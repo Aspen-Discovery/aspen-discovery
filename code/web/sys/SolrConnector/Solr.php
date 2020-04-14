@@ -39,7 +39,7 @@ abstract class Solr
 	 */
 	public $host;
 
-	private $index;
+	protected $index;
 
 	/**
 	 * The status of the connection to Solr
@@ -125,6 +125,8 @@ abstract class Solr
 				$index = isset($configArray['Index']['default_core']) ? $configArray['Index']['default_core'] : "grouped_works";
 			}
 
+			$this->index = $index;
+		}else{
 			$this->index = $index;
 		}
 
@@ -1150,15 +1152,11 @@ abstract class Solr
 		//Boost items owned at our location
 		$searchLocation = Location::getSearchLocation($this->searchSource);
 
-		//Apply automatic boosting for grouped work queries
-		if (preg_match('/.*(grouped_works).*/i', $this->host)) {
-			$boostFactors = $this->getBoostFactors($searchLibrary);
-
+		//Apply automatic boosting for queries
+		$boostFactors = $this->getBoostFactors($searchLibrary);
+		if (!empty($boostFactors)) {
 			if (isset($options['qt']) && $options['qt'] == 'dismax') {
-				//Boost by number of holdings
-				if (count($boostFactors) > 0 && $configArray['Index']['enableBoosting']) {
-					$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
-				}
+				$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
 			} else {
 				$baseQuery = $options['q'];
 				//Boost items in our system
@@ -1167,7 +1165,7 @@ abstract class Solr
 				} else {
 					$boost = '';
 				}
-				if (empty($boost) || !$configArray['Index']['enableBoosting']) {
+				if (empty($boost)) {
 					$options['q'] = $baseQuery;
 				} else {
 					$options['q'] = "{!boost b=$boost} $baseQuery";
@@ -2051,7 +2049,7 @@ abstract class Solr
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $solrScope;
-		$fields = $memCache->get("schema_dynamic_fields_$solrScope");
+		$fields = $memCache->get("schema_dynamic_fields_{$solrScope}_{$this->index}");
 		if (!$fields || isset($_REQUEST['reload'])) {
 			global $configArray;
 			$schemaUrl = $configArray['Index']['url'] . '/grouped_works/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
@@ -2062,7 +2060,7 @@ abstract class Solr
 			foreach ($schema->fields->dynamicField as $field) {
 				$fields[] = substr((string)$field['name'], 0, -1);
 			}
-			$memCache->set("schema_dynamic_fields_$solrScope", $fields, 24 * 60 * 60);
+			$memCache->set("schema_dynamic_fields_{$solrScope}_{$this->index}", $fields, 24 * 60 * 60);
 		}
 		return $fields;
 	}
@@ -2076,7 +2074,7 @@ abstract class Solr
 			return array('*');
 		}
 		//There are very large performance gains for caching this in memory since we need to do a remote call and file parse
-		$fields = $memCache->get("schema_fields_$solrScope");
+		$fields = $memCache->get("schema_fields_{$solrScope}_{$this->index}");
 		if (!$fields || isset($_REQUEST['reload'])) {
 			$schemaUrl = $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema = @simplexml_load_file($schemaUrl);
@@ -2098,7 +2096,7 @@ abstract class Solr
 					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
 				}
 			}
-			$memCache->set("schema_fields_$solrScope", $fields, 24 * 60 * 60);
+			$memCache->set("schema_fields_{$solrScope}_{$this->index}", $fields, 24 * 60 * 60);
 		}
 		return $fields;
 	}

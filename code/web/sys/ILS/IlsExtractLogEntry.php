@@ -1,8 +1,8 @@
 <?php
 
-require_once ROOT_DIR . '/sys/DB/DataObject.php';
+require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 
-class IlsExtractLogEntry extends DataObject
+class IlsExtractLogEntry extends BaseLogEntry
 {
 	public $__table = 'ils_extract_log';   // table name
 	public $id;

@@ -130,12 +130,10 @@ public class HooplaExportMain {
 						markRecordToReloadAsProcessedStmt.executeUpdate();
 						numRecordsToReloadProcessed++;
 					}catch (JSONException e){
-						logEntry.incErrors();
-						logEntry.addNote("Could not parse item details for record to reload " + hooplaId);
+						logEntry.incErrors("Could not parse item details for record to reload " + hooplaId, e);
 					}
 				}else{
-					logEntry.incErrors();
-					logEntry.addNote("Could not get details for record to reload " + hooplaId);
+					logEntry.incErrors("Could not get details for record to reload " + hooplaId);
 				}
 				getItemDetailsForRecordRS.close();
 			}
@@ -144,8 +142,7 @@ public class HooplaExportMain {
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
-			logEntry.incErrors();
-			logEntry.addNote("Error processing records to reload " + e.toString());
+			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
 
@@ -241,8 +238,7 @@ public class HooplaExportMain {
 
 				String accessToken = getAccessToken(apiUsername, apiPassword);
 				if (accessToken == null) {
-					logEntry.incErrors();
-					logEntry.addNote("Could not load access token");
+					logEntry.incErrors("Could not load access token");
 					return;
 				}
 
@@ -259,8 +255,7 @@ public class HooplaExportMain {
 				headers.put("Accept", "application/json");
 				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
 				if (!response.isSuccess()){
-					logEntry.incErrors();
-					logEntry.addNote("Could not get titles from " + url + " " + response.getMessage());
+					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());
 				}else {
 					JSONObject responseJSON = new JSONObject(response.getMessage());
 					if (responseJSON.has("titles")) {
@@ -272,7 +267,7 @@ public class HooplaExportMain {
 
 						String startToken = null;
 						if (responseJSON.has("nextStartToken")) {
-							startToken = responseJSON.getString("nextStartToken");
+							startToken = responseJSON.get("nextStartToken").toString();
 						}
 
 						int numTries = 0;
@@ -288,7 +283,7 @@ public class HooplaExportMain {
 									}
 								}
 								if (responseJSON.has("nextStartToken")) {
-									startToken = responseJSON.getString("nextStartToken");
+									startToken = responseJSON.get("nextStartToken").toString();
 								} else {
 									startToken = null;
 								}
@@ -296,16 +291,14 @@ public class HooplaExportMain {
 								if (response.getResponseCode() == 401 || response.getResponseCode() == 504){
 									numTries++;
 									if (numTries >= 3){
-										logEntry.incErrors();
-										logEntry.addNote("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
+										logEntry.incErrors("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
 										startToken = null;
 									}else{
 										accessToken = getAccessToken(apiUsername, apiPassword);
 										headers.put("Authorization", "Bearer " + accessToken);
 									}
 								}else {
-									logEntry.incErrors();
-									logEntry.addNote("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
+									logEntry.incErrors("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
 									startToken = null;
 								}
 							}
@@ -336,9 +329,7 @@ public class HooplaExportMain {
 				logger.error("Unable to find settings for Hoopla, please add settings to the database");
 			}
 		}catch (Exception e){
-			logger.error("Error exporting hoopla data", e);
-			logEntry.addNote("Error exporting hoopla data " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error exporting hoopla data", e);
 		}
 	}
 
@@ -419,16 +410,12 @@ public class HooplaExportMain {
 							String groupedWorkId = groupRecord(curTitle, hooplaId);
 							indexRecord(groupedWorkId);
 						}catch (SQLException e){
-							logger.error("Error updating hoopla data in database ", e);
-							logEntry.addNote("Error updating hoopla data  in database " + e.toString());
-							logEntry.incErrors();
+							logEntry.incErrors("Error updating hoopla data in database ", e);
 						}
 					}
 				}
 			}catch (Exception e){
-				logger.error("Error updating hoopla data", e);
-				logEntry.addNote("Error updating hoopla data " + e.toString());
-				logEntry.incErrors();
+				logEntry.incErrors("Error updating hoopla data", e);
 			}
 		}
 

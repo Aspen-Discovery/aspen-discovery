@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>Release Notes</h1>
+		<h1>{translate text="Release Notes"}</h1>
 		<hr>
 
 		<form class="navbar form-inline row">

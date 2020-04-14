@@ -1,0 +1,154 @@
+<?xml version="1.0" ?>
+<schema name="Aspen Events Index" version="1.5">
+	<types>
+		<fieldType name="unchanged_string" class="StrField"/> 
+		<fieldType name="integer" class="IntPointField"/>
+		<fieldType name="long" class="LongPointField"/>
+		<fieldType name="float" class="FloatPointField"/>
+		<fieldType name="date" class="DateRangeField"/>
+		<fieldType name="random" class="RandomSortField"/>
+		<fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="false" />
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+				<filter class="solr.LowerCaseFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="false" />
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="searchable_text" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="false" />
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true">
+			<analyzer>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<!-- The TrimFilter removes any leading or trailing whitespace -->
+				<filter class="solr.TrimFilterFactory"/>
+				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSpelling" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="0"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSuggest" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
+	</types>
+
+	<fields>
+		<!-- The id of the record in the database -->
+		<field name="id" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
+		<!-- Type i.e. library_calendar -->
+		<field name="type" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
+		<!-- Source the id of the settings entry -->
+		<field name="source" type="unchanged_string" indexed="false" stored="true" multiValued="false" required="true"/>
+		<!-- The identifier of the setting in the events system -->
+		<field name="identifier" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
+		<field name="_version_" type="long" indexed="true" stored="true"/>
+
+		<field name="boost" type="integer" indexed="true" stored="true" multiValued="false"/>
+
+		<!-- Used for diagnostic information in staff view -->
+		<field name="last_indexed" type="date" indexed="false" stored="true"/>
+
+		<field name="last_change" type="date" indexed="false" stored="true"/>
+		<field name="start_date" type="date" indexed="false" stored="true"/>
+		<field name="start_date_sort" type="integer" indexed="true" stored="true"/>
+		<field name="end_date" type="date" indexed="false" stored="true"/>
+
+		<field name="event_day" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="event_month" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="event_year" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+
+		<field name="title" type="searchable_text" indexed="true" stored="true"/>
+		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="true"/>
+
+		<field name="branch" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="room" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="offsite_address" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="online_address" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+
+		<field name="age_group_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="age_group" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="event_type" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
+		<field name="program_type_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="program_type" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="internal_category" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+
+		<field name="event_state" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="reservation_state" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+
+		<field name="registration_required" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
+		<field name="registration_start_date" type="date" indexed="false" stored="true"/>
+		<field name="registration_end_date" type="date" indexed="false" stored="true"/>
+
+		<field name="teaser" type="searchable_text" indexed="true" stored="true"/>
+		<field name="description" type="searchable_text" indexed="true" stored="true"/>
+
+		<field name="url" type="unchanged_string" indexed="false" stored="true" multiValued="false"/>
+		<field name="image_url" type="unchanged_string" indexed="false" stored="true" multiValued="false"/>
+
+		<field name="library_scopes" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- Field to get random titles -->
+		<dynamicField name="random*" type="random" indexed="true" stored="true"/>
+
+		<!-- spelling -->
+		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- suggestions (for type ahead) -->
+		<field name="title_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="keyword_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+
+	</fields>
+	
+	<uniqueKey>identifier</uniqueKey>
+	<copyField source="title" dest="title_sort"/>
+	<copyField source="title" dest="title_suggestions"/>
+	<copyField source="age_group" dest="age_group_facet"/>
+	<copyField source="program_type" dest="program_type_facet"/>
+
+	<copyField source="title" dest="keyword_suggestions"/>
+	<copyField source="teaser" dest="keyword_suggestions"/>
+	<copyField source="description" dest="keyword_suggestions"/>
+	<copyField source="age_group" dest="keyword_suggestions"/>
+	<copyField source="program_type" dest="keyword_suggestions"/>
+	<copyField source="branch" dest="keyword_suggestions"/>
+	<copyField source="room" dest="keyword_suggestions"/>
+</schema>

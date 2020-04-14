@@ -2,8 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/Events/results-displayMode-toggle.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/Events/Calendar.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Events/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Events/list.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/Events/Results.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/Events/Results.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -106,7 +110,7 @@
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="NewWatcherDialog.advanced.open" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/services/Enrichment" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/interface/themes/responsive/Events" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.jscs" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
@@ -131,8 +135,8 @@
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\ILS" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\web\aspen-discovery\code\web\services\Enrichment" />
-      <recent name="C:\web\aspen-discovery\code\web\sys\Enrichment" />
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Events" />
+      <recent name="C:\web\aspen-discovery\code\web\sys\Covers" />
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Admin" />
       <recent name="C:\web\aspen-discovery\code\web\services\WebBuilder" />
       <recent name="C:\web\aspen-discovery\code\web\services\SideLoads" />
@@ -205,76 +209,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1547769580133</updated>
-      <workItem from="1547769582682" duration="1122000" />
-      <workItem from="1547843317644" duration="8850000" />
-      <workItem from="1548256258326" duration="55527000" />
-      <workItem from="1550333588484" duration="3079000" />
-      <workItem from="1550521171479" duration="36000" />
-      <workItem from="1550522749781" duration="36596000" />
-      <workItem from="1551736550406" duration="1860000" />
-      <workItem from="1551760873497" duration="105456000" />
-      <workItem from="1552434510365" duration="30613000" />
-      <workItem from="1552853538384" duration="17957000" />
-      <workItem from="1552923349913" duration="24067000" />
-      <workItem from="1552968273467" duration="35285000" />
-      <workItem from="1553139995071" duration="164318000" />
-      <workItem from="1553876772046" duration="8234000" />
-      <workItem from="1554209908222" duration="27808000" />
-      <workItem from="1554469942897" duration="28017000" />
-      <workItem from="1554829125457" duration="43575000" />
-      <workItem from="1554940325735" duration="34977000" />
-      <workItem from="1555332992227" duration="46832000" />
-      <workItem from="1555443253379" duration="104805000" />
-      <workItem from="1556209018321" duration="34751000" />
-      <workItem from="1556674597766" duration="140309000" />
-      <workItem from="1558007221797" duration="50350000" />
-      <workItem from="1558195065290" duration="66000" />
-      <workItem from="1558195362463" duration="27831000" />
-      <workItem from="1558466222680" duration="78552000" />
-      <workItem from="1559142568493" duration="216258000" />
-      <workItem from="1560174705168" duration="41741000" />
-      <workItem from="1560342337599" duration="198530000" />
-      <workItem from="1561377984489" duration="173712000" />
-      <workItem from="1562801945055" duration="174844000" />
-      <workItem from="1563803858236" duration="34880000" />
-      <workItem from="1564078728125" duration="5065000" />
-      <workItem from="1564173088696" duration="39084000" />
-      <workItem from="1565050081723" duration="36899000" />
-      <workItem from="1565272499951" duration="64627000" />
-      <workItem from="1565834749207" duration="50548000" />
-      <workItem from="1566134130854" duration="149972000" />
-      <workItem from="1567188395973" duration="59371000" />
-      <workItem from="1568079789633" duration="17785000" />
-      <workItem from="1568248313782" duration="31141000" />
-      <workItem from="1568748246354" duration="32356000" />
-      <workItem from="1569327059428" duration="120342000" />
-      <workItem from="1570714047783" duration="6696000" />
-      <workItem from="1570800733109" duration="23498000" />
-      <workItem from="1570901205286" duration="72616000" />
-      <workItem from="1571426989275" duration="52868000" />
-      <workItem from="1572014772654" duration="2093000" />
-      <workItem from="1572039459878" duration="34132000" />
-      <workItem from="1572610832980" duration="65933000" />
-      <workItem from="1573218362294" duration="85001000" />
-      <workItem from="1573823274236" duration="17408000" />
-      <workItem from="1574009622710" duration="75141000" />
-      <workItem from="1574457053082" duration="1817000" />
-      <workItem from="1574650741738" duration="89277000" />
-      <workItem from="1575551072665" duration="112184000" />
-      <workItem from="1576501617057" duration="117873000" />
-      <workItem from="1581549131747" duration="55119000" />
-      <workItem from="1581783694636" duration="20185000" />
-      <workItem from="1582037799927" duration="5746000" />
-      <workItem from="1582148209122" duration="4991000" />
-      <workItem from="1583416173444" duration="11242000" />
-      <workItem from="1583778154632" duration="11856000" />
-      <workItem from="1584137589336" duration="2421000" />
-      <workItem from="1584316633701" duration="59000" />
-      <workItem from="1584384840186" duration="1316000" />
-      <workItem from="1584456160113" duration="46279000" />
-      <workItem from="1584986388485" duration="24018000" />
-      <workItem from="1585140477885" duration="66000" />
-      <workItem from="1585247972329" duration="37569000" />
+      <workItem from="1585151082702" duration="25886000" />
     </task>
     <servers />
   </component>

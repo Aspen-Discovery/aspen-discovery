@@ -309,7 +309,23 @@ function getOverDriveUpdates()
 				'ALTER TABLE location DROP COLUMN enableOverdriveCollection',
 				'ALTER TABLE location DROP COLUMN repeatInOverdrive',
 			]
-		]
+		],
+
+		'overdrive_module_add_log' =>[
+			'title' => 'OverDrive add log info to module',
+			'description' => 'Add logging information to OverDrive module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/OverDrive/OverDriveExtractLogEntry.php', logClassName='OverDriveExtractLogEntry' WHERE name='OverDrive'",
+			]
+		],
+
+		'overdrive_part_count' => [
+			'title' => 'OverDrive part count',
+			'description' => 'Increase the size of the partCount field',
+			'sql' => [
+				'ALTER TABLE overdrive_api_product_formats CHANGE partCount partCount SMALLINT',
+			]
+		],
 	);
 }
 

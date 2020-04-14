@@ -320,15 +320,10 @@ public class OaiIndexerMain {
 				}
 				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 			} catch (HttpSolrClient.RemoteSolrException rse) {
-				logger.error("Solr is not running properly, try restarting", rse);
-				logEntry.addNote("Solr is not running properly");
-				logEntry.incErrors();
-				logEntry.saveResults();
+				logEntry.incErrors("Solr is not running properly, try restarting", rse);
 				System.exit(-1);
 			} catch (Exception e) {
-				logger.error("Error deleting ids from index", e);
-				logEntry.addNote("Error deleting ids from index " + e.toString());
-				logEntry.incErrors();
+				logEntry.incErrors("Error deleting ids from index", e);
 			}
 		}
 
@@ -339,9 +334,7 @@ public class OaiIndexerMain {
 			updateCollectionAfterIndexing.setLong(3, collectionId);
 			updateCollectionAfterIndexing.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("Error updating the last fetch time for collection", e);
-			logEntry.addNote("Error updating the last fetch time for collection " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error updating the last fetch time for collection", e);
 		}
 
 		logEntry.setFinished();
@@ -546,20 +539,14 @@ public class OaiIndexerMain {
 							logEntry.incAdded();
 						}
 					} catch (SQLException e) {
-						logger.error("Error adding record to database", e);
-						logEntry.addNote("Error adding record to database " + e.toString());
-						logEntry.incErrors();
+						logEntry.incErrors("Error adding record to database", e);
 					}
 				}
 			}
 		} catch (SolrServerException e) {
-			logger.error("Error adding document to solr server", e);
-			logEntry.addNote("Error adding document to solr server " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error adding document to solr server", e);
 		} catch (IOException e) {
-			logger.error("I/O Error adding document to solr server", e);
-			logEntry.addNote("I/O Error adding document to solr server " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("I/O Error adding document to solr server", e);
 		}
 		if (addedToIndex && existingRecords.containsKey(solrRecord.getIdentifier())) {
 			existingRecords.get(solrRecord.getIdentifier()).processed = true;

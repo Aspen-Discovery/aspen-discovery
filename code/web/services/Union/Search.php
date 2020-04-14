@@ -46,22 +46,22 @@ class Union_Search extends Action {
 			$interface->assign('action', $action);
 			$results = new Archive_Results();
 			$results->launch();
-        }else if ($searchSource == 'open_archives'){
-            require_once (ROOT_DIR . '/services/OpenArchives/Results.php');
-            $module = 'OpenArchives';
-            $interface->assign('module', $module);
-            $action = 'Results';
-            $interface->assign('action', $action);
-            $results = new OpenArchives_Results();
-            $results->launch();
-        }else if ($searchSource == 'lists'){
-            require_once(ROOT_DIR . '/services/Lists/Results.php');
-            $module = 'Lists';
-            $interface->assign('module', $module);
-            $action = 'Results';
-            $interface->assign('action', $action);
-            $results = new Lists_Results();
-            $results->launch();
+		} else if ($searchSource == 'open_archives') {
+			require_once(ROOT_DIR . '/services/OpenArchives/Results.php');
+			$module = 'OpenArchives';
+			$interface->assign('module', $module);
+			$action = 'Results';
+			$interface->assign('action', $action);
+			$results = new OpenArchives_Results();
+			$results->launch();
+		} else if ($searchSource == 'lists') {
+			require_once(ROOT_DIR . '/services/Lists/Results.php');
+			$module = 'Lists';
+			$interface->assign('module', $module);
+			$action = 'Results';
+			$interface->assign('action', $action);
+			$results = new Lists_Results();
+			$results->launch();
 		}else if ($searchSource == 'websites'){
 			require_once(ROOT_DIR . '/services/Websites/Results.php');
 			$module = 'Websites';
@@ -69,6 +69,14 @@ class Union_Search extends Action {
 			$action = 'Results';
 			$interface->assign('action', $action);
 			$results = new Websites_Results();
+			$results->launch();
+		}else if ($searchSource == 'events'){
+			require_once(ROOT_DIR . '/services/Events/Results.php');
+			$module = 'Events';
+			$interface->assign('module', $module);
+			$action = 'Results';
+			$interface->assign('action', $action);
+			$results = new Events_Results();
 			$results->launch();
 		}else if ($searchSource == 'ebsco'){
 			require_once (ROOT_DIR . '/services/EBSCO/Results.php');

@@ -4,4 +4,8 @@
 		<a href="/MyAccount/MyList/{$summShortId}" class="btn btn-sm">{translate text="More Info"}</a>
 		{/if}
 	</div>
+
+	<div class="btn-group btn-group-sm">
+        {include file="Lists/share-tools.tpl"}
+	</div>
 </div>

@@ -75,7 +75,59 @@ class SearchAPI extends Action
 			}
 		}
 
-		//Check background processes running (Overdrive, rbdigital, open archives, list indexing, ils extract)
+		//Check free disk space
+		$freeSpace = disk_free_space('/');
+		if ($freeSpace < 5000000000){
+			$status[] = self::STATUS_CRITICAL;
+			$notes[] = "The disk currently has less than 5GB of space available";
+		}
+
+		//Check for errors within the logs
+		require_once ROOT_DIR . '/sys/Module.php';
+		$module = new Module();
+		$module->enabled = true;
+		$module->find();
+		while ($module->fetch()){
+			if (!empty($module->logClassPath) && !empty($module->logClassName)){
+				require_once ROOT_DIR . $module->logClassPath;
+				/** @var BaseLogEntry $logEntry */
+				$logEntry = new $module->logClassName();
+				$logEntry->orderBy("id DESC");
+				$logEntry->limit(0, 1);
+				if ($logEntry->find(true)){
+					if ($logEntry->numErrors > 0){
+						$status[] = self::STATUS_CRITICAL;
+						$notes[] = "The last log entry for {$module->name} had errors";
+					}
+				}
+			}
+		}
+
+		//Check cron to be sure it doesn't have errors either
+		require_once ROOT_DIR . '/sys/CronLogEntry.php';
+		$cronLogEntry = new CronLogEntry();
+		$cronLogEntry->orderBy("id DESC");
+		$cronLogEntry->limit(0, 1);
+		if ($cronLogEntry->find(true)){
+			if ($cronLogEntry->numErrors > 0){
+				$status[] = self::STATUS_CRITICAL;
+				$notes[] = "The last cron log entry had errors";
+			}
+		}
+
+		//Check to see if sitemaps have been created
+		$sitemapFiles = scandir(ROOT_DIR . '/sitemaps');
+		$groupedWorkSitemapFound = false;
+		foreach ($sitemapFiles as $sitemapFile) {
+			if (strpos($sitemapFile, 'grouped_work_site_map_') === 0){
+				$groupedWorkSitemapFound = true;
+				break;
+			}
+		}
+		if (!$groupedWorkSitemapFound){
+			$status[] = self::STATUS_CRITICAL;
+			$notes[] = "No sitemap found for grouped works";
+		}
 
 		// Unprocessed Offline Holds //
 		$offlineHoldEntry = new OfflineHold();
@@ -89,7 +141,7 @@ class SearchAPI extends Action
 		if (count($notes) > 0) {
 			$result = array(
 				'status' => in_array(self::STATUS_CRITICAL, $status) ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
-				'message' => implode('; ', $notes)
+				'message' => implode(";\r\n", $notes)
 			);
 		} else {
 			$result = array(

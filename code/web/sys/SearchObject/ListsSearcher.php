@@ -184,7 +184,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
-	//TODO: Convert this to use definitions
+	//TODO: Convert this to use definitions so they can be customized in admin
 	public function getFacetConfig()
 	{
 		if ($this->facetConfig == null) {

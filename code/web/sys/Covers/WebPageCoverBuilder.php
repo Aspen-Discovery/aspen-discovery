@@ -50,7 +50,6 @@ class WebPageCoverBuilder
 
 	/**
 	 * @param string $title
-	 * @param array|null $listTitles
 	 * @param string $filename
 	 */
 	public function getCover($title, $filename)

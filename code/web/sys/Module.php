@@ -9,6 +9,8 @@ class Module extends DataObject
 	public $enabled;
 	public $indexName;
 	public $backgroundProcess;
+	public $logClassPath;
+	public $logClassName;
 
 	function getObjectStructure(){
 		return [
@@ -17,6 +19,8 @@ class Module extends DataObject
 			'enabled' => array('property' => 'enabled', 'type' => 'checkbox', 'label' => 'Enabled?', 'description'=>'Whether or not the module is enabled', 'default'=>'0'),
 			'indexName' => array('property'=>'indexName', 'type'=>'text', 'label'=>'Index Name', 'description'=>'The name of the associated solr index if any'),
 			'backgroundProcess' => array('property'=>'backgroundProcess', 'type'=>'text', 'label'=>'Background Process', 'description'=>'The name of the background process being run if any'),
+			'logClassPath' => array('property'=>'logClassPath', 'type'=>'text', 'label'=>'Log Class Path', 'description'=>'The path to the class where logs are stored'),
+			'logClassName' => array('property'=>'logClassName', 'type'=>'text', 'label'=>'Log Class Name', 'description'=>'The name of the class that does logging'),
 		];
 	}
 }

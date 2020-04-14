@@ -11,8 +11,8 @@ import org.ini4j.Profile.Section;
 @SuppressWarnings("unused")
 public class BookCoverCleanup implements IProcessHandler {
 	public void doCronProcess(String servername, Ini configIni, Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
-		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Bookcover Cleanup");
-		processLog.saveToDatabase(dbConn, logger);
+		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry, "Bookcover Cleanup", dbConn, logger);
+		processLog.saveResults();
 
 		String coverPath = configIni.get("Site", "coverPath");
 		String[] coverPaths = new String[] { "/small", "/medium", "/large" };
@@ -29,12 +29,10 @@ public class BookCoverCleanup implements IProcessHandler {
 			String fullPath = coverPath + path;
 			File coverDirectoryFile = new File(fullPath);
 			if (!coverDirectoryFile.exists()) {
-				processLog.incErrors();
-				processLog.addNote("Directory " + coverDirectoryFile.getAbsolutePath() + " does not exist.  Please check configuration file.");
-				processLog.saveToDatabase(dbConn, logger);
+				processLog.incErrors("Directory " + coverDirectoryFile.getAbsolutePath() + " does not exist.  Please check configuration file.");
 			} else {
 				processLog.addNote("Cleaning up covers in " + coverDirectoryFile.getAbsolutePath());
-				processLog.saveToDatabase(dbConn, logger);
+				processLog.saveResults();
 				File[] filesToCheck = coverDirectoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith("jpg") || name.toLowerCase().endsWith("png"));
 				if (filesToCheck != null) {
 					for (File curFile : filesToCheck) {
@@ -44,8 +42,7 @@ public class BookCoverCleanup implements IProcessHandler {
 								numFilesDeleted++;
 								processLog.incUpdated();
 							} else {
-								processLog.incErrors();
-								processLog.addNote("Unable to delete file " + curFile.toString());
+								processLog.incErrors("Unable to delete file " + curFile.toString());
 							}
 						}
 					}
@@ -56,6 +53,6 @@ public class BookCoverCleanup implements IProcessHandler {
 			}
 		}
 		processLog.setFinished();
-		processLog.saveToDatabase(dbConn, logger);
+		processLog.saveResults();
 	}
 }

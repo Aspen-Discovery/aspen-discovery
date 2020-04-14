@@ -207,9 +207,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 				availabilityChanged = true;
 			}
 		} catch (SQLException e) {
-			logger.error("Error loading availability", e);
-			logEntry.incErrors();
-			logEntry.addNote("Error loading availability " + e.toString());
+			logEntry.incErrors("Error loading availability", e);
 		}
 
 		Set<String> formatFields = MarcUtil.getFieldList(marcRecord, "538a");
@@ -271,9 +269,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 				updateCloudLibraryAvailabilityStmt.setLong(9, startTimeForLogging);
 				updateCloudLibraryAvailabilityStmt.executeUpdate();
 			} catch (SQLException e) {
-				logger.error("Error saving availability", e);
-				logEntry.incErrors();
-				logEntry.addNote("Error saving availability " + e.toString());
+				logEntry.incErrors("Error saving availability", e);
 			}
 		}
 

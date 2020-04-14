@@ -1,7 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
-import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -10,7 +9,6 @@ import org.ini4j.Ini;
 import java.io.*;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.Date;
 
 public class GroupedReindexMain {
@@ -86,8 +84,6 @@ public class GroupedReindexMain {
 		long numWorksProcessed = 0;
 		try {
 			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, individualWorkToProcess != null, logger);
-			HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope = new HashMap<>();
-			HashSet<Long> uniqueGroupedWorks = new HashSet<>();
 			if (groupedWorkIndexer.isOkToIndex()) {
 				if (individualWorkToProcess != null) {
 					//Get more information about the work
@@ -96,7 +92,7 @@ public class GroupedReindexMain {
 						getInfoAboutWorkStmt.setString(1, individualWorkToProcess);
 						ResultSet infoAboutWork = getInfoAboutWorkStmt.executeQuery();
 						if (infoAboutWork.next()) {
-							groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"), null, null);
+							groupedWorkIndexer.processGroupedWork(infoAboutWork.getLong("id"), individualWorkToProcess, infoAboutWork.getString("grouping_category"));
 						} else {
 							logger.error("Could not find a work with id " + individualWorkToProcess);
 						}
@@ -106,14 +102,9 @@ public class GroupedReindexMain {
 					}
 				} else {
 					logger.info("Running Reindex");
-					numWorksProcessed = groupedWorkIndexer.processGroupedWorks(siteMapsByScope, uniqueGroupedWorks);
+					numWorksProcessed = groupedWorkIndexer.processGroupedWorks();
 				}
 				groupedWorkIndexer.finishIndexing();
-
-				if (fullReindex) {
-					logger.info("Creating Site Maps");
-					groupedWorkIndexer.createSiteMaps(siteMapsByScope, uniqueGroupedWorks);
-				}
 
 			}
 		} catch (Error e) {

@@ -100,8 +100,7 @@ public class KohaExportMain {
 				Connection kohaConn;
 				KohaInstanceInformation kohaInstanceInformation = initializeKohaConnection(dbConn);
 				if (kohaInstanceInformation == null) {
-					logEntry.incErrors();
-					logEntry.addNote("Could not connect to the Koha database");
+					logEntry.incErrors("Could not connect to the Koha database");
 					logEntry.setFinished();
 					continue;
 				} else {
@@ -767,9 +766,7 @@ public class KohaExportMain {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error loading changed records from Koha database", e);
-			logEntry.addNote("Error loading changed records from Koha database: " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error loading changed records from Koha database", e);
 			//Don't quit since that keeps the exporter from running continuously
 		}
 		logger.info("Finished loading changed records from Koha database");
@@ -788,8 +785,7 @@ public class KohaExportMain {
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
 				if (!marcFile.exists()) {
-					logEntry.incErrors();
-					logEntry.addNote("Could not find marc for record to reload " + recordIdentifier);
+					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
 				} else {
 					FileInputStream marcFileStream = new FileInputStream(marcFile);
 					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
@@ -800,8 +796,7 @@ public class KohaExportMain {
 						//Reindex the record
 						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 					} else {
-						logEntry.incErrors();
-						logEntry.addNote("Could not read file " + marcFile);
+						logEntry.incErrors("Could not read file " + marcFile);
 					}
 				}
 
@@ -814,8 +809,7 @@ public class KohaExportMain {
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
-			logEntry.incErrors();
-			logEntry.addNote("Error processing records to reload " + e.toString());
+			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
 
@@ -908,9 +902,7 @@ public class KohaExportMain {
 			} else if (e instanceof SQLException && ((SQLException) e).getSQLState().equals("S1009")) {
 				throw e;
 			} else {
-				logger.error("Error updating marc record for bib " + curBibId, e);
-				logEntry.addNote("Error updating marc record for bib " + curBibId + ": " + e.toString());
-				logEntry.incErrors();
+				logEntry.incErrors("Error updating marc record for bib " + curBibId, e);
 			}
 		}
 	}

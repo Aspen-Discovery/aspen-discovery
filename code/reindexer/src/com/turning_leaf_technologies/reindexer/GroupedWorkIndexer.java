@@ -26,7 +26,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 public class GroupedWorkIndexer {
-	private Ini configIni;
 	private String serverName;
 	private String solrPort;
 	private Logger logger;
@@ -79,7 +78,6 @@ public class GroupedWorkIndexer {
 		this.logger = logger;
 		this.dbConn = dbConn;
 		this.fullReindex = fullReindex;
-		this.configIni = configIni;
 
 		solrPort = configIni.get("Reindex", "solrPort");
 
@@ -485,21 +483,6 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	void createSiteMaps(HashMap<Scope, ArrayList<SiteMapEntry>>siteMapsByScope, HashSet<Long> uniqueGroupedWorks ) {
-
-		File dataDir = new File(configIni.get("SiteMap", "filePath"));
-		String maxPopTitlesDefault = configIni.get("SiteMap", "num_titles_in_most_popular_sitemap");
-		String maxUniqueTitlesDefault = configIni.get("SiteMap", "num_title_in_unique_sitemap");
-		String url = configIni.get("Site", "url");
-		try {
-			SiteMap siteMap = new SiteMap(logger, dbConn, Integer.parseInt(maxUniqueTitlesDefault), Integer.parseInt(maxPopTitlesDefault));
-			siteMap.createSiteMaps(url, dataDir, siteMapsByScope, uniqueGroupedWorks);
-
-		} catch (IOException ex) {
-			logger.error("Error creating site map");
-		}
-	}
-
 	public void finishIndexingFromExtract(BaseLogEntry logEntry){
 		try {
 			processScheduledWorks(logEntry);
@@ -603,7 +586,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	Long processGroupedWorks(HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope, HashSet<Long> uniqueGroupedWorks) {
+	Long processGroupedWorks() {
 		Long numWorksProcessed = 0L;
 		try {
 			PreparedStatement getAllGroupedWorks;
@@ -635,7 +618,7 @@ public class GroupedWorkIndexer {
 				if (groupedWorks.wasNull()){
 					lastUpdated = null;
 				}
-				processGroupedWork(id, permanentId, grouping_category, siteMapsByScope, uniqueGroupedWorks);
+				processGroupedWork(id, permanentId, grouping_category);
 
 				numWorksProcessed++;
 				if (fullReindex && (numWorksProcessed % 5000 == 0)){
@@ -675,7 +658,7 @@ public class GroupedWorkIndexer {
 			if (getGroupedWorkInfoRS.next()) {
 				long id = getGroupedWorkInfoRS.getLong("id");
 				String grouping_category = getGroupedWorkInfoRS.getString("grouping_category");
-				processGroupedWork(id, permanentId, grouping_category, null, null);
+				processGroupedWork(id, permanentId, grouping_category);
 			}
 			totalRecordsHandled++;
 			if (totalRecordsHandled % 25 == 0) {
@@ -687,7 +670,7 @@ public class GroupedWorkIndexer {
 
 	}
 
-	void processGroupedWork(Long id, String permanentId, String grouping_category, HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope, HashSet<Long> uniqueGroupedWorks) throws SQLException {
+	void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
 		//Create a solr record for the grouped work
 		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
 		groupedWork.setId(permanentId);
@@ -783,22 +766,6 @@ public class GroupedWorkIndexer {
 				this.deleteRecord(permanentId, id);
 			}
 
-		}
-
-		// loop through each of the scopes and if library owned add to appropriate sitemap
-		if (fullReindex && siteMapsByScope != null) {
-			int ownershipCount = 0;
-			for (Scope scope : this.getScopes()) {
-				if (scope.isLibraryScope() && groupedWork.getIsLibraryOwned(scope)) {
-					if (!siteMapsByScope.containsKey(scope)) {
-						siteMapsByScope.put(scope, new ArrayList<>());
-					}
-					siteMapsByScope.get(scope).add(new SiteMapEntry(id, permanentId, groupedWork.getPopularity()));
-					ownershipCount++;
-				}
-			}
-			if (ownershipCount == 1) //unique works
-				uniqueGroupedWorks.add(id);
 		}
 
 	}

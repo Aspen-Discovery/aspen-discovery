@@ -3,14 +3,6 @@
 function getHooplaUpdates()
 {
 	return array(
-		'variables_lastHooplaExport' => array(
-			'title' => 'Variables Last Hoopla Export Time',
-			'description' => 'Add a variable for when hoopla data was extracted from the API last.',
-			'sql' => array(
-				"INSERT INTO variables (name, value) VALUES ('lastHooplaExport', 'false')",
-			),
-		),
-
 		'hoopla_exportTables' => array(
 			'title' => 'Hoopla export tables',
 			'description' => 'Create tables to store data exported from hoopla.',
@@ -178,6 +170,14 @@ function getHooplaUpdates()
 			'sql' => [
 				"UPDATE modules SET backgroundProcess = '' WHERE name = 'Hoopla'",
 			]
-		]
+		],
+
+		'hoopla_module_add_log' =>[
+			'title' => 'Hoopla add log info to module',
+			'description' => 'Add logging information to Hoopla module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/Hoopla/HooplaExportLogEntry.php', logClassName='HooplaExportLogEntry' WHERE name='Hoopla'",
+			]
+		],
 	);
 }

@@ -222,6 +222,20 @@ $timer->logTime('Translator setup');
 
 $interface->setLanguage($activeLanguage);
 
+//Check to see if we should show the submit ticket option
+$interface->assign('showSubmitTicket', false);
+if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin'))) {
+	try {
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = new SystemVariables();
+		if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
+			$interface->assign('showSubmitTicket', true);
+		}
+	}catch (Exception $e) {
+		//This happens before the table is setup
+	}
+}
+
 //Set System Message after translator has been setup
 if ($configArray['System']['systemMessage']){
 	$interface->assign('systemMessage', translate($configArray['System']['systemMessage']));
@@ -480,10 +494,14 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	if ($searchObject->getView()) $interface->assign('displayMode', $searchObject->getView());
 
 	/** @var SearchObject_ListsSearcher $listSearchIndexes */
-    $listSearchIndexes = SearchObjectFactory::initSearchObject('Lists');
-    $interface->assign('listSearchIndexes', is_object($listSearchIndexes) ? $listSearchIndexes->getSearchIndexes() : array());
+	$listSearchIndexes = SearchObjectFactory::initSearchObject('Lists');
+	$interface->assign('listSearchIndexes', is_object($listSearchIndexes) ? $listSearchIndexes->getSearchIndexes() : array());
 
-	/** @var SearchObject_ListsSearcher $listSearchIndexes */
+	/** @var SearchObject_EventsSearcher $eventsSearchIndexes */
+	$eventsSearchIndexes = SearchObjectFactory::initSearchObject('Events');
+	$interface->assign('eventsSearchIndexes', is_object($eventsSearchIndexes) ? $eventsSearchIndexes->getSearchIndexes() : array());
+
+	/** @var SearchObject_WebsitesSearcher $websiteSearchIndexes */
 	$websiteSearchIndexes = SearchObjectFactory::initSearchObject('Websites');
 	$interface->assign('websiteSearchIndexes', is_object($websiteSearchIndexes) ? $websiteSearchIndexes->getSearchIndexes() : array());
 
@@ -499,11 +517,11 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 		$interface->assign('enableArchive', true);
 	}
 
-    if ($library->enableOpenArchives){
-        $openArchivesSearchObject = SearchObjectFactory::initSearchObject('OpenArchives');
-        $interface->assign('openArchivesSearchIndexes', is_object($openArchivesSearchObject) ? $openArchivesSearchObject->getSearchIndexes() : array());
-        $interface->assign('enableOpenArchives', true);
-    }
+	if ($library->enableOpenArchives) {
+		$openArchivesSearchObject = SearchObjectFactory::initSearchObject('OpenArchives');
+		$interface->assign('openArchivesSearchIndexes', is_object($openArchivesSearchObject) ? $openArchivesSearchObject->getSearchIndexes() : array());
+		$interface->assign('enableOpenArchives', true);
+	}
 
 	//TODO: Re-enable once we do full EDS integration
 	/*if ($library->edsApiProfile){

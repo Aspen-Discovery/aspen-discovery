@@ -1,7 +1,7 @@
 <?php
 
-require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class CloudLibraryExportLogEntry extends DataObject
+require_once ROOT_DIR . '/sys/BaseLogEntry.php';
+class CloudLibraryExportLogEntry extends BaseLogEntry
 {
 	public $__table = 'cloud_library_export_log';   // table name
 	public $id;
@@ -10,7 +10,6 @@ class CloudLibraryExportLogEntry extends DataObject
 	public $endTime;
 	public $notes;
     public $numProducts;
-    public $numErrors;
     public $numAdded;
     public $numDeleted;
     public $numUpdated;

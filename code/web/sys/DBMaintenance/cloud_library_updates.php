@@ -139,6 +139,14 @@ function getCloudLibraryUpdates() {
 			'sql' => [
 				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Cloud Library', 'grouped_works', 'cloud_library_export')"
 			]
-		]
+		],
+
+		'cloud_library_module_add_log' =>[
+			'title' => 'Cloud Library add log info to module',
+			'description' => 'Add logging information to Cloud Library modules',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/CloudLibrary/CloudLibraryExportLogEntry.php', logClassName='CloudLibraryExportLogEntry' WHERE name = 'Cloud Library'",
+			]
+		],
 	);
 }

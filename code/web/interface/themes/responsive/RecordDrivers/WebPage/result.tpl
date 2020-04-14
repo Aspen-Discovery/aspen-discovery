@@ -1,5 +1,5 @@
 {strip}
-<div id="openArchivesResult{$resultIndex|escape}" class="resultsList row">
+<div id="webPageResult{$resultIndex|escape}" class="resultsList row">
 	{if $showCovers}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 			{if $disableCoverArt != 1}
@@ -69,6 +69,14 @@
 				</div>
 			</div>
 		{/if}
+
+		<div class="row">
+			<div class="col-xs-12">
+                {include file='Websites/result-tools-horizontal.tpl' ratingData=$summRating recordUrl=$summUrl showMoreInfo=true}
+                {* TODO: id & shortId shouldn't be needed to be specified here, otherwise need to note when used.
+					summTitle only used by cart div, which is disabled as of now. 12-28-2015 plb *}
+			</div>
+		</div>
 	</div>
 </div>
 {/strip}

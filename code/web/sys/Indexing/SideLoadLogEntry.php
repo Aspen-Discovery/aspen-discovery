@@ -1,8 +1,8 @@
 <?php
 
-require_once ROOT_DIR . '/sys/DB/DataObject.php';
+require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 
-class SideLoadLogEntry extends DataObject
+class SideLoadLogEntry extends BaseLogEntry
 {
 	public $__table = 'sideload_log';   // table name
 	public $id;

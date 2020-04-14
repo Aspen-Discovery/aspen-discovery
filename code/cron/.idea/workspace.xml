@@ -3,7 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../events_indexer/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/META-INF/MANIFEST.MF" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -26,7 +29,7 @@
     <favorites_list name="cron" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+    <leaf />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -38,9 +41,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>finish</find>
-      <find>system.ex</find>
-      <find>Error loading</find>
       <find>getAllExistingRbdigitalItemsStmt</find>
       <find>logEntry.incErrors</find>
       <find>logEntry.incErrors(</find>
@@ -68,6 +68,9 @@
       <find>RBdigitalScope</find>
       <find>runFull</find>
       <find>solr</find>
+      <find>internal_category</find>
+      <find>library_scopes</find>
+      <find>SimpleDate</find>
     </findStrings>
     <replaceStrings>
       <replace>Rbdigital</replace>
@@ -105,8 +108,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/../../sites/arlington.localhost/conf/config.ini" />
-        <option value="$PROJECT_DIR$/../../sites/arlington.production/conf/config.ini" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/Scope.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/OwnershipRule.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/InclusionRule.java" />
@@ -156,6 +157,8 @@
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java" />
         <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java" />
+        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" />
+        <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" />
       </list>
     </option>
   </component>
@@ -167,7 +170,7 @@
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-10" />
-    <option name="width" value="979" />
+    <option name="width" value="980" />
     <option name="height" value="1040" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -175,14 +178,18 @@
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="PackagesPane" />
+      <pane id="ProjectPane" />
+      <pane id="Scope" />
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1557953281623" />
     <property name="extract.method.default.visibility" value="private" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../sierra_export_api/META-INF/MANIFEST.MF" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../events_indexer" />
     <property name="project.structure.last.edited" value="Artifacts" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
@@ -209,10 +216,10 @@
       <recent name="com.turning_leaf_technologies" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\data_dir_setup\solr7" />
       <recent name="C:\web\aspen-discovery\sites" />
       <recent name="C:\web\aspen-discovery\install" />
       <recent name="C:\web\aspen-discovery\sites\nashville.production" />
-      <recent name="C:\web\aspen-discovery\data_dir_setup\solr7" />
       <recent name="C:\web\aspen-discovery\code" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -223,11 +230,11 @@
       <recent name="com.turning_leaf_technologies.reindexer" />
     </key>
     <key name="CreateClassDialog.RecentsKey">
+      <recent name="com.turning_leaf_technologies.events" />
       <recent name="com.turning_leaf_technologies.sierra" />
       <recent name="com.turning_leaf_technologies.indexing" />
       <recent name="com.turning_leaf_technologies.website_indexer" />
       <recent name="com.turning_leaf_technologies.web_indexer" />
-      <recent name="com.turning_leaf_technologies.cloud_library" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -242,7 +249,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.OverDrive Export">
+  <component name="RunManager" selected="Application.Events Indexing">
     <configuration name="CARLX Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.carlx.CarlXExportMain" />
       <module name="carlx_export" />
@@ -272,6 +279,15 @@
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.cron.Cron" />
       <module name="cron" />
       <option name="PROGRAM_PARAMETERS" value="aspen.demo" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Events Indexing" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.events.EventsIndexerMain" />
+      <module name="events_indexer" />
+      <option name="PROGRAM_PARAMETERS" value="basinlibraries.localhost" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../events_indexer" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -398,6 +414,7 @@
       <item itemvalue="Application.Cloud Library Export" />
       <item itemvalue="Application.Cron BookCoverCleanup" />
       <item itemvalue="Application.Cron" />
+      <item itemvalue="Application.Events Indexing" />
       <item itemvalue="Application.Genealogy Cleanup/Reindex" />
       <item itemvalue="Application.Hoopla Export" />
       <item itemvalue="Application.Koha Export" />
@@ -442,7 +459,7 @@
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" weight="0.19127516" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4969325" visible="true" weight="0.19127516" />
       <window_info id="Image Layers" order="1" />
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
@@ -467,7 +484,7 @@
       <window_info anchor="right" id="Theme Preview" order="5" />
       <window_info anchor="right" id="Capture Analysis" order="6" />
       <window_info anchor="right" id="Palette&#9;" order="7" />
-      <window_info anchor="right" id="Structure" order="8" sideWeight="0.50727654" side_tool="true" visible="true" weight="0.17583893" />
+      <window_info anchor="right" id="Structure" order="8" sideWeight="0.50727654" side_tool="true" weight="0.11409396" />
       <window_info anchor="right" id="Maven" order="9" weight="0.3295302" />
     </layout>
     <layout-to-restore>
@@ -511,19 +528,19 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java</url>
-          <line>328</line>
+          <line>339</line>
           <properties />
           <option name="timeStamp" value="238" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java</url>
-          <line>345</line>
+          <line>356</line>
           <properties />
           <option name="timeStamp" value="241" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java</url>
-          <line>314</line>
+          <line>325</line>
           <properties />
           <option name="timeStamp" value="242" />
         </line-breakpoint>
@@ -565,7 +582,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java</url>
-          <line>485</line>
+          <line>496</line>
           <properties />
           <option name="timeStamp" value="519" />
         </line-breakpoint>
@@ -631,127 +648,127 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java</url>
-          <line>163</line>
+          <line>166</line>
           <properties />
           <option name="timeStamp" value="706" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java</url>
-          <line>160</line>
+          <line>163</line>
           <properties />
           <option name="timeStamp" value="708" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>272</line>
+          <line>290</line>
           <properties />
           <option name="timeStamp" value="717" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>290</line>
+          <line>308</line>
           <properties />
           <option name="timeStamp" value="718" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>293</line>
+          <line>311</line>
           <properties />
           <option name="timeStamp" value="719" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>304</line>
+          <line>322</line>
           <properties />
           <option name="timeStamp" value="720" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>334</line>
+          <line>352</line>
           <properties />
           <option name="timeStamp" value="721" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>127</line>
+          <line>134</line>
           <properties />
           <option name="timeStamp" value="735" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>842</line>
+          <line>860</line>
           <properties />
           <option name="timeStamp" value="743" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>461</line>
+          <line>479</line>
           <properties />
           <option name="timeStamp" value="751" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>471</line>
+          <line>489</line>
           <properties />
           <option name="timeStamp" value="753" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>700</line>
+          <line>718</line>
           <properties />
           <option name="timeStamp" value="768" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>469</line>
+          <line>487</line>
           <properties />
           <option name="timeStamp" value="773" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>377</line>
+          <line>395</line>
           <properties />
           <option name="timeStamp" value="777" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>736</line>
+          <line>754</line>
           <properties />
           <option name="timeStamp" value="781" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>777</line>
+          <line>795</line>
           <properties />
           <option name="timeStamp" value="782" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>1116</line>
+          <line>1134</line>
           <properties />
           <option name="timeStamp" value="793" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>1121</line>
+          <line>1139</line>
           <properties />
           <option name="timeStamp" value="794" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>1126</line>
+          <line>1144</line>
           <properties />
           <option name="timeStamp" value="795" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>486</line>
+          <line>504</line>
           <properties />
           <option name="timeStamp" value="796" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>151</line>
+          <line>158</line>
           <properties />
           <option name="timeStamp" value="797" />
         </line-breakpoint>
@@ -763,13 +780,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>787</line>
+          <line>789</line>
           <properties />
           <option name="timeStamp" value="829" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>785</line>
+          <line>787</line>
           <properties />
           <option name="timeStamp" value="830" />
         </line-breakpoint>
@@ -781,13 +798,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
-          <line>779</line>
+          <line>796</line>
           <properties />
           <option name="timeStamp" value="848" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>521</line>
+          <line>539</line>
           <properties />
           <option name="timeStamp" value="870" />
         </line-breakpoint>
@@ -805,7 +822,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
-          <line>146</line>
+          <line>163</line>
           <properties />
           <option name="timeStamp" value="914" />
         </line-breakpoint>
@@ -829,7 +846,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>479</line>
+          <line>481</line>
           <properties />
           <option name="timeStamp" value="972" />
         </line-breakpoint>
@@ -847,7 +864,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java</url>
-          <line>200</line>
+          <line>194</line>
           <properties />
           <option name="timeStamp" value="1010" />
         </line-breakpoint>
@@ -859,13 +876,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java</url>
-          <line>372</line>
+          <line>348</line>
           <properties />
           <option name="timeStamp" value="1098" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java</url>
-          <line>374</line>
+          <line>350</line>
           <properties />
           <option name="timeStamp" value="1099" />
         </line-breakpoint>
@@ -930,16 +947,28 @@
           <option name="timeStamp" value="1161" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
+          <line>112</line>
+          <properties />
+          <option name="timeStamp" value="1163" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
-          <line>162</line>
+          <line>179</line>
           <properties />
           <option name="timeStamp" value="1164" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexerMain.java</url>
-          <line>99</line>
+          <line>110</line>
           <properties />
           <option name="timeStamp" value="1166" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
+          <line>89</line>
+          <properties />
+          <option name="timeStamp" value="1169" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="linkUrl.contains(&quot;org/files&quot;)" language="JAVA" />
@@ -956,19 +985,19 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
-          <line>607</line>
+          <line>624</line>
           <properties />
           <option name="timeStamp" value="1194" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
-          <line>603</line>
+          <line>620</line>
           <properties />
           <option name="timeStamp" value="1202" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java</url>
-          <line>119</line>
+          <line>135</line>
           <properties />
           <option name="timeStamp" value="1215" />
         </line-breakpoint>
@@ -998,39 +1027,45 @@
           <option name="timeStamp" value="1314" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
+          <line>87</line>
+          <properties />
+          <option name="timeStamp" value="1326" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
-          <line>413</line>
+          <line>436</line>
           <properties />
           <option name="timeStamp" value="1327" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>1247</line>
+          <line>1249</line>
           <properties />
           <option name="timeStamp" value="1331" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java</url>
-          <line>298</line>
+          <line>299</line>
           <properties />
           <option name="timeStamp" value="1357" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
-          <line>364</line>
+          <line>387</line>
           <properties />
           <option name="timeStamp" value="1369" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="seriesInfo.startsWith(&quot; &quot;)" language="JAVA" />
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java</url>
-          <line>1339</line>
+          <line>1348</line>
           <properties />
           <option name="timeStamp" value="1393" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
-          <line>1180</line>
+          <line>1203</line>
           <properties />
           <option name="timeStamp" value="1394" />
         </line-breakpoint>
@@ -1042,14 +1077,14 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>929</line>
+          <line>931</line>
           <properties />
           <option name="timeStamp" value="1399" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="!language.equals(&quot;English&quot;)" language="JAVA" />
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java</url>
-          <line>1761</line>
+          <line>1770</line>
           <properties />
           <option name="timeStamp" value="1419" />
         </line-breakpoint>
@@ -1057,43 +1092,43 @@
           <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
           <line>310</line>
           <properties />
-          <option name="timeStamp" value="1428" />
+          <option name="timeStamp" value="1427" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
           <line>316</line>
           <properties />
-          <option name="timeStamp" value="1429" />
+          <option name="timeStamp" value="1435" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
           <line>322</line>
           <properties />
-          <option name="timeStamp" value="1430" />
+          <option name="timeStamp" value="1438" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
           <line>328</line>
           <properties />
-          <option name="timeStamp" value="1432" />
+          <option name="timeStamp" value="1440" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
           <line>334</line>
           <properties />
-          <option name="timeStamp" value="1433" />
+          <option name="timeStamp" value="1441" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
           <line>340</line>
           <properties />
-          <option name="timeStamp" value="1434" />
+          <option name="timeStamp" value="1445" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
           <line>289</line>
           <properties />
-          <option name="timeStamp" value="1436" />
+          <option name="timeStamp" value="1459" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java</url>
@@ -1115,31 +1150,31 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>178</line>
+          <line>196</line>
           <properties />
           <option name="timeStamp" value="1446" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>184</line>
+          <line>202</line>
           <properties />
           <option name="timeStamp" value="1448" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>181</line>
+          <line>199</line>
           <properties />
           <option name="timeStamp" value="1449" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
-          <line>981</line>
+          <line>1004</line>
           <properties />
           <option name="timeStamp" value="1450" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
-          <line>982</line>
+          <line>1005</line>
           <properties />
           <option name="timeStamp" value="1451" />
         </line-breakpoint>
@@ -1151,105 +1186,105 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>263</line>
+          <line>295</line>
           <properties />
           <option name="timeStamp" value="1489" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>322</line>
+          <line>359</line>
           <properties />
           <option name="timeStamp" value="1494" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>401</line>
+          <line>424</line>
           <properties />
           <option name="timeStamp" value="1499" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>187</line>
+          <line>210</line>
           <properties />
           <option name="timeStamp" value="1500" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>190</line>
+          <line>213</line>
           <properties />
           <option name="timeStamp" value="1502" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>222</line>
+          <line>242</line>
           <properties />
           <option name="timeStamp" value="1503" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>225</line>
+          <line>245</line>
           <properties />
           <option name="timeStamp" value="1505" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>236</line>
+          <line>268</line>
           <properties />
           <option name="timeStamp" value="1506" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>344</line>
+          <line>384</line>
           <properties />
           <option name="timeStamp" value="1507" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>621</line>
+          <line>750</line>
           <properties />
           <option name="timeStamp" value="1518" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>415</line>
+          <line>438</line>
           <properties />
           <option name="timeStamp" value="1527" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>428</line>
+          <line>484</line>
           <properties />
           <option name="timeStamp" value="1530" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>612</line>
+          <line>741</line>
           <properties />
           <option name="timeStamp" value="1535" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>559</line>
+          <line>686</line>
           <properties />
           <option name="timeStamp" value="1536" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="setting.getId() != 1" language="JAVA" />
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>101</line>
+          <line>112</line>
           <properties />
           <option name="timeStamp" value="1550" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="setting.getId() != 1" language="JAVA" />
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>447</line>
+          <line>510</line>
           <properties />
           <option name="timeStamp" value="1552" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
-          <line>470</line>
+          <line>530</line>
           <properties />
           <option name="timeStamp" value="1554" />
         </line-breakpoint>
@@ -1259,6 +1294,26 @@
           <line>167</line>
           <properties />
           <option name="timeStamp" value="1560" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>233</line>
+          <properties />
+          <option name="timeStamp" value="1563" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <condition expression="curEvent.has(&quot;internal_categories&quot;) &amp;&amp; curEvent.getJSONArray(&quot;internal_categories&quot;).length() &gt; 0" language="JAVA" />
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>164</line>
+          <properties />
+          <option name="timeStamp" value="1564" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <condition expression="curEvent.has(&quot;event_state&quot;) &amp;&amp; curEvent.getJSONArray(&quot;event_state&quot;).length() &gt; 0" language="JAVA" />
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>165</line>
+          <properties />
+          <option name="timeStamp" value="1565" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1279,6 +1334,21 @@
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="breakpointCondition">
+      <expression>
+        <expression-string>curEvent.has(&quot;event_state&quot;) &amp;&amp; curEvent.getJSONArray(&quot;event_state&quot;).length() &gt; 0</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>curEvent.has(&quot;internal_categories&quot;) &amp;&amp; curEvent.getJSONArray(&quot;internal_categories&quot;).length() &gt; 0</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>curEvent.has(&quot;internal_categories&quot;)</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>curFormat == null</expression-string>
         <language-id>JAVA</language-id>
@@ -1311,21 +1381,6 @@
       </expression>
       <expression>
         <expression-string>series.length() == 0</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>seriesInfo.startsWith(&quot; &quot;)</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>curScope.isLibraryScope() == true</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>subtitle.length() &gt; 0 &amp;&amp; !subtitle.toLowerCase().contains(series.toLowerCase())</expression-string>
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -1406,30 +1461,14 @@
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
+      <expression>
+        <expression-string>(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-885">
-          <caret line="18" column="13" selection-start-line="18" selection-start-column="13" selection-end-line="18" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexerMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="30" column="63" selection-start-line="30" selection-start-column="63" selection-end-line="30" selection-end-column="63" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="269" selection-start-line="269" selection-end-line="269" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveRecordInfo.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
@@ -1824,13 +1863,28 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="258">
+          <caret line="68" column="135" selection-start-line="68" selection-start-column="135" selection-end-line="68" selection-end-column="135" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1194">
+          <caret line="159" column="61" selection-start-line="159" selection-start-column="61" selection-end-line="159" selection-end-column="61" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" />
   </component>
   <component name="masterDetails">
     <states>
       <state key="ArtifactsStructureConfigurable.UI">
         <settings>
           <artifact-editor />
-          <last-edited>cloud_library_export</last-edited>
+          <last-edited>events_indexer</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -1878,7 +1932,7 @@
       </state>
       <state key="ModuleStructureConfigurable.UI">
         <settings>
-          <last-edited>cloud_library_export</last-edited>
+          <last-edited>events_indexer</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>

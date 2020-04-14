@@ -566,6 +566,9 @@ class UInterface extends Smarty
 		$expandedLinkCategories = array();
 		/** @var LibraryLink $libraryLink */
 		foreach ($links as $libraryLink){
+			if ($libraryLink->showToLoggedInUsersOnly && !UserAccount::isLoggedIn()){
+				continue;
+			}
 			if ($libraryLink->showInHelp || (!$libraryLink->showInHelp && !$libraryLink->showInAccount)){
 				if (!array_key_exists($libraryLink->category, $libraryHelpLinks)){
 					$libraryHelpLinks[$libraryLink->category] = array();

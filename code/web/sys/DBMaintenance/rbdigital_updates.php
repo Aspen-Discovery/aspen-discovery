@@ -5,14 +5,6 @@
 
 function getRBdigitalUpdates() {
 	return array(
-		'variables_lastRBdigitalExport' => array(
-			'title' => 'Variables Last RBdigital Export Time',
-			'description' => 'Add a variable for when RBdigital data was extracted from the API last.',
-			'sql' => array(
-				"INSERT INTO variables (name, value) VALUES ('lastRBdigitalExport', 'false')",
-			),
-		),
-
 		'rbdigital_exportTables' => array(
 			'title' => 'RBdigital title tables',
 			'description' => 'Create tables to store data exported from RBdigital.',
@@ -269,6 +261,14 @@ function getRBdigitalUpdates() {
 				'ALTER TABLE rbdigital_magazine_usage ADD COLUMN issueId INT(11)',
 				"ALTER TABLE rbdigital_magazine_usage DROP INDEX magazineId",
 				"ALTER TABLE rbdigital_magazine_usage ADD INDEX (magazineId, issueId, year, month)",
+			]
+		],
+
+		'rbdigital_module_add_log' =>[
+			'title' => 'RBdigital add log info to module',
+			'description' => 'Add logging information to RBdigital module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/RBdigital/RBdigitalExportLogEntry.php', logClassName='RBdigitalExportLogEntry' WHERE name='RBdigital'",
 			]
 		],
 	);

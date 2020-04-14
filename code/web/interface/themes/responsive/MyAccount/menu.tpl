@@ -220,7 +220,7 @@
 				</div>
 
 				{if (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-					{if in_array($action, array('Modules', 'Administrators', 'DBMaintenance', 'PHPInfo', 'Variables'))
+					{if in_array($action, array('Modules', 'Administrators', 'DBMaintenance', 'PHPInfo', 'Variables', 'SystemVariables'))
 					|| ($module == 'Admin' && $action == 'Home')}
 						{assign var="curSection" value=true}
 					{else}
@@ -247,7 +247,8 @@
 									<div class="adminMenuLink"><a href="/Admin/SendGridSettings">{translate text="SendGrid Settings"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/Home">{translate text="Solr Information"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/PHPInfo">{translate text="PHP Information"}</a></div>
-									<div class="adminMenuLink"><a href="/Admin/Variables">{translate text="System Variables"}</a></div>
+									<div class="adminMenuLink"><a href="/Admin/Variables">{translate text="Variables"}</a></div>
+									<div class="adminMenuLink"><a href="/Admin/SystemVariables">{translate text="System Variables"}</a></div>
 								{/if}
 							</div>
 						</div>
@@ -368,7 +369,7 @@
 				{/if}
 
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'OMDBSettings', 'NewYorkTimesSettings'))}
+					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'OMDBSettings', 'NewYorkTimesSettings', 'RecaptchaSettings'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -418,6 +419,9 @@
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/OMDBSettings">{translate text="OMDB Settings"}</a></div>
+								{/if}
+								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink"><a href="/Enrichment/RecaptchaSettings">{translate text="reCAPTCHA Settings"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/SyndeticsSettings">{translate text="Syndetics Settings"}</a></div>
@@ -709,6 +713,30 @@
 					</div>
 				{/if}
 
+				{if array_key_exists('Events', $enabledModules) && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+					{if $module == 'Events' && in_array($action, array('LMLibraryCalendarSettings', 'Dashboard', 'IndexingLog'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#eventsMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+									{translate text="Events"}
+								</div>
+							</div>
+						</a>
+						<div id="eventsMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="/Events/LMLibraryCalendarSettings">{translate text="Library Market - Calendar Settings"}</a></div>
+								<div class="adminMenuLink"><a href="/Events/IndexingLog">{translate text="Indexing Log"}</a></div>
+								{*<div class="adminMenuLink"><a href="/Events/Dashboard">{translate text="Dashboard"}</a></div>*}
+							</div>
+						</div>
+					</div>
+				{/if}
+
 				{if array_key_exists('Web Indexer', $enabledModules) && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 					{if $module == 'Websites' && in_array($action, array('Settings', 'Dashboard', 'IndexingLog'))}
 						{assign var="curSection" value=true}
@@ -762,17 +790,19 @@
 						{assign var="curSection" value=false}
 					{/if}
 					<div class="panel{if $curSection} active{/if}">
-						<a href="#websitesMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<a href="#aspenHelpMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
 							<div class="panel-heading">
 								<div class="panel-title">
 									{translate text="Aspen Discovery Help"}
 								</div>
 							</div>
 						</a>
-						<div id="websitesMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div id="aspenHelpMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/Admin/ReleaseNotes">{translate text="Release Notes"}</a></div>
-								{*<div class="adminMenuLink"><a href="/Admin/SubmitTicket">{translate text="Submit Ticket"}</a></div>*}
+								{if $showSubmitTicket}
+								<div class="adminMenuLink"><a href="/Admin/SubmitTicket">{translate text="Submit Ticket"}</a></div>
+								{/if}
 							</div>
 						</div>
 					</div>
