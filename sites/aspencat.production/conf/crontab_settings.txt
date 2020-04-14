@@ -37,7 +37,8 @@
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-# 0 2 * * *   root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar aspencat.production
+0 2 * * *   root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar aspencat.production
+0 1 * * *   root    cd /usr/local/aspen-discovery/code/hoopla_export; java -jar hoopla_export.jar pueblo.production
 
 ######################
 # MySQL Nightly Dump #
