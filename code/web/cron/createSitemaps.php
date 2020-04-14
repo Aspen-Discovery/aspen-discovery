@@ -17,6 +17,7 @@ while ($module->fetch()) {
 	}
 }
 
+ini_set('memory_limit','4G');
 $library = new Library();
 $library->find();
 while ($library->fetch()){
