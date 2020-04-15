@@ -148,5 +148,17 @@ function getCloudLibraryUpdates() {
 				"UPDATE modules set logClassPath='/sys/CloudLibrary/CloudLibraryExportLogEntry.php', logClassName='CloudLibraryExportLogEntry' WHERE name = 'Cloud Library'",
 			]
 		],
+
+		'cloud_library_increase_allowable_copies' => [
+			'title' => 'Cloud Library increase field size for copies fields',
+			'description' => 'Cloud Library increase field size for copies fields',
+			'sql' => [
+				'ALTER TABLE cloud_library_availability CHANGE COLUMN totalCopies totalCopies SMALLINT NOT NULL DEFAULT 0',
+				'ALTER TABLE cloud_library_availability CHANGE COLUMN sharedCopies sharedCopies SMALLINT NOT NULL DEFAULT 0',
+				'ALTER TABLE cloud_library_availability CHANGE COLUMN totalLoanCopies totalLoanCopies SMALLINT NOT NULL DEFAULT 0',
+				'ALTER TABLE cloud_library_availability CHANGE COLUMN totalHoldCopies totalHoldCopies SMALLINT NOT NULL DEFAULT 0',
+				'ALTER TABLE cloud_library_availability CHANGE COLUMN sharedLoanCopies sharedLoanCopies SMALLINT NOT NULL DEFAULT 0'
+			]
+		]
 	);
 }
