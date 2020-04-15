@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.hoopla;
 
+import com.mysql.cj.exceptions.DataTruncationException;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
@@ -409,8 +410,10 @@ public class HooplaExportMain {
 
 							String groupedWorkId = groupRecord(curTitle, hooplaId);
 							indexRecord(groupedWorkId);
+						}catch (DataTruncationException e) {
+							logEntry.addNote("Record " + hooplaId + " " + curTitle.getString("title") + " contained invalid data " + e.toString());
 						}catch (SQLException e){
-							logEntry.incErrors("Error updating hoopla data in database ", e);
+							logEntry.incErrors("Error updating hoopla data in database for record " + hooplaId + " " + curTitle.getString("title"), e);
 						}
 					}
 				}
