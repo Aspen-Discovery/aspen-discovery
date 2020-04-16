@@ -6,13 +6,6 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-/**
- * Provides a method of running SQL updates to the database.
- * Shows a list of updates that are available with a description of the
- *
- * @author Mark Noble
- *
- */
 class CreateCollectionSpotlight extends Action {
 	function launch() 	{
 		$user = UserAccount::getLoggedInUser();
@@ -58,6 +51,7 @@ class CreateCollectionSpotlight extends Action {
 			$spotlightList->collectionSpotlightId = $collectionSpotlight->id;
 			$spotlightList->displayFor   = 'all';
 			if ($source == 'search') {
+				$spotlightList->sourceListId = -1;
 				/** @var SearchObject_GroupedWorkSearcher $searchObj */
 				$searchObj = SearchObjectFactory::initSearchObject();
 				$searchObj->init();
@@ -72,7 +66,6 @@ class CreateCollectionSpotlight extends Action {
 				$spotlightList->sourceListId = $sourceId;
 			}
 
-			$spotlightList->sourceListId = $sourceId;
 			$spotlightList->name         = $spotlightName;
 			$spotlightList->weight       = 0;
 			$spotlightList->insert();

@@ -68,7 +68,7 @@ public class UpdateReadingHistoryTask implements Runnable {
 			processLog.incErrors("Bad url for patron API " + e.toString());
 			hadError = true;
 		} catch (IOException e) {
-			processLog.incErrors("Unable to retrieve information from patron API for " + cat_username /*+ ": " + e.toString()*/);
+			processLog.incErrors("Unable to retrieve information from patron API for " + cat_username, e);
 			hadError = true;
 		}
 		if (!hadError){
