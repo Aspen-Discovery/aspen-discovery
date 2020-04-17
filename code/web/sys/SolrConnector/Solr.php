@@ -245,6 +245,10 @@ abstract class Solr
 		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
 	}
 
+	public function setTimeout($timeout){
+		$this->client->setTimeout($timeout);
+	}
+
 	/**
 	 * Is this object configured with case-sensitive boolean operators?
 	 *

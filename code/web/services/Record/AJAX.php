@@ -526,6 +526,10 @@ class Record_AJAX extends Action
 		}
 		$interface->assign('id', $id);
 
+		//Figure out the maximum upload size
+		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
+
 		return [
 			'title' => 'Upload a PDF',
 			'modalBody' => $interface->fetch("Record/upload-pdf-form.tpl"),

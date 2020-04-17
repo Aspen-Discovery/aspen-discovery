@@ -2,14 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/Events/results-displayMode-toggle.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/Events/Calendar.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Events/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Events/list.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/Events/Results.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/Events/Results.php" afterDir="false" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -96,6 +91,7 @@
       </server>
       <server host="wasatch.basinlibraries.localhost" id="914e1869-abd0-42ed-b365-d8c234bb5e4e" name="wasatch.basinlibraries.localhost" />
       <server host="nederland.aspencat.localhost" id="f9c9d3e1-29cc-4bc6-86ef-a7a330a42b6e" name="nederland.aspencat.localhost" />
+      <server host="arlington.koha.local" id="88213282-7667-4f99-9209-81efc10079fa" name="arlington.koha.local" />
     </servers>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.1">
@@ -105,6 +101,11 @@
   </component>
   <component name="ProjectId" id="1OW1o0nR89VagBknOyBYfpbOOIz" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent">
     <property name="DatabaseDriversLRU" value="mysql" />
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
@@ -142,19 +143,7 @@
       <recent name="C:\web\aspen-discovery\code\web\services\SideLoads" />
     </key>
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
-  </component>
-  <component name="RunManager" selected="PHP Script.importPikaData">
+  <component name="RunManager" selected="PHP Script.createSitemaps">
     <configuration default="true" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../cron/updateNYTLists.sh" scriptParameters="basinlibraries.localhost">
       <method v="2" />
     </configuration>
@@ -162,6 +151,9 @@
       <method v="2" />
     </configuration>
     <configuration name="createSite" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../../install/createSite.php">
+      <method v="2" />
+    </configuration>
+    <configuration name="createSitemaps" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/createSitemaps.php" scriptParameters="aspencat.localhost">
       <method v="2" />
     </configuration>
     <configuration name="importPikaData" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/migrations/importPikaData.php" scriptParameters="arlington.localhost">
@@ -175,26 +167,12 @@
     </configuration>
     <list>
       <item itemvalue="PHP Script.checkBackgroundProcesses" />
+      <item itemvalue="PHP Script.createSitemaps" />
       <item itemvalue="PHP Script.createSite" />
       <item itemvalue="PHP Script.importPikaData" />
       <item itemvalue="PHP Script.updateNYTLists" />
       <item itemvalue="PHP Script.updateSuggesters" />
     </list>
-  </component>
-  <component name="ServiceViewManager">
-    <option name="allServicesViewState">
-      <serviceView>
-        <treeState>
-          <expand>
-            <path>
-              <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
-              <item name="com.intellij.execution.services.ServiceModel$ServiceGroupNode@2b277a7a" type="7427dc5b:ServiceModel$ServiceGroupNode" />
-            </path>
-          </expand>
-          <select />
-        </treeState>
-      </serviceView>
-    </option>
   </component>
   <component name="StructureViewFactory">
     <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR,Show Fields" />
@@ -210,6 +188,7 @@
       <option name="presentableId" value="Default" />
       <updated>1547769580133</updated>
       <workItem from="1585151082702" duration="25886000" />
+      <workItem from="1587042805091" duration="10044000" />
     </task>
     <servers />
   </component>
@@ -228,6 +207,76 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="223" y="70" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1587131332829">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="223" y="70" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.824@0.0.1536.824" timestamp="1587131332829" />
+    <state width="1493" height="196" key="GridCell.Tab.0.bottom" timestamp="1587133449062">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1587133449062" />
+    <state width="1493" height="196" key="GridCell.Tab.0.center" timestamp="1587133449061">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1587133449061" />
+    <state width="1493" height="196" key="GridCell.Tab.0.left" timestamp="1587133449061">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1587133449061" />
+    <state width="1493" height="196" key="GridCell.Tab.0.right" timestamp="1587133449061">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1587133449061" />
+    <state width="1493" height="196" key="GridCell.Tab.1.bottom" timestamp="1587133449062">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1587133449062" />
+    <state width="1493" height="196" key="GridCell.Tab.1.center" timestamp="1587133449062">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1587133449062" />
+    <state width="1493" height="196" key="GridCell.Tab.1.left" timestamp="1587133449062">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1587133449062" />
+    <state width="1493" height="196" key="GridCell.Tab.1.right" timestamp="1587133449062">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1587133449062" />
+    <state width="1493" height="196" key="GridCell.Tab.2.bottom" timestamp="1587131334376">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.2.bottom/0.0.1536.824@0.0.1536.824" timestamp="1587131334376" />
+    <state width="1493" height="196" key="GridCell.Tab.2.center" timestamp="1587131334376">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.2.center/0.0.1536.824@0.0.1536.824" timestamp="1587131334376" />
+    <state width="1493" height="196" key="GridCell.Tab.2.left" timestamp="1587131334376">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.2.left/0.0.1536.824@0.0.1536.824" timestamp="1587131334376" />
+    <state width="1493" height="196" key="GridCell.Tab.2.right" timestamp="1587131334376">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="196" key="GridCell.Tab.2.right/0.0.1536.824@0.0.1536.824" timestamp="1587131334376" />
+    <state x="561" y="247" key="NewPhpClassDialog" timestamp="1587130131825">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="561" y="247" key="NewPhpClassDialog/0.0.1536.824@0.0.1536.824" timestamp="1587130131825" />
+    <state x="332" y="151" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1587133445589">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="332" y="151" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1536.824@0.0.1536.824" timestamp="1587133445589" />
+    <state x="474" y="168" width="588" height="488" key="find.popup" timestamp="1587131814763">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="474" y="168" width="588" height="488" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1587131814763" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1587131254657">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1587131254657" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>

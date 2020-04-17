@@ -68,6 +68,10 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		return $this->indexEngine->pingServer(false);
 	}
 
+	function setTimeout($timeout){
+		$this->indexEngine->setTimeout($timeout);
+	}
+
 	/**
 	 * Load all available facet settings.  This is mainly useful for showing
 	 * appropriate labels when an existing search has multiple filters associated
