@@ -245,4 +245,11 @@ class CurlWrapper
 			$this->headers = array_merge($this->headers, $customHeaders);
 		}
 	}
+
+	function setTimeout($timeout){
+		$this->timeout = $timeout;
+		if (!empty($this->curl_connection)){
+			curl_setopt($this->curl_connection, CURLOPT_TIMEOUT, $this->timeout);
+		}
+	}
 }
