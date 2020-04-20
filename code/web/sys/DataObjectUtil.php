@@ -337,10 +337,21 @@ class DataObjectUtil
 				if ($_FILES[$propertyName]["error"] > 0){
 					//return an error to the browser
 				}else if (true){ //TODO: validate the file type
+					if (array_key_exists('validTypes', $property)){
+						$fileType = $_FILES[$propertyName]["type"];
+						if (!in_array($fileType, $property['validTypes'])){
+							AspenError::raiseError('Incorrect file type uploaded ' . $fileType);
+						}
+					}
 					//Copy the full image to the correct location
 					//Filename is the name of the object + the original filename
 					$destFileName = $_FILES[$propertyName]["name"];
 					$destFolder = $property['path'];
+					if (!file_exists($destFolder)){
+						if (!mkdir($destFolder, 0755, true)) {
+							$logger->log("Could not create $destFolder", Logger::LOG_NOTICE);
+						}
+					}
 					$destFullPath = $destFolder . '/' . $destFileName;
 					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 					if ($copyResult){
@@ -425,7 +436,6 @@ class DataObjectUtil
 						} else {
 							$subObject = $existingValues[$id];
 						}
-
 					}
 
 					$deleted = isset($deletions[$id]) ? $deletions[$id] : false;

@@ -7,6 +7,7 @@ class WebBuilder_BasicPage extends Action{
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
+		$interface->assign('id', $id);
 
 		require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
 		$basicPage = new BasicPage();
