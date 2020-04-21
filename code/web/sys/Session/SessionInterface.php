@@ -48,6 +48,7 @@ class SessionInterface {
 				}
 			}
 		}
+		return true;
 	}
 
 	// how often does this get called (if at all)?

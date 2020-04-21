@@ -43,8 +43,34 @@ class MySQLSession extends SessionInterface
 	 */
 	static public function write($sess_id, $data)
 	{
-//		global $logger;
+		global $logger;
+		global $module;
+		global $action;
 //		$logger->log("Writing session $sess_id", Logger::LOG_ALERT);
+		if ($module == 'AJAX' || $action == 'AJAX' || $action == 'JSON') {
+			//Don't update sessions on AJAX and JSON calls
+			////TODO: Make sure this doesn't break anything
+			if (isset($_REQUEST['method'])) {
+				$method = $_REQUEST['method'];
+				if ($method != 'loginUser'
+					&& $method != 'login'
+					&& $method != 'initiateMasquerade'
+					&& $method != 'endMasquerade'
+					&& $method != 'lockFacet'
+					&& $method != 'unlockFacet'
+					&& !isset($_REQUEST['showCovers'])
+					&& !isset($_REQUEST['sort'])
+					&& !isset($_REQUEST['availableHoldSort'])
+					&& !isset($_REQUEST['unavailableHoldSort'])) {
+					$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_DEBUG);
+					return true;
+				}
+			} else {
+				$logger->log("Not updating session $sess_id, no method provided", Logger::LOG_ERROR);
+				return true;
+			}
+		}
+
 		$s = new Session();
 		$s->session_id = $sess_id;
 		if ($s->find(true)){
@@ -122,12 +148,13 @@ class MySQLSession extends SessionInterface
 		global $logger;
 		$logger->log("Destroying session $sess_id", Logger::LOG_DEBUG);
 		// Perform standard actions required by all session methods:
-		parent::destroy($sess_id);
+		if (parent::destroy($sess_id)){
+			// Now do database-specific destruction:
+			$s = new Session();
+			$s->session_id = $sess_id;
+			$numDeleted = $s->delete(true);
+		}
 
-		// Now do database-specific destruction:
-		$s = new Session();
-		$s->session_id = $sess_id;
-		$numDeleted = $s->delete();
 		return $numDeleted == 1;
 	}
 
