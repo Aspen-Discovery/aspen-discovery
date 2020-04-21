@@ -33,7 +33,9 @@ class MySQLSession extends SessionInterface
 					global $logger;
 					$logger->log("Could not delete session " . $sess_id, Logger::LOG_ERROR);
 				}
-				return "";
+				//Force a new session to start
+				$_SESSION = array();
+				$createSession = true;
 			} else {
 				// updated the session in the database to show that we just used it
 				MySQLSession::$active_session = $s;
