@@ -11,7 +11,6 @@ class MySQLSession extends SessionInterface
 
 	static public function read($sess_id)
 	{
-		global $logger;
 		$s = new Session();
 		$s->session_id = $sess_id;
 
@@ -29,7 +28,11 @@ class MySQLSession extends SessionInterface
 			if ($curTime > $sessionExpirationTime) {
 				//Clear any previously saved data
 				$s->data = '';
-				$s->delete();
+				$deleted = $s->delete();
+				if (!$deleted){
+					global $logger;
+					$logger->log("Could not delete session " . $sess_id, Logger::LOG_ERROR);
+				}
 				$_SESSION = array();
 				$createSession = true;
 			} else {
@@ -58,6 +61,10 @@ class MySQLSession extends SessionInterface
 			$s->data = '';
 			MySQLSession::$active_session = $s;
 			$ret = $s->insert();
+			if (!$ret){
+				global $logger;
+				$logger->log("Could not insert session", Logger::LOG_ERROR);
+			}
 		}
 		$cookieData = MySQLSession::$active_session->data;
 		return $cookieData;
