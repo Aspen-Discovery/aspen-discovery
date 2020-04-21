@@ -946,7 +946,7 @@ class BookCoverProcessor{
 		$result = $client->curlGetPage($url);
 		if ($result !== false) {
 			if ($json = json_decode($result, true)) {
-				if ($json['totalItems'] > 0 && count($json['items']) > 0){
+				if (array_key_exists('totalItems', $json) && count($json['items']) > 0){
 					foreach ($json['items'] as $item){
 						if (!empty($item['volumeInfo']['imageLinks']['thumbnail'])){
 							if ($this->processImageURL($source, $item['volumeInfo']['imageLinks']['thumbnail'], true)){
