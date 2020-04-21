@@ -210,7 +210,7 @@ class CurlWrapper
 				$curl_info = curl_getinfo($this->curl_connection);
 			}
 			global $logger;
-			$logger->log('curl get error : ' . curl_error($this->curl_connection), Logger::LOG_ERROR);
+			$logger->log("curl send error for url $url : " . curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
 		return $return;
 	}
