@@ -60,11 +60,18 @@ class MySQLSession extends SessionInterface
 			}
 			$s->data = '';
 			MySQLSession::$active_session = $s;
-			$ret = $s->insert();
-			if (!$ret){
+			try{
+				$ret = $s->insert();
+				if (!$ret){
+					global $logger;
+					$logger->log("Could not insert session", Logger::LOG_ERROR);
+				}
+			}catch (PDOException $e){
 				global $logger;
-				$logger->log("Could not insert session", Logger::LOG_ERROR);
+				$logger->log("Error inserting session, updating", Logger::LOG_ERROR);
+				$s->update();
 			}
+
 		}
 		$cookieData = MySQLSession::$active_session->data;
 		return $cookieData;
