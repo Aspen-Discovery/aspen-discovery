@@ -830,14 +830,20 @@ function getGitBranch(){
 		$explodedString = explode("/", $stringFromFile); //separate out by the "/" in the string
 		$branchName = $explodedString[2]; //get the one that is always the branch name
 	}else{
-		$stringFromFile = file('../../.git/FETCH_HEAD', FILE_USE_INCLUDE_PATH);
-		$stringFromFile = $stringFromFile[0]; //get the string from the array
-		if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)){
-			if ($configArray['System']['debug']) {
-				$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
-			}else{
-				$branchName = $matches[2]; //get the branch name
+		if (file_exists('../../.git/FETCH_HEAD')) {
+			$stringFromFile = file('../../.git/FETCH_HEAD', FILE_USE_INCLUDE_PATH);
+			if (!empty($stringFromFile)) {
+				$stringFromFile = $stringFromFile[0]; //get the string from the array
+				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
+					if ($configArray['System']['debug']) {
+						$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
+					} else {
+						$branchName = $matches[2]; //get the branch name
+					}
+				}
 			}
+		}else{
+			$branchName = 'Unknown';
 		}
 	}
 	$interface->assign('gitBranch', $branchName);
