@@ -294,8 +294,7 @@ abstract class DataObject
 			$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		}
 
-		$response = $aspen_db->prepare($deleteQuery)->execute();
-		return $response;
+		return $aspen_db->exec($deleteQuery);
 	}
 
 	public function limit($start, $count){
