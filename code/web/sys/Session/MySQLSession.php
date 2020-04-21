@@ -6,8 +6,8 @@ require_once ROOT_DIR . '/sys/Session/Session.php';
 class MySQLSession extends SessionInterface
 {
 	static public function open($sess_path, $sess_name) {
-		global $logger;
-		//$logger->log("Opening session ", Logger::LOG_ALERT);
+//		global $logger;
+//		$logger->log("Opening session ", Logger::LOG_DEBUG);
 		//Delete any sessions where remember me was false
 		$s = new Session();
 		$earliestValidSession = time() - self::$lifetime;
@@ -43,13 +43,11 @@ class MySQLSession extends SessionInterface
 	 */
 	static public function write($sess_id, $data)
 	{
-		global $logger;
+//		global $logger;
 		global $module;
 		global $action;
-//		$logger->log("Writing session $sess_id", Logger::LOG_ALERT);
 		if ($module == 'AJAX' || $action == 'AJAX' || $action == 'JSON') {
 			//Don't update sessions on AJAX and JSON calls
-			////TODO: Make sure this doesn't break anything
 			if (isset($_REQUEST['method'])) {
 				$method = $_REQUEST['method'];
 				if ($method != 'loginUser'
@@ -62,15 +60,16 @@ class MySQLSession extends SessionInterface
 					&& !isset($_REQUEST['sort'])
 					&& !isset($_REQUEST['availableHoldSort'])
 					&& !isset($_REQUEST['unavailableHoldSort'])) {
-					$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_DEBUG);
+					//$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_DEBUG);
 					return true;
 				}
 			} else {
-				$logger->log("Not updating session $sess_id, no method provided", Logger::LOG_ERROR);
+				//$logger->log("Not updating session $sess_id, no method provided", Logger::LOG_DEBUG);
 				return true;
 			}
 		}
 
+		//$logger->log("Writing session $sess_id", Logger::LOG_DEBUG);
 		$s = new Session();
 		$s->session_id = $sess_id;
 		if ($s->find(true)){
@@ -89,73 +88,28 @@ class MySQLSession extends SessionInterface
 			$result = $s->insert();
 		}
 		return $result;
-//		global $logger;
-//		global $module;
-//		global $action;
-//		if (isset($_REQUEST['method'])) {
-//			$method = $_REQUEST['method'];
-//		}else{
-//			$method = '';
-//		}
-//		if ($module == 'AJAX' || $action == 'AJAX' || $action == 'JSON') {
-//			//Don't update sessions on AJAX and JSON calls
-//			////TODO: Make sure this doesn't break anything
-//			if (isset($_REQUEST['method'])) {
-//				$method = $_REQUEST['method'];
-//				if ($method != 'loginUser'
-//					&& $method != 'login'
-//					&& $method != 'initiateMasquerade'
-//					&& $method != 'endMasquerade'
-//					&& $method != 'lockFacet'
-//					&& $method != 'unlockFacet'
-//					&& !isset($_REQUEST['showCovers'])
-//					&& !isset($_REQUEST['sort'])
-//					&& !isset($_REQUEST['availableHoldSort'])
-//					&& !isset($_REQUEST['unavailableHoldSort'])) {
-//					$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_DEBUG);
-//					return true;
-//				}
-//			} else {
-//				$logger->log("Not updating session $sess_id, no method provided", Logger::LOG_ERROR);
-//				return true;
-//			}
-//
-//		}
-//		if (MySQLSession::$active_session->session_id != $sess_id) {
-//			echo("Session id changed since load time");
-//			die();
-//		}
-//
-//		$s = MySQLSession::$active_session;
-//		//$logger->log("Saving session for " . $_SERVER['REQUEST_URI'] . " {$s->last_used}, " . MySQLSession::$sessionStartTime, Logger::LOG_DEBUG);
-//		if ($s->data != $data) {
-//			$s->data = $data;
-//			$s->last_used = MySQLSession::$sessionStartTime;
-//			$logger->log("Session data changed $sess_id {$s->last_used} $module $action $method: " . print_r($data, true), Logger::LOG_DEBUG);
-//		//}else{
-//		//	$logger->log("Not updating session $sess_id, the session data has not changed", Logger::LOG_ERROR);
-//		}
-//		if (isset($_SESSION['rememberMe']) && ($_SESSION['rememberMe'] == true || $_SESSION['rememberMe'] === "true")) {
-//			$s->remember_me = 1;
-//		}
-//		parent::write($sess_id, $data);
-//		$ret = $s->update();
-//		return $ret;
 	}
 
 	static public function destroy($sess_id)
 	{
-		global $logger;
-		$logger->log("Destroying session $sess_id", Logger::LOG_DEBUG);
-		// Perform standard actions required by all session methods:
-		if (parent::destroy($sess_id)){
-			// Now do database-specific destruction:
-			$s = new Session();
-			$s->session_id = $sess_id;
-			$numDeleted = $s->delete(true);
+		// Now do database-specific destruction:
+		$s = new Session();
+		$s->session_id = $sess_id;
+		if ($s->find(true)){
+//			global $logger;
+//			$logger->log("Destroying session $sess_id", Logger::LOG_DEBUG);
+			// Perform standard actions required by all session methods:
+			parent::destroy($sess_id);
+
+			$numDeleted = $s->delete();
+			return $numDeleted == 1;
+		}else{
+//			global $logger;
+//			$logger->log("Session $sess_id has already been destroyed", Logger::LOG_DEBUG);
+			//Already deleted
+			return false;
 		}
 
-		return $numDeleted == 1;
 	}
 
 	static public function gc($sess_maxlifetime)
