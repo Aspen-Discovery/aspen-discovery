@@ -30,7 +30,7 @@ class MySQLSession extends SessionInterface
 
 		if ($s->find(true)) {
 			global $logger;
-			$logger->log("Reading existing session $sess_id", Logger::LOG_ALERT);
+			$logger->log("Reading existing session $sess_id", Logger::LOG_DEBUG);
 			return $s->data;
 		}else{
 			return "";
