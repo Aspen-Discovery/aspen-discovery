@@ -79,7 +79,7 @@ class Memcache
 				}
 			} else {
 				global $logger;
-				$logger->log("data was too large to be cached", Logger::LOG_WARNING);
+				$logger->log("data for $name was too large to be cached", Logger::LOG_WARNING);
 				return false;
 			}
 		}

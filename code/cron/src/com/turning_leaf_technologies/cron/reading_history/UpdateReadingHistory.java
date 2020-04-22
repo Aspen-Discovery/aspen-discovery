@@ -50,7 +50,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 				BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(numUsersToUpdate);
 
 				//Process all the threads, we will allow up to 20 concurrent threads to start
-				ThreadPoolExecutor executor = new ThreadPoolExecutor(15, 30, 5000, TimeUnit.MILLISECONDS, blockingQueue);
+				ThreadPoolExecutor executor = new ThreadPoolExecutor(7, 15, 5000, TimeUnit.MILLISECONDS, blockingQueue);
 
 				//Setup the ThreadGroup
 				ResultSet userResults = getUsersStmt.executeQuery();
@@ -74,14 +74,15 @@ public class UpdateReadingHistory implements IProcessHandler {
 				userResults.close();
 
 				while ((executor.getCompletedTaskCount() + numSkipped) < numUsersToUpdate) {
-					logger.error("Num Users To Update = " + numUsersToUpdate + " Completed Task Count = " + executor.getCompletedTaskCount() + " Num Skipped = " + numSkipped);
+					processLog.saveResults();
+					logger.debug("Num Users To Update = " + numUsersToUpdate + " Completed Task Count = " + executor.getCompletedTaskCount() + " Num Skipped = " + numSkipped);
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						logger.error("Sleep was interrupted", e);
 					}
 				}
-				logger.error("Finished processing all threads");
+				logger.debug("Finished processing all threads");
 
 				executor.shutdownNow();
 

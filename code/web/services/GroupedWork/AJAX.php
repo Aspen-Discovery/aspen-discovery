@@ -1022,7 +1022,7 @@ class GroupedWork_AJAX extends JSON_Action
 		$samePikaCache = new IslandoraSamePikaCache();
 		$samePikaCache->groupedWorkId = $id;
 		if ($samePikaCache->find(true)){
-			if ($samePikaCache->delete()){
+			if ($samePikaCache->delete() == 1){
 				$samePikaCleared = true;
 			}else{
 				$cacheMessage = 'Could not delete same pika cache';
