@@ -5,9 +5,9 @@ require_once ROOT_DIR . '/sys/Session/Session.php';
 
 class MySQLSession extends SessionInterface
 {
-	static public function open($sess_path, $sess_name) {
-//		global $logger;
-//		$logger->log("Opening session ", Logger::LOG_DEBUG);
+	public function open($sess_path, $sess_name) {
+		global $logger;
+		$logger->log("Opening session ", Logger::LOG_DEBUG);
 		//Delete any sessions where remember me was false
 		$s = new Session();
 		$earliestValidSession = time() - self::$lifetime;
@@ -23,13 +23,14 @@ class MySQLSession extends SessionInterface
 		return true;
 	}
 
-	static public function read($sess_id)
+	public function read($sess_id)
 	{
 		$s = new Session();
 		$s->session_id = $sess_id;
 
 		if ($s->find(true)) {
-			//$logger->log("Reading existing session $sess_id", Logger::LOG_ALERT);
+			global $logger;
+			$logger->log("Reading existing session $sess_id", Logger::LOG_ALERT);
 			return $s->data;
 		}else{
 			return "";
@@ -41,9 +42,9 @@ class MySQLSession extends SessionInterface
 	 * @param $data
 	 * @return bool
 	 */
-	static public function write($sess_id, $data)
+	public function write($sess_id, $data)
 	{
-//		global $logger;
+		global $logger;
 		global $module;
 		global $action;
 		if ($module == 'AJAX' || $action == 'AJAX' || $action == 'JSON') {
@@ -60,23 +61,24 @@ class MySQLSession extends SessionInterface
 					&& !isset($_REQUEST['sort'])
 					&& !isset($_REQUEST['availableHoldSort'])
 					&& !isset($_REQUEST['unavailableHoldSort'])) {
-					//$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_DEBUG);
+					$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_DEBUG);
 					return true;
 				}
 			} else {
-				//$logger->log("Not updating session $sess_id, no method provided", Logger::LOG_DEBUG);
+				$logger->log("Not updating session $sess_id, no method provided", Logger::LOG_DEBUG);
 				return true;
 			}
 		}
 
-		//$logger->log("Writing session $sess_id", Logger::LOG_DEBUG);
 		$s = new Session();
 		$s->session_id = $sess_id;
 		if ($s->find(true)){
+			$logger->log("Updating session $sess_id", Logger::LOG_DEBUG);
 			$s->data = $data;
 			$s->last_used = time();
 			$result = $s->update();
 		}else{
+			$logger->log("Inserting new session $sess_id", Logger::LOG_DEBUG);
 			$s->data = $data;
 			$s->created = date('Y-m-d h:i:s');
 			$s->last_used = time();
@@ -87,32 +89,33 @@ class MySQLSession extends SessionInterface
 			}
 			$result = $s->insert();
 		}
-		return $result;
+		$logger->log(" Result = $result", Logger::LOG_DEBUG);
+		return $result == 1;
 	}
 
-	static public function destroy($sess_id)
+	public function destroy($sess_id)
 	{
 		// Now do database-specific destruction:
 		$s = new Session();
 		$s->session_id = $sess_id;
 		if ($s->find(true)){
-//			global $logger;
-//			$logger->log("Destroying session $sess_id", Logger::LOG_DEBUG);
+			global $logger;
+			$logger->log("Destroying session $sess_id", Logger::LOG_DEBUG);
 			// Perform standard actions required by all session methods:
 			parent::destroy($sess_id);
 
 			$numDeleted = $s->delete();
 			return $numDeleted == 1;
 		}else{
-//			global $logger;
-//			$logger->log("Session $sess_id has already been destroyed", Logger::LOG_DEBUG);
+			global $logger;
+			$logger->log("Session $sess_id has already been destroyed", Logger::LOG_DEBUG);
 			//Already deleted
 			return false;
 		}
 
 	}
 
-	static public function gc($sess_maxlifetime)
+	public function gc($sess_maxlifetime)
 	{
 		//Do nothing here, delete old sessions in Java Cron
 		return true;
