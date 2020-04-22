@@ -17,7 +17,7 @@
 		{* include to give responsive capability to ie8 browsers, but only on successful detection of those browsers. For that reason, don't include in aspen.min.js *}
 		<script src="/interface/themes/responsive/js/lib/respond.min.js?v={$gitBranch|urlencode}"></script>
 	{/if}
-	{if $debugJs}
+	{if false && $debugJs}
 
 		<script src="/js/jquery-1.11.0.min.js?v={$gitBranch|urlencode}"></script>
 		{* Load Libraries*}
@@ -75,11 +75,11 @@
 	{else}
 		{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 		{* Code is minified using uglify.js *}
-		<script src="/interface/themes/responsive/js/aspen.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/aspen.js?v={$gitBranch|urlencode}"></script>
 	{/if}
 
 	{/strip}
-  <script type="text/javascript">
+	<script type="text/javascript">
 		{* Override variables as needed *}
 		{literal}
 		$(document).ready(function(){{/literal}

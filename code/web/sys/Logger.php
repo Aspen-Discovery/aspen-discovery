@@ -52,7 +52,7 @@ class Logger
 
 		// Write the message to the log:
 		$fhnd = fopen($this->logFilePath, 'a');
-		fwrite($fhnd, $msg . "\r\n");
+		fwrite($fhnd,  '[' . date('Y M d H:i:s') . '] ' . $msg . "\r\n");
 		fclose($fhnd);
 	}
 }

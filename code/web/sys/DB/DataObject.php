@@ -223,7 +223,7 @@ abstract class DataObject
 			}
 		}
 		$insertQuery .= '(' . $propertyNames . ') VALUES (' . $propertyValues . ');';
-		$response = $aspen_db->prepare($insertQuery)->execute();
+		$response = $aspen_db->exec($insertQuery);
 		$this->{$this->__primaryKey} = $aspen_db->lastInsertId();
 		return $response;
 	}
@@ -266,7 +266,7 @@ abstract class DataObject
 		}
 		$updateQuery .= ' SET ' . $updates . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		$this->__lastQuery = $updateQuery;
-		$response = $aspen_db->prepare($updateQuery)->execute();
+		$response = $aspen_db->exec($updateQuery);
 		return $response;
 	}
 
@@ -294,8 +294,7 @@ abstract class DataObject
 			$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		}
 
-		$response = $aspen_db->prepare($deleteQuery)->execute();
-		return $response;
+		return $aspen_db->exec($deleteQuery);
 	}
 
 	public function limit($start, $count){

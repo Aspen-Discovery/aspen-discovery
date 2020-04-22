@@ -63,6 +63,11 @@ class GroupedWork_Series extends Action
 					$resourceList[] = $interface->fetch('RecordDrivers/Index/nonowned_result.tpl');
 				}
 			}
+			$interface->assign('recordEnd', count($seriesTitles));
+			$interface->assign('recordCount', count($seriesTitles));
+		}else{
+			$interface->assign('recordEnd', 0);
+			$interface->assign('recordCount', 0);
 		}
 
 		$interface->assign('seriesAuthors', $seriesAuthors);
@@ -70,8 +75,7 @@ class GroupedWork_Series extends Action
 		$interface->assign('resourceList', $resourceList);
 
 		$interface->assign('recordStart', 1);
-		$interface->assign('recordEnd', count($seriesTitles));
-		$interface->assign('recordCount', count($seriesTitles));
+
 
 		$interface->assign('recordDriver', $recordDriver);
 
