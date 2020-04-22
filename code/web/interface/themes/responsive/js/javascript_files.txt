@@ -21,6 +21,7 @@ aspen/admin.js
 aspen/archive.js
 aspen/authors.js
 aspen/browse.js
+aspen/cloud-library.js
 aspen/dpla.js
 aspen/econtent-record.js
 aspen/grouped-work.js
@@ -28,14 +29,18 @@ aspen/lists.js
 aspen/collection-spotlights.js
 aspen/materials-request.js
 aspen/menu.js
-aspen/hoopla.js
 aspen/overdrive.js
+aspen/open-archives.js
+aspen/hoopla.js
 aspen/prospector.js
 aspen/ratings.js
+aspen/rbdigital.js
 aspen/reading-history.js
 aspen/record.js
 aspen/responsive.js
 aspen/results-list.js
 aspen/searches.js
+aspen/sideloads.js
 aspen/title-scroller.js
+aspen/websites.js
 aspen/wikipedia.js

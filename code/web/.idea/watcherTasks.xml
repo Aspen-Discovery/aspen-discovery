@@ -22,7 +22,7 @@
       <envs />
     </TaskOptions>
     <TaskOptions isEnabled="true">
-      <option name="arguments" value="" />
+      <option name="arguments" value="C:\web\aspen-discovery\code\web\interface\themes\responsive\js\merge_javascript.php" />
       <option name="checkSyntaxErrors" value="true" />
       <option name="description" />
       <option name="exitCodeBehavior" value="ERROR" />
@@ -34,11 +34,11 @@
         <array />
       </option>
       <option name="outputFromStdout" value="false" />
-      <option name="program" value="$PROJECT_DIR$/interface/themes/responsive/js/merge_javascript.php" />
+      <option name="program" value="C:/Bitnami/wampstack-7.1.25-0/php/php" />
       <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="Local Javascript" />
       <option name="trackOnlyRoot" value="false" />
-      <option name="workingDir" value="" />
+      <option name="workingDir" value="$PROJECT_DIR$/interface/themes/responsive/js/" />
       <envs />
     </TaskOptions>
     <enabled-global>

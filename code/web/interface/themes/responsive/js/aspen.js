@@ -2684,6 +2684,230 @@ AspenDiscovery.Browse = (function(){
 	}
 }(AspenDiscovery.Browse || {}));
 
+AspenDiscovery.CloudLibrary = (function () {
+	return {
+		cancelHold: function (patronId, id) {
+			let url = Globals.path + "/CloudLibrary/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+						$("#cloudLibraryHold_" + id).hide();
+						AspenDiscovery.Account.loadMenuData();
+					} else {
+						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
+				}
+			});
+		},
+
+		checkOutTitle: function (id) {
+			if (Globals.loggedIn) {
+				//Get any prompts needed for checking out a title
+				let promptInfo = AspenDiscovery.CloudLibrary.getCheckOutPrompts(id);
+				// noinspection JSUnresolvedVariable
+				if (!promptInfo.promptNeeded) {
+					AspenDiscovery.CloudLibrary.doCheckOut(promptInfo.patronId, id);
+				}
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.CloudLibrary.checkOutTitle(id);
+				});
+			}
+			return false;
+		},
+
+		doCheckOut: function (patronId, id) {
+			if (Globals.loggedIn) {
+				let ajaxUrl = Globals.path + "/CloudLibrary/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
+				$.ajax({
+					url: ajaxUrl,
+					cache: false,
+					success: function (data) {
+						if (data.success === true) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
+							AspenDiscovery.Account.loadMenuData();
+						} else {
+							// noinspection JSUnresolvedVariable
+							if (data.noCopies === true) {
+								AspenDiscovery.closeLightbox();
+								let ret = confirm(data.message);
+								if (ret === true) {
+									AspenDiscovery.CloudLibrary.doHold(patronId, id);
+								}
+							} else {
+								AspenDiscovery.showMessage(data.title, data.message, false);
+							}
+						}
+					},
+					dataType: 'json',
+					async: false,
+					error: function () {
+						alert("An error occurred processing your request in Cloud Library.  Please try again in a few minutes.");
+						//alert("ajaxUrl = " + ajaxUrl);
+						AspenDiscovery.closeLightbox();
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.CloudLibrary.checkOutTitle(id);
+				}, false);
+			}
+			return false;
+		},
+
+		doHold: function (patronId, id) {
+			let url = Globals.path + "/CloudLibrary/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					// noinspection JSUnresolvedVariable
+					if (data.availableForCheckout) {
+						AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
+					} else {
+						AspenDiscovery.showMessage("Placed Hold", data.message, true);
+						AspenDiscovery.Account.loadMenuData();
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
+				}
+			});
+		},
+
+		getCheckOutPrompts: function (id) {
+			let url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getCheckOutPrompts";
+			let result = true;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					result = data;
+					// noinspection JSUnresolvedVariable
+					if (data.promptNeeded) {
+						// noinspection JSUnresolvedVariable
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					alert("An error occurred processing your request.  Please try again in a few minutes.");
+					AspenDiscovery.closeLightbox();
+				}
+			});
+			return result;
+		},
+
+		getHoldPrompts: function (id) {
+			let url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getHoldPrompts";
+			let result = true;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					result = data;
+					// noinspection JSUnresolvedVariable
+					if (data.promptNeeded) {
+						// noinspection JSUnresolvedVariable
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					alert("An error occurred processing your request in Cloud Library.  Please try again in a few minutes.");
+					AspenDiscovery.closeLightbox();
+				}
+			});
+			return result;
+		},
+
+		placeHold: function (id) {
+			if (Globals.loggedIn) {
+				//Get any prompts needed for placing holds (email and format depending on the interface.
+				let promptInfo = AspenDiscovery.CloudLibrary.getHoldPrompts(id, 'hold');
+				// noinspection JSUnresolvedVariable
+				if (!promptInfo.promptNeeded) {
+					AspenDiscovery.CloudLibrary.doHold(promptInfo.patronId, id);
+				}
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.CloudLibrary.placeHold(id);
+				});
+			}
+			return false;
+		},
+
+		processCheckoutPrompts: function () {
+			let id = $("#id").val();
+			let patronId = $("#patronId option:selected").val();
+			AspenDiscovery.closeLightbox();
+			return AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
+		},
+
+		processHoldPrompts: function () {
+			let id = $("#id").val();
+			let patronId = $("#patronId option:selected").val();
+			AspenDiscovery.closeLightbox();
+			return AspenDiscovery.CloudLibrary.doHold(patronId, id);
+		},
+
+		renewCheckout: function (patronId, recordId) {
+			let url = Globals.path + "/CloudLibrary/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Title Renewed", data.message, true);
+					} else {
+						AspenDiscovery.showMessage("Unable to Renew Title", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
+				}
+			});
+		},
+
+		returnCheckout: function (patronId, recordId) {
+			let url = Globals.path + "/CloudLibrary/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Title Returned", data.message, true);
+						$(".cloudLibraryCheckout_" + recordId).hide();
+						AspenDiscovery.Account.loadMenuData();
+					} else {
+						AspenDiscovery.showMessage("Error Returning Title", data.message, true);
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
+				}
+			});
+		},
+	}
+}(AspenDiscovery.CloudLibrary || {}));
 AspenDiscovery.DPLA = (function(){
 	return {
 		getDPLAResults: function(searchTerm){
@@ -3919,75 +4143,6 @@ AspenDiscovery.Menu = (function(){
 		}
 	}
 }(AspenDiscovery.Menu || {}));
-AspenDiscovery.Hoopla = (function(){
-	return {
-		checkOutHooplaTitle: function (hooplaId, patronId) {
-			if (Globals.loggedIn) {
-				if (typeof patronId === 'undefined') {
-					patronId = $('#patronId', '#pickupLocationOptions').val(); // Lookup selected user from the options form
-				}
-				let url = Globals.path + '/Hoopla/'+ hooplaId + '/AJAX';
-				let	params = {
-					'method' : 'checkOutHooplaTitle',
-					patronId : patronId
-				};
-				if ($('#stopHooplaConfirmation').prop('checked')){
-					params['stopHooplaConfirmation'] = true;
-				}
-				$.getJSON(url, params, function (data) {
-					if (data.success) {
-						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
-						AspenDiscovery.Account.loadMenuData();
-					} else {
-						AspenDiscovery.showMessage("Checking Out Title", data.message);
-					}
-				}).fail(AspenDiscovery.ajaxFail)
-			}else{
-				AspenDiscovery.Account.ajaxLogin(null, function(){
-					AspenDiscovery.Hoopla.checkOutHooplaTitle(hooplaId, patronId);
-				}, false);
-			}
-			return false;
-		},
-
-		getCheckOutPrompts: function (hooplaId) {
-			if (Globals.loggedIn) {
-				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=getCheckOutPrompts";
-				$.getJSON(url, function (data) {
-					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
-				}).fail(AspenDiscovery.ajaxFail);
-			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.Hoopla.getCheckOutPrompts(hooplaId);
-				}, false);
-			}
-			return false;
-		},
-
-		returnCheckout: function (patronId, hooplaId) {
-			if (Globals.loggedIn) {
-				if (confirm('Are you sure you want to return this title?')) {
-					AspenDiscovery.showMessage("Returning Title", "Returning your title in Hoopla.");
-					var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
-							params = {
-								'method': 'returnCheckout'
-								,patronId: patronId
-							};
-					$.getJSON(url, params, function (data) {
-						AspenDiscovery.showMessage(data.success ? 'Success' : 'Error', data.message, data.success, data.success);
-					}).fail(AspenDiscovery.ajaxFail);
-				}
-			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.Hoopla.returnCheckout(patronId, hooplaId);
-					AspenDiscovery.Account.loadMenuData();
-				}, false);
-			}
-			return false;
-		}
-
-	}
-}(AspenDiscovery.Hoopla || {}));
 AspenDiscovery.OverDrive = (function(){
 	// noinspection JSUnusedGlobalSymbols
 	return {
@@ -4325,6 +4480,83 @@ AspenDiscovery.OverDrive = (function(){
 		}
 	}
 }(AspenDiscovery.OverDrive || {}));
+AspenDiscovery.OpenArchives = (function () {
+	return {
+		trackUsage: function (id) {
+			let ajaxUrl = Globals.path + "/OpenArchives/JSON?method=trackUsage&id=" + id;
+			$.getJSON(ajaxUrl);
+		}
+	};
+}(AspenDiscovery.OpenArchives || {}));
+AspenDiscovery.Hoopla = (function(){
+	return {
+		checkOutHooplaTitle: function (hooplaId, patronId) {
+			if (Globals.loggedIn) {
+				if (typeof patronId === 'undefined') {
+					patronId = $('#patronId', '#pickupLocationOptions').val(); // Lookup selected user from the options form
+				}
+				let url = Globals.path + '/Hoopla/'+ hooplaId + '/AJAX';
+				let	params = {
+					'method' : 'checkOutHooplaTitle',
+					patronId : patronId
+				};
+				if ($('#stopHooplaConfirmation').prop('checked')){
+					params['stopHooplaConfirmation'] = true;
+				}
+				$.getJSON(url, params, function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
+						AspenDiscovery.Account.loadMenuData();
+					} else {
+						AspenDiscovery.showMessage("Checking Out Title", data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail)
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Hoopla.checkOutHooplaTitle(hooplaId, patronId);
+				}, false);
+			}
+			return false;
+		},
+
+		getCheckOutPrompts: function (hooplaId) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=getCheckOutPrompts";
+				$.getJSON(url, function (data) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
+				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Hoopla.getCheckOutPrompts(hooplaId);
+				}, false);
+			}
+			return false;
+		},
+
+		returnCheckout: function (patronId, hooplaId) {
+			if (Globals.loggedIn) {
+				if (confirm('Are you sure you want to return this title?')) {
+					AspenDiscovery.showMessage("Returning Title", "Returning your title in Hoopla.");
+					var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
+							params = {
+								'method': 'returnCheckout'
+								,patronId: patronId
+							};
+					$.getJSON(url, params, function (data) {
+						AspenDiscovery.showMessage(data.success ? 'Success' : 'Error', data.message, data.success, data.success);
+					}).fail(AspenDiscovery.ajaxFail);
+				}
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Hoopla.returnCheckout(patronId, hooplaId);
+					AspenDiscovery.Account.loadMenuData();
+				}, false);
+			}
+			return false;
+		}
+
+	}
+}(AspenDiscovery.Hoopla || {}));
 AspenDiscovery.Prospector = (function(){
 	return {
 		getProspectorResults: function(prospectorNumTitlesToLoad, prospectorSavedSearchId){
@@ -4502,6 +4734,386 @@ $.fn.rater.rate = function($this, opts, rating) {
 		}, true);
 	}
 };
+AspenDiscovery.RBdigital = (function(){
+    return {
+        cancelHold: function(patronId, id){
+            let url = Globals.path + "/RBdigital/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
+            $.ajax({
+                url: url,
+                cache: false,
+                success: function(data){
+                    if (data.success) {
+                        AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+                        $("#rbdigitalHold_" + id).hide();
+                        AspenDiscovery.Account.loadMenuData();
+                    }else{
+                        AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+                    }
+
+                },
+                dataType: 'json',
+                async: false,
+                error: function(){
+                    AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
+                }
+            });
+        },
+
+        checkOutTitle: function (id) {
+            if (Globals.loggedIn){
+                //Get any prompts needed for checking out a title
+                let promptInfo = AspenDiscovery.RBdigital.getCheckOutPrompts(id);
+                // noinspection JSUnresolvedVariable
+                if (!promptInfo.promptNeeded){
+                    AspenDiscovery.RBdigital.doCheckOut(promptInfo.patronId, id);
+                }
+            }else{
+                AspenDiscovery.Account.ajaxLogin(null, function(){
+                    AspenDiscovery.RBdigital.checkOutTitle(id);
+                });
+            }
+            return false;
+        },
+
+        checkOutMagazine: function (id) {
+            if (Globals.loggedIn){
+                //Get any prompts needed for checking out a title
+                let promptInfo = AspenDiscovery.RBdigital.getMagazineCheckOutPrompts(id);
+                // noinspection JSUnresolvedVariable
+                if (!promptInfo.promptNeeded){
+                    AspenDiscovery.RBdigital.doMagazineCheckOut(promptInfo.patronId, id);
+                }
+            }else{
+                AspenDiscovery.Account.ajaxLogin(null, function(){
+                    AspenDiscovery.RBdigital.checkOutMagazine(id);
+                });
+            }
+            return false;
+        },
+
+        createAccount: function(action, patronId, id){
+            if (Globals.loggedIn){
+                //Check form validation
+                var $accountForm = $('#createRBdigitalAccount');
+
+                if(! $accountForm[0].checkValidity()) {
+                    // If the form is invalid, submit it. The form won't actually submit;
+                    // this will just cause the browser to display the native HTML5 error messages.
+                    $accountForm.find(':submit').click();
+                    return false;
+                }
+
+                let formValues = 'username=' + encodeURIComponent($("#username").val());
+                let password1 = encodeURIComponent($('#password1').val());
+                let password2 = encodeURIComponent($('#password2').val());
+                if (password1 !== password2){
+                    $("#password_validation").show().focus();
+                    return false;
+                }else{
+                    $("#password_validation").hide();
+                }
+                formValues += '&password=' +  password1;
+                formValues += '&libraryCard=' +  encodeURIComponent($('#libraryCard').val());
+                formValues += '&firstName=' + encodeURIComponent($('#firstName').val());
+                formValues += '&lastName=' + encodeURIComponent($('#lastName').val());
+                formValues += '&email=' + encodeURIComponent($('#email').val());
+                formValues += '&postalCode=' + encodeURIComponent($('#postalCode').val());
+                formValues += '&followupAction=' + encodeURIComponent(action);
+                formValues += '&patronId=' + encodeURIComponent(patronId);
+                formValues += '&id=' + encodeURIComponent(id);
+                formValues += '&method=createAccount';
+
+                let ajaxUrl = Globals.path + "/RBdigital/AJAX?" + formValues;
+
+                $.ajax({
+                    url: ajaxUrl,
+                    cache: false,
+                    success: function(data){
+                        if (data.success === true){
+                            AspenDiscovery.showMessageWithButtons("Success", data.message, data.buttons);
+                        }else{
+                            AspenDiscovery.showMessage("Error", data.message, false);
+                        }
+                    },
+                    dataType: 'json',
+                    async: false,
+                    error: function(){
+                        AspenDiscovery.showMessage("Error", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.");
+                    }
+                });
+            }else{
+                AspenDiscovery.showMessage("Error", "You must be logged in before creating an RBdigital account.", false);
+            }
+            return false;
+        },
+
+        doCheckOut: function(patronId, id){
+            if (Globals.loggedIn){
+                let ajaxUrl = Globals.path + "/RBdigital/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
+                $.ajax({
+                    url: ajaxUrl,
+                    cache: false,
+                    success: function(data){
+                        if (data.success === true){
+                            AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
+                            AspenDiscovery.Account.loadMenuData();
+                        }else{
+                            // noinspection JSUnresolvedVariable
+                            if (data.noCopies === true){
+                                AspenDiscovery.closeLightbox();
+                                let ret = confirm(data.message);
+                                if (ret === true){
+                                    AspenDiscovery.RBdigital.doHold(patronId, id);
+                                }
+                            }else{
+                                AspenDiscovery.showMessage(data.title, data.message, false);
+                            }
+                        }
+                    },
+                    dataType: 'json',
+                    async: false,
+                    error: function(){
+                        alert("An error occurred processing your request in RBdigital.  Please try again in a few minutes.");
+                        //alert("ajaxUrl = " + ajaxUrl);
+                        AspenDiscovery.closeLightbox();
+                    }
+                });
+            }else{
+                AspenDiscovery.Account.ajaxLogin(null, function(){
+                    AspenDiscovery.RBdigital.checkOutTitle(id);
+                }, false);
+            }
+            return false;
+        },
+
+        doMagazineCheckOut: function(patronId, id){
+            if (Globals.loggedIn){
+                let ajaxUrl = Globals.path + "/RBdigital/AJAX?method=checkOutMagazine&patronId=" + patronId + "&id=" + id;
+                $.ajax({
+                    url: ajaxUrl,
+                    cache: false,
+                    success: function(data){
+                        if (data.success === true){
+                            AspenDiscovery.showMessageWithButtons("Magazine Checked Out Successfully", data.message, data.buttons);
+                            AspenDiscovery.Account.loadMenuData();
+                        }else{
+                            // noinspection JSUnresolvedVariable
+                            AspenDiscovery.showMessage("Error Checking Out Magazine", data.message, false);
+                        }
+                    },
+                    dataType: 'json',
+                    async: false,
+                    error: function(){
+                        alert("An error occurred processing your request in RBdigital.  Please try again in a few minutes.");
+                        //alert("ajaxUrl = " + ajaxUrl);
+                        AspenDiscovery.closeLightbox();
+                    }
+                });
+            }else{
+                AspenDiscovery.Account.ajaxLogin(null, function(){
+                    AspenDiscovery.RBdigital.checkOutMagazine(id);
+                }, false);
+            }
+            return false;
+        },
+
+        doHold: function(patronId, id){
+            let url = Globals.path + "/RBdigital/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
+            $.ajax({
+                url: url,
+                cache: false,
+                success: function(data){
+                    // noinspection JSUnresolvedVariable
+                    if (data.availableForCheckout){
+                        AspenDiscovery.RBdigital.doCheckOut(patronId, id);
+                    }else{
+                        AspenDiscovery.showMessage("Placed Hold", data.message, true);
+                        AspenDiscovery.Account.loadMenuData();
+                    }
+                },
+                dataType: 'json',
+                async: false,
+                error: function(){
+                    AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
+                }
+            });
+        },
+
+        getCheckOutPrompts: function(id) {
+            let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getCheckOutPrompts";
+            let result = true;
+            $.ajax({
+                url: url,
+                cache: false,
+                success: function(data){
+                    result = data;
+                    // noinspection JSUnresolvedVariable
+                    if (data.promptNeeded){
+                        // noinspection JSUnresolvedVariable
+                        AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+                    }
+                },
+                dataType: 'json',
+                async: false,
+                error: function(){
+                    alert("An error occurred processing your request.  Please try again in a few minutes.");
+                    AspenDiscovery.closeLightbox();
+                }
+            });
+            return result;
+        },
+
+        getMagazineCheckOutPrompts: function(id) {
+            let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getMagazineCheckOutPrompts";
+            let result = true;
+            $.ajax({
+                url: url,
+                cache: false,
+                success: function(data){
+                    result = data;
+                    // noinspection JSUnresolvedVariable
+                    if (data.promptNeeded){
+                        // noinspection JSUnresolvedVariable
+                        AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+                    }
+                },
+                dataType: 'json',
+                async: false,
+                error: function(){
+                    alert("An error occurred processing your request.  Please try again in a few minutes.");
+                    AspenDiscovery.closeLightbox();
+                }
+            });
+            return result;
+        },
+
+        getHoldPrompts: function(id){
+            let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getHoldPrompts";
+            let result = true;
+            $.ajax({
+                url: url,
+                cache: false,
+                success: function(data){
+                    result = data;
+                    // noinspection JSUnresolvedVariable
+                    if (data.promptNeeded){
+                        // noinspection JSUnresolvedVariable
+                        AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+                    }
+                },
+                dataType: 'json',
+                async: false,
+                error: function(){
+                    alert("An error occurred processing your request in RBdigital.  Please try again in a few minutes.");
+                    AspenDiscovery.closeLightbox();
+                }
+            });
+            return result;
+        },
+
+        placeHold: function (id) {
+            if (Globals.loggedIn){
+                //Get any prompts needed for placing holds (email and format depending on the interface.
+                let promptInfo = AspenDiscovery.RBdigital.getHoldPrompts(id, 'hold');
+                // noinspection JSUnresolvedVariable
+                if (!promptInfo.promptNeeded){
+                    AspenDiscovery.RBdigital.doHold(promptInfo.patronId, id);
+                }
+            }else{
+                AspenDiscovery.Account.ajaxLogin(null, function(){
+                    AspenDiscovery.RBdigital.placeHold(id);
+                });
+            }
+            return false;
+        },
+
+        processCheckoutPrompts: function(){
+            let id = $("#id").val();
+            let checkoutType = $("#checkoutType").val();
+            let patronId = $("#patronId option:selected").val();
+            AspenDiscovery.closeLightbox();
+            if (checkoutType === 'book'){
+                return AspenDiscovery.RBdigital.doCheckOut(patronId, id);
+            }else{
+                return AspenDiscovery.RBdigital.doMagazineCheckOut(patronId, id);
+            }
+        },
+
+        processHoldPrompts: function(){
+            let id = $("#id").val();
+            let patronId = $("#patronId option:selected").val();
+            AspenDiscovery.closeLightbox();
+            return AspenDiscovery.RBdigital.doHold(patronId, id);
+        },
+
+        renewCheckout: function(patronId, recordId){
+            let url = Globals.path + "/RBdigital/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
+            $.ajax({
+                url: url,
+                cache: false,
+                success: function(data){
+                    if (data.success) {
+                        AspenDiscovery.showMessage("Title Renewed", data.message, true);
+                    }else{
+                        AspenDiscovery.showMessage("Unable to Renew Title", data.message, true);
+                    }
+
+                },
+                dataType: 'json',
+                async: false,
+                error: function(){
+                    AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
+                }
+            });
+        },
+
+        returnCheckout: function(patronId, recordId){
+            let url = Globals.path + "/RBdigital/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
+            $.ajax({
+                url: url,
+                cache: false,
+                success: function(data){
+                    if (data.success) {
+                        AspenDiscovery.showMessage("Title Returned", data.message, true);
+                        $("#rbdigitalCheckout_" + recordId).hide();
+                        AspenDiscovery.Account.loadMenuData();
+                    }else{
+                        AspenDiscovery.showMessage("Error Returning Title", data.message, true);
+                    }
+
+                },
+                dataType: 'json',
+                async: false,
+                error: function(){
+                    AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
+                }
+            });
+        },
+
+        returnMagazine: function(patronId, recordId){
+            let url = Globals.path + "/RBdigital/AJAX?method=returnMagazine&patronId=" + patronId + "&recordId=" + recordId;
+            $.ajax({
+                url: url,
+                cache: false,
+                success: function(data){
+                    if (data.success) {
+                        AspenDiscovery.showMessage("Magazine Returned", data.message, true);
+                        $(".rbdigitalMagazineCheckout_" + recordId).hide();
+                        AspenDiscovery.Account.loadMenuData();
+                    }else{
+                        AspenDiscovery.showMessage("Error Returning Magazine", data.message, true);
+                    }
+
+                },
+                dataType: 'json',
+                async: false,
+                error: function(){
+                    AspenDiscovery.showMessage("Error Returning Magazine", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
+                }
+            });
+        }
+    }
+}(AspenDiscovery.RBdigital || {}));
 AspenDiscovery.Account.ReadingHistory = (function(){
 	return {
 		deleteEntry: function (patronId, id){
@@ -5194,6 +5806,30 @@ AspenDiscovery.Searches = (function(){
 		},
 	}
 }(AspenDiscovery.Searches || {}));
+AspenDiscovery.SideLoads = (function(){
+	return {
+		deleteMarc: function (sideLoadId, fileName, fileIndex) {
+			if (!confirm('Are you sure you want to delete this ' + fileName + '?')){
+				return false;
+			}
+			let url = Globals.path + "/SideLoads/AJAX?method=deleteMarc&id=" + sideLoadId + "&file=" + fileName;
+			let params = {
+				method : 'deleteMarc',
+				id: sideLoadId,
+				file: fileName
+			};
+
+			$.getJSON(Globals.path + "/SideLoads/AJAX",params, function(data){
+				if (data.success){
+					$("#file" + fileIndex).hide();
+				}else{
+					AspenDiscovery.showMessage('Delete Failed', data.message, false, autoLogOut);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		}
+	}
+}(AspenDiscovery.SideLoads || {}));
 /**
  * Create a title scroller object for display
  * 
@@ -5543,6 +6179,14 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 	};
 })(jQuery);
 
+AspenDiscovery.Websites = (function () {
+	return {
+		trackUsage: function (id) {
+			let ajaxUrl = Globals.path + "/Websites/JSON?method=trackUsage&id=" + id;
+			$.getJSON(ajaxUrl);
+		}
+	};
+}(AspenDiscovery.Websites || {}));
 AspenDiscovery.Wikipedia = (function(){
 	return{
 		getWikipediaArticle: function(articleName){
