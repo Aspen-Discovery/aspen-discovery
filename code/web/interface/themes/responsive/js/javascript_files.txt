@@ -14,6 +14,7 @@ lib/jquery.rwdImageMaps.min.js
 lib/additional-methods.min.js
 lib/rater.min.js
 lib/recaptcha_ajax.min.js
+lib/simplemde.min.js
 aspen/globals.js
 aspen/base.js
 aspen/account.js
