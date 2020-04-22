@@ -1,5 +1,5 @@
 <?php
-
+header('Content-type: text/plain');
 date_default_timezone_set('America/Denver');
 $mergeListFile = fopen("./javascript_files.txt", 'r');
 $mergedFile = fopen("aspen.js", 'w');

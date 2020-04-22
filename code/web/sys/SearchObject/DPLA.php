@@ -70,7 +70,7 @@ class DPLA {
 
 	public function formatResults($results, $showDescription = true) {
 		$formattedResults = "";
-		if (count($results) > 0){
+		if (!empty($results)){
 			global $interface;
 			$interface->assign('searchResults', $results);
 			$interface->assign('showDplaDescription', $showDescription);
