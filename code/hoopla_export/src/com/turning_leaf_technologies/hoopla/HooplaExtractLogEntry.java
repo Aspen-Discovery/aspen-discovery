@@ -143,4 +143,8 @@ class HooplaExtractLogEntry implements BaseLogEntry {
 	void incSkipped() {
 		numSkipped++;
 	}
+
+	int getNumChanges() {
+		return numUpdated + numDeleted + numAdded;
+	}
 }

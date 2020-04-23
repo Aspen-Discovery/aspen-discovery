@@ -172,6 +172,14 @@ function getHooplaUpdates()
 			]
 		],
 
+		're_enable_hoopla_module_auto_restart' => [
+			'title' => 'Re-enable Hoopla Auto Restart',
+			'description' => 'Re-enable Hoopla Auto Restart',
+			'sql' => [
+				"UPDATE modules SET backgroundProcess = 'hoopla_export' WHERE name = 'Hoopla'",
+			]
+		],
+
 		'hoopla_module_add_log' =>[
 			'title' => 'Hoopla add log info to module',
 			'description' => 'Add logging information to Hoopla module',
