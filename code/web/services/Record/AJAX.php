@@ -162,8 +162,9 @@ class Record_AJAX extends Action
 			/** @var FormatMapValue $formatMapValue */
 			$holdType = 'bib';
 			foreach ($formatMap as $formatMapValue){
-				if ($formatMapValue->format == $format){
+				if (strcasecmp($formatMapValue->format, $format) === 0){
 					$holdType = $formatMapValue->holdType;
+					break;
 				}
 			}
 
