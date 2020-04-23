@@ -14,29 +14,18 @@ class Record_AJAX extends Action
 		$timer->logTime("Starting method $method");
 		if (method_exists($this, $method)) {
 			// Methods intend to return JSON data
-			if (in_array($method, array('getPlaceHoldForm', 'getPlaceHoldEditionsForm', 'getBookMaterialForm', 'placeHold', 'bookMaterial', 'getUploadPDFForm', 'uploadPDF', 'showSelectDownloadForm'))) {
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo json_encode($this->$method());
+			if ($method == 'downloadMarc') {
+				echo $this->$method();
 			} else if (in_array($method, array('getBookingCalendar'))) {
 				header('Content-type: text/html');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				echo $this->$method();
-			} else if ($method == 'downloadMarc') {
-				echo $this->$method();
 			} else {
-				header('Content-type: text/xml');
+				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-				$xmlResponse = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-				$xmlResponse .= "<AJAXResponse>\n";
-				$xmlResponse .= $this->$_GET['method']();
-				$xmlResponse .= '</AJAXResponse>';
-
-				echo $xmlResponse;
+				echo json_encode($this->$method());
 			}
 		} else {
 			$output = json_encode(array('error' => 'invalid_method'));
@@ -617,6 +606,52 @@ class Record_AJAX extends Action
 		return $result;
 	}
 
+	function deletePDF(){
+		$result = [
+			'success' => false,
+			'title' => 'Deleting PDF',
+			'message' => 'Unknown error deleting PDF'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))){
+			$fileId = $_REQUEST['fileId'];
+			$id = $_REQUEST['id'];
+
+			/** @var MarcRecordDriver $recordDriver */
+			$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+			if ($recordDriver->isValid()){
+				require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+				$recordFile = new RecordFile();
+				$recordFile->type = $recordDriver->getRecordType();
+				$recordFile->identifier = $recordDriver->getUniqueID();
+				$recordFile->fileId = $fileId;
+				if ($recordFile->find(true)){
+					require_once ROOT_DIR . '/sys/File/FileUpload.php';
+					$fileUpload = new FileUpload();
+					$fileUpload->id = $fileId;
+					if ($fileUpload->find(true)){
+						if (unlink($fileUpload->fullPath)){
+							$fileUpload->delete();
+							$recordFile->delete();
+							$result['success'] = true;
+							$result['message'] = 'The file was deleted successfully';
+						}else{
+							$result['message'] = 'Could not delete the file';
+						}
+					}else{
+						$result['message'] = 'Could not find the file to delete';
+					}
+				}else {
+					$result['message'] = 'The file does not appear to be attached to this record';
+				}
+			}else{
+				$result['message'] = 'Could not load the record to delete the file from';
+			}
+		}else{
+			$result['message'] = 'You do not have the correct permissions to delete this file';
+		}
+		return $result;
+	}
+
 	function showSelectDownloadForm(){
 		global $interface;
 
@@ -649,5 +684,25 @@ class Record_AJAX extends Action
 			'modalBody' => $interface->fetch("Record/select-download-pdf-form.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadPDF\").submit()'>Download PDF</button>"
 		];
+	}
+
+	function getStaffView(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error loading staff view'
+		];
+		$id = $_REQUEST['id'];
+		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+		if ($recordDriver->isValid()){
+			global $interface;
+			$interface->assign('recordDriver', $recordDriver);
+			$result = [
+				'success' => true,
+				'staffView' => $interface->fetch($recordDriver->getStaffView())
+			];
+		}else{
+			$result['message'] = 'Could not find that record';
+		}
+		return $result;
 	}
 }

@@ -9,7 +9,7 @@ class Record_DownloadPDF
 
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
-		require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+		/** @var MarcRecordDriver $recordDriver */
 		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
 
 		$fileId = $_REQUEST['fileId'];

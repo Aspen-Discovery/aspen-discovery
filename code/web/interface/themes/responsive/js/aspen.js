@@ -5330,12 +5330,21 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
+		deletePDF: function(id, fileId) {
+			if (confirm("Are you sure you want to delete this file?")){
+				let url = Globals.path + '/Record/' + id + '/AJAX?method=deletePDF&fileId=' +fileId;
+				$.getJSON(url, function (data){
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				});
+			}
+			return false;
+		},
+
 		getUploadPDFForm: function (id){
 			let url = Globals.path + '/Record/' + id + '/AJAX?method=getUploadPDFForm';
 			$.getJSON(url, function (data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}
-			);
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			});
 			return false;
 		},
 
@@ -5353,6 +5362,18 @@ AspenDiscovery.Record = (function(){
 			let selectedFile = $('#selectedFile').val();
 			window.location = Globals.path + '/Record/' + id + '/DownloadPDF?fileId=' + selectedFile;
 			return false;
+		},
+
+		getStaffView: function (module, id) {
+			let url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getStaffView";
+			$.getJSON(url, function (data){
+				if (!data.success){
+					AspenDiscovery.showMessage('Error', data.message);
+				}else{
+					$("#staffViewPlaceHolder").replaceWith(data.staffView);
+				}
+			}
+			);
 		}
 	};
 }(AspenDiscovery.Record || {}));

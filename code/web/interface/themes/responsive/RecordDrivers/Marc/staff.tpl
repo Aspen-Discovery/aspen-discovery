@@ -38,6 +38,32 @@
 
 {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
+{if !empty($uploadedPDFs)}
+	<h4>{translate text="Uploaded PDFs"}</h4>
+	<table class="table-striped table table-condensed notranslate">
+		<thead>
+			<tr>
+				<th>{translate text='Title'}</th>
+				<th>{translate text='Path'}</th>
+				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+					<th>{translate text='Actions'}</th>
+				{/if}
+			</tr>
+		</thead>
+		<tbody>
+		{foreach from=$uploadedPDFs item=uploadedPDF}
+			<tr>
+				<td>{$uploadedPDF->title}</td>
+				<td>{$uploadedPDF->getFileName()}</td>
+				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+					<td><button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Record.deletePDF('{$recordDriver->getId()}', '{$uploadedPDF->id}')">{translate text="Delete"}</button></td>
+				{/if}
+			</tr>
+		{/foreach}
+		</tbody>
+	</table>
+{/if}
+
 {if $marcRecord}
 	<h4>{translate text="Marc Record"}</h4>
 	<table class="table-striped table table-condensed notranslate">
