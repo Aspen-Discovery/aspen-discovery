@@ -141,7 +141,7 @@ class CurlWrapper
 	 *
 	 * @return string   The response from the web page if any
 	 */
-	public function curlPostPage($url, $postParams)
+	public function curlPostPage($url, $postParams, $curlOptions = null)
 	{
 		if (is_string($postParams)) {
 			$post_string = $postParams;
@@ -153,6 +153,9 @@ class CurlWrapper
 			CURLOPT_POST => true,
 			CURLOPT_POSTFIELDS => $post_string
 		));
+		if ($curlOptions != null){
+			curl_setopt_array($this->curl_connection, $curlOptions);
+		}
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;

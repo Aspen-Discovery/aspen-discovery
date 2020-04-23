@@ -349,4 +349,10 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		$availability->find(true);
 		return $availability;
 	}
+
+	function getAccessOnlineLink($patron)
+	{
+		global $configArray;
+		return $configArray['Site']['url'] . '/CloudLibrary/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
+	}
 }
