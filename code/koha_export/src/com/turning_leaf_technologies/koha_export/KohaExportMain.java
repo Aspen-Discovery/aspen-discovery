@@ -122,6 +122,8 @@ public class KohaExportMain {
 				exportHolds(dbConn, kohaConn);
 				logEntry.addNote("Finished loading holds");
 
+				exportVolumes(dbConn, kohaConn);
+
 				//Update works that have changed since the last index
 				numChanges = updateRecords(dbConn, kohaConn);
 
@@ -170,6 +172,89 @@ public class KohaExportMain {
 				logger.info("Thread was interrupted");
 			}
 		} //Infinite loop
+	}
+
+	private static void exportVolumes(Connection dbConn, Connection kohaConn) {
+		try{
+			logEntry.addNote("Starting export of volume information");
+			//Get the existing volumes
+			PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT volumeId from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			HashSet<Long> existingVolumes = new HashSet<>();
+			ResultSet existingVolumesRS = getExistingVolumes.executeQuery();
+			while (existingVolumesRS.next()){
+				existingVolumes.add(existingVolumesRS.getLong("volumeId"));
+			}
+			existingVolumesRS.close();
+
+			PreparedStatement getVolumeInfoStmt = kohaConn.prepareStatement("SELECT * from volumes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getItemsForVolumeStmt = kohaConn.prepareStatement("SELECT * from volume_items", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems)");
+			PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
+
+			ResultSet volumeInfoRS = null;
+			boolean loadError = false;
+
+			HashMap<Long, String> itemsForVolume = new HashMap<>(); //Volume Id, list of item
+			try {
+				volumeInfoRS = getVolumeInfoStmt.executeQuery();
+
+				ResultSet getItemsForVolumeRS = getItemsForVolumeStmt.executeQuery();
+				while (getItemsForVolumeRS.next()){
+					String itemRecordNum = getItemsForVolumeRS.getString("itemnumber");
+
+					Long volumeId = getItemsForVolumeRS.getLong("volume_id");
+					itemsForVolume.merge(volumeId, itemRecordNum, (a, b) -> a + "|" + b);
+				}
+				getItemsForVolumeRS.close();
+			} catch (SQLException e1) {
+				logger.error("Error loading volume information", e1);
+				loadError = true;
+			}
+
+			if (!loadError) {
+				int numVolumesUpdated = 0;
+				while (volumeInfoRS.next()) {
+					long recordId = volumeInfoRS.getLong("biblionumber");
+					long volumeId = volumeInfoRS.getLong("id");
+					int displayOrder = volumeInfoRS.getInt("display_order");
+					String description = volumeInfoRS.getString("description");
+					existingVolumes.remove(volumeId);
+					String relatedItems = itemsForVolume.get(recordId);
+					if (relatedItems == null){
+						relatedItems = "";
+					}
+
+					try {
+						addVolumeStmt.setString(1, "ils:" + recordId);
+						addVolumeStmt.setLong(2, volumeId);
+						addVolumeStmt.setString(3, description);
+						addVolumeStmt.setString(4, relatedItems);
+						addVolumeStmt.setInt(5, displayOrder);
+						int numUpdates = addVolumeStmt.executeUpdate();
+						if (numUpdates > 0) {
+							numVolumesUpdated++;
+						}
+					}catch (SQLException sqlException){
+						logEntry.incErrors("Error adding volume", sqlException);
+					}
+				}
+				volumeInfoRS.close();
+
+
+				//Remove anything that no longer exists
+				long numVolumesDeleted = 0;
+				for (Long existingVolume : existingVolumes){
+					logEntry.addNote("Deleted volume " + existingVolume);
+					deleteVolumeStmt.setLong(1, existingVolume);
+					deleteVolumeStmt.executeUpdate();
+					numVolumesDeleted++;
+				}
+				logEntry.addNote("Updated " + numVolumesUpdated + " volumes and deleted " + numVolumesDeleted + " volumes");
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error exporting volume information", e);
+		}
+		logEntry.saveResults();
 	}
 
 	private static KohaInstanceInformation initializeKohaConnection(Connection dbConn) throws SQLException {

@@ -2510,11 +2510,12 @@ class GroupedWorkDriver extends IndexRecordDriver
 	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers = false)
 	{
 		//Check to see if we have any volume data for the record
-		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
+		require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 		global $memoryWatcher;
 		$volumeData = array();
 		$volumeDataDB = new IlsVolumeInfo();
 		$volumeDataDB->recordId = $recordDetails[0];
+		$volumeDataDB->orderBy('displayOrder ASC, displayLabel ASC');
 		//D-81 show volume information even if there aren't related items
 		//$volumeDataDB->whereAdd('length(relatedItems) > 0');
 		if ($volumeDataDB->find()) {
