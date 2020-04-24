@@ -16,10 +16,10 @@ class MySQLSession extends SessionInterface
 		$s->delete(true);
 		//Delete any sessions where remember me was true
 		$s2 = new Session();
-		$earliestValidSession = time() - self::$rememberMeLifetime;
-		$s2->remember_me = 1;
-		$s2->whereAdd('last_used < ' . $earliestValidSession);
-		$s2->delete(true);
+		$earliestValidRememberMeSession = time() - self::$rememberMeLifetime;
+		$s2->remember_me = '1';
+		$s2->whereAdd('last_used < ' . $earliestValidRememberMeSession);
+		$numRememberMeDeleted = $s2->delete(true);
 		return true;
 	}
 
@@ -76,17 +76,16 @@ class MySQLSession extends SessionInterface
 			$logger->log("Updating session $sess_id", Logger::LOG_DEBUG);
 			$s->data = $data;
 			$s->last_used = time();
+			if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] == true || $_REQUEST['rememberMe'] === "true")) {
+				$s->remember_me = 1;
+			}
 			$result = $s->update();
 		}else{
 			$logger->log("Inserting new session $sess_id", Logger::LOG_DEBUG);
 			$s->data = $data;
 			$s->created = date('Y-m-d h:i:s');
 			$s->last_used = time();
-			if (isset($_SESSION['rememberMe']) && ($_SESSION['rememberMe'] == true || $_SESSION['rememberMe'] === "true")) {
-				$s->remember_me = 1;
-			}else{
-				$s->remember_me = 0;
-			}
+			$s->remember_me = 0;
 			$result = $s->insert();
 		}
 		$logger->log(" Result = $result", Logger::LOG_DEBUG);
