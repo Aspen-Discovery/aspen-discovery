@@ -9,6 +9,7 @@ class StaffDirectory extends Action
 
 		require_once ROOT_DIR . '/sys/WebBuilder/StaffMember.php';
 		$staffMember = new StaffMember();
+		$staffMember->orderBy('name');
 		$staffMember->find();
 		$staffMembers = [];
 		$hasPhotos = false;
