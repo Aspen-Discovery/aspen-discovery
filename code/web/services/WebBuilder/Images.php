@@ -1,17 +1,17 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/File/FileUpload.php';
+require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 
-class WebBuilder_PDFs extends ObjectEditor
+class WebBuilder_Images extends ObjectEditor
 {
 	function getObjectType()
 	{
-		return 'FileUpload';
+		return 'ImageUpload';
 	}
 
 	function getToolName()
 	{
-		return 'PDFs';
+		return 'Images';
 	}
 
 	function getModule()
@@ -21,13 +21,13 @@ class WebBuilder_PDFs extends ObjectEditor
 
 	function getPageTitle()
 	{
-		return 'Uploaded PDFs';
+		return 'Uploaded Images';
 	}
 
 	function getAllObjects()
 	{
-		$object = new FileUpload();
-		$object->type = 'web_builder_pdf';
+		$object = new ImageUpload();
+		$object->type = 'web_builder_image';
 		$object->orderBy('title');
 		$object->find();
 		$objectList = array();
@@ -38,20 +38,14 @@ class WebBuilder_PDFs extends ObjectEditor
 	}
 
 	function updateFromUI($object, $structure){
-		$object->type = 'web_builder_pdf';
+		$object->type = 'web_builder_image';
 		return parent::updateFromUI($object, $structure);
 	}
 
 	function getObjectStructure()
 	{
-		$objectStructure = FileUpload::getObjectStructure();
+		$objectStructure = ImageUpload::getObjectStructure();
 		unset($objectStructure['type']);
-		$fileProperty = $objectStructure['fullPath'];
-		global $serverName;
-		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_pdf/';
-		$fileProperty['path'] = $dataPath;
-		$fileProperty['validTypes'] = ['application/pdf'];
-		$objectStructure['fullPath'] = $fileProperty;
 		return $objectStructure;
 	}
 
@@ -89,8 +83,8 @@ class WebBuilder_PDFs extends ObjectEditor
 		$objectActions = [];
 		if (!empty($existingObject) && !empty($existingObject->id)){
 			$objectActions[] = [
-				'text' => 'Download PDF',
-				'url' => '/WebBuilder/DownloadPDF?id=' . $existingObject->id,
+				'text' => 'View Image',
+				'url' => '/WebBuilder/ViewImage?id=' . $existingObject->id,
 			];
 		}
 		return $objectActions;

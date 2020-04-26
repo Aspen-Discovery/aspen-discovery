@@ -1,6 +1,6 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/Parsedown/Parsedown.php';
+require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 
 class ReleaseNotes extends Admin_Admin
 {
@@ -21,7 +21,7 @@ class ReleaseNotes extends Admin_Admin
 
 		arsort($releaseNotes);
 
-		$parsedown = Parsedown::instance();
+		$parsedown = AspenParsedown::instance();
 		$releaseNotesFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. reset($releaseNotes) . '.MD'));
 		$interface->assign('releaseNotesFormatted', $releaseNotesFormatted);
 

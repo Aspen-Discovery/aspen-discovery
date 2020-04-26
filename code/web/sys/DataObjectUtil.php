@@ -231,10 +231,21 @@ class DataObjectUtil
 						$logger->log("Copied file to $destFullPath", Logger::LOG_DEBUG);
 					}else{
 						$logger->log("Creating thumbnails for $propertyName", Logger::LOG_DEBUG);
-						$destFileName = $propertyName . $_FILES[$propertyName]["name"];
-						$destFolder = $configArray['Site']['local'] . '/files/original';
-						$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
-						$pathToMedium = $configArray['Site']['local'] . '/files/medium';
+						if (isset($property['path'])){
+							$destFolder = $property['path'];
+							$destFileName = $_FILES[$propertyName]["name"];
+							if (!file_exists($destFolder)){
+								mkdir($destFolder, 0755, true);
+							}
+							$pathToThumbs = $destFolder . '/thumbnail';
+							$pathToMedium = $destFolder . '/medium';
+						}else{
+							$destFileName = $propertyName . $_FILES[$propertyName]["name"];
+							$destFolder = $configArray['Site']['local'] . '/files/original';
+							$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
+							$pathToMedium = $configArray['Site']['local'] . '/files/medium';
+						}
+
 						$destFullPath = $destFolder . '/' . $destFileName;
 						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 

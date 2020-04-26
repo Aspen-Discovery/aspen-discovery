@@ -189,7 +189,12 @@
 						<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
 						{$propValue} &nbsp;
 					{else}
-						<img src='/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+
+						{if $property.displayUrl}
+							<img src='{$property.displayUrl}{$object->id}' style="display: block" alt="Selected Image for {$property.label}">
+						{else}
+							<img src='/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+						{/if}
 						{$propValue} &nbsp;
 					{/if}
 					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">Remove image</label>

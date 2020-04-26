@@ -110,9 +110,27 @@ function getWebBuilderUpdates(){
 				'ALTER TABLE web_builder_portal_cell ADD COLUMN weight INT DEFAULT 0'
 			]
 		],
+
+		'web_builder_image_upload' => [
+			'title' => 'Create Image Uploads Table',
+			'description' => 'Create File Uploads Table to store information about files that have been uploaded to aspen',
+			'sql' => [
+				'CREATE TABLE image_uploads (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					title VARCHAR(255) NOT NULL,
+					fullSizePath VARCHAR(512) NOT NULL,
+					generateMediumSize TINYINT(1) NOT NULL default 0,
+					mediumSizePath VARCHAR(512),
+					generateSmallSize TINYINT(1) NOT NULL default 0,
+					smallSizePath VARCHAR(512),
+					type VARCHAR(25) NOT NULL,
+					INDEX (type, title)
+				) ENGINE INNODB'
+			]
+		],
+
 		//TODO: Add roles
 		//TODO: Add library to pages for scoping
-		//TODO: Upload of files
 
 	];
 }

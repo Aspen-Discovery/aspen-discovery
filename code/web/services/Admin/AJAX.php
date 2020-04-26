@@ -222,8 +222,8 @@ class Admin_AJAX extends Action
 		if (!file_exists($releaseNotesPath . '/'. $release . '.MD')){
 			$results['message'] = 'Could not find notes for that release';
 		}else{
-			require_once ROOT_DIR . '/sys/Parsedown/Parsedown.php';
-			$parsedown = Parsedown::instance();
+			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+			$parsedown = AspenParsedown::instance();
 			$releaseNotesFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '.MD'));
 			$results = [
 				'success' => true,

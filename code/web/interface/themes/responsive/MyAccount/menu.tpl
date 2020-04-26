@@ -387,6 +387,7 @@
 								<div class="adminMenuLink"><a href="/WebBuilder/Menus">{translate text="Menu"}</a></div>
 								<div class="adminMenuLink"><a href="/WebBuilder/BasicPages">{translate text="Basic Pages"}</a></div>
 								<div class="adminMenuLink"><a href="/WebBuilder/PortalPages">{translate text="Portal Pages"}</a></div>
+								<div class="adminMenuLink"><a href="/WebBuilder/Images">{translate text="Images"}</a></div>
 								<div class="adminMenuLink"><a href="/WebBuilder/PDFs">{translate text="PDFs"}</a></div>
 								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('web_builder_admin', $userRoles)}
 									<div class="adminMenuLink"><a href="/WebBuilder/StaffMembers">{translate text="Staff Members"}</a></div>
