@@ -838,6 +838,56 @@ class Koha extends AbstractIlsDriver
 		}
 	}
 
+
+	/**
+	 * @param User $patron
+	 * @param string $recordId
+	 * @param string $volumeId
+	 * @param string $pickupBranch
+	 * @return array
+	 */
+	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	{
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error placing a hold on this volume.'
+		];
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+		} else {
+			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
+			$postParams = [
+				'patron_id' => $patron->username,
+				'pickup_library_id' => $pickupBranch,
+				'volume_id' => $volumeId,
+			];
+			$postParams = json_encode($postParams);
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'Accept-Encoding: gzip, deflate',
+			], true);
+			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
+			$responseCode = $this->apiCurlWrapper->getResponseCode();
+			if ($responseCode == 201){
+				$result['message'] = 'Your hold was placed successfully.';
+				$result['success'] = true;
+			}else{
+				$result = [
+					'success' => false,
+					'message' => "Error ($responseCode) placing a hold on this volume."
+				];
+			}
+		}
+		return $result;
+	}
+
 	/**
 	 * Place Item Hold
 	 *

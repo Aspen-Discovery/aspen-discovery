@@ -1,0 +1,74 @@
+#Aspen Discovery Manual - Table of Contents
+- Administration
+  - Administrators
+  - Library Administration
+  - Location Administration
+- Advanced Search
+- Aspen API
+- Author pages
+- Browsing
+- Citations
+- Collection Spotlights
+- Covers
+- eCommerce
+- eContent Integrations
+  - CloudLibrary
+  - Hoopla
+  - OverDrive
+  - RBdigital
+- Email
+- Events
+  - Library Calendar
+- Explore More
+- Full Record Pages
+- Genealogy & Obituaries
+- Grouped Works
+  - Creating Grouped Works
+  - Grouped Work Pages
+  - Manually grouping records
+  - Ungrouping records
+- ILS Integration
+  - Account Profiles
+  - Carl.X
+  - Horizon
+  - Koha
+  - Millennium
+  - Polaris
+  - Sierra
+  - Symphony
+- Interlibrary Loans
+- Languages and Translations
+- Materials Requests & Purchase Suggestions
+- Open Archives
+- Reading History
+- Ratings and Reviews
+- Recommendations
+- Reports
+  - Cron Log
+  - Dashboards
+  - Indexing Logs
+  - Performance Report
+- Searching
+  - Search Types
+  - Facets
+- Server Setup
+  - Installation
+  - Background tasks
+- Third Party Enrichment
+  - Accelerated Reader
+  - Content Cafe
+  - DP.LA
+  - Facebook
+  - GoodReads
+  - Google
+  - OMDB
+  - New York Times
+  - Novelist
+  - Pinterest
+  - reCAPTCHA
+  - Syndetics
+  - Wikipedia
+- Theming
+- Uploaded PDFS
+- User Lists
+- Website Indexing
