@@ -1610,7 +1610,7 @@ public class SierraExportAPIMain {
 				}
 				getVolumeLabelsRS.close();
 			} catch (SQLException e1) {
-				logger.error("Error loading volume information", e1);
+				logEntry.incErrors("Error loading volume information", e1);
 				loadError = true;
 			}
 			if (!loadError) {

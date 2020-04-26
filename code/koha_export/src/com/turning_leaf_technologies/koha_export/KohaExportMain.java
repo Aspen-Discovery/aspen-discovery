@@ -206,8 +206,11 @@ public class KohaExportMain {
 					itemsForVolume.merge(volumeId, itemRecordNum, (a, b) -> a + "|" + b);
 				}
 				getItemsForVolumeRS.close();
+			} catch (SQLSyntaxErrorException e1) {
+				logEntry.addNote("Volume table does not exist within the database");
+				return;
 			} catch (SQLException e1) {
-				logger.error("Error loading volume information", e1);
+				logEntry.incErrors("Error loading volume information", e1);
 				loadError = true;
 			}
 

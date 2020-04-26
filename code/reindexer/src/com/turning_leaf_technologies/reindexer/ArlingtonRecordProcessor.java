@@ -7,39 +7,17 @@ import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Pattern;
 
 class ArlingtonRecordProcessor extends IIIRecordProcessor {
-	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-	private HashSet<String> recordsWithVolumes = new HashSet<>();
 	ArlingtonRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
 
-		languageFields = "008[35-37]";
-
 		loadOrderInformationFromExport();
 
-		loadVolumesFromExport(dbConn);
-
 		validCheckedOutStatusCodes.add("o");
-	}
-
-	private void loadVolumesFromExport(Connection dbConn){
-		try{
-			PreparedStatement loadVolumesStmt = dbConn.prepareStatement("SELECT distinct(recordId) FROM ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet volumeInfoRS = loadVolumesStmt.executeQuery();
-			while (volumeInfoRS.next()){
-				String recordId = volumeInfoRS.getString(1);
-				recordsWithVolumes.add(recordId);
-			}
-			volumeInfoRS.close();
-		}catch (SQLException e){
-			logger.error("Error loading volumes from the export", e);
-		}
 	}
 
 	@Override
@@ -300,13 +278,6 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 			}
 		}
 		return unsuppressedEcontentRecords;
-	}
-
-	boolean checkIfBibShouldBeRemovedAsItemless(RecordInfo recordInfo) {
-		//boolean hasVolumeRecords = recordsWithVolumes.contains(recordInfo.getFullIdentifier());
-		//Need to do additional work to determine exactly how Arlington wants bibs with volumes, but no items
-		//to show.  See #D-81
-		return recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0 && suppressItemlessBibs;
 	}
 
 	private static Pattern suppressedBCode3Pattern = Pattern.compile("^[xnopwhd]$");
