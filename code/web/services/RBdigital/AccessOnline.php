@@ -30,10 +30,10 @@ class RBdigital_AccessOnline extends Action
 				//We don't actually get to here since the redirect happens above
 				die();
 			} else {
-				AspenError::raiseError('Sorry, it looks like you don\'t have permissions to place holds for that user.');
+				AspenError::raiseError('Sorry, it looks like you don\'t have permissions to access checkouts for user.');
 			}
 		} else {
-			AspenError::raiseError('You must be logged in to place a hold.');
+			AspenError::raiseError('You must be logged in to access this title.');
 		}
 	}
 }

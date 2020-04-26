@@ -6,8 +6,8 @@ if (file_exists(ROOT_DIR . '/services/MyResearch/lib/Search.php')) {
 
 class SessionInterface implements SessionHandlerInterface{
 
-	static public $lifetime = 3600;
-	static public $rememberMeLifetime = 1209600;
+	static public $lifetime = 3600; //one hour
+	static public $rememberMeLifetime = 1209600; //2 weeks
 
 	public function init($lt, $rememberMeLifetime) {
 		self::$lifetime = $lt;

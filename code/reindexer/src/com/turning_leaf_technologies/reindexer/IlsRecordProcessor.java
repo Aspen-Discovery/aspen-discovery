@@ -77,6 +77,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private HashSet<String> statusesToSuppress = new HashSet<>();
 	private HashSet<String> inLibraryUseOnlyFormats = new HashSet<>();
 	private HashSet<String> inLibraryUseOnlyStatuses = new HashSet<>();
+	private HashSet<String> nonHoldableFormats = new HashSet<>();
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);
@@ -247,10 +248,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		while (formatMapRS.next()){
 			String format = formatMapRS.getString("value");
 			if (formatMapRS.getBoolean("suppress")){
-				formatsToSuppress.add(format);
+				formatsToSuppress.add(format.toUpperCase());
 			}
 			if (formatMapRS.getBoolean("inLibraryUseOnly")){
-				inLibraryUseOnlyFormats.add(format);
+				inLibraryUseOnlyFormats.add(format.toUpperCase());
+			}
+			if (formatMapRS.getString("holdType").equals("none")){
+				nonHoldableFormats.add(format.toUpperCase());
 			}
 			formatMap.addValue(format, formatMapRS.getString("format"));
 			formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"));
@@ -926,7 +930,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (inLibraryUseOnlyStatuses.contains(itemInfo.getStatusCode())){
 			return true;
 		}
-		if (inLibraryUseOnlyFormats.contains(itemInfo.getFormat())){
+		String format = itemInfo.getFormat();
+		if (format == null){
+			format = itemInfo.getRecordInfo().getPrimaryFormat();
+		}
+		if (inLibraryUseOnlyFormats.contains(format.toUpperCase())){
 			return true;
 		}
 		return false;
@@ -1138,10 +1146,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				statusesThatHaveHoldabilityChecked.put(itemStatusCode, !nonHoldableStatuses.matcher(itemStatusCode).matches());
 			}
 			if (!statusesThatHaveHoldabilityChecked.get(itemStatusCode)){
-
-
 				return new HoldabilityInformation(false, new HashSet<>());
 			}
+		}
+		String format = itemInfo.getFormat();
+		if (format == null){
+			format = itemInfo.getRecordInfo().getPrimaryFormat();
+		}
+		if (nonHoldableFormats.contains(format.toUpperCase())){
+			return new HoldabilityInformation(false, new HashSet<>());
 		}
 		return new HoldabilityInformation(true, new HashSet<>());
 	}
@@ -1298,7 +1311,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (formatSubfieldValue != null){
 				String formatValue = formatSubfieldValue.getData();
 				//noinspection RedundantIfStatement
-				if (formatsToSuppress.contains(formatValue)){
+				if (formatsToSuppress.contains(formatValue.toUpperCase())){
 					return true;
 				}
 			}

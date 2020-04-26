@@ -193,6 +193,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 		}
 
+		$interface->assign('uploadedPDFs', $this->getUploadedPDFs());
+
+
 		return 'RecordDrivers/Marc/staff.tpl';
 	}
 
@@ -1210,7 +1213,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
 					'label' => 'Staff View',
-					'body' => $interface->fetch($this->getStaffView()),
+					'onShow' => "AspenDiscovery.Record.getStaffView('{$this->getModule()}', '{$this->id}');",
+					'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 
@@ -1733,6 +1737,26 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			//AspenError::raiseError('MARC Record did not have an associated record in grouped work ' . $this->getPermanentId());
 			return null;
 		}
+	}
+
+	function getUploadedPDFs()
+	{
+		$uploadedPDFs = [];
+		require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+		require_once ROOT_DIR . '/sys/File/FileUpload.php';
+		$recordFile = new RecordFile();
+		$recordFile->type = $this->getRecordType();
+		$recordFile->identifier = $this->getUniqueID();
+		if ($recordFile->find()){
+			while ($recordFile->fetch()){
+				$fileUpload = new FileUpload();
+				$fileUpload->id = $recordFile->fileId;
+				if ($fileUpload->find(true)){
+					$uploadedPDFs[] = $fileUpload;
+				}
+			}
+		}
+		return $uploadedPDFs;
 	}
 
 }

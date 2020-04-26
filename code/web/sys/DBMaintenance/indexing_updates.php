@@ -290,6 +290,14 @@ function getIndexingUpdates()
 			)
 		),
 
+		'volume_display_order' => [
+			'title' => 'Volume display order',
+			'description' => 'Add display order to volumes',
+			'sql' => [
+				'ALTER TABLE ils_volume_info ADD COLUMN displayOrder SMALLINT default 0'
+			],
+		],
+
 		'last_check_in_status_adjustments' => array(
 			'title' => 'Last Check In Time Status Adjustments',
 			'description' => 'Add additional fields to adjust status based on last check-in time.',

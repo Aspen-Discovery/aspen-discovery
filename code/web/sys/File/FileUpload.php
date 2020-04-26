@@ -18,4 +18,8 @@ class FileUpload extends DataObject
 
 		];
 	}
+	
+	public function getFileName(){
+		return basename($this->fullPath);
+	}
 }
