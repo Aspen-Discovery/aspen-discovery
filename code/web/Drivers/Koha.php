@@ -862,6 +862,7 @@ class Koha extends AbstractIlsDriver
 				'patron_id' => $patron->username,
 				'pickup_library_id' => $pickupBranch,
 				'volume_id' => $volumeId,
+				'biblio_id' => $recordId,
 			];
 			$postParams = json_encode($postParams);
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -1004,6 +1005,15 @@ class Koha extends AbstractIlsDriver
 			}
 			if (isset($curRow['enumchron'])) {
 				$curHold['volume'] = $curRow['enumchron'];
+			}
+			if (isset($curRow['volume_id'])){
+				//Get the volume info
+				require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+				$volumeInfo = new IlsVolumeInfo();
+				$volumeInfo->volumeId = $curRow['volume_id'];
+				if ($volumeInfo->find(true)){
+					$curHold['volume'] = $volumeInfo->displayLabel;
+				}
 			}
 			$curHold['create'] = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
 			if (!empty($curRow['expirationdate'])) {
