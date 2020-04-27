@@ -25,7 +25,7 @@ class BasicPage extends DataObject
 
 	public function getFormattedContents()
 	{
-		//Add in widgets and links to titles
+		//TODO: Add in widgets and links to titles?
 		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 		$parsedown = AspenParsedown::instance();
 		return $parsedown->parse($this->contents);

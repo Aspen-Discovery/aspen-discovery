@@ -113,7 +113,7 @@ function getWebBuilderUpdates(){
 
 		'web_builder_image_upload' => [
 			'title' => 'Create Image Uploads Table',
-			'description' => 'Create File Uploads Table to store information about files that have been uploaded to aspen',
+			'description' => 'Create Image Uploads Table to store information about images that have been uploaded to Aspen',
 			'sql' => [
 				'CREATE TABLE image_uploads (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -128,6 +128,25 @@ function getWebBuilderUpdates(){
 				) ENGINE INNODB'
 			]
 		],
+
+		'web_builder_resources' => [
+			'title' => 'Create Web Builder Resources Table',
+			'description' => 'Create Resources table to store information about resources the library provides access to',
+			'sql' => [
+				'CREATE TABLE web_builder_resource (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(100) NOT NULL,
+					url VARCHAR(255) NOT NULL,
+					logo VARCHAR(200),
+					featured TINYINT(1) NOT NULL default 0,
+					category VARCHAR(100),
+					requiresLibraryCard TINYINT(1) NOT NULL default 0,
+					description MEDIUMTEXT,
+					INDEX (featured),
+					INDEX (category)
+				) ENGINE INNODB'
+			]
+		]
 
 		//TODO: Add roles
 		//TODO: Add library to pages for scoping
