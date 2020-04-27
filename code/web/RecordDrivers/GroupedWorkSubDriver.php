@@ -597,4 +597,9 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 			return $this->getGroupedWorkDriver()->getBookcoverInfo();
 		}
 	}
+
+	public function getCancelledIsbns()
+	{
+		return [];
+	}
 }

@@ -1759,6 +1759,22 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		return $uploadedPDFs;
 	}
 
+	public function getCancelledIsbns()
+	{
+		$cancelledIsbns = [];
+		if ($this->marcRecord != false){
+			$cancelledIsbnFields = $this->marcRecord->getFields('020');
+			/** @var File_MARC_Data_Field $cancelledIsbnField */
+			foreach ($cancelledIsbnFields as $cancelledIsbnField) {
+				$cancelledIsbn = $cancelledIsbnField->getSubfield('z');
+				if ($cancelledIsbn){
+					$isbnObj = new ISBN($cancelledIsbn);
+					$cancelledIsbns[$isbnObj->get13()] = $isbnObj->get13();
+				}
+			}
+		}
+		return $cancelledIsbns;
+	}
 }
 
 

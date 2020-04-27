@@ -72,7 +72,6 @@ class User extends DataObject
 	public $_fines;
 	public $_finesVal;
 	public $_homeLibrary;
-	public $_homeLibraryName; //Only populated as part of loading administrators
 	public $_homeLocationCode;
 	public $_homeLocation;
 	public $_myLocation1;
@@ -1079,20 +1078,16 @@ class User extends DataObject
 				case 'author' :
 				case 'format' :
 					//This is used in the sort function
-					/** @noinspection PhpUnusedLocalVariableInspection */
 					$indexToSortBy = $availableSort;
 					break;
 				case 'title' :
-					/** @noinspection PhpUnusedLocalVariableInspection */
 					$indexToSortBy = 'sortTitle';
 					break;
 				case 'libraryAccount' :
-					/** @noinspection PhpUnusedLocalVariableInspection */
 					$indexToSortBy = 'user';
 					break;
 				case 'expire' :
 				default :
-					/** @noinspection PhpUnusedLocalVariableInspection */
 					$indexToSortBy = 'expire';
 			}
 			uasort($allHolds['available'], $holdSort);
@@ -1105,20 +1100,16 @@ class User extends DataObject
 				case 'status' :
 				case 'format' :
 					//This is used in the sort function
-					/** @noinspection PhpUnusedLocalVariableInspection */
 					$indexToSortBy = $unavailableSort;
 					break;
 				case 'placed' :
-					/** @noinspection PhpUnusedLocalVariableInspection */
 					$indexToSortBy = 'create';
 					break;
 				case 'libraryAccount' :
-					/** @noinspection PhpUnusedLocalVariableInspection */
 					$indexToSortBy = 'user';
 					break;
 				case 'title' :
 				default :
-					/** @noinspection PhpUnusedLocalVariableInspection */
 					$indexToSortBy = 'sortTitle';
 			}
 			uasort($allHolds['unavailable'], $holdSort);
@@ -1705,6 +1696,11 @@ class User extends DataObject
 		if (strlen($this->displayName) > 60){
 			$this->displayName = substr($this->displayName, 0, 60);
 		}
+	}
+
+	function eligibleForHolds()
+	{
+		$this->getCatalogDriver()->patronEligibleForHolds($this);
 	}
 }
 
