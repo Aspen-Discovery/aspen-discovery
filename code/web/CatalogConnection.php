@@ -975,4 +975,9 @@ class CatalogConnection
 	{
 		return $this->driver->completeFinePayment($patron, $payment);
 	}
+
+	public function patronEligibleForHolds(User $patron)
+	{
+		return $this->driver->patronEligibleForHolds($patron);
+	}
 }

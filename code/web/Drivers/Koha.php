@@ -744,7 +744,8 @@ class Koha extends AbstractIlsDriver
 		//Set pickup location
 		$pickupBranch = strtoupper($pickupBranch);
 
-		if (!$this->patronEligibleForHolds($patron, $hold_result)){
+		if (!$this->patronEligibleForHolds($patron)){
+			$hold_result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
 			return $hold_result;
 		}
 
@@ -874,6 +875,7 @@ class Koha extends AbstractIlsDriver
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
 			], true);
+			/** @noinspection PhpUnusedLocalVariableInspection */
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
 			if ($responseCode == 201){
@@ -908,7 +910,8 @@ class Koha extends AbstractIlsDriver
 		$hold_result = array();
 		$hold_result['success'] = false;
 
-		if (!$this->patronEligibleForHolds($patron, $hold_result)){
+		if (!$this->patronEligibleForHolds($patron)){
+			$hold_result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
 			return $hold_result;
 		}
 
@@ -976,7 +979,6 @@ class Koha extends AbstractIlsDriver
 	 * otherwise.
 	 * @access public
 	 */
-	/** @noinspection PhpUnusedParameterInspection */
 	public function getHolds($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'title')
 	{
 		$availableHolds = array();
@@ -1118,6 +1120,7 @@ class Koha extends AbstractIlsDriver
 				$cancelHoldResponse = $this->getXMLWebServiceResponse($cancelHoldURL);
 
 				//Parse the result
+				/** @noinspection PhpStatementHasEmptyBodyInspection */
 				if (isset($cancelHoldResponse->code) && ($cancelHoldResponse->code == 'Cancelled' || $cancelHoldResponse->code == 'Canceled')) {
 					//We cancelled the hold
 				} else {
@@ -1953,7 +1956,7 @@ class Koha extends AbstractIlsDriver
 		return 'koha-requests.tpl';
 	}
 
-	function deleteMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */ User $user)
+	function deleteMaterialsRequests(User $user)
 	{
 		$this->loginToKohaOpac($user);
 
@@ -2033,8 +2036,7 @@ class Koha extends AbstractIlsDriver
 		$interface->assign('object', $user);
 		$interface->assign('saveButtonText', 'Update Contact Information');
 
-		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
-		return $fieldsForm;
+		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 
 	function kohaDateToAspenDate($date)
@@ -2607,7 +2609,7 @@ class Koha extends AbstractIlsDriver
 		return $result;
 	}
 
-	private function patronEligibleForHolds(User $patron, array &$hold_result)
+	public function patronEligibleForHolds(User $patron)
 	{
 		$this->initDatabaseConnection();
 
@@ -2625,8 +2627,6 @@ class Koha extends AbstractIlsDriver
 			$accountSummary = $this->getAccountSummary($patron, true);
 			$totalFines = $accountSummary['totalFines'];
 			if ($totalFines > $maxOutstanding){
-				$hold_result['success'] = false;
-				$hold_result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
 				return false;
 			}else{
 				return true;

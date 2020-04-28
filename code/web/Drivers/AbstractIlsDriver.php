@@ -314,4 +314,8 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		];
 	}
 
+	public function patronEligibleForHolds(User $patron)
+	{
+		return true;
+	}
 }

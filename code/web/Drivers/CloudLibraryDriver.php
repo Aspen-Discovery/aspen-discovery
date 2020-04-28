@@ -233,6 +233,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$settings = $this->getSettings();
 		$patronId = $patron->getBarcode();
 		$password = $patron->getPasswordOrPin();
+		if (!$patron->eligibleForHolds()){
+			$result['message'] = translate(['text' => 'cl_outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to use Cloud Library.']);
+			return $result;
+		}
 
 		$apiPath = "/cirrus/library/{$settings->libraryId}/placehold?password=$password";
 		$requestBody =
@@ -360,6 +364,11 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$settings = $this->getSettings();
 		$patronId = $user->getBarcode();
 		$password = $user->getPasswordOrPin();
+		if (!$user->eligibleForHolds()){
+			$result['message'] = translate(['text' => 'cl_outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to use Cloud Library.']);
+			return $result;
+		}
+
 		$apiPath = "/cirrus/library/{$settings->libraryId}/checkout?password=$password";
 		$requestBody =
 			"<CheckoutRequest>
