@@ -1702,6 +1702,19 @@ class User extends DataObject
 	{
 		$this->getCatalogDriver()->patronEligibleForHolds($this);
 	}
+
+	function getShowAutoRenewSwitch()
+	{
+		return $this->getCatalogDriver()->getShowAutoRenewSwitch($this);
+	}
+
+	function isAutoRenewalEnabledForUser(){
+		return $this->getCatalogDriver()->isAutoRenewalEnabledForUser($this);
+	}
+
+	function updateAutoRenewal($allowAutoRenewal){
+		return $this->getCatalogDriver()->updateAutoRenewal($this, $allowAutoRenewal);
+	}
 }
 
 function modifiedEmpty($var) {

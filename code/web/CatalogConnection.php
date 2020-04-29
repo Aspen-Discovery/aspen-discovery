@@ -980,4 +980,19 @@ class CatalogConnection
 	{
 		return $this->driver->patronEligibleForHolds($patron);
 	}
+
+	public function getShowAutoRenewSwitch(User $patron)
+	{
+		return $this->driver->getShowAutoRenewSwitch($patron);
+	}
+
+	public function isAutoRenewalEnabledForUser(User $patron)
+	{
+		return $this->driver->isAutoRenewalEnabledForUser($patron);
+	}
+
+	public function updateAutoRenewal(User $patron, bool $allowAutoRenewal)
+	{
+		return $this->driver->updateAutoRenewal($patron, $allowAutoRenewal);
+	}
 }

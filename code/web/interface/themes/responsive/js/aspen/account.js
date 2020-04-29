@@ -1050,6 +1050,23 @@ AspenDiscovery.Account = (function(){
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
+		},
+
+		updateAutoRenewal(patronId) {
+			let url = Globals.path + "/MyAccount/AJAX";
+			let params = {
+				method: "updateAutoRenewal",
+				allowAutoRenewal: $('#allowAutoRenewal').prop("checked"),
+				patronId: patronId,
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage('Success', data.message, true);
+				} else {
+					AspenDiscovery.showMessage('Error', data.message, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
 		}
 	};
 }(AspenDiscovery.Account || {}));

@@ -2546,4 +2546,27 @@ class MyAccount_AJAX extends JSON_Action
 
 		return $result;
 	}
+
+	function updateAutoRenewal(){
+		$patronId = $_REQUEST['patronId'];
+		$allowAutoRenewal = ($_REQUEST['allowAutoRenewal'] == 'on' || $_REQUEST['allowAutoRenewal'] == 'true');
+
+		if (!UserAccount::isLoggedIn()) {
+			$result = array(
+				'success' => false,
+				'message' => 'Sorry, you must be logged in to change auto renewal.'
+			);
+		} else {
+			$user = UserAccount::getActiveUserObj();
+			if ($user->id == $patronId){
+				$result = $user->updateAutoRenewal($allowAutoRenewal);
+			}else{
+				$result = array(
+					'success' => false,
+					'message' => 'Invalid user information, please logout and login again.'
+				);
+			}
+		}
+		return $result;
+	}
 }
