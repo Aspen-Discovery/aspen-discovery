@@ -40,6 +40,7 @@
 - Languages and Translations
 - Materials Requests & Purchase Suggestions
 - Open Archives
+- Placards
 - Reading History
 - Ratings and Reviews
 - Recommendations
