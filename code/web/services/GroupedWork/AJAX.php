@@ -1242,4 +1242,25 @@ class GroupedWork_AJAX extends JSON_Action
 		$logger->log("JSON Results " . json_encode($results), Logger::LOG_ERROR);
 		return $results;
 	}
+
+	function getStaffView(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error loading staff view'
+		];
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$recordDriver = new GroupedWorkDriver($id);
+		if ($recordDriver->isValid()){
+			global $interface;
+			$interface->assign('recordDriver', $recordDriver);
+			$result = [
+				'success' => true,
+				'staffView' => $interface->fetch($recordDriver->getStaffView())
+			];
+		}else{
+			$result['message'] = 'Could not find that record';
+		}
+		return $result;
+	}
 }

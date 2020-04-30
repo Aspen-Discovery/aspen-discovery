@@ -220,5 +220,16 @@ AspenDiscovery.CloudLibrary = (function () {
 				}
 			});
 		},
+
+		getStaffView: function (id) {
+			let url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getStaffView";
+			$.getJSON(url, function (data){
+				if (!data.success){
+					AspenDiscovery.showMessage('Error', data.message);
+				}else{
+					$("#staffViewPlaceHolder").replaceWith(data.staffView);
+				}
+			});
+		}
 	}
 }(AspenDiscovery.CloudLibrary || {}));

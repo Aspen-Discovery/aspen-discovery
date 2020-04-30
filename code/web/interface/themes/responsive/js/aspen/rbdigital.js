@@ -375,6 +375,28 @@ AspenDiscovery.RBdigital = (function(){
                     AspenDiscovery.showMessage("Error Returning Magazine", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
                 }
             });
+        },
+
+        getStaffView: function (id) {
+            let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getStaffView";
+            $.getJSON(url, function (data){
+                if (!data.success){
+                    AspenDiscovery.showMessage('Error', data.message);
+                }else{
+                    $("#staffViewPlaceHolder").replaceWith(data.staffView);
+                }
+            });
+        },
+
+        getMagazineStaffView: function (id) {
+            let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getMagazineStaffView";
+            $.getJSON(url, function (data){
+                if (!data.success){
+                    AspenDiscovery.showMessage('Error', data.message);
+                }else{
+                    $("#staffViewPlaceHolder").replaceWith(data.staffView);
+                }
+            });
         }
     }
 }(AspenDiscovery.RBdigital || {}));
