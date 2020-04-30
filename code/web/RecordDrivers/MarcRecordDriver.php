@@ -103,6 +103,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		return isset($this->indexingProfile) ? $this->indexingProfile->recordUrlComponent : 'Record';
 	}
 
+	public function getIndexingProfile(){
+		return $this->indexingProfile;
+	}
+
 	public function isValid()
 	{
 		if ($this->valid === null) {

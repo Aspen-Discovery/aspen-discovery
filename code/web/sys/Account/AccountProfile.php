@@ -24,6 +24,8 @@ class AccountProfile extends DataObject {
 	public $oAuthClientSecret;
 	public $weight;
 
+	private $_indexingProfile = false;
+
     static function getObjectStructure() {
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
@@ -84,5 +86,20 @@ class AccountProfile extends DataObject {
 		global $instanceName;
 		$memCache->delete('account_profiles_' . $instanceName);
 		return parent::delete($useWhere);
+	}
+
+	/**
+	 * @return null|IndexingProfile
+	 */
+	function getIndexingProfile(){
+		if ($this->_indexingProfile == false) {
+			global $indexingProfiles;
+			if (array_key_exists($this->name, $indexingProfiles)) {
+				$this->_indexingProfile = $indexingProfiles[$this->name];
+			} else {
+				$this->_indexingProfile = null;
+			}
+		}
+		return $this->_indexingProfile;
 	}
 }

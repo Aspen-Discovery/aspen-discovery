@@ -52,18 +52,7 @@ class ILS_Dashboard extends Admin_Admin
 		$activeRecordsAllTime = $this->getRecordStats(null, null, $profilesToGetStatsFor);
 		$interface->assign('activeRecordsAllTime', $activeRecordsAllTime);
 
-		$selfRegistrationsThisMonth = $this->getSelfRegistrationStats($thisMonth, $thisYear, $profilesToGetStatsFor);
-		$interface->assign('selfRegistrationsThisMonth', $selfRegistrationsThisMonth);
-		$selfRegistrationsLastMonth = $this->getSelfRegistrationStats($lastMonth, $lastMonthYear, $profilesToGetStatsFor);
-		$interface->assign('selfRegistrationsLastMonth', $selfRegistrationsLastMonth);
-		$selfRegistrationsThisYear = $this->getSelfRegistrationStats(null, $thisYear, $profilesToGetStatsFor);
-		$interface->assign('selfRegistrationsThisYear', $selfRegistrationsThisYear);
-		$selfRegistrationsLastYear = $this->getSelfRegistrationStats(null, $lastYear, $profilesToGetStatsFor);
-		$interface->assign('selfRegistrationsLastYear', $selfRegistrationsLastYear);
-		$selfRegistrationsAllTime = $this->getSelfRegistrationStats(null, null, $profilesToGetStatsFor);
-		$interface->assign('selfRegistrationsAllTime', $selfRegistrationsAllTime);
-
-		$this->display('dashboard.tpl', 'ILS & Side Load Dashboard');
+		$this->display('dashboard.tpl', 'ILS Usage Dashboard');
 	}
 
 	function getAllowableRoles()
@@ -90,40 +79,29 @@ class ILS_Dashboard extends Admin_Admin
 		$userUsage->selectAdd();
 		$userUsage->selectAdd('indexingProfileId');
 		$userUsage->selectAdd('COUNT(id) as numUsers');
-		$userUsage->find();
-		$usageStats = [];
-		foreach ($profilesToGetStatsFor as $id => $name) {
-			$usageStats[$id] = 0;
-		}
-		while ($userUsage->fetch()) {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$usageStats[$userUsage->indexingProfileId] = $userUsage->numUsers;
-		}
-		return $usageStats;
-	}
-
-	public function getSelfRegistrationStats($month, $year, $profilesToGetStatsFor): array
-	{
-		$userUsage = new UserILSUsage();
-		if ($month != null) {
-			$userUsage->month = $month;
-		}
-		if ($year != null) {
-			$userUsage->year = $year;
-		}
-		$userUsage->userId = -1;
-		$userUsage->groupBy('indexingProfileId');
-		$userUsage->selectAdd();
-		$userUsage->selectAdd('indexingProfileId');
+		$userUsage->selectAdd('SUM(IF(usageCount>0,1,0)) as usersWithHolds');
 		$userUsage->selectAdd('SUM(selfRegistrationCount) AS numSelfRegistrations');
+		$userUsage->selectAdd('SUM(IF(pdfDownloadCount>0,1,0)) as usersWithPdfDownloads');
+
 		$userUsage->find();
 		$usageStats = [];
 		foreach ($profilesToGetStatsFor as $id => $name) {
-			$usageStats[$id] = 0;
+			$usageStats[$id] = [
+				'totalUsers' => 0,
+				'usersWithHolds' => 0,
+				'usersWithPdfDownloads' => 0,
+				'numSelfRegistrations' => 0
+			];
 		}
 		while ($userUsage->fetch()) {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$usageStats[$userUsage->indexingProfileId] = $userUsage->numSelfRegistrations;
+			$usageStats[$userUsage->indexingProfileId]['totalUsers'] = $userUsage->numUsers;
+			/** @noinspection PhpUndefinedFieldInspection */
+			$usageStats[$userUsage->indexingProfileId]['usersWithHolds'] = $userUsage->usersWithHolds;
+			/** @noinspection PhpUndefinedFieldInspection */
+			$usageStats[$userUsage->indexingProfileId]['usersWithPdfDownloads'] = $userUsage->usersWithPdfDownloads;
+			/** @noinspection PhpUndefinedFieldInspection */
+			$usageStats[$userUsage->indexingProfileId]['numSelfRegistrations'] = $userUsage->numSelfRegistrations;
 		}
 		return $usageStats;
 	}
@@ -149,23 +127,26 @@ class ILS_Dashboard extends Admin_Admin
 
 		$usage->selectAdd('COUNT(*) as numRecordViewed');
 		$usage->selectAdd('SUM(IF(timesUsed>0,1,0)) as numRecordsUsed');
+		$usage->selectAdd('SUM(pdfDownloadCount) as numPDFsDownloaded');
+
 		$usage->find();
 
 		$usageStats = [];
 		foreach ($profilesToGetStatsFor as $id => $name) {
 			$usageStats[$id] = [
 				'numRecordViewed' => 0,
-				'numRecordsUsed' => 0
+				'numRecordsUsed' => 0,
+				'numPDFsDownloaded' => 0
 			];
 		}
 		while ($usage->fetch()) {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$usageStats[$usage->indexingProfileId] = [
 				'numRecordViewed' => $usage->numRecordViewed,
-				'numRecordsUsed' => $usage->numRecordsUsed
+				'numRecordsUsed' => $usage->numRecordsUsed,
+				'numPDFsDownloaded' => $usage->numPDFsDownloaded,
 			];
 		}
 		return $usageStats;
 	}
-
 }
