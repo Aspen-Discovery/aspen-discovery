@@ -1,3 +1,4 @@
+##Advanced Search
 - Advanced Search (notes derived from VuFind)
   - The advanced search page allows you to enter multiple terms in given fields. Options are available to select from a dropdown to narrow by (Keyword, Title, Start of Title, Author, Subject, ISBN/ISSN/UPC, Publisher, Series, Year of Publiclication, TOC, Record Number, Call Number). You can integrate the following Search Operators.
    - Operators
