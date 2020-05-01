@@ -192,8 +192,13 @@
 								{/if}
 							{/if}
 							{if $record.locationUpdateable}
-								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">Change Pickup Loc.</button>
+								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="Change Pickup Loc."}</button>
 							{/if}
+						{/if}
+					</div>
+					<div class="btn-group btn-group-vertical btn-block">
+						{if !empty($record.groupedWorkId)}
+							<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
 						{/if}
 					</div>
 				</div>

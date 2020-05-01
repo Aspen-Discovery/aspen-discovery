@@ -7,4 +7,8 @@ class FileUpload extends DataObject
 	public $title;
 	public $fullPath;
 	public $type;
+
+	public function getFileName(){
+		return basename($this->fullPath);
+	}
 }

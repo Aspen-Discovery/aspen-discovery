@@ -166,7 +166,8 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
+				'onShow' => "AspenDiscovery.CloudLibrary.getStaffView('{$this->id}');",
+				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 
@@ -338,7 +339,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 			$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 		}
 
-		return 'RecordDrivers/Marc/staff.tpl';
+		return 'RecordDrivers/CloudLibrary/staff.tpl';
 	}
 
 	function getAvailability()
@@ -348,5 +349,11 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		$availability->cloudLibraryId = $this->id;
 		$availability->find(true);
 		return $availability;
+	}
+
+	function getAccessOnlineLink($patron)
+	{
+		global $configArray;
+		return $configArray['Site']['url'] . '/CloudLibrary/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
 	}
 }

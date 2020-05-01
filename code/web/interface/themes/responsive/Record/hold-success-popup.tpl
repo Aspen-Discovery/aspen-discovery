@@ -32,6 +32,10 @@
 					{/if}
 				</div>
 			{/if}
+
+			{if count($whileYouWaitTitles) > 0}
+				{include file='GroupedWork/whileYouWait.tpl'}
+			{/if}
 		{else}
 			<p class="alert alert-danger">{$message}</p>
 		{/if}

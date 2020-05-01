@@ -270,13 +270,20 @@ class AJAX extends Action {
 		require_once ROOT_DIR . '/sys/SearchObject/DPLA.php';
 		$dpla = new DPLA();
 		$searchTerm = $_REQUEST['searchTerm'];
-		$results = $dpla->getDPLAResults($searchTerm);
-		$formattedResults = $dpla->formatResults($results['records']);
+		if (!empty($searchTerm)){
+			$results = $dpla->getDPLAResults($searchTerm);
+			$formattedResults = $dpla->formatResults($results['records']);
 
-		$returnVal = array(
-			'rawResults' => $results['records'],
-			'formattedResults' => $formattedResults,
-		);
+			$returnVal = array(
+				'rawResults' => $results['records'],
+				'formattedResults' => $formattedResults,
+			);
+		}else{
+			$returnVal = array(
+				'rawResults' => [],
+				'formattedResults' => '',
+			);
+		}
 
 		//Format the results
 		return $returnVal;

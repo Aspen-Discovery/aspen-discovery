@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.hoopla;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
@@ -56,52 +57,83 @@ public class HooplaExportMain {
 			serverName = args[0];
 		}
 
-		logger = LoggingUtil.setupLogging(serverName, "hoopla_export");
+		String processName = "hoopla_export";
+		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Hoopla only needs to run once a day so just run it in cron
-		Date startTime = new Date();
-		startTimeForLogging = startTime.getTime() / 1000;
-		logger.info(startTime.toString() + ": Starting Hoopla Export");
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
+		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
-		// Read the base INI file to get information about the server (current directory/cron/config.ini)
-		configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
+		while (true) {
+			//Hoopla only needs to run once a day so just run it in cron
+			Date startTime = new Date();
+			startTimeForLogging = startTime.getTime() / 1000;
+			logger.info(startTime.toString() + ": Starting Hoopla Export");
 
-		//Connect to the Aspen database
-		aspenConn = connectToDatabase();
+			// Read the base INI file to get information about the server (current directory/cron/config.ini)
+			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
-		//Start a log entry
-		createDbLogEntry(startTime, aspenConn);
-		logEntry.addNote("Starting extract");
-		logEntry.saveResults();
+			//Connect to the Aspen database
+			aspenConn = connectToDatabase();
 
-		//Get a list of all existing records in the database
-		loadExistingTitles();
+			//Start a log entry
+			createDbLogEntry(startTime, aspenConn);
+			logEntry.addNote("Starting extract");
+			logEntry.saveResults();
 
-		//Do work here
-		exportHooplaData();
+			//Get a list of all existing records in the database
+			loadExistingTitles();
 
-		processRecordsToReload(logEntry);
+			//Do work here
+			exportHooplaData();
+			int numChanges = logEntry.getNumChanges();
 
-		if (groupedWorkIndexer != null) {
-			groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-			recordGroupingProcessorSingleton = null;
-			groupedWorkIndexer = null;
-			existingRecords = null;
+			processRecordsToReload(logEntry);
+
+			if (groupedWorkIndexer != null) {
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
+				recordGroupingProcessorSingleton = null;
+				groupedWorkIndexer = null;
+				existingRecords = null;
+			}
+
+			if (logEntry.hasErrors()) {
+				logger.error("There were errors during the export!");
+			}
+
+			logger.info("Finished exporting data " + new Date().toString());
+			long endTime = new Date().getTime();
+			long elapsedTime = endTime - startTime.getTime();
+			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+
+			//Mark that indexing has finished
+			logEntry.setFinished();
+
+			disconnectDatabase(aspenConn);
+
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
+			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				break;
+			}
+			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				break;
+			}
+			//Pause before running the next export (longer if we didn't get any actual changes)
+			try {
+				System.gc();
+				if (numChanges == 0) {
+					Thread.sleep(1000 * 60 * 5);
+				} else {
+					Thread.sleep(1000 * 60);
+				}
+			} catch (InterruptedException e) {
+				logger.info("Thread was interrupted");
+			}
 		}
-
-		if (logEntry.hasErrors()) {
-			logger.error("There were errors during the export!");
-		}
-
-		logger.info("Finished exporting data " + new Date().toString());
-		long endTime = new Date().getTime();
-		long elapsedTime = endTime - startTime.getTime();
-		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
-
-		//Mark that indexing has finished
-		logEntry.setFinished();
-
-		disconnectDatabase(aspenConn);
 
 	}
 
@@ -133,7 +165,11 @@ public class HooplaExportMain {
 						logEntry.incErrors("Could not parse item details for record to reload " + hooplaId, e);
 					}
 				}else{
-					logEntry.incErrors("Could not get details for record to reload " + hooplaId);
+					//The record has likely been deleted
+					logEntry.addNote("Could not get details for record to reload " + hooplaId + " it has been deleted");
+					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+					markRecordToReloadAsProcessedStmt.executeUpdate();
+					numRecordsToReloadProcessed++;
 				}
 				getItemDetailsForRecordRS.close();
 			}
@@ -273,6 +309,9 @@ public class HooplaExportMain {
 						int numTries = 0;
 						while (startToken != null) {
 							url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startToken=" + startToken;
+							if (!doFullReload && lastUpdate > 0) {
+								url += "&startTime=" + lastUpdate;
+							}
 							response = NetworkUtils.getURL(url, logger, headers);
 							if (response.isSuccess()){
 								responseJSON = new JSONObject(response.getMessage());

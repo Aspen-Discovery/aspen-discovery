@@ -334,6 +334,14 @@ class Grouping_Manifestation
 		return $this->_statusInformation;
 	}
 
+	function isAvailable(){
+		return $this->_statusInformation->isAvailable();
+	}
+
+	function isAvailableOnline(){
+		return $this->_statusInformation->isAvailableOnline();
+	}
+
 	public function getCopies()
 	{
 		return $this->_statusInformation->getCopies();

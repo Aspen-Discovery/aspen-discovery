@@ -220,6 +220,9 @@ public class GroupedWorkIndexer {
 						case "Arlington":
 							ilsRecordProcessors.put(curType, new ArlingtonRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
+						case "ArlingtonKoha":
+							ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							break;
 						case "CarlX":
 							ilsRecordProcessors.put(curType, new CarlXRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;

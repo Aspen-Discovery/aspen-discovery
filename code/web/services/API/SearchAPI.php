@@ -64,8 +64,11 @@ class SearchAPI extends Action
 				if (preg_match('/.*\.sql\.gz/', $backupFile)){
 					$fileCreationTime = filectime($backupDir . $backupFile);
 					if ((time() - $fileCreationTime) < (24.5 * 60 * 60)){
-						//We have a backup file created in the last 24.5 hours (30 min buffer to give time for the backup to be created)
-						$backupFileFound = true;
+						$fileSize = filesize($backupDir . $backupFile);
+						if ($fileSize > 1000) {
+							//We have a backup file created in the last 24.5 hours (30 min buffer to give time for the backup to be created)
+							$backupFileFound = true;
+						}
 					}
 				}
 			}

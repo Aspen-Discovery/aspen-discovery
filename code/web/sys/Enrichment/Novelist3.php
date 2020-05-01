@@ -168,6 +168,8 @@ class Novelist3{
 						//Get the JSON from the service
 						disableErrorHandler();
 						$req = new CurlWrapper();
+						$req->setConnectTimeout(5);
+						$req->setTimeout(20);
 
 						$response = $req->curlGetPage($requestUrl);
 						$timer->logTime("Made call to Novelist for enrichment information $isbn");

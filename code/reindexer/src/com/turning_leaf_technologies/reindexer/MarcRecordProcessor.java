@@ -19,6 +19,7 @@ abstract class MarcRecordProcessor {
 	protected GroupedWorkIndexer indexer;
 	private static Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)Rated\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
+	private static Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
 	private HashSet<String> unknownSubjectForms = new HashSet<>();
 	int numCharsToCreateFolderFrom;
@@ -499,7 +500,14 @@ abstract class MarcRecordProcessor {
 						// + " Rated " + getId());
 						return mpaaMatcher2.group(1) + " Rated";
 					} else {
-						return null;
+						Matcher mpaaMatcher3 = mpaaRatingRegex3.matcher(val);
+						if (mpaaMatcher3.find()) {
+							// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
+							// + " Rated " + getId());
+							return mpaaMatcher3.group(1) + " Rated";
+						} else {
+							return null;
+						}
 					}
 				}
 			} catch (PatternSyntaxException ex) {

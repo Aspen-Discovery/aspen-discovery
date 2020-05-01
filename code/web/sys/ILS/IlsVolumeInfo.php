@@ -8,4 +8,5 @@ class IlsVolumeInfo extends DataObject{
 	public $displayLabel;
 	public $relatedItems;
 	public $volumeId;
+	public $displayOrder;
 }

@@ -9,7 +9,7 @@ class Record_DownloadPDF
 
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
-		require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+		/** @var MarcRecordDriver $recordDriver */
 		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
 
 		$fileId = $_REQUEST['fileId'];
@@ -27,6 +27,40 @@ class Record_DownloadPDF
 				$fileUpload->id = $fileId;
 				if ($fileUpload->find(true)){
 					if (file_exists($fileUpload->fullPath)) {
+						if ($recordDriver->getIndexingProfile() != null){
+							//Record the usage of the PDF
+							if (UserAccount::isLoggedIn()){
+								require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
+								$userUsage = new UserILSUsage();
+								$userUsage->userId = UserAccount::getActiveUserId();
+								$userUsage->indexingProfileId = $recordDriver->getIndexingProfile()->id;
+								$userUsage->year = date('Y');
+								$userUsage->month = date('n');
+								if ($userUsage->find(true)) {
+									$userUsage->pdfDownloadCount++;
+									$userUsage->update();
+								} else {
+									$userUsage->pdfDownloadCount = 1;
+									$userUsage->insert();
+								}
+							}
+
+							//Track usage of the record
+							require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
+							$recordUsage = new ILSRecordUsage();
+							$recordUsage->indexingProfileId = $recordDriver->getIndexingProfile()->id;
+							$recordUsage->recordId = $recordDriver->getUniqueID();
+							$recordUsage->year = date('Y');
+							$recordUsage->month = date('n');
+							if ($recordUsage->find(true)) {
+								$recordUsage->pdfDownloadCount++;
+								$recordUsage->update();
+							} else {
+								$recordUsage->pdfDownloadCount = 1;
+								$recordUsage->insert();
+							}
+						}
+
 						set_time_limit(300);
 						$chunkSize = 2 * (1024 * 1024);
 

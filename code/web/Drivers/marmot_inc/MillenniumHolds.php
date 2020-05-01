@@ -520,7 +520,7 @@ class MillenniumHolds{
 				//This is a volume level hold
 				$volumeId = '.' . substr($curHold['cancelId'], 0, strpos($curHold['cancelId'], '~'));
 				$volumeId .= $this->driver->getCheckDigit($volumeId);
-				require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
+				require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 				$volumeInfo = new IlsVolumeInfo();
 				$volumeInfo->volumeId = $volumeId;
 				if ($volumeInfo->find(true)){
@@ -580,6 +580,7 @@ class MillenniumHolds{
 				disableErrorHandler();
 				$recordDriver = new MarcRecordDriver($this->driver->accountProfile->recordSource . ":" . $hold['recordId']);
 				if ($recordDriver->isValid()){
+					$hold['groupedWorkId'] = $recordDriver->getPermanentId();
 					$hold['id'] = $recordDriver->getUniqueID();
 					$hold['shortId'] = $recordDriver->getShortId();
 					//Load title, author, and format information about the title

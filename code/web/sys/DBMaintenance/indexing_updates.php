@@ -290,6 +290,14 @@ function getIndexingUpdates()
 			)
 		),
 
+		'volume_display_order' => [
+			'title' => 'Volume display order',
+			'description' => 'Add display order to volumes',
+			'sql' => [
+				'ALTER TABLE ils_volume_info ADD COLUMN displayOrder SMALLINT default 0'
+			],
+		],
+
 		'last_check_in_status_adjustments' => array(
 			'title' => 'Last Check In Time Status Adjustments',
 			'description' => 'Add additional fields to adjust status based on last check-in time.',
@@ -410,6 +418,16 @@ function getIndexingUpdates()
 			'description' => 'Track self registrations done by indexing profile',
 			'sql' => [
 				'ALTER TABLE user_ils_usage ADD COLUMN selfRegistrationCount INT(11) DEFAULT 0'
+			]
+		],
+
+		'track_pdf_downloads' => [
+			'title' => 'Tracking of PDF Downloads',
+			'description' => 'Track PDF Downloads by User and by indexing profile',
+			'sql' =>[
+				'ALTER TABLE user_ils_usage ADD COLUMN pdfDownloadCount INT(11) DEFAULT 0',
+				'ALTER TABLE ils_record_usage ADD COLUMN pdfDownloadCount INT(11) DEFAULT 0',
+				'ALTER TABLE ils_record_usage CHANGE COLUMN timesUsed timesUsed INT(11) DEFAULT 0',
 			]
 		],
 

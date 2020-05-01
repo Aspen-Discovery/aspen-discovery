@@ -946,7 +946,7 @@ class BookCoverProcessor{
 		$result = $client->curlGetPage($url);
 		if ($result !== false) {
 			if ($json = json_decode($result, true)) {
-				if ($json['totalItems'] > 0 && count($json['items']) > 0){
+				if (array_key_exists('totalItems', $json) && $json['totalItems'] > 0 && count($json['items']) > 0){
 					foreach ($json['items'] as $item){
 						if (!empty($item['volumeInfo']['imageLinks']['thumbnail'])){
 							if ($this->processImageURL($source, $item['volumeInfo']['imageLinks']['thumbnail'], true)){
@@ -1157,6 +1157,21 @@ class BookCoverProcessor{
 								}
 							}
 						}
+
+						require_once ROOT_DIR . '/sys/SystemVariables.php';
+						$systemVariables = new SystemVariables();
+						if ($systemVariables->find(true) && $systemVariables->loadCoversFrom020z) {
+							if (empty($isbns) && empty($upcs)) {
+								//Look for an 020$z if we didn't get anything else
+								$isbns = $driver->getCancelledIsbns();
+								foreach ($isbns as $isbn) {
+									$this->isn = $isbn;
+									if ($this->getCoverFromProvider()) {
+										return true;
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -1342,4 +1357,5 @@ class BookCoverProcessor{
 		}
 		return false;
 	}
+
 }

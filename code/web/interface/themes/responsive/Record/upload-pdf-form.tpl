@@ -17,7 +17,7 @@
 			</label>
 			<input type="text" class="form-control" id="selected-pdf-label" readonly>
 		</div>
-		<small id="pdfFileHelp" class="form-text text-muted">PDF must be 50MB or less.</small>
+		<small id="pdfFileHelp" class="form-text text-muted">PDF must be {$max_file_size}MB or less.</small>
 	</div>
 </form>
 	<script type="application/javascript">

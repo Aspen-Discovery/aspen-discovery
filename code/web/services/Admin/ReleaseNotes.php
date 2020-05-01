@@ -2,7 +2,7 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Parsedown/Parsedown.php';
 
-class ReleaseNotes extends Admin_Admin
+class Admin_ReleaseNotes extends Admin_Admin
 {
 	function launch()
 	{

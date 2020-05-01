@@ -99,7 +99,7 @@
 		</div>
 		{if count($allRequests) > 0}
 			<form id="updateRequests" method="post" action="/MaterialsRequest/ManageRequests" class="form form-horizontal">
-				<table id="requestedMaterials" class="table tablesorter table-striped table-hover">
+				<table id="requestedMaterials" class="table tablesorter table-striped table-hover table-sticky">
 					<thead>
 						<tr>
 							<th><input type="checkbox" name="selectAll" id="selectAll" onchange="AspenDiscovery.toggleCheckboxes('.select', '#selectAll');"></th>

@@ -225,7 +225,7 @@ abstract class ObjectEditor extends Admin_Admin
 				}else if ($objectAction =='delete'){
 					//Delete the record
 					$ret = $curObject->delete();
-					if ($ret === false){
+					if ($ret == 0){
 						$_SESSION['lastError'] = "Unable to delete {$this->getObjectType()} with id of $id";
 						$errorOccurred = true;
 					}
