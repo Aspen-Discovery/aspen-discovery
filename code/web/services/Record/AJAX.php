@@ -463,6 +463,7 @@ class Record_AJAX extends Action
 						$recordDriver = RecordDriverFactory::initRecordDriverById($recordId);
 						if ($recordDriver->isValid()){
 							$groupedWorkId = $recordDriver->getPermanentId();
+							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 							$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
 							$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
 
