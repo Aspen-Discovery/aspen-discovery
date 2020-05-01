@@ -294,6 +294,7 @@ class Koha extends AbstractIlsDriver
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 				$recordDriver = new MarcRecordDriver($checkout['recordId']);
 				if ($recordDriver->isValid()) {
+					$checkout['groupedWorkId'] = $recordDriver->getPermanentId();
 					$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 					$checkout['ratingData'] = $recordDriver->getRatingData();
 					$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -1056,6 +1057,7 @@ class Koha extends AbstractIlsDriver
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 				$recordDriver = new MarcRecordDriver($bibId);
 				if ($recordDriver->isValid()) {
+					$curHold['groupedWorkId'] = $recordDriver->getPermanentId();
 					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
 					$curHold['format'] = $recordDriver->getFormat();
 					$curHold['isbn'] = $recordDriver->getCleanISBN();

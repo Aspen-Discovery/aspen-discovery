@@ -411,6 +411,7 @@ class CarlX extends SIP2Driver{
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($carlID);
 					if ($recordDriver->isValid()){
+						$curHold['groupedWorkId'] = $recordDriver->getPermanentId();
 						$curHold['sortTitle']       = $recordDriver->getSortableTitle();
 						$curHold['format']          = $recordDriver->getFormat();
 						$curHold['isbn']            = $recordDriver->getCleanISBN();
@@ -639,6 +640,7 @@ class CarlX extends SIP2Driver{
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($carlID); // This needs the $carlID
 					if ($recordDriver->isValid()){
+						$curTitle['groupedWorkId'] = $recordDriver->getPermanentId();
 						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 						$curTitle['ratingData']    = $recordDriver->getRatingData();
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();

@@ -580,6 +580,7 @@ class MillenniumHolds{
 				disableErrorHandler();
 				$recordDriver = new MarcRecordDriver($this->driver->accountProfile->recordSource . ":" . $hold['recordId']);
 				if ($recordDriver->isValid()){
+					$hold['groupedWorkId'] = $recordDriver->getPermanentId();
 					$hold['id'] = $recordDriver->getUniqueID();
 					$hold['shortId'] = $recordDriver->getShortId();
 					//Load title, author, and format information about the title

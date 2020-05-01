@@ -554,6 +554,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 		$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
 		if ($recordDriver->isValid()) {
+			$hold['groupedWorkId'] = $recordDriver->getPermanentId();
 			$hold['title'] = $recordDriver->getTitle();
 			$hold['sortTitle'] = $recordDriver->getTitle();
 			$hold['author'] = $recordDriver->getPrimaryAuthor();

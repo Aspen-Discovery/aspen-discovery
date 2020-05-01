@@ -93,6 +93,11 @@
 						<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-primary">{translate text='Open in RBdigital'}</a>
 						<a href="#" onclick="return AspenDiscovery.RBdigital.returnMagazine('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-warning">{translate text='Return&nbsp;Now'}</a>
 					</div>
+					<div class="btn-group btn-group-vertical btn-block">
+						{if !empty($record.groupedWorkId)}
+							<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.groupedWorkId}');" class="btn btn-sm btn-default">{translate text="You Might Also Like"}</button>
+						{/if}
+					</div>
 				</div>
 			</div>
 		</div>

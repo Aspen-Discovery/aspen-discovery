@@ -931,6 +931,8 @@
         era^50
         genre_facet^50
         geographic_facet^50
+        mpaa_rating
+        accelerated_reader_interest_level
       </str>
       <str name="mlt.mintf">1</str>
       <str name="mlt.mindf">2</str>

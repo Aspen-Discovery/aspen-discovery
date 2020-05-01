@@ -85,12 +85,14 @@ class GroupedWorksSolrConnector extends Solr
 	 * @throws    object                        PEAR Error
 	 * @var     string $id The id to retrieve similar titles for
 	 */
-	function getMoreLikeThis($id)
+	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null)
 	{
-		global $configArray;
-		$originalResult = $this->getRecord($id, 'target_audience_full,target_audience_full,literary_form,language,isbn,upc,series');
+		$originalResult = $this->getRecord($id, 'target_audience_full,mpaa_rating,literary_form,language,isbn,upc,series');
 		// Query String Parameters
-		$options = array('q' => "id:$id", 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return);
+		if ($fieldsToReturn == null){
+			$fieldsToReturn = SearchObject_GroupedWorkSearcher::$fields_to_return;
+		}
+		$options = array('q' => "id:$id", 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => $fieldsToReturn);
 		if ($originalResult) {
 			$options['fq'] = array();
 			if (isset($originalResult['target_audience_full'])) {
@@ -111,6 +113,22 @@ class GroupedWorksSolrConnector extends Solr
 					$options['fq'][] = 'target_audience_full:"' . $originalResult['target_audience_full'] . '"';
 				}
 			}
+			if (isset($originalResult['mpaa_rating'])){
+				if (is_array($originalResult['mpaa_rating'])) {
+					$filter = '';
+					foreach ($originalResult['mpaa_rating'] as $rating) {
+						if (strlen($filter) > 0) {
+							$filter .= ' OR ';
+						}
+						$filter .= 'mpaa_rating:"' . $rating . '"';
+					}
+					if (strlen($filter) > 0) {
+						$options['fq'][] = "($filter)";
+					}
+				} else {
+					$options['fq'][] = 'mpaa_rating:"' . $originalResult['mpaa_rating'] . '"';
+				}
+			}
 			if (isset($originalResult['literary_form'])) {
 				if (is_array($originalResult['literary_form'])) {
 					$filter = '';
@@ -129,7 +147,7 @@ class GroupedWorksSolrConnector extends Solr
 					$options['fq'][] = 'literary_form:"' . $originalResult['literary_form'] . '"';
 				}
 			}
-			if (isset($originalResult['language'])) {
+			if (isset($originalResult['language']) && count($originalResult['language']) == 1) {
 				$options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
 			}
 			if (isset($originalResult['series'])) {
@@ -145,6 +163,10 @@ class GroupedWorksSolrConnector extends Solr
 				$searchLocation = null;
 			}
 		}
+		if ($availableOnly){
+			global $solrScope;
+			$options['fq'][] = "availability_toggle_{$solrScope}:available OR availability_toggle_{$solrScope}:available_online";
+		}
 
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 		foreach ($scopingFilters as $filter) {
@@ -153,6 +175,9 @@ class GroupedWorksSolrConnector extends Solr
 		$boostFactors = $this->getBoostFactors($searchLibrary);
 		if (!empty($boostFactors)) {
 			$options['bf'] = $boostFactors;
+		}
+		if ($limit != null && is_numeric($limit)){
+			$options['rows'] = $limit;
 		}
 
 		$result = $this->_select('GET', $options, false, 'mlt');
@@ -180,7 +205,6 @@ class GroupedWorksSolrConnector extends Solr
 	 */
 	function getMoreLikeThese($ids, $notInterestedIds, $fieldsToReturn, $page = 1, $limit = 25)
 	{
-		global $configArray;
 		// Query String Parameters
 		$idString = '';
 		foreach ($ids as $index => $ratingInfo) {

@@ -2730,4 +2730,51 @@ class GroupedWorkDriver extends IndexRecordDriver
 			return null;
 		}
 	}
+
+	function getWhileYouWait(){
+		//Load Similar titles (from Solr)
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		/** @var SearchObject_GroupedWorkSearcher $db */
+		$searchObject = SearchObjectFactory::initSearchObject();
+		$searchObject->init();
+		$searchObject->disableScoping();
+		$similar = $searchObject->getMoreLikeThis($this->getPermanentId(), true, false, 3);
+		// Send the similar items to the template; if there is only one, we need
+		// to force it to be an array or things will not display correctly.
+		if (isset($similar) && count($similar['response']['docs']) > 0) {
+			$whileYouWaitTitles = array();
+			foreach ($similar['response']['docs'] as $key => $similarTitle){
+				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
+				$formatCategoryInfo = [];
+				$relatedManifestations = $similarTitleDriver->getRelatedManifestations();
+				foreach ($relatedManifestations as $relatedManifestation){
+					if ($relatedManifestation->isAvailable() || $relatedManifestation->isAvailableOnline()){
+						$formatCategoryInfo[$relatedManifestation->formatCategory] = [
+							'formatCategory' => $relatedManifestation->formatCategory,
+							'available' => true,
+							'image' => strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_available.png"
+						];
+					}else{
+						if (!array_key_exists($relatedManifestation->formatCategory, $formatCategoryInfo)){
+							$formatCategoryInfo[$relatedManifestation->formatCategory] = [
+								'formatCategory' => $relatedManifestation->formatCategory,
+								'available' => false,
+								'image' => strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_small.png",
+							];
+						}
+					}
+				}
+				$whileYouWaitTitles[] = [
+					'driver' => $similarTitleDriver,
+					'url' => $similarTitleDriver->getLinkUrl(),
+					'title' => $similarTitleDriver->getTitle(),
+					'coverUrl' => $similarTitleDriver->getBookcoverUrl('medium'),
+					'formatCategories' => $formatCategoryInfo,
+				];
+			}
+			return $whileYouWaitTitles;
+		}else{
+			return [];
+		}
+	}
 }
