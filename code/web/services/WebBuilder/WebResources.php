@@ -1,17 +1,17 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
 
-class WebBuilder_BasicPages extends ObjectEditor
+class WebBuilder_WebResources extends ObjectEditor
 {
 	function getObjectType()
 	{
-		return 'BasicPage';
+		return 'WebResource';
 	}
 
 	function getToolName()
 	{
-		return 'BasicPages';
+		return 'WebResources';
 	}
 
 	function getModule()
@@ -21,13 +21,13 @@ class WebBuilder_BasicPages extends ObjectEditor
 
 	function getPageTitle()
 	{
-		return 'Basic WebBuilder Pages';
+		return 'Library Resources';
 	}
 
 	function getAllObjects()
 	{
-		$object = new BasicPage();
-		$object->orderBy('title');
+		$object = new WebResource();
+		$object->orderBy('name');
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -38,7 +38,7 @@ class WebBuilder_BasicPages extends ObjectEditor
 
 	function getObjectStructure()
 	{
-		return BasicPage::getObjectStructure();
+		return WebResource::getObjectStructure();
 	}
 
 	function getPrimaryKeyColumn()

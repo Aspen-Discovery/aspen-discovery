@@ -1,6 +1,6 @@
 <?php
 
-class Resource extends DataObject
+class WebResource extends DataObject
 {
 	public $__table = 'web_builder_resource';
 	public $id;
@@ -10,6 +10,7 @@ class Resource extends DataObject
 	public $featured;
 	public $category;
 	public $requiresLibraryCard;
+	public $teaser;
 	public $description;
 
 	static function getObjectStructure()
@@ -22,6 +23,7 @@ class Resource extends DataObject
 			'featured' => array('property' => 'featured', 'type' => 'checkbox', 'label' => 'Featured?', 'description' => 'Whether or not the resource is a featured resource', 'default'=>0),
 			'category' => array('property' => 'category', 'type' => 'text', 'label' => 'Category', 'description' => 'The category of the resource', 'size' => '40', 'maxLength'=>100),
 			'requiresLibraryCard' => array('property' => 'requiresLibraryCard', 'type' => 'checkbox', 'label' => 'Requires Library Card?', 'description' => 'Whether or not the resource requires a library card to use it', 'default'=>0),
+			'teaser' => array('property' => 'teaser', 'type' => 'markdown', 'label' => 'Teaser', 'description' => 'A short description of the resource to show in lists', 'hideInLists' => true),
 			'description' => array('property' => 'description', 'type' => 'markdown', 'label' => 'Description', 'description' => 'A description of the resource', 'hideInLists' => true),
 		];
 	}

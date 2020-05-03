@@ -1,6 +1,5 @@
 <?php
 
-
 class BasicPage extends DataObject
 {
 	public $__table = 'web_builder_basic_page';
@@ -25,7 +24,6 @@ class BasicPage extends DataObject
 
 	public function getFormattedContents()
 	{
-		//TODO: Add in widgets and links to titles?
 		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 		$parsedown = AspenParsedown::instance();
 		return $parsedown->parse($this->contents);

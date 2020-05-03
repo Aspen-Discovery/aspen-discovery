@@ -59,4 +59,41 @@ class WebBuilder_AJAX extends JSON_Action
 
 		return $result;
 	}
+
+	function uploadMarkdownImage(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error uploading image'
+		];
+		if (UserAccount::isLoggedIn()){
+			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')){
+				$uploadedFiles = array();
+
+				if (! empty($_FILES)) {
+					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
+					$structure = ImageUpload::getObjectStructure();
+					foreach ($_FILES as $file) {
+						$image = new ImageUpload();
+						$image->title = $file['name'];
+						$image->type = 'web_builder_image';
+						$image->fullSizePath = $file['name'];
+						$destFileName = $file['name'];
+						$destFolder = $structure['fullSizePath']['path'];
+						$destFullPath = $destFolder . '/' . $destFileName;
+						$copyResult = copy($file["tmp_name"], $destFullPath);
+						if ($copyResult) {
+							$image->insert();
+							$uploadedFiles[] = $image->getDisplayUrl('full');
+						}
+					}
+				}
+				return $uploadedFiles;
+			}else{
+				$result['message'] = 'You don\'t have the correct permissions to upload an image';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to upload an image';
+		}
+		return $result;
+	}
 }

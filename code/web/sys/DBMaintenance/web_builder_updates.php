@@ -146,7 +146,15 @@ function getWebBuilderUpdates(){
 					INDEX (category)
 				) ENGINE INNODB'
 			]
-		]
+		],
+
+		'web_builder_resource_teaser' => [
+			'title' => 'Add teaser to web builder resources',
+			'description' => 'Add teaser to web builder resources for display in search results',
+			'sql' => [
+				'ALTER TABLE web_builder_resource ADD COLUMN teaser VARCHAR(512)'
+			]
+		],
 
 		//TODO: Add roles
 		//TODO: Add library to pages for scoping

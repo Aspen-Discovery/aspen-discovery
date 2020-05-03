@@ -26,7 +26,7 @@ class ImageUpload extends DataObject
 			'generateMediumSize' => array('property' => 'generateMediumSize', 'type' => 'checkbox', 'label' => 'Generate medium size image', 'default' => 1, 'hideInLists' => true),
 			'mediumSizePath' => array('property'=>'mediumSizePath', 'type'=>'image', 'label'=>'Medium Size Image', 'description'=>'The medium size image (max width 350px)', 'maxWidth' => ImageUpload::$mediumSize, 'maxHeight' => ImageUpload::$mediumSize, 'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/medium', 'displayUrl' => '/WebBuilder/ViewImage?size=medium&id=', 'hideInLists' => true),
 			'generateSmallSize' => array('property' => 'generateSmallSize', 'type' => 'checkbox', 'label' => 'Generate small size image', 'default' => 1, 'hideInLists' => true),
-			'smallSizePath' => array('property'=>'mediumSizePath', 'type'=>'image', 'label'=>'Small Size Image', 'description'=>'The small size image (max width 200px)', 'maxWidth' => ImageUpload::$smallSize, 'maxHeight' => ImageUpload::$smallSize, 'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/small', 'displayUrl' => '/WebBuilder/ViewImage?size=small&id=', 'hideInLists' => true),
+			'smallSizePath' => array('property'=>'smallSizePath', 'type'=>'image', 'label'=>'Small Size Image', 'description'=>'The small size image (max width 200px)', 'maxWidth' => ImageUpload::$smallSize, 'maxHeight' => ImageUpload::$smallSize, 'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/small', 'displayUrl' => '/WebBuilder/ViewImage?size=small&id='),
 		];
 	}
 
