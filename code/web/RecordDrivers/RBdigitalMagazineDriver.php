@@ -190,7 +190,8 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
+				'onShow' => "AspenDiscovery.RBdigital.getMagazineStaffView('{$this->id}');",
+				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 

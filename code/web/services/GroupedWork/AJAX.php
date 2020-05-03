@@ -6,7 +6,7 @@ class GroupedWork_AJAX extends JSON_Action
 	/**
 	 * Alias of deleteUserReview()
 	 *
-	 * @return string
+	 * @return array
 	 */
 	/** @noinspection PhpUnused */
 	function clearUserRating(){
@@ -201,6 +201,61 @@ class GroupedWork_AJAX extends JSON_Action
 		$memoryWatcher->logMemory('Loaded More Like This scroller data');
 
 		return $enrichmentResult;
+	}
+
+	/** @noinspection PhpUnused */
+	function getWhileYouWait(){
+		global $interface;
+
+		$id = $_REQUEST['id'];
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkDriver = new GroupedWorkDriver($id);
+		$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
+
+		$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+
+		return [
+			'success' => true,
+			'title' => translate('While You Wait'),
+			'body' => $interface->fetch('GroupedWork/whileYouWait.tpl'),
+		];
+	}
+
+	function getYouMightAlsoLike(){
+		global $interface;
+		global $memoryWatcher;
+
+		$id = $_REQUEST['id'];
+
+		//Load Similar titles (from Solr)
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		/** @var SearchObject_GroupedWorkSearcher $db */
+		$searchObject = SearchObjectFactory::initSearchObject();
+		$searchObject->init();
+		$searchObject->disableScoping();
+		$similar = $searchObject->getMoreLikeThis($id, false, false, 3);
+		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
+		// Send the similar items to the template; if there is only one, we need
+		// to force it to be an array or things will not display correctly.
+		if (isset($similar) && count($similar['response']['docs']) > 0) {
+			$youMightAlsoLikeTitles = array();
+			foreach ($similar['response']['docs'] as $key => $similarTitle){
+				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
+				$youMightAlsoLikeTitles[] = $similarTitleDriver;
+			}
+			$interface->assign('numTitles', count($similar['response']['docs']));
+			$interface->assign('youMightAlsoLikeTitles', $youMightAlsoLikeTitles);
+		}else{
+			$interface->assign('numTitles', 0);
+		}
+		$memoryWatcher->logMemory('Loaded More Like This scroller data');
+		return [
+			'success' => true,
+			'title' => translate('You Might Also Like'),
+			'body' => $interface->fetch('GroupedWork/youMightAlsoLike.tpl'),
+		];
 	}
 
 	function getScrollerTitle($record, $index, $scrollerName){
@@ -1241,5 +1296,26 @@ class GroupedWork_AJAX extends JSON_Action
 
 		$logger->log("JSON Results " . json_encode($results), Logger::LOG_ERROR);
 		return $results;
+	}
+
+	function getStaffView(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error loading staff view'
+		];
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$recordDriver = new GroupedWorkDriver($id);
+		if ($recordDriver->isValid()){
+			global $interface;
+			$interface->assign('recordDriver', $recordDriver);
+			$result = [
+				'success' => true,
+				'staffView' => $interface->fetch($recordDriver->getStaffView())
+			];
+		}else{
+			$result['message'] = 'Could not find that record';
+		}
+		return $result;
 	}
 }

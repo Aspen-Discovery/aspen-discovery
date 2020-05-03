@@ -1659,6 +1659,23 @@ AspenDiscovery.Account = (function(){
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
+		},
+
+		updateAutoRenewal(patronId) {
+			let url = Globals.path + "/MyAccount/AJAX";
+			let params = {
+				method: "updateAutoRenewal",
+				allowAutoRenewal: $('#allowAutoRenewal').prop("checked"),
+				patronId: patronId,
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage('Success', data.message, true);
+				} else {
+					AspenDiscovery.showMessage('Error', data.message, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
 		}
 	};
 }(AspenDiscovery.Account || {}));
@@ -2921,6 +2938,17 @@ AspenDiscovery.CloudLibrary = (function () {
 				}
 			});
 		},
+
+		getStaffView: function (id) {
+			let url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getStaffView";
+			$.getJSON(url, function (data){
+				if (!data.success){
+					AspenDiscovery.showMessage('Error', data.message);
+				}else{
+					$("#staffViewPlaceHolder").replaceWith(data.staffView);
+				}
+			});
+		}
 	}
 }(AspenDiscovery.CloudLibrary || {}));
 AspenDiscovery.DPLA = (function(){
@@ -3476,6 +3504,41 @@ AspenDiscovery.GroupedWork = (function(){
 					AspenDiscovery.GroupedWork.ungroupRecord(id);
 				});
 			}
+			return false;
+		},
+
+		getStaffView: function (id) {
+			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getStaffView";
+			$.getJSON(url, function (data){
+				if (!data.success){
+					AspenDiscovery.showMessage('Error', data.message);
+				}else{
+					$("#staffViewPlaceHolder").replaceWith(data.staffView);
+				}
+			});
+		},
+
+		getWhileYouWait: function (id) {
+			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getWhileYouWait";
+			$.getJSON(url, function (data){
+				if (!data.success){
+					AspenDiscovery.showMessage('Error', data.message);
+				}else{
+					AspenDiscovery.showMessage(data.title, data.body);
+				}
+			});
+			return false;
+		},
+
+		getYouMightAlsoLike: function(id) {
+			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getYouMightAlsoLike";
+			$.getJSON(url, function (data){
+				if (!data.success){
+					AspenDiscovery.showMessage('Error', data.message);
+				}else{
+					AspenDiscovery.showMessage(data.title, data.body);
+				}
+			});
 			return false;
 		}
 	};
@@ -4492,6 +4555,17 @@ AspenDiscovery.OverDrive = (function(){
 				}
 			}
 			return false;
+		},
+
+		getStaffView: function (id) {
+			let url = Globals.path + "/OverDrive/" + id + "/AJAX?method=getStaffView";
+			$.getJSON(url, function (data){
+				if (!data.success){
+					AspenDiscovery.showMessage('Error', data.message);
+				}else{
+					$("#staffViewPlaceHolder").replaceWith(data.staffView);
+				}
+			});
 		}
 	}
 }(AspenDiscovery.OverDrive || {}));
@@ -5126,6 +5200,28 @@ AspenDiscovery.RBdigital = (function(){
                     AspenDiscovery.showMessage("Error Returning Magazine", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
                 }
             });
+        },
+
+        getStaffView: function (id) {
+            let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getStaffView";
+            $.getJSON(url, function (data){
+                if (!data.success){
+                    AspenDiscovery.showMessage('Error', data.message);
+                }else{
+                    $("#staffViewPlaceHolder").replaceWith(data.staffView);
+                }
+            });
+        },
+
+        getMagazineStaffView: function (id) {
+            let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getMagazineStaffView";
+            $.getJSON(url, function (data){
+                if (!data.success){
+                    AspenDiscovery.showMessage('Error', data.message);
+                }else{
+                    $("#staffViewPlaceHolder").replaceWith(data.staffView);
+                }
+            });
         }
     }
 }(AspenDiscovery.RBdigital || {}));
@@ -5387,8 +5483,7 @@ AspenDiscovery.Record = (function(){
 				}else{
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
-			}
-			);
+			});
 		}
 	};
 }(AspenDiscovery.Record || {}));

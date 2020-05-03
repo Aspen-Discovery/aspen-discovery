@@ -389,4 +389,25 @@ class OverDrive_AJAX extends JSON_Action
 
 		return $result;
 	}
+
+	function getStaffView(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error loading staff view'
+		];
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+		$recordDriver = new OverDriveRecordDriver($id);
+		if ($recordDriver->isValid()){
+			global $interface;
+			$interface->assign('recordDriver', $recordDriver);
+			$result = [
+				'success' => true,
+				'staffView' => $interface->fetch($recordDriver->getStaffView())
+			];
+		}else{
+			$result['message'] = 'Could not find that record';
+		}
+		return $result;
+	}
 }

@@ -841,6 +841,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'loadCoversFrom020z' => [
+					'title' => 'Allow loading covers from the 020z',
+					'description' => 'Update System variables to allow loading covers from the 020z',
+					'sql' => [
+						'ALTER TABLE system_variables ADD COLUMN loadCoversFrom020z TINYINT(1) DEFAULT 0'
+					]
+				],
+
 				'utf8_update' => array(
 					'title' => 'Update to UTF-8',
 					'description' => 'Update database to use UTF-8 encoding',

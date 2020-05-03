@@ -1,22 +1,8 @@
 <?php
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/JSON_Action.php';
 
-class RBdigital_AJAX extends Action
+class RBdigital_AJAX extends JSON_Action
 {
-
-	function launch()
-	{
-		$method = $_GET['method'];
-		if (method_exists($this, $method)) {
-			header('Content-type: application/json');
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-			echo $this->$method();
-		} else {
-			echo json_encode(array('error' => 'invalid_method'));
-		}
-	}
-
 	function placeHold()
 	{
 		$user = UserAccount::getLoggedInUser();
@@ -29,12 +15,12 @@ class RBdigital_AJAX extends Action
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
 				$holdMessage = $driver->placeHold($patron, $id);
-				return json_encode($holdMessage);
+				return $holdMessage;
 			} else {
-				return json_encode(array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.'])));
+				return array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.']));
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to place a hold.'));
+			return array('result' => false, 'message' => 'You must be logged in to place a hold.');
 		}
 	}
 
@@ -57,12 +43,12 @@ class RBdigital_AJAX extends Action
 				} else {
 					$result['title'] = translate("Error Checking Out Title");
 				}
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate(['text' => 'no_permission_to_checkout', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.'])));
+				return array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate(['text' => 'no_permission_to_checkout', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.']));
 			}
 		} else {
-			return json_encode(array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate('You must be logged in to checkout an item.')));
+			return array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate('You must be logged in to checkout an item.'));
 		}
 	}
 
@@ -82,12 +68,12 @@ class RBdigital_AJAX extends Action
 					/** @noinspection HtmlUnknownTarget */
 					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate('View My Check Outs') . '</a>';
 				}
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to checkout an item.'));
+			return array('result' => false, 'message' => 'You must be logged in to checkout an item.');
 		}
 	}
 
@@ -113,12 +99,12 @@ class RBdigital_AJAX extends Action
 						return $this->placeHold();
 					}
 				}
-				return json_encode($createAccountMessage);
+				return $createAccountMessage;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permission to create an RBdigital account for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permission to create an RBdigital account for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in prior to creating an account in RBdigital.'));
+			return array('result' => false, 'message' => 'You must be logged in prior to creating an account in RBdigital.');
 		}
 	}
 
@@ -134,31 +120,25 @@ class RBdigital_AJAX extends Action
 
 		if (count($usersWithRBdigitalAccess) > 1) {
 			$promptTitle = 'RBdigital Hold Options';
-			return json_encode(
-				array(
+			return array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
 					'prompts' => $interface->fetch('RBdigital/ajax-hold-prompt.tpl'),
 					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return AspenDiscovery.RBdigital.processHoldPrompts();">'
-				)
 			);
 		} elseif (count($usersWithRBdigitalAccess) == 1) {
-			return json_encode(
-				array(
+			return array(
 					'patronId' => reset($usersWithRBdigitalAccess)->id,
 					'promptNeeded' => false,
-				)
-			);
+				);
 		} else {
 			// No RBdigital Account Found, let the user create one if they want
-			return json_encode(
-				array(
+			return array(
 					'promptNeeded' => true,
 					'promptTitle' => 'Create an Account',
 					'prompts' => $interface->fetch('RBdigital/ajax-create-account-prompt.tpl'),
 					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return AspenDiscovery.RBdigital.createAccount(\'hold\', \'' . $user->id . '\', \'' . $id . '\');">'
-				)
-			);
+				);
 		}
 	}
 
@@ -175,31 +155,25 @@ class RBdigital_AJAX extends Action
 
 		if (count($usersWithRBdigitalAccess) > 1) {
 			$promptTitle = 'RBdigital Checkout Options';
-			return json_encode(
-				array(
+			return array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
 					'prompts' => $interface->fetch('RBdigital/ajax-checkout-prompt.tpl'),
 					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.RBdigital.processCheckoutPrompts();">'
-				)
-			);
+				);
 		} elseif (count($usersWithRBdigitalAccess) == 1) {
-			return json_encode(
-				array(
+			return array(
 					'patronId' => reset($usersWithRBdigitalAccess)->id,
 					'promptNeeded' => false,
-				)
-			);
+				);
 		} else {
 			// No RBdigital Account Found, let the user create one if they want
-			return json_encode(
-				array(
+			return array(
 					'promptNeeded' => true,
 					'promptTitle' => 'Create an Account',
 					'prompts' => $interface->fetch('RBdigital/ajax-create-account-prompt.tpl'),
 					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return AspenDiscovery.RBdigital.createAccount(\'checkout\', ' . $user->id . ', ' . $id . ');">'
-				)
-			);
+				);
 		}
 	}
 
@@ -216,31 +190,25 @@ class RBdigital_AJAX extends Action
 
 		if (count($usersWithRBdigitalAccess) > 1) {
 			$promptTitle = 'RBdigital Checkout Options';
-			return json_encode(
-				array(
+			return array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
 					'prompts' => $interface->fetch('RBdigital/ajax-checkout-prompt.tpl'),
 					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Magazine" onclick="return AspenDiscovery.RBdigital.processCheckoutPrompts();">'
-				)
-			);
+				);
 		} elseif (count($usersWithRBdigitalAccess) == 1) {
-			return json_encode(
-				array(
+			return array(
 					'patronId' => reset($usersWithRBdigitalAccess)->id,
 					'promptNeeded' => false,
-				)
-			);
+				);
 		} else {
 			// No RBdigital Account Found, let the user create one if they want
-			return json_encode(
-				array(
+			return array(
 					'promptNeeded' => true,
 					'promptTitle' => 'Create an Account',
 					'prompts' => $interface->fetch('RBdigital/ajax-create-account-prompt.tpl'),
 					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return AspenDiscovery.RBdigital.createAccount(\'checkoutMagazine\', ' . $user->id . ', ' . $id . ');">'
-				)
-			);
+				);
 		}
 	}
 
@@ -255,12 +223,12 @@ class RBdigital_AJAX extends Action
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
 				$result = $driver->cancelHold($patron, $id);
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to cancel holds.'));
+			return array('result' => false, 'message' => 'You must be logged in to cancel holds.');
 		}
 	}
 
@@ -275,12 +243,12 @@ class RBdigital_AJAX extends Action
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
 				$result = $driver->renewCheckout($patron, $id);
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to renew titles.'));
+			return array('result' => false, 'message' => 'You must be logged in to renew titles.');
 		}
 	}
 
@@ -296,12 +264,12 @@ class RBdigital_AJAX extends Action
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
 				$result = $driver->returnCheckout($patron, $id);
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to return titles.'));
+			return array('result' => false, 'message' => 'You must be logged in to return titles.');
 		}
 	}
 
@@ -318,12 +286,12 @@ class RBdigital_AJAX extends Action
 				$driver = new RBdigitalDriver();
 				list($magzineId, $issueId) = explode('_', $id);
 				$result = $driver->returnMagazine($patron, $magzineId, $issueId);
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to return titles.'));
+			return array('result' => false, 'message' => 'You must be logged in to return titles.');
 		}
 	}
 
@@ -347,4 +315,45 @@ class RBdigital_AJAX extends Action
 		return $usersWithRBdigitalAccess;
 	}
 
+	function getStaffView(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error loading staff view'
+		];
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+		$recordDriver = new RBdigitalRecordDriver($id);
+		if ($recordDriver->isValid()){
+			global $interface;
+			$interface->assign('recordDriver', $recordDriver);
+			$result = [
+				'success' => true,
+				'staffView' => $interface->fetch($recordDriver->getStaffView())
+			];
+		}else{
+			$result['message'] = 'Could not find that record';
+		}
+		return $result;
+	}
+
+	function getMagazineStaffView(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error loading staff view'
+		];
+		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
+		$recordDriver = new RBdigitalMagazineDriver($id);
+		if ($recordDriver->isValid()){
+			global $interface;
+			$interface->assign('recordDriver', $recordDriver);
+			$result = [
+				'success' => true,
+				'staffView' => $interface->fetch($recordDriver->getStaffView())
+			];
+		}else{
+			$result['message'] = 'Could not find that record';
+		}
+		return $result;
+	}
 }

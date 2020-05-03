@@ -1,9 +1,9 @@
-#Aspen Discovery Manual - Table of Contents
+##Table of Contents
 - Administration
   - Administrators
   - Library Administration
   - Location Administration
-- Advanced Search
+- [Advanced Search](/Admin/HelpManual?page=Advanced%20Search)
 - Aspen API
 - Author pages
 - Browsing
@@ -40,6 +40,7 @@
 - Languages and Translations
 - Materials Requests & Purchase Suggestions
 - Open Archives
+- Placards
 - Reading History
 - Ratings and Reviews
 - Recommendations

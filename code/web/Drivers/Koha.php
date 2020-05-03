@@ -294,6 +294,7 @@ class Koha extends AbstractIlsDriver
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 				$recordDriver = new MarcRecordDriver($checkout['recordId']);
 				if ($recordDriver->isValid()) {
+					$checkout['groupedWorkId'] = $recordDriver->getPermanentId();
 					$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 					$checkout['ratingData'] = $recordDriver->getRatingData();
 					$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -744,7 +745,8 @@ class Koha extends AbstractIlsDriver
 		//Set pickup location
 		$pickupBranch = strtoupper($pickupBranch);
 
-		if (!$this->patronEligibleForHolds($patron, $hold_result)){
+		if (!$this->patronEligibleForHolds($patron)){
+			$hold_result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
 			return $hold_result;
 		}
 
@@ -862,6 +864,7 @@ class Koha extends AbstractIlsDriver
 				'patron_id' => $patron->username,
 				'pickup_library_id' => $pickupBranch,
 				'volume_id' => $volumeId,
+				'biblio_id' => $recordId,
 			];
 			$postParams = json_encode($postParams);
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -873,6 +876,7 @@ class Koha extends AbstractIlsDriver
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
 			], true);
+			/** @noinspection PhpUnusedLocalVariableInspection */
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
 			if ($responseCode == 201){
@@ -907,7 +911,8 @@ class Koha extends AbstractIlsDriver
 		$hold_result = array();
 		$hold_result['success'] = false;
 
-		if (!$this->patronEligibleForHolds($patron, $hold_result)){
+		if (!$this->patronEligibleForHolds($patron)){
+			$hold_result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
 			return $hold_result;
 		}
 
@@ -975,7 +980,6 @@ class Koha extends AbstractIlsDriver
 	 * otherwise.
 	 * @access public
 	 */
-	/** @noinspection PhpUnusedParameterInspection */
 	public function getHolds($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'title')
 	{
 		$availableHolds = array();
@@ -1004,6 +1008,15 @@ class Koha extends AbstractIlsDriver
 			}
 			if (isset($curRow['enumchron'])) {
 				$curHold['volume'] = $curRow['enumchron'];
+			}
+			if (isset($curRow['volume_id'])){
+				//Get the volume info
+				require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+				$volumeInfo = new IlsVolumeInfo();
+				$volumeInfo->volumeId = $curRow['volume_id'];
+				if ($volumeInfo->find(true)){
+					$curHold['volume'] = $volumeInfo->displayLabel;
+				}
 			}
 			$curHold['create'] = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
 			if (!empty($curRow['expirationdate'])) {
@@ -1044,6 +1057,7 @@ class Koha extends AbstractIlsDriver
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 				$recordDriver = new MarcRecordDriver($bibId);
 				if ($recordDriver->isValid()) {
+					$curHold['groupedWorkId'] = $recordDriver->getPermanentId();
 					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
 					$curHold['format'] = $recordDriver->getFormat();
 					$curHold['isbn'] = $recordDriver->getCleanISBN();
@@ -1108,6 +1122,7 @@ class Koha extends AbstractIlsDriver
 				$cancelHoldResponse = $this->getXMLWebServiceResponse($cancelHoldURL);
 
 				//Parse the result
+				/** @noinspection PhpStatementHasEmptyBodyInspection */
 				if (isset($cancelHoldResponse->code) && ($cancelHoldResponse->code == 'Cancelled' || $cancelHoldResponse->code == 'Canceled')) {
 					//We cancelled the hold
 				} else {
@@ -1943,7 +1958,7 @@ class Koha extends AbstractIlsDriver
 		return 'koha-requests.tpl';
 	}
 
-	function deleteMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */ User $user)
+	function deleteMaterialsRequests(User $user)
 	{
 		$this->loginToKohaOpac($user);
 
@@ -2023,8 +2038,7 @@ class Koha extends AbstractIlsDriver
 		$interface->assign('object', $user);
 		$interface->assign('saveButtonText', 'Update Contact Information');
 
-		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
-		return $fieldsForm;
+		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 
 	function kohaDateToAspenDate($date)
@@ -2597,7 +2611,7 @@ class Koha extends AbstractIlsDriver
 		return $result;
 	}
 
-	private function patronEligibleForHolds(User $patron, array &$hold_result)
+	public function patronEligibleForHolds(User $patron)
 	{
 		$this->initDatabaseConnection();
 
@@ -2615,12 +2629,119 @@ class Koha extends AbstractIlsDriver
 			$accountSummary = $this->getAccountSummary($patron, true);
 			$totalFines = $accountSummary['totalFines'];
 			if ($totalFines > $maxOutstanding){
-				$hold_result['success'] = false;
-				$hold_result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
 				return false;
 			}else{
 				return true;
 			}
 		}
+	}
+
+	public function getShowAutoRenewSwitch(User $patron)
+	{
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM systempreferences where variable = 'AllowPatronToControlAutorenewal';";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$showAutoRenew = false;
+		while ($curRow = $results->fetch_assoc()) {
+			$showAutoRenew = $curRow['value'];
+		}
+		return $showAutoRenew;
+	}
+
+	public function isAutoRenewalEnabledForUser(User $patron)
+	{
+		$this->initDatabaseConnection();
+
+		$barcode = $patron->getBarcode();
+		/** @noinspection SqlResolve */
+		$sql = "SELECT autorenew_checkouts FROM borrowers where borrowernumber = {$patron->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$autoRenewEnabled = false;
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()) {
+				$autoRenewEnabled = $curRow['autorenew_checkouts'];
+				break;
+			}
+		}
+		return $autoRenewEnabled;
+	}
+
+	public function updateAutoRenewal(User $patron, bool $allowAutoRenewal)
+	{
+		$result = [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+
+		//Load required fields from Koha here to make sure we don't wipe them out
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$address = '';
+		$city = '';
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()) {
+				$address = $curRow['address'];
+				$city = $curRow['city'];
+			}
+		}
+
+		$postVariables = [
+			'surname' => $patron->lastname,
+			'address' => $address,
+			'city' => $city,
+			'library_id' => Location::getUserHomeLocation()->code,
+			'category_id' => $patron->patronType,
+			'autorenew_checkouts' => (bool)$allowAutoRenewal,
+		];
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+		} else {
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
+			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
+			$postParams = json_encode($postVariables);
+
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+			if ($this->apiCurlWrapper->getResponseCode() != 200) {
+				if (strlen($response) > 0) {
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse) {
+						$result['message'] = $jsonResponse->error;
+					} else {
+						$result['message'] = $response;
+					}
+				} else {
+					$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+				}
+
+			} else {
+				$response = json_decode($response);
+				if ($response->autorenew_checkouts == $allowAutoRenewal){
+					$result = [
+						'success' => true,
+						'message' => 'Your account was updated successfully.'
+					];
+				}else{
+					$result = [
+						'success' => true,
+						'message' => 'Error updating this setting in the system.'
+					];
+				}
+			}
+		}
+		return $result;
 	}
 }

@@ -116,13 +116,12 @@ class Record_AJAX extends Action
 			$holdDisclaimers = array();
 			$patronLibrary = $user->getHomeLibrary();
 			if ($patronLibrary == null){
-				$results = array(
+				return array(
 					'holdFormBypassed' => false,
 					'title' => 'Unable to place hold',
 					'modalBody' => '<p>This account is not associated with a library, please contact your library.</p>',
 					'modalButtons' => ""
 				);
-				return $results;
 			}
 			if (strlen($patronLibrary->holdDisclaimer) > 0) {
 				$holdDisclaimers[$patronLibrary->displayName] = $patronLibrary->holdDisclaimer;
@@ -459,6 +458,18 @@ class Record_AJAX extends Action
 						$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
 						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
 						$interface->assign('profile', $patron);
+
+						//Get the grouped work for the record
+						$recordDriver = RecordDriverFactory::initRecordDriverById($recordId);
+						if ($recordDriver->isValid()){
+							$groupedWorkId = $recordDriver->getPermanentId();
+							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+							$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+							$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
+
+							$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+
+						}
 
 						$results = array(
 							'success' => $return['success'],

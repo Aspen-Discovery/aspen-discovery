@@ -74,25 +74,29 @@
 					</div>
 					{/if}
 
-                    {if !empty($record.position)}
+					{if !empty($record.position)}
 						<div class="row">
 							<div class="result-label col-tn-4">{translate text='Position'}</div>
 							<div class="col-tn-8 result-value">
-                                {$record.position}
+								{$record.position}
 							</div>
 						</div>
-                    {/if}
+					{/if}
 				</div>
 
 				{* Actions for Title *}
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
-                        {if $section == 'available'}
-                            <button onclick="return AspenDiscovery.CloudLibrary.checkOutTitle('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">{translate text="Checkout"}</button>
-                        {/if}
+						{if $section == 'available'}
+							<button onclick="return AspenDiscovery.CloudLibrary.checkOutTitle('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">{translate text="Checkout"}</button>
+						{/if}
 						<button onclick="return AspenDiscovery.CloudLibrary.cancelHold('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">Cancel Hold</button>
 					</div>
-
+					<div class="btn-group btn-group-vertical btn-block">
+						{if !empty($record.groupedWorkId)}
+							<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
+						{/if}
+					</div>
 				</div>
 			</div>
 		</div>

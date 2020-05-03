@@ -154,7 +154,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		HashMap<String, Integer> itemCountsByItype = new HashMap<>();
 		HashMap<String, String> itemTypeToFormat = new HashMap<>();
 		int mostUsedCount = 0;
-		String mostPopularIType = "";		//Get a list of all the formats based on the items
+		String mostPopularIType = ""; //Get a list of all the formats based on the items
 		for(ItemInfo item : recordInfo.getRelatedItems()){
 			if (item.isEContent()) {continue;}
 			boolean foundFormatFromSublocation = false;
@@ -540,5 +540,18 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			location += translateValue("shelf_location", shelvingLocation, identifier);
 		}
 		return location;
+	}
+
+	protected boolean isBibSuppressed(Record record) {
+		boolean isSuppressed = false;
+		DataField field942 = record.getDataField("942");
+		if (field942 != null){
+			Subfield subfieldN = field942.getSubfield('n');
+			if (subfieldN != null && subfieldN.getData().equals("1")){
+				isSuppressed = true;
+			}
+		}
+
+		return isSuppressed;
 	}
 }

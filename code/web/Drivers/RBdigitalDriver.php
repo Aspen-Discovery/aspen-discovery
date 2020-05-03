@@ -122,6 +122,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 						require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
 						$recordDriver = new RBdigitalRecordDriver($checkout['recordId']);
 						if ($recordDriver->isValid()) {
+							$checkout['groupedWorkId'] = $recordDriver->getPermanentId();
 							$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 							$checkout['ratingData'] = $recordDriver->getRatingData();
 							$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -170,6 +171,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 						require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
 						$recordDriver = new RBdigitalMagazineDriver($checkout['recordId']);
 						if ($recordDriver->isValid()) {
+							$checkout['groupedWorkId'] = $recordDriver->getPermanentId();
 							$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 							$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 							$checkout['ratingData'] = $recordDriver->getRatingData();
@@ -519,6 +521,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 				require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
 				$recordDriver = new RBdigitalRecordDriver($hold['id']);
 				if ($recordDriver->isValid()) {
+					$hold['groupedWorkId'] = $recordDriver->getPermanentId();
 					$hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 					$hold['title'] = $recordDriver->getTitle();
 					$hold['sortTitle'] = $recordDriver->getTitle();

@@ -486,6 +486,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 							$bookshelfItem['groupedWorkId'] = $overDriveRecord->getGroupedWorkId();
 						}
 						$formats = $overDriveRecord->getFormats();
+						$bookshelfItem['groupedWorkId']     = $overDriveRecord->getPermanentId();
 						$bookshelfItem['format']     = reset($formats);
 						$bookshelfItem['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
 						$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
@@ -564,6 +565,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 				if (!$forSummary){
 					$overDriveRecord = new OverDriveRecordDriver($hold['overDriveId']);
+					$hold['groupedWorkId'] = $overDriveRecord->getPermanentId();
 					$hold['recordId'] = $overDriveRecord->getUniqueID();
 					$hold['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
 					/** @noinspection DuplicatedCode */

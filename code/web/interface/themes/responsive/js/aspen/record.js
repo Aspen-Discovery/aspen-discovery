@@ -202,8 +202,7 @@ AspenDiscovery.Record = (function(){
 				}else{
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
-			}
-			);
+			});
 		}
 	};
 }(AspenDiscovery.Record || {}));

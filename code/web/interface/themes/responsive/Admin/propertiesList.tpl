@@ -12,7 +12,7 @@
 {/if}
 <form action="" method="get" id='compare' class="form-inline">
 	<div class='adminTableRegion'>
-		<table class="adminTable table table-striped table-condensed smallText" id="adminTable">
+		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable">
 			<thead>
 				<tr>
 					{if $canCompare}

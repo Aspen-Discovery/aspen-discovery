@@ -332,6 +332,17 @@ AspenDiscovery.OverDrive = (function(){
 				}
 			}
 			return false;
+		},
+
+		getStaffView: function (id) {
+			let url = Globals.path + "/OverDrive/" + id + "/AJAX?method=getStaffView";
+			$.getJSON(url, function (data){
+				if (!data.success){
+					AspenDiscovery.showMessage('Error', data.message);
+				}else{
+					$("#staffViewPlaceHolder").replaceWith(data.staffView);
+				}
+			});
 		}
 	}
 }(AspenDiscovery.OverDrive || {}));

@@ -9,5 +9,6 @@ class ILSRecordUsage extends DataObject
     public $recordId;
     public $year;
     public $month;
-    public $timesUsed;
+    public $timesUsed; //This is number of holds
+    public $pdfDownloadCount;
 }

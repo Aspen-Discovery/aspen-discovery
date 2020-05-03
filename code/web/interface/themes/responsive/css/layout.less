@@ -443,18 +443,28 @@ a.placard-link{
   font-weight: bold;
 }
 
-#webMenuNavBar{
+.table-sticky{
+  overflow-y: auto;
+  thead th{
+    position: sticky;
+    top: 0;
+  }
+}
+
+#webMenuNavBar {
   background-color: @home-search-top-color;
   color: @home-search-label-color;
   border: 0;
   border-top: solid @home-search-label-color 2px;
   border-radius: 0;
   min-height: auto;
+
   .nav > li > a, .nav > li > a:visited {
     color: @home-search-label-color;
     padding: 7px 10px;
   }
-  .navbar-nav > li.open > a, .navbar-nav > li.open > a:visited{
+
+  .navbar-nav > li.open > a, .navbar-nav > li.open > a:visited {
     color: rgb(85, 85, 85);
   }
 }

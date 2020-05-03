@@ -314,4 +314,26 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		];
 	}
 
+	public function patronEligibleForHolds(User $patron)
+	{
+		return true;
+	}
+
+	public function getShowAutoRenewSwitch(User $patron)
+	{
+		return false;
+	}
+
+	public function isAutoRenewalEnabledForUser(User $patron)
+	{
+		return false;
+	}
+
+	public function updateAutoRenewal(User $patron, bool $allowAutoRenewal)
+	{
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
 }

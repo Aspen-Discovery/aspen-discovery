@@ -63,7 +63,7 @@
 					<div class="row">
 						<div class="result-label col-tn-4">{translate text='Source'}</div>
 						<div class="col-tn-8 result-value">
-                            OverDrive
+							OverDrive
 						</div>
 					</div>
 
@@ -106,10 +106,10 @@
 						{* Unavailable hold *}
 						<div class="row">
 							{if $record.frozen}
-							    <div class="result-label col-tn-4">{translate text='Status'}</div>
-							    <div class="col-tn-8 result-value">
-							        <span class="frozenHold">{$record.status}</span>
-							    </div>
+								<div class="result-label col-tn-4">{translate text='Status'}</div>
+								<div class="col-tn-8 result-value">
+									<span class="frozenHold">{$record.status}</span>
+								</div>
 							{else}
 								<div class="result-label col-tn-4">{translate text='Position'}</div>
 								<div class="col-tn-8 result-value">
@@ -127,15 +127,19 @@
 							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-primary">{translate text="Checkout"}</button>
 						{/if}
 						<button onclick="return AspenDiscovery.OverDrive.cancelOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
-                        {if $record.allowFreezeHolds}
-                            {if $record.frozen}
+						{if $record.allowFreezeHolds}
+							{if $record.frozen}
 								<button onclick="return AspenDiscovery.OverDrive.thawHold('{$record.userId}', '{$record.overDriveId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
-                            {elseif $record.canFreeze}
+							{elseif $record.canFreeze}
 								<button onclick="return AspenDiscovery.OverDrive.freezeHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
-                            {/if}
-                        {/if}
+							{/if}
+						{/if}
 					</div>
-
+					<div class="btn-group btn-group-vertical btn-block">
+						{if !empty($record.groupedWorkId)}
+							<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
+						{/if}
+					</div>
 				</div>
 			</div>
 		</div>

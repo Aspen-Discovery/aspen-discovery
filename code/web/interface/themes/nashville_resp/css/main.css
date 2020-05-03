@@ -8748,6 +8748,13 @@ a.placard-link {
 .placard-body {
   font-weight: bold;
 }
+.table-sticky {
+  overflow-y: auto;
+}
+.table-sticky thead th {
+  position: sticky;
+  top: 0;
+}
 #webMenuNavBar {
   background-color: #00a4e3;
   color: #FFF;

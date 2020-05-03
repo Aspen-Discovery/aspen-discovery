@@ -828,6 +828,7 @@
 						</a>
 						<div id="aspenHelpMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
+								<div class="adminMenuLink"><a href="/Admin/HelpManual?page=table_of_contents">{translate text="Help Manual"}</a></div>
 								<div class="adminMenuLink"><a href="/Admin/ReleaseNotes">{translate text="Release Notes"}</a></div>
 								{if $showSubmitTicket}
 								<div class="adminMenuLink"><a href="/Admin/SubmitTicket">{translate text="Submit Ticket"}</a></div>

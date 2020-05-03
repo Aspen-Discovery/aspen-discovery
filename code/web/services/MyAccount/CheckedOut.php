@@ -21,6 +21,12 @@ class MyAccount_CheckedOut extends MyAccount{
 			$interface->assign('libraryHoursMessage', $libraryHoursMessage);
 		}
 
+		$showAutoRenewSwitch = $user->getShowAutoRenewSwitch();
+		$interface->assign('showAutoRenewSwitch', $showAutoRenewSwitch);
+		if ($showAutoRenewSwitch){
+			$interface->assign('autoRenewalEnabled', $user->isAutoRenewalEnabledForUser());
+		}
+
 		$interface->assign('profile', $user);
 		$this->display('checkedout.tpl','Checked Out Titles');
 	}

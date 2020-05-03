@@ -11,6 +11,7 @@ class CatalogConnection
 	 */
 	public $status = false;
 
+	/** @var AccountProfile  */
 	public $accountProfile;
 
 	/**
@@ -161,6 +162,21 @@ class CatalogConnection
 				$user->update();
 			}
 			if ($parentAccount) $user->setParentUser($parentAccount); // only set when the parent account is passed.
+
+			//Record stats to show the user logged in
+			$indexingProfile = $this->accountProfile->getIndexingProfile();
+			if ($indexingProfile != null){
+				require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
+				$userUsage = new UserILSUsage();
+				$userUsage->userId = $user->id;
+				$userUsage->indexingProfileId = $this->accountProfile->getIndexingProfile()->id;
+				$userUsage->year = date('Y');
+				$userUsage->month = date('n');
+				if (!$userUsage->find(true)) {
+					$userUsage->insert();
+				}
+			}
+
 		}
 
 		return $user;
@@ -974,5 +990,25 @@ class CatalogConnection
 	public function completeFinePayment(User $patron, UserPayment $payment)
 	{
 		return $this->driver->completeFinePayment($patron, $payment);
+	}
+
+	public function patronEligibleForHolds(User $patron)
+	{
+		return $this->driver->patronEligibleForHolds($patron);
+	}
+
+	public function getShowAutoRenewSwitch(User $patron)
+	{
+		return $this->driver->getShowAutoRenewSwitch($patron);
+	}
+
+	public function isAutoRenewalEnabledForUser(User $patron)
+	{
+		return $this->driver->isAutoRenewalEnabledForUser($patron);
+	}
+
+	public function updateAutoRenewal(User $patron, bool $allowAutoRenewal)
+	{
+		return $this->driver->updateAutoRenewal($patron, $allowAutoRenewal);
 	}
 }

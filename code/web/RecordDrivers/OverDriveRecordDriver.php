@@ -277,6 +277,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		$overDriveAPIProduct->overdriveId = strtolower($this->id);
 		if ($overDriveAPIProduct->find(true)) {
 			$interface->assign('overDriveProduct', $overDriveAPIProduct);
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
 			$overDriveAPIProductMetaData = new OverDriveAPIProductMetaData();
 			$overDriveAPIProductMetaData->productId = $overDriveAPIProduct->id;
 			if ($overDriveAPIProductMetaData->find(true)) {
@@ -688,7 +689,8 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		if ($interface->getVariable('showStaffView')){
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
+				'onShow' => "AspenDiscovery.OverDrive.getStaffView('{$this->id}');",
+				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 
