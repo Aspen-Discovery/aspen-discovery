@@ -7,23 +7,22 @@ class Suggestions{
 	 * and related titles from Novelist.
 	 */
 	static function getSuggestions($userId = -1, $page = 1, $limit = 25){
-		global $configArray;
 		global $timer;
 
 		//Configuration for suggestions
-		if ($userId == -1){
+		if ($userId == -1 || $userId == UserAccount::getActiveUserId()){
 			$userId = UserAccount::getActiveUserId();
+			$user = UserAccount::getActiveUserObj();
+		}else{
+			$user = new User();
+			$user->id = $userId;
+			if (!$user->find(true)){
+				return [];
+			}
 		}
 
 		//Load all titles the user is not interested in
-		$notInterestedTitles = array();
-		$notInterested = new NotInterested();
-		$notInterested->userId = $userId;
-		$notInterested->find();
-		while ($notInterested->fetch()){
-			$notInterestedTitles[$notInterested->groupedRecordPermanentId] = $notInterested->groupedRecordPermanentId;
-		}
-		$timer->logTime("Loaded titles the patron is not interested in");
+		$notInterestedTitles = $user->getNotInterestedTitles();
 
 		//Load all titles the user has rated.  Need to load all so we don't recommend things they already rated
 		$allRatedTitles = array();

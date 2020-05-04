@@ -80,12 +80,16 @@ class GroupedWorksSolrConnector extends Solr
 	 * Uses SOLR MLT Query Handler
 	 *
 	 * @access    public
+	 * @param $id
+	 * @param null $notInterestedIds
+	 * @param bool $availableOnly
+	 * @param bool $limitFormat
+	 * @param null $limit
+	 * @param null $fieldsToReturn
 	 * @return    array                            An array of query results
 	 *
-	 * @throws    object                        PEAR Error
-	 * @var     string $id The id to retrieve similar titles for
 	 */
-	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null)
+	function getMoreLikeThis($id, $notInterestedIds = null, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null)
 	{
 		$originalResult = $this->getRecord($id, 'target_audience_full,mpaa_rating,literary_form,language,isbn,upc,series');
 		// Query String Parameters
@@ -172,6 +176,12 @@ class GroupedWorksSolrConnector extends Solr
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
 		}
+
+		if ($notInterestedIds != null && count($notInterestedIds) > 0) {
+			$notInterestedString = implode(' OR ', $notInterestedIds);
+			$options['fq'][] = "-id:($notInterestedString)";
+		}
+
 		$boostFactors = $this->getBoostFactors($searchLibrary);
 		if (!empty($boostFactors)) {
 			$options['bf'] = $boostFactors;
@@ -234,7 +244,7 @@ class GroupedWorksSolrConnector extends Solr
 			$options['bf'] = $boostFactors;
 		}
 
-		$result = $this->_select('GET', $options, true, 'mlt');
+		$result = $this->_select('POST', $options, true, 'mlt');
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
 		}

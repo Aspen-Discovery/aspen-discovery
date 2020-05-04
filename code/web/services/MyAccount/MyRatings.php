@@ -64,16 +64,18 @@ class MyRatings extends MyAccount{
 		$records = $searchObject->getRecords(array_keys($notInterestedIds));
 		foreach ($notInterestedIds as $permanentId => $notInterestedObj){
 			if (array_key_exists($permanentId, $notInterestedIds)) {
-				$record = $records[$permanentId];
-				$groupedWorkDriver = new GroupedWorkDriver($record);
-				if ($groupedWorkDriver->isValid) {
-					$notInterested[] = array(
-						'id' => $notInterestedObj->id,
-						'title' => $groupedWorkDriver->getTitle(),
-						'author' => $groupedWorkDriver->getPrimaryAuthor(),
-						'dateMarked' => $notInterestedObj->dateMarked,
-						'link' => $groupedWorkDriver->getLinkUrl()
-					);
+				if (array_key_exists($permanentId, $records)) {
+					$record = $records[$permanentId];
+					$groupedWorkDriver = new GroupedWorkDriver($record);
+					if ($groupedWorkDriver->isValid) {
+						$notInterested[] = array(
+							'id' => $notInterestedObj->id,
+							'title' => $groupedWorkDriver->getTitle(),
+							'author' => $groupedWorkDriver->getPrimaryAuthor(),
+							'dateMarked' => $notInterestedObj->dateMarked,
+							'link' => $groupedWorkDriver->getLinkUrl()
+						);
+					}
 				}
 			}
 		}

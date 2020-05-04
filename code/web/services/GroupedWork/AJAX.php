@@ -232,6 +232,8 @@ class GroupedWork_AJAX extends JSON_Action
 		if (!$library->showWhileYouWait){
 			$interface->assign('numTitles', 0);
 		}else{
+			//Get all the titles to ignore, everything that has been rated, in reading history, or that the user is not interested in
+
 			//Load Similar titles (from Solr)
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
@@ -239,7 +241,8 @@ class GroupedWork_AJAX extends JSON_Action
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
 			$searchObject->disableScoping();
-			$similar = $searchObject->getMoreLikeThis($id, false, false, 3);
+			$user = UserAccount::getActiveUserObj();
+			$similar = $searchObject->getMoreLikeThis($id, $user->getNotInterestedTitles(), false, false, 3);
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 			// Send the similar items to the template; if there is only one, we need
 			// to force it to be an array or things will not display correctly.
