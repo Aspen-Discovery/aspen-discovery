@@ -92,11 +92,13 @@
 						{/if}
 						<button onclick="return AspenDiscovery.CloudLibrary.cancelHold('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">Cancel Hold</button>
 					</div>
-					<div class="btn-group btn-group-vertical btn-block">
-						{if !empty($record.groupedWorkId)}
-							<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
-						{/if}
-					</div>
+					{if $showWhileYouWait}
+						<div class="btn-group btn-group-vertical btn-block">
+							{if !empty($record.groupedWorkId)}
+								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>

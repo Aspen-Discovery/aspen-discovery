@@ -1,5 +1,5 @@
 {strip}
-	<div class="result row" id="cloudLibraryHold_{$record.id}">
+	<div class="result row" id="rbdigitalHold_{$record.id}">
 		{* Cover column *}
 		{if $showCovers}
 		<div class="col-xs-4 col-sm-3">
@@ -80,11 +80,13 @@
 					<div class="btn-group btn-group-vertical btn-block">
 						<button onclick="return AspenDiscovery.RBdigital.cancelHold('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">Cancel Hold</button>
 					</div>
-					<div class="btn-group btn-group-vertical btn-block">
-						{if !empty($record.groupedWorkId)}
-							<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
-						{/if}
-					</div>
+					{if $showWhileYouWait}
+						<div class="btn-group btn-group-vertical btn-block">
+							{if !empty($record.groupedWorkId)}
+								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>

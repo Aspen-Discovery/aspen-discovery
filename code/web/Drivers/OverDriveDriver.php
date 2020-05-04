@@ -670,7 +670,29 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$this->trackRecordHold($overDriveId);
 
 			$holdResult['success'] = true;
-			$holdResult['message'] = translate(['text'=>'overdrive_hold_success', 'defaultText' => 'Your hold was placed successfully.  You are number %1% on the wait list.', 1=>$response->holdListPosition]);
+			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=>'overdrive_hold_success', 'defaultText' => 'Your hold was placed successfully.  You are number %1% on the wait list.', 1=>$response->holdListPosition]) . "</p>";
+			$holdResult['hasWhileYouWait'] = false;
+
+			//Get the grouped work for the record
+			global $library;
+			if ($library->showWhileYouWait) {
+				require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+				$recordDriver = new OverDriveRecordDriver($overDriveId);
+				if ($recordDriver->isValid()) {
+					$groupedWorkId = $recordDriver->getPermanentId();
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+					$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
+
+					global $interface;
+					if (count($whileYouWaitTitles) > 0) {
+						$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+						$holdResult['message'] .= '<h3>' . translate('While You Wait') . '</h3>';
+						$holdResult['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
+						$holdResult['hasWhileYouWait'] = true;
+					}
+				}
+			}
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not place a hold for you on this title.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";

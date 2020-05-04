@@ -2732,6 +2732,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 	}
 
 	function getWhileYouWait(){
+		global $library;
+		if (!$library->showWhileYouWait){
+			return [];
+		}
 		//Load Similar titles (from Solr)
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		/** @var SearchObject_GroupedWorkSearcher $db */

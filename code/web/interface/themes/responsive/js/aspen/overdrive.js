@@ -167,7 +167,7 @@ AspenDiscovery.OverDrive = (function(){
 					if (data.availableForCheckout){
 						AspenDiscovery.OverDrive.doOverDriveCheckout(patronId, overdriveId);
 					}else{
-						AspenDiscovery.showMessage("Placed Hold", data.message, true);
+						AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				},

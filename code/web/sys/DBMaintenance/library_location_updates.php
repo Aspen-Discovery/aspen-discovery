@@ -2099,6 +2099,14 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				'ALTER TABLE library add COLUMN selfRegistrationUrl VARCHAR(255)',
 			]
+		],
+
+		'showWhileYouWait' => [
+			'title' => 'Library Show While You Wait',
+			'description' => 'Update libraries to allow While You Wait functionality to be disabled',
+			'sql' => [
+				'ALTER TABLE library add COLUMN showWhileYouWait TINYINT(1) DEFAULT 1',
+			]
 		]
 	);
 }

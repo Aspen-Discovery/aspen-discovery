@@ -228,29 +228,35 @@ class GroupedWork_AJAX extends JSON_Action
 
 		$id = $_REQUEST['id'];
 
-		//Load Similar titles (from Solr)
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		/** @var SearchObject_GroupedWorkSearcher $db */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-		$searchObject->disableScoping();
-		$similar = $searchObject->getMoreLikeThis($id, false, false, 3);
-		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
-		// Send the similar items to the template; if there is only one, we need
-		// to force it to be an array or things will not display correctly.
-		if (isset($similar) && count($similar['response']['docs']) > 0) {
-			$youMightAlsoLikeTitles = array();
-			foreach ($similar['response']['docs'] as $key => $similarTitle){
-				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
-				$youMightAlsoLikeTitles[] = $similarTitleDriver;
-			}
-			$interface->assign('numTitles', count($similar['response']['docs']));
-			$interface->assign('youMightAlsoLikeTitles', $youMightAlsoLikeTitles);
-		}else{
+		global $library;
+		if (!$library->showWhileYouWait){
 			$interface->assign('numTitles', 0);
+		}else{
+			//Load Similar titles (from Solr)
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			/** @var SearchObject_GroupedWorkSearcher $db */
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$searchObject->init();
+			$searchObject->disableScoping();
+			$similar = $searchObject->getMoreLikeThis($id, false, false, 3);
+			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
+			// Send the similar items to the template; if there is only one, we need
+			// to force it to be an array or things will not display correctly.
+			if (isset($similar) && count($similar['response']['docs']) > 0) {
+				$youMightAlsoLikeTitles = array();
+				foreach ($similar['response']['docs'] as $key => $similarTitle){
+					$similarTitleDriver = new GroupedWorkDriver($similarTitle);
+					$youMightAlsoLikeTitles[] = $similarTitleDriver;
+				}
+				$interface->assign('numTitles', count($similar['response']['docs']));
+				$interface->assign('youMightAlsoLikeTitles', $youMightAlsoLikeTitles);
+			}else{
+				$interface->assign('numTitles', 0);
+			}
+			$memoryWatcher->logMemory('Loaded More Like This scroller data');
 		}
-		$memoryWatcher->logMemory('Loaded More Like This scroller data');
+
 		return [
 			'success' => true,
 			'title' => translate('You Might Also Like'),

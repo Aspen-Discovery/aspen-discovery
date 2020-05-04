@@ -465,6 +465,7 @@ class UInterface extends Smarty
 		$this->assign('showExpirationWarnings', $library->showExpirationWarnings);
 		$this->assign('expiredMessage', $library->expiredMessage);
 		$this->assign('expirationNearMessage', $library->expirationNearMessage);
+		$this->assign('showWhileYouWait', $library->showWhileYouWait);
 
 		$this->assign('showItsHere', $library->showItsHere);
 		$this->assign('enableMaterialsBooking', $library->enableMaterialsBooking);
