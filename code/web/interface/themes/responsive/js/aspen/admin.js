@@ -87,6 +87,6 @@ AspenDiscovery.Admin = (function(){
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
-		},
+		}
 	};
 }(AspenDiscovery.Admin || {}));

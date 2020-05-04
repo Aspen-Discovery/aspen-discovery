@@ -60,7 +60,7 @@ class WebBuilder_AJAX extends JSON_Action
 		return $result;
 	}
 
-	function uploadMarkdownImage(){
+	function uploadImage(){
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error uploading image'
@@ -74,20 +74,32 @@ class WebBuilder_AJAX extends JSON_Action
 					$structure = ImageUpload::getObjectStructure();
 					foreach ($_FILES as $file) {
 						$image = new ImageUpload();
-						$image->title = $file['name'];
 						$image->type = 'web_builder_image';
 						$image->fullSizePath = $file['name'];
 						$destFileName = $file['name'];
 						$destFolder = $structure['fullSizePath']['path'];
 						$destFullPath = $destFolder . '/' . $destFileName;
+						if (file_exists($destFullPath)){
+							$image->find(true);
+						}
+
+						$image->title = $file['name'];
 						$copyResult = copy($file["tmp_name"], $destFullPath);
 						if ($copyResult) {
-							$image->insert();
-							$uploadedFiles[] = $image->getDisplayUrl('full');
+							$image->update();
+							$result = [
+								'success' => true,
+								'title' => $image->title,
+								'imageUrl' => $image->getDisplayUrl('full')
+							];
+							break;
+						}else{
+							$result['message'] = 'Could not save the image to disk';
 						}
 					}
+				}else{
+					$result['message'] = 'No file was selected';
 				}
-				return $uploadedFiles;
 			}else{
 				$result['message'] = 'You don\'t have the correct permissions to upload an image';
 			}
@@ -95,5 +107,31 @@ class WebBuilder_AJAX extends JSON_Action
 			$result['message'] = 'You must be logged in to upload an image';
 		}
 		return $result;
+	}
+
+	function getUploadImageForm(){
+		global $interface;
+		$results = [
+			'success' => false,
+			'message' => 'Unknown error getting upload form'
+		];
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+				$editorName = strip_tags($_REQUEST['editorName']);
+				$interface->assign('editorName', $editorName);
+				$results = array(
+					'success' => true,
+					'title' => 'Upload an Image',
+					'modalBody' => $interface->fetch('WebBuilder/uploadImage.tpl'),
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='return AspenDiscovery.WebBuilder.doImageUpload()'>Upload Image</button>"
+				);
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to upload an image';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to upload an image';
+		}
+
+		return $results;
 	}
 }
