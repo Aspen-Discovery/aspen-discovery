@@ -8745,6 +8745,13 @@ a.placard-link {
 .placard-body {
   font-weight: bold;
 }
+.table-sticky {
+  overflow-y: auto;
+}
+.table-sticky thead th {
+  position: sticky;
+  top: 0;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;

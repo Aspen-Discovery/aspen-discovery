@@ -5,7 +5,7 @@
   - Location Administration
 - [Advanced Search](/Admin/HelpManual?page=Advanced%20Search)
 - Aspen API
-- Author pages
+- [Author pages](/Admin/HelpManual?page=Author-Pages)
 - Browsing
 - Citations
 - Collection Spotlights

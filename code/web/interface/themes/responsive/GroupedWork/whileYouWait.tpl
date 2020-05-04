@@ -2,7 +2,6 @@
 {if count($whileYouWaitTitles) == 0}
 	<div class="alert alert-info">Sorry, we could not find any additional titles.</div>
 {else}
-	<div class="alert alert-info">Here are some suggestions for titles that you might like while you are waiting for your hold.</div>
 	<div class="row">
 		{foreach from=$whileYouWaitTitles item=whileYouWaitTitle}
 			<div class="col-tn-12 col-sm-4" style="text-align: center">
@@ -18,11 +17,11 @@
 						</div>
 					</div>
 				</div>
-				<div class="row">
-					<div class="col-tn-12" style="padding-top: 5px">
-					<a href="{$whileYouWaitTitle.url}" class="btn btn-primary btn-sm">{translate text="More Info"}</a>
-					</div>
-				</div>
+{*				<div class="row">*}
+{*					<div class="col-tn-12" style="padding-top: 5px">*}
+{*					<a href="{$whileYouWaitTitle.url}" class="btn btn-primary btn-sm">{translate text="More Info"}</a>*}
+{*					</div>*}
+{*				</div>*}
 			</div>
 		{/foreach}
 	</div>

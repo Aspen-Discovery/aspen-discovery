@@ -1713,8 +1713,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
-	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null)
+	function getMoreLikeThis($id, $notInterestedIds = null, $availableOnly = false, $limitFormat = true, $limit = null)
 	{
-		return $this->indexEngine->getMoreLikeThis($id, $availableOnly, $limitFormat, $limit, $this->getFieldsToReturn());
+		return $this->indexEngine->getMoreLikeThis($id, $notInterestedIds, $availableOnly, $limitFormat, $limit, $this->getFieldsToReturn());
 	}
 }

@@ -576,7 +576,29 @@ class RBdigitalDriver extends AbstractEContentDriver
 					$this->trackUserUsageOfRBdigital($patron);
 					$this->trackRecordHold($recordId);
 					$result['success'] = true;
-					$result['message'] = "Your hold was placed successfully.";
+					$result['message'] = "<p class='alert alert-success'>Your hold was placed successfully.</p>";
+					$result['hasWhileYouWait'] = false;
+
+					//Get the grouped work for the record
+					global $library;
+					if ($library->showWhileYouWait) {
+						require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+						$recordDriver = new RBdigitalRecordDriver($recordId);
+						if ($recordDriver->isValid()) {
+							$groupedWorkId = $recordDriver->getPermanentId();
+							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+							$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+							$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
+
+							global $interface;
+							if (count($whileYouWaitTitles) > 0) {
+								$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+								$result['message'] .= '<h3>' . translate('While You Wait') . '</h3>';
+								$result['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
+								$result['hasWhileYouWait'] = true;
+							}
+						}
+					}
 
 					/** @var Memcache $memCache */
 					global $memCache;

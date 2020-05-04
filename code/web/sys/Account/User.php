@@ -1715,6 +1715,47 @@ class User extends DataObject
 	function updateAutoRenewal($allowAutoRenewal){
 		return $this->getCatalogDriver()->updateAutoRenewal($this, $allowAutoRenewal);
 	}
+
+	public function getNotInterestedTitles(){
+		global $timer;
+		$notInterestedTitles = [];
+		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+		$notInterested = new NotInterested();
+		$notInterested->userId = $this->id;
+		$notInterested->find();
+		while ($notInterested->fetch()){
+			$notInterestedTitles[$notInterested->groupedRecordPermanentId] = $notInterested->groupedRecordPermanentId;
+		}
+		$timer->logTime("Loaded titles the patron is not interested in");
+		return $notInterestedTitles;
+	}
+
+	public function getAllIdsNotToSuggest(){
+		$idsNotToSuggest = $this->getNotInterestedTitles();
+		//Add everything the user has rated
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+		$ratings = new UserWorkReview();
+		$ratings->userId = $this->id;
+		$ratings->find();
+		while ($ratings->fetch()){
+			$idsNotToSuggest[$ratings->groupedRecordPermanentId] = $ratings->groupedRecordPermanentId;
+		}
+		//Add everything in the user's reading history
+		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+		$readingHistoryEntry = new ReadingHistoryEntry();
+		$readingHistoryEntry->userId = $this->id;
+		$readingHistoryEntry->selectAdd();
+		$readingHistoryEntry->selectAdd('groupedWorkPermanentId');
+		$readingHistoryEntry->groupBy('groupedWorkPermanentId');
+		$readingHistoryEntry->find();
+		while ($readingHistoryEntry->fetch()){
+			if (!empty($readingHistoryEntry->groupedWorkPermanentId)) {
+				$idsNotToSuggest[$readingHistoryEntry->groupedWorkPermanentId] = $readingHistoryEntry->groupedWorkPermanentId;
+			}
+		}
+
+		return $idsNotToSuggest;
+	}
 }
 
 function modifiedEmpty($var) {
