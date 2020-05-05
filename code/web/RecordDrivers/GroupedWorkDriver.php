@@ -2732,13 +2732,18 @@ class GroupedWorkDriver extends IndexRecordDriver
 	}
 
 	function getWhileYouWait(){
+		global $library;
+		if (!$library->showWhileYouWait){
+			return [];
+		}
 		//Load Similar titles (from Solr)
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		/** @var SearchObject_GroupedWorkSearcher $db */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		$searchObject->disableScoping();
-		$similar = $searchObject->getMoreLikeThis($this->getPermanentId(), true, false, 3);
+		$user = UserAccount::getActiveUserObj();
+		$similar = $searchObject->getMoreLikeThis($this->getPermanentId(), $user->getAllIdsNotToSuggest(), true, false, 3);
 		// Send the similar items to the template; if there is only one, we need
 		// to force it to be an array or things will not display correctly.
 		if (isset($similar) && count($similar['response']['docs']) > 0) {

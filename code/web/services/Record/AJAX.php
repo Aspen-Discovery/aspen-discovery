@@ -460,15 +460,19 @@ class Record_AJAX extends Action
 						$interface->assign('profile', $patron);
 
 						//Get the grouped work for the record
-						$recordDriver = RecordDriverFactory::initRecordDriverById($recordId);
-						if ($recordDriver->isValid()){
-							$groupedWorkId = $recordDriver->getPermanentId();
-							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-							$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
-							$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
+						global $library;
+						if ($library->showWhileYouWait) {
+							$recordDriver = RecordDriverFactory::initRecordDriverById($recordId);
+							if ($recordDriver->isValid()) {
+								$groupedWorkId = $recordDriver->getPermanentId();
+								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+								$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+								$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
 
-							$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
-
+								$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+							}
+						}else{
+							$interface->assign('whileYouWaitTitles', []);
 						}
 
 						$results = array(

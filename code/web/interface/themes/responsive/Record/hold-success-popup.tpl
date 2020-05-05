@@ -4,7 +4,7 @@
 		{if $success}
 			<p class="alert alert-success">{$message}</p>
 			{if $showDetailedHoldNoticeInformation}
-				<div class="alert alert-info">
+				<div class="alert">
 					{translate text='Once the title arrives at your library'} you will
 					{if $profile->_noticePreferenceLabel eq 'Mail' && !$treatPrintNoticesAsPhoneNotices} be mailed a notification to :
 						<blockquote class="alert-warning">
@@ -34,6 +34,7 @@
 			{/if}
 
 			{if count($whileYouWaitTitles) > 0}
+				<h3>{translate text="While You Wait"}</h3>
 				{include file='GroupedWork/whileYouWait.tpl'}
 			{/if}
 		{else}

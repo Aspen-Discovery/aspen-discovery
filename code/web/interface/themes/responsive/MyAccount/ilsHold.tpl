@@ -196,11 +196,13 @@
 							{/if}
 						{/if}
 					</div>
-					<div class="btn-group btn-group-vertical btn-block">
-						{if !empty($record.groupedWorkId)}
-							<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
-						{/if}
-					</div>
+					{if $showWhileYouWait}
+						<div class="btn-group btn-group-vertical btn-block">
+							{if !empty($record.groupedWorkId)}
+								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>

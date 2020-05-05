@@ -2,7 +2,6 @@
 {if $numTitles == 0}
 	<div class="alert alert-info">Sorry, we could not find any additional titles.</div>
 {else}
-	<div class="alert alert-info">Here are some suggestions for titles that you might like also like.</div>
 	<div class="row">
 		{foreach from=$youMightAlsoLikeTitles item=title}
 			<div class="col-tn-12 col-sm-4" style="text-align: center">

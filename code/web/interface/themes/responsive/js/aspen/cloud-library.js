@@ -88,7 +88,7 @@ AspenDiscovery.CloudLibrary = (function () {
 					if (data.availableForCheckout) {
 						AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
 					} else {
-						AspenDiscovery.showMessage("Placed Hold", data.message, true);
+						AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				},

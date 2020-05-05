@@ -1,8 +1,8 @@
 ##Advanced Search
 - Advanced Search (notes derived from VuFind)
-  - The advanced search page allows you to enter multiple terms in given fields. Options are available to select from a dropdown to narrow by (Keyword, Title, Start of Title, Author, Subject, ISBN/ISSN/UPC, Publisher, Series, Year of Publiclication, TOC, Record Number, Call Number). You can integrate the following Search Operators.
+  - The advanced search page allows you to enter multiple terms in given fields. Options are available to select from a dropdown to narrow by (Keyword, Title, Start of Title, Author, Subject, ISBN/ISSN/UPC, Publisher, Series, Year of Publication, TOC, Record Number, Call Number). You can integrate the following Search Operators.
    - Operators
-    - Phrase Searches - wrap the entire search in ("") phrase quotes. Placing double quotes in the beginning and end of your set of words will bring back results in the exact order without any change.   
+    - Phrase Searches - wrap the entire search in ("") phrase quotes. Placing double quotes at the beginning and end of your set of words will bring back results in the exact order without any change.   
     - Wildcard Searches - single character wildcard search uses the (?) 
       - Example: educat?
       - To perform a multiple character, 0 or more, wildcard search use the * symbol.      

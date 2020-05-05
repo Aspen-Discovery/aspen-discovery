@@ -8746,6 +8746,7 @@ a.placard-link {
 .placard-body {
   font-weight: bold;
 }
+
 #webMenuNavBar {
   background-color: #00a4e3;
   color: #FFF;
@@ -8762,6 +8763,13 @@ a.placard-link {
 #webMenuNavBar .navbar-nav > li.open > a,
 #webMenuNavBar .navbar-nav > li.open > a:visited {
   color: #555555;
+}
+.table-sticky {
+  overflow-y: auto;
+}
+.table-sticky thead th {
+  position: sticky;
+  top: 0;
 }
 #home-page-search {
   background-color: #00a4e3;
