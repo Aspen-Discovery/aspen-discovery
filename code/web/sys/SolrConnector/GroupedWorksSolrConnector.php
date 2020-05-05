@@ -190,7 +190,7 @@ class GroupedWorksSolrConnector extends Solr
 			$options['rows'] = $limit;
 		}
 
-		$result = $this->_select('GET', $options, false, 'mlt');
+		$result = $this->_select('POST', $options, false, 'mlt');
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
 		}
