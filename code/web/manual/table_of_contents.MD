@@ -52,6 +52,7 @@
 - Searching
   - Search Types
   - Facets
+  - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - Server Setup
   - Installation
   - Background tasks
