@@ -176,29 +176,34 @@ class GroupedWork_AJAX extends JSON_Action
 
 		$id = $_REQUEST['id'];
 
-		$enrichmentResult = array();
+		$enrichmentResult = [
+			'similarTitles' => [],
+		];
 
-		//Load Similar titles (from Solr)
-		$url = $configArray['Index']['url'];
+		//Make sure that the title exists
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		/** @var GroupedWorksSolrConnector $db */
-		$db = new GroupedWorksSolrConnector($url);
-		$db->disableScoping();
-		$similar = $db->getMoreLikeThis($id);
-		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
-		// Send the similar items to the template; if there is only one, we need
-		// to force it to be an array or things will not display correctly.
-		if (isset($similar) && count($similar['response']['docs']) > 0) {
-			$similarTitles = array();
-			foreach ($similar['response']['docs'] as $key => $similarTitle){
-				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
-				$similarTitles[] = $similarTitleDriver->getScrollerTitle($key, 'MoreLikeThis');
+		$recordDriver = new GroupedWorkDriver($id);
+		if ($recordDriver->isValid()){
+			//Load Similar titles (from Solr)
+			$url = $configArray['Index']['url'];
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+			$db = new GroupedWorksSolrConnector($url);
+			$db->disableScoping();
+			$similar = $db->getMoreLikeThis($id);
+			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
+			// Send the similar items to the template; if there is only one, we need
+			// to force it to be an array or things will not display correctly.
+			if (isset($similar) && count($similar['response']['docs']) > 0) {
+				$similarTitles = array();
+				foreach ($similar['response']['docs'] as $key => $similarTitle){
+					$similarTitleDriver = new GroupedWorkDriver($similarTitle);
+					$similarTitles[] = $similarTitleDriver->getScrollerTitle($key, 'MoreLikeThis');
+				}
+				$similarTitlesInfo = array('titles' => $similarTitles, 'currentIndex' => 0);
+				$enrichmentResult['similarTitles'] = $similarTitlesInfo;
 			}
-			$similarTitlesInfo = array('titles' => $similarTitles, 'currentIndex' => 0);
-			$enrichmentResult['similarTitles'] = $similarTitlesInfo;
+			$memoryWatcher->logMemory('Loaded More Like This scroller data');
 		}
-		$memoryWatcher->logMemory('Loaded More Like This scroller data');
 
 		return $enrichmentResult;
 	}
