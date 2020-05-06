@@ -10,7 +10,7 @@
 - Citations
 - Collection Spotlights
 - Covers
-- eCommerce
+- [eCommerce](/Admin/HelpManual?page=eCommerce)
 - eContent Integrations
   - CloudLibrary
   - Hoopla

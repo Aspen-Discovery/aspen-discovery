@@ -846,6 +846,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'runNightlyFullIndex' => [
+					'title' => 'Run Nightly Full Index',
+					'description' => 'Whether or not a new full index should be run in the middle of the night',
+					'sql' => [
+						'ALTER TABLE system_variables ADD COLUMN runNightlyFullIndex TINYINT(1) DEFAULT 0'
+					]
+				],
+
 				'utf8_update' => array(
 					'title' => 'Update to UTF-8',
 					'description' => 'Update database to use UTF-8 encoding',

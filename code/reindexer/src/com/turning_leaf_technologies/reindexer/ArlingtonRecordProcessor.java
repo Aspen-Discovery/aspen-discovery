@@ -344,7 +344,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 			if (okToInclude){
 				StringBuilder subjectValue = new StringBuilder();
 				for (Subfield curSubfield : curSubject.getSubfields()){
-					if (curSubfield.getCode() != '2' && curSubfield.getCode() != '0'){
+					if (curSubfield.getCode() != '2' && curSubfield.getCode() != '0' && curSubfield.getCode() != '9'){
 						if (subjectValue.length() > 0){
 							subjectValue.append(" -- ");
 						}

@@ -177,7 +177,27 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				}
 			}
 
-			if (!foundFormatFromSublocation) {
+			boolean foundFormatFromCollection = false;
+			String collectionCode = item.getSubLocationCode();
+			if (!foundFormatFromCollection && collectionCode != null){
+				collectionCode = collectionCode.toLowerCase().trim();
+				if (hasTranslation("format", collectionCode)){
+					String translatedLocation = translateValue("format", collectionCode, recordInfo.getRecordIdentifier());
+					if (itemCountsByItype.containsKey(collectionCode)) {
+						itemCountsByItype.put(collectionCode, itemCountsByItype.get(collectionCode) + 1);
+					} else {
+						itemCountsByItype.put(collectionCode, 1);
+					}
+					foundFormatFromCollection = true;
+					itemTypeToFormat.put(collectionCode, translatedLocation);
+					if (itemCountsByItype.get(collectionCode) > mostUsedCount){
+						mostPopularIType = collectionCode;
+						mostUsedCount = itemCountsByItype.get(collectionCode);
+					}
+				}
+			}
+
+			if (!foundFormatFromSublocation && !foundFormatFromCollection) {
 				String iTypeCode = item.getITypeCode();
 				if (iTypeCode != null) {
 					String iType = iTypeCode.toLowerCase().trim();
