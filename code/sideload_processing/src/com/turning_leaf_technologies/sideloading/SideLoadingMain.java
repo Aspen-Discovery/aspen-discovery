@@ -5,6 +5,7 @@ import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.grouping.SideLoadedRecordGrouper;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.indexing.SideLoadSettings;
 import com.turning_leaf_technologies.logging.LoggingUtil;
@@ -115,12 +116,25 @@ public class SideLoadingMain {
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
 				break;
 			}
-			//Pause 30 minutes before running the next export
-			try {
-				System.gc();
-				Thread.sleep(1000 * 60 * 30);
-			} catch (InterruptedException e) {
-				logger.info("Thread was interrupted");
+
+			//Check to see if nightly indexing is running and if so, wait until it is done.
+			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+				while (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+					try {
+						System.gc();
+						Thread.sleep(1000 * 60 * 5);
+					} catch (InterruptedException e) {
+						logger.info("Thread was interrupted");
+					}
+				}
+			}else {
+				//Pause 30 minutes before running the next export
+				try {
+					System.gc();
+					Thread.sleep(1000 * 60 * 30);
+				} catch (InterruptedException e) {
+					logger.info("Thread was interrupted");
+				}
 			}
 		}
 	}
