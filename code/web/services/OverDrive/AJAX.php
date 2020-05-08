@@ -145,9 +145,7 @@ class OverDrive_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$result = $driver->selectOverDriveDownloadFormat($overDriveId, $formatId, $patron);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				return $result;
+				return $driver->selectOverDriveDownloadFormat($overDriveId, $formatId, $patron);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.');
 			}

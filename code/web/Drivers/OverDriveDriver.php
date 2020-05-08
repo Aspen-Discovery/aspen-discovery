@@ -34,7 +34,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		'audiobook-overdrive' => 'OverDrive Listen',
 		'video-streaming' => 'OverDrive Video',
 		'ebook-mediado' => 'MediaDo Reader',
-		'overdrive-magazine' => 'OverDrive Magazine'
+		'magazine-overdrive' => 'OverDrive Magazine'
 	);
 	private $lastHttpCode;
 
@@ -920,7 +920,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 				$userPin = $user->getPasswordOrPin();
 				// determine which column is the pin by using the opposing field to the barcode. (between catalog password & username)
 				$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
-				// this worked for flatirons checkout.  plb 1-13-2015
 			}else{
 				$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, false);
 			}
@@ -1135,6 +1134,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 */
 	private function loadCheckoutFormatInformation($curTitle, array $bookshelfItem): array
 	{
+		$bookshelfItem['allowDownload'] = true;
 		if (isset($curTitle->formats)) {
 			foreach ($curTitle->formats as $id => $format) {
 				if ($format->formatType == 'ebook-overdrive' || $format->formatType == 'ebook-mediado') {
@@ -1143,6 +1143,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$bookshelfItem['overdriveListen'] = true;
 				} else if ($format->formatType == 'video-streaming') {
 					$bookshelfItem['overdriveVideo'] = true;
+				} else if ($format->formatType == 'magazine-overdrive') {
+					$bookshelfItem['overdriveMagazine'] = true;
+					$bookshelfItem['allowDownload'] = false;
 				} else {
 					$bookshelfItem['selectedFormat'] = array(
 						'name' => $this->format_map[$format->formatType],
@@ -1152,15 +1155,15 @@ class OverDriveDriver extends AbstractEContentDriver{
 				$curFormat = array();
 				$curFormat['id'] = $id;
 				$curFormat['format'] = $format;
-				$curFormat['name'] = $format->formatType;
+				$curFormat['name'] = $this->format_map[$format->formatType];
 				if (isset($format->links->self)) {
 					$curFormat['downloadUrl'] = $format->links->self->href . '/downloadlink';
 				}
-				if ($format->formatType != 'ebook-overdrive' && $format->formatType != 'ebook-mediado' && $format->formatType != 'audiobook-overdrive' && $format->formatType != 'video-streaming') {
+				if ($format->formatType != 'magazine-overdrive' && $format->formatType != 'ebook-overdrive' && $format->formatType != 'ebook-mediado' && $format->formatType != 'audiobook-overdrive' && $format->formatType != 'video-streaming') {
 					$bookshelfItem['formats'][] = $curFormat;
 				} else {
 					if (isset($curFormat['downloadUrl'])) {
-						if ($format->formatType = 'ebook-overdrive' || $format->formatType == 'ebook-mediado') {
+						if ($format->formatType = 'ebook-overdrive' || $format->formatType == 'ebook-mediado' || $format->formatType == 'magazine-overdrive') {
 							$bookshelfItem['overdriveReadUrl'] = $curFormat['downloadUrl'];
 						} else if ($format->formatType == 'video-streaming') {
 							$bookshelfItem['overdriveVideoUrl'] = $curFormat['downloadUrl'];
