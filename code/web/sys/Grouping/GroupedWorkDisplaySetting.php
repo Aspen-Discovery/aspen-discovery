@@ -14,6 +14,7 @@ class GroupedWorkDisplaySetting extends DataObject
 	public $__displayNameColumn = 'name';
 	public $id;
 	public $name;
+	public $isDefault;
 
 	//Processing search
 	public $applyNumberOfHoldingsBoost;
