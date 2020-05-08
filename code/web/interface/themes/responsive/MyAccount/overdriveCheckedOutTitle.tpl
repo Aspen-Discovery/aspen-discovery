@@ -91,26 +91,28 @@
 						<div class="result-value col-tn-8 col-lg-9">{$record.dueDate|date_format}</div>
 					</div>
 
-					<div class="row econtent-download-row">
-						<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
-						<div class="result-value col-md-8 col-lg-9">
-							{if $record.formatSelected}
-								{translate text="overdrive_locked_in_format" defaultText="You downloaded the <strong>%1%</strong> format of this title." 1=$record.selectedFormat.name}
-							{else}
-								<div class="form-inline">
-									<label for="downloadFormat_{$record.overDriveId}">{translate text="Select one format to download."}</label>
-									<br>
-									<select name="downloadFormat_{$record.overDriveId}" id="downloadFormat_{$record.overDriveId}_{$smarty.now}" class="input-sm form-control">
-										<option value="-1">{translate text="Select a Format"}</option>
-										{foreach from=$record.formats item=format}
-											<option value="{$format.id}">{$format.name|translate}</option>
-										{/foreach}
-									</select>
-									<a href="#" onclick="AspenDiscovery.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}', '{$smarty.now}')" class="btn btn-sm btn-primary">{translate text="Download"}</a>
-								</div>
-							{/if}
+					{if $record.allowDownload}
+						<div class="row econtent-download-row">
+							<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
+							<div class="result-value col-md-8 col-lg-9">
+								{if $record.formatSelected}
+									{translate text="overdrive_locked_in_format" defaultText="You downloaded the <strong>%1%</strong> format of this title." 1=$record.selectedFormat.name}
+								{else}
+									<div class="form-inline">
+										<label for="downloadFormat_{$record.overDriveId}">{translate text="Select one format to download."}</label>
+										<br>
+										<select name="downloadFormat_{$record.overDriveId}" id="downloadFormat_{$record.overDriveId}_{$smarty.now}" class="input-sm form-control">
+											<option value="-1">{translate text="Select a Format"}</option>
+											{foreach from=$record.formats item=format}
+												<option value="{$format.id}">{$format.name|translate}</option>
+											{/foreach}
+										</select>
+										<a href="#" onclick="AspenDiscovery.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}', '{$smarty.now}')" class="btn btn-sm btn-primary">{translate text="Download"}</a>
+									</div>
+								{/if}
+							</div>
 						</div>
-					</div>
+					{/if}
 				</div>
 
 				{* Actions for Title *}
@@ -124,6 +126,9 @@
 						{/if}
 						{if !empty($record.overdriveVideo)}
 							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">{translate text="Watch&nbsp;Online"}</a>
+						{/if}
+						{if $record.overdriveMagazine}
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'magazine-overdrive')" class="btn btn-sm btn-primary">{translate text="Read&nbsp;Online"}</a>
 						{/if}
 						{if $record.formatSelected && empty($record.overdriveVideo)}
 							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.format}')" class="btn btn-sm btn-primary">{translate text="Download&nbsp;Again"}</a>

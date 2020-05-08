@@ -21,4 +21,15 @@ class SystemVariables extends DataObject
 			'loadCoversFrom020z' => array('property' => 'loadCoversFrom020z', 'type' => 'checkbox', 'label' => 'Load covers from cancelled & invalid ISBNs (020$z)', 'description' => 'Whether or not covers can be loaded from the 020z', 'default' => false),
 		];
 	}
+
+	public static function forceNightlyIndex()
+	{
+		$variables = new SystemVariables();
+		if ($variables->find(true)){
+			if ($variables->runNightlyFullIndex == 0) {
+				$variables->runNightlyFullIndex = 1;
+				$variables->update();
+			}
+		}
+	}
 }
