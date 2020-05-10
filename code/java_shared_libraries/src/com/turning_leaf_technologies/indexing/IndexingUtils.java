@@ -1,5 +1,8 @@
 package com.turning_leaf_technologies.indexing;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,7 +11,9 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.TreeSet;
 
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
+import org.ini4j.Ini;
 
 public class IndexingUtils {
 
@@ -492,4 +497,39 @@ public class IndexingUtils {
 		}
 	}
 
+	public static boolean isNightlyIndexRunning(Ini configIni, String serverName, Logger logger) {
+		if (configIni.get("System", "operatingSystem").equalsIgnoreCase("windows")){
+			try {
+				String line;
+				Process p = Runtime.getRuntime().exec("tasklist.exe /fo csv /nh /v /fi \"IMAGENAME eq cmd.exe\"");
+				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				while ((line = input.readLine()) != null) {
+					logger.info(line);
+					if (line.matches(".*reindexer\\.jar " + serverName + " nightly.*")){
+						return true;
+					}
+				}
+				input.close();
+			} catch (IOException e) {
+				logger.error("Error checking to see if reindexer is running", e);
+			}
+
+		}else{
+			try {
+				String line;
+				Process p = Runtime.getRuntime().exec("ps -ef | grep java");
+				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				while ((line = input.readLine()) != null) {
+					logger.info(line);
+					if (line.matches(".*reindexer\\.jar " + serverName + " nightly.*")){
+						return true;
+					}
+				}
+				input.close();
+			} catch (IOException e) {
+				logger.error("Error checking to see if reindexer is running", e);
+			}
+		}
+		return false;
+	}
 }

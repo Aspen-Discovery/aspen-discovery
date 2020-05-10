@@ -2076,6 +2076,15 @@ function getLibraryLocationUpdates(){
 			],
 		],
 
+		'defaultGroupedWorkDisplaySettings' => [
+			'title' => 'Default Grouped Work Display Settings',
+			'description' => 'Add a flag for which grouped work display settings should be the default when creating a library',
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings add column isDefault TINYINT(0) DEFAULT 0',
+				"UPDATE grouped_work_display_settings set isDefault = 1 where name = 'public'"
+			]
+		],
+
 		'selfRegistrationLocationRestrictions' => [
 			'title' => 'Self Registration Location Restrictions',
 			'description' => 'Setup restrictions for valid locations for self registration',

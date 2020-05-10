@@ -31,7 +31,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `indexing_profiles` WRITE;
 /*!40000 ALTER TABLE `indexing_profiles` DISABLE KEYS */;
-INSERT INTO `indexing_profiles` VALUES (1,'ils','/data/aspen-discovery/{sitename}/ils/marc','UTF8','/data/aspen-discovery/{sitename}/ils/marc_recs','MarcRecordGrouper','Koha','MarcRecordDriver','Record','bib','999','',1,'952','9',1,'','o','','','a','','c','8','h','','p','','','l','','','m','y','','d','yyyy-MM-dd','',0,'y','','','','','','','','Koha','','','','','','','','0',8,'.*\\.ma?rc','',4,0,'',1,0,NULL,NULL,NULL,NULL,NULL,'a','c',1,0,0,0);
+INSERT INTO `indexing_profiles` VALUES (1,'ils','/data/aspen-discovery/{sitename}/ils/marc','UTF8','/data/aspen-discovery/{sitename}/ils/marc_recs','MarcRecordGrouper','Koha','MarcRecordDriver','Record','bib','999','',1,'952','9',1,'','o','','','b','','c','8','h','','p','','','l','','','m','y','','d','yyyy-MM-dd','',0,'y','','','','','','','','Koha','','','','','','','','0',8,'.*\\.ma?rc','',4,0,'',1,0,NULL,NULL,NULL,NULL,NULL,'a','c',1,0,0,0);
 /*!40000 ALTER TABLE `indexing_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 

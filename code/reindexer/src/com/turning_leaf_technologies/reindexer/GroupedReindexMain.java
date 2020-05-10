@@ -21,6 +21,7 @@ public class GroupedReindexMain {
 	private static String processName = "grouped_reindex";
 	private static boolean fullReindex = false;
 	private static boolean clearIndex = false;
+	private static boolean isNightlyReindex = false;
 	private static String individualWorkToProcess;
 	private static Ini configIni;
 	private static String baseLogPath;
@@ -52,9 +53,10 @@ public class GroupedReindexMain {
 		if (args.length >= 2 && args[1].equalsIgnoreCase("full")) {
 			fullReindex = true;
 			clearIndex = true;
-		}else if (args.length >= 2 && args[1].equalsIgnoreCase("fullNoClear")){
+		}else if (args.length >= 2 && (args[1].equalsIgnoreCase("fullNoClear") || args[1].equalsIgnoreCase("nightly"))){
 			fullReindex = true;
 			clearIndex = false;
+			isNightlyReindex = args[1].equalsIgnoreCase("nightly");
 		}else if (args.length >= 2 && args[1].equalsIgnoreCase("singleWork")){
 			//Process a specific work
 			//Prompt for the work to process
@@ -204,6 +206,25 @@ public class GroupedReindexMain {
 			System.exit(1);
 		}
 
+		//If this is the nightly index, check to see if we need to run
+		if (isNightlyReindex) {
+			try {
+				logger.info("Checking to see if nightly index should run");
+				PreparedStatement getRunNightlyIndexStmt = dbConn.prepareStatement("SELECT runNightlyFullIndex FROM system_variables");
+				ResultSet getRunNightlyIndexRS = getRunNightlyIndexStmt.executeQuery();
+				if (getRunNightlyIndexRS.next()){
+					boolean runNightlyFullIndex = getRunNightlyIndexRS.getBoolean("runNightlyFullIndex");
+					if (!runNightlyFullIndex){
+						logger.info("Not running nightly full index");
+						System.exit(0);
+					}
+				}
+				getRunNightlyIndexStmt.close();
+			}catch (SQLException e) {
+				logger.error("Unable to determine if the nightly index should run, running it", e);
+			}
+		}
+
 		//Start a reindex log entry
 		try {
 			logger.info("Creating log entry for index");
@@ -216,6 +237,7 @@ public class GroupedReindexMain {
 			if (generatedKeys.next()){
 				reindexLogId = generatedKeys.getLong(1);
 			}
+			createLogEntryStatement.close();
 			
 			addNoteToReindexLogStmt = dbConn.prepareStatement("UPDATE reindex_log SET notes = ?, lastUpdate = ? WHERE id = ?");
 		} catch (SQLException e) {

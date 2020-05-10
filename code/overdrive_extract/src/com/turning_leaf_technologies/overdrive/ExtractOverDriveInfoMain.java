@@ -7,6 +7,7 @@ import java.util.Date;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -115,16 +116,29 @@ public class ExtractOverDriveInfoMain {
 			if (extractSingleWork) {
 				break;
 			}
-			//Based on number of changes, pause for a little while and then continue on so we are running continuously
-			try {
-				System.gc();
-				if (numChanges == 0) {
-					Thread.sleep(1000 * 60 * 5);
-				}else {
-					Thread.sleep(1000 * 60);
+
+			//Check to see if nightly indexing is running and if so, wait until it is done.
+			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+				while (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+					try {
+						System.gc();
+						Thread.sleep(1000 * 60 * 5);
+					} catch (InterruptedException e) {
+						logger.info("Thread was interrupted");
+					}
 				}
-			} catch (InterruptedException e) {
-				logger.info("Thread was interrupted");
+			}else {
+				//Based on number of changes, pause for a little while and then continue on so we are running continuously
+				try {
+					System.gc();
+					if (numChanges == 0) {
+						Thread.sleep(1000 * 60 * 5);
+					} else {
+						Thread.sleep(1000 * 60);
+					}
+				} catch (InterruptedException e) {
+					logger.info("Thread was interrupted");
+				}
 			}
 		}
 	}

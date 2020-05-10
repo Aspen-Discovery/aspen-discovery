@@ -136,80 +136,80 @@ class DataObjectUtil
 			}
 		}else if (in_array($property['type'], array('text', 'enum', 'hidden', 'url', 'email', 'multiemail'))){
 			if (isset($_REQUEST[$propertyName])){
-				$object->$propertyName = strip_tags(trim($_REQUEST[$propertyName]));
+				$object->setProperty($propertyName, strip_tags(trim($_REQUEST[$propertyName])), $property);
 			} else {
-				$object->$propertyName = "";
+				$object->setProperty($propertyName, "", $property);
 			}
 
 		}else if (in_array( $property['type'], array('textarea', 'html', 'markdown', 'folder', 'crSeparated'))){
 			if (strlen(trim($_REQUEST[$propertyName])) == 0){
-				$object->$propertyName = null;
+				$object->setProperty($propertyName, null, $property);
 			}else{
-				$object->$propertyName = trim($_REQUEST[$propertyName]);
+				$object->setProperty($propertyName, trim($_REQUEST[$propertyName]), $property);
 			}
 			//Strip tags from the input to avoid problems
 			if ($property['type'] == 'textarea' || $property['type'] == 'crSeparated'){
-				$object->$propertyName = strip_tags($object->$propertyName);
-			}elseif ($property['type'] == 'html'){
+				$object->setProperty($propertyName, strip_tags($object->$propertyName), $property);
+			}else{
 				$allowableTags = isset($property['allowableTags']) ? $property['allowableTags'] : '<p><a><b><em><ul><ol><em><li><strong><i><br>';
-				$object->$propertyName = strip_tags($object->$propertyName, $allowableTags);
+				$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
 			}
 		}else if ($property['type'] == 'integer' || $property['type'] == 'timestamp'){
 			if (preg_match('/\\d+/', $_REQUEST[$propertyName])){
-				$object->$propertyName =  $_REQUEST[$propertyName];
+				$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 			}else{
-				$object->$propertyName =  0;
+				$object->setProperty($propertyName, 0, $property);
 			}
 		} else if ($property['type'] == 'color' || $property['type'] == 'font') {
 			$defaultProperty = $propertyName . 'Default';
 			if (isset($_REQUEST[$propertyName . '-default']) && ($_REQUEST[$propertyName . '-default'] == 'on')) {
-				$object->$defaultProperty = 1;
+				$object->setProperty($defaultProperty, 1, null);
 			} else {
-				$object->$defaultProperty = 0;
+				$object->setProperty($defaultProperty, 0, null);
 			}
-			$object->$propertyName = $_REQUEST[$propertyName];
+			$object->setProperty($defaultProperty, $_REQUEST[$propertyName], $property);
 		}else if ($property['type'] == 'currency'){
 			if (preg_match('/\\$?\\d*\\.?\\d*/', $_REQUEST[$propertyName])){
 				if (substr($_REQUEST[$propertyName], 0, 1) == '$'){
-					$object->$propertyName =  substr($_REQUEST[$propertyName], 1);
+					$object->setProperty($propertyName, substr($_REQUEST[$propertyName], 1), $property);
 				}else{
-					$object->$propertyName =  $_REQUEST[$propertyName];
+					$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 				}
 			}else{
-				$object->$propertyName =  0;
+				$object->setProperty($propertyName, 0, $property);
 			}
 
 		}else if ($property['type'] == 'checkbox'){
-			$object->$propertyName = isset($_REQUEST[$propertyName]) && $_REQUEST[$propertyName] == 'on' ? 1 : 0;
+			$object->setProperty($propertyName,isset($_REQUEST[$propertyName]) && $_REQUEST[$propertyName] == 'on' ? 1 : 0, $property);
 
 		}else if ($property['type'] == 'multiSelect'){
 			if (isset($_REQUEST[$propertyName]) && is_array($_REQUEST[$propertyName])){
-				$object->$propertyName = $_REQUEST[$propertyName];
+				$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 			}else{
-				$object->$propertyName = array();
+				$object->setProperty($propertyName, [], $property);
 			}
 
 		}else if ($property['type'] == 'date'){
 			if (strlen($_REQUEST[$propertyName]) == 0 || $_REQUEST[$propertyName] == '0000-00-00'){
-				$object->$propertyName = null;
+				$object->setProperty($propertyName, null, $property);
 			}else{
 				$dateParts = date_parse($_REQUEST[$propertyName]);
 				$time = $dateParts['year'] . '-' . $dateParts['month'] . '-' . $dateParts['day'];
-				$object->$propertyName = $time;
+				$object->setProperty($propertyName, $time, $property);
 			}
 
 		}else if ($property['type'] == 'partialDate'){
 			$dayField = $property['propNameDay'];
-			$object->$dayField = $_REQUEST[$dayField];
+			$object->setProperty($dayField, $_REQUEST[$dayField], null);
 			$monthField = $property['propNameMonth'];
-			$object->$monthField = $_REQUEST[$monthField];
+			$object->setProperty($monthField, $_REQUEST[$monthField], null);
 			$yearField = $property['propNameYear'];
-			$object->$yearField = $_REQUEST[$yearField];
+			$object->setProperty($yearField, $_REQUEST[$yearField], null);
 
 		}else if ($property['type'] == 'image'){
 			//Make sure that the type is correct (jpg, png, or gif)
 			if (isset($_REQUEST["remove{$propertyName}"])){
-				$object->$propertyName = '';
+				$object->setProperty($propertyName, '', $property);
 
 			}else if (isset($_FILES[$propertyName])){
 				if (isset($_FILES[$propertyName]["error"]) && $_FILES[$propertyName]["error"] == 4){
@@ -333,7 +333,7 @@ class DataObjectUtil
 						}
 					}
 					//store the actual filename
-					$object->$propertyName = $destFileName;
+					$object->setProperty($propertyName, $destFileName, $property);
 					$logger->log("Set $propertyName to $destFileName", Logger::LOG_DEBUG);
 				}
 			}
@@ -341,9 +341,9 @@ class DataObjectUtil
 		}else if ($property['type'] == 'file'){
 			//Make sure that the type is correct (jpg, png, or gif)
 			if (isset($_REQUEST["remove{$propertyName}"])){
-				$object->$propertyName = '';
+				$object->setProperty($propertyName, '', $property);
 			}elseif (isset($_REQUEST["{$propertyName}_existing"]) && $_FILES[$propertyName]['error'] == 4){
-				$object->$propertyName = $_REQUEST["{$propertyName}_existing"];
+				$object->setProperty($propertyName, $_REQUEST["{$propertyName}_existing"], $property);
 			}else if (isset($_FILES[$propertyName])){
 				if ($_FILES[$propertyName]["error"] > 0){
 					//return an error to the browser
@@ -377,15 +377,15 @@ class DataObjectUtil
 						}
 					}
 					//store the actual filename
-					$object->$propertyName = $destFileName;
+					$object->setProperty($propertyName, $destFileName, $property);
 				}
 			}
 		}else if ($property['type'] == 'uploaded_font'){
 			//Make sure that the type is correct (jpg, png, or gif)
 			if (isset($_REQUEST["remove{$propertyName}"])){
-				$object->$propertyName = '';
+				$object->setProperty($propertyName, '', $property);
 			}elseif (isset($_REQUEST["{$propertyName}_existing"]) && $_FILES[$propertyName]['error'] == 4){
-				$object->$propertyName = $_REQUEST["{$propertyName}_existing"];
+				$object->setProperty($propertyName, $_REQUEST["{$propertyName}_existing"], $property);
 			}else if (isset($_FILES[$propertyName])){
 				if ($_FILES[$propertyName]["error"] > 0){
 					//return an error to the browser
@@ -409,16 +409,16 @@ class DataObjectUtil
 						}
 					}
 					//store the actual filename
-					$object->$propertyName = $destFileName;
+					$object->setProperty($propertyName, $destFileName, $property);
 				}
 			}
 		}else if ($property['type'] == 'password'){
 			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])){
-				$object->$propertyName = md5($_REQUEST[$propertyName]);
+				$object->setProperty($propertyName, md5($_REQUEST[$propertyName]), $property);
 			}
 		}else if ($property['type'] == 'storedPassword'){
 			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])){
-				$object->$propertyName = $_REQUEST[$propertyName];
+				$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 			}
 		}else if ($property['type'] == 'oneToMany'){
 			//Check for deleted associations
@@ -458,16 +458,16 @@ class DataObjectUtil
 							$requestKey = $propertyName . '_' . $subProperty['property'];
 							$subPropertyName = $subProperty['property'];
 							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html', 'markdown', 'multiSelect') )){
-								$subObject->$subPropertyName = $_REQUEST[$requestKey][$id];
+								$subObject->setProperty($subPropertyName, $_REQUEST[$requestKey][$id], $subProperty);
 							}elseif (in_array($subProperty['type'], array('checkbox') )){
-								$subObject->$subPropertyName = isset($_REQUEST[$requestKey][$id]) ? 1 : 0;
+								$subObject->setProperty($subPropertyName, isset($_REQUEST[$requestKey][$id]) ? 1 : 0, $subProperty);
 							}elseif ($subProperty['type'] == 'date'){
 								if (strlen($_REQUEST[$requestKey][$id]) == 0 || $_REQUEST[$requestKey][$id] == '0000-00-00'){
-									$subObject->$subPropertyName = null;
+									$subObject->setProperty($subPropertyName, null, $subProperty);
 								}else{
 									$dateParts = date_parse($_REQUEST[$requestKey][$id]);
 									$time = $dateParts['year'] . '-' . $dateParts['month'] . '-' . $dateParts['day'];
-									$subObject->$subPropertyName = $time;
+									$subObject->setProperty($subPropertyName, $time, $subProperty);
 								}
 							}elseif (!in_array($subProperty['type'], array('label', 'foreignKey', 'oneToMany') )){
 								//echo("Invalid Property Type " . $subProperty['type']);
@@ -475,7 +475,7 @@ class DataObjectUtil
 						}
 					}
 					if ($property['sortable'] == true && isset($weights)){
-						$subObject->weight = $weights[$id];
+						$subObject->setProperty('weight', $weights[$id], null);
 					}
 
 					//Update the values array
@@ -516,4 +516,5 @@ class DataObjectUtil
 		);
 		return $errorMessages[$errorNo];
 	}
+
 }

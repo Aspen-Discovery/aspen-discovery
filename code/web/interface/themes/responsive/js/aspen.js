@@ -3152,8 +3152,10 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadMoreLikeThis: function (id, forceReload) {
-			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-				params = {'method':'getMoreLikeThis'};
+			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+			let params = {
+				'method':'getMoreLikeThis'
+			};
 			if (forceReload !== undefined){
 				params['reload'] = true;
 			}

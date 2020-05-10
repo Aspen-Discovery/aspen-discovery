@@ -1700,7 +1700,7 @@ class User extends DataObject
 
 	function eligibleForHolds()
 	{
-		$this->getCatalogDriver()->patronEligibleForHolds($this);
+		return $this->getCatalogDriver()->patronEligibleForHolds($this);
 	}
 
 	function getShowAutoRenewSwitch()
