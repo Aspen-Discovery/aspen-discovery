@@ -76,6 +76,8 @@ class WebBuilder_AJAX extends JSON_Action
 						$image = new ImageUpload();
 						$image->type = 'web_builder_image';
 						$image->fullSizePath = $file['name'];
+						$image->generateMediumSize = true;
+						$image->generateSmallSize = true;
 						$destFileName = $file['name'];
 						$destFolder = $structure['fullSizePath']['path'];
 						$destFullPath = $destFolder . '/' . $destFileName;
