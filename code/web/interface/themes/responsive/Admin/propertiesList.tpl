@@ -90,12 +90,15 @@
 						{/foreach}
 						{if $dataItem->class != 'objectDeleted'}
 							<td>
-								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>Edit</a>
+								<div class="btn-group-vertical">
+								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm">Edit</a>
+								<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm">History</a>
 								{if $additionalActions}
 									{foreach from=$additionalActions item=action}
-										<a href='{$action.path}&amp;id={$id}'>{$action.name}</a>
+										<a href='{$action.path}&amp;id={$id}' class="btn btn-default btn-sm">{$action.name}</a>
 									{/foreach}
 								{/if}
+								</div>
 							</td>
 						{/if}
 					</tr>

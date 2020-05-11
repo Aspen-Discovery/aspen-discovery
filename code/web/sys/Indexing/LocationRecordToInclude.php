@@ -8,7 +8,6 @@ class LocationRecordToInclude extends RecordToInclude{
 	static function getObjectStructure(){
 		$location = new Location();
 		$location->orderBy('displayName');
-		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$location->libraryId = $homeLibrary->libraryId;

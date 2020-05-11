@@ -466,7 +466,8 @@ class UserAPI extends Action
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			$allHolds = $user->getHolds();
+			$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
+			$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
 			return array('success' => true, 'holds' => $allHolds);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -766,7 +767,8 @@ class UserAPI extends Action
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !($user instanceof AspenError)) {
-				$allCheckedOut = $user->getCheckouts(false, true);
+				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
+				$allCheckedOut = $user->getCheckouts(false);
 				foreach ($allCheckedOut as $key => $checkout){
 					if (isset($checkout['canRenew'])){
 						/** @noinspection SpellCheckingInspection */

@@ -1332,4 +1332,36 @@ class GroupedWork_AJAX extends JSON_Action
 		}
 		return $result;
 	}
+
+	function deleteAlternateTitle(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error deleting alternate title'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			$id = $_REQUEST['id'];
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
+			$alternateTitle = new GroupedWorkAlternateTitle();
+			$alternateTitle->id = $id;
+			if ($alternateTitle->find(true)){
+				$permanentId = $alternateTitle->permanent_id;
+				$alternateTitle->delete();
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+				$groupedWork = new GroupedWork();
+				$groupedWork->permanent_id = $permanentId;
+				if ($groupedWork->find(true)){
+					$groupedWork->forceReindex(true);
+				}
+				$result = [
+					'success' => true,
+					'message' => "Successfully deleted the alternate title"
+				];
+			}else{
+				$results['message'] = "Could not find the alternate title to delete";
+			}
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return $result;
+	}
 }

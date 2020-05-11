@@ -13,6 +13,7 @@
 			{if $showReturnToList}
 				<a class="btn btn-default" href='/{$module}/{$toolName}?objectAction=list'>{translate text="Return to List"}</a>
 			{/if}
+			<a class="btn btn-default" href='/{$module}/{$toolName}?id={$id}&amp;objectAction=history'>{translate text="History"}</a>
 			{if $id > 0 && $canDelete}<a class="btn btn-danger" href='/{$module}/{$toolName}?id={$id}&amp;objectAction=delete' onclick='return confirm("Are you sure you want to delete this {$objectType}?")'>{translate text="Delete"}</a>{/if}
 		</p>
 		<div class="btn-group">
