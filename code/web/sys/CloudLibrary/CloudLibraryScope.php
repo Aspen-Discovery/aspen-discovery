@@ -5,9 +5,9 @@ class CloudLibraryScope extends DataObject
 	public $__table = 'cloud_library_scopes';
 	public $id;
 	public $name;
-	public $includeEAudiobook;
-	public $includeEBooks;
-	public $restrictToChildrensMaterial;
+	public /** @noinspection PhpUnused */ $includeEAudiobook;
+	public /** @noinspection PhpUnused */ $includeEBooks;
+	public /** @noinspection PhpUnused */ $restrictToChildrensMaterial;
 
 	private $_libraries;
 	private $_locations;
@@ -17,12 +17,12 @@ class CloudLibraryScope extends DataObject
 		$libraryList = Library::getLibraryList();
 		$locationList = Location::getLocationList();
 
-		$structure = array(
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
-			'includeEAudiobook' => array('property'=>'includeEAudiobook', 'type'=>'checkbox', 'label'=>'Include eAudio books', 'description'=>'Whether or not EAudiobook are included', 'default'=>1),
-			'includeEBooks' => array('property'=>'includeEBooks', 'type'=>'checkbox', 'label'=>'Include eBooks', 'description'=>'Whether or not EBooks are included', 'default'=>1),
-			'restrictToChildrensMaterial' => array('property'=>'restrictToChildrensMaterial', 'type'=>'checkbox', 'label'=>'Include Children\'s Materials Only', 'description'=>'If checked only includes titles identified as children by RBdigital', 'default'=>0),
+			'includeEAudiobook' => array('property'=>'includeEAudiobook', 'type'=>'checkbox', 'label'=>'Include eAudio books', 'description'=>'Whether or not EAudiobook are included', 'default'=>1, 'forcesReindex' => true),
+			'includeEBooks' => array('property'=>'includeEBooks', 'type'=>'checkbox', 'label'=>'Include eBooks', 'description'=>'Whether or not EBooks are included', 'default'=>1, 'forcesReindex' => true),
+			'restrictToChildrensMaterial' => array('property'=>'restrictToChildrensMaterial', 'type'=>'checkbox', 'label'=>'Include Children\'s Materials Only', 'description'=>'If checked only includes titles identified as children by RBdigital', 'default'=>0, 'forcesReindex' => true),
 
 			'libraries' => array(
 				'property' => 'libraries',
@@ -31,6 +31,7 @@ class CloudLibraryScope extends DataObject
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use this scope',
 				'values' => $libraryList,
+				'forcesReindex' => true
 			),
 
 			'locations' => array(
@@ -40,9 +41,9 @@ class CloudLibraryScope extends DataObject
 				'label' => 'Locations',
 				'description' => 'Define locations that use this scope',
 				'values' => $locationList,
+				'forcesReindex' => true
 			),
 		);
-		return $structure;
 	}
 
 	public function __get($name){
@@ -75,10 +76,8 @@ class CloudLibraryScope extends DataObject
 
 	public function __set($name, $value){
 		if ($name == "libraries") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_libraries = $value;
 		}elseif ($name == "locations") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_locations = $value;
 		}else {
 			$this->_data[$name] = $value;
@@ -166,37 +165,41 @@ class CloudLibraryScope extends DataObject
 		}
 	}
 
-	/** @return Library[] */
+	/** @return Library[]
+	 * @noinspection PhpUnused
+	 */
 	public function getLibraries()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_libraries;
 	}
 
-	/** @return Location[] */
+	/** @return Location[]
+	 * @noinspection PhpUnused
+	 */
 	public function getLocations()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_locations;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setLibraries($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setLocations($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearLibraries(){
 		$this->clearOneToManyOptions('Library', 'cloudLibraryScopeId');
 		unset($this->_libraries);
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearLocations(){
 		$this->clearOneToManyOptions('Location', 'cloudLibraryScopeId');
 		unset($this->_locations);
