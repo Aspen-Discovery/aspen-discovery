@@ -640,7 +640,7 @@ abstract class DataObject
 			$history = new DataObjectHistory();
 			$history->objectType = get_class($this);
 			$primaryKey = $this->__primaryKey;
-			if (!empty($primaryKey)) {
+			if (!empty($this->$primaryKey)) {
 				$history->objectId = $this->$primaryKey;
 				$history->oldValue = $oldValue;
 				$history->propertyName = $propertyName;
