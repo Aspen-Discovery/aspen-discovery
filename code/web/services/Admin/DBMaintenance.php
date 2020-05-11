@@ -2253,6 +2253,15 @@ class Admin_DBMaintenance extends Admin_Admin
 						) ENGINE = INNODB;',
 					]
 				],
+
+				'object_history_field_lengths' => [
+					'title' => 'Data Object History Value Lengths',
+					'description' => 'Increase the maximum length of values',
+					'sql' => [
+						'ALTER TABLE object_history CHANGE COLUMN oldValue oldValue TEXT',
+						'ALTER TABLE object_history CHANGE COLUMN newValue newValue TEXT',
+					]
+				],
 			)
 		);
 	}
