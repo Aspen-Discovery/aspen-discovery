@@ -228,7 +228,7 @@ class DataObjectUtil
 						$destFolder = $property['storagePath'];
 						$destFullPath = $destFolder . '/' . $destFileName;
 						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
-						$logger->log("Copied file to $destFullPath", Logger::LOG_DEBUG);
+						$logger->log("Copied file to $destFullPath result: $copyResult", Logger::LOG_DEBUG);
 					}else{
 						$logger->log("Creating thumbnails for $propertyName", Logger::LOG_DEBUG);
 						if (isset($property['path'])){
@@ -347,6 +347,7 @@ class DataObjectUtil
 			}else if (isset($_FILES[$propertyName])){
 				if ($_FILES[$propertyName]["error"] > 0){
 					//return an error to the browser
+					$logger->log("Error uploading file " . $_FILES[$propertyName]["error"], Logger::LOG_ERROR);
 				}else if (true){ //TODO: validate the file type
 					if (array_key_exists('validTypes', $property)){
 						$fileType = $_FILES[$propertyName]["type"];
@@ -389,6 +390,7 @@ class DataObjectUtil
 			}else if (isset($_FILES[$propertyName])){
 				if ($_FILES[$propertyName]["error"] > 0){
 					//return an error to the browser
+					$logger->log("Error uploading file " . $_FILES[$propertyName]["error"], Logger::LOG_ERROR);
 				}else if (true){ //TODO: validate the file type
 					//Copy the full image to the correct location
 					//Filename is the name of the object + the original filename
@@ -471,6 +473,7 @@ class DataObjectUtil
 								}
 							}elseif (!in_array($subProperty['type'], array('label', 'foreignKey', 'oneToMany') )){
 								//echo("Invalid Property Type " . $subProperty['type']);
+								$logger->log("Invalid Property Type " . $subProperty['type'], Logger::LOG_DEBUG);
 							}
 						}
 					}

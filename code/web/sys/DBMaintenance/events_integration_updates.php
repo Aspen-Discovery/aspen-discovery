@@ -129,5 +129,23 @@ function getEventsIntegrationUpdates(){
 			],
 		],
 
+		'events_spotlights' => [
+			'title' => 'Create Events Spotlights',
+			'description' => 'Add a table for Events Spotlights',
+			'sql' => [
+				"CREATE TABLE events_spotlights (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(255) NOT NULL,
+					showNameAsTitle TINYINT(1),
+					description TEXT, 
+					showDescription TINYINT(1) DEFAULT 0, 
+					showEventImages TINYINT(1) DEFAULT 1,
+					showEventDescriptions TINYINT(1) DEFAULT 1,
+					searchTerm VARCHAR(500) NOT NULL DEFAULT '',
+					defaultFilter TEXT,
+					defaultSort ENUM('relevance', 'start_date_sort', 'title_sort')
+				) ENGINE = InnoDB"
+			]
+		]
 	];
 }

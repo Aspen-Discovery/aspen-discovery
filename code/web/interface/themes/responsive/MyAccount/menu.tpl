@@ -421,6 +421,9 @@
 								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/CollectionSpotlights">{translate text="Collection Spotlights"}</a></div>
 								{/if}
+								{if array_key_exists('Events', $enabledModules) && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink"><a href="/Events/EventsSpotlights">{translate text="Events Spotlights"}</a></div>
+								{/if}
 								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/Placards">{translate text="Placards"}</a></div>
 								{/if}
@@ -743,7 +746,7 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('Events', $enabledModules) && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+				{if array_key_exists('Events', $enabledModules) && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 					{if $module == 'Events' && in_array($action, array('LMLibraryCalendarSettings', 'Dashboard', 'IndexingLog'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -761,6 +764,7 @@
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/Events/LMLibraryCalendarSettings">{translate text="Library Market - Calendar Settings"}</a></div>
 								<div class="adminMenuLink"><a href="/Events/IndexingLog">{translate text="Indexing Log"}</a></div>
+								<div class="adminMenuLink"><a href="/Events/EventsSpotlights">{translate text="Events Spotlights"}</a></div>
 								{*<div class="adminMenuLink"><a href="/Events/Dashboard">{translate text="Dashboard"}</a></div>*}
 							</div>
 						</div>

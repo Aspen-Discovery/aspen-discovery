@@ -26,6 +26,9 @@ class AspenParsedown extends ParsedownExtra{
 					'extent' => strlen($Excerpt['text']),
 				);
 			}
+		}elseif (preg_match_all('/events:(.*)/i', $element['element']['attributes']['href'], $matches)){
+			require_once ROOT_DIR . '/sys/LocalEnrichment/EventsSpotlight.php';
+
 		}
 		return $element;
 	}
