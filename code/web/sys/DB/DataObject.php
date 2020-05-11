@@ -640,13 +640,15 @@ abstract class DataObject
 			$history = new DataObjectHistory();
 			$history->objectType = get_class($this);
 			$primaryKey = $this->__primaryKey;
-			$history->objectId = $this->$primaryKey;
-			$history->oldValue = $oldValue;
-			$history->propertyName = $propertyName;
-			$history->newValue = $newValue;
-			$history->changedBy = UserAccount::getActiveUserId();
-			$history->changeDate = time();
-			$history->insert();
+			if (!empty($primaryKey)) {
+				$history->objectId = $this->$primaryKey;
+				$history->oldValue = $oldValue;
+				$history->propertyName = $propertyName;
+				$history->newValue = $newValue;
+				$history->changedBy = UserAccount::getActiveUserId();
+				$history->changeDate = time();
+				$history->insert();
+			}
 
 			return true;
 		}else{
