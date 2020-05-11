@@ -37,6 +37,8 @@ abstract class ObjectEditor extends Admin_Admin
 			$this->editObject($objectAction, $structure);
 		}elseif ($objectAction == 'compare') {
 			$this->compareObjects($structure);
+		}elseif ($objectAction == 'history') {
+			$this->showHistory($structure);
 		}else{
 			//check to see if a custom action is being called.
 			if (method_exists($this, $objectAction)){
@@ -378,6 +380,40 @@ abstract class ObjectEditor extends Admin_Admin
 			return $property['values'][$propertyValue];
 		} else {
 			return is_array($propertyValue) ? implode(', ', $propertyValue) : (is_object($propertyValue) ? (string)$propertyValue : $propertyValue);
+		}
+	}
+
+	function showHistory($structure) {
+		$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
+		if (empty($id) || $id < 0){
+			AspenError::raiseError('Please select an object to show history for');
+		}else{
+			//Work with an existing record
+			global $interface;
+			$curObject = $this->getExistingObjectById($id);
+			$interface->assign('curObject', $curObject);
+			$interface->assign('id', $id);
+			$displayNameColumn = $curObject->__displayNameColumn;
+			$primaryField = $curObject->__primaryKey;
+			$objectHistory = [];
+			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+			$historyEntry = new DataObjectHistory();
+			$historyEntry->objectType = get_class($curObject);
+			$historyEntry->objectId = $curObject->$primaryField;
+			if ($displayNameColumn != null){
+				$title = 'History for ' . $curObject->$displayNameColumn;
+			}else{
+				$title = 'History for ' . $historyEntry->objectType . ' - ' . $historyEntry->objectId;
+			}
+			$interface->assign('title', $title);
+			$historyEntry->orderBy('changeDate desc');
+			$historyEntry->find();
+			while ($historyEntry->fetch()){
+				$objectHistory[] = clone $historyEntry;
+			}
+			$interface->assign('objectHistory', $objectHistory);
+			$this->display('objectHistory.tpl',$title);
+			exit();
 		}
 	}
 }
