@@ -412,7 +412,7 @@ abstract class ObjectEditor extends Admin_Admin
 				$objectHistory[] = clone $historyEntry;
 			}
 			$interface->assign('objectHistory', $objectHistory);
-			$this->display('objectHistory.tpl',$title);
+			$this->display('../Admin/objectHistory.tpl',$title);
 			exit();
 		}
 	}
