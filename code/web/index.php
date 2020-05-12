@@ -662,6 +662,11 @@ if (array_key_exists('Web Builder', $enabledModules)){
 		//Get the top level menu
 		$menu = new WebBuilderMenu();
 		$menu->parentMenuId = -1;
+		if (!UserAccount::isLoggedIn()){
+			$menu->whereAdd('showWhen = 0 OR showWhen = 2');
+		}else{
+			$menu->whereAdd('showWhen = 0 OR showWhen = 1');
+		}
 		$menu->orderBy('weight ASC, label');
 		$menu->find();
 		while ($menu->fetch()) {
