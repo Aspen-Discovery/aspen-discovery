@@ -8,6 +8,7 @@ class WebBuilderMenu extends DataObject
 	public $label;
 	public $parentMenuId;
 	public $url;
+	public $showWhen;
 
 	public function getNumericColumnNames()
 	{
@@ -31,6 +32,7 @@ class WebBuilderMenu extends DataObject
 			'parentMenuId' => array('property' => 'parentMenuId', 'type' => 'enum', 'values' => $parentMenuItems, 'label' => 'Parent Menu Item', 'description' => 'The parent of the menu item'),
 			'weight' => array('property' => 'weight', 'type' => 'integer', 'label' => 'Weight', 'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.', 'required'=> true, 'default'=>0),
 			'url' => array('property' => 'url', 'type' => 'text', 'label' => 'URL', 'description' => 'The URL to link to', 'maxLength' => 255),
+			'showWhen' => ['property' => 'showWhen', 'type' => 'enum', 'values' => [0 => 'Always', 1 => 'When User is Logged In', 2 => 'When User is Logged Out'], 'label' => 'Show', 'description' => 'When the menu should be shown', 'default' => 0]
 		];
 		return $structure;
 	}

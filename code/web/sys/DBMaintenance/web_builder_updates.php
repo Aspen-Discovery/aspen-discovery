@@ -47,9 +47,17 @@ function getWebBuilderUpdates(){
 
 		'web_builder_menu_sorting' => [
 			'title' => 'Web Builder Menu Sorting',
-			'description' => 'Add a weight to the Web Builder',
+			'description' => 'Add a weight to the Web Builder Menu',
 			'sql' => [
 				"ALTER TABLE web_builder_menu ADD COLUMN weight INT DEFAULT 0",
+			]
+		],
+
+		'web_builder_menu_show_when' => [
+			'title' => 'Web Builder Menu Show When',
+			'description' => 'Add a showWhen to the Web Builder Menu',
+			'sql' => [
+				"ALTER TABLE web_builder_menu ADD COLUMN showWhen TINYINT DEFAULT 0",
 			]
 		],
 
