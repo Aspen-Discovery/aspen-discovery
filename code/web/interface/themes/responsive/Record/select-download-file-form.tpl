@@ -1,7 +1,11 @@
 {strip}
-<form enctype="multipart/form-data" name="downloadPDF" id="downloadPDF" method="post" onsubmit="return AspenDiscovery.Record.downloadSelectedFile();">
+<form enctype="multipart/form-data" name="downloadFile" id="downloadFile" method="post" onsubmit="return AspenDiscovery.Record.downloadSelectedFile();">
 	<input type="hidden" name="id" id="id" value="{$id}"/>
-	<input type="hidden" name="method" value="downloadPDF"/>
+	{if $fileType == 'RecordPDF'}
+		<input type="hidden" name="method" value="downloadPDF"/>
+	{else}
+		<input type="hidden" name="method" value="downloadPDF"/>
+	{/if}
 	<div class="form-group">
 		<div class="form-group">
 			<label for="selectedFile">

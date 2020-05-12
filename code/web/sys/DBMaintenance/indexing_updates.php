@@ -431,6 +431,15 @@ function getIndexingUpdates()
 			]
 		],
 
+		'track_supplemental_file_downloads' => [
+			'title' => 'Tracking of Supplemental File Downloads',
+			'description' => 'Track Supplemental File Downloads by User and by indexing profile',
+			'sql' =>[
+				'ALTER TABLE user_ils_usage ADD COLUMN supplementalFileDownloadCount INT(11) DEFAULT 0',
+				'ALTER TABLE ils_record_usage ADD COLUMN supplementalFileDownloadCount INT(11) DEFAULT 0',
+			]
+		],
+
 		'indexing_profile_add_continuous_update_fields' => [
 			'title' => 'Indexing Profile Add Continuous Update Fields',
 			'description' => 'Add fields to track when last updates were done and to trigger full updates',

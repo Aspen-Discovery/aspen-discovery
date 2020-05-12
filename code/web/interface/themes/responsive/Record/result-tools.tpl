@@ -3,7 +3,7 @@
 	<div class="btn-group btn-group-vertical btn-block">
 		{* actions *}
 		{foreach from=$actions item=curAction}
-			<a href="{$curAction.url}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm btn-primary">{$curAction.title}</a>
+			<a href="{$curAction.url}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm btn-primary btn-wrap">{$curAction.title}</a>
 		{/foreach}
 	</div>
 </div>
