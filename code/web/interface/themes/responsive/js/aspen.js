@@ -5455,9 +5455,27 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		deletePDF: function(id, fileId) {
+		uploadSupplementalFile: function (id){
+			let url = Globals.path + '/Record/' + id + '/AJAX?method=uploadSupplementalFile';
+			let uploadSupplementalFileData = new FormData($("#uploadSupplementalFileForm")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: uploadSupplementalFileData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
+
+		deleteUploadedFile: function(id, fileId) {
 			if (confirm("Are you sure you want to delete this file?")){
-				let url = Globals.path + '/Record/' + id + '/AJAX?method=deletePDF&fileId=' +fileId;
+				let url = Globals.path + '/Record/' + id + '/AJAX?method=deleteUploadedFile&fileId=' +fileId;
 				$.getJSON(url, function (data){
 					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
 				});
@@ -5473,9 +5491,21 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		selectFileDownload: function( recordId) {
-			let url = Globals.path + '/Record/' + recordId + '/AJAX?method=showSelectDownloadForm';
+		getUploadSupplementalFileForm: function (id) {
+			let url = Globals.path + '/Record/' + id + '/AJAX?method=getUploadSupplementalFileForm';
 			$.getJSON(url, function (data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			});
+			return false;
+		},
+
+		selectFileDownload: function( recordId, type) {
+			let url = Globals.path + '/Record/' + recordId + '/AJAX';
+			let params = {
+				method: 'showSelectDownloadForm',
+				type: type,
+			};
+			$.getJSON(url, params, function (data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
 			);
@@ -5484,8 +5514,13 @@ AspenDiscovery.Record = (function(){
 
 		downloadSelectedFile: function () {
 			let id = $('#id').val();
+			let fileType = $('#fileType').val();
 			let selectedFile = $('#selectedFile').val();
-			window.location = Globals.path + '/Record/' + id + '/DownloadPDF?fileId=' + selectedFile;
+			if (fileType === 'RecordPDF'){
+				window.location = Globals.path + '/Record/' + id + '/DownloadPDF?fileId=' + selectedFile;
+			}else{
+				window.location = Globals.path + '/Record/' + id + '/DownloadSupplementalFile?fileId=' + selectedFile;
+			}
 			return false;
 		},
 
