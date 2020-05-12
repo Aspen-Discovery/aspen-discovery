@@ -45,14 +45,28 @@ public class KohaExportMain {
 	private static IlsExtractLogEntry logEntry;
 
 	public static void main(String[] args) {
+		boolean extractSingleWork = false;
+		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
+			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
+				extractSingleWork = true;
+			}
 		} else {
 			serverName = args[0];
+			if (args.length > 1){
+				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")){
+					extractSingleWork = true;
+				}
+			}
+		}
+		if (extractSingleWork) {
+			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 		}
 		String profileToLoad = "koha";
 
@@ -111,22 +125,24 @@ public class KohaExportMain {
 
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
 
-				updateBranchInfo(dbConn, kohaConn);
-				logEntry.addNote("Finished updating branch information");
+				if (!extractSingleWork) {
+					updateBranchInfo(dbConn, kohaConn);
+					logEntry.addNote("Finished updating branch information");
 
-				updatePatronTypes(dbConn, kohaConn);
-				logEntry.addNote("Finished updating patron types");
+					updatePatronTypes(dbConn, kohaConn);
+					logEntry.addNote("Finished updating patron types");
 
-				updateTranslationMaps(dbConn, kohaConn);
-				logEntry.addNote("Finished updating translation maps");
+					updateTranslationMaps(dbConn, kohaConn);
+					logEntry.addNote("Finished updating translation maps");
 
-				exportHolds(dbConn, kohaConn);
-				logEntry.addNote("Finished loading holds");
+					exportHolds(dbConn, kohaConn);
+					logEntry.addNote("Finished loading holds");
 
-				exportVolumes(dbConn, kohaConn);
+					exportVolumes(dbConn, kohaConn);
+				}
 
 				//Update works that have changed since the last index
-				numChanges = updateRecords(dbConn, kohaConn);
+				numChanges = updateRecords(dbConn, kohaConn, singleWorkId);
 
 				logEntry.setFinished();
 
@@ -159,6 +175,9 @@ public class KohaExportMain {
 				break;
 			}
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				break;
+			}
+			if (extractSingleWork) {
 				break;
 			}
 
@@ -747,7 +766,7 @@ public class KohaExportMain {
 		logger.info("Finished exporting holds");
 	}
 
-	private static int updateRecords(Connection dbConn, Connection kohaConn) {
+	private static int updateRecords(Connection dbConn, Connection kohaConn, String singleWorkId) {
 		int totalChanges = 0;
 
 		try {
@@ -762,24 +781,28 @@ public class KohaExportMain {
 
 			HashSet<String> changedBibIds = new HashSet<>();
 
-			//Get a list of bibs that have changed
-			PreparedStatement getChangedBibsFromKohaStmt;
-			if (indexingProfile.isRunFullUpdate()) {
-				getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio");
-				logEntry.addNote("Getting all records from Koha");
-			} else {
-				getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
-				logEntry.addNote("Getting changes to records since " + lastExtractTimestamp.toString() + " UTC");
+			if (singleWorkId != null){
+				changedBibIds.add(singleWorkId);
+			}else {
+				//Get a list of bibs that have changed
+				PreparedStatement getChangedBibsFromKohaStmt;
+				if (indexingProfile.isRunFullUpdate()) {
+					getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio");
+					logEntry.addNote("Getting all records from Koha");
+				} else {
+					getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
+					logEntry.addNote("Getting changes to records since " + lastExtractTimestamp.toString() + " UTC");
 
-				getChangedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+					getChangedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+				}
+
+				ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
+				while (getChangedBibsFromKohaRS.next()) {
+					changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
+				}
 			}
 
-			ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
-			while (getChangedBibsFromKohaRS.next()) {
-				changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
-			}
-
-			if (!indexingProfile.isRunFullUpdate()) {
+			if (singleWorkId == null && !indexingProfile.isRunFullUpdate()) {
 				//Get a list of items that have changed
 				PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from items where timestamp >= ?");
 				getChangedItemsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
