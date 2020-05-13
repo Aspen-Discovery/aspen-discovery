@@ -56,6 +56,8 @@ INSERT INTO `translation_maps` VALUES (1,1,'location',0),(2,1,'sub_location',0),
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
+UPDATE modules set enabled = 1 where name = 'Koha';
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
