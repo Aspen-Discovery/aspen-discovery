@@ -375,7 +375,7 @@ public class KohaExportMain {
 			HashMap<String, String> existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaBranchesStmt, "branchcode", "branchname", insertTranslationStmt, translationMapId, existingValues);
 
-			//Load LOC into sub location
+			//Load sub location
 			PreparedStatement kohaLocStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = 'LOC'");
 			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "sub_location");
 			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
@@ -799,6 +799,23 @@ public class KohaExportMain {
 				ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
 				while (getChangedBibsFromKohaRS.next()) {
 					changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
+				}
+
+				//Get a list of changed bibs by biblio_metadata timestamp as well
+				if (!indexingProfile.isRunFullUpdate()){
+					PreparedStatement getChangedBibMetadataFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio_metadata where timestamp >= ?");
+					logEntry.addNote("Getting changes to record metadata since " + lastExtractTimestamp.toString() + " UTC");
+
+					getChangedBibMetadataFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+
+					ResultSet getChangedBibMetadataFromKohaRS = getChangedBibMetadataFromKohaStmt.executeQuery();
+					int numRecordsWithChangedMetadata = 0;
+					while (getChangedBibMetadataFromKohaRS.next()) {
+						if (changedBibIds.add(getChangedBibMetadataFromKohaRS.getString("biblionumber"))){
+							numRecordsWithChangedMetadata++;
+						}
+					}
+					logEntry.addNote(numRecordsWithChangedMetadata + " records had changes to the metadata, but not the bib.");
 				}
 			}
 
