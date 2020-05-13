@@ -20,6 +20,7 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 
+import javax.xml.transform.Result;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -139,6 +140,8 @@ public class KohaExportMain {
 					logEntry.addNote("Finished loading holds");
 
 					exportVolumes(dbConn, kohaConn);
+
+					updateNovelist(dbConn, kohaConn);
 				}
 
 				//Update works that have changed since the last index
@@ -205,6 +208,40 @@ public class KohaExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void updateNovelist(Connection dbConn, Connection kohaConn) {
+		try{
+			PreparedStatement getExistingNovelistSettingsStmt = dbConn.prepareStatement("SELECT * from novelist_settings");
+			ResultSet existingNovelistSettingsRS = getExistingNovelistSettingsStmt.executeQuery();
+			if (!existingNovelistSettingsRS.next()){
+				PreparedStatement kohaNovelistSettingsStmt = kohaConn.prepareStatement("SELECT * from systempreferences where variable LIKE 'Novelist%'");
+				ResultSet kohaNovelistSettingsRS = kohaNovelistSettingsStmt.executeQuery();
+				boolean novelistEnabled = false;
+				String novelistPassword = "";
+				String novelistProfile = "";
+				while (kohaNovelistSettingsRS.next()){
+					String variableName = kohaNovelistSettingsRS.getString("variable");
+					switch (variableName){
+						case "NovelistSelectEnabled":
+							novelistEnabled = kohaNovelistSettingsRS.getBoolean("value");
+						case "NovelistSelectPassword":
+							novelistPassword = kohaNovelistSettingsRS.getString("value");
+						case "NovelistSelectProfile":
+							novelistProfile = kohaNovelistSettingsRS.getString("value");
+					}
+				}
+				if (novelistEnabled){
+					PreparedStatement addNovelistSettingsStmt = dbConn.prepareStatement("INSERT INTO novelist_settings (profile, pwd) VALUES (?, ?)");
+					addNovelistSettingsStmt.setString(1, novelistProfile);
+					addNovelistSettingsStmt.setString(2, novelistPassword);
+					addNovelistSettingsStmt.executeUpdate();
+					logEntry.addNote("Added Novelist settings from Koha");
+				}
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error updating Novelist information", e);
+		}
 	}
 
 	private static void exportVolumes(Connection dbConn, Connection kohaConn) {
@@ -375,17 +412,32 @@ public class KohaExportMain {
 			HashMap<String, String> existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaBranchesStmt, "branchcode", "branchname", insertTranslationStmt, translationMapId, existingValues);
 
-			//Load LOC into sub location
-			PreparedStatement kohaLocStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = 'LOC'");
-			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "sub_location");
-			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
-			updateTranslationMap(kohaLocStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+			//Load sub location
+			String authorizedValueType = getAuthorizedValueTypeForSubfield(indexingProfile.getSubLocationSubfield());
+			if (authorizedValueType != null){
+				PreparedStatement kohaLocStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = '" + authorizedValueType + "'");
+				translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "sub_location");
+				existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+				updateTranslationMap(kohaLocStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+			}
 
-			//Load ccodes into shelf location
-			PreparedStatement kohaCCodesStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = 'CCODE'");
-			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "shelf_location");
-			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
-			updateTranslationMap(kohaCCodesStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+			//Load shelf location
+			authorizedValueType = getAuthorizedValueTypeForSubfield(indexingProfile.getShelvingLocationSubfield());
+			if (authorizedValueType != null) {
+				PreparedStatement kohaCCodesStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = '" + authorizedValueType + "'");
+				translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "shelf_location");
+				existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+				updateTranslationMap(kohaCCodesStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+			}
+
+			//Load collection
+			authorizedValueType = getAuthorizedValueTypeForSubfield(indexingProfile.getCollectionSubfield());
+			if (authorizedValueType != null) {
+				PreparedStatement kohaCCodesStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = '" + authorizedValueType + "'");
+				translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "collection");
+				existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+				updateTranslationMap(kohaCCodesStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+			}
 
 			//Load itemtypes into formats for the indexing profile
 			PreparedStatement kohaItemTypesStmt = kohaConn.prepareStatement("SELECT itemtype, description FROM itemtypes");
@@ -400,6 +452,16 @@ public class KohaExportMain {
 		} catch (SQLException e) {
 			logger.error("Error updating translation maps", e);
 		}
+	}
+
+	private static String getAuthorizedValueTypeForSubfield(char subfield) {
+		String authorizedValueType = null;
+		if (subfield == '8'){
+			authorizedValueType = "CCODE";
+		}else if (indexingProfile.getSubLocationSubfield() == 'c'){
+			authorizedValueType = "LOC";
+		}
+		return authorizedValueType;
 	}
 
 	private static void updateFormatMap(PreparedStatement kohaValuesStmt, PreparedStatement insertFormatStmt, Long indexingProfileId, HashMap<String, String> existingValues) throws SQLException {
@@ -799,6 +861,23 @@ public class KohaExportMain {
 				ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
 				while (getChangedBibsFromKohaRS.next()) {
 					changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
+				}
+
+				//Get a list of changed bibs by biblio_metadata timestamp as well
+				if (!indexingProfile.isRunFullUpdate()){
+					PreparedStatement getChangedBibMetadataFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio_metadata where timestamp >= ?");
+					logEntry.addNote("Getting changes to record metadata since " + lastExtractTimestamp.toString() + " UTC");
+
+					getChangedBibMetadataFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+
+					ResultSet getChangedBibMetadataFromKohaRS = getChangedBibMetadataFromKohaStmt.executeQuery();
+					int numRecordsWithChangedMetadata = 0;
+					while (getChangedBibMetadataFromKohaRS.next()) {
+						if (changedBibIds.add(getChangedBibMetadataFromKohaRS.getString("biblionumber"))){
+							numRecordsWithChangedMetadata++;
+						}
+					}
+					logEntry.addNote(numRecordsWithChangedMetadata + " records had changes to the metadata, but not the bib.");
 				}
 			}
 
