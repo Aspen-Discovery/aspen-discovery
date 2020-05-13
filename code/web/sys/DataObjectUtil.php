@@ -167,7 +167,7 @@ class DataObjectUtil
 			} else {
 				$object->setProperty($defaultProperty, 0, null);
 			}
-			$object->setProperty($defaultProperty, $_REQUEST[$propertyName], $property);
+			$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 		}else if ($property['type'] == 'currency'){
 			if (preg_match('/\\$?\\d*\\.?\\d*/', $_REQUEST[$propertyName])){
 				if (substr($_REQUEST[$propertyName], 0, 1) == '$'){
