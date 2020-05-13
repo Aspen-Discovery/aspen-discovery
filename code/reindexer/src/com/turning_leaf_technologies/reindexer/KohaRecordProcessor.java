@@ -178,7 +178,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			}
 
 			boolean foundFormatFromCollection = false;
-			String collectionCode = item.getSubLocationCode();
+			String collectionCode = item.getCollection();
 			if (!foundFormatFromSublocation && collectionCode != null){
 				collectionCode = collectionCode.toLowerCase().trim();
 				if (hasTranslation("format", collectionCode)){
