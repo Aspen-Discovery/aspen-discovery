@@ -111,9 +111,9 @@
 - Materials Requests & Purchase Suggestions
 - Open Archives
 - Placards
-- Reading History
+- [Reading History](/Admin/HelpManual?page=Reading-History)
 - Ratings and Reviews
-- Recommendations
+- [Recommendations](/Admin/HelpManual?page=Recommendations)
 - Searching
   - Search Types
   - Facets
