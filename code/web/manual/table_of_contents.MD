@@ -1,8 +1,93 @@
 ##Table of Contents
 - Administration
-  - Administrators
-  - Library Administration
-  - Location Administration
+  - System Administration
+  - System Reports
+    - Cron Log
+    - Dashboards
+    - Indexing Logs
+    - Performance Report
+  - Configuration Templates
+    - Themes
+    - Layout Settings
+    - Grouped Work Display Settings
+      - Grouped Work Facets
+      - Creating Grouped Works
+      - Grouped Work Pages
+      - Manually grouping records
+      - Ungrouping records
+    - Browse Category Groups
+      - Browse Categories
+  - Primary Configuration
+    - Languages
+      - Translations
+    - Library Systems
+      - Locations 
+      - IP Addresses
+    - Block Patron Account Linking
+    - Patron Types
+    - Account Profiles
+  - Enrichment
+    - Accelerated Reader
+    - Content Cafe
+    - DP.LA
+    - Facebook
+    - GoodReads
+    - Google
+    - OMDB
+    - New York Times
+      - NY Times Lists
+    - Novelist
+    - Pinterest
+    - reCAPTCHA
+    - Syndetics
+    - Wikipedia
+  - Cataloging 
+  - ILS Integration
+    - Account Profiles
+    - Carl.X
+    - Horizon
+    - Koha
+    - Millennium
+    - Polaris
+    - Sierra
+    - Symphony
+  - OverDrive
+    - Settings
+     - Scopes
+    - Indexing Log
+    - Dashboard
+    - API Information
+  - RB Digital
+    - Settings 
+     - Scopes 
+    - Indexing Log 
+    - Dashboard
+  - Cloud Library
+    - Settings 
+     - Scopes 
+    - Indexing Log 
+    - Dashboard
+  - Side Loaded eContent
+    - Side Loaded Configurations
+     - Scopes
+    - Indexing Log
+    - Dashboard
+  - Indexing Information
+    - Group Work Index Log
+  - Open Archives
+    - Collections
+    - Indexing Log
+    - Dashboard
+  - Website Indexing
+    - Settings
+    - Indexing Log
+    - Dashboard
+  - Circulation
+    - Offline Holds Report
+  - Server Setup
+    - Installation
+    - Background tasks
+  - Uploaded PDFS
 - [Advanced Search](/Admin/HelpManual?page=Advanced%20Search)
 - Aspen API
 - [Author pages](/Admin/HelpManual?page=Author-Pages)
@@ -10,7 +95,7 @@
 - Citations
 - Collection Spotlights
 - Covers
-- eCommerce
+- [eCommerce](/Admin/HelpManual?page=eCommerce)
 - eContent Integrations
   - CloudLibrary
   - Hoopla
@@ -22,54 +107,15 @@
 - Explore More
 - Full Record Pages
 - Genealogy & Obituaries
-- Grouped Works
-  - Creating Grouped Works
-  - Grouped Work Pages
-  - Manually grouping records
-  - Ungrouping records
-- ILS Integration
-  - Account Profiles
-  - Carl.X
-  - Horizon
-  - Koha
-  - Millennium
-  - Polaris
-  - Sierra
-  - Symphony
 - Interlibrary Loans
-- Languages and Translations
 - Materials Requests & Purchase Suggestions
 - Open Archives
 - Placards
-- Reading History
+- [Reading History](/Admin/HelpManual?page=Reading-History)
 - Ratings and Reviews
-- Recommendations
-- Reports
-  - Cron Log
-  - Dashboards
-  - Indexing Logs
-  - Performance Report
+- [Recommendations](/Admin/HelpManual?page=Recommendations)
 - Searching
   - Search Types
   - Facets
-- Server Setup
-  - Installation
-  - Background tasks
-- Third Party Enrichment
-  - Accelerated Reader
-  - Content Cafe
-  - DP.LA
-  - Facebook
-  - GoodReads
-  - Google
-  - OMDB
-  - New York Times
-  - Novelist
-  - Pinterest
-  - reCAPTCHA
-  - Syndetics
-  - Wikipedia
-- Theming
-- Uploaded PDFS
+  - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - User Lists
-- Website Indexing

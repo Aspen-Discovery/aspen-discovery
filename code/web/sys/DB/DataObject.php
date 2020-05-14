@@ -31,6 +31,8 @@ abstract class DataObject
 	protected $__fetchingFromDB = false;
 
 	protected $_data = [];
+	protected $_changedFields = [];
+	protected $_forceNightlyIndex = false;
 
 	function getNumericColumnNames(){
 		return [];
@@ -616,5 +618,41 @@ abstract class DataObject
 			}
 		}
 		return $equal;
+	}
+
+	/**
+	 * @param string $propertyName
+	 * @param $newValue
+	 * @param array|null $propertyStructure
+	 *
+	 * @return boolean true if the property changed, or false if it did not
+	 */
+	public function setProperty($propertyName, $newValue, $propertyStructure){
+		if ($this->$propertyName != $newValue) {
+			$oldValue = $this->$propertyName;
+			$this->$propertyName = $newValue;
+			if ($propertyStructure != null && !empty($propertyStructure['forcesReindex'])){
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				SystemVariables::forceNightlyIndex();
+			}
+			//Add the change to the history
+			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+			$history = new DataObjectHistory();
+			$history->objectType = get_class($this);
+			$primaryKey = $this->__primaryKey;
+			if (!empty($this->$primaryKey)) {
+				$history->objectId = $this->$primaryKey;
+				$history->oldValue = $oldValue;
+				$history->propertyName = $propertyName;
+				$history->newValue = $newValue;
+				$history->changedBy = UserAccount::getActiveUserId();
+				$history->changeDate = time();
+				$history->insert();
+			}
+
+			return true;
+		}else{
+			return false;
+		}
 	}
 }

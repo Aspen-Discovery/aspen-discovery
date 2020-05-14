@@ -466,7 +466,8 @@ class UserAPI extends Action
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			$allHolds = $user->getHolds();
+			$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
+			$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
 			return array('success' => true, 'holds' => $allHolds);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -766,7 +767,8 @@ class UserAPI extends Action
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !($user instanceof AspenError)) {
-				$allCheckedOut = $user->getCheckouts(false, true);
+				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
+				$allCheckedOut = $user->getCheckouts(false);
 				foreach ($allCheckedOut as $key => $checkout){
 					if (isset($checkout['canRenew'])){
 						/** @noinspection SpellCheckingInspection */
@@ -938,21 +940,25 @@ class UserAPI extends Action
 
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
-			if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
-				if (isset($_REQUEST['pickupBranch'])) {
-					$pickupBranch = trim($_REQUEST['pickupBranch']);
+			global $library;
+			if ($library->showHoldButton) {
+				if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
+					if (isset($_REQUEST['pickupBranch'])) {
+						$pickupBranch = trim($_REQUEST['pickupBranch']);
+					} else {
+						$pickupBranch = trim($_REQUEST['campus']);
+					}
+					$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
+					if (!$locationValid) {
+						return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText' => 'This location is no longer available, please select a different pickup location']));
+					}
 				} else {
-					$pickupBranch = trim($_REQUEST['campus']);
+					$pickupBranch = $patron->_homeLocationCode;
 				}
-				$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
-				if (!$locationValid){
-					return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
-				}
-			} else {
-				$pickupBranch = $patron->_homeLocationCode;
+				return $patron->placeHold($bibId, $pickupBranch);
+			}else{
+				return array('success' => false, 'message' => 'Sorry, holds are not currently allowed.');
 			}
-			$holdMessage = $patron->placeHold($bibId, $pickupBranch);
-			return $holdMessage;
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -966,18 +972,22 @@ class UserAPI extends Action
 
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
-			if (isset($_REQUEST['pickupBranch'])) {
-				$pickupBranch = trim($_REQUEST['pickupBranch']);
-				$pickupBranch = trim($_REQUEST['pickupBranch']);
-				$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
-				if (!$locationValid){
-					return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+			global $library;
+			if ($library->showHoldButton) {
+				if (isset($_REQUEST['pickupBranch'])) {
+					$pickupBranch = trim($_REQUEST['pickupBranch']);
+					$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
+					if (!$locationValid){
+						return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+					}
+				} else {
+					$pickupBranch = $patron->_homeLocationCode;
 				}
+				return $patron->placeItemHold($bibId, $itemId, $pickupBranch);
 			} else {
 				$pickupBranch = $patron->_homeLocationCode;
 			}
-			$holdMessage = $patron->placeItemHold($bibId, $itemId, $pickupBranch);
-			return $holdMessage;
+			return $patron->placeHold($bibId, $pickupBranch);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}

@@ -81,11 +81,11 @@ public class HorizonExportMain {
 	}
 
 	/**
-	 * Processes the exports from Horizon.  If a record appears in mulitple extracts,
+	 * Processes the exports from Horizon.  If a record appears in multiple extracts,
 	 * we just process the last extract.
 	 *
 	 * Expects extracts to already be copied to the server and to be in the
-	 * /data/vufind-plus/{sitename}/marc_changes directory
+	 * /data/aspen-discovery/{sitename}/marc_changes directory
 	 *
 	 * @param ini the configuration INI file for Pika
 	 */

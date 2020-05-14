@@ -20,7 +20,7 @@ AspenDiscovery.GroupedWork = (function(){
 			let url = Globals.path + '/GroupedWork/' + notInterestedId + '/AJAX?method=clearNotInterested';
 			$.getJSON(
 					url, function(data){
-						if (data.result == false){
+						if (data.result === false){
 							AspenDiscovery.showMessage('Sorry', "There was an error updating the title.");
 						}else{
 							$("#notInterested" + notInterestedId).hide();
@@ -33,7 +33,7 @@ AspenDiscovery.GroupedWork = (function(){
 			if (confirm("Are you sure you want to delete this review?")){
 				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
 				$.getJSON(url, function(data){
-					if (data.result == true){
+					if (data.result === true){
 						$('#review_' + reviewId).hide();
 						AspenDiscovery.showMessage('Success', data.message, true);
 					}else{
@@ -165,8 +165,10 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadMoreLikeThis: function (id, forceReload) {
-			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-				params = {'method':'getMoreLikeThis'};
+			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+			let params = {
+				'method':'getMoreLikeThis'
+			};
 			if (forceReload !== undefined){
 				params['reload'] = true;
 			}
@@ -548,6 +550,18 @@ AspenDiscovery.GroupedWork = (function(){
 			$.getJSON(url, function (data){
 				if (!data.success){
 					AspenDiscovery.showMessage('Error', data.message);
+				}else{
+					AspenDiscovery.showMessage(data.title, data.body);
+				}
+			});
+			return false;
+		},
+
+		deleteAlternateTitle: function(id) {
+			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=deleteAlternateTitle";
+			$.getJSON(url, function (data){
+				if (data.success){
+					$("#alternateTitle" + id).hide();
 				}else{
 					AspenDiscovery.showMessage(data.title, data.body);
 				}

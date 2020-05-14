@@ -846,6 +846,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'runNightlyFullIndex' => [
+					'title' => 'Run Nightly Full Index',
+					'description' => 'Whether or not a new full index should be run in the middle of the night',
+					'sql' => [
+						'ALTER TABLE system_variables ADD COLUMN runNightlyFullIndex TINYINT(1) DEFAULT 0'
+					]
+				],
+
 				'utf8_update' => array(
 					'title' => 'Update to UTF-8',
 					'description' => 'Update database to use UTF-8 encoding',
@@ -939,6 +947,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'reindexLog_nightly_updates' => [
+					'title' => 'Reindex Log Update for Nightly Index',
+					'description' => 'Update reindex logging for nightly index',
+					'sql' => [
+						'ALTER TABLE reindex_log DROP COLUMN numListsProcessed',
+						'ALTER TABLE reindex_log ADD COLUMN numErrors INT(11) DEFAULT 0',
+					]
+				],
 
 				'cronLog' => array(
 					'title' => 'Cron Log table',
@@ -2222,6 +2238,34 @@ class Admin_DBMaintenance extends Admin_Admin
 						) ENGINE = INNODB;',
 						'populateRecaptchaSettings'
 					],
+				],
+
+				'object_history' => [
+					'title' => 'Data Object History',
+					'description' => 'Add a table to store when properties are changed',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS object_history(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							objectType VARCHAR(75) NOT NULL,
+							objectId INT(11) NOT NULL,
+							propertyName VARCHAR(75) NOT NULL,
+							oldValue VARCHAR(512),
+							newValue VARCHAR(512),
+							changedBy INT(11) NOT NULL,
+							changeDate INT(11) NOT NULL,
+							INDEX (objectType, objectId),
+							INDEX (changedBy)
+						) ENGINE = INNODB;',
+					]
+				],
+
+				'object_history_field_lengths' => [
+					'title' => 'Data Object History Value Lengths',
+					'description' => 'Increase the maximum length of values',
+					'sql' => [
+						'ALTER TABLE object_history CHANGE COLUMN oldValue oldValue TEXT',
+						'ALTER TABLE object_history CHANGE COLUMN newValue newValue TEXT',
+					]
 				],
 			)
 		);

@@ -178,6 +178,25 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	public function getStaffView()
 	{
 		global $interface;
+		global $configArray;
+		if ($configArray['Catalog']['ils'] == 'Millennium' || $configArray['Catalog']['ils'] == 'Sierra'){
+			$classicId = substr($this->id, 1, strlen($this->id) -2);
+			$interface->assign('classicId', $classicId);
+			$millenniumScope = $interface->getVariable('millenniumScope');
+			if(isset($configArray['Catalog']['linking_url'])){
+				$interface->assign('classicUrl', $configArray['Catalog']['linking_url'] . "/record=$classicId&amp;searchscope={$millenniumScope}");
+			}
+
+		}elseif ($configArray['Catalog']['ils'] == 'Koha'){
+			$interface->assign('classicId', $this->id);
+			$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $this->id);
+			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $this->id);
+		}elseif ($configArray['Catalog']['ils'] == 'CarlX'){
+			$shortId = str_replace('CARL', '', $this->id);
+			$shortId = ltrim($shortId, '0');
+			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
+		}
+
 		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
 		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
@@ -198,6 +217,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 
 		$interface->assign('uploadedPDFs', $this->getUploadedPDFs());
+
+		$interface->assign('uploadedSupplementalFiles', $this->getUploadedSupplementalFiles());
 
 
 		return 'RecordDrivers/Marc/staff.tpl';
@@ -897,49 +918,66 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if (isset($volumeInfo->holdable) && $volumeInfo->holdable) {
 						$volume = $volumeInfo->volumeId;
 						$actions[] = array(
-								'title' => 'Hold ' . $volumeInfo->displayLabel,
-								'url' => '',
-								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volume');",
-								'requireLogin' => false,
+							'title' => 'Hold ' . $volumeInfo->displayLabel,
+							'url' => '',
+							'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volume');",
+							'requireLogin' => false,
 						);
 					}
 				}
 			} else {
 				$actions[] = array(
-						'title' => 'Place Hold',
-						'url' => '',
-						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
-						'requireLogin' => false,
+					'title' => 'Place Hold',
+					'url' => '',
+					'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
+					'requireLogin' => false,
 				);
 			}
 		}
 		if ($isBookable && $library->enableMaterialsBooking) {
 			$actions[] = array(
-					'title' => 'Schedule Item',
-					'url' => '',
-					'onclick' => "return AspenDiscovery.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
-					'requireLogin' => false,
+				'title' => 'Schedule Item',
+				'url' => '',
+				'onclick' => "return AspenDiscovery.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
+				'requireLogin' => false,
 			);
 		}
 
-		//Check to see if a file has been uploaded for the record
-		require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
-		$recordFile = new RecordFile();
-		$recordFile->type = $this->getRecordType();
-		$recordFile->identifier = $this->getUniqueID();
-		if ($recordFile->find()){
-			if ($recordFile->getNumResults() == 1){
-				$recordFile->fetch();
+		//Check to see if a PDF has been uploaded for the record
+		$uploadedPDFs = $this->getUploadedPDFs();
+		if (count($uploadedPDFs) > 0) {
+			if (count($uploadedPDFs) == 1) {
+				$recordFile = reset($uploadedPDFs);
 				$actions[] = array(
 					'title' => 'Download PDF',
-					'url' => "/Record/{$this->getId()}/DownloadPDF?fileId={$recordFile->fileId}",
+					'url' => "/Record/{$this->getId()}/DownloadPDF?fileId={$recordFile->id}",
 					'requireLogin' => false,
 				);
-			}else{
+			} else {
 				$actions[] = array(
 					'title' => 'Download PDF',
 					'url' => '',
-					'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}');",
+					'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}', 'RecordPDF');",
+					'requireLogin' => false,
+				);
+			}
+		}
+
+		//Check to see if a Supplemental Files have been uploaded for the record
+		$supplementalFiles = $this->getUploadedSupplementalFiles();
+		if (count($supplementalFiles) > 0) {
+			if (count($supplementalFiles) == 1) {
+				$recordFile = reset($supplementalFiles);
+				$actions[] = array(
+					'title' => 'Download Supplemental File',
+					'url' => "/Record/{$this->getId()}/DownloadSupplementalFile?fileId={$recordFile->id}",
+					'requireLogin' => false,
+				);
+			} else {
+				$actions[] = array(
+					'title' => 'Download Supplemental File',
+					'url' => '',
+					'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}', 'RecordSupplementalFile');",
 					'requireLogin' => false,
 				);
 			}
@@ -1755,12 +1793,34 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			while ($recordFile->fetch()){
 				$fileUpload = new FileUpload();
 				$fileUpload->id = $recordFile->fileId;
+				$fileUpload->type = 'RecordPDF';
 				if ($fileUpload->find(true)){
 					$uploadedPDFs[] = $fileUpload;
 				}
 			}
 		}
 		return $uploadedPDFs;
+	}
+
+	function getUploadedSupplementalFiles()
+	{
+		$uploadedFiles = [];
+		require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+		require_once ROOT_DIR . '/sys/File/FileUpload.php';
+		$recordFile = new RecordFile();
+		$recordFile->type = $this->getRecordType();
+		$recordFile->identifier = $this->getUniqueID();
+		if ($recordFile->find()){
+			while ($recordFile->fetch()){
+				$fileUpload = new FileUpload();
+				$fileUpload->id = $recordFile->fileId;
+				$fileUpload->type = 'RecordSupplementalFile';
+				if ($fileUpload->find(true)){
+					$uploadedFiles[] = $fileUpload;
+				}
+			}
+		}
+		return $uploadedFiles;
 	}
 
 	public function getCancelledIsbns()

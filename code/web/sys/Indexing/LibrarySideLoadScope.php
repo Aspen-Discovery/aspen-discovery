@@ -16,6 +16,7 @@ class LibrarySideLoadScope extends DataObject
 			$library->libraryId = $homeLibrary->libraryId;
 		}
 		$library->find();
+		$libraryList = [];
 		while ($library->fetch()){
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
@@ -34,12 +35,11 @@ class LibrarySideLoadScope extends DataObject
 			$sideLoadScopes[$sideLoadScopeData['id']] = $sideLoadScopeData['scope_name'] . ' - ' . $sideLoadScopeData['name'];
 			$sideLoadScopeData = $sideLoadScope->fetchAssoc();
 		}
-		$structure = array(
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'sideLoadScopeId' => array('property' => 'sideLoadScopeId', 'type' => 'enum', 'values' => $sideLoadScopes, 'label' => 'Side Load Scope', 'description' => 'The Scope to add to the library', 'required' => true),
 			'libraryId' => array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'The id of a library'),
 		);
-		return $structure;
 	}
 
 	function getEditLink(){

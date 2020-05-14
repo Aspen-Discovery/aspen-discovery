@@ -82,6 +82,7 @@ class ILS_Dashboard extends Admin_Admin
 		$userUsage->selectAdd('SUM(IF(usageCount>0,1,0)) as usersWithHolds');
 		$userUsage->selectAdd('SUM(selfRegistrationCount) AS numSelfRegistrations');
 		$userUsage->selectAdd('SUM(IF(pdfDownloadCount>0,1,0)) as usersWithPdfDownloads');
+		$userUsage->selectAdd('SUM(IF(supplementalFileDownloadCount>0,1,0)) as usersWithSupplementalFileDownloads');
 
 		$userUsage->find();
 		$usageStats = [];
@@ -90,7 +91,8 @@ class ILS_Dashboard extends Admin_Admin
 				'totalUsers' => 0,
 				'usersWithHolds' => 0,
 				'usersWithPdfDownloads' => 0,
-				'numSelfRegistrations' => 0
+				'numSelfRegistrations' => 0,
+				'usersWithSupplementalFileDownloads' => 0
 			];
 		}
 		while ($userUsage->fetch()) {
@@ -102,6 +104,8 @@ class ILS_Dashboard extends Admin_Admin
 			$usageStats[$userUsage->indexingProfileId]['usersWithPdfDownloads'] = $userUsage->usersWithPdfDownloads;
 			/** @noinspection PhpUndefinedFieldInspection */
 			$usageStats[$userUsage->indexingProfileId]['numSelfRegistrations'] = $userUsage->numSelfRegistrations;
+			/** @noinspection PhpUndefinedFieldInspection */
+			$usageStats[$userUsage->indexingProfileId]['usersWithSupplementalFileDownloads'] = $userUsage->usersWithSupplementalFileDownloads;
 		}
 		return $usageStats;
 	}
@@ -128,6 +132,7 @@ class ILS_Dashboard extends Admin_Admin
 		$usage->selectAdd('COUNT(*) as numRecordViewed');
 		$usage->selectAdd('SUM(IF(timesUsed>0,1,0)) as numRecordsUsed');
 		$usage->selectAdd('SUM(pdfDownloadCount) as numPDFsDownloaded');
+		$usage->selectAdd('SUM(supplementalFileDownloadCount) as numSupplementalFileDownloadCount');
 
 		$usage->find();
 
@@ -136,7 +141,8 @@ class ILS_Dashboard extends Admin_Admin
 			$usageStats[$id] = [
 				'numRecordViewed' => 0,
 				'numRecordsUsed' => 0,
-				'numPDFsDownloaded' => 0
+				'numPDFsDownloaded' => 0,
+				'numSupplementalFileDownloadCount' => 0
 			];
 		}
 		while ($usage->fetch()) {
@@ -145,6 +151,7 @@ class ILS_Dashboard extends Admin_Admin
 				'numRecordViewed' => $usage->numRecordViewed,
 				'numRecordsUsed' => $usage->numRecordsUsed,
 				'numPDFsDownloaded' => $usage->numPDFsDownloaded,
+				'numSupplementalFileDownloadCount' => $usage->numSupplementalFileDownloadCount,
 			];
 		}
 		return $usageStats;

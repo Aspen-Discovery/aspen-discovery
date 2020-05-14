@@ -536,9 +536,30 @@ class Record_AJAX extends Action
 		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
 
 		return [
-			'title' => 'Upload a PDF',
+			'title' => translate('Upload a PDF'),
 			'modalBody' => $interface->fetch("Record/upload-pdf-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadPDFForm\").submit()'>Upload PDF</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadPDFForm\").submit()'>" . translate("Upload PDF") . "</button>"
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getUploadSupplementalFileForm(){
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		if (strpos($id, ':')){
+			list(,$id) = explode(':', $id);
+		}
+		$interface->assign('id', $id);
+
+		//Figure out the maximum upload size
+		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
+
+		return [
+			'title' => translate('Upload a Supplemental File'),
+			'modalBody' => $interface->fetch("Record/upload-supplemental-file-form.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadSupplementalFileForm\").submit()'>" . translate("Upload File") . "</button>"
 		];
 	}
 
@@ -614,18 +635,105 @@ class Record_AJAX extends Action
 			}
 		}
 		if ($result['success']){
-			//TODO: Marc the record as needing indexing
-			//$this->reloadCover();
 			$result['message'] = 'Your file has been uploaded successfully';
 		}
 		return $result;
 	}
 
-	function deletePDF(){
+	/** @noinspection PhpUnused */
+	function uploadSupplementalFile(){
 		$result = [
 			'success' => false,
-			'title' => 'Deleting PDF',
-			'message' => 'Unknown error deleting PDF'
+			'title' => 'Uploading Supplemental File',
+			'message' => 'Sorry your file could not be uploaded'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))){
+			if (isset($_FILES['supplementalFile'])) {
+				$uploadedFile = $_FILES['supplementalFile'];
+				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+					$result['message'] = "No File was uploaded";
+				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+					$result['message'] =  "Error in file upload " . $uploadedFile["error"];
+				} else {
+					$id = $_REQUEST['id'];
+					$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+					if (!$recordDriver->isValid()){
+						$result['message'] =  "Could not find the record to attach this file to";
+					}else{
+						//Upload data files
+						global $serverName;
+						$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/record_files/';
+						if (!file_exists($dataPath)){
+							global $configArray;
+							if ($configArray['System']['operatingSystem'] == 'windows') {
+								if (!mkdir($dataPath, 0777, true)) {
+									$result['message'] = 'Could not create the directory on the server';
+								}
+							}else{
+								if (!mkdir($dataPath, 0755, true)) {
+									$result['message'] = 'Could not create the directory on the server';
+								}
+							}
+						}
+						$destFullPath = $dataPath . $recordDriver->getId() . '_' . $uploadedFile["name"];
+						if (!file_exists($destFullPath)) {
+							$fileType = $uploadedFile["type"];
+							$fileOk = false;
+							if (in_array($fileType, ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.oasis.opendocument.spreadsheet',
+									'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.oasis.opendocument.text', 'text/csv',
+									'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.oasis.opendocument.presentation'])) {
+								$fileOk = true;
+							}elseif ($fileType = 'application/octect-stream'){
+								$fileExtension = $uploadedFile["name"];
+								$fileExtension = strtolower(substr($fileExtension, strrpos($fileExtension, '.') + 1));
+								if (in_array($fileExtension, ['csv', 'doc', 'docx', 'odp', 'ods', 'odt', 'ppt', 'pptx', 'xls', 'xlsx'])){
+									$fileOk = true;
+								}
+							}
+							if ($fileOk){
+								if (copy($uploadedFile["tmp_name"], $destFullPath)) {
+									require_once ROOT_DIR . '/sys/File/FileUpload.php';
+									$fileUpload = new FileUpload();
+									$fileUpload->title = $_REQUEST['title'];
+									$fileUpload->fullPath = $destFullPath;
+									$fileUpload->type = 'RecordSupplementalFile';
+									$fileUpload->insert();
+
+									require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+									$recordFile = new RecordFile();
+									$recordFile->type = $recordDriver->getRecordType();
+									$recordFile->identifier = $recordDriver->getUniqueID();
+									$recordFile->fileId = $fileUpload->id;
+									$recordFile->insert();
+
+									$result['success'] = true;
+
+								}else{
+									$result['message'] = 'Could not save the file on the server';
+								}
+							} else {
+								$result['message'] = "Incorrect file type ($fileType).  Please upload one of the following files: .CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PPT, .PPTX, .XLS, .XLSX";
+							}
+						}else{
+							$result['message'] = 'A file with this name already exists. Please rename your file.';
+						}
+					}
+				}
+			} else {
+				$result['message'] = 'No file was uploaded, please try again.';
+			}
+		}
+		if ($result['success']){
+			$result['message'] = 'Your file has been uploaded successfully';
+		}
+		return $result;
+	}
+
+	function deleteUploadedFile(){
+		$result = [
+			'success' => false,
+			'title' => 'Deleting Uploaded File',
+			'message' => 'Unknown error deleting file'
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))){
 			$fileId = $_REQUEST['fileId'];
@@ -671,6 +779,8 @@ class Record_AJAX extends Action
 		global $interface;
 
 		$id = $_REQUEST['id'];
+		$fileType = $_REQUEST['type'];
+		$interface->assign('fileType', $fileType);
 		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
 		if (strpos($id, ':')){
 			list(,$id) = explode(':', $id);
@@ -687,6 +797,7 @@ class Record_AJAX extends Action
 		while ($recordFile->fetch()){
 			$fileUpload = new FileUpload();
 			$fileUpload->id = $recordFile->fileId;
+			$fileUpload->type = $fileType;
 			if ($fileUpload->find(true)){
 				$validFiles[$recordFile->fileId] = $fileUpload->title;
 			}
@@ -694,10 +805,15 @@ class Record_AJAX extends Action
 		asort($validFiles);
 		$interface->assign('validFiles', $validFiles);
 
+		if ($fileType == 'RecordPDF'){
+			$buttonTitle = translate('Download PDF');
+		}else{
+			$buttonTitle = translate('Download Supplemental File');
+		}
 		return [
-			'title' => 'Select PDF to download',
-			'modalBody' => $interface->fetch("Record/select-download-pdf-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadPDF\").submit()'>Download PDF</button>"
+			'title' => 'Select File to download',
+			'modalBody' => $interface->fetch("Record/select-download-file-form.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadFile\").submit()'>{$buttonTitle}</button>"
 		];
 	}
 

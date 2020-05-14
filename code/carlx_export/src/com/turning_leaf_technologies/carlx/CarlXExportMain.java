@@ -15,6 +15,7 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
@@ -182,15 +183,27 @@ public class CarlXExportMain {
 				break;
 			}
 
-			//Pause before running the next export (longer if we didn't get any actual changes)
-			try {
-				if (numChanges == 0 || logEntry.hasErrors()) {
-					Thread.sleep(1000 * 60 * 5);
-				}else {
-					Thread.sleep(1000 * 60);
+			//Check to see if nightly indexing is running and if so, wait until it is done.
+			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+				while (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+					try {
+						System.gc();
+						Thread.sleep(1000 * 60 * 5);
+					} catch (InterruptedException e) {
+						logger.info("Thread was interrupted");
+					}
 				}
-			} catch (InterruptedException e) {
-				logger.info("Thread was interrupted");
+			}else {
+				//Pause before running the next export (longer if we didn't get any actual changes)
+				try {
+					if (numChanges == 0 || logEntry.hasErrors()) {
+						Thread.sleep(1000 * 60 * 5);
+					} else {
+						Thread.sleep(1000 * 60);
+					}
+				} catch (InterruptedException e) {
+					logger.info("Thread was interrupted");
+				}
 			}
 		} //Infinite loop
 	}
@@ -1391,14 +1404,14 @@ public class CarlXExportMain {
 
 	private static MarcRecordGrouper getRecordGroupingProcessor(Connection dbConn){
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logger, false);
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}
 
 	private static GroupedWorkIndexer getGroupedWorkIndexer(Connection dbConn) {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}

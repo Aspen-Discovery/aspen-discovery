@@ -15,6 +15,7 @@ import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.config.ConfigUtil;
@@ -259,16 +260,29 @@ public class SierraExportAPIMain {
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
 				break;
 			}
-			//Pause before running the next export (longer if we didn't get any actual changes)
-			try {
-				System.gc();
-				if (numChanges == 0) {
-					Thread.sleep(1000 * 60 * 5);
-				} else {
-					Thread.sleep(1000 * 60);
+
+			//Check to see if nightly indexing is running and if so, wait until it is done.
+			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+				while (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+					try {
+						System.gc();
+						Thread.sleep(1000 * 60 * 5);
+					} catch (InterruptedException e) {
+						logger.info("Thread was interrupted");
+					}
 				}
-			} catch (InterruptedException e) {
-				logger.info("Thread was interrupted");
+			}else {
+				//Pause before running the next export (longer if we didn't get any actual changes)
+				try {
+					System.gc();
+					if (numChanges == 0) {
+						Thread.sleep(1000 * 60 * 5);
+					} else {
+						Thread.sleep(1000 * 60);
+					}
+				} catch (InterruptedException e) {
+					logger.info("Thread was interrupted");
+				}
 			}
 		} //Infinite loop
 	}
@@ -871,7 +885,7 @@ public class SierraExportAPIMain {
 				JSONArray fields = marcResults.getJSONArray("fields");
 				for (int i = 0; i < fields.length(); i++){
 					JSONObject fieldData = fields.getJSONObject(i);
-					@SuppressWarnings("unchecked") Iterator<String> tags = (Iterator<String>)fieldData.keys();
+					Iterator<String> tags = fieldData.keys();
 					while (tags.hasNext()){
 						String tag = tags.next();
 						if (fieldData.get(tag) instanceof JSONObject){
@@ -882,7 +896,7 @@ public class SierraExportAPIMain {
 							JSONArray subfields = fieldDataDetails.getJSONArray("subfields");
 							for (int j = 0; j < subfields.length(); j++){
 								JSONObject subfieldData = subfields.getJSONObject(j);
-								String subfieldIndicatorStr = (String)subfieldData.keys().next();
+								String subfieldIndicatorStr = subfieldData.keys().next();
 								char subfieldIndicator = subfieldIndicatorStr.charAt(0);
 								String subfieldValue = subfieldData.getString(subfieldIndicatorStr);
 								dataField.addSubfield(marcFactory.newSubfield(subfieldIndicator, subfieldValue));
@@ -1743,14 +1757,14 @@ public class SierraExportAPIMain {
 
 	private static MarcRecordGrouper getRecordGroupingProcessor() {
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logger, false);
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}
 
 	private static GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}

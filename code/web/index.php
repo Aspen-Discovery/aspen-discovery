@@ -656,7 +656,12 @@ if (isset($_SESSION['hold_message'])) {
 // Call Action
 // Note: ObjectEditor classes typically have the class name of DB_Object with an 's' added to the end.
 //       This distinction prevents the DB_Object from being mistakenly called as the Action class.
-if (!is_dir(ROOT_DIR . "/services/$module")){
+$isInvalidUrl = false;
+$requestUrl = $_SERVER['REQUEST_URI'];
+if (preg_match('/.*(DBMS_PIPE\.RECEIVE_MESSAGE|PG_SLEEP|WAITFOR|UNION%20ALL|SLEEP%28\d+%29|%7CCHR|CONVERT%28INT|SELECT%20COUNT).*/', $requestUrl)){
+	$isInvalidUrl = true;
+}
+if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")){
 	$module = 'Error';
 	$action = 'Handle404';
 	$interface->assign('module','Error');

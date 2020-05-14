@@ -36,7 +36,7 @@ class SideLoadScope extends DataObject
 		$locationSideLoadScopeStructure = LocationSideLoadScope::getObjectStructure();
 		unset($locationSideLoadScopeStructure['sideLoadScopeId']);
 
-		$structure = array(
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'sideLoadId' => array('property' => 'sideLoadId', 'type' => 'enum', 'values'=>$validSideLoads, 'label' => 'Side Load', 'description' =>'The Side Load to apply the scope to'),
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
@@ -98,10 +98,10 @@ class SideLoadScope extends DataObject
 						'url' => '/SideLoads/Scopes?id=$id&amp;objectAction=clearLocations',
 						'class' => 'btn-warning',
 					),
-				)
+				),
+				'forcesReindex' => true
 			),
 		);
-		return $structure;
 	}
 
 	function getEditLink(){

@@ -29,12 +29,11 @@ class LocationSideLoadScope extends DataObject
 		while ($location->fetch()){
 			$locationsList[$location->locationId] = $location->displayName;
 		}
-		$structure = array(
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'sideLoadScopeId' => array('property' => 'sideLoadScopeId', 'type' => 'enum', 'values' => $sideLoadScopes, 'label' => 'Side Load Scope', 'description' => 'The Scope to add to the library', 'required' => true),
 			'locationId' => array('property'=>'locationId', 'type'=>'enum','values'=>$locationsList, 'label'=>'Location', 'description'=>'The Location to associate the scope to', 'required' => true),
 		);
-		return $structure;
 	}
 
 	function getEditLink(){

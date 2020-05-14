@@ -246,6 +246,19 @@ class Koha extends AbstractIlsDriver
 			if (isset($curRow['enumchron'])) {
 				$checkout['volume'] = $curRow['enumchron'];
 			}
+
+			$itemNumber = $curRow['itemnumber'];
+
+			//Check to see if there is a volume for the checkout
+			/** @noinspection SqlResolve */
+			$volumeSql = "SELECT description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber = $itemNumber";
+			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
+			if ($volumeResults !== false) { //This is false if Koha does not support volumes
+				if ($volumeRow = $volumeResults->fetch_assoc()) {
+					$checkout['volume'] = $volumeRow['description'];
+				}
+			}
+
 			$checkout['author'] = $curRow['author'];
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
@@ -258,7 +271,7 @@ class Koha extends AbstractIlsDriver
 				$dueTime = null;
 			}
 			$checkout['dueDate'] = $dueTime;
-			$checkout['itemId'] = $curRow['itemnumber'];
+			$checkout['itemId'] = $itemNumber;
 			$checkout['renewIndicator'] = $curRow['itemnumber'];
 			$checkout['renewCount'] = $curRow['renewals'];
 

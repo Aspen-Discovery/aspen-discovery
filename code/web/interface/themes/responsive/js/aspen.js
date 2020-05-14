@@ -2992,7 +2992,7 @@ AspenDiscovery.GroupedWork = (function(){
 			let url = Globals.path + '/GroupedWork/' + notInterestedId + '/AJAX?method=clearNotInterested';
 			$.getJSON(
 					url, function(data){
-						if (data.result == false){
+						if (data.result === false){
 							AspenDiscovery.showMessage('Sorry', "There was an error updating the title.");
 						}else{
 							$("#notInterested" + notInterestedId).hide();
@@ -3005,7 +3005,7 @@ AspenDiscovery.GroupedWork = (function(){
 			if (confirm("Are you sure you want to delete this review?")){
 				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
 				$.getJSON(url, function(data){
-					if (data.result == true){
+					if (data.result === true){
 						$('#review_' + reviewId).hide();
 						AspenDiscovery.showMessage('Success', data.message, true);
 					}else{
@@ -3137,8 +3137,10 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadMoreLikeThis: function (id, forceReload) {
-			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-				params = {'method':'getMoreLikeThis'};
+			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+			let params = {
+				'method':'getMoreLikeThis'
+			};
 			if (forceReload !== undefined){
 				params['reload'] = true;
 			}
@@ -3520,6 +3522,18 @@ AspenDiscovery.GroupedWork = (function(){
 			$.getJSON(url, function (data){
 				if (!data.success){
 					AspenDiscovery.showMessage('Error', data.message);
+				}else{
+					AspenDiscovery.showMessage(data.title, data.body);
+				}
+			});
+			return false;
+		},
+
+		deleteAlternateTitle: function(id) {
+			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=deleteAlternateTitle";
+			$.getJSON(url, function (data){
+				if (data.success){
+					$("#alternateTitle" + id).hide();
 				}else{
 					AspenDiscovery.showMessage(data.title, data.body);
 				}
@@ -5426,9 +5440,27 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		deletePDF: function(id, fileId) {
+		uploadSupplementalFile: function (id){
+			let url = Globals.path + '/Record/' + id + '/AJAX?method=uploadSupplementalFile';
+			let uploadSupplementalFileData = new FormData($("#uploadSupplementalFileForm")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: uploadSupplementalFileData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
+
+		deleteUploadedFile: function(id, fileId) {
 			if (confirm("Are you sure you want to delete this file?")){
-				let url = Globals.path + '/Record/' + id + '/AJAX?method=deletePDF&fileId=' +fileId;
+				let url = Globals.path + '/Record/' + id + '/AJAX?method=deleteUploadedFile&fileId=' +fileId;
 				$.getJSON(url, function (data){
 					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
 				});
@@ -5444,9 +5476,21 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		selectFileDownload: function( recordId) {
-			let url = Globals.path + '/Record/' + recordId + '/AJAX?method=showSelectDownloadForm';
+		getUploadSupplementalFileForm: function (id) {
+			let url = Globals.path + '/Record/' + id + '/AJAX?method=getUploadSupplementalFileForm';
 			$.getJSON(url, function (data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			});
+			return false;
+		},
+
+		selectFileDownload: function( recordId, type) {
+			let url = Globals.path + '/Record/' + recordId + '/AJAX';
+			let params = {
+				method: 'showSelectDownloadForm',
+				type: type,
+			};
+			$.getJSON(url, params, function (data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
 			);
@@ -5455,8 +5499,13 @@ AspenDiscovery.Record = (function(){
 
 		downloadSelectedFile: function () {
 			let id = $('#id').val();
+			let fileType = $('#fileType').val();
 			let selectedFile = $('#selectedFile').val();
-			window.location = Globals.path + '/Record/' + id + '/DownloadPDF?fileId=' + selectedFile;
+			if (fileType === 'RecordPDF'){
+				window.location = Globals.path + '/Record/' + id + '/DownloadPDF?fileId=' + selectedFile;
+			}else{
+				window.location = Globals.path + '/Record/' + id + '/DownloadSupplementalFile?fileId=' + selectedFile;
+			}
 			return false;
 		},
 
