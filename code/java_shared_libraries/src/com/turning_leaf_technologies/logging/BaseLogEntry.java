@@ -8,7 +8,7 @@ public interface BaseLogEntry {
 
 	void setFinished();
 
-	public void incErrors(String note);
+	void incErrors(String note);
 
-	public void incErrors(String note, Exception e);
+	void incErrors(String note, Exception e);
 }

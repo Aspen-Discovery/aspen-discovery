@@ -947,6 +947,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'reindexLog_nightly_updates' => [
+					'title' => 'Reindex Log Update for Nightly Index',
+					'description' => 'Update reindex logging for nightly index',
+					'sql' => [
+						'ALTER TABLE reindex_log DROP COLUMN numListsProcessed',
+						'ALTER TABLE reindex_log ADD COLUMN numErrors INT(11) DEFAULT 0',
+					]
+				],
 
 				'cronLog' => array(
 					'title' => 'Cron Log table',

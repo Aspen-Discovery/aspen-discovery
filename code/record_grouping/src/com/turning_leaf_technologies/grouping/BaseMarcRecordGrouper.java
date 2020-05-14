@@ -30,8 +30,8 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 	private boolean isValid = true;
 
-	BaseMarcRecordGrouper(String serverName, BaseIndexingSettings settings, Connection dbConn, boolean fullRegrouping, Logger logger) {
-		super(dbConn, serverName, logger);
+	BaseMarcRecordGrouper(String serverName, BaseIndexingSettings settings, Connection dbConn, BaseLogEntry logEntry, Logger logger) {
+		super(dbConn, serverName, logEntry, logger);
 		this.dbConn = dbConn;
 		recordNumberTag = settings.getRecordNumberTag();
 		recordNumberSubfield = settings.getRecordNumberSubfield();
@@ -42,7 +42,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		try {
 			insertMarcRecordChecksum = dbConn.prepareStatement("INSERT INTO ils_marc_checksums (ilsId, source, checksum, dateFirstDetected) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), dateFirstDetected=VALUES(dateFirstDetected)");
 		} catch (Exception e) {
-			logger.error("Error setting up database statement");
+			logEntry.incErrors("Error setting up database statement");
 			isValid = false;
 		}
 	}
@@ -419,7 +419,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 				}
 				break;
 			default:
-				logger.error("Unknown setting to load format from");
+				logEntry.incErrors("Unknown setting to load format from");
 				groupingFormat = "Other";
 		}
 		workForTitle.setGroupingCategory(groupingFormat);
@@ -543,7 +543,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 					updateMarcRecordChecksum(recordNumber, indexingSettings.getName(), checksum, dateAdded);
 					//logger.debug("checksum changed for " + recordNumber + " was " + existingChecksum + " now its " + checksum);
 				} catch (IOException e) {
-					logger.error("Error writing marc", e);
+					logEntry.incErrors("Error writing marc", e);
 				}
 			} else {
 				//Update date first detected if needed
@@ -554,7 +554,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 				}
 			}
 		} else {
-			logger.error("Error did not find record number for MARC record");
+			logEntry.incErrors("Error did not find record number for MARC record");
 		}
 		return marcRecordStatus;
 	}
@@ -585,7 +585,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			getAllExistingRecordsStmt.close();
 			return true;
 		} catch (SQLException e) {
-			logger.error("Error loading existing titles", e);
+			logEntry.incErrors("Error loading existing titles", e);
 			logEntry.addNote("Error loading existing titles" + e.toString());
 			return false;
 		}
@@ -599,7 +599,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			insertMarcRecordChecksum.setLong(4, dateFirstDetected);
 			insertMarcRecordChecksum.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("Unable to update checksum for ils marc record", e);
+			logEntry.incErrors("Unable to update checksum for ils marc record", e);
 		}
 	}
 

@@ -1123,14 +1123,14 @@ public class KohaExportMain {
 
 	private static MarcRecordGrouper getRecordGroupingProcessor() {
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logger, false);
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}
 
 	private static GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}

@@ -1,18 +1,21 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.jcraft.jsch.*;
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.UnzipUtility;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.logging.LoggingUtil;
-import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class GroupedReindexMain {
-
+	private static BaseLogEntry logEntry;
 	private static Logger logger;
 
 	//General configuration
@@ -26,12 +29,6 @@ public class GroupedReindexMain {
 	private static Ini configIni;
 	private static String baseLogPath;
 
-	//Reporting information
-	private static long reindexLogId;
-	private static long startTime;
-	private static long endTime;
-	private static PreparedStatement addNoteToReindexLogStmt;
-
 	//Database connections and prepared statements
 	private static Connection dbConn = null;
 
@@ -41,7 +38,6 @@ public class GroupedReindexMain {
 	 * @param args String[] The server name to index with optional parameter for properties of indexing
 	 */
 	public static void main(String[] args) {
-		startTime = new Date().getTime();
 		// Get the configuration filename
 		if (args.length == 0) {
 			System.out.println("Please enter the server to index as the first parameter");
@@ -77,15 +73,15 @@ public class GroupedReindexMain {
 		
 		initializeReindex();
 		
-		addNoteToReindexLog("Initialized Reindex ");
+		logEntry.addNote("Initialized Reindex ");
 		if (fullReindex){
-			addNoteToReindexLog("Performing full reindex");
+			logEntry.addNote("Performing full reindex");
 		}
 		
 		//Process grouped works
 		long numWorksProcessed = 0;
 		try {
-			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, individualWorkToProcess != null, logger);
+			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, logEntry, logger);
 			if (groupedWorkIndexer.isOkToIndex()) {
 				if (individualWorkToProcess != null) {
 					//Get more information about the work
@@ -110,42 +106,13 @@ public class GroupedReindexMain {
 
 			}
 		} catch (Error e) {
-			logger.error("Error processing reindex ", e);
-			addNoteToReindexLog("Error processing reindex " + e.toString());
+			logEntry.incErrors("Error processing reindex " + e.toString());
 		} catch (Exception e) {
-			logger.error("Exception processing reindex ", e);
-			addNoteToReindexLog("Exception processing reindex " + e.toString());
+			logEntry.incErrors("Exception processing reindex ", e);
 		}
 
-		// Send completion information
-		endTime = new Date().getTime();
-		sendCompletionMessage(numWorksProcessed);
-		
-		addNoteToReindexLog("Finished Reindex for " + serverName);
-		logger.info("Finished Reindex for " + serverName);
-		long endTime = new Date().getTime();
-		long elapsedTime = endTime - startTime;
-		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
-	}
-
-	private static StringBuffer reindexNotes = new StringBuffer();
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	static void addNoteToReindexLog(String note) {
-		if (addNoteToReindexLogStmt == null){
-			//This happens when called from another system (i.e. from Sierra Export)
-			return;
-		}
-		try {
-			Date date = new Date();
-			reindexNotes.append("<br>").append(dateFormat.format(date)).append(note);
-			addNoteToReindexLogStmt.setString(1, StringUtils.trimTo(65535, reindexNotes.toString()));
-			addNoteToReindexLogStmt.setLong(2, new Date().getTime() / 1000);
-			addNoteToReindexLogStmt.setLong(3, reindexLogId);
-			addNoteToReindexLogStmt.executeUpdate();
-			logger.info(note);
-		} catch (SQLException e) {
-			logger.error("Error adding note to Reindex Log", e);
-		}
+		logEntry.addNote("Finished Reindex for " + serverName);
+		logEntry.setFinished();
 	}
 
 	private static void initializeReindex() {
@@ -206,8 +173,12 @@ public class GroupedReindexMain {
 			System.exit(1);
 		}
 
+		logEntry = new NightlyIndexLogEntry(dbConn, logger);
+
 		//If this is the nightly index, check to see if we need to run
 		if (isNightlyReindex) {
+			loadAcceleratedReaderData();
+
 			try {
 				logger.info("Checking to see if nightly index should run");
 				PreparedStatement getRunNightlyIndexStmt = dbConn.prepareStatement("SELECT runNightlyFullIndex FROM system_variables");
@@ -215,7 +186,8 @@ public class GroupedReindexMain {
 				if (getRunNightlyIndexRS.next()){
 					boolean runNightlyFullIndex = getRunNightlyIndexRS.getBoolean("runNightlyFullIndex");
 					if (!runNightlyFullIndex){
-						logger.info("Not running nightly full index");
+						logEntry.addNote("Nightly index does not need to be run");
+						logEntry.setFinished();
 						System.exit(0);
 					}
 				}
@@ -224,74 +196,104 @@ public class GroupedReindexMain {
 				logger.error("Unable to determine if the nightly index should run, running it", e);
 			}
 		}
-
-		//Start a reindex log entry
-		try {
-			logger.info("Creating log entry for index");
-			PreparedStatement createLogEntryStatement = dbConn.prepareStatement("INSERT INTO reindex_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			createLogEntryStatement.setLong(1, new Date().getTime() / 1000);
-			createLogEntryStatement.setLong(2, new Date().getTime() / 1000);
-			createLogEntryStatement.setString(3, "Initialization complete");
-			createLogEntryStatement.executeUpdate();
-			ResultSet generatedKeys = createLogEntryStatement.getGeneratedKeys();
-			if (generatedKeys.next()){
-				reindexLogId = generatedKeys.getLong(1);
-			}
-			createLogEntryStatement.close();
-			
-			addNoteToReindexLogStmt = dbConn.prepareStatement("UPDATE reindex_log SET notes = ?, lastUpdate = ? WHERE id = ?");
-		} catch (SQLException e) {
-			logger.error("Unable to create log entry for reindex process", e);
-			System.exit(0);
-		}
-		
 	}
-	
-	private static void sendCompletionMessage(Long numWorksProcessed){
-		long elapsedTime = endTime - startTime;
-		float elapsedMinutes = (float)elapsedTime / (float)(60000); 
-		logger.info("Time elapsed: " + elapsedMinutes + " minutes");
-		
-		try {
-			PreparedStatement finishedStatement = dbConn.prepareStatement("UPDATE reindex_log SET endTime = ?, numWorksProcessed = ? WHERE id = ?");
-			finishedStatement.setLong(1, new Date().getTime() / 1000);
-			finishedStatement.setLong(2, numWorksProcessed);
-			finishedStatement.setLong(3, reindexLogId);
-			finishedStatement.executeUpdate();
-		} catch (SQLException e) {
-			logger.error("Unable to update reindex log with completion time.", e);
-		}
 
-		//Update variables table to mark the index as complete
-		if (individualWorkToProcess == null){
-			try {
-				PreparedStatement finishedStatement = dbConn.prepareStatement("INSERT INTO variables (name, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)");
-				if (fullReindex){
-					finishedStatement.setString(1, "lastFullReindexFinish");
-				} else{
-					finishedStatement.setString(1, "lastPartialReindexFinish");
+	private static void loadAcceleratedReaderData(){
+		try{
+			PreparedStatement arSettingsStmt = dbConn.prepareStatement("SELECT * FROM accelerated_reading_settings");
+			ResultSet arSettingsRS = arSettingsStmt.executeQuery();
+			if (arSettingsRS.next()){
+				long lastFetched = arSettingsRS.getLong("lastFetched");
+				//Update if we have never updated or if we last updated more than a week ago
+				//If we are updating, update the settings table right away so multiple processors don't update at the same time
+				if (lastFetched < ((new java.util.Date().getTime() / 1000) - (7 * 24 * 60 * 60))){
+					logEntry.addNote("Updating Accelerated Reader Data");
+					logEntry.saveResults();
+
+					PreparedStatement updateSettingsStmt = dbConn.prepareStatement("UPDATE accelerated_reading_settings SET lastFetched = ?");
+					updateSettingsStmt.setLong(1, (new Date().getTime() / 1000));
+
+					updateSettingsStmt.executeUpdate();
+
+					//Fetch the latest file from the SFTP server
+					String ftpServer = arSettingsRS.getString("ftpServer");
+					String ftpUser = arSettingsRS.getString("ftpUser");
+					String ftpPassword = arSettingsRS.getString("ftpPassword");
+					String arExportPath = arSettingsRS.getString("arExportPath");
+
+					String remoteFile = "/RLI-ARDATA-XML.ZIP";
+					File localFile = new File(arExportPath + "/RLI-ARDATA-XML.ZIP");
+
+					JSch jsch = new JSch();
+					Session session;
+					try {
+						session = jsch.getSession(ftpUser, ftpServer, 22);
+						session.setConfig("StrictHostKeyChecking", "no");
+						session.setPassword(ftpPassword);
+						session.connect();
+
+						Channel channel = session.openChannel("sftp");
+						channel.connect();
+						ChannelSftp sftpChannel = (ChannelSftp) channel;
+						sftpChannel.get(remoteFile, new FileOutputStream(localFile));
+						sftpChannel.exit();
+						session.disconnect();
+
+						logEntry.addNote("Retrieved new file from FTP server");
+						logEntry.saveResults();
+					} catch (JSchException e) {
+						logEntry.incErrors("JSch Error retrieving accelerated reader file from server", e);
+					} catch (SftpException e) {
+						logEntry.incErrors("Sftp Error retrieving accelerated reader file from server", e);
+					}
+
+					if (localFile.exists()){
+						UnzipUtility.unzip(localFile.getPath(), arExportPath);
+
+						//Update the database
+						//Load the ar_titles xml file
+						File arTitles = new File(arExportPath + "/ar_titles.xml");
+						loadAcceleratedReaderTitlesXMLFile(arTitles);
+
+						//Load the ar_titles_isbn xml file
+						File arTitlesIsbn = new File(arExportPath + "/ar_titles_isbn.xml");
+						loadAcceleratedReaderTitlesIsbnXMLFile(arTitlesIsbn);
+
+						logEntry.addNote("Done updating Accelerated Reader Data");
+						logEntry.saveResults();
+					}
 				}
-				finishedStatement.setLong(2, new Date().getTime() / 1000);
-				finishedStatement.executeUpdate();
-			} catch (SQLException e) {
-				logger.error("Unable to update variables with completion time.", e);
 			}
+		}catch (Exception e){
+			logEntry.incErrors("Error loading accelerated reader data", e);
 		}
-
 	}
 
-	private static PreparedStatement updateNumWorksStatement;
-	static void updateNumWorksProcessed(long numWorksProcessed){
+	private static void loadAcceleratedReaderTitlesIsbnXMLFile(File arTitlesIsbn) {
 		try {
-			if (updateNumWorksStatement == null){
-				updateNumWorksStatement = dbConn.prepareStatement("UPDATE reindex_log SET lastUpdate = ?, numWorksProcessed = ? WHERE id = ?");
-			}
-			updateNumWorksStatement.setLong(1, new Date().getTime() / 1000);
-			updateNumWorksStatement.setLong(2, numWorksProcessed);
-			updateNumWorksStatement.setLong(3, reindexLogId);
-			updateNumWorksStatement.executeUpdate();
-		} catch (SQLException e) {
-			logger.error("Unable to update reindex log with number of works processed.", e);
+			logEntry.addNote("Loading ar isbns from " + arTitlesIsbn);
+			logEntry.saveResults();
+
+			SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+			SAXParser saxParser = saxParserFactory.newSAXParser();
+			ArTitleIsbnsHandler handler = new ArTitleIsbnsHandler(dbConn, logger);
+			saxParser.parse(arTitlesIsbn, handler);
+		} catch (Exception e) {
+			logEntry.incErrors("Error parsing Accelerated Reader Title data ", e);
+		}
+	}
+
+	private static void loadAcceleratedReaderTitlesXMLFile(File arTitles) {
+		try {
+			logEntry.addNote("Loading ar titles from " + arTitles);
+			logEntry.saveResults();
+
+			SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+			SAXParser saxParser = saxParserFactory.newSAXParser();
+			ArTitlesHandler handler = new ArTitlesHandler(dbConn, logger);
+			saxParser.parse(arTitles, handler);
+		} catch (Exception e) {
+			logEntry.incErrors("Error parsing Accelerated Reader Title data ", e);
 		}
 	}
 }

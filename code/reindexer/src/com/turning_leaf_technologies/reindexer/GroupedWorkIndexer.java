@@ -1,13 +1,8 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.jcraft.jsch.*;
-import com.turning_leaf_technologies.config.ConfigUtil;
-import com.turning_leaf_technologies.file.UnzipUtility;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.net.NetworkUtils;
-import com.turning_leaf_technologies.net.WebServiceResponse;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -22,12 +17,9 @@ import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 public class GroupedWorkIndexer {
 	private String serverName;
-	private String solrPort;
+	private BaseLogEntry logEntry;
 	private Logger logger;
 	private Long indexStartTime;
 	private int totalRecordsHandled = 0;
@@ -41,7 +33,6 @@ public class GroupedWorkIndexer {
 	private HooplaProcessor hooplaProcessor;
 	private HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
-	private Long maxWorksToProcess = -1L;
 
 	private PreparedStatement getRatingStmt;
 	private PreparedStatement getNovelistStmt;
@@ -72,24 +63,15 @@ public class GroupedWorkIndexer {
 
 	private boolean removeRedundantHooplaRecords = false;
 
-	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, boolean singleWorkIndex, Logger logger) {
+	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
 		this.serverName = serverName;
+		this.logEntry = logEntry;
 		this.logger = logger;
 		this.dbConn = dbConn;
 		this.fullReindex = fullReindex;
 
-		solrPort = configIni.get("Reindex", "solrPort");
-
-		String maxWorksToProcessStr = ConfigUtil.cleanIniValue(configIni.get("Reindex", "maxWorksToProcess"));
-		if (maxWorksToProcessStr != null && maxWorksToProcessStr.length() > 0){
-			try{
-				maxWorksToProcess = Long.parseLong(maxWorksToProcessStr);
-				logger.warn("Processing a maximum of " + maxWorksToProcess + " works");
-			}catch (NumberFormatException e){
-				logger.warn("Unable to parse max works to process " + maxWorksToProcessStr);
-			}
-		}
+		String solrPort = configIni.get("Reindex", "solrPort");
 
 		//Load the last Index time
 		try{
@@ -102,7 +84,7 @@ public class GroupedWorkIndexer {
 			lastGroupingTimeRS.close();
 			loadLastGroupingTime.close();
 		} catch (Exception e){
-			logger.error("Could not load last index time from variables table ", e);
+			logEntry.incErrors("Could not load last index time from variables table ", e);
 		}
 
 		//Load a few statements we will need later
@@ -117,7 +99,7 @@ public class GroupedWorkIndexer {
 			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 		} catch (Exception e){
-			logger.error("Could not load statements to get identifiers ", e);
+			logEntry.incErrors("Could not load statements to get identifiers ", e);
 		}
 
 		//Check hoopla settings to see if we need to remove redundant records
@@ -128,49 +110,17 @@ public class GroupedWorkIndexer {
 				removeRedundantHooplaRecords = getHooplaSettingsRS.getBoolean("excludeTitlesWithCopiesFromOtherVendors");
 			}
 		}catch (Exception e){
-			logger.error("Error loading Hoopla Settings", e);
+			logEntry.incErrors("Error loading Hoopla Settings", e);
 		}
 
 		//Initialize the updateServer and solr server
-		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
-		//SolrClient solrServer;
-		if (fullReindex){
-			//MDN 10-21-2015 - use the grouped core since we are using replication.
-			ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-			solrBuilder.withThreadCount(1);
-			solrBuilder.withQueueSize(25);
-			updateServer = solrBuilder.build();
-			updateServer.setRequestWriter(new BinaryRequestWriter());
-		}else{
-			//TODO: Bypass this if called from an export process?
+		logEntry.addNote("Setting up update server and solr server");
 
-			//Check to make sure that at least a couple of minutes have elapsed since the last index
-			//Periodically in the middle of the night we get indexes every minute or multiple times a minute
-			//which is annoying especially since it generally means nothing is changing.
-			long elapsedTime = indexStartTime - lastReindexTime;
-			long minIndexingInterval = 2 * 60;
-			if (elapsedTime < minIndexingInterval && !singleWorkIndex) {
-				try {
-					logger.debug("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60f) + " minutes ago");
-					logger.debug("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
-					GroupedReindexMain.addNoteToReindexLog("Pausing between indexes, last index ran " + Math.ceil(elapsedTime / 60f) + " minutes ago");
-					GroupedReindexMain.addNoteToReindexLog("Pausing for " + (minIndexingInterval - elapsedTime) + " seconds");
-					Thread.sleep((minIndexingInterval - elapsedTime) * 1000);
-				} catch (InterruptedException e) {
-					logger.warn("Pause was interrupted while pausing between indexes");
-				}
-			}else{
-				GroupedReindexMain.addNoteToReindexLog("Index last ran " + (elapsedTime) + " seconds ago");
-			}
-
-			ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-			solrBuilder.withThreadCount(1);
-			solrBuilder.withQueueSize(25);
-			updateServer = solrBuilder.build();
-			updateServer.setRequestWriter(new BinaryRequestWriter());
-			//HttpSolrClient.Builder solrServerBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-			//solrServer = solrServerBuilder.build();
-		}
+		ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+		solrBuilder.withThreadCount(1);
+		solrBuilder.withQueueSize(25);
+		updateServer = solrBuilder.build();
+		updateServer.setRequestWriter(new BinaryRequestWriter());
 
 		scopes = IndexingUtils.loadScopes(dbConn, logger);
 		logger.info("Loaded " + scopes.size() + " scopes");
@@ -233,7 +183,7 @@ public class GroupedWorkIndexer {
 							ilsRecordProcessors.put(curType, new KohaRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						default:
-							logger.error("Unknown indexing class " + ilsIndexingClassString);
+							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
 							okToIndex = false;
 							return;
 					}
@@ -245,12 +195,12 @@ public class GroupedWorkIndexer {
 						if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
 							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, dbConn, getSideLoadSettingsRS, logger, fullReindex));
 						} else {
-							logger.error("Unknown side load processing class " + sideLoadIndexingClassString);
+							logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
 							okToIndex = false;
 							return;
 						}
 					}else{
-						logger.error("Could not find indexing profile or side load settings for type " + curType);
+						logEntry.incErrors("Could not find indexing profile or side load settings for type " + curType);
 					}
 				}
 			}
@@ -258,7 +208,7 @@ public class GroupedWorkIndexer {
 			setupIndexingStats();
 
 		}catch (Exception e){
-			logger.error("Error loading record processors for ILS records", e);
+			logEntry.incErrors("Error loading record processors for ILS records", e);
 		}
 		overDriveProcessor = new OverDriveProcessor(this, dbConn, logger);
 
@@ -279,13 +229,11 @@ public class GroupedWorkIndexer {
 			getRatingStmt = dbConn.prepareStatement("SELECT AVG(rating) as averageRating, groupedRecordPermanentId from user_work_review where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getNovelistStmt = dbConn.prepareStatement("SELECT * from novelist_data where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
-			logger.error("Could not prepare statements to load local enrichment", e);
+			logEntry.incErrors("Could not prepare statements to load local enrichment", e);
 		}
 
 		String lexileExportPath = configIni.get("Reindex", "lexileExportPath");
 		loadLexileData(lexileExportPath);
-
-		loadAcceleratedReaderData();
 
 		if (clearIndex){
 			clearIndex();
@@ -308,94 +256,6 @@ public class GroupedWorkIndexer {
 
 	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
 	private TreeMap<String, ScopedIndexingStats> indexingStats = new TreeMap<>();
-
-	private void loadAcceleratedReaderData(){
-		try{
-			PreparedStatement arSettingsStmt = dbConn.prepareStatement("SELECT * FROM accelerated_reading_settings");
-			ResultSet arSettingsRS = arSettingsStmt.executeQuery();
-			if (arSettingsRS.next()){
-				long lastFetched = arSettingsRS.getLong("lastFetched");
-				//Update if we have never updated or if we last updated more than a week ago
-				//If we are updating, update the settings table right away so multiple processors don't update at the same time
-				if (lastFetched < ((new Date().getTime() / 1000) - (7 * 24 * 60 * 60 * 1000))){
-					PreparedStatement updateSettingsStmt = dbConn.prepareStatement("UPDATE accelerated_reading_settings SET lastFetched = ?");
-					updateSettingsStmt.setLong(1, (new Date().getTime() / 1000));
-
-					updateSettingsStmt.executeUpdate();
-
-					//Fetch the latest file from the SFTP server
-					String ftpServer = arSettingsRS.getString("ftpServer");
-					String ftpUser = arSettingsRS.getString("ftpUser");
-					String ftpPassword = arSettingsRS.getString("ftpPassword");
-					String arExportPath = arSettingsRS.getString("arExportPath");
-
-					String remoteFile = "/RLI-ARDATA-XML.ZIP";
-					File localFile = new File(arExportPath + "/RLI-ARDATA-XML.ZIP");
-
-					JSch jsch = new JSch();
-					Session session;
-					try {
-						session = jsch.getSession(ftpUser, ftpServer, 22);
-						session.setConfig("StrictHostKeyChecking", "no");
-						session.setPassword(ftpPassword);
-						session.connect();
-
-						Channel channel = session.openChannel("sftp");
-						channel.connect();
-						ChannelSftp sftpChannel = (ChannelSftp) channel;
-						sftpChannel.get(remoteFile, new FileOutputStream(localFile));
-						sftpChannel.exit();
-						session.disconnect();
-					} catch (JSchException e) {
-						logger.error("JSch Error retrieving accelerated reader file from server", e);
-					} catch (SftpException e) {
-						logger.error("Sftp Error retrieving accelerated reader file from server", e);
-					}
-
-					if (localFile.exists()){
-						UnzipUtility.unzip(localFile.getPath(), arExportPath);
-
-						//Update the database
-						//Load the ar_titles xml file
-						File arTitles = new File(arExportPath + "/ar_titles.xml");
-						loadAcceleratedReaderTitlesXMLFile(arTitles);
-
-						//Load the ar_titles_isbn xml file
-						File arTitlesIsbn = new File(arExportPath + "/ar_titles_isbn.xml");
-						loadAcceleratedReaderTitlesIsbnXMLFile(arTitlesIsbn);
-					}
-				}
-			}
-		}catch (Exception e){
-			logger.error("Error loading accelerated reader data", e);
-		}
-	}
-
-	private void loadAcceleratedReaderTitlesIsbnXMLFile(File arTitlesIsbn) {
-		try {
-			logger.info("Loading ar isbns from " + arTitlesIsbn);
-
-			SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-			SAXParser saxParser = saxParserFactory.newSAXParser();
-			ArTitleIsbnsHandler handler = new ArTitleIsbnsHandler(dbConn, logger);
-			saxParser.parse(arTitlesIsbn, handler);
-		} catch (Exception e) {
-			logger.error("Error parsing Accelerated Reader Title data ", e);
-		}
-	}
-
-	private void loadAcceleratedReaderTitlesXMLFile(File arTitles) {
-		try {
-			logger.info("Loading ar titles from " + arTitles);
-
-			SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-			SAXParser saxParser = saxParserFactory.newSAXParser();
-			ArTitlesHandler handler = new ArTitlesHandler(dbConn, logger);
-			saxParser.parse(arTitles, handler);
-		} catch (Exception e) {
-			logger.error("Error parsing Accelerated Reader Title data ", e);
-		}
-	}
 
 	private void loadLexileData(String lexileExportPath) {
 		String[] lexileFields = new String[0];
@@ -430,9 +290,10 @@ public class GroupedWorkIndexer {
 			}
 			logger.info("Read " + lexileInformation.size() + " lines of lexile data");
 		}catch (FileNotFoundException fne){
-			logger.warn("Error loading lexile data, the file was not found at " + lexileExportPath);
+			//This is normal
+			logEntry.addNote("Error loading lexile data, the file was not found at " + lexileExportPath);
 		}catch (Exception e){
-			logger.warn("Error loading lexile data on " + curLine +  Arrays.toString(lexileFields), e);
+			logEntry.incErrors("Error loading lexile data on " + curLine +  Arrays.toString(lexileFields), e);
 		}
 	}
 
@@ -446,10 +307,10 @@ public class GroupedWorkIndexer {
 			//Allow auto commit functionality to handle this
 			//updateServer.commit(true, false, false);
 		} catch (HttpSolrClient.RemoteSolrException rse) {
-			logger.error("Solr is not running properly, try restarting", rse);
+			logEntry.incErrors("Solr is not running properly, try restarting", rse);
 			System.exit(-1);
 		} catch (Exception e) {
-			logger.error("Error deleting from index", e);
+			logEntry.incErrors("Error deleting from index", e);
 		}
 	}
 
@@ -473,7 +334,7 @@ public class GroupedWorkIndexer {
 			deleteGroupedWorkStmt.executeUpdate();
 
 		} catch (Exception e) {
-			logger.error("Error deleting work from index", e);
+			logEntry.incErrors("Error deleting work from index", e);
 		}
 	}
 
@@ -482,11 +343,11 @@ public class GroupedWorkIndexer {
 			processScheduledWorks(logEntry);
 
 			updateServer.commit(false, false, true);
-			GroupedReindexMain.addNoteToReindexLog("Shutting down the update server");
+			logEntry.addNote("Shutting down the update server");
 			updateServer.blockUntilFinished();
 			updateServer.close();
 		}catch (Exception e) {
-			logger.error("Error finishing extract ", e);
+			logEntry.incErrors("Error finishing extract ", e);
 		}
 	}
 
@@ -494,7 +355,7 @@ public class GroupedWorkIndexer {
 		try {
 			updateServer.commit(false, false, true);
 		}catch (Exception e) {
-			logger.error("Error finishing extract ", e);
+			logEntry.incErrors("Error finishing extract ", e);
 		}
 	}
 
@@ -527,33 +388,23 @@ public class GroupedWorkIndexer {
 	}
 
 	void finishIndexing(){
-		GroupedReindexMain.addNoteToReindexLog("Finishing indexing");
-		logger.info("Finishing indexing");
+		logEntry.addNote("Finishing indexing");
 		if (fullReindex) {
 			try {
-				GroupedReindexMain.addNoteToReindexLog("Calling final commit");
+				logEntry.addNote("Calling final commit");
 				updateServer.commit(true, true, false);
 			} catch (Exception e) {
-				logger.error("Error calling final commit", e);
-			}
-			//Swap the indexes
-			if (fullReindex)  {
-				//Restart replication from the master
-				String url = "http://localhost:" + solrPort + "/solr/grouped_works/replication?command=enablereplication";
-				WebServiceResponse startReplicationResponse = NetworkUtils.getURL(url, logger);
-				if (!startReplicationResponse.isSuccess()){
-					logger.error("Error restarting replication " + startReplicationResponse.getMessage());
-				}
+				logEntry.incErrors("Error calling final commit", e);
 			}
 		}else {
 			try {
-				GroupedReindexMain.addNoteToReindexLog("Doing a soft commit to make sure changes are saved");
+				logEntry.addNote("Doing a soft commit to make sure changes are saved");
 				updateServer.commit(false, false, true);
-				GroupedReindexMain.addNoteToReindexLog("Shutting down the update server");
+				logEntry.addNote("Shutting down the update server");
 				updateServer.blockUntilFinished();
 				updateServer.close();
 			} catch (Exception e) {
-				logger.error("Error shutting down update server", e);
+				logEntry.incErrors("Error shutting down update server", e);
 			}
 		}
 
@@ -576,12 +427,12 @@ public class GroupedWorkIndexer {
 				insertVariableStmt.close();
 			}
 		}catch (Exception e){
-			logger.error("Error setting last grouping time", e);
+			logEntry.incErrors("Error setting last grouping time", e);
 		}
 	}
 
 	Long processGroupedWorks() {
-		Long numWorksProcessed = 0L;
+		long numWorksProcessed = 0L;
 		try {
 			PreparedStatement getAllGroupedWorks;
 			PreparedStatement getNumWorksToIndex;
@@ -601,7 +452,7 @@ public class GroupedWorkIndexer {
 			ResultSet numWorksToIndexRS = getNumWorksToIndex.executeQuery();
 			numWorksToIndexRS.next();
 			long numWorksToIndex = numWorksToIndexRS.getLong(1);
-			GroupedReindexMain.addNoteToReindexLog("Starting to process " + numWorksToIndex + " grouped works");
+			logEntry.addNote("Starting to process " + numWorksToIndex + " grouped works");
 
 			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
 			while (groupedWorks.next()){
@@ -615,6 +466,9 @@ public class GroupedWorkIndexer {
 				processGroupedWork(id, permanentId, grouping_category);
 
 				numWorksProcessed++;
+				if (logEntry instanceof NightlyIndexLogEntry){
+					((NightlyIndexLogEntry) logEntry).incNumWorksProcessed();
+				}
 				if (fullReindex && (numWorksProcessed % 5000 == 0)){
 					//Testing shows that regular commits do seem to improve performance.
 					//However, we can't do it too often or we get errors with too many searchers warming.
@@ -625,12 +479,7 @@ public class GroupedWorkIndexer {
 					}catch (Exception e){
 						logger.warn("Error committing changes", e);
 					}*/
-					GroupedReindexMain.addNoteToReindexLog("Processed " + numWorksProcessed + " grouped works processed.");
-					GroupedReindexMain.updateNumWorksProcessed(numWorksProcessed);
-				}
-				if (maxWorksToProcess != -1 && numWorksProcessed >= maxWorksToProcess){
-					logger.warn("Stopping processing now because we've reached the max works to process.");
-					break;
+					logEntry.addNote("Processed " + numWorksProcessed + " grouped works processed.");
 				}
 				if (lastUpdated == null){
 					setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started so we don't index multiple times
@@ -639,7 +488,7 @@ public class GroupedWorkIndexer {
 				}
 			}
 		} catch (SQLException e) {
-			logger.error("Unexpected SQL error", e);
+			logEntry.incErrors("Unexpected SQL error", e);
 		}
 		logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
 		return numWorksProcessed;
@@ -659,7 +508,7 @@ public class GroupedWorkIndexer {
 				updateServer.commit(false, false, true);
 			}
 		} catch (Exception e) {
-			logger.error("Error indexing grouped work by id", e);
+			logEntry.incErrors("Error indexing grouped work by id", e);
 		}
 
 	}
@@ -682,7 +531,7 @@ public class GroupedWorkIndexer {
 			try {
 				originalWork = groupedWork.clone();
 			}catch (CloneNotSupportedException cne){
-				logger.error("Could not clone grouped work", cne);
+				logEntry.incErrors("Could not clone grouped work", cne);
 				return;
 			}
 			//Figure out how many records we had originally
@@ -727,7 +576,7 @@ public class GroupedWorkIndexer {
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument();
 				UpdateResponse response = updateServer.add(inputDocument);
 				if (response.getException() != null){
-					logger.error("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
+					logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
 				}
 				//logger.debug("Updated solr \r\n" + inputDocument.toString());
 				//Check to see if we need to automatically reindex this record in the future.
@@ -743,7 +592,7 @@ public class GroupedWorkIndexer {
 								addScheduledWorkStmt.setLong(2, autoReindexTime);
 								addScheduledWorkStmt.executeUpdate();
 							} catch (SQLException sqe) {
-								logger.error("Error adding scheduled reindex time", sqe);
+								logEntry.incErrors("Error adding scheduled reindex time", sqe);
 							}
 						}
 						getScheduledWorkRS.close();
@@ -751,7 +600,7 @@ public class GroupedWorkIndexer {
 				}
 
 			} catch (Exception e) {
-				logger.error("Error adding grouped work to solr " + groupedWork.getId(), e);
+				logEntry.incErrors("Error adding grouped work to solr " + groupedWork.getId(), e);
 			}
 		}else{
 			//Log that this record did not have primary identifiers after
@@ -803,7 +652,7 @@ public class GroupedWorkIndexer {
 				}
 			}
 		} catch (SQLException e) {
-			logger.error("Error loading accelerated reader information", e);
+			logEntry.incErrors("Error loading accelerated reader information", e);
 		}
 	}
 
@@ -820,7 +669,7 @@ public class GroupedWorkIndexer {
 			}
 			ratingsRS.close();
 		}catch (Exception e){
-			logger.error("Unable to load local enrichment", e);
+			logEntry.incErrors("Unable to load local enrichment", e);
 		}
 	}
 
@@ -843,7 +692,7 @@ public class GroupedWorkIndexer {
 			}
 			novelistRS.close();
 		}catch (Exception e){
-			logger.error("Unable to load novelist data", e);
+			logEntry.incErrors("Unable to load novelist data", e);
 		}
 	}
 
@@ -914,7 +763,7 @@ public class GroupedWorkIndexer {
 		try {
 			props.load(new FileReader(translationMapFile));
 		} catch (IOException e) {
-			logger.error("Could not read translation map, " + translationMapFile.getAbsolutePath(), e);
+			logEntry.incErrors("Could not read translation map, " + translationMapFile.getAbsolutePath(), e);
 		}
 		HashMap<String, String> translationMap = new HashMap<>();
 		for (Object keyObj : props.keySet()){
@@ -938,7 +787,7 @@ public class GroupedWorkIndexer {
 		if (translationMap == null){
 			if (!missingTranslationMaps.contains(mapName)) {
 				missingTranslationMaps.add(mapName);
-				logger.error("Unable to find system translation map for " + mapName);
+				logEntry.incErrors("Unable to find system translation map for " + mapName);
 			}
 			translatedValue = value;
 		}else{

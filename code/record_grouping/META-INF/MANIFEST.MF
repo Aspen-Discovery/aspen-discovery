@@ -7,5 +7,4 @@ Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../ja
  -2.11.2.jar ../java_shared_libraries/log4j-core-2.11.2.jar ../java_sh
  ared_libraries/mysql-connector-java-8.0.15.jar ../java_shared_librari
  es/opencsv-4.5.jar ../marc4j/marc4j-turningleaftech.jar
-Main-Class: com.turning_leaf_technologies.grouping.RecordGrouperMain
 

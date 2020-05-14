@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.grouping;
 
 import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -13,6 +14,7 @@ import java.util.*;
 import java.util.Date;
 
 public class RecordGroupingProcessor {
+	protected BaseLogEntry logEntry;
 	protected Logger logger;
 
 	private PreparedStatement insertGroupedWorkStmt;
@@ -40,11 +42,6 @@ public class RecordGroupingProcessor {
 
 	private PreparedStatement getWorkByAlternateTitleAuthorStmt;
 
-	private int numRecordsProcessed = 0;
-	private int numGroupedWorksAdded = 0;
-
-	private long startTime = new Date().getTime();
-
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 
 	//A list of grouped works that have been manually merged.
@@ -53,21 +50,15 @@ public class RecordGroupingProcessor {
 	private Long updateTime = new Date().getTime() / 1000;
 
 	/**
-	 * Default constructor for use by subclasses.  Should only be used within Record Grouping module
-	 */
-	RecordGroupingProcessor(Logger logger) {
-		this.logger = logger;
-	}
-
-	/**
 	 * Creates a record grouping processor that saves results to the database.  For use from external extractors
 	 *
 	 * @param dbConnection - The Connection to the database
 	 * @param serverName   - The server we are grouping data for
 	 * @param logger       - A logger to store debug and error messages to.
 	 */
-	public RecordGroupingProcessor(Connection dbConnection, String serverName, Logger logger) {
+	public RecordGroupingProcessor(Connection dbConnection, String serverName, BaseLogEntry logEntry, Logger logger) {
 		this.logger = logger;
+		this.logEntry = logEntry;
 
 		setupDatabaseStatements(dbConnection);
 
@@ -110,7 +101,7 @@ public class RecordGroupingProcessor {
 				}
 			}//If not true, already deleted skip this
 		} catch (Exception e) {
-			logger.error("Error processing deleted bibs", e);
+			logEntry.incErrors("Error processing deleted bibs", e);
 		}
 		return result;
 	}
@@ -130,14 +121,14 @@ public class RecordGroupingProcessor {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error processing deleted bibs", e);
+			logEntry.incErrors("Error processing deleted bibs", e);
 		}
 		return permanentId;
 	}
 
 	void setupDatabaseStatements(Connection dbConnection) {
 		try {
-			insertGroupedWorkStmt = dbConnection.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
+			insertGroupedWorkStmt = dbConnection.prepareStatement("INSERT INTO grouped_work (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
 			updateDateUpdatedForGroupedWorkStmt = dbConnection.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
 			addPrimaryIdentifierForWorkStmt = dbConnection.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
 			removePrimaryIdentifiersForWorkStmt = dbConnection.prepareStatement("DELETE FROM grouped_work_primary_identifiers where grouped_work_id = ?");
@@ -178,7 +169,7 @@ public class RecordGroupingProcessor {
 
 
 		} catch (Exception e) {
-			logger.error("Error setting up prepared statements", e);
+			logEntry.incErrors("Error setting up prepared statements", e);
 		}
 	}
 
@@ -215,7 +206,7 @@ public class RecordGroupingProcessor {
 				groupedWorkPermanentId = getWorkByAlternateTitleAuthorRS.getString("permanent_id");
 			}
 		} catch (SQLException e) {
-			logger.error("Error looking for grouped work by alternate title title = " + groupedWork.getTitle() + " author = " + groupedWork.getAuthor(), e);
+			logEntry.incErrors("Error looking for grouped work by alternate title title = " + groupedWork.getTitle() + " author = " + groupedWork.getAuthor(), e);
 		}
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
@@ -242,11 +233,10 @@ public class RecordGroupingProcessor {
 			}
 			groupedWorkForIdentifierRS.close();
 		} catch (SQLException e) {
-			logger.error("Error determining existing grouped work for identifier", e);
+			logEntry.incErrors("Error determining existing grouped work for identifier", e);
 		}
 
 		//Add the work to the database
-		numRecordsProcessed++;
 		long groupedWorkId = -1;
 		try {
 			getGroupedWorkIdByPermanentIdStmt.setString(1, groupedWorkPermanentId);
@@ -276,7 +266,6 @@ public class RecordGroupingProcessor {
 					groupedWorkId = generatedKeysRS.getLong(1);
 				}
 				generatedKeysRS.close();
-				numGroupedWorksAdded++;
 
 				updatedAndInsertedWorksThisRun.add(groupedWorkId);
 			}
@@ -284,7 +273,7 @@ public class RecordGroupingProcessor {
 			//Update identifiers
 			addPrimaryIdentifierForWorkToDB(groupedWorkId, primaryIdentifier);
 		} catch (Exception e) {
-			logger.error("Error adding grouped record to grouped work ", e);
+			logEntry.incErrors("Error adding grouped record to grouped work ", e);
 		}
 
 	}
@@ -312,7 +301,7 @@ public class RecordGroupingProcessor {
 						updateRatingsStmt.setString(2, oldPermanentId);
 						numUpdatedRatings = updateRatingsStmt.executeUpdate();
 					}catch (SQLException e){
-						logger.error("Error moving ratings");
+						logEntry.incErrors("Error moving ratings");
 					}
 
 					//Move reading history
@@ -322,7 +311,7 @@ public class RecordGroupingProcessor {
 						updateReadingHistoryStmt.setString(2, oldPermanentId);
 						numUpdatedReadingHistory = updateReadingHistoryStmt.executeUpdate();
 					}catch (SQLException e){
-						logger.error("Error moving reading history");
+						logEntry.incErrors("Error moving reading history");
 					}
 
 					//Update list entries
@@ -332,7 +321,7 @@ public class RecordGroupingProcessor {
 						updateUserListEntriesStmt.setString(2, oldPermanentId);
 						numUpdatedListEntries = updateUserListEntriesStmt.executeUpdate();
 					}catch (SQLException e){
-						logger.error("Error moving list entries");
+						logEntry.incErrors("Error moving list entries");
 					}
 
 					//User Not Interested
@@ -342,7 +331,7 @@ public class RecordGroupingProcessor {
 						updateNotInterestedStmt.setString(2, oldPermanentId);
 						numUpdatedNotInterested = updateNotInterestedStmt.executeUpdate();
 					}catch (SQLException e){
-						logger.error("Error moving not interested info");
+						logEntry.incErrors("Error moving not interested info");
 					}
 
 					//Novelist
@@ -352,16 +341,16 @@ public class RecordGroupingProcessor {
 						updateNovelistStmt.setString(2, oldPermanentId);
 						numUpdatedNovelist = updateNovelistStmt.executeUpdate();
 					}catch (SQLException e){
-						logger.error("Error moving not interested info");
+						logEntry.incErrors("Error moving not interested info");
 					}
 
 					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries, " + numUpdatedNovelist + " novelist entries");
 				}
 			}else{
-				logger.error("Could not find the id of the work when merging enrichment " + oldPermanentId);
+				logEntry.incErrors("Could not find the id of the work when merging enrichment " + oldPermanentId);
 			}
 		}catch (Exception e){
-			logger.error("Error moving enrichment", e);
+			logEntry.incErrors("Error moving enrichment", e);
 		}
 	}
 
@@ -395,7 +384,7 @@ public class RecordGroupingProcessor {
 				removePrimaryIdentifiersForWorkStmt.executeUpdate();
 			}
 		} catch (SQLException e) {
-			logger.error("Error removing primary identifiers for merged work " + originalGroupedWorkPermanentId, e);
+			logEntry.incErrors("Error removing primary identifiers for merged work " + originalGroupedWorkPermanentId, e);
 		}
 		return groupedWorkPermanentId;
 	}
@@ -411,7 +400,7 @@ public class RecordGroupingProcessor {
 				updateDateUpdatedForGroupedWorkStmt.executeUpdate();
 				updatedAndInsertedWorksThisRun.add(groupedWorkId);
 			} catch (Exception e) {
-				logger.error("Error updating date updated for grouped work ", e);
+				logEntry.incErrors("Error updating date updated for grouped work ", e);
 			}
 		}
 	}
@@ -430,7 +419,7 @@ public class RecordGroupingProcessor {
 			primaryIdentifier.setIdentifierId(primaryIdentifierRS.getLong(1));
 			primaryIdentifierRS.close();*/
 		} catch (SQLException e) {
-			logger.error("Error adding primary identifier to grouped work " + groupedWorkId + " " + primaryIdentifier.toString(), e);
+			logEntry.incErrors("Error adding primary identifier to grouped work " + groupedWorkId + " " + primaryIdentifier.toString(), e);
 		}
 	}
 
@@ -461,7 +450,7 @@ public class RecordGroupingProcessor {
 			groupedWork.setGroupingCategory(groupingCategory);
 		} else {
 			if (!formatsWarned.contains(format)) {
-				logger.error("Could not find format category for format " + format + " setting to book");
+				logEntry.incErrors("Could not find format category for format " + format + " setting to book");
 				groupedWork.setGroupingCategory("book");
 				formatsWarned.add(format);
 			}
@@ -591,15 +580,6 @@ public class RecordGroupingProcessor {
 		categoryMap.put("movies", "movie");
 	}
 
-
-	void dumpStats() {
-		long totalElapsedTime = new Date().getTime() - startTime;
-		long totalElapsedMinutes = totalElapsedTime / (60 * 1000);
-		logger.debug("-----------------------------------------------------------");
-		logger.debug("Processed " + numRecordsProcessed + " records in " + totalElapsedMinutes + " minutes");
-		logger.debug("Created a total of " + numGroupedWorksAdded + " grouped works");
-	}
-
 	private void loadTranslationMaps(String serverName) {
 		//Load all translationMaps, first from default, then from the site specific configuration
 		File defaultTranslationMapDirectory = new File("../../sites/default/translation_maps");
@@ -629,7 +609,7 @@ public class RecordGroupingProcessor {
 		try {
 			props.load(new FileReader(translationMapFile));
 		} catch (IOException e) {
-			logger.error("Could not read translation map, " + translationMapFile.getAbsolutePath(), e);
+			logEntry.incErrors("Could not read translation map, " + translationMapFile.getAbsolutePath(), e);
 		}
 		HashMap<String, String> translationMap = new HashMap<>();
 		for (Object keyObj : props.keySet()) {
@@ -647,7 +627,7 @@ public class RecordGroupingProcessor {
 		String translatedValue;
 		if (translationMap == null) {
 			if (!unableToTranslateWarnings.contains("unable_to_find_" + mapName)) {
-				logger.error("Unable to find translation map for " + mapName);
+				logEntry.incErrors("Unable to find translation map for " + mapName);
 				unableToTranslateWarnings.add("unable_to_find_" + mapName);
 			}
 
@@ -700,13 +680,13 @@ public class RecordGroupingProcessor {
 							addAuthorAuthorityStmt.setString(2, curLine[1]);
 							addAuthorAuthorityStmt.executeUpdate();
 						} catch (SQLException e) {
-							logger.error("Error adding authority " + curLine[0]);
+							logEntry.incErrors("Error adding authority " + curLine[0]);
 						}
 						curLine = csvReader.readNext();
 					}
 					csvReader.close();
 				} catch (IOException e) {
-					logger.error("Unable to load author authorities", e);
+					logEntry.incErrors("Unable to load author authorities", e);
 				}
 			}
 
@@ -730,17 +710,17 @@ public class RecordGroupingProcessor {
 							addTitleAuthorityStmt.setString(2, curLine[1]);
 							addTitleAuthorityStmt.executeUpdate();
 						} catch (SQLException e) {
-							logger.error("Error adding authority " + curLine[0]);
+							logEntry.incErrors("Error adding authority " + curLine[0]);
 						}
 						curLine = csvReader.readNext();
 					}
 					csvReader.close();
 				} catch (IOException e) {
-					logger.error("Unable to load title authorities", e);
+					logEntry.incErrors("Unable to load title authorities", e);
 				}
 			}
 		} catch (SQLException e) {
-			logger.error("Error loading authorities", e);
+			logEntry.incErrors("Error loading authorities", e);
 		}
 
 		logger.info("Done loading authorities");
@@ -754,7 +734,7 @@ public class RecordGroupingProcessor {
 				return authorityRS.getString("authoritativeName");
 			}
 		} catch (SQLException e) {
-			logger.error("Error getting authoritative author", e);
+			logEntry.incErrors("Error getting authoritative author", e);
 		}
 		return originalAuthor;
 	}
@@ -767,8 +747,12 @@ public class RecordGroupingProcessor {
 				return authorityRS.getString("authoritativeName");
 			}
 		} catch (SQLException e) {
-			logger.error("Error getting authoritative title", e);
+			logEntry.incErrors("Error getting authoritative title", e);
 		}
 		return originalTitle;
+	}
+
+	BaseLogEntry getLogEntry(){
+		return this.logEntry;
 	}
 }

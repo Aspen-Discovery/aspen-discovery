@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class ReindexLogEntry extends DataObject
+class ReindexLogEntry extends BaseLogEntry
 {
 	public $__table = 'reindex_log';   // table name
 	public $id;
@@ -10,7 +10,7 @@ class ReindexLogEntry extends DataObject
 	public $endTime;
 	public $notes;
 	public $numWorksProcessed;
-	public $numListsProcessed;
+	public $numErrors;
 
 	function keys() {
 		return array('id');
