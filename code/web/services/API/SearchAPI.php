@@ -159,13 +159,13 @@ class SearchAPI extends Action
 
 		if ($hasCriticalErrors || $hasWarnings) {
 			$result = array(
-				'status' => $hasCriticalErrors ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
+				'aspen_health_status' => $hasCriticalErrors ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
 				'message' => "Errors have been found",
 				'checks' => $checks
 			);
 		} else {
 			$result = array(
-				'status' => self::STATUS_OK,
+				'aspen_health_status' => self::STATUS_OK,
 				'message' => "Everything is current",
 				'checks' => $checks
 			);
