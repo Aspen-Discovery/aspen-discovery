@@ -141,15 +141,6 @@ public class GroupedWorkIndexer {
 			solrBuilder.withQueueSize(25);
 			updateServer = solrBuilder.build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
-			//HttpSolrClient.Builder httpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-			//solrServer = httpBuilder.build();
-
-			//Stop replication from the master
-			String url = "http://localhost:" + solrPort + "/solr/grouped_works/replication?command=disablereplication";
-			WebServiceResponse stopReplicationResponse = NetworkUtils.getURL(url, logger);
-			if (!stopReplicationResponse.isSuccess()){
-				logger.error("Error restarting replication " + stopReplicationResponse.getMessage());
-			}
 		}else{
 			//TODO: Bypass this if called from an export process?
 
