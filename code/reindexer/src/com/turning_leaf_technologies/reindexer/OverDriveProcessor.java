@@ -378,24 +378,28 @@ class OverDriveProcessor {
 	}
 
 	private void loadOverDriveIdentifiers(GroupedWorkSolr groupedWork, JSONObject productMetadata, String primaryFormat) throws JSONException {
-		JSONArray formats = productMetadata.getJSONArray("formats");
-		for (int i = 0; i < formats.length(); i++) {
-			JSONObject curFormat = formats.getJSONObject(i);
-			//Things like videos do not have identifiers so we need to check for the lack here
-			if (curFormat.has("identifiers")) {
-				JSONArray identifiers = curFormat.getJSONArray("identifiers");
-				for (int j = 0; j < identifiers.length(); j++) {
-					JSONObject curIdentifier = identifiers.getJSONObject(j);
-					String type = curIdentifier.getString("type");
-					String value = curIdentifier.getString("value");
-					//For now, ignore anything that isn't an ISBN
-					if (type.equals("ISBN")) {
-						groupedWork.addIsbn(value, primaryFormat);
-					} else if (type.equals("UPC")) {
-						groupedWork.addUpc(value);
+		if (productMetadata.has("formats")) {
+			JSONArray formats = productMetadata.getJSONArray("formats");
+			for (int i = 0; i < formats.length(); i++) {
+				JSONObject curFormat = formats.getJSONObject(i);
+				//Things like videos do not have identifiers so we need to check for the lack here
+				if (curFormat.has("identifiers")) {
+					JSONArray identifiers = curFormat.getJSONArray("identifiers");
+					for (int j = 0; j < identifiers.length(); j++) {
+						JSONObject curIdentifier = identifiers.getJSONObject(j);
+						String type = curIdentifier.getString("type");
+						String value = curIdentifier.getString("value");
+						//For now, ignore anything that isn't an ISBN
+						if (type.equals("ISBN")) {
+							groupedWork.addIsbn(value, primaryFormat);
+						} else if (type.equals("UPC")) {
+							groupedWork.addUpc(value);
+						}
 					}
 				}
 			}
+		}else{
+			logger.warn("OverDrive product did not have formats");
 		}
 	}
 
