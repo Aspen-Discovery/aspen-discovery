@@ -1646,7 +1646,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		updateAutoRenewal(patronId) {
+		updateAutoRenewal:function(patronId) {
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "updateAutoRenewal",
