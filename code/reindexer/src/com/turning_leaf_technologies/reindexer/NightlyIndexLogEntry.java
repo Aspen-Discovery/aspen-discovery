@@ -62,7 +62,7 @@ public class NightlyIndexLogEntry implements BaseLogEntry {
 	@Override
 	public void setFinished() {
 		this.endTime = new Date();
-		this.addNote("Finished ILS extraction");
+		this.addNote("Finished Reindex");
 		this.saveResults();
 	}
 
@@ -80,7 +80,7 @@ public class NightlyIndexLogEntry implements BaseLogEntry {
 		logger.error(note, e);
 	}
 
-	public void incNumWorksProcessed(){
+	void incNumWorksProcessed(){
 		numWorksProcessed++;
 		if (numWorksProcessed % 5000 == 0){
 			this.saveResults();

@@ -177,28 +177,30 @@ public class GroupedReindexMain {
 
 		//If this is the nightly index, check to see if we need to run
 		if (isNightlyReindex) {
-			loadAcceleratedReaderData();
-
-			try {
-				logger.info("Checking to see if nightly index should run");
-				PreparedStatement getRunNightlyIndexStmt = dbConn.prepareStatement("SELECT runNightlyFullIndex FROM system_variables");
-				ResultSet getRunNightlyIndexRS = getRunNightlyIndexStmt.executeQuery();
-				if (getRunNightlyIndexRS.next()){
-					boolean runNightlyFullIndex = getRunNightlyIndexRS.getBoolean("runNightlyFullIndex");
-					if (!runNightlyFullIndex){
-						logEntry.addNote("Nightly index does not need to be run");
-						logEntry.setFinished();
-						System.exit(0);
+			boolean arDataReloaded = loadAcceleratedReaderData();
+			if (!arDataReloaded) { //Force nightly update to run if AR data was reloaded
+				try {
+					logger.info("Checking to see if nightly index should run");
+					PreparedStatement getRunNightlyIndexStmt = dbConn.prepareStatement("SELECT runNightlyFullIndex FROM system_variables");
+					ResultSet getRunNightlyIndexRS = getRunNightlyIndexStmt.executeQuery();
+					if (getRunNightlyIndexRS.next()){
+						boolean runNightlyFullIndex = getRunNightlyIndexRS.getBoolean("runNightlyFullIndex");
+						if (!runNightlyFullIndex){
+							logEntry.addNote("Nightly index does not need to be run");
+							logEntry.setFinished();
+							System.exit(0);
+						}
 					}
+					getRunNightlyIndexStmt.close();
+				}catch (SQLException e) {
+					logger.error("Unable to determine if the nightly index should run, running it", e);
 				}
-				getRunNightlyIndexStmt.close();
-			}catch (SQLException e) {
-				logger.error("Unable to determine if the nightly index should run, running it", e);
 			}
 		}
 	}
 
-	private static void loadAcceleratedReaderData(){
+	private static boolean loadAcceleratedReaderData(){
+		boolean infoReloaded = false;
 		try{
 			PreparedStatement arSettingsStmt = dbConn.prepareStatement("SELECT * FROM accelerated_reading_settings");
 			ResultSet arSettingsRS = arSettingsStmt.executeQuery();
@@ -261,12 +263,14 @@ public class GroupedReindexMain {
 
 						logEntry.addNote("Done updating Accelerated Reader Data");
 						logEntry.saveResults();
+						infoReloaded = true;
 					}
 				}
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Error loading accelerated reader data", e);
 		}
+		return infoReloaded;
 	}
 
 	private static void loadAcceleratedReaderTitlesIsbnXMLFile(File arTitlesIsbn) {
