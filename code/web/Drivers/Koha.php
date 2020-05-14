@@ -253,8 +253,10 @@ class Koha extends AbstractIlsDriver
 			/** @noinspection SqlResolve */
 			$volumeSql = "SELECT description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber = $itemNumber";
 			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
-			if ($volumeRow = $volumeResults->fetch_assoc()){
-				$checkout['volume'] = $volumeRow['description'];
+			if ($volumeResults !== false) { //This is false if Koha does not support volumes
+				if ($volumeRow = $volumeResults->fetch_assoc()) {
+					$checkout['volume'] = $volumeRow['description'];
+				}
 			}
 
 			$checkout['author'] = $curRow['author'];
