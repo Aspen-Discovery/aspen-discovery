@@ -119,5 +119,5 @@
   - Facets
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - User Lists
-- Patron Accoun
-  -[While You Wait](/Admin/HelpManual?page=While-You-Wait)
+- Patron Account
+  - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
