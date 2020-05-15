@@ -246,6 +246,19 @@ class Koha extends AbstractIlsDriver
 			if (isset($curRow['enumchron'])) {
 				$checkout['volume'] = $curRow['enumchron'];
 			}
+
+			$itemNumber = $curRow['itemnumber'];
+
+			//Check to see if there is a volume for the checkout
+			/** @noinspection SqlResolve */
+			$volumeSql = "SELECT description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber = $itemNumber";
+			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
+			if ($volumeResults !== false) { //This is false if Koha does not support volumes
+				if ($volumeRow = $volumeResults->fetch_assoc()) {
+					$checkout['volume'] = $volumeRow['description'];
+				}
+			}
+
 			$checkout['author'] = $curRow['author'];
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
@@ -258,7 +271,7 @@ class Koha extends AbstractIlsDriver
 				$dueTime = null;
 			}
 			$checkout['dueDate'] = $dueTime;
-			$checkout['itemId'] = $curRow['itemnumber'];
+			$checkout['itemId'] = $itemNumber;
 			$checkout['renewIndicator'] = $curRow['itemnumber'];
 			$checkout['renewCount'] = $curRow['renewals'];
 
@@ -426,7 +439,7 @@ class Koha extends AbstractIlsDriver
 	{
 		global $timer;
 		/** @noinspection SqlResolve */
-		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where borrowernumber = $patronId";
+		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote from borrowers where borrowernumber = $patronId";
 
 		$userExistsInDB = false;
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
@@ -480,6 +493,8 @@ class Koha extends AbstractIlsDriver
 			$user->_state = $userFromDb['state'];
 			$user->_zip = $userFromDb['zipcode'];
 			$user->phone = $userFromDb['phone'];
+
+			$user->_web_note = $userFromDb['opacnote'];
 
 			$timer->logTime("Loaded base patron information for Koha $patronId");
 

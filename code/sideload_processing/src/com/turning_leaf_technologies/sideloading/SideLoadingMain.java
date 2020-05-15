@@ -359,7 +359,7 @@ public class SideLoadingMain {
 
 	private static GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}
@@ -367,7 +367,7 @@ public class SideLoadingMain {
 	private static SideLoadedRecordGrouper getRecordGroupingProcessor(SideLoadSettings settings) {
 		SideLoadedRecordGrouper recordGroupingProcessor = recordGroupingProcessors.get(settings.getName());
 		if (recordGroupingProcessor == null) {
-			recordGroupingProcessor = new SideLoadedRecordGrouper(serverName, aspenConn, settings, logger, false);
+			recordGroupingProcessor = new SideLoadedRecordGrouper(serverName, aspenConn, settings, logEntry, logger);
 			recordGroupingProcessors.put(settings.getName(), recordGroupingProcessor);
 		}
 		return recordGroupingProcessor;

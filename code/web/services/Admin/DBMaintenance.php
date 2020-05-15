@@ -947,6 +947,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'reindexLog_nightly_updates' => [
+					'title' => 'Reindex Log Update for Nightly Index',
+					'description' => 'Update reindex logging for nightly index',
+					'sql' => [
+						'ALTER TABLE reindex_log DROP COLUMN numListsProcessed',
+						'ALTER TABLE reindex_log ADD COLUMN numErrors INT(11) DEFAULT 0',
+					]
+				],
 
 				'cronLog' => array(
 					'title' => 'Cron Log table',
@@ -2248,6 +2256,15 @@ class Admin_DBMaintenance extends Admin_Admin
 							INDEX (objectType, objectId),
 							INDEX (changedBy)
 						) ENGINE = INNODB;',
+					]
+				],
+
+				'object_history_field_lengths' => [
+					'title' => 'Data Object History Value Lengths',
+					'description' => 'Increase the maximum length of values',
+					'sql' => [
+						'ALTER TABLE object_history CHANGE COLUMN oldValue oldValue TEXT',
+						'ALTER TABLE object_history CHANGE COLUMN newValue newValue TEXT',
 					]
 				],
 			)

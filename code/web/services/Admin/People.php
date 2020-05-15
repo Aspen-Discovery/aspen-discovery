@@ -39,7 +39,6 @@ class People extends ObjectEditor
 		return array('genealogyContributor');
 	}
 	function getRedirectLocation($objectAction, $curObject){
-		global $configArray;
 		if ($objectAction == 'delete'){
 			return '/Union/Search?searchSource=genealogy&lookfor=&searchIndex=GenealogyName&submit=Find';
 		}else{

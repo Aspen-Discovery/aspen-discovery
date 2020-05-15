@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.grouping;
 
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -284,7 +285,7 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	public void setGroupingCategory(String groupingCategory) {
 		groupingCategory = groupingCategory.toLowerCase();
 		if (!validCategories.matcher(groupingCategory).matches()) {
-			logger.error("Invalid grouping category " + groupingCategory);
+			logEntry.incErrors("Invalid grouping category " + groupingCategory);
 		}else {
 			this.groupingCategory = groupingCategory;
 		}

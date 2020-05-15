@@ -8,7 +8,6 @@ class LibraryRecordOwned extends RecordOwned{
 	static function getObjectStructure(){
 		$library = new Library();
 		$library->orderBy('displayName');
-		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;

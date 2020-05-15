@@ -2394,11 +2394,11 @@ class MyAccount_AJAX extends JSON_Action
 
 			$purchaseUnits['amount'] = [
 				'currency_code' => 'USD',
-				'value' => $totalFines,
+				'value' => round($totalFines, 2),
 				'breakdown' => [
 					'item_total' => [
 						'currency_code' => 'USD',
-						'value' => $totalFines,
+						'value' => round($totalFines, 2),
 					],
 				]
 			];

@@ -15,7 +15,6 @@ import java.util.zip.CRC32;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.turning_leaf_technologies.grouping.OverDriveRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.net.NetworkUtils;
@@ -34,7 +33,7 @@ class ExtractOverDriveInfo {
 	private OverDriveRecordGrouper recordGroupingProcessorSingleton;
 	private String serverName;
 	private Connection dbConn;
-	private OverDriveExtractLogEntry results;
+	private OverDriveExtractLogEntry logEntry;
 
 	private String lastUpdateTimeParam = "";
 
@@ -80,7 +79,7 @@ class ExtractOverDriveInfo {
 		this.configIni = configIni;
 		this.serverName = serverName;
 		this.dbConn = dbConn;
-		this.results = logEntry;
+		this.logEntry = logEntry;
 
 		long extractStartTime = new Date().getTime();
 
@@ -202,7 +201,7 @@ class ExtractOverDriveInfo {
 			}
 
 			//Mark the new last update time if we did not get errors loading products from the database
-			if (errorsWhileLoadingProducts || results.hasErrors()) {
+			if (errorsWhileLoadingProducts || this.logEntry.hasErrors()) {
 				logger.warn("Not setting last extract time since there were problems extracting products from the API");
 			} else {
 				PreparedStatement updateExtractTime;
@@ -217,7 +216,7 @@ class ExtractOverDriveInfo {
 			}
 		} catch (SQLException e) {
 			// handle any errors
-			results.incErrors("Error initializing overdrive extraction " + e.toString());
+			this.logEntry.incErrors("Error initializing overdrive extraction " + e.toString());
 		}
 		return numChanges;
 	}
@@ -228,7 +227,7 @@ class ExtractOverDriveInfo {
 		this.configIni = configIni;
 		this.serverName = serverName;
 		this.dbConn = dbConn;
-		this.results = logEntry;
+		this.logEntry = logEntry;
 
 		try {
 			initOverDriveExtract(dbConn, logEntry);
@@ -298,7 +297,7 @@ class ExtractOverDriveInfo {
 			}
 		} catch (SQLException e) {
 			// handle any errors
-			results.incErrors("Error initializing overdrive extraction ", e);
+			this.logEntry.incErrors("Error initializing overdrive extraction ", e);
 		}
 		return numChanges;
 	}
@@ -426,9 +425,9 @@ class ExtractOverDriveInfo {
 			deleteProductStmt.setLong(1, curTime);
 			deleteProductStmt.setLong(2, overDriveDBInfo.getDbId());
 			deleteProductStmt.executeUpdate();
-			results.incDeleted();
+			logEntry.incDeleted();
 		} catch (SQLException e) {
-			results.incErrors("Error deleting overdrive product " + overDriveDBInfo.getDbId(), e);
+			logEntry.incErrors("Error deleting overdrive product " + overDriveDBInfo.getDbId(), e);
 		}
 	}
 
@@ -455,12 +454,12 @@ class ExtractOverDriveInfo {
 
 				updateProductChangeTimeStmt.executeUpdate();
 
-				results.incUpdated();
+				logEntry.incUpdated();
 			} else {
-				results.incSkipped();
+				logEntry.incSkipped();
 			}
 		} catch (SQLException e) {
-			results.incErrors("Error updating overdrive product " + overDriveId, e);
+			logEntry.incErrors("Error updating overdrive product " + overDriveId, e);
 		}
 		
 	}
@@ -487,7 +486,7 @@ class ExtractOverDriveInfo {
 			newIdRS.next();
 			databaseId = newIdRS.getLong(1);
 
-			results.incAdded();
+			logEntry.incAdded();
 
 			OverDriveDBInfo dbInfo = new OverDriveDBInfo();
 			dbInfo.setDbId(databaseId);
@@ -495,7 +494,7 @@ class ExtractOverDriveInfo {
 			existingProductsInAspen.put(overDriveId, dbInfo);
 
 		} catch (SQLException e) {
-			results.incErrors("Error saving product " + overDriveId + " to the database " , e);
+			logEntry.incErrors("Error saving product " + overDriveId + " to the database " , e);
 		}
 		return databaseId;
 	}
@@ -514,7 +513,7 @@ class ExtractOverDriveInfo {
 			}
 			return true;
 		} catch (SQLException e) {
-			results.incErrors("Error loading products from database " , e);
+			logEntry.incErrors("Error loading products from database " , e);
 			return false;
 		}
 		
@@ -623,32 +622,32 @@ class ExtractOverDriveInfo {
 										loadProductsFromUrl(collectionInfo, productUrl, loadType);
 									}
 								} else {
-									results.addNote("Unable to load advantage information for " + advantageSelfUrl);
+									logEntry.addNote("Unable to load advantage information for " + advantageSelfUrl);
 									if (advantageWebServiceResponse.getMessage() != null) {
-										results.addNote(advantageWebServiceResponse.getMessage());
+										logEntry.addNote(advantageWebServiceResponse.getMessage());
 									}
 								}
 							}
 						}
 					} else {
-						results.incErrors("The API indicate that the library has advantage accounts, but none were returned from " + libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
+						logEntry.incErrors("The API indicate that the library has advantage accounts, but none were returned from " + libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
 						if (webServiceResponse.getMessage() != null) {
-							results.addNote(webServiceResponse.getMessage());
+							logEntry.addNote(webServiceResponse.getMessage());
 						}
 					}
 				}
-				results.setNumProducts(allProductsInOverDrive.size());
+				logEntry.setNumProducts(allProductsInOverDrive.size());
 				return true;
 			} catch (SocketTimeoutException toe){
 				throw toe;
 			} catch (Exception e) {
-				results.incErrors("error loading information from OverDrive API ", e);
+				logEntry.incErrors("error loading information from OverDrive API ", e);
 				return false;
 			}
 		}else{
-			results.incErrors("Unable to load library information for library " + accountId);
+			logEntry.incErrors("Unable to load library information for library " + accountId);
 			if (libraryInfoResponse.getMessage() != null){
-				results.addNote(libraryInfoResponse.getMessage());
+				logEntry.addNote(libraryInfoResponse.getMessage());
 			}
 			logger.info("Error loading overdrive titles " + libraryInfoResponse.getMessage());
 			return false;
@@ -699,24 +698,24 @@ class ExtractOverDriveInfo {
 							}
 						}
 					} else {
-						results.incErrors("The API indicate that the library has advantage accounts, but none were returned from " + libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
+						logEntry.incErrors("The API indicate that the library has advantage accounts, but none were returned from " + libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
 						if (webServiceResponse.getMessage() != null) {
-							results.addNote(webServiceResponse.getMessage());
+							logEntry.addNote(webServiceResponse.getMessage());
 						}
 					}
 				}
-				results.setNumProducts(allProductsInOverDrive.size());
+				logEntry.setNumProducts(allProductsInOverDrive.size());
 				return true;
 			} catch (SocketTimeoutException toe){
 				throw toe;
 			} catch (Exception e) {
-				results.incErrors("error loading information from OverDrive API ", e);
+				logEntry.incErrors("error loading information from OverDrive API ", e);
 				return false;
 			}
 		}else{
-			results.incErrors("Unable to load library information for library " + accountId);
+			logEntry.incErrors("Unable to load library information for library " + accountId);
 			if (libraryInfoResponse.getMessage() != null){
-				results.addNote(libraryInfoResponse.getMessage());
+				logEntry.addNote(libraryInfoResponse.getMessage());
 			}
 			logger.info("Error loading overdrive accounts " + libraryInfoResponse.getMessage());
 			return false;
@@ -734,9 +733,9 @@ class ExtractOverDriveInfo {
 			//if (numProducts > 50) numProducts = 50;
 			logger.info(collectionInfo.getName() + " collection has " + numProducts + " products, the libraryId for the collection is " + collectionInfo.getAspenLibraryId());
 			if (loadType == LOAD_ALL_PRODUCTS) {
-				results.addNote(collectionInfo.getName() + " collection has " + numProducts + " products, the libraryId for the collection is " + collectionInfo.getAspenLibraryId());
+				logEntry.addNote(collectionInfo.getName() + " collection has " + numProducts + " products, the libraryId for the collection is " + collectionInfo.getAspenLibraryId());
 			}
-			results.saveResults();
+			logEntry.saveResults();
 			long batchSize = 300;
 			for (int i = 0; i < numProducts; i += batchSize) {
 				//Just search for the specific product
@@ -791,18 +790,18 @@ class ExtractOverDriveInfo {
 							}else{
 								//Could not parse the record make sure we log that there was an error
 								errorsWhileLoadingProducts = true;
-								results.incErrors("Unable to parse record, invalid json");
+								logEntry.incErrors("Unable to parse record, invalid json");
 							}
 						}
 					}
 				}else{
-					results.incErrors("Could not load product batch " + productBatchInfoResponse.getResponseCode() + " - " + productBatchInfoResponse.getMessage());
+					logEntry.incErrors("Could not load product batch " + productBatchInfoResponse.getResponseCode() + " - " + productBatchInfoResponse.getMessage());
 					errorsWhileLoadingProducts = true;
 				}
 
 			}
 		}else{
-			results.incErrors("Unable to load products from " + collectionInfo.getName() + " " + mainProductUrl);
+			logEntry.incErrors("Unable to load products from " + collectionInfo.getName() + " " + mainProductUrl);
 			logger.error(productsResponse.getResponseCode() + " " + productsResponse.getMessage());
 			errorsWhileLoadingProducts = true;
 		}
@@ -825,7 +824,7 @@ class ExtractOverDriveInfo {
 		String url = "https://api.overdrive.com/v1/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/metadata";
 		WebServiceResponse metaDataResponse = callOverDriveURL(url);
 		if (metaDataResponse.getResponseCode() != 200){
-			results.incErrors("Could not load metadata from " + url );
+			logEntry.incErrors("Could not load metadata from " + url );
 			logger.info(metaDataResponse.getResponseCode() + ":" + metaDataResponse.getMessage());
 		}else{
 			JSONObject metaData = metaDataResponse.getJSONResponse();
@@ -957,7 +956,7 @@ class ExtractOverDriveInfo {
 						Long numericFormat = overDriveFormatMap.get(textFormat);
 						if (numericFormat == null){
 							logger.warn("Could not find numeric format for format " + textFormat);
-							results.addNote("Could not find numeric format for format " + textFormat);
+							logEntry.addNote("Could not find numeric format for format " + textFormat);
 							addFormatStmt.setLong(3, 0L);
 						}else {
 							addFormatStmt.setLong(3, numericFormat);
@@ -1004,9 +1003,9 @@ class ExtractOverDriveInfo {
 						addIdentifierStmt.executeUpdate();
 					}
 				}
-				results.incMetadataChanges();
+				logEntry.incMetadataChanges();
 			} catch (Exception e) {
-				results.incErrors("Error loading meta data for title " + overDriveInfo.getId(), e);
+				logEntry.incErrors("Error loading meta data for title " + overDriveInfo.getId(), e);
 			}
 
 			try {
@@ -1015,7 +1014,7 @@ class ExtractOverDriveInfo {
 				updateProductMetadataStmt.setLong(3, overDriveInfo.getDatabaseId());
 				updateProductMetadataStmt.executeUpdate();
 			} catch (SQLException e) {
-				results.incErrors("Error updating product metadata summary " + overDriveInfo.getId(), e);
+				logEntry.incErrors("Error updating product metadata summary " + overDriveInfo.getId(), e);
 			}
 		}
 	}
@@ -1034,7 +1033,7 @@ class ExtractOverDriveInfo {
 		//404 is a message that availability has been deleted.
 		if (availabilityResponse.getResponseCode() != 200 && availabilityResponse.getResponseCode() != 404){
 			//We got an error calling the OverDrive API, do nothing.
-			results.incErrors("Error availability API for product " + overDriveInfo.getId());
+			logEntry.incErrors("Error availability API for product " + overDriveInfo.getId());
 			logger.info(availabilityResponse.getResponseCode() + ":" + availabilityResponse.getMessage());
 		}else if (availabilityResponse.getMessage() == null){
 			//Delete all availability for this record
@@ -1042,7 +1041,7 @@ class ExtractOverDriveInfo {
 				deleteAllAvailabilityStmt.setLong(1, overDriveInfo.getDatabaseId());
 				deleteAllAvailabilityStmt.executeUpdate();
 			} catch (SQLException e) {
-				results.incErrors("SQL Error deleting all availability for title " + overDriveInfo.getId(), e);
+				logEntry.incErrors("SQL Error deleting all availability for title " + overDriveInfo.getId(), e);
 			}
 		}else {
 			try {
@@ -1188,7 +1187,7 @@ class ExtractOverDriveInfo {
 									addAvailabilityStmt.executeUpdate();
 								}
 							} catch (SQLException e) {
-								results.incErrors("SQL Error loading availability for title " + overDriveInfo.getId(), e);
+								logEntry.incErrors("SQL Error loading availability for title " + overDriveInfo.getId(), e);
 							}
 						}
 					}
@@ -1208,24 +1207,24 @@ class ExtractOverDriveInfo {
 							deleteAvailabilityStmt.executeUpdate();
 						} catch (SQLException e) {
 
-							results.incErrors("SQL Error loading availability for title " + overDriveInfo.getId(), e);
+							logEntry.incErrors("SQL Error loading availability for title " + overDriveInfo.getId(), e);
 						}
 					}
 				}
 			} catch (JSONException e) {
-				results.incErrors("JSON Error loading availability for title " + overDriveInfo.getId(), e);
+				logEntry.incErrors("JSON Error loading availability for title " + overDriveInfo.getId(), e);
 			}
 		}
 		//Update the product to indicate that we checked availability
 		try {
 			updateProductAvailabilityStmt.setLong(1, curTime);
 			updateProductAvailabilityStmt.setLong(2, curTime);
-			results.incAvailabilityChanges();
-			results.saveResults();
+			logEntry.incAvailabilityChanges();
+			logEntry.saveResults();
 			updateProductAvailabilityStmt.setLong(3, databaseId);
 			updateProductAvailabilityStmt.executeUpdate();
 		} catch (SQLException e) {
-			results.incErrors("Error updating product availability status " + overDriveInfo.getId(), e);
+			logEntry.incErrors("Error updating product availability status " + overDriveInfo.getId(), e);
 		}
 	}
 
@@ -1319,14 +1318,14 @@ class ExtractOverDriveInfo {
 
 	private OverDriveRecordGrouper getRecordGroupingProcessor(){
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new OverDriveRecordGrouper(dbConn, serverName, logger, false);
+			recordGroupingProcessorSingleton = new OverDriveRecordGrouper(dbConn, serverName, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}
 
 	private GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}

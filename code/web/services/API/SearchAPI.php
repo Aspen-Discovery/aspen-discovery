@@ -41,22 +41,21 @@ class SearchAPI extends Action
 
 	function getIndexStatus()
 	{
-		$notes = array();
-		$status = array();
+		$checks = [];
 
 		//Check if solr is running by pinging it
 		$solrSearcher = SearchObjectFactory::initSearchObject();
 		if (!$solrSearcher->ping()) {
-			$status[] = self::STATUS_CRITICAL;
-			$notes[] = "Solr is not responding";
+			$this->addCheck($checks, 'Solr', self::STATUS_CRITICAL, "Solr is not responding");
+		}else{
+			$this->addCheck($checks, 'Solr');
 		}
 
 		//Check for a current backup
 		global $serverName;
 		$backupDir = "/data/aspen-discovery/{$serverName}/sql_backup/";
 		if (!file_exists($backupDir)){
-			$status[] = self::STATUS_CRITICAL;
-			$notes[] = "Backup directory $backupDir does not exist";
+			$this->addCheck($checks, 'Backup', self::STATUS_CRITICAL, "Backup directory $backupDir does not exist");
 		}else{
 			$backupFiles = scandir($backupDir);
 			$backupFileFound = false;
@@ -73,16 +72,18 @@ class SearchAPI extends Action
 				}
 			}
 			if (!$backupFileFound){
-				$status[] = self::STATUS_CRITICAL;
-				$notes[] = "A current backup of Aspen was not found in $backupDir.  Check my.cnf to be sure mysqldump credentials exist.";
+				$this->addCheck($checks, 'Backup', self::STATUS_CRITICAL, "A current backup of Aspen was not found in $backupDir.  Check my.cnf to be sure mysqldump credentials exist.");
+			}else{
+				$this->addCheck($checks, 'Backup');
 			}
 		}
 
 		//Check free disk space
 		$freeSpace = disk_free_space('/');
 		if ($freeSpace < 5000000000){
-			$status[] = self::STATUS_CRITICAL;
-			$notes[] = "The disk currently has less than 5GB of space available";
+			$this->addCheck($checks, 'Backup', self::STATUS_CRITICAL, "The disk currently has less than 5GB of space available");
+		}else{
+			$this->addCheck($checks, 'Backup');
 		}
 
 		//Check for errors within the logs
@@ -99,8 +100,9 @@ class SearchAPI extends Action
 				$logEntry->limit(0, 1);
 				if ($logEntry->find(true)){
 					if ($logEntry->numErrors > 0){
-						$status[] = self::STATUS_CRITICAL;
-						$notes[] = "The last log entry for {$module->name} had errors";
+						$this->addCheck($checks, $module->name, self::STATUS_WARN, "The last log entry for {$module->name} had errors");
+					}else{
+						$this->addCheck($checks, $module->name);
 					}
 				}
 			}
@@ -113,8 +115,9 @@ class SearchAPI extends Action
 		$cronLogEntry->limit(0, 1);
 		if ($cronLogEntry->find(true)){
 			if ($cronLogEntry->numErrors > 0){
-				$status[] = self::STATUS_CRITICAL;
-				$notes[] = "The last cron log entry had errors";
+				$this->addCheck($checks, "Cron", self::STATUS_CRITICAL, "The last cron log entry had errors");
+			}else{
+				$this->addCheck($checks, "Cron");
 			}
 		}
 
@@ -128,8 +131,9 @@ class SearchAPI extends Action
 			}
 		}
 		if (!$groupedWorkSitemapFound){
-			$status[] = self::STATUS_CRITICAL;
-			$notes[] = "No sitemap found for grouped works";
+			$this->addCheck($checks, "Sitemap", self::STATUS_CRITICAL, "No sitemap found for grouped works");
+		}else{
+			$this->addCheck($checks, "Sitemap");
 		}
 
 		// Unprocessed Offline Holds //
@@ -137,19 +141,33 @@ class SearchAPI extends Action
 		$offlineHoldEntry->status = 'Not Processed';
 		$offlineHolds = $offlineHoldEntry->count();
 		if (!empty($offlineHolds)) {
-			$status[] = self::STATUS_CRITICAL;
-			$notes[] = "There are $offlineHolds un-processed offline holds";
+			$this->addCheck($checks, "Offline Holds", self::STATUS_CRITICAL, "There are $offlineHolds un-processed offline holds");
+		}else{
+			$this->addCheck($checks, "Offline Holds");
 		}
 
-		if (count($notes) > 0) {
+		$hasCriticalErrors = false;
+		$hasWarnings = false;
+		foreach ($checks as $check){
+			if ($check['status'] == self::STATUS_CRITICAL){
+				$hasCriticalErrors = true;
+				break;
+			}if ($check['status'] == self::STATUS_WARN){
+				$hasWarnings = true;
+			}
+		}
+
+		if ($hasCriticalErrors || $hasWarnings) {
 			$result = array(
-				'status' => in_array(self::STATUS_CRITICAL, $status) ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
-				'message' => implode(";\r\n", $notes)
+				'aspen_health_status' => $hasCriticalErrors ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
+				'message' => "Errors have been found",
+				'checks' => $checks
 			);
 		} else {
 			$result = array(
-				'status' => self::STATUS_OK,
-				'message' => "Everything is current"
+				'aspen_health_status' => self::STATUS_OK,
+				'message' => "Everything is current",
+				'checks' => $checks
 			);
 		}
 
@@ -185,6 +203,17 @@ class SearchAPI extends Action
 		}
 
 		return $result;
+	}
+
+	private function addCheck(&$checks, $checkName, $status = self::STATUS_OK, $note = ''){
+		$checkNameMachine = str_replace(' ', '_', strtolower($checkName));
+		$checks[$checkNameMachine] = [
+			'name' => $checkName,
+			'status' => $status
+		];
+		if (!empty($note)){
+			$checks[$checkNameMachine]['note'] = $note;
+		}
 	}
 
 	/**

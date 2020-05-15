@@ -87,7 +87,7 @@ public class ExtractOverDriveInfoMain {
 			}
 
 			ExtractOverDriveInfo extractor = new ExtractOverDriveInfo();
-			int numChanges = 0;
+			int numChanges;
 			if (extractSingleWork) {
 				numChanges = extractor.processSingleWork(singleWorkId, configIni, serverName, dbConn, logEntry);
 			}else {
