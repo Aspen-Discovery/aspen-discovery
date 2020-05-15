@@ -13,7 +13,7 @@
       - Grouped Work Facets
       - Creating Grouped Works
       - Grouped Work Pages
-      - Manually grouping records
+      - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
       - Ungrouping records
     - Browse Category Groups
       - Browse Categories
@@ -67,7 +67,7 @@
      - Scopes 
     - Indexing Log 
     - Dashboard
-  - Side Loaded eContent
+  - [Side Loaded eContent](/Admin/HelpManual?page=Side-Loaded-eContent)
     - Side Loaded Configurations
      - Scopes
     - Indexing Log
@@ -110,7 +110,7 @@
 - Interlibrary Loans
 - Materials Requests & Purchase Suggestions
 - Open Archives
-- Placards
+- [Placards](/Admin/HelpManual?page=Placards)
 - [Reading History](/Admin/HelpManual?page=Reading-History)
 - Ratings and Reviews
 - [Recommendations](/Admin/HelpManual?page=Recommendations)
@@ -119,3 +119,5 @@
   - Facets
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - User Lists
+- Patron Accoun
+  -[While You Wait](/Admin/HelpManual?page=While-You-Wait)
