@@ -1367,7 +1367,7 @@ public class CarlXExportMain {
 			startOfHolds = dbConn.setSavepoint();
 			dbConn.setAutoCommit(false);
 			//Delete existing holds closer to the time that holds are re-added.  This shouldn't matter since auto commit is off though
-			dbConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeQuery();
+			dbConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeUpdate();
 			logger.debug("Found " + numHoldsByBib.size() + " bibs that have title or item level holds");
 
 			for (String bibId : numHoldsByBib.keySet()){
