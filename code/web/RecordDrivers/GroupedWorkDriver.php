@@ -1863,16 +1863,34 @@ class GroupedWorkDriver extends IndexRecordDriver
 		ksort($fields);
 		$interface->assign('details', $fields);
 
-		$groupedWorkDetails = $this->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
+		$this->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
+		return 'RecordDrivers/GroupedWork/staff-view.tpl';
+	}
+
+	public function assignGroupedWorkStaffView(){
+		global $interface;
+
+		$interface->assign('groupedWorkDetails', $this->getGroupedWorkDetails());
 
 		$interface->assign('alternateTitles', $this->getAlternateTitles());
 
 		$interface->assign('primaryIdentifiers', $this->getPrimaryIdentifiers());
 
-		return 'RecordDrivers/GroupedWork/staff-view.tpl';
+		$interface->assign('specifiedDisplayInfo', $this->getSpecifiedDisplayInfo());
+	}
+
+	public function getSpecifiedDisplayInfo() {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
+		$existingDisplayInfo  = new GroupedWorkDisplayInfo();
+		$existingDisplayInfo->permanent_id = $this->getPermanentId();
+		if ($existingDisplayInfo->find(true)){
+			return $existingDisplayInfo;
+		}else{
+			return null;
+		}
 	}
 
 	public function getAlternateTitles(){

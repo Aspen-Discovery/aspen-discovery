@@ -323,21 +323,13 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	public function getStaffView()
 	{
 		global $interface;
-		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
-
-		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
-		$interface->assign('marcRecord', $this->getMarcRecord());
+		$interface->assign('cloudLibraryProduct', $this->cloudLibraryProduct);
 
-		if ($this->groupedWork != null) {
-			$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
-			$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
-		}
+		$interface->assign('marcRecord', $this->getMarcRecord());
 
 		return 'RecordDrivers/CloudLibrary/staff.tpl';
 	}

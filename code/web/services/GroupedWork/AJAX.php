@@ -227,6 +227,7 @@ class GroupedWork_AJAX extends JSON_Action
 		];
 	}
 
+	/** @noinspection PhpUnused */
 	function getYouMightAlsoLike(){
 		global $interface;
 		global $memoryWatcher;
@@ -245,8 +246,10 @@ class GroupedWork_AJAX extends JSON_Action
 			/** @var SearchObject_GroupedWorkSearcher $db */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
+			/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 			$searchObject->disableScoping();
 			$user = UserAccount::getActiveUserObj();
+			/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 			$similar = $searchObject->getMoreLikeThis($id, $user->getNotInterestedTitles(), false, false, 3);
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 			// Send the similar items to the template; if there is only one, we need
@@ -355,10 +358,9 @@ class GroupedWork_AJAX extends JSON_Action
 		$isbn = $recordDriver->getCleanISBN();
 
 		$formattedData = GoDeeperData::getHtmlData($dataType, 'GroupedWork', $isbn, $upc);
-		$return = array(
+		return array(
 			'formattedData' => $formattedData
 		);
-		return $return;
 
 	}
 
@@ -406,13 +408,12 @@ class GroupedWork_AJAX extends JSON_Action
 		$interface->assign('url', $url);
 
 		$modalBody = $interface->fetch('GroupedWork/work-details.tpl');
-		$results = array(
+		return array(
 			'title' => "<a href='$url'>{$recordDriver->getTitle()}</a>",
 			'modalBody' => $modalBody,
 			'modalButtons' => "<button onclick=\"return AspenDiscovery.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
 				."<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate("More Info") . "</button></a>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -466,8 +467,8 @@ class GroupedWork_AJAX extends JSON_Action
 
 	private function clearMySuggestionsBrowseCategoryCache(){
 		// Reset any cached suggestion browse category for the user
-		/** @var Memcache $memCache */
-		global $memCache, $solrScope;
+		global $memCache;
+		global $solrScope;
 		foreach (array('0', '1') as $browseMode) { // (Browse modes are set in class Browse_AJAX)
 			$key = 'browse_category_system_recommended_for_you_' . UserAccount::getActiveUserId() . '_' . $solrScope . '_' . $browseMode;
 			$memCache->delete($key);
@@ -502,13 +503,12 @@ class GroupedWork_AJAX extends JSON_Action
 		}
 		$interface->assign('userReviews', $userReviews);
 
-		$results = array(
+		return array(
 			'numSyndicatedReviews' => $numSyndicatedReviews,
 			'syndicatedReviewsHtml' => $interface->fetch('GroupedWork/view-syndicated-reviews.tpl'),
 			'numCustomerReviews' => count($userReviews),
 			'customerReviewsHtml' => $interface->fetch('GroupedWork/view-user-reviews.tpl'),
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -656,12 +656,11 @@ class GroupedWork_AJAX extends JSON_Action
 
 		$relatedRecords = $recordDriver->getRelatedRecords();
 		$interface->assign('relatedRecords', $relatedRecords);
-		$results = array(
+		return array(
 				'title' => 'Share via Email',
 				'modalBody' => $interface->fetch("GroupedWork/email-form-body.tpl"),
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send Email</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -840,12 +839,11 @@ class GroupedWork_AJAX extends JSON_Action
 		$interface->assign('containingLists', $containingLists);
 		$interface->assign('nonContainingLists', $nonContainingLists);
 
-		$results = array(
+		return array(
 				'title' => 'Add To List',
 				'modalBody' => $interface->fetch("GroupedWork/save.tpl"),
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveToList(\"{$id}\"); return false;'>Save To List</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -937,11 +935,10 @@ class GroupedWork_AJAX extends JSON_Action
 		$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
 		$interface->assign('prospectorResults', $prospectorResults['records']);
 
-		$result = array(
+		return array(
 			'numTitles' => count($prospectorResults),
 			'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl')
 		);
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -1021,12 +1018,11 @@ class GroupedWork_AJAX extends JSON_Action
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
 
-		$results = array(
+		return array(
 			'title' => 'Upload a New Cover',
 			'modalBody' => $interface->fetch("GroupedWork/upload-cover-form.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadCoverForm\").submit()'>Upload Cover</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -1107,6 +1103,7 @@ class GroupedWork_AJAX extends JSON_Action
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	function getCopyDetails(){
 		global $interface;
 
@@ -1132,6 +1129,7 @@ class GroupedWork_AJAX extends JSON_Action
 			if ($record != null){
 				$summary = $record->getItemSummary();
 			}else{
+				$summary = null;
 				foreach ($relatedManifestation->getVariations() as $variation){
 					if ($recordId == $id . '_' . $variation->label){
 						$summary = $variation->getItemSummary();
@@ -1145,13 +1143,13 @@ class GroupedWork_AJAX extends JSON_Action
 		$interface->assign('summary', $summary);
 
 		$modalBody = $interface->fetch('GroupedWork/copyDetails.tpl');
-		$results = array(
+		return array(
 			'title' => translate("Copy Summary"),
 			'modalBody' => $modalBody,
 		);
-		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getGroupWithForm(){
 		$results = [
 			'success' => false,
@@ -1182,6 +1180,7 @@ class GroupedWork_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getGroupWithInfo(){
 		$results = [
 			'success' => false,
@@ -1204,6 +1203,8 @@ class GroupedWork_AJAX extends JSON_Action
 		}
 		return $results;
 	}
+
+	/** @noinspection PhpUnused */
 	function processGroupWithForm(){
 		$results = [
 			'success' => false,
@@ -1249,6 +1250,7 @@ class GroupedWork_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getGroupWithSearchForm(){
 		$results = [
 			'success' => false,
@@ -1305,10 +1307,6 @@ class GroupedWork_AJAX extends JSON_Action
 		}else{
 			$results['message'] = "You do not have the correct permissions for this operation";
 		}
-		global $logger;
-		$logger->log("Results " . print_r($results, true), Logger::LOG_ERROR);
-
-		$logger->log("JSON Results " . json_encode($results), Logger::LOG_ERROR);
 		return $results;
 	}
 
@@ -1333,6 +1331,7 @@ class GroupedWork_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function deleteAlternateTitle(){
 		$result = [
 			'success' => false,
@@ -1358,6 +1357,138 @@ class GroupedWork_AJAX extends JSON_Action
 				];
 			}else{
 				$results['message'] = "Could not find the alternate title to delete";
+			}
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getDisplayInfoForm(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$id = $_REQUEST['id'];
+			$groupedWork->permanent_id = $id;
+			if ($groupedWork->find(true)) {
+				global $interface;
+				$interface->assign('id', $id);
+				$interface->assign('groupedWork', $groupedWork);
+
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
+				$existingDisplayInfo  = new GroupedWorkDisplayInfo();
+				$existingDisplayInfo->permanent_id = $id;
+				if ($existingDisplayInfo->find(true)){
+					$interface->assign('title', $existingDisplayInfo->title);
+					$interface->assign('author', $existingDisplayInfo->author);
+					$interface->assign('seriesName', $existingDisplayInfo->seriesName);
+					$interface->assign('seriesDisplayOrder', $existingDisplayInfo->seriesDisplayOrder);
+				}else{
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$recordDriver = new GroupedWorkDriver($id);
+					$interface->assign('title', $recordDriver->getTitle());
+					$interface->assign('author', $recordDriver->getPrimaryAuthor());
+					$series = $recordDriver->getSeries();
+					if (!empty($series)){
+						$interface->assign('seriesName', $series['seriesTitle']);
+						$interface->assign('seriesDisplayOrder', $series['volume']);
+					}else{
+						$interface->assign('seriesName', '');
+						$interface->assign('seriesDisplayOrder', '');
+					}
+				}
+
+				$results = array(
+					'success' => true,
+					'title' => translate("Group this with another work"),
+					'modalBody' => $interface->fetch("GroupedWork/groupedWorkDisplayInfoForm.tpl"),
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupedWorkDisplayInfoForm(\"{$id}\")'>" . translate("Set Display Info") . "</button>"
+				);
+			} else {
+				$results['message'] = "Could not find a work with that id";
+			}
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return $results;
+	}
+
+	function processDisplayInfoForm(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$id = $_REQUEST['id'];
+			$groupedWork->permanent_id = $id;
+			if ($groupedWork->find(true)) {
+				$title = $_REQUEST['title'];
+				$author = $_REQUEST['author'];
+				$seriesName = $_REQUEST['seriesName'];
+				$seriesDisplayOrder = $_REQUEST['seriesDisplayOrder'];
+				if (!is_numeric($seriesDisplayOrder)){
+					$seriesDisplayOrder = '';
+				}
+				if (empty($title)){
+					$results['message'] = "Please specify the title";
+				}else{
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
+					$existingDisplayInfo  = new GroupedWorkDisplayInfo();
+					$existingDisplayInfo->permanent_id = $id;
+					$existingDisplayInfo->find(true);
+					$existingDisplayInfo->title = $title;
+					$existingDisplayInfo->author = $author;
+					$existingDisplayInfo->seriesName = $seriesName;
+					$existingDisplayInfo->seriesDisplayOrder = $seriesDisplayOrder;
+					$existingDisplayInfo->update();
+
+					$groupedWork->forceReindex();
+
+					$results = [
+						'success' => true,
+						'message' => 'The display information has been set and the index will update shortly.'
+					];
+				}
+			} else {
+				$results['message'] = "Could not find a work with that id";
+			}
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return $results;
+	}
+
+	function deleteDisplayInfo(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error deleting display info'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			$id = $_REQUEST['id'];
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
+			$existingDisplayInfo = new GroupedWorkDisplayInfo();
+			$existingDisplayInfo->permanent_id = $id;
+			if ($existingDisplayInfo->find()){
+				$existingDisplayInfo->delete();
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+				$groupedWork = new GroupedWork();
+				$groupedWork->permanent_id = $id;
+				if ($groupedWork->find(true)){
+					$groupedWork->forceReindex(false);
+				}
+				$result = [
+					'success' => true,
+					'message' => "Successfully deleted the display info, the index will update shortly."
+				];
+			}else{
+				$results['message'] = "Could not find the display info to delete, it's likely been deleted already";
 			}
 		}else{
 			$results['message'] = "You do not have the correct permissions for this operation";
