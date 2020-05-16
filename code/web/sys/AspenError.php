@@ -167,11 +167,26 @@ class AspenError extends DataObject
 		}
 
 		$interface->assign('error', $this);
-		$interface->assign('debug', $configArray['System']['debug']);
+		$debug = $configArray['System']['debug'];
+		$interface->assign('debug', $debug);
 
-		$interface->setTemplate('../error.tpl');
-		$interface->setPageTitle('An Error has occurred');
-		$interface->display('layout.tpl');
+		global $isAJAX;
+		if ($isAJAX){
+			$result = [
+				'success' => false,
+				'message' => $this->getMessage()
+			];
+			if ($debug){
+				foreach ($this->getRawBacktrace() as $trace){
+					$result['message'] .= "<br/>[{$trace['line']}] {$trace['file']}";
+				}
+			}
+			echo json_encode($result);
+		}else {
+			$interface->setTemplate('../error.tpl');
+			$interface->setPageTitle('An Error has occurred');
+			$interface->display('layout.tpl');
+		}
 
 		// Exceptions we don't want to log
 		$doLog = true;
