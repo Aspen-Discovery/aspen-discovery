@@ -34,6 +34,7 @@ public class RecordGroupingProcessor {
 	private PreparedStatement updateNotInterestedStmt;
 	private PreparedStatement updateUserListEntriesStmt;
 	private PreparedStatement updateNovelistStmt;
+	private PreparedStatement updateDisplayInfoStmt;
 
 	private PreparedStatement getAuthorAuthorityStmt;
 	private PreparedStatement getTitleAuthorityStmt;
@@ -149,6 +150,7 @@ public class RecordGroupingProcessor {
 			updateNotInterestedStmt = dbConnection.prepareStatement("UPDATE user_not_interested SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
 			updateUserListEntriesStmt = dbConnection.prepareStatement("UPDATE user_list_entry SET groupedWorkPermanentId = ? where groupedWorkPermanentId = ?");
 			updateNovelistStmt = dbConnection.prepareStatement("UPDATE novelist_data SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
+			updateDisplayInfoStmt = dbConnection.prepareStatement("UPDATE grouped_work_display_info SET permanent_id = ? where permanent_id = ?");
 
 			markWorkAsNeedingReindexStmt = dbConnection.prepareStatement("INSERT into grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 			PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * from merged_grouped_works");
@@ -341,10 +343,20 @@ public class RecordGroupingProcessor {
 						updateNovelistStmt.setString(2, oldPermanentId);
 						numUpdatedNovelist = updateNovelistStmt.executeUpdate();
 					}catch (SQLException e){
-						logEntry.incErrors("Error moving not interested info");
+						logEntry.incErrors("Error moving novelist info");
 					}
 
-					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries, " + numUpdatedNovelist + " novelist entries");
+					//Display info
+					int numUpdatedDisplayInfo = 0;
+					try{
+						updateDisplayInfoStmt.setString(1, newPermanentId);
+						updateDisplayInfoStmt.setString(2, oldPermanentId);
+						numUpdatedDisplayInfo = updateDisplayInfoStmt.executeUpdate();
+					}catch (SQLException e){
+						logEntry.incErrors("Error moving display info");
+					}
+
+					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries, " + numUpdatedNovelist + " novelist entries, " + numUpdatedDisplayInfo + " display info entries");
 				}
 			}else{
 				logEntry.incErrors("Could not find the id of the work when merging enrichment " + oldPermanentId);
