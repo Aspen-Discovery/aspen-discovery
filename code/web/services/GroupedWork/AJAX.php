@@ -177,7 +177,9 @@ class GroupedWork_AJAX extends JSON_Action
 		$id = $_REQUEST['id'];
 
 		$enrichmentResult = [
-			'similarTitles' => [],
+			'similarTitles' => [
+				'titles' => []
+			],
 		];
 
 		//Make sure that the title exists
@@ -1436,17 +1438,24 @@ class GroupedWork_AJAX extends JSON_Action
 				if (!is_numeric($seriesDisplayOrder)){
 					$seriesDisplayOrder = '';
 				}
-				if (empty($title)){
-					$results['message'] = "Please specify the title";
+				if (empty($title) && empty($author) && empty($seriesName) && empty($seriesDisplayOrder)){
+					$results['message'] = "Please specify at least one piece of information";
 				}else{
 					require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
 					$existingDisplayInfo  = new GroupedWorkDisplayInfo();
 					$existingDisplayInfo->permanent_id = $id;
-					$existingDisplayInfo->find(true);
+					$isNew = true;
+					if ($existingDisplayInfo->find(true)){
+						$isNew = false;
+					}
 					$existingDisplayInfo->title = $title;
 					$existingDisplayInfo->author = $author;
 					$existingDisplayInfo->seriesName = $seriesName;
 					$existingDisplayInfo->seriesDisplayOrder = $seriesDisplayOrder;
+					if ($isNew) {
+						$existingDisplayInfo->addedBy = UserAccount::getActiveUserId();
+						$existingDisplayInfo->dateAdded = time();
+					}
 					$existingDisplayInfo->update();
 
 					$groupedWork->forceReindex();
@@ -1465,9 +1474,11 @@ class GroupedWork_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function deleteDisplayInfo(){
 		$result = [
 			'success' => false,
+			'title' => 'Deleting display information',
 			'message' => 'Unknown error deleting display info'
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
@@ -1475,7 +1486,7 @@ class GroupedWork_AJAX extends JSON_Action
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
 			$existingDisplayInfo = new GroupedWorkDisplayInfo();
 			$existingDisplayInfo->permanent_id = $id;
-			if ($existingDisplayInfo->find()){
+			if ($existingDisplayInfo->find(true)){
 				$existingDisplayInfo->delete();
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 				$groupedWork = new GroupedWork();
@@ -1488,10 +1499,10 @@ class GroupedWork_AJAX extends JSON_Action
 					'message' => "Successfully deleted the display info, the index will update shortly."
 				];
 			}else{
-				$results['message'] = "Could not find the display info to delete, it's likely been deleted already";
+				$result['message'] = "Could not find the display info to delete, it's likely been deleted already";
 			}
 		}else{
-			$results['message'] = "You do not have the correct permissions for this operation";
+			$result['message'] = "You do not have the correct permissions for this operation";
 		}
 		return $result;
 	}

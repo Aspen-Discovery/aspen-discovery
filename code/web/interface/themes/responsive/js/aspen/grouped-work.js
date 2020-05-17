@@ -212,18 +212,6 @@ AspenDiscovery.GroupedWork = (function(){
 			});
 		},
 
-		loadSeriesSummary: function (recordId){
-			let url = Globals.path + '/GroupedWork/' + recordId + '/AJAX?method=getSeriesSummary';
-			$.getJSON(
-				url, function(data){
-					if (data.result == true){
-						$("#seriesPlaceholder" + recordId).html(data.seriesSummary);
-					}
-				}
-			);
-			return false;
-		},
-
 		markNotInterested: function (recordId){
 			if (Globals.loggedIn){
 				let url = Globals.path + '/GroupedWork/' + recordId + '/AJAX?method=markNotInterested';
@@ -605,9 +593,9 @@ AspenDiscovery.GroupedWork = (function(){
 			$.getJSON(url, function (data){
 				if (data.success){
 					$("#groupedWorkDisplayInfo").hide();
-					AspenDiscovery.showMessage(data.title, data.body);
+					AspenDiscovery.showMessage(data.title, data.message);
 				}else{
-					AspenDiscovery.showMessage(data.title, data.body);
+					AspenDiscovery.showMessage(data.title, data.message);
 				}
 			});
 			return false;

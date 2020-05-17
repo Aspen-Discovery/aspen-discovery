@@ -3,10 +3,10 @@
 	<div>
 		<div class="form-group">
 			<div class="col-tn-3">
-				<label for="title">{translate text="Title"} <span class="required-input">*</span></label>
+				<label for="title">{translate text="Title"}</label>
 			</div>
 			<div class="col-tn-9">
-				<input type="text" name="title" id="title" class="form-control required" value="{$title}" maxlength="276"/>
+				<input type="text" name="title" id="title" class="form-control" value="{$title}" maxlength="276"/>
 			</div>
 		</div>
 		<div class="form-group">

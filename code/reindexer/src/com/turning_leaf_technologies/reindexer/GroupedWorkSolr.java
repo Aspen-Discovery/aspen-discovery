@@ -976,6 +976,10 @@ public class GroupedWorkSolr implements Cloneable {
 	private static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 
 	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
+		this.setTitle(shortTitle, displayTitle, sortableTitle, recordFormat, false);
+	}
+
+	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat, boolean forceUpdate) {
 		if (shortTitle != null) {
 			shortTitle = StringUtils.trimTrailingPunctuation(shortTitle);
 
@@ -1012,7 +1016,7 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 			}
 
-			if (updateTitle) {
+			if (updateTitle || forceUpdate) {
 				//Strip out anything in brackets unless that would cause us to show nothing
 				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
 				if (shortTitle.length() > 0) {
@@ -1080,6 +1084,10 @@ public class GroupedWorkSolr implements Cloneable {
 			this.subTitle = subTitle;
 			keywords.add(subTitle);
 		}
+	}
+
+	void clearSubTitle(){
+		this.subTitle = "";
 	}
 
 	void addFullTitles(Set<String> fullTitles) {
@@ -1265,6 +1273,12 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void addSeries(String series) {
 		addSeriesInfoToField(series, this.series);
+	}
+
+	void clearSeries(){
+		this.seriesWithVolume.clear();
+		this.series2.putAll(this.series);
+		this.series.clear();
 	}
 
 	void addSeriesWithVolume(String seriesName, String volume) {
