@@ -8,7 +8,6 @@ class BookCoverProcessor{
 	private $bookCoverPath;
 	private $localFile;
 	private $category;
-	private $format;
 	private $size;
 	private $id;
 	private $isn;
@@ -405,7 +404,6 @@ class BookCoverProcessor{
 		$this->bookCoverInfo->find(true);
 
 		$this->category = !empty($_GET['category']) ? strtolower($_GET['category']) : null;
-		$this->format   = !empty($_GET['format']) ? strtolower($_GET['format']) : null;
 		//First check to see if this has a custom cover due to being an e-book
 		if (!is_null($this->id)){
 			if ($this->isEContent){
@@ -495,7 +493,6 @@ class BookCoverProcessor{
 		}
 	}
 
-	private static $providers = null;
 	private function getCoverFromProvider(){
 		// Update to allow retrieval of covers based on upc
 		if (!is_null($this->isn) || !is_null($this->upc) || !is_null($this->issn)) {
@@ -644,6 +641,8 @@ class BookCoverProcessor{
 
 	/**
 	 * Display a "cover unavailable" graphic and terminate execution.
+	 * @param RecordInterface $recordDriver
+	 * @return bool
 	 */
 	function getDefaultCover($recordDriver = null){
 		//Get the resource for the cover so we can load the title and author
@@ -865,19 +864,10 @@ class BookCoverProcessor{
 		return $this->processImageURL('syndetics', $url, true);
 	}
 
-	function librarything($key)
-	{
-		if (is_null($this->isn)){
-			return false;
-		}
-		$url = 'http://covers.librarything.com/devkey/' . $key . '/' . $this->size . '/isbn/' . $this->isn;
-		return $this->processImageURL('libraryThing', $url, true);
-	}
-
 	/**
 	 * Retrieve a Content Cafe cover.
 	 *
-	 * @param ContentCafeSetting $id
+	 * @param ContentCafeSetting $settings
 	 *
 	 * @return bool      True if image displayed, false otherwise.
 	 */
@@ -984,9 +974,10 @@ class BookCoverProcessor{
 				$year = array_merge($year, $years);
 			}
 		}
+
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		foreach ($year as $curYear){
 			$url = "http://www.omdbapi.com/?t=$encodedTitle&y=$curYear&apikey={$omdbSettings->apiKey}";
-			require_once ROOT_DIR . '/sys/CurlWrapper.php';
 			$client = new CurlWrapper();
 			$result = $client->curlGetPage($url);
 			if ($result !== false) {
@@ -1002,7 +993,6 @@ class BookCoverProcessor{
 
 		//Try one last time without a year
 		$url = "http://www.omdbapi.com/?t=$encodedTitle&apikey={$omdbSettings->apiKey}";
-		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$client = new CurlWrapper();
 		$result = $client->curlGetPage($url);
 		if ($result !== false) {
@@ -1021,7 +1011,6 @@ class BookCoverProcessor{
 		$title = preg_replace('/the complete collection$/i', '', $title);
 		$encodedTitle = urlencode($title);
 		$url = "http://www.omdbapi.com/?t=$encodedTitle&type=series&apikey={$omdbSettings->apiKey}";
-		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$client = new CurlWrapper();
 		$result = $client->curlGetPage($url);
 		if ($result !== false) {
@@ -1124,7 +1113,6 @@ class BookCoverProcessor{
 						return true;
 					}
                 }else{
-					/** @var GroupedWorkSubDriver $driver */
 					$driver = $relatedRecord->_driver;
 					//First check to see if there is a specific record defined in an 856 etc.
 					if (method_exists($driver, 'getMarcRecord') && $this->getCoverFromMarc($driver->getMarcRecord())){
@@ -1274,8 +1262,7 @@ class BookCoverProcessor{
 			if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
 				return $this->processImageURL('open_archives', $bookcoverUrl, true);
-			} /** @noinspection HtmlDeprecatedAttribute */
-			elseif (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)) {
+			} elseif (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
 				if (strpos($bookcoverUrl, 'http') !== 0) {
 					$urlComponents = parse_url($url);
