@@ -51,14 +51,15 @@ class CloudLibraryEventHandler extends DefaultHandler {
 	}
 
 	public void characters(char[] ch, int start, int length) {
-		nodeContents = new String(ch, start, length).trim();
+		nodeContents += new String(ch, start, length);
 	}
 
 	public void endElement(String uri, String localName, String qName) {
 		if (qName.equals("ItemId")){
 			numDocuments++;
-			updateAvailabilityForTitle(nodeContents);
+			updateAvailabilityForTitle(nodeContents.trim());
 		}
+		nodeContents = "";
 	}
 
 	private void updateAvailabilityForTitle(String cloudLibraryId) {
