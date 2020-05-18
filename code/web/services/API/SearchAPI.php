@@ -127,6 +127,21 @@ class SearchAPI extends Action
 			}
 		}
 
+		//Check nightly index
+		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
+		$logEntry = new ReindexLogEntry();
+		$logEntry->orderBy("id DESC");
+		$logEntry->limit(0, 1);
+		if ($logEntry->find(true)){
+			if ($logEntry->numErrors > 0){
+				$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, 'The last nightly index had errors');
+			}else{
+				$this->addCheck($checks, 'Nightly Index');
+			}
+		}else{
+			$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, 'Nightly index has never run');
+		}
+
 		//Check for errors within the logs
 		require_once ROOT_DIR . '/sys/Module.php';
 		$module = new Module();
