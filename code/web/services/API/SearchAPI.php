@@ -100,12 +100,13 @@ class SearchAPI extends Action
 					$freeMem = $pieces[1];
 				}
 			}
+			$percentMemoryUsage = round((1 - ($freeMem / $totalMem)) * 100, 1);
 			if ($freeMem < 1000000){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "Less than 1GB ($freeMem) of available memory exists, increase available resources");
-			}elseif (($freeMem / $totalMem) > .95){
-				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "95% or more of total memory is in use, increase available resources");
-			}elseif (($freeMem / $totalMem) < .6){
-				$this->addCheck($checks, 'Memory Usage', self::STATUS_WARN, "Less than 60% of memory is in use, may be able to reduce resources");
+			}elseif ($percentMemoryUsage > 95){
+				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "{$percentMemoryUsage}% of total memory is in use, increase available resources");
+			}elseif ($percentMemoryUsage < 60){
+				$this->addCheck($checks, 'Memory Usage', self::STATUS_WARN, "$percentMemoryUsage% of memory is in use, may be able to reduce resources");
 			}else{
 				$this->addCheck($checks, 'Memory Usage');
 			}
