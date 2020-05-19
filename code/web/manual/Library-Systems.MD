@@ -4,6 +4,11 @@
 
 ![Library Systems](/manual/images/Library-Systems.png)
 
+- To create a library system, click the 'Add New' box.
+- If you have more than one system, you can click the small checkbox next to two and click 'Compare' at the bottom of the list to see the similarities and differences in configuration for the two.
+- To edit already created systems you can either click the 'Edit' box on the right hand side of the screen or click the Library ID
+- Underneath the edit button the right hand side, there is a 'History' box. This shows you changes made in the configuration. 
+
 - Within library systems you can customize many aspects of Aspen for your system. You will want include subdomain and base URL in your options. This lets Aspen know which URL is specific to a system. This is especially important if you have many systems and subdomains.
 - If you fill in 'Display Name' that will display within the header of Aspen if you click the box 'Show Display Name in Header'.
 - Systems Message allows you to add customized language if you have an annoucement for your patrons. This message will display in the header.
