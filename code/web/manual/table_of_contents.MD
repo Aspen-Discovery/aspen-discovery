@@ -20,7 +20,7 @@
   - Primary Configuration
     - Languages
       - Translations
-    - Library Systems
+    - [Library Systems](/Admin/HelpManual?page=Library-Systems)
       - Locations 
       - IP Addresses
     - Block Patron Account Linking
