@@ -27,8 +27,8 @@
     - Patron Types
     - Account Profiles
   - Enrichment
-    - Accelerated Reader
-    - Content Cafe
+    - [Accelerated Reader](/Admin/HelpManual?page=Accelerated-Reader)
+    - [Content Cafe](/Admin/HelpManual?page=Content-Cafe)
     - DP.LA
     - Facebook
     - GoodReads
