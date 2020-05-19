@@ -21,8 +21,8 @@
     - Languages
       - Translations
     - [Library Systems](/Admin/HelpManual?page=Library-Systems)
-      - Locations 
-      - IP Addresses
+      - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
+      - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
     - Block Patron Account Linking
     - Patron Types
     - Account Profiles
