@@ -553,7 +553,8 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $listId;
-		$listEntry->groupedWorkPermanentId = getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks);
+		$listEntry->source = 'GroupedWork';
+		$listEntry->sourceId = getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks);
 		$entryExists = false;
 		if ($listEntry->find(true)){
 			$entryExists = true;

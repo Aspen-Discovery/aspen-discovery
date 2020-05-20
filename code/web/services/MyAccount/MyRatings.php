@@ -27,8 +27,7 @@ class MyRatings extends MyAccount{
 		$records = $searchObject->getRecords(array_keys($ratedIds));
 		foreach ($ratedIds as $permanentId => $rating){
 			if (array_key_exists($permanentId, $records)){
-				$record = $records[$permanentId];
-				$groupedWorkDriver = new GroupedWorkDriver($record);
+				$groupedWorkDriver = $records[$permanentId];
 				if ($groupedWorkDriver->isValid){
 					$ratings[$rating->groupedRecordPermanentId] = array(
 						'id' =>$rating->id,
@@ -65,8 +64,7 @@ class MyRatings extends MyAccount{
 		foreach ($notInterestedIds as $permanentId => $notInterestedObj){
 			if (array_key_exists($permanentId, $notInterestedIds)) {
 				if (array_key_exists($permanentId, $records)) {
-					$record = $records[$permanentId];
-					$groupedWorkDriver = new GroupedWorkDriver($record);
+					$groupedWorkDriver = $records[$permanentId];
 					if ($groupedWorkDriver->isValid) {
 						$notInterested[] = array(
 							'id' => $notInterestedObj->id,

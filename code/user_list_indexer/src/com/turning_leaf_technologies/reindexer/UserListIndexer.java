@@ -33,6 +33,8 @@ class UserListIndexer {
 	private HashMap<Long, Long> librariesByHomeLocation = new HashMap<>();
 	private HashMap<Long, String> locationCodesByHomeLocation = new HashMap<>();
 	private HashSet<Long> listPublisherUsers = new HashSet<>();
+	private SolrClient openArchivesServer;
+	private PreparedStatement getListDisplayNameAndAuthorStmt;
 
 	UserListIndexer(Ini configIni, Connection dbConn, Logger logger){
 		this.dbConn = dbConn;
@@ -44,6 +46,7 @@ class UserListIndexer {
 			while (listPublishersRS.next()){
 				listPublisherUsers.add(listPublishersRS.getLong(1));
 			}
+			getListDisplayNameAndAuthorStmt = dbConn.prepareStatement("SELECT title, displayName FROM user_list inner join user on user_id = user.id where user_list.id = ?");
 		}catch (Exception e){
 			logger.error("Error loading a list of users with the listPublisher role");
 		}
@@ -59,8 +62,11 @@ class UserListIndexer {
 		solrBuilder.withQueueSize(25);
 		updateServer = solrBuilder.build();
 		updateServer.setRequestWriter(new BinaryRequestWriter());
-		HttpSolrClient.Builder httpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-		groupedWorkServer = httpBuilder.build();
+		HttpSolrClient.Builder groupedWorkHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+		groupedWorkServer = groupedWorkHttpBuilder.build();
+		HttpSolrClient.Builder openArchivesHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/open_archives");
+		openArchivesServer = openArchivesHttpBuilder.build();
+
 
 		scopes = IndexingUtils.loadScopes(dbConn, logger);
 	}
@@ -72,6 +78,12 @@ class UserListIndexer {
 			groupedWorkServer = null;
 		} catch (IOException e) {
 			logger.error("Could not close grouped work server", e);
+		}
+		try{
+			openArchivesServer.close();
+			openArchivesServer = null;
+		} catch (IOException e) {
+			logger.error("Could not close open archives server", e);
 		}
 		updateServer.close();
 		updateServer = null;
@@ -97,7 +109,7 @@ class UserListIndexer {
 				listsStmt.setLong(1, lastReindexTime);
 			}
 
-			PreparedStatement getTitlesForListStmt = dbConn.prepareStatement("SELECT groupedWorkPermanentId, notes from user_list_entry WHERE listId = ?");
+			PreparedStatement getTitlesForListStmt = dbConn.prepareStatement("SELECT source, sourceId, notes from user_list_entry WHERE listId = ?");
 			PreparedStatement getLibraryForHomeLocation = dbConn.prepareStatement("SELECT libraryId, locationId from location");
 			PreparedStatement getCodeForHomeLocation = dbConn.prepareStatement("SELECT code, locationId from location");
 
@@ -115,7 +127,7 @@ class UserListIndexer {
 
 			ResultSet allPublicListsRS = listsStmt.executeQuery();
 			while (allPublicListsRS.next()){
-				if (updateSolrForList(updateServer, groupedWorkServer, getTitlesForListStmt, allPublicListsRS)){
+				if (updateSolrForList(updateServer, getTitlesForListStmt, allPublicListsRS)){
 					numListsIndexed++;
 				}
 				numListsProcessed++;
@@ -131,7 +143,7 @@ class UserListIndexer {
 		return numListsProcessed;
 	}
 
-	private boolean updateSolrForList(ConcurrentUpdateSolrClient updateServer, SolrClient solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
+	private boolean updateSolrForList(ConcurrentUpdateSolrClient updateServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
 		UserListSolr userListSolr = new UserListSolr(this);
 		long listId = allPublicListsRS.getLong("id");
 
@@ -185,27 +197,56 @@ class UserListIndexer {
 			getTitlesForListStmt.setLong(1, listId);
 			ResultSet allTitlesRS = getTitlesForListStmt.executeQuery();
 			while (allTitlesRS.next()) {
-				String groupedWorkId = allTitlesRS.getString("groupedWorkPermanentId");
-				if (!allTitlesRS.wasNull() && groupedWorkId.length() > 0 && !groupedWorkId.contains(":")) {
-					// Skip archive object Ids
-					SolrQuery query = new SolrQuery();
-					query.setQuery("id:" + groupedWorkId);
-					query.setFields("title_display", "author_display");
+				String source = allTitlesRS.getString("source");
+				String sourceId = allTitlesRS.getString("sourceId");
+				if (!allTitlesRS.wasNull()){
+					if (sourceId.length() > 0 && source.equals("GroupedWork")) {
+						// Skip archive object Ids
+						SolrQuery query = new SolrQuery();
+						query.setQuery("id:" + sourceId);
+						query.setFields("title_display", "author_display");
 
-					try {
-						QueryResponse response = solrServer.query(query);
-						SolrDocumentList results = response.getResults();
-						//Should only ever get one response
-						if (results.size() >= 1) {
-							SolrDocument curWork = results.get(0);
-							userListSolr.addListTitle(groupedWorkId, curWork.getFieldValue("title_display"), curWork.getFieldValue("author_display"));
+						try {
+							QueryResponse response = groupedWorkServer.query(query);
+							SolrDocumentList results = response.getResults();
+							//Should only ever get one response
+							if (results.size() >= 1) {
+								SolrDocument curWork = results.get(0);
+								userListSolr.addListTitle("grouped_work", sourceId, curWork.getFieldValue("title_display"), curWork.getFieldValue("author_display"));
+							}
+						} catch (Exception e) {
+							logger.error("Error loading information about title " + sourceId);
 						}
-					}catch(Exception e){
-						logger.error("Error loading information about title " + groupedWorkId);
+					}else if (source.equals("OpenArchives")){
+						// Skip archive object Ids
+						SolrQuery query = new SolrQuery();
+						query.setQuery("id:" + sourceId);
+						query.setFields("title", "creator");
+
+						try {
+							QueryResponse response = openArchivesServer.query(query);
+							SolrDocumentList results = response.getResults();
+							//Should only ever get one response
+							if (results.size() >= 1) {
+								SolrDocument curWork = results.get(0);
+								userListSolr.addListTitle("open_archives", sourceId, curWork.getFieldValue("title"), curWork.getFieldValue("creator"));
+							}
+						} catch (Exception e) {
+							logger.error("Error loading information about title " + sourceId);
+						}
+					}else if (source.equals("Lists")){
+						getListDisplayNameAndAuthorStmt.setString(1, sourceId);
+						ResultSet listDisplayNameAndAuthorRS = getListDisplayNameAndAuthorStmt.executeQuery();
+						if (listDisplayNameAndAuthorRS.next()){
+							userListSolr.addListTitle("lists", sourceId, listDisplayNameAndAuthorRS.getString("title"), listDisplayNameAndAuthorRS.getString("displayName"));
+						}
+						listDisplayNameAndAuthorRS.close();
+					}else{
+						logger.error("Unhandled source " + source);
 					}
+					//TODO: Handle other types of objects within a User List
+					//Sub-lists, open archives, people, etc.
 				}
-				//TODO: Handle other types of objects within a User List
-				//Sub-lists, open archives, people, etc.
 			}
 			if (userListSolr.getNumTitles() >= 3) {
 				// Index in the solr catalog

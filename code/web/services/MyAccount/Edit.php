@@ -85,7 +85,8 @@ class MyAccount_Edit extends Action
 					// Retrieve saved information about record
 					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 					$userListEntry                         = new UserListEntry();
-					$userListEntry->groupedWorkPermanentId = $id;
+					$userListEntry->source = 'GroupedWork';
+					$userListEntry->sourceId = $id;
 					$userListEntry->listId                 = $listId;
 					if ($userListEntry->find(true)) {
 						$interface->assign('listEntry', $userListEntry);

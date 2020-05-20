@@ -53,6 +53,33 @@
 			</div>
 		{/if}
 
+		{if count($userLists) > 0}
+			<div class="row">
+				<div class="result-label col-tn-3">
+					{if count($userLists) > 1}
+						{translate text="Appears on these lists"}
+					{else}
+						{translate text="Appears on list"}
+					{/if}
+				</div>
+				<div class="result-value col-tn-8">
+					{if count($userLists) >= 5}
+						{assign var=showMoreLists value="true"}
+					{/if}
+					{foreach from=$userLists item=userList name=loop}
+						<a href="{$userList.link}">{$userList.title}</a><br/>
+						{if !empty($showMoreLists) && $smarty.foreach.loop.iteration == 3}
+							<a onclick="$('#moreLists_{$recordDriver->getPermanentId()}').show();$('#moreListsLink_{$recordDriver->getPermanentId()}').hide();" id="moreListsLink_{$recordDriver->getPermanentId()}">{translate text="More Lists..."}</a>
+							<div id="moreLists_{$recordDriver->getPermanentId()}" style="display:none">
+						{/if}
+					{/foreach}
+					{if !empty($showMoreLists)}
+						</div>
+					{/if}
+				</div>
+			</div>
+		{/if}
+
 		{if $summSnippets}
 			{foreach from=$summSnippets item=snippet}
 				<div class="row">

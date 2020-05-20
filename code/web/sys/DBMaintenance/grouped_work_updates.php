@@ -168,7 +168,7 @@ function getGroupedWorkUpdates(){
 					title VARCHAR(276),
 					author VARCHAR(50),
 					seriesName VARCHAR(255),
-					seriesDisplayOrder INT,
+					seriesDisplayOrder INT DEFAULT 0,
 					addedBy INT(11),
 					dateAdded INT(11),
 					INDEX (permanent_id)

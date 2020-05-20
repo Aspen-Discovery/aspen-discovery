@@ -73,6 +73,33 @@
 			</div>
 		{/if}
 
+		{if count($userLists) > 0}
+			<div class="row">
+				<div class="result-label col-tn-3">
+					{if count($userLists) > 1}
+						{translate text="Appears on these lists"}
+					{else}
+						{translate text="Appears on list"}
+					{/if}
+				</div>
+				<div class="result-value col-tn-8">
+					{if count($userLists) >= 5}
+						{assign var=showMoreLists value="true"}
+					{/if}
+					{foreach from=$userLists item=userList name=loop}
+						<a href="{$userList.link}">{$userList.title}</a><br/>
+						{if !empty($showMoreLists) && $smarty.foreach.loop.iteration == 3}
+							<a onclick="$('#moreLists_{$recordDriver->getPermanentId()}').show();$('#moreListsLink_{$recordDriver->getPermanentId()}').hide();" id="moreListsLink_{$recordDriver->getPermanentId()}">{translate text="More Lists..."}</a>
+							<div id="moreLists_{$recordDriver->getPermanentId()}" style="display:none">
+						{/if}
+					{/foreach}
+					{if !empty($showMoreLists)}
+						</div>
+					{/if}
+				</div>
+			</div>
+		{/if}
+
 		{* Description Section *}
 		{if $description}
 			<div class="row visible-xs">
@@ -90,9 +117,7 @@
 
 		<div class="row">
 			<div class="col-xs-12">
-                {include file='OpenArchives/result-tools-horizontal.tpl' recordUrl=$openArchiveUrl showMoreInfo=true}
-                {* TODO: id & shortId shouldn't be needed to be specified here, otherwise need to note when used.
-					summTitle only used by cart div, which is disabled as of now. 12-28-2015 plb *}
+				{include file='OpenArchives/result-tools-horizontal.tpl' recordUrl=$openArchiveUrl showMoreInfo=true}
 			</div>
 		</div>
 	</div>

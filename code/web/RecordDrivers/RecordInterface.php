@@ -305,4 +305,41 @@ abstract class RecordInterface
 
 	public abstract function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null);
 
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+		global $interface;
+		$interface->assign('showRatings', $collectionSpotlight->showRatings);
+
+		$interface->assign('key', $index);
+
+		if ($collectionSpotlight->coverSize == 'small'){
+			$imageUrl = $this->getBookcoverUrl('small');
+		}else{
+			$imageUrl = $this->getBookcoverUrl('medium');
+		}
+
+		$interface->assign('title', $this->getTitle());
+		$interface->assign('author', $this->getPrimaryAuthor());
+		$interface->assign('description', $this->getDescription());
+		$interface->assign('shortId', $this->getId());
+		$interface->assign('id', $this->getId());
+		$interface->assign('titleURL', $this->getLinkUrl());
+		$interface->assign('imageUrl', $imageUrl);
+
+		if ($collectionSpotlight->showRatings){
+			$interface->assign('ratingData', null);
+			$interface->assign('showNotInterested', false);
+		}
+
+		$result = [
+			'title' => $this->getTitle(),
+			'author' => $this->getPrimaryAuthor(),
+		];
+		if ($collectionSpotlight->style == 'text-list'){
+			$result['formattedTextOnlyTitle'] = $interface->fetch('CollectionSpotlight/formattedTextOnlyTitle.tpl');
+		}else{
+			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
+		}
+
+		return $result;
+	}
 }

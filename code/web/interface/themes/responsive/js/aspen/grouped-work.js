@@ -5,7 +5,7 @@ AspenDiscovery.GroupedWork = (function(){
 		clearUserRating: function (groupedWorkId){
 			let url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
 			$.getJSON(url, function(data){
-				if (data.result == true){
+				if (data.result === true){
 					$('.rate' + groupedWorkId).find('.ui-rater-starsOn').width(0);
 					$('#myRating' + groupedWorkId).hide();
 					AspenDiscovery.showMessage('Success', data.message, true);
@@ -31,7 +31,7 @@ AspenDiscovery.GroupedWork = (function(){
 
 		deleteReview: function(id, reviewId){
 			if (confirm("Are you sure you want to delete this review?")){
-				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
+				let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
 				$.getJSON(url, function(data){
 					if (data.result === true){
 						$('#review_' + reviewId).hide();
@@ -56,13 +56,13 @@ AspenDiscovery.GroupedWork = (function(){
 
 		getGoDeeperData: function (id, dataType){
 			let placeholder;
-			if (dataType == 'excerpt') {
+			if (dataType === 'excerpt') {
 				placeholder = $("#excerptPlaceholder");
-			} else if (dataType == 'avSummary') {
+			} else if (dataType === 'avSummary') {
 				placeholder = $("#avSummaryPlaceholder");
-			} else if (dataType == 'tableOfContents') {
+			} else if (dataType === 'tableOfContents') {
 				placeholder = $("#tableOfContentsPlaceholder");
-			} else if (dataType == 'authornotes') {
+			} else if (dataType === 'authornotes') {
 				placeholder = $("#authornotesPlaceholder");
 			}
 			if (placeholder.hasClass("loaded")) return;
@@ -75,6 +75,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		getGoodReadsComments: function (isbn){
+			// noinspection HtmlDeprecatedAttribute
 			$("#goodReadsPlaceHolder").replaceWith(
 				"<iframe id='goodreads_iframe' class='goodReadsIFrame' src='https://www.goodreads.com/api/reviews_widget_iframe?did=DEVELOPER_ID&format=html&isbn=" + isbn + "&links=660&review_back=fff&stars=000&text=000' width='100%' height='400px' frameborder='0'></iframe>"
 			);
@@ -118,13 +119,13 @@ AspenDiscovery.GroupedWork = (function(){
 						let goDeeperOptions = data.goDeeperOptions;
 						//add a tab before citation for each item
 						for (let option in goDeeperOptions){
-							if (option == 'excerpt') {
+							if (option === 'excerpt') {
 								$("#excerptPanel").show();
-							} else if (option == 'avSummary') {
+							} else if (option === 'avSummary') {
 								$("#avSummaryPlaceholder,#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
-							} else if (option == 'tableOfContents') {
+							} else if (option === 'tableOfContents') {
 								$("#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
-							} else if (option == 'authorNotes') {
+							} else if (option === 'authorNotes') {
 								$('#authornotesPlaceholder,#authornotesPanel').show();
 							}
 						}
@@ -192,7 +193,7 @@ AspenDiscovery.GroupedWork = (function(){
 		loadReviewInfo: function (id) {
 			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewInfo";
 			$.getJSON(url, function(data) {
-				if (data.numSyndicatedReviews == 0){
+				if (data.numSyndicatedReviews === 0){
 					$("#syndicatedReviewsPanel").hide();
 				}else{
 					let syndicatedReviewsData = data.syndicatedReviewsHtml;
@@ -201,7 +202,7 @@ AspenDiscovery.GroupedWork = (function(){
 					}
 				}
 
-				if (data.numCustomerReviews == 0){
+				if (data.numCustomerReviews === 0){
 					$("#borrowerReviewsPanel").hide();
 				}else{
 					let customerReviewsData = data.customerReviewsHtml;
@@ -217,7 +218,7 @@ AspenDiscovery.GroupedWork = (function(){
 				let url = Globals.path + '/GroupedWork/' + recordId + '/AJAX?method=markNotInterested';
 				$.getJSON(
 						url, function(data){
-							if (data.result == true){
+							if (data.result === true){
 								$("#notInterested" + recordId).css('background-color', '#f73d3d').css('color', 'white').prop("disabled", true);
 							}else{
 								AspenDiscovery.showMessage('Sorry', data.message);
@@ -284,30 +285,6 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		saveToList: function(id){
-			if (Globals.loggedIn){
-				let listId = $('#addToList-list').val();
-				let notes  = $('#addToList-notes').val();
-				let url    = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
-				let params = {
-					'method':'saveToList'
-					,notes:notes
-					,listId:listId
-				};
-				$.getJSON(url, params,
-						function(data) {
-							if (data.success) {
-								AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
-								AspenDiscovery.Account.loadListData();
-							} else {
-								AspenDiscovery.showMessage("Error", data.message);
-							}
-						}
-				).fail(AspenDiscovery.ajaxFail);
-			}
-			return false;
-		},
-
 		sendEmail: function(id){
 			if (Globals.loggedIn){
 				let from = $('#from').val();
@@ -363,7 +340,7 @@ AspenDiscovery.GroupedWork = (function(){
 
 		showGroupedWorkInfo:function(id, browseCategoryId){
 			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
-			if (browseCategoryId != undefined){
+			if (browseCategoryId !== undefined){
 				url += "&browseCategoryId=" + browseCategoryId;
 			}
 			AspenDiscovery.loadingMessage();
@@ -383,21 +360,6 @@ AspenDiscovery.GroupedWork = (function(){
 				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
 					return AspenDiscovery.GroupedWork.showReviewForm(trigger, id);
 				}, false);
-			}
-			return false;
-		},
-
-		showSaveToListForm: function (trigger, id){
-			if (Globals.loggedIn){
-				AspenDiscovery.loadingMessage();
-				let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getSaveToListForm";
-				$.getJSON(url, function(data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(AspenDiscovery.ajaxFail);
-			}else{
-				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
-					AspenDiscovery.GroupedWork.showSaveToListForm(trigger, id);
-				});
 			}
 			return false;
 		},
@@ -466,7 +428,8 @@ AspenDiscovery.GroupedWork = (function(){
 			}
 			return false;
 		},
-		getGroupWithInfo: function(id) {
+
+		getGroupWithInfo: function() {
 			let groupWithId = $('#workToGroupWithId').val().trim();
 			if (groupWithId.length === 36){
 				let url = Globals.path + "/GroupedWork/" + groupWithId + "/AJAX?method=getGroupWithInfo";

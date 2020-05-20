@@ -190,13 +190,12 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param   object $user User object owning tag/note metadata.
 	 * @param   int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param   bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true) {
+	public function getListEntry($listId = null, $allowEdit = true) {
 		global $interface;
 
 		$id = $this->getUniqueID();
@@ -226,9 +225,10 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		//Get information from list entry
 		if ($listId) {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-			$listEntry                         = new UserListEntry();
-			$listEntry->groupedWorkPermanentId = $this->getUniqueID();
-			$listEntry->listId                 = $listId;
+			$listEntry = new UserListEntry();
+			$listEntry->source = 'Islandora';
+			$listEntry->sourceId = $this->getUniqueID();
+			$listEntry->listId = $listId;
 			if ($listEntry->find(true)) {
 				$interface->assign('listEntryNotes', $listEntry->notes);
 			}
@@ -1329,26 +1329,25 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 				}
 			}
 
-			if (count($relatedWorkIds) > 0){
-                /** @var SearchObject_GroupedWorkSearcher $searchObject */
-                $searchObject = SearchObjectFactory::initSearchObject();
-                $searchObject->init();
-                $linkedWorkData = $searchObject->getRecords($relatedWorkIds);
-                foreach ($linkedWorkData as $workData) {
-                    $workDriver = new GroupedWorkDriver($workData);
-                    if ($workDriver->isValid) {
-                        $this->relatedPikaRecords[] = array(
-                            'link' => $workDriver->getLinkUrl(),
-                            'label' => $workDriver->getTitle(),
-                            'image' => $workDriver->getBookcoverUrl('medium'),
-                            'id' => $workDriver->getPermanentId()
-                        );
-                        //$this->links[$id]['hidden'] = true;
-                    }
-                }
-                $searchObject = null;
-                unset ($searchObject);
-            }
+			if (count($relatedWorkIds) > 0) {
+				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$searchObject->init();
+				$linkedWorkData = $searchObject->getRecords($relatedWorkIds);
+				foreach ($linkedWorkData as $workDriver) {
+					if ($workDriver->isValid) {
+						$this->relatedPikaRecords[] = array(
+							'link' => $workDriver->getLinkUrl(),
+							'label' => $workDriver->getTitle(),
+							'image' => $workDriver->getBookcoverUrl('medium'),
+							'id' => $workDriver->getPermanentId()
+						);
+						//$this->links[$id]['hidden'] = true;
+					}
+				}
+				$searchObject = null;
+				unset ($searchObject);
+			}
 
 			//Look for links related to the collection(s) this object is linked to
 			$collections = $this->getRelatedCollections();

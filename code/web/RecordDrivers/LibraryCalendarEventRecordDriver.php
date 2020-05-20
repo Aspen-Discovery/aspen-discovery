@@ -28,7 +28,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		return $this->valid;
 	}
 
-	public function getListEntry($user, $listId = null, $allowEdit = true)
+	public function getListEntry($listId = null, $allowEdit = true)
 	{
 		return $this->getSearchResult('list');
 	}

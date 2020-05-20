@@ -19,9 +19,7 @@ class MyAccount_MyList extends MyAccount {
 		$list = new UserList();
 		$list->id = $listId;
 
-		//QUESTION : When does this intentionally come into play?
-		// It looks to be a way for users to create a list with the number of their own choosing. plb 1-25-2016
-		// Pascal this would create the default "My Favorites" list if none currently exists.
+		//If the list does not exist, create a new My Favorites List
 		if (!$list->find(true)){
 			//TODO: Use the first list?
 			$list = new UserList();
@@ -155,14 +153,15 @@ class MyAccount_MyList extends MyAccount {
 					//Get the id of the document
 					$id = $firstDoc['id'];
 					$numAdded++;
-					$userListEntry                         = new UserListEntry();
-					$userListEntry->listId                 = $list->id;
-					$userListEntry->groupedWorkPermanentId = $id;
-					$existingEntry                         = false;
+					$userListEntry = new UserListEntry();
+					$userListEntry->listId = $list->id;
+					$userListEntry->source = 'GroupedWork';
+					$userListEntry->sourceId = $id;
+					$existingEntry = false;
 					if ($userListEntry->find(true)) {
 						$existingEntry = true;
 					}
-					$userListEntry->notes     = '';
+					$userListEntry->notes = '';
 					$userListEntry->dateAdded = time();
 					if ($existingEntry) {
 						$userListEntry->update();

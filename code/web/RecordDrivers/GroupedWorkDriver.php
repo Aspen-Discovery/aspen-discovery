@@ -527,9 +527,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 		// Rating Settings
-		/** @var Library $library */
 		global $library;
-		/** @var Location $location */
 		global $location;
 		$browseCategoryRatingsMode = null;
 		if ($location) { // Try Location Setting
@@ -1103,7 +1101,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true)
+	public function getListEntry($listId = null, $allowEdit = true)
 	{
 		global $configArray;
 		global $interface;
@@ -1164,7 +1162,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 		if ($listId) {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$listEntry = new UserListEntry();
-			$listEntry->groupedWorkPermanentId = $this->getUniqueID();
+			$listEntry->source = 'GroupedWork';
+			$listEntry->sourceId = $this->getUniqueID();
 			$listEntry->listId = $listId;
 			if ($listEntry->find(true)) {
 				$interface->assign('listEntryNotes', $listEntry->notes);
@@ -1226,7 +1225,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getSummaryInformation()
 	{
-		$summaryInfo = array(
+		return array(
 			'id' => $this->getPermanentId(),
 			'shortId' => $this->getPermanentId(),
 			'recordtype' => 'grouped_work',
@@ -1240,8 +1239,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 			'publisher' => '',
 			'ratingData' => $this->getRatingData(),
 		);
-
-		return $summaryInfo;
 	}
 
 
@@ -1643,6 +1640,11 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$snippets = $this->getHighlightedSnippets();
 		$interface->assign('summSnippets', $snippets);
 		$timer->logTime("Loaded highlighted snippets");
+
+		//Check to see if there are lists the record is on
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		$userLists = UserList::getUserListsForRecord('GroupedWork', $this->getPermanentId());
+		$interface->assign('userLists', $userLists);
 
 		$summPublisher = null;
 		$summPubDate = null;

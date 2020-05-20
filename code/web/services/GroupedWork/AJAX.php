@@ -402,7 +402,7 @@ class GroupedWork_AJAX extends JSON_Action
 		}
 
 		$escapedId = htmlentities($recordDriver->getPermanentId()); // escape for html
-		$buttonLabel = translate('Add to favorites');
+		$buttonLabel = translate('Add to list');
 
 		// button template
 		$interface->assign('escapeId', $escapedId);
@@ -413,7 +413,7 @@ class GroupedWork_AJAX extends JSON_Action
 		return array(
 			'title' => "<a href='$url'>{$recordDriver->getTitle()}</a>",
 			'modalBody' => $modalBody,
-			'modalButtons' => "<button onclick=\"return AspenDiscovery.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
+			'modalButtons' => "<button onclick=\"return AspenDiscovery.Account.showSaveToListForm(this, 'grouped_work', '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
 				."<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate("More Info") . "</button></a>"
 		);
 	}
@@ -736,116 +736,6 @@ class GroupedWork_AJAX extends JSON_Action
 			);
 		}
 		return $result;
-	}
-
-	/** @noinspection PhpUnused */
-	function saveToList(){
-		$result = array();
-
-		if (!UserAccount::isLoggedIn()) {
-			$result['success'] = false;
-			$result['message'] = 'Please login before adding a title to list.';
-		}else{
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-			$result['success'] = true;
-			$id = $_REQUEST['id'];
-			$listId = $_REQUEST['listId'];
-			$notes = $_REQUEST['notes'];
-
-			//Check to see if we need to create a list
-			$userList = new UserList();
-			$listOk = true;
-			if (empty($listId)){
-				$userList->title = "My Favorites";
-				$userList->user_id = UserAccount::getActiveUserId();
-				$userList->public = 0;
-				$userList->description = '';
-				$userList->insert();
-			}else{
-				$userList->id = $listId;
-				if (!$userList->find(true)){
-					$result['success'] = false;
-					$result['message'] = 'Sorry, we could not find that list in the system.';
-					$listOk = false;
-				}
-			}
-
-			if ($listOk){
-				$userListEntry = new UserListEntry();
-				$userListEntry->listId = $userList->id;
-				if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)) {
-					$result['success'] = false;
-					$result['message'] = 'Sorry, that is not a valid entry for the list.';
-				}else {
-					$userListEntry->groupedWorkPermanentId = $id;
-
-					$existingEntry = false;
-					if ($userListEntry->find(true)) {
-						$existingEntry = true;
-					}
-					$userListEntry->notes = strip_tags($notes);
-					$userListEntry->dateAdded = time();
-					if ($existingEntry) {
-						$userListEntry->update();
-					} else {
-						$userListEntry->insert();
-					}
-					$result['success'] = true;
-					$result['message'] = 'This title was saved to your list successfully.';
-				}
-			}
-
-		}
-
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
-	function getSaveToListForm(){
-		global $interface;
-
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-
-		//Get a list of all lists for the user
-		$containingLists = array();
-		$nonContainingLists = array();
-
-		$userLists = new UserList();
-		$userLists->user_id = UserAccount::getActiveUserId();
-		$userLists->whereAdd('deleted = 0');
-		$userLists->orderBy('title');
-		$userLists->find();
-		while ($userLists->fetch()){
-			//Check to see if the user has already added the title to the list.
-			$userListEntry = new UserListEntry();
-			$userListEntry->listId = $userLists->id;
-			$userListEntry->groupedWorkPermanentId = $id;
-			if ($userListEntry->find(true)){
-				$containingLists[] = array(
-						'id' => $userLists->id,
-						'title' => $userLists->title
-				);
-			}else{
-				$nonContainingLists[] = array(
-						'id' => $userLists->id,
-						'title' => $userLists->title
-				);
-			}
-		}
-
-		$interface->assign('containingLists', $containingLists);
-		$interface->assign('nonContainingLists', $nonContainingLists);
-
-		return array(
-				'title' => 'Add To List',
-				'modalBody' => $interface->fetch("GroupedWork/save.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveToList(\"{$id}\"); return false;'>Save To List</button>"
-		);
 	}
 
 	/** @noinspection PhpUnused */
@@ -1389,7 +1279,7 @@ class GroupedWork_AJAX extends JSON_Action
 					$interface->assign('title', $existingDisplayInfo->title);
 					$interface->assign('author', $existingDisplayInfo->author);
 					$interface->assign('seriesName', $existingDisplayInfo->seriesName);
-					$interface->assign('seriesDisplayOrder', $existingDisplayInfo->seriesDisplayOrder);
+					$interface->assign('seriesDisplayOrder', ($existingDisplayInfo->seriesDisplayOrder == 0) ? '' : $existingDisplayInfo->seriesDisplayOrder);
 				}else{
 					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 					$recordDriver = new GroupedWorkDriver($id);
@@ -1436,7 +1326,7 @@ class GroupedWork_AJAX extends JSON_Action
 				$seriesName = $_REQUEST['seriesName'];
 				$seriesDisplayOrder = $_REQUEST['seriesDisplayOrder'];
 				if (!is_numeric($seriesDisplayOrder)){
-					$seriesDisplayOrder = '';
+					$seriesDisplayOrder = '0';
 				}
 				if (empty($title) && empty($author) && empty($seriesName) && empty($seriesDisplayOrder)){
 					$results['message'] = "Please specify at least one piece of information";

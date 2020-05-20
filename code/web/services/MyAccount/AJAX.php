@@ -459,7 +459,8 @@ class MyAccount_AJAX extends JSON_Action
 					//Check to see if the user has already added the title to the list.
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
-					$userListEntry->groupedWorkPermanentId = $recordToAdd;
+					$userListEntry->source = 'GroupedWork';
+					$userListEntry->sourceId = $recordToAdd;
 					if (!$userListEntry->find(true)) {
 						$userListEntry->dateAdded = time();
 						$userListEntry->insert();
@@ -995,7 +996,8 @@ class MyAccount_AJAX extends JSON_Action
 					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $update['id'])) {
 						$success = false;
 					} else {
-						$userListEntry->groupedWorkPermanentId = $update['id'];
+						$userListEntry->source = 'GroupedWork';
+						$userListEntry->sourceId = $update['id'];
 						if ($userListEntry->find(true) && ctype_digit($update['newOrder'])) {
 							// check entry exists already and the new weight is a number
 							$userListEntry->weight = $update['newOrder'];
@@ -2567,6 +2569,104 @@ class MyAccount_AJAX extends JSON_Action
 				);
 			}
 		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getSaveToListForm(){
+		global $interface;
+
+		$sourceId = $_REQUEST['sourceId'];
+		$source = $_REQUEST['source'];
+		$interface->assign('sourceId', $sourceId);
+		$interface->assign('source', $source);
+
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		UserList::getUserListsForSaveForm($source, $sourceId);
+
+		return array(
+			'title' => 'Add To List',
+			'modalBody' => $interface->fetch("MyAccount/saveToList.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.saveToList(); return false;'>" . translate("Save To List") . "</button>"
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function saveToList(){
+		$result = array();
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['success'] = false;
+			$result['message'] = 'Please login before adding a title to list.';
+		}else{
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			$result['success'] = true;
+			$sourceId = $_REQUEST['sourceId'];
+			$source = $_REQUEST['source'];
+			$listId = $_REQUEST['listId'];
+			$notes = $_REQUEST['notes'];
+
+			//Check to see if we need to create a list
+			$userList = new UserList();
+			$listOk = true;
+			if (empty($listId)){
+				$userList->title = "My Favorites";
+				$userList->user_id = UserAccount::getActiveUserId();
+				$userList->public = 0;
+				$userList->description = '';
+				$userList->insert();
+			}else{
+				$userList->id = $listId;
+				if (!$userList->find(true)){
+					$result['success'] = false;
+					$result['message'] = 'Sorry, we could not find that list in the system.';
+					$listOk = false;
+				}
+			}
+
+			if ($listOk){
+				$userListEntry = new UserListEntry();
+				$userListEntry->listId = $userList->id;
+
+				//TODO: Validate the entry
+				$isValid = true;
+				if (!$isValid) {
+					$result['success'] = false;
+					$result['message'] = 'Sorry, that is not a valid entry for the list.';
+				}else {
+					if (empty($sourceId) || empty($source)){
+						$result['success'] = false;
+						$result['message'] = 'Unable to add that to a list, not correctly specified.';
+					}else {
+						$userListEntry->source = $source;
+						$userListEntry->sourceId = $sourceId;
+
+						$existingEntry = false;
+						if ($userListEntry->find(true)) {
+							$existingEntry = true;
+						}
+						$userListEntry->notes = strip_tags($notes);
+						$userListEntry->dateAdded = time();
+						if ($existingEntry) {
+							$userListEntry->update();
+						} else {
+							$userListEntry->insert();
+						}
+
+						$userObject = UserAccount::getActiveUserObj();
+						if ($userObject->lastListUsed != $userList->id) {
+							$userObject->lastListUsed = $userList->id;
+							$userObject->update();
+						}
+						$result['success'] = true;
+						$result['message'] = 'This title was saved to your list successfully.';
+					}
+				}
+			}
+
+		}
+
 		return $result;
 	}
 }

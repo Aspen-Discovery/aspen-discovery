@@ -1,7 +1,6 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
 require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
 
 class SuggestedTitles extends MyAccount
@@ -21,7 +20,6 @@ class SuggestedTitles extends MyAccount
 			foreach($suggestions as $suggestion) {
 				$interface->assign('resultIndex', ++$curIndex);
 				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				/** @var GroupedWorkDriver $recordDriver */
 				$recordDriver = new GroupedWorkDriver($suggestion['titleInfo']);
 				$resourceEntry = $interface->fetch($recordDriver->getSearchResult());
 				$resourceList[] = $resourceEntry;
