@@ -31,6 +31,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
 	// Publicly viewable version
 	protected $publicQuery = null;
+	protected $idFieldName = 'id';
 
 	public function __construct()
 	{
@@ -123,6 +124,107 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 				$html[] = $interface->fetch($record->getSearchResult($this->view));
 			} else {
 				$html[] = "Unable to find record";
+			}
+		}
+		return $html;
+	}
+
+	/**
+	 * Use the record driver to build an array of HTML displays from the search
+	 * results suitable for use while displaying lists
+	 *
+	 * @access  public
+	 * @param int $listId ID of list containing desired tags/notes (or
+	 *                              null to show tags/notes from all user's lists).
+	 * @param bool $allowEdit Should we display edit controls?
+	 * @param array $IDList optional list of IDs to re-order the records by (ie User List sorts)
+	 * @param bool $isMixedUserList Used to correctly number items in a list of mixed content (eg catalog & archive content)
+	 * @return array Array of HTML chunks for individual records.
+	 */
+	public function getResultListHTML($listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false)
+	{
+		global $interface;
+		$html = array();
+		if ($IDList) {
+			//Reorder the documents based on the list of id's
+			$x = 0;
+			foreach ($IDList as $listPosition => $currentId) {
+				// use $IDList as the order guide for the html
+				$current = null; // empty out in case we don't find the matching record
+				reset($this->indexResult['response']['docs']);
+				foreach ($this->indexResult['response']['docs'] as $docIndex => $doc) {
+					if ($doc[$this->idFieldName] == $currentId) {
+						$current = &$this->indexResult['response']['docs'][$docIndex];
+						break;
+					}
+				}
+				if (empty($current)) {
+					continue; // In the case the record wasn't found, move on to the next record
+				} else {
+					if ($isMixedUserList) {
+						$interface->assign('recordIndex', $listPosition + 1);
+						$interface->assign('resultIndex', $listPosition + 1 + (($this->page - 1) * $this->limit));
+					} else {
+						$interface->assign('recordIndex', $x + 1);
+						$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+					}
+					if (!$this->debug) {
+						unset($current['explain']);
+						unset($current['score']);
+					}
+					$record = RecordDriverFactory::initRecordDriver($current);
+					if ($isMixedUserList) {
+						$html[$listPosition] = $interface->fetch($record->getListEntry($listId, $allowEdit));
+					} else {
+						$html[] = $interface->fetch($record->getListEntry($listId, $allowEdit));
+						$x++;
+					}
+				}
+			}
+		} else {
+			//The order we get from solr is just fine
+			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
+				$current = &$this->indexResult['response']['docs'][$x];
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+				if (!$this->debug) {
+					unset($current['explain']);
+					unset($current['score']);
+				}
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+				$record = RecordDriverFactory::initRecordDriver($current);
+				$html[] = $interface->fetch($record->getListEntry($listId, $allowEdit));
+			}
+		}
+		return $html;
+	}
+
+	/**
+	 * Use the record driver to build an array of HTML displays from the search
+	 * results suitable for display on the home page.
+	 *
+	 * @access  public
+	 * @return  array   Array of HTML chunks for individual records.
+	 */
+	public function getBrowseRecordHTML()
+	{
+		global $interface;
+		$html = array();
+		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
+			$current = &$this->indexResult['response']['docs'][$x];
+			$interface->assign('recordIndex', $x + 1);
+			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+			$record = RecordDriverFactory::initRecordDriver($current);
+			if (!($record instanceof AspenError)) {
+				if (method_exists($record, 'getBrowseResult')) {
+					$html['GroupedWork' . $current['id']] = $interface->fetch($record->getBrowseResult());
+				} else {
+					$html['GroupedWork' . $current['id']] = 'Browse Result not available';
+				}
+
+			} else {
+				$html['GroupedWork' . $current['id']] = "Browse Result not available";
 			}
 		}
 		return $html;
@@ -725,6 +827,23 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	function getRecord($id)
 	{
 		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
+	}
+
+	/**
+	 * Retrieves a document specified by the ID.
+	 *
+	 * @param string[] $ids An array of documents to retrieve from Solr
+	 * @access  public
+	 * @return  array              The requested resources
+	 * @throws  object              PEAR Error
+	 */
+	function getRecords($ids)
+	{
+		$recordsRaw = $this->indexEngine->getRecords($ids, $this->getFieldsToReturn());
+		foreach ($recordsRaw as $index => $recordRaw) {
+			$recordsRaw[$index] = $this->getRecordDriverForResult($recordRaw);
+		}
+		return $recordsRaw;
 	}
 
 	function getSearchName()

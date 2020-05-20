@@ -181,7 +181,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true)
+	public function getResultListHTML($listId = null, $allowEdit = true)
 	{
 		global $interface;
 
@@ -190,7 +190,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			$current = &$this->indexResult['response']['docs'][$x];
 			/** @var PersonRecord $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
-			$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+			$html[] = $interface->fetch($record->getListEntry($listId, $allowEdit));
 		}
 		return $html;
 	}
