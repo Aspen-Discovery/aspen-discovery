@@ -19,12 +19,22 @@
     - ILS Code is asking for the location code or codes that your items for this system start with. If you want all items you can use .* - this pulls all items.
     - The checkbox 'Show Expiration Warnings' will warn patrons when their accounts are set to expire soon.
     - The checkbox 'Show While You Wait' allows Aspen to give patrons recommendations on items when placing holds. Reference the section of the manual on 'While You Wait' for more information.
-    - The checkbox 'Allow Linked Accounts' tells Aspen that relationships between patron accounts in your ILS are present and can be allowed in Aspen, as well. For example if your ILS has guarantor and guarantee relationships.
+    - The checkbox 'Allow Linked Accounts' tells Aspen that relationships between patron accounts in your ILS are present and can be allowed in Aspen, as well. For example, if your ILS has guarantor and guarantee relationships.
     - The checkbox 'Show Library Hours Notice on Account Pages' determines whether or not the library hours should show My Account's Checked Out, Holds, and Bookings page.
   - Barcode
     - You can let Aspen know what your minimum and maximum length on patron barcodes.
-    - If you define a Barcode Prefix, patrons can login with their cardnumber without the prefix. This is useful when patrons are more familar with thier unique id instead of the entire cardnumber.
-  - You can also customize language and placement of information for User Profile, Holds, Login, and Self Registration in their respective dropdowns.
+    - If you define a Barcode Prefix, patrons can login with their cardnumber without the prefix. This is useful when patrons are more familiar with their unique id instead of the entire cardnumber.
+  - User Profile
+     - You have the ability to allow profile updates from the patron to their profile   within aspen, address updates from patron, PIN/password reset, alternate library updates and pickup location changes.
+     - This is where you define how you would like patron names to be displayed
+     - You can enable a forgot password link
+  - Holds
+    - This is where you can customize what information is displayed in regard to holds
+  - Login
+    - You can choose to prevent login for users that have expired
+    - 'Login Form Username Label' and 'Login Form Password Label' will display whatever you put within those boxes. This is what borrowers see and are prompted by when they login. 
+  - Self Registration 
+    - In order to enable self registration you can configure patrons options for self registration and the language they see during the self registration process
   - Masquerade Mode, if enabled, allows staff to 'login' with a patrons cardnumber to show searches and information.
 - Fines/e-commerce is where you would set up the connection to your PayPal account. This is where you can update settings to allow certain actions. For example, you can choose between letting the patron choose what fines to pay or forcing them to pay all their fines. You can also set a minimum fine amount here. In order to connect to PayPal, you will need you PayPal ClientID and PayPal Client Secret from PayPal. 
 - If you set up different grouped work settings, you will define what your system uses with the 'Grouped Work Display Settings' dropdown.
@@ -38,4 +48,5 @@
   - In addition to enabling DPLA content in searches, you will need to set up a connection to DP.LA - see the DP.LA section of the manual for more information.
 - Records owned allows you to tell Aspen what items are owned by your system. If you are a one branch system, you can input .* as your location, which tells Aspen all of the locations are your items. If you are a multi-branch system then you will need to define your distinct locations in the locations section under Library Systems. You can find more information on that on the location page of the manual. 
 - Records to Include tells Aspen what records should be included in your searches.
+
 
