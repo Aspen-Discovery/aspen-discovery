@@ -21,7 +21,6 @@ class MyAccount_MyList extends MyAccount {
 
 		//If the list does not exist, create a new My Favorites List
 		if (!$list->find(true)){
-			//TODO: Use the first list?
 			$list = new UserList();
 			$list->user_id = UserAccount::getActiveUserId();
 			$list->public = false;
@@ -37,14 +36,13 @@ class MyAccount_MyList extends MyAccount {
 		}
 		if (!$list->public && $list->user_id != UserAccount::getActiveUserId()) {
 			//Allow the user to view if they are admin
-			if (UserAccount::isLoggedIn() && UserAccount::userHasRole('opacAdmin')){
-				//Allow the user to view
-			}else{
+			if (!UserAccount::isLoggedIn() || !UserAccount::userHasRole('opacAdmin')) {
 				$this->display('invalidList.tpl', 'Invalid List');
 				return;
 			}
 		}
 
+		//List Notes are created as part of bulk add to list
 		if (isset($_SESSION['listNotes'])){
 			$interface->assign('notes', $_SESSION['listNotes']);
 			unset($_SESSION['listNotes']);
@@ -103,11 +101,10 @@ class MyAccount_MyList extends MyAccount {
 			//Redirect back to avoid having the parameters stay in the URL.
 			header("Location: /MyAccount/MyList/{$list->id}");
 			die();
-
 		}
 
 		// Send list to template so title/description can be displayed:
-		$interface->assign('favList', $list);
+		$interface->assign('userList', $list);
 		$interface->assign('listSelected', $list->id);
 
 		// Load the User object for the owner of the list (if necessary):
@@ -126,8 +123,8 @@ class MyAccount_MyList extends MyAccount {
 		// Create a handler for displaying favorites and use it to assign
 		// appropriate template variables:
 		$interface->assign('allowEdit', $userCanEdit);
-		$favList = new FavoriteHandler($list, $listUser, $userCanEdit);
-		$favList->buildListForDisplay();
+		$favoriteHandler = new FavoriteHandler($list, $listUser, $userCanEdit);
+		$favoriteHandler->buildListForDisplay();
 
 		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), 'Search/home-sidebar.tpl', false);
 	}

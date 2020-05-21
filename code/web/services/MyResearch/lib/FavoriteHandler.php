@@ -41,11 +41,9 @@ class FavoriteHandler
 	private $defaultSort = 'dateAdded'; // initial setting (Use a userlist sorting option initially)
 	private $sort;
 	private $isUserListSort; // true for sorting options not done by Solr
-	private $isMixedUserList = false; // Flag for user lists that have both catalog & archive items (and eventually other type of items)
 
 	protected $userListSortOptions = array();
 	protected $solrSortOptions = array('title', 'author'); // user list sorting options handled by Solr engine.
-	protected $islandoraSortOptions = array('fgs_label_s'); // user list sorting options handled by the Islandora Solr engine.
 
 	/**
 	 * Constructor.
@@ -84,26 +82,11 @@ class FavoriteHandler
 		$this->allEntries = $listEntries['listEntries'];
 		$this->idsBySource = $listEntries['idsBySource'];
 
-		// Determine if this UserList mixes catalog & archive Items
-		if (count($this->idsBySource) > 1) {
-			$this->isMixedUserList = true;
-		} else {
-			//Figure out the proper default sort
-			if (!$userSpecifiedTheSort && !isset($list->defaultSort)) {
-				foreach ($this->idsBySource as $source => $sourceIds) {
-					if ($source == 'Islandora') {
-						$this->defaultSort    = $this->islandoraSortOptions[0];
-						$this->sort           = $this->defaultSort;
-						$this->isUserListSort = false;
-					} elseif ($source == 'GroupedWork') {
-						$this->defaultSort    = $this->solrSortOptions[0];
-						$this->sort           = $this->defaultSort;
-						$this->isUserListSort = false;
-					} else {
-						//TODO: This should all work off the grouped work searcher
-					}
-				}
-			}
+		//Figure out the proper default sort
+		if (!$userSpecifiedTheSort && !isset($list->defaultSort)) {
+			$this->defaultSort    = 'title';
+			$this->sort           = $this->defaultSort;
+			$this->isUserListSort = false;
 		}
 	}
 
@@ -115,8 +98,6 @@ class FavoriteHandler
 	public function buildListForDisplay()
 	{
 		global $interface;
-
-		$this->list->description = strip_tags($this->list->description, '<p><b><em><strong><i><br>');
 
 		$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
@@ -135,22 +116,19 @@ class FavoriteHandler
 			'perPage'     => $recordsPerPage
 		);
 
-		$sortOptions = $defaultSortOptions = array();
-
-		/*			Use Cases:
-			Only Catalog items, user sort
-			Only Catalog items, solr sort
-			Only Archive items, user sort
-			Only Archive items, islandora sort
-			Mixed Items, user sort
-		*/
+		$sortOptions = $defaultSortOptions = array(
+			'title' => 'Title',
+			'dateAdded' => 'Date Added',
+			'recentlyAdded' => 'Recently Added',
+			'custom' => 'User Defined'
+		);
 
 		$interface->assign('sortList', $sortOptions);
 		$interface->assign('defaultSortList', $defaultSortOptions);
 		$interface->assign('defaultSort', $this->defaultSort);
 		$interface->assign('userSort', ($this->getSort() == 'custom')); // switch for when users can sort their list
 
-		$resourceList = $this->list->getListRecordsAsHtml($startRecord, $recordsPerPage, $this->allowEdit);
+		$resourceList = $this->list->getListRecords($startRecord, $recordsPerPage, $this->allowEdit, 'html');
 		$interface->assign('resourceList', $resourceList);
 
 		// Set up paging of list contents:
@@ -236,30 +214,6 @@ class FavoriteHandler
 	public function getSort()
 	{
 		return $this->sort;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getCatalogIds()
-	{
-		return $this->catalogIds;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getArchiveIds()
-	{
-		return $this->archiveIds;
-	}
-
-	/**
-	 * @return boolean
-	 */
-	public function isMixedUserList()
-	{
-		return $this->isMixedUserList;
 	}
 
 	/**

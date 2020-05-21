@@ -27,11 +27,21 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 
 	public function getListEntry($listId = null, $allowEdit = true)
 	{
-		return $this->getSearchResult('list');
+		//Use getSearchResult to do the bulk of the assignments
+		$this->getSearchResult('list', false);
+		global $interface;
+		$interface->assign('listEntryNotes', $this->getListNotes());
+		$interface->assign('listEditAllowed', $allowEdit);
+		//Switch template
+		return 'RecordDrivers/OpenArchives/listEntry.tpl';
 	}
 
-	public function getSearchResult($view = 'list')
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true)
 	{
+		if ($view == 'covers') { // Displaying Results as bookcover tiles
+			return $this->getBrowseResult();
+		}
+
 		global $interface;
 
 		$interface->assign('id', $this->getId());
@@ -55,9 +65,11 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		}
 
 		//Check to see if there are lists the record is on
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		$userLists = UserList::getUserListsForRecord('OpenArchives', $this->getId());
-		$interface->assign('userLists', $userLists);
+		if ($showListsAppearingOn) {
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$appearsOnLists = UserList::getUserListsForRecord('OpenArchives', $this->getId());
+			$interface->assign('appearsOnLists', $appearsOnLists);
+		}
 
 		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php';
 		$openArchivesUsage = new OpenArchivesRecordUsage();

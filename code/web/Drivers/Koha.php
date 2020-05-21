@@ -2158,7 +2158,7 @@ class Koha extends AbstractIlsDriver
 
 						if (!$resourceOnList) {
 							$listEntry = new UserListEntry();
-							$listEntry->source = 'grouped_work';
+							$listEntry->source = 'GroupedWork';
 							$listEntry->sourceId = $groupedWork->permanent_id;
 							$listEntry->listId = $newList->id;
 							$listEntry->notes = '';

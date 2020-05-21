@@ -413,7 +413,7 @@ class GroupedWork_AJAX extends JSON_Action
 		return array(
 			'title' => "<a href='$url'>{$recordDriver->getTitle()}</a>",
 			'modalBody' => $modalBody,
-			'modalButtons' => "<button onclick=\"return AspenDiscovery.Account.showSaveToListForm(this, 'grouped_work', '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
+			'modalButtons' => "<button onclick=\"return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
 				."<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate("More Info") . "</button></a>"
 		);
 	}

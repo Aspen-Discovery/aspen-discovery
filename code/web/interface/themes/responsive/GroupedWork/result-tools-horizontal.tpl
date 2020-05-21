@@ -18,7 +18,7 @@
 				{/if}
 				{if $showFavorites == 1}
 					<div class="btn-group btn-group-sm">
-						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'grouped_work', {$recordDriver->getPermanentId()|escape}');" class="btn btn-sm ">{translate text='Add to list'}</button>
+						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm ">{translate text='Add to list'}</button>
 					</div>
 				{/if}
 				{if $loggedIn && $module == 'Search' && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}

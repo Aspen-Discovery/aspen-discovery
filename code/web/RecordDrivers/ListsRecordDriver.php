@@ -42,7 +42,7 @@ class ListsRecordDriver extends IndexRecordDriver
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list'){
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true){
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -67,10 +67,12 @@ class ListsRecordDriver extends IndexRecordDriver
 		}
 		$interface->assign('summDateUpdated', $this->getListObject()->dateUpdated);
 
-		//Check to see if there are lists the record is on
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		$userLists = UserList::getUserListsForRecord('Lists', $this->getId());
-		$interface->assign('userLists', $userLists);
+		if ($showListsAppearingOn) {
+			//Check to see if there are lists the record is on
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$appearsOnLists = UserList::getUserListsForRecord('Lists', $this->getId());
+			$interface->assign('appearsOnLists', $appearsOnLists);
+		}
 
 		// Obtain and assign snippet (highlighting) information:
 		$snippets = $this->getHighlightedSnippets();
@@ -160,7 +162,14 @@ class ListsRecordDriver extends IndexRecordDriver
 	 */
 	public function getListEntry($listId = null, $allowEdit = true)
 	{
-		return $this->getSearchResult('list');
+		//Use getSearchResult to do the bulk of the assignments
+		$this->getSearchResult('list', false);
+
+		global $interface;
+		$interface->assign('listEntryNotes', $this->getListNotes());
+		$interface->assign('listEditAllowed', $allowEdit);
+		//Switch template
+		return 'RecordDrivers/List/listEntry.tpl';
 	}
 
 	public function getModule()

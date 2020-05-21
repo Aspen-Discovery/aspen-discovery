@@ -40,10 +40,10 @@ class UserList extends DataObject
 	// Used by FavoriteHandler as well//
 	protected $__userListSortOptions = array(
 		// URL_value => SQL code for Order BY clause
+		'title' => 'title ASC',
 		'dateAdded' => 'dateAdded ASC',
 		'recentlyAdded' => 'dateAdded DESC',
 		'custom' => 'weight ASC',  // this puts items with no set weight towards the end of the list
-		//								'custom' => 'weight IS NULL, weight ASC',  // this puts items with no set weight towards the end of the list
 	);
 
 
@@ -177,7 +177,8 @@ class UserList extends DataObject
 			$idsBySource[$listEntry->source][] = $listEntry->sourceId;
 			$listEntries[] = [
 				'source' => $listEntry->source,
-				'sourceId' => $listEntry->sourceId
+				'sourceId' => $listEntry->sourceId,
+				'notes' => $listEntry->notes
 			];
 		}
 		$listEntry->__destruct();
@@ -272,7 +273,7 @@ class UserList extends DataObject
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$listEntry = new UserListEntry();
-			$listEntry->source = 'grouped_work';
+			$listEntry->source = 'GroupedWork';
 			$listEntry->sourceId = $workToRemove;
 			$listEntry->listId = $this->id;
 			$listEntry->delete(true);
@@ -282,6 +283,14 @@ class UserList extends DataObject
 
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
+	}
+
+	private $_cleanDescription = null;
+	function getCleanDescription(){
+		if ($this->_cleanDescription == null){
+			$this->_cleanDescription = strip_tags($this->description, '<p><b><em><strong><i><br>');;
+		}
+		return $this->_cleanDescription;
 	}
 
 	/**
@@ -299,17 +308,21 @@ class UserList extends DataObject
 	 * @param int $start position of first list item to fetch (1 based)
 	 * @param int $numItems Number of items to fetch for this result
 	 * @param boolean $allowEdit whether or not the list should be editable
-	 * @param string $sort How the list should be sorted
+	 * @param string $format The format of the records, valid values are html, summary, recordDrivers
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getListRecordsAsHtml($start, $numItems, $allowEdit) {
+	public function getListRecords($start, $numItems, $allowEdit, $format) {
 		$sort = in_array($this->defaultSort, array_keys($this->__userListSortOptions)) ? $this->__userListSortOptions[$this->defaultSort] : null;
 
 		//Get all entries for the list
 		$listEntryInfo = $this->getListEntries($sort);
 
 		//Trim to the number of records we want to return
-		$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start - 1, $numItems);
+		if ($numItems > 0){
+			$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start - 1, $numItems);
+		}else{
+			$filteredListEntries = $listEntryInfo['listEntries'];
+		}
 
 		$filteredIdsBySource = [];
 		foreach ($filteredListEntries as $listItemEntry) {
@@ -319,19 +332,27 @@ class UserList extends DataObject
 			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
 		}
 
-		//Load catalog items
-		$listResultsHtml = [];
+		//Load the actual items from each source
+		$listResults = [];
 		foreach ($filteredIdsBySource as $sourceType => $sourceIds){
 			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
 			if ($searchObject === false){
 				AspenError::raiseError("Unknown List Entry Source $sourceType");
 			}else{
 				$records = $searchObject->getRecords($sourceIds);
-				$listResultsHtml = array_merge($listResultsHtml, $this->getResultListHTML($records, $filteredListEntries, $allowEdit));
+				if ($format == 'html') {
+					$listResults = array_merge($listResults, $this->getResultListHTML($records, $filteredListEntries, $allowEdit));
+				}elseif ($format == 'summary') {
+					$listResults = array_merge($listResults, $this->getResultListSummary($records, $filteredListEntries));
+				}elseif ($format == 'recordDrivers') {
+					$listResults = array_merge($listResults, $this->getResultListRecordDrivers($records, $filteredListEntries));
+				}else{
+					AspenError::raiseError("Unknown display format $format in getListRecords");
+				}
 			}
 		}
 
-		return $listResultsHtml;
+		return $listResults;
 	}
 
 	/**
@@ -357,20 +378,63 @@ class UserList extends DataObject
 			reset($records);
 			foreach ($records as $docIndex => $recordDriver) {
 				if ($recordDriver->getId() == $currentId['sourceId']) {
+					$recordDriver->setListNotes($currentId['notes']);
 					$current = $recordDriver;
 					break;
 				}
 			}
-			if (empty($current)) {
-				continue; // In the case the record wasn't found, move on to the next record
-			} else {
+			if (!empty($current)) {
 				$interface->assign('recordIndex', $listPosition + 1);
 				$interface->assign('resultIndex', $listPosition + 1 + (($page - 1) * $numRecordsPerPage));
-				$interface->assign('recordDriver', $recordDriver);
-				$html[$listPosition] = $interface->fetch($recordDriver->getListEntry($this->id, $allowEdit));
+				$interface->assign('recordDriver', $current);
+				$html[$listPosition] = $interface->fetch($current->getListEntry($this->id, $allowEdit));
 			}
 		}
 		return $html;
+	}
+
+	private function getResultListSummary($records, $allListEntryIds)
+	{
+		$results = array();
+		//Reorder the documents based on the list of id's
+		foreach ($allListEntryIds as $listPosition => $currentId) {
+			// use $IDList as the order guide for the html
+			$current = null; // empty out in case we don't find the matching record
+			reset($records);
+			foreach ($records as $docIndex => $recordDriver) {
+				if ($recordDriver->getId() == $currentId['sourceId']) {
+					$recordDriver->setListNotes($currentId['notes']);
+					$current = $recordDriver;
+					break;
+				}
+			}
+			if (!empty($current)) {
+				$results[$listPosition] = $current->getSummaryInformation();
+			}
+		}
+		return $results;
+	}
+
+	private function getResultListRecordDrivers($records, $allListEntryIds)
+	{
+		$results = array();
+		//Reorder the documents based on the list of id's
+		foreach ($allListEntryIds as $listPosition => $currentId) {
+			// use $IDList as the order guide for the html
+			$current = null; // empty out in case we don't find the matching record
+			reset($records);
+			foreach ($records as $docIndex => $recordDriver) {
+				if ($recordDriver->getId() == $currentId['sourceId']) {
+					$recordDriver->setListNotes($currentId['notes']);
+					$current = $recordDriver;
+					break;
+				}
+			}
+			if (!empty($current)) {
+				$results[$listPosition] = $current;
+			}
+		}
+		return $results;
 	}
 
 	/**

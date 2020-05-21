@@ -1159,19 +1159,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$timer->logTime('Finished Loading Series');
 
 		//Get information from list entry
-		if ($listId) {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-			$listEntry = new UserListEntry();
-			$listEntry->source = 'GroupedWork';
-			$listEntry->sourceId = $this->getUniqueID();
-			$listEntry->listId = $listId;
-			if ($listEntry->find(true)) {
-				$interface->assign('listEntryNotes', $listEntry->notes);
-			} else {
-				$interface->assign('listEntryNotes', '');
-			}
-			$interface->assign('listEditAllowed', $allowEdit);
-		}
+		global $interface;
+		$interface->assign('listEntryNotes', $this->getListNotes());
+		$interface->assign('listEditAllowed', $allowEdit);
+
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
@@ -1643,8 +1634,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		//Check to see if there are lists the record is on
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		$userLists = UserList::getUserListsForRecord('GroupedWork', $this->getPermanentId());
-		$interface->assign('userLists', $userLists);
+		$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->getPermanentId());
+		$interface->assign('appearsOnLists', $appearsOnLists);
 
 		$summPublisher = null;
 		$summPubDate = null;

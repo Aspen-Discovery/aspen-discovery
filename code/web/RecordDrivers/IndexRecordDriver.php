@@ -197,7 +197,7 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * @access  protected
 	 * @return  string
 	 */
-	protected function getPrimaryAuthor()
+	public function getPrimaryAuthor()
 	{
 		return isset($this->fields['author_display']) ? $this->fields['author_display'] : '';
 	}

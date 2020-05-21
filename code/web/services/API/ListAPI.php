@@ -268,31 +268,7 @@ class ListAPI extends Action
 				}
 			}
 
-			require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
-			$user = UserAccount::getLoggedInUser();
-			$favoriteHandler = new FavoriteHandler($list, $user, false);
-			$isMixedContentList = $favoriteHandler->isMixedUserList();
-			$orderedListOfIds = $isMixedContentList ? $favoriteHandler->getFavorites() : array();
-			// Use this array to combined Mixed Lists Back into their list-defined order
-
-			$catalogItems = $archiveItems = array();
-			$catalogIds = $favoriteHandler->getCatalogIds();
-			$archiveIds = $favoriteHandler->getArchiveIds();
-			if (count($catalogIds) > 0) {
-				$catalogItems = $this->loadTitleInformationForIds($catalogIds, $numTitlesToShow, $orderedListOfIds);
-			}
-			if (count($archiveIds) > 0) {
-				$archiveItems = $this->loadArchiveInformationForIds($archiveIds, $numTitlesToShow, $orderedListOfIds);
-			}
-			if ($isMixedContentList) {
-				$titles = $catalogItems + $archiveItems;
-				ksort($titles, SORT_NUMERIC);
-				$titles = array_slice($titles, 0, $numTitlesToShow);
-
-			} else {
-				$titles = $catalogItems + $archiveItems; // One of these should always be empty, but add them together just in case
-			}
-
+			$titles = $list->getListRecords(0, $numTitlesToShow, false, 'summary');
 
 			return array('success' => true, 'listName' => $list->title, 'listDescription' => $list->description, 'titles' => $titles);
 		} else {

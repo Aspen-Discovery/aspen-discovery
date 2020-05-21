@@ -1455,12 +1455,15 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		showCreateListForm: function(id){
+		showCreateListForm: function(source, sourceId){
 			if (Globals.loggedIn){
 				let url = Globals.path + "/MyAccount/AJAX";
 				let params = {method:"getCreateListForm"};
-				if (id !== undefined){
-					params.recordId= id;
+				if (source !== undefined){
+					params.source= source;
+				}
+				if (sourceId !== undefined){
+					params.sourceId= sourceId;
 				}
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function(data){

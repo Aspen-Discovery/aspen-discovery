@@ -138,10 +138,9 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 *                              null to show tags/notes from all user's lists).
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @param array $IDList optional list of IDs to re-order the records by (ie User List sorts)
-	 * @param bool $isMixedUserList Used to correctly number items in a list of mixed content (eg catalog & archive content)
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	public function getResultListHTML($listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false)
+	public function getResultListHTML($listId = null, $allowEdit = true, $IDList = null)
 	{
 		global $interface;
 		$html = array();
@@ -161,24 +160,14 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 				if (empty($current)) {
 					continue; // In the case the record wasn't found, move on to the next record
 				} else {
-					if ($isMixedUserList) {
-						$interface->assign('recordIndex', $listPosition + 1);
-						$interface->assign('resultIndex', $listPosition + 1 + (($this->page - 1) * $this->limit));
-					} else {
-						$interface->assign('recordIndex', $x + 1);
-						$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-					}
+					$interface->assign('recordIndex', $listPosition + 1);
+					$interface->assign('resultIndex', $listPosition + 1 + (($this->page - 1) * $this->limit));
 					if (!$this->debug) {
 						unset($current['explain']);
 						unset($current['score']);
 					}
 					$record = RecordDriverFactory::initRecordDriver($current);
-					if ($isMixedUserList) {
-						$html[$listPosition] = $interface->fetch($record->getListEntry($listId, $allowEdit));
-					} else {
-						$html[] = $interface->fetch($record->getListEntry($listId, $allowEdit));
-						$x++;
-					}
+					$html[$listPosition] = $interface->fetch($record->getListEntry($listId, $allowEdit));
 				}
 			}
 		} else {
