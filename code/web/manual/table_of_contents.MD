@@ -9,8 +9,8 @@
   - Configuration Templates
     - Themes
     - Layout Settings
-    - Grouped Work Display Settings
-      - Grouped Work Facets
+    - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
+      - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
       - Creating Grouped Works
       - Grouped Work Pages
       - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
@@ -20,15 +20,15 @@
   - Primary Configuration
     - Languages
       - Translations
-    - Library Systems
-      - Locations 
-      - IP Addresses
+    - [Library Systems](/Admin/HelpManual?page=Library-Systems)
+      - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
+      - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
     - Block Patron Account Linking
     - Patron Types
     - Account Profiles
   - Enrichment
-    - Accelerated Reader
-    - Content Cafe
+    - [Accelerated Reader](/Admin/HelpManual?page=Accelerated-Reader)
+    - [Content Cafe](/Admin/HelpManual?page=Content-Cafe)
     - DP.LA
     - Facebook
     - GoodReads
