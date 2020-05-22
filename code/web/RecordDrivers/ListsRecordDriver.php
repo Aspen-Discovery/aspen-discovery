@@ -90,10 +90,8 @@ class ListsRecordDriver extends IndexRecordDriver
 		global $interface;
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
-		$shortId = substr($id, 4);  // Trim the list prefix for the short id
-//		$interface->assign('summShortId', $shortId);
 
-		$url ='/MyAccount/MyList/'.$shortId;
+		$url ='/MyAccount/MyList/'.$id;
 
 		$interface->assign('summUrl', $url);
 		$interface->assign('summTitle', $this->getTitle());
