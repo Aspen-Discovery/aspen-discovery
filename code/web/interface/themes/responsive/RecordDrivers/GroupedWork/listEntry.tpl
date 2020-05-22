@@ -1,5 +1,5 @@
 {strip}
-	<div id="groupedRecord{$summId|escape}" class="resultsList" data-order="{$resultIndex}">
+	<div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
 		<a name="record{$summId|escape:"url"}"></a>
 		<div class="row">
 		{if $showCovers}

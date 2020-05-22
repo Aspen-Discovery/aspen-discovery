@@ -38,7 +38,7 @@ class UserList extends DataObject
 	}
 
 	// Used by FavoriteHandler as well//
-	protected $__userListSortOptions = array(
+	private static $__userListSortOptions = array(
 		// URL_value => SQL code for Order BY clause
 		'title' => 'title ASC',
 		'dateAdded' => 'dateAdded ASC',
@@ -147,13 +147,12 @@ class UserList extends DataObject
 	 * @return array      of list entries
 	 */
 	function getListEntries($sort = null){
-		//TODO: implement the sort here
-
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
 
-		if (!empty($sort)) $listEntry->orderBy($sort);
+		//Sort the list appropriately
+		if (!empty($sort)) $listEntry->orderBy(UserList::getSortOptions()[$sort]);
 
 		// These conditions retrieve list items with a valid groupedWorkId or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
@@ -313,10 +312,8 @@ class UserList extends DataObject
 	 * @return array     Array of HTML to display to the user
 	 */
 	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null) {
-		$sort = in_array($this->defaultSort, array_keys($this->__userListSortOptions)) ? $this->__userListSortOptions[$this->defaultSort] : null;
-
 		//Get all entries for the list
-		$listEntryInfo = $this->getListEntries($sort);
+		$listEntryInfo = $this->getListEntries($this->defaultSort);
 
 		//Trim to the number of records we want to return
 		if ($numItems > 0){
@@ -342,19 +339,20 @@ class UserList extends DataObject
 			}else{
 				$records = $searchObject->getRecords($sourceIds);
 				if ($format == 'html') {
-					$listResults = array_merge($listResults, $this->getResultListHTML($records, $filteredListEntries, $allowEdit, $start));
+					$listResults = $listResults + $this->getResultListHTML($records, $filteredListEntries, $allowEdit, $start);
 				}elseif ($format == 'summary') {
-					$listResults = array_merge($listResults, $this->getResultListSummary($records, $filteredListEntries));
+					$listResults = $listResults + $this->getResultListSummary($records, $filteredListEntries);
 				}elseif ($format == 'recordDrivers') {
-					$listResults = array_merge($listResults, $this->getResultListRecordDrivers($records, $filteredListEntries));
+					$listResults = $listResults + $this->getResultListRecordDrivers($records, $filteredListEntries);
 				}elseif ($format == 'citations') {
-					$listResults = array_merge($listResults, $this->getResultListCitations($records, $filteredListEntries, $citationFormat));
+					$listResults = $listResults + $this->getResultListCitations($records, $filteredListEntries, $citationFormat);
 				}else{
 					AspenError::raiseError("Unknown display format $format in getListRecords");
 				}
 			}
 		}
 
+		ksort($listResults);
 		return $listResults;
 	}
 
@@ -543,9 +541,9 @@ class UserList extends DataObject
 	/**
 	 * @return array
 	 */
-	public function getUserListSortOptions()
+	public static function getSortOptions()
 	{
-		return $this->__userListSortOptions;
+		return UserList::$__userListSortOptions;
 	}
 
 	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight)

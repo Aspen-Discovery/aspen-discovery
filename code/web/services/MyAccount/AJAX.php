@@ -980,23 +980,17 @@ class MyAccount_AJAX extends JSON_Action
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 				$success = true; // assume success now
 				foreach ($updates as $update) {
-					$update['id'] = str_replace('_', ':', $update['id']); // Rebuilt Islandora PIDs
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $listId;
-					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $update['id'])) {
-						$success = false;
-					} else {
-						$userListEntry->source = 'GroupedWork';
-						$userListEntry->sourceId = $update['id'];
-						if ($userListEntry->find(true) && ctype_digit($update['newOrder'])) {
-							// check entry exists already and the new weight is a number
-							$userListEntry->weight = $update['newOrder'];
-							if (!$userListEntry->update()) {
-								$success = false;
-							}
-						} else {
+					$userListEntry->id = $update['id'];
+					if ($userListEntry->find(true) && ctype_digit($update['newOrder'])) {
+						// check entry exists already and the new weight is a number
+						$userListEntry->weight = $update['newOrder'];
+						if (!$userListEntry->update()) {
 							$success = false;
 						}
+					} else {
+						$success = false;
 					}
 				}
 			}

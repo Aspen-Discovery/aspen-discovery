@@ -67,7 +67,6 @@ class MyAccount_MyList extends MyAccount {
 				}elseif ($actionToPerform == 'saveList'){
 					$list->title = $_REQUEST['newTitle'];
 					$list->description = strip_tags($_REQUEST['newDescription']);
-					$list->defaultSort = $_REQUEST['defaultSort'];
 					$list->update();
 				}elseif ($actionToPerform == 'deleteList'){
 					$list->delete();
@@ -123,8 +122,26 @@ class MyAccount_MyList extends MyAccount {
 		// Create a handler for displaying favorites and use it to assign
 		// appropriate template variables:
 		$interface->assign('allowEdit', $userCanEdit);
-		$favoriteHandler = new FavoriteHandler($list, $listUser, $userCanEdit);
-		$favoriteHandler->buildListForDisplay();
+
+		//Determine the sort options
+		$activeSort = $list->defaultSort;
+		if (isset($_REQUEST['sort']) && array_key_exists($_REQUEST['sort'], UserList::getSortOptions())){
+			$activeSort = $_REQUEST['sort'];
+		}
+		if (empty($activeSort)) {
+			$activeSort = 'dateAdded';
+		}
+		//Set the default sort (for people other than the list editor to match what the editor does)
+		if ($userCanEdit && $activeSort != $list->defaultSort){
+			$list->defaultSort = $activeSort;
+			$list->update();
+		}
+
+		$listEntries = $list->getListEntries($activeSort);
+		$allListEntries = $listEntries['listEntries'];
+
+		$favoriteHandler = new FavoriteHandler();
+		$favoriteHandler->buildListForDisplay($list, $allListEntries, $userCanEdit, $activeSort);
 
 		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), 'Search/home-sidebar.tpl', false);
 	}

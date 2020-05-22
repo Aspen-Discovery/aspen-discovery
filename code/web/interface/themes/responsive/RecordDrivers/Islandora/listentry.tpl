@@ -1,5 +1,5 @@
 {strip}
-	<div id="archive{$jquerySafeId|escape}" class="resultsList" data-order="{$resultIndex}">
+	<div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
 		{* Because colons give css & jquery trouble the Ids from Islandora have : replaced with _ *}
 		<a name="record{$summId|escape:"url"}"></a>{* TODO: remove colons from these Ids as well *}
 		<div class="row">

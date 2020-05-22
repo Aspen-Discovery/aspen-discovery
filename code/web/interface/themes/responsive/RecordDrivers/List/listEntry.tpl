@@ -1,5 +1,5 @@
 {strip}
-<div id="record{$summId|escape}" class="resultsList" data-order="{$resultIndex}">
+<div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
 	<div class="row">
 		{if $showCovers}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">

@@ -30,72 +30,12 @@
  */
 class FavoriteHandler
 {
-    /** @var UserList */
-	private $list;
-	/** @var User */
-	private $user;
-	private $listId;
-	private $allowEdit;
-	private $allEntries;
-	private $idsBySource;
-	private $defaultSort = 'dateAdded'; // initial setting (Use a userlist sorting option initially)
-	private $sort;
-	private $isUserListSort; // true for sorting options not done by Solr
-
-	protected $userListSortOptions = array();
-	protected $solrSortOptions = array('title', 'author'); // user list sorting options handled by Solr engine.
-
-	/**
-	 * Constructor.
-	 *
-	 * @access  public
-	 * @param   UserList   $list        User List Object.
-	 * @param   User       $user        User object owning tag/note metadata.
-	 * @param   bool       $allowEdit   Should we display edit controls?
-	 */
-	public function __construct($list, $user, $allowEdit = true)
-	{
-		$this->list                = $list;
-		$this->user                = $user;
-		$this->listId              = $list->id;
-		$this->allowEdit           = $allowEdit;
-		$this->userListSortOptions = $list->getUserListSortOptions(); // Keep the UserList Sort options in the UserList class since it used there as well.
-
-		// Determine Sorting Option //
-		if (isset($list->defaultSort)){
-			$this->defaultSort = $list->defaultSort; // when list as a sort setting use that
-		}
-		if (isset($_REQUEST['sort']) && (in_array($_REQUEST['sort'], $this->solrSortOptions) || in_array($_REQUEST['sort'], array_keys($this->userListSortOptions))) ) {
-			// if URL variable is a valid sort option, set the list's sort setting
-			$this->sort = $_REQUEST['sort'];
-			$userSpecifiedTheSort = true;
-		} else {
-			$this->sort = $this->defaultSort;
-			$userSpecifiedTheSort = false;
-		}
-
-		$this->isUserListSort = in_array($this->sort, array_keys($this->userListSortOptions));
-
-		// Get the Favorites //
-		$userListSort = $this->isUserListSort ? $this->userListSortOptions[$this->sort] : null;
-		$listEntries = $list->getListEntries($userListSort); // when using a user list sorting, rather than solr sorting, get results in order
-		$this->allEntries = $listEntries['listEntries'];
-		$this->idsBySource = $listEntries['idsBySource'];
-
-		//Figure out the proper default sort
-		if (!$userSpecifiedTheSort && !isset($list->defaultSort)) {
-			$this->defaultSort    = 'title';
-			$this->sort           = $this->defaultSort;
-			$this->isUserListSort = false;
-		}
-	}
-
 	/**
 	 * Assign all necessary values to the interface.
 	 *
 	 * @access  public
 	 */
-	public function buildListForDisplay()
+	public function buildListForDisplay(UserList $list, $allEntries, $allowEdit = false, $sortName = 'dateAdded')
 	{
 		global $interface;
 
@@ -106,29 +46,56 @@ class FavoriteHandler
 			$startRecord = 0;
 		}
 		$endRecord = $page * $recordsPerPage;
-		if ($endRecord > count($this->allEntries)){
-			$endRecord = count($this->allEntries);
+		if ($endRecord > count($allEntries)){
+			$endRecord = count($allEntries);
 		}
 		$pageInfo = array(
-			'resultTotal' => count($this->allEntries),
+			'resultTotal' => count($allEntries),
 			'startRecord' => $startRecord,
 			'endRecord'   => $endRecord,
 			'perPage'     => $recordsPerPage
 		);
 
-		$sortOptions = $defaultSortOptions = array(
-			'title' => 'Title',
-			'dateAdded' => 'Date Added',
-			'recentlyAdded' => 'Recently Added',
-			'custom' => 'User Defined'
+		$queryParams = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
+		if ($queryParams == null){
+			$queryParams = [];
+		}else{
+			$queryParamsTmp = explode("&", $queryParams);
+			$queryParams = [];
+			foreach ($queryParamsTmp as $param) {
+				list($name, $value) = explode("=", $param);
+				if ($name != 'sort'){
+					$queryParams[$name] = $value;
+				}
+			}
+		}
+		$sortOptions = array(
+			'title' => [
+				'desc' => 'Title',
+				'selected' => $sortName == 'title',
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'title']))
+			],
+			'dateAdded' => [
+				'desc' => 'Date Added',
+				'selected' => $sortName == 'dateAdded',
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'dateAdded']))
+			],
+			'recentlyAdded' => [
+				'desc' => 'Recently Added',
+				'selected' => $sortName == 'recentlyAdded',
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'recentlyAdded']))
+			],
+			'custom' => [
+				'desc' => 'User Defined',
+				'selected' => $sortName == 'custom',
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'custom']))
+			],
 		);
 
 		$interface->assign('sortList', $sortOptions);
-		$interface->assign('defaultSortList', $defaultSortOptions);
-		$interface->assign('defaultSort', $this->defaultSort);
-		$interface->assign('userSort', ($this->getSort() == 'custom')); // switch for when users can sort their list
+		$interface->assign('userSort', ($sortName == 'custom')); // switch for when users can sort their list
 
-		$resourceList = $this->list->getListRecords($startRecord, $recordsPerPage, $this->allowEdit, 'html');
+		$resourceList = $list->getListRecords($startRecord, $recordsPerPage, $allowEdit, 'html');
 		$interface->assign('resourceList', $resourceList);
 
 		// Set up paging of list contents:
@@ -155,72 +122,4 @@ class FavoriteHandler
 
 	}
 
-	function getTitles($numListEntries){
-		// Currently only used by AJAX call for emailing lists
-
-		$catalogRecordSet = $archiveRecordSet = array();
-		// Retrieve records from index (currently, only Solr IDs supported):
-		if (count($this->catalogIds) > 0) {
-			// Initialise from the current search globals
-			/** @var SearchObject_GroupedWorkSearcher $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init();
-			// these are added for emailing list  plb 10-8-2014
-			$searchObject->disableScoping(); // get title data regardless of scope
-			$searchObject->setLimit($numListEntries); // only get results for each item
-
-			$searchObject->setQueryIDs($this->catalogIds);
-			$searchObject->processSearch();
-			$catalogRecordSet = $searchObject->getResultRecordSet();
-			//TODO: user list sorting here
-		}
-		if (count($this->archiveIds) > 0) {
-			// Initialise from the current search globals
-			/** @var SearchObject_IslandoraSearcher $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
-			$archiveSearchObject->init();
-			$archiveSearchObject->setPrimarySearch(true);
-			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
-			$archiveSearchObject->setQueryIDs($this->archiveIds);
-			$archiveSearchObject->processSearch();
-			$archiveRecordSet = $archiveSearchObject->getResultRecordSet();
-
-
-		}
-		return array_merge($catalogRecordSet, $archiveRecordSet);
-	}
-
-	function getCitations($citationFormat){
-		// Initialise from the current search globals
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-
-		// Retrieve records from index (currently, only Solr IDs supported):
-		if (count($this->allEntries) > 0) {
-			$searchObject->setLimit(count($this->allEntries));
-			$searchObject->setQueryIDs($this->allEntries);
-			$searchObject->processSearch();
-			return $searchObject->getCitations($citationFormat);
-		}else{
-			return array();
-		}
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getSort()
-	{
-		return $this->sort;
-	}
-
-	/**
-	 * @return UserListEntry[]
-	 */
-	public function getFavorites()
-	{
-		return $this->allEntries;
-	}
 }

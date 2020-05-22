@@ -18,22 +18,12 @@
 				{if $allowEdit}
 					<div id="listEditControls" style="display:none" class="collapse">
 						<div class="form-group">
-							<label for="listTitleEdit" class="control-label">Title: </label>
+							<label for="listTitleEdit" class="control-label">{translate text="Title"}</label>
 							<input type="text" id="listTitleEdit" name="newTitle" value="{$userList->title|escape:"html"}" maxlength="255" size="80" class="form-control">
 						</div>
 						<div class="form-group">
-							<label for="listDescriptionEdit" class="control-label">Description: </label>&nbsp;
+							<label for="listDescriptionEdit" class="control-label">{translate text="Description"}"</label>&nbsp;
 							<textarea name="newDescription" id="listDescriptionEdit" rows="3" cols="80" class="form-control">{$userList->getCleanDescription()|escape:"html"}</textarea>
-						</div>
-						<div class="form-group">
-							<label for="defaultSort" class="control-label">{translate text='Default Sort'} </label>
-							<select id="defaultSort" name="defaultSort" class="form-control">
-								{foreach from=$defaultSortList item=sortValue key=sortLabel}
-									<option value="{$sortLabel}"{if $sortLabel == $defaultSort} selected="selected"{/if}>
-										{translate text=$sortValue}
-									</option>
-								{/foreach}
-							</select>
 						</div>
 					</div>
 				{/if}
@@ -95,7 +85,7 @@
 		{if $resourceList}
 			<form class="navbar form-inline">
 				<label for="pageSize" class="control-label">{translate text='Records Per Page'}</label>&nbsp;
-				<select id="pageSize" class="pageSize form-control{* input-sm*}" onchange="AspenDiscovery.changePageSize()">
+				<select id="pageSize" class="pageSize form-control-sm" onchange="AspenDiscovery.changePageSize()">
 					<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
 					<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
 					<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
@@ -135,35 +125,33 @@
 							update: function (e, ui){
 								let updates = [];
 								let firstItemOnPage = {/literal}{$recordStart}{literal};
-								$('#UserList>div>div').each(function(currentOrder){
-									let id = this.id.replace('groupedRecord','') /* Grouped IDs for catalog items */
-																	.replace('archive',''),      /*modified Islandora PIDs for archive items*/
-													originalOrder = $(this).data('order'),
-													change = currentOrder+firstItemOnPage-originalOrder,
-													newOrder = originalOrder+change;
-									if (change != 0) updates.push({'id':id, 'newOrder':newOrder});
+								$('#UserList .listEntry').each(function(currentOrder){
+									let id = $(this).data('list_entry_id');
+									let originalOrder = $(this).data('order');
+									let change = currentOrder+firstItemOnPage-originalOrder;
+									let newOrder = originalOrder+change;
+									if (change !== 0) updates.push({'id':id, 'newOrder':newOrder});
 								});
 								$.getJSON('/MyAccount/AJAX',
-												{
-													method:'setListEntryPositions'
-													,updates:updates
-													,listID:{/literal}{$userList->id}{literal}
+									{
+										method:'setListEntryPositions'
+										,updates:updates
+										,listID:{/literal}{$userList->id}{literal}
+									}
+									, function(response){
+										if (response.success) {
+											updates.forEach(function(e){
+												let listEntry = $('#listEntry'+ e.id);
+												if (listEntry.length > 0) {
+													listEntry
+														.data('order', e.newOrder)
+														.find('span.result-index')
+														.text(e.newOrder + ')');
 												}
-												, function(response){
-													if (response.success) {
-														updates.forEach(function(e){
-															if ($('#groupedRecord'+ e.id).length > 0) {
-																$('#groupedRecord' + e.id).data('order', e.newOrder)
-																				.find('span.result-index').text(e.newOrder + ')');
-															/*$('#weight_'+ e.id).val(e.newOrder);*/
-															} else if ($('#archive'+ e.id).length > 0) {
-																$('#archive' + e.id).data('order', e.newOrder)
-																				.find('span.result-index').text(e.newOrder + ')');
-															/*$('#weight_'+ e.id).val(e.newOrder);*/
-															}
-														})
-													}
-												})
+											})
+										}
+									}
+								);
 							}
 						});
 					});
