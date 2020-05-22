@@ -611,19 +611,21 @@ AspenDiscovery.Account = (function(){
 		 * Called from createListForm.tpl
 		 * @returns {boolean}
 		 */
-		addList: function(recordId){
+		addList: function(){
 			let form = $("#addListForm");
-			recordId = recordId === undefined ? form.find("input[name=recordId]").val() : recordId;
-			let		isPublic = form.find("#public").prop("checked"),
-					title = form.find("input[name=title]").val(),
-					desc = $("#listDesc").val(),
-					url = Globals.path + "/MyAccount/AJAX";
+			let source = form.find("input[name=source]").val();
+			let sourceId = form.find("input[name=sourceId]").val();
+			let isPublic = form.find("#public").prop("checked");
+			let title = form.find("input[name=title]").val();
+			let desc = $("#listDesc").val();
+			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				'method':'addList',
 				title: title,
 				public: isPublic,
 				desc: desc,
-				recordId: recordId
+				source: source,
+				sourceId: sourceId
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params,function (data) {

@@ -29,9 +29,6 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 	{
 		//Use getSearchResult to do the bulk of the assignments
 		$this->getSearchResult('list', false);
-		global $interface;
-		$interface->assign('listEntryNotes', $this->getListNotes());
-		$interface->assign('listEditAllowed', $allowEdit);
 		//Switch template
 		return 'RecordDrivers/OpenArchives/listEntry.tpl';
 	}

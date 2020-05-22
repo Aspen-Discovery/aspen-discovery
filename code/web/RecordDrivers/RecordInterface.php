@@ -8,7 +8,9 @@
  */
 abstract class RecordInterface
 {
-	private $listNotes; //Used when displaying a the title as part of a list when notes have been set
+	//Used when displaying a the title as part of a list
+	private $listNotes;
+	private $listEntryId;
 	/**
 	 * Constructor.  We build the object using all the data retrieved
 	 * from the (Solr) index.  Since we have to
@@ -350,5 +352,13 @@ abstract class RecordInterface
 
 	function getListNotes(){
 		return $this->listNotes;
+	}
+
+	function setListEntryId($listEntryId) {
+		$this->listEntryId = $listEntryId;
+	}
+
+	function getListEntryId() {
+		return $this->listEntryId;
 	}
 }

@@ -12,7 +12,6 @@ class CiteList extends Action {
 
 		// Fetch List object
 		if (isset($_REQUEST['listId'])){
-			/** @var UserList $list */
 			$list = new UserList();
 			$list->id = $_GET['listId'];
 			$list->find(true);
@@ -20,12 +19,10 @@ class CiteList extends Action {
 		$interface->assign('favList', $list);
 
 		// Get all titles on the list
-		//TODO: test this
-		$favList = new FavoriteHandler($list, null, false);
 		$citationFormat = $_REQUEST['citationFormat'];
 		$citationFormats = CitationBuilder::getCitationFormats();
 		$interface->assign('citationFormat', $citationFormats[$citationFormat]);
-		$citations = $favList->getCitations($citationFormat);
+		$citations = $list->getListRecords(0, -1, false, 'citations', $citationFormat);
 
 		$interface->assign('citations', $citations);
 

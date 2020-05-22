@@ -1158,11 +1158,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		$timer->logTime('Finished Loading Series');
 
-		//Get information from list entry
-		global $interface;
-		$interface->assign('listEntryNotes', $this->getListNotes());
-		$interface->assign('listEditAllowed', $allowEdit);
-
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 

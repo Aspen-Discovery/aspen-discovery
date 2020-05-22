@@ -70,4 +70,23 @@ class UserListEntry extends DataObject{
 		$userListBrowseCategory->__destruct();
 		$userListBrowseCategory = null;
 	}
+
+	public function getRecordDriver()
+	{
+		if ($this->source == 'GroupedWork'){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$recordDriver = new GroupedWorkDriver($this->sourceId);
+			return $recordDriver;
+		}elseif ($this->source == 'OpenArchives'){
+			require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
+			$recordDriver = new OpenArchivesRecordDriver($this->sourceId);
+			return $recordDriver;
+		}elseif ($this->source == 'Lists'){
+			require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
+			$recordDriver = new ListsRecordDriver($this->sourceId);
+			return $recordDriver;
+		}else{
+			return null;
+		}
+	}
 }

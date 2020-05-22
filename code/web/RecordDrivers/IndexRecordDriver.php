@@ -279,4 +279,55 @@ abstract class IndexRecordDriver extends RecordInterface
 		return $this->fields['id'];
 	}
 
+	/**
+	 * Assign necessary Smarty variables and return a template name
+	 * to load in order to display the requested citation format.
+	 * For legal values, see getCitationFormats().  Returns null if
+	 * format is not supported.
+	 *
+	 * @param string $format Citation format to display.
+	 * @access  public
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getCitation($format)
+	{
+		require_once ROOT_DIR . '/sys/CitationBuilder.php';
+
+		// Build author list:
+		$authors = array();
+		$primary = $this->getPrimaryAuthor();
+		if (!empty($primary)) {
+			$authors[] = $primary;
+		}
+
+		// Collect all details for citation builder:
+		$publishers = $this->getPublishers();
+		//$pubPlaces = $this->getPlacesOfPublication();
+		$details = array(
+			'authors' => $authors,
+			'title' => $this->getTitle(),
+			'subtitle' => '',
+			//'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
+			'pubName' => count($publishers) > 0 ? $publishers[0] : null,
+			'pubDate' => null,
+			'edition' => null,
+			'format' => $this->getFormats()
+		);
+
+		// Build the citation:
+		$citation = new CitationBuilder($details);
+		switch ($format) {
+			case 'APA':
+				return $citation->getAPA();
+			case 'AMA':
+				return $citation->getAMA();
+			case 'ChicagoAuthDate':
+				return $citation->getChicagoAuthDate();
+			case 'ChicagoHumanities':
+				return $citation->getChicagoHumanities();
+			case 'MLA':
+				return $citation->getMLA();
+		}
+		return '';
+	}
 }

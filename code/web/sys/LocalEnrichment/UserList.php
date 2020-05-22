@@ -178,7 +178,8 @@ class UserList extends DataObject
 			$listEntries[] = [
 				'source' => $listEntry->source,
 				'sourceId' => $listEntry->sourceId,
-				'notes' => $listEntry->notes
+				'notes' => $listEntry->notes,
+				'listEntryId' => $listEntry->id
 			];
 		}
 		$listEntry->__destruct();
@@ -262,20 +263,18 @@ class UserList extends DataObject
 	}
 
 	/**
-	 * @param String $workToRemove
+	 * @param String $listEntryToRemove
 	 * @param bool $updateBrowseCategories
 	 */
-	function removeListEntry($workToRemove, $updateBrowseCategories = true)
+	function removeListEntry($listEntryToRemove, $updateBrowseCategories = true)
 	{
 		// Remove the Saved List Entry
-		if ($workToRemove instanceof UserListEntry){
-			$workToRemove->delete(false, $updateBrowseCategories);
+		if ($listEntryToRemove instanceof UserListEntry){
+			$listEntryToRemove->delete(false, $updateBrowseCategories);
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$listEntry = new UserListEntry();
-			$listEntry->source = 'GroupedWork';
-			$listEntry->sourceId = $workToRemove;
-			$listEntry->listId = $this->id;
+			$listEntry->id = $listEntryToRemove;
 			$listEntry->delete(true);
 		}
 
@@ -286,6 +285,8 @@ class UserList extends DataObject
 	}
 
 	private $_cleanDescription = null;
+
+	/** @noinspection PhpUnused */
 	function getCleanDescription(){
 		if ($this->_cleanDescription == null){
 			$this->_cleanDescription = strip_tags($this->description, '<p><b><em><strong><i><br>');;
@@ -308,10 +309,10 @@ class UserList extends DataObject
 	 * @param int $start position of first list item to fetch (1 based)
 	 * @param int $numItems Number of items to fetch for this result
 	 * @param boolean $allowEdit whether or not the list should be editable
-	 * @param string $format The format of the records, valid values are html, summary, recordDrivers
+	 * @param string $format The format of the records, valid values are html, summary, recordDrivers, citation
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getListRecords($start, $numItems, $allowEdit, $format) {
+	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null) {
 		$sort = in_array($this->defaultSort, array_keys($this->__userListSortOptions)) ? $this->__userListSortOptions[$this->defaultSort] : null;
 
 		//Get all entries for the list
@@ -341,11 +342,13 @@ class UserList extends DataObject
 			}else{
 				$records = $searchObject->getRecords($sourceIds);
 				if ($format == 'html') {
-					$listResults = array_merge($listResults, $this->getResultListHTML($records, $filteredListEntries, $allowEdit));
+					$listResults = array_merge($listResults, $this->getResultListHTML($records, $filteredListEntries, $allowEdit, $start));
 				}elseif ($format == 'summary') {
 					$listResults = array_merge($listResults, $this->getResultListSummary($records, $filteredListEntries));
 				}elseif ($format == 'recordDrivers') {
 					$listResults = array_merge($listResults, $this->getResultListRecordDrivers($records, $filteredListEntries));
+				}elseif ($format == 'citations') {
+					$listResults = array_merge($listResults, $this->getResultListCitations($records, $filteredListEntries, $citationFormat));
 				}else{
 					AspenError::raiseError("Unknown display format $format in getListRecords");
 				}
@@ -363,11 +366,10 @@ class UserList extends DataObject
 	 * @param RecordInterface[] $records Records retrieved from the getRecords method of a SolrSearcher
 	 * @param bool $allowEdit
 	 * @param array $allListEntryIds optional list of IDs to re-order the records by (ie User List sorts)
-	 * @param int $page The current page being viewed
-	 * @param int $numRecordsPerPage the number of records being shown
+	 * @param int $startRecord The first record being displayed
 	 * @return array Array of HTML chunks for individual records.
 	 */
-	private function getResultListHTML($records, $allListEntryIds, $allowEdit, $page = 1, $numRecordsPerPage = 20)
+	private function getResultListHTML($records, $allListEntryIds, $allowEdit, $startRecord = 0)
 	{
 		global $interface;
 		$html = array();
@@ -379,14 +381,20 @@ class UserList extends DataObject
 			foreach ($records as $docIndex => $recordDriver) {
 				if ($recordDriver->getId() == $currentId['sourceId']) {
 					$recordDriver->setListNotes($currentId['notes']);
+					$recordDriver->setListEntryId($currentId['listEntryId']);
 					$current = $recordDriver;
 					break;
 				}
 			}
 			if (!empty($current)) {
 				$interface->assign('recordIndex', $listPosition + 1);
-				$interface->assign('resultIndex', $listPosition + 1 + (($page - 1) * $numRecordsPerPage));
+				$interface->assign('resultIndex', $listPosition + $startRecord);
 				$interface->assign('recordDriver', $current);
+
+				//Get information from list entry
+				$interface->assign('listEntryNotes', $current->getListNotes());
+				$interface->assign('listEntryId', $current->getListEntryId());
+				$interface->assign('listEditAllowed', $allowEdit);
 				$html[$listPosition] = $interface->fetch($current->getListEntry($this->id, $allowEdit));
 			}
 		}
@@ -410,6 +418,27 @@ class UserList extends DataObject
 			}
 			if (!empty($current)) {
 				$results[$listPosition] = $current->getSummaryInformation();
+			}
+		}
+		return $results;
+	}
+
+	private function getResultListCitations($records, $allListEntryIds, $format){
+		global $interface;
+		$results = array();
+		//Reorder the documents based on the list of id's
+		foreach ($allListEntryIds as $listPosition => $currentId) {
+			// use $IDList as the order guide for the html
+			$current = null; // empty out in case we don't find the matching record
+			reset($records);
+			foreach ($records as $docIndex => $recordDriver) {
+				if ($recordDriver->getId() == $currentId['sourceId']) {
+					$current = $recordDriver;
+					break;
+				}
+			}
+			if (!empty($current)) {
+				$results[$listPosition] = $interface->fetch($current->getCitation($format));
 			}
 		}
 		return $results;
@@ -528,32 +557,21 @@ class UserList extends DataObject
 		 * @var string $key
 		 * @var UserListEntry $entry */
 		foreach ($allEntries as $key => $entry){
-			if ($entry->source == 'GroupedWork'){
-				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				$groupedWork = new GroupedWorkDriver($entry->sourceId);
-				if ($groupedWork->isValid()){
-					$results[$key] = $groupedWork->getSpotlightResult($collectionSpotlight, $key);
-				}
-			}elseif ($entry->source == 'OpenArchives'){
-				require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
-				$recordDriver = new OpenArchivesRecordDriver($entry->sourceId);
-				if ($recordDriver->isValid()){
-					$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
-				}
-			}elseif ($entry->source == 'Lists'){
-				require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
-				$recordDriver = new ListsRecordDriver($entry->sourceId);
-				if ($recordDriver->isValid()){
-					$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
-				}
-			}else{
+			$recordDriver = $entry->getRecordDriver();
+			if ($recordDriver == null){
 				$results[$key] = [
 					'title' => 'Unhandled Source ' . $entry->source,
 					'author' => '',
 					'formattedTextOnlyTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
 					'formattedTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
 				];
+			}else{
+				if ($recordDriver->isValid()){
+					$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
+				}
 			}
+
+
 
 			if (count($results) == $collectionSpotlight->numTitlesToShow){
 				break;
