@@ -6,9 +6,14 @@
 {/if}
 {strip}
 	<div class="col-xs-12">
-		{if !empty($pageTitleShort) || !empty($objectName)}
-			<h1>{if !empty($pageTitleShort)}{$pageTitleShort} - {/if}{$objectName}</h1>
-		{/if}
+		<div class="row">
+			<div class="col-xs-12 col-md-9">
+				<h1 id="pageTitle">{$pageTitleShort}{if !empty($objectName)} - {$objectName}{/if}</h1>
+			</div>
+			<div class="col-xs-12 col-md-3 help-link">
+				{if $instructions}<a href="{$instructions}"><img src="/images/silk/help.png" alt="Help" /> Documentation</a>{/if}
+			</div>
+		</div>
 		<p>
 			{if $showReturnToList}
 				<a class="btn btn-default" href='/{$module}/{$toolName}?objectAction=list'>{translate text="Return to List"}</a>

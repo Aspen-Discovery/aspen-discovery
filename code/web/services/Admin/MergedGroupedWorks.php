@@ -41,8 +41,5 @@ class Admin_MergedGroupedWorks extends ObjectEditor
 		global $interface;
 		return $interface->fetch('Admin/merge_grouped_work_instructions.tpl');
 	}
-	function getListInstructions(){
-		return '';
-	}
 
 }

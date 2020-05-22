@@ -1,15 +1,18 @@
+<div class="row">
+	<div class="col-xs-12 col-md-9">
+		<h1 id="pageTitle">{$pageTitleShort}</h1>
+	</div>
+	<div class="col-xs-12 col-md-3 help-link">
+        {if $instructions}<a href="{$instructions}"><img src="/images/silk/help.png" alt="Help" /> Documentation</a>{/if}
+	</div>
+</div>
 
-<h1 id="pageTitle">{$pageTitleShort}</h1>
 {if $lastError}
 	<div class="alert alert-danger">
 		{$lastError}
 	</div>
 {/if}
-{if $instructions}
-	<div class="alert alert-info">
-		{$instructions}
-	</div>
-{/if}
+
 <form action="" method="get" id='compare' class="form-inline">
 	<div class='adminTableRegion'>
 		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable">

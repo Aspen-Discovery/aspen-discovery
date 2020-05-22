@@ -73,6 +73,6 @@ class Locations extends ObjectEditor
 	}
 
 	function getInstructions(){
-		return '';
+		return '/Admin/HelpManual?page=Library-Systems-Locations';
 	}
 }

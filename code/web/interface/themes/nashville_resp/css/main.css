@@ -8754,6 +8754,11 @@ a.placard-link {
   position: sticky;
   top: 0;
 }
+.help-link {
+  margin-top: 20px;
+  line-height: 50px;
+  text-align: right;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;

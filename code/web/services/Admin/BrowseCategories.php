@@ -46,8 +46,4 @@ class Admin_BrowseCategories extends ObjectEditor
 	function getInstructions(){
 		return '';
 	}
-
-	function getListInstructions(){
-		return $this->getInstructions();
-	}
 }
