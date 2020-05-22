@@ -109,7 +109,7 @@ class SideLoads_SideLoads extends ObjectEditor
 
 	function getInstructions()
 	{
-		return null;
+		return '/Admin/HelpManual?page=Side-Loaded-eContent';
 	}
 
 	function getAdditionalObjectActions($existingObject)

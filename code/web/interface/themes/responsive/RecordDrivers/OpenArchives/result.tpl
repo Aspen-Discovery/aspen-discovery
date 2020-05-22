@@ -26,17 +26,6 @@
 			</div>
 		</div>
 
-		{if !empty($summSnippets)}
-			{foreach from=$summSnippets item=snippet}
-				<div class="row">
-					<div class="result-label col-tn-3 col-xs-3">{translate text=$snippet.caption} </div>
-					<div class="result-value col-tn-9 col-xs-9">
-						{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br />{/if}
-					</div>
-				</div>
-			{/foreach}
-		{/if}
-
 		{if !empty($type)}
 			<div class="row">
 				<div class="result-label col-tn-3">{translate text="Type"} </div>
@@ -73,6 +62,33 @@
 			</div>
 		{/if}
 
+		{if count($appearsOnLists) > 0}
+			<div class="row">
+				<div class="result-label col-tn-3">
+					{if count($appearsOnLists) > 1}
+						{translate text="Appears on these lists"}
+					{else}
+						{translate text="Appears on list"}
+					{/if}
+				</div>
+				<div class="result-value col-tn-8">
+					{if count($appearsOnLists) >= 5}
+						{assign var=showMoreLists value="true"}
+					{/if}
+					{foreach from=$appearsOnLists item=appearsOnList name=loop}
+					<a href="{$appearsOnList.link}">{$appearsOnList.title}</a><br/>
+					{if !empty($showMoreLists) && $smarty.foreach.loop.iteration == 3}
+					<a onclick="$('#moreLists_OpenArchives{$recordDriver->getId()}').show();$('#moreListsLink_OpenArchives{$recordDriver->getId()}').hide();" id="moreListsLink_OpenArchives{$recordDriver->getId()}">{translate text="More Lists..."}</a>
+					<div id="moreLists_OpenArchives{$recordDriver->getId()}" style="display:none">
+						{/if}
+						{/foreach}
+						{if !empty($showMoreLists)}
+					</div>
+					{/if}
+				</div>
+			</div>
+		{/if}
+
 		{* Description Section *}
 		{if $description}
 			<div class="row visible-xs">
@@ -90,9 +106,7 @@
 
 		<div class="row">
 			<div class="col-xs-12">
-                {include file='OpenArchives/result-tools-horizontal.tpl' recordUrl=$openArchiveUrl showMoreInfo=true}
-                {* TODO: id & shortId shouldn't be needed to be specified here, otherwise need to note when used.
-					summTitle only used by cart div, which is disabled as of now. 12-28-2015 plb *}
+				{include file='OpenArchives/result-tools-horizontal.tpl' recordUrl=$openArchiveUrl showMoreInfo=true}
 			</div>
 		</div>
 	</div>

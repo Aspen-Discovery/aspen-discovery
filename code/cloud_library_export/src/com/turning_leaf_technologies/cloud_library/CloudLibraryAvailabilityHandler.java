@@ -12,25 +12,25 @@ class CloudLibraryAvailabilityHandler extends DefaultHandler {
 	}
 
 	public void characters(char[] ch, int start, int length) {
-		nodeContents = new String(ch, start, length).trim();
+		nodeContents += new String(ch, start, length);
 	}
 
 	public void endElement(String uri, String localName, String qName) {
 		switch (qName) {
 			case "totalCopies":
-				availability.setTotalCopies(Integer.parseInt(nodeContents));
+				availability.setTotalCopies(Integer.parseInt(nodeContents.trim()));
 				break;
 			case "sharedCopies":
-				availability.setSharedCopies(Integer.parseInt(nodeContents));
+				availability.setSharedCopies(Integer.parseInt(nodeContents.trim()));
 				break;
 			case "totalLoanCopies":
-				availability.setTotalLoanCopies(Integer.parseInt(nodeContents));
+				availability.setTotalLoanCopies(Integer.parseInt(nodeContents.trim()));
 				break;
 			case "totalHoldCopies":
-				availability.setTotalHoldCopies(Integer.parseInt(nodeContents));
+				availability.setTotalHoldCopies(Integer.parseInt(nodeContents.trim()));
 				break;
 			case "sharedLoanCopies":
-				availability.setSharedLoanCopies(Integer.parseInt(nodeContents));
+				availability.setSharedLoanCopies(Integer.parseInt(nodeContents.trim()));
 				break;
 		}
 		nodeContents = "";

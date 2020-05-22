@@ -143,7 +143,7 @@ class DataObjectUtil
 
 		}else if (in_array( $property['type'], array('textarea', 'html', 'folder', 'crSeparated'))){
 			if (strlen(trim($_REQUEST[$propertyName])) == 0){
-				$object->setProperty($propertyName, null, $property);
+				$object->setProperty($propertyName, "", $property);
 			}else{
 				$object->setProperty($propertyName, trim($_REQUEST[$propertyName]), $property);
 			}

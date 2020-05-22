@@ -305,7 +305,7 @@ abstract class ObjectEditor extends Admin_Admin
 		return '';
 	}
 	function getListInstructions(){
-		return '';
+		return $this->getInstructions();
 	}
 	function getInitializationJs(){
 		return '';

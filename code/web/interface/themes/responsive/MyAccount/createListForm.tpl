@@ -31,7 +31,8 @@
 				</div>
 			</div>
 		</div>
-	  <input type="hidden" name="recordId" value="{$recordId}">
+		<input type="hidden" name="source" value="{$source}">
+		<input type="hidden" name="sourceId" value="{$sourceId}">
 	</form>
 	<br/>
 {/strip}

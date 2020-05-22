@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
+
 class ReindexLogEntry extends BaseLogEntry
 {
 	public $__table = 'reindex_log';   // table name

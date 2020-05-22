@@ -1482,7 +1482,8 @@ class Millennium extends AbstractIlsDriver
 
 							if (!$resourceOnList){
 								$listEntry = new UserListEntry();
-								$listEntry->groupedWorkPermanentId = $primaryIdentifier->permanent_id;
+								$listEntry->source = 'GroupedWork';
+								$listEntry->sourceId = $primaryIdentifier->permanent_id;
 								$listEntry->listId = $newList->id;
 								$listEntry->notes = '';
 								$listEntry->dateAdded = time();

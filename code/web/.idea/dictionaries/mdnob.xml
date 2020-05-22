@@ -19,6 +19,7 @@
       <w>amountoutstanding</w>
       <w>anotes</w>
       <w>anymap</w>
+      <w>apikey</w>
       <w>arrarr</w>
       <w>asmx</w>
       <w>aspx</w>
@@ -130,6 +131,7 @@
       <w>ilsdi</w>
       <w>ilsname</w>
       <w>imageinfo</w>
+      <w>inauthor</w>
       <w>infobox</w>
       <w>instagram</w>
       <w>interlibrary</w>
@@ -186,6 +188,7 @@
       <w>munge</w>
       <w>munges</w>
       <w>mylang</w>
+      <w>navbar</w>
       <w>negcap</w>
       <w>newkey</w>
       <w>newpin</w>
@@ -200,6 +203,7 @@
       <w>odreadauthurl</w>
       <w>officedocument</w>
       <w>oldkey</w>
+      <w>omdb</w>
       <w>onephrase</w>
       <w>opac</w>
       <w>openxml</w>
@@ -274,6 +278,7 @@
       <w>syndetics</w>
       <w>systemctl</w>
       <w>tableofcontents</w>
+      <w>tablesorter</w>
       <w>taxobox</w>
       <w>tdlabel</w>
       <w>timedatectl</w>
@@ -292,6 +297,7 @@
       <w>videoclip</w>
       <w>vufind</w>
       <w>wcpl</w>
+      <w>webpage</w>
       <w>whos</w>
       <w>whosonfirst</w>
       <w>wikipedia</w>

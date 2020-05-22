@@ -100,8 +100,8 @@ class UserListSolr {
 		this.author = author;
 	}
 
-	void addListTitle(String groupedWorkId, Object title, Object author) {
-		relatedRecordIds.add("grouped_work:" + groupedWorkId);
+	void addListTitle(String source, String groupedWorkId, Object title, Object author) {
+		relatedRecordIds.add(source + ":" + groupedWorkId);
 		contents.add(title + " - " + author);
 		numTitles++;
 	}

@@ -15,6 +15,22 @@
 	{/foreach}
 </table>
 
+{if !empty($specifiedDisplayInfo)}
+	<div id="groupedWorkDisplayInfo">
+		<h4>Display Information</h4>
+		<table class="table-striped table table-condensed notranslate">
+			<tr><th>Title</th><td>{$specifiedDisplayInfo->title}</td></tr>
+			<tr><th>Subtitle</th><td>{$specifiedDisplayInfo->subtitle}</td></tr>
+			<tr><th>Author</th><td>{$specifiedDisplayInfo->author}</td></tr>
+			<tr><th>Series Name</th><td>{$specifiedDisplayInfo->seriesName}</td></tr>
+			<tr><th>Series Display Order</th><td>{if $specifiedDisplayInfo->seriesDisplayOrder != 0}{$specifiedDisplayInfo->seriesDisplayOrder}{/if}</td></tr>
+		</table>
+	    {if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+		    <tr><th></th><td><a onclick="AspenDiscovery.GroupedWork.deleteDisplayInfo('{$recordDriver->getPermanentId()}')" class="btn btn-danger btn-sm">Delete</a></td></tr>
+	    {/if}
+	</div>
+{/if}
+
 {if (!empty($alternateTitles))}
 	<h4>Alternate Titles and Authors</h4>
 	<table class="table-striped table table-condensed notranslate">

@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -36,6 +37,8 @@ public class GroupedWorkIndexer {
 
 	private PreparedStatement getRatingStmt;
 	private PreparedStatement getNovelistStmt;
+	private PreparedStatement getDisplayInfoStmt;
+
 	private Connection dbConn;
 
 	static int availableAtBoostValue = 50;
@@ -228,6 +231,7 @@ public class GroupedWorkIndexer {
 			//No need to filter for ratings greater than 0 because the user has to rate from 1-5
 			getRatingStmt = dbConn.prepareStatement("SELECT AVG(rating) as averageRating, groupedRecordPermanentId from user_work_review where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getNovelistStmt = dbConn.prepareStatement("SELECT * from novelist_data where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getDisplayInfoStmt = dbConn.prepareStatement("SELECT * from grouped_work_display_info where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logEntry.incErrors("Could not prepare statements to load local enrichment", e);
 		}
@@ -570,6 +574,8 @@ public class GroupedWorkIndexer {
 			loadAcceleratedDataForWork(groupedWork);
 			//Load Novelist data
 			loadNovelistInfo(groupedWork);
+			//Load Display Info
+			loadDisplayInfo(groupedWork);
 
 			//Write the record to Solr.
 			try {
@@ -693,6 +699,35 @@ public class GroupedWorkIndexer {
 			novelistRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Unable to load novelist data", e);
+		}
+	}
+
+	private void loadDisplayInfo(GroupedWorkSolr groupedWork) {
+		try {
+			getDisplayInfoStmt.setString(1, groupedWork.getId());
+			ResultSet displayInfoRS = getDisplayInfoStmt.executeQuery();
+			if (displayInfoRS.next()) {
+				String title = displayInfoRS.getString("title");
+				if (title.length() > 0){
+					groupedWork.setTitle(title, title, StringUtils.makeValueSortable(title), "", true);
+					groupedWork.clearSubTitle();
+				}
+				String author = displayInfoRS.getString("author");
+				if (author.length() > 0){
+					groupedWork.setAuthorDisplay(author);
+				}
+				String seriesName = displayInfoRS.getString("seriesName");
+				String seriesDisplayOrder = displayInfoRS.getString("seriesDisplayOrder");
+				if (seriesName.length() > 0) {
+					groupedWork.clearSeries();
+					groupedWork.addSeries(seriesName);
+					if (seriesDisplayOrder.length() > 0) {
+						groupedWork.addSeriesWithVolume(seriesName, seriesDisplayOrder);
+					}
+				}
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Unable to load display info", e);
 		}
 	}
 

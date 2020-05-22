@@ -118,7 +118,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 	}
 
 	public void characters(char[] ch, int start, int length) {
-		nodeContents = new String(ch, start, length).trim();
+		nodeContents += new String(ch, start, length);
 	}
 
 	public void endElement(String uri, String localName, String qName) {
@@ -127,16 +127,16 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 				processMarcRecord();
 				break;
 			case "marc:leader":
-				marcRecord.setLeader(marcFactory.newLeader(nodeContents));
+				marcRecord.setLeader(marcFactory.newLeader(nodeContents.trim()));
 				break;
 			case "marc:controlfield":
-				marcRecord.addVariableField(marcFactory.newControlField(tag, nodeContents));
+				marcRecord.addVariableField(marcFactory.newControlField(tag, nodeContents.trim()));
 				break;
 			case "marc:datafield":
 				marcRecord.addVariableField(dataField);
 				break;
 			case "marc:subfield":
-				dataField.addSubfield(marcFactory.newSubfield(subfieldCode, nodeContents));
+				dataField.addSubfield(marcFactory.newSubfield(subfieldCode, nodeContents.trim()));
 				break;
 		}
 		nodeContents = "";

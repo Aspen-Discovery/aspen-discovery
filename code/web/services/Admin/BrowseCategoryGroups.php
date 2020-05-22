@@ -46,8 +46,4 @@ class Admin_BrowseCategoryGroups extends ObjectEditor
 	function getInstructions(){
 		return '';
 	}
-
-	function getListInstructions(){
-		return $this->getInstructions();
-	}
 }

@@ -42,10 +42,7 @@ class Admin_GroupedWorkFacets extends ObjectEditor
 
 	function getInstructions(){
 		//return 'For more information on themes see TBD';
-		return '';
+		return '/Admin/HelpManual?page=Grouped-Work-Facets';
 	}
 
-	function getListInstructions(){
-		return $this->getInstructions();
-	}
 }

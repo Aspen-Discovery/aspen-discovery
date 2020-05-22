@@ -1,8 +1,8 @@
 {strip}
-	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
+	<form action="/MyAccount/MyList/{$userList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
-			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
+			<h3 id="listTitle">{$userList->title|escape:"html"}</h3>
 			{if $notes}
 				<div id="listNotes">
 				{foreach from=$notes item="note"}
@@ -11,31 +11,19 @@
 				</div>
 			{/if}
 
-			{if $favList->deleted == 1}
+			{if $userList->deleted == 1}
 				<p class="alert alert-danger">{translate text='Sorry, this list has been deleted.'}</p>
 			{else}
-				{if $favList->description}<div class="listDescription alignleft" id="listDescription">{$favList->description}</div>{/if}
+				{if $userList->getCleanDescription()}<div class="listDescription alignleft" id="listDescription">{$userList->getCleanDescription()}</div>{/if}
 				{if $allowEdit}
 					<div id="listEditControls" style="display:none" class="collapse">
 						<div class="form-group">
-							<label for="listTitleEdit" class="control-label">Title: </label>
-							<input type="text" id="listTitleEdit" name="newTitle" value="{$favList->title|escape:"html"}" maxlength="255" size="80" class="form-control">
+							<label for="listTitleEdit" class="control-label">{translate text="Title"}</label>
+							<input type="text" id="listTitleEdit" name="newTitle" value="{$userList->title|escape:"html"}" maxlength="255" size="80" class="form-control">
 						</div>
 						<div class="form-group">
-							<label for="listDescriptionEdit" class="control-label">Description: </label>&nbsp;
-							<textarea name="newDescription" id="listDescriptionEdit" rows="3" cols="80" class="form-control">{$favList->description|escape:"html"}</textarea>
-						</div>
-						<div class="form-group">
-
-							<label for="defaultSort" class="control-label">{translate text='Default Sort'} </label>
-							<select id="defaultSort" name="defaultSort" class="form-control">
-								{foreach from=$defaultSortList item=sortValue key=sortLabel}
-									<option value="{$sortLabel}"{if $sortLabel == $defaultSort} selected="selected"{/if}>
-										{translate text=$sortValue}
-									</option>
-								{/foreach}
-							</select>
-
+							<label for="listDescriptionEdit" class="control-label">{translate text="Description"}"</label>&nbsp;
+							<textarea name="newDescription" id="listDescriptionEdit" rows="3" cols="80" class="form-control">{$userList->getCleanDescription()|escape:"html"}</textarea>
 						</div>
 					</div>
 				{/if}
@@ -49,24 +37,24 @@
 							<button value="saveList" id="FavSave" class="btn btn-sm btn-primary" style="display:none" onclick='return AspenDiscovery.Lists.updateListAction()'>{translate text='Save Changes'}</button>
 						</div>
 						<div class="btn-group">
-							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.batchAddToListAction({$favList->id})'>{translate text='Add Multiple Titles'}</button>
-							{if $favList->public == 0}
+							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.batchAddToListAction({$userList->id})'>{translate text='Add Multiple Titles'}</button>
+							{if $userList->public == 0}
 								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.makeListPublicAction()'>{translate text='Make Public'}</button>
 							{else}
 								<button value="makePrivate" id="FavPrivate" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.makeListPrivateAction()'>{translate text='Make Private'}</button>
 								{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles))}
-									&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default" id="FavCreateSpotlight" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromList('{$favList->id}')">{translate text='Create Spotlight'}</a>
+									&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default" id="FavCreateSpotlight" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromList('{$userList->id}')">{translate text='Create Spotlight'}</a>
 								{/if}
 								{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-									<a href="#" id="FavHome" class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Browse'}</a>
+									<a href="#" id="FavHome" class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.addToHomePage('{$userList->id}')">{translate text='Add To Browse'}</a>
 								{/if}
 							{/if}
 						</div>
 					{/if}
 					<div class="btn-group">
-						<button value="emailList" id="FavEmail" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.emailListAction("{$favList->id}")'>{translate text='Email List'}</button>
+						<button value="emailList" id="FavEmail" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.emailListAction("{$userList->id}")'>{translate text='Email List'}</button>
 						<button value="printList" id="FavPrint" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.printListAction()'>{translate text='Print List'}</button>
-						<button value="citeList" id="FavCite" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.citeListAction("{$favList->id}")'>{translate text='Generate Citations'}</button>
+						<button value="citeList" id="FavCite" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.citeListAction("{$userList->id}")'>{translate text='Generate Citations'}</button>
 
 						<div class="btn-group" role="group">
 							<button type="button" class="btn btn-sm btn-default btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{translate text='Sort by'}&nbsp;<span class="caret"></span></button>
@@ -93,11 +81,11 @@
 		</div>
 	</form>
 
-	{if $favList->deleted == 0}
+	{if $userList->deleted == 0}
 		{if $resourceList}
 			<form class="navbar form-inline">
 				<label for="pageSize" class="control-label">{translate text='Records Per Page'}</label>&nbsp;
-				<select id="pageSize" class="pageSize form-control{* input-sm*}" onchange="AspenDiscovery.changePageSize()">
+				<select id="pageSize" class="pageSize form-control-sm" onchange="AspenDiscovery.changePageSize()">
 					<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
 					<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
 					<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
@@ -137,35 +125,33 @@
 							update: function (e, ui){
 								let updates = [];
 								let firstItemOnPage = {/literal}{$recordStart}{literal};
-								$('#UserList>div>div').each(function(currentOrder){
-									let id = this.id.replace('groupedRecord','') /* Grouped IDs for catalog items */
-																	.replace('archive',''),      /*modified Islandora PIDs for archive items*/
-													originalOrder = $(this).data('order'),
-													change = currentOrder+firstItemOnPage-originalOrder,
-													newOrder = originalOrder+change;
-									if (change != 0) updates.push({'id':id, 'newOrder':newOrder});
+								$('#UserList .listEntry').each(function(currentOrder){
+									let id = $(this).data('list_entry_id');
+									let originalOrder = $(this).data('order');
+									let change = currentOrder+firstItemOnPage-originalOrder;
+									let newOrder = originalOrder+change;
+									if (change !== 0) updates.push({'id':id, 'newOrder':newOrder});
 								});
 								$.getJSON('/MyAccount/AJAX',
-												{
-													method:'setListEntryPositions'
-													,updates:updates
-													,listID:{/literal}{$favList->id}{literal}
+									{
+										method:'setListEntryPositions'
+										,updates:updates
+										,listID:{/literal}{$userList->id}{literal}
+									}
+									, function(response){
+										if (response.success) {
+											updates.forEach(function(e){
+												let listEntry = $('#listEntry'+ e.id);
+												if (listEntry.length > 0) {
+													listEntry
+														.data('order', e.newOrder)
+														.find('span.result-index')
+														.text(e.newOrder + ')');
 												}
-												, function(response){
-													if (response.success) {
-														updates.forEach(function(e){
-															if ($('#groupedRecord'+ e.id).length > 0) {
-																$('#groupedRecord' + e.id).data('order', e.newOrder)
-																				.find('span.result-index').text(e.newOrder + ')');
-															/*$('#weight_'+ e.id).val(e.newOrder);*/
-															} else if ($('#archive'+ e.id).length > 0) {
-																$('#archive' + e.id).data('order', e.newOrder)
-																				.find('span.result-index').text(e.newOrder + ')');
-															/*$('#weight_'+ e.id).val(e.newOrder);*/
-															}
-														})
-													}
-												})
+											})
+										}
+									}
+								);
 							}
 						});
 					});

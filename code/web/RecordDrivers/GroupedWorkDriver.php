@@ -527,9 +527,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 		// Rating Settings
-		/** @var Library $library */
 		global $library;
-		/** @var Location $location */
 		global $location;
 		$browseCategoryRatingsMode = null;
 		if ($location) { // Try Location Setting
@@ -1103,7 +1101,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true)
+	public function getListEntry($listId = null, $allowEdit = true)
 	{
 		global $configArray;
 		global $interface;
@@ -1160,19 +1158,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		$timer->logTime('Finished Loading Series');
 
-		//Get information from list entry
-		if ($listId) {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-			$listEntry = new UserListEntry();
-			$listEntry->groupedWorkPermanentId = $this->getUniqueID();
-			$listEntry->listId = $listId;
-			if ($listEntry->find(true)) {
-				$interface->assign('listEntryNotes', $listEntry->notes);
-			} else {
-				$interface->assign('listEntryNotes', '');
-			}
-			$interface->assign('listEditAllowed', $allowEdit);
-		}
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
@@ -1226,7 +1211,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getSummaryInformation()
 	{
-		$summaryInfo = array(
+		return array(
 			'id' => $this->getPermanentId(),
 			'shortId' => $this->getPermanentId(),
 			'recordtype' => 'grouped_work',
@@ -1240,8 +1225,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 			'publisher' => '',
 			'ratingData' => $this->getRatingData(),
 		);
-
-		return $summaryInfo;
 	}
 
 
@@ -1644,6 +1627,11 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('summSnippets', $snippets);
 		$timer->logTime("Loaded highlighted snippets");
 
+		//Check to see if there are lists the record is on
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->getPermanentId());
+		$interface->assign('appearsOnLists', $appearsOnLists);
+
 		$summPublisher = null;
 		$summPubDate = null;
 		$summPhysicalDesc = null;
@@ -1863,16 +1851,34 @@ class GroupedWorkDriver extends IndexRecordDriver
 		ksort($fields);
 		$interface->assign('details', $fields);
 
-		$groupedWorkDetails = $this->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
+		$this->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
+		return 'RecordDrivers/GroupedWork/staff-view.tpl';
+	}
+
+	public function assignGroupedWorkStaffView(){
+		global $interface;
+
+		$interface->assign('groupedWorkDetails', $this->getGroupedWorkDetails());
 
 		$interface->assign('alternateTitles', $this->getAlternateTitles());
 
 		$interface->assign('primaryIdentifiers', $this->getPrimaryIdentifiers());
 
-		return 'RecordDrivers/GroupedWork/staff-view.tpl';
+		$interface->assign('specifiedDisplayInfo', $this->getSpecifiedDisplayInfo());
+	}
+
+	public function getSpecifiedDisplayInfo() {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
+		$existingDisplayInfo  = new GroupedWorkDisplayInfo();
+		$existingDisplayInfo->permanent_id = $this->getPermanentId();
+		if ($existingDisplayInfo->find(true)){
+			return $existingDisplayInfo;
+		}else{
+			return null;
+		}
 	}
 
 	public function getAlternateTitles(){

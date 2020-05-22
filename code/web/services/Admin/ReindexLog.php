@@ -11,6 +11,7 @@ class ReindexLog extends Admin_Admin
 		global $interface;
 
 		$logEntries = array();
+		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
 		$logEntry = new ReindexLogEntry();
 		if (!empty($_REQUEST['worksLimit']) && ctype_digit($_REQUEST['worksLimit'])) {
 			// limits total count correctly

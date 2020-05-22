@@ -41,6 +41,7 @@ class SearchAPI extends Action
 
 	function getIndexStatus()
 	{
+		global $configArray;
 		$checks = [];
 
 		//Check if solr is running by pinging it
@@ -84,6 +85,61 @@ class SearchAPI extends Action
 			$this->addCheck($checks, 'Backup', self::STATUS_CRITICAL, "The disk currently has less than 5GB of space available");
 		}else{
 			$this->addCheck($checks, 'Backup');
+		}
+
+		//Check free memory
+		if ($configArray['System']['operatingSystem'] == 'linux'){
+			$fh = fopen('/proc/meminfo','r');
+			$freeMem = 0;
+			$totalMem = 0;
+			while ($line = fgets($fh)) {
+				$pieces = array();
+				if (preg_match('/^MemTotal:\s+(\d+)\skB$/', $line, $pieces)) {
+					$totalMem = $pieces[1];
+				}else if (preg_match('/^MemAvailable:\s+(\d+)\skB$/', $line, $pieces)) {
+					$freeMem = $pieces[1];
+				}
+			}
+			$percentMemoryUsage = round((1 - ($freeMem / $totalMem)) * 100, 1);
+			if ($freeMem < 1000000){
+				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "Less than 1GB ($freeMem) of available memory exists, increase available resources");
+			}elseif ($percentMemoryUsage > 95){
+				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "{$percentMemoryUsage}% of total memory is in use, increase available resources");
+			}elseif ($percentMemoryUsage < 60){
+				$this->addCheck($checks, 'Memory Usage', self::STATUS_WARN, "$percentMemoryUsage% of memory is in use, may be able to reduce resources");
+			}else{
+				$this->addCheck($checks, 'Memory Usage');
+			}
+			fclose($fh);
+
+			//Check load (use the 5 minute load)
+			$load = sys_getloadavg();
+			if ($load[1] > 5){
+				if ($load[0] >= $load[1]){
+					$this->addCheck($checks, 'Load Average', self::STATUS_CRITICAL, "Load is very high {$load[1]} and is increasing");
+				}else{
+					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is very high {$load[1]}, but it is decreasing");
+				}
+			}elseif ($load[1] > 2.5){
+				$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is higher than optimal {$load[1]}");
+			}else{
+				$this->addCheck($checks, 'Load Average');
+			}
+		}
+
+		//Check nightly index
+		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
+		$logEntry = new ReindexLogEntry();
+		$logEntry->orderBy("id DESC");
+		$logEntry->limit(0, 1);
+		if ($logEntry->find(true)){
+			if ($logEntry->numErrors > 0){
+				$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, 'The last nightly index had errors');
+			}else{
+				$this->addCheck($checks, 'Nightly Index');
+			}
+		}else{
+			$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, 'Nightly index has never run');
 		}
 
 		//Check for errors within the logs

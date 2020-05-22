@@ -74,6 +74,6 @@ class Enrichment_ContentCafeSettings extends ObjectEditor
 
 	function getInstructions()
 	{
-		return '';
+		return '/Admin/HelpManual?page=Content-Cafe';
 	}
 }

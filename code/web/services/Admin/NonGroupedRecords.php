@@ -41,9 +41,5 @@ class Admin_NonGroupedRecords extends ObjectEditor
 		global $interface;
 		return $interface->fetch('Admin/ungrouping_work_instructions.tpl');
 	}
-	function getListInstructions(){
-		return '';
-	}
-
 
 }

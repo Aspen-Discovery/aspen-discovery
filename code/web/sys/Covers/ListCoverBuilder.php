@@ -83,7 +83,7 @@ class ListCoverBuilder
 		$validListEntries = [];
 		/** @var UserListEntry $curListEntry */
 		foreach ($listTitles as $curListEntry) {
-			$groupedWorkRecordDriver = new GroupedWorkDriver($curListEntry->groupedWorkPermanentId);
+			$groupedWorkRecordDriver = new GroupedWorkDriver($curListEntry->sourceId);
 			if ($groupedWorkRecordDriver->isValid()) {
 				$validListEntries[] = $groupedWorkRecordDriver;
 			}

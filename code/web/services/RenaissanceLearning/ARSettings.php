@@ -50,6 +50,6 @@ class RenaissanceLearning_ARSettings extends ObjectEditor
     }
 
     function getInstructions(){
-        return '';
+        return '/Admin/HelpManual?page=Accelerated-Reader';
     }
 }
