@@ -266,6 +266,12 @@ abstract class IndexRecordDriver extends RecordInterface
 		return trim($title);
 	}
 
+	public function getSortableTitle(){
+		$title = $this->getTitle();
+		$title = preg_replace('/^(?:(an|a|the|el|la)\s)/i', '', $title);
+		return $title;
+	}
+
 	/**
 	 * Return the unique identifier of this record within the Solr index;
 	 * useful for retrieving additional information (like tags and user

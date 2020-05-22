@@ -152,7 +152,7 @@ class UserList extends DataObject
 		$listEntry->listId = $this->id;
 
 		//Sort the list appropriately
-		if (!empty($sort)) $listEntry->orderBy(UserList::getSortOptions()[$sort]);
+		if (!empty($sort) && $sort != 'title') $listEntry->orderBy(UserList::getSortOptions()[$sort]);
 
 		// These conditions retrieve list items with a valid groupedWorkId or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
@@ -174,15 +174,23 @@ class UserList extends DataObject
 				$idsBySource[$listEntry->source] = [];
 			}
 			$idsBySource[$listEntry->source][] = $listEntry->sourceId;
-			$listEntries[] = [
+			$tmpListEntry = [
 				'source' => $listEntry->source,
 				'sourceId' => $listEntry->sourceId,
 				'notes' => $listEntry->notes,
 				'listEntryId' => $listEntry->id
 			];
+			if ($sort == 'title') {
+				$tmpListEntry['title'] = strtolower($listEntry->getRecordDriver()->getSortableTitle());
+			}
+			$listEntries[] = $tmpListEntry;
 		}
 		$listEntry->__destruct();
 		$listEntry = null;
+
+		if ($sort == 'title') {
+			usort($listEntries, 'compareListEntryTitles');
+		}
 
 		return [
 			'listEntries' => $listEntries,
@@ -671,4 +679,8 @@ class UserList extends DataObject
 		ksort($userLists);
 		return $userLists;
 	}
+}
+
+function compareListEntryTitles($listEntry1, $listEntry2){
+	return strcmp($listEntry1['title'], $listEntry2['title']);
 }
