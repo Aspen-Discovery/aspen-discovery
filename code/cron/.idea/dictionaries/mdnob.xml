@@ -140,6 +140,7 @@
       <w>netlibrary</w>
       <w>newbery</w>
       <w>nextaction</w>
+      <w>nfkc</w>
       <w>nomap</w>
       <w>nongrouped</w>
       <w>notforloan</w>
@@ -180,6 +181,7 @@
       <w>sideload</w>
       <w>sideloads</w>
       <w>sitemap</w>
+      <w>sitename</w>
       <w>soapenv</w>
       <w>solrconfig</w>
       <w>solrmarc</w>
@@ -208,6 +210,7 @@
       <w>upcs</w>
       <w>validationstatus</w>
       <w>verticalfile</w>
+      <w>viaf</w>
       <w>videocartridge</w>
       <w>videoreel</w>
       <w>videosisc</w>

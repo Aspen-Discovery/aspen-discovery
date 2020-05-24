@@ -235,16 +235,16 @@ class Browse_AJAX extends Action {
 			$browseMode = $this->setBrowseMode();
 			if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {
 				// only first page is cached
-				/** @var Memcache $memCache */
-				global $memCache, $solrScope;
-				$key                = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
+				global $memCache;
+				global $solrScope;
+				$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
 				$browseCategoryInfo = $memCache->get($key);
 				if ($browseCategoryInfo != false) {
 					return $browseCategoryInfo;
 				}
 			}
 
-			$result         = array('success' => false);
+			$result = array('success' => false);
 			$browseCategory = $this->getBrowseCategory();
 			if ($browseCategory) {
 				global $interface;

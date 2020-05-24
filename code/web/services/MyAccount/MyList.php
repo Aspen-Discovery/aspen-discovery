@@ -19,11 +19,8 @@ class MyAccount_MyList extends MyAccount {
 		$list = new UserList();
 		$list->id = $listId;
 
-		//QUESTION : When does this intentionally come into play?
-		// It looks to be a way for users to create a list with the number of their own choosing. plb 1-25-2016
-		// Pascal this would create the default "My Favorites" list if none currently exists.
+		//If the list does not exist, create a new My Favorites List
 		if (!$list->find(true)){
-			//TODO: Use the first list?
 			$list = new UserList();
 			$list->user_id = UserAccount::getActiveUserId();
 			$list->public = false;
@@ -39,14 +36,13 @@ class MyAccount_MyList extends MyAccount {
 		}
 		if (!$list->public && $list->user_id != UserAccount::getActiveUserId()) {
 			//Allow the user to view if they are admin
-			if (UserAccount::isLoggedIn() && UserAccount::userHasRole('opacAdmin')){
-				//Allow the user to view
-			}else{
+			if (!UserAccount::isLoggedIn() || !UserAccount::userHasRole('opacAdmin')) {
 				$this->display('invalidList.tpl', 'Invalid List');
 				return;
 			}
 		}
 
+		//List Notes are created as part of bulk add to list
 		if (isset($_SESSION['listNotes'])){
 			$interface->assign('notes', $_SESSION['listNotes']);
 			unset($_SESSION['listNotes']);
@@ -71,7 +67,6 @@ class MyAccount_MyList extends MyAccount {
 				}elseif ($actionToPerform == 'saveList'){
 					$list->title = $_REQUEST['newTitle'];
 					$list->description = strip_tags($_REQUEST['newDescription']);
-					$list->defaultSort = $_REQUEST['defaultSort'];
 					$list->update();
 				}elseif ($actionToPerform == 'deleteList'){
 					$list->delete();
@@ -105,11 +100,10 @@ class MyAccount_MyList extends MyAccount {
 			//Redirect back to avoid having the parameters stay in the URL.
 			header("Location: /MyAccount/MyList/{$list->id}");
 			die();
-
 		}
 
 		// Send list to template so title/description can be displayed:
-		$interface->assign('favList', $list);
+		$interface->assign('userList', $list);
 		$interface->assign('listSelected', $list->id);
 
 		// Load the User object for the owner of the list (if necessary):
@@ -128,8 +122,26 @@ class MyAccount_MyList extends MyAccount {
 		// Create a handler for displaying favorites and use it to assign
 		// appropriate template variables:
 		$interface->assign('allowEdit', $userCanEdit);
-		$favList = new FavoriteHandler($list, $listUser, $userCanEdit);
-		$favList->buildListForDisplay();
+
+		//Determine the sort options
+		$activeSort = $list->defaultSort;
+		if (isset($_REQUEST['sort']) && array_key_exists($_REQUEST['sort'], UserList::getSortOptions())){
+			$activeSort = $_REQUEST['sort'];
+		}
+		if (empty($activeSort)) {
+			$activeSort = 'dateAdded';
+		}
+		//Set the default sort (for people other than the list editor to match what the editor does)
+		if ($userCanEdit && $activeSort != $list->defaultSort){
+			$list->defaultSort = $activeSort;
+			$list->update();
+		}
+
+		$listEntries = $list->getListEntries($activeSort);
+		$allListEntries = $listEntries['listEntries'];
+
+		$favoriteHandler = new FavoriteHandler();
+		$favoriteHandler->buildListForDisplay($list, $allListEntries, $userCanEdit, $activeSort);
 
 		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), 'Search/home-sidebar.tpl', false);
 	}
@@ -155,14 +167,15 @@ class MyAccount_MyList extends MyAccount {
 					//Get the id of the document
 					$id = $firstDoc['id'];
 					$numAdded++;
-					$userListEntry                         = new UserListEntry();
-					$userListEntry->listId                 = $list->id;
-					$userListEntry->groupedWorkPermanentId = $id;
-					$existingEntry                         = false;
+					$userListEntry = new UserListEntry();
+					$userListEntry->listId = $list->id;
+					$userListEntry->source = 'GroupedWork';
+					$userListEntry->sourceId = $id;
+					$existingEntry = false;
 					if ($userListEntry->find(true)) {
 						$existingEntry = true;
 					}
-					$userListEntry->notes     = '';
+					$userListEntry->notes = '';
 					$userListEntry->dateAdded = time();
 					if ($existingEntry) {
 						$userListEntry->update();

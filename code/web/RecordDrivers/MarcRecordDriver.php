@@ -197,12 +197,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
 		}
 
-		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
-
-		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
@@ -210,11 +205,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId("{$this->profileType}:{$this->id}");
 		$interface->assign('lastMarcModificationTime', $lastMarcModificationTime);
-
-		if ($this->groupedWork != null) {
-			$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
-			$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
-		}
 
 		$interface->assign('uploadedPDFs', $this->getUploadedPDFs());
 

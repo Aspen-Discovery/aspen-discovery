@@ -45,12 +45,11 @@ class MyAccount_AJAX extends JSON_Action
 
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
-		$results = array(
+		return array(
 			'title' => 'Add as Browse Category to Home Page',
 			'modalBody' => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -140,12 +139,11 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name'));
 		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
 		// Display Page
-		$formDefinition = array(
+		return array(
 			'title' => 'Account to Manage',
 			'modalBody' => $interface->fetch('MyAccount/addAccountLink.tpl'),
 			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>Add Account</span>"
 		);
-		return $formDefinition;
 	}
 
 	/** @noinspection PhpUnused */
@@ -155,12 +153,11 @@ class MyAccount_AJAX extends JSON_Action
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
 		$interface->assign('popupTitle', 'Add titles to list');
-		$formDefinition = array(
+		return array(
 			'title' => 'Add titles to list',
 			'modalBody' => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
 			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Lists.processBulkAddForm(); return false;'>Add To List</span>"
 		);
-		return $formDefinition;
 	}
 
 	/** @noinspection PhpUnused */
@@ -188,11 +185,10 @@ class MyAccount_AJAX extends JSON_Action
 		} else {
 			$message = "Sorry, it looks like that search has expired.";
 		}
-		$result = array(
+		return array(
 			'result' => $saveOk,
 			'message' => $message,
 		);
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -247,12 +243,11 @@ class MyAccount_AJAX extends JSON_Action
 
 		$interface->assign('cancelResults', $result);
 
-		$cancelResult = array(
+		return array(
 			'title' => 'Cancel Hold',
 			'body' => $interface->fetch('MyAccount/cancelHold.tpl'),
 			'success' => $result['success']
 		);
-		return $cancelResult;
 	}
 
 	/** @noinspection PhpUnused */
@@ -291,7 +286,6 @@ class MyAccount_AJAX extends JSON_Action
 				}
 			}
 		} catch (PDOException $e) {
-			/** @var Logger $logger */
 			global $logger;
 			$logger->log('Booking : ' . $e->getMessage(), Logger::LOG_ERROR);
 
@@ -307,13 +301,12 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('numCancelled', $numCancelled);
 		$interface->assign('totalCancelled', $totalCancelled);
 
-		$cancelResult = array(
+		return array(
 			'title' => 'Cancel Booking',
 			'modalBody' => $interface->fetch('MyAccount/cancelBooking.tpl'),
 			'success' => $result['success'],
 			'failed' => $failed
 		);
-		return $cancelResult;
 	}
 
 	function freezeHold()
@@ -418,9 +411,10 @@ class MyAccount_AJAX extends JSON_Action
 				$return['message'] = "You must provide a title for the list";
 			} else {
 				//If the record is not valid, skip the whole thing since the title could be bad too
-				if (!empty($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])) {
-					$recordToAdd = urldecode($_REQUEST['recordId']);
-					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $recordToAdd)) {
+				if (!empty($_REQUEST['sourceId']) && !is_array($_REQUEST['sourceId'])) {
+					$recordToAdd = urldecode($_REQUEST['sourceId']);
+					$source = urldecode($_REQUEST['source']);
+					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+|\d+$/i", $recordToAdd)) {
 						$return['success'] = false;
 						$return['message'] = 'The recordId provided is not valid';
 						return $return;
@@ -453,13 +447,15 @@ class MyAccount_AJAX extends JSON_Action
 					$list->insert();
 				}
 
-				if (!empty($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])) {
-					$recordToAdd = urldecode($_REQUEST['recordId']);
+				if (!empty($_REQUEST['sourceId']) && !is_array($_REQUEST['sourceId'])) {
+					$sourceId = urldecode($_REQUEST['sourceId']);
+					$source = urldecode($_REQUEST['source']);
 					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 					//Check to see if the user has already added the title to the list.
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
-					$userListEntry->groupedWorkPermanentId = $recordToAdd;
+					$userListEntry->source = $source;
+					$userListEntry->sourceId = $sourceId;
 					if (!$userListEntry->find(true)) {
 						$userListEntry->dateAdded = time();
 						$userListEntry->insert();
@@ -468,6 +464,12 @@ class MyAccount_AJAX extends JSON_Action
 
 				$return['success'] = 'true';
 				$return['newId'] = $list->id;
+
+				$userObject = UserAccount::getActiveUserObj();
+				if ($userObject->lastListUsed != $list->id) {
+					$userObject->lastListUsed = $list->id;
+					$userObject->update();
+				}
 				if ($existingList) {
 					$return['message'] = "Updated list {$title} successfully";
 				} else {
@@ -487,11 +489,11 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		global $interface;
 
-		if (isset($_REQUEST['recordId'])) {
-			$id = $_REQUEST['recordId'];
-			$interface->assign('recordId', $id);
-		} else {
-			$id = '';
+		if (isset($_REQUEST['sourceId'])) {
+			$sourceId = $_REQUEST['sourceId'];
+			$source = $_REQUEST['source'];
+			$interface->assign('sourceId', $sourceId);
+			$interface->assign('source', $source);
 		}
 
 		//Check to see if we will index the list if it is public
@@ -515,12 +517,11 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		$interface->assign('publicListWillBeIndexed', $publicListWillBeIndexed);
 
-		$results = array(
+		return array(
 			'title' => 'Create new List',
 			'modalBody' => $interface->fetch("MyAccount/createListForm.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(\"{$id}\"); return false;'>Create List</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(); return false;'>Create List</span>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -645,12 +646,11 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
 		$title = translate('Freeze Hold'); // language customization
-		$results = array(
+		return array(
 			'title' => $title,
 			'modalBody' => $interface->fetch("MyAccount/reactivationDate.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -667,8 +667,7 @@ class MyAccount_AJAX extends JSON_Action
 				$patronId = $_REQUEST['patronId'];
 				$patronOwningHold = $user->getUserReferredTo($patronId);
 
-				$result = $patronOwningHold->changeHoldPickUpLocation($holdId, $newPickupLocation);
-				return $result;
+				return $patronOwningHold->changeHoldPickUpLocation($holdId, $newPickupLocation);
 			} else {
 				return $results = array(
 					'title' => 'Please login',
@@ -694,14 +693,12 @@ class MyAccount_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function requestPinReset()
 	{
-		/** @var CatalogConnection $catalog */
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 
 		$barcode = $_REQUEST['barcode'];
 
 		//Get the list of pickup branch locations for display in the user interface.
-		$result = $catalog->requestPinReset($barcode);
-		return $result;
+		return $catalog->requestPinReset($barcode);
 	}
 
 	/** @noinspection PhpUnused */
@@ -744,9 +741,7 @@ class MyAccount_AJAX extends JSON_Action
 				// Load the User object for the owner of the list (if necessary):
 				if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)) {
 					//The user can access the list
-					require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
-					$favoriteHandler = new FavoriteHandler($list, UserAccount::getActiveUserObj(), false);
-					$titleDetails = $favoriteHandler->getTitles(count($listEntries));
+					$titleDetails = $list->getListRecords(0, -1, false, 'recordDrivers');
 					// get all titles for email list, not just a page's worth
 					$interface->assign('titles', $titleDetails);
 					$interface->assign('list', $list);
@@ -816,12 +811,11 @@ class MyAccount_AJAX extends JSON_Action
 			$listId = $_REQUEST['listId'];
 
 			$interface->assign('listId', $listId);
-			$formDefinition = array(
+			return array(
 				'title' => 'Email a list',
 				'modalBody' => $interface->fetch('MyAccount/emailListPopup.tpl'),
 				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send Email</span>'
 			);
-			return $formDefinition;
 		} else {
 			return [
 				'success' => false,
@@ -868,12 +862,11 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		global $interface;
 		$interface->assign('renewResults', $renewResults);
-		$result = array(
+		return array(
 			'title' => translate('Renew') . ' Item',
 			'modalBody' => $interface->fetch('MyAccount/renew-item-results.tpl'),
 			'success' => $renewResults['success']
 		);
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -941,13 +934,12 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
 
-		$result = array(
+		return array(
 			'title' => translate('Renew') . ' Selected Items',
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
 			'renewed' => isset($renewResults['Renewed']) ? $renewResults['Renewed'] : []
 		);
-		return $result;
 	}
 
 	function renewAll()
@@ -965,13 +957,12 @@ class MyAccount_AJAX extends JSON_Action
 
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
-		$result = array(
+		return array(
 			'title' => translate('Renew') . ' All',
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
 			'renewed' => $renewResults['Renewed']
 		);
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -989,22 +980,17 @@ class MyAccount_AJAX extends JSON_Action
 				require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 				$success = true; // assume success now
 				foreach ($updates as $update) {
-					$update['id'] = str_replace('_', ':', $update['id']); // Rebuilt Islandora PIDs
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $listId;
-					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $update['id'])) {
-						$success = false;
-					} else {
-						$userListEntry->groupedWorkPermanentId = $update['id'];
-						if ($userListEntry->find(true) && ctype_digit($update['newOrder'])) {
-							// check entry exists already and the new weight is a number
-							$userListEntry->weight = $update['newOrder'];
-							if (!$userListEntry->update()) {
-								$success = false;
-							}
-						} else {
+					$userListEntry->id = $update['id'];
+					if ($userListEntry->find(true) && ctype_digit($update['newOrder'])) {
+						// check entry exists already and the new weight is a number
+						$userListEntry->weight = $update['newOrder'];
+						if (!$userListEntry->update()) {
 							$success = false;
 						}
+					} else {
+						$success = false;
 					}
 				}
 			}
@@ -1259,7 +1245,6 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		global $interface;
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		$result = array();
 		if (UserAccount::isLoggedIn()) {
@@ -2394,11 +2379,11 @@ class MyAccount_AJAX extends JSON_Action
 
 			$purchaseUnits['amount'] = [
 				'currency_code' => 'USD',
-				'value' => $totalFines,
+				'value' => round($totalFines, 2),
 				'breakdown' => [
 					'item_total' => [
 						'currency_code' => 'USD',
-						'value' => $totalFines,
+						'value' => round($totalFines, 2),
 					],
 				]
 			];
@@ -2547,6 +2532,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function updateAutoRenewal(){
 		$patronId = $_REQUEST['patronId'];
 		$allowAutoRenewal = ($_REQUEST['allowAutoRenewal'] == 'on' || $_REQUEST['allowAutoRenewal'] == 'true');
@@ -2567,6 +2553,104 @@ class MyAccount_AJAX extends JSON_Action
 				);
 			}
 		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getSaveToListForm(){
+		global $interface;
+
+		$sourceId = $_REQUEST['sourceId'];
+		$source = $_REQUEST['source'];
+		$interface->assign('sourceId', $sourceId);
+		$interface->assign('source', $source);
+
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		UserList::getUserListsForSaveForm($source, $sourceId);
+
+		return array(
+			'title' => 'Add To List',
+			'modalBody' => $interface->fetch("MyAccount/saveToList.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.saveToList(); return false;'>" . translate("Save To List") . "</button>"
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function saveToList(){
+		$result = array();
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['success'] = false;
+			$result['message'] = 'Please login before adding a title to list.';
+		}else{
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			$result['success'] = true;
+			$sourceId = $_REQUEST['sourceId'];
+			$source = $_REQUEST['source'];
+			$listId = $_REQUEST['listId'];
+			$notes = $_REQUEST['notes'];
+
+			//Check to see if we need to create a list
+			$userList = new UserList();
+			$listOk = true;
+			if (empty($listId)){
+				$userList->title = "My Favorites";
+				$userList->user_id = UserAccount::getActiveUserId();
+				$userList->public = 0;
+				$userList->description = '';
+				$userList->insert();
+			}else{
+				$userList->id = $listId;
+				if (!$userList->find(true)){
+					$result['success'] = false;
+					$result['message'] = 'Sorry, we could not find that list in the system.';
+					$listOk = false;
+				}
+			}
+
+			if ($listOk){
+				$userListEntry = new UserListEntry();
+				$userListEntry->listId = $userList->id;
+
+				//TODO: Validate the entry
+				$isValid = true;
+				if (!$isValid) {
+					$result['success'] = false;
+					$result['message'] = 'Sorry, that is not a valid entry for the list.';
+				}else {
+					if (empty($sourceId) || empty($source)){
+						$result['success'] = false;
+						$result['message'] = 'Unable to add that to a list, not correctly specified.';
+					}else {
+						$userListEntry->source = $source;
+						$userListEntry->sourceId = $sourceId;
+
+						$existingEntry = false;
+						if ($userListEntry->find(true)) {
+							$existingEntry = true;
+						}
+						$userListEntry->notes = strip_tags($notes);
+						$userListEntry->dateAdded = time();
+						if ($existingEntry) {
+							$userListEntry->update();
+						} else {
+							$userListEntry->insert();
+						}
+
+						$userObject = UserAccount::getActiveUserObj();
+						if ($userObject->lastListUsed != $userList->id) {
+							$userObject->lastListUsed = $userList->id;
+							$userObject->update();
+						}
+						$result['success'] = true;
+						$result['message'] = 'This title was saved to your list successfully.';
+					}
+				}
+			}
+
+		}
+
 		return $result;
 	}
 }

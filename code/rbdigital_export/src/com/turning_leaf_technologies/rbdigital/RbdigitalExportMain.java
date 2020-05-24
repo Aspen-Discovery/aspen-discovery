@@ -753,7 +753,7 @@ public class RbdigitalExportMain {
 
 	private static GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}
@@ -785,7 +785,7 @@ public class RbdigitalExportMain {
 
 	private static RecordGroupingProcessor getRecordGroupingProcessor() {
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger);
+			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}

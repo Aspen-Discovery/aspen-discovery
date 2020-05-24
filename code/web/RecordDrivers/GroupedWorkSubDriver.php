@@ -500,17 +500,9 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	public function getStaffView()
 	{
 		global $interface;
-		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
-
-		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
-
-		$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
-		$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 
 		return 'RecordDrivers/Index/staff.tpl';
 	}

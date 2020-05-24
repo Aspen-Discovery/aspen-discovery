@@ -40,8 +40,5 @@ class Admin_AuthorEnrichment extends ObjectEditor
 	function getInstructions(){
 		return "";
 	}
-	function getListInstructions(){
-		return $this->getInstructions();
-	}
 
 }

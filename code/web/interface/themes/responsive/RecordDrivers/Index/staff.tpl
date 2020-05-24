@@ -3,10 +3,6 @@
     <th>Last File Modification Time</th>
     <td>{$lastMarcModificationTime|date_format:"%b %d, %Y %r"}</td>
   </tr>
-  <tr>
-    <th>Last Grouped Work Modification Time</th>
-    <td>{$lastGroupedWorkModificationTime|date_format:"%b %d, %Y %r"}</td>
-  </tr>
 </table>
 
 <table class="citation">

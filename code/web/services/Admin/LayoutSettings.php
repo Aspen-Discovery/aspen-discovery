@@ -41,13 +41,4 @@ class Admin_LayoutSettings extends ObjectEditor
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin');
 	}
-
-	function getInstructions(){
-		//return 'For more information on themes see TBD';
-		return '';
-	}
-
-	function getListInstructions(){
-		return $this->getInstructions();
-	}
 }

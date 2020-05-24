@@ -253,8 +253,10 @@ class Koha extends AbstractIlsDriver
 			/** @noinspection SqlResolve */
 			$volumeSql = "SELECT description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber = $itemNumber";
 			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
-			if ($volumeRow = $volumeResults->fetch_assoc()){
-				$checkout['volume'] = $volumeRow['description'];
+			if ($volumeResults !== false) { //This is false if Koha does not support volumes
+				if ($volumeRow = $volumeResults->fetch_assoc()) {
+					$checkout['volume'] = $volumeRow['description'];
+				}
 			}
 
 			$checkout['author'] = $curRow['author'];
@@ -437,7 +439,7 @@ class Koha extends AbstractIlsDriver
 	{
 		global $timer;
 		/** @noinspection SqlResolve */
-		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where borrowernumber = $patronId";
+		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote from borrowers where borrowernumber = $patronId";
 
 		$userExistsInDB = false;
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
@@ -491,6 +493,8 @@ class Koha extends AbstractIlsDriver
 			$user->_state = $userFromDb['state'];
 			$user->_zip = $userFromDb['zipcode'];
 			$user->phone = $userFromDb['phone'];
+
+			$user->_web_note = $userFromDb['opacnote'];
 
 			$timer->logTime("Loaded base patron information for Koha $patronId");
 
@@ -2154,7 +2158,8 @@ class Koha extends AbstractIlsDriver
 
 						if (!$resourceOnList) {
 							$listEntry = new UserListEntry();
-							$listEntry->groupedWorkPermanentId = $groupedWork->permanent_id;
+							$listEntry->source = 'GroupedWork';
+							$listEntry->sourceId = $groupedWork->permanent_id;
 							$listEntry->listId = $newList->id;
 							$listEntry->notes = '';
 							$listEntry->dateAdded = time();

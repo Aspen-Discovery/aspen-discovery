@@ -50,6 +50,8 @@ class User extends DataObject
 
 	public $rememberHoldPickupLocation;
 
+	public $lastListUsed;
+
 	/** @var User $parentUser */
 	private $parentUser;
 	/** @var User[] $linkedUsers */

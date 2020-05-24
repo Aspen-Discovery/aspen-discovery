@@ -180,7 +180,7 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function getInstructions(){
-		return '';
+		return '/Admin/HelpManual?page=Library-Systems';
 	}
 
 	function getInitializationJs(){

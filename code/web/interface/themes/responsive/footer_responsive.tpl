@@ -14,7 +14,7 @@
 				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-2 text-center" id="footer-branding">
-				{if $footerLogo}
+				{if !empty($footerLogo)}
 					<div>
 					{if $footerLogoLink}
 						<a href="{$footerLogoLink}">

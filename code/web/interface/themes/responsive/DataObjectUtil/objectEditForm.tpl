@@ -7,12 +7,6 @@
 	</div>
 {/if}
 
-{if !empty($instructions)}
-	<div class="alert alert-info">
-		{$instructions}
-	</div>
-{/if}
-
 {* Create the base form *}
 <form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form">
 	{literal}

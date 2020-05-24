@@ -128,7 +128,4 @@ class Admin_Administrators extends ObjectEditor
 	function getInstructions(){
 		return '';
 	}
-	function getListInstructions(){
-		return $this->getInstructions();
-	}
 }

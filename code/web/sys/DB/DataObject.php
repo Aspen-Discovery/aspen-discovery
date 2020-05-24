@@ -641,7 +641,13 @@ abstract class DataObject
 			$history->objectType = get_class($this);
 			$primaryKey = $this->__primaryKey;
 			if (!empty($this->$primaryKey)) {
-				$history->objectId = $this->$primaryKey;
+				if (strlen($oldValue) >= 65535){
+					$oldValue = 'Too long to track history';
+				}
+				if (strlen($newValue) >= 65535){
+					$newValue = 'Too long to track history';
+				}
+ 				$history->objectId = $this->$primaryKey;
 				$history->oldValue = $oldValue;
 				$history->propertyName = $propertyName;
 				$history->newValue = $newValue;

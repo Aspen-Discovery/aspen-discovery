@@ -41,12 +41,7 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 	}
 
 	function getInstructions(){
-		//return 'For more information on themes see TBD';
-		return '';
-	}
-
-	function getListInstructions(){
-		return $this->getInstructions();
+		return '/Admin/HelpManual?page=Grouped-Work-Display-Settings';
 	}
 
 	/** @noinspection PhpUnused */

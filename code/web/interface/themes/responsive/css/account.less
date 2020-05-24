@@ -20,9 +20,14 @@
   color: @gray-dark;
   //text-shadow: 1px 1px #fff;
 }
-#account-settings-accordion .active .panel-title{
-  color: #fff;
-  //text-shadow: 1px 1px @gray;
+#account-link-accordion .panel.active, account-settings-accordion .panel.active{
+  .panel-title {
+    color: white;
+
+    > a {
+      color: white;
+    }
+  }
 }
 #account-settings-accordion .panel-body{
   font-size:12px;

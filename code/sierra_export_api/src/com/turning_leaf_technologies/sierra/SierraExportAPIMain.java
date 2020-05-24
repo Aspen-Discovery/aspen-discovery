@@ -885,7 +885,7 @@ public class SierraExportAPIMain {
 				JSONArray fields = marcResults.getJSONArray("fields");
 				for (int i = 0; i < fields.length(); i++){
 					JSONObject fieldData = fields.getJSONObject(i);
-					@SuppressWarnings("unchecked") Iterator<String> tags = (Iterator<String>)fieldData.keys();
+					Iterator<String> tags = fieldData.keys();
 					while (tags.hasNext()){
 						String tag = tags.next();
 						if (fieldData.get(tag) instanceof JSONObject){
@@ -896,7 +896,7 @@ public class SierraExportAPIMain {
 							JSONArray subfields = fieldDataDetails.getJSONArray("subfields");
 							for (int j = 0; j < subfields.length(); j++){
 								JSONObject subfieldData = subfields.getJSONObject(j);
-								String subfieldIndicatorStr = (String)subfieldData.keys().next();
+								String subfieldIndicatorStr = subfieldData.keys().next();
 								char subfieldIndicator = subfieldIndicatorStr.charAt(0);
 								String subfieldValue = subfieldData.getString(subfieldIndicatorStr);
 								dataField.addSubfield(marcFactory.newSubfield(subfieldIndicator, subfieldValue));
@@ -1757,14 +1757,14 @@ public class SierraExportAPIMain {
 
 	private static MarcRecordGrouper getRecordGroupingProcessor() {
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logger, false);
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}
 
 	private static GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}

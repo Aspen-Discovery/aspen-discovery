@@ -26,6 +26,7 @@
 					<a href="{$classicUrl}" class="btn btn-sm btn-info">{translate text="View in Native OPAC"}</a>
 				{/if}
 				<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex"}</button>
+				<button onclick="return AspenDiscovery.GroupedWork.getDisplayInfoForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Set Display Info"}</button>
 				<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Group With Work"}</button>
 				<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">{translate text="Ungroup"}</button>
 				<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
@@ -100,10 +101,6 @@
 				<td>{$lastMarcModificationTime|date_format:"%b %d, %Y %r"}</td>
 			</tr>
 		{/if}
-		<tr>
-			<th>{translate text="Last Grouped Work Modification Time"}</th>
-			<td>{$lastGroupedWorkModificationTime|date_format:"%b %d, %Y %r"}</td>
-		</tr>
 	</table>
 
 	<div id="formattedMarcRecord">

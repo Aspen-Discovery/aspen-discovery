@@ -6,7 +6,7 @@
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 
 		{include file="cssAndJsIncludes.tpl" includeAutoLogoutCode=false}
-		{*TODO a smaller suite of javascript for Spotlights*}
+		{$themeCss}
 
 		{if $resizeIframe}
 		<script type="text/javascript" src="/js/iframeResizer/iframeResizer.contentWindow.min.js"></script>

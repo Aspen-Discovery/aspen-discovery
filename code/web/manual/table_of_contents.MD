@@ -9,26 +9,26 @@
   - Configuration Templates
     - Themes
     - Layout Settings
-    - Grouped Work Display Settings
-      - Grouped Work Facets
+    - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
+      - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
       - Creating Grouped Works
       - Grouped Work Pages
-      - Manually grouping records
+      - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
       - Ungrouping records
     - Browse Category Groups
       - Browse Categories
   - Primary Configuration
     - Languages
       - Translations
-    - Library Systems
-      - Locations 
-      - IP Addresses
+    - [Library Systems](/Admin/HelpManual?page=Library-Systems)
+      - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
+      - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
     - Block Patron Account Linking
     - Patron Types
     - Account Profiles
   - Enrichment
-    - Accelerated Reader
-    - Content Cafe
+    - [Accelerated Reader](/Admin/HelpManual?page=Accelerated-Reader)
+    - [Content Cafe](/Admin/HelpManual?page=Content-Cafe)
     - DP.LA
     - Facebook
     - GoodReads
@@ -67,7 +67,7 @@
      - Scopes 
     - Indexing Log 
     - Dashboard
-  - Side Loaded eContent
+  - [Side Loaded eContent](/Admin/HelpManual?page=Side-Loaded-eContent)
     - Side Loaded Configurations
      - Scopes
     - Indexing Log
@@ -110,7 +110,7 @@
 - Interlibrary Loans
 - Materials Requests & Purchase Suggestions
 - Open Archives
-- Placards
+- [Placards](/Admin/HelpManual?page=Placards)
 - [Reading History](/Admin/HelpManual?page=Reading-History)
 - Ratings and Reviews
 - [Recommendations](/Admin/HelpManual?page=Recommendations)
@@ -119,3 +119,5 @@
   - Facets
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - User Lists
+- Patron Account
+  - [While You Wait](/Admin/HelpManual?page=While-You-Wait)

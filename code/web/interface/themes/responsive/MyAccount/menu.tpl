@@ -255,7 +255,7 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('opacAdmin', $userRoles)}
+				{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles)}
 					{if in_array($action, array('UsageDashboard', 'PerformanceReport', 'ErrorReport', 'CronLog'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -273,6 +273,11 @@
 							<div class="panel-body">
 								{if array_key_exists('opacAdmin', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/UsageDashboard">{translate text="Usage Dashboard"}</a></div>
+								{/if}
+								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles)}
+									<div class="adminMenuLink"><a href="/Admin/ReindexLog">{translate text="Nightly Index Log"}</a></div>
+								{/if}
+								{if array_key_exists('opacAdmin', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/CronLog">{translate text="Cron Log"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/ErrorReport">{translate text="Error Report"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/PerformanceReport">{translate text="Performance Report"}</a></div>
@@ -666,28 +671,6 @@
 								<div class="adminMenuLink"><a href="/SideLoads/Scopes">&nbsp;&raquo;&nbsp;{translate text="Scopes"}</a></div>
 								<div class="adminMenuLink"><a href="/SideLoads/IndexingLog">{translate text="Indexing Log"}</a></div>
 								<div class="adminMenuLink"><a href="/SideLoads/Dashboard">{translate text="Dashboard"}</a></div>
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				{if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-					{if in_array($action, array('ReindexLog'))}
-						{assign var="curSection" value=true}
-					{else}
-						{assign var="curSection" value=false}
-					{/if}
-					<div class="panel{if $curSection} active{/if}">
-						<a href="#indexingMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
-							<div class="panel-heading">
-								<div class="panel-title">
-									{translate text="Indexing Information"}
-								</div>
-							</div>
-						</a>
-						<div id="indexingMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
-							<div class="panel-body">
-								<div class="adminMenuLink"><a href="/Admin/ReindexLog">{translate text="Grouped Work Index Log"}</a></div>
 							</div>
 						</div>
 					</div>

@@ -264,12 +264,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	{
 		global $interface;
 
-		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
-
-		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
@@ -288,9 +283,6 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 				$interface->assign('overDriveMetaDataRaw', $overDriveMetadata);
 			}
 		}
-
-		$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
-		$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 
 		return 'RecordDrivers/OverDrive/staff.tpl';
 	}

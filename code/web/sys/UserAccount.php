@@ -400,7 +400,7 @@ class UserAccount
 			$_SESSION['showCovers'] = $showCovers;
 		}
 
-		session_commit();
+		session_write_close();
 	}
 
 	/**

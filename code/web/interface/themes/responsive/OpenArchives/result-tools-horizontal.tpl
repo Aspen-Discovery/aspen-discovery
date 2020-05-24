@@ -8,6 +8,11 @@
 						<a href="{$openArchiveUrl}" class="btn btn-sm ">{translate text="More Info"}</a>
 					</div>
 				{/if}
+				{if $showFavorites == 1}
+					<div class="btn-group btn-group-sm">
+						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'OpenArchives', '{$id|escape}');" class="btn btn-sm ">{translate text='Add to list'}</button>
+					</div>
+				{/if}
 			{/if}
 
 			<div class="btn-group btn-group-sm">

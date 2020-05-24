@@ -727,8 +727,8 @@ class Archive_AJAX extends Action {
 
 		$urlStr = "<a href=\"$url\" onclick='AspenDiscovery.Archive.setForExhibitNavigation({$_COOKIE['recordIndex']},{$_COOKIE['page']})'>";
 		$escapedPid = urlencode($pid);
-		$addToFavoritesLabel = translate('Add to favorites');
-		$addToFavoritesButton = "<button onclick=\"return AspenDiscovery.Archive.showSaveToListForm(this, '$escapedPid');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$addToFavoritesLabel</button>";
+		$addToFavoritesLabel = translate('Add to list');
+		$addToFavoritesButton = "<button onclick=\"return AspenDiscovery.Account.showSaveToListForm(this, 'archive', '$escapedPid');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$addToFavoritesLabel</button>";
 		return array(
 			'title' => "{$urlStr}{$recordDriver->getTitle()}</a>",
 			'modalBody' => $interface->fetch('Archive/archivePopup.tpl'),
@@ -877,125 +877,6 @@ class Archive_AJAX extends Action {
 				'success' => true,
 				'additionalObjects' => $interface->fetch('Archive/additionalRelatedObjects.tpl')
 		);
-	}
-
-	function getSaveToListForm(){
-		global $interface;
-
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-
-		//Get a list of all lists for the user
-		$containingLists = array();
-		$nonContainingLists = array();
-
-		$userLists = new UserList();
-		$userLists->user_id = UserAccount::getActiveUserId();
-		$userLists->whereAdd('deleted = 0');
-		$userLists->orderBy('title');
-		$userLists->find();
-		while ($userLists->fetch()){
-			//Check to see if the user has already added the title to the list.
-			$userListEntry = new UserListEntry();
-			$userListEntry->listId = $userLists->id;
-			$userListEntry->groupedWorkPermanentId = $id;
-			if ($userListEntry->find(true)){
-				$containingLists[] = array(
-					'id' => $userLists->id,
-					'title' => $userLists->title
-				);
-			}else{
-				$nonContainingLists[] = array(
-					'id' => $userLists->id,
-					'title' => $userLists->title
-				);
-			}
-		}
-
-		$interface->assign('containingLists', $containingLists);
-		$interface->assign('nonContainingLists', $nonContainingLists);
-
-		$results = array(
-			'title' => 'Add To List',
-			'modalBody' => $interface->fetch("GroupedWork/save.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Archive.saveToList(\"{$id}\"); return false;'>Save To List</button>"
-		);
-		return $results;
-	}
-
-	function saveToList(){
-		$result = array();
-
-		if (!UserAccount::isLoggedIn()) {
-			$result['success'] = false;
-			$result['message'] = 'Please login before adding a title to list.';
-		}else{
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-			$result['success'] = true;
-			$id = urldecode($_REQUEST['id']);
-			if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i",$id)){
-				$result['success'] = false;
-				$result['message'] = 'That is not a valid title to add to the list.';
-			}else{
-				$listId = $_REQUEST['listId'];
-				$notes = $_REQUEST['notes'];
-
-				//Check to see if we need to create a list
-				$userList = new UserList();
-				$listOk = true;
-				if (empty($listId)){
-					$existingList = new UserList();
-					$existingList->user_id = UserAccount::getActiveUserId();
-					$existingList->title = "My Favorites";
-					$existingList->whereAdd('deleted = 0');
-					//Make sure we don't create duplicate My Favorites List
-					if ($existingList->find(true)){
-						$userList = $existingList;
-					}else{
-						$userList->title = "My Favorites";
-						$userList->user_id = UserAccount::getActiveUserId();
-						$userList->public = 0;
-						$userList->description = '';
-						$userList->insert();
-					}
-
-				}else{
-					$userList->id = $listId;
-					if (!$userList->find(true)){
-						$result['success'] = false;
-						$result['message'] = 'Sorry, we could not find that list in the system.';
-						$listOk = false;
-					}
-				}
-
-				if ($listOk){
-					$userListEntry = new UserListEntry();
-					$userListEntry->listId = $userList->id;
-					$userListEntry->groupedWorkPermanentId = $id;
-
-					$existingEntry = false;
-					if ($userListEntry->find(true)){
-						$existingEntry = true;
-					}
-					$userListEntry->notes = strip_tags($notes);
-					$userListEntry->dateAdded = time();
-					if ($existingEntry){
-						$userListEntry->update();
-					}else{
-						$userListEntry->insert();
-					}
-				}
-
-				$result['success'] = true;
-				$result['message'] = 'This title was saved to your list successfully.';
-			}
-		}
-
-		return $result;
 	}
 
 	/**

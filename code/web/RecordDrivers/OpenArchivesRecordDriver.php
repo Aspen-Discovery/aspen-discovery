@@ -25,13 +25,20 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		return $this->valid;
 	}
 
-	public function getListEntry($user, $listId = null, $allowEdit = true)
+	public function getListEntry($listId = null, $allowEdit = true)
 	{
-		return $this->getSearchResult('list');
+		//Use getSearchResult to do the bulk of the assignments
+		$this->getSearchResult('list', false);
+		//Switch template
+		return 'RecordDrivers/OpenArchives/listEntry.tpl';
 	}
 
-	public function getSearchResult($view = 'list')
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true)
 	{
+		if ($view == 'covers') { // Displaying Results as bookcover tiles
+			return $this->getBrowseResult();
+		}
+
 		global $interface;
 
 		$interface->assign('id', $this->getId());
@@ -52,6 +59,13 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 			$interface->assign('date', $this->fields['date']);
 		} else {
 			$interface->assign('date', null);
+		}
+
+		//Check to see if there are lists the record is on
+		if ($showListsAppearingOn) {
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$appearsOnLists = UserList::getUserListsForRecord('OpenArchives', $this->getId());
+			$interface->assign('appearsOnLists', $appearsOnLists);
 		}
 
 		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php';
@@ -127,5 +141,23 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 	public function getLinkUrl($absolutePath = false)
 	{
 		return $this->fields['identifier'];
+	}
+
+	public function getBrowseResult()
+	{
+		global $interface;
+		$id = $this->getUniqueID();
+		$interface->assign('summId', $id);
+
+		$url = $this->getLinkUrl();
+
+		$interface->assign('summUrl', $url);
+		$interface->assign('summTitle', $this->getTitle());
+		$interface->assign('summAuthor', $this->getPrimaryAuthor());
+
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		return 'RecordDrivers/OpenArchives/browse_result.tpl';
 	}
 }

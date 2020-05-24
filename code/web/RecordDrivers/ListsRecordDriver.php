@@ -3,23 +3,36 @@ require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 
 class ListsRecordDriver extends IndexRecordDriver
 {
+	private $listObject;
 	public function __construct($record)
 	{
 		// Call the parent's constructor...
-		parent::__construct($record);
+		if (is_string($record)) {
+			/** @var SearchObject_ListsSearcher $searchObject */
+			$searchObject = SearchObjectFactory::initSearchObject('Lists');
+			$fields = $searchObject->getRecord($record);
+			parent::__construct($fields);
+		}else {
+			parent::__construct($record);
+		}
 	}
 
-    function getBookcoverUrl($size = 'small', $absolutePath = false){
-        global $configArray;
-        if ($absolutePath){
-            $bookCoverUrl = $configArray['Site']['url'];
-        }else{
-            $bookCoverUrl = '';
-        }
-        $id = $this->getId();
-        $bookCoverUrl = $bookCoverUrl . "/bookcover.php?type=list&amp;id={$id}&amp;size={$size}";
-        return $bookCoverUrl;
-    }
+	public function isValid(){
+		return true;
+	}
+
+	function getBookcoverUrl($size = 'small', $absolutePath = false)
+	{
+		global $configArray;
+		if ($absolutePath) {
+			$bookCoverUrl = $configArray['Site']['url'];
+		} else {
+			$bookCoverUrl = '';
+		}
+		$id = $this->getId();
+		$bookCoverUrl = $bookCoverUrl . "/bookcover.php?type=list&amp;id={$id}&amp;size={$size}";
+		return $bookCoverUrl;
+	}
 
 	/**
 	 * Assign necessary Smarty variables and return a template name to
@@ -29,7 +42,7 @@ class ListsRecordDriver extends IndexRecordDriver
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list'){
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true){
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -41,7 +54,7 @@ class ListsRecordDriver extends IndexRecordDriver
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
 		$interface->assign('summShortId', $id);
 		$interface->assign('summTitle', $this->getTitle(true));
-		$interface->assign('summAuthor', $this->getPrimaryAuthor(true));
+		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 		if (isset($this->fields['description'])){
 			$interface->assign('summDescription', $this->getDescription());
 		}else{
@@ -51,6 +64,14 @@ class ListsRecordDriver extends IndexRecordDriver
 			$interface->assign('summNumTitles', $this->fields['num_titles']);
 		}else{
 			$interface->assign('summNumTitles', 0);
+		}
+		$interface->assign('summDateUpdated', $this->getListObject()->dateUpdated);
+
+		if ($showListsAppearingOn) {
+			//Check to see if there are lists the record is on
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$appearsOnLists = UserList::getUserListsForRecord('Lists', $this->getId());
+			$interface->assign('appearsOnLists', $appearsOnLists);
 		}
 
 		// Obtain and assign snippet (highlighting) information:
@@ -64,15 +85,13 @@ class ListsRecordDriver extends IndexRecordDriver
 		return array();
 	}
 
-	// initally taken From GroupedWorkDriver.php getBrowseResult();
+	// initially taken From GroupedWorkDriver.php getBrowseResult();
 	public function getBrowseResult(){
 		global $interface;
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
-		$shortId = substr($id, 4);  // Trim the list prefix for the short id
-//		$interface->assign('summShortId', $shortId);
 
-		$url ='/MyAccount/MyList/'.$shortId;
+		$url ='/MyAccount/MyList/'.$id;
 
 		$interface->assign('summUrl', $url);
 		$interface->assign('summTitle', $this->getTitle());
@@ -82,9 +101,8 @@ class ListsRecordDriver extends IndexRecordDriver
 		//Get Rating
 //		$interface->assign('ratingData', $this->getRatingData());
 		//TODO: list image. (list.png added in template)
-//		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-//		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		return 'RecordDrivers/List/cover_result.tpl';
 //		return 'RecordDrivers/GroupedWork/browse_result.tpl';
@@ -121,62 +139,79 @@ class ListsRecordDriver extends IndexRecordDriver
 			if (isset($this->fields['_highlighting']['description'][0])) {
 				return $this->fields['_highlighting']['description'][0];
 			}
-		}else{
-			return $this->fields['description'];
 		}
+		return $this->fields['description'];
 	}
 
 	function getMoreInfoLinkUrl() {
 		return $this->getLinkUrl();
 	}
 
-    /**
-     * Assign necessary Smarty variables and return a template name to
-     * load in order to display a summary of the item suitable for use in
-     * user's favorites list.
-     *
-     * @access  public
-     * @param object $user User object owning tag/note metadata.
-     * @param int $listId ID of list containing desired tags/notes (or
-     *                              null to show tags/notes from all user's lists).
-     * @param bool $allowEdit Should we display edit controls?
-     * @return  string              Name of Smarty template file to display.
-     */
-    public function getListEntry($user, $listId = null, $allowEdit = true)
-    {
-        // TODO: Implement getListEntry() method.
-    }
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display a summary of the item suitable for use in
+	 * user's favorites list.
+	 *
+	 * @access  public
+	 * @param int $listId ID of list containing desired tags/notes (or
+	 *                              null to show tags/notes from all user's lists).
+	 * @param bool $allowEdit Should we display edit controls?
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getListEntry($listId = null, $allowEdit = true)
+	{
+		//Use getSearchResult to do the bulk of the assignments
+		$this->getSearchResult('list', false);
 
-    public function getModule()
-    {
-        return 'MyAccount/MyList';
-    }
+		//Switch template
+		return 'RecordDrivers/List/listEntry.tpl';
+	}
 
-    /**
-     * Assign necessary Smarty variables and return a template name to
-     * load in order to display the full record information on the Staff
-     * View tab of the record view page.
-     *
-     * @access  public
-     * @return  string              Name of Smarty template file to display.
-     */
-    public function getStaffView()
-    {
-        return null;
-    }
+	public function getModule()
+	{
+		return 'MyAccount/MyList';
+	}
 
-    public function getDescription()
-    {
-        return $this->fields['description'];
-    }
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display the full record information on the Staff
+	 * View tab of the record view page.
+	 *
+	 * @access  public
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getStaffView()
+	{
+		return null;
+	}
 
-    public function getItemActions($itemInfo)
-    {
-        return [];
-    }
+	public function getDescription()
+	{
+		return $this->fields['description'];
+	}
 
-    public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-    {
-        return [];
-    }
+	public function getItemActions($itemInfo)
+	{
+		return [];
+	}
+
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
+	{
+		return [];
+	}
+
+	private function getListObject()
+	{
+		if ($this->listObject == null){
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$this->listObject = new UserList();
+			$this->listObject->id = $this->getId();
+			if (!$this->listObject->find(true)){
+				$this->listObject = false;
+			}
+		}
+		return $this->listObject;
+	}
+
+
 }

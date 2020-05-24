@@ -1,6 +1,7 @@
 <?php
 
-function getUserUpdates(){
+function getUserUpdates()
+{
 	return array(
 		'roles_2' => array(
 			'title' => 'Roles 2',
@@ -113,8 +114,8 @@ function getUserUpdates(){
 			'description' => 'Set Id columns to require a value (can not be null).',
 			'sql' => array(
 				"ALTER TABLE `user_link` 
-                    CHANGE COLUMN `primaryAccountId` `primaryAccountId` INT(11) NOT NULL,
-                    CHANGE COLUMN `linkedAccountId` `linkedAccountId` INT(11) NOT NULL;",
+					CHANGE COLUMN `primaryAccountId` `primaryAccountId` INT(11) NOT NULL,
+					CHANGE COLUMN `linkedAccountId` `linkedAccountId` INT(11) NOT NULL;",
 			),
 		),
 
@@ -141,38 +142,38 @@ function getUserUpdates(){
 			),
 		),
 
-        'user_reading_history_index_source_id' => array(
-            'title' => 'Index source Id in user reading history',
-            'description' => 'Index source Id in user reading history',
-            'sql' => array(
-                "ALTER TABLE user_reading_history_work ADD INDEX sourceId(sourceId)"
-            ),
-        ),
+		'user_reading_history_index_source_id' => array(
+			'title' => 'Index source Id in user reading history',
+			'description' => 'Index source Id in user reading history',
+			'sql' => array(
+				"ALTER TABLE user_reading_history_work ADD INDEX sourceId(sourceId)"
+			),
+		),
 
-        'user_hoopla_confirmation_checkout_prompt' => array(
-            'title' => 'Hoopla Checkout Confirmation Prompt',
-            'description' => 'Stores user preference whether or not to prompt for confirmation before checking out a title from Hoopla',
-            'sql' => array(
-                "ALTER TABLE `user` ADD COLUMN `hooplaCheckOutConfirmation` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;"
-            ),
-        ),
+		'user_hoopla_confirmation_checkout_prompt' => array(
+			'title' => 'Hoopla Checkout Confirmation Prompt',
+			'description' => 'Stores user preference whether or not to prompt for confirmation before checking out a title from Hoopla',
+			'sql' => array(
+				"ALTER TABLE `user` ADD COLUMN `hooplaCheckOutConfirmation` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;"
+			),
+		),
 
-        'user_remove_default_created' => array(
-            'title' => 'Remove default for user created field',
-            'description' => 'Remove default for user created field (not correct for later versions of MySQL',
-            'sql' => array(
-                "ALTER TABLE `user` CHANGE COLUMN created created DATETIME not null;"
-            ),
-        ),
+		'user_remove_default_created' => array(
+			'title' => 'Remove default for user created field',
+			'description' => 'Remove default for user created field (not correct for later versions of MySQL',
+			'sql' => array(
+				"ALTER TABLE `user` CHANGE COLUMN created created DATETIME not null;"
+			),
+		),
 
-        'user_add_rbdigital_id' => array(
-            'title' => 'User RBdigital Id',
-            'description' => 'Stores user rbdigital id for a user',
-            'sql' => array(
-                "ALTER TABLE user ADD COLUMN rbdigitalId INT(11) DEFAULT -1;",
-                "ALTER TABLE user ADD COLUMN rbdigitalLastAccountCheck INT(11)",
-            ),
-        ),
+		'user_add_rbdigital_id' => array(
+			'title' => 'User RBdigital Id',
+			'description' => 'Stores user rbdigital id for a user',
+			'sql' => array(
+				"ALTER TABLE user ADD COLUMN rbdigitalId INT(11) DEFAULT -1;",
+				"ALTER TABLE user ADD COLUMN rbdigitalLastAccountCheck INT(11)",
+			),
+		),
 
 		'user_add_rbdigital_username_password' => array(
 			'title' => 'User RBdigital Username and Password',
@@ -206,13 +207,13 @@ function getUserUpdates(){
 			'description' => 'Add the ability to send messages to users',
 			'sql' => [
 				'CREATE TABLE user_messages (
-    				id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    				userId INT(11),
-    				messageType VARCHAR(50),
-    				messageLevel ENUM (\'success\', \'info\', \'warning\', \'danger\') DEFAULT \'info\',
-    				message MEDIUMTEXT,
-    				isDismissed TINYINT(1) DEFAULT 0,
-    				INDEX (userId, isDismissed)   				
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					userId INT(11),
+					messageType VARCHAR(50),
+					messageLevel ENUM (\'success\', \'info\', \'warning\', \'danger\') DEFAULT \'info\',
+					message MEDIUMTEXT,
+					isDismissed TINYINT(1) DEFAULT 0,
+					INDEX (userId, isDismissed)
 				)'
 			]
 		],
@@ -249,15 +250,15 @@ function getUserUpdates(){
 			'description' => 'Add a table to store information about payments that have been submitted through Aspen Discovery',
 			'sql' => [
 				'CREATE TABLE user_payments (
-    				id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    				userId INT(11),
-    				paymentType VARCHAR(20),
-    				orderId VARCHAR(50),
-    				completed TINYINT(1),
-    				finesPaid VARCHAR(255),
-    				totalPaid FLOAT,
-    				INDEX (userId, paymentType, completed),
-    				INDEX (paymentType, orderId)
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					userId INT(11),
+					paymentType VARCHAR(20),
+					orderId VARCHAR(50),
+					completed TINYINT(1),
+					finesPaid VARCHAR(255),
+					totalPaid FLOAT,
+					INDEX (userId, paymentType, completed),
+					INDEX (paymentType, orderId)
 				)'
 			]
 		],
@@ -285,16 +286,35 @@ function getUserUpdates(){
 				'makeNytUserListPublisher',
 			),
 		],
+
+		'user_list_entry_add_additional_types' => [
+			'title' => 'Add additional types to list entries',
+			'description' => 'Allow any type of resource to be added to user lists',
+			'sql' => [
+				'ALTER TABLE user_list_entry CHANGE COLUMN groupedWorkPermanentId sourceId VARCHAR(36)',
+				"ALTER TABLE user_list_entry ADD COLUMN source VARCHAR(20) NOT NULL default 'GroupedWork'",
+				"ALTER TABLE user_list_entry ADD INDEX source(source, sourceId)"
+			]
+		],
+
+		'user_last_list_used' => [
+			'title' => 'User Last Used List',
+			'description' => 'Store the last list the user edited',
+			'sql' => [
+				"ALTER TABLE user ADD COLUMN lastListUsed INT(11) DEFAULT -1",
+			]
+		]
 	);
 }
 
-function makeNytUserListPublisher(){
+function makeNytUserListPublisher()
+{
 	$user = new User();
 	$user->username = 'nyt_user';
-	if ($user->find(true)){
+	if ($user->find(true)) {
 		$role = new Role();
 		$role->name = 'listPublisher';
-		if ($role->find(true)){
+		if ($role->find(true)) {
 			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 			$userRole = new UserRoles();
 			$userRole->userId = $user->id;

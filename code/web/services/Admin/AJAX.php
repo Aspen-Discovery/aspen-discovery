@@ -8,6 +8,7 @@ class Admin_AJAX extends JSON_Action
 	function getReindexNotes()
 	{
 		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
 		$reindexProcess = new ReindexLogEntry();
 		$reindexProcess->id = $id;
 		$results = array(

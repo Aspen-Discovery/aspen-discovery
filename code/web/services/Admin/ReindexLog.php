@@ -9,9 +9,9 @@ class ReindexLog extends Admin_Admin
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 
 		$logEntries = array();
+		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
 		$logEntry = new ReindexLogEntry();
 		if (!empty($_REQUEST['worksLimit']) && ctype_digit($_REQUEST['worksLimit'])) {
 			// limits total count correctly
@@ -41,7 +41,7 @@ class ReindexLog extends Admin_Admin
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
-		$this->display('reindexLog.tpl', 'Reindex Log');
+		$this->display('reindexLog.tpl', 'Nightly Index Log');
 	}
 
 	function getAllowableRoles(){
