@@ -25,7 +25,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 		// ??x?? = Other
 		String literaryForm = null;
 		for (ItemInfo printItem : printItems){
-			String locationCode = printItem.getSubLocationCode();
+			String locationCode = printItem.getShelfLocationCode();
 			if (locationCode != null) {
 				literaryForm = getLiteraryFormForLocation(locationCode);
 				if (literaryForm != null){
@@ -60,7 +60,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 		// ?y??? = Teen
 		HashSet<String> targetAudiences = new HashSet<>();
 		for (ItemInfo printItem : printItems){
-			String locationCode = printItem.getSubLocationCode();
+			String locationCode = printItem.getShelfLocationCode();
 			if (addTargetAudienceBasedOnLocationCode(targetAudiences, locationCode)) break;
 		}
 		if (targetAudiences.size() == 0){
@@ -72,7 +72,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 
 	private boolean addTargetAudienceBasedOnLocationCode(HashSet<String> targetAudiences, String locationCode) {
 		if (locationCode != null) {
-			if (locationCode.length() >= 2) {
+			if (locationCode.length() >= 1) {
 				if (locationCode.charAt(0) == 'A') {
 					targetAudiences.add("Adult");
 					return true;
