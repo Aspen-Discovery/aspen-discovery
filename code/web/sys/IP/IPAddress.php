@@ -16,6 +16,26 @@ class IPAddress extends DataObject
 		return array('id', 'locationid', 'ip');
 	}
 
+	static function getObjectStructure(){
+		//Look lookup information for display in the user interface
+		$location = new Location();
+		$location->orderBy('displayName');
+		$location->find();
+		$locationList = array();
+		$locationLookupList = array();
+		$locationLookupList[-1] = '<No Nearby Location>';
+		while ($location->fetch()){
+			$locationLookupList[$location->locationId] = $location->displayName;
+			$locationList[$location->locationId] = clone $location;
+		}
+		return array(
+			'ip' => array('property'=>'ip', 'type'=>'text', 'label'=>'IP Address', 'description'=>'The IP Address to map to a location formatted as xxx.xxx.xxx.xxx/mask'),
+			'location' => array('property'=>'location', 'type'=>'text', 'label'=>'Display Name', 'description'=>'Descriptive information for the IP Address for internal use'),
+			'locationid' => array('property'=>'locationid', 'type'=>'enum', 'values'=>$locationLookupList, 'label'=>'Location', 'description'=>'The Location which this IP address maps to'),
+			'isOpac' => array('property' => 'isOpac', 'type' => 'checkbox', 'label' => 'Treat as a Public OPAC', 'description' => 'This IP address will be treated as a public OPAC with autologout features turned on.', 'default' => true),
+		);
+	}
+
 	function label(){
 		return $this->location;
 	}
@@ -37,8 +57,14 @@ class IPAddress extends DataObject
 			$startIp = $ipRange[0];
 			$endIp = $ipRange[1];
 		}else{
-			$startIp = ip2long($ipAddress);
-			$endIp = $startIp;
+			if (strpos($ipAddress, '-')){
+				list($startVal, $endVal) = explode('-', $ipAddress);
+				$startIp = ip2long(trim($startVal));
+				$endIp = ip2long(trim($endVal));
+			}else {
+				$startIp = ip2long($ipAddress);
+				$endIp = $startIp;
+			}
 		}
 		//echo("\r\n<br/>$ipAddress: " . sprintf('%u', $startIp) . " - " .  sprintf('%u', $endIp));
 		$this->startIpVal = $startIp;
