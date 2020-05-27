@@ -147,6 +147,7 @@ class Library extends DataObject
 	public $facebookLink;
 	public $youtubeLink;
 	public $instagramLink;
+	public $pinterestLink;
 	public $goodreadsLink;
 	public $generalContactLink;
 
@@ -446,6 +447,7 @@ class Library extends DataObject
 				'twitterLink' => array('property'=>'twitterLink', 'type'=>'text', 'label'=>'Twitter Link Url', 'description'=>'The url to Twitter (leave blank if the library does not have a Twitter account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'youtubeLink' => array('property'=>'youtubeLink', 'type'=>'text', 'label'=>'Youtube Link Url', 'description'=>'The url to Youtube (leave blank if the library does not have a Youtube account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'instagramLink' => array('property'=>'instagramLink', 'type'=>'text', 'label'=>'Instagram Link Url', 'description'=>'The url to Instagram (leave blank if the library does not have a Instagram account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
+				'pinterestLink' => array('property'=>'pinterestLink', 'type'=>'text', 'label'=>'Pinterest Link Url', 'description'=>'The url to Pinterest (leave blank if the library does not have a Pinterest account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'goodreadsLink' => array('property'=>'goodreadsLink', 'type'=>'text', 'label'=>'GoodReads Link Url', 'description'=>'The url to GoodReads (leave blank if the library does not have a GoodReads account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'generalContactLink' => array('property'=>'generalContactLink', 'type'=>'text', 'label'=>'General Contact Link Url', 'description'=>'The url to a General Contact Page, i.e web form or mailto link', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 			)),
