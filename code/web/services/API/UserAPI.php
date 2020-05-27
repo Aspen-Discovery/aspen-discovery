@@ -1617,4 +1617,28 @@ class UserAPI extends Action
 		}
 		return $locationValid;
 	}
+
+	function getBarcodeForPatron(){
+		$results = array('success' => false, 'message' => 'Unknown error loading barcode');
+		if (isset($_REQUEST['patronId'])){
+			$user = new User();
+			$user->username = $_REQUEST['patronId'];
+			if ($user->find(true)){
+				$results = array('success' => true, 'barcode' => $user->getBarcode());
+			}else{
+				$results['message'] = 'Invalid Patron';
+			}
+		}else if (isset($_REQUEST['id'])){
+			$user = new User();
+			$user->id = $_REQUEST['id'];
+			if ($user->find(true)){
+				$results = array('success' => true, 'barcode' => $user->getBarcode());
+			}else{
+				$results['message'] = 'Invalid Patron';
+			}
+		}else{
+			$results['message'] = 'No patron id was provided';
+		}
+		return $results;
+	}
 }
