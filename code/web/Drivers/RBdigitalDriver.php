@@ -713,14 +713,18 @@ class RBdigitalDriver extends AbstractEContentDriver
 				$rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
 				$response = json_decode($rawResponse);
 				if (is_null($response) || (isset($response->message) && ($response->message == 'Patron not found.'))) {
-					//Do lookup by email address if seettings allow.
+					//Do lookup by email address if settings allow.
 					// Can be disabled because patron's can share email addresses
 					if (!empty($user->email) && $this->allowPatronLookupByEmail) {
 						$lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->email);
 
 						$rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
 						$response = json_decode($rawResponse);
-						if (!empty($response->message) && $response->message == 'Patron not found.') {
+						if (is_null($response) || !empty($response->message) && $response->message == 'Patron not found.') {
+							$rbdigitalId = -1;
+						} else if (!empty($response->message)) {
+							global $logger;
+							$logger->log("New Message checking if patron exists by email {$response->message}", Logger::LOG_DEBUG);
 							$rbdigitalId = -1;
 						} else {
 							$rbdigitalId = $response->patronId;
@@ -728,7 +732,10 @@ class RBdigitalDriver extends AbstractEContentDriver
 					} else {
 						$rbdigitalId = -1;
 					}
-
+				} else if (!empty($response->message)) {
+					global $logger;
+					$logger->log("New Message checking if patron exists {$response->message}", Logger::LOG_DEBUG);
+					$rbdigitalId = -1;
 				} else {
 					$rbdigitalId = $response->patronId;
 				}
