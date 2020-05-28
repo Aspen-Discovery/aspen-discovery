@@ -29,14 +29,14 @@
   - Enrichment
     - [Accelerated Reader](/Admin/HelpManual?page=Accelerated-Reader)
     - [Content Cafe](/Admin/HelpManual?page=Content-Cafe)
-    - DP.LA
+    - [DP.LA](/Admin/HelpManual?page=DPLA)
     - Facebook
     - GoodReads
     - Google
-    - OMDB
-    - New York Times
+    - [OMDB](/Admin/HelpManual?page=OMDB)
+    - [New York Times](/Admin/HelpManual?=New-York-Times)
       - NY Times Lists
-    - Novelist
+    - [Novelist](/Admin/HelpManual?=Novelist)
     - Pinterest
     - reCAPTCHA
     - Syndetics
@@ -96,7 +96,7 @@
 - Collection Spotlights
 - Covers
 - [eCommerce](/Admin/HelpManual?page=eCommerce)
-- eContent Integrations
+- [eContent Integrations](/Admin/HelpManual?page=eContent-Integrations)
   - CloudLibrary
   - Hoopla
   - OverDrive
