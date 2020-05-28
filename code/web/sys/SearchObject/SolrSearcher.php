@@ -42,7 +42,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		if ($configArray['System']['debugSolr']) {
 			//Verify that the ip is ok
 			global $locationSingleton;
-			$activeIp = $locationSingleton->getActiveIp();
+			$activeIp = IPAddress::getActiveIp();
 			$maintenanceIps = $configArray['System']['maintenanceIps'];
 			$debug = true;
 			if (strlen($maintenanceIps) > 0) {

@@ -738,9 +738,18 @@ class Admin_DBMaintenance extends Admin_Admin
 					'continueOnError' => true,
 					'sql' => array(
 						"ALTER TABLE `ip_lookup` ADD COLUMN `isOpac` TINYINT UNSIGNED NOT NULL DEFAULT 1",
-
 					),
 				),
+
+				'ip_lookup_blocking' => [
+					'title' => 'IP Lookup Blocking',
+					'description' => 'Optionally block access to all of Aspen and APIs by IP address',
+					'sql' => [
+						"ALTER TABLE ip_lookup ADD COLUMN blockAccess TINYINT NOT NULL DEFAULT 0",
+						"ALTER TABLE ip_lookup ADD COLUMN allowAPIAccess TINYINT NOT NULL DEFAULT 0",
+						"INSERT INTO ip_lookup (location, ip, locationid, startIpVal, endIpVal, blockAccess, allowAPIAccess) VALUES ('Internal', '127.0.0.1', -1, 2130706433, 2130706433, 0, 1)",
+					]
+				],
 
 				'remove_merged_records' => [
 					'title' => 'Remove unused Merged Records Table',
@@ -1953,6 +1962,16 @@ class Admin_DBMaintenance extends Admin_Admin
 					'continueOnError' => false,
 					'sql' => array(
 						'ALTER TABLE aspen_usage ADD COLUMN websiteSearches INT(11) DEFAULT 0',
+					)
+				],
+
+				'aspen_usage_blocked_requests' => [
+					'title' => 'Aspen Usage for Requests that have been blocked',
+					'description' => 'Add a column to which requests have been blocked (both regular requests and API)',
+					'continueOnError' => false,
+					'sql' => array(
+						'ALTER TABLE aspen_usage ADD COLUMN blockedRequests INT(11) DEFAULT 0',
+						'ALTER TABLE aspen_usage ADD COLUMN blockedApiRequests INT(11) DEFAULT 0',
 					)
 				],
 

@@ -7,8 +7,6 @@ class Admin_UsageDashboard extends Admin_Admin
 	function launch()
 	{
 		global $interface;
-
-		/** @var IndexingProfile[] $indexingProfiles*/
 		global $indexingProfiles;
 		$profilesToGetStatsFor = [];
 		foreach ($indexingProfiles as $indexingProfile){
@@ -67,11 +65,13 @@ class Admin_UsageDashboard extends Admin_Admin
 		$usage->selectAdd('SUM(userListSearches) as totalUserListSearches');
 		$usage->selectAdd('SUM(websiteSearches) as totalWebsiteSearches');
 		$usage->selectAdd('SUM(eventsSearches) as totalEventsSearches');
+		$usage->selectAdd('SUM(blockedRequests) as totalBlockedRequests');
+		$usage->selectAdd('SUM(blockedApiRequests) as totalBlockedApiRequests');
 
 		$usage->find(true);
 
 		/** @noinspection PhpUndefinedFieldInspection */
-		$stats = [
+		return [
 			'totalViews' => $usage->totalViews,
 			'totalCovers' => $usage->totalCovers,
 			'totalErrors' => $usage->totalErrors,
@@ -83,8 +83,8 @@ class Admin_UsageDashboard extends Admin_Admin
 			'totalUserListSearches' => $usage->totalUserListSearches,
 			'totalWebsiteSearches' => $usage->totalWebsiteSearches,
 			'totalEventsSearches' => $usage->totalEventsSearches,
+			'totalBlockedRequests' => $usage->totalBlockedRequests,
+			'totalBlockedApiRequests' => $usage->totalBlockedApiRequests,
 		];
-
-		return $stats;
 	}
 }

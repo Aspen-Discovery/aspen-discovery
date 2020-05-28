@@ -1,9 +1,14 @@
 <?php
 
-class WorkAPI {
+class WorkAPI extends Action{
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+		//Make sure the user can access the API based on the IP address
+		if ($method != 'getRatingData' && !IPAddress::allowAPIAccessForClientIP()){
+			$this->forbidAPIAccess();
+		}
+
 		if (method_exists($this, $method)) {
 			$output = json_encode(array('result'=>$this->$method()));
 		} else {
@@ -77,6 +82,7 @@ class WorkAPI {
 		return $ratingData;
 	}
 
+	/** @noinspection PhpUnused */
 	public function getIsbnsForWork($permanentId = null){
 		if ($permanentId == null){
 			$permanentId = $_REQUEST['id'];
@@ -89,7 +95,6 @@ class WorkAPI {
 
 		global $configArray;
 		$url = $configArray['Index']['url'];
-		/** @var Solr $db */
 		$db = new GroupedWorksSolrConnector($url);
 
 		disableErrorHandler();
@@ -100,20 +105,5 @@ class WorkAPI {
 		}else{
 			return $record['isbn'];
 		}
-
-
-	}
-
-	public function generateWorkId(){
-		global $configArray;
-		$localPath = $configArray['Site']['local'];
-		$title = escapeshellarg($_REQUEST['title']);
-		$author = escapeshellarg($_REQUEST['author']);
-		$format = escapeshellarg($_REQUEST['format']);
-		$recordGroupingPath = realpath("$localPath/../record_grouping/");
-		$commandToRun = "java -jar $recordGroupingPath/record_grouping.jar generateWorkId $title $author $format";
-		$result = shell_exec($commandToRun);
-		//TODO: Return normalized title and normalized author as well.
-		return json_decode($result);
 	}
 }

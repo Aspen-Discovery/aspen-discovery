@@ -11,13 +11,17 @@ class ListAPI extends Action
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
+		if ($method != 'getRSSFeed' && !IPAddress::allowAPIAccessForClientIP()){
+			$this->forbidAPIAccess();
+		}
+
+		if (!in_array($method, ['getSavedSearchTitles', 'getCacheInfoForListId', 'getSystemListTitles']) && method_exists($this, $method)) {
 			if ($method == 'getRSSFeed') {
 				header('Content-type: text/xml');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-				$xml .= $this->$_REQUEST['method']();
+				$xml .= $this->$method();
 
 				echo $xml;
 
@@ -160,7 +164,7 @@ class ListAPI extends Action
 
 			if ($titleCount > 0) {
 
-				$listTitle = $titleData["listTitle"];
+				$listTitle = $titleData["listName"];
 				$listDesc = $titleData["listDescription"];
 
 				$rssFeed .= '<title>' . $listTitle . '</title>';
@@ -451,39 +455,6 @@ class ListAPI extends Action
 		}
 	}
 
-	function loadTitleInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array())
-	{
-		$titles = array();
-		if (count($ids) > 0) {
-			/** @var SearchObject_GroupedWorkSearcher $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init();
-			$searchObject->setLimit($numTitlesToShow);
-			$searchObject->setQueryIDs($ids);
-			$searchObject->processSearch();
-			$titles = $searchObject->getTitleSummaryInformation($orderedListOfIds);
-		}
-		return $titles;
-	}
-
-	function loadArchiveInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array())
-	{
-		$titles = array();
-		if (count($ids) > 0) {
-			/** @var SearchObject_IslandoraSearcher $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
-			$archiveSearchObject->init();
-			$archiveSearchObject->setPrimarySearch(true);
-			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
-			$archiveSearchObject->setLimit($numTitlesToShow);
-			$archiveSearchObject->setQueryIDs($ids);
-			$archiveSearchObject->processSearch();
-			$titles = $archiveSearchObject->getTitleSummaryInformation($orderedListOfIds);
-		}
-		return $titles;
-	}
-
 	function getSavedSearchTitles($searchId, $numTitlesToShow)
 	{
 		//return a random selection of 30 titles from the list.
@@ -529,7 +500,7 @@ class ListAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/ListAPI?method=createList&username=23025003575917&password=1234&title=Test+List&description=Test&public=0
+	 * https://aspenurl/API/ListAPI?method=createList&username=userbarcode&password=userpin&title=Test+List&description=Test&public=0
 	 * </code>
 	 *
 	 * Sample Response:
@@ -591,7 +562,7 @@ class ListAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/ListAPI?method=createList&username=23025003575917&password=1234&title=Test+List&description=Test&public=0
+	 * https://aspenurl/API/ListAPI?method=createList&username=userbarcode&password=userpin&title=Test+List&description=Test&public=0
 	 * </code>
 	 *
 	 * Sample Response:
@@ -677,7 +648,7 @@ class ListAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/ListAPI?method=clearListTitles&username=23025003575917&password=1234&listId=1234
+	 * https://aspenurl/API/ListAPI?method=clearListTitles&username=userbarcode&password=userpin&listId=1234
 	 * </code>
 	 *
 	 * Sample Response:
@@ -740,6 +711,7 @@ class ListAPI extends Action
 	 *
 	 * @param string $selectedList machine readable name of the new york times list
 	 * @return array
+	 * @throws Exception
 	 */
 	public function createUserListFromNYT($selectedList = null): array
 	{
