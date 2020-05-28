@@ -1491,6 +1491,7 @@ class CarlX extends SIP2Driver{
 				if ($hold) {
 
 					$pickupLocation = $hold->PickUpBranch;
+					$queuePosition = $hold->QueuePosition;
 					if (!empty($hold->Title)) {
 						$title = $hold->Title;
 					}
@@ -1499,7 +1500,7 @@ class CarlX extends SIP2Driver{
 						$freeze = false;
 					}
 
-					$in = $mySip->freezeSuspendHold($dateToReactivate, $freeze,'2', '', $holdId, 'N', $pickupLocation);
+					$in = $mySip->freezeSuspendHold($dateToReactivate, $freeze,'2', '', $holdId, 'N', $pickupLocation, $queuePosition);
 					$msg_result = $mySip->get_message($in);
 
 					if (preg_match("/^16/", $msg_result)) {

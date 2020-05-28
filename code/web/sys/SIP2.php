@@ -405,7 +405,7 @@ class sip2
 	}
 
 	// For CarlX Only
-	function freezeSuspendHold($reactivateDate = '', $freeze = true, $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '')
+	function freezeSuspendHold($reactivateDate = '', $freeze = true, $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '', $queuePosition = 1)
 	{
 		$mode = '*';
 		/* mode validity check */
@@ -453,7 +453,7 @@ class sip2
 		$this->_addVarOption('AC','', true);
 		$this->_addVarOption('BO',$fee, true); /* Y when user has agreed to a fee notice */
 
-		$this->_addVarOption('BR', '1', false);
+		$this->_addVarOption('BR', $queuePosition, false);
 		$this->_addVarOption('XG', '', false);
 		$this->_addVarOption('XI',$reactivateDate . ($freeze ? 'B' : ''), true);  // Custom Field to suspend holds
 
