@@ -747,7 +747,7 @@ class Admin_DBMaintenance extends Admin_Admin
 					'sql' => [
 						"ALTER TABLE ip_lookup ADD COLUMN blockAccess TINYINT NOT NULL DEFAULT 0",
 						"ALTER TABLE ip_lookup ADD COLUMN allowAPIAccess TINYINT NOT NULL DEFAULT 0",
-						"INSERT INTO ip_lookup (location, ip, locationid, startIpVal, endIpVal, blockAccess, allowAPIAccess) VALUES ('Internal', '127.0.0.1', -1, 2130706433, 2130706433, 0, 1)",
+						"INSERT INTO ip_lookup (location, ip, locationid, startIpVal, endIpVal, blockAccess, allowAPIAccess, isOpac) VALUES ('Internal', '127.0.0.1', -1, 2130706433, 2130706433, 0, 1, 0)",
 					]
 				],
 
