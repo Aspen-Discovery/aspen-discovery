@@ -130,6 +130,17 @@ function getIndexingUpdates()
 			)
 		),
 
+		'indexing_records_default_sub_location' => [
+			'title' => 'Set Sub Location defaults for Indexing Records',
+			'description' => 'Set Sub Location defaults for records owned and records to include',
+			'sql' => [
+				"ALTER TABLE library_records_owned CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_owned CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
+			]
+		],
+
 		'indexing_profile_collection' => array(
 			'title' => 'Indexing profile collections',
 			'description' => 'Add handling of collections to indexing profile table',
