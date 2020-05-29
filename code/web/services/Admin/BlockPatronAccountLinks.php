@@ -84,18 +84,18 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	}
 
 	function getInstructions(){
-		return '<p>To block a patron from viewing the information of another patron by linking accounts:</p>
-		<br>
- 		<ul>
- 		<li>First enter the barcode of the user you want to prevent from seeing the other account as the <b>"The following blocked barcode will not have access to the account below."</b></li>
- 		<li>Next enter the barcode of the user you want to prevent from being viewed by the other account as the <b>"The following barcode will not be accessible by the blocked barcode above."</b></li>
- 		<li>If the user should not be able to see any other accounts at all, check <b>"Check this box to prevent the blocked barcode from accessing ANY linked accounts."</b></li>
- 		<li>Now select a <b>Save Changes</b> button</li>
- 		</ul>
- 		<br>
- 		<p class="alert alert-warning">
- 		<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> Blocking a patron from linking accounts will not prevent a user from manually logging into other accounts.
- 		If you suspect that someone has been accessing other accounts incorrectly, you should issue new cards or change PINs for the accounts they have accessed in addition to blocking them.
-		</p>';
+//		return '<p>To block a patron from viewing the information of another patron by linking accounts:</p>
+//		<br>
+// 		<ul>
+// 		<li>First enter the barcode of the user you want to prevent from seeing the other account as the <b>"The following blocked barcode will not have access to the account below."</b></li>
+// 		<li>Next enter the barcode of the user you want to prevent from being viewed by the other account as the <b>"The following barcode will not be accessible by the blocked barcode above."</b></li>
+// 		<li>If the user should not be able to see any other accounts at all, check <b>"Check this box to prevent the blocked barcode from accessing ANY linked accounts."</b></li>
+// 		<li>Now select a <b>Save Changes</b> button</li>
+// 		</ul>
+// 		<br>
+// 		<p class="alert alert-warning">
+// 		<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> Blocking a patron from linking accounts will not prevent a user from manually logging into other accounts.
+// 		If you suspect that someone has been accessing other accounts incorrectly, you should issue new cards or change PINs for the accounts they have accessed in addition to blocking them.
+//		</p>';
 	}
 }

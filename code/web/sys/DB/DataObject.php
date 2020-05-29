@@ -26,7 +26,7 @@ abstract class DataObject
 	private $__limitStart;
 	private $__limitCount;
 	protected $__lastQuery;
-	private $__lastError;
+	protected $__lastError;
 	private $__joins = [];
 	protected $__fetchingFromDB = false;
 
@@ -395,6 +395,10 @@ abstract class DataObject
 			$row = $results->fetchObject();
 		}
 		return $columns;
+	}
+
+	protected function setLastError($errorMessage) {
+		$this->__lastError = $errorMessage;
 	}
 
 	public function getLastError(){

@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
+
 class BlockPatronAccountLink extends DataObject
 {
 
@@ -11,35 +12,33 @@ class BlockPatronAccountLink extends DataObject
 	public $blockLinking;         // Indicates primaryAccountId will not be linked to any other accounts.
 
 	// Additional Info Not stored in table
-
-	public $primaryAccountBarCode;      //  The info the Admin user will see & input
-	public $primaryAccountName; // TODO
-	public $blockedAccountBarCode;      //  The info the Admin user will see & input
-	public $blockedAccountName; // TODO
+	public $_primaryAccountBarCode;      //  The info the Admin user will see & input
+	public $_blockedAccountBarCode;      //  The info the Admin user will see & input
 
 	/**
 	 * Override the fetch functionality to fetch Account BarCodes
 	 *
-	 * @see DB/DB_DataObject::fetch()
-	 * @param bool $includeBarCodes  short-circuit the fetching of barcodes when not needed.
+	 * @param bool $includeBarCodes short-circuit the fetching of barcodes when not needed.
 	 * @return bool
+	 * @see DB/DB_DataObject::fetch()
 	 */
-	function fetch($includeBarCodes = true){
+	function fetch($includeBarCodes = true)
+	{
 		$return = parent::fetch();
-		if ($return & $includeBarCodes) {
+		if (!is_null($return) & $includeBarCodes) {
 			// Default values (clear out any previous values
-			$this->blockedAccountBarCode = null;
-			$this->primaryAccountBarCode = null;
+			$this->_blockedAccountBarCode = null;
+			$this->_primaryAccountBarCode = null;
 
 			$barcode = $this->getBarcode();
 			$user = new User();
-			if($user->get($this->primaryAccountId)) {
-				$this->primaryAccountBarCode = $user->$barcode;
+			if ($user->get($this->primaryAccountId)) {
+				$this->_primaryAccountBarCode = $user->$barcode;
 			}
 			if ($this->blockedLinkAccountId) {
 				$user = new User();
 				if ($user->get($this->blockedLinkAccountId)) {
-					$this->blockedAccountBarCode = $user->$barcode;
+					$this->_blockedAccountBarCode = $user->$barcode;
 				}
 			}
 		}
@@ -51,10 +50,17 @@ class BlockPatronAccountLink extends DataObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update()
+	{
 		$this->getAccountIds();
-		if (!$this->primaryAccountId) return false;  // require a primary account id
-		if (!$this->blockedLinkAccountId && !$this->blockLinking) return false; // require at least one of these
+		if (!$this->primaryAccountId) {
+			$this->setLastError("Could not find a user for the blocked barcode that was provided");
+			return false;
+		}  // require a primary account id
+		if (!$this->blockedLinkAccountId && !$this->blockLinking) {
+			$this->setLastError("Could not find a user for the non accessible barcode that was provided");
+			return false;
+		} // require at least one of these
 		return parent::update();
 	}
 
@@ -63,48 +69,57 @@ class BlockPatronAccountLink extends DataObject
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert(){
+	public function insert()
+	{
 		$this->getAccountIds();
-		if (!$this->primaryAccountId) return false;  // require a primary account id
-		if (!$this->blockedLinkAccountId && !$this->blockLinking) return false; // require at least one of these
+		if (!$this->primaryAccountId) {
+			$this->setLastError("Could not find a user for the blocked barcode that was provided");
+			return false;
+		}  // require a primary account id
+		if (!$this->blockedLinkAccountId && !$this->blockLinking) {
+			$this->setLastError("Could not find a user for the non accessible barcode that was provided");
+			return false;
+		} // require at least one of these
 		return parent::insert();
 	}
 
-	private function getAccountIds(){
+	private function getAccountIds()
+	{
 		// Get Account Ids for the barcodes
 		$barcode = $this->getBarcode();
-		if ($this->primaryAccountBarCode) {
+		if ($this->_primaryAccountBarCode) {
 			$user = new User();
-			if ($user->get($barcode, $this->primaryAccountBarCode)) {
+			if ($user->get($barcode, $this->_primaryAccountBarCode)) {
 				$this->primaryAccountId = $user->id;
 			}
 		}
-		if ($this->blockedAccountBarCode) {
+		if ($this->_blockedAccountBarCode) {
 			$user = new User();
-			if ($user->get($barcode, $this->blockedAccountBarCode)) {
+			if ($user->get($barcode, $this->_blockedAccountBarCode)) {
 				$this->blockedLinkAccountId = $user->id;
 			}
 		}
 	}
 
-	private function getBarcode(){
-        global $configArray;
-        return ($configArray['Catalog']['barcodeProperty'] == 'cat_username') ? 'cat_username' : 'cat_password';
-    }
+	private function getBarcode()
+	{
+		global $configArray;
+		return ($configArray['Catalog']['barcodeProperty'] == 'cat_username') ? 'cat_username' : 'cat_password';
+	}
 
 	static function getObjectStructure()
 	{
-		$structure = array(
-			array(
+		return [
+			[
 				'property' => 'id',
 				'type' => 'hidden',
 				'label' => 'Id',
 				'description' => 'The unique id of the blocking row in the database',
 				'storeDb' => true,
 				'primaryKey' => true,
-			),
-			array(
-				'property' => 'primaryAccountBarCode',
+			],
+			[
+				'property' => '_primaryAccountBarCode',
 				'type' => 'text',
 //				'size' => 36,
 //				'maxLength' => 36,
@@ -113,9 +128,9 @@ class BlockPatronAccountLink extends DataObject
 				'storeDb' => true,
 //				'showDescription' => true,
 				'required' => true,
-			),
-			array(
-				'property' => 'blockedAccountBarCode',
+			],
+			[
+				'property' => '_blockedAccountBarCode',
 				'type' => 'text',
 //				'size' => 36,
 //				'maxLength' => 36,
@@ -124,18 +139,15 @@ class BlockPatronAccountLink extends DataObject
 //				'showDescription' => true,
 				'storeDb' => true,
 //				'required' => true,
-			),
-			array(
+			],
+			[
 				'property' => 'blockLinking',
 				'type' => 'checkbox',
 				'label' => 'Check this box to prevent the blocked barcode from accessing ANY linked accounts.',
 				'description' => 'Prevent the blocked barcode from linking to any account.',
 //				'showDescription' => true,
 				'storeDb' => true,
-			),
-
-
-		);
-		return $structure;
+			],
+		];
 	}
 }

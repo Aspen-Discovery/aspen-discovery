@@ -136,7 +136,6 @@ class Archive_RequestCopy extends Action{
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
-				$logger->log(mysql_error(), Logger::LOG_DEBUG);
 				return false;
 			}
 		} else {
