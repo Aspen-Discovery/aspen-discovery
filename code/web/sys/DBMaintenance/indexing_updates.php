@@ -636,6 +636,15 @@ function getIndexingUpdates()
 			]
 		],
 
+		'sideload_defaults' => [
+			'title' => 'Default values for sideloads',
+			'description' => 'Update default values for sideloads',
+			'sql' => [
+				"ALTER table sideloads CHANGE COLUMN recordNumberPrefix recordNumberPrefix varchar(10) NOT NULL DEFAULT '';",
+				"ALTER table sideloads CHANGE COLUMN itemTag itemTag char(3) NOT NULL DEFAULT '';"
+			]
+		],
+
 		'track_sideload_user_usage' => array(
 			'title' => 'Sideload Usage by user',
 			'description' => 'Add a table to track how often a particular user uses side loads.',

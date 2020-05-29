@@ -8,18 +8,42 @@
 {/if}
 
 {* Create the base form *}
-<form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form">
+<form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();">
 	{literal}
 
 	<script type="text/javascript">
+	let savingForm = false;
+	function setFormSubmitting(){
+		savingForm = true;
+	}
 	$(document).ready(function(){
-		$("#objectEditor").validate();
-		{/literal}
+		let objectEditorObject = $('#objectEditor');
+
+		objectEditorObject.validate();
+		objectEditorObject.data('serialize',objectEditorObject.serialize()); // On load save form current state
+        {/literal}
 		{if !empty($initializationJs)}
 			{$initializationJs}
 		{/if}
 		{literal}
+
+		$(window).bind('beforeunload', function(e){
+			if (!savingForm) {
+				// if form state change show warning box, else don't show it.
+				let objectEditorObject = $('#objectEditor');
+				if (objectEditorObject.serialize() !== objectEditorObject.data('serialize')) {
+					return 'You have made changes to the configuration, would you like to save them before continuing?';
+				} else {
+					e = null;
+				}
+			}else{
+				e = null;
+			}
+		}).bind('onsubmit', function(e){
+			savingForm = true;
+		});
 	});
+
 	</script>
 	{/literal}
 	
@@ -50,6 +74,7 @@
 					{if $id}
 						<button type="submit" name="submitStay" value="Save Changes and Stay Here" class="btn">{translate text="Save Changes and Stay Here"}</button>
 					{else}
+						<button type="submit" name="submitStay" value="Save Changes and Continue Editing" class="btn">{translate text="Save Changes and Continue Editing"}</button>
 						<button type="submit" name="submitAddAnother" value="Save Changes and Add Another" class="btn">{translate text="Save Changes and Add Another"}</button>
 					{/if}
 					</div>

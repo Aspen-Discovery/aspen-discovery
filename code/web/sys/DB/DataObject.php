@@ -50,6 +50,11 @@ abstract class DataObject
 		}
 	}
 
+	function getPrimaryKeyValue(){
+		$primaryKeyProperty = $this->__primaryKey;
+		return $this->$primaryKeyProperty;
+	}
+
 	public function find($fetchFirst = false){
 		if (!isset($this->__table)) {
 			echo("Table not defined for class " . self::class);
@@ -380,7 +385,6 @@ abstract class DataObject
 	}
 
 	public function table(){
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
