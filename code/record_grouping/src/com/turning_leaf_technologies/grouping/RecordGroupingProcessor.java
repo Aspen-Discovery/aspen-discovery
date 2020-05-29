@@ -148,7 +148,7 @@ public class RecordGroupingProcessor {
 			updateRatingsStmt = dbConnection.prepareStatement("UPDATE user_work_review SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
 			updateReadingHistoryStmt = dbConnection.prepareStatement("UPDATE user_reading_history_work SET groupedWorkPermanentId = ? where groupedWorkPermanentId = ?");
 			updateNotInterestedStmt = dbConnection.prepareStatement("UPDATE user_not_interested SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
-			updateUserListEntriesStmt = dbConnection.prepareStatement("UPDATE user_list_entry SET groupedWorkPermanentId = ? where groupedWorkPermanentId = ?");
+			updateUserListEntriesStmt = dbConnection.prepareStatement("UPDATE user_list_entry SET sourceId = ? where sourceId = ? and source = 'GroupedWork'");
 			updateNovelistStmt = dbConnection.prepareStatement("UPDATE novelist_data SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
 			updateDisplayInfoStmt = dbConnection.prepareStatement("UPDATE grouped_work_display_info SET permanent_id = ? where permanent_id = ?");
 
@@ -303,7 +303,7 @@ public class RecordGroupingProcessor {
 						updateRatingsStmt.setString(2, oldPermanentId);
 						numUpdatedRatings = updateRatingsStmt.executeUpdate();
 					}catch (SQLException e){
-						logEntry.incErrors("Error moving ratings");
+						logEntry.incErrors("Error moving ratings", e);
 					}
 
 					//Move reading history
@@ -313,7 +313,7 @@ public class RecordGroupingProcessor {
 						updateReadingHistoryStmt.setString(2, oldPermanentId);
 						numUpdatedReadingHistory = updateReadingHistoryStmt.executeUpdate();
 					}catch (SQLException e){
-						logEntry.incErrors("Error moving reading history");
+						logEntry.incErrors("Error moving reading history", e);
 					}
 
 					//Update list entries
@@ -323,7 +323,7 @@ public class RecordGroupingProcessor {
 						updateUserListEntriesStmt.setString(2, oldPermanentId);
 						numUpdatedListEntries = updateUserListEntriesStmt.executeUpdate();
 					}catch (SQLException e){
-						logEntry.incErrors("Error moving list entries");
+						logEntry.incErrors("Error moving list entries", e);
 					}
 
 					//User Not Interested
@@ -333,7 +333,7 @@ public class RecordGroupingProcessor {
 						updateNotInterestedStmt.setString(2, oldPermanentId);
 						numUpdatedNotInterested = updateNotInterestedStmt.executeUpdate();
 					}catch (SQLException e){
-						logEntry.incErrors("Error moving not interested info");
+						logEntry.incErrors("Error moving not interested info", e);
 					}
 
 					//Novelist
@@ -343,7 +343,7 @@ public class RecordGroupingProcessor {
 						updateNovelistStmt.setString(2, oldPermanentId);
 						numUpdatedNovelist = updateNovelistStmt.executeUpdate();
 					}catch (SQLException e){
-						logEntry.incErrors("Error moving novelist info");
+						logEntry.incErrors("Error moving novelist info", e);
 					}
 
 					//Display info
@@ -353,7 +353,7 @@ public class RecordGroupingProcessor {
 						updateDisplayInfoStmt.setString(2, oldPermanentId);
 						numUpdatedDisplayInfo = updateDisplayInfoStmt.executeUpdate();
 					}catch (SQLException e){
-						logEntry.incErrors("Error moving display info");
+						logEntry.incErrors("Error moving display info", e);
 					}
 
 					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries, " + numUpdatedNovelist + " novelist entries, " + numUpdatedDisplayInfo + " display info entries");
