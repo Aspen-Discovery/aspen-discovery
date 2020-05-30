@@ -14,7 +14,7 @@ class ExploreMore {
 
 		$exploreMoreSectionsToShow = array();
 
-		$relatedPikaContent = array();
+		$relatedCatalogContent = array();
 		if ($activeSection == 'archive'){
 			//If this is a book or a page, show a table of contents
 			//Check to see if the record is part of a compound object.  If so we will want to link to the parent compound object.
@@ -94,14 +94,14 @@ class ExploreMore {
 			}
 
 			//Find content from the catalog that is directly related to the object or collection based on linked data
-			$relatedPikaContent = $archiveDriver->getRelatedPikaContent();
-			if (count($relatedPikaContent) > 0){
+			$relatedCatalogContent = $archiveDriver->getRelatedCatalogContent();
+			if (count($relatedCatalogContent) > 0){
 				$exploreMoreSectionsToShow['linkedCatalogRecords'] = array(
 						'format' => 'scroller',
-						'values' => $relatedPikaContent
+						'values' => $relatedCatalogContent
 				);
 			}
-			$timer->logTime("Loaded related Pika content");
+			$timer->logTime("Loaded related Catalog content");
 
 			//Find other entities
 		}
@@ -198,7 +198,7 @@ class ExploreMore {
 		}
 
 		if ($activeSection != 'catalog'){
-			$relatedWorks = $this->getRelatedWorks($quotedSubjectsForSearching, $relatedPikaContent);
+			$relatedWorks = $this->getRelatedWorks($quotedSubjectsForSearching, $relatedCatalogContent);
 			if ($relatedWorks['numFound'] > 0){
 				$exploreMoreSectionsToShow['relatedCatalog'] = array(
 						'format' => 'scrollerWithLink',
@@ -1194,7 +1194,7 @@ class ExploreMore {
 				foreach ($response['facet_counts']['facet_fields']['RELS_EXT_isMemberOfCollection_uri_ms'] as $collectionInfo) {
 					$archiveObject = $fedoraUtils->getObject($collectionInfo[0]);
 					if ($archiveObject != null) {
-						$okToAdd = $fedoraUtils->isObjectValidForPika($archiveObject);
+						$okToAdd = $fedoraUtils->isObjectValidForDisplay($archiveObject);
 
 						if ($okToAdd) {
 							$exploreMoreOptions['sampleRecords']['islandora'][] = array(

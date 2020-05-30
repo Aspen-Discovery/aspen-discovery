@@ -46,7 +46,7 @@
 	{* this is bootstrap datepicker, not jquery ui *}
 	{literal}
 	$(document).ready(function(){
-		$('input.datePika').datepicker({
+		$('input.dateAspen').datepicker({
 			format: "mm-dd-yyyy"
 			,endDate: "+0d"
 			,startView: 2

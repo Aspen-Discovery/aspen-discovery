@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Pika
- *
- * Author: Pascal Brammeier
- * Date: 7/30/2015
- *
- */
-
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Administration/BlockPatronAccountLink.php'; // Database object
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';

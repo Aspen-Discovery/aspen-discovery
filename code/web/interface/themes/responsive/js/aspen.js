@@ -549,7 +549,7 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 }, "Invalid email format: please use a comma to separate multiple email addresses.");
 
 /**
- *  Modified from above code, for Pika self registration form.
+ *  Modified from above code, for Aspen Discovery self registration form.
  *
  * Return true, if the value is a valid date, also making this formal check mm-dd-yyyy.
  *
@@ -562,15 +562,15 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
  * @example jQuery.validator.methods.date("01.01.1900")
  * @result false
  *
- * @example <input name="pippo" class="{datePika:true}" />
+ * @example <input name="pippo" class="{dateAspen:true}" />
  * @desc Declares an optional input element whose value must be a valid date.
  *
- * @name jQuery.validator.methods.datePika
+ * @name jQuery.validator.methods.dateAspen
  * @type Boolean
  * @cat Plugins/Validate/Methods
  */
 jQuery.validator.addMethod(
-		"datePika",
+		"dateAspen",
 		function(value, element) {
 			var check = false;
 			var re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
@@ -1914,7 +1914,7 @@ AspenDiscovery.Archive = (function(){
 
 		openSeadragonViewerSettings: function(){
 			return {
-				"id": "pika-openseadragon",
+				"id": "custom-openseadragon",
 				"prefixUrl": Globals.encodedRepositoryUrl + "\/sites\/all\/libraries\/openseadragon\/images\/",
 				"debugMode": false,
 				"djatokaServerBaseURL": Globals.encodedRepositoryUrl + "\/AJAX\/DjatokaResolver",
@@ -2333,8 +2333,8 @@ AspenDiscovery.Archive = (function(){
 						this.pageDetails[pid]['jp2'],
 						AspenDiscovery.Archive.openSeadragonViewerSettings()
 				);
-				if (!$('#pika-openseadragon').hasClass('processed')) {
-					$('#pika-openseadragon').addClass('processed');
+				if (!$('#custom-openseadragon').hasClass('processed')) {
+					$('#custom-openseadragon').addClass('processed');
 					settings = AspenDiscovery.Archive.openSeadragonViewerSettings();
 					settings.tileSources = [];
 					settings.tileSources.push(tile);
@@ -4775,7 +4775,7 @@ AspenDiscovery.Ratings = (function(){
 }(AspenDiscovery.Ratings));
 
 /*
-*  Jquery Ratings Plugin, Adapted for Pika
+*  Jquery Ratings Plugin, Adapted for Aspen Discovery
  *
 * */
 //copyright 2008 Jarrett Vance

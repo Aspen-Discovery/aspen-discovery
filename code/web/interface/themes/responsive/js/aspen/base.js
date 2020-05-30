@@ -502,7 +502,7 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 }, "Invalid email format: please use a comma to separate multiple email addresses.");
 
 /**
- *  Modified from above code, for Pika self registration form.
+ *  Modified from above code, for Aspen Discovery self registration form.
  *
  * Return true, if the value is a valid date, also making this formal check mm-dd-yyyy.
  *
@@ -515,15 +515,15 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
  * @example jQuery.validator.methods.date("01.01.1900")
  * @result false
  *
- * @example <input name="pippo" class="{datePika:true}" />
+ * @example <input name="pippo" class="{dateAspen:true}" />
  * @desc Declares an optional input element whose value must be a valid date.
  *
- * @name jQuery.validator.methods.datePika
+ * @name jQuery.validator.methods.dateAspen
  * @type Boolean
  * @cat Plugins/Validate/Methods
  */
 jQuery.validator.addMethod(
-		"datePika",
+		"dateAspen",
 		function(value, element) {
 			var check = false;
 			var re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;

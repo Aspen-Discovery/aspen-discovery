@@ -33,7 +33,7 @@
 					<div id="view-image" style="display: none">
 						<div class="large-image-wrapper">
 							<div class="large-image-content">
-								<div id="pika-openseadragon" class="openseadragon"></div>
+								<div id="custom-openseadragon" class="openseadragon"></div>
 							</div>
 						</div>
 					</div>

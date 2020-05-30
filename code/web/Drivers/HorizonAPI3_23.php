@@ -88,7 +88,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
 		} elseif (!empty($changeMyPinResponse['sessionToken'])){
-			if ($user->username == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Pika user
+			if ($user->username == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Aspen Discovery user
 				$user->cat_password = $newPin;
 				$user->update();
 			}
@@ -120,7 +120,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			if (!empty($patron->cat_password)) {
 				list($userValid, $sessionToken) = $this->loginViaWebService($barcode, $patron->cat_password);
 				if ($userValid) {
-					// Yay! We were able to login with the pin Pika has!
+					// Yay! We were able to login with the pin Aspen Discovery has!
 
 					//Now check for an email address
 					$lookupMyAccountInfoResponse = $this->getWebServiceResponse( $configArray['Catalog']['webServiceUrl']  . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true');
@@ -191,7 +191,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		$requestHeaders = array(
 			'Accept: application/json',
 			'Content-Type: application/json',
-			'SD-Originating-App-Id: Pika',
+			'SD-Originating-App-Id: Aspen Discovery',
 			'x-sirs-clientId: ' . $configArray['Catalog']['clientId'],
 		);
 

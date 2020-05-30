@@ -37,10 +37,10 @@ public class SymphonyExportMain {
 		Ini ini = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
 		//Connect to the aspen database
-		Connection pikaConn = null;
+		Connection aspenConn = null;
 		try{
-			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
-			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
+			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_aspen_jdbc"));
+			aspenConn = DriverManager.getConnection(databaseConnectionInfo);
 
 		}catch (Exception e){
 			System.out.println("Error connecting to aspen database " + e.toString());
@@ -51,21 +51,21 @@ public class SymphonyExportMain {
 		long exportStartTime = startTime.getTime() / 1000;
 
 		// The time the last export started
-		long lastExportTime = getLastExtractTime(pikaConn);
+		long lastExportTime = getLastExtractTime(aspenConn);
 
 		String profileToLoad = "ils";
 		if (args.length > 1){
 			profileToLoad = args[1];
 		}
-		indexingProfile = IndexingProfile.loadIndexingProfile(pikaConn, profileToLoad, logger);
+		indexingProfile = IndexingProfile.loadIndexingProfile(aspenConn, profileToLoad, logger);
 
 		//Check for new marc out
-		processNewMarcExports(lastExportTime, pikaConn);
+		processNewMarcExports(lastExportTime, aspenConn);
 
 		//Check for a new holds file
-		processNewHoldsFile(pikaConn);
+		processNewHoldsFile(aspenConn);
 
-		//Check for new orders file(lastExportTime, pikaConn);
+		//Check for new orders file(lastExportTime, aspenConn);
 		processOrdersFile();
 
 		//update the last export start time
@@ -74,14 +74,14 @@ public class SymphonyExportMain {
 			if (!hadErrors) {
 				//Update the last extract time
 				if (lastSymphonyExtractTimeVariableId != null) {
-					PreparedStatement updateVariableStmt = pikaConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+					PreparedStatement updateVariableStmt = aspenConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
 					updateVariableStmt.setLong(1, exportStartTime);
 					updateVariableStmt.setLong(2, lastSymphonyExtractTimeVariableId);
 					updateVariableStmt.executeUpdate();
 					updateVariableStmt.close();
 					logger.debug("Updated last extract time to " + exportStartTime);
 				} else {
-					PreparedStatement insertVariableStmt = pikaConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_symphony_extract_time', ?)");
+					PreparedStatement insertVariableStmt = aspenConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_symphony_extract_time', ?)");
 					insertVariableStmt.setString(1, Long.toString(exportStartTime));
 					insertVariableStmt.executeUpdate();
 					insertVariableStmt.close();
@@ -93,7 +93,7 @@ public class SymphonyExportMain {
 
 			try{
 				//Close the connection
-				pikaConn.close();
+				aspenConn.close();
 			}catch(Exception e){
 				System.out.println("Error closing connection: " + e.toString());
 			}
@@ -201,9 +201,9 @@ public class SymphonyExportMain {
 	 *
 	 * If so, load a count of holds per bib and then update the database.
 	 *
-	 * @param pikaConn       the connection to the database
+	 * @param aspenConn       the connection to the database
 	 */
-	private static void processNewHoldsFile(Connection pikaConn) {
+	private static void processNewHoldsFile(Connection aspenConn) {
 		HashMap<String, Integer> holdsByBib = new HashMap<>();
 		boolean writeHolds = false;
 		File holdFile = new File(indexingProfile.getMarcPath() + "/Pika_Holds.csv");
@@ -289,10 +289,10 @@ public class SymphonyExportMain {
 		//Now that we've counted all the holds, update the database
 		if (!hadErrors && writeHolds){
 			try {
-				pikaConn.setAutoCommit(false);
-				pikaConn.prepareCall("DELETE FROM ils_hold_summary").executeUpdate();
+				aspenConn.setAutoCommit(false);
+				aspenConn.prepareCall("DELETE FROM ils_hold_summary").executeUpdate();
 				logger.info("Removed existing holds");
-				PreparedStatement updateHoldsStmt = pikaConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
+				PreparedStatement updateHoldsStmt = aspenConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
 				for (String ilsId : holdsByBib.keySet()){
 					updateHoldsStmt.setString(1, "a" + ilsId);
 					updateHoldsStmt.setInt(2, holdsByBib.get(ilsId));
@@ -301,8 +301,8 @@ public class SymphonyExportMain {
 						logger.info("Hold was not inserted " + "a" + ilsId + " " + holdsByBib.get(ilsId));
 					}
 				}
-				pikaConn.commit();
-				pikaConn.setAutoCommit(true);
+				aspenConn.commit();
+				aspenConn.setAutoCommit(true);
 				logger.info("Finished adding new holds to the database");
 			}catch (Exception e){
 				logger.error("Error updating holds database", e);
@@ -320,9 +320,9 @@ public class SymphonyExportMain {
 	 * the current MARC with the new record.
 	 *
 	 * @param lastExportTime the last time the export was run
-	 * @param pikaConn       the connection to the database
+	 * @param aspenConn       the connection to the database
 	 */
-	private static void processNewMarcExports(long lastExportTime, Connection pikaConn) {
+	private static void processNewMarcExports(long lastExportTime, Connection aspenConn) {
 		File fullExportFile = new File(indexingProfile.getMarcPath() + "/fullexport.mrc");
 		File fullExportDirectory = fullExportFile.getParentFile();
 		File sitesDirectory = fullExportDirectory.getParentFile();
@@ -349,10 +349,10 @@ public class SymphonyExportMain {
 
 		//If we got this far we have a good updates file to process.
 		try {
-			PreparedStatement getChecksumStmt = pikaConn.prepareStatement("SELECT checksum FROM ils_marc_checksums where source = ? AND ilsId = ?");
-			PreparedStatement updateChecksumStmt = pikaConn.prepareStatement("UPDATE ils_marc_checksums set checksum = ? where source = ? AND ilsId = ?");
-			PreparedStatement getGroupedWorkIdStmt = pikaConn.prepareStatement("SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = ? AND identifier = ?");
-			PreparedStatement updateGroupedWorkStmt = pikaConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
+			PreparedStatement getChecksumStmt = aspenConn.prepareStatement("SELECT checksum FROM ils_marc_checksums where source = ? AND ilsId = ?");
+			PreparedStatement updateChecksumStmt = aspenConn.prepareStatement("UPDATE ils_marc_checksums set checksum = ? where source = ? AND ilsId = ?");
+			PreparedStatement getGroupedWorkIdStmt = aspenConn.prepareStatement("SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = ? AND identifier = ?");
+			PreparedStatement updateGroupedWorkStmt = aspenConn.prepareStatement("UPDATE grouped_work set date_updated = ? where id = ?");
 
 			MarcReader updatedMarcReader = new MarcStreamReader(new FileInputStream(updatesFile));
 			while (updatedMarcReader.hasNext()){

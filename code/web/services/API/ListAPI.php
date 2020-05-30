@@ -779,7 +779,7 @@ class ListAPI extends Action
 		$nytList->title = $selectedListTitle;
 		$listExistsInAspen = $nytList->find(1);
 
-		//We didn't find the list in Pika, create one
+		//We didn't find the list in Aspen Discovery, create one
 		if (!$listExistsInAspen) {
 			$nytList = new UserList();
 			$nytList->title = $selectedListTitle;

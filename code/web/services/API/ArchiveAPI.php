@@ -41,7 +41,6 @@ class API_ArchiveAPI extends Action {
 			/** @var IslandoraRecordDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($doc);
 			$contributingLibrary = $record->getContributingLibrary();
-			//$exportToDPLA = isset($doc['mods_extension_marmotLocal_pikaOptions_dpla_s']) ? $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] : 'collection';
 
 			//Get the owning library
 			$dplaDoc = array();

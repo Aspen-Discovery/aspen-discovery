@@ -2071,7 +2071,7 @@ CREATE TABLE `list_widgets` (
   `showListWidgetTitle` tinyint(4) NOT NULL DEFAULT '1',
   `numTitlesToShow` int(11) NOT NULL DEFAULT '25',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within Pika or within other sites';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within Aspen Discovery or within other sites';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

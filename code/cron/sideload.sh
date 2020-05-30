@@ -10,7 +10,6 @@
 #	get wget commands from config.pwd.ini
 # 20151006: Correct for new ALL directory name 'Only libraries loading All'
 # 20150522: Grab USA_ALL_*.marc files for Comic, eBook, and Music
-# 20150130: Grab Hoopla marc records for Pika. Read Hoopla ftp user and password from ... site/[site]/config/config.pwd.ini
 
 if [[ $# -ne 1 ]]; then
 	echo "Please provide site directory, e.g., ${0} opac.marmot.org"

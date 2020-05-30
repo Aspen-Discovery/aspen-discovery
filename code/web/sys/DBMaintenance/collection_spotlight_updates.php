@@ -105,7 +105,7 @@ function getCollectionSpotlightUpdates(){
 			'description' => 'Add Text-Only List as a style option.',
 			'sql' => array(
 				"ALTER TABLE `list_widgets` CHANGE `style` `style` ENUM('vertical', 'horizontal', 'single', 'single-with-next', 'text-list') NOT NULL DEFAULT 'horizontal'",
-				"ALTER TABLE `list_widgets` COMMENT = 'A widget that can be displayed within Pika or within other sites'",
+				"ALTER TABLE `list_widgets` COMMENT = 'A widget that can be displayed within Aspen Discovery or within other sites'",
 			),
 		),
 

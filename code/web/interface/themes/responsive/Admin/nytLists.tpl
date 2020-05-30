@@ -24,7 +24,7 @@
 		<button type="submit" name="submit" class="btn btn-primary">Create/Update List</button>
 	</form>
 
-	{if !empty($pikaLists)}
+	{if !empty($existingLists)}
 		<h3>Existing New York Times Lists</h3>
 		<table class="table table-bordered table-hover">
 			<tr>
@@ -33,14 +33,13 @@
 				</th>
 				<th>Last Updated</th>
 			</tr>
-			{foreach from=$pikaLists item="pikaList"}
+			{foreach from=$existingLists item="existingList"}
 				<tr>
 					<td>
-						<a href="/MyAccount/MyList/{$pikaList->id}">{$pikaList->title} ({$pikaList->numValidListItems()})</a>
+						<a href="/MyAccount/MyList/{$existingList->id}">{$existingList->title} ({$existingList->numValidListItems()})</a>
 					</td>
-					<td>{
-						$pikaList->dateUpdated|date_format}
-						{*<button class="btn btn-primary btn-xs pull-right" onclick="$('#existingListId').val({$pikaList->id});$('#buildList').submit()">Update</button>*}
+					<td>
+						{$existingList->dateUpdated|date_format}
 					</td>
 				</tr>
 			{/foreach}

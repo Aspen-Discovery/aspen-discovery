@@ -1108,7 +1108,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$archiveObject = $fedoraUtils->getObject($pid);
 			if ($archiveObject == null) {
 				$okToShow = true; //These are things like People, Places, Events, Large Image Collection, etc
-			} else if (!$fedoraUtils->isObjectValidForPika($archiveObject)) {
+			} else if (!$fedoraUtils->isObjectValidForDisplay($archiveObject)) {
 				$okToShow = false;
 			}
 		}

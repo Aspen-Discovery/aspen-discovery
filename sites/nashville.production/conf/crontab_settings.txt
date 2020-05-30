@@ -58,9 +58,9 @@
 20 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php nashville.production
 # update on Sundays and Mondays at 7:20
 
-#################
-# Aspen Cleanup #
-#################
+###########################
+# Aspen Discovery Cleanup #
+###########################
 
 # Temp files
 26 0 * * * cd /tmp; rm -rf CURLCOOKIE*

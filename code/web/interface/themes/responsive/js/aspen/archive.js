@@ -63,7 +63,7 @@ AspenDiscovery.Archive = (function(){
 
 		openSeadragonViewerSettings: function(){
 			return {
-				"id": "pika-openseadragon",
+				"id": "custom-openseadragon",
 				"prefixUrl": Globals.encodedRepositoryUrl + "\/sites\/all\/libraries\/openseadragon\/images\/",
 				"debugMode": false,
 				"djatokaServerBaseURL": Globals.encodedRepositoryUrl + "\/AJAX\/DjatokaResolver",
@@ -482,8 +482,8 @@ AspenDiscovery.Archive = (function(){
 						this.pageDetails[pid]['jp2'],
 						AspenDiscovery.Archive.openSeadragonViewerSettings()
 				);
-				if (!$('#pika-openseadragon').hasClass('processed')) {
-					$('#pika-openseadragon').addClass('processed');
+				if (!$('#custom-openseadragon').hasClass('processed')) {
+					$('#custom-openseadragon').addClass('processed');
 					settings = AspenDiscovery.Archive.openSeadragonViewerSettings();
 					settings.tileSources = [];
 					settings.tileSources.push(tile);

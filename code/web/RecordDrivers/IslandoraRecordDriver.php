@@ -929,7 +929,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 			$collectionsRaw = $this->getArchiveObject()->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOfCollection');
 			$fedoraUtils = FedoraUtils::getInstance();
 			foreach ($collectionsRaw as $collectionInfo) {
-				if ($fedoraUtils->isPidValidForPika($collectionInfo['object']['value'])){
+				if ($fedoraUtils->isPidValidForDisplay($collectionInfo['object']['value'])){
 					$collectionObject = $fedoraUtils->getObject($collectionInfo['object']['value']);
 					$driver = RecordDriverFactory::initRecordDriver($collectionObject);
 					$this->relatedCollections[$collectionInfo['object']['value']] = array(
@@ -945,7 +945,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 
 			if (count($this->relatedCollections) == 0){
 				foreach ($collectionsRaw as $collectionInfo) {
-					if (!$fedoraUtils->isPidValidForPika($collectionInfo['object']['value'])){
+					if (!$fedoraUtils->isPidValidForDisplay($collectionInfo['object']['value'])){
 						$parentObject = $fedoraUtils->getObject($collectionInfo['object']['value']);
 						/** @var IslandoraRecordDriver $parentDriver */
 						$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
@@ -1310,12 +1310,12 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		return $this->links;
 	}
 
-	protected $relatedPikaRecords;
-	public function getRelatedPikaContent(){
-		if ($this->relatedPikaRecords == null){
+	protected $relatedCatalogRecords;
+	public function getRelatedCatalogContent(){
+		if ($this->relatedCatalogRecords == null){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 
-			$this->relatedPikaRecords = array();
+			$this->relatedCatalogRecords = array();
 
 			//Look for things linked directly to this object
 			$links = $this->getLinks();
@@ -1336,7 +1336,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 				$linkedWorkData = $searchObject->getRecords($relatedWorkIds);
 				foreach ($linkedWorkData as $workDriver) {
 					if ($workDriver->isValid) {
-						$this->relatedPikaRecords[] = array(
+						$this->relatedCatalogRecords[] = array(
 							'link' => $workDriver->getLinkUrl(),
 							'label' => $workDriver->getTitle(),
 							'image' => $workDriver->getBookcoverUrl('medium'),
@@ -1354,13 +1354,13 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 			foreach ($collections as $collection){
 				/** @var IslandoraRecordDriver $collectionDriver */
 				$collectionDriver = RecordDriverFactory::initRecordDriver($collection['object']);
-				$relatedFromCollection = $collectionDriver->getRelatedPikaContent();
+				$relatedFromCollection = $collectionDriver->getRelatedCatalogContent();
 				if (count($relatedFromCollection)){
-					$this->relatedPikaRecords = array_merge($this->relatedPikaRecords, $relatedFromCollection);
+					$this->relatedCatalogRecords = array_merge($this->relatedCatalogRecords, $relatedFromCollection);
 				}
 			}
 		}
-		return $this->relatedPikaRecords;
+		return $this->relatedCatalogRecords;
 	}
 
 	protected $directlyRelatedObjects = null;

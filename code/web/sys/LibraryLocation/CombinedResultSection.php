@@ -26,7 +26,7 @@ abstract class CombinedResultSection extends DataObject{
 			$validResultSources['dpla'] = 'DPLA';
 		}
 		$validResultSources['eds'] = 'EBSCO EDS';
-		$validResultSources['pika'] = 'Catalog Results';
+		$validResultSources['catalog'] = 'Catalog Results';
 		if ($configArray['Content']['Prospector']) {
 			$validResultSources['prospector'] = 'Prospector';
 		}
@@ -36,13 +36,13 @@ abstract class CombinedResultSection extends DataObject{
 				'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
 				'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'The full name of the section for display to the user', 'maxLength' => 255),
 				'numberOfResultsToShow' => array('property'=>'numberOfResultsToShow', 'type'=>'integer', 'label'=>'Num Results', 'description'=>'The number of results to show in the box.', 'default' => '5'),
-				'source' => array('property'=>'source', 'type'=>'enum', 'label'=>'Source', 'values' => $validResultSources, 'description'=>'The source of results in the section.', 'default'=>'pika'),
+				'source' => array('property'=>'source', 'type'=>'enum', 'label'=>'Source', 'values' => $validResultSources, 'description'=>'The source of results in the section.', 'default'=>'catalog'),
 		);
 		return $structure;
 	}
 
 	function getResultsLink($searchTerm, $searchType){
-		if ($this->source == 'pika') {
+		if ($this->source == 'catalog') {
 			return "/Search/Results?lookfor=$searchTerm&searchIndex=$searchType&searchSource=local";
 		}elseif ($this->source == 'prospector'){
 			require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';

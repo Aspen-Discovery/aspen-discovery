@@ -216,7 +216,7 @@ function readConfig()
 	}
 	// @codeCoverageIgnoreEnd
 
-	// Set a instanceName so that memcache variables can be stored for a specific instance of Pika,
+	// Set a instanceName so that memcache variables can be stored for a specific instance of Aspen Discovery,
 	// rather than the $serverName will depend on the specific interface a user is browsing to.
 	$instanceName = parse_url($mainArray['Site']['url'], PHP_URL_HOST);
 	// Have to set the instanceName before the transformation of $mainArray['Site']['url'] below.

@@ -10,7 +10,7 @@
 		{if $canView}
 			<div class="large-image-wrapper">
 				<div class="large-image-content" oncontextmenu="return false;">
-					<div id="pika-openseadragon" class="openseadragon"></div>
+					<div id="custom-openseadragon" class="openseadragon"></div>
 				</div>
 			</div>
 
@@ -54,13 +54,13 @@
 	{if $canView}
 	<script type="text/javascript">
 		$(document).ready(function(){ldelim}
-			if (!$('#pika-openseadragon').hasClass('processed')) {ldelim}
+			if (!$('#custom-openseadragon').hasClass('processed')) {ldelim}
 				var openSeadragonSettings = {ldelim}
 					"pid":"{$pid}",
 					"resourceUri":{$front_image|@json_encode nofilter},
 					"tileSize":256,
 					"tileOverlap":0,
-					"id":"pika-openseadragon",
+					"id":"custom-openseadragon",
 					"settings": AspenDiscovery.Archive.openSeadragonViewerSettings()
 				{rdelim};
 				openSeadragonSettings.settings.tileSources = new Array();
@@ -78,7 +78,7 @@
 				openSeadragonSettings.settings.tileSources.push(backTile);
 
 				AspenDiscovery.Archive.openSeaDragonViewer = new OpenSeadragon(openSeadragonSettings.settings);
-				$('#pika-openseadragon').addClass('processed');
+				$('#custom-openseadragon').addClass('processed');
 			{rdelim}
 		{rdelim});
 	</script>
