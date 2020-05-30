@@ -108,16 +108,16 @@
 - Full Record Pages
 - Genealogy & Obituaries
 - Interlibrary Loans
-- Materials Requests & Purchase Suggestions
+- [Materials Requests & Purchase Suggestions](/Admin/HelpManual?page=Materials-Requests-Purchase-Suggestions)
 - Open Archives
 - [Placards](/Admin/HelpManual?page=Placards)
 - [Reading History](/Admin/HelpManual?page=Reading-History)
-- Ratings and Reviews
+- [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
 - [Recommendations](/Admin/HelpManual?page=Recommendations)
 - Searching
   - Search Types
   - Facets
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
-- User Lists
+- [User Lists](/Admin/HelpManual?page=User-Lists)
 - Patron Account
   - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
