@@ -43,21 +43,12 @@ class CollectionSpotlight extends DataObject
 		return ['id'];
 	}
 
-	public function getStyles()
-	{
-		return CollectionSpotlight::$_styles;
-	}
-
 	public function getStyle($styleName)
 	{
 		return CollectionSpotlight::$_styles[$styleName];
 	}
 
-	public function getDisplayTypes()
-	{
-		return CollectionSpotlight::$_displayTypes;
-	}
-
+	/** @noinspection PhpUnused */
 	public function getDisplayType($typeName)
 	{
 		return CollectionSpotlight::$_displayTypes[$typeName];
@@ -85,7 +76,12 @@ class CollectionSpotlight extends DataObject
 			$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
 		}
 
-		$structure = array(
+		$spotlightListStructure = CollectionSpotlightList::getObjectStructure();
+		unset($spotlightListStructure['searchTerm']);
+		unset($spotlightListStructure['defaultFilter']);
+		unset($spotlightListStructure['sourceListId']);
+		unset($spotlightListStructure['defaultSort']);
+		return array(
 			'id' => array(
 				'property' => 'id',
 				'type' => 'hidden',
@@ -226,18 +222,20 @@ class CollectionSpotlight extends DataObject
 				'keyThis' => 'id',
 				'keyOther' => 'collectionSpotlightId',
 				'subObjectType' => 'CollectionSpotlightList',
-				'structure' => CollectionSpotlightList::getObjectStructure(),
+				'structure' => $spotlightListStructure,
 				'label' => 'Lists',
 				'description' => 'The lists to be displayed.',
 				'sortable' => true,
 				'storeDb' => true,
 				'serverValidation' => 'validateLists',
 				'hideInLists' => false,
+				'allowEdit' => true,
+				'canEdit' => true,
 			),
 		);
-		return $structure;
 	}
 
+	/** @noinspection PhpUnused */
 	function validateName()
 	{
 		//Setup validation return array

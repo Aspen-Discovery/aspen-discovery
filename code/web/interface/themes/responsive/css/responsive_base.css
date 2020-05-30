@@ -7096,10 +7096,10 @@ body > .container {
   color: #333333;
 }
 .active .panel-title {
-  color: white;
+  color: #333333;
 }
 .active .panel-title > a {
-  color: white;
+  color: #333333;
 }
 .modal {
   left: 50%;
@@ -8752,6 +8752,11 @@ a.placard-link {
   position: sticky;
   top: 0;
 }
+.help-link {
+  margin-top: 20px;
+  line-height: 50px;
+  text-align: right;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;
@@ -9465,8 +9470,13 @@ a.browse-thumbnail-sorted.active {
   font-size: 13px;
   color: #333333;
 }
-#account-settings-accordion .active .panel-title {
-  color: #fff;
+#account-link-accordion .panel.active .panel-title,
+account-settings-accordion .panel.active .panel-title {
+  color: white;
+}
+#account-link-accordion .panel.active .panel-title > a,
+account-settings-accordion .panel.active .panel-title > a {
+  color: white;
 }
 #account-settings-accordion .panel-body {
   font-size: 12px;
@@ -9526,9 +9536,9 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .titleScrollerHeader {
-  background: url(/interface/themes/responsive/images/breadcrumb-gradient.png) repeat-x top left;
+  background-color: #4dacde;
   padding: 2px;
-  color: #00125E;
+  color: white;
   font-size: 12px;
   font-weight: bold;
   height: 20px;

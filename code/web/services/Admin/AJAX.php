@@ -1,27 +1,11 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/JSON_Action.php';
 
-class Admin_AJAX extends Action
+class Admin_AJAX extends JSON_Action
 {
 
-	function launch()
-	{
-		global $timer;
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
-			$timer->logTime("Starting method $method");
-
-			//JSON Responses
-			header('Content-type: application/json');
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-			echo $this->$method();
-		} else {
-			echo json_encode(array('error' => 'invalid_method'));
-		}
-	}
-
+	/** @noinspection PhpUnused */
 	function getReindexNotes()
 	{
 		$id = $_REQUEST['id'];
@@ -44,9 +28,10 @@ class Admin_AJAX extends Action
 			$results['title'] = "Error";
 			$results['modalBody'] = "We could not find a reindex entry with that id.  No notes available.";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getCronProcessNotes()
 	{
 		$id = $_REQUEST['id'];
@@ -68,9 +53,10 @@ class Admin_AJAX extends Action
 			$results['title'] = "Error";
 			$results['modalBody'] = "We could not find a process with that id.  No notes available.";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getCronNotes()
 	{
 		$id = $_REQUEST['id'];
@@ -93,9 +79,10 @@ class Admin_AJAX extends Action
 			$results['title'] = "Error";
 			$results['modalBody'] = "We could not find a cron entry with that id.  No notes available.";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getExtractNotes()
 	{
 		$id = $_REQUEST['id'];
@@ -148,9 +135,10 @@ class Admin_AJAX extends Action
 		}
 
 
-		return json_encode($results);
+		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getAddToSpotlightForm()
 	{
 		global $interface;
@@ -173,9 +161,10 @@ class Admin_AJAX extends Action
 			'modalBody' => $interface->fetch('Admin/addToSpotlightForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#addSpotlight\").submit();'>Create Spotlight</button>"
 		);
-		return json_encode($results);
+		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function ungroupRecord(){
 		$results = [
 			'success' => false,
@@ -211,9 +200,10 @@ class Admin_AJAX extends Action
 		}else{
 			$results['message'] = "You do not have the correct permissions for this operation";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getReleaseNotes(){
 		$release = $_REQUEST['release'];
 		$releaseNotesPath = ROOT_DIR . '/release_notes';
@@ -232,6 +222,6 @@ class Admin_AJAX extends Action
 				'releaseNotes' => $releaseNotesFormatted
 			];
 		}
-		return json_encode($results);
+		return $results;
 	}
 }

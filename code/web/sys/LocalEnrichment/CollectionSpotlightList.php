@@ -28,7 +28,9 @@ class CollectionSpotlightList extends DataObject
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 		$sourceLists = UserList::getSourceListsForBrowsingAndCarousels();
 
-		$structure = array(
+		$spotlightSources = CollectionSpotlightList::getCollectionSpotlightSources();
+
+		return array(
 			'id' => array(
 				'property' => 'id',
 				'type' => 'label',
@@ -38,8 +40,9 @@ class CollectionSpotlightList extends DataObject
 			'collectionSpotlightId' => array(
 				'property' => 'collectionSpotlightId',
 				'type' => 'foreignKey',
-				'label' => 'Collection Spotlight Id',
-				'description' => 'The spotlight this list is associated with.'
+				'label' => 'Collection Spotlight',
+				'description' => 'The spotlight this list is associated with.',
+				'editLink' => '/Admin/CollectionSpotlights?id=propertyValue&objectAction=edit'
 			),
 			'name' => array(
 				'property' => 'name',
@@ -55,20 +58,20 @@ class CollectionSpotlightList extends DataObject
 				'label' => 'Display For',
 				'description' => 'Who this list should be displayed for.'
 			),
-			/*'source' => array(
+			'source' => array(
 				'property' => 'source',
-				'type' => 'text',
+				'type' => 'enum',
+				'values' => $spotlightSources,
 				'label' => 'Source',
 				'description' => 'The source of the list.',
-				'serverValidation' => 'validateSource',
-				'required' => false
-			),*/
+				'required' => true,
+				'onchange' => "return AspenDiscovery.Admin.updateSpotlightSearchForSource();"
+			),
 			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
 			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
 			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'),
 			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true),
 		);
-		return $structure;
 	}
 
 	public function insert()
@@ -95,6 +98,7 @@ class CollectionSpotlightList extends DataObject
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function fullListLink()
 	{
 		global $configArray;
@@ -109,24 +113,6 @@ class CollectionSpotlightList extends DataObject
 			}
 			return $link;
 		}
-	}
-
-
-	function validateName()
-	{
-		//Setup validation return array
-		$validationResults = array(
-			'validatedOk' => true,
-			'errors' => array(),
-		);
-
-		//TODO: Check to see if the name is unique
-
-		//Make sure there aren't errors
-		if (count($validationResults['errors']) > 0) {
-			$validationResults['validatedOk'] = false;
-		}
-		return $validationResults;
 	}
 
 	function __toString()
@@ -159,7 +145,7 @@ class CollectionSpotlightList extends DataObject
 	public function getSearchObject()
 	{
 		/** @var SearchObject_GroupedWorkSearcher $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject('GroupedWork');
+		$searchObject = SearchObjectFactory::initSearchObject($this->source);
 		if (!empty($this->defaultFilter)) {
 			$defaultFilterInfo = $this->defaultFilter;
 			$defaultFilters = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
@@ -200,6 +186,7 @@ class CollectionSpotlightList extends DataObject
 	 */
 	public function updateFromSearch($searchObj)
 	{
+		$this->source = $searchObj->getEngineName();
 		//Search terms
 		$searchTerms = $searchObj->getSearchTerms();
 		if (is_array($searchTerms)) {
@@ -208,7 +195,7 @@ class CollectionSpotlightList extends DataObject
 			} else {
 				if (!isset($searchTerms[0]['index'])) {
 					$this->searchTerm = $searchObj->displayQuery();
-				} else if ($searchTerms[0]['index'] == 'Keyword') {
+				} else if ($searchTerms[0]['index'] == $searchObj->getDefaultSearchIndex()) {
 					$this->searchTerm = $searchTerms[0]['lookfor'];
 				} else {
 					$this->searchTerm = $searchTerms[0]['index'] . ':' . $searchTerms[0]['lookfor'];
@@ -251,6 +238,30 @@ class CollectionSpotlightList extends DataObject
 			$this->defaultSort = 'relevance';
 		}
 		return true;
+	}
 
+	public static function getCollectionSpotlightSources()
+	{
+		$spotlightSources = [
+			'GroupedWork' => 'Grouped Work Search'
+		];
+		global $enabledModules;
+		if (array_key_exists('User Lists', $enabledModules)){
+			$spotlightSources['List'] = 'Public List';
+		}
+		if (array_key_exists('Events', $enabledModules)){
+			$spotlightSources['Events'] = 'Events Search';
+		}
+		if (array_key_exists('Open Archives', $enabledModules)){
+			$spotlightSources['OpenArchives'] = 'Open Archives Search';
+		}
+		if (array_key_exists('Web Indexer', $enabledModules)){
+			$spotlightSources['Websites'] = 'Website Search';
+		}
+		return $spotlightSources;
+	}
+
+	function getEditLink(){
+		return '/Admin/CollectionSpotlightLists?objectAction=edit&id=' . $this->id;
 	}
 }

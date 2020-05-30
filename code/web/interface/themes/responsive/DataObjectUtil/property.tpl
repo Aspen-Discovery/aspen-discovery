@@ -1,6 +1,7 @@
 {assign var=propName value=$property.property}
 {if $property.type != 'section'}
 	{assign var=propValue value=$object->$propName}
+    {assign var=objectId value=$object->getPrimaryKeyValue()}
 {else}
 	{assign var=propValue value=""}
 {/if}
@@ -69,7 +70,13 @@
 					</div>
 				</div>
 			{/if}
-		{elseif $property.type == 'text' || $property.type == 'folder'}
+        {elseif $property.type == 'foreignKey' && !empty($property.editLink)}
+			<div class="row">
+				<div class="col-sm-12">
+					<a class="btn btn-default btn-sm" href="{$property.editLink|replace:'propertyValue':$propValue}">Edit {$property.label}</a>
+				</div>
+			</div>
+        {elseif $property.type == 'text' || $property.type == 'folder'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'integer'}
 			<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>

@@ -1832,6 +1832,20 @@ AspenDiscovery.Admin = (function(){
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
+		updateSpotlightSearchForSource: function () {
+			let selectedSource = $('#sourceSelect').val();
+			if (selectedSource === 'List') {
+				$("#propertyRowsearchTerm").hide();
+				$("#propertyRowdefaultFilter").hide();
+				$("#propertyRowdefaultSort").hide();
+				$("#propertyRowsourceListId").show();
+			}else{
+				$("#propertyRowsearchTerm").show();
+				$("#propertyRowdefaultFilter").show();
+				$("#propertyRowdefaultSort").show();
+				$("#propertyRowsourceListId").hide();
+			}
+		}
 	};
 }(AspenDiscovery.Admin || {}));
 

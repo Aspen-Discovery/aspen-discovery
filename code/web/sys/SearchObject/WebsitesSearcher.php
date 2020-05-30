@@ -162,4 +162,13 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		}
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
+
+	public function getEngineName(){
+		return 'Websites';
+	}
+
+	public function getDefaultSearchIndex()
+	{
+		return 'WebsiteKeyword';
+	}
 }

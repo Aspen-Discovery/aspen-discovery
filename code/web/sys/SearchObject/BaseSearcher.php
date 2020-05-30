@@ -137,6 +137,8 @@ abstract class SearchObject_BaseSearcher
 		return $this->searchSource;
 	}
 
+	public abstract function getEngineName();
+
 	/**
 	 * @return array
 	 */

@@ -53,21 +53,6 @@ function getCollectionSpotlightUpdates(){
 			),
 		),
 
-		'addTableListWidgetListsLinks' => array(
-			'title' => 'Widget Lists',
-			'description' => 'Add a new table: list_widget_lists_links',
-			'sql' => array(
-				"CREATE TABLE IF NOT EXISTS `list_widget_lists_links`(
-					`id` int(11) NOT NULL AUTO_INCREMENT, 
-					`listWidgetListsId` int(11) NOT NULL, 
-					`name` varchar(50) NOT NULL, 
-					`link` text NOT NULL, 
-					`weight` int(3) NOT NULL DEFAULT '0',
-					PRIMARY KEY (`id`) 
-				) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-			),
-		),
-
 		'list_wdiget_list_update_1' => array(
 			'title' => 'List Widget List Source Length Update',
 			'description' => 'Update length of source field to accommodate search source type',
@@ -155,7 +140,7 @@ function getCollectionSpotlightUpdates(){
 			'title' => 'Remove Widget List Links',
 			'description' => 'Remove table list_widget_lists_links',
 			'sql' => [
-				"DROP TABLE list_widget_lists_links"
+				"DROP TABLE IF EXISTS list_widget_lists_links"
 			],
 		],
 
@@ -168,6 +153,58 @@ function getCollectionSpotlightUpdates(){
 				"RENAME TABLE list_widgets TO collection_spotlights",
 				"RENAME TABLE list_widget_lists TO collection_spotlight_lists",
 			]
+		],
+
+		'update_spotlight_sources' => [
+			'title' => 'Update Spotlight sources',
+			'description' => 'Update Spotlight Sources to make it easier to add other types of searches.',
+			'sql' => [
+				'updateSpotlightSources'
+			]
 		]
 	);
+}
+
+/** @noinspection PhpUnused */
+function updateSpotlightSources(){
+	require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
+	$validSources = CollectionSpotlightList::getCollectionSpotlightSources();
+	$spotlightLists = new CollectionSpotlightList();
+	$spotlightLists->find();
+	$allSpotlights = [];
+	while ($spotlightLists->fetch()) {
+		$allSpotlights[] = clone $spotlightLists;
+	}
+	foreach ($allSpotlights as $index => $spotlightList){
+		if (!empty($spotlightList->source)){
+			$source = $spotlightList->source;
+			if (strpos($source, ':') > 0){
+				list($sourceName, $sourceId) = explode(':', $source);
+				if ($sourceName == 'list'){
+					$spotlightList->source = 'List';
+					if (empty($spotlightList->sourceListId)){
+						$spotlightList->source = $sourceId;
+					}
+					$spotlightList->update();
+				}elseif ($sourceName == 'search') {
+					if (empty($spotlightList->sourceListId)){
+						/** @var SearchObject_GroupedWorkSearcher $searcher */
+						$searcher = SearchObjectFactory::initSearchObject('GroupedWork');
+						$savedSearch = $searcher->restoreSavedSearch($sourceId, false, true);
+						$spotlightList->updateFromSearch($savedSearch);
+						$spotlightList->update();
+					}
+				}
+			}
+		}else{
+			if (!array_key_exists($spotlightList->source, $validSources)) {
+				if (!empty($spotlightList->sourceListId) && $spotlightList->sourceListId != -1) {
+					$spotlightList->source = 'List';
+				} else {
+					$spotlightList->source = 'GroupedWork';
+				}
+				$spotlightList->update();
+			}
+		}
+	}
 }

@@ -2044,30 +2044,6 @@ CREATE TABLE `list_widget_lists` (
 /*!40000 ALTER TABLE `list_widget_lists` ENABLE KEYS */;
 
 --
--- Table structure for table `list_widget_lists_links`
---
-
-DROP TABLE IF EXISTS `list_widget_lists_links`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `list_widget_lists_links` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `listWidgetListsId` int(11) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `link` text NOT NULL,
-  `weight` int(3) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `list_widget_lists_links`
---
-
-/*!40000 ALTER TABLE `list_widget_lists_links` DISABLE KEYS */;
-/*!40000 ALTER TABLE `list_widget_lists_links` ENABLE KEYS */;
-
---
 -- Table structure for table `list_widgets`
 --
 

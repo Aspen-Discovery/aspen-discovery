@@ -630,4 +630,13 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		}
 		return $this->facetConfig;
 	}
+
+	public function getEngineName(){
+		return 'Genealogy';
+	}
+
+	public function getDefaultSearchIndex()
+	{
+		return 'GenealogyKeyword';
+	}
 }

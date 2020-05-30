@@ -859,4 +859,32 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	{
 		return $this->indexEngine->loadDynamicFields();
 	}
+
+	public function setSearchTerm($searchTerm)
+	{
+		$this->initBasicSearch($searchTerm);
+	}
+
+	public abstract function getDefaultSearchIndex();
+
+	public function getSpotlightResults(CollectionSpotlight $spotlight){
+		$spotlightResults = [];
+		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
+			$current = &$this->indexResult['response']['docs'][$x];
+			$record = $this->getRecordDriverForResult($current);
+			if (!($record instanceof AspenError)) {
+				if (!empty($orderedListOfIDs)) {
+					$position = array_search($current['id'], $orderedListOfIDs);
+					if ($position !== false) {
+						$spotlightResults[$position] = $record->getSpotlightResult($spotlight, $position);
+					}
+				} else {
+					$spotlightResults[] = $record->getSpotlightResult($spotlight, $x);
+				}
+			} else {
+				$spotlightResults[] = "Unable to find record";
+			}
+		}
+		return $spotlightResults;
+	}
 }

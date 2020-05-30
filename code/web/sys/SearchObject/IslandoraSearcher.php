@@ -1137,4 +1137,13 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	{
 		return 'islandoraSearches';
 	}
+
+	public function getEngineName(){
+		return 'Islandora';
+	}
+
+	public function getDefaultSearchIndex()
+	{
+		return 'IslandoraKeyword';
+	}
 }

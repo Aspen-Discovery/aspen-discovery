@@ -219,11 +219,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
 	}
 
-	public function setSearchTerm($searchTerm)
-	{
-		$this->initBasicSearch($searchTerm);
-	}
-
 	/**
 	 * Initialise the object for retrieving advanced
 	 *   search screen facet data from inside solr.
@@ -353,28 +348,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			}
 		}
 		return $titleSummaries;
-	}
-
-	public function getSpotlightResults(CollectionSpotlight $spotlight){
-		$spotlightResults = [];
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = &$this->indexResult['response']['docs'][$x];
-			/** @var GroupedWorkDriver $record */
-			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!($record instanceof AspenError)) {
-				if (!empty($orderedListOfIDs)) {
-					$position = array_search($current['id'], $orderedListOfIDs);
-					if ($position !== false) {
-						$spotlightResults[$position] = $record->getSpotlightResult($spotlight, $position);
-					}
-				} else {
-					$spotlightResults[] = $record->getSpotlightResult($spotlight, $x);
-				}
-			} else {
-				$spotlightResults[] = "Unable to find record";
-			}
-		}
-		return $spotlightResults;
 	}
 
 	/*
@@ -1596,5 +1569,14 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	function getMoreLikeThis($id, $notInterestedIds = null, $availableOnly = false, $limitFormat = true, $limit = null)
 	{
 		return $this->indexEngine->getMoreLikeThis($id, $notInterestedIds, $availableOnly, $limitFormat, $limit, $this->getFieldsToReturn());
+	}
+
+	public function getEngineName(){
+		return 'GroupedWork';
+	}
+
+	public function getDefaultSearchIndex()
+	{
+		return 'Keyword';
 	}
 }
