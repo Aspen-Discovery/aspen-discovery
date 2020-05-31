@@ -190,8 +190,7 @@ class FedoraUtils {
 	 * @param FedoraObject $archiveObject
 	 * @return bool
 	 */
-	public function isObjectValidForPika($archiveObject){
-		/** @var Memcache $memCache */
+	public function isObjectValidForDisplay($archiveObject){
 		global $memCache;
 		global $timer;
 		$isValid = $memCache->get('islandora_object_valid_in_pika_' . $archiveObject->id);
@@ -200,13 +199,13 @@ class FedoraUtils {
 		}else{
 			$mods = FedoraUtils::getInstance()->getModsData($archiveObject);
 			if (strlen($mods) > 0) {
-				$includeInPika = $this->getModsValue('includeInPika', 'marmot', $mods);
-				$okToAdd = $includeInPika != 'no';
+				$includeInDisplay = $this->getModsValue('includeInPika', 'marmot', $mods);
+				$okToAdd = $includeInDisplay != 'no';
 				global $configArray;
 				if ($configArray['Site']['isProduction']) {
-					$okToAdd = ($includeInPika != 'no' && $includeInPika != 'testOnly');
+					$okToAdd = ($includeInDisplay != 'no' && $includeInDisplay != 'testOnly');
 				}else{
-					$okToAdd = $includeInPika != 'no';
+					$okToAdd = $includeInDisplay != 'no';
 				}
 			} else {
 				//If we don't get mods, exclude from the display
@@ -223,8 +222,7 @@ class FedoraUtils {
 	 * @param string $pid
 	 * @return bool
 	 */
-	public function isPidValidForPika($pid){
-		/** @var Memcache $memCache */
+	public function isPidValidForDisplay($pid){
 		global $memCache;
 		$isValid = $memCache->get('islandora_object_valid_in_pika_' . $pid);
 		if ($isValid !== FALSE && !isset($_REQUEST['reload'])){
@@ -232,7 +230,7 @@ class FedoraUtils {
 		}else{
 			$archiveObject = $this->getObject($pid);
 			if ($archiveObject != null) {
-				return $this->isObjectValidForPika($archiveObject);
+				return $this->isObjectValidForDisplay($archiveObject);
 			}else{
 				global $configArray;
 				$memCache->set('islandora_object_valid_in_pika_' . $pid, 0, $configArray['Caching']['islandora_object_valid']);

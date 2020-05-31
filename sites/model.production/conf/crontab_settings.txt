@@ -52,9 +52,9 @@
 15 7 * * 0-1  root    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php model.production
 # update on Sundays and Mondays at 7:15
 
-################
-# Pika Cleanup #
-################
+###########################
+# Aspen Discovery Cleanup #
+###########################
 
 # Temp files
 26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*

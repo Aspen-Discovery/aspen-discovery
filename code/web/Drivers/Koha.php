@@ -716,7 +716,7 @@ class Koha extends AbstractIlsDriver
 				$historyEntry['permanentId'] = null;
 				$historyEntry['linkUrl'] = null;
 				$historyEntry['coverUrl'] = null;
-				$historyEntry['format'] = "Unknown";;
+				$historyEntry['format'] = "Unknown";
 				if (!empty($historyEntry['recordId'])) {
 //					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Constructor expects the recordId as a string.
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -1145,7 +1145,6 @@ class Koha extends AbstractIlsDriver
 				}
 			}
 			if ($allCancelsSucceed) {
-				/** @var Memcache $memCache */
 				global $memCache;
 				$memCache->delete('koha_summary_' . $patron->id);
 				return array(
@@ -1202,7 +1201,6 @@ class Koha extends AbstractIlsDriver
 			//We renewed the hold
 			$success = true;
 			$message = 'Your item was successfully renewed';
-			/** @var Memcache $memCache */
 			global $memCache;
 			$memCache->delete('koha_summary_' . $patron->id);
 		} else {
@@ -1754,6 +1752,7 @@ class Koha extends AbstractIlsDriver
 		if ($user->cat_password != $oldPin) {
 			return ['success' => false, 'errors' => "The old PIN provided is incorrect."];
 		}
+		$result = ['success' => false, 'errors' => "Unknown error updating password."];
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
@@ -1791,7 +1790,7 @@ class Koha extends AbstractIlsDriver
 				return ['success' => true, 'message' => 'Your password was updated successfully.'];
 			}
 		}
-		return ['success' => false, 'errors' => "Unknown error updating password."];
+		return $result;
 	}
 
 	function hasMaterialsRequestSupport()
@@ -1986,7 +1985,6 @@ class Koha extends AbstractIlsDriver
 		];
 		$this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
 
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('koha_summary_' . $user->id);
 
@@ -2083,22 +2081,6 @@ class Koha extends AbstractIlsDriver
 	}
 
 	/**
-	 * Converts the string for submission to the web form which is different than the
-	 * format within the database.
-	 * @param string $date
-	 * @return string
-	 */
-	function aspenDateToKohaRestDate($date)
-	{
-		if (strlen($date) == 0) {
-			return $date;
-		} else {
-			list($month, $day, $year) = explode('-', $date);
-			return "$year-$month-$day";
-		}
-	}
-
-	/**
 	 * Import Lists from the ILS
 	 *
 	 * @param User $patron
@@ -2188,7 +2170,6 @@ class Koha extends AbstractIlsDriver
 
 	public function getAccountSummary($user, $forceRefresh = false)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $timer;
 		global $configArray;
@@ -2521,7 +2502,6 @@ class Koha extends AbstractIlsDriver
 				break;
 			}
 		}
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('koha_summary_' . $patron->id);
 		return $hold_result;
@@ -2621,7 +2601,6 @@ class Koha extends AbstractIlsDriver
 				];
 			}
 		}
-		/** @var $memCache Memcache */
 		global $memCache;
 		$memCache->delete('koha_summary_' . $patron->id);
 		return $result;
@@ -2670,7 +2649,6 @@ class Koha extends AbstractIlsDriver
 	{
 		$this->initDatabaseConnection();
 
-		$barcode = $patron->getBarcode();
 		/** @noinspection SqlResolve */
 		$sql = "SELECT autorenew_checkouts FROM borrowers where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);

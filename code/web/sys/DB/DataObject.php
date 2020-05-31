@@ -26,7 +26,7 @@ abstract class DataObject
 	private $__limitStart;
 	private $__limitCount;
 	protected $__lastQuery;
-	private $__lastError;
+	protected $__lastError;
 	private $__joins = [];
 	protected $__fetchingFromDB = false;
 
@@ -48,6 +48,11 @@ abstract class DataObject
 		}else{
 			return $this->$stringProperty;
 		}
+	}
+
+	function getPrimaryKeyValue(){
+		$primaryKeyProperty = $this->__primaryKey;
+		return $this->$primaryKeyProperty;
 	}
 
 	public function find($fetchFirst = false){
@@ -380,7 +385,6 @@ abstract class DataObject
 	}
 
 	public function table(){
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -395,6 +399,10 @@ abstract class DataObject
 			$row = $results->fetchObject();
 		}
 		return $columns;
+	}
+
+	protected function setLastError($errorMessage) {
+		$this->__lastError = $errorMessage;
 	}
 
 	public function getLastError(){

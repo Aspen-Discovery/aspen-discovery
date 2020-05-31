@@ -35,6 +35,11 @@
 7 3 * * * php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php nashville.production
 */5 * * * * php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php nashville.production
 
+#############################
+# ILS CarlX nightly extract #
+#############################
+0 23 * * * expect /usr/local/aspen-discovery/sites/nashville.production/copyCarlXExport.exp nashville.production
+
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
@@ -45,7 +50,7 @@
 # MySQL Nightly Dump #
 ######################
 # backup important bits at 12:10am daily
-10 0 * * * /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh nashville.production aspen 2>&1 >/dev/null
+10 0 * * * cd /usr/local/aspen-discovery/code/cron/; bash nightly_mysql_dump.sh nashville.production aspen
 
 #############################################
 # New York Times Best seller Lists Updating #
@@ -53,9 +58,9 @@
 20 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php nashville.production
 # update on Sundays and Mondays at 7:20
 
-################
-# Pika Cleanup #
-################
+###########################
+# Aspen Discovery Cleanup #
+###########################
 
 # Temp files
 26 0 * * * cd /tmp; rm -rf CURLCOOKIE*

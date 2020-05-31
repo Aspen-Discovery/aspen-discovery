@@ -49,7 +49,13 @@ class Mailer {
 			$apiBody->content[] = $content;
 
 			$response = $curlWrapper->curlPostPage('https://api.sendgrid.com/v3/mail/send', json_encode($apiBody));
-			return $response == '';
+			if ($response != ''){
+				global $logger;
+				$logger->log('Error sending email via SendGrid ' . $curlWrapper->getResponseCode() . ' ' . $response, Logger::LOG_ERROR);
+				return false;
+			}else{
+				return true;
+			}
 		}else{
 			return false;
 		}

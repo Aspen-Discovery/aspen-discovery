@@ -577,8 +577,6 @@ class UserList extends DataObject
 				}
 			}
 
-
-
 			if (count($results) == $collectionSpotlight->numTitlesToShow){
 				break;
 			}

@@ -1,6 +1,6 @@
 <?php
 
-// TO DO: copy pika config > [catalog|school] > basic display > additional css from galacto to production
+// TO DO: copy aspen config > [catalog|school] > basic display > additional css from galacto to production
 // TO DO: ensure MNPS Staff, Library Staff, and Libraries should be included (privacy?)
 // TO DO: maybe sort teachers with their homerooms
 // TO DO: sort opted-outs with homeroom

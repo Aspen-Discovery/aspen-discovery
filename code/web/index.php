@@ -121,7 +121,7 @@ $interface->assign('page_body_style', 'one_column');
 
 $interface->assign('showFines', $configArray['Catalog']['showFines']);
 
-$interface->assign('activeIp', Location::getActiveIp());
+$interface->assign('activeIp', IPAddress::getActiveIp());
 
 // Check system availability
 $mode = checkAvailabilityMode();

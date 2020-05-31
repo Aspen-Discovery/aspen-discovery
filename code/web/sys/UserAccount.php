@@ -309,8 +309,17 @@ class UserAccount
 					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
 
 					if ($userData == false) {
+						global $isAJAX;
+						if (!$isAJAX){
+							UserAccount::softLogout();
+
+							//This happens when the PIN has been reset in the ILS, redirect to the login page
+							require_once ROOT_DIR . '/services/MyAccount/Login.php';
+							$launchAction = new MyAccount_Login();
+							$launchAction->launch();
+							exit();
+						}
 						AspenError::raiseError("We could not validate your account, please logout and login again. If this error persists, please contact the library. Error ($activeUserId)");
-						UserAccount::softLogout();
 					}
 					self::updateSession($userData);
 				}else{
@@ -559,7 +568,6 @@ class UserAccount
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
-					/** @var Memcache $memCache */
 					global $memCache;
 					global $serverName;
 					global $configArray;
@@ -623,6 +631,9 @@ class UserAccount
 			UserAccount::$primaryUserData = null;
 			UserAccount::$primaryUserObjectFromDB = null;
 			UserAccount::$guidingUserObjectFromDB = null;
+
+			global $interface;
+			$interface->assign('loggedIn', false);
 		}
 	}
 

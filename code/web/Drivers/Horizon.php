@@ -288,7 +288,7 @@ abstract class Horizon extends AbstractIlsDriver{
 				if (preg_match('/<td.*?class="boldRedFont1".*?>(.*?)(?:<br>)*<\/td>/si', $sResult, $matches)) {
 					$updateErrors[] = $matches[1];
 				} else {
-					// Update the users email address in the Pika database
+					// Update the users email address in the Aspen Discovery database
 					$user->email = $_REQUEST['email'];
 				}
 			}
@@ -311,7 +311,7 @@ abstract class Horizon extends AbstractIlsDriver{
 				if (preg_match('/<td.*?class="boldRedFont1".*?>(.*?)(?:<br>)*<\/td>/', $sResult, $matches)) {
 					$updateErrors[] = $matches[1];
 				} else {
-					//Update the users cat_password in the Pika database
+					//Update the users cat_password in the Aspen Discovery database
 					$user->cat_password = $_REQUEST['newPin'];
 				}
 			}
@@ -346,7 +346,7 @@ abstract class Horizon extends AbstractIlsDriver{
 				}
 			}
 
-			// update Pika user data & clear cache of patron profile
+			// update Aspen Discovery user data & clear cache of patron profile
 			$user->update();
 //			UserAccount::updateSession($user); //TODO if this is required it must be determined that the user being updated is the same as the session holding user.
 //			$user->clearCache(); // Done in User object now by calling method

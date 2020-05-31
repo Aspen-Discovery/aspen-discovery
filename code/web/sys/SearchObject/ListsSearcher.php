@@ -204,4 +204,13 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 		}
 		return $this->facetConfig;
 	}
+
+	public function getEngineName(){
+		return 'Lists';
+	}
+
+	public function getDefaultSearchIndex()
+	{
+		return 'ListsKeyword';
+	}
 }

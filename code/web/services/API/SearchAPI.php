@@ -9,6 +9,10 @@ class SearchAPI extends Action
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+
+		if (!in_array($method, array('getListWidget', 'getCollectionSpotlight', 'getIndexStatus')) && !IPAddress::allowAPIAccessForClientIP()){
+			$this->forbidAPIAccess();
+		}
 		$output = '';
 		if (!empty($method) && method_exists($this, $method)) {
 			if (in_array($method, array('getListWidget', 'getCollectionSpotlight'))) {
@@ -149,17 +153,23 @@ class SearchAPI extends Action
 		$module->find();
 		while ($module->fetch()){
 			if (!empty($module->logClassPath) && !empty($module->logClassName)){
+				/** @noinspection PhpIncludeInspection */
 				require_once ROOT_DIR . $module->logClassPath;
 				/** @var BaseLogEntry $logEntry */
 				$logEntry = new $module->logClassName();
 				$logEntry->orderBy("id DESC");
-				$logEntry->limit(0, 1);
-				if ($logEntry->find(true)){
+				$logEntry->limit(0, 3);
+				$logErrors = 0;
+				$logEntry->find();
+				while ($logEntry->fetch()){
 					if ($logEntry->numErrors > 0){
-						$this->addCheck($checks, $module->name, self::STATUS_WARN, "The last log entry for {$module->name} had errors");
-					}else{
-						$this->addCheck($checks, $module->name);
+						$logErrors++;
 					}
+				}
+				if ($logErrors > 0){
+					$this->addCheck($checks, $module->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$module->name} had errors");
+				}else{
+					$this->addCheck($checks, $module->name);
 				}
 			}
 		}
@@ -429,9 +439,10 @@ class SearchAPI extends Action
 	/**
 	 * This is old for historical compatibility purposes.
 	 *
+	 * @return string
+	 * @noinspection PhpUnused
 	 * @deprecated
 	 *
-	 * @return string
 	 */
 	function getListWidget()
 	{

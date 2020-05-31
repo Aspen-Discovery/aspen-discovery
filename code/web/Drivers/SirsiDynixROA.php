@@ -29,7 +29,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 		$headers  = array(
 			'Accept: application/json',
 			'Content-Type: application/json',
-			'SD-Originating-App-Id: Pika',
+			'SD-Originating-App-Id: Aspen Discovery',
 			'x-sirs-clientID: ' . $clientId,
 		);
 		if ($sessionToken != null) {
@@ -1634,7 +1634,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
 		} elseif (!empty($changeMyPinResponse->sessionToken)){
-			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Pika user
+			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
 				$user->cat_password = $newPin;
 				$user->update();
 			}
@@ -1657,13 +1657,13 @@ abstract class SirsiDynixROA extends HorizonAPI
 		$patron->get('cat_username', $barcode);
 		if (!empty($patron->id)) {
 			global $configArray;
-			$pikaUserID = $patron->id;
+			$aspenUserID = $patron->id;
 
 			// If possible, check if ILS has an email address for the patron
 			if (!empty($patron->cat_password)) {
 				list($userValid, $sessionToken, $userID) = $this->loginViaWebService($barcode, $patron->cat_password);
 				if ($userValid) {
-					// Yay! We were able to login with the pin Pika has!
+					// Yay! We were able to login with the pin Aspen has!
 
 					//Now check for an email address
 					$lookupMyAccountInfoResponse = $this->getWebServiceResponse($this->getWebServiceURL() . '/v1/user/patron/key/' . $userID . '?includeFields=preferredAddress,address1,address2,address3', null, $sessionToken);
@@ -1698,7 +1698,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 			$resetPinAPIUrl = $this->getWebServiceUrl() . '/v1/user/patron/resetMyPin';
 			$jsonPOST       = array(
 				'login' => $barcode,
-				'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>&uid=' . $pikaUserID
+				'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>&uid=' . $aspenUserID
 			);
 
 			$resetPinResponse = $this->getWebServiceResponse($resetPinAPIUrl, $jsonPOST, null, 'POST');

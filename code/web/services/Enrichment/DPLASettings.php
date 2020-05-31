@@ -74,6 +74,6 @@ class Enrichment_DPLASettings extends ObjectEditor
 
 	function getInstructions()
 	{
-		return '';
+		return '/Admin/HelpManual?page=DPLA';
 	}
 }

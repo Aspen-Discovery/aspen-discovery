@@ -89,7 +89,11 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 
 	public function getDescription()
 	{
-		return $this->fields['description'];
+		if (isset($this->fields['description'])) {
+			return $this->fields['description'];
+		}else{
+			return '';
+		}
 	}
 
 	public function getItemActions($itemInfo)

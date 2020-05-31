@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/JSON_Action.php';
 class Admin_AJAX extends JSON_Action
 {
 
+	/** @noinspection PhpUnused */
 	function getReindexNotes()
 	{
 		$id = $_REQUEST['id'];
@@ -30,6 +31,7 @@ class Admin_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getCronProcessNotes()
 	{
 		$id = $_REQUEST['id'];
@@ -54,6 +56,7 @@ class Admin_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getCronNotes()
 	{
 		$id = $_REQUEST['id'];
@@ -79,6 +82,7 @@ class Admin_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getExtractNotes()
 	{
 		$id = $_REQUEST['id'];
@@ -134,6 +138,7 @@ class Admin_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getAddToSpotlightForm()
 	{
 		global $interface;
@@ -158,6 +163,7 @@ class Admin_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function ungroupRecord(){
 		$results = [
 			'success' => false,
@@ -196,6 +202,7 @@ class Admin_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getReleaseNotes(){
 		$release = $_REQUEST['release'];
 		$releaseNotesPath = ROOT_DIR . '/release_notes';

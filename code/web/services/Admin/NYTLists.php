@@ -37,7 +37,7 @@ class NYTLists extends Admin_Admin
 				$interface->assign('selectedListName', $selectedList);
 
 				if (isset($_REQUEST['submit'])) {
-					//Find and update the correct Pika list, creating a new list as needed.
+					//Find and update the correct Aspen Discovery list, creating a new list as needed.
 					require_once ROOT_DIR . '/services/API/ListAPI.php';
 					$listApi = new ListAPI();
 					$results = $listApi->createUserListFromNYT($selectedList);
@@ -60,9 +60,9 @@ class NYTLists extends Admin_Admin
 				$nyTimesUserLists->user_id = $nyTimesUser->id;
 				$nyTimesUserLists->whereAdd('title like "NYT - %"');
 				$nyTimesUserLists->orderBy('title');
-				$pikaLists = $nyTimesUserLists->fetchAll();
+				$existingLists = $nyTimesUserLists->fetchAll();
 
-				$interface->assign('pikaLists', $pikaLists);
+				$interface->assign('existingLists', $existingLists);
 			}
 		}
 

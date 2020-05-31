@@ -794,7 +794,7 @@ class Location extends DataObject
 		global $configArray;
 		global $logger;
 		//Check the current IP address to see if we are in a branch
-		$activeIp = $this->getActiveIp();
+		$activeIp = IPAddress::getActiveIp();
 		$this->_ipLocation = $memCache->get('location_for_ip_' . $activeIp);
 		$this->_ipId = $memCache->get('ipId_for_ip_' . $activeIp);
 		if ($this->_ipId == -1) {
@@ -828,43 +828,6 @@ class Location extends DataObject
 		return $this->_ipLocation;
 	}
 
-
-	private static $activeIp = null;
-	static function getActiveIp()
-	{
-		if (!is_null(Location::$activeIp)) return Location::$activeIp;
-		global $timer;
-		//Make sure gets and cookies are processed in the correct order.
-		if (isset($_GET['test_ip'])) {
-			$ip = $_GET['test_ip'];
-			//Set a cookie so we don't have to transfer the ip from page to page.
-			setcookie('test_ip', $ip, 0, '/');
-//		}elseif (isset($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1' && strlen($_COOKIE['test_ip']) > 0){
-		} elseif (!empty($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1') {
-			$ip = $_COOKIE['test_ip'];
-		} else {
-			if (isset($_SERVER["HTTP_CLIENT_IP"])) {
-				$ip = $_SERVER["HTTP_CLIENT_IP"];
-			} elseif (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
-				$ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-			} elseif (isset($_SERVER["HTTP_X_FORWARDED"])) {
-				$ip = $_SERVER["HTTP_X_FORWARDED"];
-			} elseif (isset($_SERVER["HTTP_FORWARDED_FOR"])) {
-				$ip = $_SERVER["HTTP_FORWARDED_FOR"];
-			} elseif (isset($_SERVER["HTTP_FORWARDED"])) {
-				$ip = $_SERVER["HTTP_FORWARDED"];
-			} elseif (isset($_SERVER['REMOTE_HOST']) && strlen($_SERVER['REMOTE_HOST']) > 0) {
-				$ip = $_SERVER['REMOTE_HOST'];
-			} elseif (isset($_SERVER['REMOTE_ADDR']) && strlen($_SERVER['REMOTE_ADDR']) > 0) {
-				$ip = $_SERVER['REMOTE_ADDR'];
-			} else {
-				$ip = '';
-			}
-		}
-		Location::$activeIp = $ip;
-		$timer->logTime("getActiveIp");
-		return Location::$activeIp;
-	}
 
 	private $sublocationCode = 'unset';
 
@@ -1317,7 +1280,7 @@ class Location extends DataObject
 			} elseif (isset($_COOKIE['opac'])) {
 				$this->_opacStatus = (boolean)$_COOKIE['opac'];
 			} else {
-				$activeIP = $this->getActiveIp();
+				$activeIP = IPAddress::getActiveIp();
 				require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 				$subnet = IPAddress::getIPAddressForIP($activeIP);
 				if ($subnet != false) {

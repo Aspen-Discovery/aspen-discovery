@@ -14,17 +14,3 @@
 		{$editForm}
 	</div>
 {/strip}
-{if $edit}
-<script type="text/javascript">{literal}
-	$(function(){
-		let selectedSpotlightBody = $('#selectedSpotlightLists tbody');
-		selectedSpotlightBody.sortable({
-			update: function(event, ui){
-				let listOrder = $(this).sortable('toArray').toString();
-				alert("ListOrder = " + listOrder);
-			}
-		});
-		selectedSpotlightBody.disableSelection();
-	});{/literal}
-</script>
-{/if}

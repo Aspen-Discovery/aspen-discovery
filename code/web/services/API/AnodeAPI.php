@@ -22,58 +22,67 @@ require_once ROOT_DIR . '/services/API/ListAPI.php';
 require_once ROOT_DIR . '/services/API/SearchAPI.php';
 require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 
-class AnodeAPI extends Action {
+class AnodeAPI extends Action
+{
 
-	function launch() {
-        header('Content-type: text/plain');
-        header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-        $method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-        if (method_exists($this, $method)) {
-            $output = json_encode(array('result'=>$this->$method()),JSON_PRETTY_PRINT);
-        } else {
-            $output = json_encode(array('error'=>'invalid_method'));
-        }
-        echo $output;
+	function launch()
+	{
+		//Make sure the user can access the API based on the IP address
+		if (!IPAddress::allowAPIAccessForClientIP()){
+			$this->forbidAPIAccess();
+		}
+
+		header('Content-type: text/plain');
+		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+		if (method_exists($this, $method)) {
+			$output = json_encode(array('result' => $this->$method()), JSON_PRETTY_PRINT);
+		} else {
+			$output = json_encode(array('error' => 'invalid_method'));
+		}
+		echo $output;
 	}
 
 	/**
 	 * Returns information about the titles within a list
 	 * according to the parameters of
-	 * Anode Pika API Description at
+	 * Anode Compatibility API Description at
 	 * https://docs.google.com/document/d/1N_LiYaK56WLWXTIxzDvmwdVQ3WgogopTnHHixKc_2zk
 	 *
 	 * @param string $listId - The list to show
 	 * @param integer $numGroupedWorksToShow - the maximum number of titles that should be shown
 	 * @return array
 	 */
-	function getAnodeListGroupedWorks($listId = NULL, $numGroupedWorksToShow = NULL) {
+	function getAnodeListGroupedWorks($listId = NULL, $numGroupedWorksToShow = NULL)
+	{
 		if (!$listId) {
 			$listId = $_REQUEST['listId'];
 		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","se"))) {
+		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl", "se"))) {
 			$branch = $_GET['branch'];
 		} else {
 			$branch = "catalog";
 		}
 		$listAPI = new ListAPI();
 		$result = $listAPI->getListTitles($listId, $numGroupedWorksToShow);
-		$result = $this->getAnodeGroupedWorks($result,$branch);
+		$result = $this->getAnodeGroupedWorks($result, $branch);
 		return $result;
 	}
 
 	/**
 	 * Returns information about a grouped work's related titles ("More Like This")
 	 *
-	 * @param	string	$id - The initial grouped work
-	 * @return	array
+	 * @param string $id - The initial grouped work
+	 * @return    array
 	 */
-	function getAnodeRelatedGroupedWorks($id = NULL) {
-                global $configArray;
+	function getAnodeRelatedGroupedWorks($id = NULL)
+	{
+		global $configArray;
 		if (!isset($id)) {
 			$id = $_REQUEST['id'];
 		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","se"))) {
+		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl", "se"))) {
 			$branch = $_GET['branch'];
 		} else {
 			$branch = "catalog";
@@ -86,19 +95,20 @@ class AnodeAPI extends Action {
 		if (isset($similar) && count($similar['response']['docs']) > 0) {
 			$similarTitles = array();
 
-			foreach ($similar['response']['docs'] as $key => $similarTitle){
+			foreach ($similar['response']['docs'] as $key => $similarTitle) {
 				$similarTitles['titles'][] = $similarTitle;
 			}
-            $result = $this->getAnodeGroupedWorks($similarTitles,$branch);
-		}else{
-		    $result = ['titles' => []];
-        }
+			$result = $this->getAnodeGroupedWorks($similarTitles, $branch);
+		} else {
+			$result = ['titles' => []];
+		}
 
 
 		return $result;
 	}
 
-	function getAnodeGroupedWorks($result,$branch) {
+	function getAnodeGroupedWorks($result, $branch)
+	{
 		if (!isset($result['titles'])) {
 			$result['titles'] = array();
 		} else {
@@ -142,8 +152,8 @@ class AnodeAPI extends Action {
 				if (isset($groupedWorkRecord['publishDateSort'])) {
 					$groupedWork['published'] = $groupedWorkRecord['publishDateSort'];
 				}
-				if (isset($groupedWorkRecord['econtent_source_'.$branch])) {
-					$groupedWork['econtent_source'] = $groupedWorkRecord['econtent_source_'.$branch];
+				if (isset($groupedWorkRecord['econtent_source_' . $branch])) {
+					$groupedWork['econtent_source'] = $groupedWorkRecord['econtent_source_' . $branch];
 				}
 				if (isset($groupedWorkRecord['physical'])) {
 					$groupedWork['physical'] = $groupedWorkRecord['physical'];
@@ -157,27 +167,27 @@ class AnodeAPI extends Action {
 //				$groupedWork['contentRating'] = $groupedWorkRecord['???'];
 
 				foreach ($groupedWorkRecord['scoping_details_' . $branch] as $item) {
-					$item = explode('|',$item);
+					$item = explode('|', $item);
 					$item['availableHere'] = false;
 					if ($item[4] == 'true' && $item[5] == 'true') {
 						$item['availableHere'] = true;
 						$groupedWork['availableHere'] = true;
 					}
 					$groupedWork['items'][] = array(
-						'01_bibIdentifier'	=> $item[0],
-						'02_itemIdentifier'	=> $item[1],
-						'05_statusGrouped'	=> $item[2],
-						'06_status'		=> $item[3],
-						'07_availableHere'	=> $item['availableHere'],
-						'11_available'		=> $item[5]
+						'01_bibIdentifier' => $item[0],
+						'02_itemIdentifier' => $item[1],
+						'05_statusGrouped' => $item[2],
+						'06_status' => $item[3],
+						'07_availableHere' => $item['availableHere'],
+						'11_available' => $item[5]
 					);
 					foreach ($groupedWorkRecord['item_details'] as $itemDetail) {
 						if (strpos($itemDetail, $item[0] . '|' . $item[1]) === 0) {
-							$itemDetail = explode('|',$itemDetail);
-							$groupedWork['items'][count($groupedWork['items'])-1] += array(
-								'08_itemShelfLocation'		=> $itemDetail[2],
-								'09_itemLocationCode'		=> $itemDetail[15],
-								'10_itemCallNumber'		=> $itemDetail[3]
+							$itemDetail = explode('|', $itemDetail);
+							$groupedWork['items'][count($groupedWork['items']) - 1] += array(
+								'08_itemShelfLocation' => $itemDetail[2],
+								'09_itemLocationCode' => $itemDetail[15],
+								'10_itemCallNumber' => $itemDetail[3]
 							);
 							break;
 						}
@@ -185,14 +195,14 @@ class AnodeAPI extends Action {
 					foreach ($groupedWorkRecord['record_details'] as $bibRecord) {
 						if (strpos($bibRecord, $item[0]) === 0) {
 							$bibRecord = explode('|', $bibRecord);
-							$groupedWork['items'][count($groupedWork['items'])-1] += array(
-								'03_bibFormat'		=> $bibRecord[1],
-								'04_bibFormatCategory'	=> $bibRecord[2]
+							$groupedWork['items'][count($groupedWork['items']) - 1] += array(
+								'03_bibFormat' => $bibRecord[1],
+								'04_bibFormatCategory' => $bibRecord[2]
 							);
 							break;
 						}
 					}
-					ksort($groupedWork['items'][count($groupedWork['items'])-1]);
+					ksort($groupedWork['items'][count($groupedWork['items']) - 1]);
 				}
 				unset($groupedWork['length']);
 				unset($groupedWork['ratingData']);

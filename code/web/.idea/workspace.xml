@@ -101,6 +101,7 @@
     <property name="node.js.selected.package.standard" value="" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="php.override.implement.member.chooser.php.doc" value="NONE" />
     <property name="settings.editor.selected.configurable" value="watcher.settings" />
   </component>
   <component name="RecentsManager">
@@ -112,18 +113,11 @@
       <recent name="C:\web\aspen-discovery\code\web\services\SideLoads" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\RecordDrivers\Index" />
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\MyAccount" />
       <recent name="C:\web\aspen-discovery\code\web\sys\Indexing" />
       <recent name="C:\web\aspen-discovery\code\web\sys\ILS" />
       <recent name="C:\web\aspen-discovery\code\web\services\ILS" />
-      <recent name="C:\web\aspen-discovery\code\web\sys\Grouping" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\RecordDrivers\List" />
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\RecordDrivers\OpenArchives" />
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\GroupedWork" />
-      <recent name="C:\web\aspen-discovery\code\web\services\CloudLibrary" />
-      <recent name="C:\web\aspen-discovery\code\web\release_notes" />
     </key>
   </component>
   <component name="RunManager" selected="PHP Script.updateNYTLists">
@@ -208,10 +202,26 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="223" y="70" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.824@0.0.1536.824" timestamp="1589988462915" />
+    <state x="574" y="94" key="#com.intellij.ide.util.MemberChooser" timestamp="1590814156550">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="574" y="94" key="#com.intellij.ide.util.MemberChooser/0.0.1536.824@0.0.1536.824" timestamp="1590814156550" />
+    <state x="559" y="209" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1590875819262">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="559" y="209" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/0.0.1536.824@0.0.1536.824" timestamp="1590875819262" />
+    <state x="587" y="114" key="#com.jetbrains.php.refactoring.extractMethod.PhpExtractMethodDialog#method1" timestamp="1590615679685">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="587" y="114" key="#com.jetbrains.php.refactoring.extractMethod.PhpExtractMethodDialog#method1/0.0.1536.824@0.0.1536.824" timestamp="1590615679685" />
     <state x="610" y="231" key="#com.jetbrains.php.refactoring.makeStatic.PhpMakeStaticDialog" timestamp="1590157724512">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="610" y="231" key="#com.jetbrains.php.refactoring.makeStatic.PhpMakeStaticDialog/0.0.1536.824@0.0.1536.824" timestamp="1590157724512" />
+    <state x="543" y="161" key="#com.jetbrains.php.refactoring.move.member.PhpMoveMemberDialog#" timestamp="1590615603128">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="543" y="161" key="#com.jetbrains.php.refactoring.move.member.PhpMoveMemberDialog#/0.0.1536.824@0.0.1536.824" timestamp="1590615603128" />
     <state x="524" y="115" key="#xdebugger.evaluate" timestamp="1590174599501">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -224,58 +234,58 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="548" y="169" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1589822576693" />
-    <state width="1493" height="180" key="GridCell.Tab.0.bottom" timestamp="1590357872195">
+    <state width="1493" height="202" key="GridCell.Tab.0.bottom" timestamp="1590897263765">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1590357872195" />
-    <state width="1493" height="180" key="GridCell.Tab.0.center" timestamp="1590357872194">
+    <state width="1493" height="202" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1590897263765" />
+    <state width="1493" height="202" key="GridCell.Tab.0.center" timestamp="1590897263765">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1590357872194" />
-    <state width="1493" height="180" key="GridCell.Tab.0.left" timestamp="1590357872194">
+    <state width="1493" height="202" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1590897263765" />
+    <state width="1493" height="202" key="GridCell.Tab.0.left" timestamp="1590897263765">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1590357872194" />
-    <state width="1493" height="180" key="GridCell.Tab.0.right" timestamp="1590357872195">
+    <state width="1493" height="202" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1590897263765" />
+    <state width="1493" height="202" key="GridCell.Tab.0.right" timestamp="1590897263765">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1590357872195" />
-    <state width="1493" height="180" key="GridCell.Tab.1.bottom" timestamp="1590357872195">
+    <state width="1493" height="202" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1590897263765" />
+    <state width="1493" height="202" key="GridCell.Tab.1.bottom" timestamp="1590897263766">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1590357872195" />
-    <state width="1493" height="180" key="GridCell.Tab.1.center" timestamp="1590357872195">
+    <state width="1493" height="202" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1590897263766" />
+    <state width="1493" height="202" key="GridCell.Tab.1.center" timestamp="1590897263765">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1590357872195" />
-    <state width="1493" height="180" key="GridCell.Tab.1.left" timestamp="1590357872195">
+    <state width="1493" height="202" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1590897263765" />
+    <state width="1493" height="202" key="GridCell.Tab.1.left" timestamp="1590897263765">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1590357872195" />
-    <state width="1493" height="180" key="GridCell.Tab.1.right" timestamp="1590357872195">
+    <state width="1493" height="202" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1590897263765" />
+    <state width="1493" height="202" key="GridCell.Tab.1.right" timestamp="1590897263765">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1590357872195" />
-    <state width="1493" height="180" key="GridCell.Tab.2.bottom" timestamp="1590357872195">
+    <state width="1493" height="202" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1590897263765" />
+    <state width="1493" height="202" key="GridCell.Tab.2.bottom" timestamp="1590897263766">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.2.bottom/0.0.1536.824@0.0.1536.824" timestamp="1590357872195" />
-    <state width="1493" height="180" key="GridCell.Tab.2.center" timestamp="1590357872195">
+    <state width="1493" height="202" key="GridCell.Tab.2.bottom/0.0.1536.824@0.0.1536.824" timestamp="1590897263766" />
+    <state width="1493" height="202" key="GridCell.Tab.2.center" timestamp="1590897263766">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.2.center/0.0.1536.824@0.0.1536.824" timestamp="1590357872195" />
-    <state width="1493" height="180" key="GridCell.Tab.2.left" timestamp="1590357872195">
+    <state width="1493" height="202" key="GridCell.Tab.2.center/0.0.1536.824@0.0.1536.824" timestamp="1590897263766" />
+    <state width="1493" height="202" key="GridCell.Tab.2.left" timestamp="1590897263766">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.2.left/0.0.1536.824@0.0.1536.824" timestamp="1590357872195" />
-    <state width="1493" height="180" key="GridCell.Tab.2.right" timestamp="1590357872195">
+    <state width="1493" height="202" key="GridCell.Tab.2.left/0.0.1536.824@0.0.1536.824" timestamp="1590897263766" />
+    <state width="1493" height="202" key="GridCell.Tab.2.right" timestamp="1590897263766">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="180" key="GridCell.Tab.2.right/0.0.1536.824@0.0.1536.824" timestamp="1590357872195" />
-    <state x="561" y="247" key="NewPhpClassDialog" timestamp="1589546116568">
+    <state width="1493" height="202" key="GridCell.Tab.2.right/0.0.1536.824@0.0.1536.824" timestamp="1590897263766" />
+    <state x="561" y="247" key="NewPhpClassDialog" timestamp="1590875684361">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="561" y="247" key="NewPhpClassDialog/0.0.1536.824@0.0.1536.824" timestamp="1589546116568" />
+    <state x="561" y="247" key="NewPhpClassDialog/0.0.1536.824@0.0.1536.824" timestamp="1590875684361" />
     <state x="279" y="58" key="SettingsEditor" timestamp="1587579226890">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -284,18 +294,18 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state width="1028" height="432" key="XDebugger.FullValuePopup/0.0.1536.824@0.0.1536.824" timestamp="1590075937721" />
-    <state x="442" y="26" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1590086789747">
+    <state x="442" y="26" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1590886304703">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="442" y="26" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.1536.824@0.0.1536.824" timestamp="1590086789747" />
-    <state x="332" y="151" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1590357865219">
+    <state x="442" y="26" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.1536.824@0.0.1536.824" timestamp="1590886304703" />
+    <state x="332" y="151" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1590897255152">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="332" y="151" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1536.824@0.0.1536.824" timestamp="1590357865219" />
-    <state x="272" y="200" width="1247" height="624" key="find.popup" timestamp="1590173851937">
+    <state x="332" y="151" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1536.824@0.0.1536.824" timestamp="1590897255152" />
+    <state x="289" y="96" width="1247" height="624" key="find.popup" timestamp="1590897029573">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="272" y="200" width="1247" height="624" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1590173851937" />
+    <state x="289" y="96" width="1247" height="624" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1590897029573" />
     <state x="425" y="187" width="672" height="677" key="run.anything.popup" timestamp="1589921501612">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -304,9 +314,9 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="360" y="73" key="scopes/0.0.1536.824@0.0.1536.824" timestamp="1587476327922" />
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1590358666289">
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1590896848782">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1590358666289" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1590896848782" />
   </component>
 </project>

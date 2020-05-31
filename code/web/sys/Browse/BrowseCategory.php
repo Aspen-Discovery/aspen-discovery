@@ -1,8 +1,9 @@
 <?php
 
+require_once ROOT_DIR . '/sys/Browse/BaseBrowsable.php';
 require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
 
-class BrowseCategory extends DataObject
+class BrowseCategory extends BaseBrowsable
 {
 	public $__table = 'browse_category';
 	public $id;
@@ -14,13 +15,10 @@ class BrowseCategory extends DataObject
 	public $label; //A label for the browse category to be shown in the browse category listing
 	public $description; //A description of the browse category
 
-	public $searchTerm;
-	public $defaultFilter;
-	public $sourceListId;
-	public $defaultSort;
-
 	public $numTimesShown;
 	public $numTitlesClickedOn;
+
+	private $_subBrowseCategories;
 
 	function getNumericColumnNames()
 	{
@@ -29,25 +27,24 @@ class BrowseCategory extends DataObject
 
 	public function getSubCategories()
 	{
-		if (!isset($this->subBrowseCategories) && $this->id) {
-			$this->subBrowseCategories = array();
+		if (!isset($this->_subBrowseCategories) && $this->id) {
+			$this->_subBrowseCategories = array();
 			$subCategory = new SubBrowseCategories();
 			$subCategory->browseCategoryId = $this->id;
 			$subCategory->orderBy('weight');
 			$subCategory->find();
 			while ($subCategory->fetch()) {
-				$this->subBrowseCategories[$subCategory->id] = clone($subCategory);
+				$this->_subBrowseCategories[$subCategory->id] = clone($subCategory);
 			}
 		}
-		return $this->subBrowseCategories;
+		return $this->_subBrowseCategories;
 	}
 
 	public function __get($name)
 	{
 		if ($name == 'subBrowseCategories') {
 			$this->getSubCategories();
-			/** @noinspection PhpUndefinedFieldInspection */
-			return $this->subBrowseCategories;
+			return $this->_subBrowseCategories;
 		} else {
 			return $this->_data[$name];
 		}
@@ -56,8 +53,7 @@ class BrowseCategory extends DataObject
 	public function __set($name, $value)
 	{
 		if ($name == 'subBrowseCategories') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->subBrowseCategories = $value;
+			$this->_subBrowseCategories = $value;
 		} else {
 			$this->_data[$name] = $value;
 		}
@@ -89,8 +85,7 @@ class BrowseCategory extends DataObject
 	 */
 	public function update_stats_only()
 	{
-		$ret = parent::update();
-		return $ret;
+		return parent::update();
 	}
 
 	/**
@@ -134,12 +129,6 @@ class BrowseCategory extends DataObject
 
 	public function deleteCachedBrowseCategoryResults()
 	{
-		// key structure
-		// $key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
-		$librarySubDomains = Library::getAllSubdomains();
-		$locationCodes = Location::getAllCodes();
-
-		/** @var $memCache Memcache */
 		global $memCache;
 		$keyFormat = 'browse_category_' . $this->textId;
 		$memCache->deleteKeysStartingWith($keyFormat);
@@ -147,10 +136,10 @@ class BrowseCategory extends DataObject
 
 	public function saveSubBrowseCategories()
 	{
-		if (isset ($this->subBrowseCategories) && is_array($this->subBrowseCategories)) {
+		if (isset ($this->_subBrowseCategories) && is_array($this->_subBrowseCategories)) {
 			/** @var SubBrowseCategories[] $subBrowseCategories */
 			/** @var SubBrowseCategories $subCategory */
-			foreach ($this->subBrowseCategories as $subCategory) {
+			foreach ($this->_subBrowseCategories as $subCategory) {
 				if (isset($subCategory->deleteOnSave) && $subCategory->deleteOnSave == true) {
 					$subCategory->delete();
 				} else {
@@ -162,7 +151,7 @@ class BrowseCategory extends DataObject
 					}
 				}
 			}
-			unset($this->subBrowseCategories);
+			unset($this->_subBrowseCategories);
 		}
 	}
 
@@ -176,8 +165,9 @@ class BrowseCategory extends DataObject
 		$browseSubCategoryStructure = SubBrowseCategories::getObjectStructure();
 		unset($browseSubCategoryStructure['weight']);
 		unset($browseSubCategoryStructure['browseCategoryId']);
+		$browseCategorySources = BaseBrowsable::getBrowseSources();
 
-		$structure = array(
+		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'label' => array('property' => 'label', 'type' => 'text', 'label' => 'Label', 'description' => 'The label to show to the user', 'maxLength' => 50, 'required' => true),
 			'textId' => array('property' => 'textId', 'type' => 'text', 'label' => 'textId', 'description' => 'A textual id to identify the category', 'serverValidation' => 'validateTextId', 'maxLength' => 50),
@@ -200,7 +190,15 @@ class BrowseCategory extends DataObject
 				'allowEdit' => true,
 				'canEdit' => true,
 			),
-
+			'source' => array(
+				'property' => 'source',
+				'type' => 'enum',
+				'values' => $browseCategorySources,
+				'label' => 'Source',
+				'description' => 'The source of the browse category.',
+				'required' => true,
+				'onchange' => "return AspenDiscovery.Admin.updateBrowseSearchForSource();"
+			),
 			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
 			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
 			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'),
@@ -208,8 +206,6 @@ class BrowseCategory extends DataObject
 			'numTimesShown' => array('property' => 'numTimesShown', 'type' => 'label', 'label' => 'Times Shown', 'description' => 'The number of times this category has been shown to users'),
 			'numTitlesClickedOn' => array('property' => 'numTitlesClickedOn', 'type' => 'label', 'label' => 'Titles Clicked', 'description' => 'The number of times users have clicked on titles within this category'),
 		);
-
-		return $structure;
 	}
 
 	function getEditLink(){
@@ -249,85 +245,5 @@ class BrowseCategory extends DataObject
 		}
 
 		return $validationResults;
-	}
-
-	public function getSolrSort()
-	{
-		if ($this->defaultSort == 'relevance') {
-			return 'relevance';
-		} elseif ($this->defaultSort == 'popularity') {
-			return 'popularity desc';
-		} elseif ($this->defaultSort == 'newest_to_oldest') {
-			return 'days_since_added asc';
-		} elseif ($this->defaultSort == 'author') {
-			return 'author,title';
-		} elseif ($this->defaultSort == 'title') {
-			return 'title,author';
-		} elseif ($this->defaultSort == 'user_rating') {
-			return 'rating desc,title';
-		} else {
-			return 'relevance';
-		}
-	}
-
-	/**
-	 * @param SearchObject_SolrSearcher $searchObj
-	 *
-	 * @return boolean
-	 */
-	public function updateFromSearch($searchObj)
-	{
-		//Search terms
-		$searchTerms = $searchObj->getSearchTerms();
-		if (is_array($searchTerms)) {
-			if (count($searchTerms) > 1) {
-				return false;
-			} else {
-				if (!isset($searchTerms[0]['index'])) {
-					$this->searchTerm = $searchObj->displayQuery();
-				} else if ($searchTerms[0]['index'] == 'Keyword') {
-					$this->searchTerm = $searchTerms[0]['lookfor'];
-				} else {
-					$this->searchTerm = $searchTerms[0]['index'] . ':' . $searchTerms[0]['lookfor'];
-				}
-			}
-		} else {
-			$this->searchTerm = $searchTerms;
-		}
-
-		//Default Filter
-		$filters = $searchObj->getFilterList();
-		$formattedFilters = '';
-		foreach ($filters as $filter) {
-			foreach ($filter as $filterValue){
-				if (strlen($formattedFilters) > 0) {
-					$formattedFilters .= "\r\n";
-				}
-				$formattedFilters .= $filterValue['field'] . ':' . $filterValue['value'];
-			}
-		}
-		$this->defaultFilter = $formattedFilters;
-
-		//Default sort
-		$solrSort = $searchObj->getSort();
-		if ($solrSort == 'relevance') {
-			$this->defaultSort = 'relevance';
-		} elseif ($solrSort == 'popularity desc') {
-			$this->defaultSort = 'popularity';
-		} elseif ($solrSort == 'days_since_added asc' || $solrSort == 'year desc,title asc') {
-			$this->defaultSort = 'newest_to_oldest';
-		} elseif ($solrSort == 'days_since_added desc') {
-			$this->defaultSort = 'oldest_to_newest';
-		} elseif ($solrSort == 'author,title') {
-			$this->defaultSort = 'author';
-		} elseif ($solrSort == 'title,author') {
-			$this->defaultSort = 'title';
-		} elseif ($solrSort == 'rating desc,title') {
-			$this->defaultSort = 'user_rating';
-		} else {
-			$this->defaultSort = 'relevance';
-		}
-		return true;
-
 	}
 }

@@ -28,7 +28,7 @@ public class HorizonExportMain {
 	private static PreparedStatement markGroupedWorkForBibAsChangedStmt;
 
 	public static void main(String[] args) {
-		//Pika instance name
+		//Aspen Discovery instance name
 		String serverName = args[0];
 
 		Date startTime = new Date();
@@ -87,7 +87,7 @@ public class HorizonExportMain {
 	 * Expects extracts to already be copied to the server and to be in the
 	 * /data/aspen-discovery/{sitename}/marc_changes directory
 	 *
-	 * @param ini the configuration INI file for Pika
+	 * @param ini the configuration INI file for Aspen
 	 */
 	private static void processChangesFromHorizon(Ini ini) {
 		String exportPath = ini.get("Reindex", "marcChangesPath");

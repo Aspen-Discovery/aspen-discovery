@@ -25,7 +25,7 @@ class BrowseCategoryGroup extends DataObject
 		unset($browseCategoryStructure['weight']);
 		unset($browseCategoryStructure['browseCategoryGroupId']);
 
-		$structure = [
+		return [
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the group', 'maxLength' => 50, 'required' => true),
 			'defaultBrowseMode' => array('property' => 'defaultBrowseMode', 'type' => 'enum', 'label'=>'Default Viewing Mode', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,
 				'values'=> array('0' => 'Show Covers Only', '1' => 'Show as Grid'),
@@ -74,34 +74,14 @@ class BrowseCategoryGroup extends DataObject
 				'values' => $locationList,
 			),
 		];
-
-		return $structure;
 	}
 
 	public function __get($name)
 	{
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
-				$this->_libraries = [];
-				$obj = new Library();
-				$obj->browseCategoryGroupId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_libraries[$obj->libraryId] = $obj->libraryId;
-				}
-			}
-			return $this->_libraries;
+			return $this->getLibraries();
 		} elseif ($name == "locations") {
-			if (!isset($this->_locations) && $this->id){
-				$this->_locations = [];
-				$obj = new Location();
-				$obj->browseCategoryGroupId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_locations[$obj->locationId] = $obj->locationId;
-				}
-			}
-			return $this->_locations;
+			return $this->getLocations();
 		} elseif ($name == 'browseCategories') {
 			return $this->getBrowseCategories();
 		} else {
@@ -127,9 +107,9 @@ class BrowseCategoryGroup extends DataObject
 	public function __set($name, $value)
 	{
 		if ($name == "libraries") {
-			$this->_libraries = $value;
+			$this->setLibraries($value);
 		}elseif ($name == "locations") {
-			$this->_locations = $value;
+			$this->setLocations($value);
 		}elseif ($name == 'browseCategories') {
 			$this->_browseCategories = $value;
 		}else{
@@ -253,12 +233,30 @@ class BrowseCategoryGroup extends DataObject
 	/** @return Library[] */
 	public function getLibraries()
 	{
+		if (!isset($this->_libraries) && $this->id){
+			$this->_libraries = [];
+			$obj = new Library();
+			$obj->browseCategoryGroupId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_libraries[$obj->libraryId] = $obj->libraryId;
+			}
+		}
 		return $this->_libraries;
 	}
 
 	/** @return Location[] */
 	public function getLocations()
 	{
+		if (!isset($this->_locations) && $this->id){
+			$this->_locations = [];
+			$obj = new Location();
+			$obj->browseCategoryGroupId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_locations[$obj->locationId] = $obj->locationId;
+			}
+		}
 		return $this->_locations;
 	}
 
@@ -269,16 +267,6 @@ class BrowseCategoryGroup extends DataObject
 
 	public function setLocations($val)
 	{
-		$this->_libraries = $val;
-	}
-
-	public function clearLibraries(){
-		$this->clearOneToManyOptions('Library', 'browseCategoryGroupId');
-		unset($this->_libraries);
-	}
-
-	public function clearLocations(){
-		$this->clearOneToManyOptions('Location', 'browseCategoryGroupId');
-		unset($this->_locations);
+		$this->_locations = $val;
 	}
 }

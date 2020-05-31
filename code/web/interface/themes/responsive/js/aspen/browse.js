@@ -87,15 +87,15 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		changeBrowseCategory: function(categoryTextId){
-			var url = Globals.path + '/Browse/AJAX',
-					params = {
-						method : 'getBrowseCategoryInfo'
-						,textId : categoryTextId || AspenDiscovery.Browse.curCategory
-						,browseMode : this.browseMode
-					},
-					newLabel = $('#browse-category-'+categoryTextId+' div').first().text(), // get label from corresponding li div
+			let url = Globals.path + '/Browse/AJAX';
+			let params = {
+				method : 'getBrowseCategoryInfo'
+				,textId : categoryTextId || AspenDiscovery.Browse.curCategory
+				,browseMode : this.browseMode
+			};
+			let newLabel = $('#browse-category-'+categoryTextId+' div').first().text(); // get label from corresponding li div
 			// the carousel clones these divs sometimes, so grab only the text from the first one.
-					loadingID = categoryTextId || initial;
+			let loadingID = categoryTextId || initial;
 
 			// Set selected Carousel
 			$('.browse-category').removeClass('selected');
@@ -120,9 +120,13 @@ AspenDiscovery.Browse = (function(){
 			//   so that if the user moves onto another category before we get results, we won't do anything
 			this.loadingCategory = loadingID;
 			$.getJSON(url, params, function(data){
-				if (AspenDiscovery.Browse.loadingCategory == loadingID) {
-					if (data.success == false) {
-						AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+				if (AspenDiscovery.Browse.loadingCategory === loadingID) {
+					if (data.success === false) {
+						if (data.message) {
+							AspenDiscovery.showMessage("Error loading browse information", data.message);
+						} else {
+							AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+						}
 					} else {
 						$('.selected-browse-label-search-text').html(data.label); // update label
 

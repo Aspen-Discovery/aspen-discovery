@@ -445,10 +445,17 @@ a.placard-link{
 
 .table-sticky{
   overflow-y: auto;
-  thead th{
-    position: sticky;
-    top: 0;
+  thead {
+    tr {
+      th {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 5;
+      }
+    }
   }
+
 }
 
 #webMenuNavBar {

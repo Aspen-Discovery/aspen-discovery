@@ -95,6 +95,10 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 	}
 
+	/**
+	 * @param $structure
+	 * @return DataObject|false
+	 */
 	function insertObject($structure){
 		$objectType = $this->getObjectType();
 		/** @var DataObject $newObject */
@@ -200,6 +204,8 @@ abstract class ObjectEditor extends Admin_Admin
 			if ($curObject == false){
 				//The session lastError is updated
 				$errorOccurred = true;
+			}else{
+				$id = $curObject->getPrimaryKeyValue();
 			}
 		}else{
 			//Work with an existing record

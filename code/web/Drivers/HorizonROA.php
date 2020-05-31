@@ -1188,26 +1188,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 			} /** @noinspection PhpStatementHasEmptyBodyInspection */ else {
 				//TODO: Look up user in Horizon
 			}
-//				// If possible, check if Horizon has an email address for the patron
-//				if (!empty($patron->cat_password)) {
-//					list($userValid, $sessionToken, $ilsUserID) = $this->loginViaWebService($barcode, $patron->cat_password);
-//					if ($userValid) {
-//						// Yay! We were able to login with the pin Pika has!
-//
-//						//Now check for an email address
-//						$lookupMyAccountInfoResponse = $this->getWebServiceResponse($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true');
-//						if ($lookupMyAccountInfoResponse) {
-//							if (isset($lookupMyAccountInfoResponse->AddressInfo)) {
-//								if (empty($lookupMyAccountInfoResponse->AddressInfo->email)) {
-//									// return an error message because horizon doesn't have an email.
-//									return array(
-//										'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your pin.'
-//									);
-//								}
-//							}
-//						}
-//					}
-//				}
+
 			if ($userID) {
 				//TODO: looks like user ID will still be required
 				// email the pin to the user
@@ -1268,7 +1249,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
 		} elseif (!empty($changeMyPinResponse->sessionToken)){
-			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Pika user
+			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
 				//TODO: check that this still applies
 				$user->cat_password = $newPin;
 				$user->update();
@@ -1288,7 +1269,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 		$staffUser = $configArray['Catalog']['webServiceStaffUser'];
 		$staffPass = $configArray['Catalog']['webServiceStaffPass'];
 		$body = ['login'=>$staffUser, 'password'=>$staffPass];
-		$xtraHeaders = ['sd-originating-app-id'=>'Pika'];
+		$xtraHeaders = ['sd-originating-app-id'=>'Aspen Discovery'];
 		$res = $this->getWebServiceResponse($this->webServiceURL . '/v1/user/staff/login', $body, null, "POST", $xtraHeaders);
 		if(!$res || !isset($res->sessionToken)) {
 			return false;

@@ -243,4 +243,12 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
+	public function getEngineName(){
+		return 'OpenArchives';
+	}
+
+	public function getDefaultSearchIndex()
+	{
+		return 'OpenArchivesKeyword';
+	}
 }

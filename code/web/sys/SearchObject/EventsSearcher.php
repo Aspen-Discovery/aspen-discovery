@@ -293,4 +293,13 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 		}
 		return $this->facetConfig;
 	}
+
+	public function getEngineName(){
+		return 'Events';
+	}
+
+	public function getDefaultSearchIndex()
+	{
+		return 'EventsKeyword';
+	}
 }

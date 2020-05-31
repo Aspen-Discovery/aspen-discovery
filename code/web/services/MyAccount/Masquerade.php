@@ -70,7 +70,7 @@ class MyAccount_Masquerade extends MyAccount
 							}
 
 							if ($masqueradedUser->getNumResults() == 0) {
-								// Test for a user that hasn't logged into Pika before
+								// Test for a user that hasn't logged into Aspen Discovery before
 								$masqueradedUser = UserAccount::findNewUser($libraryCard);
 								if (!$masqueradedUser) {
 									return array(

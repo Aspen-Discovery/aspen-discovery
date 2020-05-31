@@ -48,7 +48,7 @@
 
 	<!--		<div class="col-sm-5 text-right" id="connect-with-us-info">
 
-				{if $twitterLink || $facebookLink || $generalContactLink || $youtubeLink || $instagramLink || $goodreadsLink}
+				{if $twitterLink || $facebookLink || $generalContactLink || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink}
 					<span id="connect-with-us-label" class="large">CONNECT WITH US</span>
 					{if $twitterLink}
 						<a href="{$twitterLink}" class="connect-icon"><img src="{img filename='twitter.png'}" class="img-rounded"></a>
@@ -61,6 +61,9 @@
 					{/if}
 					{if $instagramLink}
 						<a href="{$instagramLink}" class="connect-icon"><img src="{img filename='instagram.png'}" class="img-rounded"></a>
+					{/if}
+					{if $pinterestLink}
+						<a href="{$pinterestLink}" class="connect-icon"><img src="{img filename='pinterest.png'}" class="img-rounded"></a>
 					{/if}
 					{if $goodreadsLink}
 						<a href="{$goodreadsLink}" class="connect-icon"><img src="{img filename='goodreads.png'}" class="img-rounded"></a>

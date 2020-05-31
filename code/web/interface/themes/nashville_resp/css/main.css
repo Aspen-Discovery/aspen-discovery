@@ -8751,9 +8751,11 @@ a.placard-link {
 .table-sticky {
   overflow-y: auto;
 }
-.table-sticky thead th {
+.table-sticky thead tr th {
   position: sticky;
   top: 0;
+  background-color: white;
+  z-index: 5;
 }
 #webMenuNavBar {
   background-color: #00a4e3;

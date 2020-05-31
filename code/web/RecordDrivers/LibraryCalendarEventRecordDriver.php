@@ -42,7 +42,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		$interface->assign('eventUrl', $this->getLinkUrl());
 		$interface->assign('title', $this->getTitle());
 		if (isset($this->fields['description'])) {
-			$interface->assign('description', $this->getDescription());
+			$interface->assign('description', $this->fields['description']);
 		} else {
 			$interface->assign('description', '');
 		}
@@ -100,7 +100,11 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 
 	public function getDescription()
 	{
-		return $this->fields['description'];
+		if (isset($this->fields['description'])) {
+			return $this->fields['description'];
+		} else {
+			return '';
+		}
 	}
 
 	public function getItemActions($itemInfo)

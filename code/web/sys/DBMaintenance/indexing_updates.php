@@ -130,6 +130,17 @@ function getIndexingUpdates()
 			)
 		),
 
+		'indexing_records_default_sub_location' => [
+			'title' => 'Set Sub Location defaults for Indexing Records',
+			'description' => 'Set Sub Location defaults for records owned and records to include',
+			'sql' => [
+				"ALTER TABLE library_records_owned CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_owned CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include CHANGE COLUMN subLocation subLocation varchar(100) NOT NULL DEFAULT ''",
+			]
+		],
+
 		'indexing_profile_collection' => array(
 			'title' => 'Indexing profile collections',
 			'description' => 'Add handling of collections to indexing profile table',
@@ -622,6 +633,15 @@ function getIndexingUpdates()
 					PRIMARY KEY (`id`),
 					UNIQUE KEY `name` (`name`)
                 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+			]
+		],
+
+		'sideload_defaults' => [
+			'title' => 'Default values for sideloads',
+			'description' => 'Update default values for sideloads',
+			'sql' => [
+				"ALTER table sideloads CHANGE COLUMN recordNumberPrefix recordNumberPrefix varchar(10) NOT NULL DEFAULT '';",
+				"ALTER table sideloads CHANGE COLUMN itemTag itemTag char(3) NOT NULL DEFAULT '';"
 			]
 		],
 

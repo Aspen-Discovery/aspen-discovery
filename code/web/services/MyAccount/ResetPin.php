@@ -36,7 +36,7 @@ class ResetPin extends Action{
 
 					if (empty($patron->id)) {
 						// Did not find a matching user to the uid
-						// This check could be optional if the resetPin method verifies that the ILS user matches the Pika user.
+						// This check could be optional if the resetPin method verifies that the ILS user matches the Aspen Discovery user.
 						$resetPinResult = array(
 							'error' => 'Invalid parameter. Your Pin can not be reset'
 						);

@@ -564,7 +564,7 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 }, "Invalid email format: please use a comma to separate multiple email addresses.");
 
 /**
- *  Modified from above code, for Pika self registration form.
+ *  Modified from above code, for Aspen Discovery self registration form.
  *
  * Return true, if the value is a valid date, also making this formal check mm-dd-yyyy.
  *
@@ -577,15 +577,15 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
  * @example jQuery.validator.methods.date("01.01.1900")
  * @result false
  *
- * @example <input name="pippo" class="{datePika:true}" />
+ * @example <input name="pippo" class="{dateAspen:true}" />
  * @desc Declares an optional input element whose value must be a valid date.
  *
- * @name jQuery.validator.methods.datePika
+ * @name jQuery.validator.methods.dateAspen
  * @type Boolean
  * @cat Plugins/Validate/Methods
  */
 jQuery.validator.addMethod(
-		"datePika",
+		"dateAspen",
 		function(value, element) {
 			var check = false;
 			var re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
@@ -1846,6 +1846,20 @@ AspenDiscovery.Admin = (function(){
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
+		},
+		updateBrowseSearchForSource: function () {
+			let selectedSource = $('#sourceSelect').val();
+			if (selectedSource === 'List') {
+				$("#propertyRowsearchTerm").hide();
+				$("#propertyRowdefaultFilter").hide();
+				$("#propertyRowdefaultSort").hide();
+				$("#propertyRowsourceListId").show();
+			}else{
+				$("#propertyRowsearchTerm").show();
+				$("#propertyRowdefaultFilter").show();
+				$("#propertyRowdefaultSort").show();
+				$("#propertyRowsourceListId").hide();
+			}
 		}
 	};
 }(AspenDiscovery.Admin || {}));
@@ -1915,7 +1929,7 @@ AspenDiscovery.Archive = (function(){
 
 		openSeadragonViewerSettings: function(){
 			return {
-				"id": "pika-openseadragon",
+				"id": "custom-openseadragon",
 				"prefixUrl": Globals.encodedRepositoryUrl + "\/sites\/all\/libraries\/openseadragon\/images\/",
 				"debugMode": false,
 				"djatokaServerBaseURL": Globals.encodedRepositoryUrl + "\/AJAX\/DjatokaResolver",
@@ -2334,8 +2348,8 @@ AspenDiscovery.Archive = (function(){
 						this.pageDetails[pid]['jp2'],
 						AspenDiscovery.Archive.openSeadragonViewerSettings()
 				);
-				if (!$('#pika-openseadragon').hasClass('processed')) {
-					$('#pika-openseadragon').addClass('processed');
+				if (!$('#custom-openseadragon').hasClass('processed')) {
+					$('#custom-openseadragon').addClass('processed');
 					settings = AspenDiscovery.Archive.openSeadragonViewerSettings();
 					settings.tileSources = [];
 					settings.tileSources.push(tile);
@@ -2584,15 +2598,15 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		changeBrowseCategory: function(categoryTextId){
-			var url = Globals.path + '/Browse/AJAX',
-					params = {
-						method : 'getBrowseCategoryInfo'
-						,textId : categoryTextId || AspenDiscovery.Browse.curCategory
-						,browseMode : this.browseMode
-					},
-					newLabel = $('#browse-category-'+categoryTextId+' div').first().text(), // get label from corresponding li div
+			let url = Globals.path + '/Browse/AJAX';
+			let params = {
+				method : 'getBrowseCategoryInfo'
+				,textId : categoryTextId || AspenDiscovery.Browse.curCategory
+				,browseMode : this.browseMode
+			};
+			let newLabel = $('#browse-category-'+categoryTextId+' div').first().text(); // get label from corresponding li div
 			// the carousel clones these divs sometimes, so grab only the text from the first one.
-					loadingID = categoryTextId || initial;
+			let loadingID = categoryTextId || initial;
 
 			// Set selected Carousel
 			$('.browse-category').removeClass('selected');
@@ -2617,9 +2631,13 @@ AspenDiscovery.Browse = (function(){
 			//   so that if the user moves onto another category before we get results, we won't do anything
 			this.loadingCategory = loadingID;
 			$.getJSON(url, params, function(data){
-				if (AspenDiscovery.Browse.loadingCategory == loadingID) {
-					if (data.success == false) {
-						AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+				if (AspenDiscovery.Browse.loadingCategory === loadingID) {
+					if (data.success === false) {
+						if (data.message) {
+							AspenDiscovery.showMessage("Error loading browse information", data.message);
+						} else {
+							AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+						}
 					} else {
 						$('.selected-browse-label-search-text').html(data.label); // update label
 
@@ -4776,7 +4794,7 @@ AspenDiscovery.Ratings = (function(){
 }(AspenDiscovery.Ratings));
 
 /*
-*  Jquery Ratings Plugin, Adapted for Pika
+*  Jquery Ratings Plugin, Adapted for Aspen Discovery
  *
 * */
 //copyright 2008 Jarrett Vance

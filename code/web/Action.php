@@ -44,4 +44,16 @@ abstract class Action
 		}
 		$interface->assign('showCovers', $showCovers);
 	}
+
+	protected function forbidAPIAccess()
+	{
+		global $aspenUsage;
+		$aspenUsage->blockedApiRequests++;
+		$aspenUsage->update();
+
+		http_response_code(403);
+		$clientIP = IPAddress::getClientIP();
+		echo("<h1>Forbidden</h1><p><strong>API requests from {$clientIP} are forbidden.</strong></p>");
+		die();
+	}
 }

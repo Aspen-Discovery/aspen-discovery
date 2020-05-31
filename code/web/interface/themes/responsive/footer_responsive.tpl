@@ -27,7 +27,7 @@
 				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-5 text-right" id="connect-with-us-info">
-				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $goodreadsLink}
+				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink}
 					<span id="connect-with-us-label" class="large">CONNECT WITH US</span>
 					{if $twitterLink}
 						<a href="{$twitterLink}" class="connect-icon" target="_blank"><img alt='{translate text="Follow us on Twitter" inAttribute=true}' src="{img filename='twitter.png'}" class="img-rounded"></a>
@@ -40,6 +40,9 @@
 					{/if}
 					{if $instagramLink}
 						<a href="{$instagramLink}" class="connect-icon" target="_blank"><img alt='{translate text="Follow us on Instagram" inAttribute=true}' src="{img filename='instagram.png'}" class="img-rounded"></a>
+					{/if}
+					{if $pinterestLink}
+						<a href="{$pinterestLink}" class="connect-icon"><img alt='{translate text="Follow us on Pinterest" inAttribute=true}'  src="{img filename='pinterest.png'}" class="img-rounded"></a>
 					{/if}
 					{if $goodreadsLink}
 						<a href="{$goodreadsLink}" class="connect-icon" target="_blank"><img alt='{translate text="Follow us on GoodReads" inAttribute=true}' src="{img filename='goodreads.png'}" class="img-rounded"></a>

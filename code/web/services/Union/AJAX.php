@@ -71,7 +71,7 @@ class Union_AJAX extends Action {
 		$fullResultsLink = $sectionObject->getResultsLink($searchTerm, $searchType);
 		if ($source == 'eds') {
 			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'pika') {
+		}elseif ($source == 'catalog') {
 			$results = $this->getResultsFromCatalog($searchTerm, $numberOfResults, $searchType, $fullResultsLink);
 		}elseif ($source == 'archive'){
 			$results = $this->getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink);

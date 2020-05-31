@@ -512,7 +512,7 @@ abstract class Archive_Object extends Action {
 			} elseif (!empty($library->defaultArchiveCollectionBrowseMode)) {
 				$displayMode = $library->defaultArchiveCollectionBrowseMode;
 			} else {
-				$displayMode = 'covers'; // Pika default mode is covers
+				$displayMode = 'covers'; // default mode is covers
 			}
 		}
 

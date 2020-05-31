@@ -1,14 +1,13 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
-/**
- * APIs related to Digital Archive functionality
- * User: mnoble
- * Date: 6/29/2017
- * Time: 11:00 AM
- */
 
 class API_ArchiveAPI extends Action {
 	function launch(){
+		//Make sure the user can access the API based on the IP address
+		if (!IPAddress::allowAPIAccessForClientIP()){
+			$this->forbidAPIAccess();
+		}
+
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		header('Content-type: application/json');
@@ -42,7 +41,6 @@ class API_ArchiveAPI extends Action {
 			/** @var IslandoraRecordDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($doc);
 			$contributingLibrary = $record->getContributingLibrary();
-			//$exportToDPLA = isset($doc['mods_extension_marmotLocal_pikaOptions_dpla_s']) ? $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] : 'collection';
 
 			//Get the owning library
 			$dplaDoc = array();
@@ -164,6 +162,7 @@ class API_ArchiveAPI extends Action {
 			"Video" => "Moving Image",
 			"Voice Recording" => "Sound",
 	);
+
 	private function mapFormat($format){
 		if (array_key_exists($format, $this->formatMap)){
 			return $this->formatMap[$format];
@@ -181,7 +180,7 @@ class API_ArchiveAPI extends Action {
 	 */
 	private function getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize)
 	{
-//Query for collections that should not be exported to DPLA
+		//Query for collections that should not be exported to DPLA
 		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
@@ -203,7 +202,6 @@ class API_ArchiveAPI extends Action {
 			}
 			$ancestors .= 'ancestors_ms:"' . $doc['PID'] . '"';
 		}
-
 
 		//Query Solr for the records to export
 		// Initialise from the current search globals

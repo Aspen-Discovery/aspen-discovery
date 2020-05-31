@@ -42,7 +42,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		if ($configArray['System']['debugSolr']) {
 			//Verify that the ip is ok
 			global $locationSingleton;
-			$activeIp = $locationSingleton->getActiveIp();
+			$activeIp = IPAddress::getActiveIp();
 			$maintenanceIps = $configArray['System']['maintenanceIps'];
 			$debug = true;
 			if (strlen($maintenanceIps) > 0) {
@@ -204,7 +204,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 			$current = &$this->indexResult['response']['docs'][$x];
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-			$record = RecordDriverFactory::initRecordDriver($current);
+			$record = $this->getRecordDriverForResult($current);
 			if (!($record instanceof AspenError)) {
 				if (method_exists($record, 'getBrowseResult')) {
 					$html['GroupedWork' . $current['id']] = $interface->fetch($record->getBrowseResult());
@@ -858,5 +858,33 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	public function loadDynamicFields()
 	{
 		return $this->indexEngine->loadDynamicFields();
+	}
+
+	public function setSearchTerm($searchTerm)
+	{
+		$this->initBasicSearch($searchTerm);
+	}
+
+	public abstract function getDefaultSearchIndex();
+
+	public function getSpotlightResults(CollectionSpotlight $spotlight){
+		$spotlightResults = [];
+		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
+			$current = &$this->indexResult['response']['docs'][$x];
+			$record = $this->getRecordDriverForResult($current);
+			if (!($record instanceof AspenError)) {
+				if (!empty($orderedListOfIDs)) {
+					$position = array_search($current['id'], $orderedListOfIDs);
+					if ($position !== false) {
+						$spotlightResults[$position] = $record->getSpotlightResult($spotlight, $position);
+					}
+				} else {
+					$spotlightResults[] = $record->getSpotlightResult($spotlight, $x);
+				}
+			} else {
+				$spotlightResults[] = "Unable to find record";
+			}
+		}
+		return $spotlightResults;
 	}
 }

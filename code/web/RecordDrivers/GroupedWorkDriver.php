@@ -417,17 +417,17 @@ class GroupedWorkDriver extends IndexRecordDriver
 			} else {
 				require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
 				//Check for cached links
-				$samePikaCache = new IslandoraSamePikaCache();
-				$samePikaCache->groupedWorkId = $groupedWorkId;
+				$sameCatalogRecordCache = new IslandoraSamePikaCache();
+				$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
 				$foundLink = false;
-				if ($samePikaCache->find(true)) {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $samePikaCache->archiveLink;
-					$archiveLink = $samePikaCache->archiveLink;
+				if ($sameCatalogRecordCache->find(true)) {
+					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $sameCatalogRecordCache->archiveLink;
+					$archiveLink = $sameCatalogRecordCache->archiveLink;
 					$foundLink = true;
 				} else {
 					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = false;
-					$samePikaCache->archiveLink = '';
-					$samePikaCache->insert();
+					$sameCatalogRecordCache->archiveLink = '';
+					$sameCatalogRecordCache->insert();
 				}
 
 				if (!$foundLink || isset($_REQUEST['reload'])) {
@@ -452,15 +452,15 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 							$archiveLink = $firstObjectDriver->getRecordUrl();
 
-							$samePikaCache = new IslandoraSamePikaCache();
-							$samePikaCache->groupedWorkId = $groupedWorkId;
-							if ($samePikaCache->find(true) && $samePikaCache->archiveLink != $archiveLink) {
-								$samePikaCache->archiveLink = $archiveLink;
-								$samePikaCache->pid = $firstObjectDriver->getUniqueID();
-								$numUpdates = $samePikaCache->update();
+							$sameCatalogRecordCache = new IslandoraSamePikaCache();
+							$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
+							if ($sameCatalogRecordCache->find(true) && $sameCatalogRecordCache->archiveLink != $archiveLink) {
+								$sameCatalogRecordCache->archiveLink = $archiveLink;
+								$sameCatalogRecordCache->pid = $firstObjectDriver->getUniqueID();
+								$numUpdates = $sameCatalogRecordCache->update();
 								if ($numUpdates == 0) {
 									global $logger;
-									$logger->log("Did not update same pika cache " . print_r($samePikaCache->getLastError(), true), Logger::LOG_ERROR);
+									$logger->log("Did not update same catalog record cache " . print_r($sameCatalogRecordCache->getLastError(), true), Logger::LOG_ERROR);
 								}
 							}
 							GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
@@ -1313,8 +1313,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	function getOGType()
 	{
-		$pikaFormat = strtolower($this->getFormatCategory());
-		switch ($pikaFormat) {
+		$format = strtolower($this->getFormatCategory());
+		switch ($format) {
 			case 'books':
 			case 'ebook':
 			case 'audio books':
@@ -2248,14 +2248,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$groupedWorkIdsToSearch = array();
 			foreach ($groupedWorkIds as $groupedWorkId) {
 				//Check for cached links
-				$samePikaCache = new IslandoraSamePikaCache();
-				$samePikaCache->groupedWorkId = $groupedWorkId;
-				if ($samePikaCache->find(true)) {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $samePikaCache->archiveLink;
+				$sameCatalogRecordCache = new IslandoraSamePikaCache();
+				$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
+				if ($sameCatalogRecordCache->find(true)) {
+					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $sameCatalogRecordCache->archiveLink;
 				} else {
 					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = false;
-					$samePikaCache->archiveLink = '';
-					$samePikaCache->insert();
+					$sameCatalogRecordCache->archiveLink = '';
+					$sameCatalogRecordCache->insert();
 					$groupedWorkIdsToSearch[] = $groupedWorkId;
 				}
 			}
@@ -2289,15 +2289,15 @@ class GroupedWorkDriver extends IndexRecordDriver
 							$archiveLink = $firstObjectDriver->getRecordUrl();
 							foreach ($groupedWorkIdsToSearch as $groupedWorkId) {
 								if (strpos($doc['mods_extension_marmotLocal_externalLink_samePika_link_s'], $groupedWorkId) !== false) {
-									$samePikaCache = new IslandoraSamePikaCache();
-									$samePikaCache->groupedWorkId = $groupedWorkId;
-									if ($samePikaCache->find(true) && $samePikaCache->archiveLink != $archiveLink) {
-										$samePikaCache->archiveLink = $archiveLink;
-										$samePikaCache->pid = $firstObjectDriver->getUniqueID();
-										$numUpdates = $samePikaCache->update();
+									$sameCatalogRecordCache = new IslandoraSamePikaCache();
+									$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
+									if ($sameCatalogRecordCache->find(true) && $sameCatalogRecordCache->archiveLink != $archiveLink) {
+										$sameCatalogRecordCache->archiveLink = $archiveLink;
+										$sameCatalogRecordCache->pid = $firstObjectDriver->getUniqueID();
+										$numUpdates = $sameCatalogRecordCache->update();
 										if ($numUpdates == 0) {
 											global $logger;
-											$logger->log("Did not update same pika cache " . print_r($samePikaCache->getLastError(), true), Logger::LOG_ERROR);
+											$logger->log("Did not update same catalog record cache " . print_r($sameCatalogRecordCache->getLastError(), true), Logger::LOG_ERROR);
 										}
 									}
 									GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;

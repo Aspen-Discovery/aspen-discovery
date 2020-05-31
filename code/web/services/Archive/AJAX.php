@@ -994,7 +994,7 @@ class Archive_AJAX extends Action {
 		} elseif (!empty($library->defaultArchiveCollectionBrowseMode)) {
 			$displayMode = $library->defaultArchiveCollectionBrowseMode;
 		} else {
-			$displayMode = 'covers'; // Pika default mode is covers
+			$displayMode = 'covers'; // default mode is covers
 		}
 
 		$_SESSION['archiveCollectionDisplayMode'] = $displayMode;
@@ -1031,24 +1031,24 @@ class Archive_AJAX extends Action {
 			$cacheMessage = 'Cached data does not exist for that id.<br/>';
 		}
 
-		$samePikaCleared = false;
+		$sameRecordCleared = false;
 		require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
 		//Check for cached links
-		$samePikaCache = new IslandoraSamePikaCache();
-		$samePikaCache->pid = $id;
-		if ($samePikaCache->find(true)){
-			if ($samePikaCache->delete()){
-				$samePikaCleared = true;
+		$sameCatalogRecordCache = new IslandoraSamePikaCache();
+		$sameCatalogRecordCache->pid = $id;
+		if ($sameCatalogRecordCache->find(true)){
+			if ($sameCatalogRecordCache->delete()){
+				$sameRecordCleared = true;
 			}else{
-				$cacheMessage .= 'Could not delete same pika cache';
+				$cacheMessage .= 'Could not delete same catalog record cache';
 			}
 
 		}else{
-			$cacheMessage .= 'Data not cached for same pika link';
+			$cacheMessage .= 'Data not cached for same catalog link';
 		}
 
 		return array(
-				'success' => $mainCacheCleared || $samePikaCleared,
+				'success' => $mainCacheCleared || $sameRecordCleared,
 				'message' => $cacheMessage
 		);
 	}

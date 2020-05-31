@@ -53,6 +53,16 @@ $timer->logTime("Initialized Database");
 requireSystemLibraries();
 initLocale();
 
+//Check to see if we should be blocking based on the IP address
+if (IPAddress::isClientIpBlocked()){
+	$aspenUsage->blockedRequests++;
+	$aspenUsage->update();
+
+	http_response_code(403);
+	echo("<h1>Forbidden</h1><p><strong>We are unable to handle your request.</strong></p>");
+	die();
+}
+
 global $enabledModules;
 $enabledModules = [];
 try {
@@ -109,6 +119,7 @@ function requireSystemLibraries(){
 	require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 	require_once ROOT_DIR . '/sys/Translation/Translator.php';
 	require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
+	require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 }
 
 function initLocale(){
@@ -133,7 +144,7 @@ function loadLibraryAndLocation(){
 	$timer->logTime('Created Location');
 
 	global $active_ip;
-	$active_ip = $locationSingleton->getActiveIp();
+	$active_ip = IPAddress::getActiveIp();
 	if (!isset($_COOKIE['test_ip']) || $active_ip != $_COOKIE['test_ip']){
 		if ($active_ip == ''){
 			setcookie('test_ip', $active_ip, time() - 1000, '/');

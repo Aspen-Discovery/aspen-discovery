@@ -6,9 +6,6 @@ class Browse_AJAX extends Action {
 
 	const ITEMS_PER_PAGE = 24;
 
-	/** @var SearchObject_SolrSearcher $searchObject*/
-	private $searchObject;
-
 	function launch()
 	{
 		header ('Content-type: application/json');
@@ -46,12 +43,11 @@ class Browse_AJAX extends Action {
 
 		// Display Page
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
-		$results = array(
+		return array(
 			'title' => 'Add as Browse Category to Home Page',
 			'modalBody' => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -173,11 +169,17 @@ class Browse_AJAX extends Action {
 	}
 
 	private function getSuggestionsBrowseCategoryResults($pageToLoad = 1){
+		if (!UserAccount::isLoggedIn()){
+			return [
+				'success' => false,
+				'message' => 'Your session has timed out, please login again to view suggestions'
+			];
+		}
 		// Only Fetches one page of results
 		$browseMode = $this->setBrowseMode();
 		if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {
-			/** @var Memcache $memCache */
-			global $memCache, $solrScope;
+			global $memCache;
+			global $solrScope;
 			$activeUserId = UserAccount::getActiveUserId();
 			$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
 			$browseCategoryInfo = $memCache->get($key);
@@ -252,10 +254,9 @@ class Browse_AJAX extends Action {
 				$result['success'] = true;
 				$result['textId']  = $browseCategory->textId;
 				$result['label']   = $browseCategory->label;
-				//$result['description'] = $browseCategory->description; // the description is not used anywhere on front end. plb 1-2-2015
 
 				// User List Browse Category //
-				if ($browseCategory->sourceListId != null && $browseCategory->sourceListId > 0) {
+				if ($browseCategory->source == 'List') {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 					$sourceList     = new UserList();
 					$sourceList->id = $browseCategory->sourceListId;
@@ -268,27 +269,27 @@ class Browse_AJAX extends Action {
 
 					// Search Browse Category //
 				} else {
-					$this->searchObject = SearchObjectFactory::initSearchObject();
+					$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
 					$defaultFilterInfo  = $browseCategory->defaultFilter;
 					$defaultFilters     = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
 					foreach ($defaultFilters as $filter) {
-						$this->searchObject->addFilter(trim($filter));
+						$searchObject->addFilter(trim($filter));
 					}
 					//Set Sorting, this is actually slightly mangled from the category to Solr
-					$this->searchObject->setSort($browseCategory->getSolrSort());
+					$searchObject->setSort($browseCategory->getSolrSort());
 					if ($browseCategory->searchTerm != '') {
-						$this->searchObject->setSearchTerm($browseCategory->searchTerm);
+						$searchObject->setSearchTerm($browseCategory->searchTerm);
 					}
 
 					//Get titles for the list
-					$this->searchObject->clearFacets();
-					$this->searchObject->disableSpelling();
-					$this->searchObject->disableLogging();
-					$this->searchObject->setLimit(self::ITEMS_PER_PAGE);
-					$this->searchObject->setPage($pageToLoad);
-					$this->searchObject->processSearch();
+					$searchObject->clearFacets();
+					$searchObject->disableSpelling();
+					$searchObject->disableLogging();
+					$searchObject->setLimit(self::ITEMS_PER_PAGE);
+					$searchObject->setPage($pageToLoad);
+					$searchObject->processSearch();
 
-					$records = $this->searchObject->getBrowseRecordHTML();
+					$records = $searchObject->getBrowseRecordHTML();
 
 					// Do we need to initialize the ajax ratings?
 					if ($this->browseMode == 0) {
@@ -307,12 +308,12 @@ class Browse_AJAX extends Action {
 						if ($browseCategoryRatingsMode == 2) $records[] = '<script type="text/javascript">AspenDiscovery.Ratings.initializeRaters()</script>';
 					}
 
-					$result['searchUrl'] = $this->searchObject->renderSearchUrl();
+					$result['searchUrl'] = $searchObject->renderSearchUrl();
 
 					//TODO: Check if last page
 
 					// Shutdown the search object
-					$this->searchObject->close();
+					$searchObject->close();
 				}
 				if (count($records) == 0) {
 					$records[] = $interface->fetch('Browse/noResults.tpl');
@@ -484,8 +485,7 @@ class Browse_AJAX extends Action {
 			$pageToLoad = (int) $_REQUEST['pageToLoad'];
 			if (!is_int($pageToLoad)) return array('success' => false);
 		}
-		$result = $this->getBrowseCategoryResults($pageToLoad);
-		return $result;
+		return $this->getBrowseCategoryResults($pageToLoad);
 	}
 
 	/** @var  BrowseCategory $subCategories[]   Browse category info for each sub-category */
@@ -503,7 +503,6 @@ class Browse_AJAX extends Action {
 			foreach ($this->browseCategory->getSubCategories() as $subCategory) {
 
 				// Get Needed Info about sub-category
-				/** @var BrowseCategory $temp */
 				$temp = new BrowseCategory();
 				$temp->id = $subCategory->subCategoryId;
 				if ($temp->find(true)) {
@@ -517,8 +516,7 @@ class Browse_AJAX extends Action {
 			if ($subCategories) {
 				global $interface;
 				$interface->assign('subCategories', $subCategories);
-				$result = $interface->fetch('Search/browse-sub-category-menu.tpl');
-				return $result;
+				return $interface->fetch('Search/browse-sub-category-menu.tpl');
 			}
 		}
 		return null;
@@ -535,7 +533,6 @@ class Browse_AJAX extends Action {
 	private function getActiveBrowseCategories(){
 		//Figure out which library or location we are looking at
 		global $library;
-		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		global $configArray;
 		//Check to see if we have an active location, will be null if we don't have a specific location
@@ -549,7 +546,6 @@ class Browse_AJAX extends Action {
 			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
 		}else{
 			//We have a location get data for that
-			/** @noinspection PhpUndefinedFieldInspection */
 			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
 		}
 

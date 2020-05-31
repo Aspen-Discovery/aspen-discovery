@@ -1118,7 +1118,7 @@ class CarlX extends SIP2Driver{
 						$curTitle['shortId']      = $readingHistoryEntry->BID;
 						$curTitle['recordId']     = $this->fullCarlIDfromBID($readingHistoryEntry->BID);
 						$curTitle['title']        = rtrim($readingHistoryEntry->Title, ' /');
-						$curTitle['checkout']     = $checkOutDate->format('m-d-Y'); // this format is expected by Pika's java cron program.
+						$curTitle['checkout']     = $checkOutDate->format('m-d-Y'); // this format is expected by Aspen Discovery's java cron program.
 						$curTitle['borrower_num'] = $user->id;
 						$curTitle['dueDate']      = null; // Not available in ChargeHistoryItems
 						$curTitle['author']       = null; // Not available in ChargeHistoryItems
@@ -1491,6 +1491,7 @@ class CarlX extends SIP2Driver{
 				if ($hold) {
 
 					$pickupLocation = $hold->PickUpBranch;
+					$queuePosition = $hold->QueuePosition;
 					if (!empty($hold->Title)) {
 						$title = $hold->Title;
 					}
@@ -1499,7 +1500,7 @@ class CarlX extends SIP2Driver{
 						$freeze = false;
 					}
 
-					$in = $mySip->freezeSuspendHold($dateToReactivate, $freeze,'2', '', $holdId, 'N', $pickupLocation);
+					$in = $mySip->freezeSuspendHold($dateToReactivate, $freeze,'2', '', $holdId, 'N', $pickupLocation, $queuePosition);
 					$msg_result = $mySip->get_message($in);
 
 					if (preg_match("/^16/", $msg_result)) {
