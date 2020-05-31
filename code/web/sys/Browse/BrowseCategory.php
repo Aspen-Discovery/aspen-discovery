@@ -165,6 +165,7 @@ class BrowseCategory extends BaseBrowsable
 		$browseSubCategoryStructure = SubBrowseCategories::getObjectStructure();
 		unset($browseSubCategoryStructure['weight']);
 		unset($browseSubCategoryStructure['browseCategoryId']);
+		$browseCategorySources = BaseBrowsable::getBrowseSources();
 
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
@@ -189,7 +190,15 @@ class BrowseCategory extends BaseBrowsable
 				'allowEdit' => true,
 				'canEdit' => true,
 			),
-
+			'source' => array(
+				'property' => 'source',
+				'type' => 'enum',
+				'values' => $browseCategorySources,
+				'label' => 'Source',
+				'description' => 'The source of the browse category.',
+				'required' => true,
+				'onchange' => "return AspenDiscovery.Admin.updateBrowseSearchForSource();"
+			),
 			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
 			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
 			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'),

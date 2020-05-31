@@ -46,4 +46,8 @@ class Admin_BrowseCategories extends ObjectEditor
 	function getInstructions(){
 		return '';
 	}
+
+	function getInitializationJs(){
+		return 'return AspenDiscovery.Admin.updateBrowseSearchForSource();';
+	}
 }

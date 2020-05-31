@@ -61,7 +61,7 @@ class CollectionSpotlightList extends BaseBrowsable
 				'label' => 'Source',
 				'description' => 'The source of the list.',
 				'required' => true,
-				'onchange' => "return AspenDiscovery.Admin.updateSpotlightSearchForSource();"
+				'onchange' => "return AspenDiscovery.Admin.updateBrowseSearchForSource();"
 			),
 			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
 			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),

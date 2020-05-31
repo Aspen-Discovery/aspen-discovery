@@ -88,7 +88,7 @@ AspenDiscovery.Admin = (function(){
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		updateSpotlightSearchForSource: function () {
+		updateBrowseSearchForSource: function () {
 			let selectedSource = $('#sourceSelect').val();
 			if (selectedSource === 'List') {
 				$("#propertyRowsearchTerm").hide();

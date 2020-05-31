@@ -50,7 +50,7 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 	}
 
 	function getInitializationJs(){
-		return 'return AspenDiscovery.Admin.updateSpotlightSearchForSource();';
+		return 'return AspenDiscovery.Admin.updateBrowseSearchForSource();';
 	}
 
 	function showReturnToList(){
