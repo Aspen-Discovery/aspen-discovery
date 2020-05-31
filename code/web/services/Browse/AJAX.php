@@ -169,6 +169,12 @@ class Browse_AJAX extends Action {
 	}
 
 	private function getSuggestionsBrowseCategoryResults($pageToLoad = 1){
+		if (!UserAccount::isLoggedIn()){
+			return [
+				'success' => false,
+				'message' => 'Your session has timed out, please login again to view suggestions'
+			];
+		}
 		// Only Fetches one page of results
 		$browseMode = $this->setBrowseMode();
 		if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {
