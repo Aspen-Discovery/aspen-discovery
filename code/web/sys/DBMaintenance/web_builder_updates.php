@@ -236,7 +236,7 @@ function getWebBuilderUpdates(){
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					basicPageId INT(11) NOT NULL, 
 					categoryId INT(11) NOT NULL,
-					UNIQUE INDEX (basicPageId, audienceId)
+					UNIQUE INDEX (basicPageId, categoryId)
 				) ENGINE INNODB',
 				'CREATE TABLE web_builder_resource_audience (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
