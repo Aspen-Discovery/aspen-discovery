@@ -16,7 +16,7 @@ class StaffMember extends DataObject
 	static function getObjectStructure()
 	{
 		$libraryList = Library::getLibraryList();
-		$structure = [
+		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'libraryId' => array('property'=>'libraryId',         'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'A link to the library which the location belongs to'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the staffer', 'size' => '100', 'maxLength'=>100),
@@ -26,6 +26,5 @@ class StaffMember extends DataObject
 			'photo' => array('property' => 'photo', 'type' => 'image', 'label' => 'Photo (500px x 500px max)', 'description' => 'The photo for use in the header', 'required' => false, 'maxWidth' => 500, 'maxHeight' => 500, 'thumbWidth' => 150, 'mediumWidth' => 250, 'hideInLists' => true),
 			'description' => array('property' => 'description', 'type' => 'html', 'label' => 'Description', 'description' => 'A description for the staff member', 'hideInLists' => true),
 		];
-		return $structure;
 	}
 }

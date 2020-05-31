@@ -7,10 +7,10 @@ class WebResource extends DataObject
 	public $name;
 	public $logo;
 	public $url;
-	public $featured;
+	public /** @noinspection PhpUnused */ $featured;
 	public $category;
-	public $requiresLibraryCard;
-	public $teaser;
+	public /** @noinspection PhpUnused */ $requiresLibraryCard;
+	public /** @noinspection PhpUnused */ $teaser;
 	public $description;
 
 	static function getObjectStructure()
@@ -28,6 +28,7 @@ class WebResource extends DataObject
 		];
 	}
 
+	/** @noinspection PhpUnused */
 	public function getFormattedDescription()
 	{
 		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';

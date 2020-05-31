@@ -8,14 +8,14 @@ class PortalCell extends DataObject
 	public $portalRowId;
 	public $weight;
 
-	public $widthTiny;
-	public $widthXs;
-	public $widthSm;
-	public $widthMd;
-	public $widthLg;
+	public /** @noinspection PhpUnused */ $widthTiny;
+	public /** @noinspection PhpUnused */ $widthXs;
+	public /** @noinspection PhpUnused */ $widthSm;
+	public /** @noinspection PhpUnused */ $widthMd;
+	public /** @noinspection PhpUnused */ $widthLg;
 
-	public $verticalAlignment;
-	public $horizontalJustification;
+	public /** @noinspection PhpUnused */ $verticalAlignment;
+	public /** @noinspection PhpUnused */ $horizontalJustification;
 
 	public $sourceType;
 	public $sourceId;
@@ -40,7 +40,7 @@ class PortalCell extends DataObject
 			'event_calendar' => 'Event Calendar',
 			'event_spotlight' => 'Event Spotlight'
 		];
-		$structure = [
+		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'portalRowId' => array('property'=>'portalRowId', 'type'=>'label', 'label'=>'Portal Row', 'description'=>'The parent row'),
 			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.', 'required'=> true),
@@ -54,7 +54,6 @@ class PortalCell extends DataObject
 			'sourceType' => ['property'=>'sourceType', 'type'=>'enum', 'values'=>$sourceOptions, 'label'=>'Source Type', 'description'=>'Source type for the content of cell', 'onchange' => 'return AspenDiscovery.WebBuilder.getPortalCellValuesForSource(\'~id~\');'],
 			'sourceId' => ['property'=>'sourceId', 'type'=>'enum', 'values'=>[], 'label'=>'Source Id', 'description'=>'Source for the content of cell'],
 		];
-		return $structure;
 	}
 
 	function getContents(){

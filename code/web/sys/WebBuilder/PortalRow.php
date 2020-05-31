@@ -7,14 +7,14 @@ class PortalRow extends DataObject
 	public $weight;
 	public $id;
 	public $portalPageId;
-	public $rowTitle;
+	public /** @noinspection PhpUnused */ $rowTitle;
 
 	private $_cells;
 
 	static function getObjectStructure() {
 		$portalCellStructure = PortalCell::getObjectStructure();
 
-		$structure = [
+		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.', 'required'=> true),
 			'portalPageId' => array('property'=>'portalPageId', 'type'=>'label', 'label'=>'Portal Page', 'description'=>'The parent page'),
@@ -35,7 +35,6 @@ class PortalRow extends DataObject
 				'canEdit' => false,
 			],
 		];
-		return $structure;
 	}
 
 	/** @noinspection PhpUnused */

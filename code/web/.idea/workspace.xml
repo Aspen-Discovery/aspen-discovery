@@ -2,7 +2,21 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/mdnob.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/mdnob.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/menu.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/menu.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/Events/EventsSpotlights.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/Events/EventsSpotlight.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/Events/LMLibraryCalendarSetting.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Events/LMLibraryCalendarSetting.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/WebBuilder/PortalCell.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/WebBuilder/PortalCell.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/WebBuilder/PortalPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/WebBuilder/PortalPage.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/WebBuilder/PortalRow.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/WebBuilder/PortalRow.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/WebBuilder/StaffMember.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/WebBuilder/StaffMember.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/WebBuilder/WebBuilderMenu.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/WebBuilder/WebBuilderMenu.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/WebBuilder/WebResource.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/WebBuilder/WebResource.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,6 +99,7 @@
     <property name="DatabaseDriversLRU" value="mysql" />
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="NewWatcherDialog.advanced.open" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/services/WebBuilder" />
@@ -171,6 +186,7 @@
       <updated>1547769580133</updated>
       <workItem from="1585151082702" duration="25886000" />
       <workItem from="1587042805091" duration="10044000" />
+      <workItem from="1590897952318" duration="2245000" />
     </task>
     <servers />
   </component>
@@ -302,10 +318,10 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="332" y="151" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1536.824@0.0.1536.824" timestamp="1590897255152" />
-    <state x="289" y="96" width="1247" height="624" key="find.popup" timestamp="1590897029573">
+    <state x="289" y="96" width="1247" height="624" key="find.popup" timestamp="1590899718965">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="289" y="96" width="1247" height="624" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1590897029573" />
+    <state x="289" y="96" width="1247" height="624" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1590899718965" />
     <state x="425" y="187" width="672" height="677" key="run.anything.popup" timestamp="1589921501612">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -314,9 +330,9 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="360" y="73" key="scopes/0.0.1536.824@0.0.1536.824" timestamp="1587476327922" />
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1590896848782">
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1590899731657">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1590896848782" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1590899731657" />
   </component>
 </project>

@@ -8,7 +8,7 @@ class WebBuilderMenu extends DataObject
 	public $label;
 	public $parentMenuId;
 	public $url;
-	public $showWhen;
+	public /** @noinspection PhpUnused */ $showWhen;
 
 	public function getNumericColumnNames()
 	{
@@ -26,7 +26,7 @@ class WebBuilderMenu extends DataObject
 			$parentMenuItems[$menus->id] = $menus->label;
 		}
 
-		$structure = [
+		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'label' => array('property' => 'label', 'type' => 'text', 'label' => 'Label', 'description' => 'The label of the menu item', 'size' => '40', 'maxLength'=>50),
 			'parentMenuId' => array('property' => 'parentMenuId', 'type' => 'enum', 'values' => $parentMenuItems, 'label' => 'Parent Menu Item', 'description' => 'The parent of the menu item'),
@@ -34,9 +34,9 @@ class WebBuilderMenu extends DataObject
 			'url' => array('property' => 'url', 'type' => 'text', 'label' => 'URL', 'description' => 'The URL to link to', 'maxLength' => 255),
 			'showWhen' => ['property' => 'showWhen', 'type' => 'enum', 'values' => [0 => 'Always', 1 => 'When User is Logged In', 2 => 'When User is Logged Out'], 'label' => 'Show', 'description' => 'When the menu should be shown', 'default' => 0]
 		];
-		return $structure;
 	}
 
+	/** @noinspection PhpUnused */
 	public function getChildMenuItems(){
 		$childItems = [];
 		$childItem = new WebBuilderMenu();
