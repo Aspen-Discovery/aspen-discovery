@@ -158,13 +158,18 @@ class SearchAPI extends Action
 				/** @var BaseLogEntry $logEntry */
 				$logEntry = new $module->logClassName();
 				$logEntry->orderBy("id DESC");
-				$logEntry->limit(0, 1);
-				if ($logEntry->find(true)){
+				$logEntry->limit(0, 3);
+				$logErrors = 0;
+				$logEntry->find();
+				while ($logEntry->fetch()){
 					if ($logEntry->numErrors > 0){
-						$this->addCheck($checks, $module->name, self::STATUS_WARN, "The last log entry for {$module->name} had errors");
-					}else{
-						$this->addCheck($checks, $module->name);
+						$logErrors++;
 					}
+				}
+				if ($logErrors > 0){
+					$this->addCheck($checks, $module->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$module->name} had errors");
+				}else{
+					$this->addCheck($checks, $module->name);
 				}
 			}
 		}
