@@ -8748,9 +8748,11 @@ a.placard-link {
 .table-sticky {
   overflow-y: auto;
 }
-.table-sticky thead th {
+.table-sticky thead tr th {
   position: sticky;
   top: 0;
+  background-color: white;
+  z-index: 5;
 }
 .help-link {
   margin-top: 20px;
