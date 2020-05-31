@@ -38,22 +38,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>displayTi</find>
-      <find>display_ti</find>
-      <find>displayDescription</find>
-      <find>getRatingStmt</find>
-      <find>Sortable</find>
-      <find>loadLocalEnrichment</find>
-      <find>format</find>
-      <find>CloudLibraryMarcHandler</find>
-      <find>handler</find>
-      <find>singleWork</find>
-      <find>updateCloudLibraryItemStmt</find>
-      <find>characters</find>
-      <find>char</find>
-      <find>nodeContents</find>
-      <find>public void characters(char[] ch, int start, int length) {</find>
-      <find>enrichment</find>
       <find>move</find>
       <find>updateNovelistStmt</find>
       <find>schema.</find>
@@ -68,6 +52,22 @@
       <find>getListDisplayNameAndAuthorStmt</find>
       <find>sortable</find>
       <find>makeValue</find>
+      <find>loadTargetAudiences</find>
+      <find>my.</find>
+      <find>getLiteraryFormForLocation</find>
+      <find>max_heap_table_size</find>
+      <find>updateTranslationMap</find>
+      <find>volume</find>
+      <find>Error moving list entries</find>
+      <find>moveGroupedWorkEnrichment</find>
+      <find>updateUserListEntriesStmt</find>
+      <find>fetch_sideload</find>
+      <find>moveSideload</find>
+      <find>fetch_lyn</find>
+      <find>Aspen Cleanup</find>
+      <find>sideload.sh</find>
+      <find>Hoopla.sh</find>
+      <find>pika</find>
     </findStrings>
     <replaceStrings>
       <replace>Rbdigital</replace>
@@ -105,18 +105,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexerMain.java" />
-        <option value="$PROJECT_DIR$/../../sites/basinlibraries.production/start_background_processes.sh" />
-        <option value="$PROJECT_DIR$/../../sites/nashville.production/start_background_processes.sh" />
-        <option value="$PROJECT_DIR$/../../sites/nashville.production/full_update.sh" />
-        <option value="$PROJECT_DIR$/../../sites/nashville.production/continuous_partial_reindex.sh" />
-        <option value="$PROJECT_DIR$/../../sites/arlington.production/start_background_processes.sh" />
-        <option value="$PROJECT_DIR$/../../sites/template.linux/start_background_processes.sh" />
-        <option value="$PROJECT_DIR$/../../sites/aspencat.production/start_background_processes.sh" />
-        <option value="$PROJECT_DIR$/../../sites/model.production/start_background_processes.sh" />
-        <option value="$PROJECT_DIR$/../../sites/pueblo.production/start_background_processes.sh" />
-        <option value="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java" />
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java" />
         <option value="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" />
@@ -135,14 +123,12 @@
         <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" />
         <option value="$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/CronProcessLogEntry.java" />
         <option value="$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/reading_history/UpdateReadingHistory.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../hoopla_export/src/com/turning_leaf_technologies/hoopla/HooplaExtractLogEntry.java" />
         <option value="$PROJECT_DIR$/../hoopla_export/src/com/turning_leaf_technologies/hoopla/HooplaExportMain.java" />
         <option value="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java" />
         <option value="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonKokaRecordProcessor.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonKohaRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArTitleIsbnsHandler.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArTitlesHandler.java" />
@@ -151,11 +137,25 @@
         <option value="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java" />
         <option value="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryAvailabilityHandler.java" />
         <option value="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryEventHandler.java" />
-        <option value="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java" />
         <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/schema.xml" />
         <option value="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListSolr.java" />
         <option value="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexer.java" />
         <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/lists/conf/schema.xml" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonKohaRecordProcessor.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" />
+        <option value="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java" />
+        <option value="$PROJECT_DIR$/../../sites/nashville.production/conf/config.ini" />
+        <option value="$PROJECT_DIR$/../../sites/model2.production/conf/crontab_settings.txt" />
+        <option value="$PROJECT_DIR$/../../sites/model.production/conf/crontab_settings.txt" />
+        <option value="$PROJECT_DIR$/../../sites/basinlibraries.production/conf/crontab_settings.txt" />
+        <option value="$PROJECT_DIR$/../../sites/aspencat.production/conf/crontab_settings.txt" />
+        <option value="$PROJECT_DIR$/../../sites/template.linux/conf/crontab_settings.txt" />
+        <option value="$PROJECT_DIR$/../../sites/pueblo.production/conf/crontab_settings.txt" />
+        <option value="$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java" />
+        <option value="$PROJECT_DIR$/../../sites/arlington.production/conf/crontab_settings.txt" />
+        <option value="$PROJECT_DIR$/../../sites/nashville.production/conf/crontab_settings.txt" />
+        <option value="$PROJECT_DIR$/../horizon_export/src/com/turning_leaf_technologies/horizon/HorizonExportMain.java" />
+        <option value="$PROJECT_DIR$/sideload.sh" />
       </list>
     </option>
   </component>
@@ -175,7 +175,39 @@
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cron" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
+              <item name="record_grouping" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
+              <item name="record_grouping" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
+              <item name="sites" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
+              <item name="sites" type="462c0819:PsiDirectoryNode" />
+              <item name="nashville.production" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
@@ -242,7 +274,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.User List Indexer">
+  <component name="RunManager" selected="Application.OverDrive Export">
     <configuration name="CARLX Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.carlx.CarlXExportMain" />
       <module name="carlx_export" />
@@ -333,24 +365,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Record Grouping Test" type="Application" factoryName="Application">
-      <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.grouping.RecordGrouperMain" />
-      <module name="record_grouping" />
-      <option name="PROGRAM_PARAMETERS" value="basinlibraries.localhost generateWorkId" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../record_grouping" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Record Grouping" type="Application" factoryName="Application">
-      <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.grouping.RecordGrouperMain" />
-      <module name="record_grouping" />
-      <option name="PROGRAM_PARAMETERS" value="basinlibraries.localhost full" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../record_grouping" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="Reindexer Full" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
@@ -413,8 +427,6 @@
       <item itemvalue="Application.OAI Indexer" />
       <item itemvalue="Application.OverDrive Export" />
       <item itemvalue="Application.Rbdigital Export" />
-      <item itemvalue="Application.Record Grouping Test" />
-      <item itemvalue="Application.Record Grouping" />
       <item itemvalue="Application.Reindexer Full" />
       <item itemvalue="Application.Reindexer Single Work" />
       <item itemvalue="Application.Side Load Processing" />
@@ -451,7 +463,7 @@
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" weight="0.19664429" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" weight="0.19932885" />
       <window_info id="Image Layers" order="1" />
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
@@ -658,148 +670,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="54" selection-start-line="54" selection-end-line="54" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="48">
-          <caret line="212" column="73" selection-start-line="212" selection-start-column="73" selection-end-line="212" selection-end-column="73" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ScopingInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="12" column="29" selection-start-line="12" selection-start-column="29" selection-end-line="12" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RecordInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="173" column="13" lean-forward="true" selection-start-line="173" selection-start-column="13" selection-end-line="173" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="258">
-          <caret line="68" column="135" selection-start-line="68" selection-start-column="135" selection-end-line="68" selection-end-column="135" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1194">
-          <caret line="159" column="61" selection-start-line="159" selection-start-column="61" selection-end-line="159" selection-end-column="61" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/CronProcessLogEntry.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="524">
-          <caret line="46" column="25" selection-start-line="46" selection-start-column="25" selection-end-line="46" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/aspencat.production/httpd-aspencat.production.conf">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/aspencat.production/httpd-aspencat.production-le-ssl.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="66" column="27" selection-start-line="66" selection-start-column="27" selection-end-line="66" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="41" column="9" selection-start-line="41" selection-start-column="9" selection-end-line="41" selection-end-column="9" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/reading_history/UpdateReadingHistory.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="76" column="45" selection-start-line="76" selection-start-column="45" selection-end-line="76" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/reading_history/UpdateReadingHistoryTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="44" column="4" selection-start-line="44" selection-start-column="4" selection-end-line="44" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="145">
-          <caret line="299" selection-start-line="299" selection-end-line="299" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/basinlibraries.production/httpd-basinlibraries.production.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/basinlibraries.production/httpd-basinlibraries.production-le-ssl.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="96" column="44" lean-forward="true" selection-start-line="96" selection-start-column="44" selection-end-line="96" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/arlington.koha.local/conf/config.pwd.ini">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../hoopla_export/src/com/turning_leaf_technologies/hoopla/HooplaExtractLogEntry.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="249">
-          <caret line="137" selection-start-line="137" selection-end-line="137" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="145">
-          <caret line="348" selection-start-line="348" selection-end-line="348" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/HooplaProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="129">
-          <caret line="255" selection-start-line="255" selection-end-line="255" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../marc4j/src/org/marc4j/MarcPermissiveStreamReader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="235">
-          <caret line="354" selection-start-line="354" selection-end-line="354" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="145">
-          <caret line="66" selection-start-line="66" selection-end-line="66" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../hoopla_export/src/com/turning_leaf_technologies/hoopla/HooplaExportMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="54">
@@ -824,36 +694,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="841">
           <caret line="1612" column="34" selection-start-line="1612" selection-start-column="25" selection-end-line="1612" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="273">
-          <caret line="216" column="29" selection-start-line="216" selection-start-column="29" selection-end-line="216" selection-end-column="29" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ItemInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="145">
-          <caret line="317" column="9" selection-start-line="317" selection-start-column="9" selection-end-line="317" selection-end-column="9" />
-          <folding>
-            <element signature="e#5221#5222#0" expanded="true" />
-            <element signature="e#5264#5265#0" expanded="true" />
-            <element signature="e#7029#7030#0" expanded="true" />
-            <element signature="e#7066#7067#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="99">
-          <caret line="358" column="49" selection-start-line="358" selection-start-column="49" selection-end-line="358" selection-end-column="49" />
         </state>
       </provider>
     </entry>
@@ -885,13 +725,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="145">
           <caret line="300" column="30" selection-start-line="300" selection-start-column="30" selection-end-line="300" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonKohaRecordProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="273">
-          <caret line="120" column="33" lean-forward="true" selection-start-line="120" selection-start-column="33" selection-end-line="120" selection-end-column="33" />
         </state>
       </provider>
     </entry>
@@ -1036,13 +869,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="174">
-          <caret line="353" column="86" selection-start-line="353" selection-start-column="86" selection-end-line="353" selection-end-column="86" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
@@ -1097,13 +923,170 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../../install/my.cnf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="23" column="30" lean-forward="true" selection-start-line="23" selection-start-column="30" selection-end-line="23" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7425">
+          <caret line="522" column="109" selection-start-line="522" selection-start-column="109" selection-end-line="522" selection-end-column="109" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonKohaRecordProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1020">
+          <caret line="78" column="59" selection-start-line="78" selection-start-column="59" selection-end-line="78" selection-end-column="59" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1020">
+          <caret line="82" column="31" selection-start-line="82" selection-start-column="31" selection-end-line="82" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../sites/arlington.koha.local/conf/config.cron.ini">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="22" column="47" selection-start-line="22" selection-start-column="47" selection-end-line="22" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../sites/arlington.production/conf/config.cron.ini">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="24" selection-start-line="24" selection-end-line="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ItemInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3225">
+          <caret line="301" column="11" selection-start-line="301" selection-start-column="11" selection-end-line="301" selection-end-column="11" />
+          <folding>
+            <element signature="e#5221#5222#0" expanded="true" />
+            <element signature="e#5264#5265#0" expanded="true" />
+            <element signature="e#6715#6716#0" expanded="true" />
+            <element signature="e#6746#6747#0" expanded="true" />
+            <element signature="e#7029#7030#0" expanded="true" />
+            <element signature="e#7066#7067#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/solrTest.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1227">
+          <caret line="42" column="47" selection-start-line="42" selection-start-column="47" selection-end-line="42" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nightly_mysql_dump.sh">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/restore_backup_index.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="49">
+          <caret line="5" column="4" selection-start-line="5" selection-start-column="4" selection-end-line="5" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/restore_backup_index_mercury.sh">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="468">
+          <caret line="367" selection-start-line="367" selection-end-line="367" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/moveSideloadAdds.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-165">
+          <caret line="13" column="4" selection-start-line="13" selection-start-column="4" selection-end-line="13" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mergeSideloadMarc.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" column="20" lean-forward="true" selection-start-line="17" selection-start-column="20" selection-end-line="17" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/moveFullExport.sh">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GetHooplaFromMarmot.sh">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fetch_lynda.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" column="29" lean-forward="true" selection-start-line="19" selection-start-column="29" selection-end-line="19" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fetch_sideload_data.sh">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/apacheSemaphoreCleanup.sh">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/zinioDeleteCovers.sh">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/NashvilleAdHocOverdues.php">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/NashvilleFinesPaymentCron.php">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../sites/model.production/conf/crontab_settings.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="453">
+          <caret line="56" column="27" selection-start-line="56" selection-start-column="27" selection-end-line="56" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="449">
+          <caret line="224" column="43" selection-start-line="224" selection-start-column="43" selection-end-line="224" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../sites/nashville.aspenlocal/conf/config.pwd.ini">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="169">
+          <caret line="60" column="31" selection-start-line="60" selection-start-column="31" selection-end-line="60" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sideload.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="378">
+          <caret line="63" selection-start-line="63" selection-end-line="63" />
+        </state>
+      </provider>
+    </entry>
   </component>
   <component name="masterDetails">
     <states>
       <state key="ArtifactsStructureConfigurable.UI">
         <settings>
           <artifact-editor />
-          <last-edited>events_indexer</last-edited>
+          <last-edited>record_grouping</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -1151,11 +1134,12 @@
       </state>
       <state key="ModuleStructureConfigurable.UI">
         <settings>
-          <last-edited>events_indexer</last-edited>
+          <last-edited>record_grouping</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
                 <option value="0.2" />
+                <option value="0.6" />
               </list>
             </option>
           </splitter-proportions>
