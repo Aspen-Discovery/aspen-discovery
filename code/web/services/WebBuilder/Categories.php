@@ -1,17 +1,17 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderMenu.php';
+require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
 
-class WebBuilder_Menus extends ObjectEditor
+class WebBuilder_Categories extends ObjectEditor
 {
 	function getObjectType()
 	{
-		return 'WebBuilderMenu';
+		return 'WebBuilderCategory';
 	}
 
 	function getToolName()
 	{
-		return 'Menus';
+		return 'Categories';
 	}
 
 	function getModule()
@@ -21,36 +21,24 @@ class WebBuilder_Menus extends ObjectEditor
 
 	function getPageTitle()
 	{
-		return 'WebBuilder Menus';
+		return 'Categories';
 	}
 
 	function getAllObjects()
 	{
-		global $library;
-		$object = new WebBuilderMenu();
-		$object->parentMenuId = -1;
-		$object->libraryId = $library->libraryId;
-		$object->orderBy('weight asc');
+		$object = new WebBuilderCategory();
+		$object->orderBy('name');
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
-			$subMenu = new WebBuilderMenu();
-			$subMenu->parentMenuId = $object->id;
-			$subMenu->libraryId = $library->libraryId;
-			$subMenu->orderBy('weight asc');
-			$subMenu->find();
-			while ($subMenu->fetch()) {
-				$subMenu->label = "--- " . $subMenu->label;
-				$objectList[$subMenu->id] = clone $subMenu;
-			}
 		}
 		return $objectList;
 	}
 
 	function getObjectStructure()
 	{
-		return WebBuilderMenu::getObjectStructure();
+		return WebBuilderCategory::getObjectStructure();
 	}
 
 	function getPrimaryKeyColumn()
@@ -75,7 +63,7 @@ class WebBuilder_Menus extends ObjectEditor
 
 	function canDelete()
 	{
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole( 'web_builder_admin');
+		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin');
 	}
 
 	function getAdditionalObjectActions($existingObject)

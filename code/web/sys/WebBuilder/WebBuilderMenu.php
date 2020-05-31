@@ -9,6 +9,8 @@ class WebBuilderMenu extends DataObject
 	public $parentMenuId;
 	public $url;
 	public /** @noinspection PhpUnused */ $showWhen;
+	public $libraryId;
+	public $lastUpdate;
 
 	public function getNumericColumnNames()
 	{
@@ -47,5 +49,12 @@ class WebBuilderMenu extends DataObject
 			$childItems[$childItem->id] = clone($childItem);
 		}
 		return $childItems;
+	}
+
+	public function insert()
+	{
+		global $library;
+		$this->libraryId = $library->libraryId;
+		return parent::insert();
 	}
 }

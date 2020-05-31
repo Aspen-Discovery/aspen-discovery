@@ -392,12 +392,16 @@
 								<div class="adminMenuLink"><a href="/WebBuilder/Menus">{translate text="Menu"}</a></div>
 								<div class="adminMenuLink"><a href="/WebBuilder/BasicPages">{translate text="Basic Pages"}</a></div>
 								<div class="adminMenuLink"><a href="/WebBuilder/PortalPages">{translate text="Portal Pages"}</a></div>
-								<div class="adminMenuLink"><a href="/WebBuilder/Images">{translate text="Images"}</a></div>
-								<div class="adminMenuLink"><a href="/WebBuilder/PDFs">{translate text="PDFs"}</a></div>
 								<div class="adminMenuLink"><a href="/WebBuilder/WebResources">{translate text="Web Resources"}</a></div>
-                                {if array_key_exists('opacAdmin', $userRoles) || array_key_exists('web_builder_admin', $userRoles)}
+								<div class="adminMenuLink"><a href="/WebBuilder/PDFs">{translate text="PDFs"}</a></div>
+								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('web_builder_admin', $userRoles)}
 									<div class="adminMenuLink"><a href="/WebBuilder/StaffMembers">{translate text="Staff Members"}</a></div>
 								{/if}
+								<hr/>
+								<div class="adminMenuLink"><a href="/WebBuilder/Images">{translate text="Images"}</a></div>
+								<hr/>
+								<div class="adminMenuLink"><a href="/WebBuilder/Audiences">{translate text="Audiences"}</a></div>
+								<div class="adminMenuLink"><a href="/WebBuilder/Categories">{translate text="Categories"}</a></div>
 							</div>
 						</div>
 					</div>

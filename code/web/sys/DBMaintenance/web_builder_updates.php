@@ -164,8 +164,97 @@ function getWebBuilderUpdates(){
 			]
 		],
 
+		'web_builder_scope_by_library' => [
+			'title' => 'Web Builder add Library Scoping',
+			'description' => 'Add the ability to scope web builder content',
+			'sql' => [
+				'CREATE TABLE library_web_builder_resource (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT(11) NOT NULL,
+					webResourceId  INT(11) NOT NULL,
+					INDEX libraryId(libraryId),
+					INDEX webResourceId(webResourceId)
+				) ENGINE INNODB',
+				'CREATE TABLE library_web_builder_basic_page (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT(11) NOT NULL,
+					basicPageId  INT(11) NOT NULL,
+					INDEX libraryId(libraryId),
+					INDEX basicPageId(basicPageId)
+				) ENGINE INNODB',
+				'ALTER TABLE web_builder_menu ADD COLUMN libraryId INT(11)',
+			]
+		],
+
+		'web_builder_last_update_timestamps' => [
+			'title' => 'Web Builder Add Last Update Times',
+			'description' => 'Add additional fields to resources to make indexing easier',
+			'sql' => [
+				'ALTER TABLE web_builder_resource ADD COLUMN lastUpdate INT(11) DEFAULT 0',
+				'ALTER TABLE web_builder_basic_page ADD COLUMN lastUpdate INT(11) DEFAULT 0',
+			]
+		],
+
+		'web_builder_categories_and_audiences' => [
+			'title' => 'Web Builder Categories and Audiences',
+			'description' => 'Setup categories and audiences for web content',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE web_builder_audience (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(100) UNIQUE
+				) ENGINE INNODB',
+				'CREATE TABLE web_builder_category (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(100) UNIQUE
+				) ENGINE INNODB',
+				"INSERT INTO web_builder_audience (name) VALUES ('Adults')",
+				"INSERT INTO web_builder_audience (name) VALUES ('Teens')",
+				"INSERT INTO web_builder_audience (name) VALUES ('Tweens')",
+				"INSERT INTO web_builder_audience (name) VALUES ('Children')",
+				"INSERT INTO web_builder_audience (name) VALUES ('Parents')",
+				"INSERT INTO web_builder_audience (name) VALUES ('Seniors')",
+				"INSERT INTO web_builder_audience (name) VALUES ('Everyone')",
+				"INSERT INTO web_builder_category (name) VALUES ('eBooks and Audiobooks')",
+				"INSERT INTO web_builder_category (name) VALUES ('Languages and Culture')",
+				"INSERT INTO web_builder_category (name) VALUES ('Lifelong Learning')",
+				"INSERT INTO web_builder_category (name) VALUES ('Newspapers and Magazines')",
+				"INSERT INTO web_builder_category (name) VALUES ('Reading Recommendations')",
+				"INSERT INTO web_builder_category (name) VALUES ('Reference and Research')",
+				"INSERT INTO web_builder_category (name) VALUES ('Video Streaming')",
+				"INSERT INTO web_builder_category (name) VALUES ('Local History')",
+				"INSERT INTO web_builder_category (name) VALUES ('Homework Help')",
+				"INSERT INTO web_builder_category (name) VALUES ('Arts and Music')",
+				"INSERT INTO web_builder_category (name) VALUES ('Library Documents and Policies')",
+				'CREATE TABLE web_builder_basic_page_audience (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					basicPageId INT(11) NOT NULL, 
+					audienceId INT(11) NOT NULL,
+					UNIQUE INDEX (basicPageId, audienceId)
+				) ENGINE INNODB',
+				'CREATE TABLE web_builder_basic_page_category (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					basicPageId INT(11) NOT NULL, 
+					categoryId INT(11) NOT NULL,
+					UNIQUE INDEX (basicPageId, audienceId)
+				) ENGINE INNODB',
+				'CREATE TABLE web_builder_resource_audience (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					webResourceId INT(11) NOT NULL, 
+					audienceId INT(11) NOT NULL,
+					UNIQUE INDEX (webResourceId, audienceId)
+				) ENGINE INNODB',
+				'CREATE TABLE web_builder_resource_category (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					webResourceId INT(11) NOT NULL, 
+					categoryId INT(11) NOT NULL,
+					UNIQUE INDEX (webResourceId, categoryId)
+				) ENGINE INNODB',
+				'ALTER TABLE web_builder_resource DROP COLUMN category',
+			],
+		],
+
 		//TODO: Add roles
-		//TODO: Add library to pages for scoping
 
 	];
 }

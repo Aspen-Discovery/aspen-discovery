@@ -662,6 +662,7 @@ if (array_key_exists('Web Builder', $enabledModules)){
 		//Get the top level menu
 		$menu = new WebBuilderMenu();
 		$menu->parentMenuId = -1;
+		$menu->libraryId = $library->libraryId;
 		if (!UserAccount::isLoggedIn()){
 			$menu->whereAdd('showWhen = 0 OR showWhen = 2');
 		}else{
