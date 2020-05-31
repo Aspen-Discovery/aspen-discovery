@@ -23,16 +23,16 @@ class BrowseCategoryGroupEntry extends DataObject
 		$browseCategories = new BrowseCategory();
 		$browseCategories->orderBy('label');
 		$browseCategories->find();
+		$browseCategoryList = [];
 		while($browseCategories->fetch()){
 			$browseCategoryList[$browseCategories->id] = $browseCategories->label . " ({$browseCategories->textId})";
 		}
-		$structure = array(
+		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the hours within the database'),
 			'browseCategoryGroupId' => array('property'=>'browseCategoryGroupId', 'type'=>'enum', 'values'=>$groupList, 'label'=>'Group', 'description'=>'The group the browse category should be added in'),
 			'browseCategoryId' => array('property'=>'browseCategoryId', 'type'=>'enum', 'values'=>$browseCategoryList, 'label'=>'Browse Category', 'description'=>'The browse category to display '),
 			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how lists are sorted within the group.  Lower weights are displayed to the left of the screen.', 'required'=> true),
-		);
-		return $structure;
+		];
 	}
 
 	function getEditLink(){

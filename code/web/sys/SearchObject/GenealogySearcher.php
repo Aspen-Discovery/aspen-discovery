@@ -501,8 +501,12 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	{
 		$params = parent::getSearchParams();
 
-		$params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
-		$params[] = 'searchSource=' . $_REQUEST['searchSource'];
+		if (isset($_REQUEST['searchIndex'])) {
+			$params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
+		}
+		if (isset($_REQUEST['searchSource'])) {
+			$params[] = 'searchSource=' . $_REQUEST['searchSource'];
+		}
 
 		return $params;
 	}

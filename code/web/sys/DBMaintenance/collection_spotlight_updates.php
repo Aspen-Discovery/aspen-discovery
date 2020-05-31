@@ -47,7 +47,7 @@ function getCollectionSpotlightUpdates(){
 			'title' => 'List Widget Home',
 			'description' => 'Create the default homepage widget',
 			'sql' => array(
-				"INSERT INTO list_widgets (name, description, showTitleDescriptions, onSelectCallback) VALUES ('home', 'Default example widget.', '1','')",
+				"INSERT INTO list_widgets (name, description, showTitleDescriptions, onSelectCallback, customCss) VALUES ('home', 'Default example widget.', '1','','')",
 				"INSERT INTO list_widget_lists (listWidgetId, weight, source, name, displayFor) VALUES ('1', '1', 'highestRated', 'Highest Rated', 'all')",
 				"INSERT INTO list_widget_lists (listWidgetId, weight, source, name, displayFor) VALUES ('1', '2', 'recentlyReviewed', 'Recently Reviewed', 'all')",
 			),
@@ -168,7 +168,7 @@ function getCollectionSpotlightUpdates(){
 /** @noinspection PhpUnused */
 function updateSpotlightSources(){
 	require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
-	$validSources = CollectionSpotlightList::getCollectionSpotlightSources();
+	$validSources = BaseBrowsable::getBrowseSources();
 	$spotlightLists = new CollectionSpotlightList();
 	$spotlightLists->find();
 	$allSpotlights = [];

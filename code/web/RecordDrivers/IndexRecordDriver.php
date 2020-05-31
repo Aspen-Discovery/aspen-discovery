@@ -336,4 +336,22 @@ abstract class IndexRecordDriver extends RecordInterface
 		}
 		return '';
 	}
+
+	public function getBrowseResult()
+	{
+		global $interface;
+		$id = $this->getUniqueID();
+		$interface->assign('summId', $id);
+
+		$url = $this->getLinkUrl();
+
+		$interface->assign('summUrl', $url);
+		$interface->assign('summTitle', $this->getTitle());
+		$interface->assign('summAuthor', $this->getPrimaryAuthor());
+
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		return 'RecordDrivers/Index/browse_result.tpl';
+	}
 }

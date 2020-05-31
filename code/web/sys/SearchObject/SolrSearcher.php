@@ -204,7 +204,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 			$current = &$this->indexResult['response']['docs'][$x];
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-			$record = RecordDriverFactory::initRecordDriver($current);
+			$record = $this->getRecordDriverForResult($current);
 			if (!($record instanceof AspenError)) {
 				if (method_exists($record, 'getBrowseResult')) {
 					$html['GroupedWork' . $current['id']] = $interface->fetch($record->getBrowseResult());
