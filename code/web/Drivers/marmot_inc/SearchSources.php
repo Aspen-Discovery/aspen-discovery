@@ -40,7 +40,6 @@ class SearchSources{
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
 
-		$marmotAdded = false;
 		if ($enableCombinedResults && $showCombinedResultsFirst){
 			$searchOptions['combinedResults'] = array(
 					'name' => $combinedResultsName,
@@ -156,6 +155,14 @@ class SearchSources{
 				$searchOptions['websites'] = array(
 					'name' => $websiteSetting->searchCategory,
 					'description' => $websiteSetting->searchCategory,
+					'catalogType' => 'websites'
+				);
+			}
+			//Local search, activate if we have at least one page
+			if ($library->enableWebBuilder) {
+				$searchOptions['websites'] = array(
+					'name' => 'Library Website',
+					'description' => 'Library Website',
 					'catalogType' => 'websites'
 				);
 			}

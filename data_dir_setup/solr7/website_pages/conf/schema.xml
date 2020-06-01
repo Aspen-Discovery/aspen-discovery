@@ -126,6 +126,10 @@
 		<field name="time_since_added" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="days_since_added" type="integer" indexed="true" stored="true" multiValued="false"/>
 		<field name="scope_has_related_records" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+		<field name="audience_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="audience" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="category_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="category" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 
 		<!-- Field to get random titles -->
 		<dynamicField name="random*" type="random" indexed="true" stored="true"/>
@@ -138,6 +142,8 @@
 	</fields>
 
 	<copyField source="title" dest="title_suggestions"/>
+	<copyField source="audience" dest="audience_facet"/>
+	<copyField source="category" dest="category_facet"/>
 	<copyField source="description" dest="keyword_suggestions"/>
 	<copyField source="table_of_contents" dest="keyword_suggestions"/>
 

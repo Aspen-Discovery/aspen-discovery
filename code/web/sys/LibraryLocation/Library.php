@@ -235,6 +235,9 @@ class Library extends DataObject
 	//OAI
 	public $enableOpenArchives;
 
+	//Web Builder
+	public $enableWebBuilder;
+
 	static $archiveRequestFormFieldOptions = array('Hidden', 'Optional', 'Required');
 
 	static $archiveMoreDetailsDisplayModeOptions = array(
@@ -830,6 +833,10 @@ class Library extends DataObject
 
 			'oaiSection' => array('property' => 'oaiSection', 'type' => 'section', 'label' => 'Open Archives Results', 'hideInLists' => true, 'helpLink' => '', 'renderAsHeading' => true, 'properties' => array(
 				'enableOpenArchives' => array('property' => 'enableOpenArchives', 'type' => 'checkbox', 'label' => 'Allow Searching Open Archives', 'description' => 'Whether or not information from indexed Open Archives is shown.', 'hideInLists' => true, 'default' => 0),
+			)),
+
+			'webBuilderSection' => array('property' => 'webBuilderSection', 'type' => 'section', 'label' => 'Web Builder Results', 'hideInLists' => true, 'helpLink' => '', 'renderAsHeading' => true, 'properties' => array(
+				'enableWebBuilder' => array('property' => 'enableWebBuilder', 'type' => 'checkbox', 'label' => 'Allow searching locally created web content', 'description' => 'Whether or not information from indexed local web content is shown.', 'hideInLists' => true, 'default' => 0),
 			)),
 
 			'edsSection' => array('property' => 'edsSection', 'type' => 'section', 'label' => 'EBSCO EDS', 'hideInLists' => true, 'properties' => array(

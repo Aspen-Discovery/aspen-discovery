@@ -35,7 +35,7 @@ public class WebsiteIndexerMain {
 
 		while (true) {
 			Date startTime = new Date();
-			Long startTimeForLogging = startTime.getTime() / 1000;
+			//Long startTimeForLogging = startTime.getTime() / 1000;
 			logger.info("Starting " + processName + ": " + startTime.toString());
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
@@ -91,8 +91,32 @@ public class WebsiteIndexerMain {
 
 						logEntry.setFinished();
 					}
-
 				}
+
+				//Index all content entered within Aspen (pages, resources, etc)
+				PreparedStatement getBasicPagesStmt = aspenConn.prepareStatement("SELECT count(*) as numBasicPages from web_builder_basic_page");
+				ResultSet getBasicPagesRS = getBasicPagesStmt.executeQuery();
+				int numBasicPages = 0;
+				if (getBasicPagesRS.next()){
+					numBasicPages = getBasicPagesRS.getInt("numBasicPages");
+				}
+				getBasicPagesRS.close();
+				getBasicPagesStmt.close();
+				PreparedStatement getResourcesStmt = aspenConn.prepareStatement("SELECT count(*) as numResources from web_builder_resource");
+				ResultSet getResourcesRS = getResourcesStmt.executeQuery();
+				int numResources = 0;
+				if (getResourcesRS.next()){
+					numResources = getResourcesRS.getInt("numResources");
+				}
+				getResourcesRS.close();
+				getResourcesStmt.close();
+				if ((numBasicPages > 0) || (numResources > 0)){
+					boolean fullReload = true;
+					WebsiteIndexLogEntry logEntry = createDbLogEntry("Web Builder Content", startTime, aspenConn);
+					WebBuilderIndexer indexer = new WebBuilderIndexer(fullReload, logEntry, aspenConn, solrUpdateServer);
+					indexer.indexContent();
+				}
+
 			} catch (SQLException e) {
 				logger.error("Error processing websites to index", e);
 			}

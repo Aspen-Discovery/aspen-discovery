@@ -2126,6 +2126,14 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				'ALTER TABLE library add COLUMN showWhileYouWait TINYINT(1) DEFAULT 1',
 			]
+		],
+
+		'library_enable_web_builder' => [
+			'title' => 'Library enable web builder',
+			'description' => 'Add a flag for whether or not web builder is active',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN enableWebBuilder TINYINT(1) DEFAULT 0',
+			]
 		]
 	);
 }
