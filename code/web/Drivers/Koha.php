@@ -1585,18 +1585,18 @@ class Koha extends AbstractIlsDriver
 		]);
 
 		if (empty($library->validSelfRegistrationStates)){
-			$borrowerCityField = array('property' => 'borrower_city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true);
+			$borrowerStateField = array('property' => 'borrower_state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
 		}else{
-			$validCities = explode('|', $library->validSelfRegistrationStates);
-			$validCities = array_combine($validCities, $validCities);
-			$borrowerCityField = array('property' => 'borrower_city', 'type' => 'enum', 'values' => $validCities, 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true);
+			$validStates = explode('|', $library->validSelfRegistrationStates);
+			$validStates = array_combine($validStates, $validStates);
+			$borrowerStateField = array('property' => 'borrower_state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
 		}
 		//Main Address
 		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'borrower_address' => array('property' => 'borrower_address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 128, 'required' => true),
 			'borrower_address2' => array('property' => 'borrower_address2', 'type' => 'text', 'label' => 'Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false),
-			'borrower_city' => $borrowerCityField,
-			'borrower_state' => array('property' => 'borrower_state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true),
+			'borrower_city' => array('property' => 'borrower_city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true),
+			'borrower_state' => $borrowerStateField,
 			'borrower_zipcode' => array('property' => 'borrower_zipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => true),
 			'borrower_country' => array('property' => 'borrower_country', 'type' => 'text', 'label' => 'Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
 		]);
