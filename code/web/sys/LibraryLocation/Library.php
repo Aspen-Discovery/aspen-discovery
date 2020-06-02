@@ -114,6 +114,7 @@ class Library extends DataObject
 	public $showHoldCancelDate;
 	public /** @noinspection PhpUnused */ $enableCourseReserves;
 	public $enableSelfRegistration;
+	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
 	public $selfRegistrationLocationRestrictions;
 	public $promptForBirthDateInSelfReg;
@@ -515,6 +516,7 @@ class Library extends DataObject
 				'selfRegistrationSection' => array('property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true, 'helpLink' => '', 'properties' => array(
 					'enableSelfRegistration'         => array('property'=>'enableSelfRegistration', 'type'=>'enum', 'values' => [0 => 'No Self Registration', 1 => 'ILS Based Self Registration', 2 => 'Redirect to Self Registration URL'], 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
 					'selfRegistrationLocationRestrictions' => ['property' => 'selfRegistrationLocationRestrictions', 'type' => 'enum', 'values' => [0 => 'No Restrictions', 1 => 'All Library Locations', 2 => 'All Hold Pickup Locations', 3 => 'Pickup Locations for the library'], 'label' => 'Valid Registration Locations', 'description' => 'Indicates which locations are valid pickup locations', 'hideInLists' => true],
+					'selfRegistrationPasswordNotes' => array('property'=>'selfRegistrationPasswordNotes', 'type'=>'text', 'label'=>'Self Registration Password Notes', 'description'=>'Notes to be displayed when setting the password for self registration', 'hideInLists' => true, 'default' => ''),
 					'promptForBirthDateInSelfReg'    => array('property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description'=>'Whether or not to prompt for birth date when self registering'),
 					'useAllCapsWhenSubmittingSelfRegistration' => array('property' => 'useAllCapsWhenSubmittingSelfRegistration', 'type' => 'checkbox', 'label' => 'Use All Caps When Submitting Self Registration', 'description'=>'Whether or not self registration will be submitted using all caps'),
 					'validSelfRegistrationStates' => array('property'=>'validSelfRegistrationStates', 'type'=>'text', 'label'=>'Valid States for Self Registration', 'description'=>'The states that can be used in self registration', 'hideInLists' => true, 'default' => ''),

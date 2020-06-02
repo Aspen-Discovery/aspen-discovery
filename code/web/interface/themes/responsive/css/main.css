@@ -8759,6 +8759,9 @@ a.placard-link {
   line-height: 50px;
   text-align: right;
 }
+.propertyDescription {
+  margin-bottom: 6px;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;

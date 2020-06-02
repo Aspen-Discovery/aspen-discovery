@@ -1637,9 +1637,11 @@ class Koha extends AbstractIlsDriver
 			'borrower_altcontactphone' => array('property' => 'borrower_altcontactphone', 'type' => 'text', 'label' => 'Phone (xxx-xxx-xxxx)', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
 		]);
 		if ($type == 'selfReg') {
-			$fields['passwordSection'] = array('property' => 'passwordSection', 'type' => 'section', 'label' => 'PIN', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-				'borrower_password' => array('property' => 'borrower_password', 'type' => 'password', 'label' => 'PIN', 'description' => 'Your PIN must be at least 3 characters long.  If you do not enter a password a system generated password will be created.', 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => false, 'required' => false),
-				'borrower_password2' => array('property' => 'borrower_password2', 'type' => 'password', 'label' => 'Confirm PIN', 'description' => 'Reenter your PIN', 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => false, 'required' => false),
+			$passwordLabel = $library->loginFormPasswordLabel;
+			$passwordNotes = $library->selfRegistrationPasswordNotes;
+			$fields['passwordSection'] = array('property' => 'passwordSection', 'type' => 'section', 'label' => $passwordLabel, 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+				'borrower_password' => array('property' => 'borrower_password', 'type' => 'password', 'label' => $passwordLabel, 'description' => $passwordNotes, 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => false, 'required' => false, 'showDescription' => true),
+				'borrower_password2' => array('property' => 'borrower_password2', 'type' => 'password', 'label' => 'Confirm ' . $passwordLabel, 'description' => 'Reenter your PIN', 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => false, 'required' => false),
 			]);
 		}
 

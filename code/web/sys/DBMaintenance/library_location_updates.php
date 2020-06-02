@@ -2135,6 +2135,14 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library ADD COLUMN useAllCapsWhenSubmittingSelfRegistration TINYINT(1) DEFAULT 0',
 				"ALTER TABLE library ADD COLUMN validSelfRegistrationStates VARCHAR(255) DEFAULT ''",
 			]
+		],
+
+		'selfRegistrationPasswordNotes' => [
+			'title' => 'Self Registration Password Notes',
+			'description' => 'Allow customization of additional instructions for creating a PIN or Password',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN selfRegistrationPasswordNotes VARCHAR(255) DEFAULT ''",
+			]
 		]
 	);
 }
