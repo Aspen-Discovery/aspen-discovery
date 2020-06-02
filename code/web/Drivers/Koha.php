@@ -1583,11 +1583,19 @@ class Koha extends AbstractIlsDriver
 			'borrower_sex' => array('property' => 'borrower_sex', 'type' => 'enum', 'label' => 'Gender', 'values' => ['' => 'None Specified', 'F' => 'Female', 'M' => 'Male'], 'description' => 'Gender', 'required' => false),
 
 		]);
+
+		if (empty($library->validSelfRegistrationStates)){
+			$borrowerCityField = array('property' => 'borrower_city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true);
+		}else{
+			$validCities = explode('|', $library->validSelfRegistrationStates);
+			$validCities = array_combine($validCities, $validCities);
+			$borrowerCityField = array('property' => 'borrower_city', 'type' => 'enum', 'values' => $validCities, 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true);
+		}
 		//Main Address
 		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'borrower_address' => array('property' => 'borrower_address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 128, 'required' => true),
 			'borrower_address2' => array('property' => 'borrower_address2', 'type' => 'text', 'label' => 'Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false),
-			'borrower_city' => array('property' => 'borrower_city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true),
+			'borrower_city' => $borrowerCityField,
 			'borrower_state' => array('property' => 'borrower_state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true),
 			'borrower_zipcode' => array('property' => 'borrower_zipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => true),
 			'borrower_country' => array('property' => 'borrower_country', 'type' => 'text', 'label' => 'Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
@@ -1662,6 +1670,7 @@ class Koha extends AbstractIlsDriver
 
 	function selfRegister()
 	{
+		global $library;
 		$result = [
 			'success' => false,
 		];
@@ -1680,46 +1689,46 @@ class Koha extends AbstractIlsDriver
 		}
 
 		$postFields = [];
-		$postFields = $this->setPostField($postFields, 'borrower_branchcode');
-		$postFields = $this->setPostField($postFields, 'borrower_title');
-		$postFields = $this->setPostField($postFields, 'borrower_surname');
-		$postFields = $this->setPostField($postFields, 'borrower_firstname');
+		$postFields = $this->setPostField($postFields, 'borrower_branchcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_title', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_surname', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_firstname', $library->useAllCapsWhenSubmittingSelfRegistration);
 		if (isset($_REQUEST['borrower_dateofbirth'])) {
 			$postFields['borrower_dateofbirth'] = str_replace('-', '/', $_REQUEST['borrower_dateofbirth']);
 		}
-		$postFields = $this->setPostField($postFields, 'borrower_initials');
-		$postFields = $this->setPostField($postFields, 'borrower_othernames');
-		$postFields = $this->setPostField($postFields, 'borrower_sex');
-		$postFields = $this->setPostField($postFields, 'borrower_address');
-		$postFields = $this->setPostField($postFields, 'borrower_address2');
-		$postFields = $this->setPostField($postFields, 'borrower_city');
-		$postFields = $this->setPostField($postFields, 'borrower_state');
-		$postFields = $this->setPostField($postFields, 'borrower_zipcode');
-		$postFields = $this->setPostField($postFields, 'borrower_country');
-		$postFields = $this->setPostField($postFields, 'borrower_phone');
-		$postFields = $this->setPostField($postFields, 'borrower_email');
-		$postFields = $this->setPostField($postFields, 'borrower_phonepro');
-		$postFields = $this->setPostField($postFields, 'borrower_mobile');
-		$postFields = $this->setPostField($postFields, 'borrower_emailpro');
-		$postFields = $this->setPostField($postFields, 'borrower_fax');
-		$postFields = $this->setPostField($postFields, 'borrower_B_address');
-		$postFields = $this->setPostField($postFields, 'borrower_B_address2');
-		$postFields = $this->setPostField($postFields, 'borrower_B_city');
-		$postFields = $this->setPostField($postFields, 'borrower_B_state');
-		$postFields = $this->setPostField($postFields, 'borrower_B_zipcode');
-		$postFields = $this->setPostField($postFields, 'borrower_B_country');
-		$postFields = $this->setPostField($postFields, 'borrower_B_phone');
-		$postFields = $this->setPostField($postFields, 'borrower_B_email');
-		$postFields = $this->setPostField($postFields, 'borrower_contactnote');
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactsurname');
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactfirstname');
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress1');
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress2');
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress3');
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactstate');
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactzipcode');
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactcountry');
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactphone');
+		$postFields = $this->setPostField($postFields, 'borrower_initials', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_othernames', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_sex', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_address', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_city', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_state', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_country', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_phone', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_email', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_phonepro', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_mobile', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_emailpro', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_fax', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_B_address', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_B_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_B_city', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_B_state', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_B_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_B_country', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_B_phone', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_B_email', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_contactnote', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactsurname', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactfirstname', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress1', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress2', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress3', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactstate', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactzipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactcountry', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactphone', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_password');
 		$postFields = $this->setPostField($postFields, 'borrower_password2');
 		$postFields['captcha'] = $captcha;
@@ -1741,6 +1750,9 @@ class Koha extends AbstractIlsDriver
 		}elseif (preg_match('%<h1>Registration Complete!</h1>%s', $selfRegPageResponse, $matches)) {
 			$result['success'] = true;
 			$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
+		}elseif (preg_match('%<h1>Please confirm your registration</h1>%s', $selfRegPageResponse, $matches)) {
+			$result['success'] = true;
+			$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
 		}elseif (preg_match('%This email address already exists in our database.%', $selfRegPageResponse)){
 			$result['message'] = 'This email address already exists in our database. Please contact your library for account information or use a different email.';
 		}
@@ -2272,12 +2284,18 @@ class Koha extends AbstractIlsDriver
 	/**
 	 * @param array $postFields
 	 * @param string $variableName
+	 * @param bool $convertToUpperCase
 	 * @return array
 	 */
-	private function setPostField(array $postFields, string $variableName): array
+	private function setPostField(array $postFields, string $variableName, $convertToUpperCase = false): array
 	{
 		if (isset($_REQUEST[$variableName])) {
-			$postFields[$variableName] = $_REQUEST[$variableName];
+			if ($convertToUpperCase){
+				$postFields[$variableName] = strtoupper($_REQUEST[$variableName]);
+			}else{
+				$postFields[$variableName] = $_REQUEST[$variableName];
+			}
+
 		}
 		return $postFields;
 	}

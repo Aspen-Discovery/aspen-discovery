@@ -2126,6 +2126,15 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				'ALTER TABLE library add COLUMN showWhileYouWait TINYINT(1) DEFAULT 1',
 			]
+		],
+
+		'selfRegistrationCustomizations' => [
+			'title' => 'Self Registration Customizations',
+			'description' => 'Allow customization of whether or not self registration is all caps or not and which states should be allowed',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN useAllCapsWhenSubmittingSelfRegistration TINYINT(1) DEFAULT 0',
+				"ALTER TABLE library ADD COLUMN validSelfRegistrationStates VARCHAR(255) DEFAULT ''",
+			]
 		]
 	);
 }
