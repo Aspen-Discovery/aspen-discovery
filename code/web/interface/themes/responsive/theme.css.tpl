@@ -115,9 +115,15 @@ body .container{ldelim}
 {/if}
 
 {if $secondaryBackgroundColor}
-.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover,.active .panel-heading, .titleScrollerHeader{ldelim}
+.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover, .titleScrollerHeader{ldelim}
     border-color: {$secondaryBackgroundColor} !important;
     background: {$secondaryBackgroundColor} !important;
+{rdelim}
+.active.panel-default > .panel-heading,.sidebar-links .active .panel-heading, #account-link-accordion .panel.active .panel-title, #account-settings-accordion .panel.active .panel-title{ldelim}
+    background-color: {$secondaryBackgroundColor};
+{rdelim}
+.panel-title > a,.panel-default > .panel-heading{ldelim}
+    color: {$bodyTextColor} !important;
 {rdelim}
 {/if}
 
@@ -126,7 +132,13 @@ body .container{ldelim}
     background-color: {$secondaryForegroundColor};
     border-color: {$secondaryForegroundColor};
 {rdelim}
-.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover,.active .panel-heading, .titleScrollerHeader{ldelim}
+.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover, .titleScrollerHeader{ldelim}
+    color: {$secondaryForegroundColor} !important;
+{rdelim}
+.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title{ldelim}
+    background-color: #e7e7e7;
+{rdelim}
+.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
     color: {$secondaryForegroundColor} !important;
 {rdelim}
 {/if}
