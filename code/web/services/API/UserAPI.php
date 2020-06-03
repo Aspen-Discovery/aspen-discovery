@@ -701,7 +701,17 @@ class UserAPI extends Action
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			$fines = $this->getCatalogConnection()->getFines($user, $includeMessages);
-			return array('success' => true, 'fines' => $fines);
+			$totalOwed = 0;
+			foreach ($fines as $fine) {
+				if (isset($fine['amountOutstandingVal'])) {
+					$totalOwed += $fine['amountOutstandingVal'];
+				}elseif (isset($fine['amountVal'])) {
+					$totalOwed += $fine['amountVal'];
+				}elseif (isset($fine['amount'])) {
+					$totalOwed += $fine['amount'];
+				}
+			}
+			return array('success' => true, 'fines' => $fines, 'totalOwed' => $totalOwed);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
