@@ -535,7 +535,7 @@ public class IndexingUtils {
 	public static void markNightlyIndexNeeded(Connection dbConn, Logger logger) {
 		try {
 			//Mark that nightly index does not need to run since we are currently running it.
-			dbConn.prepareStatement("UPDATE system_variables set runNightlyFullIndex = 0").executeUpdate();
+			dbConn.prepareStatement("UPDATE system_variables set runNightlyFullIndex = 1").executeUpdate();
 		}catch (SQLException e) {
 			logger.error("Unable to update that the nightly index should run tonight", e);
 		}
