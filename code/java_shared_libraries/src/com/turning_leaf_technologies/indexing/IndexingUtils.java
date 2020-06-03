@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.TreeSet;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
@@ -520,7 +519,7 @@ public class IndexingUtils {
 				Process p = Runtime.getRuntime().exec("ps -ef");
 				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = input.readLine()) != null) {
-					System.out.println(line);
+					logger.info(line);
 					if (line.matches(".*reindexer\\.jar " + serverName + " nightly.*")){
 						return true;
 					}
@@ -531,5 +530,14 @@ public class IndexingUtils {
 			}
 		}
 		return false;
+	}
+
+	public static void markNightlyIndexNeeded(Connection dbConn, Logger logger) {
+		try {
+			//Mark that nightly index does not need to run since we are currently running it.
+			dbConn.prepareStatement("UPDATE system_variables set runNightlyFullIndex = 0").executeUpdate();
+		}catch (SQLException e) {
+			logger.error("Unable to update that the nightly index should run tonight", e);
+		}
 	}
 }

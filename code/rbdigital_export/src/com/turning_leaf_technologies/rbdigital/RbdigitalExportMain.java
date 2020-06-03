@@ -134,19 +134,25 @@ public class RbdigitalExportMain {
 				logEntry.setFinished();
 			}
 
-			//Disconnect from the database
-			disconnectDatabase(aspenConn);
-
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
 				break;
 			}
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
 				break;
 			}
+
+			//Disconnect from the database
+			disconnectDatabase(aspenConn);
 
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
