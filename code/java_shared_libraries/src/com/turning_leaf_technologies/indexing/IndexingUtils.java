@@ -517,7 +517,7 @@ public class IndexingUtils {
 		}else{
 			try {
 				String line;
-				Process p = Runtime.getRuntime().exec("ps -ef | grep java");
+				Process p = Runtime.getRuntime().exec("ps -ef");
 				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = input.readLine()) != null) {
 					System.out.println(line);
