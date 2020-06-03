@@ -520,7 +520,7 @@ public class IndexingUtils {
 				Process p = Runtime.getRuntime().exec("ps -ef | grep java");
 				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = input.readLine()) != null) {
-					logger.info(line);
+					System.out.println(line);
 					if (line.matches(".*reindexer\\.jar " + serverName + " nightly.*")){
 						return true;
 					}
