@@ -924,7 +924,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'title' => 'Uploading custom cover',
 			'message' => 'Sorry your cover could not be uploaded'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('contentEditor'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('superCataloger'))){
 			if (isset($_FILES['coverFile'])) {
 				$uploadedFile = $_FILES['coverFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
@@ -1048,7 +1048,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'message' => 'Unknown Error'
 		];
 
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$id = $_REQUEST['id'];
@@ -1078,7 +1078,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'success' => false,
 			'message' => 'Unknown Error'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$id = $_REQUEST['id'];
@@ -1102,7 +1102,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'success' => false,
 			'message' => 'Unknown Error'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
 			$id = $_REQUEST['id'];
@@ -1149,7 +1149,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'message' => 'Unknown Error'
 		];
 
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$id = $_REQUEST['id'];
@@ -1229,7 +1229,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'success' => false,
 			'message' => 'Unknown error deleting alternate title'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))) {
 			$id = $_REQUEST['id'];
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
@@ -1262,7 +1262,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'success' => false,
 			'message' => 'Unknown Error'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$id = $_REQUEST['id'];
@@ -1315,7 +1315,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'success' => false,
 			'message' => 'Unknown Error'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$id = $_REQUEST['id'];
@@ -1371,7 +1371,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'title' => 'Deleting display information',
 			'message' => 'Unknown error deleting display info'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))) {
 			$id = $_REQUEST['id'];
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
 			$existingDisplayInfo = new GroupedWorkDisplayInfo();

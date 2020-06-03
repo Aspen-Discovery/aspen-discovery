@@ -37,7 +37,7 @@ class RBdigital_Settings extends ObjectEditor
         return 'id';
     }
     function getAllowableRoles(){
-        return array('opacAdmin', 'libraryAdmin', 'cataloging');
+        return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
     }
     function canAddNew(){
         return UserAccount::userHasRole('opacAdmin');

@@ -35,11 +35,12 @@ class Admin_MergedGroupedWorks extends ObjectEditor
 		return 'id';
 	}
 	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging');
+		return array('opacAdmin', 'cataloging', 'superCataloger');
 	}
 	function getInstructions(){
-		global $interface;
-		return $interface->fetch('Admin/merge_grouped_work_instructions.tpl');
+//		global $interface;
+//		return $interface->fetch('Admin/merge_grouped_work_instructions.tpl');
+		return '';
 	}
 
 }

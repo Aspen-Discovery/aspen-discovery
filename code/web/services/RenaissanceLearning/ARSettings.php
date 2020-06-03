@@ -54,7 +54,7 @@ class RenaissanceLearning_ARSettings extends ObjectEditor
 
 	function getAllowableRoles()
 	{
-		return array('opacAdmin', 'cataloging');
+		return array('opacAdmin', 'cataloging', 'superCataloger');
 	}
 
 	function canAddNew()

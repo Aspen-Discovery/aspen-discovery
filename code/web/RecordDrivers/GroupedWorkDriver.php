@@ -1883,7 +1883,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getAlternateTitles(){
 		//Load alternate titles
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging')){
+		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger')){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
 			$alternateTitle->permanent_id = $this->getPermanentId();
@@ -1899,7 +1899,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getPrimaryIdentifiers(){
 		$primaryIdentifiers = [];
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging')){
+		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger')){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$groupedWork->permanent_id = $this->getUniqueID();

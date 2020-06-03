@@ -170,7 +170,7 @@ class Admin_AJAX extends JSON_Action
 			'success' => false,
 			'message' => 'Unknown Error'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))) {
 			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
 			$ungroupedRecord = new NonGroupedRecord();
 			/** @var GroupedWorkSubDriver $record */

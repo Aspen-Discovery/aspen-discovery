@@ -145,7 +145,7 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return TranslationMap::getObjectStructure();
 	}
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return array('opacAdmin', 'superCataloger');
 	}
 	function getPrimaryKeyColumn(){
 		return 'id';
@@ -154,10 +154,10 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return 'id';
 	}
 	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin');
+		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('superCataloger');
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
+		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('superCataloger');
 	}
 
 	/**

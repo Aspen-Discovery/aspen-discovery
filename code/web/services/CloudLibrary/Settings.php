@@ -54,7 +54,7 @@ class CloudLibrary_Settings extends ObjectEditor
 
 	function getAllowableRoles()
 	{
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
 	}
 
 	function canAddNew()

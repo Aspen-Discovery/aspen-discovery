@@ -10,10 +10,10 @@
 		<div class="col-xs-12">
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">{translate text="Go To Grouped Work"}</a>
 			<button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Reload Cover"}</button>
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover"}</button>
 			{/if}
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 				<button onclick="return AspenDiscovery.Record.getUploadPDFForm('{$recordDriver->getId()}')" class="btn btn-sm btn-default">{translate text="Upload PDF Version"}</button>
 				<button onclick="return AspenDiscovery.Record.getUploadSupplementalFileForm('{$recordDriver->getId()}')" class="btn btn-sm btn-default">{translate text="Upload Supplemental File"}</button>
 			{/if}
@@ -21,7 +21,7 @@
 			{if $staffClientUrl}
 				<a href="{$staffClientUrl}" class="btn btn-sm btn-info">{translate text="View in Staff Client"}</a>
 			{/if}
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 				{if $classicUrl}
 					<a href="{$classicUrl}" class="btn btn-sm btn-info">{translate text="View in Native OPAC"}</a>
 				{/if}
@@ -47,7 +47,7 @@
 			<tr>
 				<th>{translate text='Title'}</th>
 				<th>{translate text='Path'}</th>
-				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					<th>{translate text='Actions'}</th>
 				{/if}
 			</tr>
@@ -57,7 +57,7 @@
 			<tr>
 				<td>{$uploadedPDF->title}</td>
 				<td>{$uploadedPDF->getFileName()}</td>
-				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					<td><button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Record.deleteUploadedFile('{$recordDriver->getId()}', '{$uploadedPDF->id}')">{translate text="Delete"}</button></td>
 				{/if}
 			</tr>
@@ -73,7 +73,7 @@
 		<tr>
 			<th>{translate text='Title'}</th>
 			<th>{translate text='Path'}</th>
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 				<th>{translate text='Actions'}</th>
 			{/if}
 		</tr>
@@ -83,7 +83,7 @@
 			<tr>
 				<td>{$uploadedFile->title}</td>
 				<td>{$uploadedFile->getFileName()}</td>
-				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					<td><button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Record.deleteUploadedFile('{$recordDriver->getId()}', '{$uploadedFile->id}')">{translate text="Delete"}</button></td>
 				{/if}
 			</tr>

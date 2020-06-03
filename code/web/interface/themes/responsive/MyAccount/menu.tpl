@@ -255,7 +255,7 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles)}
+				{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles)}
 					{if in_array($action, array('UsageDashboard', 'PerformanceReport', 'ErrorReport', 'CronLog'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -274,7 +274,7 @@
 								{if array_key_exists('opacAdmin', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/UsageDashboard">{translate text="Usage Dashboard"}</a></div>
 								{/if}
-								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles)}
+								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/ReindexLog">{translate text="Nightly Index Log"}</a></div>
 								{/if}
 								{if array_key_exists('opacAdmin', $userRoles)}
@@ -373,7 +373,7 @@
 					</div>
 				{/if}
 
-				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
+				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('catalogging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'OMDBSettings', 'NewYorkTimesSettings', 'RecaptchaSettings'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -461,7 +461,7 @@
 					</div>
 				{/if}
 
-				{if (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+				{if (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -477,7 +477,7 @@
 						</a>
 						<div id="catalogingMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
-								<div class="adminMenuLink"><a href="/Admin/MergedGroupedWorks">{translate text="Grouped Work Merging"}</a></div>
+{*								<div class="adminMenuLink"><a href="/Admin/MergedGroupedWorks">{translate text="Grouped Work Merging"}</a></div>*}
 								<div class="adminMenuLink"><a href="/Admin/NonGroupedRecords">{translate text="Records To Not Group"}</a></div>
 
 							</div>
@@ -485,7 +485,7 @@
 					</div>
 				{/if}
 
-				{if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					{if $module == 'ILS' && in_array($action, array('IndexingLog', 'TranslationMaps', 'IndexingProfiles', 'Dashboard', 'LoanRules', 'LoanRuleDeterminers'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -502,7 +502,7 @@
 						<div id="ilsMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/ILS/IndexingProfiles">{translate text="Indexing Profiles"}</a></div>
-								{if array_key_exists('opacAdmin', $userRoles)}
+								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('superCataloger', $userRoles)}
 									<div class="adminMenuLink"><a href="/ILS/TranslationMaps">&nbsp;&raquo;&nbsp;{translate text="Translation Maps"}</a></div>
 									{* Sierra/Millennium OPAC Admin Actions*}
 									{if ($ils == 'Millennium' || $ils == 'Sierra')}
@@ -517,7 +517,7 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('OverDrive', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if array_key_exists('OverDrive', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					{if $module == 'OverDrive' && in_array($action, array('APIData', 'ExtractLog', 'Settings', 'Scopes', 'Dashboard'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -543,7 +543,7 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('Hoopla', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if array_key_exists('Hoopla', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					{if $module == 'Hoopla' && in_array($action, array('IndexingLog', 'Settings', 'Scopes', 'Dashboard'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -568,7 +568,7 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('RBdigital', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if array_key_exists('RBdigital', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					{if $module == 'RBdigital' && in_array($action, array('Settings', 'IndexingLog', 'Scopes', 'Dashboard'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -593,7 +593,7 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('Cloud Library', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if array_key_exists('Cloud Library', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					{if $module == 'CloudLibrary' && in_array($action, array('Settings', 'IndexingLog', 'Scopes', 'Dashboard'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -618,7 +618,7 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('Side Loads', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if array_key_exists('Side Loads', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					{if $module == 'SideLoads' && in_array($action, array('IndexingLog', 'Scopes', 'SideLoads', 'Dashboard'))}
 						{assign var="curSection" value=true}
 					{else}
