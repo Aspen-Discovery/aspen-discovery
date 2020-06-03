@@ -100,22 +100,29 @@ public class ExtractOverDriveInfoMain {
 			long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
 			logger.info("Elapsed time " + String.format("%f2", ((float)elapsedTime / 60f)) + " minutes");
 
-			//Clean up resources
-			extractor.close();
-
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				extractor.close();
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				extractor.close();
 				break;
 			}
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				extractor.close();
 				break;
 			}
 			if (extractSingleWork) {
+				extractor.close();
 				break;
 			}
+
+			//Clean up resources
+			extractor.close();
 
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {

@@ -20,7 +20,6 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 
-import javax.xml.transform.Result;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -149,20 +148,6 @@ public class KohaExportMain {
 
 				logEntry.setFinished();
 
-				try {
-					//Close the connection
-					dbConn.close();
-				} catch (Exception e) {
-					System.out.println("Error closing aspen connection: " + e.toString());
-					e.printStackTrace();
-				}
-				try {
-					//Close the connection
-					kohaConn.close();
-				} catch (Exception e) {
-					System.out.println("Error closing koha connection: " + e.toString());
-					e.printStackTrace();
-				}
 				Date currentTime = new Date();
 				logger.info(currentTime.toString() + ": Finished Koha Extract");
 			} catch (Exception e) {
@@ -172,17 +157,25 @@ public class KohaExportMain {
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase();
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase();
 				break;
 			}
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase();
 				break;
 			}
 			if (extractSingleWork) {
+				disconnectDatabase();
 				break;
 			}
+			disconnectDatabase();
 
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
@@ -208,6 +201,19 @@ public class KohaExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void disconnectDatabase() {
+		try {
+			//Close the connection
+			if (dbConn != null) {
+				dbConn.close();
+				dbConn = null;
+			}
+		} catch (Exception e) {
+			System.out.println("Error closing aspen connection: " + e.toString());
+			e.printStackTrace();
+		}
 	}
 
 	private static void updateNovelist(Connection dbConn, Connection kohaConn) {

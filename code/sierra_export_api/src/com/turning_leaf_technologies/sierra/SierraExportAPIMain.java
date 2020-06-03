@@ -233,13 +233,6 @@ public class SierraExportAPIMain {
 				logEntry.addNote("Finished exporting sierra data " + new Date().toString());
 				logEntry.setFinished();
 
-				try{
-					//Close the connection
-					dbConn.close();
-				}catch(Exception e){
-					System.out.println("Error closing connection: " + e.toString());
-					e.printStackTrace();
-				}
 				Date currentTime = new Date();
 				logger.info(currentTime.toString() + ": Finished Sierra Extract");
 			}catch (Exception e){
@@ -248,16 +241,23 @@ public class SierraExportAPIMain {
 			}
 
 			if (extractSingleRecord){
+				disconnectDatabase();
 				break;
 			}
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase();
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase();
 				break;
 			}
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase();
 				break;
 			}
 
@@ -285,6 +285,16 @@ public class SierraExportAPIMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void disconnectDatabase() {
+		try{
+			//Close the connection
+			dbConn.close();
+		}catch(Exception e){
+			System.out.println("Error closing connection: " + e.toString());
+			e.printStackTrace();
+		}
 	}
 
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
