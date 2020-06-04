@@ -116,6 +116,7 @@ function getBrowseUpdates(){
 		'browse_category_source' => [
 			'title' => 'Browse Category Source',
 			'description' => 'Add source to Browse Category so searches from archives, events, etc can be shown',
+			'continueOnError' => true,
 			'sql' => [
 				'ALTER TABLE browse_category ADD COLUMN source VARCHAR(50) NOT NULL',
 				'updateBrowseCategorySources'
