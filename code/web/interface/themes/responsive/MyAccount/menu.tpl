@@ -462,7 +462,7 @@
 				{/if}
 
 				{if (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('superCataloger', $userRoles))}
-					{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords'))}
+					{if in_array($action, array('NonGroupedRecords'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -477,9 +477,7 @@
 						</a>
 						<div id="catalogingMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
-{*								<div class="adminMenuLink"><a href="/Admin/MergedGroupedWorks">{translate text="Grouped Work Merging"}</a></div>*}
 								<div class="adminMenuLink"><a href="/Admin/NonGroupedRecords">{translate text="Records To Not Group"}</a></div>
-
 							</div>
 						</div>
 					</div>

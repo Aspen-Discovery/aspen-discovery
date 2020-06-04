@@ -46,7 +46,7 @@ public class RecordGroupingProcessor {
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 
 	//A list of grouped works that have been manually merged.
-	private HashMap<String, String> mergedGroupedWorks = new HashMap<>();
+	//private HashMap<String, String> mergedGroupedWorks = new HashMap<>();
 	private HashSet<String> recordsToNotGroup = new HashSet<>();
 	private Long updateTime = new Date().getTime() / 1000;
 
@@ -153,12 +153,12 @@ public class RecordGroupingProcessor {
 			updateDisplayInfoStmt = dbConnection.prepareStatement("UPDATE grouped_work_display_info SET permanent_id = ? where permanent_id = ?");
 
 			markWorkAsNeedingReindexStmt = dbConnection.prepareStatement("INSERT into grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
-			PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * from merged_grouped_works");
-			ResultSet mergedWorksRS = loadMergedWorksStmt.executeQuery();
-			while (mergedWorksRS.next()) {
-				mergedGroupedWorks.put(mergedWorksRS.getString("sourceGroupedWorkId"), mergedWorksRS.getString("destinationGroupedWorkId"));
-			}
-			mergedWorksRS.close();
+//			PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * from merged_grouped_works");
+//			ResultSet mergedWorksRS = loadMergedWorksStmt.executeQuery();
+//			while (mergedWorksRS.next()) {
+//				mergedGroupedWorks.put(mergedWorksRS.getString("sourceGroupedWorkId"), mergedWorksRS.getString("destinationGroupedWorkId"));
+//			}
+//			mergedWorksRS.close();
 			PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
 			ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery();
 			while (nonGroupedRecordsRS.next()) {
@@ -195,9 +195,9 @@ public class RecordGroupingProcessor {
 		String groupedWorkPermanentId = groupedWork.getPermanentId();
 
 		//Check to see if we are doing a manual merge of the work
-		if (mergedGroupedWorks.containsKey(groupedWorkPermanentId)) {
-			groupedWorkPermanentId = handleMergedWork(groupedWork, groupedWorkPermanentId);
-		}
+//		if (mergedGroupedWorks.containsKey(groupedWorkPermanentId)) {
+//			groupedWorkPermanentId = handleMergedWork(groupedWork, groupedWorkPermanentId);
+//		}
 
 		try {
 			//Check to see if we know the work based on the title and author through the merge process
@@ -366,40 +366,40 @@ public class RecordGroupingProcessor {
 		}
 	}
 
-	private String handleMergedWork(GroupedWorkBase groupedWork, String groupedWorkPermanentId) {
-		//Handle the merge
-		String originalGroupedWorkPermanentId = groupedWorkPermanentId;
-		//Override the work id
-		groupedWorkPermanentId = mergedGroupedWorks.get(groupedWorkPermanentId);
-		groupedWork.overridePermanentId(groupedWorkPermanentId);
-
-		logger.debug("Overriding grouped work " + originalGroupedWorkPermanentId + " with " + groupedWorkPermanentId);
-
-		//Mark that the original was updated
-		try {
-			getGroupedWorkIdByPermanentIdStmt.setString(1, groupedWorkPermanentId);
-			ResultSet existingIdRS = getGroupedWorkIdByPermanentIdStmt.executeQuery();
-
-			if (existingIdRS.next()) {
-				//There is an existing grouped record
-				long originalGroupedWorkId = existingIdRS.getLong("id");
-
-				//Make sure we mark the original work as updated so it can be removed from the index next time around
-				markWorkAsNeedingReindexStmt.setString(1, originalGroupedWorkPermanentId);
-				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 120); //Give it a buffer to make sure it indexes again
-				markWorkAsNeedingReindexStmt.executeUpdate();
-
-				//move enrichment from the old id to the new if the new old no longer has any records
-				moveGroupedWorkEnrichment(originalGroupedWorkPermanentId, groupedWorkPermanentId);
-
-				removePrimaryIdentifiersForWorkStmt.setLong(1, originalGroupedWorkId);
-				removePrimaryIdentifiersForWorkStmt.executeUpdate();
-			}
-		} catch (SQLException e) {
-			logEntry.incErrors("Error removing primary identifiers for merged work " + originalGroupedWorkPermanentId, e);
-		}
-		return groupedWorkPermanentId;
-	}
+//	private String handleMergedWork(GroupedWorkBase groupedWork, String groupedWorkPermanentId) {
+//		//Handle the merge
+//		String originalGroupedWorkPermanentId = groupedWorkPermanentId;
+//		//Override the work id
+//		groupedWorkPermanentId = mergedGroupedWorks.get(groupedWorkPermanentId);
+//		groupedWork.overridePermanentId(groupedWorkPermanentId);
+//
+//		logger.debug("Overriding grouped work " + originalGroupedWorkPermanentId + " with " + groupedWorkPermanentId);
+//
+//		//Mark that the original was updated
+//		try {
+//			getGroupedWorkIdByPermanentIdStmt.setString(1, groupedWorkPermanentId);
+//			ResultSet existingIdRS = getGroupedWorkIdByPermanentIdStmt.executeQuery();
+//
+//			if (existingIdRS.next()) {
+//				//There is an existing grouped record
+//				long originalGroupedWorkId = existingIdRS.getLong("id");
+//
+//				//Make sure we mark the original work as updated so it can be removed from the index next time around
+//				markWorkAsNeedingReindexStmt.setString(1, originalGroupedWorkPermanentId);
+//				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 120); //Give it a buffer to make sure it indexes again
+//				markWorkAsNeedingReindexStmt.executeUpdate();
+//
+//				//move enrichment from the old id to the new if the new old no longer has any records
+//				moveGroupedWorkEnrichment(originalGroupedWorkPermanentId, groupedWorkPermanentId, "handling merged work");
+//
+//				removePrimaryIdentifiersForWorkStmt.setLong(1, originalGroupedWorkId);
+//				removePrimaryIdentifiersForWorkStmt.executeUpdate();
+//			}
+//		} catch (SQLException e) {
+//			logEntry.incErrors("Error removing primary identifiers for merged work " + originalGroupedWorkPermanentId, e);
+//		}
+//		return groupedWorkPermanentId;
+//	}
 
 	private HashSet<Long> updatedAndInsertedWorksThisRun = new HashSet<>();
 
