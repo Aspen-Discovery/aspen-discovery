@@ -18,6 +18,11 @@ class IPAddress extends DataObject
 		return array('id', 'locationid', 'ip');
 	}
 
+	function getNumericColumnNames()
+	{
+		return ['isOpac', 'blockAccess', 'allowAPIAccess', 'startIpVal', 'endIpVal'];
+	}
+
 	static function getObjectStructure(){
 		//Look lookup information for display in the user interface
 		$location = new Location();

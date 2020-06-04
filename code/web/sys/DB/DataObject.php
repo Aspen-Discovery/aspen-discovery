@@ -31,8 +31,6 @@ abstract class DataObject
 	protected $__fetchingFromDB = false;
 
 	protected $_data = [];
-	protected $_changedFields = [];
-	protected $_forceNightlyIndex = false;
 
 	function getNumericColumnNames(){
 		return [];
@@ -67,7 +65,6 @@ abstract class DataObject
 			$this->__queryStmt = null;
 		}
 
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		$query = $this->getSelectQuery($aspen_db);
 		$this->__lastQuery = $query;
@@ -195,7 +192,6 @@ abstract class DataObject
 	}
 
 	public function insert(){
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -240,7 +236,6 @@ abstract class DataObject
 		if (empty($this->$primaryKey)){
 			return $this->insert();
 		}
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -273,6 +268,7 @@ abstract class DataObject
 		}
 		$updateQuery .= ' SET ' . $updates . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		$this->__lastQuery = $updateQuery;
+		/** @noinspection PhpUnnecessaryLocalVariableInspection */
 		$response = $aspen_db->exec($updateQuery);
 		return $response;
 	}
@@ -287,7 +283,6 @@ abstract class DataObject
 	}
 
 	public function delete($useWhere = false){
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -315,7 +310,6 @@ abstract class DataObject
 			die();
 		}
 
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -350,7 +344,6 @@ abstract class DataObject
 			die();
 		}
 
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -370,7 +363,6 @@ abstract class DataObject
 	}
 
 	public function escape($variable){
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		return $aspen_db->quote($variable);
 	}
@@ -563,7 +555,6 @@ abstract class DataObject
 	protected function clearOneToManyOptions($oneToManyDBObjectClassName, $keyOther) {
 		/** @var DataObject $oneToManyDBObject */
 		$oneToManyDBObject = new $oneToManyDBObjectClassName();
-		/** @noinspection PhpUndefinedFieldInspection */
 		$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
 		$oneToManyDBObject->delete(true);
 	}
@@ -634,9 +625,11 @@ abstract class DataObject
 	 * @param array|null $propertyStructure
 	 *
 	 * @return boolean true if the property changed, or false if it did not
+	 * @noinspection PhpUnused
 	 */
 	public function setProperty($propertyName, $newValue, $propertyStructure){
-		if ($this->$propertyName != $newValue) {
+		$propertyChanged = $this->$propertyName != $newValue || (is_null($this->$propertyName) && !is_null($newValue));
+		if ($propertyChanged) {
 			$oldValue = $this->$propertyName;
 			$this->$propertyName = $newValue;
 			if ($propertyStructure != null && !empty($propertyStructure['forcesReindex'])){
