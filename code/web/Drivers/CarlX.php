@@ -406,7 +406,7 @@ class CarlX extends SIP2Driver{
 					$curHold['reactivateTime']     = null;
 					$curHold['frozen']             = isset($hold->Suspended) && ($hold->Suspended == true);
 					$curHold['cancelable']         = true; //TODO: Can Cancel Available Holds?
-					$curHold['canFreeze']         = false;
+					$curHold['canFreeze']          = false;
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($carlID);
@@ -466,8 +466,12 @@ class CarlX extends SIP2Driver{
 						$curHold['reactivateTime']     = strtotime($hold->SuspendedUntilDate);
 						$curHold['status']             = 'Frozen';
 					}
-					$curHold['canFreeze'] = true;
-
+					// CarlX [9.6] will not allow suspend hold on item level hold. UnavailableHoldItem has ItemNumber = 0 if the hold is NOT an item level hold.
+					if ($curHold['itemId'] !== 0) {
+						$curHold['canFreeze'] = true;
+					} else {
+						$curHold['canFreeze'] = false;
+					}
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($carlID);
