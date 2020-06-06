@@ -28,7 +28,7 @@ class UserAPI extends Action
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if ($method != 'getCatalogConnection' && method_exists($this, $method)) {
+		if ($method != 'getCatalogConnection' && $method != 'getUserForApiCall' && method_exists($this, $method)) {
 			$result = [
 				'result' => $this->$method()
 			];
@@ -469,15 +469,18 @@ class UserAPI extends Action
 	 */
 	function getPatronHolds()
 	{
-		list($username, $password) = $this->loadUsernameAndPassword();
-
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)) {
-			$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
-			$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
-			return array('success' => true, 'holds' => $allHolds);
+		global $offlineMode;
+		if ($offlineMode) {
+			return array('success' => false, 'message' => 'Circulation system is offline');
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			$user = $this->getUserForApiCall();
+			if ($user && !($user instanceof AspenError)) {
+				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
+				$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
+				return array('success' => true, 'holds' => $allHolds);
+			} else {
+				return array('success' => false, 'message' => 'Login unsuccessful');
+			}
 		}
 	}
 
@@ -696,9 +699,8 @@ class UserAPI extends Action
 	 */
 	function getPatronFines()
 	{
-		list($username, $password) = $this->loadUsernameAndPassword();
 		$includeMessages = isset($_REQUEST['includeMessages']) ? $_REQUEST['includeMessages'] : false;
-		$user = UserAccount::validateAccount($username, $password);
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$fines = $this->getCatalogConnection()->getFines($user, $includeMessages);
 			$totalOwed = 0;
@@ -787,8 +789,7 @@ class UserAPI extends Action
 		if ($offlineMode) {
 			return array('success' => false, 'message' => 'Circulation system is offline');
 		} else {
-			list($username, $password) = $this->loadUsernameAndPassword();
-			$user = UserAccount::validateAccount($username, $password);
+			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
 				$allCheckedOut = $user->getCheckouts(false, $source);
@@ -1678,5 +1679,44 @@ class UserAPI extends Action
 			$results['message'] = 'No patron id was provided';
 		}
 		return $results;
+	}
+
+	function getUserByBarcode(){
+		$results = array('success' => false, 'message' => 'Unknown error loading patronId');
+		if (isset($_REQUEST['username'])){
+			$user = UserAccount::getUserByBarcode($_REQUEST['username']);
+			if ($user->find(true)){
+				$results = array('success' => true, 'id' => $user->id, 'patronId' => $user->username, 'displayName' => $user->displayName);
+			}else{
+				$results['message'] = 'Invalid Patron';
+			}
+		}else{
+			$results['message'] = 'No barcode was provided';
+		}
+		return $results;
+	}
+
+	/**
+	 * @return bool|false|User
+	 */
+	protected function getUserForApiCall()
+	{
+		if (isset($_REQUEST['patronId'])) {
+			$user = new User();
+			$user->username = $_REQUEST['patronId'];
+			if (!$user->find(true)) {
+				$user = false;
+			}
+		} else if (isset($_REQUEST['id'])) {
+			$user = new User();
+			$user->id = $_REQUEST['id'];
+			if (!$user->find(true)) {
+				$user = false;
+			}
+		} else {
+			list($username, $password) = $this->loadUsernameAndPassword();
+			$user = UserAccount::validateAccount($username, $password);
+		}
+		return $user;
 	}
 }

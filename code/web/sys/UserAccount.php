@@ -586,6 +586,30 @@ class UserAccount
 		return false;
 	}
 
+	public static function getUserByBarcode($username){
+		require_once ROOT_DIR . '/CatalogFactory.php';
+		// Perform authentication:
+		//Test all valid authentication methods and see which (if any) result in a valid login.
+		$driversToTest = self::getAccountProfiles();
+		foreach ($driversToTest as $driverName => $additionalInfo) {
+			$accountProfile = $additionalInfo['accountProfile'];
+			if ($accountProfile->loginConfiguration == 'barcode_pin') {
+				$user = new User();
+				$user->cat_username = $username;
+				if ($user->find(true)) {
+					return $user;
+				}
+			} else {
+				$user = new User();
+				$user->cat_password = $username;
+				if ($user->find(true)) {
+					return $user;
+				}
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Completely logout the user annihilating their entire session.
 	 */
