@@ -467,7 +467,7 @@ class CarlX extends SIP2Driver{
 						$curHold['status']             = 'Frozen';
 					}
 					// CarlX [9.6] will not allow suspend hold on item level hold. UnavailableHoldItem has ItemNumber = 0 if the hold is NOT an item level hold.
-					if ($curHold['itemId'] !== 0) {
+					if ($curHold['itemId'] === '0') {
 						$curHold['canFreeze'] = true;
 					} else {
 						$curHold['canFreeze'] = false;
