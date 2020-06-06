@@ -2719,7 +2719,7 @@ AspenDiscovery.Browse = (function(){
 				params['listId'] = listId.val()
 			}
 			$.getJSON(url, params, function (data) {
-				if (data.success == false) {
+				if (data.success === false) {
 					AspenDiscovery.showMessage("Unable to create category", data.message);
 				} else {
 					AspenDiscovery.showMessage("Successfully added", "This search was added to the homepage successfully.", true);
