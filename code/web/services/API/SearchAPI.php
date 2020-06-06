@@ -116,15 +116,18 @@ class SearchAPI extends Action
 			}
 			fclose($fh);
 
+			//Get the number of CPUs available
+			$numCPUs = (int)shell_exec("cat /proc/cpuinfo | grep processor | wc -l");
+
 			//Check load (use the 5 minute load)
 			$load = sys_getloadavg();
-			if ($load[1] > 5){
+			if ($load[1] > $numCPUs * 1.5){
 				if ($load[0] >= $load[1]){
 					$this->addCheck($checks, 'Load Average', self::STATUS_CRITICAL, "Load is very high {$load[1]} and is increasing");
 				}else{
 					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is very high {$load[1]}, but it is decreasing");
 				}
-			}elseif ($load[1] > 2.5){
+			}elseif ($load[1] > $numCPUs){
 				$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is higher than optimal {$load[1]}");
 			}else{
 				$this->addCheck($checks, 'Load Average');
