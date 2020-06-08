@@ -805,8 +805,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @return array results (success, message, noCopies)
 	 */
 	public function checkOutTitle($user, $overDriveId){
-
-		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts';
