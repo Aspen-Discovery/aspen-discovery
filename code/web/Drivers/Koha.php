@@ -1053,7 +1053,7 @@ class Koha extends AbstractIlsDriver
 			$curHold['cancelable'] = true;
 			if ($curRow['suspend'] == '1') {
 				$curHold['frozen'] = true;
-				$curHold['status'] = "Suspended";
+				$curHold['status'] = "Frozen";
 				if ($curRow['suspend_until'] != null) {
 					$curHold['status'] .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
