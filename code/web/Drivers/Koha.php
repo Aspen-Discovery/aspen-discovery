@@ -1433,7 +1433,7 @@ class Koha extends AbstractIlsDriver
 		$sResult = $this->postToKohaPage($loginUrl, $postParams);
 		//Parse the response to make sure the login went ok
 		//If we can see the logout link, it means that we logged in successfully.
-		if (preg_match('/<a\\s+class="logout"\\s+id="logout"[^>]*?>/si', $sResult)) {
+		if (preg_match('/<a[^>]*?\\s+class="logout"\\s+id="logout"[^>]*?>/si', $sResult)) {
 			$result = array(
 				'success' => true,
 				'summaryPage' => $sResult
@@ -2472,6 +2472,13 @@ class Koha extends AbstractIlsDriver
 				}
 			}
 
+			//Get the csr token
+			$updatePage = $this->getKohaPage($updateMessageUrl);
+			$csr_token = '';
+			if (preg_match('%<input type="hidden" name="csrf_token" value="(.*?)" />%s', $updatePage, $matches)) {
+				$getParams[] = 'csrf_token='. $matches[1];
+			}
+
 			$updateMessageUrl .= implode('&', $getParams);
 			$result = $this->getKohaPage($updateMessageUrl);
 			if (strpos($result, 'Settings updated') !== false) {
@@ -2563,7 +2570,7 @@ class Koha extends AbstractIlsDriver
 					if (strlen($response) > 0) {
 						$jsonResponse = json_decode($response);
 						if ($jsonResponse) {
-							$result['message'] = $jsonResponse->errors[0]['message'];
+							$result['message'] = $jsonResponse->errors[0]->message;
 						} else {
 							$result['message'] = $response;
 						}
