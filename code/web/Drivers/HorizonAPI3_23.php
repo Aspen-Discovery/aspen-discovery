@@ -242,6 +242,6 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 
 	function getEmailResetPinTemplate()
 	{
-		return 'sirsiROAEmailResetPinLinkgotPasswordLink.tpl';
+		return 'sirsiROAEmailResetPinLink.tpl';
 	}
 }

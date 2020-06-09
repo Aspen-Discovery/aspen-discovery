@@ -336,4 +336,12 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'message' => 'This functionality has not been implemented for this ILS'
 		];
 	}
+
+	function getPasswordRecoveryTemplate(){
+		return null;
+	}
+
+	function processPasswordRecovery(){
+		return null;
+	}
 }

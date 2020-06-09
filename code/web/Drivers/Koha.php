@@ -1782,38 +1782,8 @@ class Koha extends AbstractIlsDriver
 		if ($oauthToken == false) {
 			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
 		} else {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$user->username}/password";
-			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
-			$postParams = [];
-			$postParams['password'] = $newPin;
-			$postParams['password_2'] = $newPin;
-			$postParams = json_encode($postParams);
-
-			$this->apiCurlWrapper->addCustomHeaders([
-				'Authorization: Bearer ' . $oauthToken,
-				'User-Agent: Aspen Discovery',
-				'Accept: */*',
-				'Cache-Control: no-cache',
-				'Content-Type: application/json',
-				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-				'Accept-Encoding: gzip, deflate',
-			], true);
-			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
-			if ($this->apiCurlWrapper->getResponseCode() != 200) {
-				if (strlen($response) > 0) {
-					$jsonResponse = json_decode($response);
-					if ($jsonResponse) {
-						return ['success' => false, 'errors' => $jsonResponse->error];
-					} else {
-						return ['success' => false, 'errors' => $response];
-					}
-				} else {
-					return ['success' => false, 'errors' => "Error {$this->apiCurlWrapper->getResponseCode()} updating your PIN."];
-				}
-
-			} else {
-				return ['success' => true, 'message' => 'Your password was updated successfully.'];
-			}
+			$borrowerNumber = $user->username;
+			$result = $this->resetPinInKoha($borrowerNumber, $newPin, $oauthToken);
 		}
 		return $result;
 	}
@@ -2768,5 +2738,130 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 		return $result;
+	}
+
+	function getPasswordRecoveryTemplate(){
+		global $interface;
+		if (isset($_REQUEST['uniqueKey'])){
+			$error = null;
+			$uniqueKey = $_REQUEST['uniqueKey'];
+			$interface->assign('uniqueKey', $uniqueKey);
+
+			//Validate that the unique key is valid
+			$this->initDatabaseConnection();
+
+			/** @noinspection SqlResolve */
+			$sql = "SELECT * from borrower_password_recovery where uuid = '" . mysqli_escape_string($this->dbConnection, $uniqueKey) . "'";
+			$lookupResult = mysqli_query($this->dbConnection, $sql);
+			$uniqueKeyValid = false;
+			if ($lookupResult->num_rows > 0) {
+				$lookupResultRow = $lookupResult->fetch_assoc();
+				if (date_create($lookupResultRow['valid_until'])->getTimestamp() > time()){
+					$uniqueKeyValid = true;
+				}
+			}
+			if (!$uniqueKeyValid){
+				$error = translate(['text' => 'invalid_pass_reset_uuid', 'defaultText' => ' The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.']);
+			}
+
+			$interface->assign('error', $error);
+			return 'kohaPasswordRecovery.tpl';
+		}else{
+			//No key provided, go back to the starting point
+			header('Location: /MyAccount/EmailResetPin');
+			die();
+		}
+	}
+
+	function processPasswordRecovery(){
+		global $interface;
+		if (isset($_REQUEST['uniqueKey'])){
+			$error = null;
+			$uniqueKey = $_REQUEST['uniqueKey'];
+			$borrowerNumber = null;
+
+			//Validate that the unique key is valid
+			$this->initDatabaseConnection();
+
+			/** @noinspection SqlResolve */
+			$sql = "SELECT * from borrower_password_recovery where uuid = '" . mysqli_escape_string($this->dbConnection, $uniqueKey) . "'";
+			$lookupResult = mysqli_query($this->dbConnection, $sql);
+			$uniqueKeyValid = false;
+			if ($lookupResult->num_rows > 0) {
+				$lookupResultRow = $lookupResult->fetch_assoc();
+				if (date_create($lookupResultRow['valid_until'])->getTimestamp() > time()){
+					$borrowerNumber = $lookupResultRow['borrowernumber'];
+					$uniqueKeyValid = true;
+				}
+			}
+			if (!$uniqueKeyValid){
+				$error = translate(['text' => 'invalid_pass_reset_uuid', 'defaultText' => ' The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.']);
+			}else{
+				$oauthToken = $this->getOAuthToken();
+				if ($oauthToken == false) {
+					$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+				} else {
+					$result = $this->resetPinInKoha($borrowerNumber, $_REQUEST['pin1'], $oauthToken);
+					if ($result['success'] == false){
+						$error = $result['errors'];
+					}else{
+						$interface->assign('result', $result);
+					}
+				}
+			}
+
+			$interface->assign('error', $error);
+			return 'kohaPasswordRecoveryResult.tpl';
+		}else{
+			//No key provided, go back to the starting point
+			header('Location: /MyAccount/EmailResetPin');
+			die();
+		}
+	}
+
+	/**
+	 * @param $borrowerNumber
+	 * @param string $newPin
+	 * @param string $oauthToken
+	 * @return array
+	 */
+	protected function resetPinInKoha($borrowerNumber, string $newPin, string $oauthToken): array
+	{
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/password";
+		//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
+		$postParams = [];
+		$postParams['password'] = $newPin;
+		$postParams['password_2'] = $newPin;
+		$postParams = json_encode($postParams);
+
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Bearer ' . $oauthToken,
+			'User-Agent: Aspen Discovery',
+			'Accept: */*',
+			'Cache-Control: no-cache',
+			'Content-Type: application/json',
+			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			'Accept-Encoding: gzip, deflate',
+		], true);
+		$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
+		if ($this->apiCurlWrapper->getResponseCode() != 200) {
+			if (strlen($response) > 0) {
+				$jsonResponse = json_decode($response);
+				if ($jsonResponse) {
+					return ['success' => false, 'errors' => $jsonResponse->error];
+				} else {
+					return ['success' => false, 'errors' => $response];
+				}
+			} else {
+				return ['success' => false, 'errors' => "Error {$this->apiCurlWrapper->getResponseCode()} updating your PIN."];
+			}
+
+		} else {
+			return ['success' => true, 'message' => 'Your password was updated successfully.'];
+		}
+	}
+
+	private function isPasswordRecoveryKeyValid(){
+
 	}
 }

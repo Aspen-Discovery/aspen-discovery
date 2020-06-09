@@ -1011,4 +1011,14 @@ class CatalogConnection
 	{
 		return $this->driver->updateAutoRenewal($patron, $allowAutoRenewal);
 	}
+
+	public function getPasswordRecoveryTemplate()
+	{
+		return $this->driver->getPasswordRecoveryTemplate();
+	}
+
+	public function processPasswordRecovery()
+	{
+		return $this->driver->processPasswordRecovery();
+	}
 }
