@@ -146,7 +146,7 @@
 								{if $record.frozen}
 									<span class="frozenHold">
 								{/if}
-								{$record.status}
+								{$record.status|translate}
 								{if $record.frozen && $showDateWhenSuspending && !empty($record.reactivate)} until {$record.reactivate|date_format:"%b %d, %Y"}</span>{/if}
 							</div>
 						</div>
