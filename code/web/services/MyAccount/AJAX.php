@@ -695,10 +695,8 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 
-		$barcode = $_REQUEST['barcode'];
-
 		//Get the list of pickup branch locations for display in the user interface.
-		return $catalog->requestPinReset($barcode);
+		return $catalog->processEmailResetPinForm();
 	}
 
 	/** @noinspection PhpUnused */

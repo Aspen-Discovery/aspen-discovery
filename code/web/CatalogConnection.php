@@ -888,11 +888,6 @@ class CatalogConnection
 		return $result;
 	}
 
-	function requestPinReset($patronBarcode)
-	{
-		return $this->driver->requestPinReset($patronBarcode);
-	}
-
 	function showOutstandingFines()
 	{
 		return $this->driver->showOutstandingFines();
@@ -915,6 +910,25 @@ class CatalogConnection
 
 	public function getEmailResetPinTemplate()
 	{
+		global $interface;
+		global $library;
+
+		$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Name'));
+		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
+
+		if (isset($_REQUEST['email'])){
+			$interface->assign('email', $_REQUEST['email']);
+		}
+		if (isset($_REQUEST['barcode'])){
+			$interface->assign('barcode', $_REQUEST['barcode']);
+		}
+		if (isset($_REQUEST['username'])){
+			$interface->assign('username', $_REQUEST['username']);
+		}
+		if (isset($_REQUEST['resendEmail'])){
+			$interface->assign('resendEmail', $_REQUEST['resendEmail']);
+		}
+
 		return $this->driver->getEmailResetPinTemplate();
 	}
 
@@ -1020,5 +1034,10 @@ class CatalogConnection
 	public function processPasswordRecovery()
 	{
 		return $this->driver->processPasswordRecovery();
+	}
+
+	public function getEmailResetPinResultsTemplate()
+	{
+		return $this->driver->getEmailResetPinResultsTemplate();
 	}
 }

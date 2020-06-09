@@ -1473,6 +1473,11 @@ class Koha extends AbstractIlsDriver
 		return $this->opacCurlWrapper->curlGetPage($kohaUrl);
 	}
 
+	function getEmailResetPinResultsTemplate()
+	{
+		return 'emailResetPinResults.tpl';
+	}
+
 	function processEmailResetPinForm()
 	{
 		$result = array(

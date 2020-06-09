@@ -1649,6 +1649,11 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
+	function getEmailResetPinResultsTemplate()
+	{
+		return 'emailResetPinResults.tpl';
+	}
+
 	function processEmailResetPinForm()
 	{
 		$barcode = $_REQUEST['barcode'];

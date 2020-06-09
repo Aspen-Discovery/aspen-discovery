@@ -2,9 +2,9 @@
 	<div id="main-content">
 		<div class="resulthead"><h3>{translate text='Forgot Your PIN?'}</h3></div>
 		<div class="page">
-			<p>{$requestPinResetResult.message}</p>
+			<p>{$result.message}</p>
 
-			{if $requestPinResetResult.error}
+			{if $result.error}
 				<div>
 					<a href="/MyAccount/RequestPinReset">Try Again</a>
 				</div>
