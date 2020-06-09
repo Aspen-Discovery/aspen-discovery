@@ -1443,6 +1443,7 @@ class Koha extends AbstractIlsDriver
 			$info = curl_getinfo($this->opacCurlWrapper->curl_connection);
 			$result = array(
 				'success' => false,
+				'message' => 'Could not login to the backend system'
 			);
 		}
 		return $result;
