@@ -701,13 +701,21 @@ class UserAPI extends Action
 		if ($user && !($user instanceof AspenError)) {
 			$fines = $this->getCatalogConnection()->getFines($user, $includeMessages);
 			$totalOwed = 0;
-			foreach ($fines as $fine) {
+			foreach ($fines as &$fine) {
 				if (isset($fine['amountOutstandingVal'])) {
 					$totalOwed += $fine['amountOutstandingVal'];
 				}elseif (isset($fine['amountVal'])) {
 					$totalOwed += $fine['amountVal'];
 				}elseif (isset($fine['amount'])) {
 					$totalOwed += $fine['amount'];
+				}
+				if (array_key_exists('amount', $fine) && array_key_exists('amountOutstanding', $fine)){
+					$fine['amountOriginal'] = $fine['amount'];
+					$fine['amount'] = $fine['amountOutstanding'];
+				}
+				if (array_key_exists('amountVal', $fine) && array_key_exists('amountOutstandingVal', $fine)){
+					$fine['amountOriginalVal'] = $fine['amountVal'];
+					$fine['amountVal'] = $fine['amountOutstandingVal'];
 				}
 			}
 			return array('success' => true, 'fines' => $fines, 'totalOwed' => $totalOwed);
