@@ -1062,6 +1062,7 @@ class Koha extends AbstractIlsDriver
 				if ($curRow['suspend_until'] != null) {
 					$curHold['status'] .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
+				$curHold['locationUpdateable'] = true;
 			} elseif ($curRow['found'] == 'W') {
 				$curHold['cancelable'] = false;
 				$curHold['status'] = "Ready to Pickup";
@@ -1070,6 +1071,7 @@ class Koha extends AbstractIlsDriver
 			} else {
 				$curHold['status'] = "Pending";
 				$curHold['canFreeze'] = true;
+				$curHold['locationUpdateable'] = true;
 			}
 			$curHold['cancelId'] = $curRow['reserve_id'];
 
@@ -1417,7 +1419,65 @@ class Koha extends AbstractIlsDriver
 
 	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
-		return $this->updateHoldDetailed($patron, 'update', null, $itemToUpdateId, $newPickupLocation, 'off');
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error changing hold pickup location.'
+		];
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+		} else {
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'Accept-Encoding: gzip, deflate',
+			], true);
+
+			//Get the current hold so we can load priority
+			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds?hold_id=$itemToUpdateId";
+			$response = $this->apiCurlWrapper->curlGetPage($apiUrl);
+			if (!$response) {
+				return $result;
+			}else{
+				$currentHolds = json_decode($response, false);
+				$currentHold = null;
+				foreach ($currentHolds as $currentHold){
+					if ($currentHold->hold_id == $itemToUpdateId){
+						break;
+					}
+				}
+
+				$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToUpdateId";
+				$postParams = [];
+				$postParams['branchcode'] = $newPickupLocation;
+				$postParams['pickup_library_id'] = $newPickupLocation;
+				$postParams['priority'] = $currentHold->priority;
+				$postParams = json_encode($postParams);
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+				if (!$response) {
+					return $result;
+				} else {
+					$hold_response = json_decode($response, false);
+					if (isset($hold_response->error)) {
+						$result['message'] = $hold_response->error;
+						$result['success'] = true;
+					} elseif ($hold_response->pickup_library_id != $newPickupLocation) {
+						$result['message'] = 'Sorry, the pickup location of your hold could not be changed.';
+						$result['success'] = true;
+					} else {
+						$result['message'] = 'The pickup location of your hold was changed successfully.';
+						$result['success'] = true;
+					}
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	public function showOutstandingFines()
