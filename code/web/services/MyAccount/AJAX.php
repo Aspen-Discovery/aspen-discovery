@@ -695,10 +695,8 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 
-		$barcode = $_REQUEST['barcode'];
-
 		//Get the list of pickup branch locations for display in the user interface.
-		return $catalog->requestPinReset($barcode);
+		return $catalog->processEmailResetPinForm();
 	}
 
 	/** @noinspection PhpUnused */
@@ -2309,8 +2307,8 @@ class MyAccount_AJAX extends JSON_Action
 
 					$purchaseUnits['items'][] = [
 						'custom_id' => $fineId,
-						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 127, true),
-						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 127, true),
+						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 120, true),
+						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 120, true),
 						'unit_amount' => [
 							'currency_code' => 'USD',
 							'value' => round($fineAmount, 2),

@@ -191,8 +191,10 @@ function updateSpotlightSources(){
 						/** @var SearchObject_GroupedWorkSearcher $searcher */
 						$searcher = SearchObjectFactory::initSearchObject('GroupedWork');
 						$savedSearch = $searcher->restoreSavedSearch($sourceId, false, true);
-						$spotlightList->updateFromSearch($savedSearch);
-						$spotlightList->update();
+						if ($savedSearch !== false) {
+							$spotlightList->updateFromSearch($savedSearch);
+							$spotlightList->update();
+						}
 					}
 				}
 			}

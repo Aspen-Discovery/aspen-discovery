@@ -16,22 +16,9 @@ class MyAccount_EmailResetPin extends Action{
 		if (isset($_REQUEST['submit'])){
 			$emailResult = $catalog->processEmailResetPinForm();
 
-			$interface->assign('emailResult', $emailResult);
-			$this->display('emailResetPinResults.tpl', 'Email to Reset Pin');
+			$interface->assign('result', $emailResult);
+			$this->display($catalog->getEmailResetPinResultsTemplate(), 'Email to Reset Pin');
 		}else{
-			if (isset($_REQUEST['email'])){
-				$interface->assign('email', $_REQUEST['email']);
-			}
-			if (isset($_REQUEST['barcode'])){
-				$interface->assign('barcode', $_REQUEST['barcode']);
-			}
-			if (isset($_REQUEST['username'])){
-				$interface->assign('username', $_REQUEST['username']);
-			}
-			if (isset($_REQUEST['resendEmail'])){
-				$interface->assign('resendEmail', $_REQUEST['resendEmail']);
-			}
-
 			$this->display($catalog->getEmailResetPinTemplate(), 'Reset ' . $interface->getVariable('passwordLabel'));
 		}
 	}

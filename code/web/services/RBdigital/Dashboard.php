@@ -69,7 +69,7 @@ class RBdigital_Dashboard extends Admin_Admin
     }
 
     function getAllowableRoles(){
-        return array('opacAdmin', 'libraryAdmin', 'cataloging');
+        return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
     }
 
     /**

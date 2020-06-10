@@ -552,7 +552,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$hold['canFreeze'] = true;
 					if (isset($curTitle->holdSuspension)){
 						$hold['frozen'] = true;
-						$hold['status'] = "Suspended";
+						$hold['status'] = "Frozen";
 						if ($curTitle->holdSuspension->numberOfDays > 0) {
 							$numDaysSuspended = $curTitle->holdSuspension->numberOfDays;
 							$hold['status'] .= ' until ' . DateUtils::addDays(date('m/d/Y'), $numDaysSuspended, "m/d/Y");
@@ -805,8 +805,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @return array results (success, message, noCopies)
 	 */
 	public function checkOutTitle($user, $overDriveId){
-
-		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts';

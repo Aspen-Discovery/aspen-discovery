@@ -102,6 +102,7 @@ class Browse_AJAX extends Action {
 			}else{
 				$listId = $_REQUEST['listId'];
 				$browseCategory->sourceListId = $listId;
+				$browseCategory->source = 'List';
 			}
 
 			$browseCategory->label = $categoryName;

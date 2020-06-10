@@ -49,7 +49,7 @@ class SearchAPI extends Action
 		$checks = [];
 
 		//Check if solr is running by pinging it
-		$solrSearcher = SearchObjectFactory::initSearchObject();
+		$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
 		if (!$solrSearcher->ping()) {
 			$this->addCheck($checks, 'Solr', self::STATUS_CRITICAL, "Solr is not responding");
 		}else{
@@ -109,22 +109,25 @@ class SearchAPI extends Action
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "Less than 1GB ($freeMem) of available memory exists, increase available resources");
 			}elseif ($percentMemoryUsage > 95){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "{$percentMemoryUsage}% of total memory is in use, increase available resources");
-			}elseif ($percentMemoryUsage < 60){
+			}elseif ($percentMemoryUsage < 40){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_WARN, "$percentMemoryUsage% of memory is in use, may be able to reduce resources");
 			}else{
 				$this->addCheck($checks, 'Memory Usage');
 			}
 			fclose($fh);
 
+			//Get the number of CPUs available
+			$numCPUs = (int)shell_exec("cat /proc/cpuinfo | grep processor | wc -l");
+
 			//Check load (use the 5 minute load)
 			$load = sys_getloadavg();
-			if ($load[1] > 5){
+			if ($load[1] > $numCPUs * 1.5){
 				if ($load[0] >= $load[1]){
 					$this->addCheck($checks, 'Load Average', self::STATUS_CRITICAL, "Load is very high {$load[1]} and is increasing");
 				}else{
 					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is very high {$load[1]}, but it is decreasing");
 				}
-			}elseif ($load[1] > 2.5){
+			}elseif ($load[1] > $numCPUs){
 				$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is higher than optimal {$load[1]}");
 			}else{
 				$this->addCheck($checks, 'Load Average');

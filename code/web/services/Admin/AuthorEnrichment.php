@@ -35,7 +35,7 @@ class Admin_AuthorEnrichment extends ObjectEditor
 		return 'id';
 	}
 	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging');
+		return array('opacAdmin', 'cataloging', 'superCataloger');
 	}
 	function getInstructions(){
 		return "";

@@ -172,7 +172,6 @@ abstract class Solr
 
 	public function pingServer($failOnError = true)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $timer;
 		global $configArray;
@@ -203,6 +202,8 @@ abstract class Solr
 			// Test to see solr is online
 			$test_url = $this->host . "/admin/ping";
 			$test_client = new CurlWrapper();
+			$test_client->setTimeout(1);
+			$test_client->setConnectTimeout(1);
 			$result = $test_client->curlGetPage($test_url);
 			if ($result !== false) {
 				// Even if we get a response, make sure it's a 'good' one.

@@ -1149,28 +1149,6 @@ AspenDiscovery.Account = (function(){
 			return false
 		},
 
-		resetPin: function(){
-			let barcode = $('#card_number').val();
-			if (barcode.length === 0){
-				alert("Please enter your library card number");
-			}else{
-				let url = path + '/MyAccount/AJAX?method=requestPinReset&barcode=' + barcode;
-				$.getJSON(url, function(data){
-					// noinspection EqualityComparisonWithCoercionJS
-					if (data.error == false){
-						alert(data.message);
-						// noinspection EqualityComparisonWithCoercionJS
-						if (data.result == true){
-							AspenDiscovery.closeLightbox();
-						}
-					}else{
-						alert("There was an error requesting your pin reset information.  Please contact the library for additional information.");
-					}
-				});
-			}
-			return false;
-		},
-
 		ajaxLightbox: function (urlToDisplay, requireLogin) {
 			if (requireLogin === undefined) {
 				requireLogin = false;
@@ -2734,7 +2712,7 @@ AspenDiscovery.Browse = (function(){
 				params['listId'] = listId.val()
 			}
 			$.getJSON(url, params, function (data) {
-				if (data.success == false) {
+				if (data.success === false) {
 					AspenDiscovery.showMessage("Unable to create category", data.message);
 				} else {
 					AspenDiscovery.showMessage("Successfully added", "This search was added to the homepage successfully.", true);

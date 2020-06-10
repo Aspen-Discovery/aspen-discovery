@@ -5,10 +5,6 @@ require_once ROOT_DIR . '/CatalogConnection.php';
 
 class EmailPin extends Action{
 	protected $catalog;
-	
-	function __construct()
-	{
-	}
 
 	function launch($msg = null)
 	{

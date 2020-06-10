@@ -32,6 +32,9 @@
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'hidden'}
 			<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required}<span class="required-input">*</span>{/if}</label>
 		{/if}
+		{if !empty($property.showDescription)}
+			<div class='propertyDescription'><em>{$property.description}</em></div>
+		{/if}
 		{* Output the editing control*}
 		{if $property.type == 'section'}
 			{if !empty($property.renderAsHeading) && $property.renderAsHeading == true}
@@ -233,8 +236,5 @@
 	</div>
 {elseif $property.type == 'hidden'}
 	<input type='hidden' name='{$propName}' value='{$propValue}'>
-{/if}
-{if !empty($property.showDescription)}
-	<div class='propertyDescription'>{$property.description}</div>
 {/if}
 {/strip}

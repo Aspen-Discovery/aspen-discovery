@@ -39,6 +39,6 @@ class SideLoads_DownloadMarc extends Admin_Admin
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging');
+		return array('opacAdmin', 'cataloging', 'superCataloger');
 	}
 }

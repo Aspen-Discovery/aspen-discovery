@@ -1298,7 +1298,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 							$title = '';
 							foreach ($marcField->getSubFields() as $subField) {
 								/** @var File_MARC_Subfield $subField */
-								if ($subField->getCode() != '2' && $subField->getCode() != '0') {
+								if ($subField->getCode() != '2' && $subField->getCode() != '0' && $subField->getCode() != '9') {
 									$subFieldData = $subField->getData();
 									if ($type == 'bisac' && $subField->getCode() == 'a') {
 										$subFieldData = ucwords(strtolower($subFieldData));

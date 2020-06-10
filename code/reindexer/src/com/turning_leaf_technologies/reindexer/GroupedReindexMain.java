@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.jcraft.jsch.*;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.UnzipUtility;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +46,8 @@ public class GroupedReindexMain {
 		}
 		serverName = args[0];
 		System.setProperty("reindex.process.serverName", serverName);
-		
+
+		boolean checkNightlyIndexRunning = false;
 		if (args.length >= 2 && args[1].equalsIgnoreCase("full")) {
 			fullReindex = true;
 			clearIndex = true;
@@ -53,6 +55,8 @@ public class GroupedReindexMain {
 			fullReindex = true;
 			clearIndex = false;
 			isNightlyReindex = args[1].equalsIgnoreCase("nightly");
+		}else if (args.length >= 2 && args[1].equalsIgnoreCase("isNightlyIndexRunning")){
+			checkNightlyIndexRunning = true;
 		}else if (args.length >= 2 && args[1].equalsIgnoreCase("singleWork")){
 			//Process a specific work
 			//Prompt for the work to process
@@ -74,6 +78,13 @@ public class GroupedReindexMain {
 		initializeReindex();
 		
 		logEntry.addNote("Initialized Reindex ");
+		if (checkNightlyIndexRunning) {
+			boolean isNightlyIndexRunning = IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger);
+			logEntry.addNote("Checked if nightly index is running: " + isNightlyIndexRunning);
+			System.out.println("Is Nightly Index Running: " + isNightlyIndexRunning);
+			logEntry.setFinished();
+			System.exit(0);
+		}
 		if (fullReindex){
 			logEntry.addNote("Performing full reindex");
 		}
@@ -192,6 +203,9 @@ public class GroupedReindexMain {
 						}
 					}
 					getRunNightlyIndexStmt.close();
+
+					//Mark that nightly index does not need to run since we are currently running it.
+					dbConn.prepareStatement("UPDATE system_variables set runNightlyFullIndex = 0").executeUpdate();
 				}catch (SQLException e) {
 					logger.error("Unable to determine if the nightly index should run, running it", e);
 				}

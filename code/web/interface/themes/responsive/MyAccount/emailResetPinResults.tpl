@@ -3,13 +3,13 @@
 		<div id="main-content">
 			<div class="resulthead"><h3>{translate text='Reset My PIN'}</h3></div>
 			<div class="page">
-				{if !$emailResult.success && $emailResult.error}
-					<div class="alert alert-danger">{$emailResult.error}</div>
+				{if !$result.success && $result.error}
+					<div class="alert alert-danger">{$result.error}</div>
 					<div>
 						<a class="btn btn-primary" role="button" href="/MyAccount/EmailResetPin">Try Again</a>
 					</div>
-				{elseif $emailResult.message}
-					<div class="alert alert-success">{$emailResult.message}</div>
+				{elseif $result.message}
+					<div class="alert alert-success">{$result.message}</div>
 					<p>
 						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
 					</p>

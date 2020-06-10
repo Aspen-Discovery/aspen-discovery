@@ -83,7 +83,7 @@ abstract class Archive_Object extends Action {
 				$restrictionType = str_replace(' ', '', strtolower($restrictionType));
 				$restriction = trim($restriction);
 				$restrictionLower = strtolower($restriction);
-				if ($restrictionLower == 'anonymousmasterdownload' || $restrictionLower == 'verifiedmasterdownload'){
+				if ($restrictionLower == 'anonymousoriginaldownload' || $restrictionLower == 'verifiedoriginaldownload'){
 					continue;
 				}
 
@@ -316,17 +316,17 @@ abstract class Archive_Object extends Action {
 		//Check for display restrictions
 		if ($this->recordDriver instanceof BasicImageRecordDriver || $this->recordDriver instanceof LargeImageRecordDriver || $this->recordDriver instanceof BookDriver || $this->recordDriver instanceof PageRecordDriver || $this->recordDriver instanceof AudioRecordDriver || $this->recordDriver instanceof VideoRecordDriver) {
 			/** @var CollectionRecordDriver $collection */
-			$anonymousMasterDownload = true;
-			$verifiedMasterDownload = true;
+			$anonymousOriginalDownload = true;
+			$verifiedOriginalDownload = true;
 			$anonymousLcDownload = true;
 			$verifiedLcDownload = true;
 			foreach ($this->recordDriver->getRelatedCollections() as $collection) {
 				$collectionDriver = RecordDriverFactory::initRecordDriver($collection['object']);
-				if (!$collectionDriver->canAnonymousDownloadMaster()) {
-					$anonymousMasterDownload = false;
+				if (!$collectionDriver->canAnonymousDownloadOriginal()) {
+					$anonymousOriginalDownload = false;
 				}
-				if (!$collectionDriver->canVerifiedDownloadMaster()) {
-					$verifiedMasterDownload = false;
+				if (!$collectionDriver->canVerifiedDownloadOriginal()) {
+					$verifiedOriginalDownload = false;
 				}
 				if (!$collectionDriver->canAnonymousDownloadLC()) {
 					$anonymousLcDownload = false;
@@ -340,25 +340,25 @@ abstract class Archive_Object extends Action {
 			foreach ($viewingRestrictions as $viewingRestriction){
 				$restrictionLower = str_replace(' ', '', strtolower($viewingRestriction));
 				if ($restrictionLower == 'preventanonymousmasterdownload'){
-					$anonymousMasterDownload = false;
+					$anonymousOriginalDownload = false;
 				}
 				if ($restrictionLower == 'preventverifiedmasterdownload'){
-					$verifiedMasterDownload = false;
-					$anonymousMasterDownload = false;
+					$verifiedOriginalDownload = false;
+					$anonymousOriginalDownload = false;
 				}
-				if ($restrictionLower == 'anonymousmasterdownload'){
-					$anonymousMasterDownload = true;
-					$verifiedMasterDownload = true;
+				if ($restrictionLower == 'anonymousoriginaldownload'){
+					$anonymousOriginalDownload = true;
+					$verifiedOriginalDownload = true;
 				}
-				if ($restrictionLower == 'verifiedmasterdownload'){
-					$anonymousMasterDownload = true;
+				if ($restrictionLower == 'verifiedoriginaldownload'){
+					$anonymousOriginalDownload = true;
 				}
 			}
-			$interface->assign('anonymousMasterDownload', $anonymousMasterDownload);
-			if ($anonymousMasterDownload){
-				$verifiedMasterDownload = true;
+			$interface->assign('anonymousOriginalDownload', $anonymousOriginalDownload);
+			if ($anonymousOriginalDownload){
+				$verifiedOriginalDownload = true;
 			}
-			$interface->assign('verifiedMasterDownload', $verifiedMasterDownload);
+			$interface->assign('verifiedOriginalDownload', $verifiedOriginalDownload);
 			$interface->assign('anonymousLcDownload', $anonymousLcDownload);
 			if ($anonymousLcDownload){
 				$verifiedLcDownload = true;

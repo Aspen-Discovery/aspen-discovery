@@ -298,14 +298,6 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'message' => 'Volume level holds have not been implemented for this ILS.');
 	}
 
-	public function requestPinReset($patronBarcode)
-	{
-		return array(
-			'success' => false,
-			'error' => 'This functionality is not available in the ILS.',
-		);
-	}
-
 	public function completeFinePayment(User $patron, UserPayment $payment)
 	{
 		return [
@@ -335,5 +327,17 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS'
 		];
+	}
+
+	function getPasswordRecoveryTemplate(){
+		return null;
+	}
+
+	function processPasswordRecovery(){
+		return null;
+	}
+
+	function getEmailResetPinResultsTemplate(){
+		return null;
 	}
 }

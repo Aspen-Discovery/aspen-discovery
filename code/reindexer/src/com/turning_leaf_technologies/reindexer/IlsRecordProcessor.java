@@ -78,6 +78,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private HashSet<String> inLibraryUseOnlyFormats = new HashSet<>();
 	private HashSet<String> inLibraryUseOnlyStatuses = new HashSet<>();
 	private HashSet<String> nonHoldableFormats = new HashSet<>();
+	protected boolean suppressRecordsWithNoCollection = true;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);
@@ -1295,7 +1296,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (collectionSubfield != ' '){
 			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
 			if (collectionSubfieldValue == null){
-				return true;
+				if (this.suppressRecordsWithNoCollection) {
+					return true;
+				}
 			}else{
 				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()){
 					return true;

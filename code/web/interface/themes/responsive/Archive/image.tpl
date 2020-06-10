@@ -9,11 +9,11 @@
 		{if $canView}
 			<div class="main-project-image" oncontextmenu="return false;">
 				{* TODO: restrict access to original image *}
-				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
+				{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 					<a href="{$original_image}">
 				{/if}
 					<img src="{$large_image}" class="img-responsive" oncontextmenu="return false;">
-				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
+				{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 					</a>
 				{/if}
 			</div>
@@ -28,7 +28,7 @@
 				{elseif (!$loggedIn && $verifiedLcDownload)}
 					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">{translate text="Login to Download Large Image"}</a>
 				{/if}
-				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
+				{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">{translate text="Download Original Image"}</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
 					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">{translate text="Login to Download Original Image"}</a>

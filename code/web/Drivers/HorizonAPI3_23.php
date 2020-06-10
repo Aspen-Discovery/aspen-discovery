@@ -103,7 +103,10 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		}
 	}
 
-
+	function getEmailResetPinResultsTemplate()
+	{
+		return 'emailResetPinResults.tpl';
+	}
 
 	// Newer Horizon API version
 	function processEmailResetPinForm()
@@ -242,6 +245,6 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 
 	function getEmailResetPinTemplate()
 	{
-		return 'sirsiROAEmailResetPinLinkgotPasswordLink.tpl';
+		return 'sirsiROAEmailResetPinLink.tpl';
 	}
 }

@@ -3,20 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/.idea/dictionaries/mdnob.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/dictionaries/mdnob.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/menu.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/menu.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Events/EventsSpotlights.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Events/EventsSpotlight.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Events/LMLibraryCalendarSetting.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Events/LMLibraryCalendarSetting.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/WebBuilder/PortalCell.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/WebBuilder/PortalCell.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/WebBuilder/PortalPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/WebBuilder/PortalPage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/WebBuilder/PortalRow.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/WebBuilder/PortalRow.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/WebBuilder/StaffMember.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/WebBuilder/StaffMember.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/WebBuilder/WebBuilderMenu.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/WebBuilder/WebBuilderMenu.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/WebBuilder/WebResource.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/WebBuilder/WebResource.php" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -84,22 +70,6 @@
       <find>getListDisplayNameAndAuthorStmt</find>
       <find>sortable</find>
       <find>makeValue</find>
-      <find>loadTargetAudiences</find>
-      <find>my.</find>
-      <find>getLiteraryFormForLocation</find>
-      <find>max_heap_table_size</find>
-      <find>updateTranslationMap</find>
-      <find>volume</find>
-      <find>Error moving list entries</find>
-      <find>moveGroupedWorkEnrichment</find>
-      <find>updateUserListEntriesStmt</find>
-      <find>fetch_sideload</find>
-      <find>moveSideload</find>
-      <find>fetch_lyn</find>
-      <find>Aspen Cleanup</find>
-      <find>sideload.sh</find>
-      <find>Hoopla.sh</find>
-      <find>pika</find>
     </findStrings>
     <replaceStrings>
       <replace>Rbdigital</replace>
@@ -138,41 +108,22 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java" />
-        <option value="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java" />
-        <option value="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" />
         <option value="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexerMain.java" />
         <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RBdigitalSetting.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/RbdigitalScope.java" />
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java" />
         <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalTitle.java" />
         <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExtractLogEntry.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java" />
         <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RBdigitalMagazineIssue.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java" />
-        <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java" />
         <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" />
         <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" />
         <option value="$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/CronProcessLogEntry.java" />
         <option value="$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/reading_history/UpdateReadingHistory.java" />
         <option value="$PROJECT_DIR$/../hoopla_export/src/com/turning_leaf_technologies/hoopla/HooplaExtractLogEntry.java" />
-        <option value="$PROJECT_DIR$/../hoopla_export/src/com/turning_leaf_technologies/hoopla/HooplaExportMain.java" />
-        <option value="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java" />
-        <option value="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonKokaRecordProcessor.java" />
-        <option value="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArTitleIsbnsHandler.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArTitlesHandler.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java" />
-        <option value="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java" />
-        <option value="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryAvailabilityHandler.java" />
-        <option value="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryEventHandler.java" />
-        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/schema.xml" />
-        <option value="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListSolr.java" />
-        <option value="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexer.java" />
-        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/lists/conf/schema.xml" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonKohaRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java" />
@@ -212,45 +163,7 @@
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
-          <expand>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cron" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="record_grouping" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="record_grouping" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="sites" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="sites" type="462c0819:PsiDirectoryNode" />
-              <item name="nashville.production" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="web_indexer" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="web_indexer" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="web_indexer" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="website_indexer" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
+          <expand />
           <select />
         </subPane>
       </pane>
@@ -321,7 +234,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.OverDrive Export">
+  <component name="RunManager" selected="Application.Koha Export">
     <configuration name="CARLX Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.carlx.CarlXExportMain" />
       <module name="carlx_export" />
@@ -412,6 +325,15 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Reindexer - Is Nightly Index Running" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
+      <module name="reindexer" />
+      <option name="PROGRAM_PARAMETERS" value="model.localhost isNightlyIndexRunning" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Reindexer Full" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
@@ -474,6 +396,7 @@
       <item itemvalue="Application.OAI Indexer" />
       <item itemvalue="Application.OverDrive Export" />
       <item itemvalue="Application.Rbdigital Export" />
+      <item itemvalue="Application.Reindexer - Is Nightly Index Running" />
       <item itemvalue="Application.Reindexer Full" />
       <item itemvalue="Application.Reindexer Single Work" />
       <item itemvalue="Application.Side Load Processing" />
@@ -520,7 +443,7 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49261746" weight="0.27620396" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4966443" weight="0.3186969" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" weight="0.34135976" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" visible="true" weight="0.34135976" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3286119" />
@@ -773,13 +696,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="149">
-          <caret line="1374" column="54" selection-start-line="1374" selection-start-column="54" selection-end-line="1374" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
@@ -858,13 +774,6 @@
             <element signature="e#11527#11528#0" expanded="true" />
             <element signature="e#11553#11554#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="129">
-          <caret line="487" column="100" selection-start-line="487" selection-start-column="96" selection-end-line="487" selection-end-column="100" />
         </state>
       </provider>
     </entry>

@@ -163,9 +163,4 @@ class Sierra extends Millennium{
 			return 'none';
 		}
 	}
-
-	function getEmailResetPinTemplate()
-	{
-		return 'requestPinReset.tpl';
-	}
 }

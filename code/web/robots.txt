@@ -10,3 +10,6 @@ Disallow: /
 
 User-agent: SemrushBot-SA
 Disallow: /
+
+User-Agent: AhrefsBot
+Disallow: /

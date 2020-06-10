@@ -664,6 +664,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'superCatalogerRole' => array(
+					'title' => 'Create superCataloger role',
+					'description' => 'Create cataloging role to handle additional actions typically reserved for consortial offices, etc.',
+					'sql' => array(
+						"INSERT INTO `roles` (`name`, `description`) VALUES ('superCataloger', 'Allows user to perform cataloging activities that require advanced knowledge.')",
+					),
+				),
+
 				'materialRequestsRole' => array(
 					'title' => 'Create library material requests role',
 					'description' => 'Create library materials request role to handle material requests for a specific library system.',

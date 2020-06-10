@@ -58,7 +58,7 @@ class OverDrive_Dashboard extends Admin_Admin
     }
 
     function getAllowableRoles(){
-        return array('opacAdmin');
+        return array('opacAdmin', 'cataloger', 'superCataloger');
     }
 
     /**

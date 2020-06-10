@@ -1370,7 +1370,17 @@ class Millennium extends AbstractIlsDriver
 		return $messages;
 	}
 
-	public function requestPinReset($barcode){
+	public function getEmailResetPinTemplate(){
+		return 'requestPinReset.tpl';
+	}
+
+	public function getEmailResetPinResultsTemplate(){
+		return 'requestPinResetResults.tpl';
+	}
+
+	public function processEmailResetPinForm(){
+		$barcode = strip_tags($_REQUEST['barcode']);
+
 		//Go to the pinreset page
 		$pinResetUrl = $this->getVendorOpacUrl() . '/pinreset';
 		$cookieJar = tempnam ("/tmp", "CURLCOOKIE");

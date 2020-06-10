@@ -152,9 +152,6 @@ public class CarlXExportMain {
 				logEntry.setFinished();
 
 				try{
-					//Close the connection
-					dbConn.close();
-
 					if (carlXInstanceInformation.carlXConn != null){
 						carlXInstanceInformation.carlXConn.close();
 					}
@@ -174,14 +171,22 @@ public class CarlXExportMain {
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase(dbConn);
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase(dbConn);
 				break;
 			}
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase(dbConn);
 				break;
 			}
+
+			disconnectDatabase(dbConn);
 
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
@@ -206,6 +211,18 @@ public class CarlXExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void disconnectDatabase(Connection dbConn) {
+		try {
+			//Close the connection
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		} catch (Exception e) {
+			System.out.println("Error closing aspen connection: " + e.toString());
+			e.printStackTrace();
+		}
 	}
 
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {

@@ -25,7 +25,7 @@
 			<tr><th>Series Name</th><td>{$specifiedDisplayInfo->seriesName}</td></tr>
 			<tr><th>Series Display Order</th><td>{if $specifiedDisplayInfo->seriesDisplayOrder != 0}{$specifiedDisplayInfo->seriesDisplayOrder}{/if}</td></tr>
 		</table>
-	    {if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+	    {if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 		    <tr><th></th><td><a onclick="AspenDiscovery.GroupedWork.deleteDisplayInfo('{$recordDriver->getPermanentId()}')" class="btn btn-danger btn-sm">Delete</a></td></tr>
 	    {/if}
 	</div>
@@ -35,13 +35,13 @@
 	<h4>Alternate Titles and Authors</h4>
 	<table class="table-striped table table-condensed notranslate">
 		<thead>
-		<tr><th>Title</th><th>Author</th>{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}<th>Actions</th>{/if}</tr>
+		<tr><th>Title</th><th>Author</th>{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}<th>Actions</th>{/if}</tr>
 		</thead>
 		{foreach from=$alternateTitles item="alternateTitle"}
 			<tr id="alternateTitle{$alternateTitle->id}">
 				<td>{$alternateTitle->alternateTitle}</td>
 				<td>{$alternateTitle->alternateAuthor}</td>
-				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					<td><a onclick="AspenDiscovery.GroupedWork.deleteAlternateTitle('{$alternateTitle->id}')" class="btn btn-danger btn-sm">Delete</a></td>
 				{/if}
 			</tr>

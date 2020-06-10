@@ -66,7 +66,7 @@ class ILS_IndexingProfiles extends ObjectEditor {
 		return IndexingProfile::getObjectStructure();
 	}
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return array('opacAdmin', 'superCataloger');
 	}
 	function getPrimaryKeyColumn(){
 		return 'id';
@@ -75,12 +75,10 @@ class ILS_IndexingProfiles extends ObjectEditor {
 		return 'id';
 	}
 	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
+		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('superCataloger');
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
+		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('superCataloger');
 	}
 
 	function getInstructions(){

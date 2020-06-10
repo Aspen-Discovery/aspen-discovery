@@ -32,6 +32,6 @@ class Websites_IndexingLog extends Admin_IndexingLog
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
 	}
 }

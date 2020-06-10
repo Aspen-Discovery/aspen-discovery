@@ -76,10 +76,10 @@ class ExternalReviews
 	 * This method is responsible for connecting to Syndetics and abstracting
 	 * reviews from multiple providers.
 	 *
-	 * It first queries the master url for the ISBN entry seeking a review URL.
+	 * It first queries the url for the primary ISBN entry seeking a review URL.
 	 * If a review URL is found, the script will then use HTTP request to
 	 * retrieve the script. The script will then parse the review according to
-	 * US MARC (I believe). It will provide a link to the URL master HTML page
+	 * US MARC (I believe). It will provide a link to the primary URL HTML page
 	 * for more information.
 	 * Configuration:  Sources are processed in order - refer to $sourceList.
 	 * If your library prefers one reviewer over another change the order.

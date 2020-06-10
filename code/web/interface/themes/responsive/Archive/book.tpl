@@ -10,7 +10,7 @@
 			<div id="main-content" class="col-xs-12 text-center">
 				{if $canView}
 					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
-						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
+						{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 						<label class="btn btn-group-small btn-default">
 							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="return AspenDiscovery.Archive.handleBookClick('{$pid}', AspenDiscovery.Archive.activeBookPage, 'pdf');">
 							{*TODO: set bookPID*}
@@ -57,9 +57,9 @@
 			<a class="btn btn-default" href="/Archive/{$activePage}/DownloadPDF" id="downloadPageAsPDF">Download Page As PDF</a>
 			*}
 			<br/>
-			{if $hasPdf && ($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
+			{if $hasPdf && ($anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload))}
 				<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">{translate text="Download PDF"}</a>
-			{elseif ($hasPdf && !$loggedIn && $verifiedMasterDownload)}
+			{elseif ($hasPdf && !$loggedIn && $verifiedOriginalDownload)}
 				<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">{translate text="Login to Download PDF"}</a>
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
@@ -122,7 +122,7 @@
 <script src="/js/openseadragon/djtilesource.js" ></script>
 {if $canView}
 <script type="text/javascript">
-	{if !($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
+	{if !($anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload))}
 		AspenDiscovery.Archive.allowPDFView = false;
 	{/if}
 	{assign var=pageCounter value=1}
@@ -130,14 +130,14 @@
 		AspenDiscovery.Archive.pageDetails['{$section.pid}'] = {ldelim}
 			pid: '{$section.pid}',
 			title: "{$section.title|escape:javascript}",
-			pdf: {if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}'{$section.pdf}'{else}''{/if}
+			pdf: {if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}'{$section.pdf}'{else}''{/if}
 		{rdelim};
 
 		{foreach from=$section.pages item=page}
 			AspenDiscovery.Archive.pageDetails['{$page.pid}'] = {ldelim}
 				pid: '{$page.pid}',
 				title: 'Page {$pageCounter}',
-				pdf: {if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}'{$page.pdf}'{else}''{/if},
+				pdf: {if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}'{$page.pdf}'{else}''{/if},
 				jp2: '{$page.jp2}',
 				transcript: '{$page.transcript}',
 				index: '{$pageCounter}'

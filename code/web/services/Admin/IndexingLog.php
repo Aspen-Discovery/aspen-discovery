@@ -49,7 +49,7 @@ abstract class Admin_IndexingLog extends Admin_Admin
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
 	}
 
 	abstract function getIndexLogEntryObject() : BaseLogEntry;

@@ -236,15 +236,16 @@ if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserA
 	}
 }
 
+$systemMessage = '';
+if ($offlineMode){
+	$systemMessage = "<p class='alert alert-warning'>" . translate(['text'=>'offline_notice', 'defaultText'=>"<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."]) . "</p>";
+	$interface->assign('systemMessage', $systemMessage);
+}
 //Set System Message after translator has been setup
 if ($configArray['System']['systemMessage']){
-	$interface->assign('systemMessage', translate($configArray['System']['systemMessage']));
-}else if ($offlineMode){
-	$interface->assign('systemMessage', "<p class='alert alert-warning'>" . translate(['text'=>'offline_notice', 'defaultText'=>"<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."]) . "</p>");
-}else{
-	if ($library && strlen($library->systemMessage) > 0){
-		$interface->assign('systemMessage', translate($library->systemMessage));
-	}
+	$interface->assign('systemMessage', $systemMessage . translate($configArray['System']['systemMessage']));
+}else if (strlen($library->systemMessage) > 0){
+	$interface->assign('systemMessage', $systemMessage . translate($library->systemMessage));
 }
 
 $deviceName = get_device_name();

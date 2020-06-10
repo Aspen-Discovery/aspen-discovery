@@ -36,6 +36,7 @@ class Memcache
 					if ($cachedValue->expirationTime != 0 && $cachedValue->expirationTime < time()) {
 						return false;
 					} else {
+						/** @noinspection PhpUnnecessaryLocalVariableInspection */
 						$unSerializedValue = unserialize($cachedValue->value);
 						return $unSerializedValue;
 					}
@@ -68,8 +69,10 @@ class Memcache
 					}
 
 					if ($isNew) {
+						/** @noinspection PhpUnusedLocalVariableInspection */
 						$result = $cachedValue->insert();
 					} else {
+						/** @noinspection PhpUnusedLocalVariableInspection */
 						$result = $cachedValue->update();
 					}
 				} catch (Exception $e) {
@@ -106,6 +109,7 @@ class Memcache
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	public function deleteKeysStartingWith($name){
 		if ($this->enableDbCache){
 			try {

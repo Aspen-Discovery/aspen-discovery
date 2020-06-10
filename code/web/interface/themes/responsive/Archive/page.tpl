@@ -10,7 +10,7 @@
 			<div id="main-content" class="col-xs-12 text-center">
 				{if $canView}
 					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
-						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
+						{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 						<label class="btn btn-group-small btn-default">
 							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="AspenDiscovery.Archive.changeActiveBookViewer('pdf', AspenDiscovery.Archive.activeBookPage);">
 							View As PDF
@@ -66,13 +66,13 @@
 <script src="/js/openseadragon/djtilesource.js" ></script>
 
 <script type="text/javascript">
-	{if !($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
+	{if !($anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload))}
 	AspenDiscovery.Archive.allowPDFView = false;
 	{/if}
 	{assign var=pageCounter value=1}
 	AspenDiscovery.Archive.pageDetails['{$page.pid}'] = {ldelim}
 		pid: '{$page.pid}',
-		pdf: {if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}'{$page.pdf}'{else}''{/if},
+		pdf: {if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}'{$page.pdf}'{else}''{/if},
 		jp2: '{$page.jp2}',
 		transcript: '{$page.transcript}'
 	{rdelim};

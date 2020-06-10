@@ -23,6 +23,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		this (indexer, dbConn, indexingProfileRS, logger, fullReindex, null);
+		suppressRecordsWithNoCollection = false;
 	}
 
 	private Connection connectToKohaDB(Connection dbConn, Logger logger) {

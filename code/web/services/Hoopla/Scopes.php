@@ -38,13 +38,13 @@ class Hoopla_Scopes extends ObjectEditor
 		return 'id';
 	}
 	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
 	}
 	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging');
+		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger');
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging');
+		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger');
 	}
 	function getAdditionalObjectActions($existingObject){
 		return [];

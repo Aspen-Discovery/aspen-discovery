@@ -3,7 +3,7 @@
 require_once ROOT_DIR . '/Drivers/HorizonAPI.php';
 require_once ROOT_DIR . '/sys/Account/User.php';
 
-abstract class SirsiDynixROA extends HorizonAPI
+class SirsiDynixROA extends HorizonAPI
 {
 	//TODO: Additional caching of sessionIds by patron
 	private static $sessionIdsForUsers = array();
@@ -1649,6 +1649,11 @@ abstract class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
+	function getEmailResetPinResultsTemplate()
+	{
+		return 'emailResetPinResults.tpl';
+	}
+
 	function processEmailResetPinForm()
 	{
 		$barcode = $_REQUEST['barcode'];
@@ -1870,6 +1875,36 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 	function getEmailResetPinTemplate()
 	{
-		return 'sirsiROAEmailResetPinLinkgotPasswordLink.tpl';
+		return 'sirsiROAEmailResetPinLink.tpl';
+	}
+
+	function translateFineMessageType($code){
+		switch ($code){
+
+			default:
+				return $code;
+		}
+	}
+
+	public function translateLocation($locationCode){
+		$locationCode = strtoupper($locationCode);
+		$locationMap = array(
+
+		);
+		return isset($locationMap[$locationCode]) ? $locationMap[$locationCode] : "Unknown" ;
+	}
+	public function translateCollection($collectionCode){
+		$collectionCode = strtoupper($collectionCode);
+		$collectionMap = array(
+
+		);
+		return isset($collectionMap[$collectionCode]) ? $collectionMap[$collectionCode] : "Unknown $collectionCode";
+	}
+	public function translateStatus($statusCode){
+		$statusCode = strtolower($statusCode);
+		$statusMap = array(
+
+		);
+		return isset($statusMap[$statusCode]) ? $statusMap[$statusCode] : 'Unknown (' . $statusCode . ')';
 	}
 }

@@ -28,7 +28,7 @@ class UserAPI extends Action
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if ($method != 'getCatalogConnection' && method_exists($this, $method)) {
+		if ($method != 'getCatalogConnection' && $method != 'getUserForApiCall' && method_exists($this, $method)) {
 			$result = [
 				'result' => $this->$method()
 			];
@@ -384,8 +384,7 @@ class UserAPI extends Action
 	 * <li>holds - information about each hold including when it was placed, when it expires, and whether or not it is available for pickup.  Holds are broken into two sections: available and unavailable.  Available holds are ready for pickup.</li>
 	 * <li>Id - the record/bib id of the title being held</li>
 	 * <li>location - The location where the title will be picked up</li>
-	 * <li>expire - the date the hold will expire if it is unavailable or the date that it must be picked up if the hold is available</li>
-	 * <li>expireTime - the expire information in number of days since January 1, 1970 </li>
+	 * <li>expire - the timestamp the hold will expire if it is unavailable or the date that it must be picked up if the hold is available</li>
 	 * <li>create - the date the hold was originally placed</li>
 	 * <li>createTime - the create information in number of days since January 1, 1970</li>
 	 * <li>reactivate - The date the hold will be reactivated if the hold is suspended</li>
@@ -413,8 +412,7 @@ class UserAPI extends Action
 	 *            "barcode" : "33025016545293",
 	 *            "create" : "2011-12-20 00:00:00",
 	 *            "createTime" : 15328,
-	 *            "expire" : "[No expiration date]",
-	 *            "expireTime" : null,
+	 *            "expire" : 15429,
 	 *            "format" : "Book",
 	 *            "format_category" : [ "Books" ],
 	 *            "frozen" : false,
@@ -440,8 +438,7 @@ class UserAPI extends Action
 	 *            "barcode" : "33025025084185",
 	 *            "create" : "2011-09-27 00:00:00",
 	 *            "createTime" : 15244,
-	 *            "expire" : "2012-01-09 00:00:00",
-	 *            "expireTime" : 15348,
+	 *            "expire" : 15429,
 	 *            "format" : "Book",
 	 *            "format_category" : [ "Books" ],
 	 *            "frozen" : false,
@@ -469,15 +466,18 @@ class UserAPI extends Action
 	 */
 	function getPatronHolds()
 	{
-		list($username, $password) = $this->loadUsernameAndPassword();
-
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)) {
-			$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
-			$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
-			return array('success' => true, 'holds' => $allHolds);
+		global $offlineMode;
+		if ($offlineMode) {
+			return array('success' => false, 'message' => 'Circulation system is offline');
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			$user = $this->getUserForApiCall();
+			if ($user && !($user instanceof AspenError)) {
+				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
+				$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
+				return array('success' => true, 'holds' => $allHolds);
+			} else {
+				return array('success' => false, 'message' => 'Login unsuccessful');
+			}
 		}
 	}
 
@@ -696,12 +696,29 @@ class UserAPI extends Action
 	 */
 	function getPatronFines()
 	{
-		list($username, $password) = $this->loadUsernameAndPassword();
 		$includeMessages = isset($_REQUEST['includeMessages']) ? $_REQUEST['includeMessages'] : false;
-		$user = UserAccount::validateAccount($username, $password);
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$fines = $this->getCatalogConnection()->getFines($user, $includeMessages);
-			return array('success' => true, 'fines' => $fines);
+			$totalOwed = 0;
+			foreach ($fines as &$fine) {
+				if (isset($fine['amountOutstandingVal'])) {
+					$totalOwed += $fine['amountOutstandingVal'];
+				}elseif (isset($fine['amountVal'])) {
+					$totalOwed += $fine['amountVal'];
+				}elseif (isset($fine['amount'])) {
+					$totalOwed += $fine['amount'];
+				}
+				if (array_key_exists('amount', $fine) && array_key_exists('amountOutstanding', $fine)){
+					$fine['amountOriginal'] = $fine['amount'];
+					$fine['amount'] = $fine['amountOutstanding'];
+				}
+				if (array_key_exists('amountVal', $fine) && array_key_exists('amountOutstandingVal', $fine)){
+					$fine['amountOriginalVal'] = $fine['amountVal'];
+					$fine['amountVal'] = $fine['amountOutstandingVal'];
+				}
+			}
+			return array('success' => true, 'fines' => $fines, 'totalOwed' => $totalOwed);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -777,8 +794,7 @@ class UserAPI extends Action
 		if ($offlineMode) {
 			return array('success' => false, 'message' => 'Circulation system is offline');
 		} else {
-			list($username, $password) = $this->loadUsernameAndPassword();
-			$user = UserAccount::validateAccount($username, $password);
+			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
 				$allCheckedOut = $user->getCheckouts(false, $source);
@@ -1668,5 +1684,44 @@ class UserAPI extends Action
 			$results['message'] = 'No patron id was provided';
 		}
 		return $results;
+	}
+
+	function getUserByBarcode(){
+		$results = array('success' => false, 'message' => 'Unknown error loading patronId');
+		if (isset($_REQUEST['username'])){
+			$user = UserAccount::getUserByBarcode($_REQUEST['username']);
+			if ($user->find(true)){
+				$results = array('success' => true, 'id' => $user->id, 'patronId' => $user->username, 'displayName' => $user->displayName);
+			}else{
+				$results['message'] = 'Invalid Patron';
+			}
+		}else{
+			$results['message'] = 'No barcode was provided';
+		}
+		return $results;
+	}
+
+	/**
+	 * @return bool|false|User
+	 */
+	protected function getUserForApiCall()
+	{
+		if (isset($_REQUEST['patronId'])) {
+			$user = new User();
+			$user->username = $_REQUEST['patronId'];
+			if (!$user->find(true)) {
+				$user = false;
+			}
+		} else if (isset($_REQUEST['id'])) {
+			$user = new User();
+			$user->id = $_REQUEST['id'];
+			if (!$user->find(true)) {
+				$user = false;
+			}
+		} else {
+			list($username, $password) = $this->loadUsernameAndPassword();
+			$user = UserAccount::validateAccount($username, $password);
+		}
+		return $user;
 	}
 }
