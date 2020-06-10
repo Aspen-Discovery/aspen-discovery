@@ -348,7 +348,7 @@ class BookCoverProcessor{
 		}
 		$this->reload = isset($_GET['reload']);
 		// Sanitize incoming parameters to avoid filesystem attacks.  We'll make sure the
-		// provided size matches a whitelist, and we'll strip illegal characters from the
+		// provided size matches an accepted list, and we'll strip illegal characters from the
 		// ISBN.
 		$this->size = isset($_GET['size']) ? $_GET['size'] : 'small';
 		if (!in_array($this->size, array('small', 'medium', 'large'))) {

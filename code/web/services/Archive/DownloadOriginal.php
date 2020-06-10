@@ -6,10 +6,10 @@ class Archive_DownloadOriginal extends Archive_Object{
 		global $interface;
 		global $logger;
 		$this->loadArchiveObjectData();
-		$anonymousMasterDownload = $interface->getVariable('anonymousMasterDownload');
-		$verifiedMasterDownload = $interface->getVariable('verifiedMasterDownload');
+		$anonymousOriginalDownload = $interface->getVariable('anonymousOriginalDownload');
+		$verifiedOriginalDownload = $interface->getVariable('verifiedOriginalDownload');
 
-		if ($anonymousMasterDownload || (UserAccount::isLoggedIn() && $verifiedMasterDownload)){
+		if ($anonymousOriginalDownload || (UserAccount::isLoggedIn() && $verifiedOriginalDownload)){
 			$expires = 60*60*24*14;  //expire the cover in 2 weeks on the client side
 			header("Cache-Control: maxage=".$expires);
 			header('Expires: ' . gmdate('D, d M Y H:i:s', time()+$expires) . ' GMT');

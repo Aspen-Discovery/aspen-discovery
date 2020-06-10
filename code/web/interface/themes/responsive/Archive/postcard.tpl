@@ -30,7 +30,7 @@
 				{elseif (!$loggedIn && $verifiedLcDownload)}
 					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Login to Download Large Image</a>
 				{/if}
-				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
+				{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original Image</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
 					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Login to Download Original Image</a>

@@ -7,17 +7,17 @@ class CollectionRecordDriver extends IslandoraRecordDriver {
 		return "Exhibit";
 	}
 
-	private $anonymousMasterDownload = null;
-	private $verifiedMasterDownload = null;
+	private $anonymousOriginalDownload = null;
+	private $verifiedOriginalDownload = null;
 	private $anonymousLcDownload = null;
 	private $verifiedLcDownload = null;
-	public function canAnonymousDownloadMaster() {
+	public function canAnonymousDownloadOriginal() {
 		$this->loadDownloadRestrictions();
-		return $this->anonymousMasterDownload;
+		return $this->anonymousOriginalDownload;
 	}
-	public function canVerifiedDownloadMaster() {
+	public function canVerifiedDownloadOriginal() {
 		$this->loadDownloadRestrictions();
-		return $this->verifiedMasterDownload;
+		return $this->verifiedOriginalDownload;
 	}
 
 	public function canAnonymousDownloadLC() {
@@ -30,11 +30,11 @@ class CollectionRecordDriver extends IslandoraRecordDriver {
 	}
 
 	public function loadDownloadRestrictions(){
-		if ($this->anonymousMasterDownload != null){
+		if ($this->anonymousOriginalDownload != null){
 			return;
 		}
-		$this->anonymousMasterDownload = $this->getModsValue('anonymousMasterDownload', 'marmot') != 'no';
-		$this->verifiedMasterDownload = $this->getModsValue('verifiedMasterDownload', 'marmot') != 'no';
+		$this->anonymousOriginalDownload = $this->getModsValue('anonymousMasterDownload', 'marmot') != 'no';
+		$this->verifiedOriginalDownload = $this->getModsValue('verifiedMasterDownload', 'marmot') != 'no';
 		$this->anonymousLcDownload = $this->getModsValue('anonymousLcDownload', 'marmot') != 'no';
 		$this->verifiedLcDownload = $this->getModsValue('verifiedLcDownload', 'marmot') != 'no';
 	}

@@ -1010,7 +1010,7 @@ class ExploreMore {
 		);
 
 		if (strlen($searchTerm) > 0) {
-			//Blacklist any records that we have specific links to
+			//Do not include any records that we have specific links to
 			$recordsToAvoid = '';
 			foreach ($directlyRelatedRecords as $record){
 				if (strlen($recordsToAvoid) > 0){
