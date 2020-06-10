@@ -1096,9 +1096,9 @@ class Koha extends AbstractIlsDriver
 			$curHold['user'] = $patron->getNameAndLibraryLabel();
 
 			if (!isset($curHold['status']) || !preg_match('/^Ready to Pickup.*/i', $curHold['status'])) {
-				$holds['unavailable'][] = $curHold;
+				$holds['unavailable'][$curHold['holdSource'] . $curHold['cancelId']. $curHold['user']] = $curHold;
 			} else {
-				$holds['available'][] = $curHold;
+				$holds['available'][$curHold['holdSource'] . $curHold['cancelId']. $curHold['user']] = $curHold;
 			}
 		}
 

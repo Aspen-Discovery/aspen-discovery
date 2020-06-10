@@ -1041,7 +1041,6 @@ class User extends DataObject
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 					$allHolds = array_merge_recursive($allHolds, $user->getHolds(false, $unavailableSort, $availableSort, $source));
 				}
