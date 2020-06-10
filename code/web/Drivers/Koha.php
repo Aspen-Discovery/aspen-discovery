@@ -2532,6 +2532,13 @@ class Koha extends AbstractIlsDriver
 			'success' => false,
 			'message' => 'Unknown error completing fine payment'
 		];
+
+		$kohaVersion = $this->getKohaVersion();
+		$creditType = 'payment';
+		if ((float)$kohaVersion >= 19.11){
+			$creditType = 'PAYMENT';
+		}
+
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
@@ -2566,7 +2573,7 @@ class Koha extends AbstractIlsDriver
 				$postVariables = [
 					'account_lines_ids' => $accountLinesPaid,
 					'amount' => (float)$fullyPaidTotal,
-					'credit_type' => 'payment',
+					'credit_type' => $creditType,
 					'payment_type' => $payment->paymentType,
 					'description' => 'Paid Online via Aspen Discovery',
 					'note' => $payment->paymentType,
@@ -2592,7 +2599,7 @@ class Koha extends AbstractIlsDriver
 					$postVariables = [
 						'account_lines_ids' => [(int)$paymentInfo[0]],
 						'amount' => (float)$paymentInfo[1],
-						'credit_type' => 'payment',
+						'credit_type' => $creditType,
 						'payment_type' => $payment->paymentType,
 						'description' => 'Paid Online via Aspen Discovery',
 						'note' => $payment->paymentType,
@@ -2879,5 +2886,18 @@ class Koha extends AbstractIlsDriver
 		} else {
 			return ['success' => true, 'message' => 'Your password was updated successfully.'];
 		}
+	}
+
+	private function getKohaVersion()
+	{
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$sql = "SELECT value FROM systempreferences WHERE variable='Version';";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$kohaVersion = '';
+		while ($curRow = $results->fetch_assoc()) {
+			$kohaVersion = $curRow['value'];
+		}
+		return $kohaVersion;
 	}
 }
