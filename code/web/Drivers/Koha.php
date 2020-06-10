@@ -1033,7 +1033,12 @@ class Koha extends AbstractIlsDriver
 					$curHold['volume'] = $volumeInfo->displayLabel;
 				}
 			}
-			$curHold['create'] = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
+			if (strpos($curRow['reservedate'], ':') > 0){
+				$curHold['create'] = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
+			}else{
+				$curHold['create'] = date_parse_from_format('Y-m-d', $curRow['reservedate']);
+			}
+
 			if (!empty($curRow['expirationdate'])) {
 				$dateTime = date_create_from_format('Y-m-d', $curRow['expirationdate']);
 				$curHold['expire'] = $dateTime->getTimestamp();
@@ -1075,6 +1080,7 @@ class Koha extends AbstractIlsDriver
 					$curHold['groupedWorkId'] = $recordDriver->getPermanentId();
 					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
 					$curHold['format'] = $recordDriver->getFormat();
+					$curHold['author'] = $recordDriver->getPrimaryAuthor();
 					$curHold['isbn'] = $recordDriver->getCleanISBN();
 					$curHold['upc'] = $recordDriver->getCleanUPC();
 					$curHold['format_category'] = $recordDriver->getFormatCategory();
@@ -2474,7 +2480,6 @@ class Koha extends AbstractIlsDriver
 
 			//Get the csr token
 			$updatePage = $this->getKohaPage($updateMessageUrl);
-			$csr_token = '';
 			if (preg_match('%<input type="hidden" name="csrf_token" value="(.*?)" />%s', $updatePage, $matches)) {
 				$getParams[] = 'csrf_token='. $matches[1];
 			}
@@ -2541,6 +2546,8 @@ class Koha extends AbstractIlsDriver
 					$partialPayments[] = $accountLineInfo;
 					$fullyPaidTotal -= $accountLineInfo[1];
 					unset($accountLinesPaid[$index]);
+				}else{
+					$accountLinesPaid[$index] = (int)$accountLinePaid;
 				}
 			}
 
@@ -2558,7 +2565,7 @@ class Koha extends AbstractIlsDriver
 			if (count($accountLinesPaid) > 0) {
 				$postVariables = [
 					'account_lines_ids' => $accountLinesPaid,
-					'amount' => $fullyPaidTotal,
+					'amount' => (float)$fullyPaidTotal,
 					'credit_type' => 'payment',
 					'payment_type' => $payment->paymentType,
 					'description' => 'Paid Online via Aspen Discovery',
@@ -2583,8 +2590,8 @@ class Koha extends AbstractIlsDriver
 			if (count($partialPayments) > 0){
 				foreach ($partialPayments as $paymentInfo){
 					$postVariables = [
-						'account_lines_ids' => [$paymentInfo[0]],
-						'amount' => $paymentInfo[1],
+						'account_lines_ids' => [(int)$paymentInfo[0]],
+						'amount' => (float)$paymentInfo[1],
 						'credit_type' => 'payment',
 						'payment_type' => $payment->paymentType,
 						'description' => 'Paid Online via Aspen Discovery',
@@ -2872,9 +2879,5 @@ class Koha extends AbstractIlsDriver
 		} else {
 			return ['success' => true, 'message' => 'Your password was updated successfully.'];
 		}
-	}
-
-	private function isPasswordRecoveryKeyValid(){
-
 	}
 }

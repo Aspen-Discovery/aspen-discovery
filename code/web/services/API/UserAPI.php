@@ -384,8 +384,7 @@ class UserAPI extends Action
 	 * <li>holds - information about each hold including when it was placed, when it expires, and whether or not it is available for pickup.  Holds are broken into two sections: available and unavailable.  Available holds are ready for pickup.</li>
 	 * <li>Id - the record/bib id of the title being held</li>
 	 * <li>location - The location where the title will be picked up</li>
-	 * <li>expire - the date the hold will expire if it is unavailable or the date that it must be picked up if the hold is available</li>
-	 * <li>expireTime - the expire information in number of days since January 1, 1970 </li>
+	 * <li>expire - the timestamp the hold will expire if it is unavailable or the date that it must be picked up if the hold is available</li>
 	 * <li>create - the date the hold was originally placed</li>
 	 * <li>createTime - the create information in number of days since January 1, 1970</li>
 	 * <li>reactivate - The date the hold will be reactivated if the hold is suspended</li>
@@ -413,8 +412,7 @@ class UserAPI extends Action
 	 *            "barcode" : "33025016545293",
 	 *            "create" : "2011-12-20 00:00:00",
 	 *            "createTime" : 15328,
-	 *            "expire" : "[No expiration date]",
-	 *            "expireTime" : null,
+	 *            "expire" : 15429,
 	 *            "format" : "Book",
 	 *            "format_category" : [ "Books" ],
 	 *            "frozen" : false,
@@ -440,8 +438,7 @@ class UserAPI extends Action
 	 *            "barcode" : "33025025084185",
 	 *            "create" : "2011-09-27 00:00:00",
 	 *            "createTime" : 15244,
-	 *            "expire" : "2012-01-09 00:00:00",
-	 *            "expireTime" : 15348,
+	 *            "expire" : 15429,
 	 *            "format" : "Book",
 	 *            "format_category" : [ "Books" ],
 	 *            "frozen" : false,
