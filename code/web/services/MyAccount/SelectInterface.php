@@ -13,7 +13,7 @@ class MyAccount_SelectInterface extends Action{
 			$libraries[$library->libraryId] = array(
 				'id' => $library->libraryId,
 				'displayName' => $library->displayName,
-				'subdomain' => $library->subdomain,
+				'library' => clone $library,
 			);
 		}
 		$interface->assign('libraries', $libraries);
@@ -43,18 +43,24 @@ class MyAccount_SelectInterface extends Action{
 		}
 		if ($redirectLibrary != null){
 			$logger->log("Selected library $redirectLibrary", Logger::LOG_DEBUG);
-			$selectedLibrary = $libraries[$redirectLibrary];
-			global $configArray;
-			$baseUrl = $configArray['Site']['url'];
-			$urlPortions = explode('://', $baseUrl);
-			//Get rid of extra portions of the url
-			$subdomain = $selectedLibrary['subdomain'];
-			if (strpos($urlPortions[1], 'opac2') !== false){
-				$urlPortions[1] = str_replace('opac2.', '', $urlPortions[1]);
-				$subdomain .= '2';
+			/** @var Library $selectedLibrary */
+			$selectedLibrary = $libraries[$redirectLibrary]['library'];
+			if (!empty($selectedLibrary->baseUrl)){
+				$baseUrl = $selectedLibrary->baseUrl;
+			}else{
+				global $configArray;
+				$baseUrl = $configArray['Site']['url'];
+				$urlPortions = explode('://', $baseUrl);
+				//Get rid of extra portions of the url
+				$subdomain = $selectedLibrary['subdomain'];
+				if (strpos($urlPortions[1], 'opac2') !== false){
+					$urlPortions[1] = str_replace('opac2.', '', $urlPortions[1]);
+					$subdomain .= '2';
+				}
+				$urlPortions[1] = str_replace('opac.', '', $urlPortions[1]);
+				$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
 			}
-			$urlPortions[1] = str_replace('opac.', '', $urlPortions[1]);
-			$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
+
 			if ($gotoModule){
 				$baseUrl .= '/' . $gotoModule;
 			}
