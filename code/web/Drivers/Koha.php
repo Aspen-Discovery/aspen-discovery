@@ -1630,24 +1630,33 @@ class Koha extends AbstractIlsDriver
 		$location = new Location();
 
 		$pickupLocations = array();
-		if ($library->selfRegistrationLocationRestrictions == 1){
-			//Library Locations
-			$location->libraryId = $library->libraryId;
-		}elseif ($library->selfRegistrationLocationRestrictions == 2){
-			//Valid pickup locations
-			$location->whereAdd('validHoldPickupBranch <> 2');
-		}elseif ($library->selfRegistrationLocationRestrictions == 3){
-			//Valid pickup locations
-			$location->libraryId = $library->libraryId;
-			$location->whereAdd('validHoldPickupBranch <> 2');
-		}
-		if ($location->find()) {
-			while ($location->fetch()) {
-				if (count($validLibraries) == 0 || array_key_exists($location->code, $validLibraries)) {
-					$pickupLocations[$location->code] = $location->displayName;
-				}
+		if ($type == 'selfReg') {
+			if ($library->selfRegistrationLocationRestrictions == 1) {
+				//Library Locations
+				$location->libraryId = $library->libraryId;
+			} elseif ($library->selfRegistrationLocationRestrictions == 2) {
+				//Valid pickup locations
+				$location->whereAdd('validHoldPickupBranch <> 2');
+			} elseif ($library->selfRegistrationLocationRestrictions == 3) {
+				//Valid pickup locations
+				$location->libraryId = $library->libraryId;
+				$location->whereAdd('validHoldPickupBranch <> 2');
 			}
-			asort($pickupLocations);
+			if ($location->find()) {
+				while ($location->fetch()) {
+					if (count($validLibraries) == 0 || array_key_exists($location->code, $validLibraries)) {
+						$pickupLocations[$location->code] = $location->displayName;
+					}
+				}
+				asort($pickupLocations);
+			}
+		}else{
+			$patron = UserAccount::getActiveUserObj();
+			$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+			$pickupLocations = [];
+			foreach ($userPickupLocations as $location){
+				$pickupLocations[$location->code] = $location->displayName;
+			}
 		}
 
 		//Library
