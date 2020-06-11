@@ -138,7 +138,7 @@
 												<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number'}</label></div>
 												<div class="col-xs-8">
 													{if $edit && $canUpdateContactInfo && ($ils != 'Horizon')}
-														<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control{*{if $primaryTheme =='arlington'} //Keep for debugging*}{if $libraryName =='Arlington Public Library'} digits{/if}">
+														<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
 													{else}
 														{$profile->phone|escape}
 													{/if}
@@ -360,19 +360,19 @@
 										<div class="form-group">
 											<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old %1%' 1=$passwordLabel}</label></div>
 											<div class="col-xs-8">
-												<input type="password" name="pin" id="pin" value="" size="4" maxlength="30" class="form-control required digits">
+												<input type="password" name="pin" id="pin" value="" minlength="{$pinValidationRules.minLength}" maxlength="30" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 											</div>
 										</div>
 										<div class="form-group">
 											<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel}</label></div>
 											<div class="col-xs-8">
-												<input type="password" name="pin1" id="pin1" value="" size="4" maxlength="30" class="form-control required digits">
+												<input type="password" name="pin1" id="pin1" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 											</div>
 										</div>
 										<div class="form-group">
 											<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New %1%' 1=$passwordLabel}</label></div>
 											<div class="col-xs-8">
-													<input type="password" name="pin2" id="pin2" value="" size="4" maxlength="30" class="form-control required digits">
+													<input type="password" name="pin2" id="pin2" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 											</div>
 										</div>
 										<div class="form-group">

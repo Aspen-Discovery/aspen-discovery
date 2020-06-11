@@ -9,8 +9,10 @@ class MyAccount_ResetPinPage extends MyAccount
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$pinValidationRules = $catalog->getPasswordPinValidationRules();
+		$interface->assign('pinValidationRules', $pinValidationRules);
 		if ($user) {
-			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);

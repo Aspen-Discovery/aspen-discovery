@@ -340,4 +340,12 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	function getEmailResetPinResultsTemplate(){
 		return null;
 	}
+
+	function getPasswordPinValidationRules(){
+		return [
+			'minLength' => 4,
+			'maxLength' => 4,
+			'onlyDigitsAllowed' => true,
+		];
+	}
 }
