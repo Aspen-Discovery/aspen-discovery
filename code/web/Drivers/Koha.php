@@ -1574,7 +1574,13 @@ class Koha extends AbstractIlsDriver
 		$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-password-recovery.pl', $postVariables);
 
 		$messageInformation = [];
-		if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
+		if ($postResults == 'Internal Server Error') {
+			if (isset($_REQUEST['resendEmail'])) {
+				$result['error'] = 'There was an error in backend system while resending the password reset email, please contact the library.';
+			}else{
+				$result['error'] = 'There was an error in backend system while sending the password reset email, please contact the library.';
+			}
+		}else if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
 			$error = $messageInformation[1];
 			$error = str_replace('<h3>', '<h4>', $error);
 			$error = str_replace('</h3>', '</h4>', $error);
@@ -1603,6 +1609,10 @@ class Koha extends AbstractIlsDriver
 
 	function getEmailResetPinTemplate()
 	{
+		if (isset($_REQUEST['resendEmail'])){
+			global $interface;
+			$interface->assign('resendEmail', true);
+		}
 		return 'kohaEmailResetPinLink.tpl';
 	}
 
