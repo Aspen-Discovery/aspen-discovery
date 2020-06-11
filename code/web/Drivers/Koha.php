@@ -2877,6 +2877,10 @@ class Koha extends AbstractIlsDriver
 			}
 
 			$interface->assign('error', $error);
+
+			$pinValidationRules = $this->getPasswordPinValidationRules();
+			$interface->assign('pinValidationRules', $pinValidationRules);
+
 			return 'kohaPasswordRecovery.tpl';
 		}else{
 			//No key provided, go back to the starting point
@@ -2989,5 +2993,13 @@ class Koha extends AbstractIlsDriver
 			$preference = $curRow['value'];
 		}
 		return $preference;
+	}
+
+	function getPasswordPinValidationRules(){
+		return [
+			'minLength' => $this->getKohaSystemPreference('minPasswordLength'),
+			'maxLength' => 60,
+			'onlyDigitsAllowed' => false,
+		];
 	}
 }

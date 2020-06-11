@@ -169,13 +169,16 @@ class MyAccount_Profile extends MyAccount
 		$millenniumNoAddress = $canUpdateContactInfo && !$canUpdateAddress && in_array($ils, array('Millennium', 'Sierra'));
 		$interface->assign('millenniumNoAddress', $millenniumNoAddress);
 
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$pinValidationRules = $catalog->getPasswordPinValidationRules();
+		$interface->assign('pinValidationRules', $pinValidationRules);
 
 		// CarlX Specific Options
 		if ($ils == 'CarlX' && !$offlineMode) {
 			// Get Phone Types
 			$phoneTypes = array();
 			/** @var CarlX $driver */
-			$driver        = CatalogFactory::getCatalogConnectionInstance();
+			$driver        = $catalog->driver;
 			$rawPhoneTypes = $driver->getPhoneTypeList();
 			foreach ($rawPhoneTypes as $rawPhoneTypeSubArray){
 				foreach ($rawPhoneTypeSubArray as $phoneType => $phoneTypeLabel) {

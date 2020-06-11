@@ -1040,4 +1040,8 @@ class CatalogConnection
 	{
 		return $this->driver->getEmailResetPinResultsTemplate();
 	}
+
+	function getPasswordPinValidationRules(){
+		return $this->driver->getPasswordPinValidationRules();
+	}
 }
