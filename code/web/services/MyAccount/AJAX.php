@@ -15,7 +15,7 @@ class MyAccount_AJAX extends JSON_Action
 				break;
 		}
 		if (method_exists($this, $method)) {
-			if (in_array($method, array('getLoginForm', 'getPinUpdateForm'))) {
+			if (in_array($method, array('getLoginForm'))) {
 				header('Content-type: text/html');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -413,7 +413,6 @@ class MyAccount_AJAX extends JSON_Action
 				//If the record is not valid, skip the whole thing since the title could be bad too
 				if (!empty($_REQUEST['sourceId']) && !is_array($_REQUEST['sourceId'])) {
 					$recordToAdd = urldecode($_REQUEST['sourceId']);
-					$source = urldecode($_REQUEST['source']);
 					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+|\d+$/i", $recordToAdd)) {
 						$return['success'] = false;
 						$return['message'] = 'The recordId provided is not valid';
@@ -570,16 +569,6 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
 		return MyAccount_Masquerade::endMasquerade();
-	}
-
-	/** @noinspection PhpUnused */
-	function getPinUpdateForm()
-	{
-		global $interface;
-		$interface->assign('popupTitle', 'Modify PIN number');
-		$pageContent = $interface->fetch('MyAccount/modifyPinPopup.tpl');
-		$interface->assign('popupContent', $pageContent);
-		return $interface->fetch('popup-wrapper.tpl');
 	}
 
 	/** @noinspection PhpUnused */
