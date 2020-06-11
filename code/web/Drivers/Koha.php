@@ -412,17 +412,23 @@ class Koha extends AbstractIlsDriver
 			} else {
 				//User is not valid, check to see if they have a valid account in Koha so we can return a different error
 				/** @noinspection SqlResolve */
-				$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '$barcode' OR userId = '$barcode'";
+				$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '$barcode' OR userId = '$barcode'";
 
 				$lookupUserResult = mysqli_query($this->dbConnection, $sql);
 				if ($lookupUserResult->num_rows > 0) {
 					$userExistsInDB = true;
+					$lookupUserRow = $lookupUserResult->fetch_assoc();
 					if (UserAccount::isUserMasquerading()) {
-						$lookupUserRow = $lookupUserResult->fetch_assoc();
 						$patronId = $lookupUserRow['borrowernumber'];
 						$newUser = $this->loadPatronInfoFromDB($patronId, null);
 						if (!empty($newUser) && !($newUser instanceof AspenError)) {
 							return $newUser;
+						}
+					}else{
+						//Check to see if the user has reached the maximum number of login attempts
+						$maxLoginAttempts = $this->getKohaSystemPreference('FailedLoginAttempts');
+						if ($maxLoginAttempts <= $lookupUserRow['login_attempts']){
+							return new AspenError('Maximum number of failed login attempts reached, your account has been locked.');
 						}
 					}
 				}
@@ -2959,14 +2965,19 @@ class Koha extends AbstractIlsDriver
 
 	private function getKohaVersion()
 	{
+		return $this->getKohaSystemPreference('Version');
+	}
+
+	private function getKohaSystemPreference(string $preferenceName)
+	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
-		$sql = "SELECT value FROM systempreferences WHERE variable='Version';";
+		$sql = "SELECT value FROM systempreferences WHERE variable='$preferenceName';";
 		$results = mysqli_query($this->dbConnection, $sql);
-		$kohaVersion = '';
+		$preference = '';
 		while ($curRow = $results->fetch_assoc()) {
-			$kohaVersion = $curRow['value'];
+			$preference = $curRow['value'];
 		}
-		return $kohaVersion;
+		return $preference;
 	}
 }
