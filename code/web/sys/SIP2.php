@@ -356,7 +356,7 @@ class sip2
 
 	}
 
-	function msgHold($mode, $expDate = '', $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '')
+	function msgHold($mode, $expDate = '', $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '', $queuePosition = '')
 	{
 		/* mode validity check */
 		/*
@@ -385,11 +385,12 @@ class sip2
 		$this->_newMessage('15');
 		$this->_addFixedOption($mode, 1);
 		$this->_addFixedOption($this->_datestamp(), 18);
-		//$this->msgBuild .= $this->fldTerminator;
+		$this->msgBuild .= $this->fldTerminator;
 		if ($expDate != '') {
 			/* hold expiration date,  due to the use of the datestamp function, we have to check here for empty value. when datestamp is passed an empty value it will generate a current datestamp */
 			$this->_addVarOption('BW', $this->_datestamp($expDate), true); /*spec says this is fixed field, but it behaves like a var field and is optional... */
 		}
+		$this->_addVarOption('BR',$queuePosition, true);
 		$this->_addVarOption('BS',$pkupLocation, true);
 		$this->_addVarOption('BY',$holdtype, true);
 		$this->_addVarOption('AO',$this->AO);

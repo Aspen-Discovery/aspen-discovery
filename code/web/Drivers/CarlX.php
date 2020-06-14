@@ -390,7 +390,7 @@ class CarlX extends SIP2Driver{
 					$curHold['id']                 = $bibId;
 					$curHold['holdSource']         = 'ILS';
 					$curHold['itemId']             = $hold->ItemNumber;
-					$curHold['cancelId']           = $bibId;
+					$curHold['cancelId']           = $hold->Identifier;
 					$curHold['position']           = $hold->QueuePosition;
 					$curHold['recordId']           = $carlID;
 					$curHold['shortId']            = $bibId;
@@ -405,7 +405,7 @@ class CarlX extends SIP2Driver{
 					$curHold['reactivate']         = null;
 					$curHold['reactivateTime']     = null;
 					$curHold['frozen']             = isset($hold->Suspended) && ($hold->Suspended == true);
-					$curHold['cancelable']         = true; //TODO: Can Cancel Available Holds?
+					$curHold['cancelable']         = true;
 					$curHold['canFreeze']          = false;
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -446,15 +446,15 @@ class CarlX extends SIP2Driver{
 					$curHold['id']                 = $bibId;
 					$curHold['holdSource']         = 'ILS';
 					$curHold['itemId']             = $hold->ItemNumber;
-					$curHold['cancelId']           = $bibId; // Unavailable holds only
-					$curHold['position']           = $hold->QueuePosition;
+					$curHold['cancelId']           = $hold->Identifier; // James Staub declares cancelId is synonymous with holdId 20200613
+					$curHold['position']           = $hold->QueuePosition; // CarlX API v1.9.6.3 does not accurately calculate hold queue position. See https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=500458
 					$curHold['recordId']           = $carlID;
 					$curHold['shortId']            = $bibId;
 					$curHold['title']              = $hold->Title;
 					$curHold['sortTitle']          = $hold->Title;
 					$curHold['author']             = $hold->Author;
 					$curHold['location']           = empty($pickUpBranch->BranchName) ? '' : $pickUpBranch->BranchName;
-					$curHold['locationUpdateable'] = false; //TODO: unless status is in transit?
+					$curHold['locationUpdateable'] = true; //TODO: unless status is in transit?
 					$curHold['currentPickupName']  = empty($pickUpBranch->BranchName) ? '' : $pickUpBranch->BranchName;
 					$curHold['frozen']             = $hold->Suspended;
 					$curHold['status']             = $this->holdStatusCodes[$hold->ItemStatus];
@@ -466,10 +466,12 @@ class CarlX extends SIP2Driver{
 						$curHold['reactivateTime']     = strtotime($hold->SuspendedUntilDate);
 						$curHold['status']             = 'Frozen';
 					}
-					// CarlX [9.6] will not allow suspend hold on item level hold. UnavailableHoldItem has ItemNumber = 0 if the hold is NOT an item level hold.
-					if ($curHold['itemId'] === '0') {
+					// CarlX [9.6.4.3] will not allow suspend hold on item level hold. UnavailableHoldItem has ItemNumber = 0 if the hold is NOT an item level hold.
+					if (strpos($curHold['cancelId'],'ITEM ID: ') === 0) {
+						$curHold['canFreeze'] = false;
+					} elseif (strpos($curHold['cancelId'],'BID: ') === 0) {
 						$curHold['canFreeze'] = true;
-					} else {
+					} else { // TO DO: Evaluate whether issue level holds are suspendable
 						$curHold['canFreeze'] = false;
 					}
 
@@ -492,6 +494,14 @@ class CarlX extends SIP2Driver{
 							$curHold['author'] = $recordDriver->getPrimaryAuthor();
 						}
 					}
+
+					// CarlX API v1.9.6.3 does not accurately calculate hold queue position. See https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=500458
+//					require_once ROOT_DIR . '/sys/SIP2.php';
+
+					$curHold['position']           = $hold->QueuePosition; 
+
+					
+
 					$holds['unavailable'][] = $curHold;
 
 				}
@@ -550,7 +560,7 @@ class CarlX extends SIP2Driver{
 	 * @return  array
 	 */
 	function cancelHold($patron, $recordId, $cancelId = null) {
-		return $this->placeHoldViaSIP($patron, $recordId, null, null, 'cancel');
+		return $this->placeHoldViaSIP($patron, $cancelId, null, null, 'cancel');
 
 	}
 
@@ -1477,7 +1487,7 @@ class CarlX extends SIP2Driver{
 				if (isset($result['variable']['AO'][0])){
 					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
 				}else{
-					$mySip->AO = 'NASH'; /* set AO to value returned */
+					$mySip->AO = 'NASH'; /* set AO to value returned */ // hardcoded Nashville
 				}
 				if (isset($result['variable']['AN'][0])) {
 					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
@@ -1495,7 +1505,9 @@ class CarlX extends SIP2Driver{
 				if ($hold) {
 
 					$pickupLocation = $hold->PickUpBranch;
-					$queuePosition = $hold->QueuePosition;
+//					$queuePosition = $hold->QueuePosition; // CarlX API v1.9.6.3 does not accurately calculate hold queue position. See https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=500458
+					$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $holdId);
+					$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 					if (!empty($hold->Title)) {
 						$title = $hold->Title;
 					}
@@ -1546,7 +1558,93 @@ class CarlX extends SIP2Driver{
 		return false;
 	}
 
-	public function placeHoldViaSIP($patron, $recordId, $pickupBranch = null, $cancelDate = null, $type = null){
+	private function getUnavailableHoldViaSIP($patron, $holdId) {
+		$request = $this->getSearchbyPatronIdRequest($patron);
+		$request->TransactionType = 'UnavailableHold';
+		$result = $this->doSoapRequest('getPatronTransactions', $request);
+
+		global $configArray;
+		//Place the hold via SIP 2
+//		require_once ROOT_DIR . '/sys/SIP2.php';
+		$mySip = new sip2();
+		$mySip->hostname = $this->accountProfile->sipHost;
+		$mySip->port = $this->accountProfile->sipPort;
+
+		$success = false;
+//		$title = '';
+		$message = '';
+		if ($mySip->connect()) {
+			//send self check status message
+			$in = $mySip->msgSCStatus();
+			$msg_result = $mySip->get_message($in);
+			// Make sure the response is 98 as expected
+			if (preg_match("/^98/", $msg_result)) {
+				$result = $mySip->parseACSStatusResponse($msg_result);
+
+				//  Use result to populate SIP2 setings
+				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
+				if (isset($result['variable']['AO'][0])){
+					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+				}else{
+					$mySip->AO = 'NASH'; /* set AO to value returned */ // hardcoded Nashville
+				}
+				if (isset($result['variable']['AN'][0])) {
+					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+				}else{
+					$mySip->AN = '';
+				}
+
+				$mySip->patron    = $patron->cat_username;
+				$mySip->patronpwd = $patron->cat_password;
+
+//				$holds = $this->getHolds($patron);
+//				$hold = $this->getUnavailableHold($patron, $holdId);
+
+				$in = $mySip->msgPatronInformation('unavail',1,110); // hardcoded Nashville - circulation policy allows 100 holds for many borrower types
+				$result = $mySip->parsePatronInfoResponse( $mySip->get_message($in) );
+
+				if ($result && !empty($result['variable']['CD'])) {
+					if (!is_array($result['variable']['CD'])) {
+						$result['variable']['CD'] = (array)$result['variable']['CD'];
+					}
+					foreach($result['variable']['CD'] as $unavailableHold) {
+						$hold = [];
+						$hold['Raw'] = explode("^",$unavailableHold);
+				                foreach ($hold['Raw'] as $item) {
+			                    	    $field = substr($item,0,1);
+			                    	    $value = substr($item,1);
+			                    	    $clean = trim($value, "\x00..\x1F");
+			                    	    if (trim($clean) <> '') {
+		                            		$hold[$field] = $clean;
+                        			    }
+                				}
+						if ((!empty($hold['B']) && ($hold['B'] == $holdId || "BID: " . $hold['B'] == $holdId)) || (!empty($hold['I']) && "ITEM ID: " . $hold['I'] == $holdId)) { 
+// TO DO: evaluate how/whether Issue level holds should be handled
+							$success = true;
+							$pickupLocation = $hold['U']; // NB branchcode, not branchnumber
+							$queuePosition = $hold['O'];
+							if (!empty($hold['T'])) {
+								$title = $hold['T'];
+							}
+							break;	
+						} 
+					}
+				}
+			}
+		}
+		return array(
+			'holdId'		=> $holdId,
+			'title'			=> $title,
+			'pickupLocation'	=> $pickupLocation, // NB branchcode, not branchnumber
+			'queuePosition'		=> $queuePosition,
+			'success'		=> $success,
+			'message'		=> $message
+		);
+
+		return false;
+	}
+
+	public function placeHoldViaSIP($patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null){
 		global $configArray;
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
@@ -1570,7 +1668,7 @@ class CarlX extends SIP2Driver{
 				if (isset($result['variable']['AO'][0])){
 					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
 				}else{
-					$mySip->AO = 'NASH'; /* set AO to value returned */
+					$mySip->AO = 'NASH'; /* set AO to value returned */ // hardcoded for Nashville
 				}
 				if (isset($result['variable']['AN'][0])) {
 					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
@@ -1596,10 +1694,31 @@ class CarlX extends SIP2Driver{
 				$pickupBranchNumber = $pickupBranchInfo->BranchNumber;
 
 				//place the hold
-				if ($type == 'cancel' || $type == 'recall'){
-					$mode = '-';
-					$holdId = $recordId;
+				$holdType = '2'; // any copy of title
+				$itemId = '';
+				$recordId = '';
+				$queuePosition = '';
+				if (strpos($holdId, 'ITEM ID: ') === 0){
+					$holdType = 3; // specific copy
+					$itemId = substr($holdId, 9);
+				} elseif (strpos($holdId, 'BID: ') === 0){
+					$holdType = 2; // any copy of title
+					$recordId = substr($holdId, 5);
+				} elseif (strpos($holdId, 'CARL') === 0) {
+					$holdType = 2; // any copy of title
+					$recordId = $this->BIDfromFullCarlID($holdId);
+				}
 
+				if ($type == 'cancel'){
+					$mode = '-';
+					// Get Title  (Title is not part of the cancel response)
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($this->fullCarlIDfromBID($recordId));
+					if ($recordDriver->isValid()) {
+						$title = $recordDriver->getTitle();
+					}
+				} elseif ($type == 'recall'){ // NASHVILLE DOES NOT ALLOW RECALL
+					$mode = '-';
 					// Get Title  (Title is not part of the cancel response)
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($this->fullCarlIDfromBID($recordId));
@@ -1607,10 +1726,10 @@ class CarlX extends SIP2Driver{
 						$title = $recordDriver->getTitle();
 					}
 
-				}elseif ($type == 'update'){
+				} elseif ($type == 'update'){
 					$mode = '*';
 					$holdId = $recordId;
-				}else{
+				} else {
 					$mode = '+';
 					$holdId = $this->BIDfromFullCarlID($recordId);
 				}
@@ -1624,7 +1743,7 @@ class CarlX extends SIP2Driver{
 					$expirationTime = time() + 2 * 365 * 24 * 60 * 60;
 				}
 
-				$in = $mySip->msgHold($mode, $expirationTime, '2', '', $holdId, '', $pickupBranchNumber);
+				$in = $mySip->msgHold($mode, $expirationTime, $holdType, $itemId, $recordId, '', $pickupBranchNumber, $queuePosition);
 				$msg_result = $mySip->get_message($in);
 
 				if (preg_match("/^16/", $msg_result)) {
