@@ -498,8 +498,8 @@ public class KohaExportMain {
 		while (kohaValuesRS.next()) {
 			String value = kohaValuesRS.getString(valueColumn);
 			String translation = kohaValuesRS.getString(translationColumn);
-			if (existingValues.containsKey(value)) {
-				if (!existingValues.get(value).equals(translation)) {
+			if (existingValues.containsKey(value.toLowerCase())) {
+				if (!existingValues.get(value.toLowerCase()).equals(translation)) {
 					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
 				}
 			} else {
@@ -531,7 +531,7 @@ public class KohaExportMain {
 		getExistingValuesForMapStmt.setLong(1, translationMapId);
 		ResultSet getExistingValuesForMapRS = getExistingValuesForMapStmt.executeQuery();
 		while (getExistingValuesForMapRS.next()) {
-			existingValues.put(getExistingValuesForMapRS.getString("value"), getExistingValuesForMapRS.getString("translation"));
+			existingValues.put(getExistingValuesForMapRS.getString("value").toLowerCase(), getExistingValuesForMapRS.getString("translation"));
 		}
 		return existingValues;
 	}

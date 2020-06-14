@@ -44,6 +44,7 @@ class GroupedWorkFacet extends FacetSetting {
 			"time_since_added" => "Added In The Last",
 			"callnumber-first" => "LC Call Number",
 			"awards_facet" => "Awards",
+			"shelf_location" => "Shelf Location",
 			"detailed_location" => "Detailed Location",
 			"lc_subject" => "LC Subject",
 			"bisac_subject" => "Bisac Subject",

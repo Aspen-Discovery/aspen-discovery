@@ -127,7 +127,8 @@ class RbdigitalMagazineProcessor {
 						Date coverDateAsDate = dateFormatter.parse(coverDate);
 						itemInfo.setCallNumber(coverDate);
 						String sortableDate = sortableDateFormatter.format(coverDateAsDate);
-						itemInfo.setShelfLocation(sortableDate + " RBdigital");
+						itemInfo.setShelfLocation("RBdigital");
+						itemInfo.setDetailedLocation(sortableDate + " RBdigital");
 						itemInfo.setSortableCallNumber(sortableDate);
 
 						rbdigitalRecord.setEdition(coverDate);

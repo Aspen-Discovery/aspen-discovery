@@ -179,6 +179,7 @@
 		<field name="collection_group" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="collection_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="detailed_location_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<dynamicField name="shelf_location_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 
 		<!-- Fields to determine availability -->
 		<dynamicField name="available_at_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>

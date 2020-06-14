@@ -421,6 +421,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 
 		//Add the library this is on order for
 		itemInfo.setShelfLocation("On Order");
+		itemInfo.setDetailedLocation("On Order");
 
 		String status = orderItem.getStatus();
 

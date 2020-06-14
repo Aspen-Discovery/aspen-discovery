@@ -515,6 +515,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		//Add the library this is on order for
 		itemInfo.setShelfLocation("On Order");
+		itemInfo.setDetailedLocation("On Order");
 
 		recordInfo.addItem(itemInfo);
 
@@ -552,7 +553,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					scopingInfo.setLibraryOwned(libraryOwned);
 					//TODO: Should this be here or should this only happen for consortia?
 					if (libraryOwned && itemInfo.getShelfLocation().equals("On Order")){
-						itemInfo.setShelfLocation(scopingInfo.getScope().getFacetLabel() + " On Order");
+						itemInfo.setShelfLocation("On Order");
+						itemInfo.setDetailedLocation(scopingInfo.getScope().getFacetLabel() + " On Order");
 					}
 				}
 				if (scopingInfo.isLocallyOwned()){
@@ -626,6 +628,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		loadItemCallNumber(record, itemField, itemInfo);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, identifier));
+		itemInfo.setDetailedLocation(getDetailedLocationForItem(itemInfo, itemField, identifier));
 
 		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 
@@ -755,6 +758,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		setShelfLocationCode(itemField, itemInfo, recordInfo.getRecordIdentifier());
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, recordInfo.getRecordIdentifier()));
+		itemInfo.setDetailedLocation(getDetailedLocationForItem(itemInfo, itemField, recordInfo.getRecordIdentifier()));
 
 		loadDateAdded(recordInfo.getRecordIdentifier(), itemField, itemInfo);
 		getDueDate(itemField, itemInfo);
@@ -1168,7 +1172,19 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return isBookableUnscoped;
 	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+		String shelfLocation = null;
+		if (itemField != null) {
+			shelfLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
+		}
+		if (shelfLocation == null || shelfLocation.length() == 0 || shelfLocation.equals("none")){
+			return "";
+		}else {
+			return translateValue("shelf_location", shelfLocation, identifier);
+		}
+	}
+
+	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String shelfLocation = null;
 		if (itemField != null) {
 			shelfLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);

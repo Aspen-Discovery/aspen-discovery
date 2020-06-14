@@ -18,6 +18,7 @@ public class ItemInfo {
 	private boolean isOrderItem;
 	private boolean isEContent;
 	private String shelfLocation;
+	private String detailedLocation;
 	private String callNumber;
 	private String sortableCallNumber;
 	private Date dateAdded;
@@ -116,6 +117,10 @@ public class ItemInfo {
 		return shelfLocation;
 	}
 
+	String getDetailedLocation(){
+		return detailedLocation;
+	}
+
 	public String getFormat() {
 		return format;
 	}
@@ -168,7 +173,7 @@ public class ItemInfo {
 			//Cache the part that doesn't change depending on the scope
 			baseDetails = recordInfo.getFullIdentifier() + "|" +
 					Util.getCleanDetailValue(itemIdentifier) + "|" +
-					Util.getCleanDetailValue(shelfLocation) + "|" +
+					Util.getCleanDetailValue(detailedLocation) + "|" +
 					Util.getCleanDetailValue(callNumber) + "|" +
 					Util.getCleanDetailValue(format) + "|" +
 					Util.getCleanDetailValue(formatCategory) + "|" +
@@ -242,6 +247,10 @@ public class ItemInfo {
 
 	void setShelfLocation(String shelfLocation) {
 		this.shelfLocation = shelfLocation;
+	}
+
+	void setDetailedLocation(String detailedLocation) {
+		this.detailedLocation = detailedLocation;
 	}
 
 	ScopingInfo addScope(Scope scope) {

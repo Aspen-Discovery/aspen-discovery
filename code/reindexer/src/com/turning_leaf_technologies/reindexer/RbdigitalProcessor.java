@@ -196,6 +196,7 @@ class RbdigitalProcessor {
 				itemInfo.seteContentSource("RBdigital");
 				itemInfo.setIsEContent(true);
 				itemInfo.setShelfLocation("Online RBdigital Collection");
+				itemInfo.setDetailedLocation("Online RBdigital Collection");
 				itemInfo.setCallNumber("Online RBdigital");
 				itemInfo.setSortableCallNumber("Online RBdigital");
 				itemInfo.setFormat(primaryFormat);
