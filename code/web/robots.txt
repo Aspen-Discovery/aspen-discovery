@@ -11,5 +11,8 @@ Disallow: /
 User-agent: SemrushBot-SA
 Disallow: /
 
+User-agent: BingPreview
+Disallow: /
+
 User-Agent: AhrefsBot
 Disallow: /

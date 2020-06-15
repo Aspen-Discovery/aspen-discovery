@@ -31,16 +31,22 @@ class MyAccount_SelectInterface extends Action{
 		}
 
 		$redirectLibrary = null;
-		$user = UserAccount::getLoggedInUser();
-		if (isset($_REQUEST['library'])){
-			$redirectLibrary = $_REQUEST['library'];
-		}elseif (!is_null($physicalLocation)){
-			$redirectLibrary = $physicalLocation->libraryId;
-		}elseif ($user && isset($user->preferredLibraryInterface) && is_numeric($user->preferredLibraryInterface)){
-			$redirectLibrary = $user->preferredLibraryInterface;
-		}elseif (isset($_COOKIE['PreferredLibrarySystem'])){
-			$redirectLibrary = $_COOKIE['PreferredLibrarySystem'];
+		if (!array_key_exists('noRememberThis', $_REQUEST) || ($_REQUEST['noRememberThis'] === false)){
+			$user = UserAccount::getLoggedInUser();
+			if (isset($_REQUEST['library'])){
+				$redirectLibrary = $_REQUEST['library'];
+			}elseif (!is_null($physicalLocation)){
+				$redirectLibrary = $physicalLocation->libraryId;
+			}elseif ($user && isset($user->preferredLibraryInterface) && is_numeric($user->preferredLibraryInterface)){
+				$redirectLibrary = $user->preferredLibraryInterface;
+			}elseif (isset($_COOKIE['PreferredLibrarySystem'])){
+				$redirectLibrary = $_COOKIE['PreferredLibrarySystem'];
+			}
+			$interface->assign('noRememberThis', false);
+		}else{
+			$interface->assign('noRememberThis', true);
 		}
+
 		if ($redirectLibrary != null){
 			$logger->log("Selected library $redirectLibrary", Logger::LOG_DEBUG);
 			/** @var Library $selectedLibrary */

@@ -12,12 +12,16 @@
 					</div>
 				{/foreach}
 				<div class="clearfix"></div>
+
 				<div class="col-xs-12">
-					<div class="selectLibraryOption">
-						<label for="rememberThis"><input type="checkbox" name="rememberThis" checked="checked" id="rememberThis"> <b>Remember This</b></label>
-					</div>
+					{if !$noRememberThis}
+						<div class="selectLibraryOption">
+							<label for="rememberThis"><input type="checkbox" name="rememberThis" checked="checked" id="rememberThis"> <b>Remember This</b></label>
+						</div>
+					{/if}
 					<input type="submit" name="submit" value="Select Library Catalog" id="submitButton" class="btn btn-primary"/>
 				</div>
+
 				<div class="clearfix"></div>
 			</div>
 		</form>
