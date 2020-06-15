@@ -8748,14 +8748,19 @@ a.placard-link {
 .table-sticky {
   overflow-y: auto;
 }
-.table-sticky thead th {
+.table-sticky thead tr th {
   position: sticky;
   top: 0;
+  background-color: white;
+  z-index: 5;
 }
 .help-link {
   margin-top: 20px;
   line-height: 50px;
   text-align: right;
+}
+.propertyDescription {
+  margin-bottom: 6px;
 }
 #home-page-search {
   background-color: #00a4e3;
@@ -9471,11 +9476,11 @@ a.browse-thumbnail-sorted.active {
   color: #333333;
 }
 #account-link-accordion .panel.active .panel-title,
-account-settings-accordion .panel.active .panel-title {
+#account-settings-accordion .panel.active .panel-title {
   color: white;
 }
 #account-link-accordion .panel.active .panel-title > a,
-account-settings-accordion .panel.active .panel-title > a {
+#account-settings-accordion .panel.active .panel-title > a {
   color: white;
 }
 #account-settings-accordion .panel-body {
