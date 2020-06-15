@@ -920,34 +920,35 @@ public class KohaExportMain {
 					logEntry.saveResults();
 				}
 			}
+			logger.info("Updated " + changedBibIds.size() + " records");
 
 			//Process any bibs that have been deleted
-			PreparedStatement getDeletedBibsFromKohaStmt;
-			if (indexingProfile.isRunFullUpdate()) {
-				getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio");
-			} else {
-				getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio where timestamp >= ?");
-				getDeletedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
-			}
-
-			ResultSet bibDeletedRS = getDeletedBibsFromKohaStmt.executeQuery();
 			int numRecordsDeleted = 0;
-			while (bibDeletedRS.next()) {
-				String bibId = bibDeletedRS.getString("biblionumber");
-				RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibId);
-				if (result.reindexWork) {
-					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-				} else if (result.deleteWork) {
-					//Delete the work from solr and the database
-					getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+			if (singleWorkId == null) {
+				PreparedStatement getDeletedBibsFromKohaStmt;
+				if (indexingProfile.isRunFullUpdate()) {
+					getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio");
+				} else {
+					getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio where timestamp >= ?");
+					getDeletedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 				}
-				numRecordsDeleted++;
-				logEntry.incDeleted();
-			}
-			logEntry.saveResults();
 
-			logger.info("Updated " + changedBibIds.size() + " records");
-			logger.info("Deleted " + numRecordsDeleted + " records");
+				ResultSet bibDeletedRS = getDeletedBibsFromKohaStmt.executeQuery();
+				while (bibDeletedRS.next()) {
+					String bibId = bibDeletedRS.getString("biblionumber");
+					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibId);
+					if (result.reindexWork) {
+						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+					} else if (result.deleteWork) {
+						//Delete the work from solr and the database
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+					}
+					numRecordsDeleted++;
+					logEntry.incDeleted();
+				}
+				logEntry.saveResults();
+				logger.info("Deleted " + numRecordsDeleted + " records");
+			}
 
 			processRecordsToReload(indexingProfile, logEntry);
 
@@ -960,19 +961,21 @@ public class KohaExportMain {
 			}
 
 			//Update the last extract time for the indexing profile
-			if (indexingProfile.isRunFullUpdate()) {
-				PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
-				updateVariableStmt.setLong(1, startTimeForLogging);
-				updateVariableStmt.setLong(2, indexingProfile.getId());
-				updateVariableStmt.executeUpdate();
-				updateVariableStmt.close();
-			} else {
-				if (!logEntry.hasErrors()) {
-					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+			if (singleWorkId == null) {
+				if (indexingProfile.isRunFullUpdate()) {
+					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
 					updateVariableStmt.setLong(1, startTimeForLogging);
 					updateVariableStmt.setLong(2, indexingProfile.getId());
 					updateVariableStmt.executeUpdate();
 					updateVariableStmt.close();
+				} else {
+					if (!logEntry.hasErrors()) {
+						PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+						updateVariableStmt.setLong(1, startTimeForLogging);
+						updateVariableStmt.setLong(2, indexingProfile.getId());
+						updateVariableStmt.executeUpdate();
+						updateVariableStmt.close();
+					}
 				}
 			}
 		} catch (Exception e) {
