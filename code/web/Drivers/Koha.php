@@ -2483,7 +2483,7 @@ class Koha extends AbstractIlsDriver
 					$messageType['label'] = 'Item due';
 					break;
 				case "Advance_Notice":
-					$messageType['label'] = 'Advanced notice';
+					$messageType['label'] = 'Advance notice';
 					break;
 				case "Hold_Filled":
 					$messageType['label'] = 'Hold filled';
