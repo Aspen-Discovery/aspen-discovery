@@ -356,7 +356,7 @@ class sip2
 
 	}
 
-	function msgHold($mode, $expDate = '', $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '', $queuePosition = '')
+	function msgHold($mode, $expDate = '', $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '')
 	{
 		/* mode validity check */
 		/*
@@ -388,9 +388,8 @@ class sip2
 		$this->msgBuild .= $this->fldTerminator;
 		if ($expDate != '') {
 			/* hold expiration date,  due to the use of the datestamp function, we have to check here for empty value. when datestamp is passed an empty value it will generate a current datestamp */
-			$this->_addVarOption('BW', $this->_datestamp($expDate), true); /*spec says this is fixed field, but it behaves like a var field and is optional... */
+			$this->_addVarOption('BW', $this->_datestamp($expDate), true); /*CarlX Hold spec says this is fixed field, but it behaves like a var field and is optional... */
 		}
-		$this->_addVarOption('BR',$queuePosition, true);
 		$this->_addVarOption('BS',$pkupLocation, true);
 		$this->_addVarOption('BY',$holdtype, true);
 		$this->_addVarOption('AO',$this->AO);
@@ -406,9 +405,8 @@ class sip2
 	}
 
 	// For CarlX Only
-	function freezeSuspendHold($reactivateDate = '', $freeze = true, $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '', $queuePosition = 1)
+	function msgHoldCarlX($mode, $expDate = '', $holdtype = '', $item = '', $title = '', $fee = null, $pkupLocation = '', $queuePosition = null, $freeze = null, $freezeReactivateDate = null)
 	{
-		$mode = '*';
 		/* mode validity check */
 		/*
 		 * - remove hold
@@ -437,26 +435,27 @@ class sip2
 		$this->_addFixedOption($mode, 1);
 		$this->_addFixedOption($this->_datestamp(), 18);
 		$this->msgBuild .= $this->fldTerminator;
-//		if ($expDate != '') {
-//			/* hold expiration date,  due to the use of the datestamp function, we have to check here for empty value. when datestamp is passed an empty value it will generate a current datestamp */
-//			$this->_addVarOption('BW', $this->_datestamp($expDate), true); /*spec says this is fixed field, but it behaves like a var field and is optional... */
-//		}
-		$this->_addVarOption('BW', '', false);
-		$this->_addVarOption('BS',$pkupLocation, false);
-		$this->_addVarOption('BY',$holdtype, true);
-		$this->_addVarOption('AO',$this->AO);
 		$this->_addVarOption('AA',$this->patron);
+		$this->_addVarOption('AB',$item, true);
+		$this->_addVarOption('AC',$this->AC, true);
 		$this->_addVarOption('AD',$this->patronpwd, true);
-//		$this->_addVarOption('AB',$item, true);
-		$this->_addVarOption('AB',$item, false);
 		$this->_addVarOption('AJ',$title, true);
-//		$this->_addVarOption('AC',$this->AC, false);
-		$this->_addVarOption('AC','', true);
+		$this->_addVarOption('AO',$this->AO);
 		$this->_addVarOption('BO',$fee, true); /* Y when user has agreed to a fee notice */
-
-		$this->_addVarOption('BR', $queuePosition, false);
-		$this->_addVarOption('XG', '', false);
-		$this->_addVarOption('XI',$reactivateDate . ($freeze ? 'B' : ''), true);  // Custom Field to suspend holds
+		$this->_addVarOption('BR',$queuePosition, true);
+		$this->_addVarOption('BS',$pkupLocation, true);
+		if ($expDate != '') {
+			/* hold expiration date,  due to the use of the datestamp function, we have to check here for empty value. when datestamp is passed an empty value it will generate a current datestamp */
+			$this->_addVarOption('BW', $this->_datestamp($expDate), true); /*CarlX Hold spec says this is fixed field, but it behaves like a var field and is optional... */
+		}
+		$this->_addVarOption('BY',$holdtype, true);
+		$this->_addVarOption('XG','', true); // CarlX custom field Issue Identifier // TO DO: Evaluate code changes for Issue level holds
+		if ($freeze == 'freeze' && !empty($freezeReactivationDate)) {
+			if (substr($freezeReactivationDate,-1) != 'B') {
+				$freezeReactivationDate .= 'B';
+			}
+		}
+		$this->_addVarOption('XI',$freezeReactivateDate, true); // CarlX custom field NNA or NNB Date used with suffix 'B' to indicate Freeze Reactivate Date
 
 		return $this->_returnMessage();
 

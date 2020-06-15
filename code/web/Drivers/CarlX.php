@@ -546,7 +546,7 @@ class CarlX extends SIP2Driver{
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
-		// TODO: Implement placeItemHold() method.
+		// TODO: Implement placeItemHold() method. // CarlX [9.6.4.3] does not allow item level holds via SIP2
 	}
 
 	/**
@@ -563,21 +563,34 @@ class CarlX extends SIP2Driver{
 	}
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) {
-		$result = $this->freezeThawHoldViaSIP($patron, $recordId, null, $dateToReactivate);
+		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId);
+		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
+		$pickupLocation = $unavailableHoldViaSIP['pickupLocation']; // NB branchcode not branchnumber
+		$freezeReactivationDate = $dateToReactivate . 'B';
+		$result = $this->placeHoldViaSIP($patron, $recordId, $pickupLocation, null, 'update', $queuePosition, 'freeze', $freezeReactivationDate);
 		return $result;
 	}
 
 	function thawHold($patron, $recordId, $itemToThawId) {
-		$timeStamp = strtotime('+1 year');
-		$date = date('m/d/Y', $timeStamp);
-		$result = $this->freezeThawHoldViaSIP($patron, $recordId, null, $date, 'thaw');
+		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId);
+		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
+		$pickupLocation = $unavailableHoldViaSIP['pickupLocation']; // NB branchcode not branchnumber
+		$timeStamp = strtotime('+2 years'); // TO DO: read hold NNA or sync with default NNA (2 years?)
+		$cancelDate = date('m/d/Y', $timeStamp);
+		$result = $this->placeHoldViaSIP($patron, $recordId, $pickupLocation, $cancelDate, 'update', $queuePosition, 'thaw');
 		return $result;
 	}
 
 	function changeHoldPickupLocation($patron, $recordId, $holdId, $newPickupLocation) {
 		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $holdId);
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
-		$result = $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition);
+		$freeze = null;
+		$freezeReactivationDate = null;
+		if (!empty($unavailableHoldViaSIP['freezeReactivationDate']) && substr($unavailableHoldViaSIP['freezeReactivationDate'],-1) == 'B') {
+			$freeze = true;
+			$freezeReactivationDate = $unavailableHoldViaSIP['freezeReactivationDate'];
+		}
+		$result = $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition, $freeze, $freezeReactivationDate);
 		return $result;
 	}
 
@@ -1461,84 +1474,6 @@ class CarlX extends SIP2Driver{
 		return $request;
 	}
 
-
-	public function freezeThawHoldViaSIP($patron, $recordId, $itemToFreezeId = null, $dateToReactivate = null, $type = 'freeze'){
-		global $configArray;
-		//Place the hold via SIP 2
-		require_once ROOT_DIR . '/sys/SIP2.php';
-		$mySip = new sip2();
-		$mySip->hostname = $this->accountProfile->sipHost;
-		$mySip->port = $this->accountProfile->sipPort;
-
-		$success = false;
-		$title = '';
-		$message = 'Failed to connect to complete requested action.';
-		if ($mySip->connect()) {
-			//send self check status message
-			$in = $mySip->msgSCStatus();
-			$msg_result = $mySip->get_message($in);
-			// Make sure the response is 98 as expected
-			if (preg_match("/^98/", $msg_result)) {
-				$result = $mySip->parseACSStatusResponse($msg_result);
-
-				//  Use result to populate SIP2 setings
-				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
-				if (isset($result['variable']['AO'][0])){
-					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
-				}else{
-					$mySip->AO = 'NASH'; /* set AO to value returned */ // hardcoded Nashville
-				}
-				if (isset($result['variable']['AN'][0])) {
-					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
-				}else{
-					$mySip->AN = '';
-				}
-
-				$mySip->patron    = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
-
-				$holdId = $recordId;
-
-//				$holds = $this->getHolds($patron);
-				$hold = $this->getUnavailableHold($patron, $holdId);
-				if ($hold) {
-
-					$pickupLocation = $hold->PickUpBranch;
-//					$queuePosition = $hold->QueuePosition; // CarlX API v1.9.6.3 does not accurately calculate hold queue position. See https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=500458
-					$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $holdId);
-					$queuePosition = $unavailableHoldViaSIP['queuePosition'];
-					if (!empty($hold->Title)) {
-						$title = $hold->Title;
-					}
-					$freeze = true;
-					if ($type == 'thaw') {
-						$freeze = false;
-					}
-
-					$in = $mySip->freezeSuspendHold($dateToReactivate, $freeze,'2', '', $holdId, 'N', $pickupLocation, $queuePosition);
-					$msg_result = $mySip->get_message($in);
-
-					if (preg_match("/^16/", $msg_result)) {
-						$result  = $mySip->parseHoldResponse($msg_result);
-						$success = ($result['fixed']['Ok'] == 1);
-						$message = $result['variable']['AF'][0];
-						if (!empty($result['variable']['AJ'][0])) {
-							$title = $result['variable']['AJ'][0];
-						}
-					}
-				} else {
-					$message = 'Failed to get Pickup Location';
-				}
-			}
-		}
-		return array(
-			'title'   => $title,
-			'bib'     => $recordId,
-			'success' => $success,
-			'message' => $message
-		);
-	}
-
 	private function getUnavailableHold($patron, $holdID) {
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$request->TransactionType = 'UnavailableHold';
@@ -1564,13 +1499,11 @@ class CarlX extends SIP2Driver{
 
 		global $configArray;
 		//Place the hold via SIP 2
-//		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
 		$mySip->port = $this->accountProfile->sipPort;
 
 		$success = false;
-//		$title = '';
 		$message = '';
 		if ($mySip->connect()) {
 			//send self check status message
@@ -1619,6 +1552,7 @@ class CarlX extends SIP2Driver{
 							$success = true;
 							$pickupLocation = $hold['U']; // NB branchcode, not branchnumber
 							$queuePosition = $hold['O'];
+							$freezeReactivationDate = $hold['2']; // CarlX custom field CS^2 and XI are MM/DD/YYYY with suffix 'B'
 							if (!empty($hold['T'])) {
 								$title = $hold['T'];
 							}
@@ -1629,18 +1563,19 @@ class CarlX extends SIP2Driver{
 			}
 		}
 		return array(
-			'holdId'		=> $holdId,
-			'title'			=> $title,
-			'pickupLocation'	=> $pickupLocation, // NB branchcode, not branchnumber
-			'queuePosition'		=> $queuePosition,
-			'success'		=> $success,
-			'message'		=> $message
+			'holdId'			=> $holdId,
+			'title'				=> $title,
+			'pickupLocation'		=> $pickupLocation, // NB branchcode, not branchnumber
+			'queuePosition'			=> $queuePosition,
+			'freezeReactivationDate'	=> $freezeReactivationDate,
+			'success'			=> $success,
+			'message'			=> $message
 		);
 
 		return false;
 	}
 
-	public function placeHoldViaSIP($patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null){
+	public function placeHoldViaSIP($patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null){
 		global $configArray;
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
@@ -1702,6 +1637,9 @@ class CarlX extends SIP2Driver{
 				} elseif (strpos($holdId, 'CARL') === 0) {
 					$holdType = 2; // any copy of title
 					$recordId = $this->BIDfromFullCarlID($holdId);
+				} else { // assume a short BID
+					$holdType = 2; // any copy of title
+					$recordId = $holdId;
 				}
 
 				if ($type == 'cancel'){
@@ -1712,7 +1650,7 @@ class CarlX extends SIP2Driver{
 					if ($recordDriver->isValid()) {
 						$title = $recordDriver->getTitle();
 					}
-				} elseif ($type == 'recall'){ // NASHVILLE DOES NOT ALLOW RECALL
+				} elseif ($type == 'recall'){ // NASHVILLE DOES NOT ALLOW RECALL // TO DO: Evaluate what recall code should be
 					$mode = '-';
 					// Get Title  (Title is not part of the cancel response)
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -1738,7 +1676,7 @@ class CarlX extends SIP2Driver{
 					$expirationTime = time() + 2 * 365 * 24 * 60 * 60;
 				}
 
-				$in = $mySip->msgHold($mode, $expirationTime, $holdType, $itemId, $recordId, '', $pickupBranchNumber, $queuePosition);
+				$in = $mySip->msgHoldCarlX($mode, $expirationTime, $holdType, $itemId, $recordId, '', $pickupBranchNumber, $queuePosition, $freeze, $freezeReactivationDate);
 				$msg_result = $mySip->get_message($in);
 
 				if (preg_match("/^16/", $msg_result)) {
