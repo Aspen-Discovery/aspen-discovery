@@ -22,6 +22,12 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		$this->accountProfile = $accountProfile;
 	}
 
+	/**
+	 * @param $username
+	 * @param $password
+	 * @param $validatedViaSSO
+	 * @return User|AspenError
+	 */
 	public abstract function patronLogin($username, $password, $validatedViaSSO);
 
 	/**
