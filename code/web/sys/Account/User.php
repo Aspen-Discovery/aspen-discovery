@@ -52,6 +52,8 @@ class User extends DataObject
 
 	public $lastListUsed;
 
+	public $lastLoginValidation;
+
 	/** @var User $parentUser */
 	private $parentUser;
 	/** @var User[] $linkedUsers */

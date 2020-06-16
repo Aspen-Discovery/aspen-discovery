@@ -381,7 +381,7 @@ class Koha extends AbstractIlsDriver
 
 		$barcodesToTest = array();
 		$barcodesToTest[] = $username;
-		$barcodesToTest[] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));;
+		$barcodesToTest[] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
 		//Special processing to allow users to login with short barcodes
 		global $library;
 		if ($library) {
