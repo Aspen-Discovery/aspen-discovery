@@ -303,6 +303,14 @@ function getUserUpdates()
 			'sql' => [
 				"ALTER TABLE user ADD COLUMN lastListUsed INT(11) DEFAULT -1",
 			]
+		],
+
+		'user_last_login_validation' => [
+			'title' => 'User Last Login Validation',
+			'description' => 'Store when the user was last validated so we don\'t need to constantly revalidate in the app',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN lastLoginValidation INT(11) DEFAULT -1',
+			]
 		]
 	);
 }

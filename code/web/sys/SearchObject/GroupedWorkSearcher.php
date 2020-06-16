@@ -255,6 +255,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					$facet->facetName = 'econtent_source_' . $solrScope;
 				} elseif ($facet->facetName == 'econtent_protection_type') {
 					$facet->facetName = 'econtent_protection_type_' . $solrScope;
+				} elseif ($facet->facetName == 'shelf_location') {
+					$facet->facetName = 'shelf_location_' . $solrScope;
 				} elseif ($facet->facetName == 'detailed_location') {
 					$facet->facetName = 'detailed_location_' . $solrScope;
 				} elseif ($facet->facetName == 'owning_location') {
@@ -1533,6 +1535,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 						$facet->facetName = 'econtent_source_' . $solrScope;
 					} elseif ($facet->facetName == 'econtent_protection_type') {
 						$facet->facetName = 'econtent_protection_type_' . $solrScope;
+					} elseif ($facet->facetName == 'shelf_location') {
+						$facet->facetName = 'shelf_location_' . $solrScope;
 					} elseif ($facet->facetName == 'detailed_location') {
 						$facet->facetName = 'detailed_location_' . $solrScope;
 					} elseif ($facet->facetName == 'owning_location') {

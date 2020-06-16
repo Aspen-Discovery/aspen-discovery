@@ -1180,7 +1180,7 @@ class Location extends DataObject
 			if (strlen($formattedMessage) != 0 && (sizeof($hours) > 2)) {
 				$formattedMessage .= ', ';
 			}
-			if (($i == (sizeof($hours) - 1))) {
+			if (($i == (sizeof($hours) - 1)) && count($hours) > 1) {
 				$formattedMessage .= translate(' and ');
 			}
 			$formattedMessage .= translate(['text' => '%1% to %2%', 1 => $hours[$i]['openFormatted'], 2 => $hours[$i]['closeFormatted']]);

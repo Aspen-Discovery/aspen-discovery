@@ -127,6 +127,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		itemInfo.setCallNumber("Online " + profileType);
 		itemInfo.setItemIdentifier(identifier);
 		itemInfo.setShelfLocation(profileType);
+		itemInfo.setDetailedLocation(profileType);
 
 		//No Collection for Side loaded eContent
 		//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));

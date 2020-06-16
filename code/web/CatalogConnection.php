@@ -96,8 +96,6 @@ class CatalogConnection
 	 */
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false)
 	{
-		global $timer;
-		global $logger;
 		global $offlineMode;
 
 		//Get the barcode property
@@ -107,42 +105,56 @@ class CatalogConnection
 			$barcode = $password;
 		}
 
-		//Strip any non digit characters from the password
-		//Can't do this any longer since some libraries do have characters in their barcode:
-		//$password = preg_replace('/[a-or-zA-OR-Z\W]/', '', $password);
-		//Remove any spaces from the barcode
-		$barcode = preg_replace('/[^a-zA-Z\d\s]/', '', trim($barcode));
-		if ($offlineMode) {
-			//The catalog is offline, check the database to see if the user is valid
-			$user = new User();
-			if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
-				$user->cat_username = $barcode;
-			} else {
-				$user->cat_password = $barcode;
+		$barcodesToTest = array();
+		$barcodesToTest[] = $username;
+		$barcodesToTest[] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
+		//Special processing to allow users to login with short barcodes
+		global $library;
+		if ($library) {
+			if ($library->barcodePrefix) {
+				if (strpos($username, $library->barcodePrefix) !== 0) {
+					//Add the barcode prefix to the barcode
+					$barcodesToTest[] = $library->barcodePrefix . $username;
+				}
 			}
-			if ($user->find(true)) {
-				if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
-					//We load the account based on the barcode make sure the pin matches
-					$userValid = $user->cat_password == $password;
-				} else {
-					//We still load based on barcode, make sure the username is similar
-					$userValid = $this->areNamesSimilar($username, $user->cat_username);
-				}
-				if ($userValid) {
-					//We have a good user account for additional processing
-				} else {
-					$timer->logTime("offline patron login failed due to invalid name");
-					$logger->log("offline patron login failed due to invalid name", Logger::LOG_NOTICE);
-					return null;
-				}
-			} else {
-				$timer->logTime("offline patron login failed because we haven't seen this user before");
-				$logger->log("offline patron login failed because we haven't seen this user before", Logger::LOG_NOTICE);
+		}
+
+		//Get the existing user from the database.  This validates that the username and password on record are correct
+		$user = null;
+		foreach ($barcodesToTest as $barcode) {
+			$user = $this->getUserFromDatabase($barcode, $password, $username);
+			if ($user != null){
+				break;
+			}
+		}
+
+		if ($offlineMode) {
+			if ($user == null){
 				return null;
 			}
 		} else {
-			//Catalog is online, do the login
-			$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
+			if ($user != null) {
+				//If we have a valid patron, only revalidate every 15 minutes
+				if ($user->lastLoginValidation < (time() - 15 * 60)) {
+					$doPatronLogin = true;
+				}else{
+					$doPatronLogin = false;
+				}
+			}else{
+				$doPatronLogin = true;
+			}
+			if ($doPatronLogin) {
+				//Catalog is online, do the login
+				$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
+				if ($user && !($user instanceof AspenError)) {
+					try {
+						$user->lastLoginValidation = time();
+						$user->update();
+					}catch (Exception $e){
+						//This happens before database update
+					}
+				}
+			}
 		}
 
 		if ($user && !($user instanceof AspenError)) {
@@ -1043,5 +1055,42 @@ class CatalogConnection
 
 	function getPasswordPinValidationRules(){
 		return $this->driver->getPasswordPinValidationRules();
+	}
+
+	/**
+	 * @param $barcode
+	 * @param string $password
+	 * @param string $username
+	 * @return User|null
+	 */
+	protected function getUserFromDatabase($barcode, string $password, string $username)
+	{
+		global $timer;
+		global $logger;
+		$user = new User();
+		if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
+			$user->cat_username = $barcode;
+		} else {
+			$user->cat_password = $barcode;
+		}
+		if ($user->find(true)) {
+			if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
+				//We load the account based on the barcode make sure the pin matches
+				$userValid = $user->cat_password == $password;
+			} else {
+				//We still load based on barcode, make sure the username is similar
+				$userValid = $this->areNamesSimilar($username, $user->cat_username);
+			}
+			if (!$userValid) {
+				$timer->logTime("offline patron login failed due to invalid name");
+				$logger->log("offline patron login failed due to invalid name", Logger::LOG_NOTICE);
+				$user = null;
+			}
+		} else {
+			$timer->logTime("offline patron login failed because we haven't seen this user before");
+			$logger->log("offline patron login failed because we haven't seen this user before", Logger::LOG_NOTICE);
+			$user = null;
+		}
+		return $user;
 	}
 }

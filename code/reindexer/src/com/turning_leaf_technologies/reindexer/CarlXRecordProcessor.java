@@ -72,7 +72,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		return overriddenStatus;
 	}*/
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode, identifier);
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);

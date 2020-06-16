@@ -251,6 +251,7 @@ class OverDriveProcessor {
 							itemInfo.seteContentSource("OverDrive");
 							itemInfo.setIsEContent(true);
 							itemInfo.setShelfLocation("Online OverDrive Collection");
+							itemInfo.setDetailedLocation("Online OverDrive Collection");
 							itemInfo.setCallNumber("Online OverDrive");
 							itemInfo.setSortableCallNumber("Online OverDrive");
 							if (isOnOrder) {
@@ -322,7 +323,8 @@ class OverDriveProcessor {
 							} else {
 								for (Scope curScope : indexer.getScopes()) {
 									if (curScope.isLibraryScope() && curScope.getLibraryId().equals(libraryId)) {
-										itemInfo.setShelfLocation(curScope.getFacetLabel() + " - OverDrive Advantage");
+										itemInfo.setShelfLocation("Online OverDrive Collection");
+										itemInfo.setDetailedLocation(curScope.getFacetLabel() + " - OverDrive Advantage");
 									}
 									if (curScope.isIncludeOverDriveCollection() && curScope.getLibraryId().equals(libraryId)) {
 										boolean okToInclude = false;

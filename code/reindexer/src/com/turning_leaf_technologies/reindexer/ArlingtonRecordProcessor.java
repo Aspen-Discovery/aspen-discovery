@@ -176,6 +176,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 
 					itemInfo.setShelfLocationCode(locationCode);
 					itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, null, recordInfo.getRecordIdentifier()));
+					itemInfo.setDetailedLocation(getDetailedLocationForItem(itemInfo, null, recordInfo.getRecordIdentifier()));
 
 					loadItemCallNumber(record, null, itemInfo);
 
@@ -254,6 +255,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 				itemInfo.setCallNumber("Online");
 				itemInfo.seteContentSource(econtentSource);
 				itemInfo.setShelfLocation(econtentSource);
+				itemInfo.setDetailedLocation(econtentSource);
 				itemInfo.setIType("eCollection");
 				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
 				relatedRecord.setSubSource(profileType);

@@ -8744,6 +8744,8 @@ a.placard-link {
 .placard-image {
   float: left;
   padding-right: 10px;
+  max-width: 100%;
+  height: auto;
 }
 .placard-body {
   font-weight: bold;

@@ -45,6 +45,7 @@ public class GroupedWorkIndexer {
 	static int ownedByBoostValue = 10;
 
 	private boolean fullReindex;
+	private boolean clearIndex;
 	private long lastReindexTime;
 	private Long lastReindexTimeVariableId;
 	private boolean okToIndex = true;
@@ -73,6 +74,7 @@ public class GroupedWorkIndexer {
 		this.logger = logger;
 		this.dbConn = dbConn;
 		this.fullReindex = fullReindex;
+		this.clearIndex = clearIndex;
 
 		String solrPort = configIni.get("Reindex", "solrPort");
 
@@ -473,7 +475,7 @@ public class GroupedWorkIndexer {
 				if (logEntry instanceof NightlyIndexLogEntry){
 					((NightlyIndexLogEntry) logEntry).incNumWorksProcessed();
 				}
-				if (fullReindex && (numWorksProcessed % 5000 == 0)){
+				if (!this.clearIndex && (numWorksProcessed % 5000 == 0)){
 					//Testing shows that regular commits do seem to improve performance.
 					//However, we can't do it too often or we get errors with too many searchers warming.
 					//This is happening now with the auto commit settings in solrconfig.xml
@@ -611,7 +613,7 @@ public class GroupedWorkIndexer {
 		}else{
 			//Log that this record did not have primary identifiers after
 			logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
-			if (!fullReindex){
+			if (!this.clearIndex){
 				this.deleteRecord(permanentId, id);
 			}
 

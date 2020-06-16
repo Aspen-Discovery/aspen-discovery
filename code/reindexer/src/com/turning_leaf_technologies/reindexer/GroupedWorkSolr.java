@@ -502,7 +502,8 @@ public class GroupedWorkSolr implements Cloneable {
 					Scope curScopeDetails = curScope.getScope();
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
 						addUniqueFieldValue(doc, "collection_" + curScopeName, curItem.getCollection());
-						addUniqueFieldValue(doc, "detailed_location_" + curScopeName, curItem.getShelfLocation());
+						addUniqueFieldValue(doc, "detailed_location_" + curScopeName, curItem.getDetailedLocation());
+						addUniqueFieldValue(doc, "shelf_location_" + curScopeName, curItem.getShelfLocation());
 					}
 					if (curItem.isEContent() || curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
 						Long daysSinceAdded;
@@ -791,7 +792,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private void addUniqueFieldValue(SolrInputDocument doc, String fieldName, String value) {
-		if (value == null) return;
+		if (value == null || value.length() == 0) return;
 		Collection<Object> fieldValues = doc.getFieldValues(fieldName);
 		if (fieldValues == null) {
 			doc.addField(fieldName, value);

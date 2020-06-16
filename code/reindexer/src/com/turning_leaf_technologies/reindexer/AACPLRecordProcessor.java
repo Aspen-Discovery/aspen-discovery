@@ -94,7 +94,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 		return available;
 	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode, identifier);
 		String shelvingLocation = itemInfo.getShelfLocationCode();
@@ -197,6 +197,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 
 				//Add the library this is on order for
 				itemInfo.setShelfLocation("On Order");
+				itemInfo.setDetailedLocation("On Order");
 
 				recordInfo.addItem(itemInfo);
 			}else{

@@ -221,6 +221,8 @@ abstract class SearchObject_BaseSearcher
 						$field = 'econtent_protection_type_' . $solrScope;
 					} elseif (($field === 'collection') || ($field === 'collection_group')) {
 						$field = 'collection_' . $solrScope;
+					} elseif ($field === 'shelf_location') {
+						$field = 'shelf_location_' . $solrScope;
 					} elseif ($field === 'detailed_location') {
 						$field = 'detailed_location_' . $solrScope;
 					} elseif ($field === 'owning_location') {
@@ -233,6 +235,8 @@ abstract class SearchObject_BaseSearcher
 						$field = 'local_time_since_added_' . $solrScope;
 					} elseif ($field === 'itype') {
 						$field = 'itype_' . $solrScope;
+					} elseif ($field === 'shelf_location') {
+						$field = 'shelf_location_' . $solrScope;
 					} elseif ($field === 'detailed_location') {
 						$field = 'detailed_location_' . $solrScope;
 					}
@@ -299,6 +303,8 @@ abstract class SearchObject_BaseSearcher
 			$shortField = 'econtent_source';
 		} elseif (strpos($shortField, 'econtent_protection_type') === 0) {
 			$shortField = 'econtent_protection_type';
+		} elseif (strpos($shortField, 'shelf_location') === 0) {
+			$shortField = 'shelf_location';
 		} elseif (strpos($shortField, 'detailed_location') === 0) {
 			$shortField = 'detailed_location';
 		} elseif (strpos($shortField, 'owning_location') === 0) {

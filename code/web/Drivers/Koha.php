@@ -381,7 +381,7 @@ class Koha extends AbstractIlsDriver
 
 		$barcodesToTest = array();
 		$barcodesToTest[] = $username;
-		$barcodesToTest[] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));;
+		$barcodesToTest[] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
 		//Special processing to allow users to login with short barcodes
 		global $library;
 		if ($library) {
@@ -2483,7 +2483,7 @@ class Koha extends AbstractIlsDriver
 					$messageType['label'] = 'Item due';
 					break;
 				case "Advance_Notice":
-					$messageType['label'] = 'Advanced notice';
+					$messageType['label'] = 'Advance notice';
 					break;
 				case "Hold_Filled":
 					$messageType['label'] = 'Hold filled';
