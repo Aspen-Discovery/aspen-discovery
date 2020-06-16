@@ -68,7 +68,7 @@ public class KohaExportMain {
 		if (extractSingleWork) {
 			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 		}
-		String profileToLoad = "koha";
+		String profileToLoad = "ils";
 
 		String processName = "koha_export";
 		logger = LoggingUtil.setupLogging(serverName, processName);
