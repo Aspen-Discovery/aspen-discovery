@@ -2,8 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SymphonyRecordProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cron/.idea/dictionaries/mdnob.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/dictionaries/mdnob.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../symphony_export/symphony_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../symphony_export/symphony_export.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/release_notes/20.09.00.MD" beforeDir="false" afterPath="$PROJECT_DIR$/release_notes/20.09.00.MD" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,6 +79,7 @@
       <server host="wasatch.basinlibraries.localhost" id="914e1869-abd0-42ed-b365-d8c234bb5e4e" name="wasatch.basinlibraries.localhost" />
       <server host="nederland.aspencat.localhost" id="f9c9d3e1-29cc-4bc6-86ef-a7a330a42b6e" name="nederland.aspencat.localhost" />
       <server host="arlington.koha.local" id="88213282-7667-4f99-9209-81efc10079fa" name="arlington.koha.local" />
+      <server host="swan.localhost" id="2c1357ff-4245-40e6-9077-d348d472ed00" name="swan.localhost" />
     </servers>
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.1">
@@ -183,6 +194,7 @@
       <workItem from="1590776093927" duration="597000" />
       <workItem from="1590777146785" duration="444000" />
       <workItem from="1590778076575" duration="42052000" />
+      <workItem from="1592311779526" duration="2031000" />
     </task>
     <servers />
   </component>
