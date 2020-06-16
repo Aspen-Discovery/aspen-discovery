@@ -388,9 +388,9 @@
       <item itemvalue="Application.OAI Indexer" />
       <item itemvalue="Application.OverDrive Export" />
       <item itemvalue="Application.Rbdigital Export" />
+      <item itemvalue="Application.Reindexer - Is Nightly Index Running" />
       <item itemvalue="Application.Reindexer Full" />
       <item itemvalue="Application.Reindexer Single Work" />
-      <item itemvalue="Application.Reindexer - Is Nightly Index Running" />
       <item itemvalue="Application.Side Load Processing" />
       <item itemvalue="Application.SierraExport" />
       <item itemvalue="Application.User List Indexer" />
