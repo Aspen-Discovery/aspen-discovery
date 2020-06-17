@@ -40,7 +40,7 @@
     - Pinterest
     - reCAPTCHA
     - Syndetics
-    - [Wikipedia](/Admin/HelpManual?=Novelist)
+    - [Wikipedia](/Admin/HelpManual?=Wikipedia)
   - Cataloging 
   - ILS Integration
     - Account Profiles
