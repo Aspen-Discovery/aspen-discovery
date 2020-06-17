@@ -428,7 +428,7 @@ class Koha extends AbstractIlsDriver
 					}else{
 						//Check to see if the user has reached the maximum number of login attempts
 						$maxLoginAttempts = $this->getKohaSystemPreference('FailedLoginAttempts');
-						if ($maxLoginAttempts <= $lookupUserRow['login_attempts']){
+						if (!empty($maxLoginAttempts) && $maxLoginAttempts <= $lookupUserRow['login_attempts']){
 							return new AspenError('Maximum number of failed login attempts reached, your account has been locked.');
 						}
 					}
