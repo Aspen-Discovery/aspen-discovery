@@ -304,7 +304,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 				$results = curl_getinfo($ch);
 				$this->lastHttpCode = $results['http_code'];
 				global $logger;
-				$logger->log("Failed to call overdrive url " . session_id() . print_r($return, true), Logger::LOG_ERROR);
+				if ($return == false) {
+					$logger->log("Failed to call overdrive url " . session_id() . " curl_exec returned false", Logger::LOG_ERROR);
+				}else{
+					$logger->log("Failed to call overdrive url " . session_id() . print_r($return, true), Logger::LOG_ERROR);
+				}
+
 			}
 			curl_close($ch);
 		}
