@@ -90,7 +90,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	private function _connectToPatronAPI($user, $patronBarcode, $patronPin, $forceNewConnection = false){
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $timer;
 		$patronTokenData = $memCache->get('overdrive_patron_token_' . $patronBarcode);
@@ -305,7 +304,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				$this->lastHttpCode = $results['http_code'];
 				global $logger;
 				if ($return == false) {
-					$logger->log("Failed to call overdrive url " . session_id() . " curl_exec returned false", Logger::LOG_ERROR);
+					$logger->log("Failed to call overdrive url $url " . session_id() . " curl_exec returned false " . print_r($postParams, true), Logger::LOG_ERROR);
 				}else{
 					$logger->log("Failed to call overdrive url " . session_id() . print_r($return, true), Logger::LOG_ERROR);
 				}
