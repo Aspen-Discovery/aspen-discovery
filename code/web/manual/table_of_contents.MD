@@ -40,7 +40,7 @@
     - Pinterest
     - reCAPTCHA
     - Syndetics
-    - Wikipedia
+    - [Wikipedia](/Admin/HelpManual?=Novelist)
   - Cataloging 
   - ILS Integration
     - Account Profiles
@@ -90,7 +90,7 @@
   - Uploaded PDFS
 - [Advanced Search](/Admin/HelpManual?page=Advanced%20Search)
 - Aspen API
-- [Author pages](/Admin/HelpManual?page=Author-Pages)
+- [Author pages](/Admin/HelpManual?page=Wikipedia)
 - Browsing
 - Citations
 - Collection Spotlights
