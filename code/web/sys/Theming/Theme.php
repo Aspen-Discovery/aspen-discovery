@@ -161,6 +161,16 @@ class Theme extends DataObject
 	public $deselectedBrowseCategoryBorderColorDefault;
 	public $capitalizeBrowseCategories;
 
+	//Panel Colors
+	public $closedPanelBackgroundColor;
+	public $closedPanelBackgroundColorDefault;
+	public $closedPanelForegroundColor;
+	public $closedPanelForegroundColorDefault;
+	public $openPanelBackgroundColor;
+	public $openPanelBackgroundColorDefault;
+	public $openPanelForegroundColor;
+	public $openPanelForegroundColorDefault;
+
 	//Fonts
 	public $headingFont;
 	public $headingFontDefault;
@@ -295,6 +305,13 @@ class Theme extends DataObject
 				'deselectedBrowseCategoryBorderColor' => array('property' => 'deselectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Deselected Browse Category Border Color', 'description' => 'Deselected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
 
 				'capitalizeBrowseCategories' => array('property' => 'capitalizeBrowseCategories', 'type' => 'enum', 'values'=> [-1 => 'Default', 0 => 'Maintain case', 1 => 'Force Uppercase'], 'label' => 'Capitalize Browse Categories', 'description' => 'How to treat capitalization of browse categories', 'required' => false, 'hideInLists' => true, 'default' => '-1'),
+			]],
+
+			'panels' => ['property'=>'panelsSection', 'type' => 'section', 'label' =>'Panels', 'hideInLists' => true, 'properties' => [
+				'closedPanelBackgroundColor' => array('property' => 'closedPanelBackgroundColor', 'type' => 'color', 'label' => 'Closed Panel Background Color', 'description' => 'Panel Background Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#e7e7e7'),
+				'closedPanelForegroundColor' => array('property' => 'closedPanelForegroundColor', 'type' => 'color', 'label' => 'Closed Panel Text Color', 'description' => 'Panel Foreground Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#333333'),
+				'openPanelBackgroundColor' => array('property' => 'openPanelBackgroundColor', 'type' => 'color', 'label' => 'Open Panel Background Color', 'description' => 'Panel Category Background Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#4DACDE'),
+				'openPanelForegroundColor' => array('property' => 'openPanelForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Category Foreground Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
 			]],
 
 			'buttonSection' =>['property'=>'buttonSection', 'type' => 'section', 'label' =>'Buttons', 'hideInLists' => true, 'properties' => [
@@ -537,6 +554,19 @@ class Theme extends DataObject
 				$interface->assign('capitalizeBrowseCategories', $theme->capitalizeBrowseCategories);
 			}
 
+			if ($interface->getVariable('closedPanelBackgroundColor') == null && !$theme->closedPanelBackgroundColorDefault) {
+				$interface->assign('closedPanelBackgroundColor', $theme->closedPanelBackgroundColor);
+			}
+			if ($interface->getVariable('closedPanelForegroundColor') == null && !$theme->closedPanelForegroundColorDefault) {
+				$interface->assign('closedPanelForegroundColor', $theme->closedPanelForegroundColor);
+			}
+			if ($interface->getVariable('openPanelBackgroundColor') == null && !$theme->openPanelBackgroundColorDefault) {
+				$interface->assign('openPanelBackgroundColor', $theme->openPanelBackgroundColor);
+			}
+			if ($interface->getVariable('openPanelForegroundColor') == null && !$theme->openPanelForegroundColorDefault) {
+				$interface->assign('openPanelForegroundColor', $theme->openPanelForegroundColor);
+			}
+
 			if ($interface->getVariable('defaultButtonBackgroundColor') == null && !$theme->defaultButtonBackgroundColorDefault) {
 				$interface->assign('defaultButtonBackgroundColor', $theme->defaultButtonBackgroundColor);
 			}
@@ -681,10 +711,22 @@ class Theme extends DataObject
 			}
 		}
 
+//		if ($interface->getVariable('closedPanelBackgroundColor') == null && $interface->getVariable('secondaryBackgroundColor') != null) {
+//			$interface->assign('closedPanelBackgroundColor', $interface->getVariable('secondaryBackgroundColor'));
+//		}
+//		if ($interface->getVariable('closedPanelForegroundColor') == null && $interface->getVariable('secondaryForegroundColor') != null) {
+//			$interface->assign('closedPanelForegroundColor', $interface->getVariable('secondaryForegroundColor'));
+//		}
+		if ($interface->getVariable('openPanelBackgroundColor') == null && $interface->getVariable('secondaryBackgroundColor') != null) {
+			$interface->assign('openPanelBackgroundColor', $interface->getVariable('secondaryBackgroundColor'));
+		}
+		if ($interface->getVariable('openPanelForegroundColor') == null && $interface->getVariable('secondaryForegroundColor') != null) {
+			$interface->assign('openPanelForegroundColor', $interface->getVariable('secondaryForegroundColor'));
+		}
+
 		$interface->assign('additionalCSS', $additionalCSS);
 
-		$formattedCSS = $interface->fetch('theme.css.tpl');
-		return $formattedCSS;
+		return $interface->fetch('theme.css.tpl');
 	}
 
 	/**
@@ -819,33 +861,41 @@ class Theme extends DataObject
 		}
 	}
 
-	/** @return Library[] */
+	/** @return Library[]
+	 * @noinspection PhpUnused
+	 */
 	public function getLibraries()
 	{
 		return $this->_libraries;
 	}
 
-	/** @return Location[] */
+	/** @return Location[]
+	 * @noinspection PhpUnused
+	 */
 	public function getLocations()
 	{
 		return $this->_locations;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setLibraries($val)
 	{
 		$this->_libraries = $val;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setLocations($val)
 	{
 		$this->_libraries = $val;
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearLibraries(){
 		$this->clearOneToManyOptions('Library', 'theme');
 		unset($this->_libraries);
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearLocations(){
 		$this->clearOneToManyOptions('Location', 'theme');
 		unset($this->_locations);
