@@ -92,6 +92,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	private function _connectToPatronAPI($user, $patronBarcode, $patronPin, $forceNewConnection = false){
 		global $memCache;
 		global $timer;
+		global $logger;
 		$patronTokenData = $memCache->get('overdrive_patron_token_' . $patronBarcode);
 		if ($forceNewConnection || $patronTokenData == false){
 			$tokenData = $this->_connectToAPI($forceNewConnection);
@@ -107,10 +108,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 				$ilsname = $this->getILSName($user);
 				if (!$ilsname) {
+					$logger->log("Patron is not valid for OverDrive, ILSName is not set", Logger::LOG_ERROR);
 					return false;
 				}
 
 				if (empty($settings->clientSecret)){
+					$logger->log("Patron is not valid for OverDrive, ClientSecret is not set", Logger::LOG_ERROR);
 					return false;
 				}
 				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
@@ -146,10 +149,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 					if (isset($patronTokenData->error)){
 						if ($patronTokenData->error == 'unauthorized_client'){ // login failure
 							// patrons with too high a fine amount will get this result.
+							$logger->log("Patron is not valid for OverDrive, patronTokenData returned unauthorized_client", Logger::LOG_ERROR);
 							return false;
 						}else{
 							if ($configArray['System']['debug']){
 								echo("Error connecting to overdrive apis ". $patronTokenData->error);
+								$logger->log("Patron is not valid for OverDrive, { $patronTokenData->error}", Logger::LOG_ERROR);
 							}
 						}
 					}else{
@@ -159,6 +164,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					}
 				}
 			}else{
+				$logger->log("Could not connect to OverDrive", Logger::LOG_ERROR);
 				return false;
 			}
 		}
