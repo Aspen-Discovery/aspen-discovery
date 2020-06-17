@@ -190,11 +190,13 @@ class Novelist3{
 						foreach ($decodedData->titles as $title) {
 							if (!is_null($title->TitleInfo)) {
 								$numManifestations = count($title->TitleInfo->manifestations);
-								if ($numManifestations > $numManifestationsForBest) {
+								if ($numManifestations > 0 && $numManifestations > $numManifestationsForBest) {
 									$novelistData->hasNovelistData = 1;
 
 									$bestResponse = json_encode($title);
-									$primaryISBN = $title->TitleInfo->primary_isbn;
+									if (!empty($title->TitleInfo->primary_isbn)) {
+										$primaryISBN = $title->TitleInfo->primary_isbn;
+									}
 									$numManifestationsForBest = $numManifestations;
 								}
 							}
