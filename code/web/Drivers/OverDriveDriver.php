@@ -303,6 +303,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}else{
 				$results = curl_getinfo($ch);
 				$this->lastHttpCode = $results['http_code'];
+				global $logger;
+				$logger->log("Failed to call overdrive url " . session_id() . print_r($return, true), Logger::LOG_ERROR);
 			}
 			curl_close($ch);
 		}
@@ -651,7 +653,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @return array (result, message)
 	 */
 	public function placeHold($user, $overDriveId){
-		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
