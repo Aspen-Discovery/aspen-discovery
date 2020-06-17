@@ -548,10 +548,13 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		location = translateValue("location", locationCode, identifier);
 		if (subLocationCode != null && subLocationCode.length() > 0){
-			if (location.length() > 0){
-				location += " - ";
+			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier);
+			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
+				if (location.length() > 0) {
+					location += " - ";
+				}
+				location += translateValue("sub_location", subLocationCode, identifier);
 			}
-			location += translateValue("sub_location", subLocationCode, identifier);
 		}
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelvingLocation != null && shelvingLocation.length() > 0){
