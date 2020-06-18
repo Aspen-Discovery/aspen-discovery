@@ -2560,7 +2560,11 @@ class Koha extends AbstractIlsDriver
 						$getParams[] = urlencode($key) . '=' . urlencode($arrayValue);
 					}
 				} else {
-					$getParams[] = urlencode($key) . '=' . urlencode($value);
+					if ($key == 'SMSnumber') {
+						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/\\D/', '', $value));
+					}else{
+						$getParams[] = urlencode($key) . '=' . urlencode($value);
+					}
 				}
 			}
 
