@@ -14,7 +14,7 @@ class UInterface extends Smarty
 	private $theme;
 	/** @var Theme */
 	private $appliedTheme = null;
-	private $isMobile = false;
+	private $isMobile;
 	private $url;
 	private $debug = false;
 
@@ -212,7 +212,6 @@ class UInterface extends Smarty
 			$this->assign('session', session_id() . ' - not saved');
 		}
 
-		/** @var IndexingProfile $activeRecordProfile */
 		global $activeRecordProfile;
 		if ($activeRecordProfile){
 			$this->assign('activeRecordProfileModule', $activeRecordProfile->recordUrlComponent);
@@ -334,24 +333,11 @@ class UInterface extends Smarty
 		return $resource;
 	}
 
-	public function isMobile(){
-		return $this->isMobile;
-	}
-
-	public function getPrimaryTheme(){
-		if (is_array($this->themes)){
-			return reset($this->themes);
-		}else{
-			return $this->themes;
-		}
-	}
-
 	function getAppliedTheme(){
 		return $this->appliedTheme;
 	}
 
 	function loadDisplayOptions(){
-		/** @var Library $library */
 		global $library;
 		global $locationSingleton;
 		global $configArray;
@@ -483,6 +469,8 @@ class UInterface extends Smarty
 
 		$this->assign('showConvertListsFromClassic', $library->showConvertListsFromClassic);
 
+		$this->assign('showAlternateLibraryCard', $library->showAlternateLibraryCard);
+
 		if ($location != null){ // library and location
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
 			$this->assign('showComments', $location->getGroupedWorkDisplaySettings()->showComments);
@@ -561,7 +549,6 @@ class UInterface extends Smarty
 		}
 
 		//Load library links
-		/** @noinspection PhpUndefinedFieldInspection */
 		$links = $library->libraryLinks;
 		$libraryHelpLinks = array();
 		$libraryAccountLinks = array();
@@ -591,7 +578,6 @@ class UInterface extends Smarty
 		$this->assign('libraryHelpLinks', $libraryHelpLinks);
 		$this->assign('expandedLinkCategories', $expandedLinkCategories);
 
-		/** @noinspection PhpUndefinedFieldInspection */
 		$topLinks = $library->libraryTopLinks;
 		$this->assign('topLinks', $topLinks);
 	}

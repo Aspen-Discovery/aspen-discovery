@@ -152,6 +152,7 @@
 							<hr class="menu">
 							<div class="myAccountLink">{translate text='Account Settings'}</div>
 							<ul class="account-submenu">
+								<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='My Library Card(s)'}{else}{translate text='My Library Card'}{/if}</a></li>
 								<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/MyPreferences">{translate text='My Preferences'}</a></li>
 								<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/ContactInformation">{translate text='Contact Information'}</a></li>
 								{if $user->showMessagingSettings()}

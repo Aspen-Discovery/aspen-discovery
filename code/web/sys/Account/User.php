@@ -39,6 +39,8 @@ class User extends DataObject
 	public $rbdigitalPassword;
 	public $rbdigitalLastAccountCheck;
 	public $lockedFacets;
+	public $alternateLibraryCard;
+	public $alternateLibraryCardPassword;
 
 	/** @var Role[] */
 	private $_roles;
