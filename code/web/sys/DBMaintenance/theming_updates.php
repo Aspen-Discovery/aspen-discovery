@@ -293,7 +293,7 @@ function getThemingUpdates()
 		],
 
 		'themes_panel_design' => [
-			'title' => 'Theme Footer',
+			'title' => 'Theme Panels',
 			'description' => 'Initial setup of footer colors and optional logos. ',
 			'continueOnError' => false,
 			'sql' => [

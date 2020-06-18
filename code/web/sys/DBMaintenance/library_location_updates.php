@@ -2164,6 +2164,14 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library ADD COLUMN alternateLibraryCardStyle VARCHAR(20) DEFAULT 'none'",
 			]
 		],
+
+		'locationHistoricCode' => [
+			'title' => 'Location Historic Code',
+			'description' => 'Add historic code for location for use in some instances when the code is not provided',
+			'sql' => [
+				"ALTER TABLE location ADD COLUMN historicCode VARCHAR(20) DEFAULT ''"
+			]
+		]
 	);
 }
 

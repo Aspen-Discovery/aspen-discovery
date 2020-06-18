@@ -1013,12 +1013,8 @@ class Library extends DataObject
 			unset($structure['displaySection']['properties']['enableCourseReserves']);
 			unset($structure['ilsSection']['properties']['scope']);
 			unset($structure['ilsSection']['properties']['useScope']);
-			unset($structure['ilsSection']['properties']['enableMaterialsBooking']);
-			unset($structure['ilsSection']['properties']['pTypesSection']);
 		}
 		if ($ils == 'Koha') {
-			//unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowProfileUpdates']);
-			//unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowPatronAddressUpdates']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showWorkPhoneInProfile']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['treatPrintNoticesAsPhoneNotices']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showNoticeTypeInProfile']);
