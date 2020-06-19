@@ -37,14 +37,6 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'library_5' => array(
-			'title' => 'Library 5',
-			'description' => 'Set up a link to boopsie in mobile',
-			'sql' => array(
-				"ALTER TABLE `library` ADD `boopsieLink` VARCHAR(150) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;",
-			),
-		),
-
 		'library_6' => array(
 			'title' => 'Library 6',
 			'description' => 'Add fields originally defined for Marmot',
