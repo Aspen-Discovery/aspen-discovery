@@ -264,7 +264,7 @@ public class KohaExportMain {
 
 			PreparedStatement getVolumeInfoStmt = kohaConn.prepareStatement("SELECT * from volumes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement getItemsForVolumeStmt = kohaConn.prepareStatement("SELECT * from volume_items", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems)");
+			PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
 			PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
 
 			ResultSet volumeInfoRS = null;
@@ -298,7 +298,7 @@ public class KohaExportMain {
 					int displayOrder = volumeInfoRS.getInt("display_order");
 					String description = volumeInfoRS.getString("description");
 					existingVolumes.remove(volumeId);
-					String relatedItems = itemsForVolume.get(recordId);
+					String relatedItems = itemsForVolume.get(volumeId);
 					if (relatedItems == null){
 						relatedItems = "";
 					}

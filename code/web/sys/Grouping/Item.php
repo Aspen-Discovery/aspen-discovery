@@ -47,6 +47,7 @@ class Grouping_Item
 	 * @var string
 	 */
 	public $subLocation;
+	public $volume;
 	/**
 	 * @var array
 	 */
