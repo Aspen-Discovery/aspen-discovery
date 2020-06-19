@@ -766,11 +766,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		return $this->groupedWorkDriver;
 	}
 
-	public function getItemActions($itemInfo){
-		return array();
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null) {
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null) {
 		$actions = array();
 		if ($isAvailable){
 			$actions[] = array(

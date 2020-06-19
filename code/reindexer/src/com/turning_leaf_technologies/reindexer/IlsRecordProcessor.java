@@ -732,6 +732,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			lastCheckInFormatter = new SimpleDateFormat(lastCheckInFormat);
 		}
 		ItemInfo itemInfo = new ItemInfo();
+
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
@@ -810,13 +811,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 
-		//This is done later so we don't need to do it here.
-		//loadScopeInfoForPrintIlsItem(recordInfo, groupedWork.getTargetAudiences(), itemInfo, record);
-
 		groupedWork.addKeywords(itemLocation);
 		if (itemSublocation.length() > 0){
 			groupedWork.addKeywords(itemSublocation);
 		}
+
+		itemInfo.setMarcField(itemField);
 
 		recordInfo.addItem(itemInfo);
 	}
@@ -1122,7 +1122,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private HashMap<String, Boolean> locationsThatHaveHoldabilityChecked = new HashMap<>();
 	private HashMap<String, Boolean> statusesThatHaveHoldabilityChecked = new HashMap<>();
 
-	private HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
+	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
 		String itemItypeCode =  itemInfo.getITypeCode();
 		if (nonHoldableITypes != null && itemItypeCode != null && itemItypeCode.length() > 0){
 			if (!iTypesThatHaveHoldabilityChecked.containsKey(itemItypeCode)){

@@ -96,16 +96,6 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 		}
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return array();
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-	{
-		return array();
-	}
-
 	/**
 	 * Return the unique identifier of this record within the Solr index;
 	 * useful for retrieving additional information (like tags and user

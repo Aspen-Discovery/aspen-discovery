@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
+import org.marc4j.marc.DataField;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,6 +38,7 @@ public class ItemInfo {
 	private HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
 	private String shelfLocationCode;
 	private Long autoReindexTime = null;
+	private DataField marcField;
 
 	public void setRecordInfo(RecordInfo recordInfo) {
 		this.recordInfo = recordInfo;
@@ -350,5 +352,13 @@ public class ItemInfo {
 
 	Long getAutoReindexTime(){
 		return autoReindexTime;
+	}
+
+	void setMarcField(DataField itemField) {
+		this.marcField = itemField;
+	}
+
+	DataField getMarcField() {
+		return  this.marcField;
 	}
 }

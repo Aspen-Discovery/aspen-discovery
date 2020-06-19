@@ -48,6 +48,7 @@ class Grouping_Item
 	 */
 	public $subLocation;
 	public $volume;
+	public $volumeId;
 	/**
 	 * @var array
 	 */
@@ -57,6 +58,7 @@ class Grouping_Item
 	private $_relatedUrls = [];
 	private $_actions = [];
 	private $_displayByDefault = false;
+
 
 	/**
 	 * Grouping_Item constructor.

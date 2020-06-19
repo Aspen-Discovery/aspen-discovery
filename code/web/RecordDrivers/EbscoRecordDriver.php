@@ -219,14 +219,6 @@ class EbscoRecordDriver extends RecordInterface {
 		// TODO: Implement getMoreDetailsOptions() method.
 	}
 
-	public function getItemActions($itemInfo) {
-		// TODO: Implement getItemActions() method.
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null) {
-		// TODO: Implement getRecordActions() method.
-	}
-
 	public function getFormats() {
 		return (string)$this->recordData->Header->PubType;
 	}

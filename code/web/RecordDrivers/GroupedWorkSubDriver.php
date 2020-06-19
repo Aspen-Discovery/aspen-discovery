@@ -470,10 +470,16 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 		return $workAPI->getRatingData($this->getGroupedWorkId());
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-	{
-		return array();
-	}
+	/**
+	 * @param Grouping_Record $relatedRecord
+	 * @param boolean $isAvailable
+	 * @param boolean $isHoldable
+	 * @param boolean $isBookable
+	 * @param null|string[] $relatedUrls
+	 * @param null|IlsVolumeInfo[] $volumeData
+	 * @return array
+	 */
+	public abstract function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null);
 
 	/**
 	 * Load Record actions when we don't have detailed information about the record yet

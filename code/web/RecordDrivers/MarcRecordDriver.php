@@ -868,12 +868,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		return "/" . $this->getModule() . "/$recordId";
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return array();
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
 		$actions = array();
 		global $interface;
@@ -904,16 +899,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$source = $this->profileType;
 			$id = $this->id;
 			if (!is_null($volumeData) && count($volumeData) > 0) {
-				foreach ($volumeData as $volumeInfo) {
-					if (isset($volumeInfo->holdable) && $volumeInfo->holdable) {
-						$volume = $volumeInfo->volumeId;
-						$actions[] = array(
-							'title' => 'Hold ' . $volumeInfo->displayLabel,
-							'url' => '',
-							'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volume');",
-							'requireLogin' => false,
-						);
+				//Check the items to see which volumes are holdable
+				$holdableVolumes = [];
+				foreach ($relatedRecord->getItems() as $itemDetail){
+					if ($itemDetail->holdable && !empty($itemDetail->volumeId)){
+						$holdableVolumes[$itemDetail->volumeId] = $itemDetail->volume;
 					}
+				}
+				foreach ($holdableVolumes as $volumeId => $volumeName) {
+					$actions[] = array(
+						'title' => 'Hold ' . $volumeName,
+						'url' => '',
+						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volumeId');",
+						'requireLogin' => false,
+					);
 				}
 			} else {
 				$actions[] = array(

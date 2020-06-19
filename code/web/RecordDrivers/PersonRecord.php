@@ -144,14 +144,4 @@ class PersonRecord extends IndexRecordDriver
 	{
 		return '';
 	}
-
-	public function getItemActions($itemInfo)
-	{
-		return [];
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-	{
-		return [];
-	}
 }

@@ -123,6 +123,7 @@ class Grouping_Record
 			foreach ($this->_volumeData as $volumeInfo){
 				if ((strlen($volumeInfo->relatedItems) == 0) || (strpos($volumeInfo->relatedItems, $item->itemId) !== false)) {
 					$item->volume = $volumeInfo->displayLabel;
+					$item->volumeId = $volumeInfo->volumeId;
 				}
 			}
 		}
@@ -539,5 +540,10 @@ class Grouping_Record
 	function getDriver(): GroupedWorkSubDriver
 	{
 		return $this->_driver;
+	}
+
+	public function getItems()
+	{
+		return $this->_items;
 	}
 }

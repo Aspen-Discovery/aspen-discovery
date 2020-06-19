@@ -724,14 +724,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		return $filteredMoreDetailsOptions;
 	}
 
-	public function getItemActions($itemInfo) {
-		return array();
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null) {
-		return array();
-	}
-
     /**
      * Overridden to add the view action
      * @return string
