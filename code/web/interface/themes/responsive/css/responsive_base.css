@@ -8941,7 +8941,7 @@ a.placard-link {
   outline: none;
 }
 .sidebar-links .active .panel-heading {
-  background: #4dacde;
+  background-color: #4dacde;
 }
 .sidebar-links .panel-body {
   font-size: 13px;

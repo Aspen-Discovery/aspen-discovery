@@ -174,12 +174,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return [];
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
 		$actions = array();
 		if ($isAvailable){

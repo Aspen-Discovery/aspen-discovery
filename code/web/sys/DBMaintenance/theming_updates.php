@@ -1,5 +1,6 @@
 <?php
 
+/** @noinspection SqlResolve */
 function getThemingUpdates()
 {
 	return [
@@ -288,6 +289,22 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN `footerForegroundColorDefault` tinyint(1) DEFAULT 1",
 				"ALTER TABLE themes ADD COLUMN footerLogo VARCHAR(100) NULL",
 				"ALTER TABLE themes ADD COLUMN footerLogoLink VARCHAR(255) NULL",
+			],
+		],
+
+		'themes_panel_design' => [
+			'title' => 'Theme Panels',
+			'description' => 'Initial setup of footer colors and optional logos. ',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN closedPanelBackgroundColor CHAR(7) DEFAULT '#e7e7e7'",
+				"ALTER TABLE themes ADD COLUMN closedPanelBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN closedPanelForegroundColor CHAR(7) DEFAULT '#333333'",
+				"ALTER TABLE themes ADD COLUMN closedPanelForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN openPanelBackgroundColor CHAR(7) DEFAULT '#4DACDE'",
+				"ALTER TABLE themes ADD COLUMN openPanelBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN openPanelForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE themes ADD COLUMN openPanelForegroundColorDefault tinyint(1) DEFAULT 1",
 			],
 		],
 	];

@@ -190,16 +190,6 @@ class ListsRecordDriver extends IndexRecordDriver
 		return $this->fields['description'];
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return [];
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-	{
-		return [];
-	}
-
 	private function getListObject()
 	{
 		if ($this->listObject == null){

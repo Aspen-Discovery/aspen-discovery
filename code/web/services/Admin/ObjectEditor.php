@@ -340,7 +340,7 @@ abstract class ObjectEditor extends Admin_Admin
 				$interface->assign('error', 'Could not load object from the database');
 			}else{
 				$properties = [];
-				$properties = $this->compareObjectProperties($structure, $object1, $object2, $properties);
+				$properties = $this->compareObjectProperties($structure, $object1, $object2, $properties, '');
 				$interface->assign('properties', $properties);
 			}
 		}else{
@@ -357,22 +357,41 @@ abstract class ObjectEditor extends Admin_Admin
 	 * @param array $properties
 	 * @return array
 	 */
-	protected function compareObjectProperties($structure, ?DataObject $object1, ?DataObject $object2, array $properties): array
+	protected function compareObjectProperties($structure, ?DataObject $object1, ?DataObject $object2, array $properties, $sectionName): array
 	{
 		foreach ($structure as $property) {
 			if ($property['type'] == 'section') {
-				$properties = $this->compareObjectProperties($property['properties'], $object1, $object2, $properties);
+				$label = $property['label'];
+				if (!empty($sectionName)) {
+					$label = $sectionName . ': ' . $label;
+				}
+				$properties = $this->compareObjectProperties($property['properties'], $object1, $object2, $properties, $label);
 			} else {
 				$propertyName = $property['property'];
 				$uniqueProperty = isset($property['uniqueProperty']) ? $property['uniqueProperty'] : ($propertyName == $this->getPrimaryKeyColumn());
 				$propertyValue1 = $this->getPropertyValue($property, $object1->$propertyName, $property['type']);
 				$propertyValue2 = $this->getPropertyValue($property, $object2->$propertyName, $property['type']);
+				$label = $property['label'];
+				if (!empty($sectionName)) {
+					$label = $sectionName . ': ' . $label;
+				}
 				$properties[] = [
-					'name' => $property['label'],
+					'name' => $label,
 					'value1' => $propertyValue1,
 					'value2' => $propertyValue2,
 					'uniqueProperty' => $uniqueProperty,
 				];
+				if ($property['type'] == 'color' || $property['type'] == 'font') {
+					$defaultPropertyName = $propertyName . 'Default';
+					$propertyValue1Default = $this->getPropertyValue($property, $object1->$defaultPropertyName, $property['type']) == 1 ? 'Yes' : 'No';
+					$propertyValue2Default = $this->getPropertyValue($property, $object1->$defaultPropertyName, $property['type']) == 1 ? 'Yes' : 'No';
+					$properties[] = [
+						'name' => $label . ' Use Default',
+						'value1' => $propertyValue1Default,
+						'value2' => $propertyValue2Default,
+						'uniqueProperty' => $uniqueProperty,
+					];
+				}
 			}
 		}
 		return $properties;

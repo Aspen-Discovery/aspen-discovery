@@ -31,7 +31,7 @@ class OverDrive_AJAX extends JSON_Action
 	function placeHold()
 	{
 		global $logger;
-		$logger->log("Starting OverDrive/placeHold session: " . session_id(), Logger::LOG_ERROR);
+		$logger->log("Starting OverDrive/placeHold session: " . session_id(), Logger::LOG_DEBUG);
 		$user = UserAccount::getLoggedInUser();
 
 		$overDriveId = $_REQUEST['overDriveId'];
@@ -57,14 +57,13 @@ class OverDrive_AJAX extends JSON_Action
 
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$holdMessage = $driver->placeHold($patron, $overDriveId);
-				return $holdMessage;
+				return $driver->placeHold($patron, $overDriveId);
 			} else {
-				$logger->log("Logged in user {$user->id} not valid for patron {$patronId}", Logger::LOG_ERROR);
+				$logger->log("Logged in user {$user->id} not valid for patron {$patronId}", Logger::LOG_DEBUG);
 				return array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.']));
 			}
 		} else {
-			$logger->log("User is not logged in", Logger::LOG_ERROR);
+			$logger->log("User is not logged in", Logger::LOG_DEBUG);
 			return array('result' => false, 'message' => 'You must be logged in to place a hold.');
 		}
 	}

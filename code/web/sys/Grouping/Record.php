@@ -42,6 +42,8 @@ class Grouping_Record
 	private $_items;
 
 	private $_displayByDefault = true;
+	/** @var  IlsVolumeInfo[] */
+	private $_volumeData;
 
 	/**
 	 * Grouping_Record constructor.
@@ -69,7 +71,15 @@ class Grouping_Record
 		$this->_statusInformation = new Grouping_StatusInformation();
 		$this->_statusInformation->setNumHolds($recordDriver != null ? $recordDriver->getNumHolds() : 0);
 		$this->_volumeHolds = $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null;
-
+		$this->_volumeData = $volumeData;
+		if (!empty($volumeData)) {
+			$this->_volumeData = [];
+			foreach ($volumeData as $volumeInfo){
+				if ($volumeInfo->recordId == $this->id){
+					$this->_volumeData[] = $volumeInfo;
+				}
+			}
+		}
 	}
 
 	function addItem(Grouping_Item $item)
@@ -109,6 +119,14 @@ class Grouping_Record
 		}
 		$this->_statusInformation->setGroupedStatus(GroupedWorkDriver::keepBestGroupedStatus($this->getStatusInformation()->getGroupedStatus(), $item->groupedStatus));
 
+		if (!empty($this->_volumeData)){
+			foreach ($this->_volumeData as $volumeInfo){
+				if ((strlen($volumeInfo->relatedItems) == 0) || (strpos($volumeInfo->relatedItems, $item->itemId) !== false)) {
+					$item->volume = $volumeInfo->displayLabel;
+					$item->volumeId = $volumeInfo->volumeId;
+				}
+			}
+		}
 	}
 
 	function getSchemaOrgBookFormat()
@@ -522,5 +540,10 @@ class Grouping_Record
 	function getDriver(): GroupedWorkSubDriver
 	{
 		return $this->_driver;
+	}
+
+	public function getItems()
+	{
+		return $this->_items;
 	}
 }

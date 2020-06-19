@@ -1054,11 +1054,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return array();
-	}
-
 	public function getLexileCode()
 	{
 		return isset($this->fields['lexile_code']) ? $this->fields['lexile_code'] : null;
@@ -1385,11 +1380,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		require_once ROOT_DIR . '/services/API/WorkAPI.php';
 		$workAPI = new WorkAPI();
 		return $workAPI->getRatingData($this->getPermanentId());
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-	{
-		return array();
 	}
 
 	public function getRecordUrl()
@@ -2692,7 +2682,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$memoryWatcher->logMemory("Setup record items");
 
 		if (!$forCovers) {
-			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $relatedRecord->isBookable(), [], $volumeData) : array());
+			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord, $relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $relatedRecord->isBookable(), $volumeData) : array());
 			$timer->logTime("Loaded actions");
 			$memoryWatcher->logMemory("Loaded actions");
 		}

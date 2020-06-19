@@ -536,7 +536,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 		if (suppressed){
-			return suppressed;
+			return true;
 		}else{
 			return super.isItemSuppressed(curItem);
 		}
@@ -548,10 +548,13 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		location = translateValue("location", locationCode, identifier);
 		if (subLocationCode != null && subLocationCode.length() > 0){
-			if (location.length() > 0){
-				location += " - ";
+			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier);
+			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
+				if (location.length() > 0) {
+					location += " - ";
+				}
+				location += translateValue("sub_location", subLocationCode, identifier);
 			}
-			location += translateValue("sub_location", subLocationCode, identifier);
 		}
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelvingLocation != null && shelvingLocation.length() > 0){
@@ -574,5 +577,14 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		}
 
 		return isSuppressed;
+	}
+
+	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
+		//Koha uses subfield 7 to determine if a record is holdable or not.
+		Subfield subfield7 = itemInfo.getMarcField().getSubfield('7');
+		if (subfield7 != null && !subfield7.getData().equals("0") && !subfield7.getData().equals("-1")){
+			return new HoldabilityInformation(false, new HashSet<>());
+		}
+		return super.isItemHoldableUnscoped(itemInfo);
 	}
 }

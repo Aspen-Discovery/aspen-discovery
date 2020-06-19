@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 
 function getLibraryLocationUpdates(){
 	return array(
@@ -47,7 +47,7 @@ function getLibraryLocationUpdates(){
 
 		'library_6' => array(
 			'title' => 'Library 6',
-			'description' => 'Add fields orginally defined for Marmot',
+			'description' => 'Add fields originally defined for Marmot',
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `library` ADD `showHoldCancelDate` TINYINT(4) NOT NULL DEFAULT '0';",
@@ -83,7 +83,7 @@ function getLibraryLocationUpdates(){
 
 		'library_8' => array(
 			'title' => 'Library 8',
-			'description' => 'Add eContenLinkRules to determine how to load library specific link urls',
+			'description' => 'Add eContentLinkRules to determine how to load library specific link urls',
 			'sql' => array(
 				"ALTER TABLE `library` ADD `eContentLinkRules` VARCHAR(512) DEFAULT '';",
 			),
@@ -128,7 +128,7 @@ function getLibraryLocationUpdates(){
 			'description' => 'Add abbreviation for library name for use in some cases where the full name is not desired.',
 			'sql' => array(
 				"ALTER TABLE `library` ADD `abbreviatedDisplayName` VARCHAR(20) DEFAULT '';",
-				"UPDATE `library` SET `abbreviatedDisplayName` = LEFT(`displayName`, 20);",
+				"UPDATE `library` SET `abbreviatedDisplayName` = LEFT(`displayName`, 20) WHERE abbreviatedDisplayName = '';",
 			),
 		),
 
@@ -150,7 +150,7 @@ function getLibraryLocationUpdates(){
 
 		'library_15' => array(
 			'title' => 'Library 15',
-			'description' => 'Add showProspectorResultsAtEndOfSearch to library so prospector titles can be removed from search results without completely diasabling prospector',
+			'description' => 'Add showProspectorResultsAtEndOfSearch to library so prospector titles can be removed from search results without completely disabling prospector',
 			'sql' => array(
 				"ALTER TABLE `library` ADD `showProspectorResultsAtEndOfSearch` TINYINT DEFAULT '1';",
 			),
@@ -260,7 +260,7 @@ function getLibraryLocationUpdates(){
 
 		'library_30' => array(
 			'title' => 'Library 30',
-			'description' => 'Add bettter controls for restricting what is searched',
+			'description' => 'Add better controls for restricting what is searched',
 			'sql' => array(
 				"ALTER TABLE library ADD restrictSearchByLibrary TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE library ADD includeDigitalCollection TINYINT(1) DEFAULT '1'",
@@ -722,14 +722,14 @@ function getLibraryLocationUpdates(){
 			'description' => 'Collapse all facets by default. To match new style.',
 			'continueOnError' => true,
 			'sql' => array(
-				"UPDATE location_facet_setting SET collapseByDefault = '1'",
-				"UPDATE library_facet_setting SET collapseByDefault = '1'",
+				"UPDATE location_facet_setting SET collapseByDefault = '1' where true",
+				"UPDATE library_facet_setting SET collapseByDefault = '1' where true",
 			),
 		),
 
 		'location_1' => array(
 			'title' => 'Location 1',
-			'description' => 'Add fields orginally defined for Marmot',
+			'description' => 'Add fields originally defined for Marmot',
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `location` ADD `defaultPType` INT(11) NOT NULL DEFAULT '-1';",
@@ -771,7 +771,7 @@ function getLibraryLocationUpdates(){
 
 		'location_7' => array(
 			'title' => 'Location 7',
-			'description' => 'Add extraLocationCodesToInclude field for indexing of juvenile collections and other special collections, and add bettter controls for restricting what is searched',
+			'description' => 'Add extraLocationCodesToInclude field for indexing of juvenile collections and other special collections, and add better controls for restricting what is searched',
 			'sql' => array(
 				"ALTER TABLE location ADD extraLocationCodesToInclude VARCHAR(255) DEFAULT ''",
 				"ALTER TABLE location ADD restrictSearchByLocation TINYINT(1) DEFAULT '0'",
@@ -1550,7 +1550,7 @@ function getLibraryLocationUpdates(){
 
 			'location_include_library_records_to_include' => array(
 					'title' => 'Location Include Library Records To Include',
-					'description' => 'Flag for whether or not a location should include all the records to include settings for a libary automatically',
+					'description' => 'Flag for whether or not a location should include all the records to include settings for a library automatically',
 					'continueOnError' => true,
 					'sql' => array(
 							"ALTER TABLE `location` ADD COLUMN `includeLibraryRecordsToInclude` TINYINT(1) DEFAULT '0';",
@@ -1643,14 +1643,14 @@ function getLibraryLocationUpdates(){
 					),
 			),
 
-			'library_show_series_in_main_details' => array(
-					'title' => 'Default Show Series In Main Details On',
-					'description' => 'Update all libraries to have show series in main details set to on',
-					'continueOnError' => false,
-					'sql' => array(
-							"updateShowSeriesInMainDetails",
-					),
+		'library_show_series_in_main_details' => array(
+			'title' => 'Default Show Series In Main Details On',
+			'description' => 'Updates to all libraries to have show series in main details set to on',
+			'continueOnError' => false,
+			'sql' => array(
+				"updateShowSeriesInMainDetails",
 			),
+		),
 
 		'library_use_theme' => array(
 			'title' => 'Use Themes for libraries and locations',
@@ -2152,6 +2152,34 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				"ALTER TABLE library ADD COLUMN selfRegistrationPasswordNotes VARCHAR(255) DEFAULT ''",
 			]
+		],
+
+		'libraryAlternateCardSetup' => [
+			'title' => 'Library Alternate Card Setup',
+			'description' => 'Add fields to allow definition of alternate library cards',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN showAlternateLibraryCard TINYINT DEFAULT 0",
+				"ALTER TABLE library ADD COLUMN showAlternateLibraryCardPassword TINYINT DEFAULT 0",
+				"ALTER TABLE library ADD COLUMN alternateLibraryCardLabel VARCHAR(50) DEFAULT ''",
+				"ALTER TABLE library ADD COLUMN alternateLibraryCardPasswordLabel VARCHAR(50) DEFAULT ''"
+			]
+		],
+
+		'libraryCardBarcode' => [
+			'title' => 'Library Card Barcode',
+			'description' => 'Add fields to to define how barcodes should be rendered',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN libraryCardBarcodeStyle VARCHAR(20) DEFAULT 'none'",
+				"ALTER TABLE library ADD COLUMN alternateLibraryCardStyle VARCHAR(20) DEFAULT 'none'",
+			]
+		],
+
+		'locationHistoricCode' => [
+			'title' => 'Location Historic Code',
+			'description' => 'Add historic code for location for use in some instances when the code is not provided',
+			'sql' => [
+				"ALTER TABLE location ADD COLUMN historicCode VARCHAR(20) DEFAULT ''"
+			]
 		]
 	);
 }
@@ -2191,7 +2219,6 @@ function createFacetGroupsForLibrariesAndLocations(){
 		$facetGroups[$facetGroup->id] = clone $facetGroup;
 	}
 	//Now go through the existing facets to see if we need to create new groups
-	/** @var PDO $aspen_db */
 	global $aspen_db;
 	$library = new Library();
 	$library->find();
@@ -2420,6 +2447,7 @@ function createFacetGroupsForLibrariesAndLocations(){
 				if ($location->getGroupedWorkDisplaySettings()->facetGroupId != $newFacetGroup->id){
 					if ($location->getGroupedWorkDisplaySettings()->facetGroupId != 0) {
 						//We need to create a new set of display settings for the new facet group
+						/** @var GroupedWorkDisplaySetting $newGroupedWorkDisplaySettings */
 						$newGroupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings()->copy(['name' => 'Location: ' . $location->displayName], true);
 						$location->setGroupedWorkDisplaySettings($newGroupedWorkDisplaySettings);
 						$location->update();
@@ -2446,7 +2474,6 @@ function createFacetGroupsForLibrariesAndLocations(){
 
 /** @noinspection PhpUnused */
 function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
-	/** @var PDO $aspen_db */
 	global $aspen_db;
 
 	$uniqueSearchSettingsSQL = "(SELECT libraryId as id, 'library' as tableType, displayName, true as isMainBranch, applyNumberOfHoldingsBoost, showSearchTools, showQuickCopy, showInSearchResultsMainDetails, alwaysShowSearchResultsMainDetails, availabilityToggleLabelSuperScope, IF (availabilityToggleLabelLocal = '', '{display name}', availabilityToggleLabelLocal) as availabilityToggleLabelLocal, availabilityToggleLabelAvailable, availabilityToggleLabelAvailableOnline, 0 as baseAvailabilityToggleOnLocalHoldingsOnly, includeOnlineMaterialsInAvailableToggle, includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets From library)
@@ -2472,6 +2499,7 @@ function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInsp
 		$groupedWorkDisplaySetting->includeOnlineMaterialsInAvailableToggle = $uniqueSearchSettingsRow['includeOnlineMaterialsInAvailableToggle'];
 		$groupedWorkDisplaySetting->includeAllRecordsInShelvingFacets = $uniqueSearchSettingsRow['includeAllRecordsInShelvingFacets'];
 		$groupedWorkDisplaySetting->includeAllRecordsInDateAddedFacets = $uniqueSearchSettingsRow['includeAllRecordsInDateAddedFacets'];
+		$searchId = null;
 		if ($groupedWorkDisplaySetting->find(true)){
 			$searchId = $groupedWorkDisplaySetting->id;
 		}else{
@@ -2507,7 +2535,6 @@ function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInsp
 
 /** @noinspection PhpUnused */
 function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
-	/** @var PDO $aspen_db */
 	global $aspen_db;
 
 	$uniqueLayoutSettingsSQL = "SELECT libraryId as id, displayName, showSidebarMenu, sidebarMenuButtonText, useHomeLinkInBreadcrumbs, useHomeLinkForLogo, homeLinkText, showLibraryHoursAndLocationsLink From library";
@@ -2524,6 +2551,7 @@ function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspectio
 		$layoutSetting->useHomeLinkForLogo = $uniqueLayoutSettingsRow['useHomeLinkForLogo'];
 		$layoutSetting->homeLinkText = $uniqueLayoutSettingsRow['homeLinkText'];
 		$layoutSetting->showLibraryHoursAndLocationsLink = $uniqueLayoutSettingsRow['showLibraryHoursAndLocationsLink'];
+		$settingId = null;
 		if ($layoutSetting->find(true)){
 			$settingId = $layoutSetting->id;
 		}else{
@@ -2548,9 +2576,9 @@ function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspectio
 	}
 }
 
+/** @noinspection PhpUnused */
 function convertLibraryMoreDetailsToGroupedWork(&$update){
 	//This should only be called once or it will do weird things
-	/** @var PDO $aspen_db */
 	global $aspen_db;
 
 	//Get all of the records from the more details

@@ -72,18 +72,19 @@
 					{/if}
 				</div>
 				<div class="result-value col-tn-8">
+					{assign var=showMoreLists value=false}
 					{if count($appearsOnLists) >= 5}
-						{assign var=showMoreLists value="true"}
+						{assign var=showMoreLists value=true}
 					{/if}
 					{foreach from=$appearsOnLists item=appearsOnList name=loop}
-					<a href="{$appearsOnList.link}">{$appearsOnList.title}</a><br/>
-					{if !empty($showMoreLists) && $smarty.foreach.loop.iteration == 3}
-					<a onclick="$('#moreLists_OpenArchives{$recordDriver->getId()}').show();$('#moreListsLink_OpenArchives{$recordDriver->getId()}').hide();" id="moreListsLink_OpenArchives{$recordDriver->getId()}">{translate text="More Lists..."}</a>
-					<div id="moreLists_OpenArchives{$recordDriver->getId()}" style="display:none">
+						<a href="{$appearsOnList.link}">{$appearsOnList.title}</a><br/>
+						{if !empty($showMoreLists) && $smarty.foreach.loop.iteration == 3}
+							<a onclick="$('#moreLists_OpenArchives{$recordDriver->getId()}').show();$('#moreListsLink_OpenArchives{$recordDriver->getId()}').hide();" id="moreListsLink_OpenArchives{$recordDriver->getId()}">{translate text="More Lists..."}</a>
+							<div id="moreLists_OpenArchives{$recordDriver->getId()}" style="display:none">
 						{/if}
-						{/foreach}
-						{if !empty($showMoreLists)}
-					</div>
+					{/foreach}
+					{if !empty($showMoreLists)}
+						</div>
 					{/if}
 				</div>
 			</div>

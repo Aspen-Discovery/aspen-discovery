@@ -158,8 +158,16 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $showLibraryHoursNoticeOnAccountPages;
 	public $showShareOnExternalSites;
 	public /** @noinspection PhpUnused */ $barcodePrefix;
+	public $libraryCardBarcodeStyle;
 	public /** @noinspection PhpUnused */ $minBarcodeLength;
 	public /** @noinspection PhpUnused */ $maxBarcodeLength;
+
+	public $showAlternateLibraryCard;
+	public $alternateLibraryCardStyle;
+	public $showAlternateLibraryCardPassword;
+	public $alternateLibraryCardLabel;
+	public $alternateLibraryCardPasswordLabel;
+
 	public $econtentLocationsToInclude;
 	public $showExpirationWarnings;
 	public /** @noinspection PhpUnused */ $loginFormUsernameLabel;
@@ -420,7 +428,19 @@ class Library extends DataObject
 			$cloudLibraryScopes[$cloudLibraryScope->id] = $cloudLibraryScope->name;
 		}
 
-		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
+		$barcodeTypes = [
+			'none' => 'Do not show the barcode',
+			'CODE128' => 'CODE128 (automatic mode switching)',
+			'CODE128A' => 'CODE128 Mode A',
+			'CODE128B' => 'CODE128 Mode B',
+			'CODE128C' => 'CODE128 Mode C',
+			'CODE39' => 'CODE39',
+			'EAN13' => 'EAN-13',
+			'EAN8' => 'EAN-8',
+			'EAN5' => 'EAN-5',
+			'ITF14' => 'ITF 14',
+			"MSI" => "MSI",
+		];
 
 		/** @noinspection HtmlRequiredAltAttribute */
 		/** @noinspection RequiredAttributes */
@@ -477,9 +497,17 @@ class Library extends DataObject
 					'defaultPType' => array('property'=>'defaultPType', 'type'=>'text', 'label'=>'Default P-Type', 'description'=>'The P-Type to use when accessing a subdomain if the patron is not logged in.','default'=>-1, 'forcesReindex' => true),
 				)),
 				'barcodeSection' => array('property' => 'barcodeSection', 'type' => 'section', 'label' => 'Barcode', 'hideInLists' => true, 'helpLink' => '', 'properties' => array(
+					'libraryCardBarcodeStyle' => array('property' => 'libraryCardBarcodeStyle', 'type'=>'enum', 'values'=>$barcodeTypes, 'label'=>'Library Barcode Style', 'description'=>'The style to show for the barcode on the Library Card page', 'hideInLists' => true, 'default' => 'none'),
 					'minBarcodeLength' => array('property'=>'minBarcodeLength', 'type'=>'integer', 'label'=>'Min Barcode Length', 'description'=>'A minimum length the patron barcode is expected to be. Leave as 0 to extra processing of barcodes.', 'hideInLists' => true, 'default'=>0),
 					'maxBarcodeLength' => array('property'=>'maxBarcodeLength', 'type'=>'integer', 'label'=>'Max Barcode Length', 'description'=>'The maximum length the patron barcode is expected to be. Leave as 0 to extra processing of barcodes.', 'hideInLists' => true, 'default'=>0),
 					'barcodePrefix'    => array('property'=>'barcodePrefix', 'type'=>'text', 'label'=>'Barcode Prefix', 'description'=>'A barcode prefix to apply to the barcode if it does not start with the barcode prefix or if it is not within the expected min/max range.  Multiple prefixes can be specified by separating them with commas. Leave blank to avoid additional processing of barcodes.', 'hideInLists' => true,'default'=>''),
+				)),
+				'alternateLibraryCardSection' => array('property' => 'alternateLibraryCardSection', 'type' => 'section', 'label' => 'Alternate Library Card', 'hideInLists' => true, 'helpLink' => '', 'properties' => array(
+					'showAlternateLibraryCard' => array('property'=>'showAlternateLibraryCard', 'type'=>'checkbox', 'label'=>'Show Alternate Library Card', 'description'=>'Whether or not the patron can enter an alternate library card.', 'hideInLists' => true, 'default'=>0),
+					'alternateLibraryCardStyle' => array('property' => 'alternateLibraryCardStyle', 'type'=>'enum', 'values'=>$barcodeTypes, 'label'=>'Alternate Library Card Barcode Style', 'description'=>'The style to show for the alternate barcode on the Library Card page', 'hideInLists' => true, 'default' => 'none'),
+					'showAlternateLibraryCardPassword' => array('property'=>'showAlternateLibraryCardPassword', 'type'=>'checkbox', 'label'=>'Show Alternate Library Card PIN/Password', 'description'=>'Whether or not the patron can enter an PIN/Password for their alternate library card', 'hideInLists' => true, 'default'=>0),
+					'alternateLibraryCardLabel' => array('property'=>'alternateLibraryCardLabel', 'type'=>'text', 'label'=>'Alternate Library Card Label', 'description'=>'A label describing the alternate library card.', 'hideInLists' => true,'default'=>''),
+					'alternateLibraryCardPasswordLabel' => array('property'=>'alternateLibraryCardPasswordLabel', 'type'=>'text', 'label'=>'Alternate Library Card PIN/Password Label', 'description'=>'A label describing the PIN/Password field for the alternate library card', 'hideInLists' => true,'default'=>''),
 				)),
 				'userProfileSection' => array('property' => 'userProfileSection', 'type' => 'section', 'label' => 'User Profile', 'hideInLists' => true,
 						'helpLink'=>'', 'properties' => array(
@@ -992,12 +1020,8 @@ class Library extends DataObject
 			unset($structure['displaySection']['properties']['enableCourseReserves']);
 			unset($structure['ilsSection']['properties']['scope']);
 			unset($structure['ilsSection']['properties']['useScope']);
-			unset($structure['ilsSection']['properties']['enableMaterialsBooking']);
-			unset($structure['ilsSection']['properties']['pTypesSection']);
 		}
 		if ($ils == 'Koha') {
-			//unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowProfileUpdates']);
-			//unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowPatronAddressUpdates']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showWorkPhoneInProfile']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['treatPrintNoticesAsPhoneNotices']);
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showNoticeTypeInProfile']);

@@ -161,6 +161,16 @@ class Theme extends DataObject
 	public $deselectedBrowseCategoryBorderColorDefault;
 	public $capitalizeBrowseCategories;
 
+	//Panel Colors
+	public $closedPanelBackgroundColor;
+	public $closedPanelBackgroundColorDefault;
+	public $closedPanelForegroundColor;
+	public $closedPanelForegroundColorDefault;
+	public $openPanelBackgroundColor;
+	public $openPanelBackgroundColorDefault;
+	public $openPanelForegroundColor;
+	public $openPanelForegroundColorDefault;
+
 	//Fonts
 	public $headingFont;
 	public $headingFontDefault;
@@ -297,6 +307,13 @@ class Theme extends DataObject
 				'capitalizeBrowseCategories' => array('property' => 'capitalizeBrowseCategories', 'type' => 'enum', 'values'=> [-1 => 'Default', 0 => 'Maintain case', 1 => 'Force Uppercase'], 'label' => 'Capitalize Browse Categories', 'description' => 'How to treat capitalization of browse categories', 'required' => false, 'hideInLists' => true, 'default' => '-1'),
 			]],
 
+			'panels' => ['property'=>'panelsSection', 'type' => 'section', 'label' =>'Panels', 'hideInLists' => true, 'properties' => [
+				'closedPanelBackgroundColor' => array('property' => 'closedPanelBackgroundColor', 'type' => 'color', 'label' => 'Closed Panel Background Color', 'description' => 'Panel Background Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#e7e7e7'),
+				'closedPanelForegroundColor' => array('property' => 'closedPanelForegroundColor', 'type' => 'color', 'label' => 'Closed Panel Text Color', 'description' => 'Panel Foreground Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#333333'),
+				'openPanelBackgroundColor' => array('property' => 'openPanelBackgroundColor', 'type' => 'color', 'label' => 'Open Panel Background Color', 'description' => 'Panel Category Background Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#4DACDE'),
+				'openPanelForegroundColor' => array('property' => 'openPanelForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Category Foreground Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+			]],
+
 			'buttonSection' =>['property'=>'buttonSection', 'type' => 'section', 'label' =>'Buttons', 'hideInLists' => true, 'properties' => [
 				'buttonRadius'  => array('property' => 'buttonRadius', 'type' => 'text', 'label' => 'Button Radius', 'description' => 'Button Radius', 'required' => false, 'hideInLists' => true),
 				'smallButtonRadius'  => array('property' => 'smallButtonRadius', 'type' => 'text', 'label' => 'Small Button Radius', 'description' => 'Small Button Radius', 'required' => false, 'hideInLists' => true),
@@ -310,48 +327,48 @@ class Theme extends DataObject
 					'defaultButtonHoverBorderColor' => array('property' => 'defaultButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Button Hover Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#adadad'),
 				]],
 				'primaryButtonSection' =>['property'=>'primaryButtonSection', 'type' => 'section', 'label' =>'Primary Button', 'hideInLists' => true, 'properties' => [
-					'primaryButtonBackgroundColor' => array('property' => 'primaryButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'primary' => '#428bca'),
-					'primaryButtonForegroundColor' => array('property' => 'primaryButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'primary' => '#ffffff'),
-					'primaryButtonBorderColor' => array('property' => 'primaryButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'primary' => '#357ebd'),
-					'primaryButtonHoverBackgroundColor' => array('property' => 'primaryButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'primary' => '#3276b1'),
-					'primaryButtonHoverForegroundColor' => array('property' => 'primaryButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'primary' => '#ffffff'),
+					'primaryButtonBackgroundColor' => array('property' => 'primaryButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#428bca'),
+					'primaryButtonForegroundColor' => array('property' => 'primaryButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+					'primaryButtonBorderColor' => array('property' => 'primaryButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#357ebd'),
+					'primaryButtonHoverBackgroundColor' => array('property' => 'primaryButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#3276b1'),
+					'primaryButtonHoverForegroundColor' => array('property' => 'primaryButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
 					'primaryButtonHoverBorderColor' => array('property' => 'primaryButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'primary' => '#285e8e'),
 				]],
 
 				'actionButtonSection' =>['property'=>'actionButtonSection', 'type' => 'section', 'label' =>'Action Button (Place hold, checkout, access online, etc)', 'hideInLists' => true, 'properties' => [
 					'actionButtonBackgroundColor' => array('property' => 'actionButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'action' => '#428bca'),
-					'actionButtonForegroundColor' => array('property' => 'actionButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'action' => '#ffffff'),
-					'actionButtonBorderColor' => array('property' => 'actionButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'action' => '#357ebd'),
-					'actionButtonHoverBackgroundColor' => array('property' => 'actionButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'action' => '#3276b1'),
-					'actionButtonHoverForegroundColor' => array('property' => 'actionButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'action' => '#ffffff'),
-					'actionButtonHoverBorderColor' => array('property' => 'actionButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'action' => '#285e8e'),
+					'actionButtonForegroundColor' => array('property' => 'actionButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+					'actionButtonBorderColor' => array('property' => 'actionButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#357ebd'),
+					'actionButtonHoverBackgroundColor' => array('property' => 'actionButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#3276b1'),
+					'actionButtonHoverForegroundColor' => array('property' => 'actionButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+					'actionButtonHoverBorderColor' => array('property' => 'actionButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#285e8e'),
 				]],
 
 				'infoButtonSection' =>['property'=>'infoButtonSection', 'type' => 'section', 'label' =>'Info Button', 'hideInLists' => true, 'properties' => [
-					'infoButtonBackgroundColor' => array('property' => 'infoButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'info' => '#5bc0de'),
-					'infoButtonForegroundColor' => array('property' => 'infoButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'info' => '#ffffff'),
-					'infoButtonBorderColor' => array('property' => 'infoButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'info' => '#46b8da'),
-					'infoButtonHoverBackgroundColor' => array('property' => 'infoButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'info' => '#39b3d7'),
-					'infoButtonHoverForegroundColor' => array('property' => 'infoButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'info' => '#ffffff'),
-					'infoButtonHoverBorderColor' => array('property' => 'infoButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'info' => '#269abc'),
+					'infoButtonBackgroundColor' => array('property' => 'infoButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#5bc0de'),
+					'infoButtonForegroundColor' => array('property' => 'infoButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+					'infoButtonBorderColor' => array('property' => 'infoButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#46b8da'),
+					'infoButtonHoverBackgroundColor' => array('property' => 'infoButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#39b3d7'),
+					'infoButtonHoverForegroundColor' => array('property' => 'infoButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+					'infoButtonHoverBorderColor' => array('property' => 'infoButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#269abc'),
 				]],
 
 				'warningButtonSection' =>['property'=>'warningButtonSection', 'type' => 'section', 'label' =>'Warning Button', 'hideInLists' => true, 'properties' => [
-					'warningButtonBackgroundColor' => array('property' => 'warningButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'warning' => '#f0ad4e'),
-					'warningButtonForegroundColor' => array('property' => 'warningButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'warning' => '#ffffff'),
-					'warningButtonBorderColor' => array('property' => 'warningButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'warning' => '#eea236'),
-					'warningButtonHoverBackgroundColor' => array('property' => 'warningButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'warning' => '#ed9c28'),
-					'warningButtonHoverForegroundColor' => array('property' => 'warningButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'warning' => '#ffffff'),
-					'warningButtonHoverBorderColor' => array('property' => 'warningButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'warning' => '#d58512'),
+					'warningButtonBackgroundColor' => array('property' => 'warningButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f0ad4e'),
+					'warningButtonForegroundColor' => array('property' => 'warningButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+					'warningButtonBorderColor' => array('property' => 'warningButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#eea236'),
+					'warningButtonHoverBackgroundColor' => array('property' => 'warningButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ed9c28'),
+					'warningButtonHoverForegroundColor' => array('property' => 'warningButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+					'warningButtonHoverBorderColor' => array('property' => 'warningButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#d58512'),
 				]],
 
 				'dangerButtonSection' =>['property'=>'dangerButtonSection', 'type' => 'section', 'label' =>'Danger Button', 'hideInLists' => true, 'properties' => [
-					'dangerButtonBackgroundColor' => array('property' => 'dangerButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'danger' => '#d9534f'),
-					'dangerButtonForegroundColor' => array('property' => 'dangerButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'danger' => '#ffffff'),
-					'dangerButtonBorderColor' => array('property' => 'dangerButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'danger' => '#d43f3a'),
-					'dangerButtonHoverBackgroundColor' => array('property' => 'dangerButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'danger' => '#d2322d'),
-					'dangerButtonHoverForegroundColor' => array('property' => 'dangerButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'danger' => '#ffffff'),
-					'dangerButtonHoverBorderColor' => array('property' => 'dangerButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'danger' => '#ac2925'),
+					'dangerButtonBackgroundColor' => array('property' => 'dangerButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#d9534f'),
+					'dangerButtonForegroundColor' => array('property' => 'dangerButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+					'dangerButtonBorderColor' => array('property' => 'dangerButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#d43f3a'),
+					'dangerButtonHoverBackgroundColor' => array('property' => 'dangerButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#d2322d'),
+					'dangerButtonHoverForegroundColor' => array('property' => 'dangerButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+					'dangerButtonHoverBorderColor' => array('property' => 'dangerButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#ac2925'),
 				]],
 			]],
 
@@ -537,6 +554,19 @@ class Theme extends DataObject
 				$interface->assign('capitalizeBrowseCategories', $theme->capitalizeBrowseCategories);
 			}
 
+			if ($interface->getVariable('closedPanelBackgroundColor') == null && !$theme->closedPanelBackgroundColorDefault) {
+				$interface->assign('closedPanelBackgroundColor', $theme->closedPanelBackgroundColor);
+			}
+			if ($interface->getVariable('closedPanelForegroundColor') == null && !$theme->closedPanelForegroundColorDefault) {
+				$interface->assign('closedPanelForegroundColor', $theme->closedPanelForegroundColor);
+			}
+			if ($interface->getVariable('openPanelBackgroundColor') == null && !$theme->openPanelBackgroundColorDefault) {
+				$interface->assign('openPanelBackgroundColor', $theme->openPanelBackgroundColor);
+			}
+			if ($interface->getVariable('openPanelForegroundColor') == null && !$theme->openPanelForegroundColorDefault) {
+				$interface->assign('openPanelForegroundColor', $theme->openPanelForegroundColor);
+			}
+
 			if ($interface->getVariable('defaultButtonBackgroundColor') == null && !$theme->defaultButtonBackgroundColorDefault) {
 				$interface->assign('defaultButtonBackgroundColor', $theme->defaultButtonBackgroundColor);
 			}
@@ -681,10 +711,22 @@ class Theme extends DataObject
 			}
 		}
 
+//		if ($interface->getVariable('closedPanelBackgroundColor') == null && $interface->getVariable('secondaryBackgroundColor') != null) {
+//			$interface->assign('closedPanelBackgroundColor', $interface->getVariable('secondaryBackgroundColor'));
+//		}
+//		if ($interface->getVariable('closedPanelForegroundColor') == null && $interface->getVariable('secondaryForegroundColor') != null) {
+//			$interface->assign('closedPanelForegroundColor', $interface->getVariable('secondaryForegroundColor'));
+//		}
+		if ($interface->getVariable('openPanelBackgroundColor') == null && $interface->getVariable('secondaryBackgroundColor') != null) {
+			$interface->assign('openPanelBackgroundColor', $interface->getVariable('secondaryBackgroundColor'));
+		}
+		if ($interface->getVariable('openPanelForegroundColor') == null && $interface->getVariable('secondaryForegroundColor') != null) {
+			$interface->assign('openPanelForegroundColor', $interface->getVariable('secondaryForegroundColor'));
+		}
+
 		$interface->assign('additionalCSS', $additionalCSS);
 
-		$formattedCSS = $interface->fetch('theme.css.tpl');
-		return $formattedCSS;
+		return $interface->fetch('theme.css.tpl');
 	}
 
 	/**
@@ -819,33 +861,41 @@ class Theme extends DataObject
 		}
 	}
 
-	/** @return Library[] */
+	/** @return Library[]
+	 * @noinspection PhpUnused
+	 */
 	public function getLibraries()
 	{
 		return $this->_libraries;
 	}
 
-	/** @return Location[] */
+	/** @return Location[]
+	 * @noinspection PhpUnused
+	 */
 	public function getLocations()
 	{
 		return $this->_locations;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setLibraries($val)
 	{
 		$this->_libraries = $val;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setLocations($val)
 	{
 		$this->_libraries = $val;
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearLibraries(){
 		$this->clearOneToManyOptions('Library', 'theme');
 		unset($this->_libraries);
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearLocations(){
 		$this->clearOneToManyOptions('Location', 'theme');
 		unset($this->_locations);

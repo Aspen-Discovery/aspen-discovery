@@ -49,6 +49,7 @@
       <w>booklist</w>
       <w>bools</w>
       <w>boombox</w>
+      <w>boopsie</w>
       <w>borrowernumber</w>
       <w>branchcode</w>
       <w>callnumber</w>
@@ -227,6 +228,7 @@
       <w>parsedown</w>
       <w>passwd</w>
       <w>patroninfo</w>
+      <w>paypal</w>
       <w>personalizations</w>
       <w>phonepro</w>
       <w>pids</w>
@@ -284,6 +286,7 @@
       <w>streamingvideoauth</w>
       <w>streetnumber</w>
       <w>subdomain</w>
+      <w>sublocation</w>
       <w>subpage</w>
       <w>suggesteddate</w>
       <w>suggestionid</w>

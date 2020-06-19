@@ -8929,7 +8929,7 @@ a.placard-link {
 }
 .sidebar-links .panel-heading {
   padding: 5px 15px;
-  background: #e7e7e7;
+  background-color: #e7e7e7;
   border-bottom: 1px solid #a1a1a1;
 }
 .sidebar-links .panel > a,
@@ -8937,6 +8937,7 @@ a.placard-link {
 .sidebar-links .panel > a:hover {
   font-size: 14px;
   color: #333333;
+  text-decoration: none;
 }
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,
@@ -8945,7 +8946,7 @@ a.placard-link {
   outline: none;
 }
 .sidebar-links .active .panel-heading {
-  background: #4dacde;
+  background-color: #4dacde;
 }
 .sidebar-links .panel-body {
   font-size: 13px;
@@ -11230,7 +11231,7 @@ div.panel-title {
 #account-settings-accordion .panel-heading {
   color: #292929;
   font-size: 16px;
-  background: #e4e4e4;
+  background-color: #e4e4e4;
   border-radius: 0px;
   box-shadow: 0 1px 0 #fefefe inset;
   border: 1px solid #d7d7d7;
@@ -11240,8 +11241,8 @@ div.panel-title {
 #account-settings-accordion .active .panel-heading {
   color: #292929;
   font-size: 16px;
-  background: #e4e4e4;
-  border-radius: 0px;
+  background-color: #e4e4e4;
+  border-radius: 0;
   box-shadow: 0 1px 0 #fefefe inset;
   border: 1px solid #d7d7d7;
 }

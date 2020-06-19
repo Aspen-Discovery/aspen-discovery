@@ -119,12 +119,6 @@ body .container{ldelim}
     border-color: {$secondaryBackgroundColor} !important;
     background: {$secondaryBackgroundColor} !important;
 {rdelim}
-.active.panel-default > .panel-heading,.sidebar-links .active .panel-heading, #account-link-accordion .panel.active .panel-title, #account-settings-accordion .panel.active .panel-title{ldelim}
-    background-color: {$secondaryBackgroundColor};
-{rdelim}
-.panel-title > a,.panel-default > .panel-heading{ldelim}
-    color: {$bodyTextColor} !important;
-{rdelim}
 {/if}
 
 {if $secondaryForegroundColor}
@@ -135,11 +129,26 @@ body .container{ldelim}
 .browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover, .titleScrollerHeader{ldelim}
     color: {$secondaryForegroundColor} !important;
 {rdelim}
-.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title{ldelim}
-    background-color: #e7e7e7;
+{/if}
+
+{if $closedPanelBackgroundColor}
+.facetTitle, .exploreMoreTitle,.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title{ldelim}
+    background-color: {$closedPanelBackgroundColor};
 {rdelim}
-.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
-    color: {$secondaryForegroundColor} !important;
+{/if}
+{if $closedPanelForegroundColor}
+.facetTitle, .exploreMoreTitle,.panel-title,.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title, .panel-title > a,.panel-default > .panel-heading{ldelim}
+    color: {$closedPanelForegroundColor};
+{rdelim}
+{/if}
+{if $openPanelBackgroundColor}
+.facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,.active .panel-default > .panel-heading, .sidebar-links .active .panel-heading, #account-link-accordion .panel.active .panel-title, #account-settings-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
+    background-color: {$openPanelBackgroundColor};
+{rdelim}
+{/if}
+{if $openPanelForegroundColor}
+.facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,#more-details-accordion .active .panel-title,#account-link-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
+    color: {$openPanelForegroundColor};
 {rdelim}
 {/if}
 

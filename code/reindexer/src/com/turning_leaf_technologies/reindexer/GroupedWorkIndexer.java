@@ -187,6 +187,9 @@ public class GroupedWorkIndexer {
 						case "Koha":
 							ilsRecordProcessors.put(curType, new KohaRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
+						case "Symphony":
+							ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							break;
 						default:
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
 							okToIndex = false;

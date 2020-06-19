@@ -22,7 +22,7 @@
 	<form method="post" action="/MyAccount/MessagingSettings" name="kohaMessaging">
 		<input type="hidden" name="modify" value="yes">
 
-		<table class="table table-bordered table-condensed table-striped">
+		<table class="table table-bordered table-condensed table-striped" id="messagingTable">
 			<thead>
 			<tr>
 				<th>&nbsp;</th>
@@ -43,8 +43,8 @@
 			<tbody>
 
 			{foreach from=$messageAttributes item=messageType}
-			{assign var=messageTypeId value=$messageType.message_attribute_id}
-				<tr>
+				{assign var=messageTypeId value=$messageType.message_attribute_id}
+				<tr id="messageType{$messageTypeId}Row">
 					<td>
 						{$messageType.label}
 					</td>
@@ -123,7 +123,7 @@
 		</table>
 
 		{if $enableSmsMessaging}
-			<div class="row form-group">
+			<div class="row form-group" id="smsNoticeRow">
 				<div class="col-md-3">
 				<label class="control-label">Notice</label>
 				</div>
@@ -131,7 +131,7 @@
 					Some charges for text messages may be incurred when using this service. Please check with your mobile service provider if you have questions.
 				</div>
 			</div>
-			<div class="row form-group">
+			<div class="row form-group" id="smsNumberRow">
 				<div class="col-md-3">
 					<label for="SMSnumber" class="control-label">SMS number</label>
 				</div>
@@ -140,7 +140,7 @@
 					<i>Please enter numbers only. <b>(123) 456-7890</b> would be entered as <b>1234567890</b>.</i>
 				</div>
 			</div>
-			<div class="row form-group">
+			<div class="row form-group" id="smsProviderRow">
 				<div class="col-md-3">
 					<label for="sms_provider_id" class="control-label">SMS provider</label>
 				</div>

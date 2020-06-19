@@ -190,11 +190,6 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return [];
-	}
-
 	public function getISBNs()
 	{
 		$isbns = [];
@@ -209,7 +204,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return array();
 	}
 
-	function getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $relatedUrls = null, $volumeData = null){
+	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $recordBookable, $volumeData = null){
 		$actions = array();
 
 		/** @var Library $searchLibrary */

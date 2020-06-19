@@ -195,11 +195,6 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return [];
-	}
-
 	public function getISBNs()
 	{
 		$isbns = [];
@@ -212,7 +207,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 		return array();
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
 		$actions = array();
 		if ($isAvailable) {

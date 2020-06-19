@@ -5,11 +5,10 @@
 {* ils check & last checkin date *}
 {if ($ils == 'Sierra' || $ils == 'Millennium')}
 	{assign var=showLastCheckIn value=$hasLastCheckinData}
-	{assign var=showVolume value=$hasVolume}
 {else}
 	{assign var=showLastCheckIn value=false}
-	{assign var=showVolume value=false}
 {/if}
+{assign var=showVolume value=$hasVolume}
 {assign var=lastSection value=''}
 {if $periodicalIssues}
 	{include file='Record/issueSummaries.tpl' issueSummaries=$periodicalIssues}

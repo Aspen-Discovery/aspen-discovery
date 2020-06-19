@@ -428,7 +428,7 @@ class Koha extends AbstractIlsDriver
 					}else{
 						//Check to see if the user has reached the maximum number of login attempts
 						$maxLoginAttempts = $this->getKohaSystemPreference('FailedLoginAttempts');
-						if ($maxLoginAttempts <= $lookupUserRow['login_attempts']){
+						if (!empty($maxLoginAttempts) && $maxLoginAttempts <= $lookupUserRow['login_attempts']){
 							return new AspenError('Maximum number of failed login attempts reached, your account has been locked.');
 						}
 					}
@@ -855,8 +855,25 @@ class Koha extends AbstractIlsDriver
 				$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordId, $hold_result);
 			} else {
 				$hold_result['success'] = false;
+				//See if we can get more info on why this failed.
+				$holds = $this->getHolds($patron);
+				$alreadyOnHold = false;
+				foreach($holds['available'] as $hold) {
+					if ($hold['recordId'] == $recordId){
+						$alreadyOnHold = true;
+					}
+				}
+				foreach($holds['unavailable'] as $hold) {
+					if ($hold['recordId'] == $recordId){
+						$alreadyOnHold = true;
+					}
+				}
 				//Look for an alert message
-				$hold_result['message'] = 'Your hold could not be placed. ' . $placeHoldResponse->code;
+				if ($alreadyOnHold){
+					$hold_result['message'] = 'Your hold could not be placed, you already have this title on hold.';
+				}else {
+					$hold_result['message'] = 'Your hold could not be placed. ' . $placeHoldResponse->code;
+				}
 			}
 			return $hold_result;
 		}
@@ -2168,8 +2185,12 @@ class Koha extends AbstractIlsDriver
 		if (strlen($date) == 0) {
 			return $date;
 		} else {
-			list($month, $day, $year) = explode('-', $date);
-			return "$month/$day/$year";
+			if (strpos($date, '-') !== false){
+				list($month, $day, $year) = explode('-', $date);
+				return "$month/$day/$year";
+			}else{
+				return $date;
+			}
 		}
 	}
 
@@ -2560,7 +2581,11 @@ class Koha extends AbstractIlsDriver
 						$getParams[] = urlencode($key) . '=' . urlencode($arrayValue);
 					}
 				} else {
-					$getParams[] = urlencode($key) . '=' . urlencode($value);
+					if ($key == 'SMSnumber') {
+						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/\\D/', '', $value));
+					}else{
+						$getParams[] = urlencode($key) . '=' . urlencode($value);
+					}
 				}
 			}
 

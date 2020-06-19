@@ -311,10 +311,21 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user ADD COLUMN lastLoginValidation INT(11) DEFAULT -1',
 			]
+		],
+
+		'user_secondary_library_card' => [
+			'title' => 'User Secondary Library Card',
+			'description' => 'Add the ability to define a secondary library card for a user',
+			'sql' => [
+				"ALTER TABLE user ADD COLUMN alternateLibraryCard VARCHAR(50) DEFAULT ''",
+				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(60) DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(60) DEFAULT ''",
+			]
 		]
 	);
 }
 
+/** @noinspection PhpUnused */
 function makeNytUserListPublisher()
 {
 	$user = new User();

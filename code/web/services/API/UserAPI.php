@@ -1031,6 +1031,10 @@ class UserAPI extends Action
 		$newLocation = $_REQUEST['location'];
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
+			$locationValid = $this->validatePickupBranch($newLocation, $patron);
+			if (!$locationValid){
+				return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+			}
 			$holdMessage = $patron->changeHoldPickUpLocation($holdId, $newLocation);
 			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
 		} else {
@@ -1638,9 +1642,10 @@ class UserAPI extends Action
 	 * @return bool
 	 * @noinspection PhpUnused
 	 */
-	protected function validatePickupBranch(string $pickupBranch, User $patron): bool
+	protected function validatePickupBranch(string &$pickupBranch, User $patron): bool
 	{
-		//Validate the selected pickup branch
+		//Validate the selected pickup branch, we do this in 2 passes, the first looking at the code and the second at the historicCode
+		//If the historic code is valid, we replace $pickupBranch with the new code
 		$location = new Location();
 		$location->code = $pickupBranch;
 		$location->find();
@@ -1655,8 +1660,26 @@ class UserAPI extends Action
 				$locationValid = $location->code == $patron->_homeLocationCode;
 			}
 		} else {
-			//Location is deleted
-			$locationValid = false;
+			$location = new Location();
+			$location->historicCode = $pickupBranch;
+			$location->find();
+			$locationValid = true;
+			if ($location->getNumResults() == 1) {
+				$location->fetch();
+				if ($location->validHoldPickupBranch == 2) {
+					//Valid for no one
+					$locationValid = false;
+				} elseif ($location->validHoldPickupBranch == 0) {
+					//Valid for patrons of the branch only
+					$locationValid = $location->code == $patron->_homeLocationCode;
+				}
+				if ($locationValid){
+					$pickupBranch = $location->code;
+				}
+			} else {
+				//Location is deleted
+				$locationValid = false;
+			}
 		}
 		return $locationValid;
 	}

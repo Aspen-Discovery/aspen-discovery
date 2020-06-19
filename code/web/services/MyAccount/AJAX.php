@@ -655,8 +655,14 @@ class MyAccount_AJAX extends JSON_Action
 				$user = UserAccount::getLoggedInUser();
 				$patronId = $_REQUEST['patronId'];
 				$patronOwningHold = $user->getUserReferredTo($patronId);
-
-				return $patronOwningHold->changeHoldPickUpLocation($holdId, $newPickupLocation);
+				if ($patronOwningHold != false) {
+					return $patronOwningHold->changeHoldPickUpLocation($holdId, $newPickupLocation);
+				}else{
+					return array(
+						'result' => false,
+						'message' => 'The logged in user does not have permission to change hold location for the specified user, please login as that user.'
+					);
+				}
 			} else {
 				return $results = array(
 					'title' => 'Please login',
