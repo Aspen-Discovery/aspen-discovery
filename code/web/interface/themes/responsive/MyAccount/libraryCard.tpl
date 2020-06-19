@@ -15,7 +15,7 @@
 			{if $libraryCardBarcodeStyle != 'none'}
 				<svg class="barcode" id="library-barcode-svg"
 					data-format="{$libraryCardBarcodeStyle}"
-					 data-value="12345671234567"
+					 data-value="{$profile->getBarcode()}"
 					 data-textmargin="0"
 					 data-fontoptions="bold"
 					 data-displayValue="true">
