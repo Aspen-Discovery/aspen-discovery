@@ -116,6 +116,70 @@ class Grouping_Variation
 				} else {
 					$this->_actions = $bestRecord->getActions();
 				}
+
+				if ($this->getNumRelatedRecords() > 1){
+					//Check to see if there are any downloadable files for the related records and if so make sure we have an action to download them.
+					$numDownloadablePDFs = 0;
+					$downloadPdfAction = '';
+					$numDownloadableSupplementalFiles = 0;
+					$downloadSupplementalFileAction = '';
+					foreach ($this->_records as $relatedRecord) {
+						$actions = $relatedRecord->getActions();
+						foreach ($actions as $action) {
+							if ($action['type'] == 'download_pdf'){
+								$numDownloadablePDFs += 1;
+								if ($numDownloadablePDFs == 1) {
+									$downloadPdfAction = $action;
+								}
+							}elseif ($action['type'] == 'download_supplemental_file'){
+								$numDownloadableSupplementalFiles += 1;
+								if ($numDownloadableSupplementalFiles == 1) {
+									$downloadSupplementalFileAction = $action;
+								}
+							}
+						}
+					}
+					//Remove the action for downloading pdf & supplemental files if they exist
+					foreach ($this->_actions as $key => $action) {
+						if ($action['type'] == 'download_pdf' || $action['type'] == 'download_supplemental_file'){
+							unset($this->_actions[$key]);
+						}
+					}
+					if ($numDownloadablePDFs == 1) {
+						//Add the existing action
+						$this->_actions[] = $downloadPdfAction;
+					}elseif ($numDownloadablePDFs > 1) {
+						//Create a new action to allow the patron to select the correct pdf
+						$driver = $bestRecord->getDriver();
+						if ($driver == null) {
+							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
+						}
+						$this->_actions[] = array(
+							'title' => 'Download PDF',
+							'url' => '',
+							'onclick' => "return AspenDiscovery.GroupedWork.selectFileDownload('{$driver->getPermanentId()}', 'RecordPDF');",
+							'requireLogin' => false,
+							'type' => 'download_pdfs'
+						);
+					}
+					if ($numDownloadableSupplementalFiles == 1) {
+						//Add the existing action
+						$this->_actions[] = $downloadSupplementalFileAction;
+					}elseif ($numDownloadableSupplementalFiles > 1) {
+						//Create a new action to allow the patron to select the correct supplemental file
+						$driver = $bestRecord->getDriver();
+						if ($driver == null) {
+							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
+						}
+						$this->_actions[] = array(
+							'title' => 'Download Supplemental File',
+							'url' => '',
+							'onclick' => "return AspenDiscovery.GroupedWork.selectFileDownload('{$driver->getPermanentId()}', 'RecordSupplementalFile');",
+							'requireLogin' => false,
+							'type' => 'download_supplemental_file'
+						);
+					}
+				}
 			}
 		}
 		return $this->_actions;

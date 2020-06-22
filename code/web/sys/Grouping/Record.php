@@ -535,9 +535,9 @@ class Grouping_Record
 	}
 
 	/**
-	 * @return GroupedWorkSubDriver
+	 * @return null|GroupedWorkSubDriver
 	 */
-	function getDriver(): GroupedWorkSubDriver
+	function getDriver()
 	{
 		return $this->_driver;
 	}

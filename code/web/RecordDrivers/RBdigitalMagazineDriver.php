@@ -211,12 +211,14 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 				'title' => 'Check Out RBdigital',
 				'onclick' => "return AspenDiscovery.RBdigital.checkOutMagazine('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'overdrive_magazine_checkout'
 			);
 		} else {
 			$actions[] = array(
 				'title' => 'Place Hold RBdigital',
 				'onclick' => "return AspenDiscovery.RBdigital.placeHoldMagazine('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'overdrive_magazine_hold'
 			);
 		}
 		return $actions;

@@ -773,12 +773,14 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 				'title' => 'Check Out OverDrive',
 				'onclick' => "return AspenDiscovery.OverDrive.checkOutTitle('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'overdrive_checkout'
 			);
 		}else{
 			$actions[] = array(
 				'title' => 'Place Hold OverDrive',
 				'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'overdrive_hold'
 			);
 		}
 		return $actions;

@@ -1,5 +1,5 @@
 {strip}
-<form enctype="multipart/form-data" name="downloadFile" id="downloadFile" method="post" onsubmit="return AspenDiscovery.Record.downloadSelectedFile();">
+<form enctype="multipart/form-data" name="downloadFile" id="downloadFile" method="post" onsubmit="return AspenDiscovery.GroupedWork.downloadSelectedFile();">
 	<input type="hidden" name="id" id="id" value="{$id}"/>
 	<input type="hidden" name="fileType" id="fileType" value="{$fileType}"/>
 	<div class="form-group">

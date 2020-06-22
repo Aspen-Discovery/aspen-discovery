@@ -182,12 +182,14 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 				'title' => 'Check Out Cloud Library',
 				'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'cloud_library_checkout'
 			);
 		}else{
 			$actions[] = array(
 				'title' => 'Place Hold Cloud Library',
 				'onclick' => "return AspenDiscovery.CloudLibrary.placeHold('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'cloud_library_hold'
 			);
 		}
 		return $actions;

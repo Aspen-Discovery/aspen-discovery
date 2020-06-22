@@ -214,17 +214,9 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			$title = 'Check Out Hoopla';
 			$actions[] = array(
 				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
-				'title'   => $title
+				'title'   => $title,
+				'type' => 'hoopla_checkout'
 			);
-		} else {
-			$title = translate('hoopla_url_action');
-			foreach ($relatedUrls as $url){
-				$actions[] = array(
-					'url' => $url['url'],
-					'title' => $title,
-					'requireLogin' => false,
-				);
-			}
 		}
 
 		return $actions;

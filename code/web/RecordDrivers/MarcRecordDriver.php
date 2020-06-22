@@ -912,6 +912,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						'url' => '',
 						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volumeId');",
 						'requireLogin' => false,
+						'type' => 'ils_hold'
 					);
 				}
 			} else {
@@ -920,6 +921,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					'url' => '',
 					'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
 					'requireLogin' => false,
+					'type' => 'ils_hold'
 				);
 			}
 		}
@@ -929,6 +931,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				'url' => '',
 				'onclick' => "return AspenDiscovery.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
 				'requireLogin' => false,
+				'type' => 'ils_booking'
 			);
 		}
 
@@ -941,6 +944,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					'title' => 'Download PDF',
 					'url' => "/Record/{$this->getId()}/DownloadPDF?fileId={$recordFile->id}",
 					'requireLogin' => false,
+					'type' => 'download_pdf'
 				);
 			} else {
 				$actions[] = array(
@@ -948,6 +952,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					'url' => '',
 					'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}', 'RecordPDF');",
 					'requireLogin' => false,
+					'type' => 'download_pdf'
 				);
 			}
 		}
@@ -961,6 +966,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					'title' => 'Download Supplemental File',
 					'url' => "/Record/{$this->getId()}/DownloadSupplementalFile?fileId={$recordFile->id}",
 					'requireLogin' => false,
+					'type' => 'download_supplemental_file'
 				);
 			} else {
 				$actions[] = array(
@@ -968,6 +974,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					'url' => '',
 					'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}', 'RecordSupplementalFile');",
 					'requireLogin' => false,
+					'type' => 'download_supplemental_file'
 				);
 			}
 		}
@@ -975,9 +982,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
 		if ($archiveLink != null){
 			$actions[] = array(
-					'title' => 'View Online',
-					'url' => $archiveLink,
-					'requireLogin' => false,
+				'title' => 'View Online',
+				'url' => $archiveLink,
+				'requireLogin' => false,
+				'type' => 'view_online'
 			);
 		}
 
