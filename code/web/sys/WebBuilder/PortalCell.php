@@ -20,6 +20,7 @@ class PortalCell extends DataObject
 	public $sourceType;
 	public $sourceId;
 
+
 	static function getObjectStructure() {
 		$verticalAlignmentOptions = [
 			'flex-start' => 'Top of Row',
@@ -38,7 +39,8 @@ class PortalCell extends DataObject
 			'basic_page_teaser' => 'Basic Page Teaser',
 			'collection_spotlight' => 'Collection Spotlight',
 			'event_calendar' => 'Event Calendar',
-			'event_spotlight' => 'Event Spotlight'
+			'image' => 'Image',
+			'video' => 'Video'
 		];
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),

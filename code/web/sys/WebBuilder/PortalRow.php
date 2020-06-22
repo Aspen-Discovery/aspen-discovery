@@ -45,16 +45,7 @@ class PortalRow extends DataObject
 	public function __get($name)
 	{
 		if ($name == 'cells') {
-			if (!isset($this->_cells) && $this->id){
-				$this->_cells = [];
-				$obj = new PortalCell();
-				$obj->portalRowId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_cells[$obj->id] = clone $obj;
-				}
-			}
-			return $this->_cells;
+			return $this->getCells();
 		} else {
 			return $this->_data[$name];
 		}
@@ -97,6 +88,16 @@ class PortalRow extends DataObject
 		return $ret;
 	}
 
+	public function delete($useWhere = false)
+	{
+		if ($useWhere == false) {
+			foreach ($this->getCells() as $cell) {
+				$cell->delete();
+			}
+		}
+		return parent::delete($useWhere);
+	}
+
 	public function saveCells(){
 		if (isset ($this->_cells) && is_array($this->_cells)){
 			$this->saveOneToManyOptions($this->_cells, 'portalRowId');
@@ -105,6 +106,24 @@ class PortalRow extends DataObject
 	}
 
 	public function getCells(){
-		return $this->__get('cells');
+		if (!isset($this->_cells) && $this->id){
+			$this->_cells = [];
+			$obj = new PortalCell();
+			$obj->portalRowId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_cells[$obj->id] = clone $obj;
+			}
+		}
+		return $this->_cells;
+	}
+
+	public function isLastRow(){
+		$myPage = new PortalPage();
+		$myPage->id = $this->portalPageId;
+		if ($myPage->find(true)){
+			return count($myPage->getRows()) -1 == $this->weight;
+		}
+		return false;
 	}
 }

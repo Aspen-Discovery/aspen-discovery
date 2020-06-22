@@ -1001,6 +1001,18 @@ function loadModuleActionId(){
 			$_REQUEST['module'] = 'WebBuilder';
 			$_REQUEST['action'] = 'BasicPage';
 			$_REQUEST['id'] = $basicPage->id;
+		}else{
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+			$portalPage = new PortalPage();
+			$portalPage->urlAlias = $requestURI;
+			if ($portalPage->find(true)){
+				$_GET['module'] = 'WebBuilder';
+				$_GET['action'] = 'PortalPage';
+				$_GET['id'] = $portalPage->id;
+				$_REQUEST['module'] = 'WebBuilder';
+				$_REQUEST['action'] = 'PortalPage';
+				$_REQUEST['id'] = $portalPage->id;
+			}
 		}
 	}
 	//Correct some old actions

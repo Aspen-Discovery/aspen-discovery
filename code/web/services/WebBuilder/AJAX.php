@@ -3,6 +3,7 @@ require_once ROOT_DIR . '/JSON_Action.php';
 
 class WebBuilder_AJAX extends JSON_Action
 {
+	/** @noinspection PhpUnused */
 	function getPortalCellValuesForSource() {
 		$result = [
 			'success' => false,
@@ -60,6 +61,7 @@ class WebBuilder_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function uploadImage(){
 		$result = [
 			'success' => false,
@@ -67,8 +69,6 @@ class WebBuilder_AJAX extends JSON_Action
 		];
 		if (UserAccount::isLoggedIn()){
 			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')){
-				$uploadedFiles = array();
-
 				if (! empty($_FILES)) {
 					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 					$structure = ImageUpload::getObjectStructure();
@@ -111,6 +111,7 @@ class WebBuilder_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getUploadImageForm(){
 		global $interface;
 		$results = [
@@ -135,5 +136,236 @@ class WebBuilder_AJAX extends JSON_Action
 		}
 
 		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function deleteCell() {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error deleting cell'
+		];
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+				if (isset($_REQUEST['id'])) {
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+					$portalCell = new PortalCell();
+					$portalCell->id = $_REQUEST['id'];
+					if ($portalCell->find(true)){
+						$portalCell->delete();
+						$result['success'] = true;
+						$result['message'] = 'The cell was deleted successfully';
+					}else{
+						$result['message'] = 'Unable to find that cell, it may have been deleted already';
+					}
+				}else{
+					$result['message'] = 'No cell id was provided';
+				}
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to delete a cell';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to delete a cell';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function deleteRow() {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error deleting row'
+		];
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+				if (isset($_REQUEST['id'])) {
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+					$portalRow = new PortalRow();
+					$portalRow->id = $_REQUEST['id'];
+					if ($portalRow->find(true)){
+						$portalRow->delete();
+						$result['success'] = true;
+						$result['message'] = 'The row was deleted successfully';
+					}else{
+						$result['message'] = 'Unable to find that row, it may have been deleted already';
+					}
+				}else{
+					$result['message'] = 'No row id was provided';
+				}
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to delete a row';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to delete a row';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function moveRow() {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error moving row'
+		];
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+				if (isset($_REQUEST['rowId'])) {
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+					$portalRow = new PortalRow();
+					$portalRow->id = $_REQUEST['rowId'];
+					if ($portalRow->find(true)){
+						//Figure out new weights for rows
+						$direction = $_REQUEST['direction'];
+						$oldWeight = $portalRow->weight;
+						if ($direction == 'up'){
+							$newWeight = $oldWeight - 1;
+						}else{
+							$newWeight = $oldWeight + 1;
+						}
+						$rowToSwap = new PortalRow();
+						$rowToSwap->portalPageId = $portalRow->portalPageId;
+						$rowToSwap->weight = $newWeight;
+						$rowToSwap->find(true);
+						$portalRow->weight = $newWeight;
+						$portalRow->update();
+						$rowToSwap->weight = $oldWeight;
+						$rowToSwap->update();
+
+						$result['success'] = true;
+						$result['message'] = 'The row was moved successfully';
+						$result['swappedWithId'] = $rowToSwap->id;
+					}else{
+						$result['message'] = 'Unable to find that row';
+					}
+				}else{
+					$result['message'] = 'No row id was provided';
+				}
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to move a row';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to move a row';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function addRow(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error adding row'
+		];
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+				if (isset($_REQUEST['pageId'])) {
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+					$portalPage = new PortalPage();
+					$portalPage->id = $_REQUEST['pageId'];
+					if ($portalPage->find(true)){
+						$portalRow = new PortalRow();
+						$portalRow->portalPageId = $portalPage->id;
+						$portalRow->weight = count($portalPage->getRows());
+						$portalRow->insert();
+						global $interface;
+						$interface->assign('portalRow', $portalRow);
+
+						$result['success'] = true;
+						$result['message'] = 'Added a new row';
+						$result['newRow'] = $interface->fetch('DataObjectUtil/portalRow.tpl');
+					}else{
+						$result['message'] = 'Unable to find that page';
+					}
+				}else{
+					$result['message'] = 'No page id was provided';
+				}
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to add a row';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to add a row';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function addCell(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error adding cell'
+		];
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+				if (isset($_REQUEST['rowId'])) {
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+					$portalRow = new PortalRow();
+					$portalRow->id = $_REQUEST['rowId'];
+					if ($portalRow->find(true)){
+						$portalCell = new PortalCell();
+						$portalCell->portalRowId = $portalRow->id;
+						$portalCell->weight = count($portalRow->getCells());
+						$portalCell->widthTiny = 12;
+						$portalCell->widthXs = 12;
+						$portalCell->widthSm = 6;
+						$portalCell->widthMd = 4;
+						$portalCell->widthLg = 4;
+						$portalCell->insert();
+						global $interface;
+						$interface->assign('portalCell', $portalCell);
+
+						$result['success'] = true;
+						$result['message'] = 'Added a new cell';
+						$result['newCell'] = $interface->fetch('DataObjectUtil/portalCell.tpl');
+					}else{
+						$result['message'] = 'Unable to find that row';
+					}
+				}else{
+					$result['message'] = 'No row id was provided';
+				}
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to add a cell';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to add a cell';
+		}
+		return $result;
+	}
+
+	function getEditCellForm(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error adding cell'
+		];
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+				if (isset($_REQUEST['cellId'])) {
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+					$portalCell = new PortalCell();
+					$portalCell->id = $_REQUEST['cellId'];
+					if ($portalCell->find(true)){
+						global $interface;
+						$interface->assign('object', $portalCell);
+						$interface->assign('structure', PortalCell::getObjectStructure());
+						$interface->assign('saveButtonText', 'Update');
+						$result['success'] = true;
+						$result['message'] = 'Display form';
+						$result['title'] = 'Edit Cell';
+						$result['modalBody'] = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
+						$result['modalButtons'] = "<button class='tool btn btn-primary' onclick='AspenDiscovery.WebBuilder.editCell()'>" . translate('Update Cell') . "</button>";
+					}else{
+						$result['message'] = 'Unable to find that cell';
+					}
+				}else{
+					$result['message'] = 'No cell id was provided';
+				}
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to edit a cell';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to edit a cell';
+		}
+		return $result;
+
 	}
 }

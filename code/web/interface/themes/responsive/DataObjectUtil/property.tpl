@@ -231,6 +231,8 @@
 
 		{elseif $property.type == 'oneToMany'}
 			{include file="DataObjectUtil/oneToMany.tpl"}
+		{elseif $property.type == 'portalRow'}
+			{include file="DataObjectUtil/portalRows.tpl"}
 		{/if}
 
 	</div>

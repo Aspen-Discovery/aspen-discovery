@@ -21,7 +21,7 @@ class PortalPage extends DataObject
 
 			'rows' => [
 				'property'=>'rows',
-				'type'=>'oneToMany',
+				'type'=>'portalRow',
 				'label'=>'Rows',
 				'description'=>'Rows to show on the page',
 				'keyThis' => 'id',
@@ -39,16 +39,7 @@ class PortalPage extends DataObject
 	public function __get($name)
 	{
 		if ($name == 'rows') {
-			if (!isset($this->_rows) && $this->id){
-				$this->_rows = [];
-				$obj = new PortalRow();
-				$obj->portalPageId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_rows[$obj->id] = clone $obj;
-				}
-			}
-			return $this->_rows;
+			return $this->getRows();
 		} else {
 			return $this->_data[$name];
 		}
@@ -101,6 +92,16 @@ class PortalPage extends DataObject
 	/** @return PortalRow[] */
 	public function getRows()
 	{
-		return $this->__get('rows');
+		if (!isset($this->_rows) && $this->id){
+			$this->_rows = [];
+			$obj = new PortalRow();
+			$obj->portalPageId = $this->id;
+			$obj->orderBy('weight ASC');
+			$obj->find();
+			while($obj->fetch()){
+				$this->_rows[$obj->id] = clone $obj;
+			}
+		}
+		return $this->_rows;
 	}
 }
