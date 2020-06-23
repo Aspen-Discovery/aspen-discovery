@@ -820,6 +820,14 @@ function getIndexingUpdates()
 				"UPDATE modules set logClassPath='/sys/Indexing/SideLoadLogEntry.php', logClassName='SideLoadLogEntry' WHERE name = 'Side Loads'",
 			]
 		],
+
+		'indexing_profile_determineAudienceBy' => [
+			'title' => 'Indexing Profile - determineAudienceBy',
+			'description' => 'Add the ability to control how audience is determined to Indexing Profiles',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN determineAudienceBy TINYINT DEFAULT 0'
+			]
+		]
 	);
 }
 

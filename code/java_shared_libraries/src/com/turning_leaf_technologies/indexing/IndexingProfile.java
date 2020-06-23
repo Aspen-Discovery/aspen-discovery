@@ -42,6 +42,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private long lastUpdateFromMarcExport;
 	private boolean checkRecordForLargePrint;
 	private char subLocationSubfield;
+	private int determineAudienceBy;
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
 		this.filenamesToInclude = filenamesToInclude;
@@ -143,6 +144,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setCallNumberPoststampSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberPoststamp"));
 				indexingProfile.setVolume(getCharFromRecordSet(indexingProfileRS, "volume"));
 				indexingProfile.setItemUrl(getCharFromRecordSet(indexingProfileRS, "itemUrl"));
+
+				indexingProfile.setDetermineAudienceBy(indexingProfileRS.getInt("determineAudienceBy"));
 
 				indexingProfile.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
 				indexingProfile.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
@@ -460,5 +463,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public char getSubLocationSubfield() {
 		return subLocationSubfield;
+	}
+
+	public int getDetermineAudienceBy() {
+		return determineAudienceBy;
+	}
+
+	private void setDetermineAudienceBy(int determineAudienceBy) {
+		this.determineAudienceBy = determineAudienceBy;
 	}
 }

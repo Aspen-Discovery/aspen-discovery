@@ -129,21 +129,6 @@ class LionRecordProcessor extends IIIRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Anythink, load audiences based on collection code rather than based on the 008 and 006 fields
-		HashSet<String> targetAudiences = new HashSet<>();
-		for (ItemInfo printItem : printItems){
-			String collection = printItem.getShelfLocationCode();
-			if (collection != null) {
-				targetAudiences.add(collection.toLowerCase());
-			}
-		}
-
-		HashSet<String> translatedAudiences = translateCollection("target_audience", targetAudiences, identifier);
-		groupedWork.addTargetAudiences(translatedAudiences);
-		groupedWork.addTargetAudiencesFull(translatedAudiences);
-	}
-
 	protected boolean isOrderItemValid(String status, String code3) {
 		return status.equals("o") || status.equals("1") || status.equals("q") || status.equals("a");
 	}

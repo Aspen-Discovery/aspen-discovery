@@ -85,50 +85,6 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 		return literaryForm;
 	}
 
-	@Override
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Arlington we can load the target audience based off of the location code:
-		// ?a??? = Adult
-		// ?j??? = Kids
-		// ?y??? = Teen
-		HashSet<String> targetAudiences = new HashSet<>();
-		for (ItemInfo printItem : printItems){
-			String locationCode = printItem.getShelfLocationCode();
-			if (addTargetAudienceBasedOnLocationCode(targetAudiences, locationCode)) break;
-		}
-		if (targetAudiences.size() == 0){
-			Set<String> bibLocations = MarcUtil.getFieldList(record, "998a");
-			for (String bibLocation : bibLocations){
-				if (bibLocation.length() <= 5) {
-					if (addTargetAudienceBasedOnLocationCode(targetAudiences, bibLocation)) break;
-				}
-			}
-		}
-		if (targetAudiences.size() == 0){
-			targetAudiences.add("Other");
-		}
-		groupedWork.addTargetAudiences(targetAudiences);
-		groupedWork.addTargetAudiencesFull(targetAudiences);
-	}
-
-	private boolean addTargetAudienceBasedOnLocationCode(HashSet<String> targetAudiences, String locationCode) {
-		if (locationCode != null) {
-			if (locationCode.length() >= 2) {
-				if (locationCode.charAt(1) == 'a') {
-					targetAudiences.add("Adult");
-					return true;
-				} else if (locationCode.charAt(1) == 'j') {
-					targetAudiences.add("Juvenile");
-					return true;
-				} else if (locationCode.charAt(1) == 'y') {
-					targetAudiences.add("Young Adult");
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	/**
 	 * Load format information for the record.  For arlington, we will load from the material type (998d)
 	 */
@@ -175,7 +131,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 					if (isItemInvalid(itemStatus, locationCode)) return;
 
 					itemInfo.setShelfLocationCode(locationCode);
-					itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, null, recordInfo.getRecordIdentifier()));
+					itemInfo.setShelfLocation(getShelfLocationForItem(null, recordInfo.getRecordIdentifier()));
 					itemInfo.setDetailedLocation(getDetailedLocationForItem(itemInfo, null, recordInfo.getRecordIdentifier()));
 
 					loadItemCallNumber(record, null, itemInfo);
