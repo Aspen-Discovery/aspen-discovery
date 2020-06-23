@@ -582,8 +582,11 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
 		//Koha uses subfield 7 to determine if a record is holdable or not.
 		Subfield subfield7 = itemInfo.getMarcField().getSubfield('7');
-		if (subfield7 != null && !subfield7.getData().equals("0") && !subfield7.getData().equals("-1")){
-			return new HoldabilityInformation(false, new HashSet<>());
+		if (subfield7 != null) {
+			int notForLoan = Integer.parseInt(subfield7.getData());
+			if (notForLoan >= 1) {
+				return new HoldabilityInformation(false, new HashSet<>());
+			}
 		}
 		return super.isItemHoldableUnscoped(itemInfo);
 	}
