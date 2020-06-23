@@ -15,11 +15,11 @@ import java.sql.ResultSet;
 import java.util.*;
 
 class KohaRecordProcessor extends IlsRecordProcessor {
-	private HashSet<String> inTransitItems = new HashSet<>();
-	private HashSet<String> onHoldShelfItems = new HashSet<>();
-	private HashMap<String, String> lostStatuses = new HashMap<>();
-	private HashMap<String, String> damagedStatuses = new HashMap<>();
-	private HashMap<String, String> notForLoanStatuses = new HashMap<>();
+	private final HashSet<String> inTransitItems = new HashSet<>();
+	private final HashSet<String> onHoldShelfItems = new HashSet<>();
+	private final HashMap<String, String> lostStatuses = new HashMap<>();
+	private final HashMap<String, String> damagedStatuses = new HashMap<>();
+	private final HashMap<String, String> notForLoanStatuses = new HashMap<>();
 
 	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		this (indexer, dbConn, indexingProfileRS, logger, fullReindex, null);
@@ -228,6 +228,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
 				if (printFormats.size() == 1 && printFormats.iterator().next().equalsIgnoreCase("LargePrint")) {
 					String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
+					//noinspection Java8MapApi
 					for (String itemType : itemTypeToFormat.keySet()) {
 						itemTypeToFormat.put(itemType, translatedFormat);
 					}
@@ -264,7 +265,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		}
 	}
 
-	private HashSet<String> additionalStatuses = new HashSet<>();
+	private final HashSet<String> additionalStatuses = new HashSet<>();
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
 		String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
 		if (inTransitItems.contains(itemIdentifier)){

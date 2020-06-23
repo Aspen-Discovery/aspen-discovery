@@ -47,21 +47,21 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		String subfieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
+		String statusFieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		String shelfLocationData = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")){
-			subfieldData = "On Order";
+			statusFieldData = "On Order";
 		}else {
-			if (subfieldData == null) {
-				subfieldData = "ONSHELF";
-			} else if (translateValue("item_status", subfieldData, recordIdentifier, false) == null) {
-				subfieldData = "ONSHELF";
+			if (statusFieldData == null) {
+				statusFieldData = "ONSHELF";
+			} else {
+				if (!hasTranslation("item_status", statusFieldData.toLowerCase())){
+					statusFieldData = "ONSHELF";
+				}
 			}
 		}
-		return subfieldData;
+		return statusFieldData;
 	}
-
-
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {

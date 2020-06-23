@@ -25,7 +25,7 @@ class SirsiDynixROA extends HorizonAPI
 		$logger->log('WebServiceURL :' .$url, Logger::LOG_NOTICE);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
-		$clientId = $configArray['Catalog']['clientId'];
+		$clientId = $this->accountProfile->oAuthClientId;
 		$headers  = array(
 			'Accept: application/json',
 			'Content-Type: application/json',
