@@ -19,6 +19,7 @@ class PortalCell extends DataObject
 
 	public $sourceType;
 	public $sourceId;
+	public $markdown;
 
 
 	static function getObjectStructure() {
@@ -35,6 +36,7 @@ class PortalCell extends DataObject
 			'end' => 'Right'
 		];
 		$sourceOptions = [
+			'markdown' => 'Text/Images',
 			'basic_page' => 'Basic Page',
 			'basic_page_teaser' => 'Basic Page Teaser',
 			'collection_spotlight' => 'Collection Spotlight',
@@ -55,12 +57,18 @@ class PortalCell extends DataObject
 			'horizontalJustification' => ['property'=>'horizontalJustification', 'type'=>'enum', 'values'=>$horizontalJustificationOptions, 'label'=>'Horizontal Justification', 'description'=>'Horizontal Justification of the cell', 'default'=>'start'],
 			'sourceType' => ['property'=>'sourceType', 'type'=>'enum', 'values'=>$sourceOptions, 'label'=>'Source Type', 'description'=>'Source type for the content of cell', 'onchange' => 'return AspenDiscovery.WebBuilder.getPortalCellValuesForSource(\'~id~\');'],
 			'sourceId' => ['property'=>'sourceId', 'type'=>'enum', 'values'=>[], 'label'=>'Source Id', 'description'=>'Source for the content of cell'],
+			'markdown' => ['property' => 'markdown', 'type' => 'markdown', 'label' => 'Contents', 'description' => 'Contents of the cell']
 		];
 	}
 
 	function getContents(){
 		global $interface;
-		if ($this->sourceType == 'collection_spotlight') {
+		if ($this->sourceType == 'markdown') {
+			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+			$parsedown = AspenParsedown::instance();
+			$parsedown->setBreaksEnabled(true);
+			return $parsedown->parse($this->markdown);
+		}elseif ($this->sourceType == 'collection_spotlight') {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 			$collectionSpotlight = new CollectionSpotlight();
 			$collectionSpotlight->id = $this->sourceId;
@@ -84,5 +92,15 @@ class PortalCell extends DataObject
 			}
 		}
 		return 'Could not load contents for the cell';
+	}
+
+	function getPortalRow(){
+		$portalRow = new PortalRow();
+		$portalRow->id = $this->portalRowId;
+		if ($portalRow->find(true)){
+			return $portalRow;
+		}else{
+			return null;
+		}
 	}
 }

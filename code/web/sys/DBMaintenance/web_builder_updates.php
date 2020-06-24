@@ -254,6 +254,14 @@ function getWebBuilderUpdates(){
 			],
 		],
 
+		'web_builder_portal_cell_markdown' => [
+			'title' => 'Web Builder Portal Cell Markdown',
+			'description' => 'Allow Portal Cells to contain markdown',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_cell ADD column markdown MEDIUMTEXT'
+			]
+		]
+
 		//TODO: Add roles
 
 	];

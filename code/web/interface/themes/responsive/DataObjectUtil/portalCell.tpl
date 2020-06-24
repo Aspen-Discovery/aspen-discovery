@@ -4,7 +4,8 @@
 			{$portalCell->sourceType} : {$portalCell->sourceId}
 		</div>
 		<div class="col-xs-4 text-right">
-			<a onclick="return AspenDiscovery.WebBuilder.showEditCellForm('{$portalCell->id}')"><img src="/images/silk/edit.png" alt="{translate text="Edit"}" /></a>
+{*			<a onclick="return AspenDiscovery.WebBuilder.showEditCellForm('{$portalCell->id}')"><img src="/images/silk/edit.png" alt="{translate text="Edit"}" /></a>*}
+			<a href="/WebBuilder/PortalCells?objectAction=edit&id={$portalCell->id}"><img src="/images/silk/edit.png" alt="{translate text="Edit"}" /></a>
 			<a onclick="return AspenDiscovery.WebBuilder.deleteCell('{$portalCell->id}')"><img src="/images/silk/delete.png" alt="{translate text="Delete"}" /></a>
 		</div>
 	</div>
