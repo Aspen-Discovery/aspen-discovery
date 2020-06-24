@@ -9,6 +9,7 @@ class WebBuilder_PortalPage extends Action
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
+		$interface->assign('id', $id);
 
 		require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 		$page = new PortalPage();
