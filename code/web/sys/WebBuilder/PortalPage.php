@@ -32,6 +32,7 @@ class PortalPage extends DataObject
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => true,
+				'hideInLists' => true
 			],
 		];
 	}
