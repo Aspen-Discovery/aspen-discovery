@@ -26,6 +26,7 @@ class WebBuilder_AJAX extends JSON_Action
 				$list[$basicPage->id] = $basicPage->title;
 			}
 
+			asort($list);
 			$result = [
 				'success' => true,
 				'values' => $list
@@ -47,13 +48,15 @@ class WebBuilder_AJAX extends JSON_Action
 				$list[$collectionSpotlight->id] = $collectionSpotlight->name;
 			}
 
+			asort($list);
 			$result = [
 				'success' => true,
 				'values' => $list
 			];
 			break;
+		case 'image':
+		case 'video':
 		case 'event_calendar':
-		case 'event_spotlight':
 		default:
 			$result['message'] = 'Unhandled Source Type ' . $sourceType;
 		}

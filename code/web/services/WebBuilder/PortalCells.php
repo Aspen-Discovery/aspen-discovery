@@ -88,4 +88,9 @@ class WebBuilder_PortalCells extends ObjectEditor
 			return null;
 		}
 	}
+
+	function getInitializationJs()
+	{
+		return 'AspenDiscovery.WebBuilder.getPortalCellValuesForSource()';
+	}
 }
