@@ -84,21 +84,16 @@ class SirsiDynixROA extends HorizonAPI
 		if (!empty($sessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
 			//$patronDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/describe', null, $sessionToken);
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' .$barcode . '&rw=1&ct=1&includeFields=firstName,lastName,privilegeExpiresDate,patronStatusInfo{*},preferredAddress,address1,address2,address3,library,circRecordList,blockList{owed},holdRecordList{status}', null, $sessionToken);
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' .$barcode . '&rw=1&ct=1&includeFields=firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,circRecordList,blockList,holdRecordList,primaryPhone', null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1) {
 				$userID = $lookupMyAccountInfoResponse->result[0]->key;
 				$lookupMyAccountInfoResponse = $lookupMyAccountInfoResponse->result[0];
 				$lastName  = $lookupMyAccountInfoResponse->fields->lastName;
 				$firstName = $lookupMyAccountInfoResponse->fields->firstName;
 
-//				if (isset($lookupMyAccountInfoResponse->fields->displayName)) {
-//					$fullName = $lookupMyAccountInfoResponse->fields->displayName;
-//				} else {
 				$fullName = $lastName . ', ' . $firstName;
-//				}
 
 				$userExistsInDB = false;
-				/** @var User $user */
 				$user = new User();
 				$user->source = $this->accountProfile->name;
 				$user->username = $userID;
@@ -198,7 +193,6 @@ class SirsiDynixROA extends HorizonAPI
 						// or the first location for the library
 						global $library;
 
-						/** @var \Location $location */
 						$location            = new Location();
 						$location->libraryId = $library->libraryId;
 						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
@@ -213,7 +207,6 @@ class SirsiDynixROA extends HorizonAPI
 						$user->homeLocationId = $location->locationId;
 						if (empty($user->myLocation1Id)) {
 							$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-							/** @var /Location $location */
 							//Get display name for preferred location 1
 							$myLocation1             = new Location();
 							$myLocation1->locationId = $user->myLocation1Id;
@@ -1841,13 +1834,13 @@ class SirsiDynixROA extends HorizonAPI
 
 					$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $userID, $updatePatronInfoParameters, $sessionToken, 'PUT');
 
-						if (isset($updateAccountInfoResponse->messageList)) {
-							foreach ($updateAccountInfoResponse->messageList as $message) {
-								$updateErrors[] = $message->message;
-							}
-							global $logger;
-							$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : '.implode(';', $updateErrors), Logger::LOG_ERROR);
+					if (isset($updateAccountInfoResponse->messageList)) {
+						foreach ($updateAccountInfoResponse->messageList as $message) {
+							$updateErrors[] = $message->message;
 						}
+						global $logger;
+						$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : '.implode(';', $updateErrors), Logger::LOG_ERROR);
+					}
 				} else {
 					global $logger;
 					$logger->log('Symphony Driver - Patron Info Update Error: Catalog does not have the circulation system User Id', Logger::LOG_ERROR);
