@@ -70,11 +70,9 @@ class Translator
 			return $phrase;
 		}
 
-		/** @var Language */
 		global $activeLanguage;
 		$translationMode = $this->translationModeActive() && !$inAttribute && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator'));
 		try{
-			/** @var Memcache $memCache */
 			global $memCache;
 
 			$existingTranslation = $memCache->get('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase);
