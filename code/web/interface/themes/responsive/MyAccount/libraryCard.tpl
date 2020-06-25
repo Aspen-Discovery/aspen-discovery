@@ -68,11 +68,13 @@
 		$(document).ready(
 			function () {ldelim}
 				$("#library-barcode-svg").JsBarcode().init();
+				{if $showAlternateLibraryOptionsInProfile}
 				$("#library-alternateLibraryCard-svg").JsBarcode().init();
 				updateAlternateLibraryCardBarcode();
+				{/if}
 			{rdelim}
 		);
-
+        {if $showAlternateLibraryOptionsInProfile}
 		function updateAlternateLibraryCardBarcode(){ldelim}
 			let alternateLibraryCardVal = $("#alternateLibraryCard").val();
 			let alternateLibraryCardSvg = $("#library-alternateLibraryCard-svg");
@@ -83,6 +85,7 @@
 				$("#library-alternateLibraryCard").addClass('hidden');
 			{rdelim}
 		{rdelim}
+		{/if}
 	</script>
 {else}
 	{translate text="login_to_view_account_notice" defaultText="You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login."}
