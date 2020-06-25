@@ -23,7 +23,6 @@ class MyAccount_MyPreferences extends MyAccount
 				$interface->assign('selectedUser', $patronId);
 			}
 
-			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
