@@ -66,7 +66,7 @@ class Translator
 	 */
 	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false)
 	{
-		if ($phrase == ''){
+		if ($phrase == '' || is_numeric($phrase)){
 			return $phrase;
 		}
 
@@ -176,8 +176,6 @@ class Translator
 				$file = $this->path . '/' . $this->langCode . '.ini';
 				if ($this->langCode != '' && is_file($file)) {
 					$this->words = $this->parseLanguageFile($file);
-				} else {
-					AspenError::raiseError("Unknown language file");
 				}
 				closedir($dh);
 			} else {

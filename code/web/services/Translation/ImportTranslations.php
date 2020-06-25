@@ -2,7 +2,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class ImportTranslations extends Admin_Admin
+class Translation_ImportTranslations extends Admin_Admin
 {
 	function launch(){
 		global $interface;
@@ -67,7 +67,6 @@ class ImportTranslations extends Admin_Admin
 								}
 							}
 						}
-						/** @var Memcache $memCache */
 						global $memCache;
 						while ($curRow = fgetcsv($fHnd)) {
 							$term = $curRow[0];

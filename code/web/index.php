@@ -210,7 +210,6 @@ try{
 if (!array_key_exists($language, $validLanguages)) {
 	$language = 'en';
 }
-/** @var Language $activeLanguage */
 global $activeLanguage;
 global $translator;
 $activeLanguage = $validLanguages[$language];
