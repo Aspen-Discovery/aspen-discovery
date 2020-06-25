@@ -45,7 +45,8 @@ class Translation_ImportBulkTranslations extends Admin_Admin
 
 					global $memCache;
 					while ($translationLine = fgets($fHnd)) {
-						if (preg_match('/(\d+)\s?\|\s?(.*)/i', $translationLine, $matches)){
+						//Google sometimes strips the pipe symbol we add
+						if (preg_match('/(\d+)\s?\|?\s?(.*)/i', $translationLine, $matches)){
 							$termId = trim($matches[1]);
 							$newText = trim($matches[2]);
 							$newText = str_replace(['% 1 %', '% 2 %', '% 3 %', '% 4 %', '% 5 %', '% 6 %'], ['%1%', '%2%', '%3%', '%4%', '%5%', '%6%'], $newText);
