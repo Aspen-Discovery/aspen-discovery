@@ -142,7 +142,12 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 				itemInfo.seteContentUrl(url);
 
 				//Set the format based on the material type
-				itemInfo.setFormat("Online Content");
+				String formatFrom856 = MarcUtil.getFirstFieldVal(record, "856z");
+				if (formatFrom856 != null) {
+					itemInfo.setFormat(formatFrom856);
+				}else {
+					itemInfo.setFormat("Online Content");
+				}
 				itemInfo.setFormatCategory("eBook");
 				relatedRecord.setFormatBoost(10);
 
