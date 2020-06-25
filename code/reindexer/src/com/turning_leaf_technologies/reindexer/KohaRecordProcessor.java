@@ -158,9 +158,29 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String mostPopularIType = ""; //Get a list of all the formats based on the items
 		for(ItemInfo item : recordInfo.getRelatedItems()){
 			if (item.isEContent()) {continue;}
+			boolean foundFormatFromShelfLocation = false;
+			String shelfLocationCode = item.getShelfLocationCode();
+			if (shelfLocationCode != null){
+				String shelfLocation = shelfLocationCode.toLowerCase().trim();
+				if (hasTranslation("format", shelfLocation)){
+					String translatedLocation = translateValue("format", shelfLocation, recordInfo.getRecordIdentifier());
+					if (itemCountsByItype.containsKey(shelfLocation)) {
+						itemCountsByItype.put(shelfLocation, itemCountsByItype.get(shelfLocation) + 1);
+					} else {
+						itemCountsByItype.put(shelfLocation, 1);
+					}
+					foundFormatFromShelfLocation = true;
+					itemTypeToFormat.put(shelfLocation, translatedLocation);
+					if (itemCountsByItype.get(shelfLocation) > mostUsedCount){
+						mostPopularIType = shelfLocation;
+						mostUsedCount = itemCountsByItype.get(shelfLocation);
+					}
+				}
+			}
+
 			boolean foundFormatFromSublocation = false;
 			String subLocationCode = item.getSubLocationCode();
-			if (subLocationCode != null){
+			if (!foundFormatFromShelfLocation && subLocationCode != null){
 				String subLocation = subLocationCode.toLowerCase().trim();
 				if (hasTranslation("format", subLocation)){
 					String translatedLocation = translateValue("format", subLocation, recordInfo.getRecordIdentifier());
@@ -180,7 +200,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 			boolean foundFormatFromCollection = false;
 			String collectionCode = item.getCollection();
-			if (!foundFormatFromSublocation && collectionCode != null){
+			if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && collectionCode != null){
 				collectionCode = collectionCode.toLowerCase().trim();
 				if (hasTranslation("format", collectionCode)){
 					String translatedLocation = translateValue("format", collectionCode, recordInfo.getRecordIdentifier());
@@ -198,7 +218,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				}
 			}
 
-			if (!foundFormatFromSublocation && !foundFormatFromCollection) {
+			if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection) {
 				String iTypeCode = item.getITypeCode();
 				if (iTypeCode != null) {
 					String iType = iTypeCode.toLowerCase().trim();
