@@ -64,12 +64,12 @@
 						</div>
 					{/if}
 
-					{if $showAlternateLibraryOptions}
-						<div class="form-group">
-							<div class="col-xs-4"><strong>{translate text='Home Library'}</strong></div>
-							<div class="col-xs-8">{$profile->_homeLocation|escape}</div>
-						</div>
+					<div class="form-group">
+						<div class="col-xs-4"><strong>{translate text='Home Library'}</strong></div>
+						<div class="col-xs-8">{$profile->getHomeLocationName()|escape}</div>
+					</div>
 
+					{if $showAlternateLibraryOptions}
 						{if count($locationList) > 2} {* First option is none *}
 							<div class="form-group">
 								<div class="col-xs-4"><label for="myLocation1" class="control-label">{translate text='My First Alternate Library'}</label></div>
