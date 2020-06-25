@@ -73,17 +73,6 @@ class Translation_ImportBulkTranslations extends Admin_Admin
 									$memCache->delete('translation_' . $activeLanguage->id . '_1_' . $translationTerm->term);
 									$translation->__destruct();
 									$translation = null;
-								}else{
-									$translation = new Translation();
-									$translation->languageId = $activeLanguage->id;
-									$translation->termId = $translationTerm->id;
-									if (!$translation->find(true)) {
-										$translation->translation = '';
-										$translation->translated = false;
-										$translation->insert();
-									}
-									$translation->__destruct();
-									$translation = null;
 								}
 							}
 							$translationTerm->__destruct();
