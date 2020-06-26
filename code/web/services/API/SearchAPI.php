@@ -50,7 +50,7 @@ class SearchAPI extends Action
 
 		//Check if solr is running by pinging it
 		$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
-		if (!$solrSearcher->ping()) {
+		if (!$solrSearcher->ping(false)) {
 			$this->addCheck($checks, 'Solr', self::STATUS_CRITICAL, "Solr is not responding");
 		}else{
 			$this->addCheck($checks, 'Solr');
