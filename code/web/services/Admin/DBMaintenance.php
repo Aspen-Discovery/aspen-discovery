@@ -2294,7 +2294,6 @@ class Admin_DBMaintenance extends Admin_Admin
 	function createDefaultIpRanges()
 	{
 		require_once ROOT_DIR . 'sys/IP/IPAddress.php';
-		require_once ROOT_DIR . 'sys/IP/ipcalc.php';
 		$subnet = new IPAddress();
 		$subnet->find();
 		while ($subnet->fetch()) {
