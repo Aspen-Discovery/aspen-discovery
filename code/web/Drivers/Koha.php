@@ -90,7 +90,7 @@ class Koha extends AbstractIlsDriver
 
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
-					$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+					$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 				} else {
 					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 					//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
@@ -260,6 +260,7 @@ class Koha extends AbstractIlsDriver
 			}
 
 			//Check to see if the item is Claims Returned
+			/** @noinspection SqlResolve */
 			$claimsReturnedSql = "SELECT * from return_claims where issue_id = {$curRow['issue_id']}";
 			$claimsReturnedResults = mysqli_query($this->dbConnection, $claimsReturnedSql);
 			$checkout['return_claim'] = '';
@@ -918,7 +919,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
 			$postParams = [
@@ -1385,12 +1386,12 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = [
 			'success' => false,
-			'message' => 'Unable to freeze your hold.'
+			'message' => translate('Unable to freeze your hold.')
 		];
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToFreezeId/suspension";
 			$postParams = "";
@@ -1419,7 +1420,7 @@ class Koha extends AbstractIlsDriver
 					$result['message'] = $hold_response->error;
 					$result['success'] = true;
 				} else {
-					$result['message'] = 'Your hold was ' . translate('frozen') . ' successfully.';
+					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
 					$result['success'] = true;
 				}
 			}
@@ -1432,12 +1433,12 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = [
 			'success' => false,
-			'message' => 'Unable to thaw your hold.'
+			'message' => translate('Unable to thaw your hold.')
 		];
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToThawId/suspension";
 
@@ -1455,7 +1456,7 @@ class Koha extends AbstractIlsDriver
 				$result['message'] = $response;
 				$result['success'] = true;
 			} else {
-				$result['message'] = 'Your hold has been thawed successfully.';
+				$result['message'] = translate(['text'=>'ils_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
 				$result['success'] = true;
 			}
 		}
@@ -1472,7 +1473,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
@@ -1513,10 +1514,10 @@ class Koha extends AbstractIlsDriver
 						$result['message'] = $hold_response->error;
 						$result['success'] = true;
 					} elseif ($hold_response->pickup_library_id != $newPickupLocation) {
-						$result['message'] = 'Sorry, the pickup location of your hold could not be changed.';
+						$result['message'] = translate(['text'=>'ils_change_pickup_location_failed', 'Sorry, the pickup location of your hold could not be changed.']);
 						$result['success'] = true;
 					} else {
-						$result['message'] = 'The pickup location of your hold was changed successfully.';
+						$result['message'] = translate(['text'=>'ils_change_pickup_location_success', 'The pickup location of your hold was changed successfully.']);
 						$result['success'] = true;
 					}
 				}
@@ -1917,7 +1918,7 @@ class Koha extends AbstractIlsDriver
 		$result = ['success' => false, 'errors' => "Unknown error updating password."];
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$borrowerNumber = $user->username;
 			$result = $this->resetPinInKoha($borrowerNumber, $newPin, $oauthToken);
@@ -2685,7 +2686,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$accountLinesPaid = explode(',', $payment->finesPaid);
 			$partialPayments = [];
@@ -2879,7 +2880,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
@@ -2987,7 +2988,7 @@ class Koha extends AbstractIlsDriver
 			}else{
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
-					$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+					$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 				} else {
 					$result = $this->resetPinInKoha($borrowerNumber, $_REQUEST['pin1'], $oauthToken);
 					if ($result['success'] == false){

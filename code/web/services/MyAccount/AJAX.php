@@ -386,6 +386,10 @@ class MyAccount_AJAX extends JSON_Action
 					$recordId = $_REQUEST['recordId'];
 					$holdId = $_REQUEST['holdId'];
 					$result = $patronOwningHold->thawHold($recordId, $holdId);
+					if ($result['success']) {
+						$message = '<div class="alert alert-success">' . $result['message'] . '</div>';
+						$result['message'] = $message;
+					}
 				}
 			}
 		} else {
