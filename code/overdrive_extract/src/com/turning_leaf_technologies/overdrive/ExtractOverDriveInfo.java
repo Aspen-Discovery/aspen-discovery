@@ -29,7 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 class ExtractOverDriveInfo {
-	private static Logger logger = LogManager.getLogger(ExtractOverDriveInfo.class);
+	private static final Logger logger = LogManager.getLogger(ExtractOverDriveInfo.class);
 	private OverDriveRecordGrouper recordGroupingProcessorSingleton;
 	private String serverName;
 	private Connection dbConn;
@@ -44,12 +44,12 @@ class ExtractOverDriveInfo {
 	private String overDriveAPIToken;
 	private String overDriveAPITokenType;
 	private long overDriveAPIExpiration;
-	private TreeMap<Long, String> libToOverDriveAPIKeyMap = new TreeMap<>();
-	private HashMap<String, Long> overDriveFormatMap = new HashMap<>();
+	private final TreeMap<Long, String> libToOverDriveAPIKeyMap = new TreeMap<>();
+	private final HashMap<String, Long> overDriveFormatMap = new HashMap<>();
 	
-	private HashMap<String, OverDriveRecordInfo> allProductsInOverDrive = new HashMap<>();
-	private ArrayList<AdvantageCollectionInfo> allAdvantageCollections = new ArrayList<>();
-	private HashMap<String, OverDriveDBInfo> existingProductsInAspen = new HashMap<>();
+	private final HashMap<String, OverDriveRecordInfo> allProductsInOverDrive = new HashMap<>();
+	private final ArrayList<AdvantageCollectionInfo> allAdvantageCollections = new ArrayList<>();
+	private final HashMap<String, OverDriveDBInfo> existingProductsInAspen = new HashMap<>();
 
 	private PreparedStatement addProductStmt;
 	private PreparedStatement updateProductStmt;
@@ -68,7 +68,7 @@ class ExtractOverDriveInfo {
 	private PreparedStatement deleteAllAvailabilityStmt;
 	private PreparedStatement updateProductAvailabilityStmt;
 
-	private CRC32 checksumCalculator = new CRC32();
+	private final CRC32 checksumCalculator = new CRC32();
 	private boolean errorsWhileLoadingProducts;
 	private boolean hadTimeoutsFromOverDrive;
 	private GroupedWorkIndexer groupedWorkIndexer;
@@ -181,6 +181,9 @@ class ExtractOverDriveInfo {
 					//For any records that have been marked to reload, regroup and reindex the records
 					processRecordsToReload(logEntry);
 
+					//Finally process any records that seem to be unlinked
+					processUnlinkedProducts();
+
 				}
 			}catch (SocketTimeoutException toe){
 				logger.info("Timeout while loading information from OverDrive, aborting");
@@ -219,6 +222,47 @@ class ExtractOverDriveInfo {
 			this.logEntry.incErrors("Error initializing overdrive extraction " + e.toString());
 		}
 		return numChanges;
+	}
+
+	private void processUnlinkedProducts() {
+		try {
+			PreparedStatement getUnlinkedProductsStmt = dbConn.prepareStatement("select id, overdriveId from overdrive_api_products where deleted = 0 and overdriveId in (select identifier from grouped_work_primary_identifiers where type='overdrive' and grouped_work_id not in (select id from grouped_work));", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getUnlinkedProductsRS = getUnlinkedProductsStmt.executeQuery();
+			int numUnlinkedProductsProcessed = 0;
+			while (getUnlinkedProductsRS.next()) {
+				String overDriveId = getUnlinkedProductsRS.getString("overDriveId");
+				long aspenId = getUnlinkedProductsRS.getLong("id");
+				try {
+					overDriveId = overDriveId.toLowerCase();
+					OverDriveRecordInfo recordInfo = new OverDriveRecordInfo();
+					recordInfo.setId(overDriveId);
+					recordInfo.setDatabaseId(aspenId);
+
+					//Call API for the product to figure out what collections the record belongs to
+					for (AdvantageCollectionInfo collectionInfo : allAdvantageCollections) {
+						//TODO: Do we need to validate this before updating metadata and availability?
+						recordInfo.addCollection(collectionInfo);
+					}
+
+					//Update the product in the database
+					updateOverDriveMetaData(recordInfo);
+					updateOverDriveAvailability(recordInfo, recordInfo.getDatabaseId());
+
+					//Reindex
+					String groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(recordInfo.getId());
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+
+					numUnlinkedProductsProcessed++;
+				}catch (Exception e) {
+					logEntry.incErrors("Error processing unlinked record " + overDriveId, e);
+				}
+			}
+			if (numUnlinkedProductsProcessed > 0) {
+				logEntry.addNote("Processed " + numUnlinkedProductsProcessed + " records that were not linked to a grouped work and that were not deleted");
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Could not load unlinked products", e);
+		}
 	}
 
 	int processSingleWork(String singleWorkId, Ini configIni, String serverName, Connection dbConn, OverDriveExtractLogEntry logEntry) {
@@ -759,38 +803,32 @@ class ExtractOverDriveInfo {
 							JSONObject curProduct = products.getJSONObject(j);
 							//Update the main data in the database and
 							OverDriveRecordInfo curRecord = loadOverDriveRecordFromJSON(collectionInfo, curProduct);
-							if (curRecord != null) {
-								OverDriveRecordInfo previouslyLoadedProduct = allProductsInOverDrive.get(curRecord.getId());
-								if (loadType == LOAD_ALL_PRODUCTS){
-									if (previouslyLoadedProduct == null) {
-										//Add to the list of all titles we have found
-										allProductsInOverDrive.put(curRecord.getId(), curRecord);
-										OverDriveDBInfo existingProductInAspen = existingProductsInAspen.get(curRecord.getId());
-										if (existingProductInAspen != null) {
-											curRecord.setDatabaseId(existingProductInAspen.getDbId());
-											//remove the record now that we have found it
-											existingProductsInAspen.remove(curRecord.getId());
-										} else {
-											curRecord.isNew = true;
-										}
+							OverDriveRecordInfo previouslyLoadedProduct = allProductsInOverDrive.get(curRecord.getId());
+							if (loadType == LOAD_ALL_PRODUCTS){
+								if (previouslyLoadedProduct == null) {
+									//Add to the list of all titles we have found
+									allProductsInOverDrive.put(curRecord.getId(), curRecord);
+									OverDriveDBInfo existingProductInAspen = existingProductsInAspen.get(curRecord.getId());
+									if (existingProductInAspen != null) {
+										curRecord.setDatabaseId(existingProductInAspen.getDbId());
+										//remove the record now that we have found it
+										existingProductsInAspen.remove(curRecord.getId());
 									} else {
-										previouslyLoadedProduct.addCollection(collectionInfo);
+										curRecord.isNew = true;
 									}
 								} else {
-									if (previouslyLoadedProduct == null) {
-										logger.warn("Found new product loading metadata and availability " + curRecord.getId());
-									}else {
-										if (loadType == LOAD_PRODUCTS_WITH_METADATA_CHANGES) {
-											previouslyLoadedProduct.hasMetadataChanges = true;
-										} else if (loadType == LOAD_PRODUCTS_WITH_ANY_CHANGES) {
-											previouslyLoadedProduct.hasAvailabilityChanges = true;
-										}
+									previouslyLoadedProduct.addCollection(collectionInfo);
+								}
+							} else {
+								if (previouslyLoadedProduct == null) {
+									logger.warn("Found new product loading metadata and availability " + curRecord.getId());
+								}else {
+									if (loadType == LOAD_PRODUCTS_WITH_METADATA_CHANGES) {
+										previouslyLoadedProduct.hasMetadataChanges = true;
+									} else if (loadType == LOAD_PRODUCTS_WITH_ANY_CHANGES) {
+										previouslyLoadedProduct.hasAvailabilityChanges = true;
 									}
 								}
-							}else{
-								//Could not parse the record make sure we log that there was an error
-								errorsWhileLoadingProducts = true;
-								logEntry.incErrors("Unable to parse record, invalid json");
 							}
 						}
 					}

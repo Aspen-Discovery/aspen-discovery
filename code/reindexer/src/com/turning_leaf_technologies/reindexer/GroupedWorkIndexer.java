@@ -338,9 +338,12 @@ public class GroupedWorkIndexer {
 			//Delete the work from the database?
 			//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
 			//TODO: Add a deleted flag since overdrive will return titles that can no longer be accessed?
+			//TODO: If we restore deleting the grouped work we should clean up enrichment, reading history, etc
 			//We would avoid continually deleting and re-adding?
-			deleteGroupedWorkStmt.setLong(1, groupedWorkId);
-			deleteGroupedWorkStmt.executeUpdate();
+			//MDN: leave the grouped work to deal with OverDrive records.  The grouped work will still be active, but
+			//it won't be in search results.
+			//deleteGroupedWorkStmt.setLong(1, groupedWorkId);
+			//deleteGroupedWorkStmt.executeUpdate();
 
 		} catch (Exception e) {
 			logEntry.incErrors("Error deleting work from index", e);
