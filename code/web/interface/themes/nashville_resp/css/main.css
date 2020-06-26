@@ -9500,6 +9500,10 @@ a.browse-thumbnail-sorted.active {
   color: red;
   font-weight: bold;
 }
+.return_claim {
+  color: green;
+  font-weight: bold;
+}
 .dueSoonLabel {
   color: #e58e29;
   font-weight: bold;

@@ -259,6 +259,17 @@ class Koha extends AbstractIlsDriver
 				}
 			}
 
+			//Check to see if the item is Claims Returned
+			$claimsReturnedSql = "SELECT * from return_claims where issue_id = {$curRow['issue_id']}";
+			$claimsReturnedResults = mysqli_query($this->dbConnection, $claimsReturnedSql);
+			$checkout['return_claim'] = '';
+			if ($claimsReturnedResults !== false) { //This is false if Koha does not support volumes
+				if ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
+					$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
+					$checkout['return_claim'] = translate(['text'=>'return_claim_message','defaultText'=> 'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y')]);
+				}
+			}
+
 			$checkout['author'] = $curRow['author'];
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
