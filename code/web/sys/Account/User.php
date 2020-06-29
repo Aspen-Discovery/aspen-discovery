@@ -1778,6 +1778,12 @@ class User extends DataObject
 		$location = new Location();
 		$location->locationId = $this->homeLocationId;
 		if ($location->find(true)){
+			if (empty($this->_homeLocation)) {
+				$this->_homeLocation = $location;
+			}
+			if (empty($this->_homeLocationCode)) {
+				$this->_homeLocationCode = $location->code;
+			}
 			return $location;
 		}
 		return null;
