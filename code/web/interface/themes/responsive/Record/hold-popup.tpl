@@ -89,11 +89,11 @@
 									if (typeof(users) !== "undefined") {ldelim}
 										$.each(users, function (indexIgnored, userId) {ldelim}
 											options += '<option value="' + userId + '">' + userNames[userId] + '</option>';
-											{rdelim});
-										{rdelim}
+										{rdelim});
+									{rdelim}
 									$('#userOption select').html(options);
-									{rdelim}).change(); /* trigger on initial load */
-								{rdelim});
+								{rdelim}).change(); /* trigger on initial load */
+							{rdelim});
 						</script>
 					{else}
 						<input type="hidden" name="pickupBranch" id="pickupBranch" value="{$user->_homeLocationCode}">
