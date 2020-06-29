@@ -233,7 +233,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$settings = $this->getSettings();
 		$patronId = $patron->getBarcode();
 		$password = $patron->getPasswordOrPin();
-		if (!$patron->eligibleForHolds()){
+		$patronEligibleForHolds = $patron->eligibleForHolds();
+		if ($patronEligibleForHolds['fineLimitReached']){
 			$result['message'] = translate(['text' => 'cl_outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to use Cloud Library.']);
 			return $result;
 		}

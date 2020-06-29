@@ -215,12 +215,14 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 				'title' => 'Check Out RBdigital',
 				'onclick' => "return AspenDiscovery.RBdigital.checkOutTitle('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'rbdigital_checkout'
 			);
 		} else {
 			$actions[] = array(
 				'title' => 'Place Hold RBdigital',
 				'onclick' => "return AspenDiscovery.RBdigital.placeHold('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'rbdigital_hold'
 			);
 		}
 		return $actions;

@@ -36,7 +36,7 @@ class IPAddress extends DataObject
 			$locationList[$location->locationId] = clone $location;
 		}
 		return array(
-			'ip' => array('property'=>'ip', 'type'=>'text', 'label'=>'IP Address', 'description'=>'The IP Address to map to a location formatted as xxx.xxx.xxx.xxx/mask'),
+			'ip' => array('property'=>'ip', 'type'=>'text', 'label'=>'IP Address', 'description'=>'The IP Address to map to a location formatted as xxx.xxx.xxx.xxx/mask', 'serverValidation' => 'validateIPAddress'),
 			'location' => array('property'=>'location', 'type'=>'text', 'label'=>'Display Name', 'description'=>'Descriptive information for the IP Address for internal use'),
 			'locationid' => array('property'=>'locationid', 'type'=>'enum', 'values'=>$locationLookupList, 'label'=>'Location', 'description'=>'The Location which this IP address maps to'),
 			'isOpac' => array('property' => 'isOpac', 'type' => 'checkbox', 'label' => 'Treat as a Public OPAC', 'description' => 'This IP address will be treated as a public OPAC with autologout features turned on.', 'default' => true),
@@ -57,27 +57,84 @@ class IPAddress extends DataObject
 		$this->calcIpRange();
 		return parent::update();
 	}
+	function validateIPAddress(){
+		$calcIpResult = $this->calcIpRange();
+		$errors = [];
+		if (!$calcIpResult) {
+			$errors[] = 'The IP address entered is not valid';
+		}
+		return [
+			'validatedOk' => $calcIpResult,
+			'errors' => $errors
+		];
+	}
 	function calcIpRange(){
 		$ipAddress = $this->ip;
 		$subnet_and_mask = explode('/', $ipAddress);
 		if (count($subnet_and_mask) == 2){
-			require_once ROOT_DIR . '/sys/IP/ipcalc.php';
-			$ipRange = getIpRange($ipAddress);
+			$ipRange = $this->getIpRange($ipAddress);
 			$startIp = $ipRange[0];
 			$endIp = $ipRange[1];
 		}else{
 			if (strpos($ipAddress, '-')){
 				list($startVal, $endVal) = explode('-', $ipAddress);
-				$startIp = ip2long(trim($startVal));
-				$endIp = ip2long(trim($endVal));
+				$startIp = $this->convertIpToLong(trim($startVal));
+				$endIp = $this->convertIpToLong(trim($endVal));
 			}else {
-				$startIp = ip2long($ipAddress);
+				$startIp = $this->convertIpToLong($ipAddress);
 				$endIp = $startIp;
 			}
 		}
 		//echo("\r\n<br/>$ipAddress: " . sprintf('%u', $startIp) . " - " .  sprintf('%u', $endIp));
 		$this->startIpVal = $startIp;
 		$this->endIpVal = $endIp;
+		if ($startIp == false || $endIp == false){
+			return false;
+		}else{
+			return true;
+		}
+	}
+
+	private function getIpRange(  $cidr) {
+
+		list($ip, $mask) = explode('/', $cidr);
+
+		$maskBinStr =str_repeat("1", $mask ) . str_repeat("0", 32-$mask );      //net mask binary string
+		$inverseMaskBinStr = str_repeat("0", $mask ) . str_repeat("1",  32-$mask ); //inverse mask
+
+		$ipLong = ip2long( $ip );
+		$ipMaskLong = bindec( $maskBinStr );
+		$inverseIpMaskLong = bindec( $inverseMaskBinStr );
+		$netWork = $ipLong & $ipMaskLong;
+
+		//$start = $netWork+1;//ignore network ID(eg: 192.168.1.0)
+		$start = $netWork; //MDN, start at the network id
+
+		$end = ($netWork | $inverseIpMaskLong) -1 ; //ignore broadcast IP(eg: 192.168.1.255)
+		return array( $start, $end );
+	}
+
+	function convertIpToLong($ipAddress){
+		$ipAddress = trim($ipAddress);
+		$ipAsLong = ip2long($ipAddress);
+		if ($ipAsLong !== false){
+			return $ipAsLong;
+		}else{
+			//Check if we have formatting issues, an IP entered with leading 0's in one of the octets messes up ipAsLong
+			$ipOctets = explode('.', $ipAddress);
+			if (count($ipOctets) != 4){
+				return false;
+			}else{
+				$ipAddress = '';
+				foreach ($ipOctets as $octetNum => $ipOctet) {
+					if ($octetNum != 0) {
+						$ipAddress .= '.';
+					}
+					$ipAddress .= (int)$ipOctet;
+				}
+				return ip2long($ipAddress);
+			}
+		}
 	}
 
 	/**

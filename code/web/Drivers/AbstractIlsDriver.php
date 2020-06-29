@@ -314,7 +314,12 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
 	public function patronEligibleForHolds(User $patron)
 	{
-		return true;
+		return [
+			'isEligible' => true,
+			'message' => '',
+			'fineLimitReached' => false,
+			'maxPhysicalCheckoutsReached' => false
+		];
 	}
 
 	public function getShowAutoRenewSwitch(User $patron)

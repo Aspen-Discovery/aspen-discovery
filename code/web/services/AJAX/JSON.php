@@ -81,7 +81,6 @@ class AJAX_JSON extends Action {
 			$translationTerm->id = $_REQUEST['termId'];
 			if ($translationTerm->find(true)){
 				global $interface;
-				/** @var Language $activeLanguage */
 				global $activeLanguage;
 				$interface->assign('translationTerm', $translationTerm);
 				$translation = new Translation();

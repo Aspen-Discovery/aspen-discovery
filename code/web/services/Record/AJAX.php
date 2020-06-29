@@ -159,13 +159,20 @@ class Record_AJAX extends Action
 			$interface->assign('items', $items);
 			$interface->assign('holdType', $holdType);
 
-			//See if we can bypass the holds form
+			//See if we can bypass the holds form.  We can do this if the user wants to automatically use their home location
+			//And it's a valid pickup location
 			$bypassHolds = false;
 			if ($rememberHoldPickupLocation){
-				if ($holdType == 'bib'){
-					$bypassHolds = true;
-				}elseif ($holdType != 'none' && count($items) == 1 ){
-					$bypassHolds = true;
+				$homeLocation = $user->getHomeLocation();
+				if ($homeLocation != null && $homeLocation->validHoldPickupBranch != 2){
+					if ($holdType == 'bib'){
+						$bypassHolds = true;
+					}elseif ($holdType != 'none' && count($items) == 1 ){
+						$bypassHolds = true;
+					}
+				}else{
+					$rememberHoldPickupLocation = false;
+					$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
 				}
 			}
 
@@ -353,7 +360,6 @@ class Record_AJAX extends Action
 				} else {
 					//block below sets the $patron variable to place the hold through pick-up location. (shouldn't be needed anymore. plb 10-27-2015)
 					$location = new Location();
-					/** @var Location[] $userPickupLocations */
 					$userPickupLocations = $location->getPickupBranches($user);
 					foreach ($userPickupLocations as $tmpLocation) {
 						if ($tmpLocation->code == $pickupBranch) {
@@ -366,7 +372,6 @@ class Record_AJAX extends Action
 						$linkedUsers = $user->getLinkedUsers();
 						foreach ($linkedUsers as $tmpUser) {
 							$location = new Location();
-							/** @var Location[] $userPickupLocations */
 							$userPickupLocations = $location->getPickupBranches($tmpUser);
 							foreach ($userPickupLocations as $tmpLocation) {
 								if ($tmpLocation->code == $pickupBranch) {

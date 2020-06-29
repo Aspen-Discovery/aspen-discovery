@@ -60,6 +60,6 @@
 26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 20 * * *    root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar arlington.production
+00 22 * * *    root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar arlington.production
 
 00 01 * * *    root    certbot renew

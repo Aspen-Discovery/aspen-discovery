@@ -920,6 +920,9 @@ class BookCoverProcessor{
 			$url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' . $this->isn;
 		}else{
 			$source = 'google_title_author';
+			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+			$title = StringUtils::removeTrailingPunctuation($title);
+			$author = StringUtils::removeTrailingPunctuation($author);
 			$url = 'https://www.googleapis.com/books/v1/volumes?q=intitle:"' . urlencode($title) . '"';
 			if (!is_null($author)){
 				$url .= "+inauthor:" . urlencode($author);
@@ -962,6 +965,8 @@ class BookCoverProcessor{
 		}
 
 		$source = 'omdb_title_year';
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		$title = StringUtils::removeTrailingPunctuation($title);
 		$title = str_replace('&', 'and', $title);
 		$title = str_replace('.', '', $title);
 		$encodedTitle = urlencode($title);
@@ -1172,6 +1177,15 @@ class BookCoverProcessor{
 						require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 						$googleApiSettings = new GoogleApiSetting();
 						if ($googleApiSettings->find(true)) {
+							$groupedWorkDriver = new GroupedWorkDriver($groupedWork->permanent_id);
+							//Load based on ISBNs first
+							$allIsbns = $groupedWorkDriver->getISBNs();
+							foreach ($allIsbns as $isbn){
+								$this->isn = $isbn;
+								if ($this->google($googleApiSettings)) {
+									return true;
+								}
+							}
 							if ($this->google($googleApiSettings, $driver->getTitle(), $driver->getPrimaryAuthor())) {
 								return true;
 							}

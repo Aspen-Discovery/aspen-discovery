@@ -650,9 +650,9 @@ class LibrarySolution extends AbstractIlsDriver {
 			foreach ($response->suspendHoldInfos as $itemResponse){
 				if ($itemResponse->success){
 					$result['success'] = true;
-					$result['message'] = 'Your hold was frozen successfully.';
+					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
 				}else{
-					$result['message'] = 'Sorry, your hold could not be suspended.';
+					$result['message'] = translate(['text'=>'ils_freeze_hold_failure', 'defaultText' => 'Sorry, your hold could not be frozen.']);
 				}
 			}
 		}else{

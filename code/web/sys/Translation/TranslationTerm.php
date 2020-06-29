@@ -14,4 +14,27 @@ class TranslationTerm extends DataObject
 	public $defaultText;
 	public $parameterNotes;
 	public $samplePageUrl;
+
+	public function getDefaultText()
+	{
+		$defaultText = '';
+		$translation = new Translation();
+		$translation->termId = $this->id;
+		$translation->languageId = 1;
+		if ($translation->find(true)){
+			if ($translation->translated){
+				$defaultText = $translation->translation;
+			}
+		}
+		$translation->__destruct();
+		$translation = null;
+		if (empty($defaultText)){
+			if (!empty($this->defaultText)){
+				$defaultText = $this->defaultText;
+			}else{
+				$defaultText = $this->term;
+			}
+		}
+		return $defaultText;
+	}
 }

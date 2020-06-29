@@ -47,21 +47,21 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		String subfieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
+		String statusFieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		String shelfLocationData = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")){
-			subfieldData = "On Order";
+			statusFieldData = "On Order";
 		}else {
-			if (subfieldData == null) {
-				subfieldData = "ONSHELF";
-			} else if (translateValue("item_status", subfieldData, recordIdentifier, false) == null) {
-				subfieldData = "ONSHELF";
+			if (statusFieldData == null) {
+				statusFieldData = "ONSHELF";
+			} else {
+				if (!hasTranslation("item_status", statusFieldData.toLowerCase())){
+					statusFieldData = "ONSHELF";
+				}
 			}
 		}
-		return subfieldData;
+		return statusFieldData;
 	}
-
-
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
@@ -82,21 +82,6 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 			location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
 		}
 		return location;
-	}
-
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Wake County, load audiences based on collection code rather than based on the 008 and 006 fields
-		HashSet<String> targetAudiences = new HashSet<>();
-		for (ItemInfo printItem : printItems){
-			String collection = printItem.getCollection();
-			if (collection != null) {
-				targetAudiences.add(collection.toLowerCase());
-			}
-		}
-
-		HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier);
-		groupedWork.addTargetAudiences(translatedAudiences);
-		groupedWork.addTargetAudiencesFull(translatedAudiences);
 	}
 
 	@Override

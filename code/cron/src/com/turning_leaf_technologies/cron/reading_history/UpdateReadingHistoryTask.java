@@ -51,7 +51,9 @@ public class UpdateReadingHistoryTask implements Runnable {
 						}else{
 							//This happens if the patron has changed their login or no longer exists.
 							processLog.incSkipped();
-							processLog.addNote("Updating reading history failed for " + cat_username + " " + message);
+							//Don't log that we couldn't update them, the skipped is enough
+							logger.debug("Updating reading history failed for " + cat_username + " " + message);
+							//processLog.addNote("Updating reading history failed for " + cat_username + " " + message);
 						}
 					}
 				} catch (JSONException e) {

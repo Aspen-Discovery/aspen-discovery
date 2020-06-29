@@ -90,7 +90,7 @@ class Koha extends AbstractIlsDriver
 
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
-					$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+					$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 				} else {
 					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 					//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
@@ -256,6 +256,18 @@ class Koha extends AbstractIlsDriver
 			if ($volumeResults !== false) { //This is false if Koha does not support volumes
 				if ($volumeRow = $volumeResults->fetch_assoc()) {
 					$checkout['volume'] = $volumeRow['description'];
+				}
+			}
+
+			//Check to see if the item is Claims Returned
+			/** @noinspection SqlResolve */
+			$claimsReturnedSql = "SELECT * from return_claims where issue_id = {$curRow['issue_id']}";
+			$claimsReturnedResults = mysqli_query($this->dbConnection, $claimsReturnedSql);
+			$checkout['return_claim'] = '';
+			if ($claimsReturnedResults !== false) { //This is false if Koha does not support volumes
+				if ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
+					$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
+					$checkout['return_claim'] = translate(['text'=>'return_claim_message','defaultText'=> 'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y')]);
 				}
 			}
 
@@ -767,8 +779,9 @@ class Koha extends AbstractIlsDriver
 		//Set pickup location
 		$pickupBranch = strtoupper($pickupBranch);
 
-		if (!$this->patronEligibleForHolds($patron)){
-			$hold_result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
+		$patronEligibleForHolds = $this->patronEligibleForHolds($patron);
+		if (!$patronEligibleForHolds['isEligible']){
+			$hold_result['message'] = $patronEligibleForHolds['message'];
 			return $hold_result;
 		}
 
@@ -782,7 +795,17 @@ class Koha extends AbstractIlsDriver
 		}
 		$marcRecord = $recordDriver->getMarcRecord();
 
-		//TODO: Use get services method to determine if title or item holds are available
+		//Check to see if the patron already has that record checked out
+		$allowHoldsOnCheckedOutTitles = $this->getKohaSystemPreference('AllowHoldsOnPatronsPossessions');
+		if ($allowHoldsOnCheckedOutTitles == 0) {
+			$existingCheckouts = $this->getCheckouts($patron);
+			foreach ($existingCheckouts as $checkout) {
+				if ($checkout['recordId'] == $recordId) {
+					$hold_result['message'] = 'You already have that title checked out, you cannot place a hold on it until you check it in.';
+					return $hold_result;
+				}
+			}
+		}
 
 		//Check to see if the title requires item level holds
 		/** @var File_MARC_Data_Field[] $holdTypeFields */
@@ -896,7 +919,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
 			$postParams = [
@@ -950,9 +973,9 @@ class Koha extends AbstractIlsDriver
 		$hold_result = array();
 		$hold_result['success'] = false;
 
-		if (!$this->patronEligibleForHolds($patron)){
-			$hold_result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
-			return $hold_result;
+		$patronEligibleForHolds = $this->patronEligibleForHolds($patron);
+		if ($hold_result['isEligible'] == false){
+			return $hold_result['message'] = $patronEligibleForHolds['message'];
 		}
 
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -1363,12 +1386,12 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = [
 			'success' => false,
-			'message' => 'Unable to freeze your hold.'
+			'message' => translate('Unable to freeze your hold.')
 		];
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToFreezeId/suspension";
 			$postParams = "";
@@ -1397,7 +1420,7 @@ class Koha extends AbstractIlsDriver
 					$result['message'] = $hold_response->error;
 					$result['success'] = true;
 				} else {
-					$result['message'] = 'Your hold was ' . translate('frozen') . ' successfully.';
+					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
 					$result['success'] = true;
 				}
 			}
@@ -1410,12 +1433,12 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = [
 			'success' => false,
-			'message' => 'Unable to thaw your hold.'
+			'message' => translate('Unable to thaw your hold.')
 		];
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToThawId/suspension";
 
@@ -1433,7 +1456,7 @@ class Koha extends AbstractIlsDriver
 				$result['message'] = $response;
 				$result['success'] = true;
 			} else {
-				$result['message'] = 'Your hold has been thawed successfully.';
+				$result['message'] = translate(['text'=>'ils_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
 				$result['success'] = true;
 			}
 		}
@@ -1450,7 +1473,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
@@ -1491,10 +1514,10 @@ class Koha extends AbstractIlsDriver
 						$result['message'] = $hold_response->error;
 						$result['success'] = true;
 					} elseif ($hold_response->pickup_library_id != $newPickupLocation) {
-						$result['message'] = 'Sorry, the pickup location of your hold could not be changed.';
+						$result['message'] = translate(['text'=>'ils_change_pickup_location_failed', 'Sorry, the pickup location of your hold could not be changed.']);
 						$result['success'] = true;
 					} else {
-						$result['message'] = 'The pickup location of your hold was changed successfully.';
+						$result['message'] = translate(['text'=>'ils_change_pickup_location_success', 'The pickup location of your hold was changed successfully.']);
 						$result['success'] = true;
 					}
 				}
@@ -1895,7 +1918,7 @@ class Koha extends AbstractIlsDriver
 		$result = ['success' => false, 'errors' => "Unknown error updating password."];
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$borrowerNumber = $user->username;
 			$result = $this->resetPinInKoha($borrowerNumber, $newPin, $oauthToken);
@@ -2629,6 +2652,17 @@ class Koha extends AbstractIlsDriver
 				if (isset($holdInfo['position'])) {
 					$hold_result['message'] .= "  You are number <b>" . $holdInfo['position'] . "</b> in the queue.";
 				}
+				//Show the number of holds the patron has used.
+				$accountSummary = $this->getAccountSummary($patron, true);
+				$maxReserves = $this->getKohaSystemPreference('maxreserves');
+				$totalHolds = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
+				$remainingHolds = $maxReserves - $totalHolds;
+				if ($remainingHolds <= 3){
+					$hold_result['message'] .= "<br/>You have $totalHolds holds currently and can place $remainingHolds additional holds.";
+				}else{
+					$hold_result['message'] .= "<br/>You have $totalHolds holds currently.";
+				}
+
 				break;
 			}
 		}
@@ -2652,7 +2686,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$accountLinesPaid = explode(',', $payment->finesPaid);
 			$partialPayments = [];
@@ -2747,27 +2781,40 @@ class Koha extends AbstractIlsDriver
 
 	public function patronEligibleForHolds(User $patron)
 	{
+		$result = [
+			'isEligible' => true,
+			'message' => '',
+			'fineLimitReached' => false,
+			'maxPhysicalCheckoutsReached' => false
+		];
 		$this->initDatabaseConnection();
 
-		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM systempreferences where variable = 'MaxOutstanding';";
-		$results = mysqli_query($this->dbConnection, $sql);
-		$maxOutstanding = 0;
-		while ($curRow = $results->fetch_assoc()) {
-			$maxOutstanding = $curRow['value'];
-		}
+		$maxOutstanding = $this->getKohaSystemPreference('MaxOutstanding');
 
-		if ($maxOutstanding <= 0){
-			return true;
-		}else{
+		if ($maxOutstanding > 0){
 			$accountSummary = $this->getAccountSummary($patron, true);
 			$totalFines = $accountSummary['totalFines'];
 			if ($totalFines > $maxOutstanding){
-				return false;
-			}else{
-				return true;
+				$result['isEligible'] = false;
+				$result['fineLimitReached'] = true;
+				$result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
 			}
 		}
+
+		//Check maximum holds
+		$maxHolds = $this->getKohaSystemPreference('maxreserves');
+		//Get total holds
+		$accountSummary = $this->getAccountSummary($patron);
+		$currentHoldsForUser = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
+		if ($currentHoldsForUser >= $maxHolds) {
+			$result['isEligible'] = false;
+			$result['maxPhysicalCheckoutsReached'] = true;
+			if (strlen($result['message']) > 0){
+				$result['message'] .= '<br/>';
+			}
+			$result['message'] .= translate(['text' => 'outstanding_holds_limit', 'defaultText' => 'Sorry, you have reached the maximum number of holds for your account.']);
+		}
+		return $result;
 	}
 
 	public function getShowAutoRenewSwitch(User $patron)
@@ -2833,7 +2880,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
@@ -2941,7 +2988,7 @@ class Koha extends AbstractIlsDriver
 			}else{
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
-					$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+					$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 				} else {
 					$result = $this->resetPinInKoha($borrowerNumber, $_REQUEST['pin1'], $oauthToken);
 					if ($result['success'] == false){

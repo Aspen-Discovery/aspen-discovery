@@ -98,13 +98,6 @@ class CatalogConnection
 	{
 		global $offlineMode;
 
-		//Get the barcode property
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
-			$barcode = $username;
-		} else {
-			$barcode = $password;
-		}
-
 		$barcodesToTest = array();
 		$barcodesToTest[] = $username;
 		$barcodesToTest[] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));

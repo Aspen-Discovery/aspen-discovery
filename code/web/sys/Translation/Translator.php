@@ -66,15 +66,13 @@ class Translator
 	 */
 	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false)
 	{
-		if ($phrase == ''){
+		if ($phrase == '' || is_numeric($phrase)){
 			return $phrase;
 		}
 
-		/** @var Language */
 		global $activeLanguage;
 		$translationMode = $this->translationModeActive() && !$inAttribute && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator'));
 		try{
-			/** @var Memcache $memCache */
 			global $memCache;
 
 			$existingTranslation = $memCache->get('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase);
@@ -178,8 +176,6 @@ class Translator
 				$file = $this->path . '/' . $this->langCode . '.ini';
 				if ($this->langCode != '' && is_file($file)) {
 					$this->words = $this->parseLanguageFile($file);
-				} else {
-					AspenError::raiseError("Unknown language file");
 				}
 				closedir($dh);
 			} else {

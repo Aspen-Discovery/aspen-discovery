@@ -1396,4 +1396,61 @@ class GroupedWork_AJAX extends JSON_Action
 		}
 		return $result;
 	}
+
+	/** @noinspection PhpUnused */
+	function showSelectDownloadForm(){
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$fileType = $_REQUEST['type'];
+		$interface->assign('fileType', $fileType);
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)) {
+			$interface->assign('id', $id);
+
+			$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
+			$groupedWorkPrimaryIdentifier->grouped_work_id = $groupedWork->id;
+			$groupedWorkPrimaryIdentifier->find();
+			$validFiles = [];
+			while ($groupedWorkPrimaryIdentifier->fetch()) {
+				require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+				require_once ROOT_DIR . '/sys/File/FileUpload.php';
+				$recordFile = new RecordFile();
+				$recordFile->type = $groupedWorkPrimaryIdentifier->type;
+				$recordFile->identifier = $groupedWorkPrimaryIdentifier->identifier;
+				$recordFile->find();
+				while ($recordFile->fetch()){
+					$fileUpload = new FileUpload();
+					$fileUpload->id = $recordFile->fileId;
+					$fileUpload->type = $fileType;
+					if ($fileUpload->find(true)){
+						$validFiles[$recordFile->fileId] = $fileUpload->title;
+					}
+				}
+			}
+			asort($validFiles);
+			$interface->assign('validFiles', $validFiles);
+
+			if ($fileType == 'RecordPDF'){
+				$buttonTitle = translate('Download PDF');
+			}else{
+				$buttonTitle = translate('Download Supplemental File');
+			}
+			return [
+				'title' => 'Select File to download',
+				'modalBody' => $interface->fetch("GroupedWork/select-download-file-form.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadFile\").submit()'>{$buttonTitle}</button>"
+			];
+		}else{
+			return [
+				'title' => 'Error',
+				'modalBody' => "<div class='alert alert-danger'>Could not find that record</div>",
+				'modalButtons' => ""
+			];
+		}
+
+	}
 }

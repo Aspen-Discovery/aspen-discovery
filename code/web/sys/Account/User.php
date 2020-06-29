@@ -1761,6 +1761,27 @@ class User extends DataObject
 
 		return $idsNotToSuggest;
 	}
+
+	function getHomeLocationName(){
+		if (empty($this->_homeLocation)) {
+			$location = new Location();
+			$location->locationId = $this->homeLocationId;
+			if ($location->find(true)){
+				$this->_homeLocation = $location->displayName;
+			}
+			$location->__destruct();
+		}
+		return $this->_homeLocation;
+	}
+
+	function getHomeLocation(){
+		$location = new Location();
+		$location->locationId = $this->homeLocationId;
+		if ($location->find(true)){
+			return $location;
+		}
+		return null;
+	}
 }
 
 function modifiedEmpty($var) {

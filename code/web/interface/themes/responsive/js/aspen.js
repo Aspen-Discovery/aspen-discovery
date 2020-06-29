@@ -3585,6 +3585,31 @@ AspenDiscovery.GroupedWork = (function(){
 			});
 			return false;
 		},
+
+		selectFileDownload: function( groupedWorkId, type) {
+			let url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX';
+			let params = {
+				method: 'showSelectDownloadForm',
+				type: type,
+			};
+			$.getJSON(url, params, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		downloadSelectedFile: function () {
+			let id = $('#id').val();
+			let fileType = $('#fileType').val();
+			let selectedFile = $('#selectedFile').val();
+			if (fileType === 'RecordPDF'){
+				window.location = Globals.path + '/GroupedWork/' + id + '/DownloadPDF?fileId=' + selectedFile;
+			}else{
+				window.location = Globals.path + '/GroupedWork/' + id + '/DownloadSupplementalFile?fileId=' + selectedFile;
+			}
+			return false;
+		},
 	};
 }(AspenDiscovery.GroupedWork || {}));
 AspenDiscovery.Lists = (function(){

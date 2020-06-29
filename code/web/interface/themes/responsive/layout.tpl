@@ -36,7 +36,7 @@
 		{$themeCss}
 	{/strip}
 </head>
-<body class="module_{$module} action_{$action}{if $masqueradeMode} masqueradeMode{/if}" id="{$module}-{$action}">
+<body class="module_{$module} action_{$action}{if $masqueradeMode} masqueradeMode{/if}{if $loggedIn} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}">
 {if $masqueradeMode}
 	{include file="masquerade-top-navbar.tpl"}
 {/if}
