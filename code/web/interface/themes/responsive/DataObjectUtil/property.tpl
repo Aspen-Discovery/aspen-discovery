@@ -40,7 +40,9 @@
 			{if !empty($property.renderAsHeading) && $property.renderAsHeading == true}
 				<div class="row">
 					<div class="col-xs-12">
-						<h3>{$property.label|translate}</h3>
+						{if !empty($property.label)}
+							<h3>{$property.label|translate}</h3>
+						{/if}
 
 						{foreach from=$property.properties item=property}
 							{include file="DataObjectUtil/property.tpl"}

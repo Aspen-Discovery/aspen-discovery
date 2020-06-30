@@ -401,9 +401,10 @@
 									<div class="adminMenuLink"><a href="/Admin/Placards">{translate text="Placards"}</a></div>
 								{/if}
 								<hr class="menu"/>
- 								<div class="adminMenuLink"><a href="/Admin/AuthorEnrichment">{translate text="Author Enrichment"}</a></div>
+								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles)}
+ 								    <div class="adminMenuLink"><a href="/Admin/AuthorEnrichment">{translate text="Author Enrichment"}</a></div>
+								{/if}
  								{if array_key_exists('opacAdmin', $userRoles)}
-								{if array_key_exists('opacAdmin', $userRoles)}
 									<div class="adminMenuLink"><a href="/RenaissanceLearning/ARSettings">{translate text="Accelerated Reader Settings"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}

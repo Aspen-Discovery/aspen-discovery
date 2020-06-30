@@ -38,7 +38,7 @@ class Admin_AuthorEnrichment extends ObjectEditor
 		return array('opacAdmin', 'cataloging', 'superCataloger');
 	}
 	function getInstructions(){
-		return "";
+		return '/Admin/HelpManual?page=Wikipedia';
 	}
 
 }
