@@ -15,3 +15,5 @@
  ![Disable enrichment for a specific author](/manual/images/Disable-specific-author-enrichment.png)
  
 - Click 'Save Changes... .'
+
+See Also: [Author Pages](/Admin/HelpManual?page=Author-Pages)
