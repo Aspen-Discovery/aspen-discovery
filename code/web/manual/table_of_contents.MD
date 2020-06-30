@@ -90,7 +90,7 @@
   - Uploaded PDFS
 - [Advanced Search](/Admin/HelpManual?page=Advanced%20Search)
 - Aspen API
-- [Author pages](/Admin/HelpManual?page=Wikipedia)
+- [Author pages](/Admin/HelpManual?page=Author-Pages)
 - Browsing
 - Citations
 - Collection Spotlights
