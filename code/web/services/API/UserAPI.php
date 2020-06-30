@@ -978,7 +978,7 @@ class UserAPI extends Action
 					} else {
 						$pickupBranch = trim($_REQUEST['campus']);
 					}
-					$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
+					$locationValid = $patron->validatePickupBranch($pickupBranch);
 					if (!$locationValid) {
 						return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText' => 'This location is no longer available, please select a different pickup location']));
 					}
@@ -1006,7 +1006,7 @@ class UserAPI extends Action
 			if ($library->showHoldButton) {
 				if (isset($_REQUEST['pickupBranch'])) {
 					$pickupBranch = trim($_REQUEST['pickupBranch']);
-					$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
+					$locationValid = $patron->validatePickupBranch($pickupBranch);
 					if (!$locationValid){
 						return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
 					}
@@ -1031,7 +1031,7 @@ class UserAPI extends Action
 		$newLocation = $_REQUEST['location'];
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
-			$locationValid = $this->validatePickupBranch($newLocation, $patron);
+			$locationValid = $patron->validatePickupBranch($newLocation);
 			if (!$locationValid){
 				return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
 			}
@@ -1636,54 +1636,6 @@ class UserAPI extends Action
 		return array($username, $password);
 	}
 
-	/**
-	 * @param string $pickupBranch
-	 * @param User $patron
-	 * @return bool
-	 * @noinspection PhpUnused
-	 */
-	protected function validatePickupBranch(string &$pickupBranch, User $patron): bool
-	{
-		//Validate the selected pickup branch, we do this in 2 passes, the first looking at the code and the second at the historicCode
-		//If the historic code is valid, we replace $pickupBranch with the new code
-		$location = new Location();
-		$location->code = $pickupBranch;
-		$location->find();
-		$locationValid = true;
-		if ($location->getNumResults() == 1) {
-			$location->fetch();
-			if ($location->validHoldPickupBranch == 2) {
-				//Valid for no one
-				$locationValid = false;
-			} elseif ($location->validHoldPickupBranch == 0) {
-				//Valid for patrons of the branch only
-				$locationValid = $location->code == $patron->_homeLocationCode;
-			}
-		} else {
-			$location = new Location();
-			$location->historicCode = $pickupBranch;
-			$location->find();
-			$locationValid = true;
-			if ($location->getNumResults() == 1) {
-				$location->fetch();
-				if ($location->validHoldPickupBranch == 2) {
-					//Valid for no one
-					$locationValid = false;
-				} elseif ($location->validHoldPickupBranch == 0) {
-					//Valid for patrons of the branch only
-					$locationValid = $location->code == $patron->_homeLocationCode;
-				}
-				if ($locationValid){
-					$pickupBranch = $location->code;
-				}
-			} else {
-				//Location is deleted
-				$locationValid = false;
-			}
-		}
-		return $locationValid;
-	}
-
 	/** @noinspection PhpUnused */
 	function getBarcodeForPatron(){
 		$results = array('success' => false, 'message' => 'Unknown error loading barcode');
@@ -1709,6 +1661,7 @@ class UserAPI extends Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getUserByBarcode(){
 		$results = array('success' => false, 'message' => 'Unknown error loading patronId');
 		if (isset($_REQUEST['username'])){
