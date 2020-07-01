@@ -327,7 +327,7 @@ public class IndexingUtils {
 			locationOwnedRecordRulesStmt.setLong(1, locationId);
 			ResultSet locationOwnedRecordRulesRS = locationOwnedRecordRulesStmt.executeQuery();
 			while (locationOwnedRecordRulesRS.next()) {
-				locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("name"), locationOwnedRecordRulesRS.getString("location"), locationOwnedRecordRulesRS.getString("subLocation")));
+				locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("name"), locationOwnedRecordRulesRS.getString("location"), locationOwnedRecordRulesRS.getString("subLocation"), locationOwnedRecordRulesRS.getString("locationsToExclude"), locationOwnedRecordRulesRS.getString("subLocationsToExclude")));
 			}
 
 			locationRecordInclusionRulesStmt.setLong(1, locationId);
@@ -336,6 +336,8 @@ public class IndexingUtils {
 				locationScopeInfo.addInclusionRule(new InclusionRule(locationRecordInclusionRulesRS.getString("name"),
 						locationRecordInclusionRulesRS.getString("location"),
 						locationRecordInclusionRulesRS.getString("subLocation"),
+						locationRecordInclusionRulesRS.getString("locationsToExclude"),
+						locationRecordInclusionRulesRS.getString("subLocationsToExclude"),
 						locationRecordInclusionRulesRS.getString("iType"),
 						locationRecordInclusionRulesRS.getString("audience"),
 						locationRecordInclusionRulesRS.getString("format"),
@@ -357,6 +359,8 @@ public class IndexingUtils {
 					locationScopeInfo.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("name"),
 							libraryRecordInclusionRulesRS.getString("location"),
 							libraryRecordInclusionRulesRS.getString("subLocation"),
+							libraryRecordInclusionRulesRS.getString("locationsToExclude"),
+							libraryRecordInclusionRulesRS.getString("subLocationsToExclude"),
 							libraryRecordInclusionRulesRS.getString("iType"),
 							libraryRecordInclusionRulesRS.getString("audience"),
 							libraryRecordInclusionRulesRS.getString("format"),
@@ -469,7 +473,7 @@ public class IndexingUtils {
 			libraryOwnedRecordRulesStmt.setLong(1, libraryId);
 			ResultSet libraryOwnedRecordRulesRS = libraryOwnedRecordRulesStmt.executeQuery();
 			while (libraryOwnedRecordRulesRS.next()) {
-				newScope.addOwnershipRule(new OwnershipRule(libraryOwnedRecordRulesRS.getString("name"), libraryOwnedRecordRulesRS.getString("location"), libraryOwnedRecordRulesRS.getString("subLocation")));
+				newScope.addOwnershipRule(new OwnershipRule(libraryOwnedRecordRulesRS.getString("name"), libraryOwnedRecordRulesRS.getString("location"), libraryOwnedRecordRulesRS.getString("subLocation"), libraryOwnedRecordRulesRS.getString("locationsToExclude"), libraryOwnedRecordRulesRS.getString("subLocationsToExclude")));
 			}
 
 			libraryRecordInclusionRulesStmt.setLong(1, libraryId);
@@ -478,6 +482,8 @@ public class IndexingUtils {
 				newScope.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("name"),
 						libraryRecordInclusionRulesRS.getString("location"),
 						libraryRecordInclusionRulesRS.getString("subLocation"),
+						libraryRecordInclusionRulesRS.getString("locationsToExclude"),
+						libraryRecordInclusionRulesRS.getString("subLocationsToExclude"),
 						libraryRecordInclusionRulesRS.getString("iType"),
 						libraryRecordInclusionRulesRS.getString("audience"),
 						libraryRecordInclusionRulesRS.getString("format"),
