@@ -107,7 +107,7 @@ class User extends DataObject
 
 	function getNumericColumnNames()
 	{
-		return ['trackReadingHistory', 'hooplaCheckOutConfirmation'];
+		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded'];
 	}
 
 	function getLists() {

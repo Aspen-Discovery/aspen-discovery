@@ -334,7 +334,11 @@ class CatalogConnection
 							$userReadingHistoryEntry->author = substr($title['author'], 0, 75);
 							$userReadingHistoryEntry->format = $title['format'];
 							$userReadingHistoryEntry->checkOutDate = $title['checkout'];
-							$userReadingHistoryEntry->checkInDate = null;
+							if (!empty($title['checkin'])) {
+								$userReadingHistoryEntry->checkInDate = $title['checkin'];
+							}else{
+								$userReadingHistoryEntry->checkInDate = null;
+							}
 							$userReadingHistoryEntry->deleted = 0;
 							$userReadingHistoryEntry->insert();
 						}
@@ -466,6 +470,7 @@ class CatalogConnection
 
 			//Opt out within Aspen since the ILS does not seem to implement this functionality
 			$patron->trackReadingHistory = false;
+			$patron->initialReadingHistoryLoaded = false;
 			$patron->update();
 			$result['success'] = true;
 			$result['message'] = translate('You have been opted out of tracking Reading History');

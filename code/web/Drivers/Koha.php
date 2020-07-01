@@ -669,93 +669,103 @@ class Koha extends AbstractIlsDriver
 		//TODO prepend indexProfileType
 		$this->initDatabaseConnection();
 
-		//Figure out if the user is opted in to reading history
+		//Figure out if the user is opted in to reading history.  Only LibLime Koha has the option to turn it off
+		//So assume that it is on if we don't get a good response
 		/** @noinspection SqlResolve */
 		$sql = "select disable_reading_history from borrowers where borrowernumber = {$patron->username}";
 		$historyEnabledRS = mysqli_query($this->dbConnection, $sql);
 		if ($historyEnabledRS) {
 			$historyEnabledRow = $historyEnabledRS->fetch_assoc();
 			$historyEnabled = !$historyEnabledRow['disable_reading_history'];
-
-			// Update patron's setting in Aspen if the setting has changed in Koha
-			if ($historyEnabled != $patron->trackReadingHistory) {
-				$patron->trackReadingHistory = (boolean)$historyEnabled;
-				$patron->update();
-			}
-
-			if (!$historyEnabled) {
-				return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
-			} else {
-				$historyActive = true;
-				$readingHistoryTitles = array();
-
-				//Borrowed from C4:Members.pm
-				/** @noinspection SqlResolve */
-				$readingHistoryTitleSql = "SELECT *,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
-					FROM issues
-					LEFT JOIN items on items.itemnumber=issues.itemnumber
-					LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
-					LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
-					WHERE borrowernumber={$patron->username}
-					UNION ALL
-					SELECT *,old_issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
-					FROM old_issues
-					LEFT JOIN items on items.itemnumber=old_issues.itemnumber
-					LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
-					LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
-					WHERE borrowernumber={$patron->username}";
-				$readingHistoryTitleRS = mysqli_query($this->dbConnection, $readingHistoryTitleSql);
-				if ($readingHistoryTitleRS) {
-					while ($readingHistoryTitleRow = $readingHistoryTitleRS->fetch_assoc()) {
-						$checkOutDate = new DateTime($readingHistoryTitleRow['itemstimestamp']);
-						$curTitle = array();
-						$curTitle['id'] = $readingHistoryTitleRow['biblionumber'];
-						$curTitle['shortId'] = $readingHistoryTitleRow['biblionumber'];
-						$curTitle['recordId'] = $readingHistoryTitleRow['biblionumber'];
-						$curTitle['title'] = $readingHistoryTitleRow['title'];
-						$curTitle['checkout'] = $checkOutDate->format('m-d-Y'); // this format is expected by Aspen's java cron program.
-
-						$readingHistoryTitles[] = $curTitle;
-					}
-				}
-			}
-
-			$numTitles = count($readingHistoryTitles);
-
-			//process pagination
-			if ($recordsPerPage != -1) {
-				$startRecord = ($page - 1) * $recordsPerPage;
-				$readingHistoryTitles = array_slice($readingHistoryTitles, $startRecord, $recordsPerPage);
-			}
-
-			set_time_limit(20 * count($readingHistoryTitles));
-			foreach ($readingHistoryTitles as $key => $historyEntry) {
-				//Get additional information from resources table
-				$historyEntry['ratingData'] = null;
-				$historyEntry['permanentId'] = null;
-				$historyEntry['linkUrl'] = null;
-				$historyEntry['coverUrl'] = null;
-				$historyEntry['format'] = "Unknown";
-				if (!empty($historyEntry['recordId'])) {
-//					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Constructor expects the recordId as a string.
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-					$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
-					if ($recordDriver->isValid()) {
-						$historyEntry['ratingData'] = $recordDriver->getRatingData();
-						$historyEntry['permanentId'] = $recordDriver->getPermanentId();
-						$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
-						$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-						$historyEntry['format'] = $recordDriver->getFormats();
-						$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
-					}
-					$recordDriver = null;
-				}
-				$readingHistoryTitles[$key] = $historyEntry;
-			}
-
-			return array('historyActive' => $historyActive, 'titles' => $readingHistoryTitles, 'numTitles' => $numTitles);
+		}else {
+			$historyEnabled = true;
 		}
-		return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
+
+		// Update patron's setting in Aspen if the setting has changed in Koha
+		if ($historyEnabled != $patron->trackReadingHistory) {
+			$patron->trackReadingHistory = (boolean)$historyEnabled;
+			$patron->update();
+		}
+
+		if (!$historyEnabled) {
+			return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
+		} else {
+			$historyActive = true;
+			$readingHistoryTitles = array();
+
+			//Borrowed from C4:Members.pm
+			/** @noinspection SqlResolve */
+			$readingHistoryTitleSql = "SELECT *,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
+				FROM issues
+				LEFT JOIN items on items.itemnumber=issues.itemnumber
+				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
+				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
+				WHERE borrowernumber={$patron->username}
+				UNION ALL
+				SELECT *,old_issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
+				FROM old_issues
+				LEFT JOIN items on items.itemnumber=old_issues.itemnumber
+				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
+				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
+				WHERE borrowernumber={$patron->username}";
+			$readingHistoryTitleRS = mysqli_query($this->dbConnection, $readingHistoryTitleSql);
+			if ($readingHistoryTitleRS) {
+				while ($readingHistoryTitleRow = $readingHistoryTitleRS->fetch_assoc()) {
+					$checkOutDate = new DateTime($readingHistoryTitleRow['itemstimestamp']);
+					$returnDate = null;
+					if (!empty($readingHistoryTitleRow['returndate'])){
+						$returnDate = new DateTime($readingHistoryTitleRow['returndate']);
+					}
+					$curTitle = array();
+					$curTitle['id'] = $readingHistoryTitleRow['biblionumber'];
+					$curTitle['shortId'] = $readingHistoryTitleRow['biblionumber'];
+					$curTitle['recordId'] = $readingHistoryTitleRow['biblionumber'];
+					$curTitle['title'] = $readingHistoryTitleRow['title'];
+					$curTitle['checkout'] = $checkOutDate->getTimestamp();
+					if (!empty($returnDate)){
+						$curTitle['checkin'] = $returnDate->getTimestamp();
+					}else{
+						$curTitle['checkin'] = null;
+					}
+					$readingHistoryTitles[] = $curTitle;
+				}
+			}
+		}
+
+		$numTitles = count($readingHistoryTitles);
+
+		//process pagination
+		if ($recordsPerPage != -1) {
+			$startRecord = ($page - 1) * $recordsPerPage;
+			$readingHistoryTitles = array_slice($readingHistoryTitles, $startRecord, $recordsPerPage);
+		}
+
+		set_time_limit(20 * count($readingHistoryTitles));
+		foreach ($readingHistoryTitles as $key => $historyEntry) {
+			//Get additional information from resources table
+			$historyEntry['ratingData'] = null;
+			$historyEntry['permanentId'] = null;
+			$historyEntry['linkUrl'] = null;
+			$historyEntry['coverUrl'] = null;
+			$historyEntry['format'] = "Unknown";
+			if (!empty($historyEntry['recordId'])) {
+//					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Constructor expects the recordId as a string.
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
+				if ($recordDriver->isValid()) {
+					$historyEntry['ratingData'] = $recordDriver->getRatingData();
+					$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+					$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+					$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+					$historyEntry['format'] = $recordDriver->getFormats();
+					$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
+				}
+				$recordDriver = null;
+			}
+			$readingHistoryTitles[$key] = $historyEntry;
+		}
+
+		return array('historyActive' => $historyActive, 'titles' => $readingHistoryTitles, 'numTitles' => $numTitles);
 	}
 
 	/**
