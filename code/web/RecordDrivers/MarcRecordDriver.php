@@ -21,12 +21,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	/** @var  IndexingProfile $indexingProfile */
 	protected $indexingProfile;
 	protected $valid = null;
-	/**
-	 * @var Grouping_Record
-	 */
-	private $recordFromIndex;
 
-    /**
+	/**
 	 * Constructor.  We build the object using all the data retrieved
 	 * from the (Solr) index.  Since we have to
 	 * make a search call to find out which record driver to construct,
@@ -272,9 +268,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				if ($subfields) {
 					foreach ($subfields as $subfield) {
 						//Add unless this is 655 subfield 2
-						if ($subfield->getCode() == 2) {
-							//Suppress this code
-						} else {
+						if ($subfield->getCode() != 2) {
 							$current[] = $subfield->getData();
 						}
 					}
@@ -459,7 +453,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 * @param   object $currentField $result from File_MARC::getFields.
 	 * @param   array $subfields The MARC subfield codes to read
 	 * @param   bool $concat Should we concatenate subfields?
-	 * @return  array
+	 * @return  string[]
 	 */
 	private function getSubfieldArray($currentField, $subfields, $concat = true)
 	{
@@ -619,9 +613,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			/** @var File_MARC_Data_Field[] $sevenHundredFields */
 			$sevenHundredFields = $this->getMarcRecord()->getFields('700|710', true);
 			foreach ($sevenHundredFields as $field) {
+				$nameSubfieldArray = $this->getSubfieldArray($field, array('a', 'b', 'c', 'd'), true);
+				$titleSubfieldArray = $this->getSubfieldArray($field, array('t', 'm', 'n', 'r'), true);
 				$curContributor = array(
-						'name' => reset($this->getSubfieldArray($field, array('a', 'b', 'c', 'd'), true)),
-						'title' => reset($this->getSubfieldArray($field, array('t', 'm', 'n', 'r'), true)),
+						'name' => reset($nameSubfieldArray),
+						'title' => reset($titleSubfieldArray),
 				);
 				if ($field->getSubfield('4') != null) {
 					$contributorRole = $field->getSubfield('4')->getData();
@@ -712,7 +708,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	/** @noinspection PhpUnused */
 	function loadDescriptionFromMarc($marcRecord, $allowExternalDescription = true)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
 
@@ -1588,10 +1583,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			// but include when the last index was completed for reference
 			$groupedWorkDriver = $this->getGroupedWorkDriver();
 			if ($groupedWorkDriver->isValid) {
-				$this->recordFromIndex = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
-				if ($this->recordFromIndex != null) {
+				$recordFromIndex = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
+				if ($recordFromIndex != null) {
 					//Divide the items into sections and create the status summary
-					$this->holdings = $this->recordFromIndex->getItemDetails();
+					$this->holdings = $recordFromIndex->getItemDetails();
 					$this->holdingSections = array();
 					foreach ($this->holdings as $copyInfo) {
 						$sectionName = $copyInfo['sectionId'];
@@ -1607,7 +1602,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						}
 					}
 
-					$this->statusSummary = $this->recordFromIndex;
+					$this->statusSummary = $recordFromIndex;
 
 					$this->statusSummary->_driver = null;
 				} else {
@@ -1835,6 +1830,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			}
 		}
 		return $cancelledIsbns;
+	}
+
+	public function hasMarcRecord()
+	{
+		return true;
 	}
 }
 

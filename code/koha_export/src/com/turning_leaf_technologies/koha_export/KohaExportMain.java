@@ -22,7 +22,7 @@ import org.marc4j.marc.Record;
 
 import java.io.*;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -34,7 +34,7 @@ public class KohaExportMain {
 	private static IndexingProfile indexingProfile;
 	private static PreparedStatement getBaseMarcRecordStmt;
 	private static PreparedStatement getBibItemsStmt;
-	private static MarcFactory marcFactory = MarcFactory.newInstance();
+	private static final MarcFactory marcFactory = MarcFactory.newInstance();
 	private static MarcRecordGrouper recordGroupingProcessorSingleton;
 	private static GroupedWorkIndexer groupedWorkIndexer;
 	private static Ini configIni;
@@ -141,6 +141,8 @@ public class KohaExportMain {
 					exportVolumes(dbConn, kohaConn);
 
 					updateNovelist(dbConn, kohaConn);
+
+					exportBookCovers(dbConn, kohaConn);
 				}
 
 				//Update works that have changed since the last index
@@ -182,6 +184,7 @@ public class KohaExportMain {
 				while (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
 					try {
 						System.gc();
+						//noinspection BusyWait
 						Thread.sleep(1000 * 60 * 5);
 					} catch (InterruptedException e) {
 						logger.info("Thread was interrupted");
@@ -192,8 +195,10 @@ public class KohaExportMain {
 				try {
 					System.gc();
 					if (numChanges == 0) {
+						//noinspection BusyWait
 						Thread.sleep(1000 * 60 * 5);
 					} else {
+						//noinspection BusyWait
 						Thread.sleep(1000 * 60);
 					}
 				} catch (InterruptedException e) {
@@ -201,6 +206,70 @@ public class KohaExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void exportBookCovers(Connection dbConn, Connection kohaConn) {
+		//Get a list of all images within the Koha database
+		int numCoversExported = 0;
+		try{
+			PreparedStatement getKohaCoversStmt = kohaConn.prepareStatement("SELECT imagenumber, biblionumber from biblioimages", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from biblioimages  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getGroupedWorkForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work inner join grouped_work_primary_identifiers on grouped_work.id = grouped_work_id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement clearBookCoverInfoStmt = dbConn.prepareStatement("UPDATE bookcover_info set imageSource = '', thumbnailLoaded=0, mediumLoaded=0, largeLoaded= 0 where recordType = 'grouped_work' and recordId = ?");
+
+			String coversPath = configIni.get("Site","coverPath") + "/original/";
+			ResultSet kohaCoversRS = getKohaCoversStmt.executeQuery();
+			while (kohaCoversRS.next()){
+				getGroupedWorkForRecordStmt.setString(1, indexingProfile.getName());
+				getGroupedWorkForRecordStmt.setString(2, kohaCoversRS.getString("biblionumber"));
+				ResultSet getGroupedWorkForRecordRS = getGroupedWorkForRecordStmt.executeQuery();
+				if (getGroupedWorkForRecordRS.next()){
+					//Check to see if we have an existing uploaded record
+					String groupedWorkId = getGroupedWorkForRecordRS.getString("permanent_id");
+					File coverFile = new File(coversPath + groupedWorkId + ".png");
+					if (!coverFile.exists() || coverFile.length() == 0) {
+						getKohaCoverStmt.setLong(1, kohaCoversRS.getLong("imagenumber"));
+						ResultSet kohaCoverRS = getKohaCoverStmt.executeQuery();
+						if (kohaCoverRS.next()){
+							try {
+								FileOutputStream writer = new FileOutputStream(coverFile);
+								Blob kohaCover = kohaCoverRS.getBlob("imagefile");
+								long curPos = 1;
+								int bufferSize = 1024;
+								long bytesWritten = 0;
+								boolean moreToWrite = true;
+								while (moreToWrite){
+									if (kohaCover.length() - bytesWritten <= bufferSize){
+										bufferSize = (int)(kohaCover.length() - bytesWritten);
+										moreToWrite = false;
+									}
+									writer.write(kohaCover.getBytes(curPos, bufferSize));
+									bytesWritten += bufferSize;
+									curPos += bufferSize;
+								}
+
+								writer.close();
+								clearBookCoverInfoStmt.setString(1, groupedWorkId);
+								int numUpdates = clearBookCoverInfoStmt.executeUpdate();
+								if (numUpdates > 0){
+									logger.debug("Cleared cover cache info for " + groupedWorkId);
+								}
+								numCoversExported++;
+							}catch (IOException e){
+								logEntry.incErrors("Error creating book cover for " + kohaCoversRS.getString("biblionumber"), e);
+							}
+						}
+					}
+				}else{
+					logger.debug("No grouped work found for biblio " + kohaCoversRS.getString("biblionumber"));
+				}
+			}
+		}catch (SQLException e){
+			logEntry.incErrors("Error exporting book covers", e);
+		}
+		if (numCoversExported > 0) {
+			logEntry.addNote("Exported " + numCoversExported + " covers from Koha");
+		}
 	}
 
 	private static void disconnectDatabase() {
@@ -496,8 +565,8 @@ public class KohaExportMain {
 	private static void updateTranslationMap(PreparedStatement kohaValuesStmt, String valueColumn, String translationColumn, PreparedStatement insertTranslationStmt, Long translationMapId, HashMap<String, String> existingValues) throws SQLException {
 		ResultSet kohaValuesRS = kohaValuesStmt.executeQuery();
 		while (kohaValuesRS.next()) {
-			String value = kohaValuesRS.getString(valueColumn);
-			String translation = kohaValuesRS.getString(translationColumn);
+			String value = kohaValuesRS.getString(valueColumn).trim();
+			String translation = kohaValuesRS.getString(translationColumn).trim();
 			if (existingValues.containsKey(value.toLowerCase())) {
 				if (!existingValues.get(value.toLowerCase()).equals(translation)) {
 					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
@@ -507,10 +576,14 @@ public class KohaExportMain {
 					translation = value;
 				}
 				if (value.length() > 0) {
-					insertTranslationStmt.setLong(1, translationMapId);
-					insertTranslationStmt.setString(2, value);
-					insertTranslationStmt.setString(3, translation);
-					insertTranslationStmt.executeUpdate();
+					try {
+						insertTranslationStmt.setLong(1, translationMapId);
+						insertTranslationStmt.setString(2, value);
+						insertTranslationStmt.setString(3, translation);
+						insertTranslationStmt.executeUpdate();
+					}catch (SQLException e){
+						logEntry.addNote("Error adding translation map value " + value + " with a translation of " + translation + " e");
+					}
 				}
 			}
 		}
@@ -1041,7 +1114,7 @@ public class KohaExportMain {
 			while (baseMarcRecordRS.next()) {
 				String marcXML = baseMarcRecordRS.getString("metadata");
 				marcXML = StringUtils.stripNonValidXMLCharacters(marcXML);
-				MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(marcXML.getBytes(Charset.forName("UTF-8"))));
+				MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(marcXML.getBytes(StandardCharsets.UTF_8)));
 
 				//This record has all the basic bib data
 				Record marcRecord = marcXmlReader.next();
