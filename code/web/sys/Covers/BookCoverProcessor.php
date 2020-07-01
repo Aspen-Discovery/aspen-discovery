@@ -561,25 +561,6 @@ class BookCoverProcessor{
 			}
 		}
 
-		//Check the 690 field to see if this is a seed catalog entry
-		$marcFields = $marcRecord->getFields('690');
-		if ($marcFields){
-			$this->log("Found 690 field", Logger::LOG_NOTICE);
-			foreach ($marcFields as $marcField){
-				if ($marcField->getSubfield('a')){
-					$this->log("Found 690a subfield", Logger::LOG_NOTICE);
-					$subfield_a = $marcField->getSubfield('a')->getData();
-					if (preg_match('/seed library.*/i', $subfield_a, $matches)){
-						$this->log("Title is a seed library title", Logger::LOG_NOTICE);
-						$filename = "interface/themes/responsive/images/seed_library_logo.jpg";
-						if ($this->processImageURL('seedLibrary', $filename, false)){
-							return true;
-						}
-					}
-				}
-			}
-		}
-
 		//Check for Flatirons covers
         $marcFields = $marcRecord->getFields('962');
 		if ($marcFields){
@@ -1117,10 +1098,11 @@ class BookCoverProcessor{
 					if ($this->getZinioCover($relatedRecord->id)) {
 						return true;
 					}
-                }else{
+				}else{
 					$driver = $relatedRecord->_driver;
 					//First check to see if there is a specific record defined in an 856 etc.
-					if (method_exists($driver, 'getMarcRecord') && $this->getCoverFromMarc($driver->getMarcRecord())){
+					/** @noinspection PhpPossiblePolymorphicInvocationInspection */
+					if ($driver->hasMarcRecord() && $this->getCoverFromMarc($driver->getMarcRecord())){
 						return true;
 					}else{
 						//Finally, check the isbns if we don't have an override

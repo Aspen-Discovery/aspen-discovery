@@ -600,7 +600,7 @@ class Novelist3{
 		$fullRecordLink = $recordDriver->getLinkUrl();
 
 		//See if we can get the series title from the record
-		$curTitle = array(
+		return [
 			'title' => $recordDriver->getTitle(),
 			'title_short' => $recordDriver->getTitle(),
 			'author' => $recordDriver->getPrimaryAuthor(),
@@ -619,8 +619,7 @@ class Novelist3{
 			'recordDriver' => $recordDriver,
 			'smallCover' => $recordDriver->getBookcoverUrl('small'),
 			'mediumCover' => $recordDriver->getBookcoverUrl('medium'),
-		);
-		return $curTitle;
+		];
 	}
 
 	/**

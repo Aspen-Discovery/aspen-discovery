@@ -233,8 +233,8 @@ var AspenDiscovery = (function(){
 		},
 
 		pwdToText: function(fieldId){
-			var elem = document.getElementById(fieldId);
-			var input = document.createElement('input');
+			let elem = document.getElementById(fieldId);
+			let input = document.createElement('input');
 			input.id = elem.id;
 			input.name = elem.name;
 			input.value = elem.value;
@@ -242,6 +242,7 @@ var AspenDiscovery = (function(){
 			input.onfocus = elem.onfocus;
 			input.onblur = elem.onblur;
 			input.className = elem.className;
+			input.maxLength = elem.maxLength;
 			if (elem.type == 'text' ){
 				input.type = 'password';
 			} else {

@@ -321,7 +321,15 @@ function getUserUpdates()
 				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(60) DEFAULT ''",
 				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(60) DEFAULT ''",
 			]
-		]
+		],
+
+		'user_password_length' => [
+			'title' => 'User Password length',
+			'description' => 'Increase maximum password length to match cat_password',
+			'sql' => [
+				"ALTER TABLE user CHANGE COLUMN password password VARCHAR(60) DEFAULT ''",
+			]
+		],
 	);
 }
 

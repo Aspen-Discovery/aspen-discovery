@@ -107,7 +107,7 @@ class User extends DataObject
 
 	function getNumericColumnNames()
 	{
-		return ['trackReadingHistory', 'hooplaCheckOutConfirmation'];
+		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded'];
 	}
 
 	function getLists() {
@@ -1787,6 +1787,52 @@ class User extends DataObject
 			return $location;
 		}
 		return null;
+	}
+
+	/**
+	 * @param string $pickupBranch
+	 * @return bool
+	 */
+	function validatePickupBranch(string &$pickupBranch): bool
+	{
+		//Validate the selected pickup branch, we do this in 2 passes, the first looking at the code and the second at the historicCode
+		//If the historic code is valid, we replace $pickupBranch with the new code
+		$location = new Location();
+		$location->code = $pickupBranch;
+		$location->find();
+		$locationValid = true;
+		if ($location->getNumResults() == 1) {
+			$location->fetch();
+			if ($location->validHoldPickupBranch == 2) {
+				//Valid for no one
+				$locationValid = false;
+			} elseif ($location->validHoldPickupBranch == 0) {
+				//Valid for patrons of the branch only
+				$locationValid = $location->code == $this->getHomeLocation()->code;
+			}
+		} else {
+			$location = new Location();
+			$location->historicCode = $pickupBranch;
+			$location->find();
+			$locationValid = true;
+			if ($location->getNumResults() == 1) {
+				$location->fetch();
+				if ($location->validHoldPickupBranch == 2) {
+					//Valid for no one
+					$locationValid = false;
+				} elseif ($location->validHoldPickupBranch == 0) {
+					//Valid for patrons of the branch only
+					$locationValid = $location->code == $this->getHomeLocation()->code;
+				}
+				if ($locationValid){
+					$pickupBranch = $location->code;
+				}
+			} else {
+				//Location is deleted
+				$locationValid = false;
+			}
+		}
+		return $locationValid;
 	}
 }
 

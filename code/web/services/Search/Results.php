@@ -10,7 +10,6 @@ class Search_Results extends Action {
 
 	function launch() {
 		global $interface;
-		global $configArray;
 		global $timer;
 		global $memoryWatcher;
 		global $library;
@@ -488,34 +487,39 @@ class Search_Results extends Action {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardTrigger.php';
 
 			$trigger = new PlacardTrigger();
-			$trigger->triggerWord = $_REQUEST['lookfor'];
+			$trigger->whereAdd($trigger->escape($_REQUEST['lookfor'] ) . " like concat('%', triggerWord, '%')");
 			$trigger->find();
 			while ($trigger->fetch()) {
-				$placardToDisplay = new Placard();
-				$placardToDisplay->id = $trigger->placardId;
-				if ($placardToDisplay->find(true)){
-					if ($placardToDisplay->isDismissed() || !$placardToDisplay->isValidForScope()){
-						$placardToDisplay = null;
-					}
-				}else{
-					$placardToDisplay = null;
-				}
-				if ($placardToDisplay != null) {
-					break;
-				}
-			}
-			if ($placardToDisplay == null && !empty($_REQUEST['replacementTerm'])) {
-				$trigger->triggerWord = $_REQUEST['replacementTerm'];
-				$trigger->find();
-				while ($trigger->fetch()) {
+				if ($trigger->exactMatch == 0 || (strcasecmp($trigger->triggerWord, $_REQUEST['lookfor']) === 0)){
 					$placardToDisplay = new Placard();
 					$placardToDisplay->id = $trigger->placardId;
-					$placardToDisplay->find(true);
-					if ($placardToDisplay->isDismissed() || !$placardToDisplay->isValidForScope()){
+					if ($placardToDisplay->find(true)){
+						if ($placardToDisplay->isDismissed() || !$placardToDisplay->isValidForScope()){
+							$placardToDisplay = null;
+						}
+					}else{
 						$placardToDisplay = null;
 					}
 					if ($placardToDisplay != null) {
 						break;
+					}
+				}
+			}
+			if ($placardToDisplay == null && !empty($_REQUEST['replacementTerm'])) {
+				$trigger->whereAdd($trigger->escape($_REQUEST['replacementTerm'] . ' like triggerWord' ));
+				//$trigger->triggerWord = $_REQUEST['replacementTerm'];
+				$trigger->find();
+				while ($trigger->fetch()) {
+					if ($trigger->exactMatch == 0 || (strcasecmp($trigger->triggerWord, $_REQUEST['replacementTerm']) === 0)) {
+						$placardToDisplay = new Placard();
+						$placardToDisplay->id = $trigger->placardId;
+						$placardToDisplay->find(true);
+						if ($placardToDisplay->isDismissed() || !$placardToDisplay->isValidForScope()) {
+							$placardToDisplay = null;
+						}
+						if ($placardToDisplay != null) {
+							break;
+						}
 					}
 				}
 			}

@@ -2,17 +2,18 @@
 
 function getIndexingUpdates()
 {
+	/** @noinspection SqlResolve */
 	return array(
 		'ils_hold_summary' => array(
 			'title' => 'ILS Hold Summary',
 			'description' => 'Create ils hold summary table to store summary information about the available holds',
 			'sql' => array(
 				"CREATE TABLE ils_hold_summary (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    ilsId VARCHAR (20) NOT NULL,
-                    numHolds INT(11) DEFAULT 0,
-                    UNIQUE(ilsId)
-                ) ENGINE = InnoDB"
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					ilsId VARCHAR (20) NOT NULL,
+					numHolds INT(11) DEFAULT 0,
+					UNIQUE(ilsId)
+				) ENGINE = InnoDB"
 			),
 		),
 
@@ -21,112 +22,112 @@ function getIndexingUpdates()
 			'description' => 'Setup indexing information table to store information about how to index ',
 			'sql' => array(
 				"CREATE TABLE IF NOT EXISTS `indexing_profiles` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `name` varchar(50) NOT NULL,
-                  `marcPath` varchar(100) NOT NULL,
-                  `marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'UTF8',
-                  `individualMarcPath` varchar(100) NOT NULL,
-                  `groupingClass` varchar(100) NOT NULL DEFAULT 'MarcRecordGrouper',
-                  `indexingClass` varchar(50) NOT NULL,
-                  `recordDriver` varchar(100) NOT NULL DEFAULT 'MarcRecord',
-                  `recordUrlComponent` varchar(25) NOT NULL DEFAULT 'Record',
-                  `formatSource` enum('bib','item') NOT NULL DEFAULT 'bib',
-                  `recordNumberTag` char(3) NOT NULL,
-                  `recordNumberPrefix` varchar(10) NOT NULL,
-                  `suppressItemlessBibs` tinyint(1) NOT NULL DEFAULT '1',
-                  `itemTag` char(3) NOT NULL,
-                  `itemRecordNumber` char(1) DEFAULT NULL,
-                  `useItemBasedCallNumbers` tinyint(1) NOT NULL DEFAULT '1',
-                  `callNumberPrestamp` char(1) DEFAULT NULL,
-                  `callNumber` char(1) DEFAULT NULL,
-                  `callNumberCutter` char(1) DEFAULT NULL,
-                  `callNumberPoststamp` varchar(1) DEFAULT NULL,
-                  `location` char(1) DEFAULT NULL,
-                  `locationsToSuppress` varchar(100) DEFAULT NULL,
-                  `subLocation` char(1) DEFAULT NULL,
-                  `shelvingLocation` char(1) DEFAULT NULL,
-                  `volume` varchar(1) DEFAULT NULL,
-                  `itemUrl` char(1) DEFAULT NULL,
-                  `barcode` char(1) DEFAULT NULL,
-                  `status` char(1) DEFAULT NULL,
-                  `statusesToSuppress` varchar(100) DEFAULT NULL,
-                  `totalCheckouts` char(1) DEFAULT NULL,
-                  `lastYearCheckouts` char(1) DEFAULT NULL,
-                  `yearToDateCheckouts` char(1) DEFAULT NULL,
-                  `totalRenewals` char(1) DEFAULT NULL,
-                  `iType` char(1) DEFAULT NULL,
-                  `dueDate` char(1) DEFAULT NULL,
-                  `dateCreated` char(1) DEFAULT NULL,
-                  `dateCreatedFormat` varchar(20) DEFAULT NULL,
-                  `iCode2` char(1) DEFAULT NULL,
-                  `useICode2Suppression` tinyint(1) NOT NULL DEFAULT '1',
-                  `format` char(1) DEFAULT NULL,
-                  `eContentDescriptor` char(1) DEFAULT NULL,
-                  `orderTag` char(3) DEFAULT NULL,
-                  `orderStatus` char(1) DEFAULT NULL,
-                  `orderLocation` char(1) DEFAULT NULL,
-                  `orderCopies` char(1) DEFAULT NULL,
-                  `orderCode3` char(1) DEFAULT NULL,
-                  PRIMARY KEY (`id`),
-                  UNIQUE KEY `name` (`name`)
-                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `name` varchar(50) NOT NULL,
+				  `marcPath` varchar(100) NOT NULL,
+				  `marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'UTF8',
+				  `individualMarcPath` varchar(100) NOT NULL,
+				  `groupingClass` varchar(100) NOT NULL DEFAULT 'MarcRecordGrouper',
+				  `indexingClass` varchar(50) NOT NULL,
+				  `recordDriver` varchar(100) NOT NULL DEFAULT 'MarcRecord',
+				  `recordUrlComponent` varchar(25) NOT NULL DEFAULT 'Record',
+				  `formatSource` enum('bib','item') NOT NULL DEFAULT 'bib',
+				  `recordNumberTag` char(3) NOT NULL,
+				  `recordNumberPrefix` varchar(10) NOT NULL,
+				  `suppressItemlessBibs` tinyint(1) NOT NULL DEFAULT '1',
+				  `itemTag` char(3) NOT NULL,
+				  `itemRecordNumber` char(1) DEFAULT NULL,
+				  `useItemBasedCallNumbers` tinyint(1) NOT NULL DEFAULT '1',
+				  `callNumberPrestamp` char(1) DEFAULT NULL,
+				  `callNumber` char(1) DEFAULT NULL,
+				  `callNumberCutter` char(1) DEFAULT NULL,
+				  `callNumberPoststamp` varchar(1) DEFAULT NULL,
+				  `location` char(1) DEFAULT NULL,
+				  `locationsToSuppress` varchar(100) DEFAULT NULL,
+				  `subLocation` char(1) DEFAULT NULL,
+				  `shelvingLocation` char(1) DEFAULT NULL,
+				  `volume` varchar(1) DEFAULT NULL,
+				  `itemUrl` char(1) DEFAULT NULL,
+				  `barcode` char(1) DEFAULT NULL,
+				  `status` char(1) DEFAULT NULL,
+				  `statusesToSuppress` varchar(100) DEFAULT NULL,
+				  `totalCheckouts` char(1) DEFAULT NULL,
+				  `lastYearCheckouts` char(1) DEFAULT NULL,
+				  `yearToDateCheckouts` char(1) DEFAULT NULL,
+				  `totalRenewals` char(1) DEFAULT NULL,
+				  `iType` char(1) DEFAULT NULL,
+				  `dueDate` char(1) DEFAULT NULL,
+				  `dateCreated` char(1) DEFAULT NULL,
+				  `dateCreatedFormat` varchar(20) DEFAULT NULL,
+				  `iCode2` char(1) DEFAULT NULL,
+				  `useICode2Suppression` tinyint(1) NOT NULL DEFAULT '1',
+				  `format` char(1) DEFAULT NULL,
+				  `eContentDescriptor` char(1) DEFAULT NULL,
+				  `orderTag` char(3) DEFAULT NULL,
+				  `orderStatus` char(1) DEFAULT NULL,
+				  `orderLocation` char(1) DEFAULT NULL,
+				  `orderCopies` char(1) DEFAULT NULL,
+				  `orderCode3` char(1) DEFAULT NULL,
+				  PRIMARY KEY (`id`),
+				  UNIQUE KEY `name` (`name`)
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 				"CREATE TABLE IF NOT EXISTS `translation_maps` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `indexingProfileId` int(11) NOT NULL,
-                  `name` varchar(50) NOT NULL,
-                  PRIMARY KEY (`id`),
-                  UNIQUE KEY `profileName` (`indexingProfileId`,`name`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8",
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `indexingProfileId` int(11) NOT NULL,
+				  `name` varchar(50) NOT NULL,
+				  PRIMARY KEY (`id`),
+				  UNIQUE KEY `profileName` (`indexingProfileId`,`name`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
 				"CREATE TABLE IF NOT EXISTS `translation_map_values` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `translationMapId` int(11) NOT NULL,
-                  `value` varchar(50) NOT NULL,
-                  `translation` varchar(255) NOT NULL,
-                  PRIMARY KEY (`id`),
-                  UNIQUE KEY (`translationMapId`,`value`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8",
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `translationMapId` int(11) NOT NULL,
+				  `value` varchar(50) NOT NULL,
+				  `translation` varchar(255) NOT NULL,
+				  PRIMARY KEY (`id`),
+				  UNIQUE KEY (`translationMapId`,`value`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
 				"CREATE TABLE IF NOT EXISTS `library_records_owned` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `libraryId` int(11) NOT NULL,
-                  `indexingProfileId` int(11) NOT NULL,
-                  `location` varchar(100) NOT NULL,
-                  `subLocation` varchar(100) NOT NULL,
-                  PRIMARY KEY (`id`)
-                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `libraryId` int(11) NOT NULL,
+				  `indexingProfileId` int(11) NOT NULL,
+				  `location` varchar(100) NOT NULL,
+				  `subLocation` varchar(100) NOT NULL,
+				  PRIMARY KEY (`id`)
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 				"CREATE TABLE IF NOT EXISTS `library_records_to_include` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `libraryId` int(11) NOT NULL,
-                  `indexingProfileId` int(11) NOT NULL,
-                  `location` varchar(100) NOT NULL,
-                  `subLocation` varchar(100) NOT NULL,
-                  `includeHoldableOnly` tinyint(4) NOT NULL DEFAULT '1',
-                  `includeItemsOnOrder` tinyint(1) NOT NULL DEFAULT '0',
-                  `includeEContent` tinyint(1) NOT NULL DEFAULT '0',
-                  `weight` int(11) NOT NULL,
-                  PRIMARY KEY (`id`),
-                  KEY `libraryId` (`libraryId`,`indexingProfileId`)
-                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `libraryId` int(11) NOT NULL,
+				  `indexingProfileId` int(11) NOT NULL,
+				  `location` varchar(100) NOT NULL,
+				  `subLocation` varchar(100) NOT NULL,
+				  `includeHoldableOnly` tinyint(4) NOT NULL DEFAULT '1',
+				  `includeItemsOnOrder` tinyint(1) NOT NULL DEFAULT '0',
+				  `includeEContent` tinyint(1) NOT NULL DEFAULT '0',
+				  `weight` int(11) NOT NULL,
+				  PRIMARY KEY (`id`),
+				  KEY `libraryId` (`libraryId`,`indexingProfileId`)
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 				"CREATE TABLE IF NOT EXISTS `location_records_owned` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `locationId` int(11) NOT NULL,
-                  `indexingProfileId` int(11) NOT NULL,
-                  `location` varchar(100) NOT NULL,
-                  `subLocation` varchar(100) NOT NULL,
-                  PRIMARY KEY (`id`)
-                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `locationId` int(11) NOT NULL,
+				  `indexingProfileId` int(11) NOT NULL,
+				  `location` varchar(100) NOT NULL,
+				  `subLocation` varchar(100) NOT NULL,
+				  PRIMARY KEY (`id`)
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 				"CREATE TABLE IF NOT EXISTS `location_records_to_include` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `locationId` int(11) NOT NULL,
-                  `indexingProfileId` int(11) NOT NULL,
-                  `location` varchar(100) NOT NULL,
-                  `subLocation` varchar(100) NOT NULL,
-                  `includeHoldableOnly` tinyint(4) NOT NULL DEFAULT '1',
-                  `includeItemsOnOrder` tinyint(1) NOT NULL DEFAULT '0',
-                  `includeEContent` tinyint(1) NOT NULL DEFAULT '0',
-                  `weight` int(11) NOT NULL,
-                  PRIMARY KEY (`id`),
-                  KEY `locationId` (`locationId`,`indexingProfileId`)
-                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `locationId` int(11) NOT NULL,
+				  `indexingProfileId` int(11) NOT NULL,
+				  `location` varchar(100) NOT NULL,
+				  `subLocation` varchar(100) NOT NULL,
+				  `includeHoldableOnly` tinyint(4) NOT NULL DEFAULT '1',
+				  `includeItemsOnOrder` tinyint(1) NOT NULL DEFAULT '0',
+				  `includeEContent` tinyint(1) NOT NULL DEFAULT '0',
+				  `weight` int(11) NOT NULL,
+				  PRIMARY KEY (`id`),
+				  KEY `locationId` (`locationId`,`indexingProfileId`)
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 			)
 		),
 
@@ -289,15 +290,15 @@ function getIndexingUpdates()
 			'description' => 'Store information about volumes for use within display.  These do not need to be indexed independently.',
 			'sql' => array(
 				"CREATE TABLE IF NOT EXISTS `ils_volume_info` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `recordId` varchar(50) NOT NULL COMMENT 'Full Record ID including the source',
-                  `displayLabel` varchar(255) NOT NULL,
-                  `relatedItems` varchar(512) NOT NULL,
-                  `volumeId` VARCHAR( 30 ) NOT NULL ,
-                  PRIMARY KEY (`id`),
-                  KEY `recordId` (`recordId`),
-                  UNIQUE `volumeId` (`volumeId`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8",
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `recordId` varchar(50) NOT NULL COMMENT 'Full Record ID including the source',
+				  `displayLabel` varchar(255) NOT NULL,
+				  `relatedItems` varchar(512) NOT NULL,
+				  `volumeId` VARCHAR( 30 ) NOT NULL ,
+				  PRIMARY KEY (`id`),
+				  KEY `recordId` (`recordId`),
+				  UNIQUE `volumeId` (`volumeId`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
 			)
 		),
 
@@ -314,16 +315,16 @@ function getIndexingUpdates()
 			'description' => 'Add additional fields to adjust status based on last check-in time.',
 			'sql' => array(
 				"CREATE TABLE IF NOT EXISTS `time_to_reshelve` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `indexingProfileId` int(11) NOT NULL,
-                  `locations` varchar(100) NOT NULL,
-                  `numHoursToOverride` int(11) NOT NULL,
-                  `status` varchar(50) NOT NULL,
-                  `groupedStatus` varchar(50) NOT NULL,
-                  `weight` int(11) NOT NULL,
-                  PRIMARY KEY (`id`),
-                  KEY (indexingProfileId)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8",
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `indexingProfileId` int(11) NOT NULL,
+				  `locations` varchar(100) NOT NULL,
+				  `numHoursToOverride` int(11) NOT NULL,
+				  `status` varchar(50) NOT NULL,
+				  `groupedStatus` varchar(50) NOT NULL,
+				  `weight` int(11) NOT NULL,
+				  PRIMARY KEY (`id`),
+				  KEY (indexingProfileId)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
 			)
 		),
 
@@ -365,19 +366,19 @@ function getIndexingUpdates()
 			'description' => 'Create log for ils export via api.',
 			'sql' => array(
 				"CREATE TABLE IF NOT EXISTS ils_extract_log(
-                    id INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
-                    indexingProfile VARCHAR(50) NOT NULL,
-                    startTime INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
-                    endTime INT(11) NULL COMMENT 'The timestamp when the run ended', 
-                    lastUpdate INT(11) NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)',
-                    numProducts INT(11) DEFAULT 0,
-                    numErrors INT(11) DEFAULT 0,
-                    numAdded INT(11) DEFAULT 0,
-                    numDeleted INT(11) DEFAULT 0,
-                    numUpdated INT(11) DEFAULT 0, 
-                    `notes` TEXT COMMENT 'Additional information about the run', 
-                    PRIMARY KEY ( `id` )
-                ) ENGINE = InnoDB;",
+					id INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
+					indexingProfile VARCHAR(50) NOT NULL,
+					startTime INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
+					endTime INT(11) NULL COMMENT 'The timestamp when the run ended', 
+					lastUpdate INT(11) NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)',
+					numProducts INT(11) DEFAULT 0,
+					numErrors INT(11) DEFAULT 0,
+					numAdded INT(11) DEFAULT 0,
+					numDeleted INT(11) DEFAULT 0,
+					numUpdated INT(11) DEFAULT 0, 
+					`notes` TEXT COMMENT 'Additional information about the run', 
+					PRIMARY KEY ( `id` )
+				) ENGINE = InnoDB;",
 			)
 		),
 
@@ -394,13 +395,13 @@ function getIndexingUpdates()
 			'description' => 'Add a table to track how often a particular user uses the ils and side loads.',
 			'sql' => array(
 				"CREATE TABLE user_ils_usage (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    userId INT(11) NOT NULL,
-                    indexingProfileId INT(11) NOT NULL,
-                    year INT(4) NOT NULL,
-                    month INT(2) NOT NULL,
-                    usageCount INT(11) DEFAULT 0
-                ) ENGINE = InnoDB",
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					userId INT(11) NOT NULL,
+					indexingProfileId INT(11) NOT NULL,
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					usageCount INT(11) DEFAULT 0
+				) ENGINE = InnoDB",
 				"ALTER TABLE user_ils_usage ADD INDEX (userId, indexingProfileId, year, month)",
 				"ALTER TABLE user_ils_usage ADD INDEX (year, month)",
 			),
@@ -412,13 +413,13 @@ function getIndexingUpdates()
 			'continueOnError' => true,
 			'sql' => array(
 				"CREATE TABLE ils_record_usage (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    indexingProfileId INT(11) NOT NULL,
-                    recordId VARCHAR(36),
-                    year INT(4) NOT NULL,
-                    month INT(2) NOT NULL,
-                    timesUsed INT(11) NOT NULL
-                ) ENGINE = InnoDB",
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					indexingProfileId INT(11) NOT NULL,
+					recordId VARCHAR(36),
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					timesUsed INT(11) NOT NULL
+				) ENGINE = InnoDB",
 				"ALTER TABLE ils_record_usage ADD INDEX (recordId, year, month)",
 				"ALTER TABLE ils_record_usage ADD INDEX (year, month)",
 			),
@@ -474,17 +475,17 @@ function getIndexingUpdates()
 			'description' => 'Setup authorities in the database to reduce memory usage during indexing',
 			'sql' => [
 				"CREATE TABLE author_authorities (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    originalName VARCHAR(255) NOT NULL,
-                    authoritativeName VARCHAR(255) NOT NULL
-                ) ENGINE = InnoDB",
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					originalName VARCHAR(255) NOT NULL,
+					authoritativeName VARCHAR(255) NOT NULL
+				) ENGINE = InnoDB",
 				"ALTER TABLE author_authorities ADD UNIQUE INDEX (originalName)",
 				"ALTER TABLE author_authorities ADD INDEX (authoritativeName)",
 				"CREATE TABLE title_authorities (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    originalName VARCHAR(255) NOT NULL,
-                    authoritativeName VARCHAR(255) NOT NULL
-                ) ENGINE = InnoDB",
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					originalName VARCHAR(255) NOT NULL,
+					authoritativeName VARCHAR(255) NOT NULL
+				) ENGINE = InnoDB",
 				"ALTER TABLE title_authorities ADD UNIQUE INDEX (originalName)",
 				"ALTER TABLE title_authorities ADD INDEX (authoritativeName)",
 			]
@@ -495,44 +496,44 @@ function getIndexingUpdates()
 			'description' => 'Setup Accelerated Reader in the database to reduce memory usage during indexing',
 			'sql' => [
 				"CREATE TABLE accelerated_reading_titles (
-                    arBookId INT NOT NULL PRIMARY KEY,
-                    language VARCHAR(2) NOT NULL,
-                    title VARCHAR(255) NOT NULL,
-                    authorCombined VARCHAR(255) NOT NULL,
-                    bookLevel FLOAT,
-                    arPoints INT(4),
-                    isFiction TINYINT(1),
-                    interestLevel VARCHAR(5)                                                            
-                ) ENGINE = InnoDB",
+					arBookId INT NOT NULL PRIMARY KEY,
+					language VARCHAR(2) NOT NULL,
+					title VARCHAR(255) NOT NULL,
+					authorCombined VARCHAR(255) NOT NULL,
+					bookLevel FLOAT,
+					arPoints INT(4),
+					isFiction TINYINT(1),
+					interestLevel VARCHAR(5)															
+				) ENGINE = InnoDB",
 				"CREATE TABLE accelerated_reading_isbn (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    arBookId INT NOT NULL,
-                    isbn VARCHAR(13) NOT NULL
-                ) ENGINE = InnoDB",
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					arBookId INT NOT NULL,
+					isbn VARCHAR(13) NOT NULL
+				) ENGINE = InnoDB",
 				"ALTER TABLE accelerated_reading_isbn ADD INDEX (arBookId)",
 				"ALTER TABLE accelerated_reading_isbn ADD UNIQUE INDEX (isbn)",
 				"CREATE TABLE accelerated_reading_subject (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    topic VARCHAR(255) NOT NULL,
-                    subTopic VARCHAR(255) NOT NULL
-                ) ENGINE = InnoDB",
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					topic VARCHAR(255) NOT NULL,
+					subTopic VARCHAR(255) NOT NULL
+				) ENGINE = InnoDB",
 				"ALTER TABLE accelerated_reading_subject ADD INDEX (topic, subTopic)",
 				"CREATE TABLE accelerated_reading_subject_to_title (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    arBookId INT NOT NULL,
-                    arSubjectId INT NOT NULL
-                ) ENGINE = InnoDB",
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					arBookId INT NOT NULL,
+					arSubjectId INT NOT NULL
+				) ENGINE = InnoDB",
 				"ALTER TABLE accelerated_reading_subject_to_title ADD UNIQUE INDEX (arBookId, arSubjectId)",
 				"CREATE TABLE accelerated_reading_settings (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    indexSeries TINYINT(1) DEFAULT 1,
-                    indexSubjects TINYINT(1) DEFAULT 1,
-                    arExportPath VARCHAR(255) NOT NULL,
-                    ftpServer VARCHAR(255) NOT NULL,
-                    ftpUser VARCHAR(255) NOT NULL,
-                    ftpPassword VARCHAR(255) NOT NULL,
-                    lastFetched INT NOT NULL default 0
-                ) ENGINE = InnoDB",
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					indexSeries TINYINT(1) DEFAULT 1,
+					indexSubjects TINYINT(1) DEFAULT 1,
+					arExportPath VARCHAR(255) NOT NULL,
+					ftpServer VARCHAR(255) NOT NULL,
+					ftpUser VARCHAR(255) NOT NULL,
+					ftpPassword VARCHAR(255) NOT NULL,
+					lastFetched INT NOT NULL default 0
+				) ENGINE = InnoDB",
 			]
 		],
 
@@ -541,24 +542,24 @@ function getIndexingUpdates()
 			'description' => 'Setup Format and Status Maps for Indexing Profiles',
 			'sql' => [
 				"CREATE TABLE IF NOT EXISTS `format_map_values` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `indexingProfileId` int(11) NOT NULL,
-                  `value` varchar(50) NOT NULL,
-                  `format` varchar(255) NOT NULL,
-                  `formatCategory` varchar(255) NOT NULL,
-                  `formatBoost` tinyint NOT NULL,
-                  PRIMARY KEY (`id`),
-                  UNIQUE KEY (`indexingProfileId`,`value`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8",
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `indexingProfileId` int(11) NOT NULL,
+				  `value` varchar(50) NOT NULL,
+				  `format` varchar(255) NOT NULL,
+				  `formatCategory` varchar(255) NOT NULL,
+				  `formatBoost` tinyint NOT NULL,
+				  PRIMARY KEY (`id`),
+				  UNIQUE KEY (`indexingProfileId`,`value`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
 				"CREATE TABLE IF NOT EXISTS `status_map_values` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `indexingProfileId` int(11) NOT NULL,
-                  `value` varchar(50) NOT NULL,
-                  `status` varchar(50) NOT NULL,
-                  `groupedStatus` varchar(50) NOT NULL,
-                  PRIMARY KEY (`id`),
-                  UNIQUE KEY (`indexingProfileId`,`value`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8"
+				  `id` int(11) NOT NULL AUTO_INCREMENT,
+				  `indexingProfileId` int(11) NOT NULL,
+				  `value` varchar(50) NOT NULL,
+				  `status` varchar(50) NOT NULL,
+				  `groupedStatus` varchar(50) NOT NULL,
+				  PRIMARY KEY (`id`),
+				  UNIQUE KEY (`indexingProfileId`,`value`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8"
 			],
 		],
 
@@ -632,7 +633,7 @@ function getIndexingUpdates()
 					lastUpdateOfAllRecords INT(11) DEFAULT 0,
 					PRIMARY KEY (`id`),
 					UNIQUE KEY `name` (`name`)
-                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 			]
 		],
 
@@ -650,13 +651,13 @@ function getIndexingUpdates()
 			'description' => 'Add a table to track how often a particular user uses side loads.',
 			'sql' => array(
 				"CREATE TABLE user_sideload_usage (
-	                id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	                userId INT(11) NOT NULL,
-	                sideloadId INT(11) NOT NULL,
-	                year INT(4) NOT NULL,
-	                month INT(2) NOT NULL,
-	                usageCount INT(11) DEFAULT 0
-	            ) ENGINE = InnoDB",
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					userId INT(11) NOT NULL,
+					sideloadId INT(11) NOT NULL,
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					usageCount INT(11) DEFAULT 0
+				) ENGINE = InnoDB",
 				"ALTER TABLE user_sideload_usage ADD INDEX (userId, sideloadId, year, month)",
 				"ALTER TABLE user_sideload_usage ADD INDEX (year, month)",
 			),
@@ -668,13 +669,13 @@ function getIndexingUpdates()
 			'continueOnError' => true,
 			'sql' => array(
 				"CREATE TABLE sideload_record_usage (
-	                id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	                sideloadId INT(11) NOT NULL,
-	                recordId VARCHAR(36),
-	                year INT(4) NOT NULL,
-	                month INT(2) NOT NULL,
-	                timesUsed INT(11) NOT NULL
-	            ) ENGINE = InnoDB",
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					sideloadId INT(11) NOT NULL,
+					recordId VARCHAR(36),
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					timesUsed INT(11) NOT NULL
+				) ENGINE = InnoDB",
 				"ALTER TABLE sideload_record_usage ADD INDEX (sideloadId, year, month)",
 				"ALTER TABLE sideload_record_usage ADD INDEX (year, month)",
 			),
@@ -685,21 +686,21 @@ function getIndexingUpdates()
 			'description' => 'Create log for Side Load Processing.',
 			'sql' => array(
 				"CREATE TABLE IF NOT EXISTS sideload_log(
-	                `id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
-	                `startTime` INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
-	                `endTime` INT(11) NULL COMMENT 'The timestamp when the run ended', 
-	                `lastUpdate` INT(11) NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)', 
-	                `notes` TEXT COMMENT 'Additional information about the run', 
-	                numSideLoadsUpdated INT(11) DEFAULT 0,
-	                sideLoadsUpdated MEDIUMTEXT,
-	                numProducts INT(11) DEFAULT 0,
-	                numErrors INT(11) DEFAULT 0,
-	                numAdded INT(11) DEFAULT 0,
-	                numDeleted INT(11) DEFAULT 0,
-	                numUpdated INT(11) DEFAULT 0,
-	                numSkipped INT(11) DEFAULT 0,
-	                PRIMARY KEY ( `id` )
-                ) ENGINE = InnoDB;",
+					`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
+					`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
+					`endTime` INT(11) NULL COMMENT 'The timestamp when the run ended', 
+					`lastUpdate` INT(11) NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)', 
+					`notes` TEXT COMMENT 'Additional information about the run', 
+					numSideLoadsUpdated INT(11) DEFAULT 0,
+					sideLoadsUpdated MEDIUMTEXT,
+					numProducts INT(11) DEFAULT 0,
+					numErrors INT(11) DEFAULT 0,
+					numAdded INT(11) DEFAULT 0,
+					numDeleted INT(11) DEFAULT 0,
+					numUpdated INT(11) DEFAULT 0,
+					numSkipped INT(11) DEFAULT 0,
+					PRIMARY KEY ( `id` )
+				) ENGINE = InnoDB;",
 			)
 		),
 
@@ -708,10 +709,10 @@ function getIndexingUpdates()
 			'description' => 'Add a table to define what information should be included within search results',
 			'sql' => [
 				'CREATE TABLE sideload_scopes (
-    				id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    				name VARCHAR(50) NOT NULL,
-    				sideLoadId INT(11) NOT NULL,
-    				restrictToChildrensMaterial TINYINT DEFAULT 0
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(50) NOT NULL,
+					sideLoadId INT(11) NOT NULL,
+					restrictToChildrensMaterial TINYINT DEFAULT 0
 				) ENGINE = InnoDB'
 			]
 		],
@@ -733,9 +734,9 @@ function getIndexingUpdates()
 			'description' => 'Add tables to determine how side loads are scoped',
 			'sql' => [
 				'CREATE TABLE library_sideload_scopes (
-    				id int(11) NOT NULL AUTO_INCREMENT,
-    				libraryId INT(11) NOT NULL,
-    				sideLoadScopeId INT(11) NOT NULL,
+					id int(11) NOT NULL AUTO_INCREMENT,
+					libraryId INT(11) NOT NULL,
+					sideLoadScopeId INT(11) NOT NULL,
 					PRIMARY KEY (`id`),
 					UNIQUE (libraryId, sideLoadScopeId)
 				) ENGINE = InnoDB',
@@ -745,7 +746,7 @@ function getIndexingUpdates()
 					sideLoadScopeId int(11) NOT NULL,
 					PRIMARY KEY (`id`),
 					UNIQUE (locationId, sideLoadScopeId)
-                ) ENGINE=InnoDB',
+				) ENGINE=InnoDB',
 			]
 		],
 
@@ -827,10 +828,26 @@ function getIndexingUpdates()
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN determineAudienceBy TINYINT DEFAULT 0'
 			]
+		],
+
+		'indexing_exclude_locations' => [
+			'title' => 'Indexing - Exclude Records by Location and Sublocation',
+			'description' => 'Add the ability to exclude records from a library/location by location or sublocation',
+			'sql' => [
+				"ALTER TABLE library_records_owned ADD COLUMN locationsToExclude varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_owned ADD COLUMN subLocationsToExclude varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include ADD COLUMN locationsToExclude varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include ADD COLUMN subLocationsToExclude varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_owned ADD COLUMN locationsToExclude varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_owned ADD COLUMN subLocationsToExclude varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include ADD COLUMN locationsToExclude varchar(100) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include ADD COLUMN subLocationsToExclude varchar(100) NOT NULL DEFAULT ''",
+			]
 		]
 	);
 }
 
+/** @noinspection PhpUnused */
 function createFormatAndStatusMapsFromTranslationMaps(&$update)
 {
 	require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';

@@ -2039,6 +2039,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'placard_trigger_exact_match' => [
+					'title' => 'Placard Trigger Exact Match',
+					'description' => 'Add ability to force triggers to use fuzzy matching',
+					'sql' => [
+						'ALTER TABLE placard_trigger ADD COLUMN exactMatch TINYINT(1) DEFAULT 0'
+					]
+				],
+
 				'novelist_settings' => [
 					'title' => 'Novelist settings',
 					'description' => 'Add the ability to store Novelist settings in the DB rather than config file',

@@ -27,13 +27,13 @@
 					<div id="loginUsernameRow" class="form-group">
 						<label for="username" class="control-label col-xs-12 col-sm-4">{$usernameLabel} </label>
 						<div class="col-xs-12 col-sm-8">
-							<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control">
+							<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control" maxlength="60">
 						</div>
 					</div>
 					<div id="loginPasswordRow" class="form-group">
 						<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel} </label>
 						<div class="col-xs-12 col-sm-8">
-							<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control">
+							<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control" maxlength="60">
 							{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 								<p class="text-muted help-block">
 									<strong>{translate text="forgot_pin" defaultText="Forgot %1%?" 1=$passwordLabel}</strong>&nbsp;&nbsp;

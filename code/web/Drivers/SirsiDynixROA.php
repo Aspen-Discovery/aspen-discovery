@@ -256,7 +256,6 @@ class SirsiDynixROA extends HorizonAPI
 						// $block is a simplexml object with attribute info about currency, type casting as below seems to work for adding up. plb 3-27-2015
 						$fineAmount = (float)$block->fields->owed->amount;
 						$finesVal   += $fineAmount;
-
 					}
 				}
 
@@ -303,7 +302,6 @@ class SirsiDynixROA extends HorizonAPI
 		return false;
 	}
 
-
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
 		global $timer;
@@ -336,7 +334,7 @@ class SirsiDynixROA extends HorizonAPI
 
 
 			$accountInfoLookupURL         = $webServiceURL . '/user/patron/key/' . $sirsiRoaUserID .
-				'?includeFields=firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,circRecordList,blockList,holdRecordList,primaryPhone';
+				'?includeFields=firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,blockList';
 
 			// phoneList is for texting notification preferences
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
@@ -449,7 +447,6 @@ class SirsiDynixROA extends HorizonAPI
 						// or the first location for the library
 						global $library;
 
-						/** @var \Location $location */
 						$location            = new Location();
 						$location->libraryId = $library->libraryId;
 						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
@@ -464,7 +461,6 @@ class SirsiDynixROA extends HorizonAPI
 						$user->homeLocationId = $location->locationId;
 						if (empty($user->myLocation1Id)) {
 							$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-							/** @var /Location $location */
 							//Get display name for preferred location 1
 							$myLocation1             = new Location();
 							$myLocation1->locationId = $user->myLocation1Id;
@@ -506,36 +502,13 @@ class SirsiDynixROA extends HorizonAPI
 					}
 				}
 
-				//Get additional information about fines, etc
-
 				$finesVal = 0;
 				if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
 					foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
+						$patronBlock = $this->getWebServiceResponse($webServiceURL . '/circulation/block/key/' . $block->key, null, $sessionToken);
 						// $block is a simplexml object with attribute info about currency, type casting as below seems to work for adding up. plb 3-27-2015
-						$fineAmount = (float)$block->fields->owed->amount;
+						$fineAmount = (float)$patronBlock->fields->owed->amount;
 						$finesVal   += $fineAmount;
-
-					}
-				}
-
-				$numHoldsAvailable = 0;
-				$numHoldsRequested = 0;
-				if (isset($lookupMyAccountInfoResponse->fields->holdRecordList)) {
-					foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $hold) {
-						if ($hold->fields->status == 'BEING_HELD') {
-							$numHoldsAvailable++;
-						} elseif ($hold->fields->status != 'EXPIRED') {
-							$numHoldsRequested++;
-						}
-					}
-				}
-
-				$numCheckedOut = 0;
-				if (isset($lookupMyAccountInfoResponse->fields->circRecordList)) {
-					foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkedOut) {
-						if (empty($checkedOut->fields->claimsReturnedDate) && $checkedOut->fields->status != 'INACTIVE') {
-							$numCheckedOut++;
-						}
 					}
 				}
 
@@ -547,10 +520,6 @@ class SirsiDynixROA extends HorizonAPI
 //				$user->phone                 = isset($phone) ? $phone : '';
 				$user->_fines                 = sprintf('$%01.2f', $finesVal);
 				$user->_finesVal              = $finesVal;
-				$user->_numCheckedOutIls      = $numCheckedOut;
-				$user->_numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
-				$user->_numHoldsAvailableIls  = $numHoldsAvailable;
-				$user->_numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = 0; //TODO: not getting this info here?
 				$user->_notices               = '-';
 				$user->_noticePreferenceLabel = 'Email';
@@ -573,6 +542,62 @@ class SirsiDynixROA extends HorizonAPI
 			}
 		}
 		return null;
+	}
+
+	public function getAccountSummary($user, $forceRefresh = false) {
+		$summary = [
+			'numCheckedOut' => 0,
+			'numOverdue' => 0,
+			'numAvailableHolds' => 0,
+			'numUnavailableHolds' => 0,
+			'totalFines' => 0,
+			'expires' => '',
+			'expired' => 0,
+			'expireClose' => 0,
+		];
+
+		$webServiceURL = $this->getWebServiceURL();
+		$accountInfoLookupURL         = $webServiceURL . '/user/patron/key/' . $user->username .
+			'?includeFields=circRecordList,blockList,holdRecordList,privilegeExpiresDate';
+
+		$sessionToken = $this->getSessionToken($user);
+		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
+		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
+			$summary['numCheckedOut'] = count($lookupMyAccountInfoResponse->fields->circRecordList);
+			foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkout) {
+				$patronCheckout = $this->getWebServiceResponse($webServiceURL . '/circulation/circRecord/key/' . $checkout->key, null, $sessionToken);
+				if ($patronCheckout->fields->overdue){
+					$summary['numOverdue']++;
+				}
+			}
+
+			if (isset($lookupMyAccountInfoResponse->fields->holdRecordList)) {
+				foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $hold) {
+					//Get detailed info about the hold
+					$patronHold = $this->getWebServiceResponse($webServiceURL . '/circulation/holdRecord/key/' . $hold->key, null, $sessionToken);
+					if ($patronHold->fields->status == 'BEING_HELD') {
+						$summary['numAvailableHolds']++;
+					} elseif ($patronHold->fields->status != 'EXPIRED') {
+						$summary['numUnavailableHolds']++;
+					}
+				}
+			}
+
+			$finesVal = 0;
+			if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
+				foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
+					$patronBlock = $this->getWebServiceResponse($webServiceURL . '/circulation/block/key/' . $block->key, null, $sessionToken);
+					// $block is a simplexml object with attribute info about currency, type casting as below seems to work for adding up. plb 3-27-2015
+					$fineAmount = (float)$patronBlock->fields->owed->amount;
+					$finesVal   += $fineAmount;
+				}
+			}
+			$summary['totalFines'] = $finesVal;
+
+			$summary['expires'] = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
+		}
+
+		return $summary;
 	}
 
 	private function getStaffSessionToken() {
@@ -856,31 +881,33 @@ class SirsiDynixROA extends HorizonAPI
 		$webServiceURL = $this->getWebServiceURL();
 		//Get a list of holds for the user
 //		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=circRecordList{*,item{itemType,call{dispCallNumber}}}', null, $sessionToken);
-		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=circRecordList{*,item{call{dispCallNumber}}}', null, $sessionToken);
+		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=circRecordList', null, $sessionToken);
 
 		if (!empty($patronCheckouts->fields->circRecordList)) {
 			$sCount = 0;
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 
 			foreach ($patronCheckouts->fields->circRecordList as $checkout) {
-				if (empty($checkout->fields->claimsReturnedDate) && $checkout->fields->status != 'INACTIVE') { // Titles with a claims return date will not be displayed in check outs.
+				$patronCheckout = $this->getWebServiceResponse($webServiceURL . '/circulation/circRecord/key/' . $checkout->key, null, $sessionToken);
+				if (empty($patronCheckout->fields->claimsReturnedDate) && $patronCheckout->fields->status != 'INACTIVE') { // Titles with a claims return date will not be displayed in check outs.
 					$curTitle = array();
 					$curTitle['checkoutSource'] = 'ILS';
 
-					list($bibId) = explode(':', $checkout->key);
+					list($bibId) = explode(':', $patronCheckout->key);
 					$curTitle['recordId'] = $bibId;
 					$curTitle['shortId']  = $bibId;
 					$curTitle['id']       = $bibId;
+					$curTitle['itemId'] = $patronCheckout->fields->item->key;
 
-					$curTitle['dueDate']      = strtotime($checkout->fields->dueDate);
-					$curTitle['checkoutDate'] = strtotime($checkout->fields->checkOutDate);
+					$curTitle['dueDate']      = strtotime($patronCheckout->fields->dueDate);
+					$curTitle['checkoutDate'] = strtotime($patronCheckout->fields->checkOutDate);
 					// Note: there is an overdue flag
-					$curTitle['renewCount']     = $checkout->fields->renewalCount;
-					$curTitle['canRenew']       = $checkout->fields->seenRenewalsRemaining > 0;
-					$curTitle['renewIndicator'] = $checkout->fields->item->key;
+					$curTitle['renewCount']     = $patronCheckout->fields->renewalCount;
+					$curTitle['canRenew']       = $patronCheckout->fields->seenRenewalsRemaining > 0;
+					$curTitle['renewIndicator'] = $patronCheckout->fields->item->key;
 
 					$curTitle['format'] = 'Unknown';
-					$recordDriver       = new MarcRecordDriver('a' . $bibId);
+					$recordDriver = new MarcRecordDriver('a' . $bibId);
 					if ($recordDriver->isValid()) {
 						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium', true);
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -897,12 +924,9 @@ class SirsiDynixROA extends HorizonAPI
 						$simpleSortTitle       = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
 						$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
 						$curTitle['author']     = $bibInfo->fields->author;
-//						if (!empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
-//							$curTitle['title2'] = $checkout->fields->item->fields->itemType->key . ' - ' . $checkout->fields->item->fields->call->fields->dispCallNumber;
-//						}
 					}
-					if ($curTitle['format'] == 'Magazine' && !empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
-						$curTitle['title2'] = $checkout->fields->item->fields->call->fields->dispCallNumber;
+					if ($curTitle['format'] == 'Magazine' && !empty($patronCheckout->fields->item->fields->call->fields->dispCallNumber)) {
+						$curTitle['title2'] = $patronCheckout->fields->item->fields->call->fields->dispCallNumber;
 					}
 
 					$sCount++;
@@ -1468,8 +1492,8 @@ class SirsiDynixROA extends HorizonAPI
 
 		$params = array(
 			'item' => array(
-			'key' => $itemId,
-		  'resource' => '/catalog/item'
+				'key' => $itemId,
+				'resource' => '/catalog/item'
 			)
 		);
 
@@ -1520,17 +1544,20 @@ class SirsiDynixROA extends HorizonAPI
 			$webServiceURL = $this->getWebServiceURL();
 
 //			$blockList = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=blockList{*}', null, $sessionToken);
-			$blockList = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=blockList{*,item{bib{title,author}}}', null, $sessionToken);
+			$blockList = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=blockList', null, $sessionToken);
 			// Include Title data if available
 
 			if (!empty($blockList->fields->blockList)) {
 				foreach ($blockList->fields->blockList as $block) {
-					$fine = $block->fields;
+					$patronBlock = $this->getWebServiceResponse($webServiceURL . '/circulation/block/key/' . $block->key, null, $sessionToken);
+					$fine = $patronBlock->fields;
 					$title = '';
-					if (!empty($fine->item->fields->bib->fields->title)) {
-						$title = $fine->item->fields->bib->fields->title;
-						if (!empty($fine->item->fields->bib->fields->author)) {
-							$title .= '  by '.$fine->item->fields->bib->fields->author;
+					if (!empty($fine->item) && !empty($fine->item->key)) {
+						$bibId = substr($fine->item->key, 0, strpos($fine->item->key, ':'));
+						$bibInfo  = $this->getWebServiceResponse($webServiceURL . "/catalog/bib/key/" . $bibId, null, $sessionToken);
+						$title = $bibInfo->fields->title;
+						if (!empty($bibInfo->fields->author)) {
+							$title .= '  by '.$bibInfo->fields->author;
 						}
 
 					}

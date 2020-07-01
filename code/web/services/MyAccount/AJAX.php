@@ -660,7 +660,14 @@ class MyAccount_AJAX extends JSON_Action
 				$patronId = $_REQUEST['patronId'];
 				$patronOwningHold = $user->getUserReferredTo($patronId);
 				if ($patronOwningHold != false) {
-					return $patronOwningHold->changeHoldPickUpLocation($holdId, $newPickupLocation);
+					if ($patronOwningHold->validatePickupBranch($newPickupLocation)){
+						return $patronOwningHold->changeHoldPickUpLocation($holdId, $newPickupLocation);
+					}else{
+						return array(
+							'result' => false,
+							'message' => 'The selected pickup location is not valid.'
+						);
+					}
 				}else{
 					return array(
 						'result' => false,

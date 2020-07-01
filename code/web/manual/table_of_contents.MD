@@ -34,13 +34,13 @@
     - GoodReads
     - Google
     - [OMDB](/Admin/HelpManual?page=OMDB)
-    - [New York Times](/Admin/HelpManual?=New-York-Times)
+    - [New York Times](/Admin/HelpManual?page=New-York-Times)
       - NY Times Lists
-    - [Novelist](/Admin/HelpManual?=Novelist)
+    - [Novelist](/Admin/HelpManual?page=Novelist)
     - Pinterest
     - reCAPTCHA
     - Syndetics
-    - Wikipedia
+    - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
   - Cataloging 
   - ILS Integration
     - Account Profiles
