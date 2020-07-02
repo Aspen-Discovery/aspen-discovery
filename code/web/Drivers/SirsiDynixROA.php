@@ -1245,7 +1245,7 @@ class SirsiDynixROA extends HorizonAPI
 					}
 				} else {
 					$hold_result['success'] = true;
-					$hold_result['message'] = 'Your hold was placed successfully.';
+					$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 				}
 
 				$hold_result['title'] = $title;

@@ -885,27 +885,27 @@ class Koha extends AbstractIlsDriver
 			$hold_result['id'] = $recordId;
 			if ($placeHoldResponse->title) {
 				//everything seems to be good
-				$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordId, $hold_result);
+				$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
 			} else {
 				$hold_result['success'] = false;
 				//See if we can get more info on why this failed.
 				$holds = $this->getHolds($patron);
 				$alreadyOnHold = false;
 				foreach($holds['available'] as $hold) {
-					if ($hold['recordId'] == $recordId){
+					if ($hold['recordId'] == $recordDriver->getId()){
 						$alreadyOnHold = true;
 					}
 				}
 				foreach($holds['unavailable'] as $hold) {
-					if ($hold['recordId'] == $recordId){
+					if ($hold['recordId'] == $recordDriver->getId()){
 						$alreadyOnHold = true;
 					}
 				}
 				//Look for an alert message
 				if ($alreadyOnHold){
-					$hold_result['message'] = 'Your hold could not be placed, you already have this title on hold.';
+					$hold_result['message'] = translate(['text'=>'ils_title_already_on_hold', 'defaultText'=>'Your hold could not be placed, you already have this title on hold.']);
 				}else {
-					$hold_result['message'] = 'Your hold could not be placed. ' . $placeHoldResponse->code;
+					$hold_result['message'] = translate(['text'=>'koha_hold_failed', 'defaultText'=>'Your hold could not be placed. %1%', '1'=> $placeHoldResponse->code]);
 				}
 			}
 			return $hold_result;
@@ -952,7 +952,7 @@ class Koha extends AbstractIlsDriver
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
 			if ($responseCode == 201){
-				$result['message'] = 'Your hold was placed successfully.';
+				$result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 				$result['success'] = true;
 			}else{
 				$result = [
@@ -2666,12 +2666,12 @@ class Koha extends AbstractIlsDriver
 	{
 		$holds = $this->getHolds($patron, 1, -1, 'title');
 		$hold_result['success'] = true;
-		$hold_result['message'] = "Your hold was placed successfully.";
+		$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 		//Find the correct hold (will be unavailable)
 		foreach ($holds['unavailable'] as $holdInfo) {
 			if ($holdInfo['id'] == $recordId) {
 				if (isset($holdInfo['position'])) {
-					$hold_result['message'] .= "  You are number <b>" . $holdInfo['position'] . "</b> in the queue.";
+					$hold_result['message'] .= translate(['text'=>"ils_hold_success_position", 'defaultText'=>"&nbsp;You are number <b>%1%</b> in the queue.", '1' => $holdInfo['position']]);
 				}
 				//Show the number of holds the patron has used.
 				$accountSummary = $this->getAccountSummary($patron, true);
@@ -2679,9 +2679,9 @@ class Koha extends AbstractIlsDriver
 				$totalHolds = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
 				$remainingHolds = $maxReserves - $totalHolds;
 				if ($remainingHolds <= 3){
-					$hold_result['message'] .= "<br/>You have $totalHolds holds currently and can place $remainingHolds additional holds.";
+					$hold_result['message'] .= translate(['text'=>"ils_hold_success_total_remaining_holds", 'defaultText'=>"<br/>You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds]);
 				}else{
-					$hold_result['message'] .= "<br/>You have $totalHolds holds currently.";
+					$hold_result['message'] .= translate(['text'=>"ils_hold_success_total_holds", 'defaultText'=>"<br/>You have %1% holds currently.", 1 => $totalHolds]);
 				}
 
 				break;
