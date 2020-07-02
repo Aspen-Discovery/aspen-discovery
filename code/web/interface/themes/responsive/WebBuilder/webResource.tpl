@@ -18,10 +18,17 @@
 			{$description}
 
 			{if $webResource->requiresLibraryCard}
-				{translate text="web_requires_library_card" defaultText="This resource requires a library card to use it."}
+				<p><em>
+					{translate text="web_requires_library_card" defaultText="This resource requires a library card to use it."}
+				</em></p>
 			{/if}
 
-			<a href="{$webResource->url}">{translate text="Open Resource"}</a>
+			{if $webResource->inLibraryUseOnly}
+				<p><em>
+					{translate text="web_resource_in_library_use" defaultText="This resource requires you to be in the library to use it."}
+				</em></p>
+			{/if}
+			<a href="{$webResource->url}" class="btn btn-primary">{translate text="Open Resource"}</a>
 		</div>
 		<div class="col-sm-12 col-md-3">
 			{if !empty($webResource->getDisplayAudiences())}

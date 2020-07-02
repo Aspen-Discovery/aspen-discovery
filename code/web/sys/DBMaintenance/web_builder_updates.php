@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 function getWebBuilderUpdates(){
 	return [
 		'web_builder_module' => [
@@ -259,6 +259,14 @@ function getWebBuilderUpdates(){
 			'description' => 'Allow Portal Cells to contain markdown',
 			'sql' => [
 				'ALTER TABLE web_builder_portal_cell ADD column markdown MEDIUMTEXT'
+			]
+		],
+
+		'web_builder_resource_in_library' => [
+			'title' => 'Web Builder add inLibraryUseOnly to Resources',
+			'description' => 'Add in library use only flag to web resources',
+			'sql' => [
+				'ALTER TABLE web_builder_resource ADD COLUMN inLibraryUseOnly TINYINT(1) DEFAULT 0'
 			]
 		]
 

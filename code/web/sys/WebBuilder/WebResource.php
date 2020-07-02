@@ -14,6 +14,7 @@ class WebResource extends DataObject
 	public $url;
 	public /** @noinspection PhpUnused */ $featured;
 	public /** @noinspection PhpUnused */ $requiresLibraryCard;
+	public /** @noinspection PhpUnused */ $inLibraryUseOnly;
 	public /** @noinspection PhpUnused */ $teaser;
 	public $description;
 	public $lastUpdate;
@@ -53,6 +54,7 @@ class WebResource extends DataObject
 				'values' => $categoriesList,
 				'hideInLists' => false
 			),
+			'inLibraryUseOnly' => array('property' => 'inLibraryUseOnly', 'type' => 'checkbox', 'label' => 'In Library Use Only?', 'description' => 'Whether or not the resource can only be used in the library', 'default'=>0),
 			'requiresLibraryCard' => array('property' => 'requiresLibraryCard', 'type' => 'checkbox', 'label' => 'Requires Library Card?', 'description' => 'Whether or not the resource requires a library card to use it', 'default'=>0),
 			'teaser' => array('property' => 'teaser', 'type' => 'markdown', 'label' => 'Teaser', 'description' => 'A short description of the resource to show in lists', 'hideInLists' => true),
 			'description' => array('property' => 'description', 'type' => 'markdown', 'label' => 'Description', 'description' => 'A description of the resource', 'hideInLists' => true),
