@@ -614,7 +614,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @return array
 	 */
 	public function getAccountSummary($patron){
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
 		global $timer;

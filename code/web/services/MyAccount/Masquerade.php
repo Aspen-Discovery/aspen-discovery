@@ -190,17 +190,19 @@ class MyAccount_Masquerade extends MyAccount
 
 	static function endMasquerade() {
 		if (UserAccount::isLoggedIn()) {
-			global $guidingUser,
-			       $masqueradeMode;
+			global $guidingUser;
+			global $masqueradeMode;
 			@session_start();  // (suppress notice if the session is already started)
 			unset($_SESSION['guidingUserId']);
 			$masqueradeMode = false;
 			if ($guidingUser) {
-				$_REQUEST['username'] = $guidingUser->cat_username;
-				$_REQUEST['password'] = $guidingUser->cat_password;
+				$_REQUEST['username'] = $guidingUser->getBarcode();
+				$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
 				$user = UserAccount::login();
 				if ($user && !($user instanceof AspenError)) {
 					return array('success' => true);
+				}else{
+					UserAccount::softLogout();
 				}
 			}
 		}

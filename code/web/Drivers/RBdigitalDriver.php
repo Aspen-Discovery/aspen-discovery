@@ -655,7 +655,6 @@ class RBdigitalDriver extends AbstractEContentDriver
 	 */
 	public function getAccountSummary($patron)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
 		global $timer;
