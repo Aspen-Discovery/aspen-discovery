@@ -26,7 +26,7 @@ class ListAPI extends Action
 				echo $xml;
 
 			} else {
-				header('Content-type: text/plain');
+				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				$output = json_encode(array('result' => $this->$method()));
@@ -99,12 +99,13 @@ class ListAPI extends Action
 	 */
 	function getUserLists()
 	{
-		$username = $_REQUEST['username'];
-		$password = $_REQUEST['password'];
-		$user = UserAccount::validateAccount($username, $password);
 		if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
 			return array('success' => false, 'message' => 'The username and password must be provided to load lists.');
 		}
+
+        $username = $_REQUEST['username'];
+        $password = $_REQUEST['password'];
+        $user = UserAccount::validateAccount($username, $password);
 
 		if ($user == false) {
 			return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');

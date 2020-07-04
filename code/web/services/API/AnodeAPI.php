@@ -32,7 +32,7 @@ class AnodeAPI extends Action
 			$this->forbidAPIAccess();
 		}
 
-		header('Content-type: text/plain');
+		header('Content-type: application/json');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
