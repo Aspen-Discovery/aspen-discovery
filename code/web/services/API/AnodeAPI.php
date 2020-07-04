@@ -27,11 +27,6 @@ class AnodeAPI extends Action
 
 	function launch()
 	{
-		//Make sure the user can access the API based on the IP address
-		if (!IPAddress::allowAPIAccessForClientIP()){
-			$this->forbidAPIAccess();
-		}
-
 		header('Content-type: application/json');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
