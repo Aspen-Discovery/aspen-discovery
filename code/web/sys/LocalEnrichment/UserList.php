@@ -325,7 +325,7 @@ class UserList extends DataObject
 
 		//Trim to the number of records we want to return
 		if ($numItems > 0){
-			$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start - 1, $numItems);
+			$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);
 		}else{
 			$filteredListEntries = $listEntryInfo['listEntries'];
 		}
