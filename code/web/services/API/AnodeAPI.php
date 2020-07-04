@@ -59,7 +59,7 @@ class AnodeAPI extends Action
 		if (!$listId) {
 			$listId = $_REQUEST['listId'];
 		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl", "se"))) {
+		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","bx","ep","ma","se"))) { // Nashville hardcoded
 			$branch = $_GET['branch'];
 		} else {
 			$branch = "catalog";
@@ -82,7 +82,7 @@ class AnodeAPI extends Action
 		if (!isset($id)) {
 			$id = $_REQUEST['id'];
 		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl", "se"))) {
+		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","bx","ep","ma","se"))) { // Nashville hardcoded
 			$branch = $_GET['branch'];
 		} else {
 			$branch = "catalog";
