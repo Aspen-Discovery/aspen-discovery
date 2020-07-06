@@ -9,7 +9,7 @@
 			{/if}
 
 			{if $showRatings}
-				{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating}
+				{include file="GroupedWork/title-rating.tpl" id=$summId ratingData=$summRating}
 			{/if}
 		</div>
 	{/if}

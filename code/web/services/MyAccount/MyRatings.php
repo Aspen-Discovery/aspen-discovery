@@ -17,7 +17,9 @@ class MyRatings extends MyAccount{
 		$ratings = [];
 		$ratedIds = [];
 		while($rating->fetch()){
-			$ratedIds[$rating->groupedRecordPermanentId] = clone($rating);
+			if (!array_key_exists($rating->groupedRecordPermanentId, $ratedIds)) {
+				$ratedIds[$rating->groupedRecordPermanentId] = clone $rating;
+			}
 			//$ratings[$rating->groupedRecordPermanentId] = [];
 		}
 		$timer->logTime("Loaded ids of titles the user has rated");

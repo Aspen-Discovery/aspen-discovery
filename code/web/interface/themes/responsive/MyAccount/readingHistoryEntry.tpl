@@ -88,7 +88,7 @@
 						<div class="row">
 							<div class="result-label col-tn-3">Rating&nbsp;</div>
 							<div class="result-value col-tn-9">
-								{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
+								{include file="GroupedWork/title-rating.tpl" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
 							</div>
 						</div>
 					{/if}
