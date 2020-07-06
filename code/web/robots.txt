@@ -16,3 +16,6 @@ Disallow: /
 
 User-Agent: AhrefsBot
 Disallow: /
+
+User-Agent: YandexBot
+Disallow: /

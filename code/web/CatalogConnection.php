@@ -99,15 +99,15 @@ class CatalogConnection
 		global $offlineMode;
 
 		$barcodesToTest = array();
-		$barcodesToTest[] = $username;
-		$barcodesToTest[] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
+		$barcodesToTest[$username] = $username;
+		$barcodesToTest[preg_replace('/[^a-zA-Z\d]/', '', trim($username))] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
 		//Special processing to allow users to login with short barcodes
 		global $library;
 		if ($library) {
 			if ($library->barcodePrefix) {
 				if (strpos($username, $library->barcodePrefix) !== 0) {
 					//Add the barcode prefix to the barcode
-					$barcodesToTest[] = $library->barcodePrefix . $username;
+					$barcodesToTest[$library->barcodePrefix . $username] = $library->barcodePrefix . $username;
 				}
 			}
 		}
@@ -1057,11 +1057,11 @@ class CatalogConnection
 
 	/**
 	 * @param $barcode
-	 * @param string $password
-	 * @param string $username
+	 * @param string|null $password
+	 * @param string|null $username
 	 * @return User|null
 	 */
-	protected function getUserFromDatabase($barcode, string $password, string $username)
+	protected function getUserFromDatabase($barcode, $password, $username)
 	{
 		global $timer;
 		global $logger;
@@ -1074,7 +1074,7 @@ class CatalogConnection
 		if ($user->find(true)) {
 			if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
 				//We load the account based on the barcode make sure the pin matches
-				$userValid = $user->cat_password == $password;
+				$userValid = $password != null && $user->cat_password == $password;
 			} else {
 				//We still load based on barcode, make sure the username is similar
 				$userValid = $this->areNamesSimilar($username, $user->cat_username);
