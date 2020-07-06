@@ -576,7 +576,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 					$this->trackUserUsageOfRBdigital($patron);
 					$this->trackRecordHold($recordId);
 					$result['success'] = true;
-					$result['message'] = "<p class='alert alert-success'>Your hold was placed successfully.</p>";
+					$result['message'] = "<p class='alert alert-success'>" . translate(['text'=>"rbdigital_hold_success", 'defaultText'=>"Your hold was placed successfully."]) . "</p>";
 					$result['hasWhileYouWait'] = false;
 
 					//Get the grouped work for the record
@@ -655,7 +655,6 @@ class RBdigitalDriver extends AbstractEContentDriver
 	 */
 	public function getAccountSummary($patron)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
 		global $timer;

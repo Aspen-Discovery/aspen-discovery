@@ -1,5 +1,5 @@
 {if $showRatings == 1}
-	<div{if $ratingClass} class="{$ratingClass} rate{$summId}"{/if}>
+	<div class="rate{$summId}">
 		<div class="title-rating rater"
 						{* AJAX rater data fields *}
          data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}"

@@ -60,11 +60,7 @@ class SirsiDynixROA extends HorizonAPI
 		if ($params != null) {
 			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
 		}
-//		curl_setopt($ch, CURLINFO_HEADER_OUT, true); //TODO: For debugging
 		$json = curl_exec($ch);
-//		$err  = curl_getinfo($ch);
-//		$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
-//		TODO: debugging only, comment out later.
 		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
@@ -83,7 +79,6 @@ class SirsiDynixROA extends HorizonAPI
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
-			//$patronDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/describe', null, $sessionToken);
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' .$barcode . '&rw=1&ct=1&includeFields=firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,circRecordList,blockList,holdRecordList,primaryPhone', null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1) {
 				$userID = $lookupMyAccountInfoResponse->result[0]->key;
@@ -321,20 +316,15 @@ class SirsiDynixROA extends HorizonAPI
 			$timer->logTime("User is valid in symphony");
 			$webServiceURL = $this->getWebServiceURL();
 
-//  Calls that show how patron-related data is represented
-//			$patronDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/describe', null, $sessionToken);
-//			$patronPhoneDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/phone/describe', null, $sessionToken);
-//			$patronPhoneListDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/phoneList/describe', null, $sessionToken);
-//			$patronStatusInfoDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patronStatusInfo/describe', null, $sessionToken);
-//			$patroncustomInfoDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/address1/describe', null, $sessionToken);
-//			$patronaddress1PolicyDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/address1/describe', null, $sessionToken);
+			//  Calls that show how patron-related data is represented
+			//	$patronDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/describe', null, $sessionToken);
+			//	$patronPhoneDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/phone/describe', null, $sessionToken);
+			//	$patronPhoneListDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/phoneList/describe', null, $sessionToken);
+			//	$patronStatusInfoDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patronStatusInfo/describe', null, $sessionToken);
+			//	$patronAddress1PolicyDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/address1/describe', null, $sessionToken);
 
-			//				$patronStatusResponse  = $this->getWebServiceResponse($webServiceURL . '/user/patronStatusInfo/key/' . $sirsiRoaUserID, null, $sessionToken);
-			//TODO: This resource is currently hidden
-
-
-			$accountInfoLookupURL         = $webServiceURL . '/user/patron/key/' . $sirsiRoaUserID .
-				'?includeFields=firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,blockList';
+			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,blockList{owed}");
+			$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $sirsiRoaUserID . '?includeFields=' . $includeFields;
 
 			// phoneList is for texting notification preferences
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
@@ -421,14 +411,12 @@ class SirsiDynixROA extends HorizonAPI
 								break;
 						}
 					}
-
 				}
 
 				//Get additional information about the patron's home branch for display.
 				if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
 					$homeBranchCode = strtolower(trim($lookupMyAccountInfoResponse->fields->library->key));
 					//Translate home branch to plain text
-					/** @var \Location $location */
 					$location       = new Location();
 					$location->code = $homeBranchCode;
 					if (!$location->find(true)) {
@@ -494,7 +482,6 @@ class SirsiDynixROA extends HorizonAPI
 					$timeNow      = time();
 					$timeToExpire = $timeExpire - $timeNow;
 					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						//TODO: the ils also has an expire soon flag in the patronStatusInfo
 						if ($timeToExpire <= 0) {
 							$user->_expired = 1;
 						}
@@ -505,9 +492,7 @@ class SirsiDynixROA extends HorizonAPI
 				$finesVal = 0;
 				if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
 					foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
-						$patronBlock = $this->getWebServiceResponse($webServiceURL . '/circulation/block/key/' . $block->key, null, $sessionToken);
-						// $block is a simplexml object with attribute info about currency, type casting as below seems to work for adding up. plb 3-27-2015
-						$fineAmount = (float)$patronBlock->fields->owed->amount;
+						$fineAmount = (float)$block->fields->owed->amount;
 						$finesVal   += $fineAmount;
 					}
 				}
@@ -517,7 +502,6 @@ class SirsiDynixROA extends HorizonAPI
 				$user->_city                  = $City;
 				$user->_state                 = $State;
 				$user->_zip                   = $Zip;
-//				$user->phone                 = isset($phone) ? $phone : '';
 				$user->_fines                 = sprintf('$%01.2f', $finesVal);
 				$user->_finesVal              = $finesVal;
 				$user->patronType            = 0; //TODO: not getting this info here?
@@ -557,16 +541,15 @@ class SirsiDynixROA extends HorizonAPI
 		];
 
 		$webServiceURL = $this->getWebServiceURL();
-		$accountInfoLookupURL         = $webServiceURL . '/user/patron/key/' . $user->username .
-			'?includeFields=circRecordList,blockList,holdRecordList,privilegeExpiresDate';
+		$includeFields = urlencode("circRecordList{overdue},blockList{owed},holdRecordList{status},privilegeExpiresDate");
+		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->username . '?includeFields=' . $includeFields;
 
 		$sessionToken = $this->getSessionToken($user);
 		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
 		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 			$summary['numCheckedOut'] = count($lookupMyAccountInfoResponse->fields->circRecordList);
 			foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkout) {
-				$patronCheckout = $this->getWebServiceResponse($webServiceURL . '/circulation/circRecord/key/' . $checkout->key, null, $sessionToken);
-				if ($patronCheckout->fields->overdue){
+				if ($checkout->fields->overdue){
 					$summary['numOverdue']++;
 				}
 			}
@@ -574,10 +557,9 @@ class SirsiDynixROA extends HorizonAPI
 			if (isset($lookupMyAccountInfoResponse->fields->holdRecordList)) {
 				foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $hold) {
 					//Get detailed info about the hold
-					$patronHold = $this->getWebServiceResponse($webServiceURL . '/circulation/holdRecord/key/' . $hold->key, null, $sessionToken);
-					if ($patronHold->fields->status == 'BEING_HELD') {
+					if ($hold->fields->status == 'BEING_HELD') {
 						$summary['numAvailableHolds']++;
-					} elseif ($patronHold->fields->status != 'EXPIRED') {
+					} elseif ($hold->fields->status != 'EXPIRED') {
 						$summary['numUnavailableHolds']++;
 					}
 				}
@@ -586,15 +568,23 @@ class SirsiDynixROA extends HorizonAPI
 			$finesVal = 0;
 			if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
 				foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
-					$patronBlock = $this->getWebServiceResponse($webServiceURL . '/circulation/block/key/' . $block->key, null, $sessionToken);
-					// $block is a simplexml object with attribute info about currency, type casting as below seems to work for adding up. plb 3-27-2015
-					$fineAmount = (float)$patronBlock->fields->owed->amount;
+					$fineAmount = (float)$block->fields->owed->amount;
 					$finesVal   += $fineAmount;
 				}
 			}
 			$summary['totalFines'] = $finesVal;
 
 			$summary['expires'] = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
+			list ($yearExp, $monthExp, $dayExp) = explode("-", $summary['expires']);
+			$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			$timeNow      = time();
+			$timeToExpire = $timeExpire - $timeNow;
+			if ($timeToExpire <= 30 * 24 * 60 * 60) {
+				if ($timeToExpire <= 0) {
+					$summary['expired'] = 1;
+				}
+				$summary['expireClose'] = 1;
+			}
 		}
 
 		return $summary;
@@ -621,11 +611,10 @@ class SirsiDynixROA extends HorizonAPI
 		if (!empty($sessionToken)) {
 			$webServiceURL            = $this->getWebServiceURL();
 
-//			$patronDescribeResponse   = $this->getWebServiceResponse($webServiceURL . '/user/patron/describe');
-//			$address1DescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/address1/describe');
-//			$addressDescribeResponse  = $this->getWebServiceResponse($webServiceURL . '/user/patron/address/describe');
-//			$userProfileDescribeResponse  = $this->getWebServiceResponse($webServiceURL . '/policy/userProfile/describe');
-
+			// $patronDescribeResponse   = $this->getWebServiceResponse($webServiceURL . '/user/patron/describe');
+			// $address1DescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/address1/describe');
+			// $addressDescribeResponse  = $this->getWebServiceResponse($webServiceURL . '/user/patron/address/describe');
+			// $userProfileDescribeResponse  = $this->getWebServiceResponse($webServiceURL . '/policy/userProfile/describe');
 
 			$createPatronInfoParameters  = array(
 				'fields' => array(),
@@ -831,7 +820,7 @@ class SirsiDynixROA extends HorizonAPI
 		} else {
 			$session = array(false, false, false);
 			$webServiceURL = $this->getWebServiceURL();
-//		$loginDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/login/describe');
+			// $loginDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/login/describe');
 			$loginUserUrl      = $webServiceURL . '/user/staff/login';
 			$params            = array(
 				'login' => $username,
@@ -880,31 +869,30 @@ class SirsiDynixROA extends HorizonAPI
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
 		//Get a list of holds for the user
-//		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=circRecordList{*,item{itemType,call{dispCallNumber}}}', null, $sessionToken);
-		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=circRecordList', null, $sessionToken);
+		$includeFields = urlencode('circRecordList{*,item{bib{title},itemType,call{dispCallNumber}}}');
+		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 
 		if (!empty($patronCheckouts->fields->circRecordList)) {
 			$sCount = 0;
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 
 			foreach ($patronCheckouts->fields->circRecordList as $checkout) {
-				$patronCheckout = $this->getWebServiceResponse($webServiceURL . '/circulation/circRecord/key/' . $checkout->key, null, $sessionToken);
-				if (empty($patronCheckout->fields->claimsReturnedDate) && $patronCheckout->fields->status != 'INACTIVE') { // Titles with a claims return date will not be displayed in check outs.
+				if (empty($checkout->fields->claimsReturnedDate) && $checkout->fields->status != 'INACTIVE') { // Titles with a claims return date will not be displayed in check outs.
 					$curTitle = array();
 					$curTitle['checkoutSource'] = 'ILS';
 
-					list($bibId) = explode(':', $patronCheckout->key);
+					list($bibId) = explode(':', $checkout->key);
 					$curTitle['recordId'] = $bibId;
 					$curTitle['shortId']  = $bibId;
 					$curTitle['id']       = $bibId;
-					$curTitle['itemId'] = $patronCheckout->fields->item->key;
+					$curTitle['itemId'] = $checkout->fields->item->key;
 
-					$curTitle['dueDate']      = strtotime($patronCheckout->fields->dueDate);
-					$curTitle['checkoutDate'] = strtotime($patronCheckout->fields->checkOutDate);
+					$curTitle['dueDate']      = strtotime($checkout->fields->dueDate);
+					$curTitle['checkoutDate'] = strtotime($checkout->fields->checkOutDate);
 					// Note: there is an overdue flag
-					$curTitle['renewCount']     = $patronCheckout->fields->renewalCount;
-					$curTitle['canRenew']       = $patronCheckout->fields->seenRenewalsRemaining > 0;
-					$curTitle['renewIndicator'] = $patronCheckout->fields->item->key;
+					$curTitle['renewCount']     = $checkout->fields->renewalCount;
+					$curTitle['canRenew']       = $checkout->fields->seenRenewalsRemaining > 0;
+					$curTitle['renewIndicator'] = $checkout->fields->item->key;
 
 					$curTitle['format'] = 'Unknown';
 					$recordDriver = new MarcRecordDriver('a' . $bibId);
@@ -919,14 +907,14 @@ class SirsiDynixROA extends HorizonAPI
 						$curTitle['ratingData']    = $recordDriver->getRatingData();
 					} else {
 						// Presumably ILL Items
-						$bibInfo                = $this->getWebServiceResponse($webServiceURL . '/catalog/bib/key/' . $bibId, null, $sessionToken);
+						$bibInfo                = $checkout->fields->item->fields->bib;
 						$curTitle['title']      = $bibInfo->fields->title;
 						$simpleSortTitle       = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
 						$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
 						$curTitle['author']     = $bibInfo->fields->author;
 					}
-					if ($curTitle['format'] == 'Magazine' && !empty($patronCheckout->fields->item->fields->call->fields->dispCallNumber)) {
-						$curTitle['title2'] = $patronCheckout->fields->item->fields->call->fields->dispCallNumber;
+					if ($curTitle['format'] == 'Magazine' && !empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
+						$curTitle['title2'] = $checkout->fields->item->fields->call->fields->dispCallNumber;
 					}
 
 					$sCount++;
@@ -951,7 +939,7 @@ class SirsiDynixROA extends HorizonAPI
 					} elseif ($sortOption == 'holdQueueLength') {
 						$sortKey = (isset($curTitle['holdQueueLength']) ? $curTitle['holdQueueLength'] : 0) . '-' . $sortTitle;
 					}
-					$sortKey                    .= "_$sCount";
+					$sortKey .= "_$sCount";
 					$checkedOutTitles[$sortKey] = $curTitle;
 				}
 			}
@@ -994,27 +982,27 @@ class SirsiDynixROA extends HorizonAPI
 
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
-		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=holdRecordList,item', null, $sessionToken);
+		$includeFields = urlencode("holdRecordList{*,bib{title}}");
+		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach ($patronHolds->fields->holdRecordList as $hold) {
 				//Get detailed info about the hold
-				$patronHold = $this->getWebServiceResponse($webServiceURL . '/circulation/holdRecord/key/' . $hold->key, null, $sessionToken);
 				$curHold               = array();
-				$bibId                 = $patronHold->fields->bib->key;
-				$expireDate            = $patronHold->fields->expirationDate;
-				$reactivateDate        = $patronHold->fields->suspendEndDate;
-				$createDate            = $patronHold->fields->placedDate;
-				$fillByDate            = $patronHold->fields->fillByDate;
-				$curHold['id']         = $patronHold->key;
+				$bibId                 = $hold->fields->bib->key;
+				$expireDate            = $hold->fields->expirationDate;
+				$reactivateDate        = $hold->fields->suspendEndDate;
+				$createDate            = $hold->fields->placedDate;
+				$fillByDate            = $hold->fields->fillByDate;
+				$curHold['id']         = $hold->key;
 				$curHold['holdSource'] = 'ILS';
 				$curHold['itemId']     = empty($hold->fields->item->key) ? '' : $hold->fields->item->key;
-				$curHold['cancelId']   = $patronHold->key;
-				$curHold['position']   = $patronHold->fields->queuePosition;
+				$curHold['cancelId']   = $hold->key;
+				$curHold['position']   = $hold->fields->queuePosition;
 				$curHold['recordId']   = $bibId;
 				$curHold['shortId']    = $bibId;
 				$curPickupBranch       = new Location();
-				$curPickupBranch->code = $patronHold->fields->pickupLibrary->key;
+				$curPickupBranch->code = $hold->fields->pickupLibrary->key;
 				if ($curPickupBranch->find(true)) {
 					$curPickupBranch->fetch();
 					$curHold['currentPickupId']   = $curPickupBranch->locationId;
@@ -1022,7 +1010,7 @@ class SirsiDynixROA extends HorizonAPI
 					$curHold['location']          = $curPickupBranch->displayName;
 				}
 				$curHold['currentPickupName']  = $curHold['location'];
-				$curHold['status']             = ucfirst(strtolower($patronHold->fields->status));
+				$curHold['status']             = ucfirst(strtolower($hold->fields->status));
 				$curHold['create']             = strtotime($createDate);
 				$curHold['expire']             = strtotime($expireDate);
 				$curHold['automaticCancellation'] = strtotime($fillByDate);
@@ -1054,23 +1042,17 @@ class SirsiDynixROA extends HorizonAPI
 					//Load rating information
 					$curHold['ratingData'] = $recordDriver->getRatingData();
 
-					if ($patronHold->fields->holdType == 'COPY'){
+					if ($hold->fields->holdType == 'COPY'){
 						$curHold['title2'] = $hold->fields->item->fields->itemType->key . ' - ' . $hold->fields->item->fields->call->fields->callNumber;
 					}
 
 				} else {
 					// If we don't have good marc record, ask the ILS for title info
-					$bibInfo                = $this->getWebServiceResponse($webServiceURL . '/catalog/bib/key/' . $bibId, null, $sessionToken);
+					$bibInfo                = $hold->fields->bib;
 					$curHold['title']      = $bibInfo->fields->title;
 					$simpleSortTitle       = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
 					$curHold['sortTitle'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
 					$curHold['author']     = $bibInfo->fields->author;
-
-//// TODO: ILL Holds are item level holds as well; but I doubt we need the title2 in that case.
-//					if ($hold->fields->holdType == 'COPY'){
-//						$curHold['title2'] = $hold->fields->item->fields->itemType->key . ' - ' . $hold->fields->item->fields->call->fields->callNumber;
-//					}
-
 				}
 
 				if (!isset($curHold['status']) || strcasecmp($curHold['status'], "being_held") != 0) {
@@ -1263,7 +1245,7 @@ class SirsiDynixROA extends HorizonAPI
 					}
 				} else {
 					$hold_result['success'] = true;
-					$hold_result['message'] = 'Your hold was placed successfully.';
+					$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 				}
 
 				$hold_result['title'] = $title;
@@ -1543,18 +1525,16 @@ class SirsiDynixROA extends HorizonAPI
 			//create the hold using the web service
 			$webServiceURL = $this->getWebServiceURL();
 
-//			$blockList = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=blockList{*}', null, $sessionToken);
-			$blockList = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=blockList', null, $sessionToken);
+			$includeFields = urlencode("blockList{*,item{bib{title,author}}}");
+			$blockList = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 			// Include Title data if available
 
 			if (!empty($blockList->fields->blockList)) {
 				foreach ($blockList->fields->blockList as $block) {
-					$patronBlock = $this->getWebServiceResponse($webServiceURL . '/circulation/block/key/' . $block->key, null, $sessionToken);
-					$fine = $patronBlock->fields;
+					$fine = $block->fields;
 					$title = '';
 					if (!empty($fine->item) && !empty($fine->item->key)) {
-						$bibId = substr($fine->item->key, 0, strpos($fine->item->key, ':'));
-						$bibInfo  = $this->getWebServiceResponse($webServiceURL . "/catalog/bib/key/" . $bibId, null, $sessionToken);
+						$bibInfo  = $fine->item->fields->bib;
 						$title = $bibInfo->fields->title;
 						if (!empty($bibInfo->fields->author)) {
 							$title .= '  by '.$bibInfo->fields->author;

@@ -558,7 +558,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			foreach ($placeHoldResponse->placeHoldInfos as $holdResponse){
 				if ($holdResponse->success){
 					$result['success'] = true;
-					$result['message'] = 'Your hold was placed successfully.';
+					$result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 				}else{
 					$result['message'] = 'Sorry, your hold could not be placed.  ' . htmlentities(translate($holdResponse->message));
 				}

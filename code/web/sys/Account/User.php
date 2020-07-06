@@ -335,7 +335,6 @@ class User extends DataObject
  			$this->linkedUsers = array();
 			/* var Library $library */
 			global $library;
-			/** @var Memcache $memCache */
 			global $memCache;
 			global $serverName;
 			global $logger;
@@ -546,7 +545,6 @@ class User extends DataObject
 		global $library;
 		if ($library->allowLinkedAccounts && $user->id != $this->id) { // library allows linked accounts and the account to link is not itself
 			$linkedUsers = $this->getLinkedUsers();
-			/** @var User $existingUser */
 			foreach ($linkedUsers as $existingUser) {
 				if ($existingUser->id == $user->id) {
 					//We already have a link to this user
@@ -786,8 +784,8 @@ class User extends DataObject
 	 * Clear out the cached version of the patron profile.
 	 */
 	function clearCache(){
-		/** @var Memcache $memCache */
-		global $memCache, $serverName;
+		global $memCache;
+		global $serverName;
 		$memCache->delete("user_{$serverName}_" . $this->id); // now stored by User object id column
 	}
 
@@ -842,7 +840,6 @@ class User extends DataObject
 		$myCheckouts = $this->_numCheckedOutIls + $this->_numCheckedOutOverDrive + $this->_numCheckedOutHoopla + $this->_numCheckedOutRBdigital;
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 					$myCheckouts += $user->getNumCheckedOutTotal(false);
 				}
@@ -856,7 +853,6 @@ class User extends DataObject
 		$myHolds = $this->_numHoldsIls + $this->_numHoldsOverDrive + $this->_numHoldsRBdigital;
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->linkedUsers as $user) {
 					$myHolds += $user->getNumHoldsTotal(false);
 				}
@@ -871,7 +867,6 @@ class User extends DataObject
 		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive + $this->_numHoldsAvailableRBdigital;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->linkedUsers as $user) {
 					$myHolds += $user->getNumHoldsAvailableTotal(false);
 				}
@@ -885,7 +880,6 @@ class User extends DataObject
 		$myBookings = $this->_numBookings;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->linkedUsers as $user) {
 					$myBookings += $user->getNumBookingsTotal(false);
 				}
@@ -902,7 +896,6 @@ class User extends DataObject
 		if ($includeLinkedUsers){
 			if ($this->totalFinesForLinkedUsers == -1){
 				if ($this->getLinkedUsers() != null) {
-					/** @var User $user */
 					foreach ($this->linkedUsers as $user) {
 						$totalFines += $user->getTotalFines(false);
 					}
@@ -1034,7 +1027,7 @@ class User extends DataObject
 		}
 
 		if ($source == 'all' || $source == 'cloud_library') {
-			//Get holds from Cloud LIbrary
+			//Get holds from Cloud Library
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
@@ -1131,7 +1124,6 @@ class User extends DataObject
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 					$ilsBookings = array_merge_recursive($ilsBookings, $user->getMyBookings(false));
 				}
@@ -1153,7 +1145,6 @@ class User extends DataObject
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 					$ilsFines += $user->getFines(false); // keep keys as userId
 				}
@@ -1291,7 +1282,6 @@ class User extends DataObject
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 
 					$additionalResults = $user->cancelAllBookedMaterial(false);
@@ -1411,7 +1401,6 @@ class User extends DataObject
 		//Also renew linked Users if needed
 		if ($renewLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 					$linkedResults = $user->renewAll(false);
 					//Merge results
@@ -1520,8 +1509,7 @@ class User extends DataObject
 	}
 
 	function importListsFromIls(){
-		$result = $this->getCatalogDriver()->importListsFromIls($this);
-		return $result;
+		return $this->getCatalogDriver()->importListsFromIls($this);
 	}
 
 	public function getShowUsernameField() {
@@ -1664,7 +1652,7 @@ class User extends DataObject
 			$userMessage->insert();
 			while ($userLinks->fetch()){
 				$userMessage = new UserMessage();
-				$userMessage->userId = $userLinks->primaryAccountId;;
+				$userMessage->userId = $userLinks->primaryAccountId;
 				$userMessage->messageType = 'linked_acct_notify_pause_' . $this->id;
 				$userMessage->messageLevel = 'info';
 				$userMessage->message = "An account you are linking to changed their login. Account linking with them has been temporarily disabled.";
@@ -1762,6 +1750,7 @@ class User extends DataObject
 		return $idsNotToSuggest;
 	}
 
+	/** @noinspection PhpUnused */
 	function getHomeLocationName(){
 		if (empty($this->_homeLocation)) {
 			$location = new Location();

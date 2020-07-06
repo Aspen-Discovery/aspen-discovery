@@ -56,7 +56,6 @@ class ILSAuthentication implements Authentication {
 				/** @var User $patron */
 				$patron = $catalog->patronLogin($this->username, $this->password, null, $validatedViaSSO);
 				if ($patron && !($patron instanceof AspenError)) {
-					/** @var User $user */
 					$user = $patron;
 				} elseif (($patron instanceof AspenError)){
 					$user = $patron;

@@ -75,12 +75,13 @@ class Record_AJAX extends Action
 			if ($ptype->find(true)) {
 				$maxHolds = $ptype->maxHolds;
 			}
-			$currentHolds = $user->_numHoldsIls;
+			$interface->assign('maxHolds', $maxHolds);
+			$ilsSummary = $user->getCatalogDriver()->getAccountSummary($user);
+			$currentHolds = $ilsSummary['numAvailableHolds'] +  $ilsSummary['numUnavailableHolds'];
+			$interface->assign('currentHolds', $currentHolds);
 			//TODO: this check will need to account for linked accounts now
 			if ($maxHolds != -1 && ($currentHolds + 1 > $maxHolds)) {
 				$interface->assign('showOverHoldLimit', true);
-				$interface->assign('maxHolds', $maxHolds);
-				$interface->assign('currentHolds', $currentHolds);
 			}
 
 			//Check to see if the user has linked users that we can place holds for as well
@@ -143,7 +144,7 @@ class Record_AJAX extends Action
 			//Figure out what types of holds to allow
 			$items = $marcRecord->getCopies();
 			$format = $marcRecord->getPrimaryFormat();
-			/** IndexingProfile[] */
+
 			global $indexingProfiles;
 			$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
 			$formatMap = $indexingProfile->formatMap;
