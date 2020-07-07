@@ -781,6 +781,7 @@ class Record_AJAX extends Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function showSelectDownloadForm(){
 		global $interface;
 
@@ -820,6 +821,45 @@ class Record_AJAX extends Action
 			'title' => 'Select File to download',
 			'modalBody' => $interface->fetch("Record/select-download-file-form.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadFile\").submit()'>{$buttonTitle}</button>"
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function showSelectFileToViewForm(){
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$fileType = $_REQUEST['type'];
+		$interface->assign('fileType', $fileType);
+		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+		if (strpos($id, ':')){
+			list(,$id) = explode(':', $id);
+		}
+		$interface->assign('id', $id);
+
+		require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+		require_once ROOT_DIR . '/sys/File/FileUpload.php';
+		$recordFile = new RecordFile();
+		$recordFile->type = $recordDriver->getRecordType();
+		$recordFile->identifier = $recordDriver->getUniqueID();
+		$recordFile->find();
+		$validFiles = [];
+		while ($recordFile->fetch()){
+			$fileUpload = new FileUpload();
+			$fileUpload->id = $recordFile->fileId;
+			$fileUpload->type = $fileType;
+			if ($fileUpload->find(true)){
+				$validFiles[$recordFile->fileId] = $fileUpload->title;
+			}
+		}
+		asort($validFiles);
+		$interface->assign('validFiles', $validFiles);
+
+		$buttonTitle = translate('View PDF');
+		return [
+			'title' => 'Select PDF to View',
+			'modalBody' => $interface->fetch("Record/select-view-file-form.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewFile\").submit()'>{$buttonTitle}</button>"
 		];
 	}
 
