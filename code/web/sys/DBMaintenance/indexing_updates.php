@@ -443,6 +443,15 @@ function getIndexingUpdates()
 			]
 		],
 
+		'track_pdf_views' => [
+			'title' => 'Tracking of PDF Views',
+			'description' => 'Track PDF Views by User and by indexing profile',
+			'sql' =>[
+				'ALTER TABLE user_ils_usage ADD COLUMN pdfViewCount INT(11) DEFAULT 0',
+				'ALTER TABLE ils_record_usage ADD COLUMN pdfViewCount INT(11) DEFAULT 0'
+			]
+		],
+
 		'track_supplemental_file_downloads' => [
 			'title' => 'Tracking of Supplemental File Downloads',
 			'description' => 'Track Supplemental File Downloads by User and by indexing profile',

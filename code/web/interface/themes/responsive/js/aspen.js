@@ -3596,6 +3596,25 @@ AspenDiscovery.GroupedWork = (function(){
 			}
 			return false;
 		},
+
+		selectFileToView: function( recordId, type) {
+			let url = Globals.path + '/GroupedWork/' + recordId + '/AJAX';
+			let params = {
+				method: 'showSelectFileToViewForm',
+				type: type,
+			};
+			$.getJSON(url, params, function (data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			});
+			return false;
+		},
+
+		viewSelectedFile: function () {
+			let id = $('#id').val();
+			let selectedFile = $('#selectedFile').val();
+			window.location = Globals.path + '/Files/' + selectedFile + '/ViewPDF';
+			return false;
+		},
 	};
 }(AspenDiscovery.GroupedWork || {}));
 AspenDiscovery.Lists = (function(){
@@ -5547,9 +5566,20 @@ AspenDiscovery.Record = (function(){
 				type: type,
 			};
 			$.getJSON(url, params, function (data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}
-			);
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			});
+			return false;
+		},
+
+		selectFileToView: function( recordId, type) {
+			let url = Globals.path + '/Record/' + recordId + '/AJAX';
+			let params = {
+				method: 'showSelectFileToViewForm',
+				type: type,
+			};
+			$.getJSON(url, params, function (data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			});
 			return false;
 		},
 
@@ -5562,6 +5592,13 @@ AspenDiscovery.Record = (function(){
 			}else{
 				window.location = Globals.path + '/Record/' + id + '/DownloadSupplementalFile?fileId=' + selectedFile;
 			}
+			return false;
+		},
+
+		viewSelectedFile: function () {
+			let id = $('#id').val();
+			let selectedFile = $('#selectedFile').val();
+			window.location = Globals.path + '/Files/' + selectedFile + '/ViewPDF';
 			return false;
 		},
 

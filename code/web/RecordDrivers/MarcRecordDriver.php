@@ -936,12 +936,25 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			if (count($uploadedPDFs) == 1) {
 				$recordFile = reset($uploadedPDFs);
 				$actions[] = array(
+					'title' => 'View PDF',
+					'url' => "/Files/{$recordFile->id}/ViewPDF",
+					'requireLogin' => false,
+					'type' => 'view_pdf'
+				);
+				$actions[] = array(
 					'title' => 'Download PDF',
 					'url' => "/Record/{$this->getId()}/DownloadPDF?fileId={$recordFile->id}",
 					'requireLogin' => false,
 					'type' => 'download_pdf'
 				);
 			} else {
+				$actions[] = array(
+					'title' => 'View PDF',
+					'url' => '',
+					'onclick' => "return AspenDiscovery.Record.selectFileToView('{$this->getId()}', 'RecordPDF');",
+					'requireLogin' => false,
+					'type' => 'view_pdf'
+				);
 				$actions[] = array(
 					'title' => 'Download PDF',
 					'url' => '',

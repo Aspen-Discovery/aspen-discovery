@@ -13,4 +13,5 @@ class UserILSUsage extends DataObject
 	public $selfRegistrationCount;
 	public $pdfDownloadCount;
 	public $supplementalFileDownloadCount;
+	public $pdfViewCount;
 }

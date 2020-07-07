@@ -12,4 +12,5 @@ class ILSRecordUsage extends DataObject
 	public $timesUsed; //This is number of holds
 	public $pdfDownloadCount;
 	public $supplementalFileDownloadCount;
+	public $pdfViewCount;
 }

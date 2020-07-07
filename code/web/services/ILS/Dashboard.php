@@ -83,6 +83,7 @@ class ILS_Dashboard extends Admin_Admin
 		$userUsage->selectAdd('SUM(selfRegistrationCount) AS numSelfRegistrations');
 		$userUsage->selectAdd('SUM(IF(pdfDownloadCount>0,1,0)) as usersWithPdfDownloads');
 		$userUsage->selectAdd('SUM(IF(supplementalFileDownloadCount>0,1,0)) as usersWithSupplementalFileDownloads');
+		$userUsage->selectAdd('SUM(IF(pdfViewCount>0,1,0)) as usersWithPdfViews');
 
 		$userUsage->find();
 		$usageStats = [];
@@ -91,6 +92,7 @@ class ILS_Dashboard extends Admin_Admin
 				'totalUsers' => 0,
 				'usersWithHolds' => 0,
 				'usersWithPdfDownloads' => 0,
+				'usersWithPdfViews' => 0,
 				'numSelfRegistrations' => 0,
 				'usersWithSupplementalFileDownloads' => 0
 			];
@@ -102,6 +104,8 @@ class ILS_Dashboard extends Admin_Admin
 			$usageStats[$userUsage->indexingProfileId]['usersWithHolds'] = $userUsage->usersWithHolds;
 			/** @noinspection PhpUndefinedFieldInspection */
 			$usageStats[$userUsage->indexingProfileId]['usersWithPdfDownloads'] = $userUsage->usersWithPdfDownloads;
+			/** @noinspection PhpUndefinedFieldInspection */
+			$usageStats[$userUsage->indexingProfileId]['usersWithPdfViews'] = $userUsage->usersWithPdfViews;
 			/** @noinspection PhpUndefinedFieldInspection */
 			$usageStats[$userUsage->indexingProfileId]['numSelfRegistrations'] = $userUsage->numSelfRegistrations;
 			/** @noinspection PhpUndefinedFieldInspection */
@@ -132,6 +136,7 @@ class ILS_Dashboard extends Admin_Admin
 		$usage->selectAdd('COUNT(*) as numRecordViewed');
 		$usage->selectAdd('SUM(IF(timesUsed>0,1,0)) as numRecordsUsed');
 		$usage->selectAdd('SUM(pdfDownloadCount) as numPDFsDownloaded');
+		$usage->selectAdd('SUM(pdfViewCount) as numPDFsViewed');
 		$usage->selectAdd('SUM(supplementalFileDownloadCount) as numSupplementalFileDownloadCount');
 
 		$usage->find();
@@ -142,6 +147,7 @@ class ILS_Dashboard extends Admin_Admin
 				'numRecordViewed' => 0,
 				'numRecordsUsed' => 0,
 				'numPDFsDownloaded' => 0,
+				'numPDFsViewed' => 0,
 				'numSupplementalFileDownloadCount' => 0
 			];
 		}
@@ -151,6 +157,7 @@ class ILS_Dashboard extends Admin_Admin
 				'numRecordViewed' => $usage->numRecordViewed,
 				'numRecordsUsed' => $usage->numRecordsUsed,
 				'numPDFsDownloaded' => $usage->numPDFsDownloaded,
+				'numPDFsViewed' => $usage->numPDFsViewed,
 				'numSupplementalFileDownloadCount' => $usage->numSupplementalFileDownloadCount,
 			];
 		}
