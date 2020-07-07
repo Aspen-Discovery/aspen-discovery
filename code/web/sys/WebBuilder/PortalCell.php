@@ -63,6 +63,7 @@ class PortalCell extends DataObject
 
 	function getContents(){
 		global $interface;
+		global $configArray;
 		if ($this->sourceType == 'markdown') {
 			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 			$parsedown = AspenParsedown::instance();
@@ -89,6 +90,15 @@ class PortalCell extends DataObject
 			$basicPage->id = $this->sourceId;
 			if ($basicPage->find(true)){
 				return $basicPage->teaser;
+			}
+		}elseif ($this->sourceType == 'video'){
+			require_once ROOT_DIR . '/sys/File/FileUpload.php';
+			$fileUpload = new FileUpload();
+			$fileUpload->id = $this->sourceId;
+			if ($fileUpload->find(true)){
+				$fileSize = filesize($fileUpload->fullPath);
+				$interface->assign('videoPath', $configArray['Site']['url'] . '/Files/' . $fileId . '/Contents');
+				return $interface->fetch('Files/embeddedVideo.tpl');
 			}
 		}
 		return 'Could not load contents for the cell';

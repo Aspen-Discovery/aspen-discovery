@@ -55,7 +55,25 @@ class WebBuilder_AJAX extends JSON_Action
 			];
 			break;
 		case 'image':
+			$list = [];
+			$list[-1] = 'Select an image';
 		case 'video':
+			require_once ROOT_DIR . '/sys/File/FileUpload.php';
+			$list = [];
+			$list[-1] = 'Select a video';
+			$object = new FileUpload();
+			$object->type = 'web_builder_video';
+			$object->orderBy('title');
+			$object->find();
+			while ($object->fetch()) {
+				$list[$object->id] =$object->title;
+			}
+			asort($list);
+			$result = [
+				'success' => true,
+				'values' => $list
+			];
+			break;
 		case 'event_calendar':
 		default:
 			$result['message'] = 'Unhandled Source Type ' . $sourceType;
