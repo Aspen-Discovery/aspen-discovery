@@ -97,7 +97,8 @@ class PortalCell extends DataObject
 			$fileUpload->id = $this->sourceId;
 			if ($fileUpload->find(true)){
 				$fileSize = filesize($fileUpload->fullPath);
-				$interface->assign('videoPath', $configArray['Site']['url'] . '/Files/' . $fileId . '/Contents');
+				$interface->assign('fileSize', StringUtils::formatBytes($fileSize));
+				$interface->assign('videoPath', $configArray['Site']['url'] . '/Files/' . $this->sourceId . '/Contents');
 				return $interface->fetch('Files/embeddedVideo.tpl');
 			}
 		}
