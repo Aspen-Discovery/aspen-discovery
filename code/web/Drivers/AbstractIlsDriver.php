@@ -359,4 +359,22 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'onlyDigitsAllowed' => true,
 		];
 	}
+
+	public function hasEditableUsername()
+	{
+		return false;
+	}
+
+	public function getEditableUsername(User $user)
+	{
+		return null;
+	}
+
+	public function updateEditableUsername(User $patron, $username)
+	{
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
 }

@@ -2873,7 +2873,7 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'Unknown error updating auto renewal'
 		];
 
 		//Load required fields from Koha here to make sure we don't wipe them out
@@ -3095,5 +3095,111 @@ class Koha extends AbstractIlsDriver
 			'maxLength' => 60,
 			'onlyDigitsAllowed' => false,
 		];
+	}
+
+	public function hasEditableUsername()
+	{
+		return true;
+	}
+
+	public function getEditableUsername(User $user)
+	{
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$sql = "SELECT userId from borrowers where borrowernumber = {$user->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if ($results !== false) {
+			if ($curRow = $results->fetch_assoc()) {
+				return $curRow['userId'];
+			}
+		}
+		return null;
+	}
+
+	public function updateEditableUsername(User $patron, $username)
+	{
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error updating username'
+		];
+		$this->initDatabaseConnection();
+		//Check to see if the username is already in use
+		$sql = "SELECT * FROM borrowers where userId = '{$username}' and borrowernumber != {$patron->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if ($results !== false) {
+			if ($results->fetch_assoc()){
+				return [
+					'success' => false,
+					'message' => 'Sorry, that username is not available.'
+				];
+			}
+		}
+		//Load required fields from Koha here to make sure we don't wipe them out
+		/** @noinspection SqlResolve */
+		$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$address = '';
+		$city = '';
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()) {
+				$address = $curRow['address'];
+				$city = $curRow['city'];
+			}
+		}
+
+		$postVariables = [
+			'surname' => $patron->lastname,
+			'address' => $address,
+			'city' => $city,
+			'library_id' => Location::getUserHomeLocation()->code,
+			'category_id' => $patron->patronType,
+			'userid' => $username,
+		];
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+		} else {
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
+			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
+			$postParams = json_encode($postVariables);
+
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+			if ($this->apiCurlWrapper->getResponseCode() != 200) {
+				if (strlen($response) > 0) {
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse) {
+						$result['message'] = $jsonResponse->error;
+					} else {
+						$result['message'] = $response;
+					}
+				} else {
+					$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+				}
+
+			} else {
+				$response = json_decode($response);
+				if ($response->userid == $username){
+					$result = [
+						'success' => true,
+						'message' => 'Your account was updated successfully.'
+					];
+				}else{
+					$result = [
+						'success' => true,
+						'message' => 'Error updating this setting in the system.'
+					];
+				}
+			}
+		}
+		return $result;
 	}
 }

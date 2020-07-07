@@ -16,7 +16,6 @@ class User extends DataObject
 	public $lastname;                        // string(50)  not_null
 	public $email;                           // string(250)  not_null
 	public $phone;                           // string(30)
-	public $_alt_username;                    // An alternate username used by patrons to login.
 	public $cat_username;                    // string(50)
 	public $cat_password;                    // string(50)
 	public $patronType;
@@ -730,13 +729,14 @@ class User extends DataObject
 		}
 		$this->update();
 	}
+
 	function updateUserPreferences(){
 		// Validate that the input data is correct
 		if (isset($_POST['myLocation1']) && !is_array($_POST['myLocation1']) && preg_match('/^\d{1,3}$/', $_POST['myLocation1']) == 0){
-			AspenError::raiseError('The 1st location had an incorrect format.');
+			return ['success' => false, 'message' => 'The 1st location had an incorrect format.'];
 		}
 		if (isset($_POST['myLocation2']) && !is_array($_POST['myLocation2']) && preg_match('/^\d{1,3}$/', $_POST['myLocation2']) == 0){
-			AspenError::raiseError('The 2nd location had an incorrect format.');
+			return ['success' => false, 'message' => 'The 2nd location had an incorrect format.'];
 		}
 
 		if (isset($_REQUEST['profileLanguage'])){
@@ -754,7 +754,7 @@ class User extends DataObject
 				$location = new Location();
 				$location->get('locationId', $_POST['myLocation1'] );
 				if ($location->getNumResults() != 1) {
-					AspenError::raiseError('The 1st location could not be found in the database.');
+					return ['success' => false, 'message' => 'The 1st location could not be found in the database.'];
 				} else {
 					$this->myLocation1Id = $_POST['myLocation1'];
 				}
@@ -767,7 +767,7 @@ class User extends DataObject
 				$location = new Location();
 				$location->get('locationId', $_POST['myLocation2'] );
 				if ($location->getNumResults() != 1) {
-					AspenError::raiseError('The 2nd location could not be found in the database.');
+					return ['success' => false, 'message' => 'The 2nd location could not be found in the database.'];
 				} else {
 					$this->myLocation2Id = $_POST['myLocation2'];
 				}
@@ -776,8 +776,20 @@ class User extends DataObject
 
 		$this->noPromptForUserReviews = (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on')? 1 : 0;
 		$this->rememberHoldPickupLocation = (isset($_POST['rememberHoldPickupLocation']) && $_POST['rememberHoldPickupLocation'] == 'on')? 1 : 0;
+
+		if ($this->hasEditableUsername()){
+			$result = $this->updateEditableUsername($_POST['username']);
+			if ($result['success'] == false){
+				return $result;
+			}
+		}
 		$this->clearCache();
-		return $this->update();
+		$saveResult = $this->update();
+		if ($saveResult === false){
+			return ['success' => false, 'message' => 'Could not save to the database'];
+		}else{
+			return ['success' => true, 'message' => 'Your preferences were updated successfully'];
+		}
 	}
 
 	/**
@@ -1512,14 +1524,6 @@ class User extends DataObject
 		return $this->getCatalogDriver()->importListsFromIls($this);
 	}
 
-	public function getShowUsernameField() {
-	    if ($this->hasIlsConnection()){
-            return $this->getCatalogDriver()->getShowUsernameField();
-        }else{
-	        return false;
-        }
-	}
-
 	/**
 	 * @return string
 	 */
@@ -1822,6 +1826,38 @@ class User extends DataObject
 			}
 		}
 		return $locationValid;
+	}
+
+	public function hasEditableUsername()
+	{
+		if ($this->hasIlsConnection()) {
+			$homeLibrary = $this->getHomeLibrary();
+			if ($homeLibrary->allowUsernameUpdates) {
+				return $this->getCatalogDriver()->hasEditableUsername();
+			}
+		}
+		return false;
+	}
+
+	public function getEditableUsername()
+	{
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->getEditableUsername($this);
+		}else{
+			return null;
+		}
+	}
+
+	private function updateEditableUsername($username)
+	{
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->updateEditableUsername($this, $username);
+		}else{
+			return [
+				'success' => false,
+				'message' => 'This user is not connected to an ILS'
+			];
+		}
 	}
 }
 
