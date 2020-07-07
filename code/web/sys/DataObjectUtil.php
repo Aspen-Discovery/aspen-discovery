@@ -364,6 +364,10 @@ class DataObjectUtil
 							$logger->log("Could not create $destFolder", Logger::LOG_NOTICE);
 						}
 					}
+					if (substr($destFolder, -1) == '/'){
+						$destFolder = substr($destFolder, 0, -1);
+					}
+
 					$destFullPath = $destFolder . '/' . $destFileName;
 					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 					if ($copyResult){
@@ -378,7 +382,7 @@ class DataObjectUtil
 						}
 					}
 					//store the actual filename
-					$object->setProperty($propertyName, $destFileName, $property);
+					$object->setProperty($propertyName, $destFullPath, $property);
 				}
 			}
 		}else if ($property['type'] == 'uploaded_font'){

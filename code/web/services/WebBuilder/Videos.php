@@ -2,7 +2,7 @@
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/File/FileUpload.php';
 
-class WebBuilder_PDFs extends ObjectEditor
+class WebBuilder_Videos extends ObjectEditor
 {
 	function getObjectType()
 	{
@@ -11,7 +11,7 @@ class WebBuilder_PDFs extends ObjectEditor
 
 	function getToolName()
 	{
-		return 'PDFs';
+		return 'Videos';
 	}
 
 	function getModule()
@@ -21,13 +21,13 @@ class WebBuilder_PDFs extends ObjectEditor
 
 	function getPageTitle()
 	{
-		return 'Uploaded PDFs';
+		return 'Uploaded Videos';
 	}
 
 	function getAllObjects()
 	{
 		$object = new FileUpload();
-		$object->type = 'web_builder_pdf';
+		$object->type = 'web_builder_video';
 		$object->orderBy('title');
 		$object->find();
 		$objectList = array();
@@ -38,7 +38,7 @@ class WebBuilder_PDFs extends ObjectEditor
 	}
 
 	function updateFromUI($object, $structure){
-		$object->type = 'web_builder_pdf';
+		$object->type = 'web_builder_video';
 		return parent::updateFromUI($object, $structure);
 	}
 
@@ -48,9 +48,9 @@ class WebBuilder_PDFs extends ObjectEditor
 		unset($objectStructure['type']);
 		$fileProperty = $objectStructure['fullPath'];
 		global $serverName;
-		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_pdf/';
+		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_video/';
 		$fileProperty['path'] = $dataPath;
-		$fileProperty['validTypes'] = ['application/pdf'];
+		$fileProperty['validTypes'] = ['video/mp4'];
 		$objectStructure['fullPath'] = $fileProperty;
 		return $objectStructure;
 	}
@@ -89,12 +89,8 @@ class WebBuilder_PDFs extends ObjectEditor
 		$objectActions = [];
 		if (!empty($existingObject) && !empty($existingObject->id)){
 			$objectActions[] = [
-				'text' => 'View PDF',
-				'url' => '/Files/' . $existingObject->id . '/ViewPDF',
-			];
-			$objectActions[] = [
-				'text' => 'Download PDF',
-				'url' => '/WebBuilder/DownloadPDF?id=' . $existingObject->id,
+				'text' => 'Watch Video',
+				'url' => '/Files/' . $existingObject->id . '/WatchVideo',
 			];
 		}
 		return $objectActions;

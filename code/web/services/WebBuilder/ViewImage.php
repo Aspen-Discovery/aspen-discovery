@@ -35,7 +35,6 @@ class WebBuilder_ViewImage extends Action{
 			header('Content-Type: image/png');
 			header('Content-Transfer-Encoding: binary');
 			header('Content-Length: ' . $size);
-			$fileName = basename($fullPath);
 
 			if ($size > $chunkSize) {
 				$handle = fopen($fullPath, 'rb');
