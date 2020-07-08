@@ -1913,7 +1913,15 @@ class Koha extends AbstractIlsDriver
 		$selfRegPageResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postFields);
 
 		$matches = [];
-		if (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
+		if (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>.*?<span id="patron-cardnumber">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
+			$username = $matches[1];
+			$password = $matches[2];
+			$barcode = $matches[3];
+			$result['success'] = true;
+			$result['username'] = $username;
+			$result['password'] = $password;
+			$result['barcode'] = $barcode;
+		}elseif (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
 			$username = $matches[1];
 			$password = $matches[2];
 			$result['success'] = true;
@@ -1923,6 +1931,7 @@ class Koha extends AbstractIlsDriver
 			$result['success'] = true;
 			$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
 		}elseif (preg_match('%<h1>Please confirm your registration</h1>%s', $selfRegPageResponse, $matches)) {
+			//Load the patron's username and barcode
 			$result['success'] = true;
 			$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
 		}elseif (preg_match('%This email address already exists in our database.%', $selfRegPageResponse)){
