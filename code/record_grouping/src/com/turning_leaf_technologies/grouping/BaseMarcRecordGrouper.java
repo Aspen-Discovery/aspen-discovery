@@ -17,12 +17,12 @@ import java.util.Iterator;
 import java.util.List;
 
 public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
-	private String recordNumberTag;
-	private char recordNumberSubfield;
-	private String recordNumberPrefix;
-	private BaseIndexingSettings baseSettings;
+	private final String recordNumberTag;
+	private final char recordNumberSubfield;
+	private final String recordNumberPrefix;
+	private final BaseIndexingSettings baseSettings;
 
-	private Connection dbConn;
+	private final Connection dbConn;
 
 	//Existing records
 	private static HashMap<String, IlsTitle> existingRecords = new HashMap<>();
@@ -58,7 +58,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 				DataField curRecordNumberField = (DataField) recordNumberField;
 				Subfield subfieldA = curRecordNumberField.getSubfield(recordNumberSubfield);
 				if (subfieldA != null && (recordNumberPrefix.length() == 0 || subfieldA.getData().length() > recordNumberPrefix.length())) {
-					if (subfieldA.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
+					if (subfieldA.getData().startsWith(recordNumberPrefix)) {
 						String recordNumber = subfieldA.getData().trim();
 						if (recordNumber.indexOf(' ') > 0){
 							recordNumber = recordNumber.substring(0, recordNumber.indexOf(' '));
@@ -510,6 +510,10 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		existingRecords.remove(identifier);
 	}
 
+	public HashMap<String, IlsTitle> getExistingRecords() {
+		return existingRecords;
+	}
+
 	public enum MarcStatus {
 		UNCHANGED, CHANGED, NEW
 	}
@@ -567,6 +571,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return null;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean loadExistingTitles(BaseLogEntry logEntry) {
 		try {
 			if (existingRecords == null) existingRecords = new HashMap<>();
@@ -603,6 +608,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isValid() {
 		return isValid;
 	}

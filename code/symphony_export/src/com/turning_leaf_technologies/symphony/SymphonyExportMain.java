@@ -5,10 +5,7 @@ import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
-import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
-import com.turning_leaf_technologies.indexing.IndexingProfile;
-import com.turning_leaf_technologies.indexing.IndexingUtils;
-import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
@@ -32,7 +29,6 @@ public class SymphonyExportMain {
 	private static MarcRecordGrouper recordGroupingProcessorSingleton;
 	private static GroupedWorkIndexer groupedWorkIndexer;
 
-	private static Long startTimeForLogging;
 	private static IlsExtractLogEntry logEntry;
 
 	private static boolean hadErrors = false;
@@ -60,7 +56,6 @@ public class SymphonyExportMain {
 
 		while (true) {
 			Date startTime = new Date();
-			startTimeForLogging = startTime.getTime() / 1000;
 			logger.info(startTime.toString() + ": Starting Symphony Extract");
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
@@ -102,6 +97,12 @@ public class SymphonyExportMain {
 			//Check for new marc out
 			numChanges = updateRecords(dbConn);
 
+			if (groupedWorkIndexer != null) {
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
+				recordGroupingProcessorSingleton = null;
+				groupedWorkIndexer = null;
+			}
+
 			//Check for a new holds file
 			processNewHoldsFile(dbConn);
 
@@ -134,6 +135,7 @@ public class SymphonyExportMain {
 				while (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
 					try {
 						System.gc();
+						//noinspection BusyWait
 						Thread.sleep(1000 * 60 * 5);
 					} catch (InterruptedException e) {
 						logger.info("Thread was interrupted");
@@ -143,8 +145,10 @@ public class SymphonyExportMain {
 				//Pause before running the next export (longer if we didn't get any actual changes)
 				try {
 					if (numChanges == 0 || logEntry.hasErrors()) {
+						//noinspection BusyWait
 						Thread.sleep(1000 * 60 * 5);
 					} else {
+						//noinspection BusyWait
 						Thread.sleep(1000 * 60);
 					}
 				} catch (InterruptedException e) {
@@ -155,31 +159,60 @@ public class SymphonyExportMain {
 	}
 
 	private static int updateRecords(Connection dbConn){
-		//Check to see if we need to update from the MARC export
+		//Get the last export from MARC time
+		long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
+
+		//These are all of the full exports, we only want one full export to be processed
 		File marcExportPath = new File(indexingProfile.getMarcPath());
 		File[] exportedMarcFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
+		ArrayList<File> filesToProcess = new ArrayList<>();
+		File latestFile = null;
 		long latestMarcFile = 0;
+		boolean hasFullExportFile = false;
 		if (exportedMarcFiles != null && exportedMarcFiles.length > 0){
 			for (File exportedMarcFile : exportedMarcFiles) {
-				if (exportedMarcFile.lastModified() > latestMarcFile){
-					latestMarcFile = exportedMarcFile.lastModified();
+				//Remove any files that are older than the last time we processed files.
+				if (exportedMarcFile.lastModified() / 1000 < lastUpdateFromMarc){
+					if (exportedMarcFile.delete()){
+						logEntry.addNote("Removed old file " + exportedMarcFile.getAbsolutePath());
+					}
+				}else{
+					if (exportedMarcFile.lastModified() > latestMarcFile){
+						latestMarcFile = exportedMarcFile.lastModified();
+						latestFile = exportedMarcFile;
+					}
 				}
 			}
 		}
 
-		if (exportedMarcFiles != null && exportedMarcFiles.length > 0 && (indexingProfile.getLastUpdateFromMarcExport() == 0 || (latestMarcFile / 1000) > indexingProfile.getLastUpdateFromMarcExport())){
-			//Do not load the MARC file if it was updated in the last 5 minutes to be sure it is fully written
-			if (startTimeForLogging - (latestMarcFile / 1000) < 300){
-				return 0;
+		if (latestFile != null) {
+			filesToProcess.add(latestFile);
+			hasFullExportFile = true;
+		}
+
+		//Get a list of marc deltas since the last marc record
+		File marcDeltaPath = new File(marcExportPath.getParentFile() + "/marc_delta");
+		File[] exportedMarcDeltaFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
+		if (exportedMarcDeltaFiles != null && exportedMarcDeltaFiles.length > 0){
+			for (File exportedMarcDeltaFile : exportedMarcDeltaFiles) {
+				if (exportedMarcDeltaFile.lastModified() < latestMarcFile){
+					if (exportedMarcDeltaFile.delete()){
+						logEntry.addNote("Removed old delta file " + exportedMarcDeltaFile.getAbsolutePath());
+					}
+				}else{
+					if (exportedMarcDeltaFile.lastModified() > latestMarcFile){
+						filesToProcess.add(exportedMarcDeltaFile);
+					}
+				}
 			}
+		}
+
+		if (filesToProcess.size() > 0){
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
-			return updateRecordsUsingMarcExtract(exportedMarcFiles, dbConn, latestMarcFile / 1000);
+			return updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, dbConn, latestMarcFile / 1000);
 		}else{
-//TODO: See if we can get more runtime info from SirsiDynix APIs
-//			//Get updates from the API
-//			logEntry.addNote("Updating based on API");
-//			return updateRecordsUsingAPI(dbConn, carlXInstanceInformation);
+			//TODO: See if we can get more runtime info from SirsiDynix APIs;
 			return 0;
 		}
 	}
@@ -190,11 +223,12 @@ public class SymphonyExportMain {
 	 * so it can detect what has been deleted.
 	 *
 	 * @param exportedMarcFiles - An array of files to process
-	 * @param dbConn			- Connection to the Aspen database
+	 * @param hasFullExportFile - Whether or not we are including a full export.  We will only delete records if we have a full export.
+	 * @param dbConn            - Connection to the Aspen database
 	 * @param latestMarcExport  - Timestamp of the latest MARC export
 	 * @return - total number of changes that were found
 	 */
-	private static int updateRecordsUsingMarcExtract(File[] exportedMarcFiles, Connection dbConn, Long latestMarcExport) {
+	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, Connection dbConn, Long latestMarcExport) {
 		int totalChanges = 0;
 		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor(dbConn);
 		if (!recordGroupingProcessor.isValid()){
@@ -205,6 +239,23 @@ public class SymphonyExportMain {
 		}
 
 		for (File curBibFile : exportedMarcFiles) {
+			//Make sure the file is not currently changing.
+			boolean isFileChanging = true;
+			long lastSizeCheck = curBibFile.length();
+			while (isFileChanging) {
+				try {
+					Thread.sleep(5000); //Wait 5 seconds
+				} catch (InterruptedException e) {
+					logEntry.incErrors("Error checking if a file is still changing", e);
+				}
+				if (lastSizeCheck == curBibFile.length()){
+					isFileChanging = false;
+				}else{
+					lastSizeCheck = curBibFile.length();
+				}
+			}
+			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
+
 			int numRecordsRead = 0;
 			String lastRecordProcessed = "";
 			try {
@@ -274,11 +325,24 @@ public class SymphonyExportMain {
 				}
 				marcFileStream.close();
 			} catch (Exception e) {
-				logEntry.incErrors("Error loading CARL.X bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 			}
 		}
 
-		//TODO: Loop through remaining records and delete them
+		//Loop through remaining records and delete them
+		if (hasFullExportFile) {
+			for (String identifier : recordGroupingProcessor.getExistingRecords().keySet()) {
+				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), identifier);
+				if (result.reindexWork){
+					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
+				}else if (result.deleteWork){
+					//Delete the work from solr and the database
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+				}
+				logEntry.incDeleted();
+				totalChanges++;
+			}
+		}
 
 
 		try {
@@ -539,7 +603,7 @@ public class SymphonyExportMain {
 				DataField curRecordNumberField = (DataField) curVariableField;
 				Subfield subfieldA = curRecordNumberField.getSubfield('a');
 				if (subfieldA != null && (indexingProfile.getRecordNumberPrefix().length() == 0 || subfieldA.getData().length() > indexingProfile.getRecordNumberPrefix().length())) {
-					if (curRecordNumberField.getSubfield('a').getData().substring(0, indexingProfile.getRecordNumberPrefix().length()).equals(indexingProfile.getRecordNumberPrefix())) {
+					if (curRecordNumberField.getSubfield('a').getData().startsWith(indexingProfile.getRecordNumberPrefix())) {
 						recordNumber = curRecordNumberField.getSubfield('a').getData().trim();
 						break;
 					}
