@@ -3,6 +3,7 @@ AspenDiscovery.WebBuilder = (function () {
 		editors: [],
 
 		getPortalCellValuesForSource: function () {
+			let portalCellId = $("#id").val();
 			let sourceType = $("#sourceTypeSelect").val();
 			if (sourceType === 'markdown') {
 				$('#propertyRowmarkdown').show();
@@ -10,14 +11,18 @@ AspenDiscovery.WebBuilder = (function () {
 			}else{
 				$('#propertyRowmarkdown').hide();
 				$("#propertyRowsourceId").show();
-				let url = Globals.path + '/WebBuilder/AJAX?method=getPortalCellValuesForSource&sourceType=' + sourceType;
+				let url = Globals.path + '/WebBuilder/AJAX?method=getPortalCellValuesForSource&portalCellId=' + portalCellId + '&sourceType=' + sourceType;
 				$.getJSON(url, function(data){
 					if (data.success === true){
 						let sourceIdSelect = $("#sourceIdSelect" );
 						sourceIdSelect.find('option').remove();
 						let optionValues = data.values;
 						for (let key in optionValues) {
-							sourceIdSelect.append('<option value="' + key + '">' + optionValues[key] + '</option>')
+							if (data.selected == key){
+								sourceIdSelect.append('<option value="' + key + '" selected>' + optionValues[key] + '</option>')
+							}else{
+								sourceIdSelect.append('<option value="' + key + '">' + optionValues[key] + '</option>')
+							}
 						}
 					}else{
 						AspenDiscovery.showMessage('Sorry', data.message);

@@ -16,7 +16,7 @@ class WebBuilder_AJAX extends JSON_Action
 		case 'basic_page_teaser':
 			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
 			$list = [];
-			$list[-1] = 'Select a page';
+			$list['-1'] = 'Select a page';
 
 			$basicPage = new BasicPage();
 			$basicPage->orderBy('title');
@@ -26,7 +26,6 @@ class WebBuilder_AJAX extends JSON_Action
 				$list[$basicPage->id] = $basicPage->title;
 			}
 
-			asort($list);
 			$result = [
 				'success' => true,
 				'values' => $list
@@ -35,7 +34,7 @@ class WebBuilder_AJAX extends JSON_Action
 		case 'collection_spotlight':
 			require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 			$list = [];
-			$list[-1] = 'Select a spotlight';
+			$list['-1'] = 'Select a spotlight';
 
 			$collectionSpotlight = new CollectionSpotlight();
 			if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
@@ -48,7 +47,6 @@ class WebBuilder_AJAX extends JSON_Action
 				$list[$collectionSpotlight->id] = $collectionSpotlight->name;
 			}
 
-			asort($list);
 			$result = [
 				'success' => true,
 				'values' => $list
@@ -57,7 +55,7 @@ class WebBuilder_AJAX extends JSON_Action
 		case 'image':
 			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 			$list = [];
-			$list[-1] = 'Select an image';
+			$list['-1'] = 'Select an image';
 			$object = new ImageUpload();
 			$object->type = 'web_builder_image';
 			$object->orderBy('title');
@@ -73,7 +71,7 @@ class WebBuilder_AJAX extends JSON_Action
 		case 'video':
 			require_once ROOT_DIR . '/sys/File/FileUpload.php';
 			$list = [];
-			$list[-1] = 'Select a video';
+			$list['-1'] = 'Select a video';
 			$object = new FileUpload();
 			$object->type = 'web_builder_video';
 			$object->orderBy('title');
@@ -89,6 +87,19 @@ class WebBuilder_AJAX extends JSON_Action
 		case 'event_calendar':
 		default:
 			$result['message'] = 'Unhandled Source Type ' . $sourceType;
+		}
+
+		$portalCellId = $_REQUEST['portalCellId'];
+		$portalCell = null;
+		$result['selected'] = '-1';
+		if (!empty($portalCellId)){
+			$portalCell = new PortalCell();
+			$portalCell->id = $portalCellId;
+			if ($portalCell->find(true)){
+				if ($portalCell->sourceType == $sourceType){
+					$result['selected'] = $portalCell->sourceId;
+				}
+			}
 		}
 
 		return $result;
