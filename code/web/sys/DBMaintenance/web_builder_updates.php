@@ -137,6 +137,17 @@ function getWebBuilderUpdates(){
 			]
 		],
 
+		'web_builder_image_upload_additional_sizes' => [
+			'title' => 'Add additional derivative sizes for image uploads',
+			'description' => 'Add additional derivative sizes for image uploads',
+			'sql' => [
+				'ALTER TABLE image_uploads  add COLUMN generateLargeSize TINYINT(1) NOT NULL default 1',
+				"ALTER TABLE image_uploads  add COLUMN largeSizePath VARCHAR(512) DEFAULT ''",
+				"ALTER TABLE image_uploads  add COLUMN generateXLargeSize TINYINT(1) NOT NULL default 1",
+				"ALTER TABLE image_uploads  add COLUMN xLargeSizePath VARCHAR(512) DEFAULT ''",
+			]
+		],
+
 		'web_builder_resources' => [
 			'title' => 'Create Web Builder Resources Table',
 			'description' => 'Create Resources table to store information about resources the library provides access to',
