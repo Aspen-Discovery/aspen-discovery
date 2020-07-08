@@ -31,6 +31,8 @@ public class SymphonyExportMain {
 
 	private static IlsExtractLogEntry logEntry;
 
+	private static Date reindexStartTime;
+
 	private static boolean hadErrors = false;
 
 	public static void main(String[] args){
@@ -55,8 +57,8 @@ public class SymphonyExportMain {
 		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
-			Date startTime = new Date();
-			logger.info(startTime.toString() + ": Starting Symphony Extract");
+			reindexStartTime = new Date();
+			logger.info(reindexStartTime.toString() + ": Starting Symphony Extract");
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
 			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -78,7 +80,7 @@ public class SymphonyExportMain {
 
 				logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
 				//Remove log entries older than 45 days
-				long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
+				long earliestLogToKeep = (reindexStartTime.getTime() / 1000) - (60 * 60 * 24 * 45);
 				try {
 					int numDeletions = dbConn.prepareStatement("DELETE from ils_extract_log WHERE startTime < " + earliestLogToKeep + " AND indexingProfile = '" + profileToLoad + "'").executeUpdate();
 					logger.info("Deleted " + numDeletions + " old log entries");
@@ -177,7 +179,7 @@ public class SymphonyExportMain {
 						logEntry.addNote("Removed old file " + exportedMarcFile.getAbsolutePath());
 					}
 				}else{
-					if (exportedMarcFile.lastModified() > latestMarcFile){
+					if (exportedMarcFile.lastModified() / 1000 > latestMarcFile){
 						latestMarcFile = exportedMarcFile.lastModified();
 						latestFile = exportedMarcFile;
 					}
@@ -195,7 +197,7 @@ public class SymphonyExportMain {
 		File[] exportedMarcDeltaFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
 		if (exportedMarcDeltaFiles != null && exportedMarcDeltaFiles.length > 0){
 			for (File exportedMarcDeltaFile : exportedMarcDeltaFiles) {
-				if (exportedMarcDeltaFile.lastModified() < latestMarcFile){
+				if (exportedMarcDeltaFile.lastModified() / 1000 < lastUpdateFromMarc){
 					if (exportedMarcDeltaFile.delete()){
 						logEntry.addNote("Removed old delta file " + exportedMarcDeltaFile.getAbsolutePath());
 					}
@@ -210,7 +212,7 @@ public class SymphonyExportMain {
 		if (filesToProcess.size() > 0){
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
-			return updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, dbConn, latestMarcFile / 1000);
+			return updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, dbConn);
 		}else{
 			//TODO: See if we can get more runtime info from SirsiDynix APIs;
 			return 0;
@@ -225,10 +227,9 @@ public class SymphonyExportMain {
 	 * @param exportedMarcFiles - An array of files to process
 	 * @param hasFullExportFile - Whether or not we are including a full export.  We will only delete records if we have a full export.
 	 * @param dbConn            - Connection to the Aspen database
-	 * @param latestMarcExport  - Timestamp of the latest MARC export
 	 * @return - total number of changes that were found
 	 */
-	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, Connection dbConn, Long latestMarcExport) {
+	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, Connection dbConn) {
 		int totalChanges = 0;
 		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor(dbConn);
 		if (!recordGroupingProcessor.isValid()){
@@ -347,7 +348,7 @@ public class SymphonyExportMain {
 
 		try {
 			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateFromMarcExport = ? where id = ?");
-			updateMarcExportStmt.setLong(1, latestMarcExport);
+			updateMarcExportStmt.setLong(1, reindexStartTime.getTime() / 1000);
 			updateMarcExportStmt.setLong(2, indexingProfile.getId());
 			updateMarcExportStmt.executeUpdate();
 		}catch (Exception e){
