@@ -89,15 +89,17 @@
 			</div>
 		</div>
 
-		<div id="horizontal-search-wrapper" class="row">
-			<div id="horizontal-search-container" class="col-xs-12">
-				{include file="Search/horizontal-searchbox.tpl"}
+		<div id="search-and-menu-wrapper">
+			<div id="horizontal-search-wrapper" class="row">
+				<div id="horizontal-search-container" class="col-xs-12">
+					{include file="Search/horizontal-searchbox.tpl"}
+				</div>
 			</div>
-		</div>
 
-		{if !empty($webMenu)}
-			{include file="webmenu.tpl"}
-		{/if}
+			{if !empty($webMenu)}
+				{include file="webmenu.tpl"}
+			{/if}
+		</div>
 
 		<div id="content-container">
 			<div class="row">

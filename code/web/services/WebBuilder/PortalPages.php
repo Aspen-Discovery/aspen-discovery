@@ -67,7 +67,14 @@ class WebBuilder_PortalPages extends ObjectEditor
 
 	function getAdditionalObjectActions($existingObject)
 	{
-		return [];
+		$objectActions = [];
+		if (!empty($existingObject) && $existingObject instanceof PortalPage && !empty($existingObject->id)){
+			$objectActions[] = [
+				'text' => 'View',
+				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/PortalPage?id='.$existingObject->id: $existingObject->urlAlias,
+			];
+		}
+		return $objectActions;
 	}
 
 	function getInstructions()

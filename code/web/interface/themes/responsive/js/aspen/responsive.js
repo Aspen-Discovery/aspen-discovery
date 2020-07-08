@@ -12,14 +12,14 @@ AspenDiscovery.Responsive = (function(){
 		}).keyup(); //This keyup triggers the resize
 
 		$('#lookfor').on( 'keydown', function (event ){
-			if (event.which == 13 || event.which == 10){
+			if (event.which === 13 || event.which === 10){
 				event.preventDefault();
 				event.stopPropagation();
 				$("#searchForm").submit();
 				return false;
 			}
 		}).on( 'keypress', function (event ){
-			if (event.which == 13 || event.which == 10){
+			if (event.which === 13 || event.which === 10){
 				event.preventDefault();
 				event.stopPropagation();
 				return false;
@@ -28,7 +28,7 @@ AspenDiscovery.Responsive = (function(){
 	});
 
 	try{
-		var mediaQueryList = window.matchMedia('print');
+		let mediaQueryList = window.matchMedia('print');
 		mediaQueryList.addListener(function(mql) {
 			AspenDiscovery.Responsive.isPrint = mql.matches;
 		});
@@ -45,23 +45,23 @@ AspenDiscovery.Responsive = (function(){
 		originalSidebarHeight: -1,
 		adjustLayout: function(){
 			// get resolution
-			var resolutionX = document.documentElement.clientWidth;
+			let resolutionX = document.documentElement.clientWidth;
 
 			if (resolutionX >= 768 && !AspenDiscovery.Responsive.isPrint) {
 				//Make the sidebar and main content the same size
-				var mainContentElement = $("#main-content-with-sidebar");
-				var sidebarContentElem = $("#sidebar-content");
+				let mainContentElement = $("#main-content-with-sidebar");
+				let sidebarContentElem = $("#sidebar-content");
 
-				if (AspenDiscovery.Responsive.originalSidebarHeight == -1){
+				if (AspenDiscovery.Responsive.originalSidebarHeight === -1){
 					AspenDiscovery.Responsive.originalSidebarHeight = sidebarContentElem.height();
 				}
 				//var heightToTest = Math.min(sidebarContentElem.height(), AspenDiscovery.Responsive.originalSidebarHeight);
-				var heightToTest = sidebarContentElem.height();
-				var maxHeight = Math.max(mainContentElement.height() + 15, heightToTest);
-				if (mainContentElement.height() + 15 != maxHeight){
+				let heightToTest = sidebarContentElem.height();
+				let maxHeight = Math.max(mainContentElement.height() + 15, heightToTest);
+				if (mainContentElement.height() + 15 !== maxHeight){
 					mainContentElement.height(maxHeight);
 				}
-				if (sidebarContentElem.height() != maxHeight){
+				if (sidebarContentElem.height() !== maxHeight){
 					sidebarContentElem.height(maxHeight);
 				}
 			}

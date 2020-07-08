@@ -293,7 +293,8 @@ var AspenDiscovery = (function(){
 			$("#myModalLabel").html(title);
 			$(".modal-body").html(body);
 			$('.modal-buttons').html('');
-			var modalDialog = $("#modalDialog");
+			let modalDialog = $("#modalDialog");
+			modalDialog.removeClass('image-popup')
 			modalDialog.modal('show');
 			if (autoClose) {
 				setTimeout(function(){
@@ -325,24 +326,25 @@ var AspenDiscovery = (function(){
 		},
 
 		toggleHiddenElementWithButton: function(button){
-			var hiddenElementName = $(button).data('hidden_element');
-			var hiddenElement = $(hiddenElementName);
+			let hiddenElementName = $(button).data('hidden_element');
+			let hiddenElement = $(hiddenElementName);
 			hiddenElement.val($(button).hasClass('active') ? '1' : '0');
 			return false;
 		},
 
 		showElementInPopup: function(title, elementId, buttonsElementId){
 			// buttonsElementId is optional
-			var modalDialog = $("#modalDialog");
+			let modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){
 				AspenDiscovery.closeLightbox(function(){AspenDiscovery.showElementInPopup(title, elementId)});
 			}else{
 				$(".modal-title").html(title);
-				var elementText = $(elementId).html(),
-						elementButtons = buttonsElementId ? $(buttonsElementId).html() : '';
+				let elementText = $(elementId).html();
+				let elementButtons = buttonsElementId ? $(buttonsElementId).html() : '';
 				$(".modal-body").html(elementText);
 				$('.modal-buttons').html(elementButtons);
 
+				modalDialog.removeClass('image-popup')
 				modalDialog.modal('show');
 				return false;
 			}

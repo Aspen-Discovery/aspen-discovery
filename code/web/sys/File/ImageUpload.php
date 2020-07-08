@@ -13,7 +13,9 @@ class ImageUpload extends DataObject
 	public $smallSizePath; //Stores the thumbnail with a maximum size of 200x200px
 	public $type;
 
-	static $mediumSize = 350;
+	static $xLargeSize = 1100;
+	static $largeSize = 600;
+	static $mediumSize = 400;
 	static $smallSize = 200;
 	static function getObjectStructure()
 	{

@@ -8782,6 +8782,12 @@ a.placard-link {
 .propertyDescription {
   margin-bottom: 6px;
 }
+.image-popup .modal-dialog {
+  width: auto;
+}
+.image-popup .modal-dialog .img-responsive {
+  margin: auto;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;

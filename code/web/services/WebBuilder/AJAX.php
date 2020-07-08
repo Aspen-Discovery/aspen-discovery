@@ -55,8 +55,21 @@ class WebBuilder_AJAX extends JSON_Action
 			];
 			break;
 		case 'image':
+			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 			$list = [];
 			$list[-1] = 'Select an image';
+			$object = new ImageUpload();
+			$object->type = 'web_builder_image';
+			$object->orderBy('title');
+			$object->find();
+			while ($object->fetch()) {
+				$list[$object->id] =$object->title;
+			}
+			$result = [
+				'success' => true,
+				'values' => $list
+			];
+			break;
 		case 'video':
 			require_once ROOT_DIR . '/sys/File/FileUpload.php';
 			$list = [];
@@ -68,7 +81,6 @@ class WebBuilder_AJAX extends JSON_Action
 			while ($object->fetch()) {
 				$list[$object->id] =$object->title;
 			}
-			asort($list);
 			$result = [
 				'success' => true,
 				'values' => $list

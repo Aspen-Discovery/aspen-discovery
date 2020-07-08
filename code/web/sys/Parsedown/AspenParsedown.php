@@ -5,7 +5,17 @@ class AspenParsedown extends ParsedownExtra{
 	protected function inlineImage($Excerpt) {
 		$result = parent::inlineImage($Excerpt);
 		if (!empty($result)) {
-			$result['element']['attributes']['class'] = 'img-responsive';
+			if (empty($result['element']['attributes']['class'])){
+				$result['element']['attributes']['class'] = 'img-responsive';
+			}else {
+				$result['element']['attributes']['class'] .= ' img-responsive';
+			}
+			if (preg_match('~/WebBuilder/ViewImage?.*id=(\d+).*~', $result['element']['attributes']['src'], $matches)){
+				if (strpos($result['element']['attributes']['class'], 'showInPopup') !== false) {
+					$result['element']['attributes']['onclick'] = "AspenDiscovery.WebBuilder.showImageInPopup('{$result['element']['attributes']['alt']}', '{$matches[1]}')";
+				}
+			}
+
 		}
 		return $result;
 	}

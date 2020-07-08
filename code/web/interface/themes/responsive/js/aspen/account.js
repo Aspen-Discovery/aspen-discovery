@@ -84,6 +84,7 @@ AspenDiscovery.Account = (function(){
 				$('.modal-body').html("Loading...");
 				$(".modal-content").load(dialogDestination);
 				$(".modal-title").text(dialogTitle);
+				modalDialog.removeClass('image-popup')
 				modalDialog.modal("show");
 			}
 			return false;

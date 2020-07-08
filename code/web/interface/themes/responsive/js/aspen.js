@@ -355,7 +355,8 @@ var AspenDiscovery = (function(){
 			$("#myModalLabel").html(title);
 			$(".modal-body").html(body);
 			$('.modal-buttons').html('');
-			var modalDialog = $("#modalDialog");
+			let modalDialog = $("#modalDialog");
+			modalDialog.removeClass('image-popup')
 			modalDialog.modal('show');
 			if (autoClose) {
 				setTimeout(function(){
@@ -387,24 +388,25 @@ var AspenDiscovery = (function(){
 		},
 
 		toggleHiddenElementWithButton: function(button){
-			var hiddenElementName = $(button).data('hidden_element');
-			var hiddenElement = $(hiddenElementName);
+			let hiddenElementName = $(button).data('hidden_element');
+			let hiddenElement = $(hiddenElementName);
 			hiddenElement.val($(button).hasClass('active') ? '1' : '0');
 			return false;
 		},
 
 		showElementInPopup: function(title, elementId, buttonsElementId){
 			// buttonsElementId is optional
-			var modalDialog = $("#modalDialog");
+			let modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){
 				AspenDiscovery.closeLightbox(function(){AspenDiscovery.showElementInPopup(title, elementId)});
 			}else{
 				$(".modal-title").html(title);
-				var elementText = $(elementId).html(),
-						elementButtons = buttonsElementId ? $(buttonsElementId).html() : '';
+				let elementText = $(elementId).html();
+				let elementButtons = buttonsElementId ? $(buttonsElementId).html() : '';
 				$(".modal-body").html(elementText);
 				$('.modal-buttons').html(elementButtons);
 
+				modalDialog.removeClass('image-popup')
 				modalDialog.modal('show');
 				return false;
 			}
@@ -694,6 +696,7 @@ AspenDiscovery.Account = (function(){
 				$('.modal-body').html("Loading...");
 				$(".modal-content").load(dialogDestination);
 				$(".modal-title").text(dialogTitle);
+				modalDialog.removeClass('image-popup')
 				modalDialog.modal("show");
 			}
 			return false;
@@ -5643,14 +5646,14 @@ AspenDiscovery.Responsive = (function(){
 		}).keyup(); //This keyup triggers the resize
 
 		$('#lookfor').on( 'keydown', function (event ){
-			if (event.which == 13 || event.which == 10){
+			if (event.which === 13 || event.which === 10){
 				event.preventDefault();
 				event.stopPropagation();
 				$("#searchForm").submit();
 				return false;
 			}
 		}).on( 'keypress', function (event ){
-			if (event.which == 13 || event.which == 10){
+			if (event.which === 13 || event.which === 10){
 				event.preventDefault();
 				event.stopPropagation();
 				return false;
@@ -5659,7 +5662,7 @@ AspenDiscovery.Responsive = (function(){
 	});
 
 	try{
-		var mediaQueryList = window.matchMedia('print');
+		let mediaQueryList = window.matchMedia('print');
 		mediaQueryList.addListener(function(mql) {
 			AspenDiscovery.Responsive.isPrint = mql.matches;
 		});
@@ -5676,23 +5679,23 @@ AspenDiscovery.Responsive = (function(){
 		originalSidebarHeight: -1,
 		adjustLayout: function(){
 			// get resolution
-			var resolutionX = document.documentElement.clientWidth;
+			let resolutionX = document.documentElement.clientWidth;
 
 			if (resolutionX >= 768 && !AspenDiscovery.Responsive.isPrint) {
 				//Make the sidebar and main content the same size
-				var mainContentElement = $("#main-content-with-sidebar");
-				var sidebarContentElem = $("#sidebar-content");
+				let mainContentElement = $("#main-content-with-sidebar");
+				let sidebarContentElem = $("#sidebar-content");
 
-				if (AspenDiscovery.Responsive.originalSidebarHeight == -1){
+				if (AspenDiscovery.Responsive.originalSidebarHeight === -1){
 					AspenDiscovery.Responsive.originalSidebarHeight = sidebarContentElem.height();
 				}
 				//var heightToTest = Math.min(sidebarContentElem.height(), AspenDiscovery.Responsive.originalSidebarHeight);
-				var heightToTest = sidebarContentElem.height();
-				var maxHeight = Math.max(mainContentElement.height() + 15, heightToTest);
-				if (mainContentElement.height() + 15 != maxHeight){
+				let heightToTest = sidebarContentElem.height();
+				let maxHeight = Math.max(mainContentElement.height() + 15, heightToTest);
+				if (mainContentElement.height() + 15 !== maxHeight){
 					mainContentElement.height(maxHeight);
 				}
-				if (sidebarContentElem.height() != maxHeight){
+				if (sidebarContentElem.height() !== maxHeight){
 					sidebarContentElem.height(maxHeight);
 				}
 			}
@@ -6633,7 +6636,26 @@ AspenDiscovery.WebBuilder = (function () {
 				}
 			});
 			return false;
-		}
+		},
+
+		showImageInPopup: function(title, imageId){
+			// buttonsElementId is optional
+			let modalDialog = $("#modalDialog");
+			if (modalDialog.is(":visible")){
+				AspenDiscovery.closeLightbox(function(){AspenDiscovery.showElementInPopup(title, elementId)});
+			}else{
+				if (title === ''){
+					title = '&nbsp;';
+				}
+				$(".modal-title").html(title);
+				$(".modal-body").html('<img src="/WebBuilder/ViewImage?id=' + imageId + '" class="img-responsive">');
+				$('.modal-buttons').html('');
+
+				modalDialog.addClass('image-popup')
+				modalDialog.modal('show');
+				return false;
+			}
+		},
 	};
 }(AspenDiscovery.WebBuilder || {}));
 AspenDiscovery.Websites = (function () {

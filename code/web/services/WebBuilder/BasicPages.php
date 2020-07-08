@@ -68,7 +68,14 @@ class WebBuilder_BasicPages extends ObjectEditor
 
 	function getAdditionalObjectActions($existingObject)
 	{
-		return [];
+		$objectActions = [];
+		if (!empty($existingObject) && $existingObject instanceof BasicPage && !empty($existingObject->id)){
+			$objectActions[] = [
+				'text' => 'View',
+				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/BasicPage?id='.$existingObject->id: $existingObject->urlAlias,
+			];
+		}
+		return $objectActions;
 	}
 
 	function getInstructions()

@@ -101,6 +101,23 @@ class PortalCell extends DataObject
 				$interface->assign('videoPath', $configArray['Site']['url'] . '/Files/' . $this->sourceId . '/Contents');
 				return $interface->fetch('Files/embeddedVideo.tpl');
 			}
+		}elseif ($this->sourceType == 'image'){
+			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
+			$imageUpload = new ImageUpload();
+			$imageUpload->id = $this->sourceId;
+			if ($imageUpload->find(true)) {
+				$size = '';
+				if ($this->widthMd <= 2) {
+					$size .= '&size=small';
+				}elseif ($this->widthMd <= 4){
+					$size .= '&size=medium';
+//				}elseif ($this->widthMd <= 8){
+//					$size .= '&size=large';
+//				}else{
+//					$size .= '&size=x-large';
+				}
+				return "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\">";
+			}
 		}
 		return 'Could not load contents for the cell';
 	}

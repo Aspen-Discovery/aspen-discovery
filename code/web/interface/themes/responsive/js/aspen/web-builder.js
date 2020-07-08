@@ -179,6 +179,25 @@ AspenDiscovery.WebBuilder = (function () {
 				}
 			});
 			return false;
-		}
+		},
+
+		showImageInPopup: function(title, imageId){
+			// buttonsElementId is optional
+			let modalDialog = $("#modalDialog");
+			if (modalDialog.is(":visible")){
+				AspenDiscovery.closeLightbox(function(){AspenDiscovery.showElementInPopup(title, elementId)});
+			}else{
+				if (title === ''){
+					title = '&nbsp;';
+				}
+				$(".modal-title").html(title);
+				$(".modal-body").html('<img src="/WebBuilder/ViewImage?id=' + imageId + '" class="img-responsive">');
+				$('.modal-buttons').html('');
+
+				modalDialog.addClass('image-popup')
+				modalDialog.modal('show');
+				return false;
+			}
+		},
 	};
 }(AspenDiscovery.WebBuilder || {}));
