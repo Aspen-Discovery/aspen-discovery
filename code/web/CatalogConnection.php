@@ -873,15 +873,6 @@ class CatalogConnection
 		return $this->driver->importListsFromIls($patron);
 	}
 
-	public function getShowUsernameField()
-	{
-		if ($this->checkFunction('hasUsernameField')) {
-			return $this->driver->hasUsernameField();
-		} else {
-			return false;
-		}
-	}
-
 	/**
 	 * Resets the PIN/Password.  At this point, the confirmation matches the new pin so no need to reconfirm
 	 * @param User $user
@@ -1090,5 +1081,20 @@ class CatalogConnection
 			$user = null;
 		}
 		return $user;
+	}
+
+	public function hasEditableUsername()
+	{
+		return $this->driver->hasEditableUsername();
+	}
+
+	public function getEditableUsername(User $user)
+	{
+		return $this->driver->getEditableUsername($user);
+	}
+
+	public function updateEditableUsername(User $user, $username)
+	{
+		return $this->driver->updateEditableUsername($user, $username);
 	}
 }

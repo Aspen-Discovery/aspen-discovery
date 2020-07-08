@@ -22,7 +22,7 @@ public class GroupedReindexMain {
 	//General configuration
 	private static String serverName;
 	@SuppressWarnings("FieldCanBeLocal")
-	private static String processName = "grouped_reindex";
+	private static final String processName = "grouped_reindex";
 	private static boolean fullReindex = false;
 	private static boolean clearIndex = false;
 	private static boolean isNightlyReindex = false;
@@ -90,7 +90,6 @@ public class GroupedReindexMain {
 		}
 		
 		//Process grouped works
-		long numWorksProcessed = 0;
 		try {
 			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, logEntry, logger);
 			if (groupedWorkIndexer.isOkToIndex()) {
@@ -111,7 +110,7 @@ public class GroupedReindexMain {
 					}
 				} else {
 					logger.info("Running Reindex");
-					numWorksProcessed = groupedWorkIndexer.processGroupedWorks();
+					groupedWorkIndexer.processGroupedWorks();
 				}
 				groupedWorkIndexer.finishIndexing();
 

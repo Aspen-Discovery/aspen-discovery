@@ -2172,7 +2172,15 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				"ALTER TABLE location ADD COLUMN historicCode VARCHAR(20) DEFAULT ''"
 			]
-		]
+		],
+
+		'libraryAllowUsernameUpdates' => [
+			'title' => 'Library Allow Username Updates',
+			'description' => 'Add a flag for whether or not the user can update their username (if available in the ILS)',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN allowUsernameUpdates TINYINT(1) DEFAULT 0"
+			]
+		],
 	);
 }
 

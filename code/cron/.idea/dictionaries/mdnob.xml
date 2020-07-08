@@ -100,6 +100,7 @@
       <w>homebranch</w>
       <w>icode</w>
       <w>ilsdi</w>
+      <w>imagename</w>
       <w>initialspassword</w>
       <w>interactivebook</w>
       <w>isbns</w>
@@ -150,6 +151,7 @@
       <w>oclcs</w>
       <w>ocode</w>
       <w>offsite</w>
+      <w>ohohseven</w>
       <w>oneclick</w>
       <w>oneclickdigital</w>
       <w>onloan</w>
@@ -206,6 +208,7 @@
       <w>tapecassette</w>
       <w>taperecording</w>
       <w>tapereel</w>
+      <w>tasklist</w>
       <w>transbid</w>
       <w>transcode</w>
       <w>transitem</w>

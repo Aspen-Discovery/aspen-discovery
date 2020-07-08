@@ -66,7 +66,6 @@ class MyAccount_Profile extends MyAccount
 				$passwordLabel = str_replace('Your', '', $patronHomeLibrary->loginFormPasswordLabel ? $patronHomeLibrary->loginFormPasswordLabel : 'Library Card Number');
 			}
 
-			$interface->assign('showUsernameField', $patron->getShowUsernameField());
 			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('canUpdateAddress', $canUpdateAddress);
