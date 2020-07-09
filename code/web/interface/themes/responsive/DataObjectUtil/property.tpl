@@ -10,7 +10,7 @@
 {else}
 	{assign var=propValue value=""}
 {/if}
-{if !isset($propValue) && isset($property.default)}
+{if empty($propValue) && isset($property.default)}
 	{assign var=propValue value=$property.default}
 {/if}
 
