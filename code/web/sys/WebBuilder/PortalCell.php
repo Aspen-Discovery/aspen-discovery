@@ -21,7 +21,6 @@ class PortalCell extends DataObject
 	public $sourceId;
 	public $markdown;
 
-
 	static function getObjectStructure() {
 		$verticalAlignmentOptions = [
 			'flex-start' => 'Top of Row',
@@ -40,7 +39,6 @@ class PortalCell extends DataObject
 			'basic_page' => 'Basic Page',
 			'basic_page_teaser' => 'Basic Page Teaser',
 			'collection_spotlight' => 'Collection Spotlight',
-			'event_calendar' => 'Event Calendar',
 			'image' => 'Image',
 			'video' => 'Video'
 		];

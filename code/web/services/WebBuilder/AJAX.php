@@ -84,7 +84,6 @@ class WebBuilder_AJAX extends JSON_Action
 				'values' => $list
 			];
 			break;
-		case 'event_calendar':
 		default:
 			$result['message'] = 'Unhandled Source Type ' . $sourceType;
 		}
