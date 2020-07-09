@@ -989,42 +989,46 @@ function loadModuleActionId(){
 	}
 
 	global $enabledModules;
-	if ($checkWebBuilderAliases && array_key_exists('Web Builder', $enabledModules)){
-		require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
-		$basicPage = new BasicPage();
-		$basicPage->urlAlias = $requestURI;
-		if ($basicPage->find(true)){
-			$_GET['module'] = 'WebBuilder';
-			$_GET['action'] = 'BasicPage';
-			$_GET['id'] = $basicPage->id;
-			$_REQUEST['module'] = 'WebBuilder';
-			$_REQUEST['action'] = 'BasicPage';
-			$_REQUEST['id'] = $basicPage->id;
-		}else{
-			require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
-			$portalPage = new PortalPage();
-			$portalPage->urlAlias = $requestURI;
-			if ($portalPage->find(true)){
+	try {
+		if ($checkWebBuilderAliases && array_key_exists('Web Builder', $enabledModules)) {
+			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+			$basicPage = new BasicPage();
+			$basicPage->urlAlias = $requestURI;
+			if ($basicPage->find(true)) {
 				$_GET['module'] = 'WebBuilder';
-				$_GET['action'] = 'PortalPage';
-				$_GET['id'] = $portalPage->id;
+				$_GET['action'] = 'BasicPage';
+				$_GET['id'] = $basicPage->id;
 				$_REQUEST['module'] = 'WebBuilder';
-				$_REQUEST['action'] = 'PortalPage';
-				$_REQUEST['id'] = $portalPage->id;
-			}else{
-				require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
-				$form = new CustomForm();
-				$form->urlAlias = $requestURI;
-				if ($form->find(true)){
+				$_REQUEST['action'] = 'BasicPage';
+				$_REQUEST['id'] = $basicPage->id;
+			} else {
+				require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+				$portalPage = new PortalPage();
+				$portalPage->urlAlias = $requestURI;
+				if ($portalPage->find(true)) {
 					$_GET['module'] = 'WebBuilder';
-					$_GET['action'] = 'Form';
-					$_GET['id'] = $form->id;
+					$_GET['action'] = 'PortalPage';
+					$_GET['id'] = $portalPage->id;
 					$_REQUEST['module'] = 'WebBuilder';
-					$_REQUEST['action'] = 'Form';
-					$_REQUEST['id'] = $form->id;
+					$_REQUEST['action'] = 'PortalPage';
+					$_REQUEST['id'] = $portalPage->id;
+				} else {
+					require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+					$form = new CustomForm();
+					$form->urlAlias = $requestURI;
+					if ($form->find(true)) {
+						$_GET['module'] = 'WebBuilder';
+						$_GET['action'] = 'Form';
+						$_GET['id'] = $form->id;
+						$_REQUEST['module'] = 'WebBuilder';
+						$_REQUEST['action'] = 'Form';
+						$_REQUEST['id'] = $form->id;
+					}
 				}
 			}
 		}
+	}catch (Exception $e) {
+		//This happens if web builder is not fully installed, ignore the error.
 	}
 	//Correct some old actions
 	if (isset($_GET['action'])) {
