@@ -279,6 +279,51 @@ function getWebBuilderUpdates(){
 			'sql' => [
 				'ALTER TABLE web_builder_resource ADD COLUMN inLibraryUseOnly TINYINT(1) DEFAULT 0'
 			]
+		],
+
+		'web_builder_custom_forms' => [
+			'title' => 'Web Builder Custom Forms',
+			'description' => 'Add the ability for a library to define custom forms',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE web_builder_custom_form (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					title VARCHAR(100) NOT NULL,
+					urlAlias VARCHAR(100),
+					emailResultsTo VARCHAR(100),
+					requireLogin TINYINT(1),
+					introText MEDIUMTEXT,
+					submissionResultText MEDIUMTEXT
+				) ENGINE INNODB',
+				'CREATE TABLE web_builder_custom_form_field (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					formId INT(11) NOT NULL,
+					weight INT DEFAULT 0,
+					label VARCHAR(100) NOT NULL,
+					description VARCHAR(255) default \'\',
+					fieldType INT NOT NULL default 0,
+					enumValues VARCHAR(255),
+					defaultValue VARCHAR(255),
+					required TINYINT(1) NOT NULL DEFAULT 0,
+					INDEX formId(formId)
+				) ENGINE INNODB',
+				'CREATE TABLE library_web_builder_custom_form (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT(11) NOT NULL,
+					formId  INT(11) NOT NULL,
+					INDEX libraryId(libraryId),
+					INDEX formId(formId)
+				) ENGINE INNODB',
+				'CREATE TABLE library_web_builder_custom_from_submission (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					formId INT(11) NOT NULL,
+					libraryId INT(11) NOT NULL,
+					userId INT(11) NOT NULL, 
+					dateSubmitted INT(11) NOT NULL,
+					submission MEDIUMTEXT,
+					INDEX (formId, libraryId)
+				) ENGINE INNODB'
+			]
 		]
 
 		//TODO: Add roles

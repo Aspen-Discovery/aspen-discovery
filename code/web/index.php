@@ -1011,6 +1011,18 @@ function loadModuleActionId(){
 				$_REQUEST['module'] = 'WebBuilder';
 				$_REQUEST['action'] = 'PortalPage';
 				$_REQUEST['id'] = $portalPage->id;
+			}else{
+				require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+				$form = new CustomForm();
+				$form->urlAlias = $requestURI;
+				if ($form->find(true)){
+					$_GET['module'] = 'WebBuilder';
+					$_GET['action'] = 'Form';
+					$_GET['id'] = $form->id;
+					$_REQUEST['module'] = 'WebBuilder';
+					$_REQUEST['action'] = 'Form';
+					$_REQUEST['id'] = $form->id;
+				}
 			}
 		}
 	}
