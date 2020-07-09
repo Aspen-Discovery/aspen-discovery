@@ -28,6 +28,7 @@
      - You have the ability to allow profile updates from the patron to their profile   within aspen, address updates from patron, PIN/password reset, alternate library updates and pickup location changes.
      - This is where you define how you would like patron names to be displayed
      - You can enable a forgot password link
+     - To find out more about how to setup the password reset capability with integration in Koha, you can find information here: https://bywatersolutions.com/education/password-reset-in-aspen-discovery
   - Holds
     - This is where you can customize what information is displayed in regard to holds
   - Login
