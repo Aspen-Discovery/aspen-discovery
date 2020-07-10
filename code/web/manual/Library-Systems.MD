@@ -25,9 +25,9 @@
     - You can let Aspen know what your minimum and maximum length on patron barcodes.
     - If you define a Barcode Prefix, patrons can login with their cardnumber without the prefix. This is useful when patrons are more familiar with their unique id instead of the entire cardnumber.
   - User Profile
-     - You have the ability to allow profile updates from the patron to their profile   within aspen, address updates from patron, PIN/password reset, alternate library updates and pickup location changes.
+     - You have the ability to allow profile updates from the patron to their profile within aspen, address updates from patron, PIN/password reset, alternate library updates and pickup location changes.
      - This is where you define how you would like patron names to be displayed
-     - You can enable a forgot password link
+     - You can enable a forgot password link. To find out more on how to enable this functionality within Aspen Discovery sites connected to Koha you can see more information here: [https://bywatersolutions.com/education/password-reset-in-aspen-discovery](https://bywatersolutions.com/education/password-reset-in-aspen-discovery)
   - Holds
     - This is where you can customize what information is displayed in regard to holds
   - Login
