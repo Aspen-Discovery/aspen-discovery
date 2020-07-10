@@ -523,12 +523,11 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 		$interface->assign('enableOpenArchives', true);
 	}
 
-	//TODO: Re-enable once we do full EDS integration
-	/*if ($library->edsApiProfile){
+	if (array_key_exists('EBSCO_EDS', $enabledModules) && $library->edsSettingsId != null && $library->edsSettingsId != -1){
 		require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
 		$ebscoSearchObject = new EDS_API();
-		$interface->assign('ebscoSearchTypes', $ebscoSearchObject->getSearchTypes());
-	}*/
+		$interface->assign('ebscoEdsSearchTypes', $ebscoSearchObject->getSearchTypes());
+	}
 
 	if (!($module == 'Search' && $action == 'Home')){
 		/** @var SearchObject_BaseSearcher $activeSearch */

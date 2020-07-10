@@ -542,16 +542,13 @@ abstract class MarcRecordProcessor {
 					) {
 				char targetAudienceChar;
 				if (ohOhSixField != null && ohOhSixField.getData().length() > 5) {
-					targetAudienceChar = Character.toUpperCase(ohOhSixField.getData()
-							.charAt(5));
+					targetAudienceChar = Character.toUpperCase(ohOhSixField.getData().charAt(5));
 					if (targetAudienceChar != ' ') {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
 				}
-				if (targetAudiences.size() == 0 && ohOhEightField != null
-						&& ohOhEightField.getData().length() > 22) {
-					targetAudienceChar = Character.toUpperCase(ohOhEightField.getData()
-							.charAt(22));
+				if (targetAudiences.size() == 0 && ohOhEightField != null && ohOhEightField.getData().length() > 22) {
+					targetAudienceChar = Character.toUpperCase(ohOhEightField.getData().charAt(22));
 					if (targetAudienceChar != ' ') {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}

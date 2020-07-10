@@ -200,14 +200,9 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $defaultArchiveCollectionBrowseMode;
 
 	public $maxFinesToAllowAccountUpdates;
-	public /** @noinspection PhpUnused */ $edsApiProfile;
-	public /** @noinspection PhpUnused */ $edsApiUsername;
-	public /** @noinspection PhpUnused */ $edsApiPassword;
-	public /** @noinspection PhpUnused */ $edsSearchProfile;
+
 	protected $patronNameDisplayStyle; //Needs to be protected so __get and __set are called
 	private $_patronNameDisplayStyleChanged = false; //Track changes so we can clear values for existing patrons
-//	public /** @noinspection PhpUnused */ $includeAllRecordsInShelvingFacets;
-//	public /** @noinspection PhpUnused */ $includeAllRecordsInDateAddedFacets;
 	public $alwaysShowSearchResultsMainDetails;
 	public /** @noinspection PhpUnused */ $casHost;
 	public /** @noinspection PhpUnused */ $casPort;
@@ -223,6 +218,9 @@ class Library extends DataObject
 	public $expiredMessage;
 	public $expirationNearMessage;
 	public $showOnOrderCounts;
+
+	//EBSCO Settings
+	public $edsSettingsId;
 
 	//Combined Results (Bento Box)
 	public /** @noinspection PhpUnused */ $enableCombinedResults;
@@ -386,6 +384,16 @@ class Library extends DataObject
 		$hooplaScopes[-1] = 'none';
 		while ($hooplaScope->fetch()){
 			$hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
+		}
+
+		require_once ROOT_DIR . '/sys/Ebsco/EDSSettings.php';
+		$edsSetting = new EDSSettings();
+		$edsSetting->orderBy('name');
+		$edsSettings = [];
+		$edsSetting->find();
+		$edsSettings[-1] = 'none';
+		while ($edsSetting->fetch()){
+			$edsSettings[$edsSetting->id] = $edsSetting->name;
 		}
 
 		$overDriveScopes = [];
@@ -866,11 +874,8 @@ class Library extends DataObject
 				'enableOpenArchives' => array('property' => 'enableOpenArchives', 'type' => 'checkbox', 'label' => 'Allow Searching Open Archives', 'description' => 'Whether or not information from indexed Open Archives is shown.', 'hideInLists' => true, 'default' => 0),
 			)),
 
-			'edsSection' => array('property' => 'edsSection', 'type' => 'section', 'label' => 'EBSCO EDS', 'hideInLists' => true, 'properties' => array(
-				'edsApiProfile' => array('property' => 'edsApiProfile', 'type' => 'text', 'label' => 'EDS API Profile', 'description' => 'The profile to use when connecting to the EBSCO API', 'hideInLists' => true),
-				'edsSearchProfile' => array('property' => 'edsSearchProfile', 'type' => 'text', 'label' => 'EDS Search Profile', 'description' => 'The profile to use when linking to EBSCO EDS', 'hideInLists' => true),
-				'edsApiUsername' => array('property' => 'edsApiUsername', 'type' => 'text', 'label' => 'EDS API Username', 'description' => 'The username to use when connecting to the EBSCO API', 'hideInLists' => true),
-				'edsApiPassword' => array('property' => 'edsApiPassword', 'type' => 'text', 'label' => 'EDS API Password', 'description' => 'The password to use when connecting to the EBSCO API', 'hideInLists' => true),
+			'edsSection' => array('property' => 'edsSection', 'type' => 'section', 'label' => 'EBSCO EDS', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
+				'edsSettingsId' => array('property' => 'edsSettingsId', 'type'=>'enum', 'values'=>$edsSettings, 'label' => 'EDS Settings', 'description'=>'The EDS Settings to use for connection', 'hideInLists' => true, 'default' => -1),
 			)),
 
 			'casSection' => array('property'=>'casSection', 'type' => 'section', 'label' =>'CAS Single Sign On', 'hideInLists' => true, 'helpLink'=>'', 'properties' => array(
@@ -1023,13 +1028,13 @@ class Library extends DataObject
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['promptForBirthDateInSelfReg']);
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['selfRegistrationTemplate']);
 		}
-		if (!$configArray['EDS']['enabled']) {
-			unset($structure['edsSection']);
-		}
 		if (!$configArray['CAS']['enabled']) {
 			unset($structure['casSection']);
 		}
 		global $enabledModules;
+		if (!array_key_exists('EBSCO_EDS', $enabledModules)) {
+			unset($structure['edsSection']);
+		}
 		if (!array_key_exists('OverDrive', $enabledModules)){
 			unset($structure['overdriveSection']);
 		}

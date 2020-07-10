@@ -1,10 +1,12 @@
 <?php
 
 require_once ROOT_DIR . '/sys/Pager.php';
+require_once ROOT_DIR . '/sys/Ebsco/EDSSettings.php';
 
 class EDS_API {
 	static $instance;
 
+	private $edsSettings;
 	private $edsBaseApi = 'https://eds-api.ebscohost.com/edsapi/rest';
 	private $curl_connection;
 	private $sessionId;
@@ -29,6 +31,10 @@ class EDS_API {
 	protected $searchTerm;
 
 	protected $lastSearchResults;
+	/**
+	 * @var string mixed
+	 */
+	private $searchIndex = 'TX';
 
 	/**
 	 * @return EDS_API
@@ -40,20 +46,33 @@ class EDS_API {
 		return EDS_API::$instance;
 	}
 
+	private function getSettings(){
+		global $library;
+		if ($this->edsSettings == null){
+			$this->edsSettings = new EDSSettings();
+			$this->edsSettings->id = $library->edsSettingsId;
+			if (!$this->edsSettings->find(true)){
+				$this->edsSettings = null;
+			}
+		}
+		return $this->edsSettings;
+	}
+
 	public function authenticate(){
 		/*if (isset($this->sessionId)){
 			return true;
 		}*/
 		global $library;
-		if ($library->edsApiProfile){
+		$settings = $this->getSettings();
+		if ($settings->edsApiProfile){
 			$this->curl_connection = curl_init("https://eds-api.ebscohost.com/authservice/rest/uidauth");
-			$params =<<<BODY
-<UIDAuthRequestMessage xmlns="http://www.ebscohost.com/services/public/AuthService/Response/2012/06/01" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-    <UserId>{$library->edsApiUsername}</UserId>
-    <Password>{$library->edsApiPassword}</Password>
-    <InterfaceId>{$library->edsApiProfile}</InterfaceId>
-</UIDAuthRequestMessage>
-BODY;
+			/** @noinspection XmlUnusedNamespaceDeclaration */
+			$params =
+				"<UIDAuthRequestMessage xmlns=\"http://www.ebscohost.com/services/public/AuthService/Response/2012/06/01\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">
+				    <UserId>{$settings->edsApiUsername}</UserId>
+				    <Password>{$settings->edsApiPassword}</Password>
+				    <InterfaceId>{$settings->edsApiProfile}</InterfaceId>
+				</UIDAuthRequestMessage>";
 			$headers = array(
 				'Content-Type: application/xml',
 				'Content-Length: ' . strlen($params)
@@ -77,14 +96,15 @@ BODY;
 
 				curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, $headers);
 
+				/** @noinspection XmlUnusedNamespaceDeclaration */
 				$params =<<<BODY
 <CreateSessionRequestMessage xmlns="http://epnet.com/webservices/EbscoApi/Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-  <Profile>{$library->edsApiProfile}</Profile>
+  <Profile>{$settings->edsApiProfile}</Profile>
   <Guest>n</Guest>
   <Org>{$library->displayName}</Org>
 </CreateSessionRequestMessage>
 BODY;
-;
+
 				$headers = array(
 						'Content-Type: application/xml',
 						'Content-Length: ' . strlen($params),
@@ -98,6 +118,7 @@ BODY;
 				if ($result == false){
 					echo("Error getting session token");
 					echo(curl_error($this->curl_connection));
+					return false;
 				}else {
 					$createSessionResponse = new SimpleXMLElement($result);
 					if ($createSessionResponse->SessionToken) {
@@ -135,9 +156,14 @@ BODY;
 				$termIndex++;
 			}
 		}else{
+			if (isset($_REQUEST['searchIndex'])) {
+				$this->searchIndex = $_REQUEST['searchIndex'];
+			}
 			$searchTerms = str_replace(',', '', $searchTerms);
-			$searchUrl = $this->edsBaseApi . '/search?query-1=AND,' . urlencode($searchTerms);
+			$searchTerms = $this->searchIndex . ':' .$searchTerms;
+			$searchUrl = $this->edsBaseApi . '/Search?query=' . urlencode($searchTerms);
 		}
+		$searchUrl .= '&searchmode=all';
 
 		if (isset($sort)) {
 			$this->sort = $sort;
@@ -146,6 +172,15 @@ BODY;
 		}
 		$searchUrl .= '&sort=' . $this->sort;
 
+		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
+			$this->page = $_REQUEST['page'];
+			$searchUrl .= '&pagenumber=' . $this->page;
+		}else{
+			$this->page = 1;
+		}
+
+		$searchUrl .= "&highlight=n&view=detailed&autosuggest=n&autocorrect=n&includeimagequickview=y";
+
 		$facetIndex = 1;
 		foreach ($filters as $filter) {
 			$searchUrl .= "&facetfilter=$facetIndex," . urlencode($filter);
@@ -153,33 +188,42 @@ BODY;
 		}
 
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
+
 		curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
+			'Content-Type: application/json',
+			'Accept: application/json',
 			'x-authenticationToken: ' . $this->authenticationToken,
 			'x-sessionToken: ' . $this->sessionId,
 		));
 		curl_setopt($this->curl_connection, CURLOPT_URL, $searchUrl);
 		$result = curl_exec($this->curl_connection);
 		try {
-			$searchData = new SimpleXMLElement($result);
+			$searchData = json_decode($result);
 			$this->stopQueryTimer();
-			if ($searchData && !$searchData->ErrorNumber){
+			if ($searchData && empty($searchData->ErrorNumber)){
 				$this->resultsTotal = $searchData->SearchResult->Statistics->TotalHits;
 				$this->lastSearchResults = $searchData->SearchResult;
 				return $searchData->SearchResult;
 			}else{
-				$curlInfo = curl_getinfo($this->curl_connection);
+				global $configArray;
+				global $logger;
+				if ($configArray['System']['debug']) {
+					$curlInfo = curl_getinfo($this->curl_connection);
+					$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
+				}
 				$this->lastSearchResults = null;
 				return null;
 			}
 		}catch (Exception $e){
 			global $logger;
 			$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
+			return null;
 		}
 	}
 
 	public function endSession(){
 		curl_setopt($this->curl_connection, CURLOPT_URL, $this->edsBaseApi . '/endsession?sessiontoken=' . $this->sessionId);
-		$result = curl_exec($this->curl_connection);
+		curl_exec($this->curl_connection);
 	}
 
 	public function __destruct(){
@@ -228,7 +272,7 @@ BODY;
 
 		$summary['page']        = $this->page;
 		$summary['perPage']     = $this->limit;
-		$summary['resultTotal'] = $this->resultsTotal;
+		$summary['resultTotal'] = (int)$this->resultsTotal;
 		// 1st record is easy, work out the start of this page
 		$summary['startRecord'] = (($this->page - 1) * $this->limit) + 1;
 		// Last record needs more care
@@ -272,7 +316,7 @@ BODY;
 	 * @return  string   URL of a search
 	 */
 	public function renderSearchUrl() {
-		$searchUrl = '/EBSCO/Results?lookfor=' . $this->searchTerm;
+		$searchUrl = '/EBSCO/Results?lookfor=' . $this->searchTerm . '&searchIndex=' . $this->searchIndex;
 		if ($this->page != 1){
 			$searchUrl .= '&page=' . $this->page;
 		}
@@ -296,8 +340,8 @@ BODY;
 		//global $logger;
 		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults->Data->Records)) {
-			for ($x = 0; $x < count($this->lastSearchResults->Data->Records->Record); $x++) {
-				$current = &$this->lastSearchResults->Data->Records->Record[$x];
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 
@@ -435,15 +479,16 @@ BODY;
 	public function getFacetSet() {
 		$availableFacets = array();
 		if (isset($this->lastSearchResults) && isset($this->lastSearchResults->AvailableFacets)){
-			foreach ($this->lastSearchResults->AvailableFacets->AvailableFacet as $facet){
+			foreach ($this->lastSearchResults->AvailableFacets as $facet){
 				$facetId = (string)$facet->Id;
 				$availableFacets[$facetId] = array(
-						'collapseByDefault' => true,
-						'label' => (string)$facet->Label,
-						'valuesToShow' => 5,
+					'collapseByDefault' => true,
+					'multiSelect' => true,
+					'label' => (string)$facet->Label,
+					'valuesToShow' => 5,
 				);
 				$list = array();
-				foreach ($facet->AvailableFacetValues->AvailableFacetValue as $value){
+				foreach ($facet->AvailableFacetValues as $value){
 					$facetValue = (string)$value->Value;
 					$urlWithFacet = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
 					$list[] = array(
@@ -481,5 +526,10 @@ BODY;
 
 	public function displayQuery(/** @noinspection PhpUnusedParameterInspection */$forceRebuild = false){
 		return $this->searchTerm;
+	}
+
+	public function getSearchIndex()
+	{
+		return $this->searchIndex;
 	}
 }
