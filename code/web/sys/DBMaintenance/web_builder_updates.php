@@ -314,7 +314,7 @@ function getWebBuilderUpdates(){
 					INDEX libraryId(libraryId),
 					INDEX formId(formId)
 				) ENGINE INNODB',
-				'CREATE TABLE library_web_builder_custom_from_submission (
+				'CREATE TABLE web_builder_custom_from_submission (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					formId INT(11) NOT NULL,
 					libraryId INT(11) NOT NULL,

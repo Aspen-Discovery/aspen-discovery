@@ -7,15 +7,15 @@ class Mailer {
 	 * Send an email message.
 	 *
 	 * @access  public
-	 * @param   string  $to         Recipient email address
-	 * @param   string  $from       Sender email address
-	 * @param   string  $subject    Subject line for message
-	 * @param   string  $body       Message body
-	 * @param   string  $replyTo    Someone to reply to
+	 * @param string $to Recipient email address
+	 * @param string $subject Subject line for message
+	 * @param string $body Message body
+	 * @param string $replyTo Someone to reply to
+	 * @param bool $htmlMessage True to send the email as html
 	 *
 	 * @return  mixed               PEAR error on error, boolean true otherwise
 	 */
-	public function send($to, $subject, $body, $replyTo = null) {
+	public function send($to, $subject, $body, $replyTo = null, $htmlMessage = false) {
 		require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$sendGridSettings = new SendGridSetting();
@@ -44,7 +44,11 @@ class Mailer {
 			$apiBody->subject = $subject;
 			$apiBody->content = [];
 			$content = new stdClass();
-			$content->type = 'text/plain';
+			if ($htmlMessage){
+				$content->type = 'text/html';
+			}else{
+				$content->type = 'text/plain';
+			}
 			$content->value = $body;
 			$apiBody->content[] = $content;
 

@@ -136,13 +136,17 @@ class DataObjectUtil
 			}
 		}else if (in_array($property['type'], array('text', 'enum', 'hidden', 'url', 'email', 'multiemail'))){
 			if (isset($_REQUEST[$propertyName])){
-				$object->setProperty($propertyName, strip_tags(trim($_REQUEST[$propertyName])), $property);
+				if ($object instanceof UnsavedDataObject && $property['type'] == 'enum'){
+					$object->setProperty($propertyName, $property['values'][$_REQUEST[$propertyName]], $property);
+				}else{
+					$object->setProperty($propertyName, strip_tags(trim($_REQUEST[$propertyName])), $property);
+				}
 			} else {
 				$object->setProperty($propertyName, "", $property);
 			}
 
 		}else if (in_array( $property['type'], array('textarea', 'html', 'markdown', 'folder', 'crSeparated'))){
-			if (strlen(trim($_REQUEST[$propertyName])) == 0){
+			if (empty($_REQUEST[$propertyName]) || strlen(trim($_REQUEST[$propertyName])) == 0){
 				$object->setProperty($propertyName, "", $property);
 			}else{
 				$object->setProperty($propertyName, trim($_REQUEST[$propertyName]), $property);
@@ -190,7 +194,7 @@ class DataObjectUtil
 			}
 
 		}else if ($property['type'] == 'date'){
-			if (strlen($_REQUEST[$propertyName]) == 0 || $_REQUEST[$propertyName] == '0000-00-00'){
+			if (empty(strlen($_REQUEST[$propertyName])) || strlen($_REQUEST[$propertyName]) == 0 || $_REQUEST[$propertyName] == '0000-00-00'){
 				$object->setProperty($propertyName, null, $property);
 			}else{
 				$dateParts = date_parse($_REQUEST[$propertyName]);

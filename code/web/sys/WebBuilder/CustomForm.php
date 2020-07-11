@@ -169,8 +169,7 @@ class CustomForm extends DataObject
 		return $field->delete(true);
 	}
 
-	public function getFormattedFields()
-	{
+	public function getFormStructure(){
 		$fields = $this->getFormFields();
 		$structure = [];
 		foreach ($fields as $field) {
@@ -187,8 +186,13 @@ class CustomForm extends DataObject
 				$enumValues = explode(',', $field->enumValues);
 				$fieldStructure['values'] = $enumValues;
 			}
-			$structure[] = $fieldStructure;
+			$structure[$field->id] = $fieldStructure;
 		}
+		return $structure;
+	}
+	public function getFormattedFields()
+	{
+		$structure = $this->getFormStructure();
 		global $interface;
 		$interface->assign('submitUrl', '/WebBuilder/SubmitForm?id=' . $this->id);
 		$interface->assign('structure', $structure);
