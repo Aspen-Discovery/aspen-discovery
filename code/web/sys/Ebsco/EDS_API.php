@@ -179,7 +179,7 @@ BODY;
 			$this->page = 1;
 		}
 
-		$searchUrl .= "&highlight=n&view=detailed&autosuggest=n&autocorrect=n&includeimagequickview=y";
+		$searchUrl .= "&highlight=n&view=detailed&autosuggest=n&autocorrect=n";
 
 		$facetIndex = 1;
 		foreach ($filters as $filter) {
