@@ -1472,8 +1472,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 	public function getSearchIndexes()
 	{
-		$catalogSearchIndexes = $this->searchIndexes;
-		return $catalogSearchIndexes;
+		return $this->searchIndexes;
 	}
 
 	public function getRecordDriverForResult($record)

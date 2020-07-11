@@ -355,7 +355,7 @@ class ExploreMore {
 			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
-		if (array_key_exists('EBSCO EDS', $enabledModules)) {
+		if (array_key_exists('EBSCO_EDS', $enabledModules)) {
 			$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
@@ -754,8 +754,8 @@ class ExploreMore {
 	 */
 	public function loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		global $library;
-		//TODO: Reenable once we do full EDS integration
-		if (false && $library->edsApiProfile && $activeSection != 'ebsco') {
+		global $enabledModules;
+		if (array_key_exists('EBSCO_EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {
 			//Load EDS options
 			require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
 			$edsApi = EDS_API::getInstance();
@@ -763,7 +763,7 @@ class ExploreMore {
 				//Find related titles
 				$edsResults = $edsApi->getSearchResults($searchTerm);
 				if ($edsResults) {
-					$exploreMoreOptions['sampleRecords']['ebsco'] = [];
+					$exploreMoreOptions['sampleRecords']['ebsco_eds'] = [];
 					$numMatches = $edsResults->Statistics->TotalHits;
 					if ($numMatches > 0) {
 						//Check results based on common facets
@@ -774,7 +774,7 @@ class ExploreMore {
 									if (in_array($facetValueStr, array('Magazines', 'News', 'Academic Journals', 'Primary Source Documents'))) {
 										$numFacetMatches = (int)$facetValue->Count;
 										$iconName = 'ebsco_' . str_replace(' ', '_', strtolower($facetValueStr));
-										$exploreMoreOptions['sampleRecords']['ebsco'][] = array(
+										$exploreMoreOptions['sampleRecords']['ebsco_eds'][] = array(
 												'label' => "$facetValueStr ({$numFacetMatches})",
 												'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",
 												'image' => "/interface/themes/responsive/images/{$iconName}.png",

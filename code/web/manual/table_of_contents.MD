@@ -15,8 +15,8 @@
       - Grouped Work Pages
       - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
       - Ungrouping records
-    - Browse Category Groups
-      - Browse Categories
+    - [Browse Category Groups](/Admin/HelpManual?page=Browse-Category-Groups)
+      - [Browse Categories](/Admin/HelpManual?page=Browse-Categories)
   - Primary Configuration
     - Languages
       - Translations

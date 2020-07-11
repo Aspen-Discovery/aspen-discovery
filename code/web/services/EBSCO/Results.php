@@ -10,6 +10,9 @@ class EBSCO_Results extends Action{
 		$searchObject = EDS_API::getInstance();
 		$timer->logTime('Include search engine');
 
+		// Hide Covers when the user has set that setting on the Search Results Page
+		$this->setShowCovers();
+
 		$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : null;
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter'] : array();
 		$searchObject->getSearchResults($_REQUEST['lookfor'], $sort, $filters);
@@ -20,7 +23,7 @@ class EBSCO_Results extends Action{
 			$pageTitle = substr($pageTitle, 0, 20) . '...';
 		}
 
-		$interface->assign('lookfor',             $displayQuery);
+		$interface->assign('lookfor', $displayQuery);
 
 		// Big one - our results //
 		$recordSet = $searchObject->getResultRecordHTML();
@@ -28,6 +31,7 @@ class EBSCO_Results extends Action{
 		$timer->logTime('load result records');
 
 		$interface->assign('sortList',   $searchObject->getSortList());
+		$interface->assign('searchIndex', $searchObject->getSearchIndex());
 
 		$summary = $searchObject->getResultSummary();
 		$interface->assign('recordCount', $summary['resultTotal']);
@@ -55,7 +59,7 @@ class EBSCO_Results extends Action{
 		}
 		$exploreMore = new ExploreMore();
 		$exploreMoreSearchTerm = $exploreMore->getExploreMoreQuery();
-		$interface->assign('exploreMoreSection', 'ebsco');
+		$interface->assign('exploreMoreSection', 'ebsco_eds');
 		$interface->assign('showExploreMoreBar', $showExploreMoreBar);
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 

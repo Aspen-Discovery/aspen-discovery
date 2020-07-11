@@ -53,6 +53,11 @@
 								<option data-search_source="open_archives" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
 							{/foreach}
 						{/if}
+						{if !empty($ebscoEdsSearchTypes)}
+							{foreach from=$ebscoEdsSearchTypes item=searchDesc key=searchVal}
+								<option data-search_source="ebsco_eds" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
+							{/foreach}
+						{/if}
 						{foreach from=$listSearchIndexes item=searchDesc key=searchVal}
 							<option data-search_source="lists" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
 						{/foreach}

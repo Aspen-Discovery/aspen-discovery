@@ -82,6 +82,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		$sierra_api_updates = getSierraAPIUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/overdrive_updates.php';
 		$overdrive_updates = getOverDriveUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/ebsco_updates.php';
+		$ebscoUpdates = getEbscoUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
 		$theming_updates = getThemingUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/translation_updates.php';
@@ -136,6 +138,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$indexing_updates,
 			$islandora_updates,
 			$overdrive_updates,
+			$ebscoUpdates,
 			$hoopla_updates,
 			$rbdigital_updates,
 			$sierra_api_updates,
