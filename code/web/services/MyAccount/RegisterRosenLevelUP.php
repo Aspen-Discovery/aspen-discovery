@@ -41,8 +41,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
             //}
 
             // TO DO: disable form for non-BTY 21-25
-            // TO DO: set upper bty as 25
-            if ($user->patronType < 21 && $user->patronType > 26) { // Hardcoded for Nashville - patron types for [everything but] K-2
+            if ($user->patronType < 21 && $user->patronType > 25) { // Hardcoded for Nashville - patron types for [everything but] K-2
                 $userIsEligibleStudent = false;
             } else {
                 $userIsEligibleStudent = true;
@@ -52,7 +51,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                 $student_school = $user->_homeLocation;
                 switch ($user->patronType) {
                     case 21:
-                        $student_grade_level = 'K'; // Pre-K coded as K for LevelUP
+                        $student_grade_level = 'P'; // Pre-K will be coded as K for LevelUP
                         break;
                     case 22:
                         $student_grade_level = 'K';
@@ -64,10 +63,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                         $student_grade_level = '2';
                         break;
                     case 25:
-                        $student_grade_level = '3'; // 3rd grade coded as 2nd grade for LevelUP
-                        break;
-                    case 26:
-                        $student_grade_level = '4'; // TO DO: 4th grade should not be allowed
+                        $student_grade_level = '3'; // 3rd grade will be coded as 2nd grade for LevelUP
                         break;
                 }
 
@@ -76,16 +72,16 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
 
                 $fields = array();
                 $fields[] = array('property' => 'student_username', 'default' => $student_username, 'type' => 'text', 'label' => 'Student Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
-                $fields[] = array('property' => 'student_pw', 'type' => 'password', 'label' => 'Student Rosen LevelUP Password', 'maxLength' => 40, 'required' => true);
+                $fields[] = array('property' => 'student_pw', 'type' => 'storedPassword', 'label' => 'Student Rosen LevelUP Password', 'maxLength' => 40, 'required' => true);
                 $fields[] = array('property' => 'student_first_name', 'default' => $student_first_name, 'type' => 'text', 'label' => 'Student First Name', 'maxLength' => 40, 'required' => true);
                 $fields[] = array('property' => 'student_last_name', 'default' => $student_last_name, 'type' => 'text', 'label' => 'Student Last Name', 'maxLength' => 40, 'required' => true);
                 $locationList = array();
                 $locationList[0] = "not enrolled in an MNPS school";
                 $locationList[$user->_homeLocationCode] = $user->_homeLocation;
                 $fields[] = array('property' => 'student_school', 'default' => $user->_homeLocationCode, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
-                $fields[] = array('property' => 'student_grade_level', 'default' => $student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level', 'values' => array('K', '1', '2', '3', '4'), 'required' => true); // TO DO: remove 4th grade
+                $fields[] = array('property' => 'student_grade_level', 'default' => $student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level', 'values' =>array('P'=>'Pre-K','K','1','2','3'), 'required' => true); // TO DO: remove 4th grade
                 $fields[] = array('property' => 'parent_username', 'default' => $parent_username, 'type' => 'text', 'label' => 'Parent Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
-                $fields[] = array('property' => 'parent_pw', 'type' => 'password', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true);
+                $fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true);
                 $fields[] = array('property' => 'parent_first_name', 'default' => $parent_first_name, 'type' => 'text', 'label' => 'Parent First Name', 'maxLength' => 40, 'required' => true);
                 $fields[] = array('property' => 'parent_last_name', 'default' => $parent_last_name, 'type' => 'text', 'label' => 'Parent Last Name', 'maxLength' => 40, 'required' => true);
                 $fields[] = array('property' => 'parent_email', 'default' => $parent_email, 'type' => 'email', 'label' => 'Parent Email', 'maxLength' => 128, 'required' => true);
@@ -117,7 +113,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                         ));
 
                         $response = curl_exec($curl);
-
                         curl_close($curl);
 
                         /* parse authentication cookies */
@@ -129,18 +124,16 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                             $cookies = array_merge($cookies, $cookie);
                         }
 
-                        /* check usernames */
+                    /* check usernames for availability */
 
-                        // TO DO: if username is present, perhaps registrants just need to log in? API Query *might* return extant user's password
-
-                        $parent_un_avail = 0;
-                        $student_un_avail = 0;
+                        $parent_username_avail = 0;
+                        $student_username_avail = 0;
                         $error = false;
 
-                        $parent_un = $_REQUEST['parent_un'];
-                        $student_un = $_REQUEST['student_un'];
+                        $parent_username = $_REQUEST['parent_username'];
+                        $student_username = $_REQUEST['student_username'];
 
-                        $curl = curl_init($configArray['RosenLevelUP']['lu_api_host'] . '/external/users/' . $parent_un);
+                        $curl = curl_init($configArray['RosenLevelUP']['lu_api_host'] . '/external/users/' . $parent_username);
 
                         curl_setopt_array($curl, array(
                             CURLOPT_HEADER => false,
@@ -154,13 +147,13 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
 
                         curl_close($curl);
 
-                        if (!$parent_result['id'] && $parent_un != '') {
-                            $parent_un_avail = 1;
+                        if (!isset($parent_result['id']) && !empty($parent_username)) {
+                            $parent_username_avail = 1;
                         } else {
-                            $error = true;
+                            $error = true; // parent username already exists
                         }
 
-                        $curl = curl_init($configArray['RosenLevelUP']['lu_api_host'] . '/external/users/' . $student_un);
+                        $curl = curl_init($configArray['RosenLevelUP']['lu_api_host'] . '/external/users/' . $student_username);
 
                         curl_setopt_array($curl, array(
                             CURLOPT_HEADER => false,
@@ -174,25 +167,32 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
 
                         curl_close($curl);
 
-                        if (!$student_result['id'] && $student_un != '') {
-                            $student_un_avail = 1;
+                        if (!isset($student_result['id']) && !empty($student_username)) {
+                            $student_username_avail = 1;
                         } else {
-                            $error = true;
+                            $error = true; // student username already exists
                         }
 
                         /* set error to true if usernames not available, otherwise create classroom and accounts */
+                        // TO DO: if username is present, perhaps registrants just need to log in? API Query *might* return extant user's password
 
-                        if ($parent_un_avail == 0 || $student_un_avail == 0) {
-
+                        if ($parent_username_avail == 0 || $student_username_avail == 0) {
                             $error = true;
-
-                        } else if ($parent_un_avail == 1 && $student_un_avail == 1) {
+                        } else if ($parent_username_avail == 1 && $student_username_avail == 1) {
 
                             $parent_first_name = $_REQUEST['parent_first_name'];
                             $parent_last_name = $_REQUEST['parent_last_name'];
                             $parent_email = $_REQUEST['parent_email'];
                             $parent_pw = $_REQUEST['parent_pw'];
                             $student_grade_level = strtoupper($_REQUEST['student_grade_level']);
+                            switch($student_grade_level) {
+                                case 'P':
+                                    $student_grade_level = 'K'; // Pre-K will be coded as K for LevelUP
+                                    break;
+                                case '3':
+                                    $student_grade_level = '2'; // 3rd grade will be coded as 2nd grade for LevelUP
+                                    break;
+                            }
                             $student_first_name = $_REQUEST['student_first_name'];
                             $student_last_name = $_REQUEST['student_last_name'];
                             $student_pw = $_REQUEST['student_pw'];
@@ -204,12 +204,12 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                             $json_string .= '"schools": [{';
                             $json_string .= '"name": "' . $configArray['RosenLevelUP']['lu_school_name'] . '",';
                             $json_string .= '"classRooms": [{';
-                            $json_string .= '"name": "' . $parent_un . '",';
+                            $json_string .= '"name": "' . $parent_username . '",';
                             $json_string .= '"gradeLevel": "' . $student_grade_level . '",';
                             $json_string .= '"accounts": [{';
                             $json_string .= '"name": "' . $parent_first_name . '",';
                             $json_string .= '"surname": "' . $parent_last_name . '",';
-                            $json_string .= '"username": "' . $parent_un . '",';
+                            $json_string .= '"username": "' . $parent_username . '",';
                             $json_string .= '"password": "' . $parent_pw . '",';
                             $json_string .= '"role": "TEACHER",';
                             $json_string .= '"email": "' . $parent_email . '",';
@@ -221,7 +221,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                             $json_string .= '},{';
                             $json_string .= '"name": "' . $student_first_name . '",';
                             $json_string .= '"surname": "' . $student_last_name . '",';
-                            $json_string .= '"username": "' . $student_un . '",';
+                            $json_string .= '"username": "' . $student_username . '",';
                             $json_string .= '"password": "' . $student_pw . '",';
                             $json_string .= '"role": "STUDENT",';
                             $json_string .= '"email": "null",';
@@ -237,7 +237,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                             $json_string .= '}]}],';
                             $json_string .= '"multiDistrictManager": null';
                             $json_string .= '}]\'';
-
                             $curl = curl_init($configArray['RosenLevelUP']['lu_api_host'] . '/external/users/upload');
 
                             curl_setopt_array($curl, array(
@@ -253,11 +252,9 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                                 ),
                             ));
 
-                            $response = json_decode(curl_exec($curl), true);
-
-                            echo '<pre>';
-                            print_r($response);
-                            echo '</pre>';
+                            $response = curl_exec($curl);
+print_r('create users response: ');
+var_dump($response);
 
                             curl_close($curl);
                         }
@@ -265,14 +262,14 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                         /* check that the usernames were created */
 
                         if (!$error) {
-                            $parent_un_avail = 0;
-                            $student_un_avail = 0;
+                            $parent_username_avail = 0;
+                            $student_username_avail = 0;
                             $error = false;
 
-                            $parent_un = $_REQUEST['parent_un'];
-                            $student_un = $_REQUEST['student_un'];
+                            $parent_username = $_REQUEST['parent_username'];
+                            $student_username = $_REQUEST['student_username'];
 
-                            $curl = curl_init($configArray['RosenLevelUP']['lu_api_host'] . '/external/users/' . $parent_un);
+                            $curl = curl_init($configArray['RosenLevelUP']['lu_api_host'] . '/external/users/' . $parent_username);
 
                             curl_setopt_array($curl, array(
                                 CURLOPT_HEADER => false,
@@ -283,14 +280,14 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                             ));
 
                             $parent_result = json_decode(curl_exec($curl), true);
-
+var_dump($parent_result);
                             curl_close($curl);
 
                             if (!$parent_result['id']) {
                                 $error = true;
                             }
 
-                            $curl = curl_init($configArray['RosenLevelUP']['lu_api_host'] . '/external/users/' . $student_un);
+                            $curl = curl_init($configArray['RosenLevelUP']['lu_api_host'] . '/external/users/' . $student_username);
 
                             curl_setopt_array($curl, array(
                                 CURLOPT_HEADER => false,
@@ -299,9 +296,8 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                                     'Cookie: COOKIE-BEARER=' . $cookies['COOKIE-BEARER']
                                 ),
                             ));
-
                             $student_result = json_decode(curl_exec($curl), true);
-
+var_dump($student_result);
                             curl_close($curl);
 
                             if (!$student_result['id']) {
@@ -311,15 +307,19 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
                         }
 
                         /* redirect to confirmation or error page */
-
+/*
                         if (!$error) {
                             header('Location: levelup_signup_form_confirmation.html');
                         } else {
                             header('Location: levelup_signup_form_error.html');
                         }
+*/
 
+                    global $logger;
+                    $levelUPErrorMessage = empty($levelUPResult->message) ? '' : ' LevelUP Message :' . $levelUPResult->message;
+                    $logger->log('Error from LevelUP. User ID : ' . $user->id . $levelUPErrorMessage, Logger::LOG_NOTICE);
 
-                        $interface->assign('registerRosenLevelUPResult', $result);
+                    $interface->assign('registerRosenLevelUPResult', $levelUPResult);
 // recaptcha                    }
 
                     // Pre-fill form with user supplied data
