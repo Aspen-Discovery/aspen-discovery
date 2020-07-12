@@ -1,5 +1,4 @@
 {strip}
-{debug}
 <h3>{translate text='Register Parent and Student for Rosen LevelUP'}</h3>
 <div class="page">
 	{if (isset($registerRosenLevelUPResult) && $registerRosenLevelUPResult.success)}
