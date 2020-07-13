@@ -474,7 +474,6 @@ class UserAccount
 					return $cardExpired;
 				}
 
-				/** @var Memcache $memCache */
 				global $memCache;
 				global $serverName;
 				global $configArray;

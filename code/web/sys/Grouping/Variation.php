@@ -141,7 +141,7 @@ class Grouping_Variation
 					}
 					//Remove the action for downloading pdf & supplemental files if they exist
 					foreach ($this->_actions as $key => $action) {
-						if ($action['type'] == 'download_pdf' || $action['type'] == 'download_supplemental_file'){
+						if ($action['type'] == 'download_pdf' || $action['type'] == 'view_pdf' || $action['type'] == 'download_supplemental_file'){
 							unset($this->_actions[$key]);
 						}
 					}
@@ -154,6 +154,13 @@ class Grouping_Variation
 						if ($driver == null) {
 							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
 						}
+						$this->_actions[] = array(
+							'title' => 'View PDF',
+							'url' => '',
+							'onclick' => "return AspenDiscovery.GroupedWork.selectFileToView('{$driver->getPermanentId()}', 'RecordPDF');",
+							'requireLogin' => false,
+							'type' => 'view_pdfs'
+						);
 						$this->_actions[] = array(
 							'title' => 'Download PDF',
 							'url' => '',

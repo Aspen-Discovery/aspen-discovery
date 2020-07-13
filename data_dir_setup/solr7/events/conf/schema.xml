@@ -90,7 +90,7 @@
 		<field name="last_change" type="date" indexed="false" stored="true"/>
 		<field name="start_date" type="date" indexed="false" stored="true"/>
 		<field name="start_date_sort" type="integer" indexed="true" stored="true"/>
-		<field name="end_date" type="date" indexed="false" stored="true"/>
+		<field name="end_date" type="date" indexed="true" stored="true"/>
 
 		<field name="event_day" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="event_month" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>

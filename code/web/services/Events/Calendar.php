@@ -54,6 +54,9 @@ class Events_Calendar extends Action
 		$searchObject->init();
 		$searchObject->setPrimarySearch(false);
 		$searchObject->setLimit(1000);
+		//We have a default hidden filter to only show events after today, needs to be cleared for calendars.
+		$searchObject->clearHiddenFilters();
+		//Instead we limit to just this month.
 		$searchObject->addHiddenFilter("event_month", '"' . $monthFilter . '"');
 
 		$timer->logTime('Setup Search');

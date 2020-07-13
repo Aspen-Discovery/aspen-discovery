@@ -259,7 +259,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				inLibraryUseOnlyFormats.add(format.toUpperCase());
 			}
 			if (formatMapRS.getString("holdType").equals("none")){
-				nonHoldableFormats.add(format.toUpperCase());
+				nonHoldableFormats.add(formatMapRS.getString("format").toUpperCase());
 			}
 			formatMap.addValue(format, formatMapRS.getString("format"));
 			formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"));

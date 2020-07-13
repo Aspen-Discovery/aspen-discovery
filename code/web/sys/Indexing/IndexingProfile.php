@@ -282,6 +282,9 @@ class IndexingProfile extends DataObject
 		if ($ils != 'Millennium' && $ils != 'Sierra') {
 			unset($structure['sierraFieldMappings']);
 		}
+		if ($ils == 'Koha') {
+			unset($structure['timeToReshelve']);
+		}
 		return $structure;
 	}
 

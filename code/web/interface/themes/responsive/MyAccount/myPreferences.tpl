@@ -13,12 +13,34 @@
 			<span class='availableHoldsNoticePlaceHolder'></span>
 
 			<h1>{translate text='My Preferences'}</h1>
+			{if !empty($profileUpdateErrors)}
+				{foreach from=$profileUpdateErrors item=errorMsg}
+					<div class="alert alert-danger">{$errorMsg}</div>
+				{/foreach}
+			{/if}
+			{if !empty($profileUpdateMessage)}
+				{foreach from=$profileUpdateMessage item=msg}
+					<div class="alert alert-success">{$msg}</div>
+				{/foreach}
+			{/if}
 			{if $offline}
 				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 			{else}
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" class="form-horizontal">
 					<input type="hidden" name="updateScope" value="userPreference">
+					{if $showUsernameField}
+						<div class="form-group">
+							<div class="col-xs-4"><label for="username">{translate text="editable_username_label" defaultText="Username"}</label></div>
+							<div class="col-xs-8">
+								<input type="text" name="username" id="username" value="{$editableUsername|escape}" size="25" minlength="6" maxlength="25" class="form-control">
+								<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
+								<div id="usernameHelp" style="display:none">
+									{translate text="editable_username_help" defaultText="A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “My Preferences” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters)."}
+								</div>
+							</div>
+						</div>
+					{/if}
 
 					{if count($validLanguages) > 1}
 						<div class="form-group">

@@ -19,33 +19,33 @@ import java.util.Date;
 import org.apache.logging.log4j.Logger;
 
 public class GroupedWorkIndexer {
-	private String serverName;
-	private BaseLogEntry logEntry;
-	private Logger logger;
-	private Long indexStartTime;
+	private final String serverName;
+	private final BaseLogEntry logEntry;
+	private final Logger logger;
+	private final Long indexStartTime;
 	private int totalRecordsHandled = 0;
 	private ConcurrentUpdateSolrClient updateServer;
-	private HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
-	private HashMap<String, SideLoadedEContentProcessor> sideLoadProcessors = new HashMap<>();
+	private final HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
+	private final HashMap<String, SideLoadedEContentProcessor> sideLoadProcessors = new HashMap<>();
 	private OverDriveProcessor overDriveProcessor;
 	private RbdigitalProcessor rbdigitalProcessor;
 	private RbdigitalMagazineProcessor rbdigitalMagazineProcessor;
 	private CloudLibraryProcessor cloudLibraryProcessor;
 	private HooplaProcessor hooplaProcessor;
-	private HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
-	private HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
+	private final HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
+	private final HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
 
 	private PreparedStatement getRatingStmt;
 	private PreparedStatement getNovelistStmt;
 	private PreparedStatement getDisplayInfoStmt;
 
-	private Connection dbConn;
+	private final Connection dbConn;
 
 	static int availableAtBoostValue = 50;
 	static int ownedByBoostValue = 10;
 
-	private boolean fullReindex;
-	private boolean clearIndex;
+	private final boolean fullReindex;
+	private final boolean clearIndex;
 	private long lastReindexTime;
 	private Long lastReindexTimeVariableId;
 	private boolean okToIndex = true;
@@ -63,7 +63,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement addScheduledWorkStmt;
 
 
-	private static PreparedStatement deleteGroupedWorkStmt;
+	//private static PreparedStatement deleteGroupedWorkStmt;
 
 	private boolean removeRedundantHooplaRecords = false;
 
@@ -95,7 +95,7 @@ public class GroupedWorkIndexer {
 		//Load a few statements we will need later
 		try{
 			getGroupedWorkPrimaryIdentifiers = dbConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			deleteGroupedWorkStmt = dbConn.prepareStatement("DELETE from grouped_work where id = ?");
+			//deleteGroupedWorkStmt = dbConn.prepareStatement("DELETE from grouped_work where id = ?");
 			getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookIdForIsbnStmt = dbConn.prepareStatement("SELECT arBookId from accelerated_reading_isbn where isbn = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookInfoStmt = dbConn.prepareStatement("SELECT * from accelerated_reading_titles where arBookId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -105,6 +105,8 @@ public class GroupedWorkIndexer {
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
+			this.okToIndex = false;
+			return;
 		}
 
 		//Check hoopla settings to see if we need to remove redundant records
@@ -127,8 +129,20 @@ public class GroupedWorkIndexer {
 		updateServer = solrBuilder.build();
 		updateServer.setRequestWriter(new BinaryRequestWriter());
 
-		scopes = IndexingUtils.loadScopes(dbConn, logger);
-		logger.info("Loaded " + scopes.size() + " scopes");
+		try {
+			scopes = IndexingUtils.loadScopes(dbConn, logger);
+			if (scopes == null){
+				logEntry.incErrors("Error loading scopes");
+				this.okToIndex = false;
+				return;
+			}else{
+				logger.info("Loaded " + scopes.size() + " scopes");
+			}
+		}catch (Exception e) {
+			logEntry.incErrors("Error loading scopes", e);
+			this.okToIndex = false;
+			return;
+		}
 
 		//Initialize processors based on our indexing profiles and the primary identifiers for the records.
 		try {
@@ -264,7 +278,7 @@ public class GroupedWorkIndexer {
 	}
 
 	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
-	private TreeMap<String, ScopedIndexingStats> indexingStats = new TreeMap<>();
+	private final TreeMap<String, ScopedIndexingStats> indexingStats = new TreeMap<>();
 
 	private void loadLexileData(String lexileExportPath) {
 		String[] lexileFields = new String[0];
@@ -312,9 +326,6 @@ public class GroupedWorkIndexer {
 		try {
 			updateServer.deleteByQuery("recordtype:grouped_work");
 			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
-			//Allow auto commit functionality to handle this
-			//updateServer.commit(true, false, false);
 		} catch (HttpSolrClient.RemoteSolrException rse) {
 			logEntry.incErrors("Solr is not running properly, try restarting", rse);
 			System.exit(-1);
@@ -323,13 +334,12 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void deleteRecord(String permanentId, Long groupedWorkId) {
+	public void deleteRecord(String permanentId, @SuppressWarnings("unused") Long groupedWorkId) {
 		logger.info("Clearing existing work " + permanentId + " from index");
 		try {
 			updateServer.deleteById(permanentId);
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
 			//Allow auto commit functionality to handle this
-			//updateServer.commit(true, false, false);
 			totalRecordsHandled++;
 			if (totalRecordsHandled % 25 == 0) {
 				updateServer.commit(false, false, true);
@@ -485,12 +495,14 @@ public class GroupedWorkIndexer {
 					//Testing shows that regular commits do seem to improve performance.
 					//However, we can't do it too often or we get errors with too many searchers warming.
 					//This is happening now with the auto commit settings in solrconfig.xml
-					/*try {
-						logger.info("Doing a regular commit during full indexing");
-						updateServer.commit(false, false, true);
-					}catch (Exception e){
-						logger.warn("Error committing changes", e);
-					}*/
+					if (numWorksProcessed % 10000 == 0) {
+						try {
+							logger.info("Doing a regular commit during full indexing");
+							updateServer.commit(false, false, true);
+						} catch (Exception e) {
+							logger.warn("Error committing changes", e);
+						}
+					}
 					logEntry.addNote("Processed " + numWorksProcessed + " grouped works processed.");
 				}
 				if (lastUpdated == null){
@@ -819,8 +831,8 @@ public class GroupedWorkIndexer {
 	boolean hasSystemTranslation(String mapName, String value) {
 		return translationMaps.containsKey(mapName) && translationMaps.get(mapName).containsKey(value);
 	}
-	private HashSet<String> unableToTranslateWarnings = new HashSet<>();
-	private HashSet<String> missingTranslationMaps = new HashSet<>();
+	private final HashSet<String> unableToTranslateWarnings = new HashSet<>();
+	private final HashSet<String> missingTranslationMaps = new HashSet<>();
 	String translateSystemValue(String mapName, String value, String identifier){
 		if (value == null){
 			return null;

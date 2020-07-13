@@ -16,7 +16,6 @@ class User extends DataObject
 	public $lastname;                        // string(50)  not_null
 	public $email;                           // string(250)  not_null
 	public $phone;                           // string(30)
-	public $_alt_username;                    // An alternate username used by patrons to login.
 	public $cat_username;                    // string(50)
 	public $cat_password;                    // string(50)
 	public $patronType;
@@ -335,7 +334,6 @@ class User extends DataObject
  			$this->linkedUsers = array();
 			/* var Library $library */
 			global $library;
-			/** @var Memcache $memCache */
 			global $memCache;
 			global $serverName;
 			global $logger;
@@ -546,7 +544,6 @@ class User extends DataObject
 		global $library;
 		if ($library->allowLinkedAccounts && $user->id != $this->id) { // library allows linked accounts and the account to link is not itself
 			$linkedUsers = $this->getLinkedUsers();
-			/** @var User $existingUser */
 			foreach ($linkedUsers as $existingUser) {
 				if ($existingUser->id == $user->id) {
 					//We already have a link to this user
@@ -732,13 +729,14 @@ class User extends DataObject
 		}
 		$this->update();
 	}
+
 	function updateUserPreferences(){
 		// Validate that the input data is correct
 		if (isset($_POST['myLocation1']) && !is_array($_POST['myLocation1']) && preg_match('/^\d{1,3}$/', $_POST['myLocation1']) == 0){
-			AspenError::raiseError('The 1st location had an incorrect format.');
+			return ['success' => false, 'message' => 'The 1st location had an incorrect format.'];
 		}
 		if (isset($_POST['myLocation2']) && !is_array($_POST['myLocation2']) && preg_match('/^\d{1,3}$/', $_POST['myLocation2']) == 0){
-			AspenError::raiseError('The 2nd location had an incorrect format.');
+			return ['success' => false, 'message' => 'The 2nd location had an incorrect format.'];
 		}
 
 		if (isset($_REQUEST['profileLanguage'])){
@@ -756,7 +754,7 @@ class User extends DataObject
 				$location = new Location();
 				$location->get('locationId', $_POST['myLocation1'] );
 				if ($location->getNumResults() != 1) {
-					AspenError::raiseError('The 1st location could not be found in the database.');
+					return ['success' => false, 'message' => 'The 1st location could not be found in the database.'];
 				} else {
 					$this->myLocation1Id = $_POST['myLocation1'];
 				}
@@ -769,7 +767,7 @@ class User extends DataObject
 				$location = new Location();
 				$location->get('locationId', $_POST['myLocation2'] );
 				if ($location->getNumResults() != 1) {
-					AspenError::raiseError('The 2nd location could not be found in the database.');
+					return ['success' => false, 'message' => 'The 2nd location could not be found in the database.'];
 				} else {
 					$this->myLocation2Id = $_POST['myLocation2'];
 				}
@@ -778,16 +776,28 @@ class User extends DataObject
 
 		$this->noPromptForUserReviews = (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on')? 1 : 0;
 		$this->rememberHoldPickupLocation = (isset($_POST['rememberHoldPickupLocation']) && $_POST['rememberHoldPickupLocation'] == 'on')? 1 : 0;
+
+		if ($this->hasEditableUsername()){
+			$result = $this->updateEditableUsername($_POST['username']);
+			if ($result['success'] == false){
+				return $result;
+			}
+		}
 		$this->clearCache();
-		return $this->update();
+		$saveResult = $this->update();
+		if ($saveResult === false){
+			return ['success' => false, 'message' => 'Could not save to the database'];
+		}else{
+			return ['success' => true, 'message' => 'Your preferences were updated successfully'];
+		}
 	}
 
 	/**
 	 * Clear out the cached version of the patron profile.
 	 */
 	function clearCache(){
-		/** @var Memcache $memCache */
-		global $memCache, $serverName;
+		global $memCache;
+		global $serverName;
 		$memCache->delete("user_{$serverName}_" . $this->id); // now stored by User object id column
 	}
 
@@ -842,7 +852,6 @@ class User extends DataObject
 		$myCheckouts = $this->_numCheckedOutIls + $this->_numCheckedOutOverDrive + $this->_numCheckedOutHoopla + $this->_numCheckedOutRBdigital;
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 					$myCheckouts += $user->getNumCheckedOutTotal(false);
 				}
@@ -856,7 +865,6 @@ class User extends DataObject
 		$myHolds = $this->_numHoldsIls + $this->_numHoldsOverDrive + $this->_numHoldsRBdigital;
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->linkedUsers as $user) {
 					$myHolds += $user->getNumHoldsTotal(false);
 				}
@@ -871,7 +879,6 @@ class User extends DataObject
 		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive + $this->_numHoldsAvailableRBdigital;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->linkedUsers as $user) {
 					$myHolds += $user->getNumHoldsAvailableTotal(false);
 				}
@@ -885,7 +892,6 @@ class User extends DataObject
 		$myBookings = $this->_numBookings;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->linkedUsers as $user) {
 					$myBookings += $user->getNumBookingsTotal(false);
 				}
@@ -902,7 +908,6 @@ class User extends DataObject
 		if ($includeLinkedUsers){
 			if ($this->totalFinesForLinkedUsers == -1){
 				if ($this->getLinkedUsers() != null) {
-					/** @var User $user */
 					foreach ($this->linkedUsers as $user) {
 						$totalFines += $user->getTotalFines(false);
 					}
@@ -1034,7 +1039,7 @@ class User extends DataObject
 		}
 
 		if ($source == 'all' || $source == 'cloud_library') {
-			//Get holds from Cloud LIbrary
+			//Get holds from Cloud Library
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
@@ -1131,7 +1136,6 @@ class User extends DataObject
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 					$ilsBookings = array_merge_recursive($ilsBookings, $user->getMyBookings(false));
 				}
@@ -1153,7 +1157,6 @@ class User extends DataObject
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 					$ilsFines += $user->getFines(false); // keep keys as userId
 				}
@@ -1291,7 +1294,6 @@ class User extends DataObject
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 
 					$additionalResults = $user->cancelAllBookedMaterial(false);
@@ -1411,7 +1413,6 @@ class User extends DataObject
 		//Also renew linked Users if needed
 		if ($renewLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
 					$linkedResults = $user->renewAll(false);
 					//Merge results
@@ -1520,16 +1521,7 @@ class User extends DataObject
 	}
 
 	function importListsFromIls(){
-		$result = $this->getCatalogDriver()->importListsFromIls($this);
-		return $result;
-	}
-
-	public function getShowUsernameField() {
-	    if ($this->hasIlsConnection()){
-            return $this->getCatalogDriver()->getShowUsernameField();
-        }else{
-	        return false;
-        }
+		return $this->getCatalogDriver()->importListsFromIls($this);
 	}
 
 	/**
@@ -1664,7 +1656,7 @@ class User extends DataObject
 			$userMessage->insert();
 			while ($userLinks->fetch()){
 				$userMessage = new UserMessage();
-				$userMessage->userId = $userLinks->primaryAccountId;;
+				$userMessage->userId = $userLinks->primaryAccountId;
 				$userMessage->messageType = 'linked_acct_notify_pause_' . $this->id;
 				$userMessage->messageLevel = 'info';
 				$userMessage->message = "An account you are linking to changed their login. Account linking with them has been temporarily disabled.";
@@ -1762,6 +1754,7 @@ class User extends DataObject
 		return $idsNotToSuggest;
 	}
 
+	/** @noinspection PhpUnused */
 	function getHomeLocationName(){
 		if (empty($this->_homeLocation)) {
 			$location = new Location();
@@ -1833,6 +1826,38 @@ class User extends DataObject
 			}
 		}
 		return $locationValid;
+	}
+
+	public function hasEditableUsername()
+	{
+		if ($this->hasIlsConnection()) {
+			$homeLibrary = $this->getHomeLibrary();
+			if ($homeLibrary->allowUsernameUpdates) {
+				return $this->getCatalogDriver()->hasEditableUsername();
+			}
+		}
+		return false;
+	}
+
+	public function getEditableUsername()
+	{
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->getEditableUsername($this);
+		}else{
+			return null;
+		}
+	}
+
+	private function updateEditableUsername($username)
+	{
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->updateEditableUsername($this, $username);
+		}else{
+			return [
+				'success' => false,
+				'message' => 'This user is not connected to an ILS'
+			];
+		}
 	}
 }
 

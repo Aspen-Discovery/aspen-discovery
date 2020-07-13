@@ -24,10 +24,6 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		if (is_numeric($facetLimit)) {
 			$this->facetLimit = $facetLimit;
 		}
-		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-		if (is_array($translatedFacets)) {
-			$this->translatedFacets = $translatedFacets;
-		}
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('websiteSearches');

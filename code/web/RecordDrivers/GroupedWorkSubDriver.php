@@ -622,4 +622,9 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	{
 		return [];
 	}
+
+	public function hasMarcRecord()
+	{
+		return false;
+	}
 }

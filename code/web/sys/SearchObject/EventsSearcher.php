@@ -24,10 +24,6 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 		if (is_numeric($facetLimit)) {
 			$this->facetLimit = $facetLimit;
 		}
-		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-		if (is_array($translatedFacets)) {
-			$this->translatedFacets = $translatedFacets;
-		}
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('eventsSearches');
@@ -57,6 +53,9 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
+
+		$now = new DateTime();
+		$this->addHiddenFilter('end_date', "[{$now->format('Y-m-d')} TO *]");
 
 		$timer->logTime('Setup Events Search Object');
 	}
@@ -94,9 +93,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 
 		//********************
 		// Basic Search logic
-		if ($this->initBasicSearch()) {
-			// If we found a basic search, we don't need to do anything further.
-		} else {
+		if (!$this->initBasicSearch()) {
 			$this->initAdvancedSearch();
 		}
 

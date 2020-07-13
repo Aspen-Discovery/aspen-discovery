@@ -8,7 +8,7 @@
 					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*}" alt="{translate text='Cover Image' inAttribute=true}">
 				</a>
 				{if $showRatings}
-					{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating showNotInterested=false}
+					{include file="GroupedWork/title-rating.tpl" id=$summId ratingData=$summRating showNotInterested=false}
 				{/if}
 			</div>
 		{/if}

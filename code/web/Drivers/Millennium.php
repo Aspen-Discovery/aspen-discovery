@@ -705,9 +705,7 @@ class Millennium extends AbstractIlsDriver
 			if (isset($sresult) && strpos($sresult, 'Patron information updated') !== false){
 				$user->phone = $_REQUEST['phone'];
 				$user->email = $_REQUEST['email'];
-				$user->_alt_username = $_REQUEST['username'];
 				$user->update();
-				/* @var Memcache $memCache */
 				global $memCache;
 				$memCache->delete("patron_dump_$barcode"); // because the update will affect the patron dump information also clear that cache as well
 			}else{
@@ -1870,10 +1868,6 @@ class Millennium extends AbstractIlsDriver
 
 		$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
 		$user->_fines = $patronDump['MONEY_OWED'];
-
-		if (isset($patronDump['USERNAME'])) {
-			$user->_alt_username = $patronDump['USERNAME'];
-		}
 
 		$numHoldsAvailable = 0;
 		$numHoldsRequested = 0;

@@ -38,10 +38,24 @@ class MyAccount_MyPreferences extends MyAccount
 			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
 			$interface->assign('pickupLocations', $pickupLocations);
 
+			if ($patron->hasEditableUsername()){
+				$interface->assign('showUsernameField', true);
+				$interface->assign('editableUsername', $patron->getEditableUsername());
+			}else{
+				$interface->assign('showUsernameField', false);
+			}
+
 			// Save/Update Actions
 			global $offlineMode;
 			if (isset($_POST['updateScope']) && !$offlineMode) {
-				$patron->updateUserPreferences();
+				$result = $patron->updateUserPreferences();
+				if ($result['success'] == false){
+					$_SESSION['profileUpdateErrors'] = [];
+					$_SESSION['profileUpdateErrors'][] = $result['message'];
+				}else{
+					$_SESSION['profileUpdateMessage'] = [];
+					$_SESSION['profileUpdateMessage'][] = $result['message'];
+				}
 
 				session_write_close();
 				$actionUrl = '/MyAccount/MyPreferences' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
@@ -67,6 +81,17 @@ class MyAccount_MyPreferences extends MyAccount
 			}
 
 			$interface->assign('profile', $patron);
+
+			if (!empty($_SESSION['profileUpdateErrors'])) {
+				$interface->assign('profileUpdateErrors', $_SESSION['profileUpdateErrors']);
+				@session_start();
+				unset($_SESSION['profileUpdateErrors']);
+			}
+			if (!empty($_SESSION['profileUpdateMessage'])) {
+				$interface->assign('profileUpdateMessage', $_SESSION['profileUpdateMessage']);
+				@session_start();
+				unset($_SESSION['profileUpdateMessage']);
+			}
 		}
 
 		$this->display('myPreferences.tpl', 'My Preferences');

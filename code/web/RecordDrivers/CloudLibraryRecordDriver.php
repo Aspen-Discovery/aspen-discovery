@@ -10,7 +10,6 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	/** @var CloudLibraryProduct */
 	private $cloudLibraryProduct;
 
-	/** @noinspection PhpMissingParentConstructorInspection */
 	public function __construct($recordId, $groupedWork = null) {
 		$this->id = $recordId;
 

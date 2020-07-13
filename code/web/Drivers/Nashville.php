@@ -56,7 +56,7 @@ class Nashville extends Millennium{
 			//Hold was successful
 			$hold_result['success'] = true;
 			if (!isset($reason) || strlen($reason) == 0){
-				$hold_result['message'] = 'Your hold was placed successfully';
+				$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 			}else{
 				$hold_result['message'] = $reason;
 			}

@@ -885,27 +885,27 @@ class Koha extends AbstractIlsDriver
 			$hold_result['id'] = $recordId;
 			if ($placeHoldResponse->title) {
 				//everything seems to be good
-				$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordId, $hold_result);
+				$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
 			} else {
 				$hold_result['success'] = false;
 				//See if we can get more info on why this failed.
 				$holds = $this->getHolds($patron);
 				$alreadyOnHold = false;
 				foreach($holds['available'] as $hold) {
-					if ($hold['recordId'] == $recordId){
+					if ($hold['recordId'] == $recordDriver->getId()){
 						$alreadyOnHold = true;
 					}
 				}
 				foreach($holds['unavailable'] as $hold) {
-					if ($hold['recordId'] == $recordId){
+					if ($hold['recordId'] == $recordDriver->getId()){
 						$alreadyOnHold = true;
 					}
 				}
 				//Look for an alert message
 				if ($alreadyOnHold){
-					$hold_result['message'] = 'Your hold could not be placed, you already have this title on hold.';
+					$hold_result['message'] = translate(['text'=>'ils_title_already_on_hold', 'defaultText'=>'Your hold could not be placed, you already have this title on hold.']);
 				}else {
-					$hold_result['message'] = 'Your hold could not be placed. ' . $placeHoldResponse->code;
+					$hold_result['message'] = translate(['text'=>'koha_hold_failed', 'defaultText'=>'Your hold could not be placed. %1%', '1'=> $placeHoldResponse->code]);
 				}
 			}
 			return $hold_result;
@@ -952,7 +952,7 @@ class Koha extends AbstractIlsDriver
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
 			if ($responseCode == 201){
-				$result['message'] = 'Your hold was placed successfully.';
+				$result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 				$result['success'] = true;
 			}else{
 				$result = [
@@ -1913,7 +1913,15 @@ class Koha extends AbstractIlsDriver
 		$selfRegPageResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postFields);
 
 		$matches = [];
-		if (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
+		if (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>.*?<span id="patron-cardnumber">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
+			$username = $matches[1];
+			$password = $matches[2];
+			$barcode = $matches[3];
+			$result['success'] = true;
+			$result['username'] = $username;
+			$result['password'] = $password;
+			$result['barcode'] = $barcode;
+		}elseif (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
 			$username = $matches[1];
 			$password = $matches[2];
 			$result['success'] = true;
@@ -1923,6 +1931,7 @@ class Koha extends AbstractIlsDriver
 			$result['success'] = true;
 			$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
 		}elseif (preg_match('%<h1>Please confirm your registration</h1>%s', $selfRegPageResponse, $matches)) {
+			//Load the patron's username and barcode
 			$result['success'] = true;
 			$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
 		}elseif (preg_match('%This email address already exists in our database.%', $selfRegPageResponse)){
@@ -2666,12 +2675,12 @@ class Koha extends AbstractIlsDriver
 	{
 		$holds = $this->getHolds($patron, 1, -1, 'title');
 		$hold_result['success'] = true;
-		$hold_result['message'] = "Your hold was placed successfully.";
+		$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 		//Find the correct hold (will be unavailable)
 		foreach ($holds['unavailable'] as $holdInfo) {
 			if ($holdInfo['id'] == $recordId) {
 				if (isset($holdInfo['position'])) {
-					$hold_result['message'] .= "  You are number <b>" . $holdInfo['position'] . "</b> in the queue.";
+					$hold_result['message'] .= translate(['text'=>"ils_hold_success_position", 'defaultText'=>"&nbsp;You are number <b>%1%</b> in the queue.", '1' => $holdInfo['position']]);
 				}
 				//Show the number of holds the patron has used.
 				$accountSummary = $this->getAccountSummary($patron, true);
@@ -2679,9 +2688,9 @@ class Koha extends AbstractIlsDriver
 				$totalHolds = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
 				$remainingHolds = $maxReserves - $totalHolds;
 				if ($remainingHolds <= 3){
-					$hold_result['message'] .= "<br/>You have $totalHolds holds currently and can place $remainingHolds additional holds.";
+					$hold_result['message'] .= translate(['text'=>"ils_hold_success_total_remaining_holds", 'defaultText'=>"<br/>You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds]);
 				}else{
-					$hold_result['message'] .= "<br/>You have $totalHolds holds currently.";
+					$hold_result['message'] .= translate(['text'=>"ils_hold_success_total_holds", 'defaultText'=>"<br/>You have %1% holds currently.", 1 => $totalHolds]);
 				}
 
 				break;
@@ -2873,7 +2882,7 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = [
 			'success' => false,
-			'message' => 'This functionality has not been implemented for this ILS'
+			'message' => 'Unknown error updating auto renewal'
 		];
 
 		//Load required fields from Koha here to make sure we don't wipe them out
@@ -3095,5 +3104,111 @@ class Koha extends AbstractIlsDriver
 			'maxLength' => 60,
 			'onlyDigitsAllowed' => false,
 		];
+	}
+
+	public function hasEditableUsername()
+	{
+		return true;
+	}
+
+	public function getEditableUsername(User $user)
+	{
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$sql = "SELECT userId from borrowers where borrowernumber = {$user->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if ($results !== false) {
+			if ($curRow = $results->fetch_assoc()) {
+				return $curRow['userId'];
+			}
+		}
+		return null;
+	}
+
+	public function updateEditableUsername(User $patron, $username)
+	{
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error updating username'
+		];
+		$this->initDatabaseConnection();
+		//Check to see if the username is already in use
+		$sql = "SELECT * FROM borrowers where userId = '{$username}' and borrowernumber != {$patron->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if ($results !== false) {
+			if ($results->fetch_assoc()){
+				return [
+					'success' => false,
+					'message' => 'Sorry, that username is not available.'
+				];
+			}
+		}
+		//Load required fields from Koha here to make sure we don't wipe them out
+		/** @noinspection SqlResolve */
+		$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$address = '';
+		$city = '';
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()) {
+				$address = $curRow['address'];
+				$city = $curRow['city'];
+			}
+		}
+
+		$postVariables = [
+			'surname' => $patron->lastname,
+			'address' => $address,
+			'city' => $city,
+			'library_id' => Location::getUserHomeLocation()->code,
+			'category_id' => $patron->patronType,
+			'userid' => $username,
+		];
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+		} else {
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
+			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
+			$postParams = json_encode($postVariables);
+
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+			if ($this->apiCurlWrapper->getResponseCode() != 200) {
+				if (strlen($response) > 0) {
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse) {
+						$result['message'] = $jsonResponse->error;
+					} else {
+						$result['message'] = $response;
+					}
+				} else {
+					$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+				}
+
+			} else {
+				$response = json_decode($response);
+				if ($response->userid == $username){
+					$result = [
+						'success' => true,
+						'message' => 'Your account was updated successfully.'
+					];
+				}else{
+					$result = [
+						'success' => true,
+						'message' => 'Error updating this setting in the system.'
+					];
+				}
+			}
+		}
+		return $result;
 	}
 }

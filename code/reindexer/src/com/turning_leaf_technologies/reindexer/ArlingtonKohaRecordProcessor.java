@@ -133,7 +133,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 				itemInfo.setLocationCode("Online");
 				itemInfo.setCallNumber("Online");
 				itemInfo.seteContentSource(econtentSource);
-				itemInfo.setShelfLocation(econtentSource);
+				itemInfo.setShelfLocation("Online");
 				itemInfo.setDetailedLocation(econtentSource);
 				itemInfo.setIType("eCollection");
 				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);

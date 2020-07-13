@@ -7,9 +7,7 @@ class SelfReg extends Action {
 	function launch($msg = null) {
 		global $interface;
 		global $library;
-		global $configArray;
 
-		/** @var  CatalogConnection $catalog */
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$selfRegFields = $catalog->getSelfRegistrationFields();
 		// For Arlington, this function call causes a page redirect to an external web page. plb 1-15-2016
