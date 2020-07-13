@@ -72,7 +72,11 @@ class WebBuilder_CustomForms extends ObjectEditor
 		if (!empty($existingObject) && $existingObject instanceof CustomForm && !empty($existingObject->id)){
 			$objectActions[] = [
 				'text' => 'View',
-				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/CustomForm?id='.$existingObject->id: $existingObject->urlAlias,
+				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/Form?id='.$existingObject->id: $existingObject->urlAlias,
+			];
+			$objectActions[] = [
+				'text' => 'View Submissions',
+				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/CustomFormSubmissions?formId='.$existingObject->id: $existingObject->urlAlias,
 			];
 		}
 		return $objectActions;

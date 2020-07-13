@@ -4,6 +4,7 @@
 		<div class="row">
 			<div class="col-xs-12">
 				<a href="/WebBuilder/CustomForms?id={$id}&objectAction=edit" class="btn btn-default btn-sm">{translate text=Edit}</a>
+				<a href="/WebBuilder/CustomFormSubmissions?formId={$id}&objectAction=edit" class="btn btn-default btn-sm">{translate text="View Submissions"}</a>
 			</div>
 		</div>
 	{/if}
