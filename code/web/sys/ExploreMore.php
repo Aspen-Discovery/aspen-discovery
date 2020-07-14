@@ -761,15 +761,19 @@ class ExploreMore {
 			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEDS");
 			if ($edsSearcher->authenticate()) {
 				//Find related titles
-				$edsResults = $edsSearcher->getSearchResults($searchTerm);
-				if ($edsResults) {
+				$edsSearcher->setSearchTerms(array(
+					'lookfor' => $searchTerm,
+					'index' => 'TX'
+				));
+				$edsResults = $edsSearcher->processSearch(true, false);
+				if ($edsResults != null) {
 					$exploreMoreOptions['sampleRecords']['ebsco_eds'] = [];
 					$numMatches = $edsResults->Statistics->TotalHits;
 					if ($numMatches > 0) {
 						//Check results based on common facets
-						foreach ($edsResults->AvailableFacets->AvailableFacet as $facetInfo) {
+						foreach ($edsResults->AvailableFacets as $facetInfo) {
 							if ($facetInfo->Id == 'SourceType') {
-								foreach ($facetInfo->AvailableFacetValues->AvailableFacetValue as $facetValue) {
+								foreach ($facetInfo->AvailableFacetValues as $facetValue) {
 									$facetValueStr = (string)$facetValue->Value;
 									if (in_array($facetValueStr, array('Magazines', 'News', 'Academic Journals', 'Primary Source Documents'))) {
 										$numFacetMatches = (int)$facetValue->Count;
