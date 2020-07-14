@@ -758,7 +758,7 @@ class ExploreMore {
 		if (array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {
 			//Load EDS options
 			/** @var SearchObject_EbscoEdsSearcher $edsSearcher */
-			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEDS");
+			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
 			if ($edsSearcher->authenticate()) {
 				//Find related titles
 				$edsSearcher->setSearchTerms(array(

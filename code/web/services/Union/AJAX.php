@@ -137,7 +137,7 @@ class Union_AJAX extends Action {
 		if ($searchTerm == ''){
 			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
 		}else {
-			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEDS");
+			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
 			$edsSearcher->init();
 			$searchResults = $edsSearcher->processSearch($searchTerm);
 			$summary = $edsSearcher->getResultSummary();

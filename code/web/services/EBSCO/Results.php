@@ -7,7 +7,7 @@ class EBSCO_Results extends Action{
 
 		//Include Search Engine
 		/** @var SearchObject_EbscoEdsSearcher $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject("EbscoEDS");
+		$searchObject = SearchObjectFactory::initSearchObject("EbscoEds");
 		$timer->logTime('Include search engine');
 
 		// Hide Covers when the user has set that setting on the Search Results Page
