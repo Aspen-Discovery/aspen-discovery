@@ -6,8 +6,8 @@ class EBSCO_Results extends Action{
 		global $timer;
 
 		//Include Search Engine
-		require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
-		$searchObject = EDS_API::getInstance();
+		/** @var SearchObject_EbscoEdsSearcher $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject("EbscoEDS");
 		$timer->logTime('Include search engine');
 
 		// Hide Covers when the user has set that setting on the Search Results Page
@@ -15,9 +15,10 @@ class EBSCO_Results extends Action{
 
 		$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : null;
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter'] : array();
-		$searchObject->getSearchResults($_REQUEST['lookfor'], $sort, $filters);
+		$searchObject->init();
+		$result = $searchObject->processSearch(true, true);
 
-		$displayQuery = $_REQUEST['lookfor'];
+		$displayQuery = $searchObject->displayQuery();
 		$pageTitle = $displayQuery;
 		if (strlen($pageTitle) > 20){
 			$pageTitle = substr($pageTitle, 0, 20) . '...';
@@ -38,7 +39,7 @@ class EBSCO_Results extends Action{
 		$interface->assign('recordStart', $summary['startRecord']);
 		$interface->assign('recordEnd',   $summary['endRecord']);
 
-		$appliedFacets = $searchObject->getAppliedFilters();
+		$appliedFacets = $searchObject->getFilterList();
 		$interface->assign('filterList', $appliedFacets);
 		$facetSet = $searchObject->getFacetSet();
 		$interface->assign('sideFacetSet', $facetSet);
@@ -51,6 +52,12 @@ class EBSCO_Results extends Action{
 			$pager   = new Pager($options);
 			$interface->assign('pageLinks', $pager->getLinks());
 		}
+
+		// Save the ID of this search to the session so we can return to it easily:
+		$_SESSION['lastSearchId'] = $searchObject->getSearchId();
+
+		// Save the URL of this search to the session so we can return to it easily:
+		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
 
 		//Setup explore more
 		$showExploreMoreBar = true;

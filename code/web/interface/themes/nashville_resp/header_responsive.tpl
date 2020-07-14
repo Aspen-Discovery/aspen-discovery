@@ -3,11 +3,8 @@
 	<div class="col-tn-12 col-xs-12 col-sm-3 col-md-3 col-lg-3">
 		<div id="header-logo-wrapper">
 			<a href="{$logoLink}/">
-
-				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}"
-				     alt="{$librarySystemName}" title="Return to Catalog Home" id="header-logo"
-				     {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
-
+				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="Return to Catalog Home" id="header-logo"
+				     {if $showDisplayNameInHeader && $librarySystemName} class="pull-left"{/if}>
 			</a>
 		</div>
 	</div>

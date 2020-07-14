@@ -137,11 +137,11 @@ class Union_AJAX extends Action {
 		if ($searchTerm == ''){
 			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
 		}else {
-			require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
-			$edsApi = EDS_API::getInstance();
-			$searchResults = $edsApi->getSearchResults($searchTerm);
-			$summary = $edsApi->getResultSummary();
-			$records = $edsApi->getCombinedResultHTML();
+			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEDS");
+			$edsSearcher->init();
+			$searchResults = $edsSearcher->processSearch($searchTerm);
+			$summary = $edsSearcher->getResultSummary();
+			$records = $edsSearcher->getCombinedResultHTML();
 			if ($summary['resultTotal'] == 0) {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {

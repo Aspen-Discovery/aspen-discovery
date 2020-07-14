@@ -19,10 +19,9 @@ class EbscoRecordDriver extends RecordInterface
 	public function __construct($recordData)
 	{
 		if (is_string($recordData)) {
-			require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
-			$edsApi = EDS_API::getInstance();
+			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEDS");
 			list($dbId, $an) = explode(':', $recordData);
-			$this->recordData = $edsApi->retrieveRecord($dbId, $an);
+			$this->recordData = $edsSearcher->retrieveRecord($dbId, $an);
 		} else {
 			$this->recordData = $recordData;
 		}

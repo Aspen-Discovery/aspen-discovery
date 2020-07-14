@@ -454,4 +454,25 @@ class AJAX extends Action {
 		}
 		return $response;
 	}
+
+	function getSearchIndexes(){
+		$searchSource = $_REQUEST['searchSource'];
+		$searchObject = SearchSources::getSearcherForSource($searchSource);
+		if (!is_object($searchObject)){
+			$response = [
+				'success' => false,
+				'message' => 'Unknown search source ' . $searchSource
+			];
+		}else{
+			$searchIndexes = SearchSources::getSearchIndexesForSource($searchObject, $searchSource);
+			$response = [
+				'success' => true,
+				'searchIndexes' => $searchIndexes,
+				'selectedIndex' => $searchObject->getDefaultIndex(),
+				'defaultSearchIndex' => $searchObject->getDefaultIndex(),
+			];
+		}
+
+		return $response;
+	}
 }

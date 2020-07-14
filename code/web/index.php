@@ -30,7 +30,6 @@ $interface = new UInterface();
 $timer->logTime('Create interface');
 
 //Set footer information
-/** @var Location $locationSingleton */
 global $locationSingleton;
 getGitBranch();
 
@@ -68,7 +67,6 @@ try {
 	//Google Analytics not installed yet
 }
 
-/** @var Library $library */
 global $library;
 global $offlineMode;
 
@@ -126,19 +124,7 @@ $interface->assign('activeIp', IPAddress::getActiveIp());
 // Check system availability
 $mode = checkAvailabilityMode();
 if ($mode['online'] === false) {
-	// Why are we offline?
-	switch ($mode['level']) {
-		// Forced Downtime
-		case "unavailable":
-			$interface->display($mode['template']);
-			break;
-
-			// Should never execute. checkAvailabilityMode() would
-			//    need to know we are offline, but not why.
-		default:
-			$interface->display($mode['template']);
-			break;
-	}
+	$interface->display($mode['template']);
 	exit();
 }
 $timer->logTime('Checked availability mode');
@@ -482,60 +468,39 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	}
 
 	//Load basic search types for use in the interface.
-	/** @var SearchObject_GroupedWorkSearcher $searchObject */
-	$searchObject = SearchObjectFactory::initSearchObject();
-	$timer->logTime('Create Search Object');
-	$searchObject->init();
-	$timer->logTime('Init Search Object');
-	$catalogSearchIndexes = is_object($searchObject) ? $searchObject->getSearchIndexes() : array();
-	$interface->assign('catalogSearchIndexes', $catalogSearchIndexes);
+	$activeSearchSource = 'catalog';
+	if (isset($_REQUEST['searchSource'])) {
+		$activeSearchSource = $_REQUEST['searchSource'];
+	}
+	$activeSearchObject = SearchSources::getSearcherForSource($activeSearchSource);
+	$searchIndexes = SearchSources::getSearchIndexesForSource($activeSearchObject, $activeSearchSource);
+	$interface->assign('searchIndexes', $searchIndexes);
+	$interface->assign('defaultSearchIndex', $activeSearchObject->getDefaultIndex());
 
 	// Set search results display mode in search-box //
-	if ($searchObject->getView()) $interface->assign('displayMode', $searchObject->getView());
-
-	/** @var SearchObject_ListsSearcher $listSearchIndexes */
-	$listSearchIndexes = SearchObjectFactory::initSearchObject('Lists');
-	$interface->assign('listSearchIndexes', is_object($listSearchIndexes) ? $listSearchIndexes->getSearchIndexes() : array());
-
-	/** @var SearchObject_EventsSearcher $eventsSearchIndexes */
-	$eventsSearchIndexes = SearchObjectFactory::initSearchObject('Events');
-	$interface->assign('eventsSearchIndexes', is_object($eventsSearchIndexes) ? $eventsSearchIndexes->getSearchIndexes() : array());
-
-	/** @var SearchObject_WebsitesSearcher $websiteSearchIndexes */
-	$websiteSearchIndexes = SearchObjectFactory::initSearchObject('Websites');
-	$interface->assign('websiteSearchIndexes', is_object($websiteSearchIndexes) ? $websiteSearchIndexes->getSearchIndexes() : array());
+	if ($activeSearchObject->getView()) $interface->assign('displayMode', $activeSearchObject->getView());
 
 	if ($library->enableGenealogy){
-		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
-		$interface->assign('genealogySearchIndexes', is_object($genealogySearchObject) ? $genealogySearchObject->getSearchIndexes() : array());
         $interface->assign('enableOpenGenealogy', true);
 	}
 
 	if ($library->enableArchive){
-		$islandoraSearchObject = SearchObjectFactory::initSearchObject('Islandora');
-		$interface->assign('islandoraSearchIndexes', is_object($islandoraSearchObject) ? $islandoraSearchObject->getSearchIndexes() : array());
 		$interface->assign('enableArchive', true);
 	}
 
 	if ($library->enableOpenArchives) {
-		$openArchivesSearchObject = SearchObjectFactory::initSearchObject('OpenArchives');
-		$interface->assign('openArchivesSearchIndexes', is_object($openArchivesSearchObject) ? $openArchivesSearchObject->getSearchIndexes() : array());
 		$interface->assign('enableOpenArchives', true);
-	}
-
-	if (array_key_exists('EBSCO_EDS', $enabledModules) && $library->edsSettingsId != null && $library->edsSettingsId != -1){
-		require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
-		$ebscoSearchObject = new EDS_API();
-		$interface->assign('ebscoEdsSearchTypes', $ebscoSearchObject->getSearchTypes());
 	}
 
 	if (!($module == 'Search' && $action == 'Home')){
 		/** @var SearchObject_BaseSearcher $activeSearch */
-		$activeSearch = $searchObject->loadLastSearch();
+		$activeSearch = $activeSearchObject->loadLastSearch();
 		//Load information about the search so we can display it in the search box
 		if (!is_null($activeSearch)){
 			$interface->assign('lookfor', $activeSearch->displayQuery());
 			$interface->assign('searchType', $activeSearch->getSearchType());
+			$interface->assign('searchIndexes', $activeSearch->getSearchIndexes());
+			$interface->assign('defaultSearchIndex', $activeSearch->getDefaultIndex());
 			$interface->assign('searchIndex', $activeSearch->getSearchIndex());
 			$interface->assign('filterList', $activeSearch->getFilterList());
 			$interface->assign('savedSearch', $activeSearch->isSavedSearch());

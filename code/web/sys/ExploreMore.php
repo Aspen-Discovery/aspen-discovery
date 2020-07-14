@@ -355,7 +355,7 @@ class ExploreMore {
 			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
-		if (array_key_exists('EBSCO_EDS', $enabledModules)) {
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
 			$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
@@ -755,13 +755,13 @@ class ExploreMore {
 	public function loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		global $library;
 		global $enabledModules;
-		if (array_key_exists('EBSCO_EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {
+		if (array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {
 			//Load EDS options
-			require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
-			$edsApi = EDS_API::getInstance();
-			if ($edsApi->authenticate()) {
+			/** @var SearchObject_EbscoEdsSearcher $edsSearcher */
+			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEDS");
+			if ($edsSearcher->authenticate()) {
 				//Find related titles
-				$edsResults = $edsApi->getSearchResults($searchTerm);
+				$edsResults = $edsSearcher->getSearchResults($searchTerm);
 				if ($edsResults) {
 					$exploreMoreOptions['sampleRecords']['ebsco_eds'] = [];
 					$numMatches = $edsResults->Statistics->TotalHits;

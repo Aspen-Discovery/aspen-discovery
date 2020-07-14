@@ -1032,7 +1032,7 @@ class Library extends DataObject
 			unset($structure['casSection']);
 		}
 		global $enabledModules;
-		if (!array_key_exists('EBSCO_EDS', $enabledModules)) {
+		if (!array_key_exists('EBSCO EDS', $enabledModules)) {
 			unset($structure['edsSection']);
 		}
 		if (!array_key_exists('OverDrive', $enabledModules)){

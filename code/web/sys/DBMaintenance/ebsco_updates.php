@@ -5,7 +5,7 @@ function getEbscoUpdates(){
 			'title' => 'Create EBSCO modules',
 			'description' => 'Setup modules for EBSCO Integration',
 			'sql' =>[
-				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('EBSCO_EDS', '', '')",
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('EBSCO EDS', '', '')",
 				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('EBSCOhost','', '')"
 
 			]

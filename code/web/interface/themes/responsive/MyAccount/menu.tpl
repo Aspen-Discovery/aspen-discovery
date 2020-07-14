@@ -644,7 +644,7 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('EBSCO_EDS', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+				{if array_key_exists('EBSCO EDS', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
 					{if $module == 'EBSCO' && in_array($action, array('Settings'))}
 						{assign var="curSection" value=true}
 					{else}
