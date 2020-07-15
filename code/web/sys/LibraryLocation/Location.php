@@ -875,19 +875,7 @@ class Location extends DataObject
 	public function __get($name)
 	{
 		if ($name == "hours") {
-			if (!isset($this->_hours)) {
-				$this->_hours = array();
-				if ($this->locationId) {
-					$hours = new LocationHours();
-					$hours->locationId = $this->locationId;
-					$hours->orderBy('day');
-					$hours->find();
-					while ($hours->fetch()) {
-						$this->_hours[$hours->id] = clone($hours);
-					}
-				}
-			}
-			return $this->_hours;
+			return $this->getHours();
 		} elseif ($name == "moreDetailsOptions") {
 			if (!isset($this->_moreDetailsOptions) && $this->libraryId) {
 				$this->_moreDetailsOptions = array();
@@ -1233,6 +1221,18 @@ class Location extends DataObject
 	/** @return LocationHours[] */
 	function getHours()
 	{
+		if (!isset($this->_hours)) {
+			$this->_hours = array();
+			if ($this->locationId) {
+				$hours = new LocationHours();
+				$hours->locationId = $this->locationId;
+				$hours->orderBy('day');
+				$hours->find();
+				while ($hours->fetch()) {
+					$this->_hours[$hours->id] = clone($hours);
+				}
+			}
+		}
 		return $this->_hours;
 	}
 
