@@ -2188,6 +2188,14 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library ADD COLUMN useAllCapsWhenUpdatingProfile TINYINT(1) DEFAULT 0",
 				"ALTER TABLE library ADD COLUMN bypassReviewQueueWhenUpdatingProfile TINYINT(1) DEFAULT 0"
 			]
+		],
+
+		'libraryAvailableHoldDelay' => [
+			'title' => 'Library Available Hold Delay',
+			'description' => 'Add option for delaying when a hold moves from unavailable to available',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN availableHoldDelay INT DEFAULT 0"
+			]
 		]
 	);
 }

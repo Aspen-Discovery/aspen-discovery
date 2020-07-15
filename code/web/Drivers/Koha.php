@@ -249,13 +249,7 @@ class Koha extends AbstractIlsDriver
 
 		$this->initDatabaseConnection();
 
-		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM systempreferences where variable like 'OpacRenewalAllowed';";
-		$results = mysqli_query($this->dbConnection, $sql);
-		$kohaPreferences = [];
-		while ($curRow = $results->fetch_assoc()) {
-			$kohaPreferences[$curRow['variable']] = $curRow['value'];
-		}
+		$opacRenewalAllowed = $this->getKohaSystemPreference('OpacRenewalAllowed');
 
 		/** @noinspection SqlResolve */
 		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
@@ -286,6 +280,7 @@ class Koha extends AbstractIlsDriver
 					$checkout['volume'] = $volumeRow['description'];
 				}
 			}
+			$volumeResults->close();
 
 			//Check to see if the item is Claims Returned
 			/** @noinspection SqlResolve */
@@ -298,6 +293,7 @@ class Koha extends AbstractIlsDriver
 					$checkout['return_claim'] = translate(['text'=>'return_claim_message','defaultText'=> 'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y')]);
 				}
 			}
+			$claimsReturnedResults->close();
 
 			$checkout['author'] = $curRow['author'];
 
@@ -315,7 +311,7 @@ class Koha extends AbstractIlsDriver
 			$checkout['renewIndicator'] = $curRow['itemnumber'];
 			$checkout['renewCount'] = $curRow['renewals'];
 
-			$checkout['canRenew'] = !$curRow['auto_renew'] && $kohaPreferences['OpacRenewalAllowed'];
+			$checkout['canRenew'] = !$curRow['auto_renew'] && $opacRenewalAllowed;
 			$checkout['autoRenew'] = $curRow['auto_renew'];
 			$autoRenewError = $curRow['auto_renew_error'];
 
@@ -342,6 +338,7 @@ class Koha extends AbstractIlsDriver
 			while ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
 				$checkout['maxRenewals'] = $issuingRulesRow['renewalsallowed'];
 			}
+			$issuingRulesRS->close();
 
 			if ($checkout['id'] && strlen($checkout['id']) > 0) {
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -1180,7 +1177,16 @@ class Koha extends AbstractIlsDriver
 			}
 			$curHold['user'] = $patron->getNameAndLibraryLabel();
 
-			if (!isset($curHold['status']) || !preg_match('/^Ready to Pickup.*/i', $curHold['status'])) {
+			$isAvailable = isset($curHold['status']) && preg_match('/^Ready to Pickup.*/i', $curHold['status']);
+			global $library;
+			if ($isAvailable && $library->availableHoldDelay > 0){
+				$holdAvailableOn = strtotime($curRow['waitingdate']);
+				if ((time() - $holdAvailableOn) < 60 * 60 * 24 * $library->availableHoldDelay){
+					$isAvailable = false;
+					$curHold['status'] = 'In transit';
+				}
+			}
+			if (!$isAvailable) {
 				$holds['unavailable'][$curHold['holdSource'] . $curHold['cancelId']. $curHold['user']] = $curHold;
 			} else {
 				$holds['available'][$curHold['holdSource'] . $curHold['cancelId']. $curHold['user']] = $curHold;
@@ -3157,6 +3163,7 @@ class Koha extends AbstractIlsDriver
 		while ($curRow = $results->fetch_assoc()) {
 			$preference = $curRow['value'];
 		}
+		$results->close();
 		return $preference;
 	}
 
