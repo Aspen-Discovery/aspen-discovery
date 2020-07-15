@@ -313,7 +313,7 @@ class UserList extends DataObject
 	}
 
 	/**
-	 * @param int $start position of first list item to fetch (1 based)
+	 * @param int $start position of first list item to fetch (0 based)
 	 * @param int $numItems Number of items to fetch for this result
 	 * @param boolean $allowEdit whether or not the list should be editable
 	 * @param string $format The format of the records, valid values are html, summary, recordDrivers, citation
@@ -394,7 +394,7 @@ class UserList extends DataObject
 			}
 			if (!empty($current)) {
 				$interface->assign('recordIndex', $listPosition + 1);
-				$interface->assign('resultIndex', $listPosition + $startRecord);
+				$interface->assign('resultIndex', $listPosition + $startRecord + 1);
 				$interface->assign('recordDriver', $current);
 
 				//Get information from list entry
