@@ -178,11 +178,16 @@ class Record_AJAX extends Action
 			}
 
 			if ($bypassHolds){
+				if (strpos($id, ':') !== false){
+					list(,$shortId) = explode(':', $id);
+				}else{
+					$shortId = $id;
+				}
 				if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
 					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->_homeLocationCode, null);
 				} else {
 					if (isset($_REQUEST['volume'])){
-						$results = $user->placeVolumeHold($id, $_REQUEST['volume'], $user->_homeLocationCode);
+						$results = $user->placeVolumeHold($shortId, $_REQUEST['volume'], $user->_homeLocationCode);
 					}else{
 						$results = $user->placeHold($id, $user->_homeLocationCode, null);
 					}
