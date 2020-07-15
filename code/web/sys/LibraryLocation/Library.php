@@ -137,6 +137,8 @@ class Library extends DataObject
 	public $eContentSupportAddress;
 	public $restrictOwningBranchesAndSystems;
 	public $allowPatronAddressUpdates;
+	public $useAllCapsWhenUpdatingProfile;
+	public $bypassReviewQueueWhenUpdatingProfile;
 	public $showWorkPhoneInProfile;
 	public $showNoticeTypeInProfile;
 	public $showPickupLocationInProfile;
@@ -513,6 +515,8 @@ class Library extends DataObject
 					'allowProfileUpdates'                  => array('property'=>'allowProfileUpdates', 'type'=>'checkbox', 'label'=>'Allow Profile Updates', 'description'=>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1, 'readonly' => false),
 					'allowUsernameUpdates'                 => array('property'=>'allowUsernameUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Username', 'description'=>'Whether or not the user can update their username.', 'hideInLists' => true, 'default' => 0, 'readonly' => false),
 					'allowPatronAddressUpdates'            => array('property' => 'allowPatronAddressUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Address', 'description'=>'Whether or not patrons should be able to update their own address in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false),
+					'useAllCapsWhenUpdatingProfile'        => array('property' => 'useAllCapsWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Use All Caps When Updating Profile', 'description'=>'Whether or not modifications to the patron profile will be submitted using all caps', 'default'=> 0),
+					'bypassReviewQueueWhenUpdatingProfile' => array('property' => 'bypassReviewQueueWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Bypass Review Queue Updating Profile', 'description'=>'Whether or not the Koha review queue for patron modifications is bypassed when updates are submitted', 'default'=> 0),
 					'allowPinReset'                        => array('property'=>'allowPinReset', 'type'=>'checkbox', 'label'=>'Allow PIN Reset', 'description'=>'Whether or not the user can reset their PIN if they forget it.', 'hideInLists' => true, 'default' => 0),
 					'enableForgotPasswordLink'             => array('property'=>'enableForgotPasswordLink', 'type'=>'checkbox', 'label'=>'Enable Forgot Password Link', 'description'=>'Whether or not the user can click a link to reset their password.', 'hideInLists' => true, 'default' => 1),
 					'showAlternateLibraryOptionsInProfile' => array('property' => 'showAlternateLibraryOptionsInProfile', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update their Alternate Libraries', 'description'=>'Allow Patrons to See and Change Alternate Library Settings in the Catalog Options Tab in their profile.', 'hideInLists' => true, 'default' => 1),
@@ -1022,6 +1026,9 @@ class Library extends DataObject
 			unset($structure['ilsSection']['properties']['userProfileSection']['properties']['maxFinesToAllowAccountUpdates']);
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['promptForBirthDateInSelfReg']);
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['selfRegistrationTemplate']);
+		}else{
+			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['bypassReviewQueueWhenUpdatingProfile']);
+
 		}
 		if (!$configArray['EDS']['enabled']) {
 			unset($structure['edsSection']);
