@@ -1009,7 +1009,7 @@ class Koha extends AbstractIlsDriver
 		$hold_result['success'] = false;
 
 		$patronEligibleForHolds = $this->patronEligibleForHolds($patron);
-		if ($hold_result['isEligible'] == false){
+		if ($patronEligibleForHolds['isEligible'] == false){
 			return $hold_result['message'] = $patronEligibleForHolds['message'];
 		}
 
