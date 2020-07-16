@@ -3,7 +3,11 @@
 <div class="page">
 	{if (isset($registerRosenLevelUPResult) && $registerRosenLevelUPResult.success)}
 		<div id="regSuccess" class="alert alert-success">
-				Congratulations, you have successfully registered for Rosen LevelUP.
+		{if !empty($registerRosenLevelUPResult.message)}
+			{$registerRosenLevelUPResult.message}
+		{else}
+			Congratulations, you have successfully registered for Rosen LevelUP.
+		{/if}
 		</div>
 	{else}
 		<div id="regDescription" class="alert alert-info">
