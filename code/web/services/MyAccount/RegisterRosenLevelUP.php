@@ -4,9 +4,9 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 
 // TO DO: activate recaptcha
-// TO DO: provide Rosen with Limitless Libraries school list
 // TO DO: easily [?] add additional students for a single parent
 // TO DO: make use of linked accounts
+// TO DO: disambiguate role TEACHER vs PARENT
 
 class MyAccount_RegisterRosenLevelUP extends MyAccount
 {
@@ -24,7 +24,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
     private $student_username;
     private $student_school;
     private $student_grade_level;
-    private $user;
 
     function launch()
     {
