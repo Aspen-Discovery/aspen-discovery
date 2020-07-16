@@ -279,8 +279,8 @@ class Koha extends AbstractIlsDriver
 				if ($volumeRow = $volumeResults->fetch_assoc()) {
 					$checkout['volume'] = $volumeRow['description'];
 				}
+				$volumeResults->close();
 			}
-			$volumeResults->close();
 
 			//Check to see if the item is Claims Returned
 			/** @noinspection SqlResolve */
