@@ -71,6 +71,7 @@ class BookCoverProcessor{
 				return;
 			}
 		} else {
+			global $sideLoadSettings;
 			if ($this->type == 'overdrive') {
 				//Will exit if we find a cover
 				if ($this->getOverDriveCover()) {
@@ -112,35 +113,13 @@ class BookCoverProcessor{
 				if ($this->getEbraryCover($this->id)) {
 					return;
 				}
-				// Any Side-loaded Collection that has a cover in the 856 tag (and additional conditionals)
-			} elseif (stripos($this->type, 'kanopy') !== false) {
-				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-					return;
-				}
-			} elseif (stripos($this->type, 'bookflix') !== false) {
-				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-					return;
-				}
-			} elseif (stripos($this->type, 'boombox') !== false) {
-				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-					return;
-				}
-			} elseif (stripos($this->type, 'biblioboard') !== false) {
-				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-					return;
-				}
-			} elseif (stripos($this->type, 'lynda') !== false) {
-				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-					return;
-				}
-			} elseif (stripos($this->type, 'odilo') !== false) {
-				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-					return;
-				}
-				// Cloud Library
 			} elseif (stripos($this->type, 'zinio') !== false) {
 				if ($this->getZinioCover($this->type . ':' . $this->id)) {
 					return;
+				}
+			} elseif (array_key_exists($this->type, $sideLoadSettings)){
+				if ($this->getSideLoadedCover($relatedRecord->id)) {
+					return true;
 				}
 			}
 
@@ -191,9 +170,27 @@ class BookCoverProcessor{
 				/** @var File_MARC_Data_Field[] $linkFields */
 				$linkFields = $driver->getMarcRecord()->getFields('856');
 				foreach ($linkFields as $linkField) {
-					if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
-						$coverUrl = $linkField->getSubfield('u')->getData();
-						return $this->processImageURL('sideload', $coverUrl, true);
+					if ($linkField->getIndicator(1) == 4 && ($linkField->getIndicator(2) == 2 || $linkField->getIndicator(2) == 0)) {
+						$coverUrl = null;
+						if ($linkField->getSubfield('u') != null) {
+							$coverUrl = $linkField->getSubfield('u')->getData();
+						}elseif ($linkField->getSubfield('a') != null) {
+							$coverUrl = $linkField->getSubfield('a')->getData();
+						}
+						if ($coverUrl != null){
+							$isImage = false;
+							$extension = substr($coverUrl, -4);
+							if ((strcasecmp($extension, '.jpg') === 0) || (strcasecmp($extension, '.gif') === 0) || (strcasecmp($extension, '.png') === 0)) {
+								$isImage = true;
+							}elseif ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
+								$isImage = true;
+							}
+							if ($isImage) {
+								if ($this->processImageURL('sideload', $coverUrl, true)) {
+									return true;
+								}
+							}
+						}
 					}
 				}
 			}
@@ -1037,6 +1034,7 @@ class BookCoverProcessor{
 			}
 			//Have not found a grouped work based on isbn or upc, check based on related records
 			$relatedRecords = $this->groupedWork->getRelatedRecords(true);
+			global $sideLoadSettings;
 			foreach ($relatedRecords as $relatedRecord){
 				if (strcasecmp($relatedRecord->source, 'OverDrive') == 0){
 					if ($this->getOverDriveCover($relatedRecord->id)){
@@ -1074,32 +1072,12 @@ class BookCoverProcessor{
 					if ($this->getFilmsOnDemandCover($relatedRecord->id)){
 						return true;
 					}
-				}elseif (stripos($relatedRecord->source, 'kanopy') !== false){
-					if ($this->getSideLoadedCover($relatedRecord->id)){
-						return true;
-					}
-				} elseif (stripos($relatedRecord->source, 'bookflix') !== false){
-					if ($this->getSideLoadedCover($relatedRecord->id)) {
-						return true;
-					}
-				} elseif (stripos($relatedRecord->source, 'boombox') !== false){
-					if ($this->getSideLoadedCover($relatedRecord->id)) {
-						return true;
-					}
-				} elseif (stripos($relatedRecord->source, 'biblioboard') !== false){
-					if ($this->getSideLoadedCover($relatedRecord->id)) {
-						return true;
-					}
-				} elseif (stripos($relatedRecord->source, 'lynda') !== false){
-					if ($this->getSideLoadedCover($relatedRecord->id)) {
-						return true;
-					}
-				} elseif (stripos($relatedRecord->source, 'Odilo') !== false){
-					if ($this->getSideLoadedCover($relatedRecord->id)) {
-						return true;
-					}
 				} elseif (stripos($relatedRecord->source, 'zinio') !== false){
 					if ($this->getZinioCover($relatedRecord->id)) {
+						return true;
+					}
+				} elseif (array_key_exists($relatedRecord->source, $sideLoadSettings)){
+					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}
 				}else{
