@@ -27,7 +27,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('listsSearches');
-		$this->defaultIndex = 'ListsKeyword';
+
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -209,7 +209,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 		return 'Lists';
 	}
 
-	public function getDefaultSearchIndex()
+	public function getDefaultIndex()
 	{
 		return 'ListsKeyword';
 	}

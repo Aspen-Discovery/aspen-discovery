@@ -19,10 +19,7 @@
 					<a href="{$summUrl}" class="result-title notranslate">
 						{$summTitle|removeTrailingPunctuation|escape}
 						{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
-					</a><br>
-					{if $summTitleStatement}
-						&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|truncate:180:"..."|highlight}
-					{/if}
+					</a>
 				</div>
 			</div>
 

@@ -85,6 +85,10 @@ class UserListEntry extends DataObject{
 			require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
 			$recordDriver = new ListsRecordDriver($this->sourceId);
 			return $recordDriver;
+		}elseif ($this->source == 'Genealogy'){
+			require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
+			$recordDriver = new PersonRecord($this->sourceId);
+			return $recordDriver;
 		}else{
 			return null;
 		}

@@ -136,6 +136,23 @@ class EbscoRecordDriver extends RecordInterface
 		return 'RecordDrivers/EBSCO/result.tpl';
 	}
 
+	public function getBrowseResult()
+	{
+		global $interface;
+
+		$id = $this->getUniqueID();
+		$interface->assign('summId', $id);
+
+
+		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('summTitle', $this->getTitle());
+
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		return 'RecordDrivers/EBSCO/browse_result.tpl';
+	}
+
 	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
@@ -166,6 +183,44 @@ class EbscoRecordDriver extends RecordInterface
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		return 'RecordDrivers/EBSCO/combinedResult.tpl';
+	}
+
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+		global $interface;
+		$interface->assign('showRatings', $collectionSpotlight->showRatings);
+
+		$interface->assign('key', $index);
+
+		if ($collectionSpotlight->coverSize == 'small'){
+			$imageUrl = $this->getBookcoverUrl('small');
+		}else{
+			$imageUrl = $this->getBookcoverUrl('medium');
+		}
+
+		$interface->assign('title', $this->getTitle());
+		$interface->assign('author', $this->getAuthor());
+		$interface->assign('description', $this->getDescription());
+		$interface->assign('shortId', $this->getUniqueID());
+		$interface->assign('id', $this->getUniqueID());
+		$interface->assign('titleURL', $this->getLinkUrl());
+		$interface->assign('imageUrl', $imageUrl);
+
+		if ($collectionSpotlight->showRatings){
+			$interface->assign('ratingData', null);
+			$interface->assign('showNotInterested', false);
+		}
+
+		$result = [
+			'title' => $this->getTitle(),
+			'author' => $this->getAuthor(),
+		];
+		if ($collectionSpotlight->style == 'text-list'){
+			$result['formattedTextOnlyTitle'] = $interface->fetch('CollectionSpotlight/formattedTextOnlyTitle.tpl');
+		}else{
+			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
+		}
+
+		return $result;
 	}
 
 	/**

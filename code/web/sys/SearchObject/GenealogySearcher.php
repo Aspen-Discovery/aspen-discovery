@@ -37,7 +37,6 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('genealogySearches');
-		$this->defaultIndex = 'GenealogyKeyword';
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -87,6 +86,9 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	{
 		// Call the standard initialization routine in the parent:
 		parent::init('genealogy');
+
+		$this->searchType = 'genealogy';
+		$this->basicSearchType = 'genealogy';
 
 		//********************
 		// Check if we have a saved search to restore -- if restored successfully,
@@ -147,7 +149,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		//********************
 		// Basic Search logic
 		$this->searchTerms[] = array(
-			'index' => $this->defaultIndex,
+			'index' => $this->getDefaultIndex(),
 			'lookfor' => ""
 		);
 
@@ -640,7 +642,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		return 'Genealogy';
 	}
 
-	public function getDefaultSearchIndex()
+	public function getDefaultIndex()
 	{
 		return 'GenealogyKeyword';
 	}

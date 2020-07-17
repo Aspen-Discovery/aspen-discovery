@@ -21,9 +21,6 @@
 					<a href="/MyAccount/MyList/{$summShortId}" class="result-title notranslate">
 						{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 					</a>
-					{if $summTitleStatement}
-						&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
-					{/if}
 					{if isset($summScore)}
 						&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
 					{/if}

@@ -56,7 +56,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('islandoraSearches');
-		$this->defaultIndex = 'IslandoraKeyword';
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -182,7 +181,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		//********************
 		// Basic Search logic
 		$this->searchTerms[] = [
-			'index' => $this->defaultIndex,
+			'index' => $this->getDefaultIndex(),
 			'lookfor' => ""
 		];
 
@@ -810,7 +809,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		if (isset($_REQUEST['islandoraType'])) {
 			$params[] = 'islandoraType=' . $_REQUEST['islandoraType'];
 		} else {
-			$params[] = 'islandoraType=' . $this->defaultIndex;
+			$params[] = 'islandoraType=' . $this->getDefaultIndex();
 		}
 		return $params;
 	}
@@ -1142,7 +1141,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		return 'Islandora';
 	}
 
-	public function getDefaultSearchIndex()
+	public function getDefaultIndex()
 	{
 		return 'IslandoraKeyword';
 	}

@@ -210,7 +210,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		// The below template variables are in the listEntry.tpl but the driver doesn't currently
 		// supply this information, so we are making sure they are set to a null value.
 		$interface->assign('summShortId', null);
-		$interface->assign('summTitleStatement', null);
 		$interface->assign('summAuthor', null);
 		$interface->assign('summPublisher', null);
 		$interface->assign('summPubDate', null);

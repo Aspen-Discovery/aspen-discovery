@@ -27,7 +27,6 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('openArchivesSearches');
-		$this->defaultIndex = 'OpenArchivesKeyword';
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -247,7 +246,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 		return 'OpenArchives';
 	}
 
-	public function getDefaultSearchIndex()
+	public function getDefaultIndex()
 	{
 		return 'OpenArchivesKeyword';
 	}

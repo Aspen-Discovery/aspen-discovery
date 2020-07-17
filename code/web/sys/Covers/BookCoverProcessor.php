@@ -41,109 +41,108 @@ class BookCoverProcessor{
 		$this->log("Starting to load cover", Logger::LOG_NOTICE);
 		$this->bookCoverPath = $configArray['Site']['coverPath'];
 		if (!$this->loadParameters()) {
-			return;
+			return true;
 		}
 
 		if (!$this->reload) {
 			$this->log("Looking for Cached cover", Logger::LOG_NOTICE);
 			if ($this->getCachedCover()) {
-				return;
+				return true;
 			}
 		}
 		if ($this->type == 'open_archives') {
 			if ($this->getOpenArchivesCover($this->id)) {
-				return;
+				return true;
 			}
 		} elseif ($this->type == 'list') {
 			if ($this->getListCover($this->id)) {
-				return;
+				return true;
 			}
 		} elseif ($this->type == 'library_calendar_event') {
 			if ($this->getLibraryCalendarCover($this->id)) {
-				return;
+				return true;
 			}
 		} elseif ($this->type == 'webpage') {
 			if ($this->getWebPageCover($this->id)) {
-				return;
+				return true;
 			}
 		} elseif ($this->type == 'ebsco_eds') {
 			if ($this->getEbscoEdsCover($this->id)) {
-				return;
+				return true;
 			}
 		} else {
 			global $sideLoadSettings;
 			if ($this->type == 'overdrive') {
 				//Will exit if we find a cover
 				if ($this->getOverDriveCover()) {
-					return;
+					return true;
 				}
 			} else if ($this->type == 'hoopla') {
 				//Will exit if we find a cover
 				if ($this->getHooplaCover($this->id)) {
-					return;
+					return true;
 				}
 			} else if ($this->type == 'rbdigital') {
 				//Will exit if we find a cover
 				if ($this->getRBdigitalCover($this->id)) {
-					return;
+					return true;
 				}
 			} else if ($this->type == 'rbdigital_magazine') {
 				//Will exit if we find a cover
 				if ($this->getRBdigitalMagazineCover($this->id)) {
-					return;
+					return true;
 				}
 			} else if ($this->type == 'cloud_library') {
 				//Will exit if we find a cover
 				if ($this->getCloudLibraryCover($this->id, true)) {
-					return;
+					return true;
 				}
 			} elseif ($this->type == 'Colorado State Government Documents') {
 				if ($this->getColoradoGovDocCover()) {
-					return;
+					return true;
 				}
 			} elseif ($this->type == 'Classroom Video on Demand') {
 				if ($this->getClassroomVideoOnDemandCover($this->id)) {
-					return;
+					return true;
 				}
 			} elseif (stripos($this->type, 'films on demand') !== false) {
 				if ($this->getFilmsOnDemandCover($this->id)) {
-					return;
+					return true;
 				}
 			} elseif (stripos($this->type, 'proquest') !== false || stripos($this->type, 'ebrary') !== false) {
 				if ($this->getEbraryCover($this->id)) {
-					return;
+					return true;
 				}
 			} elseif (stripos($this->type, 'zinio') !== false) {
 				if ($this->getZinioCover($this->type . ':' . $this->id)) {
-					return;
+					return true;
 				}
 			} elseif (array_key_exists($this->type, $sideLoadSettings)){
-				if ($this->getSideLoadedCover($relatedRecord->id)) {
+				if ($this->getSideLoadedCover($this->id)) {
 					return true;
 				}
 			}
 
 			if ($this->type == 'grouped_work' && $this->getUploadedGroupedWorkCover($this->id)){
-				return;
+				return true;
 			}
 
 			if ($this->type != 'grouped_work' && $this->getCoverFromMarc()) {
-				return;
+				return true;
 			}
 
 			$this->log("Looking for cover from providers", Logger::LOG_NOTICE);
 			if ($this->getCoverFromProvider()) {
-				return;
+				return true;
 			}
 
 			if ($this->getGroupedWorkCover()) {
-				return;
+				return true;
 			}
 		}
 
 		$this->log("No image found, using default image", Logger::LOG_NOTICE);
-		$this->getDefaultCover();
-
+		return $this->getDefaultCover();
 	}
 
 	private function getHooplaCover($id){
@@ -1345,5 +1344,4 @@ class BookCoverProcessor{
 			return false;
 		}
 	}
-
 }

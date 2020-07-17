@@ -43,9 +43,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('groupedWorksSearches');
-		if (isset($searchSettings['General']['default_handler'])) {
-			$this->defaultIndex = $searchSettings['General']['default_handler'];
-		}
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -288,7 +285,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		//********************
 		// Basic Search logic
 		$this->searchTerms[] = array(
-			'index' => $this->defaultIndex,
+			'index' => $this->getDefaultIndex(),
 			'lookfor' => ""
 		);
 
@@ -1578,7 +1575,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return 'GroupedWork';
 	}
 
-	public function getDefaultSearchIndex()
+	public function getDefaultIndex()
 	{
 		return 'Keyword';
 	}

@@ -231,8 +231,6 @@ class AJAX extends Action {
 					$result['listDescription'] = $sourceList->description;
 					$result['titles'] = $sourceList->getSpotlightTitles( $collectionSpotlight);
 					$result['currentIndex'] = 0;
-				} else {
-					$records = array();
 				}
 				$result['searchUrl'] = '/MyAccount/MyList/' . $collectionSpotlightList->sourceListId;
 			}else{

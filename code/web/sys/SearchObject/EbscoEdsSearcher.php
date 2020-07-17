@@ -45,7 +45,6 @@ class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 		$this->searchType = 'ebsco_eds';
 		$this->resultsModule = 'EBSCO';
 		$this->resultsAction = 'Results';
-		$this->defaultIndex = 'TX';
 	}
 
 	/**
@@ -497,7 +496,7 @@ BODY;
 
 	public function getEngineName()
 	{
-		return 'ebsco_eds';
+		return 'EbscoEds';
 	}
 
 	function getSearchesFile()
@@ -637,5 +636,79 @@ BODY;
 	function loadDynamicFields()
 	{
 		// TODO: Implement loadDynamicFields() method.
+	}
+
+	function getBrowseRecordHTML(){
+		global $interface;
+		$html = array();
+		//global $logger;
+		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
+		if (isset($this->lastSearchResults->Data->Records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+
+				require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+				$record = new EbscoRecordDriver($current);
+				if ($record->isValid()) {
+					$interface->assign('recordDriver', $record);
+					$html[] = $interface->fetch($record->getBrowseResult());
+				} else {
+					$html[] = "Unable to find record";
+				}
+			}
+		}
+
+		return $html;
+	}
+
+	public function getSpotlightResults(CollectionSpotlight $spotlight){
+		$spotlightResults = [];
+		if (isset($this->lastSearchResults->Data->Records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
+				require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+				$record = new EbscoRecordDriver($current);
+				if ($record->isValid()) {
+					if (!empty($orderedListOfIDs)) {
+						$position = array_search($current['id'], $orderedListOfIDs);
+						if ($position !== false) {
+							$spotlightResults[$position] = $record->getSpotlightResult($spotlight, $position);
+						}
+					} else {
+						$spotlightResults[] = $record->getSpotlightResult($spotlight, $x);
+					}
+				} else {
+					$spotlightResults[] = "Unable to find record";
+				}
+			}
+		}
+		return $spotlightResults;
+	}
+
+	public function setSearchTerm($searchTerm)
+	{
+		if (strpos($searchTerm, ':') !== false){
+			list($searchIndex, $term) = explode(':', $searchTerm, 2);
+			$this->setSearchTerms([
+				'lookfor' =>$term,
+				'index' => $searchIndex
+			]);
+		}else {
+			$this->setSearchTerms([
+				'lookfor' => $searchTerm,
+				'index' => $this->getDefaultIndex()
+			]);
+		}
+	}
+
+	public function disableSpelling(){
+		//Do nothing for now
+	}
+
+	public function getDefaultIndex()
+	{
+		return 'TX';
 	}
 }

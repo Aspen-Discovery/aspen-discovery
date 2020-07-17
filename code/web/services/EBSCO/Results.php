@@ -53,6 +53,9 @@ class EBSCO_Results extends Action{
 			$interface->assign('pageLinks', $pager->getLinks());
 		}
 
+		$interface->assign('savedSearch', $searchObject->isSavedSearch());
+		$interface->assign('searchId',    $searchObject->getSearchId());
+
 		// Save the ID of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchId'] = $searchObject->getSearchId();
 
