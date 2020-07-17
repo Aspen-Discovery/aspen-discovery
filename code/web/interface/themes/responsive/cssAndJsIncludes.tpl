@@ -99,7 +99,10 @@
 			Globals.automaticTimeoutLengthLoggedOut = {$automaticTimeoutLengthLoggedOut};
 			{/if}
 			{* Set Search Result Display Mode on Searchbox *}
-			{if !$onInternalIP}AspenDiscovery.Searches.getPreferredDisplayMode();AspenDiscovery.Archive.getPreferredDisplayMode();{/if}
+			{if !$onInternalIP}
+			AspenDiscovery.Searches.getPreferredDisplayMode();
+			AspenDiscovery.Archive.getPreferredDisplayMode();
+			{/if}
 			{literal}
 		});
 		{/literal}

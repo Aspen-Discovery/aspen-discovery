@@ -25,7 +25,7 @@ abstract class CombinedResultSection extends DataObject{
 		if ($dplaSetting->find(true)){
 			$validResultSources['dpla'] = 'DPLA';
 		}
-		$validResultSources['eds'] = 'EBSCO EDS';
+		$validResultSources['ebsco_eds'] = 'EBSCO EDS';
 		$validResultSources['catalog'] = 'Catalog Results';
 		if ($configArray['Content']['Prospector']) {
 			$validResultSources['prospector'] = 'Prospector';

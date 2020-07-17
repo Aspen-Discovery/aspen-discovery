@@ -14,7 +14,7 @@ class DefaultCoverImageBuilder
 	private $backgroundColor;
 	private $foregroundColor;
 
-	public function __construct()
+	public function __construct($invertColors = false)
 	{
 		global $interface;
 		if ($interface == null) {
@@ -58,6 +58,11 @@ class DefaultCoverImageBuilder
 						'g' => $colors[1],
 						'b' => $colors[2]
 					];
+				}
+				if ($invertColors) {
+					$tmpColor = $this->backgroundColor;
+					$this->backgroundColor = $this->foregroundColor;
+					$this->foregroundColor = $tmpColor;
 				}
 			}
 		}

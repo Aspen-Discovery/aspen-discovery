@@ -608,7 +608,7 @@ abstract class SearchObject_BaseSearcher
 			//The type should never have punctuation in it (quotes, colons, etc)
 			$type = preg_replace('/[:"\']/', '', $type);
 
-			if (!array_key_exists($type, $this->searchIndexes) && !array_key_exists($type, $this->advancedTypes)){
+			if (!array_key_exists($type, $this->getSearchIndexes()) && !array_key_exists($type, $this->advancedTypes)){
 				$type = $this->defaultIndex;
 			}
 		} else {
@@ -800,7 +800,7 @@ abstract class SearchObject_BaseSearcher
 			}
 
 			// Finally, if every advanced row was empty
-			if (count($this->searchTerms) == 0) {
+			if (empty($this->searchTerms)) {
 				// Treat it as an empty basic search
 				$this->searchType = $this->basicSearchType;
 				$this->searchTerms[] = array(
@@ -1450,9 +1450,7 @@ abstract class SearchObject_BaseSearcher
 	protected function minify()
 	{
 		// Clone this object as a minified object
-		$newObject = new minSO($this);
-		// Return the new object
-		return $newObject;
+		return new minSO($this);
 	}
 
 	/**
@@ -1617,8 +1615,7 @@ abstract class SearchObject_BaseSearcher
 			if ($search->session_id == $currentSessionId || $search->user_id == UserAccount::getActiveUserId()) {
 				// They do, deminify it to a new object.
 				$minSO = unserialize($search->search_object);
-				$savedSearch = SearchObjectFactory::deminify($minSO);
-				return $savedSearch;
+				return SearchObjectFactory::deminify($minSO);
 			} else {
 				// Just get out, we don't need to show an error
 				return null;
@@ -1633,12 +1630,14 @@ abstract class SearchObject_BaseSearcher
 	 * unable to load a requested saved search, return a AspenError object.
 	 *
 	 * @access  protected
+	 *
+	 * @var     string $searchId
+	 * @var     boolean $redirect
+	 * @var     boolean $forceReload
+	 *
 	 * @return  mixed               Does not return on successful load, returns
 	 *                              false if no search to restore, returns
 	 *                              AspenError object in case of trouble.
-	 * @var     boolean $redirect
-	 * @var     boolean $forceReload
-	 * @var     string $searchId
 	 */
 	public function restoreSavedSearch($searchId = null, $redirect = true, $forceReload = false)
 	{
@@ -2507,6 +2506,10 @@ abstract class SearchObject_BaseSearcher
 
 	abstract function loadValidFields();
 	abstract function loadDynamicFields();
+
+	public function getDefaultIndex(){
+		return $this->defaultIndex;
+	}
 }//End of SearchObject_Base
 
 /**

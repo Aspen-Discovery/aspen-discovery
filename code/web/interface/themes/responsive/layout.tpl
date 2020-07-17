@@ -30,8 +30,7 @@
 			<meta property="og:url" content="{$og_url|escape:html}"/>
 		{/if}
 		<link type="image/x-icon" href="{$favicon}" rel="shortcut icon">
-		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title} Catalog Search"
-		      href="/Search/OpenSearch?method=describe">
+		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title} Catalog Search" href="/Search/OpenSearch?method=describe">
 		{include file="cssAndJsIncludes.tpl"}
 		{$themeCss}
 	{/strip}

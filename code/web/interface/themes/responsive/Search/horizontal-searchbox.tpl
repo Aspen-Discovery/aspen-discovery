@@ -40,41 +40,20 @@
 				{* Search Type *}
 				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if $hiddenSearchSource} col-sm-10 col-sm-offset-2 col-xs-12 col-xs-offset-0 {else} col-sm-5 col-sm-offset-2 col-xs-5 col-xs-offset-0{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
-						{foreach from=$catalogSearchIndexes item=searchDesc key=searchVal}
-							<option data-search_source="catalog" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
+						{foreach from=$searchIndexes item=searchDesc key=searchVal}
+							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
 						{/foreach}
-						{if !empty($enableOpenGenealogy)}
-							{foreach from=$genealogySearchIndexes item=searchDesc key=searchVal}
-								<option data-search_source="genealogy" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-							{/foreach}
-						{/if}
-						{if !empty($enableOpenArchives)}
-							{foreach from=$openArchivesSearchIndexes item=searchDesc key=searchVal}
-								<option data-search_source="open_archives" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-							{/foreach}
-						{/if}
-						{foreach from=$listSearchIndexes item=searchDesc key=searchVal}
-							<option data-search_source="lists" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-						{/foreach}
-						{foreach from=$websiteSearchIndexes item=searchDesc key=searchVal}
-							<option data-search_source="websites" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-						{/foreach}
-						{if !empty($enableEvents)}
-							{foreach from=$eventsSearchIndexes item=searchDesc key=searchVal}
-								<option data-search_source="events" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-							{/foreach}
-						{/if}
 					</select>
 				</div>
 
 				{if !$hiddenSearchSource}
 					<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
-						<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="AspenDiscovery.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control" aria-label="Collection to Search">
+						<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="AspenDiscovery.Searches.loadSearchTypes();" class="searchSourceHorizontal form-control" aria-label="Collection to Search">
 							{foreach from=$searchSources item=searchOption key=searchKey}
-								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
+								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description}"
 										{if $searchKey == $searchSource} selected="selected"{/if}
-										{if $searchKey == $searchSource} id="default_search_type"{/if}
-											title="{$searchOption.description}">
+										{if $searchKey == $defaultSearchIndex} id="default_search_type"{/if}
+										>
 									{translate text="in"} {$searchOption.name}{if !empty($searchOption.external)} *{/if}
 								</option>
 							{/foreach}

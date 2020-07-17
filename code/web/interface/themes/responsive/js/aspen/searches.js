@@ -1,6 +1,5 @@
 AspenDiscovery.Searches = (function(){
-	$(function(){
-		AspenDiscovery.Searches.enableSearchTypes();
+	$(document).ready(function(){
 		AspenDiscovery.Searches.initAutoComplete();
 
 		// Add Browser-stored showCovers setting to the search form if there is a stored value set, and
@@ -10,9 +9,7 @@ AspenDiscovery.Searches = (function(){
 		// a page reload on the search results page.
 		if (!Globals.opac && !Globals.loggedIn && AspenDiscovery.hasLocalStorage() && $('input[name="showCovers"]').length === 0){
 			let showCovers = window.localStorage.getItem('showCovers') || false;
-			//console.log('Show Covers Value : ', showCovers);
 			if (showCovers.length > 0) {
-				//console.log('Add showCovers value', showCovers);
 				$("<input>").attr({
 					type: 'hidden',
 					name: 'showCovers',
@@ -176,8 +173,7 @@ AspenDiscovery.Searches = (function(){
 			return false;
 		},
 
-		initialSearchLoaded: false,
-		enableSearchTypes: function(){
+		loadSearchTypes: function(){
 			let searchTypeElement = $("#searchSource");
 			let catalogType = "catalog";
 			if (searchTypeElement){
@@ -186,31 +182,33 @@ AspenDiscovery.Searches = (function(){
 					catalogType = selectedSearchType.data("catalog_type");
 				}
 			}
-
-			let searchIndexElement = $("#searchIndex");
-			if (searchIndexElement) {
-				let searchOptions = searchIndexElement.find("option");
-				let firstVisible = true;
-				if (AspenDiscovery.Searches.initialSearchLoaded === true) {
-					$.each(searchOptions, function() {
-						let searchOption = $(this);
-						searchOption.prop('selected', false);
-					});
-				}
-				$.each(searchOptions, function() {
-					let searchOption = $(this);
-					if (searchOption.data("search_source") === catalogType) {
-						searchOption.show();
-						if (AspenDiscovery.Searches.initialSearchLoaded === true && firstVisible) {
-							searchOption.prop('selected', true);
-							firstVisible = false;
+			let url = "/Search/AJAX";
+			$.getJSON(url,
+				{ // pass parameters as data
+					method : 'getSearchIndexes',
+					searchSource : catalogType
+				},
+				function(data) {
+					if (data.success) {
+						let searchIndexElement = $("#searchIndex");
+						if (searchIndexElement) {
+							//Clear the existing options and load with the new ones
+							searchIndexElement.empty();
+							for(let searchIndex in data.searchIndexes) {
+								let selected = "";
+								if (searchIndex === data.selectedIndex){
+									selected = " selected"
+								}
+								let defaultSearch = "";
+								if (searchIndex === data.defaultSearchIndex){
+									defaultSearch = " id='default_search_type'";
+								}
+								searchIndexElement.append("<option value='" + searchIndex + "'" + selected + defaultSearch + ">" + data.searchIndexes[searchIndex] + "</option>")
+							}
 						}
-					}else{
-						searchOption.hide();
 					}
-				});
-			}
-			AspenDiscovery.Searches.initialSearchLoaded = true;
+				}
+			);
 		},
 
 		resetSearchType: function(){

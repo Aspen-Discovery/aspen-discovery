@@ -644,6 +644,28 @@
 					</div>
 				{/if}
 
+				{if array_key_exists('EBSCO EDS', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+					{if $module == 'EBSCO' && in_array($action, array('Settings'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#ebscoMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+									{translate text="EBSCO"}
+								</div>
+							</div>
+						</a>
+						<div id="ebscoMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="/EBSCO/EDSSettings">{translate text="EDS Settings"}</a></div>
+							</div>
+						</div>
+					</div>
+				{/if}
+
 				{if $islandoraEnabled && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
 					{if in_array($action, array('ArchiveSubjects', 'ArchivePrivateCollections', 'ArchiveRequests', 'AuthorshipClaims', 'ClearArchiveCache', 'ArchiveUsage'))}
 						{assign var="curSection" value=true}

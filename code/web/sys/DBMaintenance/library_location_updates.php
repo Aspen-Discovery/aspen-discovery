@@ -1320,45 +1320,45 @@ function getLibraryLocationUpdates(){
 			),
 
 			'library_max_fines_for_account_update' => array(
-					'title' => 'Library Maximum fines to allow account updates',
-					'description' => 'Add option to prevent patrons with high fines from updating their account',
-					'sql' => array(
-							'ALTER TABLE `library` ADD COLUMN `maxFinesToAllowAccountUpdates` FLOAT DEFAULT 10',
-					),
+				'title' => 'Library Maximum fines to allow account updates',
+				'description' => 'Add option to prevent patrons with high fines from updating their account',
+				'sql' => array(
+					'ALTER TABLE `library` ADD COLUMN `maxFinesToAllowAccountUpdates` FLOAT DEFAULT 10',
+				),
 			),
 
 			'show_Refresh_Account_Button' => array(
-					'title' => 'Show Refresh Account Button Setting',
-					'description' => 'Add library admin option to show Refresh Account button when the Pay Fines Online link is clicked.',
-					'sql' => array(
-							'ALTER TABLE `library` ADD `showRefreshAccountButton` TINYINT NOT NULL DEFAULT 1;',
-					),
+				'title' => 'Show Refresh Account Button Setting',
+				'description' => 'Add library admin option to show Refresh Account button when the Pay Fines Online link is clicked.',
+				'sql' => array(
+					'ALTER TABLE `library` ADD `showRefreshAccountButton` TINYINT NOT NULL DEFAULT 1;',
+				),
 			),
 
 			'library_eds_integration' => array(
-					'title' => 'Library EDS Integration',
-					'description' => 'Setup information for connection to EDS APIs',
-					'sql' => array(
-							'ALTER TABLE `library` ADD COLUMN `edsApiProfile` VARCHAR(50)',
-							'ALTER TABLE `library` ADD COLUMN `edsApiUsername` VARCHAR(50)',
-							'ALTER TABLE `library` ADD COLUMN `edsApiPassword` VARCHAR(50)',
-					),
+				'title' => 'Library EDS Integration',
+				'description' => 'Setup information for connection to EDS APIs',
+				'sql' => array(
+					'ALTER TABLE `library` ADD COLUMN `edsApiProfile` VARCHAR(50)',
+					'ALTER TABLE `library` ADD COLUMN `edsApiUsername` VARCHAR(50)',
+					'ALTER TABLE `library` ADD COLUMN `edsApiPassword` VARCHAR(50)',
+				),
 			),
 
 			'library_eds_search_integration' => array(
-					'title' => 'Library EDS Search Integration',
-					'description' => 'Setup information for linking to EDS',
-					'sql' => array(
-							'ALTER TABLE `library` ADD COLUMN `edsSearchProfile` VARCHAR(50)',
-					),
+				'title' => 'Library EDS Search Integration',
+				'description' => 'Setup information for linking to EDS',
+				'sql' => array(
+					'ALTER TABLE `library` ADD COLUMN `edsSearchProfile` VARCHAR(50)',
+				),
 			),
 
 			'library_patronNameDisplayStyle' => array(
-					'title' => 'Library Patron Display Name Style',
-					'description' => 'Setup the style for how the display name for patrons is generated',
-					'sql' => array(
-							"ALTER TABLE `library` ADD COLUMN `patronNameDisplayStyle` ENUM('firstinitial_lastname', 'lastinitial_firstname') DEFAULT 'firstinitial_lastname';",
-					),
+				'title' => 'Library Patron Display Name Style',
+				'description' => 'Setup the style for how the display name for patrons is generated',
+				'sql' => array(
+					"ALTER TABLE `library` ADD COLUMN `patronNameDisplayStyle` ENUM('firstinitial_lastname', 'lastinitial_firstname') DEFAULT 'firstinitial_lastname';",
+				),
 			),
 
 			'location_additional_branches_to_show_in_facets' => array(
@@ -2180,6 +2180,23 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library ADD COLUMN allowUsernameUpdates TINYINT(1) DEFAULT 0"
 			]
 		],
+
+		'libraryProfileUpdateOptions' => [
+			'title' => 'Library User Profile Update Options',
+			'description' => 'Add options for how profile updates are done',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN useAllCapsWhenUpdatingProfile TINYINT(1) DEFAULT 0",
+				"ALTER TABLE library ADD COLUMN bypassReviewQueueWhenUpdatingProfile TINYINT(1) DEFAULT 0"
+			]
+		],
+
+		'libraryAvailableHoldDelay' => [
+			'title' => 'Library Available Hold Delay',
+			'description' => 'Add option for delaying when a hold moves from unavailable to available',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN availableHoldDelay INT DEFAULT 0"
+			]
+		]
 	);
 }
 

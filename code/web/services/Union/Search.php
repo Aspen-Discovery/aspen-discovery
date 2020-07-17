@@ -78,7 +78,7 @@ class Union_Search extends Action {
 			$interface->assign('action', $action);
 			$results = new Events_Results();
 			$results->launch();
-		}else if ($searchSource == 'ebsco'){
+		}else if ($searchSource == 'ebsco_eds'){
 			require_once (ROOT_DIR . '/services/EBSCO/Results.php');
 			$module = 'EBSCO';
 			$interface->assign('module', $module);

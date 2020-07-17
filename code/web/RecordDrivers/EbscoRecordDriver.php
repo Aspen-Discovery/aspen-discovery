@@ -2,7 +2,8 @@
 
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 
-class EbscoRecordDriver extends RecordInterface {
+class EbscoRecordDriver extends RecordInterface
+{
 	private $recordData;
 
 	/**
@@ -12,62 +13,92 @@ class EbscoRecordDriver extends RecordInterface {
 	 * we will already have this data available, so we might as well
 	 * just pass it into the constructor.
 	 *
-	 * @param   array|File_MARC_Record||string   $recordData     Data to construct the driver from
+	 * @param array|File_MARC_Record||string   $recordData     Data to construct the driver from
 	 * @access  public
 	 */
-	public function __construct($recordData) {
-		if (is_string($recordData)){
-			require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
-			$edsApi = EDS_API::getInstance();
+	public function __construct($recordData)
+	{
+		if (is_string($recordData)) {
+			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
 			list($dbId, $an) = explode(':', $recordData);
-			$this->recordData = $edsApi->retrieveRecord($dbId, $an);
-		}else{
+			$this->recordData = $edsSearcher->retrieveRecord($dbId, $an);
+		} else {
 			$this->recordData = $recordData;
 		}
 	}
 
-	public function isValid(){
+	public function isValid()
+	{
 		return true;
 	}
 
-	public function getBookcoverUrl($size = 'small') {
-		if ($this->recordData->ImageInfo){
-			return (string)$this->recordData->ImageInfo->CoverArt->Target;
-		}else{
-			return null;
-		}
+	public function getBookcoverUrl($size = 'small', $absolutePath = false)
+	{
+		if (!empty($this->recordData->ImageInfo)) {
+			if (is_array($this->recordData->ImageInfo)) {
+				$imageUrl = '';
 
+				/** @var stdClass $coverArtElement */
+				foreach ($this->recordData->ImageInfo as $coverArtElement) {
+					if ($size == 'small' && $coverArtElement->Size == 'thumb') {
+						return $coverArtElement->Target;
+					} elseif ($size == 'medium' && $coverArtElement->Size == 'medium') {
+						return $coverArtElement->Target;
+					} else {
+						$imageUrl = $coverArtElement->Target;
+					}
+				}
+				return $imageUrl;
+			} else {
+				return $this->recordData->ImageInfo->Target;
+			}
+		} else {
+			global $configArray;
+
+			if ($absolutePath) {
+				$bookCoverUrl = $configArray['Site']['url'];
+			} else {
+				$bookCoverUrl = '';
+			}
+			$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=ebsco_eds";
+			return $bookCoverUrl;
+		}
 	}
 
-    /**
-     * Overridden because we are linking straight to EBSCO
-     * @param bool $unscoped
-     * @return string
-     */
-	public function getLinkUrl($unscoped = false) {
+	/**
+	 * Overridden because we are linking straight to EBSCO
+	 * @param bool $unscoped
+	 * @return string
+	 */
+	public function getLinkUrl($unscoped = false)
+	{
 		return $this->getRecordUrl();
 	}
 
-    /**
-     * Overridden because we are linking straight to EBSCO
-     * @return string
-     */
-    public function getAbsoluteUrl() {
-        return $this->getRecordUrl();
-    }
+	/**
+	 * Overridden because we are linking straight to EBSCO
+	 * @return string
+	 */
+	public function getAbsoluteUrl()
+	{
+		return $this->getRecordUrl();
+	}
 
-	public function getRecordUrl() {
+	public function getRecordUrl()
+	{
 		//TODO: Switch back to an internal link once we do a full EBSCO implementation
 		//global $configArray;
 		//return '/EBSCO/Home?id=' . urlencode($this->getUniqueID());
 		return $this->recordData->PLink;
 	}
 
-	public function getEbscoUrl() {
+	public function getEbscoUrl()
+	{
 		return $this->recordData->PLink;
 	}
 
-	public function getModule() {
+	public function getModule()
+	{
 		return 'EBSCO';
 	}
 
@@ -79,7 +110,8 @@ class EbscoRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list') {
+	public function getSearchResult($view = 'list')
+	{
 		global $interface;
 
 		$id = $this->getUniqueID();
@@ -96,6 +128,8 @@ class EbscoRecordDriver extends RecordInterface {
 		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
 		$interface->assign('summHasFullText', $this->hasFullText());
 
+		$interface->assign('summDescription', $this->getDescription());
+
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
@@ -110,7 +144,8 @@ class EbscoRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getCombinedResult() {
+	public function getCombinedResult()
+	{
 		global $interface;
 
 		$id = $this->getUniqueID();
@@ -141,7 +176,8 @@ class EbscoRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView() {
+	public function getStaffView()
+	{
 		return null;
 	}
 
@@ -150,22 +186,24 @@ class EbscoRecordDriver extends RecordInterface {
 	 *
 	 * @return  string
 	 */
-	public function getTitle() {
-		if (isset($this->recordData->RecordInfo->BibRecord->BibEntity)){
-			return (string)$this->recordData->RecordInfo->BibRecord->BibEntity->Titles->Title->TitleFull;
-		}else{
+	public function getTitle()
+	{
+		if (isset($this->recordData->RecordInfo->BibRecord->BibEntity)) {
+			return (string)$this->recordData->RecordInfo->BibRecord->BibEntity->Titles[0]->TitleFull;
+		} else {
 			return 'Unknown';
 		}
 	}
 
-    /**
-     * The Table of Contents extracted from the record.
-     * Returns null if no Table of Contents is available.
-     *
-     * @access  public
-     * @return  array              Array of elements in the table of contents
-     */
-	public function getTableOfContents() {
+	/**
+	 * The Table of Contents extracted from the record.
+	 * Returns null if no Table of Contents is available.
+	 *
+	 * @access  public
+	 * @return  array              Array of elements in the table of contents
+	 */
+	public function getTableOfContents()
+	{
 		return null;
 	}
 
@@ -177,8 +215,9 @@ class EbscoRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID() {
-		return  (string)$this->recordData->Header->DbId . ':'. (string)$this->recordData->Header->An;
+	public function getUniqueID()
+	{
+		return (string)$this->recordData->Header->DbId . ':' . (string)$this->recordData->Header->An;
 	}
 
 	/**
@@ -190,11 +229,13 @@ class EbscoRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  bool
 	 */
-	public function hasFullText() {
+	public function hasFullText()
+	{
 		return $this->recordData->FullText->Text->Availability == 1;
 	}
 
-	public function getFullText() {
+	public function getFullText()
+	{
 		$fullText = (string)$this->recordData->FullText->Text->Value;
 		$fullText = html_entity_decode($fullText);
 		$fullText = preg_replace('/<anid>.*?<\/anid>/', '', $fullText);
@@ -207,63 +248,81 @@ class EbscoRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  bool
 	 */
-	public function hasReviews() {
+	public function hasReviews()
+	{
 		return false;
 	}
 
-	public function getDescription() {
+	public function getDescription()
+	{
+		if (count($this->recordData->Items)) {
+			/** @var stdClass $item */
+			foreach ($this->recordData->Items as $item) {
+				if ($item->Name == 'Abstract') {
+					return strip_tags($item->Data);
+				}
+			}
+		}
 		return '';
 	}
 
-	public function getMoreDetailsOptions() {
+	public function getMoreDetailsOptions()
+	{
 		// TODO: Implement getMoreDetailsOptions() method.
 	}
 
-	public function getFormats() {
+	public function getFormats()
+	{
 		return (string)$this->recordData->Header->PubType;
 	}
 
-	public function getCleanISSN() {
+	public function getCleanISSN()
+	{
 		return '';
 	}
 
-	public function getSourceDatabase() {
+	public function getSourceDatabase()
+	{
 		return $this->recordData->Header->DbLabel;
 	}
 
-	public function getAuthor() {
-		if (count($this->recordData->Items)){
-			foreach ($this->recordData->Items->Item as $item){
-				if ($item->Name == 'Author'){
-					return strip_tags((string)$item->Data);
+	public function getAuthor()
+	{
+		if (!empty($this->recordData->Items)) {
+			foreach ($this->recordData->Items as $item) {
+				if ($item->Name == 'Author') {
+					return strip_tags(html_entity_decode($item->Data));
 				}
 			}
 		}
 		return "";
 	}
 
-	public function getExploreMoreInfo(){
+	public function getExploreMoreInfo()
+	{
 		global $configArray;
 		$exploreMoreOptions = array();
 		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
 			require_once ROOT_DIR . '/sys/ExploreMore.php';
 			$exploreMore = new ExploreMore();
-			$exploreMore->loadExploreMoreSidebar('ebsco', $this);
+			$exploreMore->loadExploreMoreSidebar('ebsco_eds', $this);
 		}
 		return $exploreMoreOptions;
 	}
 
-	public function getAllSubjectHeadings(){
+	public function getAllSubjectHeadings()
+	{
 		$subjectHeadings = array();
-		if (count(@$this->recordData->RecordInfo->BibRecord->BibEntity->Subjects) != 0){
-			foreach ($this->recordData->RecordInfo->BibRecord->BibEntity->Subjects->Subject as $subject){
+		if (count(@$this->recordData->RecordInfo->BibRecord->BibEntity->Subjects) != 0) {
+			foreach ($this->recordData->RecordInfo->BibRecord->BibEntity->Subjects->Subject as $subject) {
 				$subjectHeadings[] = (string)$subject->SubjectFull;
 			}
 		}
 		return $subjectHeadings;
 	}
 
-	public function getPermanentId(){
+	public function getPermanentId()
+	{
 		return $this->getUniqueID();
 	}
 }

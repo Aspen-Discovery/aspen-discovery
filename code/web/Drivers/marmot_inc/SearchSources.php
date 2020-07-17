@@ -1,8 +1,59 @@
 <?php
 class SearchSources{
 	static function getSearchSources(){
-		$searchSources = SearchSources::getSearchSourcesDefault();
-		return $searchSources;
+		return SearchSources::getSearchSourcesDefault();
+	}
+
+	/**
+	 * @param string $source
+	 *
+	 * @return SearchObject_BaseSearcher
+	 */
+	static function getSearcherForSource($source){
+		switch ($source)
+		{
+			case 'ebsco_eds':
+				$searchObject = SearchObjectFactory::initSearchObject('EbscoEds');
+				break;
+			case 'events':
+				$searchObject = SearchObjectFactory::initSearchObject('Events');
+				break;
+			case 'genealogy':
+				$searchObject = SearchObjectFactory::initSearchObject('Genealogy');
+				break;
+			case 'islandora':
+				$searchObject = SearchObjectFactory::initSearchObject('Islandora');
+				break;
+			case 'lists':
+				$searchObject = SearchObjectFactory::initSearchObject('Lists');
+				break;
+			case 'open_archives':
+				$searchObject = SearchObjectFactory::initSearchObject('OpenArchives');
+				break;
+			case 'websites':
+				$searchObject = SearchObjectFactory::initSearchObject('Websites');
+				break;
+			case 'catalog':
+			default:
+				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+		}
+		$searchObject->init();
+
+		return $searchObject;
+	}
+
+
+	/**
+	 * @param SearchObject_BaseSearcher $searchObject
+	 * @param string $source
+	 * @return array
+	 */
+	static function getSearchIndexesForSource($searchObject, $source){
+		if ($searchObject == null) {
+			$searchObject = SearchSources::getSearcherForSource($source);
+		}
+		return is_object($searchObject) ? $searchObject->getSearchIndexes() : array();
 	}
 
 	private static function getSearchSourcesDefault(){
@@ -10,9 +61,7 @@ class SearchSources{
 		//Check to see if marmot catalog is a valid option
 		global $library;
 		global $enabledModules;
-		$searchEbsco = false;
 
-		/** @var $locationSingleton Location */
 		global $locationSingleton;
 		$location = $locationSingleton->getActiveLocation();
 		if ($location != null && $location->useScope && $location->restrictSearchByLocation){
@@ -34,13 +83,11 @@ class SearchSources{
 		$searchGenealogy = $library->enableGenealogy;
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
 		$searchArchive = $library->enableArchive == 1;
-		//TODO: Re-enable once we do full EDS integration
-		//$searchEbsco = $library->edsApiProfile != '';
+		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) &&  $library->edsSettingsId != -1;
         $searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
 
-		$marmotAdded = false;
 		if ($enableCombinedResults && $showCombinedResultsFirst){
 			$searchOptions['combinedResults'] = array(
 					'name' => $combinedResultsName,
@@ -162,17 +209,17 @@ class SearchSources{
 		}
 
 		if ($searchEbsco){
-			$searchOptions['ebsco'] = array(
-				'name' => 'EBSCO',
-				'description' => 'EBSCO',
-				'catalogType' => 'ebsco'
+			$searchOptions['ebsco_eds'] = array(
+				'name' => 'Articles & Databases',
+				'description' => 'EBSCO EDS - Articles and Database',
+				'catalogType' => 'ebsco_eds'
 			);
 		}
 
 		if ($searchArchive){
 			$searchOptions['islandora'] = array(
 				'name' => 'Local Digital Archive',
-				'description' => 'Local Digital Archive in Colorado',
+				'description' => 'Local Digital Archive for the library',
 				'catalogType' => 'islandora'
 			);
 		}

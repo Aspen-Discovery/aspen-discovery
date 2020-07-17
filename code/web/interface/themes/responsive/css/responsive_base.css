@@ -8741,6 +8741,8 @@ a.placard-link {
 .placard-image {
   float: left;
   padding-right: 10px;
+  max-width: 100%;
+  height: auto;
 }
 .placard-body {
   font-weight: bold;
@@ -8907,7 +8909,7 @@ a.placard-link {
 }
 .sidebar-links .panel-heading {
   padding: 5px 15px;
-  background: #e7e7e7;
+  background-color: #e7e7e7;
   border-bottom: 1px solid #a1a1a1;
 }
 .sidebar-links .panel > a,
@@ -8915,6 +8917,7 @@ a.placard-link {
 .sidebar-links .panel > a:hover {
   font-size: 14px;
   color: #333333;
+  text-decoration: none;
 }
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,
@@ -9493,6 +9496,10 @@ a.browse-thumbnail-sorted.active {
 }
 .overdueLabel {
   color: red;
+  font-weight: bold;
+}
+.return_claim {
+  color: green;
   font-weight: bold;
 }
 .dueSoonLabel {
