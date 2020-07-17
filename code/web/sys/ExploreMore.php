@@ -363,6 +363,10 @@ class ExploreMore {
 			$exploreMoreOptions = $this->loadIslandoraOptions($searchTerm, $configArray, $islandoraSearchObject, $exploreMoreOptions);
 		}
 
+		if ($library->enableGenealogy){
+			$exploreMoreOptions = $this->loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		}
+
 		//Consolidate explore more options, we'd like to show the search links if possible and then pad with sample records
 		$exploreMoreDisplayOptions = [];
 
@@ -1268,6 +1272,57 @@ class ExploreMore {
 							'link' => '/Archive/RelatedEntities?lookfor=' . urlencode($searchTerm) . '&entityType=event',
 							'usageCount' => $numEvents
 						);
+					}
+				}
+			}
+		}
+		return $exploreMoreOptions;
+	}
+
+	private function loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm)
+	{
+		if ($activeSection != 'genealogy') {
+			if (strlen($searchTerm) > 0) {
+				$exploreMoreOptions['sampleRecords']['genealogy'] = [];
+				/** @var SearchObject_GenealogySearcher $searchObjectSolr */
+				$searchObjectSolr = SearchObjectFactory::initSearchObject('Genealogy');
+				$searchObjectSolr->init();
+				$searchObjectSolr->disableSpelling();
+				$searchObjectSolr->setSearchTerms(array(
+					'lookfor' => $searchTerm,
+					'index' => 'GenealogyKeyword'
+				));
+				$searchObjectSolr->setPage(1);
+				$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
+				$results = $searchObjectSolr->processSearch(true, false);
+
+				if ($results && isset($results['response'])) {
+					$numCatalogResultsAdded = 0;
+					$numCatalogResults = $results['response']['numFound'];
+					if ($numCatalogResults > 1) {
+						//Add a link to remaining results
+						$exploreMoreOptions['searchLinks'][] = array(
+							'label' => "Genealogy Results ($numCatalogResults)",
+							'description' => "Genealogy Results ($numCatalogResults)",
+							'image' => '/interface/themes/responsive/images/person.png',
+							'link' => $searchObjectSolr->renderSearchUrl(),
+							'usageCount' => 1
+						);
+					}
+					foreach ($results['response']['docs'] as $doc) {
+						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
+						if ($numCatalogResultsAdded < $this->numEntriesToAdd) {
+							//Add a link to the actual title
+							$exploreMoreOptions['sampleRecords']['genealogy'][] = array(
+								'label' => $driver->getTitle(),
+								'description' => $driver->getTitle(),
+								'image' => $driver->getBookcoverUrl('medium'),
+								'link' => $driver->getLinkUrl(),
+								'usageCount' => 1
+							);
+						}
+
+						$numCatalogResultsAdded++;
 					}
 				}
 			}

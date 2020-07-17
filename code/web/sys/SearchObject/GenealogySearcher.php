@@ -525,6 +525,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		];
 	}
 
+	/** @return PersonRecord */
 	public function getRecordDriverForResult($current)
 	{
 		require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
