@@ -32,7 +32,7 @@ class EbscoRecordDriver extends RecordInterface
 		return true;
 	}
 
-	public function getBookcoverUrl($size = 'small')
+	public function getBookcoverUrl($size = 'small', $absolutePath = false)
 	{
 		if (!empty($this->recordData->ImageInfo)) {
 			if (is_array($this->recordData->ImageInfo)) {
@@ -53,9 +53,16 @@ class EbscoRecordDriver extends RecordInterface
 				return $this->recordData->ImageInfo->Target;
 			}
 		} else {
-			return null;
-		}
+			global $configArray;
 
+			if ($absolutePath) {
+				$bookCoverUrl = $configArray['Site']['url'];
+			} else {
+				$bookCoverUrl = '';
+			}
+			$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=ebsco_eds";
+			return $bookCoverUrl;
+		}
 	}
 
 	/**

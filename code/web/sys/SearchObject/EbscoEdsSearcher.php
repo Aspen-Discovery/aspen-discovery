@@ -478,8 +478,10 @@ BODY;
 		}else{
 			curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
 			curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
-					'x-authenticationToken: ' . $this->authenticationToken,
-					'x-sessionToken: ' . $this->sessionId,
+				'Content-Type: application/json',
+				'Accept: application/json',
+				'x-authenticationToken: ' . $this->authenticationToken,
+				'x-sessionToken: ' . $this->sessionId,
 			));
 			$infoUrl = $this->edsBaseApi . "/Retrieve?an=$an&dbid=$dbId";
 			curl_setopt($this->curl_connection, CURLOPT_URL, $infoUrl);
@@ -487,8 +489,7 @@ BODY;
 			if ($recordInfoStr == false){
 				return null;
 			}else{
-				/** @var stdClass $recordData */
-				$recordData = new SimpleXMLElement($recordInfoStr);
+				$recordData = json_decode($recordInfoStr);
 				return $recordData->Record;
 			}
 		}

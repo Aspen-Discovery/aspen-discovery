@@ -66,6 +66,10 @@ class BookCoverProcessor{
 			if ($this->getWebPageCover($this->id)) {
 				return;
 			}
+		} elseif ($this->type == 'ebsco_eds') {
+			if ($this->getEbscoEdsCover($this->id)) {
+				return;
+			}
 		} else {
 			if ($this->type == 'overdrive') {
 				//Will exit if we find a cover
@@ -395,7 +399,7 @@ class BookCoverProcessor{
 				$this->type = 'ils';
 			}
 		}
-		if (strpos($this->id, ':') > 0){
+		if (strpos($this->id, ':') > 0 && $this->type != 'ebsco_eds'){
 			list($this->type, $this->id) = explode(':', $this->id);
 		}
 		$this->bookCoverInfo = new BookCoverInfo();
@@ -1306,8 +1310,11 @@ class BookCoverProcessor{
 //			if ($coverUrl == null) {
 				require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 				$coverBuilder = new EventCoverBuilder();
-				$coverBuilder->getCover($driver->getTitle(), $driver->getStartDate(), $this->cacheFile);
-				return $this->processImageURL('default', $this->cacheFile, false);
+				$props = [
+					'eventDate' => $driver->getStartDate()
+				];
+				$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
+				return $this->processImageURL('default_event', $this->cacheFile, false);
 //			}else{
 //				return $this->processImageURL('library_calendar_event', $coverUrl, true);
 //			}
@@ -1326,7 +1333,7 @@ class BookCoverProcessor{
 		if ($webPageDriver->isValid()) {
 			$title = $webPageDriver->getTitle();
 			$coverBuilder->getCover($title, $this->cacheFile);
-			return $this->processImageURL('default', $this->cacheFile, false);
+			return $this->processImageURL('default_webpage', $this->cacheFile, false);
 		} else {
 			return false;
 		}
@@ -1339,6 +1346,26 @@ class BookCoverProcessor{
 			return $this->processImageURL('upload', $uploadedImage);
 		}
 		return false;
+	}
+
+	private function getEbscoEdsCover($id)
+	{
+		//Build a cover based on the title of the page
+		require_once ROOT_DIR . '/sys/Covers/EbscoCoverBuilder.php';
+		$coverBuilder = new EbscoCoverBuilder();
+		require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+
+		$edsRecordDriver = new EbscoRecordDriver($id);
+		if ($edsRecordDriver->isValid()) {
+			$title = $edsRecordDriver->getTitle();
+			$props = [
+				'format' => $edsRecordDriver->getFormats()
+			];
+			$coverBuilder->getCover($title, $this->cacheFile, $props);
+			return $this->processImageURL('default_ebsco', $this->cacheFile, false);
+		} else {
+			return false;
+		}
 	}
 
 }
