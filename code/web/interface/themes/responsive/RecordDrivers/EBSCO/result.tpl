@@ -48,7 +48,7 @@
 			<div class="row">
 				<div class="result-label col-tn-3">{translate text='Format'}</div>
 				<div class="col-tn-9 result-value">
-					<span class="iconlabel">{translate text=$summFormats}</span>
+					<span>{translate text=$summFormats}</span>
 				</div>
 			</div>
 		{/if}
@@ -77,6 +77,14 @@
 				{* Hide in mobile view *}
 				<div class="result-value col-sm-12" id="descriptionValue{$summId|escape}">
 					{$summDescription|highlight|truncate_html:450:"..."}
+				</div>
+			</div>
+		{/if}
+
+		{if empty($viewingCombinedResults)}
+			<div class="row">
+				<div class="col-xs-12">
+					{include file='EBSCO/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
 				</div>
 			</div>
 		{/if}

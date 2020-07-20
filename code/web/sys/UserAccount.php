@@ -414,7 +414,7 @@ class UserAccount
 
 	/**
 	 * Try to log in the user using current query parameters
-	 * return User object on success, PEAR error on failure.
+	 * return User object on success, AspenError on failure.
 	 *
 	 * @return AspenError|User
 	 * @throws UnknownAuthenticationMethodException
@@ -496,7 +496,7 @@ class UserAccount
 			}
 		}
 
-		// Send back the user object (which may be a PEAR error):
+		// Send back the user object (which may be an AspenError):
 		if ($primaryUser) {
 			UserAccount::$isLoggedIn = true;
 			UserAccount::$primaryUserData = $primaryUser;

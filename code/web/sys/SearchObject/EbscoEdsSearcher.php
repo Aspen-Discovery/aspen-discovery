@@ -711,4 +711,20 @@ BODY;
 	{
 		return 'TX';
 	}
+
+	/**
+	 * Retrieves a document specified by the ID.
+	 *
+	 * @param string[] $ids An array of documents to retrieve from Solr
+	 * @access  public
+	 * @return  array              The requested resources
+	 */
+	public function getRecords($ids){
+		$records = [];
+		require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+		foreach ($ids as $index => $id){
+			$records[$index] = new EbscoRecordDriver($id);
+		}
+		return $records;
+	}
 }

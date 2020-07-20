@@ -275,6 +275,11 @@ class EbscoRecordDriver extends RecordInterface
 		return (string)$this->recordData->Header->DbId . ':' . (string)$this->recordData->Header->An;
 	}
 
+	public function getId()
+	{
+		return $this->getUniqueID();
+	}
+
 	/**
 	 * Does this record have searchable full text in the index?
 	 *
@@ -379,5 +384,24 @@ class EbscoRecordDriver extends RecordInterface
 	public function getPermanentId()
 	{
 		return $this->getUniqueID();
+	}
+
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display a summary of the item suitable for use in
+	 * user's favorites list.
+	 *
+	 * @access  public
+	 * @param int $listId ID of list containing desired tags/notes (or
+	 *                              null to show tags/notes from all user's lists).
+	 * @param bool $allowEdit Should we display edit controls?
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getListEntry($listId = null, $allowEdit = true)
+	{
+		$this->getSearchResult('list');
+
+		//Switch template
+		return 'RecordDrivers/EBSCO/listEntry.tpl';
 	}
 }

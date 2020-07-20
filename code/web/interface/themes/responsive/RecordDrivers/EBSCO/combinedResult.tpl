@@ -21,7 +21,7 @@
 			<div class="row">
 				<div class="result-label col-tn-3">Format: </div>
 				<div class="col-tn-9 result-value">
-					<span class="iconlabel">{translate text=$summFormats}</span>
+					<span>{translate text=$summFormats}</span>
 				</div>
 			</div>
 		{/if}

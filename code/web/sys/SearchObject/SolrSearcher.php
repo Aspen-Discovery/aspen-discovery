@@ -811,7 +811,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @param string $id The document to retrieve from Solr
 	 * @access  public
 	 * @return  array              The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecord($id)
 	{
@@ -824,7 +824,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @param string[] $ids An array of documents to retrieve from Solr
 	 * @access  public
 	 * @return  array              The requested resources
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecords($ids)
 	{

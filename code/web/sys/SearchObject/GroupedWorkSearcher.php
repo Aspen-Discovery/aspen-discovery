@@ -1365,7 +1365,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 *
 	 * @param string[] $ids An array of documents to retrieve from Solr
 	 * @access  public
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function searchForRecordIds($ids)
 	{
@@ -1379,7 +1379,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @param string $barcode A barcode of an item in the document to retrieve from Solr
 	 * @access  public
 	 * @return  string              The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecordByBarcode($barcode)
 	{
@@ -1392,7 +1392,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @param string[] $isbn An array of isbns to check
 	 * @access  public
 	 * @return  string              The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecordByIsbn($isbn)
 	{

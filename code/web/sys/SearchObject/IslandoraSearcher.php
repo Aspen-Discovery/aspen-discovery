@@ -787,7 +787,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * @param string $id The document to retrieve from Solr
 	 * @access  public
 	 * @return  array               The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecord($id)
 	{
