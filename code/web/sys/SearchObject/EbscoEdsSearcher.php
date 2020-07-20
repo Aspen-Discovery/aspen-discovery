@@ -423,6 +423,20 @@ BODY;
 		return $list;
 	}
 
+	public function getSortOptions() {
+		$searchOptions = $this->getSearchOptions();
+		$list = array();
+		if ($searchOptions != null){
+			foreach ($searchOptions->AvailableSearchCriteria->AvailableSorts->AvailableSort as $sortOption){
+				$sort = (string)$sortOption->Id;
+				$desc = (string)$sortOption->Label;
+				$list[$sort] = $desc;
+			}
+		}
+
+		return $list;
+	}
+
 	/**
 	 * Return a url for the current search with a new sort
 	 *
@@ -538,12 +552,7 @@ BODY;
 			$searchUrl = $this->edsBaseApi . '/Search?query=' . urlencode($searchTerms);
 		}
 		$searchUrl .= '&searchmode=all';
-
-		if (isset($sort)) {
-			$this->sort = $sort;
-		}else {
-			$this->sort = $this->defaultSort;
-		}
+		
 		$searchUrl .= '&sort=' . $this->sort;
 
 		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){

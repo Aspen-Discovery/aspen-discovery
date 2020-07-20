@@ -904,7 +904,7 @@ abstract class SearchObject_BaseSearcher
 			}
 		}
 		//Validate the sort to make sure it is correct.
-		if (!array_key_exists($this->sort, $this->sortOptions)) {
+		if (!array_key_exists($this->sort, $this->getSortOptions())) {
 			$this->sort = $this->defaultSort;
 		}
 	}

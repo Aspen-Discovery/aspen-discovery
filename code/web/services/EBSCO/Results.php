@@ -13,8 +13,6 @@ class EBSCO_Results extends Action{
 		// Hide Covers when the user has set that setting on the Search Results Page
 		$this->setShowCovers();
 
-		$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : null;
-		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter'] : array();
 		$searchObject->init();
 		$result = $searchObject->processSearch(true, true);
 

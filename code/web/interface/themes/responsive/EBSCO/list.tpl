@@ -6,13 +6,20 @@
 		{/foreach}
 	{/if}
 
+	<div class="result-head">
+		{* User's viewing mode toggle switch *}
+		{include file="Search/results-displayMode-toggle.tpl"}
+
+		<div class="clearer"></div>
+	</div>
+
 	{if $subpage}
 		{include file=$subpage}
 	{else}
 		{$pageContent}
 	{/if}
 
-	{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
+	{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 
 	{if $showSearchTools}
 		<div class="search_tools well small">
