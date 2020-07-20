@@ -548,25 +548,23 @@ BODY;
 		$searchUrl .= "&highlight=n&view=detailed&autosuggest=n&autocorrect=n";
 
 		$facetIndex = 1;
-		$appliedFilters = '';
 		foreach ($this->filterList as $field => $filter) {
-			if ($facetIndex > 1){
-				$appliedFilters .= ':';
-			}
+			$appliedFilters = '';
 			//Facets are applied differently in EDS than Solr. Format is filter, Field
 			if (is_array($filter)){
 				$appliedFilters .= "$facetIndex,";
-				foreach($filter as $fieldValue){
+				foreach($filter as $fieldIndex => $fieldValue){
+					if ($fieldIndex > 0){
+						$appliedFilters .= ',';
+					}
 					$appliedFilters .= "$field:" . urlencode($fieldValue);
 				}
 			}else{
 				$appliedFilters .= "$facetIndex,$field:" . urlencode($filter);
 			}
+			$searchUrl .= '&facetfilter=' . $appliedFilters;
 
 			$facetIndex++;
-		}
-		if (!empty($appliedFilters)){
-			$searchUrl .= '&facetfilter=' . $appliedFilters;
 		}
 
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
