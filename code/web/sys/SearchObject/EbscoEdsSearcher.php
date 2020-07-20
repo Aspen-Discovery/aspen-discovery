@@ -458,12 +458,20 @@ BODY;
 				$list = array();
 				foreach ($facet->AvailableFacetValues as $value){
 					$facetValue = (string)$value->Value;
-					$urlWithFacet = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
-					$list[] = array(
-							'display' => $facetValue,
-							'count' => (string)$value->Count,
-							'url' => $urlWithFacet
+					//Check to see if the facet has been applied
+					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
+
+					$facetSettings = array(
+						'display' => $facetValue,
+						'count' => (string)$value->Count,
+						'isApplied' => $isApplied
 					);
+					if ($isApplied) {
+						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);
+					}else{
+						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
+					}
+					$list[] = $facetSettings;
 				}
 				$availableFacets[$facetId]['list'] = $list;
 			}
@@ -583,6 +591,7 @@ BODY;
 			if ($searchData && empty($searchData->ErrorNumber)){
 				$this->resultsTotal = $searchData->SearchResult->Statistics->TotalHits;
 				$this->lastSearchResults = $searchData->SearchResult;
+
 				return $searchData->SearchResult;
 			}else{
 				global $configArray;
