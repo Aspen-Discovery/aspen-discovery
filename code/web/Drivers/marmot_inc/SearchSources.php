@@ -172,6 +172,14 @@ class SearchSources{
 			);
 		}
 
+		if ($searchEbsco){
+			$searchOptions['ebsco_eds'] = array(
+				'name' => 'Articles & Databases',
+				'description' => 'EBSCO EDS - Articles and Database',
+				'catalogType' => 'ebsco_eds'
+			);
+		}
+
 		if (array_key_exists('Events', $enabledModules)){
 			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
 			$libraryEventsSetting = new LibraryEventsSetting();
@@ -206,14 +214,6 @@ class SearchSources{
 					'catalogType' => 'websites'
 				);
 			}
-		}
-
-		if ($searchEbsco){
-			$searchOptions['ebsco_eds'] = array(
-				'name' => 'Articles & Databases',
-				'description' => 'EBSCO EDS - Articles and Database',
-				'catalogType' => 'ebsco_eds'
-			);
 		}
 
 		if ($searchArchive){

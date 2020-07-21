@@ -4,7 +4,7 @@
 		{if $showCovers}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1 && !empty($bookCoverUrlMedium)}
-					<a href="{$summUrl}">
+					<a href="{$summUrl}" onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$summId}')" target="_blank">
 						<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
 					</a>
 				{/if}
@@ -15,7 +15,7 @@
 			<div class="row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
-					<a href="{$summUrl}" class="result-title notranslate">
+					<a href="{$summUrl}" class="result-title notranslate" onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$summId}')" target="_blank">
 						{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 					</a>
 				</div>

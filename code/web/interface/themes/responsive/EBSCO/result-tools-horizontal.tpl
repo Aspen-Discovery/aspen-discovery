@@ -5,7 +5,7 @@
 			{if $showMoreInfo}
 				{if $showMoreInfo !== false}
 					<div class="btn-group btn-group-sm">
-						<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getLinkUrl()}{/if}" class="btn btn-sm ">{translate text="More Info"}</a>
+						<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getLinkUrl()}{/if}" class="btn btn-sm " onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$recordDriver->getPermanentId()}')" target="_blank">{translate text="More Info"}</a>
 					</div>
 				{/if}
 				{if $showFavorites == 1}

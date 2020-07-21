@@ -476,6 +476,7 @@ BODY;
 					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
 
 					$facetSettings = array(
+						'value' => $facetValue,
 						'display' => $facetValue,
 						'count' => (string)$value->Count,
 						'isApplied' => $isApplied
@@ -552,7 +553,7 @@ BODY;
 			$searchUrl = $this->edsBaseApi . '/Search?query=' . urlencode($searchTerms);
 		}
 		$searchUrl .= '&searchmode=all';
-		
+
 		$searchUrl .= '&sort=' . $this->sort;
 
 		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
@@ -609,13 +610,13 @@ BODY;
 					$curlInfo = curl_getinfo($this->curl_connection);
 					$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
 				}
-				$this->lastSearchResults = null;
-				return null;
+				$this->lastSearchResults = false;
+				return new AspenError("Error processing search in EBSCO EDS");
 			}
 		}catch (Exception $e){
 			global $logger;
 			$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
-			return null;
+			return new AspenError("Error loading data from EBSCO $e");
 		}
 	}
 

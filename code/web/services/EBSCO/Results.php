@@ -4,6 +4,8 @@ class EBSCO_Results extends Action{
 	function launch() {
 		global $interface;
 		global $timer;
+		global $aspenUsage;
+		$aspenUsage->ebscoEdsSearches++;
 
 		//Include Search Engine
 		/** @var SearchObject_EbscoEdsSearcher $searchObject */
@@ -15,6 +17,28 @@ class EBSCO_Results extends Action{
 
 		$searchObject->init();
 		$result = $searchObject->processSearch(true, true);
+		if ($result instanceof AspenError){
+			global $serverName;
+			$logSearchError = true;
+			if ($logSearchError) {
+				try{
+					require_once ROOT_DIR . '/sys/SystemVariables.php';
+					$systemVariables = new SystemVariables();
+					if ($systemVariables->find(true) && !empty($systemVariables->searchErrorEmail)) {
+						require_once ROOT_DIR . '/sys/Email/Mailer.php';
+						$mailer = new Mailer();
+						$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['msg'];
+						$mailer->send($systemVariables->searchErrorEmail, "$serverName Error processing EBSCO EDS search", $emailErrorDetails);
+					}
+				}catch (Exception $e){
+					//This happens when the table has not been created
+				}
+			}
+
+			$interface->assign('searchError', $result);
+			$this->display('searchError.tpl', 'Error in Search');
+			return;
+		}
 
 		$displayQuery = $searchObject->displayQuery();
 		$pageTitle = $displayQuery;

@@ -65,6 +65,7 @@ class Admin_UsageDashboard extends Admin_Admin
 		$usage->selectAdd('SUM(userListSearches) as totalUserListSearches');
 		$usage->selectAdd('SUM(websiteSearches) as totalWebsiteSearches');
 		$usage->selectAdd('SUM(eventsSearches) as totalEventsSearches');
+		$usage->selectAdd('SUM(ebscoEdsSearches) as totalEbscoEdsSearches');
 		$usage->selectAdd('SUM(blockedRequests) as totalBlockedRequests');
 		$usage->selectAdd('SUM(blockedApiRequests) as totalBlockedApiRequests');
 
@@ -83,6 +84,7 @@ class Admin_UsageDashboard extends Admin_Admin
 			'totalUserListSearches' => $usage->totalUserListSearches,
 			'totalWebsiteSearches' => $usage->totalWebsiteSearches,
 			'totalEventsSearches' => $usage->totalEventsSearches,
+			'totalEbscoEdsSearches' => $usage->totalEbscoEdsSearches,
 			'totalBlockedRequests' => $usage->totalBlockedRequests,
 			'totalBlockedApiRequests' => $usage->totalBlockedApiRequests,
 		];
