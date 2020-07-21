@@ -24,6 +24,7 @@ aspen/authors.js
 aspen/browse.js
 aspen/cloud-library.js
 aspen/dpla.js
+aspen/ebsco.js
 aspen/econtent-record.js
 aspen/grouped-work.js
 aspen/lists.js

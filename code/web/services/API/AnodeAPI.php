@@ -27,12 +27,7 @@ class AnodeAPI extends Action
 
 	function launch()
 	{
-		//Make sure the user can access the API based on the IP address
-		if (!IPAddress::allowAPIAccessForClientIP()){
-			$this->forbidAPIAccess();
-		}
-
-		header('Content-type: text/plain');
+		header('Content-type: application/json');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
@@ -59,7 +54,7 @@ class AnodeAPI extends Action
 		if (!$listId) {
 			$listId = $_REQUEST['listId'];
 		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl", "se"))) {
+		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","bx","ep","ma","se"))) { // Nashville hardcoded
 			$branch = $_GET['branch'];
 		} else {
 			$branch = "catalog";
@@ -82,7 +77,7 @@ class AnodeAPI extends Action
 		if (!isset($id)) {
 			$id = $_REQUEST['id'];
 		}
-		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl", "se"))) {
+		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","bx","ep","ma","se"))) { // Nashville hardcoded
 			$branch = $_GET['branch'];
 		} else {
 			$branch = "catalog";

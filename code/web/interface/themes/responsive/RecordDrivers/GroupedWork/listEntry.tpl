@@ -1,7 +1,6 @@
 {strip}
-	<div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
-		<a name="record{$summId|escape:"url"}"></a>
-		<div class="row">
+<div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
+	<div class="row">
 		{if $showCovers}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 				<a href="{$summUrl}">
@@ -19,10 +18,7 @@
 					<a href="{$summUrl}" class="result-title notranslate">
 						{$summTitle|removeTrailingPunctuation|escape}
 						{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
-					</a><br>
-					{if $summTitleStatement}
-						&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|truncate:180:"..."|highlight}
-					{/if}
+					</a>
 				</div>
 			</div>
 
@@ -62,7 +58,6 @@
 			{* Short Mobile Entry for Formats when there aren't hidden formats *}
 			<div class="row visible-xs">
 
-				{* TODO: Is this every needed on lists. Don't think formats get hidden *}
 				{* Determine if there were hidden Formats for this entry *}
 				{assign var=hasHiddenFormats value=false}
 				{foreach from=$relatedManifestations item=relatedManifestation}
@@ -131,7 +126,6 @@
 
 			{/if}
 		</div>
-
-		</div>
 	</div>
+</div>
 {/strip}

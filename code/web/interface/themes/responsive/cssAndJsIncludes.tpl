@@ -50,6 +50,7 @@
 		<script src="/interface/themes/responsive/js/aspen/browse.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/cloud-library.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/dpla.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/aspen/ebsco.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/econtent-record.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/grouped-work.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/lists.js?v={$gitBranch|urlencode}"></script>
@@ -101,7 +102,10 @@
 			Globals.automaticTimeoutLengthLoggedOut = {$automaticTimeoutLengthLoggedOut};
 			{/if}
 			{* Set Search Result Display Mode on Searchbox *}
-			{if !$onInternalIP}AspenDiscovery.Searches.getPreferredDisplayMode();AspenDiscovery.Archive.getPreferredDisplayMode();{/if}
+			{if !$onInternalIP}
+			AspenDiscovery.Searches.getPreferredDisplayMode();
+			AspenDiscovery.Archive.getPreferredDisplayMode();
+			{/if}
 			{literal}
 		});
 		{/literal}

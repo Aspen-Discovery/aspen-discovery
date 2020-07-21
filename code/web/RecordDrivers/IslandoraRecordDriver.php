@@ -210,7 +210,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		// The below template variables are in the listEntry.tpl but the driver doesn't currently
 		// supply this information, so we are making sure they are set to a null value.
 		$interface->assign('summShortId', null);
-		$interface->assign('summTitleStatement', null);
 		$interface->assign('summAuthor', null);
 		$interface->assign('summPublisher', null);
 		$interface->assign('summPubDate', null);
@@ -236,11 +235,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		}
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		// By default, do not display AJAX status; we won't assume that all
-		// records exist in the ILS.  Child classes can override this setting
-		// to turn on AJAX as needed:
-		$interface->assign('summAjaxStatus', false);
 
 		$interface->assign('recordDriver', $this);
 

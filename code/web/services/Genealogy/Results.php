@@ -71,6 +71,9 @@ class Genealogy_Results extends Action {
 			}
 		}
 
+		// Hide Covers when the user has set that setting on the Search Results Page
+		$this->setShowCovers();
+
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/GenealogySolrConnector.php';
 		$timer->logTime('Include search engine');

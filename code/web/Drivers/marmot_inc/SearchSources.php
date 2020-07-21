@@ -4,6 +4,58 @@ class SearchSources{
 		return SearchSources::getSearchSourcesDefault();
 	}
 
+	/**
+	 * @param string $source
+	 *
+	 * @return SearchObject_BaseSearcher
+	 */
+	static function getSearcherForSource($source){
+		switch ($source)
+		{
+			case 'ebsco_eds':
+				$searchObject = SearchObjectFactory::initSearchObject('EbscoEds');
+				break;
+			case 'events':
+				$searchObject = SearchObjectFactory::initSearchObject('Events');
+				break;
+			case 'genealogy':
+				$searchObject = SearchObjectFactory::initSearchObject('Genealogy');
+				break;
+			case 'islandora':
+				$searchObject = SearchObjectFactory::initSearchObject('Islandora');
+				break;
+			case 'lists':
+				$searchObject = SearchObjectFactory::initSearchObject('Lists');
+				break;
+			case 'open_archives':
+				$searchObject = SearchObjectFactory::initSearchObject('OpenArchives');
+				break;
+			case 'websites':
+				$searchObject = SearchObjectFactory::initSearchObject('Websites');
+				break;
+			case 'catalog':
+			default:
+				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+		}
+		$searchObject->init();
+
+		return $searchObject;
+	}
+
+
+	/**
+	 * @param SearchObject_BaseSearcher $searchObject
+	 * @param string $source
+	 * @return array
+	 */
+	static function getSearchIndexesForSource($searchObject, $source){
+		if ($searchObject == null) {
+			$searchObject = SearchSources::getSearcherForSource($source);
+		}
+		return is_object($searchObject) ? $searchObject->getSearchIndexes() : array();
+	}
+
 	private static function getSearchSourcesDefault(){
 		$searchOptions = array();
 		//Check to see if marmot catalog is a valid option
@@ -31,7 +83,7 @@ class SearchSources{
 		$searchGenealogy = $library->enableGenealogy;
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
 		$searchArchive = $library->enableArchive == 1;
-		$searchEbsco = array_key_exists('EBSCO_EDS', $enabledModules) &&  $library->edsSettingsId != -1;
+		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) &&  $library->edsSettingsId != -1;
         $searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
@@ -120,6 +172,14 @@ class SearchSources{
 			);
 		}
 
+		if ($searchEbsco){
+			$searchOptions['ebsco_eds'] = array(
+				'name' => 'Articles & Databases',
+				'description' => 'EBSCO EDS - Articles and Database',
+				'catalogType' => 'ebsco_eds'
+			);
+		}
+
 		if (array_key_exists('Events', $enabledModules)){
 			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
 			$libraryEventsSetting = new LibraryEventsSetting();
@@ -162,14 +222,6 @@ class SearchSources{
 					'catalogType' => 'websites'
 				);
 			}
-		}
-
-		if ($searchEbsco){
-			$searchOptions['ebsco_eds'] = array(
-				'name' => 'Articles & Databases',
-				'description' => 'EBSCO EDS - Articles and Database',
-				'catalogType' => 'ebsco_eds'
-			);
 		}
 
 		if ($searchArchive){

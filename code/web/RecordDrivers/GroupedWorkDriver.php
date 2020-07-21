@@ -792,11 +792,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
-		// By default, do not display AJAX status; we won't assume that all
-		// records exist in the ILS.  Child classes can override this setting
-		// to turn on AJAX as needed:
-		$interface->assign('summAjaxStatus', false);
-
 		$interface->assign('recordDriver', $this);
 
 		return 'RecordDrivers/GroupedWork/combinedResult.tpl';
@@ -1155,11 +1150,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		// By default, do not display AJAX status; we won't assume that all
-		// records exist in the ILS.  Child classes can override this setting
-		// to turn on AJAX as needed:
-		$interface->assign('summAjaxStatus', false);
 
 		$interface->assign('recordDriver', $this);
 
@@ -1688,11 +1678,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		// By default, do not display AJAX status; we won't assume that all
-		// records exist in the ILS.  Child classes can override this setting
-		// to turn on AJAX as needed:
-		$interface->assign('summAjaxStatus', false);
 
 		$interface->assign('recordDriver', $this);
 

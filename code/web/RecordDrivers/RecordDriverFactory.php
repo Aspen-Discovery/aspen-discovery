@@ -173,9 +173,7 @@ class RecordDriverFactory {
 			require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
 			$recordDriver = new OpenArchivesRecordDriver($recordId);
 		}else{
-			/** @var IndexingProfile[] $indexingProfiles */
 			global $indexingProfiles;
-			/** @var SideLoad[] $sideLoadSettings */
 			global $sideLoadSettings;
 
 			if (array_key_exists($recordType, $indexingProfiles)) {

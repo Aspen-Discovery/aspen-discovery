@@ -136,6 +136,34 @@
 				</div>
 			</div>
 
+			{if array_key_exists('EBSCO EDS', $enabledModules)}
+				<div class="dashboardCategory col-sm-6">
+					<div class="row">
+						<div class="col-sm-10 col-sm-offset-1">
+							<h3 class="dashboardCategoryLabel">{translate text="EBSCO EDS Searches"}</h3>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="This Month"}</div>
+							<div class="dashboardValue">{$usageThisMonth.totalEbscoEdsSearches|number_format}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="Last Month"}</div>
+							<div class="dashboardValue">{$usageLastMonth.totalEbscoEdsSearches|number_format}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="This Year"}</div>
+							<div class="dashboardValue">{$usageThisYear.totalEbscoEdsSearches|number_format}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="All Time"}</div>
+							<div class="dashboardValue">{$usageAllTime.totalEbscoEdsSearches|number_format}</div>
+						</div>
+					</div>
+				</div>
+			{/if}
+
 			{if array_key_exists('Events', $enabledModules)}
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">

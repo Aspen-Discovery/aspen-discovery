@@ -2,10 +2,12 @@
 
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/Ebsco/EDSSettings.php';
+require_once ROOT_DIR . '/sys/SearchObject/BaseSearcher.php';
 
-class EDS_API {
+class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 	static $instance;
 
+	/** @var EDSSettings */
 	private $edsSettings;
 	private $edsBaseApi = 'https://eds-api.ebscohost.com/edsapi/rest';
 	private $curl_connection;
@@ -28,7 +30,7 @@ class EDS_API {
 	// STATS
 	protected $resultsTotal = 0;
 
-	protected $searchTerm;
+	protected $searchTerms;
 
 	protected $lastSearchResults;
 	/**
@@ -36,14 +38,65 @@ class EDS_API {
 	 */
 	private $searchIndex = 'TX';
 
+	public function __construct()
+	{
+		parent::__construct();
+		$this->searchSource = 'ebsco_eds';
+		$this->searchType = 'ebsco_eds';
+		$this->resultsModule = 'EBSCO';
+		$this->resultsAction = 'Results';
+	}
+
 	/**
-	 * @return EDS_API
+	 * Initialise the object from the global
+	 *  search parameters in $_REQUEST.
+	 *
+	 * @access  public
+	 * @param string $searchSource
+	 * @return  boolean
+	 */
+	public function init($searchSource = null)
+	{
+		//********************
+		// Check if we have a saved search to restore -- if restored successfully,
+		// our work here is done; if there is an error, we should report failure;
+		// if restoreSavedSearch returns false, we should proceed as normal.
+		$restored = $this->restoreSavedSearch();
+		if ($restored === true) {
+			return true;
+		} else if ($restored instanceof AspenError) {
+			return false;
+		}
+
+		//********************
+		// Initialize standard search parameters
+		$this->initView();
+		$this->initPage();
+		$this->initSort();
+		$this->initFilters();
+
+		//********************
+		// Basic Search logic
+		if (!$this->initBasicSearch()) {
+			$this->initAdvancedSearch();
+		}
+
+		// If a query override has been specified, log it here
+		if (isset($_REQUEST['q'])) {
+			$this->query = $_REQUEST['q'];
+		}
+
+		return true;
+	}
+
+	/**
+	 * @return SearchObject_EbscoEdsSearcher
 	 */
 	public static function getInstance(){
-		if (EDS_API::$instance == null){
-			EDS_API::$instance = new EDS_API();
+		if (SearchObject_EbscoEdsSearcher::$instance == null){
+			SearchObject_EbscoEdsSearcher::$instance = new SearchObject_EbscoEdsSearcher();
 		}
-		return EDS_API::$instance;
+		return SearchObject_EbscoEdsSearcher::$instance;
 	}
 
 	private function getSettings(){
@@ -59,9 +112,6 @@ class EDS_API {
 	}
 
 	public function authenticate(){
-		/*if (isset($this->sessionId)){
-			return true;
-		}*/
 		global $library;
 		$settings = $this->getSettings();
 		if ($settings->edsApiProfile){
@@ -120,6 +170,7 @@ BODY;
 					echo(curl_error($this->curl_connection));
 					return false;
 				}else {
+					/** @var stdClass $createSessionResponse */
 					$createSessionResponse = new SimpleXMLElement($result);
 					if ($createSessionResponse->SessionToken) {
 						$this->sessionId = (string)$createSessionResponse->SessionToken;
@@ -137,98 +188,21 @@ BODY;
 		}else{
 			return false;
 		}
-	}
-
-	public function getSearchResults($searchTerms, $sort = null, $filters = array()){
-		if (!$this->authenticate()){
-			return null;
-		}
-
-		$this->startQueryTimer();
-		$this->searchTerm = $searchTerms;
-		if (is_array($searchTerms)){
-			$searchUrl = $this->edsBaseApi . '/search?';
-			$termIndex = 1;
-			foreach ($searchTerms as $term){
-				if ($termIndex > 1) $searchUrl .= '&';
-				$term = str_replace(',', '', $term);
-				$searchUrl .= "query-{$termIndex}=OR," . urlencode($term);
-				$termIndex++;
-			}
-		}else{
-			if (isset($_REQUEST['searchIndex'])) {
-				$this->searchIndex = $_REQUEST['searchIndex'];
-			}
-			$searchTerms = str_replace(',', '', $searchTerms);
-			$searchTerms = $this->searchIndex . ':' .$searchTerms;
-			$searchUrl = $this->edsBaseApi . '/Search?query=' . urlencode($searchTerms);
-		}
-		$searchUrl .= '&searchmode=all';
-
-		if (isset($sort)) {
-			$this->sort = $sort;
-		}else {
-			$this->sort = $this->defaultSort;
-		}
-		$searchUrl .= '&sort=' . $this->sort;
-
-		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
-			$this->page = $_REQUEST['page'];
-			$searchUrl .= '&pagenumber=' . $this->page;
-		}else{
-			$this->page = 1;
-		}
-
-		$searchUrl .= "&highlight=n&view=detailed&autosuggest=n&autocorrect=n";
-
-		$facetIndex = 1;
-		foreach ($filters as $filter) {
-			$searchUrl .= "&facetfilter=$facetIndex," . urlencode($filter);
-			$facetIndex++;
-		}
-
-		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
-
-		curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
-			'Content-Type: application/json',
-			'Accept: application/json',
-			'x-authenticationToken: ' . $this->authenticationToken,
-			'x-sessionToken: ' . $this->sessionId,
-		));
-		curl_setopt($this->curl_connection, CURLOPT_URL, $searchUrl);
-		$result = curl_exec($this->curl_connection);
-		try {
-			$searchData = json_decode($result);
-			$this->stopQueryTimer();
-			if ($searchData && empty($searchData->ErrorNumber)){
-				$this->resultsTotal = $searchData->SearchResult->Statistics->TotalHits;
-				$this->lastSearchResults = $searchData->SearchResult;
-				return $searchData->SearchResult;
-			}else{
-				global $configArray;
-				global $logger;
-				if ($configArray['System']['debug']) {
-					$curlInfo = curl_getinfo($this->curl_connection);
-					$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
-				}
-				$this->lastSearchResults = null;
-				return null;
-			}
-		}catch (Exception $e){
-			global $logger;
-			$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
-			return null;
-		}
+		return false;
 	}
 
 	public function endSession(){
-		curl_setopt($this->curl_connection, CURLOPT_URL, $this->edsBaseApi . '/endsession?sessiontoken=' . $this->sessionId);
-		curl_exec($this->curl_connection);
+		if ($this->curl_connection) {
+			curl_setopt($this->curl_connection, CURLOPT_URL, $this->edsBaseApi . '/endsession?sessiontoken=' . $this->sessionId);
+			curl_exec($this->curl_connection);
+		}
 	}
 
 	public function __destruct(){
 		$this->endSession();
-		curl_close($this->curl_connection);
+		if ($this->curl_connection) {
+			curl_close($this->curl_connection);
+		}
 	}
 
 	public function getQuerySpeed() {
@@ -310,23 +284,6 @@ BODY;
 	}
 
 	/**
-	 * Build a url for the current search
-	 *
-	 * @access  public
-	 * @return  string   URL of a search
-	 */
-	public function renderSearchUrl() {
-		$searchUrl = '/EBSCO/Results?lookfor=' . $this->searchTerm . '&searchIndex=' . $this->searchIndex;
-		if ($this->page != 1){
-			$searchUrl .= '&page=' . $this->page;
-		}
-		if ($this->sort){
-			$searchUrl .= '&sort=' . $this->sort;
-		}
-		return $searchUrl;
-	}
-
-	/**
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results.
 	 *
@@ -355,6 +312,10 @@ BODY;
 				}
 			}
 		}
+
+		//Save to history
+		$this->addToHistory();
+
 		return $html;
 	}
 
@@ -394,7 +355,7 @@ BODY;
 		if (!$this->authenticate()){
 			return null;
 		}
-		/** @var Memcache $memCache */
+
 		global $memCache;
 		global $library;
 		global $configArray;
@@ -420,15 +381,27 @@ BODY;
 
 	}
 
-	public function getSearchTypes(){
-		$searchOptions = $this->getSearchOptions();
-		$searchTypes = array();
-		if ($searchOptions != null){
-			foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields->AvailableSearchField as $searchField){
-				$searchTypes[(string)$searchField->FieldCode] = (string)$searchField->Label;
+	public function getSearchIndexes(){
+		global $memCache;
+
+		if ($this->getSettings() == null){
+			return [];
+		}else {
+			$searchIndexes = $memCache->get('ebsco_eds_search_indexes_' . $this->getSettings()->edsApiProfile);
+			if ($searchIndexes === false) {
+				$searchOptions = $this->getSearchOptions();
+				$searchIndexes = array();
+				if ($searchOptions != null) {
+					foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields->AvailableSearchField as $searchField) {
+						$searchIndexes[(string)$searchField->FieldCode] = (string)$searchField->Label;
+					}
+				}
+				global $configArray;
+				$memCache->set('ebsco_eds_search_indexes_' . $this->getSettings()->edsApiProfile, $searchIndexes, $configArray['Caching']['ebsco_options']);
 			}
+
+			return $searchIndexes;
 		}
-		return $searchTypes;
 	}
 
 	public function getSortList() {
@@ -444,6 +417,20 @@ BODY;
 						'selected' => ($sort == $this->sort)
 				);
 
+			}
+		}
+
+		return $list;
+	}
+
+	public function getSortOptions() {
+		$searchOptions = $this->getSearchOptions();
+		$list = array();
+		if ($searchOptions != null){
+			foreach ($searchOptions->AvailableSearchCriteria->AvailableSorts->AvailableSort as $sortOption){
+				$sort = (string)$sortOption->Id;
+				$desc = (string)$sortOption->Label;
+				$list[$sort] = $desc;
 			}
 		}
 
@@ -471,11 +458,6 @@ BODY;
 		return $url;
 	}
 
-	public function getAppliedFilters() {
-		$appliedFilters = array();
-		return $appliedFilters;
-	}
-
 	public function getFacetSet() {
 		$availableFacets = array();
 		if (isset($this->lastSearchResults) && isset($this->lastSearchResults->AvailableFacets)){
@@ -490,12 +472,21 @@ BODY;
 				$list = array();
 				foreach ($facet->AvailableFacetValues as $value){
 					$facetValue = (string)$value->Value;
-					$urlWithFacet = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
-					$list[] = array(
-							'display' => $facetValue,
-							'count' => (string)$value->Count,
-							'url' => $urlWithFacet
+					//Check to see if the facet has been applied
+					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
+
+					$facetSettings = array(
+						'value' => $facetValue,
+						'display' => $facetValue,
+						'count' => (string)$value->Count,
+						'isApplied' => $isApplied
 					);
+					if ($isApplied) {
+						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);
+					}else{
+						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
+					}
+					$list[] = $facetSettings;
 				}
 				$availableFacets[$facetId]['list'] = $list;
 			}
@@ -509,8 +500,10 @@ BODY;
 		}else{
 			curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
 			curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
-					'x-authenticationToken: ' . $this->authenticationToken,
-					'x-sessionToken: ' . $this->sessionId,
+				'Content-Type: application/json',
+				'Accept: application/json',
+				'x-authenticationToken: ' . $this->authenticationToken,
+				'x-sessionToken: ' . $this->sessionId,
 			));
 			$infoUrl = $this->edsBaseApi . "/Retrieve?an=$an&dbid=$dbId";
 			curl_setopt($this->curl_connection, CURLOPT_URL, $infoUrl);
@@ -518,18 +511,237 @@ BODY;
 			if ($recordInfoStr == false){
 				return null;
 			}else{
-				$recordData = new SimpleXMLElement($recordInfoStr);
+				$recordData = json_decode($recordInfoStr);
 				return $recordData->Record;
 			}
 		}
 	}
 
-	public function displayQuery(/** @noinspection PhpUnusedParameterInspection */$forceRebuild = false){
-		return $this->searchTerm;
+	public function getEngineName()
+	{
+		return 'EbscoEds';
 	}
 
-	public function getSearchIndex()
+	function getSearchesFile()
 	{
-		return $this->searchIndex;
+		// TODO: Implement getSearchesFile() method.
+	}
+
+	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
+	{
+		if (!$this->authenticate()){
+			return null;
+		}
+
+		$this->startQueryTimer();
+		if (is_array($this->searchTerms)){
+			$searchUrl = $this->edsBaseApi . '/search?';
+			$termIndex = 1;
+			foreach ($this->searchTerms as $term){
+				if ($termIndex > 1) $searchUrl .= '&';
+				$term = str_replace(',', '', $term);
+				$searchIndex = $term['index'];
+				$searchUrl .= "query-{$termIndex}=AND," . urlencode($searchIndex . ":" . $term['lookfor']);
+				$termIndex++;
+			}
+		}else{
+			if (isset($_REQUEST['searchIndex'])) {
+				$this->searchIndex = $_REQUEST['searchIndex'];
+			}
+			$searchTerms = str_replace(',', '', $this->searchTerms);
+			$searchTerms = $this->searchIndex . ':' .$searchTerms;
+			$searchUrl = $this->edsBaseApi . '/Search?query=' . urlencode($searchTerms);
+		}
+		$searchUrl .= '&searchmode=all';
+
+		$searchUrl .= '&sort=' . $this->sort;
+
+		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
+			$this->page = $_REQUEST['page'];
+			$searchUrl .= '&pagenumber=' . $this->page;
+		}else{
+			$this->page = 1;
+		}
+
+		$searchUrl .= "&highlight=n&view=detailed&autosuggest=n&autocorrect=n";
+
+		$facetIndex = 1;
+		foreach ($this->filterList as $field => $filter) {
+			$appliedFilters = '';
+			//Facets are applied differently in EDS than Solr. Format is filter, Field
+			if (is_array($filter)){
+				$appliedFilters .= "$facetIndex,";
+				foreach($filter as $fieldIndex => $fieldValue){
+					if ($fieldIndex > 0){
+						$appliedFilters .= ',';
+					}
+					$appliedFilters .= "$field:" . urlencode($fieldValue);
+				}
+			}else{
+				$appliedFilters .= "$facetIndex,$field:" . urlencode($filter);
+			}
+			$searchUrl .= '&facetfilter=' . $appliedFilters;
+
+			$facetIndex++;
+		}
+
+		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
+
+		curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
+			'Content-Type: application/json',
+			'Accept: application/json',
+			'x-authenticationToken: ' . $this->authenticationToken,
+			'x-sessionToken: ' . $this->sessionId,
+		));
+		curl_setopt($this->curl_connection, CURLOPT_URL, $searchUrl);
+		$result = curl_exec($this->curl_connection);
+		try {
+			$searchData = json_decode($result);
+			$this->stopQueryTimer();
+			if ($searchData && empty($searchData->ErrorNumber)){
+				$this->resultsTotal = $searchData->SearchResult->Statistics->TotalHits;
+				$this->lastSearchResults = $searchData->SearchResult;
+
+				return $searchData->SearchResult;
+			}else{
+				global $configArray;
+				global $logger;
+				if ($configArray['System']['debug']) {
+					$curlInfo = curl_getinfo($this->curl_connection);
+					$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
+				}
+				$this->lastSearchResults = false;
+				return new AspenError("Error processing search in EBSCO EDS");
+			}
+		}catch (Exception $e){
+			global $logger;
+			$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
+			return new AspenError("Error loading data from EBSCO $e");
+		}
+	}
+
+	public function getIndexError()
+	{
+		// TODO: Implement getIndexError() method.
+	}
+
+	public function buildRSS($result = null)
+	{
+		// TODO: Implement buildRSS() method.
+	}
+
+	public function buildExcel($result = null)
+	{
+		// TODO: Implement buildExcel() method.
+	}
+
+	public function getResultRecordSet()
+	{
+		// TODO: Implement getResultRecordSet() method.
+	}
+
+	function getSearchName()
+	{
+		return $this->searchSource;
+	}
+
+	function loadValidFields()
+	{
+		// TODO: Implement loadValidFields() method.
+	}
+
+	function loadDynamicFields()
+	{
+		// TODO: Implement loadDynamicFields() method.
+	}
+
+	function getBrowseRecordHTML(){
+		global $interface;
+		$html = array();
+		//global $logger;
+		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
+		if (isset($this->lastSearchResults->Data->Records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+
+				require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+				$record = new EbscoRecordDriver($current);
+				if ($record->isValid()) {
+					$interface->assign('recordDriver', $record);
+					$html[] = $interface->fetch($record->getBrowseResult());
+				} else {
+					$html[] = "Unable to find record";
+				}
+			}
+		}
+
+		return $html;
+	}
+
+	public function getSpotlightResults(CollectionSpotlight $spotlight){
+		$spotlightResults = [];
+		if (isset($this->lastSearchResults->Data->Records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
+				require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+				$record = new EbscoRecordDriver($current);
+				if ($record->isValid()) {
+					if (!empty($orderedListOfIDs)) {
+						$position = array_search($current['id'], $orderedListOfIDs);
+						if ($position !== false) {
+							$spotlightResults[$position] = $record->getSpotlightResult($spotlight, $position);
+						}
+					} else {
+						$spotlightResults[] = $record->getSpotlightResult($spotlight, $x);
+					}
+				} else {
+					$spotlightResults[] = "Unable to find record";
+				}
+			}
+		}
+		return $spotlightResults;
+	}
+
+	public function setSearchTerm($searchTerm)
+	{
+		if (strpos($searchTerm, ':') !== false){
+			list($searchIndex, $term) = explode(':', $searchTerm, 2);
+			$this->setSearchTerms([
+				'lookfor' =>$term,
+				'index' => $searchIndex
+			]);
+		}else {
+			$this->setSearchTerms([
+				'lookfor' => $searchTerm,
+				'index' => $this->getDefaultIndex()
+			]);
+		}
+	}
+
+	public function disableSpelling(){
+		//Do nothing for now
+	}
+
+	public function getDefaultIndex()
+	{
+		return 'TX';
+	}
+
+	/**
+	 * Retrieves a document specified by the ID.
+	 *
+	 * @param string[] $ids An array of documents to retrieve from Solr
+	 * @access  public
+	 * @return  array              The requested resources
+	 */
+	public function getRecords($ids){
+		$records = [];
+		require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+		foreach ($ids as $index => $id){
+			$records[$index] = new EbscoRecordDriver($id);
+		}
+		return $records;
 	}
 }

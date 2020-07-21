@@ -4,20 +4,43 @@ class EBSCO_Results extends Action{
 	function launch() {
 		global $interface;
 		global $timer;
+		global $aspenUsage;
+		$aspenUsage->ebscoEdsSearches++;
 
 		//Include Search Engine
-		require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
-		$searchObject = EDS_API::getInstance();
+		/** @var SearchObject_EbscoEdsSearcher $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject("EbscoEds");
 		$timer->logTime('Include search engine');
 
 		// Hide Covers when the user has set that setting on the Search Results Page
 		$this->setShowCovers();
 
-		$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : null;
-		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter'] : array();
-		$searchObject->getSearchResults($_REQUEST['lookfor'], $sort, $filters);
+		$searchObject->init();
+		$result = $searchObject->processSearch(true, true);
+		if ($result instanceof AspenError){
+			global $serverName;
+			$logSearchError = true;
+			if ($logSearchError) {
+				try{
+					require_once ROOT_DIR . '/sys/SystemVariables.php';
+					$systemVariables = new SystemVariables();
+					if ($systemVariables->find(true) && !empty($systemVariables->searchErrorEmail)) {
+						require_once ROOT_DIR . '/sys/Email/Mailer.php';
+						$mailer = new Mailer();
+						$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['msg'];
+						$mailer->send($systemVariables->searchErrorEmail, "$serverName Error processing EBSCO EDS search", $emailErrorDetails);
+					}
+				}catch (Exception $e){
+					//This happens when the table has not been created
+				}
+			}
 
-		$displayQuery = $_REQUEST['lookfor'];
+			$interface->assign('searchError', $result);
+			$this->display('searchError.tpl', 'Error in Search');
+			return;
+		}
+
+		$displayQuery = $searchObject->displayQuery();
 		$pageTitle = $displayQuery;
 		if (strlen($pageTitle) > 20){
 			$pageTitle = substr($pageTitle, 0, 20) . '...';
@@ -38,7 +61,7 @@ class EBSCO_Results extends Action{
 		$interface->assign('recordStart', $summary['startRecord']);
 		$interface->assign('recordEnd',   $summary['endRecord']);
 
-		$appliedFacets = $searchObject->getAppliedFilters();
+		$appliedFacets = $searchObject->getFilterList();
 		$interface->assign('filterList', $appliedFacets);
 		$facetSet = $searchObject->getFacetSet();
 		$interface->assign('sideFacetSet', $facetSet);
@@ -51,6 +74,15 @@ class EBSCO_Results extends Action{
 			$pager   = new Pager($options);
 			$interface->assign('pageLinks', $pager->getLinks());
 		}
+
+		$interface->assign('savedSearch', $searchObject->isSavedSearch());
+		$interface->assign('searchId',    $searchObject->getSearchId());
+
+		// Save the ID of this search to the session so we can return to it easily:
+		$_SESSION['lastSearchId'] = $searchObject->getSearchId();
+
+		// Save the URL of this search to the session so we can return to it easily:
+		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
 
 		//Setup explore more
 		$showExploreMoreBar = true;

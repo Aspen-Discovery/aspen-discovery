@@ -50,8 +50,6 @@ abstract class SearchObject_BaseSearcher
 	// Facets information
 	protected $facetConfig;    // Array of valid facet fields=>labels
 	protected $facetOptions = array();
-	// Default Search Handler
-	protected $defaultIndex = null;
 	// Available sort options
 	protected $sortOptions = array();
 	// An ID number for saving/retrieving search
@@ -608,11 +606,11 @@ abstract class SearchObject_BaseSearcher
 			//The type should never have punctuation in it (quotes, colons, etc)
 			$type = preg_replace('/[:"\']/', '', $type);
 
-			if (!array_key_exists($type, $this->searchIndexes) && !array_key_exists($type, $this->advancedTypes)){
-				$type = $this->defaultIndex;
+			if (!array_key_exists($type, $this->getSearchIndexes()) && !array_key_exists($type, $this->advancedTypes)){
+				$type = $this->getDefaultIndex();
 			}
 		} else {
-			$type = $this->defaultIndex;
+			$type = $this->getDefaultIndex();
 		}
 
 		if (strpos($searchTerm, ':') > 0) {
@@ -725,7 +723,7 @@ abstract class SearchObject_BaseSearcher
 							);
 						}else {
 							$group[] = array(
-								'field' => $this->defaultIndex,
+								'field' => $this->getDefaultIndex(),
 								'lookfor' => str_replace(':', ' ', $_REQUEST['lookfor']),
 								'bool' => 'AND'
 							);
@@ -770,7 +768,7 @@ abstract class SearchObject_BaseSearcher
 						if (!empty($_REQUEST['type' . $groupCount][$i])) {
 							$type = strip_tags($_REQUEST['type' . $groupCount][$i]);
 						} else {
-							$type = $this->defaultIndex;
+							$type = $this->getDefaultIndex();
 						}
 
 						//Marmot - search both ISBN-10 and ISBN-13
@@ -800,11 +798,11 @@ abstract class SearchObject_BaseSearcher
 			}
 
 			// Finally, if every advanced row was empty
-			if (count($this->searchTerms) == 0) {
+			if (empty($this->searchTerms)) {
 				// Treat it as an empty basic search
 				$this->searchType = $this->basicSearchType;
 				$this->searchTerms[] = array(
-					'index' => $this->defaultIndex,
+					'index' => $this->getDefaultIndex(),
 					'lookfor' => ''
 				);
 			}
@@ -906,7 +904,7 @@ abstract class SearchObject_BaseSearcher
 			}
 		}
 		//Validate the sort to make sure it is correct.
-		if (!array_key_exists($this->sort, $this->sortOptions)) {
+		if (!array_key_exists($this->sort, $this->getSortOptions())) {
 			$this->sort = $this->defaultSort;
 		}
 	}
@@ -1320,7 +1318,7 @@ abstract class SearchObject_BaseSearcher
 	public function setBasicQuery($query, $index = null)
 	{
 		if (is_null($index)) {
-			$index = $this->defaultIndex;
+			$index = $this->getDefaultIndex();
 		}
 		$this->searchTerms = array();
 		$this->searchTerms[] = array(
@@ -1450,9 +1448,7 @@ abstract class SearchObject_BaseSearcher
 	protected function minify()
 	{
 		// Clone this object as a minified object
-		$newObject = new minSO($this);
-		// Return the new object
-		return $newObject;
+		return new minSO($this);
 	}
 
 	/**
@@ -1617,8 +1613,7 @@ abstract class SearchObject_BaseSearcher
 			if ($search->session_id == $currentSessionId || $search->user_id == UserAccount::getActiveUserId()) {
 				// They do, deminify it to a new object.
 				$minSO = unserialize($search->search_object);
-				$savedSearch = SearchObjectFactory::deminify($minSO);
-				return $savedSearch;
+				return SearchObjectFactory::deminify($minSO);
 			} else {
 				// Just get out, we don't need to show an error
 				return null;
@@ -1633,12 +1628,14 @@ abstract class SearchObject_BaseSearcher
 	 * unable to load a requested saved search, return a AspenError object.
 	 *
 	 * @access  protected
+	 *
+	 * @var     string $searchId
+	 * @var     boolean $redirect
+	 * @var     boolean $forceReload
+	 *
 	 * @return  mixed               Does not return on successful load, returns
 	 *                              false if no search to restore, returns
 	 *                              AspenError object in case of trouble.
-	 * @var     boolean $redirect
-	 * @var     boolean $forceReload
-	 * @var     string $searchId
 	 */
 	public function restoreSavedSearch($searchId = null, $redirect = true, $forceReload = false)
 	{
@@ -2391,7 +2388,7 @@ abstract class SearchObject_BaseSearcher
 		$searchTerms = $this->searchTerms;
 
 		$searchString = isset($searchTerms[0]['lookfor']) ? $searchTerms[0]['lookfor'] : '';
-		$searchIndex =  isset($searchTerms[0]['index']) ? $searchTerms[0]['index'] : $this->defaultIndex;
+		$searchIndex =  isset($searchTerms[0]['index']) ? $searchTerms[0]['index'] : $this->getDefaultIndex();
 
 		$this->searchTerms = array(
 			array(
@@ -2504,6 +2501,7 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	abstract function getSearchName();
+	public abstract function getDefaultIndex();
 
 	abstract function loadValidFields();
 	abstract function loadDynamicFields();

@@ -10,7 +10,6 @@ class Lists_Results extends Action
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 		global $timer;
 		global $aspenUsage;
 		$aspenUsage->userListSearches++;

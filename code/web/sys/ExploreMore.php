@@ -355,12 +355,16 @@ class ExploreMore {
 			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
-		if (array_key_exists('EBSCO_EDS', $enabledModules)) {
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
 			$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
 		if ($islandoraActive){
 			$exploreMoreOptions = $this->loadIslandoraOptions($searchTerm, $configArray, $islandoraSearchObject, $exploreMoreOptions);
+		}
+
+		if ($library->enableGenealogy){
+			$exploreMoreOptions = $this->loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
 		//Consolidate explore more options, we'd like to show the search links if possible and then pad with sample records
@@ -755,21 +759,25 @@ class ExploreMore {
 	public function loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		global $library;
 		global $enabledModules;
-		if (array_key_exists('EBSCO_EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {
+		if (array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {
 			//Load EDS options
-			require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
-			$edsApi = EDS_API::getInstance();
-			if ($edsApi->authenticate()) {
+			/** @var SearchObject_EbscoEdsSearcher $edsSearcher */
+			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
+			if ($edsSearcher->authenticate()) {
 				//Find related titles
-				$edsResults = $edsApi->getSearchResults($searchTerm);
-				if ($edsResults) {
+				$edsSearcher->setSearchTerms(array(
+					'lookfor' => $searchTerm,
+					'index' => 'TX'
+				));
+				$edsResults = $edsSearcher->processSearch(true, false);
+				if ($edsResults != null) {
 					$exploreMoreOptions['sampleRecords']['ebsco_eds'] = [];
 					$numMatches = $edsResults->Statistics->TotalHits;
 					if ($numMatches > 0) {
 						//Check results based on common facets
-						foreach ($edsResults->AvailableFacets->AvailableFacet as $facetInfo) {
+						foreach ($edsResults->AvailableFacets as $facetInfo) {
 							if ($facetInfo->Id == 'SourceType') {
-								foreach ($facetInfo->AvailableFacetValues->AvailableFacetValue as $facetValue) {
+								foreach ($facetInfo->AvailableFacetValues as $facetValue) {
 									$facetValueStr = (string)$facetValue->Value;
 									if (in_array($facetValueStr, array('Magazines', 'News', 'Academic Journals', 'Primary Source Documents'))) {
 										$numFacetMatches = (int)$facetValue->Count;
@@ -1264,6 +1272,57 @@ class ExploreMore {
 							'link' => '/Archive/RelatedEntities?lookfor=' . urlencode($searchTerm) . '&entityType=event',
 							'usageCount' => $numEvents
 						);
+					}
+				}
+			}
+		}
+		return $exploreMoreOptions;
+	}
+
+	private function loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm)
+	{
+		if ($activeSection != 'genealogy') {
+			if (strlen($searchTerm) > 0) {
+				$exploreMoreOptions['sampleRecords']['genealogy'] = [];
+				/** @var SearchObject_GenealogySearcher $searchObjectSolr */
+				$searchObjectSolr = SearchObjectFactory::initSearchObject('Genealogy');
+				$searchObjectSolr->init();
+				$searchObjectSolr->disableSpelling();
+				$searchObjectSolr->setSearchTerms(array(
+					'lookfor' => $searchTerm,
+					'index' => 'GenealogyKeyword'
+				));
+				$searchObjectSolr->setPage(1);
+				$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
+				$results = $searchObjectSolr->processSearch(true, false);
+
+				if ($results && isset($results['response'])) {
+					$numCatalogResultsAdded = 0;
+					$numCatalogResults = $results['response']['numFound'];
+					if ($numCatalogResults > 1) {
+						//Add a link to remaining results
+						$exploreMoreOptions['searchLinks'][] = array(
+							'label' => "Genealogy Results ($numCatalogResults)",
+							'description' => "Genealogy Results ($numCatalogResults)",
+							'image' => '/interface/themes/responsive/images/person.png',
+							'link' => $searchObjectSolr->renderSearchUrl(),
+							'usageCount' => 1
+						);
+					}
+					foreach ($results['response']['docs'] as $doc) {
+						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
+						if ($numCatalogResultsAdded < $this->numEntriesToAdd) {
+							//Add a link to the actual title
+							$exploreMoreOptions['sampleRecords']['genealogy'][] = array(
+								'label' => $driver->getTitle(),
+								'description' => $driver->getTitle(),
+								'image' => $driver->getBookcoverUrl('medium'),
+								'link' => $driver->getLinkUrl(),
+								'usageCount' => 1
+							);
+						}
+
+						$numCatalogResultsAdded++;
 					}
 				}
 			}

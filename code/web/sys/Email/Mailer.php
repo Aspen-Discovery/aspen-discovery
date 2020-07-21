@@ -13,7 +13,7 @@ class Mailer {
 	 * @param string $replyTo Someone to reply to
 	 * @param bool $htmlMessage True to send the email as html
 	 *
-	 * @return  mixed               PEAR error on error, boolean true otherwise
+	 * @return  boolean
 	 */
 	public function send($to, $subject, $body, $replyTo = null, $htmlMessage = false) {
 		require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';

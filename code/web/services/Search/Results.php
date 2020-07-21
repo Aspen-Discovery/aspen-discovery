@@ -198,8 +198,6 @@ class Search_Results extends Action {
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
 		if ($result instanceof AspenError || !empty($result['error'])) {
-			$this->getKeywordSearchResults($searchObject, $interface);
-
 			//Don't record an error, but send it to issues just to be sure everything looks good
 			global $serverName;
 			$logSearchError = true;
@@ -244,6 +242,7 @@ class Search_Results extends Action {
 			}
 
 			$interface->assign('searchError', $result);
+			$this->getKeywordSearchResults($searchObject, $interface);
 			$this->display('searchError.tpl', 'Error in Search');
 			return;
 		}

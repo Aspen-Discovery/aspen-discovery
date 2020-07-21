@@ -680,8 +680,8 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('EBSCO_EDS', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-					{if $module == 'EBSCO' && in_array($action, array('Settings'))}
+				{if array_key_exists('EBSCO EDS', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
+					{if $module == 'EBSCO' && in_array($action, array('Settings', 'EDSDashboard'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -697,6 +697,7 @@
 						<div id="ebscoMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/EBSCO/EDSSettings">{translate text="EDS Settings"}</a></div>
+								<div class="adminMenuLink"><a href="/EBSCO/EDSDashboard">{translate text="EDS Dashboard"}</a></div>
 							</div>
 						</div>
 					</div>

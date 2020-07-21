@@ -41,7 +41,7 @@ class FavoriteHandler
 
 		$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$startRecord = ($page - 1) * $recordsPerPage + 1;
+		$startRecord = ($page - 1) * $recordsPerPage;
 		if ($startRecord < 0){
 			$startRecord = 0;
 		}
@@ -95,7 +95,7 @@ class FavoriteHandler
 		$interface->assign('sortList', $sortOptions);
 		$interface->assign('userSort', ($sortName == 'custom')); // switch for when users can sort their list
 
-		$resourceList = $list->getListRecords($startRecord, $recordsPerPage, $allowEdit, 'html');
+		$resourceList = $list->getListRecords($startRecord , $recordsPerPage, $allowEdit, 'html');
 		$interface->assign('resourceList', $resourceList);
 
 		// Set up paging of list contents:
