@@ -262,10 +262,18 @@ class EbscoRecordDriver extends RecordInterface
 	public function getTitle()
 	{
 		if (isset($this->recordData->RecordInfo->BibRecord->BibEntity)) {
-			return (string)$this->recordData->RecordInfo->BibRecord->BibEntity->Titles[0]->TitleFull;
-		} else {
-			return 'Unknown';
+			if (isset($this->recordData->RecordInfo->BibRecord->BibEntity->Titles)) {
+				return $this->recordData->RecordInfo->BibRecord->BibEntity->Titles[0]->TitleFull;
+			}
 		}
+		if (isset($this->recordData->RecordInfo->BibRecord->BibRelationships->IsPartOfRelationships)){
+			foreach ($this->recordData->RecordInfo->BibRecord->BibRelationships->IsPartOfRelationships as $relationship){
+				if (isset($relationship->BibEntity->Titles)){
+					return $relationship->BibEntity->Titles[0]->TitleFull;
+				}
+			}
+		}
+		return 'Unknown';
 	}
 
 	/**

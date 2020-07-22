@@ -95,17 +95,12 @@ class ListsRecordDriver extends IndexRecordDriver
 
 		$interface->assign('summUrl', $url);
 		$interface->assign('summTitle', $this->getTitle());
-//		$interface->assign('summSubTitle', $this->getSubtitle());
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 
-		//Get Rating
-//		$interface->assign('ratingData', $this->getRatingData());
-		//TODO: list image. (list.png added in template)
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		return 'RecordDrivers/List/cover_result.tpl';
-//		return 'RecordDrivers/GroupedWork/browse_result.tpl';
 	}
 
 	function getFormat() {
