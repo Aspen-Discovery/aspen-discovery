@@ -68,5 +68,13 @@ function getEbscoUpdates(){
 				"ALTER TABLE ebsco_eds_usage ADD INDEX (ebscoId, year, month)",
 			],
 		],
+		'ebsco_eds_increase_id_length' => [
+			'title' => 'EBSCO EDS Usage - Increase ebscoId length',
+			'description' => 'Increase length of ebscoId in ebsco eds usage table.',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE ebsco_eds_usage CHANGE COLUMN ebscoId ebscoId VARCHAR(100) NOT NULL",
+			],
+		]
 	];
 }
