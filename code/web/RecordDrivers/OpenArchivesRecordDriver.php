@@ -85,6 +85,14 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/OpenArchives/result.tpl';
 	}
 
+	public function getBrowseResult()
+	{
+		global $interface;
+		$interface->assign('openInNewWindow', true);
+		$interface->assign('onclick', "AspenDiscovery.OpenArchives.trackUsage('{$this->getId()}')");
+		return parent::getBrowseResult();
+	}
+
 	public function getBookcoverUrl($size = 'small', $absolutePath = false)
 	{
 		global $configArray;
