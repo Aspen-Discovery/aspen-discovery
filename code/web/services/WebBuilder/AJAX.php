@@ -286,15 +286,22 @@ class WebBuilder_AJAX extends JSON_Action
 						$rowToSwap = new PortalRow();
 						$rowToSwap->portalPageId = $portalRow->portalPageId;
 						$rowToSwap->weight = $newWeight;
-						$rowToSwap->find(true);
-						$portalRow->weight = $newWeight;
-						$portalRow->update();
-						$rowToSwap->weight = $oldWeight;
-						$rowToSwap->update();
+						if ($rowToSwap->find(true)) {
+							$portalRow->weight = $newWeight;
+							$portalRow->update();
+							$rowToSwap->weight = $oldWeight;
+							$rowToSwap->update();
 
-						$result['success'] = true;
-						$result['message'] = 'The row was moved successfully';
-						$result['swappedWithId'] = $rowToSwap->id;
+							$result['success'] = true;
+							$result['message'] = 'The row was moved successfully';
+							$result['swappedWithId'] = $rowToSwap->id;
+						}else{
+							if ($direction == 'up'){
+								$result['message'] = 'Row is already at the top';
+							}else{
+								$result['message'] = 'Row is already at the bottom';
+							}
+						}
 					}else{
 						$result['message'] = 'Unable to find that row';
 					}
@@ -306,6 +313,62 @@ class WebBuilder_AJAX extends JSON_Action
 			}
 		}else{
 			$result['message'] = 'You must be logged in to move a row';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function moveCell() {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error moving cell'
+		];
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+				if (isset($_REQUEST['cellId'])) {
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+					$portalCell = new PortalCell();
+					$portalCell->id = $_REQUEST['cellId'];
+					if ($portalCell->find(true)){
+						//Figure out new weights for rows
+						$direction = $_REQUEST['direction'];
+						$oldWeight = $portalCell->weight;
+						if ($direction == 'left'){
+							$newWeight = $oldWeight - 1;
+						}else{
+							$newWeight = $oldWeight + 1;
+						}
+						$cellToSwap = new PortalCell();
+						$cellToSwap->portalRowId = $portalCell->portalRowId;
+						$cellToSwap->weight = $newWeight;
+						if ($cellToSwap->find(true)) {
+							$portalCell->weight = $newWeight;
+							$portalCell->update();
+							$cellToSwap->weight = $oldWeight;
+							$cellToSwap->update();
+
+							$result['success'] = true;
+							$result['message'] = 'The cell was moved successfully';
+							$result['swappedWithId'] = $cellToSwap->id;
+						}else{
+							if ($direction == 'left'){
+								$result['message'] = 'The cell is already the first cell in the row';
+							}else{
+								$result['message'] = 'The cell is already the last cell in the row';
+							}
+						}
+					}else{
+						$result['message'] = 'Unable to find that cell';
+					}
+				}else{
+					$result['message'] = 'No cell id was provided';
+				}
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to move a cell';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to move a cell';
 		}
 		return $result;
 	}

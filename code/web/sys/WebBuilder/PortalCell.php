@@ -159,4 +159,14 @@ class PortalCell extends DataObject
 			return null;
 		}
 	}
+
+	/** @noinspection PhpUnused */
+	public function isLastCell(){
+		$myRow = new PortalRow();
+		$myRow->id = $this->portalRowId;
+		if ($myRow->find(true)){
+			return count($myRow->getCells()) -1 == $this->weight;
+		}
+		return false;
+	}
 }

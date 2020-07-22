@@ -176,6 +176,29 @@ AspenDiscovery.WebBuilder = (function () {
 			return false;
 		},
 
+		moveCell: function(cellId, direction) {
+			let url = Globals.path + '/WebBuilder/AJAX';
+			let params = {
+				method: 'moveCell',
+				cellId: cellId,
+				direction: direction
+			};
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					let cell1 = $("#portal-cell-" + cellId);
+					let cell2 = $("#portal-cell-" + data.swappedWithId);
+					if (direction === 'left'){
+						cell2.before(cell1);
+					}else{
+						cell1.before(cell2);
+					}
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
+		},
+
 		showEditCellForm: function(cellId) {
 			let url = Globals.path + '/WebBuilder/AJAX';
 			let params = {

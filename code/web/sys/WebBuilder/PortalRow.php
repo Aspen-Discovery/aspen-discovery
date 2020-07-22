@@ -110,6 +110,7 @@ class PortalRow extends DataObject
 			$this->_cells = [];
 			$obj = new PortalCell();
 			$obj->portalRowId = $this->id;
+			$obj->orderBy('weight');
 			$obj->find();
 			while($obj->fetch()){
 				$this->_cells[$obj->id] = clone $obj;
@@ -118,6 +119,7 @@ class PortalRow extends DataObject
 		return $this->_cells;
 	}
 
+	/** @noinspection PhpUnused */
 	public function isLastRow(){
 		$myPage = new PortalPage();
 		$myPage->id = $this->portalPageId;
