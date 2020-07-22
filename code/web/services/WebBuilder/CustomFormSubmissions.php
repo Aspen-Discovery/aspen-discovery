@@ -1,17 +1,18 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmission.php';
 
-class WebBuilder_CustomForms extends ObjectEditor
+class WebBuilder_CustomFormSubmissions extends ObjectEditor
 {
 	function getObjectType()
 	{
-		return 'CustomForm';
+		return 'CustomFormSubmission';
 	}
 
 	function getToolName()
 	{
-		return 'CustomForms';
+		return 'CustomFormSubmissions';
 	}
 
 	function getModule()
@@ -21,13 +22,15 @@ class WebBuilder_CustomForms extends ObjectEditor
 
 	function getPageTitle()
 	{
-		return 'Custom WebBuilder Forms';
+		return 'Form Submissions';
 	}
 
 	function getAllObjects()
 	{
-		$object = new CustomForm();
-		$object->orderBy('title');
+		$object = new CustomFormSubmission();
+		$formId = $_REQUEST['formId'];
+		$object->formId = $formId;
+		$object->orderBy('dateSubmitted desc');
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -38,7 +41,7 @@ class WebBuilder_CustomForms extends ObjectEditor
 
 	function getObjectStructure()
 	{
-		return CustomForm::getObjectStructure();
+		return CustomFormSubmission::getObjectStructure();
 	}
 
 	function getPrimaryKeyColumn()
@@ -58,7 +61,7 @@ class WebBuilder_CustomForms extends ObjectEditor
 
 	function canAddNew()
 	{
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator');
+		return false;
 	}
 
 	function canDelete()
@@ -66,17 +69,21 @@ class WebBuilder_CustomForms extends ObjectEditor
 		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin');
 	}
 
+	function canEdit(){
+		return false;
+	}
+
 	function getAdditionalObjectActions($existingObject)
 	{
 		$objectActions = [];
-		if (!empty($existingObject) && $existingObject instanceof CustomForm && !empty($existingObject->id)){
+		if (!empty($existingObject) && $existingObject instanceof CustomFormSubmission && !empty($existingObject->id)){
 			$objectActions[] = [
-				'text' => 'View',
-				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/Form?id='.$existingObject->id: $existingObject->urlAlias,
+				'text' => 'View Form',
+				'url' => empty($existingObject->urlAlias) ? '/WebBuilder/Form?id='.$existingObject->formId: $existingObject->urlAlias,
 			];
 			$objectActions[] = [
-				'text' => 'View Submissions',
-				'url' => '/WebBuilder/CustomFormSubmissions?formId='.$existingObject->id,
+				'text' => 'Edit Form',
+				'url' => '/WebBuilder/CustomForms?objectAction=edit&id='.$existingObject->formId,
 			];
 		}
 		return $objectActions;

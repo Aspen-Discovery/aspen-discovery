@@ -418,4 +418,10 @@ a.placard-link {
 .propertyDescription {
   margin-bottom: 6px;
 }
+.image-popup .modal-dialog {
+  width: auto;
+}
+.image-popup .modal-dialog .img-responsive {
+  margin: auto;
+}
 /*# sourceMappingURL=layout.css.map */

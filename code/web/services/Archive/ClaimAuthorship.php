@@ -116,7 +116,6 @@ class Archive_ClaimAuthorship extends Action{
 	function insertObject($structure){
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-		/** @var DataObject $newObject */
 		$newObject = new ClaimAuthorshipRequest();
 		//Check to see if we are getting default values from the
 		DataObjectUtil::updateFromUI($newObject, $structure);
@@ -132,7 +131,7 @@ class Archive_ClaimAuthorship extends Action{
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
-				$logger->log(mysql_error(), Logger::LOG_DEBUG);
+
 				return false;
 			}
 		} else {
