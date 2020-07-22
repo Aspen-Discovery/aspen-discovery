@@ -20,6 +20,7 @@ class PortalCell extends DataObject
 	public $sourceType;
 	public $sourceId;
 	public $markdown;
+	public $sourceInfo;
 
 	static function getObjectStructure() {
 		$verticalAlignmentOptions = [
@@ -39,8 +40,10 @@ class PortalCell extends DataObject
 			'basic_page' => 'Basic Page',
 			'basic_page_teaser' => 'Basic Page Teaser',
 			'collection_spotlight' => 'Collection Spotlight',
+			'custom_form' => 'Form',
 			'image' => 'Image',
-			'video' => 'Video'
+			'video' => 'Video',
+			'youtube_video' => 'YouTube Video',
 		];
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
@@ -55,7 +58,8 @@ class PortalCell extends DataObject
 			'horizontalJustification' => ['property'=>'horizontalJustification', 'type'=>'enum', 'values'=>$horizontalJustificationOptions, 'label'=>'Horizontal Justification', 'description'=>'Horizontal Justification of the cell', 'default'=>'start'],
 			'sourceType' => ['property'=>'sourceType', 'type'=>'enum', 'values'=>$sourceOptions, 'label'=>'Source Type', 'description'=>'Source type for the content of cell', 'onchange' => 'return AspenDiscovery.WebBuilder.getPortalCellValuesForSource();'],
 			'sourceId' => ['property'=>'sourceId', 'type'=>'enum', 'values'=>[], 'label'=>'Source Id', 'description'=>'Source for the content of cell'],
-			'markdown' => ['property' => 'markdown', 'type' => 'markdown', 'label' => 'Contents', 'description' => 'Contents of the cell']
+			'markdown' => ['property' => 'markdown', 'type' => 'markdown', 'label' => 'Contents', 'description' => 'Contents of the cell'],
+			'sourceInfo' => ['property' => 'sourceInfo', 'type' => 'text', 'label' => 'Source Info', 'description' => 'Additional information for the source'],
 		];
 	}
 
@@ -89,6 +93,13 @@ class PortalCell extends DataObject
 			if ($basicPage->find(true)){
 				return $basicPage->teaser;
 			}
+		}elseif ($this->sourceType == 'custom_form'){
+			require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+			$customForm = new CustomForm();
+			$customForm->id = $this->sourceId;
+			if ($customForm->find(true)){
+				return $customForm->getFormattedFields();
+			}
 		}elseif ($this->sourceType == 'video'){
 			require_once ROOT_DIR . '/sys/File/FileUpload.php';
 			$fileUpload = new FileUpload();
@@ -99,6 +110,9 @@ class PortalCell extends DataObject
 				$interface->assign('videoPath', $configArray['Site']['url'] . '/Files/' . $this->sourceId . '/Contents');
 				return $interface->fetch('Files/embeddedVideo.tpl');
 			}
+		}elseif ($this->sourceType == 'youtube_video'){
+			$sourceInfo = $this->sourceInfo;
+
 		}elseif ($this->sourceType == 'image'){
 			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 			$imageUpload = new ImageUpload();
@@ -114,7 +128,7 @@ class PortalCell extends DataObject
 //				}else{
 //					$size .= '&size=x-large';
 				}
-				return "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\">";
+				return "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\" alt='{$imageUpload->title}'>";
 			}
 		}
 		return 'Could not load contents for the cell';

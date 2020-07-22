@@ -52,6 +52,24 @@ class WebBuilder_AJAX extends JSON_Action
 				'values' => $list
 			];
 			break;
+		case 'custom_form':
+			require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+			$list = [];
+			$list['-1'] = 'Select a form';
+
+			$customForm = new CustomForm();
+			$customForm->orderBy('title');
+			$customForm->find();
+
+			while ($customForm->fetch()){
+				$list[$customForm->id] = $customForm->title;
+			}
+
+			$result = [
+				'success' => true,
+				'values' => $list
+			];
+			break;
 		case 'image':
 			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 			$list = [];

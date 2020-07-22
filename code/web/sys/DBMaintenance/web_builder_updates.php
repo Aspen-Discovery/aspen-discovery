@@ -273,6 +273,14 @@ function getWebBuilderUpdates(){
 			]
 		],
 
+		'web_builder_portal_cell_source_info' => [
+			'title' => 'Web Builder Portal Cell Source Info',
+			'description' => 'Add additional info for a portal cell to include things like YouTube Videos',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_cell ADD column sourceInfo VARCHAR(512)'
+			]
+		],
+
 		'web_builder_resource_in_library' => [
 			'title' => 'Web Builder add inLibraryUseOnly to Resources',
 			'description' => 'Add in library use only flag to web resources',
