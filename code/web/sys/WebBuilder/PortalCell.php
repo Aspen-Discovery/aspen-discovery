@@ -112,7 +112,7 @@ class PortalCell extends DataObject
 			}
 		}elseif ($this->sourceType == 'youtube_video'){
 			$sourceInfo = $this->sourceInfo;
-
+			return $interface->fetch('WebBuilder/youTubeVideo.tpl');
 		}elseif ($this->sourceType == 'image'){
 			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 			$imageUpload = new ImageUpload();

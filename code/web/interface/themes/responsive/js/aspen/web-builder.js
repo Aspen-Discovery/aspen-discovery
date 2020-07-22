@@ -7,9 +7,15 @@ AspenDiscovery.WebBuilder = (function () {
 			let sourceType = $("#sourceTypeSelect").val();
 			if (sourceType === 'markdown') {
 				$('#propertyRowmarkdown').show();
+				$('#propertyRowsourceInfo').hide();
+				$("#propertyRowsourceId").hide();
+			}else if (sourceType === 'youtube_video') {
+				$('#propertyRowmarkdown').hide();
+				$('#propertyRowsourceInfo').show();
 				$("#propertyRowsourceId").hide();
 			}else{
 				$('#propertyRowmarkdown').hide();
+				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").show();
 				let url = Globals.path + '/WebBuilder/AJAX?method=getPortalCellValuesForSource&portalCellId=' + portalCellId + '&sourceType=' + sourceType;
 				$.getJSON(url, function(data){
