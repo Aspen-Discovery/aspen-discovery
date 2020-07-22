@@ -43,6 +43,7 @@ class PortalCell extends DataObject
 			'custom_form' => 'Form',
 			'image' => 'Image',
 			'video' => 'Video',
+			'vimeo_video' => 'Vimeo Video',
 			'youtube_video' => 'YouTube Video',
 		];
 		return [
@@ -110,9 +111,24 @@ class PortalCell extends DataObject
 				$interface->assign('videoPath', $configArray['Site']['url'] . '/Files/' . $this->sourceId . '/Contents');
 				return $interface->fetch('Files/embeddedVideo.tpl');
 			}
+		}elseif ($this->sourceType == 'vimeo_video'){
+			$sourceInfo = $this->sourceInfo;
+			if (preg_match('~https://vimeo\.com/(.*?)/.*~', $sourceInfo, $matches)){
+				$sourceInfo = $matches[1];
+			}elseif (preg_match('~https://player\.vimeo\.com/video/(.*)~', $sourceInfo, $matches)){
+				$sourceInfo = $matches[1];
+			}
+			$interface->assign('vimeoId', $sourceInfo);
+			return $interface->fetch('WebBuilder/vimeoVideo.tpl');
 		}elseif ($this->sourceType == 'youtube_video'){
 			$sourceInfo = $this->sourceInfo;
-			return $interface->fetch('WebBuilder/youTubeVideo.tpl');
+			if (preg_match('~https://youtu\.be/(.*)~', $sourceInfo, $matches)){
+				$sourceInfo = $matches[1];
+			}elseif (preg_match('~https://www\.youtube\.com/watch?v=(.*?)&feature=youtu.be~', $sourceInfo, $matches)){
+				$sourceInfo = $matches[1];
+			}
+			$interface->assign('youtubeId', $sourceInfo);
+			return $interface->fetch('WebBuilder/youtubeVideo.tpl');
 		}elseif ($this->sourceType == 'image'){
 			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 			$imageUpload = new ImageUpload();

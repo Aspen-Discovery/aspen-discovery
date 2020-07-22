@@ -9,7 +9,7 @@ AspenDiscovery.WebBuilder = (function () {
 				$('#propertyRowmarkdown').show();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").hide();
-			}else if (sourceType === 'youtube_video') {
+			}else if (sourceType === 'youtube_video' || sourceType === 'vimeo_video') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
 				$("#propertyRowsourceId").hide();
