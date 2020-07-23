@@ -9,7 +9,7 @@
 
 	{else}{*Default Browse Mode (covers) *}
 		<div class="browse-thumbnail">
-			<a href="{$summUrl}" target="_blank>
+			<a href="{$summUrl}" target="_blank">
 				<div>
 					<img src="{$bookCoverUrlMedium}" alt="{$summTitle}" title="{$summTitle}">
 				</div>
