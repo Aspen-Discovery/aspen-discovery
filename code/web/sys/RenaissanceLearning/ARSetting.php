@@ -15,7 +15,7 @@ class ARSetting extends DataObject
 
 	public static function getObjectStructure()
 	{
-		$structure = array(
+		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'indexSeries' => array('property' => 'indexSeries', 'type' => 'checkbox', 'label' => 'Index Series', 'description' => 'Whether or not series from the AR data should be indexed', 'default' => 1,'forcesReindex' => true),
 			'indexSubjects' => array('property' => 'indexSubjects', 'type' => 'checkbox', 'label' => 'Index indexSubjects', 'description' => 'Whether or not subjects from the AR data should be indexed', 'default' => 1,'forcesReindex' => true),
@@ -25,6 +25,5 @@ class ARSetting extends DataObject
 			'ftpPassword' => array('property' => 'ftpPassword', 'type' => 'storedPassword', 'label' => 'FTP Password', 'description' => 'The password to connect to the FTP Server', 'hideInLists' => true,'forcesReindex' => true),
 			'lastFetched' => array('property' => 'lastFetched', 'type' => 'timestamp', 'label' => 'Last Fetch from the FTP Server', 'description' => 'The timestamp when the file was last fetched from the server', 'default' => 0),
 		);
-		return $structure;
 	}
 }

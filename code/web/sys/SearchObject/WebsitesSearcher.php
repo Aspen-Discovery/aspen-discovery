@@ -27,7 +27,6 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('websiteSearches');
-		$this->defaultIndex = 'WebsiteKeyword';
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -163,7 +162,7 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		return 'Websites';
 	}
 
-	public function getDefaultSearchIndex()
+	public function getDefaultIndex()
 	{
 		return 'WebsiteKeyword';
 	}

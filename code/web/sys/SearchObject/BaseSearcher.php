@@ -50,8 +50,6 @@ abstract class SearchObject_BaseSearcher
 	// Facets information
 	protected $facetConfig;    // Array of valid facet fields=>labels
 	protected $facetOptions = array();
-	// Default Search Handler
-	protected $defaultIndex = null;
 	// Available sort options
 	protected $sortOptions = array();
 	// An ID number for saving/retrieving search
@@ -609,10 +607,10 @@ abstract class SearchObject_BaseSearcher
 			$type = preg_replace('/[:"\']/', '', $type);
 
 			if (!array_key_exists($type, $this->getSearchIndexes()) && !array_key_exists($type, $this->advancedTypes)){
-				$type = $this->defaultIndex;
+				$type = $this->getDefaultIndex();
 			}
 		} else {
-			$type = $this->defaultIndex;
+			$type = $this->getDefaultIndex();
 		}
 
 		if (strpos($searchTerm, ':') > 0) {
@@ -725,7 +723,7 @@ abstract class SearchObject_BaseSearcher
 							);
 						}else {
 							$group[] = array(
-								'field' => $this->defaultIndex,
+								'field' => $this->getDefaultIndex(),
 								'lookfor' => str_replace(':', ' ', $_REQUEST['lookfor']),
 								'bool' => 'AND'
 							);
@@ -770,7 +768,7 @@ abstract class SearchObject_BaseSearcher
 						if (!empty($_REQUEST['type' . $groupCount][$i])) {
 							$type = strip_tags($_REQUEST['type' . $groupCount][$i]);
 						} else {
-							$type = $this->defaultIndex;
+							$type = $this->getDefaultIndex();
 						}
 
 						//Marmot - search both ISBN-10 and ISBN-13
@@ -804,7 +802,7 @@ abstract class SearchObject_BaseSearcher
 				// Treat it as an empty basic search
 				$this->searchType = $this->basicSearchType;
 				$this->searchTerms[] = array(
-					'index' => $this->defaultIndex,
+					'index' => $this->getDefaultIndex(),
 					'lookfor' => ''
 				);
 			}
@@ -906,7 +904,7 @@ abstract class SearchObject_BaseSearcher
 			}
 		}
 		//Validate the sort to make sure it is correct.
-		if (!array_key_exists($this->sort, $this->sortOptions)) {
+		if (!array_key_exists($this->sort, $this->getSortOptions())) {
 			$this->sort = $this->defaultSort;
 		}
 	}
@@ -1320,7 +1318,7 @@ abstract class SearchObject_BaseSearcher
 	public function setBasicQuery($query, $index = null)
 	{
 		if (is_null($index)) {
-			$index = $this->defaultIndex;
+			$index = $this->getDefaultIndex();
 		}
 		$this->searchTerms = array();
 		$this->searchTerms[] = array(
@@ -2390,7 +2388,7 @@ abstract class SearchObject_BaseSearcher
 		$searchTerms = $this->searchTerms;
 
 		$searchString = isset($searchTerms[0]['lookfor']) ? $searchTerms[0]['lookfor'] : '';
-		$searchIndex =  isset($searchTerms[0]['index']) ? $searchTerms[0]['index'] : $this->defaultIndex;
+		$searchIndex =  isset($searchTerms[0]['index']) ? $searchTerms[0]['index'] : $this->getDefaultIndex();
 
 		$this->searchTerms = array(
 			array(
@@ -2503,13 +2501,10 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	abstract function getSearchName();
+	public abstract function getDefaultIndex();
 
 	abstract function loadValidFields();
 	abstract function loadDynamicFields();
-
-	public function getDefaultIndex(){
-		return $this->defaultIndex;
-	}
 }//End of SearchObject_Base
 
 /**

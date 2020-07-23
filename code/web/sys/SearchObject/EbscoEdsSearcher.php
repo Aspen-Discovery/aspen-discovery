@@ -45,7 +45,6 @@ class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 		$this->searchType = 'ebsco_eds';
 		$this->resultsModule = 'EBSCO';
 		$this->resultsAction = 'Results';
-		$this->defaultIndex = 'TX';
 	}
 
 	/**
@@ -334,8 +333,8 @@ BODY;
 		//global $logger;
 		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults->Data->Records)) {
-			for ($x = 0; $x < count($this->lastSearchResults->Data->Records->Record); $x++) {
-				$current = &$this->lastSearchResults->Data->Records->Record[$x];
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 
@@ -424,6 +423,20 @@ BODY;
 		return $list;
 	}
 
+	public function getSortOptions() {
+		$searchOptions = $this->getSearchOptions();
+		$list = array();
+		if ($searchOptions != null){
+			foreach ($searchOptions->AvailableSearchCriteria->AvailableSorts->AvailableSort as $sortOption){
+				$sort = (string)$sortOption->Id;
+				$desc = (string)$sortOption->Label;
+				$list[$sort] = $desc;
+			}
+		}
+
+		return $list;
+	}
+
 	/**
 	 * Return a url for the current search with a new sort
 	 *
@@ -459,12 +472,21 @@ BODY;
 				$list = array();
 				foreach ($facet->AvailableFacetValues as $value){
 					$facetValue = (string)$value->Value;
-					$urlWithFacet = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
-					$list[] = array(
-							'display' => $facetValue,
-							'count' => (string)$value->Count,
-							'url' => $urlWithFacet
+					//Check to see if the facet has been applied
+					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
+
+					$facetSettings = array(
+						'value' => $facetValue,
+						'display' => $facetValue,
+						'count' => (string)$value->Count,
+						'isApplied' => $isApplied
 					);
+					if ($isApplied) {
+						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);
+					}else{
+						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
+					}
+					$list[] = $facetSettings;
 				}
 				$availableFacets[$facetId]['list'] = $list;
 			}
@@ -497,7 +519,7 @@ BODY;
 
 	public function getEngineName()
 	{
-		return 'ebsco_eds';
+		return 'EbscoEds';
 	}
 
 	function getSearchesFile()
@@ -532,11 +554,6 @@ BODY;
 		}
 		$searchUrl .= '&searchmode=all';
 
-		if (isset($sort)) {
-			$this->sort = $sort;
-		}else {
-			$this->sort = $this->defaultSort;
-		}
 		$searchUrl .= '&sort=' . $this->sort;
 
 		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
@@ -549,25 +566,23 @@ BODY;
 		$searchUrl .= "&highlight=n&view=detailed&autosuggest=n&autocorrect=n";
 
 		$facetIndex = 1;
-		$appliedFilters = '';
 		foreach ($this->filterList as $field => $filter) {
-			if ($facetIndex > 1){
-				$appliedFilters .= ':';
-			}
+			$appliedFilters = '';
 			//Facets are applied differently in EDS than Solr. Format is filter, Field
 			if (is_array($filter)){
 				$appliedFilters .= "$facetIndex,";
-				foreach($filter as $fieldValue){
+				foreach($filter as $fieldIndex => $fieldValue){
+					if ($fieldIndex > 0){
+						$appliedFilters .= ',';
+					}
 					$appliedFilters .= "$field:" . urlencode($fieldValue);
 				}
 			}else{
 				$appliedFilters .= "$facetIndex,$field:" . urlencode($filter);
 			}
+			$searchUrl .= '&facetfilter=' . $appliedFilters;
 
 			$facetIndex++;
-		}
-		if (!empty($appliedFilters)){
-			$searchUrl .= '&facetfilter=' . $appliedFilters;
 		}
 
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
@@ -586,6 +601,7 @@ BODY;
 			if ($searchData && empty($searchData->ErrorNumber)){
 				$this->resultsTotal = $searchData->SearchResult->Statistics->TotalHits;
 				$this->lastSearchResults = $searchData->SearchResult;
+
 				return $searchData->SearchResult;
 			}else{
 				global $configArray;
@@ -594,13 +610,13 @@ BODY;
 					$curlInfo = curl_getinfo($this->curl_connection);
 					$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
 				}
-				$this->lastSearchResults = null;
-				return null;
+				$this->lastSearchResults = false;
+				return new AspenError("Error processing search in EBSCO EDS");
 			}
 		}catch (Exception $e){
 			global $logger;
 			$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
-			return null;
+			return new AspenError("Error loading data from EBSCO $e");
 		}
 	}
 
@@ -637,5 +653,95 @@ BODY;
 	function loadDynamicFields()
 	{
 		// TODO: Implement loadDynamicFields() method.
+	}
+
+	function getBrowseRecordHTML(){
+		global $interface;
+		$html = array();
+		//global $logger;
+		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
+		if (isset($this->lastSearchResults->Data->Records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+
+				require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+				$record = new EbscoRecordDriver($current);
+				if ($record->isValid()) {
+					$interface->assign('recordDriver', $record);
+					$html[] = $interface->fetch($record->getBrowseResult());
+				} else {
+					$html[] = "Unable to find record";
+				}
+			}
+		}
+
+		return $html;
+	}
+
+	public function getSpotlightResults(CollectionSpotlight $spotlight){
+		$spotlightResults = [];
+		if (isset($this->lastSearchResults->Data->Records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
+				require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+				$record = new EbscoRecordDriver($current);
+				if ($record->isValid()) {
+					if (!empty($orderedListOfIDs)) {
+						$position = array_search($current['id'], $orderedListOfIDs);
+						if ($position !== false) {
+							$spotlightResults[$position] = $record->getSpotlightResult($spotlight, $position);
+						}
+					} else {
+						$spotlightResults[] = $record->getSpotlightResult($spotlight, $x);
+					}
+				} else {
+					$spotlightResults[] = "Unable to find record";
+				}
+			}
+		}
+		return $spotlightResults;
+	}
+
+	public function setSearchTerm($searchTerm)
+	{
+		if (strpos($searchTerm, ':') !== false){
+			list($searchIndex, $term) = explode(':', $searchTerm, 2);
+			$this->setSearchTerms([
+				'lookfor' =>$term,
+				'index' => $searchIndex
+			]);
+		}else {
+			$this->setSearchTerms([
+				'lookfor' => $searchTerm,
+				'index' => $this->getDefaultIndex()
+			]);
+		}
+	}
+
+	public function disableSpelling(){
+		//Do nothing for now
+	}
+
+	public function getDefaultIndex()
+	{
+		return 'TX';
+	}
+
+	/**
+	 * Retrieves a document specified by the ID.
+	 *
+	 * @param string[] $ids An array of documents to retrieve from Solr
+	 * @access  public
+	 * @return  array              The requested resources
+	 */
+	public function getRecords($ids){
+		$records = [];
+		require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+		foreach ($ids as $index => $id){
+			$records[$index] = new EbscoRecordDriver($id);
+		}
+		return $records;
 	}
 }

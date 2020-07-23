@@ -142,7 +142,6 @@ class Admin_AJAX extends JSON_Action
 	function getAddToSpotlightForm()
 	{
 		global $interface;
-		$user = UserAccount::getLoggedInUser();
 		// Display Page
 		$interface->assign('id', strip_tags($_REQUEST['id']));
 		$interface->assign('source', strip_tags($_REQUEST['source']));
@@ -156,12 +155,11 @@ class Admin_AJAX extends JSON_Action
 		$collectionSpotlight->orderBy('name');
 		$existingCollectionSpotlights = $collectionSpotlight->fetchAll('id', 'name');
 		$interface->assign('existingCollectionSpotlights', $existingCollectionSpotlights);
-		$results = array(
+		return array(
 			'title' => 'Create a Spotlight',
 			'modalBody' => $interface->fetch('Admin/addToSpotlightForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#addSpotlight\").submit();'>Create Spotlight</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */

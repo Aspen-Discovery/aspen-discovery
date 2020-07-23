@@ -40,6 +40,8 @@ class ListsRecordDriver extends IndexRecordDriver
 	 * search results.
 	 *
 	 * @access  public
+	 * @param string $view
+	 * @param bool $showListsAppearingOn
 	 * @return  string              Name of Smarty template file to display.
 	 */
 	public function getSearchResult($view = 'list', $showListsAppearingOn = true){
@@ -95,17 +97,12 @@ class ListsRecordDriver extends IndexRecordDriver
 
 		$interface->assign('summUrl', $url);
 		$interface->assign('summTitle', $this->getTitle());
-//		$interface->assign('summSubTitle', $this->getSubtitle());
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 
-		//Get Rating
-//		$interface->assign('ratingData', $this->getRatingData());
-		//TODO: list image. (list.png added in template)
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		return 'RecordDrivers/List/cover_result.tpl';
-//		return 'RecordDrivers/GroupedWork/browse_result.tpl';
 	}
 
 	function getFormat() {
@@ -116,6 +113,7 @@ class ListsRecordDriver extends IndexRecordDriver
 	/**
 	 * Get the full title of the record.
 	 *
+	 * @param bool $useHighlighting
 	 * @return  string
 	 */
 	public function getTitle($useHighlighting = false) {
@@ -130,21 +128,6 @@ class ListsRecordDriver extends IndexRecordDriver
 			return $this->fields['title_display'];
 		}
 		return '';
-	}
-
-	function getDescriptionFast($useHighlighting = false) {
-
-		// Don't check for highlighted values if highlighting is disabled:
-		if ($this->highlight && $useHighlighting) {
-			if (isset($this->fields['_highlighting']['description'][0])) {
-				return $this->fields['_highlighting']['description'][0];
-			}
-		}
-		return $this->fields['description'];
-	}
-
-	function getMoreInfoLinkUrl() {
-		return $this->getLinkUrl();
 	}
 
 	/**
@@ -187,7 +170,7 @@ class ListsRecordDriver extends IndexRecordDriver
 
 	public function getDescription()
 	{
-		return $this->fields['description'];
+		return !empty($this->fields['description']) ? $this->fields['description'] : '';
 	}
 
 	private function getListObject()

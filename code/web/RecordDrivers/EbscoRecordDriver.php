@@ -92,6 +92,7 @@ class EbscoRecordDriver extends RecordInterface
 		return $this->recordData->PLink;
 	}
 
+	/** @noinspection PhpUnused */
 	public function getEbscoUrl()
 	{
 		return $this->recordData->PLink;
@@ -102,16 +103,12 @@ class EbscoRecordDriver extends RecordInterface
 		return 'EBSCO';
 	}
 
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display a summary of the item suitable for use in
-	 * search results.
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getSearchResult($view = 'list')
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true)
 	{
+		if ($view == 'covers') { // Displaying Results as bookcover tiles
+			return $this->getBrowseResult();
+		}
+
 		global $interface;
 
 		$id = $this->getUniqueID();
@@ -128,12 +125,50 @@ class EbscoRecordDriver extends RecordInterface
 		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
 		$interface->assign('summHasFullText', $this->hasFullText());
 
+		//Check to see if there are lists the record is on
+		if ($showListsAppearingOn) {
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$appearsOnLists = UserList::getUserListsForRecord('EbscoEds', $this->getId());
+			$interface->assign('appearsOnLists', $appearsOnLists);
+		}
+
 		$interface->assign('summDescription', $this->getDescription());
 
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
+		require_once ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php';
+		$recordUsage = new EbscoEdsRecordUsage();
+		$recordUsage->ebscoId = $this->getUniqueID();
+		$recordUsage->year = date('Y');
+		$recordUsage->month = date('n');
+		if ($recordUsage->find(true)) {
+			$recordUsage->timesViewedInSearch++;
+			$recordUsage->update();
+		} else {
+			$recordUsage->timesViewedInSearch = 1;
+			$recordUsage->timesUsed = 0;
+			$recordUsage->insert();
+		}
+
 		return 'RecordDrivers/EBSCO/result.tpl';
+	}
+
+	public function getBrowseResult()
+	{
+		global $interface;
+
+		$id = $this->getUniqueID();
+		$interface->assign('summId', $id);
+
+
+		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('summTitle', $this->getTitle());
+
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		return 'RecordDrivers/EBSCO/browse_result.tpl';
 	}
 
 	/**
@@ -162,10 +197,50 @@ class EbscoRecordDriver extends RecordInterface
 		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
 		$interface->assign('summHasFullText', $this->hasFullText());
 
+		$interface->assign('summDescription', $this->getDescription());
+
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		return 'RecordDrivers/EBSCO/combinedResult.tpl';
+	}
+
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+		global $interface;
+		$interface->assign('showRatings', $collectionSpotlight->showRatings);
+
+		$interface->assign('key', $index);
+
+		if ($collectionSpotlight->coverSize == 'small'){
+			$imageUrl = $this->getBookcoverUrl('small');
+		}else{
+			$imageUrl = $this->getBookcoverUrl('medium');
+		}
+
+		$interface->assign('title', $this->getTitle());
+		$interface->assign('author', $this->getAuthor());
+		$interface->assign('description', $this->getDescription());
+		$interface->assign('shortId', $this->getUniqueID());
+		$interface->assign('id', $this->getUniqueID());
+		$interface->assign('titleURL', $this->getLinkUrl());
+		$interface->assign('imageUrl', $imageUrl);
+
+		if ($collectionSpotlight->showRatings){
+			$interface->assign('ratingData', null);
+			$interface->assign('showNotInterested', false);
+		}
+
+		$result = [
+			'title' => $this->getTitle(),
+			'author' => $this->getAuthor(),
+		];
+		if ($collectionSpotlight->style == 'text-list'){
+			$result['formattedTextOnlyTitle'] = $interface->fetch('CollectionSpotlight/formattedTextOnlyTitle.tpl');
+		}else{
+			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
+		}
+
+		return $result;
 	}
 
 	/**
@@ -189,10 +264,18 @@ class EbscoRecordDriver extends RecordInterface
 	public function getTitle()
 	{
 		if (isset($this->recordData->RecordInfo->BibRecord->BibEntity)) {
-			return (string)$this->recordData->RecordInfo->BibRecord->BibEntity->Titles[0]->TitleFull;
-		} else {
-			return 'Unknown';
+			if (isset($this->recordData->RecordInfo->BibRecord->BibEntity->Titles)) {
+				return $this->recordData->RecordInfo->BibRecord->BibEntity->Titles[0]->TitleFull;
+			}
 		}
+		if (isset($this->recordData->RecordInfo->BibRecord->BibRelationships->IsPartOfRelationships)){
+			foreach ($this->recordData->RecordInfo->BibRecord->BibRelationships->IsPartOfRelationships as $relationship){
+				if (isset($relationship->BibEntity->Titles)){
+					return $relationship->BibEntity->Titles[0]->TitleFull;
+				}
+			}
+		}
+		return 'Unknown';
 	}
 
 	/**
@@ -218,6 +301,11 @@ class EbscoRecordDriver extends RecordInterface
 	public function getUniqueID()
 	{
 		return (string)$this->recordData->Header->DbId . ':' . (string)$this->recordData->Header->An;
+	}
+
+	public function getId()
+	{
+		return $this->getUniqueID();
 	}
 
 	/**
@@ -324,5 +412,24 @@ class EbscoRecordDriver extends RecordInterface
 	public function getPermanentId()
 	{
 		return $this->getUniqueID();
+	}
+
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display a summary of the item suitable for use in
+	 * user's favorites list.
+	 *
+	 * @access  public
+	 * @param int $listId ID of list containing desired tags/notes (or
+	 *                              null to show tags/notes from all user's lists).
+	 * @param bool $allowEdit Should we display edit controls?
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getListEntry($listId = null, $allowEdit = true)
+	{
+		$this->getSearchResult('list');
+
+		//Switch template
+		return 'RecordDrivers/EBSCO/listEntry.tpl';
 	}
 }

@@ -43,9 +43,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('groupedWorksSearches');
-		if (isset($searchSettings['General']['default_handler'])) {
-			$this->defaultIndex = $searchSettings['General']['default_handler'];
-		}
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -288,7 +285,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		//********************
 		// Basic Search logic
 		$this->searchTerms[] = array(
-			'index' => $this->defaultIndex,
+			'index' => $this->getDefaultIndex(),
 			'lookfor' => ""
 		);
 
@@ -429,46 +426,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				unset($record);
 				$memoryWatcher->logMemory("Finished loading record information for index $x");
 				$timer->logTime('Loaded search result for ' . $current['id']);
-			}
-		}
-		return $html;
-	}
-
-	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results.
-	 *
-	 * @access  public
-	 * @return  array   Array of HTML chunks for individual records.
-	 */
-	public function getCombinedResultsHTML()
-	{
-		global $interface;
-		global $memoryWatcher;
-		$html = array();
-		if (isset($this->indexResult['response'])) {
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-				$memoryWatcher->logMemory("Started loading record information for index $x");
-				$current = &$this->indexResult['response']['docs'][$x];
-				if (!$this->debug) {
-					unset($current['explain']);
-					unset($current['score']);
-				}
-				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-				/** @var GroupedWorkDriver $record */
-				$record = RecordDriverFactory::initRecordDriver($current);
-				if (!($record instanceof AspenError)) {
-					$interface->assign('recordDriver', $record);
-					$html[] = $interface->fetch($record->getCombinedResult($this->view));
-				} else {
-					$html[] = "Unable to find record";
-				}
-				//Free some memory
-				$record = 0;
-				unset($record);
-				$memoryWatcher->logMemory("Finished loading record information for index $x");
 			}
 		}
 		return $html;
@@ -1368,7 +1325,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 *
 	 * @param string[] $ids An array of documents to retrieve from Solr
 	 * @access  public
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function searchForRecordIds($ids)
 	{
@@ -1382,7 +1339,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @param string $barcode A barcode of an item in the document to retrieve from Solr
 	 * @access  public
 	 * @return  string              The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecordByBarcode($barcode)
 	{
@@ -1395,7 +1352,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @param string[] $isbn An array of isbns to check
 	 * @access  public
 	 * @return  string              The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecordByIsbn($isbn)
 	{
@@ -1578,7 +1535,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return 'GroupedWork';
 	}
 
-	public function getDefaultSearchIndex()
+	public function getDefaultIndex()
 	{
 		return 'Keyword';
 	}

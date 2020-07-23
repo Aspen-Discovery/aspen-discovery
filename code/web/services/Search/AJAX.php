@@ -231,8 +231,6 @@ class AJAX extends Action {
 					$result['listDescription'] = $sourceList->description;
 					$result['titles'] = $sourceList->getSpotlightTitles( $collectionSpotlight);
 					$result['currentIndex'] = 0;
-				} else {
-					$records = array();
 				}
 				$result['searchUrl'] = '/MyAccount/MyList/' . $collectionSpotlightList->sourceListId;
 			}else{
@@ -457,20 +455,29 @@ class AJAX extends Action {
 
 	function getSearchIndexes(){
 		$searchSource = $_REQUEST['searchSource'];
-		$searchObject = SearchSources::getSearcherForSource($searchSource);
-		if (!is_object($searchObject)){
-			$response = [
-				'success' => false,
-				'message' => 'Unknown search source ' . $searchSource
-			];
-		}else{
-			$searchIndexes = SearchSources::getSearchIndexesForSource($searchObject, $searchSource);
+		if ($searchSource == 'combined'){
 			$response = [
 				'success' => true,
-				'searchIndexes' => $searchIndexes,
-				'selectedIndex' => $searchObject->getDefaultIndex(),
-				'defaultSearchIndex' => $searchObject->getDefaultIndex(),
+				'searchIndexes' => ['Keyword' => 'Keyword'],
+				'selectedIndex' => 'Keyword',
+				'defaultSearchIndex' => 'Keyword',
 			];
+		}else{
+			$searchObject = SearchSources::getSearcherForSource($searchSource);
+			if (!is_object($searchObject)){
+				$response = [
+					'success' => false,
+					'message' => 'Unknown search source ' . $searchSource
+				];
+			}else{
+				$searchIndexes = SearchSources::getSearchIndexesForSource($searchObject, $searchSource);
+				$response = [
+					'success' => true,
+					'searchIndexes' => $searchIndexes,
+					'selectedIndex' => $searchObject->getDefaultIndex(),
+					'defaultSearchIndex' => $searchObject->getDefaultIndex(),
+				];
+			}
 		}
 
 		return $response;

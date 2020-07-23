@@ -56,9 +56,8 @@ class Browse_AJAX extends Action {
 		global $locationSingleton;
 		$searchLocation = $locationSingleton->getSearchLocation();
 		$categoryName = isset($_REQUEST['categoryName']) ? $_REQUEST['categoryName'] : '';
+		// value of zero means nothing was selected.
 		$addAsSubCategoryOf = isset($_REQUEST['addAsSubCategoryOf']) && !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;
-			// value of zero means nothing was selected.
-
 
 		//Get the text id for the category
 		$textId = str_replace(' ', '_', strtolower(trim($categoryName)));

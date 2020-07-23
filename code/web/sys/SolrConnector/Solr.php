@@ -344,7 +344,7 @@ abstract class Solr
 	 * @param string $fieldsToReturn An optional list of fields to return separated by commas
 	 * @access    public
 	 * @return    array                            The requested resource
-	 * @throws    object                            PEAR Error
+	 * @throws    AspenError
 	 */
 	function getRecord($id, $fieldsToReturn = null)
 	{
@@ -381,7 +381,7 @@ abstract class Solr
 	 * @param string $fieldsToReturn An optional list of fields to return separated by commas
 	 * @access    public
 	 * @return    array                            The requested resources
-	 * @throws    object                            PEAR Error
+	 * @throws    AspenError
 	 */
 	function getRecords($ids, $fieldsToReturn = null)
 	{
@@ -530,8 +530,8 @@ abstract class Solr
 	 * @param array $structure the SearchSpecs-derived structure or substructure defining the search, derived from the yaml file
 	 * @param array $values the various values in an array with keys 'onephrase', 'and', 'or' (and perhaps others)
 	 * @param string $joiner
-	 * @return    string                            A search string suitable for adding to a query URL
-	 * @throws    object                            PEAR Error
+	 * @return    string A search string suitable for adding to a query URL
+	 * @throws    AspenError
 	 * @static
 	 */
 	private function _applySearchSpecs($structure, $values, $joiner = "OR")
@@ -860,7 +860,7 @@ abstract class Solr
 	 * @access	public
 	 * @param	 array	 $search		  An array of search parameters
 	 * @param	 boolean $forDisplay  Whether or not the query is being built for display purposes
-	 * @throws	object							PEAR Error
+	 * @throws	AspenError
 	 * @static
 	 * @return	string							The query
 	 */
@@ -1032,7 +1032,7 @@ abstract class Solr
 	 *                                                                            an error key set (true)?
 	 * @access    public
 	 * @return    array                             An array of query results
-	 * @throws    object                            PEAR Error
+	 * @throws    AspenError
 	 */
 	function search($query, $handler = null, $filter = null, $start = 0,
 	                $limit = 20, $facet = null, $spell = '', $dictionary = null,
@@ -1618,7 +1618,7 @@ abstract class Solr
 	 *                                                                                    should we fail outright (false) or
 	 *                                                                                    treat it as an empty result set with
 	 *                                                                                    an error key set (true)?
-	 * @return    array|AspenError                                                     The Solr response (or a PEAR error)
+	 * @return    array|AspenError                                                     The Solr response (or an AspenError)
 	 * @access    protected
 	 */
 	protected function _select($method = 'GET', $params = array(), $returnSolrError = false, $queryHandler = 'select')

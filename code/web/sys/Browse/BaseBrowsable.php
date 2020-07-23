@@ -44,7 +44,7 @@ abstract class BaseBrowsable extends DataObject
 			} else {
 				if (!isset($searchTerms[0]['index'])) {
 					$this->searchTerm = $searchObj->displayQuery();
-				} else if ($searchTerms[0]['index'] == $searchObj->getDefaultSearchIndex()) {
+				} else if ($searchTerms[0]['index'] == $searchObj->getDefaultIndex()) {
 					$this->searchTerm = $searchTerms[0]['lookfor'];
 				} else {
 					$this->searchTerm = $searchTerms[0]['index'] . ':' . $searchTerms[0]['lookfor'];
@@ -98,8 +98,14 @@ abstract class BaseBrowsable extends DataObject
 		if (array_key_exists('User Lists', $enabledModules)){
 			$spotlightSources['List'] = 'Public List';
 		}
+		if (array_key_exists('EBSCO EDS', $enabledModules)){
+			$spotlightSources['EbscoEds'] = 'EBSCO EDS Search';
+		}
 		if (array_key_exists('Events', $enabledModules)){
 			$spotlightSources['Events'] = 'Events Search';
+		}
+		if (array_key_exists('Genealogy', $enabledModules)){
+			$spotlightSources['Genealogy'] = 'Genealogy Search';
 		}
 		if (array_key_exists('Open Archives', $enabledModules)){
 			$spotlightSources['OpenArchives'] = 'Open Archives Search';
@@ -107,6 +113,7 @@ abstract class BaseBrowsable extends DataObject
 		if (array_key_exists('Web Indexer', $enabledModules)){
 			$spotlightSources['Websites'] = 'Website Search';
 		}
+
 		return $spotlightSources;
 	}
 }

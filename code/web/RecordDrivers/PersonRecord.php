@@ -91,19 +91,26 @@ class PersonRecord extends IndexRecordDriver
 		return $this->id;
 	}
 
-	function getBookcoverUrl($size = 'small')
+	function getBookcoverUrl($size = 'small', $absolutePath = false)
 	{
 		$person = $this->getPerson();
+		global $configArray;
+		if ($absolutePath) {
+			$bookCoverUrl = $configArray['Site']['url'];
+		} else {
+			$bookCoverUrl = '';
+		}
 		if ($person->picture) {
 			if ($size == 'small') {
-				return '/files/thumbnail/' . $this->person->picture;
+				$bookCoverUrl .= '/files/thumbnail/' . $this->person->picture;
 			} else {
-				return '/files/medium/' . $this->person->picture;
+				$bookCoverUrl .= '/files/medium/' . $this->person->picture;
 			}
 
 		} else {
-			return '/interface/themes/responsive/images/person.png';
+			$bookCoverUrl .= '/interface/themes/responsive/images/person.png';
 		}
+		return $bookCoverUrl;
 	}
 
 	/**
@@ -119,7 +126,10 @@ class PersonRecord extends IndexRecordDriver
 	 */
 	public function getListEntry($listId = null, $allowEdit = true)
 	{
-		return $this->getSearchResult('list');
+		$this->getSearchResult('list');
+
+		//Switch template
+		return 'RecordDrivers/Person/listEntry.tpl';
 	}
 
 	public function getModule()
@@ -143,5 +153,22 @@ class PersonRecord extends IndexRecordDriver
 	public function getDescription()
 	{
 		return '';
+	}
+
+	public function getBrowseResult()
+	{
+		global $interface;
+		$id = $this->getUniqueID();
+		$interface->assign('summId', $id);
+
+		$url = $this->getRecordUrl();
+
+		$interface->assign('summUrl', $url);
+		$interface->assign('summTitle', $this->getName());
+
+		//Get book cover
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		return 'RecordDrivers/Person/browse_result.tpl';
 	}
 }

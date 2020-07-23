@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Pascal Brammeier
- * Date: 7/13/2015
- * Time: 10:52 AM
- */
 
 class MillenniumBooking {
 	/** @var  Millennium $driver */

@@ -80,16 +80,16 @@ class SearchSources{
 			$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
 		}
 
-		$searchGenealogy = $library->enableGenealogy;
+		$searchGenealogy = array_key_exists('Genealogy', $enabledModules) && $library->enableGenealogy;
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
 		$searchArchive = $library->enableArchive == 1;
-		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) &&  $library->edsSettingsId != -1;
+		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1;
         $searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
 
 		if ($enableCombinedResults && $showCombinedResultsFirst){
-			$searchOptions['combinedResults'] = array(
+			$searchOptions['combined'] = array(
 					'name' => $combinedResultsName,
 					'description' => "Combined results from multiple sources.",
 					'catalogType' => 'combined'
@@ -172,6 +172,14 @@ class SearchSources{
 			);
 		}
 
+		if ($searchEbsco){
+			$searchOptions['ebsco_eds'] = array(
+				'name' => 'Articles & Databases',
+				'description' => 'EBSCO EDS - Articles and Database',
+				'catalogType' => 'ebsco_eds'
+			);
+		}
+
 		if (array_key_exists('Events', $enabledModules)){
 			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
 			$libraryEventsSetting = new LibraryEventsSetting();
@@ -208,14 +216,6 @@ class SearchSources{
 			}
 		}
 
-		if ($searchEbsco){
-			$searchOptions['ebsco_eds'] = array(
-				'name' => 'Articles & Databases',
-				'description' => 'EBSCO EDS - Articles and Database',
-				'catalogType' => 'ebsco_eds'
-			);
-		}
-
 		if ($searchArchive){
 			$searchOptions['islandora'] = array(
 				'name' => 'Local Digital Archive',
@@ -226,8 +226,8 @@ class SearchSources{
 
 		if ($searchOpenArchives){
             $searchOptions['open_archives'] = array(
-                'name' => 'Archives',
-                'description' => 'Archive Information',
+                'name' => 'History & Archives',
+                'description' => 'Local History and Archive Information',
                 'catalogType' => 'open_archives'
             );
         }
@@ -242,7 +242,7 @@ class SearchSources{
 		}
 
 		if ($enableCombinedResults && !$showCombinedResultsFirst){
-			$searchOptions['combinedResults'] = array(
+			$searchOptions['combined'] = array(
                 'name' => $combinedResultsName,
                 'description' => "Combined results from multiple sources.",
                 'catalogType' => 'combined'

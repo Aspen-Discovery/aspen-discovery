@@ -7,7 +7,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h3 class="dashboardCategoryLabel">Records Viewed</h3>
+							<h3 class="dashboardCategoryLabel">Unique Records Viewed</h3>
 						</div>
 					</div>
 					<div class="row">
@@ -33,7 +33,33 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h3 class="dashboardCategoryLabel">Records Used (clicked on)</h3>
+							<h3 class="dashboardCategoryLabel">Total Views</h3>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="This Month"}</div>
+							<div class="dashboardValue">{$activeRecordsThisMonth.$collectionId.numViews}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="Last Month"}</div>
+							<div class="dashboardValue">{$activeRecordsLastMonth.$collectionId.numViews}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="This Year"}</div>
+							<div class="dashboardValue">{$activeRecordsThisYear.$collectionId.numViews}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="All Time"}</div>
+							<div class="dashboardValue">{$activeRecordsAllTime.$collectionId.numViews}</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="dashboardCategory col-sm-6">
+					<div class="row">
+						<div class="col-sm-10 col-sm-offset-1">
+							<h3 class="dashboardCategoryLabel">Unique Records Used (clicked on)</h3>
 						</div>
 					</div>
 					<div class="row">
@@ -59,7 +85,33 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h3 class="dashboardCategoryLabel">Active Users</h3>
+							<h3 class="dashboardCategoryLabel">Total Clicks</h3>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="This Month"}</div>
+							<div class="dashboardValue">{$activeRecordsThisMonth.$collectionId.numClicks}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="Last Month"}</div>
+							<div class="dashboardValue">{$activeRecordsLastMonth.$collectionId.numClicks}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="This Year"}</div>
+							<div class="dashboardValue">{$activeRecordsThisYear.$collectionId.numClicks}</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="dashboardLabel">{translate text="All Time"}</div>
+							<div class="dashboardValue">{$activeRecordsAllTime.$collectionId.numClicks}</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="dashboardCategory col-sm-6">
+					<div class="row">
+						<div class="col-sm-10 col-sm-offset-1">
+							<h3 class="dashboardCategoryLabel">Unique Logged In Users</h3>
 						</div>
 					</div>
 					<div class="row">

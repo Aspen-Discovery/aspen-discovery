@@ -2993,6 +2993,14 @@ AspenDiscovery.DPLA = (function(){
 		}
 	}
 }(AspenDiscovery.DPLA || {}));
+AspenDiscovery.EBSCO = (function () {
+	return {
+		trackEdsUsage: function (id) {
+			let ajaxUrl = Globals.path + "/EBSCO/JSON?method=trackEdsUsage&id=" + id;
+			$.getJSON(ajaxUrl);
+		}
+	};
+}(AspenDiscovery.EBSCO || {}));
 AspenDiscovery.EContent = (function(){
 	return {
 		submitHelpForm: function(){
@@ -6001,13 +6009,6 @@ AspenDiscovery.Searches = (function(){
 					}
 				}
 			);
-		},
-
-		resetSearchType: function(){
-			if ($("#lookfor").val() === ""){
-				$("#searchSource").val($("#default_search_type").val());
-			}
-			return true;
 		},
 
 		loadExploreMoreBar: function(section, searchTerm){

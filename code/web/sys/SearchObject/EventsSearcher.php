@@ -27,7 +27,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('eventsSearches');
-		$this->defaultIndex = 'EventsKeyword';
+
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -295,7 +295,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 		return 'Events';
 	}
 
-	public function getDefaultSearchIndex()
+	public function getDefaultIndex()
 	{
 		return 'EventsKeyword';
 	}

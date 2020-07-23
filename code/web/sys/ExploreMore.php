@@ -316,7 +316,7 @@ class ExploreMore {
 		//Get data from the repository
 		global $interface;
 		global $configArray;
-		/** @var Library $library */
+
 		global $library;
 		global $enabledModules;
 		$exploreMoreOptions = [
@@ -341,6 +341,10 @@ class ExploreMore {
 
 		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
+			$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		}
+
 		if (array_key_exists('Events', $enabledModules)) {
 			$exploreMoreOptions = $this->loadEventOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
@@ -353,10 +357,6 @@ class ExploreMore {
 
 		if (array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives) {
 			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
-		}
-
-		if (array_key_exists('EBSCO EDS', $enabledModules)) {
-			$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
 		if ($islandoraActive){
@@ -431,9 +431,10 @@ class ExploreMore {
 					foreach ($response['response']['docs'] as $doc) {
 						$entityDriver = RecordDriverFactory::initRecordDriver($doc);
 						$exploreMoreOptions['sampleRecords']['islandora'][] = array(
-								'label' => $entityDriver->getTitle(),
-								'image' => $entityDriver->getBookcoverUrl('medium'),
-								'link' => $entityDriver->getRecordUrl(),
+							'label' => $entityDriver->getTitle(),
+							'image' => $entityDriver->getBookcoverUrl('medium'),
+							'link' => $entityDriver->getRecordUrl(),
+							'openInNewWindow' => false
 						);
 						$numProcessed++;
 						if ($numProcessed >= 3) {
@@ -475,7 +476,8 @@ class ExploreMore {
 							//TODO: provide a better icon
 							'image' => '/images/webpage.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
-							'usageCount' => 1
+							'usageCount' => 1,
+							'openInNewWindow' => false
 						);
 					}
 					foreach ($results['response']['docs'] as $doc) {
@@ -489,7 +491,8 @@ class ExploreMore {
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
 								'onclick' => 'AspenDiscovery.Websites.trackUsage(' .  $driver->getId() .')',
-								'usageCount' => 1
+								'usageCount' => 1,
+								'openInNewWindow' => false
 							);
 						}
 
@@ -527,13 +530,13 @@ class ExploreMore {
 							'description' => "Events ($numCatalogResults)",
 							'image' => '/interface/themes/responsive/images/events.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
-							'usageCount' => 1
+							'usageCount' => 1,
+							'openInNewWindow' => false
 						);
 					}
 					foreach ($results['response']['docs'] as $doc) {
-						/** @var ListsRecordDriver $driver */
+						/** @var EventRecordDriver $driver */
 						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
-						$numCatalogResults = $results['response']['numFound'];
 						if ($numCatalogResultsAdded < $this->numEntriesToAdd) {
 							//Add a link to the actual title
 							$exploreMoreOptions['sampleRecords']['events'][] = array(
@@ -541,7 +544,8 @@ class ExploreMore {
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
-								'usageCount' => 1
+								'usageCount' => 1,
+								'openInNewWindow' => false
 							);
 						}
 
@@ -582,7 +586,8 @@ class ExploreMore {
 							//TODO: provide a better icon
 							'image' => '/interface/themes/responsive/images/library_symbol.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
-							'usageCount' => 1
+							'usageCount' => 1,
+							'openInNewWindow' => false
 						);
 					}
 					foreach ($results['response']['docs'] as $doc) {
@@ -595,7 +600,8 @@ class ExploreMore {
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
-								'usageCount' => 1
+								'usageCount' => 1,
+								'openInNewWindow' => false
 							);
 						}
 
@@ -641,7 +647,8 @@ class ExploreMore {
 							//TODO: Provide a better title
 							'image' => '/interface/themes/responsive/images/library_symbol.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
-							'usageCount' => 1
+							'usageCount' => 1,
+							'openInNewWindow' => false
 						);
 					}
 					foreach ($results['response']['docs'] as $doc) {
@@ -655,7 +662,8 @@ class ExploreMore {
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
 								'onclick' => "AspenDiscovery.OpenArchives.trackUsage('{$driver->getId()}')",
-								'usageCount' => 1
+								'usageCount' => 1,
+								'openInNewWindow' => true
 							);
 						}
 
@@ -725,20 +733,22 @@ class ExploreMore {
 						if ($numCatalogResultsAdded == $this->numEntriesToAdd && $numCatalogResults > ($this->numEntriesToAdd + 1)) {
 							//Add a link to remaining catalog results
 							$exploreMoreOptions['searchLinks'][] = array(
-									'label' => "Catalog Results ($numCatalogResults)",
-									'description' => "Catalog Results ($numCatalogResults)",
-									'image' => '/interface/themes/responsive/images/library_symbol.png',
-									'link' => $searchObjectSolr->renderSearchUrl(),
-									'usageCount' => 1
+								'label' => "Catalog Results ($numCatalogResults)",
+								'description' => "Catalog Results ($numCatalogResults)",
+								'image' => '/interface/themes/responsive/images/library_symbol.png',
+								'link' => $searchObjectSolr->renderSearchUrl(),
+								'usageCount' => 1,
+								'openInNewWindow' => false
 							);
 						} else {
 							//Add a link to the actual title
 							$exploreMoreOptions['sampleRecords']['catalog'][] = array(
-									'label' => $driver->getTitle(),
-									'description' => $driver->getTitle(),
-									'image' => $driver->getBookcoverUrl('medium'),
-									'link' => $driver->getLinkUrl(),
-									'usageCount' => 1
+								'label' => $driver->getTitle(),
+								'description' => $driver->getTitle(),
+								'image' => $driver->getBookcoverUrl('medium'),
+								'link' => $driver->getLinkUrl(),
+								'usageCount' => 1,
+								'openInNewWindow' => false
 							);
 						}
 
@@ -782,11 +792,12 @@ class ExploreMore {
 									if (in_array($facetValueStr, array('Magazines', 'News', 'Academic Journals', 'Primary Source Documents'))) {
 										$numFacetMatches = (int)$facetValue->Count;
 										$iconName = 'ebsco_' . str_replace(' ', '_', strtolower($facetValueStr));
-										$exploreMoreOptions['sampleRecords']['ebsco_eds'][] = array(
-												'label' => "$facetValueStr ({$numFacetMatches})",
-												'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",
-												'image' => "/interface/themes/responsive/images/{$iconName}.png",
-												'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm) . '&filter[]=' . $facetInfo->Id . ':' . $facetValueStr,
+										$exploreMoreOptions['searchLinks'][] = array(
+											'label' => "$facetValueStr ({$numFacetMatches})",
+											'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",
+											'image' => "/interface/themes/responsive/images/{$iconName}.png",
+											'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm) . '&filter[]=' . $facetInfo->Id . ':' . $facetValueStr,
+											'openInNewWindow' => false
 										);
 									}
 
@@ -799,7 +810,8 @@ class ExploreMore {
 								'label' => "All EBSCO Results ({$numMatches})",
 								'description' => "All Results in EBSCO related to {$searchTerm}",
 								'image' => '/interface/themes/responsive/images/ebsco_eds.png',
-								'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm)
+								'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm),
+								'openInNewWindow' => false
 							);
 						}
 					}
@@ -856,10 +868,10 @@ class ExploreMore {
 
 		//Get a list of objects in the archive related to this search
 		$searchObject->setSearchTerms(array(
-				'lookfor' => $searchTerm,
-				//TODO: do additional testing with this since it was reversed.
-				'index' => 'IslandoraKeyword'
-				//'index' => $searchSubjectsOnly ? 'IslandoraSubject' : 'IslandoraKeyword'
+			'lookfor' => $searchTerm,
+			//TODO: do additional testing with this since it was reversed.
+			'index' => 'IslandoraKeyword'
+			//'index' => $searchSubjectsOnly ? 'IslandoraSubject' : 'IslandoraKeyword'
 		));
 		$searchObject->clearHiddenFilters();
 		$searchObject->clearFilters();
@@ -883,9 +895,9 @@ class ExploreMore {
 					$searchObject2->addHiddenFilter('!PID', str_replace(':', '\:', $archiveDriver->getUniqueID()));
 				}
 				$searchObject2->setSearchTerms(array(
-						'lookfor' => $searchTerm,
-						'index' => 'IslandoraKeyword'
-						//'index' => $searchSubjectsOnly ? 'IslandoraSubject' : 'IslandoraKeyword'
+					'lookfor' => $searchTerm,
+					'index' => 'IslandoraKeyword'
+					//'index' => $searchSubjectsOnly ? 'IslandoraSubject' : 'IslandoraKeyword'
 				));
 				$searchObject2->clearFilters();
 				$searchObject2->clearHiddenFilters();
@@ -911,17 +923,19 @@ class ExploreMore {
 					$contentType = ucwords(translate($relatedContentType[0]));
 					if ($numMatches == 1) {
 						$relatedArchiveContent[] = array(
-								'title' => $firstObjectDriver->getTitle(),
-								'description' => $firstObjectDriver->getTitle(),
-								'image' => $firstObjectDriver->getBookcoverUrl('medium'),
-								'link' => $firstObjectDriver->getRecordUrl(),
+							'title' => $firstObjectDriver->getTitle(),
+							'description' => $firstObjectDriver->getTitle(),
+							'image' => $firstObjectDriver->getBookcoverUrl('medium'),
+							'link' => $firstObjectDriver->getRecordUrl(),
+							'openInNewWindow' => false
 						);
 					} else {
 						$relatedArchiveContent[] = array(
-								'title' => "{$contentType}s ({$numMatches})",
-								'description' => "{$contentType}s related to this",
-								'image' => $firstObjectDriver->getBookcoverUrl('medium'),
-								'link' => $searchObject2->renderSearchUrl(),
+							'title' => "{$contentType}s ({$numMatches})",
+							'description' => "{$contentType}s related to this",
+							'image' => $firstObjectDriver->getBookcoverUrl('medium'),
+							'link' => $searchObject2->renderSearchUrl(),
+							'openInNewWindow' => false
 						);
 					}
 				}
@@ -1012,9 +1026,9 @@ class ExploreMore {
 		$searchTerm = implode(" OR ", $relatedSubjects);
 
 		$similarTitles = array(
-				'numFound' => 0,
-				'link' => '',
-				'values' => array()
+			'numFound' => 0,
+			'link' => '',
+			'values' => array()
 		);
 
 		if (strlen($searchTerm) > 0) {
@@ -1048,17 +1062,17 @@ class ExploreMore {
 
 			if ($results && isset($results['response'])) {
 				$similarTitles = array(
-						'numFound' => $results['response']['numFound'],
-						'link' => $searchObject->renderSearchUrl(),
-						'topHits' => array()
+					'numFound' => $results['response']['numFound'],
+					'link' => $searchObject->renderSearchUrl(),
+					'topHits' => array()
 				);
 				foreach ($results['response']['docs'] as $doc) {
 					/** @var GroupedWorkDriver $driver */
 					$driver = RecordDriverFactory::initRecordDriver($doc);
 					$similarTitle = array(
-							'label' => $driver->getTitle(),
-							'link' => $driver->getLinkUrl(),
-							'image' => $driver->getBookcoverUrl('medium')
+						'label' => $driver->getTitle(),
+						'link' => $driver->getLinkUrl(),
+						'image' => $driver->getBookcoverUrl('medium')
 					);
 					$similarTitles['values'][] = $similarTitle;
 				}
@@ -1182,6 +1196,7 @@ class ExploreMore {
 								'description' => "{$contentType}s related to {$searchObject2->getQuery()}",
 								'image' => $firstObjectDriver->getBookcoverUrl('medium'),
 								'link' => $firstObjectDriver->getRecordUrl(),
+								'openInNewWindow' => false
 							);
 						} else {
 							$exploreMoreOptions['searchLinks'][] = array(
@@ -1189,6 +1204,7 @@ class ExploreMore {
 								'description' => "{$contentType}s related to {$searchObject2->getQuery()}",
 								'image' => $firstObjectDriver->getBookcoverUrl('medium'),
 								'link' => $searchObject2->renderSearchUrl(),
+								'openInNewWindow' => false
 							);
 						}
 					}
@@ -1210,7 +1226,8 @@ class ExploreMore {
 								'description' => $archiveObject->label,
 								'image' => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium'),
 								'link' => "/Archive/{$archiveObject->id}/Exhibit",
-								'usageCount' => $collectionInfo[1]
+								'usageCount' => $collectionInfo[1],
+								'openInNewWindow' => false
 							);
 						}
 					}
@@ -1232,7 +1249,8 @@ class ExploreMore {
 							'description' => "People related to {$islandoraSearchObject->getQuery()}",
 							'image' => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium', 'personCModel'),
 							'link' => '/Archive/RelatedEntities?lookfor=' . urlencode($searchTerm) . '&entityType=person',
-							'usageCount' => $numPeople
+							'usageCount' => $numPeople,
+							'openInNewWindow' => false
 						);
 					}
 				}
@@ -1251,7 +1269,8 @@ class ExploreMore {
 							'description' => "Places related to {$islandoraSearchObject->getQuery()}",
 							'image' => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium', 'placeCModel'),
 							'link' => '/Archive/RelatedEntities?lookfor=' . urlencode($searchTerm) . '&entityType=place',
-							'usageCount' => $numPlaces
+							'usageCount' => $numPlaces,
+							'openInNewWindow' => false
 						);
 					}
 				}
@@ -1270,7 +1289,8 @@ class ExploreMore {
 							'description' => "Places related to {$islandoraSearchObject->getQuery()}",
 							'image' => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium', 'eventCModel'),
 							'link' => '/Archive/RelatedEntities?lookfor=' . urlencode($searchTerm) . '&entityType=event',
-							'usageCount' => $numEvents
+							'usageCount' => $numEvents,
+							'openInNewWindow' => false
 						);
 					}
 				}
@@ -1306,7 +1326,8 @@ class ExploreMore {
 							'description' => "Genealogy Results ($numCatalogResults)",
 							'image' => '/interface/themes/responsive/images/person.png',
 							'link' => $searchObjectSolr->renderSearchUrl(),
-							'usageCount' => 1
+							'usageCount' => 1,
+							'openInNewWindow' => false
 						);
 					}
 					foreach ($results['response']['docs'] as $doc) {
@@ -1318,7 +1339,8 @@ class ExploreMore {
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
-								'usageCount' => 1
+								'usageCount' => 1,
+								'openInNewWindow' => false
 							);
 						}
 

@@ -220,6 +220,44 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	}
 
 	/**
+	 * Use the record driver to build an array of HTML displays from the search
+	 * results.
+	 *
+	 * @access  public
+	 * @return  array   Array of HTML chunks for individual records.
+	 */
+	public function getCombinedResultsHTML()
+	{
+		global $interface;
+		global $memoryWatcher;
+		$html = array();
+		if (isset($this->indexResult['response'])) {
+			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
+				$memoryWatcher->logMemory("Started loading record information for index $x");
+				$current = &$this->indexResult['response']['docs'][$x];
+				if (!$this->debug) {
+					unset($current['explain']);
+					unset($current['score']);
+				}
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+				$record = $this->getRecordDriverForResult($current);
+				if (!($record instanceof AspenError)) {
+					$interface->assign('recordDriver', $record);
+					$html[] = $interface->fetch($record->getCombinedResult($this->view));
+				} else {
+					$html[] = "Unable to find record";
+				}
+				//Free some memory
+				$record = 0;
+				unset($record);
+				$memoryWatcher->logMemory("Finished loading record information for index $x");
+			}
+		}
+		return $html;
+	}
+
+	/**
 	 * Actually process and submit the search
 	 *
 	 * @access  public
@@ -811,7 +849,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @param string $id The document to retrieve from Solr
 	 * @access  public
 	 * @return  array              The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecord($id)
 	{
@@ -824,7 +862,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	 * @param string[] $ids An array of documents to retrieve from Solr
 	 * @access  public
 	 * @return  array              The requested resources
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecords($ids)
 	{
@@ -864,8 +902,6 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	{
 		$this->initBasicSearch($searchTerm);
 	}
-
-	public abstract function getDefaultSearchIndex();
 
 	public function getSpotlightResults(CollectionSpotlight $spotlight){
 		$spotlightResults = [];

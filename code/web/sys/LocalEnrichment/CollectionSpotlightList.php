@@ -118,7 +118,7 @@ class CollectionSpotlightList extends BaseBrowsable
 	}
 
 	/**
-	 * @return SearchObject_GroupedWorkSearcher
+	 * @return SearchObject_BaseSearcher
 	 */
 	public function getSearchObject()
 	{
