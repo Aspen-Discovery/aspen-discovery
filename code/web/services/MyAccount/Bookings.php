@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: pbrammeier
- * Date: 7/16/2015
- * Time: 2:01 PM
- */
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_Bookings extends MyAccount {

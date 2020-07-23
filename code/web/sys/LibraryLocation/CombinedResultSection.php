@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mnoble
- * Date: 11/17/2017
- * Time: 4:00 PM
- */
 
 abstract class CombinedResultSection extends DataObject{
 	public $__displayNameColumn = 'displayName';

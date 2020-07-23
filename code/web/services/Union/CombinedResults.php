@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mnoble
- * Date: 11/22/2017
- * Time: 12:11 PM
- */
 
 class Union_CombinedResults extends Action{
 	function launch() {
