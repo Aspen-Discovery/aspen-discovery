@@ -89,7 +89,7 @@ class SearchSources{
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
 
 		if ($enableCombinedResults && $showCombinedResultsFirst){
-			$searchOptions['combinedResults'] = array(
+			$searchOptions['combined'] = array(
 					'name' => $combinedResultsName,
 					'description' => "Combined results from multiple sources.",
 					'catalogType' => 'combined'
@@ -242,7 +242,7 @@ class SearchSources{
 		}
 
 		if ($enableCombinedResults && !$showCombinedResultsFirst){
-			$searchOptions['combinedResults'] = array(
+			$searchOptions['combined'] = array(
                 'name' => $combinedResultsName,
                 'description' => "Combined results from multiple sources.",
                 'catalogType' => 'combined'
