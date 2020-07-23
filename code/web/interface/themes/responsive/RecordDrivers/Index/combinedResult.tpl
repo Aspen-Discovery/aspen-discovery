@@ -45,25 +45,6 @@
 					</div>
 				{/if}
 
-				{* Short Mobile Entry for Formats when there aren't hidden formats *}
-				<div class="row">
-
-					{* Determine if there were hidden Formats for this entry *}
-					{foreach from=$relatedManifestations item=relatedManifestation}
-					{if $relatedManifestation->hasHiddenFormats()}
-						{assign var=hasHiddenFormats value=true}
-					{/if}
-					{/foreach}
-
-					<div class="result-label col-tn-3">
-						Format{if count($relatedManifestations) > 1}s{/if}:
-					</div>
-					<div class="result-value col-tn-8">
-						{implode subject=$relatedManifestations|@array_keys glue=", "}
-					</div>
-
-				</div>
-
 				{* Description Section *}
 				{if $summDescription}
 					<div class="row">

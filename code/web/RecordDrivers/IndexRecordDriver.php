@@ -354,4 +354,48 @@ abstract class IndexRecordDriver extends RecordInterface
 
 		return 'RecordDrivers/Index/browse_result.tpl';
 	}
+
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display a summary of the item suitable for use in
+	 * search results.
+	 *
+	 * @access  public
+	 * @param string $view The current view.
+	 *
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getCombinedResult($view = 'list')
+	{
+		if ($view == 'covers') { // Displaying Results as bookcover tiles
+			return $this->getBrowseResult();
+		}
+
+		// Displaying results as the default list
+		global $configArray;
+		global $interface;
+		global $timer;
+		global $memoryWatcher;
+
+		$interface->assign('displayingSearchResults', true);
+
+		$id = $this->getUniqueID();
+		$timer->logTime("Starting to load search result for grouped work $id");
+		$interface->assign('summId', $id);
+
+		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('summTitle', $this->getTitle());
+		$interface->assign('summAuthor', $this->getPrimaryAuthor());
+		$memoryWatcher->logMemory("Finished assignment of main data");
+
+		//Description
+		$interface->assign('summDescription', $this->getDescription());
+
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		$interface->assign('recordDriver', $this);
+
+		return 'RecordDrivers/Index/combinedResult.tpl';
+	}
 }

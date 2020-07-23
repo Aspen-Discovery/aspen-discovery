@@ -80,10 +80,10 @@ class SearchSources{
 			$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
 		}
 
-		$searchGenealogy = $library->enableGenealogy;
+		$searchGenealogy = array_key_exists('Genealogy', $enabledModules) && $library->enableGenealogy;
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
 		$searchArchive = $library->enableArchive == 1;
-		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) &&  $library->edsSettingsId != -1;
+		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1;
         $searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);

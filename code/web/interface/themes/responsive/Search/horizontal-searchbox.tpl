@@ -27,7 +27,6 @@
 						id="lookfor"
 						name="lookfor"
 						title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
-						onkeyup="return AspenDiscovery.Searches.resetSearchType()"
 						onfocus="$(this).select()"
 						autocomplete="off"
 						rows="1"

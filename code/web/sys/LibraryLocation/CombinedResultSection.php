@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 abstract class CombinedResultSection extends DataObject{
 	public $__displayNameColumn = 'displayName';
@@ -10,20 +10,36 @@ abstract class CombinedResultSection extends DataObject{
 
 	static function getObjectStructure(){
 		global $configArray;
+		global $enabledModules;
 		$validResultSources = array();
+		$validResultSources['catalog'] = 'Catalog Results';
 		if (!empty($configArray['Islandora']['repositoryUrl'])){
 			$validResultSources['archive'] = 'Digital Archive';
 		}
 		require_once ROOT_DIR . '/sys/Enrichment/DPLASetting.php';
 		$dplaSetting = new DPLASetting();
 		if ($dplaSetting->find(true)){
-			$validResultSources['dpla'] = 'DPLA';
+			$validResultSources['dpla'] = 'DP.LA';
 		}
-		$validResultSources['ebsco_eds'] = 'EBSCO EDS';
-		$validResultSources['catalog'] = 'Catalog Results';
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
+			$validResultSources['ebsco_eds'] = 'EBSCO EDS';
+		}
+		if (array_key_exists('Events', $enabledModules)){
+			$validResultSources['events'] = 'Events';
+		}
+		if (array_key_exists('Genealogy', $enabledModules)) {
+			$validResultSources['genealogy'] = 'Genealogy';
+		}
+		if (array_key_exists('Open Archives', $enabledModules)) {
+			$validResultSources['open_archives'] = 'Open Archives';
+		}
 		if ($configArray['Content']['Prospector']) {
 			$validResultSources['prospector'] = 'Prospector';
 		}
+		if (array_key_exists('Web Indexer', $enabledModules)){
+			$validResultSources['websites'] = 'Website Search';
+		}
+		$validResultSources['lists'] = 'User Lists';
 
 		return array(
 				'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of this section'),
@@ -35,20 +51,29 @@ abstract class CombinedResultSection extends DataObject{
 	}
 
 	function getResultsLink($searchTerm, $searchType){
-		if ($this->source == 'catalog') {
-			return "/Search/Results?lookfor=$searchTerm&searchIndex=$searchType&searchSource=local";
+		if ($this->source == 'archive'){
+			return "/Archive/Results?lookfor=$searchTerm";
+		}elseif ($this->source == 'catalog') {
+			return "/Search/Results?lookfor=$searchTerm&searchSource=local";
+		}elseif ($this->source == 'dpla'){
+			return "https://dp.la/search?q=$searchTerm";
+		}elseif ($this->source == 'ebsco_eds'){
+			return "/EBSCO/Results?lookfor=$searchTerm&searchSource=ebsco_eds";
+		}elseif ($this->source == 'events'){
+			return "/Events/Results?lookfor=$searchTerm&searchSource=events";
+		}elseif ($this->source == 'genealogy'){
+			return "/Genealogy/Results?lookfor=$searchTerm&searchSource=genealogy";
+		}elseif ($this->source == 'lists'){
+			return "/Lists/Results?lookfor=$searchTerm&searchSource=lists";
+		}elseif ($this->source == 'open_archives'){
+			return "/OpenArchives/Results?lookfor=$searchTerm&searchSource=open_archives";
 		}elseif ($this->source == 'prospector'){
 			require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 			$prospector = new Prospector();
 			$search = array(array('lookfor' => $searchTerm, 'index' => $searchType));
 			return $prospector->getSearchLink($search);
-		}elseif ($this->source == 'dpla'){
-			return "https://dp.la/search?q=$searchTerm";
-		}elseif ($this->source == 'eds'){
-			global $library;
-			return "https://search.ebscohost.com/login.aspx?direct=true&site=eds-live&scope=site&type=1&custid={$library->edsApiUsername}&groupid=main&profid={$library->edsSearchProfile}&mode=bool&lang=en&authtype=cookie,ip,guest&bquery=$searchTerm";
-		}elseif ($this->source == 'archive'){
-			return "/Archive/Results?lookfor=$searchTerm&searchIndex=$searchType";
+		}elseif ($this->source == 'websites'){
+			return "/Websites/Results?lookfor=$searchTerm&searchSource=open_archives";
 		}else{
 			return '';
 		}

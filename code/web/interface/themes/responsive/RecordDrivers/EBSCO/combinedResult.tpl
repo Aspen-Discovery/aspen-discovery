@@ -40,6 +40,21 @@
 			<div class="col-tn-9 result-value">{if $summHasFullText}Full text available{else}Full text not available{/if}</div>
 		</div>
 
+		{if $summDescription}
+			{* Standard Description *}
+			<div class="row visible-xs">
+				<div class="result-label col-tn-3">{translate text='Description'}</div>
+				<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
+			</div>
+
+			{* Mobile Description *}
+			<div class="row hidden-xs">
+				{* Hide in mobile view *}
+				<div class="result-value col-sm-12" id="descriptionValue{$summId|escape}">
+					{$summDescription|highlight|truncate_html:450:"..."}
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>
 {/strip}

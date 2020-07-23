@@ -9,7 +9,9 @@
 				{if $showCovers}
 					<div class="col-xs-2">
 						{if $result.object}
-							<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive"/>
+							<a href="{$result.link}">
+								<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive"/>
+							</a>
 						{/if}
 					</div>
 				{/if}

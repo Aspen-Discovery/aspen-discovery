@@ -197,6 +197,8 @@ class EbscoRecordDriver extends RecordInterface
 		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
 		$interface->assign('summHasFullText', $this->hasFullText());
 
+		$interface->assign('summDescription', $this->getDescription());
+
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 

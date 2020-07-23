@@ -32,17 +32,26 @@ class Union_AJAX extends JSON_Action {
 		$this->setShowCovers();
 
 		$fullResultsLink = $sectionObject->getResultsLink($searchTerm, $searchType);
-		if ($source == 'ebsco_eds') {
-			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
-		}elseif ($source == 'catalog') {
-			$results = $this->getResultsFromCatalog($searchTerm, $numberOfResults, $searchType, $fullResultsLink);
-		}elseif ($source == 'archive'){
+		if ($source == 'archive'){
 			$results = $this->getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink);
-
+		}elseif ($source == 'catalog') {
+			$results = $this->getResultsFromSolrSearcher('GroupedWork', $searchTerm, $numberOfResults, $searchType, $fullResultsLink);
 		}elseif ($source == 'dpla'){
 			$results = $this->getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink);
+		}elseif ($source == 'ebsco_eds') {
+			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
+		}elseif ($source == 'events') {
+			$results = $this->getResultsFromSolrSearcher('Events', $searchTerm, $numberOfResults, $searchType, $fullResultsLink);
+		}elseif ($source == 'genealogy') {
+			$results = $this->getResultsFromSolrSearcher('Genealogy', $searchTerm, $numberOfResults, $searchType, $fullResultsLink);
+		}elseif ($source == 'lists') {
+			$results = $this->getResultsFromSolrSearcher('Lists', $searchTerm, $numberOfResults, $searchType, $fullResultsLink);
+		}elseif ($source == 'open_archives') {
+			$results = $this->getResultsFromSolrSearcher('OpenArchives', $searchTerm, $numberOfResults, $searchType, $fullResultsLink);
 		}elseif ($source == 'prospector'){
 			$results = $this->getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink);
+		}elseif ($source == 'websites') {
+			$results = $this->getResultsFromSolrSearcher('Websites', $searchTerm, $numberOfResults, $searchType, $fullResultsLink);
 		}else{
 			$results = "<div>Showing $numberOfResults for $source.  Show covers? $showCovers</div>";
 		}
@@ -55,21 +64,22 @@ class Union_AJAX extends JSON_Action {
 	}
 
 	/**
-	 * @param $searchTerm
-	 * @param $numberOfResults
+	 * @param string $searcherType
+	 * @param string $searchTerm
+	 * @param int $numberOfResults
 	 * @param $searchType
 	 * @return string
 	 */
-	private function getResultsFromCatalog($searchTerm, $numberOfResults, $searchType, $fullResultsLink)
+	private function getResultsFromSolrSearcher($searcherType, $searchTerm, $numberOfResults, $searchType, $fullResultsLink)
 	{
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init('local', $searchTerm);
+		/** @var SearchObject_SolrSearcher $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject($searcherType);
+		//$searchObject->init('local', $searchTerm);
 		$searchObject->setLimit($numberOfResults);
 		$searchObject->setSearchTerms(array(
-				'index' => $searchType,
+				'index' => $searchObject->getDefaultIndex(),
 				'lookfor' => $searchTerm
 		));
 		$result = $searchObject->processSearch(true, false);
@@ -79,7 +89,7 @@ class Union_AJAX extends JSON_Action {
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		}else{
 			$formattedNumResults = number_format($summary['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
+			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
 
 			$interface->assign('recordSet', $records);
 			$interface->assign('showExploreMoreBar', false);
@@ -87,6 +97,7 @@ class Union_AJAX extends JSON_Action {
 		}
 		return $results;
 	}
+
 
 	/**
 	 * @param $searchTerm
@@ -113,7 +124,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -160,7 +171,7 @@ class Union_AJAX extends JSON_Action {
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		}else {
 			$formattedNumResults = number_format($summary['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
+			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
 
 			global $interface;
 			$interface->assign('recordSet', $records);
