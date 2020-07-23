@@ -1,45 +1,8 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/JSON_Action.php';
 
-class Union_AJAX extends Action {
-
-	function launch()
-	{
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		header ('Content-type: application/json');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-		if (method_exists($this, $method)) {
-			try{
-				$result = $this->$method();
-				require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-				$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
-				$output = json_encode($utf8EncodedValue);
-				$error = json_last_error();
-				if ($error != JSON_ERROR_NONE || $output === FALSE){
-					if (function_exists('json_last_error_msg')){
-						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error_msg()));
-					}else{
-						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error()));
-					}
-					global $configArray;
-					if ($configArray['System']['debug']){
-						print_r($utf8EncodedValue);
-					}
-				}
-			}catch (Exception $e){
-				$output = json_encode(array('error'=>'error_encoding_data', 'message' => $e));
-				global $logger;
-				$logger->log("Error encoding json data $e", Logger::LOG_ERROR);
-			}
-
-		} else {
-			$output = json_encode(array('error'=>'invalid_method'));
-		}
-		echo $output;
-	}
+class Union_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getCombinedResults()
@@ -69,7 +32,7 @@ class Union_AJAX extends Action {
 		$this->setShowCovers();
 
 		$fullResultsLink = $sectionObject->getResultsLink($searchTerm, $searchType);
-		if ($source == 'eds') {
+		if ($source == 'ebsco_eds') {
 			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
 		}elseif ($source == 'catalog') {
 			$results = $this->getResultsFromCatalog($searchTerm, $numberOfResults, $searchType, $fullResultsLink);
@@ -115,8 +78,8 @@ class Union_AJAX extends Action {
 		if ($summary['resultTotal'] == 0){
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		}else{
-			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$summary['resultTotal']} results</a><div class='clearfix'></div>";
-
+			$formattedNumResults = number_format($summary['resultTotal']);
+			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
 
 			$interface->assign('recordSet', $records);
 			$interface->assign('showExploreMoreBar', false);
@@ -139,13 +102,18 @@ class Union_AJAX extends Action {
 		}else {
 			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
 			$edsSearcher->init();
-			$searchResults = $edsSearcher->processSearch($searchTerm);
+			$edsSearcher->setSearchTerms(array(
+				'index' => $edsSearcher->getDefaultIndex(),
+				'lookfor' => $searchTerm
+			));
+			$searchResults = $edsSearcher->processSearch(true, false);
 			$summary = $edsSearcher->getResultSummary();
 			$records = $edsSearcher->getCombinedResultHTML();
 			if ($summary['resultTotal'] == 0) {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
-				$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$summary['resultTotal']} results</a><div class='clearfix'></div>";
+				$formattedNumResults = number_format($summary['resultTotal']);
+				$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -191,7 +159,8 @@ class Union_AJAX extends Action {
 		if ($summary['resultTotal'] == 0){
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		}else {
-			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$summary['resultTotal']} results</a><div class='clearfix'></div>";
+			$formattedNumResults = number_format($summary['resultTotal']);
+			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
 
 			global $interface;
 			$interface->assign('recordSet', $records);
@@ -216,7 +185,8 @@ class Union_AJAX extends Action {
 		if ($dplaResults['resultTotal'] == 0){
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		}else {
-			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$dplaResults['resultTotal']} results</a><div class='clearfix'></div>";
+			$formattedNumResults = number_format($dplaResults['resultTotal']);
+			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
 		}
 		$results .= $dpla->formatCombinedResults($dplaResults['records'], false);
 		return $results;
@@ -246,7 +216,8 @@ class Union_AJAX extends Action {
 			if ($prospectorResults['resultTotal'] == 0) {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
-				$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$prospectorResults['resultTotal']} results</a><div class='clearfix'></div>";
+				$formattedNumResults = number_format($prospectorResults['resultTotal']);
+				$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>&gt; See all {$formattedNumResults} results</a><div class='clearfix'></div>";
 				$interface->assign('prospectorResults', $prospectorResults['records']);
 				$results .= $interface->fetch('Union/prospector.tpl');
 			}

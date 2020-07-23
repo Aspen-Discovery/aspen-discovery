@@ -25,14 +25,13 @@ abstract class CombinedResultSection extends DataObject{
 			$validResultSources['prospector'] = 'Prospector';
 		}
 
-		$structure = array(
+		return array(
 				'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of this section'),
 				'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
 				'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'The full name of the section for display to the user', 'maxLength' => 255),
 				'numberOfResultsToShow' => array('property'=>'numberOfResultsToShow', 'type'=>'integer', 'label'=>'Num Results', 'description'=>'The number of results to show in the box.', 'default' => '5'),
 				'source' => array('property'=>'source', 'type'=>'enum', 'label'=>'Source', 'values' => $validResultSources, 'description'=>'The source of results in the section.', 'default'=>'catalog'),
 		);
-		return $structure;
 	}
 
 	function getResultsLink($searchTerm, $searchType){

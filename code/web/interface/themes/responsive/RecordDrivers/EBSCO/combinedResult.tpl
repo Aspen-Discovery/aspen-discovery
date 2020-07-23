@@ -1,6 +1,15 @@
 {strip}
 <div id="record{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultsList row">
-	<div class="col-xs-12">
+	{if $showCovers}
+		<div class="coversColumn col-xs-3 text-center">
+			{if $disableCoverArt != 1}
+				<a href="{$summUrl}">
+					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
+				</a>
+			{/if}
+		</div>
+	{/if}
+	<div class="{if $showCovers}col-xs-9{else}col-xs-12{/if}">
 		<div class="row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;

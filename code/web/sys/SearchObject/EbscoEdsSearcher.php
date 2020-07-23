@@ -333,8 +333,8 @@ BODY;
 		//global $logger;
 		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults->Data->Records)) {
-			for ($x = 0; $x < count($this->lastSearchResults->Data->Records->Record); $x++) {
-				$current = &$this->lastSearchResults->Data->Records->Record[$x];
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 

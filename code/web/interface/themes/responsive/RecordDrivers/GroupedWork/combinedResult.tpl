@@ -6,7 +6,17 @@
 		{/if}
 
 		<div class="row">
-			<div class="col-xs-12">{* May turn out to be more than one situation to consider here *}
+			{if $showCovers}
+				<div class="coversColumn col-xs-3 text-center">
+					{if $disableCoverArt != 1}
+						<a href="{$summUrl}">
+							<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
+						</a>
+					{/if}
+				</div>
+			{/if}
+			<div class="{if $showCovers}col-xs-9{else}col-xs-12{/if}">{* May turn out to be more than one situation to consider here *}
+				Combined Result
 				{* Title Row *}
 				<div class="row">
 					<div class="col-xs-12">
