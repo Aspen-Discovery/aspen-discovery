@@ -6,7 +6,7 @@
 		{if !empty($registerRosenLevelUPResult.message)}
 			{$registerRosenLevelUPResult.message}
 		{else}
-			Congratulations, you have successfully registered for Rosen LevelUP.
+			{translate text='Congratulations, you have successfully registered for Rosen LevelUP.'}
 		{/if}
 		</div>
 	{else}
@@ -14,7 +14,7 @@
 			{if $registerRosenLevelUPFormMessage}
 				{$registerRosenLevelUPFormMessage}
 			{else}
-				This page allows Limitless Libraries students to register with their parents for Rosen LevelUP
+				{translate text='This page allows Limitless Libraries students to register with their parents for Rosen LevelUP'}
 			{/if}
 		</div>
 		{if (isset($registerRosenLevelUPResult))}
@@ -22,7 +22,7 @@
 				{if !empty($registerRosenLevelUPResult.message)}
 					{$registerRosenLevelUPResult.message}
 				{else}
-					Sorry, we were unable to create Rosen LevelUP accounts for you.
+					{translate text='Sorry, we were unable to create Rosen LevelUP accounts for you.'}
 				{/if}
 			</div>
 		{/if}

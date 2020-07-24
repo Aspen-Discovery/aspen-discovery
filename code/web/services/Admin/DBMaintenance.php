@@ -2186,6 +2186,23 @@ class Admin_DBMaintenance extends Admin_Admin
 						'ALTER TABLE object_history CHANGE COLUMN newValue newValue TEXT',
 					]
 				],
+
+                'rosen_levelup_settings' => [
+                    'title' => 'Rosen LevelUP API Settings',
+                    'description' => 'Add the ability to store Rosen LevelUP API settings in the DB rather than the config file',
+                    'sql' => [
+                        'CREATE TABLE IF NOT EXISTS rosen_levelup_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                            lu_api_host VARCHAR(50) NOT NULL,
+                            lu_api_pw VARCHAR(50) NOT NULL,
+                            lu_api_un VARCHAR(50) NOT NULL,
+                            lu_district_name VARCHAR(50) NOT NULL,
+                            lu_eligible_ptypes VARCHAR(50) NOT NULL,
+                            lu_multi_district_name VARCHAR(50) NOT NULL,
+                            lu_school_name VARCHAR(50) NOT NULL						
+						) ENGINE = INNODB;'
+                    ]
+                ],
 			)
 		);
 	}
