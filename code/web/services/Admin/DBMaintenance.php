@@ -108,11 +108,11 @@ class Admin_DBMaintenance extends Admin_Admin
 					'description' => 'Create modules table to store information about modules',
 					'sql' => [
 						'CREATE TABLE modules (
-    						id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    						name VARCHAR(50) NOT NULL UNIQUE, 
-    						enabled TINYINT(1) DEFAULT 0,
-    						indexName VARCHAR(50) DEFAULT "",
-    						backgroundProcess VARCHAR(50) DEFAULT ""
+							id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							name VARCHAR(50) NOT NULL UNIQUE, 
+							enabled TINYINT(1) DEFAULT 0,
+							indexName VARCHAR(50) DEFAULT "",
+							backgroundProcess VARCHAR(50) DEFAULT ""
 						) ENGINE=InnoDB DEFAULT CHARSET=utf8',
 						'ALTER TABLE modules add INDEX (enabled)',
 					]
@@ -1821,10 +1821,10 @@ class Admin_DBMaintenance extends Admin_Admin
 					'continueOnError' => false,
 					'sql' => array(
 						'CREATE TABLE IF NOT EXISTS sendgrid_settings(
-						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-						    fromAddress VARCHAR(255),
-						    replyToAddress VARCHAR(255),
-						    apiKey VARCHAR(255)
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							fromAddress VARCHAR(255),
+							replyToAddress VARCHAR(255),
+							apiKey VARCHAR(255)
 						) ENGINE = InnoDB;'
 					)
 				),
@@ -1835,22 +1835,22 @@ class Admin_DBMaintenance extends Admin_Admin
 					'continueOnError' => false,
 					'sql' => array(
 						'CREATE TABLE IF NOT EXISTS aspen_usage(
-						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-						    year INT(4) NOT NULL,
-						    month INT(2) NOT NULL,
-						    pageViews INT(11) DEFAULT 0,
-						    pageViewsByBots INT(11) DEFAULT 0,
-						    pageViewsByAuthenticatedUsers INT(11) DEFAULT 0,
-						    pagesWithErrors INT(11) DEFAULT 0,
-						    slowPages INT(11) DEFAULT 0,
-						    ajaxRequests INT(11) DEFAULT 0,
-						    slowAjaxRequests INT(11) DEFAULT 0,
-						    coverViews INT(11) DEFAULT 0,
-						    genealogySearches INT(11) DEFAULT 0,
-						    groupedWorkSearches INT(11) DEFAULT 0,
-						    islandoraSearches INT(11) DEFAULT 0,
-						    openArchivesSearches INT(11) DEFAULT 0,
-						    userListSearches INT(11) DEFAULT 0
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL,
+							pageViews INT(11) DEFAULT 0,
+							pageViewsByBots INT(11) DEFAULT 0,
+							pageViewsByAuthenticatedUsers INT(11) DEFAULT 0,
+							pagesWithErrors INT(11) DEFAULT 0,
+							slowPages INT(11) DEFAULT 0,
+							ajaxRequests INT(11) DEFAULT 0,
+							slowAjaxRequests INT(11) DEFAULT 0,
+							coverViews INT(11) DEFAULT 0,
+							genealogySearches INT(11) DEFAULT 0,
+							groupedWorkSearches INT(11) DEFAULT 0,
+							islandoraSearches INT(11) DEFAULT 0,
+							openArchivesSearches INT(11) DEFAULT 0,
+							userListSearches INT(11) DEFAULT 0
 						) ENGINE = InnoDB;',
 						"ALTER TABLE aspen_usage ADD INDEX (year, month)",
 					)
@@ -1881,22 +1881,22 @@ class Admin_DBMaintenance extends Admin_Admin
 					'continueOnError' => false,
 					'sql' => array(
 						'CREATE TABLE IF NOT EXISTS slow_page(
-						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		                    year INT(4) NOT NULL,
-		                    month INT(2) NOT NULL,
-		                    module VARCHAR(50) NOT NULL,
-		                    action VARCHAR(50) NOT NULL,
-		                    timesSlow INT(11) DEFAULT 0
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL,
+							module VARCHAR(50) NOT NULL,
+							action VARCHAR(50) NOT NULL,
+							timesSlow INT(11) DEFAULT 0
 						) ENGINE = InnoDB;',
 						"ALTER TABLE slow_page ADD INDEX (year, month, module, action)",
 						'CREATE TABLE IF NOT EXISTS slow_ajax_request(
-						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		                    year INT(4) NOT NULL,
-		                    month INT(2) NOT NULL,
-		                    module VARCHAR(50) NOT NULL,
-		                    action VARCHAR(50) NOT NULL,
-		                    method VARCHAR(75) NOT NULL,
-		                    timesSlow INT(11) DEFAULT 0
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL,
+							module VARCHAR(50) NOT NULL,
+							action VARCHAR(50) NOT NULL,
+							method VARCHAR(75) NOT NULL,
+							timesSlow INT(11) DEFAULT 0
 						) ENGINE = InnoDB;',
 						"ALTER TABLE slow_ajax_request ADD INDEX (year, month, module, action, method)",
 					)
@@ -1922,10 +1922,10 @@ class Admin_DBMaintenance extends Admin_Admin
 					'description' => 'Memory table for cross platform caching',
 					'sql' => [
 						'CREATE TABLE IF NOT EXISTS cached_values(
-    						cacheKey VARCHAR(200) NOT NULL, 
-    						value VARCHAR(1024),
-    						expirationTime INT(11)
-    						) ENGINE = MEMORY;',
+							cacheKey VARCHAR(200) NOT NULL, 
+							value VARCHAR(1024),
+							expirationTime INT(11)
+							) ENGINE = MEMORY;',
 					],
 				],
 
@@ -1966,7 +1966,7 @@ class Admin_DBMaintenance extends Admin_Admin
 							message TEXT,
 							backtrace TEXT,
 							timestamp INT(11)
-    						) ENGINE = INNODB;',
+							) ENGINE = INNODB;',
 					],
 				],
 
@@ -2187,22 +2187,22 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
-                'rosen_levelup_settings' => [
-                    'title' => 'Rosen LevelUP API Settings',
-                    'description' => 'Add the ability to store Rosen LevelUP API settings in the DB rather than the config file',
-                    'sql' => [
-                        'CREATE TABLE IF NOT EXISTS rosen_levelup_settings(
+				'rosen_levelup_settings' => [
+					'title' => 'Rosen LevelUP API Settings',
+					'description' => 'Add the ability to store Rosen LevelUP API settings in the DB rather than the config file',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS rosen_levelup_settings(
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                            lu_api_host VARCHAR(50) NOT NULL,
-                            lu_api_pw VARCHAR(50) NOT NULL,
-                            lu_api_un VARCHAR(50) NOT NULL,
-                            lu_district_name VARCHAR(50) NOT NULL,
-                            lu_eligible_ptypes VARCHAR(50) NOT NULL,
-                            lu_multi_district_name VARCHAR(50) NOT NULL,
-                            lu_school_name VARCHAR(50) NOT NULL						
+							lu_api_host VARCHAR(50) NOT NULL,
+							lu_api_pw VARCHAR(50) NOT NULL,
+							lu_api_un VARCHAR(50) NOT NULL,
+							lu_district_name VARCHAR(50) NOT NULL,
+							lu_eligible_ptypes VARCHAR(50) NOT NULL,
+							lu_multi_district_name VARCHAR(50) NOT NULL,
+							lu_school_name VARCHAR(50) NOT NULL						
 						) ENGINE = INNODB;'
-                    ]
-                ],
+					]
+				],
 			)
 		);
 	}

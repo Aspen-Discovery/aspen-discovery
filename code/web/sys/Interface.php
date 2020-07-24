@@ -549,18 +549,18 @@ class UInterface extends Smarty
 		}
 
 		//Determine whether or not Rosen LevelUP functionality should be enabled
-        try {
-            require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
-            $rosenLevelUPSetting = new RosenLevelUPSetting();
-            if ($theme->find(true)) {
-                $this->assign('enableRosenLevelUP', true);
-            } else {
-                $this->assign('enableRosenLevelUP', false);
-            }
-        } catch (PDOException $e) {
-            global $logger;
-            $logger->log("Rosen LevelUP API Settings table not yet built in database: run DBMaintenance", Logger::LOG_ALERT);
-        }
+		try {
+			require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
+			$rosenLevelUPSetting = new RosenLevelUPSetting();
+			if ($theme->find(true)) {
+				$this->assign('enableRosenLevelUP', true);
+			} else {
+				$this->assign('enableRosenLevelUP', false);
+			}
+		} catch (PDOException $e) {
+			global $logger;
+			$logger->log("Rosen LevelUP API Settings table not yet built in database: run DBMaintenance", Logger::LOG_ALERT);
+		}
 
 		//Load library links
 		$links = $library->libraryLinks;
