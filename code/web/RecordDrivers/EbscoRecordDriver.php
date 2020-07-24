@@ -319,7 +319,12 @@ class EbscoRecordDriver extends RecordInterface
 	 */
 	public function hasFullText()
 	{
-		return $this->recordData->FullText->Text->Availability == 1;
+		if ($this->recordData->FullText->Text->Availability == 1){
+			return true;
+		}elseif (!empty($this->recordData->FullText->Links)){
+			return true;
+		}
+		return false;
 	}
 
 	public function getFullText()

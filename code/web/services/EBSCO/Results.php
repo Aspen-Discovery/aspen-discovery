@@ -63,6 +63,8 @@ class EBSCO_Results extends Action{
 
 		$appliedFacets = $searchObject->getFilterList();
 		$interface->assign('filterList', $appliedFacets);
+		$limitList = $searchObject->getLimitList();
+		$interface->assign('limitList', $limitList);
 		$facetSet = $searchObject->getFacetSet();
 		$interface->assign('sideFacetSet', $facetSet);
 

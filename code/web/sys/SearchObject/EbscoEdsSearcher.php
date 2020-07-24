@@ -74,6 +74,7 @@ class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 		$this->initPage();
 		$this->initSort();
 		$this->initFilters();
+		$this->initLimiters();
 
 		//********************
 		// Basic Search logic
@@ -585,6 +586,10 @@ BODY;
 			$facetIndex++;
 		}
 
+		foreach ($this->limiters as $limiter => $value) {
+			$searchUrl .= '&limiter=' . $limiter . ':y';
+		}
+
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
 
 		curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
@@ -743,5 +748,31 @@ BODY;
 			$records[$index] = new EbscoRecordDriver($id);
 		}
 		return $records;
+	}
+
+	public function getLimitList(){
+		$searchOptions = $this->getSearchOptions();
+		$list = array();
+		if ($searchOptions != null){
+			foreach ($searchOptions->AvailableSearchCriteria->AvailableLimiters->AvailableLimiter as $limitOption){
+				if ($limitOption->Type == 'select') {
+					$limit = (string)$limitOption->Id;
+					$desc = (string)$limitOption->Label;
+					$list[$limit] = array(
+						'url' => $this->renderLinkWithLimiter($limit),
+						'removalUrl' => $this->renderLinkWithoutLimiter($limit),
+						'display' => $desc,
+						'value' => $limit,
+						'isApplied' => array_key_exists($limit, $this->limiters),
+					);
+				}
+			}
+		}
+
+		return $list;
+	}
+
+	public function getResearchStarters($searchTerm){
+
 	}
 }
