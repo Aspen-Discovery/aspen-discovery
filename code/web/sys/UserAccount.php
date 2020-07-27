@@ -19,7 +19,7 @@ class UserAccount
 	 * When logged in we store information the id of the active user within the session.
 	 * The actual user is stored within memcache
 	 *
-	 * @return bool|User
+	 * @return bool
 	 */
 	public static function isLoggedIn()
 	{

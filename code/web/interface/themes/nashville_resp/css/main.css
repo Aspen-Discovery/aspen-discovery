@@ -10926,6 +10926,30 @@ a.browse-thumbnail-sorted.active {
     font-size: 18px;
   }
 }
+.researchStarter {
+  border: solid 1px #F16530;
+  margin: 10px 5px 15px;
+}
+.researchStarter .label-top {
+  color: #FFF;
+  width: 100%;
+  padding: 5px;
+  background-color: #F16530;
+  display: inline-block;
+  vertical-align: center;
+  font-weight: bold;
+  padding-top: 10px;
+  height: 40px;
+}
+.researchStarterBody {
+  padding: 10px;
+}
+.researchStarter-dismiss {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-weight: bold;
+}
 .editor .panel-group .panel-body > .form-group > .controls {
   overflow-x: auto;
 }

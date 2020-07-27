@@ -67,6 +67,14 @@ class MyAccount_MyPreferences extends MyAccount
 				$interface->assign('edit', false);
 			}
 
+			global $enabledModules;
+			global $library;
+			$showEdsPreferences = false;
+			if (array_key_exists('EBSCO EDS', $enabledModules) && !empty($library->edsSettingsId)){
+				$showEdsPreferences = true;
+			}
+			$interface->assign('showEdsPreferences', $showEdsPreferences);
+
 			if ($showAlternateLibraryOptionsInProfile) {
 				//Get the list of locations for display in the user interface.
 

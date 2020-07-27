@@ -40,6 +40,7 @@ class User extends DataObject
 	public $lockedFacets;
 	public $alternateLibraryCard;
 	public $alternateLibraryCardPassword;
+	public $hideResearchStarters;
 
 	/** @var Role[] */
 	private $_roles;
@@ -776,6 +777,11 @@ class User extends DataObject
 
 		$this->noPromptForUserReviews = (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on')? 1 : 0;
 		$this->rememberHoldPickupLocation = (isset($_POST['rememberHoldPickupLocation']) && $_POST['rememberHoldPickupLocation'] == 'on')? 1 : 0;
+		global $enabledModules;
+		global $library;
+		if (array_key_exists('EBSCO EDS', $enabledModules) && !empty($library->edsSettingsId)){
+			$this->hideResearchStarters = (isset($_POST['hideResearchStarters']) && $_POST['hideResearchStarters'] == 'on')? 1 : 0;
+		}
 
 		if ($this->hasEditableUsername()){
 			$result = $this->updateEditableUsername($_POST['username']);
