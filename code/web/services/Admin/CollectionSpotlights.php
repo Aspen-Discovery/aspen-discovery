@@ -53,7 +53,8 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		return 'id';
 	}
 	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager');
+		//Collection spotlights should be added from search results.
+		return false;
 	}
 	function canDelete(){
 		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
