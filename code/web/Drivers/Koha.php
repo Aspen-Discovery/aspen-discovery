@@ -42,7 +42,6 @@ class Koha extends AbstractIlsDriver
 			global $library;
 			if ($library->bypassReviewQueueWhenUpdatingProfile) {
 				//This method does not use the review queue
-				$postVariables = [];
 				//Load required fields from Koha here to make sure we don't wipe them out
 				/** @noinspection SqlResolve */
 				$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
@@ -2388,6 +2387,7 @@ class Koha extends AbstractIlsDriver
 		global $memCache;
 		global $timer;
 		global $configArray;
+		global $library;
 
 		$accountSummary = $memCache->get('koha_summary_' . $user->id);
 		if ($accountSummary == false || isset($_REQUEST['reload']) || $forceRefresh) {
@@ -2424,27 +2424,48 @@ class Koha extends AbstractIlsDriver
 			$timer->logTime("Loaded checkouts for Koha");
 
 			//Get number of available holds
-			/** @noinspection SqlResolve */
-			$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-			$numAvailableHolds = 0;
-			if ($availableHoldsRS) {
-				$availableHolds = $availableHoldsRS->fetch_assoc();
-				$numAvailableHolds = $availableHolds['numHolds'];
-				$availableHoldsRS->close();
-			}
-			$accountSummary['numAvailableHolds'] = $numAvailableHolds;
-			$timer->logTime("Loaded available holds for Koha");
+			if ($library->availableHoldDelay > 0){
+				/** @noinspection SqlResolve */
+				$holdsRS = mysqli_query($this->dbConnection, 'SELECT waitingdate, found FROM reserves WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+				$numAvailableHolds = 0;
+				if ($holdsRS) {
+					while ($curRow = $holdsRS->fetch_assoc()) {
+						if ($curRow['found'] !== 'W'){
+							$accountSummary['numUnavailableHolds']++;
+						}else{
+							$holdAvailableOn = strtotime($curRow['waitingdate']);
+							if ((time() - $holdAvailableOn) < 60 * 60 * 24 * $library->availableHoldDelay){
+								$accountSummary['numUnavailableHolds']++;
+							}else{
+								$accountSummary['numAvailableHolds']++;
+							}
+						}
+					}
+					$holdsRS->close();
+				}
+			}else{
+				/** @noinspection SqlResolve */
+				$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+				$numAvailableHolds = 0;
+				if ($availableHoldsRS) {
+					$availableHolds = $availableHoldsRS->fetch_assoc();
+					$numAvailableHolds = $availableHolds['numHolds'];
+					$availableHoldsRS->close();
+				}
+				$accountSummary['numAvailableHolds'] = $numAvailableHolds;
+				$timer->logTime("Loaded available holds for Koha");
 
-			//Get number of unavailable
-			/** @noinspection SqlResolve */
-			$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-			$numWaitingHolds = 0;
-			if ($waitingHoldsRS) {
-				$waitingHolds = $waitingHoldsRS->fetch_assoc();
-				$numWaitingHolds = $waitingHolds['numHolds'];
-				$waitingHoldsRS->close();
+				//Get number of unavailable
+				/** @noinspection SqlResolve */
+				$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+				$numWaitingHolds = 0;
+				if ($waitingHoldsRS) {
+					$waitingHolds = $waitingHoldsRS->fetch_assoc();
+					$numWaitingHolds = $waitingHolds['numHolds'];
+					$waitingHoldsRS->close();
+				}
+				$accountSummary['numUnavailableHolds'] = $numWaitingHolds;
 			}
-			$accountSummary['numUnavailableHolds'] = $numWaitingHolds;
 			$timer->logTime("Loaded total holds for Koha");
 
 			//Get fines
