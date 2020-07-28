@@ -96,7 +96,11 @@ class Koha extends AbstractIlsDriver
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'firstname', 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'gender', 'borrower_sex', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'initials', 'borrower_initials', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'library_id', 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile);
+				if (!isset($_REQUEST['library_id']) || $_REQUEST['library_id'] == -1){
+					$postVariables['library_id'] = $patron->getHomeLocation()->code;
+				}else {
+					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'library_id', 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile);
+				}
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'mobile', 'borrower_mobile', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'opac_notes', 'borrower_contactnote', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'other_name', 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile);
@@ -162,7 +166,11 @@ class Koha extends AbstractIlsDriver
 				}
 
 				$postVariables = [];
-				$postVariables = $this->setPostField($postVariables, 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile);
+				if (!isset($_REQUEST['library_id']) || $_REQUEST['library_id'] == -1){
+					$postVariables['borrower_branchcode'] = $patron->getHomeLocation()->code;
+				}else {
+					$postVariables = $this->setPostField($postVariables, 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile);
+				}
 				$postVariables = $this->setPostField($postVariables, 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile);
@@ -1754,8 +1762,14 @@ class Koha extends AbstractIlsDriver
 			$patron = UserAccount::getActiveUserObj();
 			$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
 			$pickupLocations = [];
-			foreach ($userPickupLocations as $location){
-				$pickupLocations[$location->code] = $location->displayName;
+			foreach ($userPickupLocations as $key => $location){
+				if ($location instanceof Location){
+					$pickupLocations[$location->code] = $location->displayName;
+				}else{
+					if ($key == '0default'){
+						$pickupLocations[-1] = $location;
+					}
+				}
 			}
 		}
 
