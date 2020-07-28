@@ -43,8 +43,8 @@ class User extends DataObject
 
 	/** @var Role[] */
 	private $_roles;
-	private $masqueradingRoles;
-	private $masqueradeLevel;
+	private $_masqueradingRoles;
+	private $_masqueradeLevel;
 
 	public $interfaceLanguage;
 	public $searchPreferenceLanguage;
@@ -264,17 +264,17 @@ class User extends DataObject
 
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		if ($masqueradeMode && !$isGuidingUser) {
-			if (is_null($this->masqueradingRoles)) {
+			if (is_null($this->_masqueradingRoles)) {
 				/** @var User $guidingUser */
 				$guidingUser = UserAccount::getGuidingUserObject();
 				$guidingUserRoles = $guidingUser->getRoles(true);
 				if (in_array('opacAdmin', $guidingUserRoles)) {
-					$this->masqueradingRoles = $this->_roles;
+					$this->_masqueradingRoles = $this->_roles;
 				} else {
-					$this->masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
+					$this->_masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
 				}
 			}
-			return $this->masqueradingRoles;
+			return $this->_masqueradingRoles;
 		}
 		return $this->_roles;
 	}
@@ -1529,22 +1529,22 @@ class User extends DataObject
 	 */
 	public function getMasqueradeLevel()
 	{
-		if (empty($this->masqueradeLevel)) $this->setMasqueradeLevel();
-		return $this->masqueradeLevel;
+		if (empty($this->_masqueradeLevel)) $this->setMasqueradeLevel();
+		return $this->_masqueradeLevel;
 	}
 
 	private function setMasqueradeLevel()
 	{
-		$this->masqueradeLevel = 'none';
+		$this->_masqueradeLevel = 'none';
 		if (!empty($this->patronType)) {
 			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
 			$pType = new pType();
 			$pType->get('pType', $this->patronType);
 			if ($pType->getNumResults() > 0) {
-				$this->masqueradeLevel = $pType->masquerade;
+				$this->_masqueradeLevel = $pType->masquerade;
 			}
 		}else if ($this->hasRole('userAdmin')){
-			$this->masqueradeLevel = 'any';
+			$this->_masqueradeLevel = 'any';
 		}
 	}
 
