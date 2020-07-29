@@ -35,9 +35,12 @@ class Koha extends AbstractIlsDriver
 	 */
 	function updatePatronInfo($patron, $canUpdateContactInfo)
 	{
-		$updateErrors = array();
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
 		if (!$canUpdateContactInfo) {
-			$updateErrors[] = "Profile Information can not be updated.";
+			$result['messages'][] = "Profile Information can not be updated.";
 		} else {
 			global $library;
 			if ($library->bypassReviewQueueWhenUpdatingProfile) {
@@ -114,7 +117,7 @@ class Koha extends AbstractIlsDriver
 
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
-					$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+					$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 				} else {
 					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 					//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
@@ -135,21 +138,22 @@ class Koha extends AbstractIlsDriver
 							$jsonResponse = json_decode($response);
 							if ($jsonResponse) {
 								if (!empty($jsonResponse->error)) {
-									$updateErrors[] = $jsonResponse->error;
+									$result['messages'][] = $jsonResponse->error;
 								}else{
 									foreach ($jsonResponse->errors as $error) {
-										$updateErrors[] = $error->message;
+										$result['messages'][] = $error->message;
 									}
 								}
 							} else {
-								$updateErrors[] = $response;
+								$result['messages'][] = $response;
 							}
 						} else {
-							$updateErrors[] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+							$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
 						}
 
 					} else {
-						$updateErrors[] = 'Your account was updated successfully.';
+						$result['success'] = true;
+						$result['messages'][] = 'Your account was updated successfully.';
 					}
 				}
 			} else {
@@ -223,20 +227,24 @@ class Koha extends AbstractIlsDriver
 					$error = $messageInformation[1];
 					$error = str_replace('<h3>', '<h4>', $error);
 					$error = str_replace('</h3>', '</h4>', $error);
-					$updateErrors[] = trim($error);
+					$result['messages'][] = trim($error);
 				} elseif (preg_match('%<div class="alert alert-success">(.*?)</div>%s', $postResults, $messageInformation)) {
 					$error = $messageInformation[1];
 					$error = str_replace('<h3>', '<h4>', $error);
 					$error = str_replace('</h3>', '</h4>', $error);
-					$updateErrors[] = trim($error);
+					$result['success'] = true;
+					$result['messages'][] = trim($error);
 				} elseif (preg_match('%<div class="alert">(.*?)</div>%s', $postResults, $messageInformation)) {
 					$error = $messageInformation[1];
-					$updateErrors[] = trim($error);
+					$result['messages'][] = trim($error);
 				}
 			}
 		}
 
-		return $updateErrors;
+		if ($result['success'] == false && empty($result['messages'])){
+			$result['messages'][] = 'Unknown error updating your account';
+		}
+		return $result;
 	}
 
 	private $checkouts = array();
@@ -1990,9 +1998,9 @@ class Koha extends AbstractIlsDriver
 	function updatePin(User $user, string $oldPin, string $newPin)
 	{
 		if ($user->cat_password != $oldPin) {
-			return ['success' => false, 'errors' => "The old PIN provided is incorrect."];
+			return ['success' => false, 'message' => "The old PIN provided is incorrect."];
 		}
-		$result = ['success' => false, 'errors' => "Unknown error updating password."];
+		$result = ['success' => false, 'message' => "Unknown error updating password."];
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
@@ -3170,12 +3178,12 @@ class Koha extends AbstractIlsDriver
 			if (strlen($response) > 0) {
 				$jsonResponse = json_decode($response);
 				if ($jsonResponse) {
-					return ['success' => false, 'errors' => $jsonResponse->error];
+					return ['success' => false, 'message' => $jsonResponse->error];
 				} else {
-					return ['success' => false, 'errors' => $response];
+					return ['success' => false, 'message' => $response];
 				}
 			} else {
-				return ['success' => false, 'errors' => "Error {$this->apiCurlWrapper->getResponseCode()} updating your PIN."];
+				return ['success' => false, 'message' => "Error {$this->apiCurlWrapper->getResponseCode()} updating your PIN."];
 			}
 
 		} else {

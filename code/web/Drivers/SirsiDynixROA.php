@@ -1564,7 +1564,7 @@ class SirsiDynixROA extends HorizonAPI
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
-			return ['success' => false, 'errors' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
+			return ['success' => false, 'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
 		}
 
 		$params = array(
@@ -1578,7 +1578,7 @@ class SirsiDynixROA extends HorizonAPI
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey ==  $patron->username) {
 			$patron->cat_password = $newPin;
 			$patron->update();
-			return ['success' => true, 'errors' => "Your pin number was updated successfully."];
+			return ['success' => true, 'message' => "Your pin number was updated successfully."];
 
 		} else {
 			$messages = array();
@@ -1592,12 +1592,12 @@ class SirsiDynixROA extends HorizonAPI
 				global $logger;
 				$logger->log('Symphony ILS encountered errors updating patron pin : '. implode('; ', $messages), Logger::LOG_ERROR);
 				if (!empty($staffPinError) ){
-					return ['success' => false, 'errors' => $staffPinError];
+					return ['success' => false, 'message' => $staffPinError];
 				} else {
-					return ['success' => false, 'errors' => 'The circulation system encountered errors attempt to update the pin.'];
+					return ['success' => false, 'message' => 'The circulation system encountered errors attempt to update the pin.'];
 				}
 			}
-			return ['success' => false, 'errors' =>'Failed to update pin'];
+			return ['success' => false, 'message' =>'Failed to update pin'];
 		}
 	}
 
@@ -1742,7 +1742,10 @@ class SirsiDynixROA extends HorizonAPI
 	 */
 	function updatePatronInfo($user, $canUpdateContactInfo)
 	{
-		$updateErrors = array();
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
 		if ($canUpdateContactInfo) {
 			$sessionToken = $this->getSessionToken($user);
 			if ($sessionToken) {
@@ -1843,23 +1846,26 @@ class SirsiDynixROA extends HorizonAPI
 
 					if (isset($updateAccountInfoResponse->messageList)) {
 						foreach ($updateAccountInfoResponse->messageList as $message) {
-							$updateErrors[] = $message->message;
+							$result['messages'][] = $message->message;
 						}
 						global $logger;
-						$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : '.implode(';', $updateErrors), Logger::LOG_ERROR);
+						$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : '.implode(';', $result['messages']), Logger::LOG_ERROR);
+					}else{
+						$result['success'] = true;
+						$result['messages'][] = 'Your account was updated successfully.';
 					}
 				} else {
 					global $logger;
 					$logger->log('Symphony Driver - Patron Info Update Error: Catalog does not have the circulation system User Id', Logger::LOG_ERROR);
-					$updateErrors[] = 'Catalog does not have the circulation system User Id';
+					$result['messages'][] = 'Catalog does not have the circulation system User Id';
 				}
 			} else {
-				$updateErrors[] = 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+				$result['messages'][] = 'Sorry, it does not look like you are logged in currently.  Please login and try again';
 			}
 		} else {
-			$updateErrors[] = 'You do not have permission to update profile information.';
+			$result['messages'][] = 'You do not have permission to update profile information.';
 		}
-		return $updateErrors;
+		return $result;
 	}
 
     public function showOutstandingFines()

@@ -230,31 +230,34 @@ abstract class Horizon extends AbstractIlsDriver
 	 */
 	function updatePatronInfo($user, $canUpdateContactInfo)
 	{
-		$updateErrors = array();
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
 		if ($canUpdateContactInfo) {
 			global $configArray;
 			//Check to make sure the patron alias is valid if provided
 			if (isset($_REQUEST['displayName']) && $_REQUEST['displayName'] != $user->displayName && strlen($_REQUEST['displayName']) > 0) {
 				//make sure the display name is less than 15 characters
 				if (strlen($_REQUEST['displayName']) > 15) {
-					$updateErrors[] = 'Sorry your display name must be 15 characters or less.';
-					return $updateErrors;
+					$result['messages'][] = 'Sorry your display name must be 15 characters or less.';
+					return $result;
 				} else {
 					//Make sure that we are not using bad words
 					require_once ROOT_DIR . '/Drivers/marmot_inc/BadWord.php';
 					$badWords = new BadWord();
 					$okToAdd = $badWords->hasBadWords($_REQUEST['displayName']);
 					if (!$okToAdd) {
-						$updateErrors[] = 'Sorry, that name is in use or invalid.';
-						return $updateErrors;
+						$result['messages'][] = 'Sorry, that name is in use or invalid.';
+						return $result;
 					}
 					//Make sure no one else is using that
 					$userValidation = new User();
 					/** @noinspection SqlResolve */
 					$userValidation->query("SELECT * from {$userValidation->__table} WHERE id <> {$user->id} and displayName = '{$_REQUEST['displayName']}'");
 					if ($userValidation->getNumResults() > 0) {
-						$updateErrors[] = 'Sorry, that name is in use or is invalid.';
-						return $updateErrors;
+						$result['messages'][] = 'Sorry, that name is in use or is invalid.';
+						return $result;
 					}
 				}
 			}
@@ -305,7 +308,7 @@ abstract class Horizon extends AbstractIlsDriver
 
 				//check for errors in boldRedFont1
 				if (preg_match('/<td.*?class="boldRedFont1".*?>(.*?)(?:<br>)*<\/td>/si', $sResult, $matches)) {
-					$updateErrors[] = $matches[1];
+					$result['messages'][] = $matches[1];
 				} else {
 					// Update the users email address in the Aspen Discovery database
 					$user->email = $_REQUEST['email'];
@@ -328,7 +331,7 @@ abstract class Horizon extends AbstractIlsDriver
 
 				//check for errors in boldRedFont1
 				if (preg_match('/<td.*?class="boldRedFont1".*?>(.*?)(?:<br>)*<\/td>/', $sResult, $matches)) {
-					$updateErrors[] = $matches[1];
+					$result['messages'][] = $matches[1];
 				} else {
 					//Update the users cat_password in the Aspen Discovery database
 					$user->cat_password = $_REQUEST['newPin'];
@@ -336,19 +339,19 @@ abstract class Horizon extends AbstractIlsDriver
 			}
 			if (isset($_REQUEST['phone'])) {
 				//TODO: Implement Setting Notification Methods
-				$updateErrors[] = 'Phone number can not be updated.';
+				$result['messages'][] = 'Phone number can not be updated.';
 			}
 			if (isset($_REQUEST['address1']) || isset($_REQUEST['city']) || isset($_REQUEST['state']) || isset($_REQUEST['zip'])) {
 				//TODO: Implement Setting Notification Methods
-				$updateErrors[] = 'Address Information can not be updated.';
+				$result['messages'][] = 'Address Information can not be updated.';
 			}
 			if (isset($_REQUEST['notices'])) {
 				//TODO: Implement Setting Notification Methods
-				$updateErrors[] = 'Notice Method can not be updated.';
+				$result['messages'][] = 'Notice Method can not be updated.';
 			}
 			if (isset($_REQUEST['pickuplocation'])) {
 				//TODO: Implement Setting Pick-up Locations
-				$updateErrors[] = 'Pickup Locations can not be updated.';
+				$result['messages'][] = 'Pickup Locations can not be updated.';
 			}
 
 			//check to see if the user has provided an alias
@@ -367,11 +370,15 @@ abstract class Horizon extends AbstractIlsDriver
 
 			// update Aspen Discovery user data & clear cache of patron profile
 			$user->update();
-//			UserAccount::updateSession($user); //TODO if this is required it must be determined that the user being updated is the same as the session holding user.
-//			$user->clearCache(); // Done in User object now by calling method
+			if (empty($result['messages'])){
+				$result['success'] = true;
+				$result['messages'][] = 'Your account was updated successfully.';
+			}
 
-		} else $updateErrors[] = 'You do not have permission to update profile information.';
-		return $updateErrors;
+		} else {
+			$result['messages'][] = 'You do not have permission to update profile information.';
+		}
+		return $result;
 	}
 
 	public function getRecordTitle($recordId)

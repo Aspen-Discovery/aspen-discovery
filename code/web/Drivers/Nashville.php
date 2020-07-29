@@ -127,7 +127,7 @@ class Nashville extends Millennium{
      * @param string $oldPin
      * @param string $newPin
      * @param string $confirmNewPin
-     * @return string
+     * @return array
      */
 	function updatePin($user, $oldPin, $newPin, $confirmNewPin){
 		//Login to the patron's account
@@ -173,7 +173,7 @@ class Nashville extends Millennium{
 //				UserAccount::updateSession($user); // needed?? TODO if needed, determine this $user is the same as the user logged in.
 				return ['success' => true, 'message' => "Your pin number was updated successfully."];
 			} else if (preg_match('/class="errormessage">(.+?)<\/div>/is', $sresult, $matches)){
-				return ['success' => false, 'errors' => trim($matches[1])];
+				return ['success' => false, 'message' => trim($matches[1])];
 //POSSIBLE ERRORS FROM /newpin
 //Old PIN does not match PIN in record.
 //New PINs do not match
@@ -182,10 +182,10 @@ class Nashville extends Millennium{
 //SUCCESS=Your PIN has been modified.
 
 			} else {
-				return ['success' => false, 'errors' => "Sorry, your PIN has not been modified : unknown error. Please try again later."];
+				return ['success' => false, 'message' => "Sorry, your PIN has not been modified : unknown error. Please try again later."];
 			}
 		}else{
-			return ['success' => false, 'errors' => "Sorry, we could not update your pin number. Please try again later."];
+			return ['success' => false, 'message' => "Sorry, we could not update your pin number. Please try again later."];
 		}
 	}
 

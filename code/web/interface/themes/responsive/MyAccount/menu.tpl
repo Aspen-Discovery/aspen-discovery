@@ -126,6 +126,7 @@
 									</a>
 								</div>
 								{if $showFines}
+									<hr class="menu">
 									<div class="myAccountLink" title="Fines and account messages">
 										<a href="/MyAccount/Fines">{translate text='Fines and Messages'}</a>
 									</div>

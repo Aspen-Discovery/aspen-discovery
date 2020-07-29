@@ -610,13 +610,6 @@ if (isset($_REQUEST['followup'])) {
 	$timer->logTime('Process followup');
 }
 
-//If there is a hold_message, make sure it gets displayed.
-/* //TODO deprecated, but there are still references in scripts that likely need removed
-if (isset($_SESSION['hold_message'])) {
-	$interface->assign('hold_message', formatHoldMessage($_SESSION['hold_message']));
-	unset($_SESSION['hold_message']);
-}*/
-
 // Call Action
 // Note: ObjectEditor classes typically have the class name of DB_Object with an 's' added to the end.
 //       This distinction prevents the DB_Object from being mistakenly called as the Action class.

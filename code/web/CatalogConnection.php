@@ -594,7 +594,7 @@ class CatalogConnection
 
 	function updatePatronInfo($user, $canUpdateContactInfo)
 	{
-		return $errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
+		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
 	}
 
 	function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null)

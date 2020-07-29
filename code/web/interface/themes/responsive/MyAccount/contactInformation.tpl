@@ -20,14 +20,10 @@
 {*				{include file="MyAccount/switch-linked-user-form.tpl" label="View Contact Information for" actionPath="/MyAccount/ContactInformation"}*}
 
 				{if !empty($profileUpdateErrors)}
-					{foreach from=$profileUpdateErrors item=errorMsg}
-						<div class="alert alert-danger">{$errorMsg}</div>
-					{/foreach}
+					<div class="alert alert-danger">{$profileUpdateErrors}</div>
 				{/if}
 				{if !empty($profileUpdateMessage)}
-					{foreach from=$profileUpdateMessage item=msg}
-						<div class="alert alert-success">{$msg}</div>
-					{/foreach}
+					<div class="alert alert-success">{$profileUpdateMessage}</div>
 				{/if}
 
 				{if !empty($patronUpdateForm)}
