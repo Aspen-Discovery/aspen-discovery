@@ -60,29 +60,24 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				$logger->log('Error from LevelUP. User ID : ' . $user->id . 'Ineligible user', Logger::LOG_NOTICE);
 				$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 				$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
-			} else {
+			} elseif ($this->student_is_eligible == true) {
 				$this->student_first_name = $user->firstname;
 				$this->student_last_name = $user->lastname;
 				$this->student_username = $user->cat_username;
 				$this->student_school_code = $user->getHomeLocation()->code;
 				$this->student_school_name = $user->getHomeLocation()->displayName;
-				switch ($user->patronType) { // Hardcoded for Nashville
-					case 21:
-						$this->student_grade_level = 'P'; // Pre-K will be coded as K for LevelUP
-						break;
-					case 22:
-						$this->student_grade_level = 'K';
-						break;
-					case 23:
-						$this->student_grade_level = '1';
-						break;
-					case 24:
-						$this->student_grade_level = '2';
-						break;
-					case 25:
-						$this->student_grade_level = '3'; // 3rd grade will be coded as 2nd grade for LevelUP
-						break;
+var_dump($this->rosenLevelUPSetting->lu_ptypes_2);
+var_dump($user->patronType);
+				if (!empty($this->rosenLevelUPSetting->lu_ptypes_k) && preg_match($this->rosenLevelUPSetting->lu_ptypes_k, $user->patronType) == 1) {
+					$this->student_grade_level = 'K';
 				}
+				if (!empty($this->rosenLevelUPSetting->lu_ptypes_1) && preg_match($this->rosenLevelUPSetting->lu_ptypes_1, $user->patronType) == 1) {
+					$this->student_grade_level = '1';
+				}
+				if (!empty($this->rosenLevelUPSetting->lu_ptypes_2) && preg_match($this->rosenLevelUPSetting->lu_ptypes_2, $user->patronType) == 1) {
+					$this->student_grade_level = '2';
+				}
+
 				$this->levelUPLogin();
 				$fields = $this->getLevelUPRegistrationFields();
 
@@ -193,7 +188,6 @@ var_dump($this->levelUPResult->UploadResponse);
 		}
 	}
 
-
 	function getLevelUPRegistrationFields() {
 		$fields = array();
 		$fields[] = array('property' => 'student_username', 'default' => $this->student_username, 'type' => 'text', 'label' => 'Student Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
@@ -204,7 +198,7 @@ var_dump($this->levelUPResult->UploadResponse);
 		$locationList[0] = "not enrolled in an MNPS school";
 		$locationList[$this->student_school_code] = $this->student_school_name;
 		$fields[] = array('property' => 'student_school', 'default' => $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
-		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level', 'values' => array('P' => 'Pre-K', 'K', '1', '2', '3'), 'required' => true); // TO DO: remove 4th grade
+		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => array('K', '1', '2'), 'required' => true);
 		$fields[] = array('property' => 'parent_username', 'default' => $this->parent_username, 'type' => 'text', 'label' => 'Parent Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'parent_first_name', 'default' => $this->parent_first_name, 'type' => 'text', 'label' => 'Parent First Name', 'maxLength' => 40, 'required' => true);
