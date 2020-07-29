@@ -38,25 +38,16 @@ class UInterface extends Smarty
 			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 			$googleSettings = new GoogleApiSetting();
 			if ($googleSettings->find(true)) {
-				if (!empty($googleSettings->googleTranslateKey)) {
-					$this->assign('google_translate_key', $googleSettings->googleTranslateKey);
-					$this->assign('google_included_languages', $googleSettings->googleTranslateLanguages);
-				} else {
-					//setup translations within Aspen
-					$this->assign('enableLanguageSelector', true);
-				}
-
 				//Get all images related to the event
 				if (!empty($googleSettings->googleMapsKey)) {
 					$this->assign('mapsKey', $googleSettings->googleMapsKey);
 				}
-			} else {
-				$this->assign('enableLanguageSelector', true);
 			}
 		}catch (Exception $e){
 			//This happens when google analytics isn't setup yet
 			$this->assign('enableLanguageSelector', true);
 		}
+		$this->assign('enableLanguageSelector', true);
 
 		//Check to see if we have a google site verification key
 		if (isset($configArray['Site']['google_verification_key']) && strlen($configArray['Site']['google_verification_key']) > 0){

@@ -10,9 +10,6 @@
 {*		<script src="https://use.typekit.net/uew0ppi.js"></script>*}
 {*		<script>try{Typekit.load({ async: true });}catch(e){}</script>*}
 {*		{/literal}*}
-		{if $google_translate_key}
-		<meta name="google-translate-customization" content="{$google_translate_key}">
-		{/if}
 		{if !empty($google_verification_key)}
 		<meta name="google-site-verification" content="{$google_verification_key}">
 		{/if}

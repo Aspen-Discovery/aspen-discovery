@@ -1,4 +1,5 @@
 {strip}
+	<h2 class="hiddenTitle" id="mobileNav">{translate text="Mobile Navigation"}</h2>
 	{if $loggedIn}{* Logged In *}
 		<a href="/MyAccount/Logout" id="logoutLink" class="menu-icon" title="{translate text="Log Out"}">
 			<img src="{img filename='/interface/themes/responsive/images/Logout.png'}" alt="{translate text="Log Out"}">

@@ -7,7 +7,7 @@
 	{/if}
 
 	{* Listing Options *}
-	<div class="resulthead">
+	<div class="resultHead">
 		<div>
 			{if !empty($solrSearchDebug)}
 				<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>

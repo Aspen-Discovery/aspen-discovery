@@ -1,4 +1,5 @@
 {strip}
+	<h1 class="hiddenTitle">{translate text='Browse the Catalog'}</h1>
 	<div id="home-page-browse-header" class="row">
 		<div class="col-sm-12">
 			<div class="row text-center" id="browse-category-picker">
