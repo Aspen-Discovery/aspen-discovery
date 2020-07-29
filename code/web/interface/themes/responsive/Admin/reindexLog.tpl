@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h3>Reindex Log</h3>
+		<h1>{translate text='Reindex Log'}</h1>
 		<hr>
 
 		<h4>Filter by</h4>

@@ -1,5 +1,5 @@
 {strip}
-<h3>{translate text='Register for a Library Card'}</h3>
+<h1>{translate text='Register for a Library Card'}</h1>
 <div class="page">
 		{if (isset($selfRegResult) && $selfRegResult.success)}
 			<div id="selfRegSuccess" class="alert alert-success">

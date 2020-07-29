@@ -1,3 +1,4 @@
+<h1 class="hiddenTitle">{translate text='Archive Search Results'}</h1>
 <div id="searchInfo">
 	{* Recommendations *}
 	{if $topRecommendations}
@@ -7,7 +8,7 @@
 	{/if}
 
 	{* Listing Options *}
-	<div class="resulthead">
+	<div class="resultHead">
 		{if !empty($solrSearchDebug)}
 			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
 			<div id="solrSearchOptions" style="display:none">

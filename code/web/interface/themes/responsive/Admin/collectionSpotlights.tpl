@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h3>Available Collection Spotlights</h3>
+		<h1>{translate text='Available Collection Spotlights'}</h1>
 		<div id="spotlights"></div>
 
 		<div id="availableSpotlights">

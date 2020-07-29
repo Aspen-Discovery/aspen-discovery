@@ -1,3 +1,4 @@
+<h1 class="hiddenTitle">{translate text='Website Search Results'}</h1>
 <div id="searchInfo">
 	{* Recommendations *}
 	{if $topRecommendations}

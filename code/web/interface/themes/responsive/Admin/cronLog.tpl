@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h3>Cron Log</h3>
+		<h1>{translate text='Cron Log'}</h1>
 		
 		<div id="econtentAttachLogContainer">
 			<table class="logEntryDetails table table-hover table-condensed">

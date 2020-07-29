@@ -3,12 +3,12 @@
 	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
+	<h1>{translate text='Setup a new administrator'}</h1>
 	<form name="addAdministrator" method="post" enctype="multipart/form-data" class="form-horizontal">
 		<fieldset>
-			<legend><h3>Setup a new administrator</h3></legend>
 			<input type="hidden" name="objectAction" value="processNewAdministrator">
 			<div class="row form-group">
-				<label for="login" class="col-sm-2 control-label">Barcode: </label>
+				<label for="login" class="col-sm-2 control-label">{translate text='Barcode'}</label>
 				<div class="col-sm-10">
 					<input type="text" name="login" id="login" class="form-control">
 				</div>
