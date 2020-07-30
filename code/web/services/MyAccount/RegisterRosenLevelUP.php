@@ -97,77 +97,78 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 					require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 					$recaptchaValid = RecaptchaSetting::validateRecaptcha();
 					if (!$recaptchaValid) {
-						$interface->assign('captchaMessage', translate('The CAPTCHA response was incorrect, please try again.');
+						$interface->assign('captchaMessage', translate('The CAPTCHA response was incorrect, please try again.'));
 					} else {
-					//Submit the form to Rosen
+						//Submit the form to Rosen
 
-					// check parent username for availability; if it ain't available, check for identical email; if identical email, allow parent to register additional students
-					$this->levelUPResult->parent_username_avail = 0;
-					$this->levelUPResult->parent_username_ok = 0;
-					$this->parent_email = $_REQUEST['parent_email'];
-					$this->parent_username = $_REQUEST['parent_username'];
-					$this->levelUPResult->parentQueryResponse = $this->levelUPQuery($this->parent_username, 'PARENT');
-					if ($this->levelUPResult->parentQueryResponse->status == '200') {
-						if ($this->parent_email == $this->levelUPResult->parentQueryResponse->content['email']) {
-							$this->levelUPResult->parent_username_ok = 1;
+						// check parent username for availability; if it ain't available, check for identical email; if identical email, allow parent to register additional students
+						$this->levelUPResult->parent_username_avail = 0;
+						$this->levelUPResult->parent_username_ok = 0;
+						$this->parent_email = $_REQUEST['parent_email'];
+						$this->parent_username = $_REQUEST['parent_username'];
+						$this->levelUPResult->parentQueryResponse = $this->levelUPQuery($this->parent_username, 'PARENT');
+						if ($this->levelUPResult->parentQueryResponse->status == '200') {
+							if ($this->parent_email == $this->levelUPResult->parentQueryResponse->content['email']) {
+								$this->levelUPResult->parent_username_ok = 1;
+							} else {
+								global $logger;
+								$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->parentQueryResponse->message;
+								$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->parentQueryResponse->error, Logger::LOG_NOTICE);
+								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
+							}
+						} elseif ($this->levelUPResult->parentQueryResponse->status == '404') { // i.e., parent username not found
+							$this->levelUPResult->parent_username_avail = 1;
 						} else {
 							global $logger;
 							$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->parentQueryResponse->message;
 							$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->parentQueryResponse->error, Logger::LOG_NOTICE);
 							$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 						}
-					} elseif ($this->levelUPResult->parentQueryResponse->status == '404') { // i.e., parent username not found
-						$this->levelUPResult->parent_username_avail = 1;
-					} else {
-						global $logger;
-						$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->parentQueryResponse->message;
-						$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' .$this->levelUPResult->parentQueryResponse->error, Logger::LOG_NOTICE);
-						$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
-					}
 
-					// check student username for availability
-					$this->levelUPResult->student_username_avail = 0;
-					if ($this->student_username != $_REQUEST['student_username']) { // because we already checked whether the patronid is in use as a Rosen LevelUP username
+						// check student username for availability
 						$this->levelUPResult->student_username_avail = 0;
-						$this->levelUPResult->studentQueryResponse = $this->levelUPQuery($_REQUEST['student_username'], 'STUDENT');
-						if ($this->levelUPResult->studentQueryResponse->status != '404') {
-							global $logger;
-							$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->studentQueryResponse->message;
-							$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->studentQueryResponse->error, Logger::LOG_NOTICE);
-							$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
-						} elseif ($this->levelUPResult->studentQueryResponse->status == '404') {
-							$this->student_username = $_REQUEST['student_username'];
-							$this->levelUPResult->student_username_avail = 1;
-						}
-					}
-
-					// register new users
-					if (($this->levelUPResult->parent_username_avail == 1 || $this->levelUPResult->parent_username_ok == 1) && $this->levelUPResult->student_username_avail == 1) {
-						$this->levelUPResult->UploadResponse = $this->levelUPUpload();
-						if ($this->levelUPResult->UploadResponse->status == '200') {
-							global $logger;
-							$this->levelUPResult->interfaceArray['success'] = 'success';
-							$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "Congratulations! you have successfully registered STUDENT Username %1% with PARENT Username %2%. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a>.", 1 => $this->student_username, 2 => $this->parent_username]);
-							$logger->log('LevelUP. User ID : ' . $user->id . ' successfully registered STUDENT ' . $this->student_username . ' with PARENT ' . $this->parent_username, Logger::LOG_NOTICE);
-							$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
-						} else {
-							global $logger;
-							$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->UploadResponse->message;
-							$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->UploadResponse->error, Logger::LOG_NOTICE);
-							$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
-						}
-					}
-
-					// Pre-fill form with user supplied data
-					foreach ($fields as &$property) {
-						if ($property['type'] == 'section') {
-							foreach ($property['properties'] as &$propertyInSection) {
-								$userValue = $_REQUEST[$propertyInSection['property']];
-								$propertyInSection['default'] = $userValue;
+						if ($this->student_username != $_REQUEST['student_username']) { // because we already checked whether the patronid is in use as a Rosen LevelUP username
+							$this->levelUPResult->student_username_avail = 0;
+							$this->levelUPResult->studentQueryResponse = $this->levelUPQuery($_REQUEST['student_username'], 'STUDENT');
+							if ($this->levelUPResult->studentQueryResponse->status != '404') {
+								global $logger;
+								$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->studentQueryResponse->message;
+								$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->studentQueryResponse->error, Logger::LOG_NOTICE);
+								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
+							} elseif ($this->levelUPResult->studentQueryResponse->status == '404') {
+								$this->student_username = $_REQUEST['student_username'];
+								$this->levelUPResult->student_username_avail = 1;
 							}
-						} else {
-							$userValue = $_REQUEST[$property['property']];
-							$property['default'] = $userValue;
+						}
+
+						// register new users
+						if (($this->levelUPResult->parent_username_avail == 1 || $this->levelUPResult->parent_username_ok == 1) && $this->levelUPResult->student_username_avail == 1) {
+							$this->levelUPResult->UploadResponse = $this->levelUPUpload();
+							if ($this->levelUPResult->UploadResponse->status == '200') {
+								global $logger;
+								$this->levelUPResult->interfaceArray['success'] = 'success';
+								$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "Congratulations! you have successfully registered STUDENT Username %1% with PARENT Username %2%. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a>.", 1 => $this->student_username, 2 => $this->parent_username]);
+								$logger->log('LevelUP. User ID : ' . $user->id . ' successfully registered STUDENT ' . $this->student_username . ' with PARENT ' . $this->parent_username, Logger::LOG_NOTICE);
+								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
+							} else {
+								global $logger;
+								$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->UploadResponse->message;
+								$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->UploadResponse->error, Logger::LOG_NOTICE);
+								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
+							}
+						}
+
+						// Pre-fill form with user supplied data
+						foreach ($fields as &$property) {
+							if ($property['type'] == 'section') {
+								foreach ($property['properties'] as &$propertyInSection) {
+									$userValue = $_REQUEST[$propertyInSection['property']];
+									$propertyInSection['default'] = $userValue;
+								}
+							} else {
+								$userValue = $_REQUEST[$property['property']];
+								$property['default'] = $userValue;
+							}
 						}
 					}
 				}
@@ -186,7 +187,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 
 				$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 				$interface->assign('registerRosenLevelUPForm', $fieldsForm);
-
 				$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
 			}
 		}
