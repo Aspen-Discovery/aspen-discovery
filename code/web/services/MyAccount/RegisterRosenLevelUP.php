@@ -199,7 +199,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$fields[] = array('property' => 'student_first_name', 'default' => $this->student_first_name, 'type' => 'text', 'label' => 'Student First Name', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'student_last_name', 'default' => $this->student_last_name, 'type' => 'text', 'label' => 'Student Last Name', 'maxLength' => 40, 'required' => true);
 		$locationList = array();
-		$locationList[0] = "not enrolled in an MNPS school";
+		$locationList[0] = "school not listed";
 		$locationList[$this->student_school_code] = $this->student_school_name;
 		$fields[] = array('property' => 'student_school', 'default' => $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
 		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => array('K', '1', '2'), 'required' => true);
@@ -276,7 +276,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$response = curl_exec($curl);
 		$queryResponse = $this->levelUPParseResponse('Query', $curl, $response);
 		curl_close($curl);
-		$queryResponse->message = 'TOOT';
+		$queryResponse->message = '';
 		if ($queryResponse->status == '404') { // i.e., username not found
 			$this->levelUPResult->{strtolower($role)."_username_avail"} = 1;
 		} elseif ($queryResponse->status == '200') { // i.e., username found
@@ -294,14 +294,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 
 	function levelUPUpload() {
 		$this->student_grade_level = strtoupper($_REQUEST['student_grade_level']);
-		switch ($this->student_grade_level) {
-			case 'P':
-				$this->student_grade_level = 'K'; // Pre-K will be coded as K for LevelUP
-				break;
-			case '3':
-				$this->student_grade_level = '2'; // 3rd grade will be coded as 2nd grade for LevelUP
-				break;
-		}
 		$this->student_first_name = $_REQUEST['student_first_name'];
 		$this->student_last_name = $_REQUEST['student_last_name'];
 		$this->student_pw = $_REQUEST['student_pw'];
