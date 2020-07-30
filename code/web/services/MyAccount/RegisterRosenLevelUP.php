@@ -4,8 +4,8 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
 
-
 // TO DO: activate recaptcha
+// TO DO: clean up Upload json build
 // TO DO: easily [?] add additional students for a single parent
 // TO DO: make use of linked accounts
 // TO DO: disambiguate role TEACHER vs PARENT
@@ -28,7 +28,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 	private $student_school_name;
 	private $student_username;
 
-
 	function launch()
 	{
 		global $interface;
@@ -42,6 +41,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 			$logger->log('Error: Rosen LevelUP is not set up for this Library System', Logger::LOG_NOTICE);
 			$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 			$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
+			return;
 		}
 
 		$this->rosen_help = translate(['text' => 'rosen_help', 'defaultText' => 'For further assistance, use the Help menu.']);
@@ -66,8 +66,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				$this->student_username = $user->cat_username;
 				$this->student_school_code = $user->getHomeLocation()->code;
 				$this->student_school_name = $user->getHomeLocation()->displayName;
-var_dump($this->rosenLevelUPSetting->lu_ptypes_2);
-var_dump($user->patronType);
+
 				if (!empty($this->rosenLevelUPSetting->lu_ptypes_k) && preg_match($this->rosenLevelUPSetting->lu_ptypes_k, $user->patronType) == 1) {
 					$this->student_grade_level = 'K';
 				}
@@ -94,14 +93,12 @@ var_dump($user->patronType);
 						$this->levelUPResult->student_username_avail = 1;
 					}
 				} elseif (isset($_REQUEST['submit'])) {
-					/*
-										require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
-										$recaptchaValid = RecaptchaSetting::validateRecaptcha();
-
-										if (!$recaptchaValid) {
-											$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.'); // TO DO: translate?
-										} else {
-					*/
+					// recaptcha evaluation
+					require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+					$recaptchaValid = RecaptchaSetting::validateRecaptcha();
+					if (!$recaptchaValid) {
+						$interface->assign('captchaMessage', translate('The CAPTCHA response was incorrect, please try again.');
+					} else {
 					//Submit the form to Rosen
 
 					// check parent username for availability; if it ain't available, check for identical email; if identical email, allow parent to register additional students
@@ -147,7 +144,6 @@ var_dump($user->patronType);
 					// register new users
 					if (($this->levelUPResult->parent_username_avail == 1 || $this->levelUPResult->parent_username_ok == 1) && $this->levelUPResult->student_username_avail == 1) {
 						$this->levelUPResult->UploadResponse = $this->levelUPUpload();
-var_dump($this->levelUPResult->UploadResponse);
 						if ($this->levelUPResult->UploadResponse->status == '200') {
 							global $logger;
 							$this->levelUPResult->interfaceArray['success'] = 'success';
@@ -179,7 +175,15 @@ var_dump($this->levelUPResult->UploadResponse);
 				$interface->assign('submitUrl', '/MyAccount/RegisterRosenLevelUP');
 				$interface->assign('structure', $fields);
 				$interface->assign('saveButtonText', 'Register');
-// TO DO: reaptcha?
+
+				// Set up captcha to limit spam self registrations
+				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+				$recaptcha = new RecaptchaSetting();
+				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)){
+					$captchaCode        = recaptcha_get_html($recaptcha->publicKey);
+					$interface->assign('captcha', $captchaCode);
+				}
+
 				$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 				$interface->assign('registerRosenLevelUPForm', $fieldsForm);
 
