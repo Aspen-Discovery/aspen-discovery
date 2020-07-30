@@ -376,7 +376,7 @@
 				{/if}
 
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('catalogging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
-					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'OMDBSettings', 'NewYorkTimesSettings', 'RecaptchaSettings'))}
+					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'OMDBSettings', 'NewYorkTimesSettings', 'RecaptchaSettings', 'RosenLevelUPSettings'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -431,6 +431,9 @@
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/RecaptchaSettings">{translate text="reCAPTCHA Settings"}</a></div>
+								{/if}
+								{if (array_key_exists('opacAdmin', $userRoles))}
+									<div class="adminMenuLink"><a href="/Rosen/RosenLevelUPSettings">{translate text="Rosen LevelUP Settings"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/SyndeticsSettings">{translate text="Syndetics Settings"}</a></div>
@@ -764,28 +767,6 @@
 								<div class="adminMenuLink"><a href="/Websites/Settings">{translate text="Settings"}</a></div>
 								<div class="adminMenuLink"><a href="/Websites/IndexingLog">{translate text="Indexing Log"}</a></div>
 								<div class="adminMenuLink"><a href="/Websites/Dashboard">{translate text="Dashboard"}</a></div>
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				{if $enableRosenLevelUP && array_key_exists('opacAdmin', $userRoles)}
-				{if $module == 'RosenLevelUP'}
-					{assign var="curSection" value=true}
-				{else}
-					{assign var="curSection" value=false}
-				{/if}
-					<div class="panel{if $curSection} active{/if}">
-						<a href="#rosenLevelUPMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
-							<div class="panel-heading">
-								<div class="panel-title">
-									{translate text="Rosen LevelUP"}
-								</div>
-							</div>
-						</a>
-						<div id="rosenLevelUPMenu" class="panel-collapse collapse {if $curSection}in{/if}">
-							<div class="panel-body">
-								<div class="adminMenuLink"><a href="/Rosen/RosenLevelUPSettings">{translate text="Settings"}</a></div>
 							</div>
 						</div>
 					</div>
