@@ -2199,7 +2199,7 @@ class Admin_DBMaintenance extends Admin_Admin
 							lu_district_name VARCHAR(50) NOT NULL,
 							lu_eligible_ptypes VARCHAR(50) NOT NULL,
 							lu_multi_district_name VARCHAR(50) NOT NULL,
-							lu_school_name VARCHAR(50) NOT NULL						
+							lu_school_name VARCHAR(50) NOT NULL,						
 							lu_ptypes_1 VARCHAR(50),
 							lu_ptypes_2 VARCHAR(50),
 							lu_ptypes_k VARCHAR(50),
