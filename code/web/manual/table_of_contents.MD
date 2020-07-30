@@ -120,4 +120,5 @@
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - [User Lists](/Admin/HelpManual?page=User-Lists)
 - Patron Account
+  - [Rosen LevelUP](/Admin/HelpManual?page=Rosen-LevelUP)
   - [While You Wait](/Admin/HelpManual?page=While-You-Wait)

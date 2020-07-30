@@ -769,6 +769,28 @@
 					</div>
 				{/if}
 
+				{if $enableRosenLevelUP && array_key_exists('opacAdmin', $userRoles)}
+				{if $module == 'RosenLevelUP'}
+					{assign var="curSection" value=true}
+				{else}
+					{assign var="curSection" value=false}
+				{/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#rosenLevelUPMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+									{translate text="Rosen LevelUP"}
+								</div>
+							</div>
+						</a>
+						<div id="rosenLevelUPMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="/Rosen/RosenLevelUPSettings">{translate text="Settings"}</a></div>
+							</div>
+						</div>
+					</div>
+				{/if}
+
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('circulationReports', $userRoles))}
 					{if $module == 'Circa'}
 						{assign var="curSection" value=true}
