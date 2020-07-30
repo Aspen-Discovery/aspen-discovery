@@ -8,16 +8,16 @@
 						<ul>
 							{foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
 								<li id="browse-category-{$browseCategory->textId}" class="browse-category {if (!$selectedBrowseCategory && $smarty.foreach.browseCategoryLoop.index == 0) || $selectedBrowseCategory && $selectedBrowseCategory->textId == $browseCategory->textId} selected{/if}" data-category-id="{$browseCategory->textId}">
-										<div >
-											{translate text=$browseCategory->label}
-										</div>
+									<div >
+										{translate text=$browseCategory->label}
+									</div>
 								</li>
 							{/foreach}
 						</ul>
 					</div>
 
-					<a href="#" class="jcarousel-control-prev"></a>
-					<a href="#" class="jcarousel-control-next"></a>
+					<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Category"}"></a>
+					<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Category"}"></a>
 
 					<p class="jcarousel-pagination"></p>
 				</div>
@@ -60,9 +60,9 @@
 				</div>
 			</div>
 
-			<a onclick="return AspenDiscovery.Browse.getMoreResults()" role="button">
+			<a onclick="return AspenDiscovery.Browse.getMoreResults()" role="button" title="{translate text='Get More Results'}">
 				<div class="row" id="more-browse-results">
-					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results'}"></span>
 				</div>
 			</a>
 		</div>

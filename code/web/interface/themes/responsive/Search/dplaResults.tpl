@@ -10,7 +10,7 @@
 					<div class="col-xs-2">
 						{if $result.object}
 							<a href="{$result.link}">
-								<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive"/>
+								<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Resource Image'}"/>
 							</a>
 						{/if}
 					</div>
