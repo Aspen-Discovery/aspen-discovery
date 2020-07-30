@@ -18,7 +18,7 @@ class RosenLevelUPSettings extends ObjectEditor
 
 	function getModule()
 	{
-		return 'Rosen'; //? What should this be?
+		return 'Rosen';
 	}
 
 	function getPageTitle()
