@@ -5,6 +5,11 @@ class EBSCO_Results extends Action{
 		global $interface;
 		global $timer;
 		global $aspenUsage;
+
+		if (!isset($_REQUEST['lookfor']) || empty($_REQUEST['lookfor'])){
+			$this->display('noSearchTerm.tpl', 'Please enter a search term');
+		}
+
 		$aspenUsage->ebscoEdsSearches++;
 
 		//Include Search Engine
