@@ -293,9 +293,9 @@ class Theme extends DataObject
 			'headerForegroundColor' => ['property' => 'headerForegroundColor', 'type' => 'color', 'label' => 'Header Text Color', 'description' => 'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#8b8b8b', 'checkContrastWith'=>'headerBackgroundColor'],
 			'headerBottomBorderWidth' => ['property' => 'headerBottomBorderWidth', 'type' => 'text', 'label' => 'Header Bottom Border Width', 'description' => 'Header Bottom Border Width', 'required' => false, 'hideInLists' => true],
 			//Header Buttons
-			'headerButtonRadius' => ['property' => 'headerButtonRadius', 'type' => 'text', 'label' => 'Header Button Radius', 'description' => 'Header Button Radius', 'required' => false, 'hideInLists' => true],
-			'headerButtonColor' => ['property' => 'headerButtonColor', 'type' => 'color', 'label' => 'Header Button Color', 'description' => 'Header Button Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'headerButtonBackgroundColor'],
 			'headerButtonBackgroundColor' => ['property' => 'headerButtonBackgroundColor', 'type' => 'color', 'label' => 'Header Button Background Color', 'description' => 'Header Button Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#848484', 'checkContrastWith'=>'headerButtonColor'],
+			'headerButtonColor' => ['property' => 'headerButtonColor', 'type' => 'color', 'label' => 'Header Button Color', 'description' => 'Header Button Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'headerButtonBackgroundColor'],
+			'headerButtonRadius' => ['property' => 'headerButtonRadius', 'type' => 'text', 'label' => 'Header Button Radius', 'description' => 'Header Button Radius', 'required' => false, 'hideInLists' => true],
 
 			//Footer Colors
 			'footerBackgroundColor' => ['property' => 'footerBackgroundColor', 'type' => 'color', 'label' => 'Footer Background Color', 'description' => 'Footer Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'footerForegroundColor'],
@@ -596,10 +596,10 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('secondaryForegroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('tertiaryBackgroundColor', '#de1f0b', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('tertiaryForegroundColor', '#ffffff', $appliedThemes);
-		$primaryColorLightened80 = ColorUtils::lightenColor($this->primaryBackgroundColor, 1.8);
-		$this->getValueForPropertyUsingDefaults('sidebarHighlightBackgroundColor', $primaryColorLightened80, $appliedThemes);
+		$defaultSidebarBackgroundColor = ColorUtils::lightenColor($this->primaryBackgroundColor, 1.2);
+		$this->getValueForPropertyUsingDefaults('sidebarHighlightBackgroundColor', $defaultSidebarBackgroundColor, $appliedThemes);
 		$defaultSidebarHighlight = '#ffffff';
-		if (ColorUtils::calculateColorContrast($primaryColorLightened80, $defaultSidebarHighlight) < 3.5){
+		if (ColorUtils::calculateColorContrast($defaultSidebarBackgroundColor, $defaultSidebarHighlight) < 3.5){
 			$defaultSidebarHighlight = '#000000';
 		}
 		$this->getValueForPropertyUsingDefaults('sidebarHighlightForegroundColor', $defaultSidebarHighlight, $appliedThemes);

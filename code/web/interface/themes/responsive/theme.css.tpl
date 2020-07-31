@@ -51,12 +51,19 @@ body{ldelim}
     color: {$footerForegroundColor};
 {rdelim}
 
-.header-button, #home-page-login{ldelim}
+.header-button{ldelim}
     background-color: {$headerButtonBackgroundColor};
-    color: {$headerButtonColor};
+    color: {$headerButtonColor} !important;
     {if $headerButtonRadius}
         border-radius: {$headerButtonRadius};
     {/if}
+{rdelim}
+#home-page-login{ldelim}
+    background-color: {$headerButtonBackgroundColor};
+    color: {$headerButtonColor} !important;
+{rdelim}
+#home-page-login a{ldelim}
+    color: {$headerButtonColor} !important;
 {rdelim}
 
 body, #home-page-browse-header {ldelim}
@@ -67,17 +74,27 @@ body .container{ldelim}
     background-color: {$bodyBackgroundColor};
 {rdelim}
 
-#home-page-search, #horizontal-search-box, #explore-more-sidebar,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar{ldelim}
+#home-page-search, #horizontal-search-box, #explore-more-sidebar,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar {ldelim}
     background-color: {$primaryBackgroundColor};
+    color: {$primaryForegroundColor};
 {rdelim}
+#vertical-menu-bar .menu-icon .menu-bar-label {ldelim}
+    color: {$primaryForegroundColor};
+{rdelim}
+
 #vertical-menu-bar .menu-bar-option.menu-icon-selected,.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
-    background-color: {$primaryBackgroundColorLightened80};
+    background-color: {$sidebarHighlightBackgroundColor};
+    color: {$sidebarHighlightForegroundColor};
+{rdelim}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label,#vertical-menu-bar .menu-icon:hover .menu-bar-label{ldelim}
+    color: {$sidebarHighlightForegroundColor};
 {rdelim}
 .exploreMoreBar{ldelim}
-    border-color: {$primaryBackgroundColorLightened80};
+    border-color: {$primaryBackgroundColor};
 {rdelim}
 #vertical-menu-bar .menu-bar-option:hover{ldelim}
-    background-color: {$primaryBackgroundColorLightened60};
+    background-color: {$sidebarHighlightBackgroundColor};
+    color: {$sidebarHighlightForegroundColor};
 {rdelim}
 
 {if $primaryForegroundColor}
@@ -85,23 +102,6 @@ body .container{ldelim}
     color: {$primaryForegroundColor}
 {rdelim}
 {/if}
-
-.browse-category{ldelim}
-    color: {$bodyTextColor}
-{rdelim}
-
-.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover, .titleScrollerHeader{ldelim}
-    border-color: {$secondaryBackgroundColor} !important;
-    background: {$secondaryBackgroundColor} !important;
-{rdelim}
-
-.browse-category{ldelim}
-    background-color: {$secondaryForegroundColor};
-    border-color: {$secondaryForegroundColor};
-{rdelim}
-.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover, .titleScrollerHeader{ldelim}
-    color: {$secondaryForegroundColor} !important;
-{rdelim}
 
 .facetTitle, .exploreMoreTitle,.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title{ldelim}
     background-color: {$closedPanelBackgroundColor};
