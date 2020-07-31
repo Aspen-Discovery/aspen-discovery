@@ -11061,4 +11061,7 @@ fieldset[disabled] .btn-masquerade.active {
   background-color: #ffc9c9;
   color: #111111;
 }
+.contrast_warning {
+  padding: 3px 5px;
+}
 /*# sourceMappingURL=main.css.map */

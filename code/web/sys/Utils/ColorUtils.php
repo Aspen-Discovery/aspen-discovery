@@ -112,4 +112,54 @@ class ColorUtils
 		$rgb = ColorUtils::colorHSLToRGB($hsl[0], $hsl[1], $hsl[2] * $percentLightening);
 		return "#" . str_pad(dechex($rgb['r']), 2, '0', STR_PAD_LEFT) . str_pad(dechex($rgb['g']), 2, '0', STR_PAD_LEFT) . str_pad(dechex($rgb['b']), 2, '0', STR_PAD_LEFT);
 	}
+
+	/**
+	 * Calculates the color contrast between two colors specified in RGB format i.e. #FFFFFF
+	 * The resulting values should be between 1 and 21.
+	 *
+	 * @param $color1
+	 * @param $color2
+	 *
+	 * @return float
+	 */
+	public static function calculateColorContrast($color1, $color2)
+	{
+		$luminance1 = ColorUtils::getLuminanceForColor($color1);
+		$luminance2 = ColorUtils::getLuminanceForColor($color2);
+
+		if ($luminance1 > $luminance2) {
+			$contrastRatio = (($luminance1 + 0.05) / ($luminance2 + 0.05));
+		} else {
+			$contrastRatio = (($luminance2 + 0.05) / ($luminance1 + 0.05));
+		}
+		return round($contrastRatio, 2);
+	}
+
+	/**
+	 * Calculates the relative luminance for a color which is a number from 0 for black to 1 for white
+	 * @param $color
+	 * @return float
+	 */
+	public static function getLuminanceForColor($color){
+		$r = self::getLuminanceComponent($color, 1, 2);
+		$g = self::getLuminanceComponent($color, 3, 2);
+		$b = self::getLuminanceComponent($color, 5, 2);
+		return (0.2126 * $r) + (0.7152 * $g) + (0.0722 * $b);
+	}
+
+	/**
+	 * @param $color
+	 * @return float
+	 */
+	private static function getLuminanceComponent($color, $start, $length)
+	{
+		$component = (float)hexdec(substr($color, $start, $length)) / (float)255;
+		if ($component <= 0.03928) {
+			$luminanceVal = $component / 12.92;
+		} else {
+			$luminanceVal = pow(($component + 0.055) / 1.055, 2.4);
+		}
+		return $luminanceVal;
+	}
+
 }

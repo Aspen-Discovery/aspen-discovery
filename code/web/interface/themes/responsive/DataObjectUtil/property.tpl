@@ -105,13 +105,13 @@
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control email {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'color'}
 			<div class="row">
-				<div class="col-sm-3">
-					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}' class='form-control{if $property.required}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);" {if !empty($property.readOnly)}readonly{/if}>
+				<div class="col-tn-3">
+					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}' class='form-control{if $property.required}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}" {if !empty($property.readOnly)}readonly{/if}>
 				</div>
-				<div class="col-sm-3">
-					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
+				<div class="col-tn-3">
+					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
 				</div>
-				<div class="col-sm-6">
+				<div class="col-tn-3">
 					{assign var=defaultVariableName value="`$propName`Default"}
 					{if is_null($object->$defaultVariableName)}
 						{assign var=useDefault value=true}
@@ -120,6 +120,16 @@
 					{/if}
 
 					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>Use Default</label>
+				</div>
+				<div class="col-tn-3">
+					{if !empty($property.checkContrastWith)}
+						&nbsp;{translate text='Contrast Ratio'}&nbsp;<span id="contrast_{$propName}" class="contrast_warning"></span>
+						<script type="text/javascript">
+							$(document).ready(function(){ldelim}
+								AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');
+							{rdelim});
+						</script>
+					{/if}
 				</div>
 			</div>
 		{elseif $property.type == 'font'}

@@ -9,9 +9,11 @@ abstract class ObjectEditor extends Admin_Admin
 	{
 		global $interface;
 
-		if (isset($_SESSION['lastError'])){
-			$interface->assign('lastError', $_SESSION['lastError']);
-			unset($_SESSION['lastError']);
+		$user = UserAccount::getActiveUserObj();
+		if (!empty($user->updateMessage)){
+			$interface->assign('lastError', $user->updateMessage);
+			$user->updateMessage = '';
+			$user->update();
 		}
 
 		$interface->assign('canAddNew', $this->canAddNew());
@@ -38,7 +40,7 @@ abstract class ObjectEditor extends Admin_Admin
 		}elseif ($objectAction == 'compare') {
 			$this->compareObjects($structure);
 		}elseif ($objectAction == 'history') {
-			$this->showHistory($structure);
+			$this->showHistory();
 		}else{
 			//check to see if a custom action is being called.
 			if (method_exists($this, $objectAction)){
@@ -115,8 +117,10 @@ abstract class ObjectEditor extends Admin_Admin
 					$errorDescription = 'Unknown error';
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
-				@session_start();
-				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
+				$user = UserAccount::getActiveUserObj();
+				$user->updateMessage = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
+				$user->updateMessageIsError = true;
+				$user->update();
 
 				$logger->log($errorDescription, Logger::LOG_DEBUG);
 				return false;
@@ -125,8 +129,10 @@ abstract class ObjectEditor extends Admin_Admin
 			global $logger;
 			$errorDescription = implode(', ', $validationResults['errors']);
 			$logger->log('Could not validate new object ' . $objectType . ' ' . $errorDescription, Logger::LOG_DEBUG);
-			@session_start();
-			$_SESSION['lastError'] = "The information entered was not valid. <br/>" . implode('<br/>', $validationResults['errors']);
+			$user = UserAccount::getActiveUserObj();
+			$user->updateMessage = "The information entered was not valid. <br/>" . implode('<br/>', $validationResults['errors']);
+			$user->updateMessageIsError = true;
+			$user->update();
 
 			return false;
 		}
@@ -144,8 +150,7 @@ abstract class ObjectEditor extends Admin_Admin
 	function updateFromUI($object, $structure){
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 		DataObjectUtil::updateFromUI($object, $structure);
-		$validationResults = DataObjectUtil::validateObject($structure, $object);
-		return $validationResults;
+		return DataObjectUtil::validateObject($structure, $object);
 	}
 	function viewExistingObjects(){
 		global $interface;
@@ -213,6 +218,7 @@ abstract class ObjectEditor extends Admin_Admin
 			if (!is_null($curObject)){
 				if ($objectAction == 'save'){
 					//Update the object
+					$user = UserAccount::getActiveUserObj();
 					$validationResults = $this->updateFromUI($curObject, $structure);
 					if ($validationResults['validatedOk']) {
 						$ret = $curObject->update();
@@ -222,25 +228,35 @@ abstract class ObjectEditor extends Admin_Admin
 							} else {
 								$errorDescription = 'Unknown error';
 							}
-							$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+							$user->updateMessage = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+							$user->updateMessageIsError = true;
+							$user->update();
 							$errorOccurred         = true;
 						}
 					} else {
-						$errorDescription = implode(', ', $validationResults['errors']);
-						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+						$errorDescription = implode('<br/>', $validationResults['errors']);
+						$user->updateMessage = "An error occurred validating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+						$user->updateMessageIsError = true;
+						$user->update();
 						$errorOccurred         = true;
 					}
 				}else if ($objectAction =='delete'){
 					//Delete the record
 					$ret = $curObject->delete();
 					if ($ret == 0){
-						$_SESSION['lastError'] = "Unable to delete {$this->getObjectType()} with id of $id";
+						$user = UserAccount::getActiveUserObj();
+						$user->updateMessage = "Unable to delete {$this->getObjectType()} with id of $id";
+						$user->updateMessageIsError = true;
+						$user->update();
 						$errorOccurred = true;
 					}
 				}
 			}else{
 				//Couldn't find the record.  Something went haywire.
-				$_SESSION['lastError'] = "An error occurred, could not find {$this->getObjectType()} with id of $id";
+				$user = UserAccount::getActiveUserObj();
+				$user->updateMessage = "An error occurred, could not find {$this->getObjectType()} with id of $id";
+				$user->updateMessageIsError = true;
+				$user->update();
 				$errorOccurred = true;
 			}
 		}
@@ -408,7 +424,7 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 	}
 
-	function showHistory($structure) {
+	function showHistory() {
 		$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
 		if (empty($id) || $id < 0){
 			AspenError::raiseError('Please select an object to show history for');
