@@ -45,19 +45,19 @@
 
 			<!-- Tab panes -->
 			<div class="tab-content" id="checkouts">
-				<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all"><div id="allCheckoutsPlaceholder">{translate text="Loading checkouts from all sources"}</div></div>
-				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils"><div id="ilsCheckoutsPlaceholder">{translate text="Loading checkouts of physical materials"}</div></div>
+				<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all" aria-label="All Checkouts List"><div id="allCheckoutsPlaceholder">{translate text="Loading checkouts from all sources"}</div></div>
+				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils" aria-label="Physical Checkouts List"><div id="ilsCheckoutsPlaceholder">{translate text="Loading checkouts of physical materials"}</div></div>
 				{if $user->isValidForEContentSource('overdrive')}
-					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from OverDrive"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="OverDrive Checkouts List"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from OverDrive"}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('hoopla')}
-					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla" aria-label="Hoopla Checkouts List"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla"}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('rbdigital')}
-					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital"><div id="rbdigitalCheckoutsPlaceholder">{translate text="Loading checkouts from RBdigital"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital" aria-label="RBdigital Checkouts List"><div id="rbdigitalCheckoutsPlaceholder">{translate text="Loading checkouts from RBdigital"}</div></div>
 				{/if}
                 {if $user->isValidForEContentSource('cloud_library')}
-					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from Cloud Library"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="Cloud Library Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from Cloud Library"}</div></div>
                 {/if}
 			</div>
 			<script type="text/javascript">
