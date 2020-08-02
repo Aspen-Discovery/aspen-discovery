@@ -7,7 +7,7 @@
 			</a>
 			<br>
 			<a href="#" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}');">
-				<span class="manifestation-toggle-text label {if $relatedManifestation->getNumRelatedRecords() == 1}label-default{else}label-info{/if}" id='manifestation-toggle-text-{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'>{if $relatedManifestation->getNumRelatedRecords() == 1}{translate text='Show&nbsp;Edition'}{else}{translate text='Show&nbsp;Editions'}{/if}</span>
+				<span class="manifestation-toggle-text btn btn-xs btn-editions" id='manifestation-toggle-text-{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'>{if $relatedManifestation->getNumRelatedRecords() == 1}{translate text='Show Edition'}{else}{translate text='Show Editions'}{/if}</span>
 			</a>
 		</div>
 		<div class="col-tn-8 col-xs-8{if empty($viewingCombinedResults)} col-md-5 col-lg-6{/if}">

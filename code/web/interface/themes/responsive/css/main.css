@@ -7135,6 +7135,31 @@ body > .container {
     display: none;
   }
 }
+.btn-editions {
+  display: inline;
+  color: #212529;
+  background-color: #f8f9fa;
+  border-color: #999999;
+}
+.btn-editions:hover,
+.btn-editions:focus,
+.btn-editions:active {
+  color: #212529;
+  background-color: #e2e6ea;
+  border-color: #dae0e5;
+}
+.btn-tools {
+  color: #ffffff;
+  background-color: #747474;
+  border-color: #636363;
+}
+.btn-tools:hover,
+.btn-tools:focus,
+.btn-tools:active {
+  color: #ffffff;
+  background-color: #636363;
+  border-color: #636363;
+}
 .tab-content {
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
@@ -8268,7 +8293,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   width: 33.33333333%;
 }
 .bootstrap-switch > div > span.bootstrap-switch-handle-on {
-  color: red;
+  color: #c62828;
   border-bottom-left-radius: 3px;
   border-top-left-radius: 3px;
 }
@@ -8671,7 +8696,7 @@ hr.menu {
   margin: 0 !important;
 }
 .required-input {
-  color: red;
+  color: #c62828;
 }
 .hiddenTitle {
   font-size: 0;
@@ -8776,6 +8801,9 @@ a.placard-link {
 .propertyDescription {
   margin-bottom: 6px;
 }
+.badge {
+  background-color: #666666;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;
@@ -8783,10 +8811,10 @@ a.placard-link {
 }
 #home-page-search-label {
   font-size: 35px;
-  color: #FFF;
+  color: #ffffff;
 }
 #home-page-advanced-search-link {
-  color: #FFF;
+  color: #ffffff;
 }
 #lookfor:-ms-input-placeholder {
   font-size: 0;
@@ -8823,9 +8851,11 @@ a.placard-link {
 }
 #keepFiltersSwitchLabel,
 #advancedSearchLink {
-  color: #FFF;
-  font-weight: normal;
+  color: #ffffff;
+  font-weight: bold;
   font-size: 85%;
+  display: inline-block;
+  margin-top: 6px;
 }
 #horizontal-search-box {
   background-color: #00a4e3;
@@ -8865,10 +8895,19 @@ a.placard-link {
   }
 }
 #horizontal-search-box #horizontal-search-label {
-  color: #FFF;
+  color: #ffffff;
   font-size: 14px;
-  margin-top: 4px;
   line-height: 20px;
+}
+@media (max-width: 1199px) {
+  #horizontal-search-box #horizontal-search-label {
+    margin-top: 4px;
+  }
+}
+@media (min-width: 1200px) {
+  #horizontal-search-box #horizontal-search-label {
+    margin-top: 0;
+  }
 }
 #horizontal-search-box #lookfor {
   height: 34px;
@@ -9507,11 +9546,11 @@ a.browse-thumbnail-sorted.active {
   border-style: solid;
 }
 .overdueLabel {
-  color: red;
+  color: #c62828;
   font-weight: bold;
 }
 .return_claim {
-  color: green;
+  color: #2e7d32;
   font-weight: bold;
 }
 .dueSoonLabel {
@@ -9991,7 +10030,7 @@ a.browse-thumbnail-sorted.active {
 }
 .result-head {
   font-size: smaller;
-  color: #0d8ec6;
+  color: #3174AF;
 }
 .result-head #selected-browse-label {
   background: linear-gradient(to bottom, #fff, #fff 44%, #d5d6da 45%, #d5d6da 55%, #fff 56%);
@@ -10016,10 +10055,6 @@ a.browse-thumbnail-sorted.active {
 }
 .result-tools-horizontal {
   margin-top: 6px;
-}
-.result-tools-horizontal .btn {
-  background-color: #909090;
-  color: #fff;
 }
 .results-covers {
   padding-top: 6px;
@@ -10062,10 +10097,10 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 .related-manifestation-shelf-status.available {
-  color: green;
+  color: #2e7d32;
 }
 .related-manifestation-shelf-status.checked_out {
-  color: red;
+  color: #c62828;
 }
 .related-manifestation-shelf-status.availableOther {
   color: #BB0099;
@@ -10075,17 +10110,17 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
 }
 .related_record_status.available {
-  color: green;
+  color: #2e7d32;
   font-size: 14px;
 }
 .related_record_status.checked_out {
-  color: red;
+  color: #c62828;
 }
 .related_record_status.availableOther {
-  color: red;
+  color: #c62828;
 }
 .itemSummaryTable tr.available {
-  color: green;
+  color: #2e7d32;
   font-weight: bold;
 }
 .itemSummary {
@@ -10243,7 +10278,7 @@ a.browse-thumbnail-sorted.active {
 }
 .share-tools {
   background-color: #e6e6e6;
-  color: #6e6f6f;
+  color: #666565;
   border-bottom: 1px solid #adadad;
   font-weight: bold;
   text-align: left;

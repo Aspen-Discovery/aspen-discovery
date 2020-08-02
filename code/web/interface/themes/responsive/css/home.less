@@ -46,8 +46,10 @@
 
 #keepFiltersSwitchLabel, #advancedSearchLink{
   color: @home-search-label-color;
-  font-weight: normal;
+  font-weight: bold;
   font-size: 85%;
+  display: inline-block;
+  margin-top: 6px;
 }
 
 // Horizontal Search Box Styling
@@ -92,7 +94,13 @@
   #horizontal-search-label {
     color: @horizontal-search-label-color;
     font-size: 14px;
-    margin-top: 4px;
+    @media (max-width: @screen-md-max) {
+      margin-top: 4px;
+    }
+    @media (min-width: @screen-lg-min) {
+      margin-top: 0;
+    }
+
     line-height: 20px;
   }
 

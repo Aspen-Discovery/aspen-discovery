@@ -12,8 +12,8 @@
 			</ul>
 		</div>
 
-		<a href="#" class="jcarousel-control-prev">&lsaquo;</a>
-		<a href="#" class="jcarousel-control-next">&rsaquo;</a>
+		<a href="#" class="jcarousel-control-prev" aria-label="Previous">&lsaquo;</a>
+		<a href="#" class="jcarousel-control-next" aria-label="Next">&rsaquo;</a>
 
 		<p class="jcarousel-pagination"></p>
 	</div>

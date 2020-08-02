@@ -22,8 +22,8 @@
 			</div>
 		{/if}
 		<div id="titleScroller{$scrollerName}" class="titleScrollerBody">
-			<div class="leftScrollerButton enabled btn" onclick="{$scrollerVariable}.scrollToLeft();"><i class="glyphicon glyphicon-chevron-left"></i></div>
-			<div class="rightScrollerButton btn" onclick="{$scrollerVariable}.scrollToRight();"><i class="glyphicon glyphicon-chevron-right"></i></div>
+			<div class="leftScrollerButton enabled btn" onclick="{$scrollerVariable}.scrollToLeft();" aria-label="Scroll Left"><i class="glyphicon glyphicon-chevron-left"></i></div>
+			<div class="rightScrollerButton btn" onclick="{$scrollerVariable}.scrollToRight();" aria-label="Scroll Right"><i class="glyphicon glyphicon-chevron-right"></i></div>
 			<div class="scrollerBodyContainer">
 				<div class="scrollerBody" style="display:none"></div>
 				<div class="scrollerLoadingContainer">

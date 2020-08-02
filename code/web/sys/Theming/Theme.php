@@ -31,6 +31,8 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $bodyBackgroundColorDefault;
 	public $bodyTextColor;
 	public /** @noinspection PhpUnused */ $bodyTextColorDefault;
+	public $linkColor;
+	public /** @noinspection PhpUnused */ $linkColorDefault;
 
 	public $footerLogo;
 	public $footerLogoLink;
@@ -58,6 +60,15 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $tertiaryForegroundColorDefault;
 	public $buttonRadius;
 	public $smallButtonRadius;
+
+	public static $defaultBadgeBackgroundColor = '#666666';
+	public static $defaultBadgeForegroundColor = '#ffffff';
+	public $badgeBackgroundColor;
+	public /** @noinspection PhpUnused */ $badgeBackgroundColorDefault;
+	public $badgeForegroundColor;
+	public /** @noinspection PhpUnused */ $badgeForegroundColorDefault;
+	public $badgeBorderRadius;
+
 	//Colors for buttons
 	public static $defaultDefaultButtonBackgroundColor = '#ffffff';
 	public static $defaultDefaultButtonForegroundColor = '#333333';
@@ -96,6 +107,44 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $primaryButtonHoverForegroundColorDefault;
 	public $primaryButtonHoverBorderColor;
 	public /** @noinspection PhpUnused */ $primaryButtonHoverBorderColorDefault;
+
+	public static $defaultEditionsButtonBackgroundColor = '#f8f9fa';
+	public static $defaultEditionsButtonForegroundColor = '#212529';
+	public static $defaultEditionsButtonBorderColor = '#999999';
+	public static $defaultEditionsButtonHoverBackgroundColor = '#ffffff';
+	public static $defaultEditionsButtonHoverForegroundColor = '#1b6ec2';
+	public static $defaultEditionsButtonHoverBorderColor = '#1b6ec2';
+	public $editionsButtonBackgroundColor;
+	public /** @noinspection PhpUnused */ $editionsButtonBackgroundColorDefault;
+	public $editionsButtonForegroundColor;
+	public /** @noinspection PhpUnused */ $editionsButtonForegroundColorDefault;
+	public $editionsButtonBorderColor;
+	public /** @noinspection PhpUnused */ $editionsButtonBorderColorDefault;
+	public $editionsButtonHoverBackgroundColor;
+	public /** @noinspection PhpUnused */ $editionsButtonHoverBackgroundColorDefault;
+	public $editionsButtonHoverForegroundColor;
+	public /** @noinspection PhpUnused */ $editionsButtonHoverForegroundColorDefault;
+	public $editionsButtonHoverBorderColor;
+	public /** @noinspection PhpUnused */ $editionsButtonHoverBorderColorDefault;
+
+	public static $defaultToolsButtonBackgroundColor = '#747474';
+	public static $defaultToolsButtonForegroundColor = '#ffffff';
+	public static $defaultToolsButtonBorderColor = '#636363';
+	public static $defaultToolsButtonHoverBackgroundColor = '#636363';
+	public static $defaultToolsButtonHoverForegroundColor = '#ffffff';
+	public static $defaultToolsButtonHoverBorderColor = '#636363';
+	public $toolsButtonBackgroundColor;
+	public /** @noinspection PhpUnused */ $toolsButtonBackgroundColorDefault;
+	public $toolsButtonForegroundColor;
+	public /** @noinspection PhpUnused */ $toolsButtonForegroundColorDefault;
+	public $toolsButtonBorderColor;
+	public /** @noinspection PhpUnused */ $toolsButtonBorderColorDefault;
+	public $toolsButtonHoverBackgroundColor;
+	public /** @noinspection PhpUnused */ $toolsButtonHoverBackgroundColorDefault;
+	public $toolsButtonHoverForegroundColor;
+	public /** @noinspection PhpUnused */ $toolsButtonHoverForegroundColorDefault;
+	public $toolsButtonHoverBorderColor;
+	public /** @noinspection PhpUnused */ $toolsButtonHoverBorderColorDefault;
 
 	public static $defaultActionButtonBackgroundColor = '#1b6ec2';
 	public static $defaultActionButtonForegroundColor = '#ffffff';
@@ -287,6 +336,7 @@ class Theme extends DataObject
 			'pageBackgroundColor' => ['property' => 'pageBackgroundColor', 'type' => 'color', 'label' => 'Page Background Color', 'description' => 'Page Background Color behind all content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'serverValidation' => 'validateColorContrast'],
 			'bodyBackgroundColor' => ['property' => 'bodyBackgroundColor', 'type' => 'color', 'label' => 'Body Background Color', 'description' => 'Body Background Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'bodyTextColor'],
 			'bodyTextColor' => ['property' => 'bodyTextColor', 'type' => 'color', 'label' => 'Body Text Color', 'description' => 'Body Text Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor'],
+			'linkColor' => ['property' => 'linkColor', 'type' => 'color', 'label' => 'Link Color', 'description' => 'Color of Links', 'required' => false, 'hideInLists' => true, 'default' => '#3174AF', 'checkContrastWith'=>'bodyBackgroundColor'],
 
 			//Header Colors
 			'headerBackgroundColor' => ['property' => 'headerBackgroundColor', 'type' => 'color', 'label' => 'Header Background Color', 'description' => 'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'headerForegroundColor'],
@@ -342,6 +392,12 @@ class Theme extends DataObject
 				'capitalizeBrowseCategories' => ['property' => 'capitalizeBrowseCategories', 'type' => 'enum', 'values'=> [-1 => 'Default', 0 => 'Maintain case', 1 => 'Force Uppercase'], 'label' => 'Capitalize Browse Categories', 'description' => 'How to treat capitalization of browse categories', 'required' => false, 'hideInLists' => true, 'default' => '-1'],
 			]],
 
+			'badges' => ['property'=>'badgesSection', 'type' => 'section', 'label' =>'Badges', 'hideInLists' => true, 'properties' => [
+				'badgeBackgroundColor' => ['property' => 'badgeBackgroundColor', 'type' => 'color', 'label' => 'Badge Background Color', 'description' => 'Badge Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultBadgeBackgroundColor, 'checkContrastWith'=>'badgeForegroundColor'],
+				'badgeForegroundColor' => ['property' => 'badgeForegroundColor', 'type' => 'color', 'label' => 'Badge Text Color', 'description' => 'Badge Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultBadgeForegroundColor, 'checkContrastWith'=>'badgeBackgroundColor'],
+				'badgeBorderRadius' => ['property' => 'badgeBorderRadius', 'type' => 'text', 'label' => 'Badge Border Radius', 'description' => 'Badge Border Radius', 'required' => false, 'hideInLists' => true],
+			]],
+
 			'panels' => ['property'=>'panelsSection', 'type' => 'section', 'label' =>'Panels', 'hideInLists' => true, 'properties' => [
 				'closedPanelBackgroundColor' => ['property' => 'closedPanelBackgroundColor', 'type' => 'color', 'label' => 'Closed Panel Background Color', 'description' => 'Panel Background Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#e7e7e7', 'checkContrastWith'=>'closedPanelForegroundColor'],
 				'closedPanelForegroundColor' => ['property' => 'closedPanelForegroundColor', 'type' => 'color', 'label' => 'Closed Panel Text Color', 'description' => 'Panel Foreground Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#333333', 'checkContrastWith'=>'closedPanelBackgroundColor'],
@@ -377,6 +433,24 @@ class Theme extends DataObject
 					'actionButtonHoverBackgroundColor' => ['property' => 'actionButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultActionButtonHoverBackgroundColor, 'checkContrastWith'=>'actionButtonHoverForegroundColor'],
 					'actionButtonHoverForegroundColor' => ['property' => 'actionButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultActionButtonHoverForegroundColor, 'checkContrastWith'=>'actionButtonHoverBackgroundColor'],
 					'actionButtonHoverBorderColor' => ['property' => 'actionButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultActionButtonHoverBorderColor],
+				]],
+
+				'editionsButtonSection' =>['property'=>'editionsButtonSection', 'type' => 'section', 'label' =>'Editions Button', 'hideInLists' => true, 'properties' => [
+					'editionsButtonBackgroundColor' => ['property' => 'editionsButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonBackgroundColor, 'checkContrastWith'=>'editionsButtonHoverBackgroundColor'],
+					'editionsButtonForegroundColor' => ['property' => 'editionsButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonForegroundColor, 'checkContrastWith'=>'editionsButtonBackgroundColor'],
+					'editionsButtonBorderColor' => ['property' => 'editionsButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonBorderColor],
+					'editionsButtonHoverBackgroundColor' => ['property' => 'editionsButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonHoverBackgroundColor, 'checkContrastWith'=>'editionsButtonHoverForegroundColor'],
+					'editionsButtonHoverForegroundColor' => ['property' => 'editionsButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonHoverForegroundColor, 'checkContrastWith'=>'editionsButtonHoverBackgroundColor'],
+					'editionsButtonHoverBorderColor' => ['property' => 'editionsButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonHoverBorderColor],
+				]],
+
+				'toolsButtonSection' =>['property'=>'toolsButtonSection', 'type' => 'section', 'label' =>'Tools Button', 'hideInLists' => true, 'properties' => [
+					'toolsButtonBackgroundColor' => ['property' => 'toolsButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonBackgroundColor, 'checkContrastWith'=>'toolsButtonHoverBackgroundColor'],
+					'toolsButtonForegroundColor' => ['property' => 'toolsButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonForegroundColor, 'checkContrastWith'=>'toolsButtonBackgroundColor'],
+					'toolsButtonBorderColor' => ['property' => 'toolsButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonBorderColor],
+					'toolsButtonHoverBackgroundColor' => ['property' => 'toolsButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonHoverBackgroundColor, 'checkContrastWith'=>'toolsButtonHoverForegroundColor'],
+					'toolsButtonHoverForegroundColor' => ['property' => 'toolsButtonHoverForegroundColor', 'type' => 'color', 'label' => 'Hover Text Color', 'description' => 'Hover Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonHoverForegroundColor, 'checkContrastWith'=>'toolsButtonHoverBackgroundColor'],
+					'toolsButtonHoverBorderColor' => ['property' => 'toolsButtonHoverBorderColor', 'type' => 'color', 'label' => 'Hover Border Color', 'description' => 'Hover Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonHoverBorderColor],
 				]],
 
 				'infoButtonSection' =>['property'=>'infoButtonSection', 'type' => 'section', 'label' =>'Info Button', 'hideInLists' => true, 'properties' => [
@@ -444,6 +518,10 @@ class Theme extends DataObject
 		if ($bodyContrast < 3.5){
 			$validationResults['errors'][] = 'Body contrast does not meet accessibility guidelines, contrast is: ' . $bodyContrast;
 		}
+		$linkContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->linkColor);
+		if ($linkContrast < 3.5){
+			$validationResults['errors'][] = 'Link contrast does not meet accessibility guidelines, contrast is: ' . $linkContrast;
+		}
 		$headerContrast = ColorUtils::calculateColorContrast($this->headerBackgroundColor, $this->headerForegroundColor);
 		if ($headerContrast < 3.5){
 			$validationResults['errors'][] = 'Header contrast does not meet accessibility guidelines, contrast is: ' . ($headerContrast);
@@ -480,6 +558,10 @@ class Theme extends DataObject
 		if ($deselectedBrowseCategoryContrast < 3.5){
 			$validationResults['errors'][] = 'Deselected Browse Category contrast does not meet accessibility guidelines, contrast is: ' . ($deselectedBrowseCategoryContrast);
 		}
+		$badgeContrast = ColorUtils::calculateColorContrast($this->badgeBackgroundColor, $this->badgeForegroundColor);
+		if ($badgeContrast < 3.5){
+			$validationResults['errors'][] = 'Badge contrast does not meet accessibility guidelines, contrast is: ' . ($badgeContrast);
+		}
 		$closedPanelContrast = ColorUtils::calculateColorContrast($this->closedPanelBackgroundColor, $this->closedPanelForegroundColor);
 		if ($closedPanelContrast < 3.5){
 			$validationResults['errors'][] = 'Closed Panel contrast does not meet accessibility guidelines, contrast is: ' . ($closedPanelContrast);
@@ -511,6 +593,22 @@ class Theme extends DataObject
 		$actionButtonHoverContrast = ColorUtils::calculateColorContrast($this->actionButtonHoverBackgroundColor, $this->actionButtonHoverForegroundColor);
 		if ($actionButtonHoverContrast < 3.5){
 			$validationResults['errors'][] = 'Action Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($actionButtonHoverContrast);
+		}
+		$editionsButtonContrast = ColorUtils::calculateColorContrast($this->editionsButtonBackgroundColor, $this->editionsButtonForegroundColor);
+		if ($editionsButtonContrast < 3.5){
+			$validationResults['errors'][] = 'Editions Button contrast does not meet accessibility guidelines, contrast is: ' . ($editionsButtonContrast);
+		}
+		$editionsButtonHoverContrast = ColorUtils::calculateColorContrast($this->editionsButtonHoverBackgroundColor, $this->editionsButtonHoverForegroundColor);
+		if ($editionsButtonHoverContrast < 3.5){
+			$validationResults['errors'][] = 'Editions Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($editionsButtonHoverContrast);
+		}
+		$toolsButtonContrast = ColorUtils::calculateColorContrast($this->toolsButtonBackgroundColor, $this->toolsButtonForegroundColor);
+		if ($toolsButtonContrast < 3.5){
+			$validationResults['errors'][] = 'Tools Button contrast does not meet accessibility guidelines, contrast is: ' . ($toolsButtonContrast);
+		}
+		$toolsButtonHoverContrast = ColorUtils::calculateColorContrast($this->toolsButtonHoverBackgroundColor, $this->toolsButtonHoverForegroundColor);
+		if ($toolsButtonHoverContrast < 3.5){
+			$validationResults['errors'][] = 'Tools Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($toolsButtonHoverContrast);
 		}
 		$infoButtonContrast = ColorUtils::calculateColorContrast($this->infoButtonBackgroundColor, $this->infoButtonForegroundColor);
 		if ($infoButtonContrast < 3.5){
@@ -584,6 +682,7 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('pageBackgroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('bodyBackgroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('bodyTextColor', '#6B6B6B', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('linkColor', '#3174AF', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerBackgroundColor', '#f1f1f1', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerForegroundColor', '#8b8b8b', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerButtonColor', '#ffffff', $appliedThemes);
@@ -610,6 +709,8 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBackgroundColor', '#0087AB', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('deselectedBrowseCategoryBorderColor', '#0087AB', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('badgeBackgroundColor', Theme::$defaultBadgeBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('badgeForegroundColor', Theme::$defaultBadgeForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('closedPanelBackgroundColor', '#e7e7e7', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('closedPanelForegroundColor', '#333333', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('openPanelBackgroundColor', $this->secondaryBackgroundColor, $appliedThemes);
@@ -632,6 +733,18 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('actionButtonHoverBackgroundColor', Theme::$defaultActionButtonHoverBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('actionButtonHoverForegroundColor', Theme::$defaultActionButtonHoverForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('actionButtonHoverBorderColor', Theme::$defaultActionButtonHoverBorderColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('editionsButtonBackgroundColor', Theme::$defaultEditionsButtonBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('editionsButtonForegroundColor', Theme::$defaultEditionsButtonForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('editionsButtonBorderColor', Theme::$defaultEditionsButtonBorderColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('editionsButtonHoverBackgroundColor', Theme::$defaultEditionsButtonHoverBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('editionsButtonHoverForegroundColor', Theme::$defaultEditionsButtonHoverForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('editionsButtonHoverBorderColor', Theme::$defaultEditionsButtonHoverBorderColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('toolsButtonBackgroundColor', Theme::$defaultToolsButtonBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('toolsButtonForegroundColor', Theme::$defaultToolsButtonForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('toolsButtonBorderColor', Theme::$defaultToolsButtonBorderColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('toolsButtonHoverBackgroundColor', Theme::$defaultToolsButtonHoverBackgroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('toolsButtonHoverForegroundColor', Theme::$defaultToolsButtonHoverForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('toolsButtonHoverBorderColor', Theme::$defaultToolsButtonHoverBorderColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonBackgroundColor', Theme::$defaultInfoButtonBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonForegroundColor', Theme::$defaultInfoButtonForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('infoButtonBorderColor', Theme::$defaultInfoButtonBorderColor, $appliedThemes);
@@ -694,6 +807,7 @@ class Theme extends DataObject
 		$interface->assign('tertiaryForegroundColor', $this->tertiaryForegroundColor);
 		$interface->assign('bodyBackgroundColor', $this->bodyBackgroundColor);
 		$interface->assign('bodyTextColor', $this->bodyTextColor);
+		$interface->assign('linkColor', $this->linkColor);
 		$interface->assign('sidebarHighlightBackgroundColor', $this->sidebarHighlightBackgroundColor);
 		$interface->assign('sidebarHighlightForegroundColor', $this->sidebarHighlightForegroundColor);
 		$interface->assign('browseCategoryPanelColor', $this->browseCategoryPanelColor);
@@ -703,6 +817,8 @@ class Theme extends DataObject
 		$interface->assign('deselectedBrowseCategoryBackgroundColor', $this->deselectedBrowseCategoryBackgroundColor);
 		$interface->assign('deselectedBrowseCategoryForegroundColor', $this->deselectedBrowseCategoryForegroundColor);
 		$interface->assign('deselectedBrowseCategoryBorderColor', $this->deselectedBrowseCategoryBorderColor);
+		$interface->assign('badgeBackgroundColor', $this->badgeBackgroundColor);
+		$interface->assign('badgeForegroundColor', $this->badgeForegroundColor);
 		$interface->assign('closedPanelBackgroundColor', $this->closedPanelBackgroundColor);
 		$interface->assign('closedPanelForegroundColor', $this->closedPanelForegroundColor);
 		$interface->assign('openPanelBackgroundColor', $this->openPanelBackgroundColor);
@@ -725,6 +841,18 @@ class Theme extends DataObject
 		$interface->assign('actionButtonHoverBackgroundColor', $this->actionButtonHoverBackgroundColor);
 		$interface->assign('actionButtonHoverForegroundColor', $this->actionButtonHoverForegroundColor);
 		$interface->assign('actionButtonHoverBorderColor', $this->actionButtonHoverBorderColor);
+		$interface->assign('editionsButtonBackgroundColor', $this->editionsButtonBackgroundColor);
+		$interface->assign('editionsButtonForegroundColor', $this->editionsButtonForegroundColor);
+		$interface->assign('editionsButtonBorderColor', $this->editionsButtonBorderColor);
+		$interface->assign('editionsButtonHoverBackgroundColor', $this->editionsButtonHoverBackgroundColor);
+		$interface->assign('editionsButtonHoverForegroundColor', $this->editionsButtonHoverForegroundColor);
+		$interface->assign('editionsButtonHoverBorderColor', $this->editionsButtonHoverBorderColor);
+		$interface->assign('toolsButtonBackgroundColor', $this->toolsButtonBackgroundColor);
+		$interface->assign('toolsButtonForegroundColor', $this->toolsButtonForegroundColor);
+		$interface->assign('toolsButtonBorderColor', $this->toolsButtonBorderColor);
+		$interface->assign('toolsButtonHoverBackgroundColor', $this->toolsButtonHoverBackgroundColor);
+		$interface->assign('toolsButtonHoverForegroundColor', $this->toolsButtonHoverForegroundColor);
+		$interface->assign('toolsButtonHoverBorderColor', $this->toolsButtonHoverBorderColor);
 		$interface->assign('infoButtonBackgroundColor', $this->infoButtonBackgroundColor);
 		$interface->assign('infoButtonForegroundColor', $this->infoButtonForegroundColor);
 		$interface->assign('infoButtonBorderColor', $this->infoButtonBorderColor);
@@ -789,6 +917,13 @@ class Theme extends DataObject
 					$buttonRadius = $buttonRadius . 'px';
 				}
 				$interface->assign('smallButtonRadius', $buttonRadius);
+			}
+			if ($interface->getVariable('badgeBorderRadius') == null && !empty($theme->badgeBorderRadius)) {
+				$badgeBorderRadius = $theme->badgeBorderRadius;
+				if (is_numeric($badgeBorderRadius)){
+					$badgeBorderRadius = $badgeBorderRadius . 'px';
+				}
+				$interface->assign('badgeBorderRadius', $badgeBorderRadius);
 			}
 			if ($appendCSS) {
 				if ($this->additionalCssType == 1) {

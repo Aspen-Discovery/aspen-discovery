@@ -68,17 +68,23 @@ body{ldelim}
 
 body, #home-page-browse-header {ldelim}
     background-color: {$pageBackgroundColor};
+    color: {$bodyTextColor};
+{rdelim}
+
+a,.result-head{ldelim}
+    color: {$linkColor};
 {rdelim}
 
 body .container{ldelim}
     background-color: {$bodyBackgroundColor};
+    color: {$bodyTextColor};
 {rdelim}
 
 #home-page-search, #horizontal-search-box, #explore-more-sidebar,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar {ldelim}
     background-color: {$primaryBackgroundColor};
     color: {$primaryForegroundColor};
 {rdelim}
-#vertical-menu-bar .menu-icon .menu-bar-label {ldelim}
+#vertical-menu-bar .menu-icon .menu-bar-label, #horizontal-search-label,#horizontal-search-box #horizontal-search-label {ldelim}
     color: {$primaryForegroundColor};
 {rdelim}
 
@@ -86,7 +92,7 @@ body .container{ldelim}
     background-color: {$sidebarHighlightBackgroundColor};
     color: {$sidebarHighlightForegroundColor};
 {rdelim}
-#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label,#vertical-menu-bar .menu-icon:hover .menu-bar-label{ldelim}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label,#vertical-menu-bar .menu-icon:hover .menu-bar-label,.exploreMoreBar .exploreMoreBarLabel{ldelim}
     color: {$sidebarHighlightForegroundColor};
 {rdelim}
 .exploreMoreBar{ldelim}
@@ -223,6 +229,11 @@ body .container{ldelim}
     border-color: {$warningButtonHoverBorderColor};
 {rdelim}
 
+.label-warning{ldelim}
+    background-color: {$warningButtonBackgroundColor};
+    color: {$warningButtonForegroundColor};
+{rdelim}
+
 .btn-danger{ldelim}
     background-color: {$dangerButtonBackgroundColor};
     color: {$dangerButtonForegroundColor};
@@ -233,6 +244,31 @@ body .container{ldelim}
     background-color: {$dangerButtonHoverBackgroundColor};
     color: {$dangerButtonHoverForegroundColor};
     border-color: {$dangerButtonHoverBorderColor};
+{rdelim}
+
+.label-danger{ldelim}
+    background-color: {$dangerButtonBackgroundColor};
+    color: {$dangerButtonForegroundColor};
+{rdelim}
+
+.btn-editions{ldelim}
+    background-color: {$editionsButtonBackgroundColor};
+    color: {$editionsButtonForegroundColor};
+    border-color: {$editionsButtonBorderColor};
+{rdelim}
+
+.btn-editions:hover, .btn-editions:focus, .btn-editions:active, .btn-editions.active{ldelim}
+    background-color: {$editionsButtonHoverBackgroundColor};
+    color: {$editionsButtonHoverForegroundColor};
+    border-color: {$editionsButtonHoverBorderColor};
+{rdelim}
+
+.badge{ldelim}
+    background-color: {$badgeBackgroundColor};
+    color: {$badgeForegroundColor};
+    {if (!empty($badgeBorderRadius))}
+    border-radius: {$badgeBorderRadius};
+    {/if}
 {rdelim}
 
 {$additionalCSS}
