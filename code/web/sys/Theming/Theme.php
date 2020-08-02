@@ -254,6 +254,10 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $openPanelBackgroundColorDefault;
 	public $openPanelForegroundColor;
 	public /** @noinspection PhpUnused */ $openPanelForegroundColorDefault;
+	public $panelBodyBackgroundColor;
+	public /** @noinspection PhpUnused */ $panelBodyBackgroundColorDefault;
+	public $panelBodyForegroundColor;
+	public /** @noinspection PhpUnused */ $panelBodyForegroundColorDefault;
 
 	//Fonts
 	public $headingFont;
@@ -403,6 +407,8 @@ class Theme extends DataObject
 				'closedPanelForegroundColor' => ['property' => 'closedPanelForegroundColor', 'type' => 'color', 'label' => 'Closed Panel Text Color', 'description' => 'Panel Foreground Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#333333', 'checkContrastWith'=>'closedPanelBackgroundColor'],
 				'openPanelBackgroundColor' => ['property' => 'openPanelBackgroundColor', 'type' => 'color', 'label' => 'Open Panel Background Color', 'description' => 'Panel Category Background Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#4DACDE', 'checkContrastWith'=>'openPanelForegroundColor'],
 				'openPanelForegroundColor' => ['property' => 'openPanelForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Category Foreground Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'openPanelBackgroundColor'],
+				'panelBodyBackgroundColor' => ['property' => 'panelBodyBackgroundColor', 'type' => 'color', 'label' => 'Panel Body Background Color', 'description' => 'Panel Body Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'panelBodyForegroundColor'],
+				'panelBodyForegroundColor' => ['property' => 'panelBodyForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Body Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'panelBodyBackgroundColor'],
 			]],
 
 			'buttonSection' =>['property'=>'buttonSection', 'type' => 'section', 'label' =>'Buttons', 'hideInLists' => true, 'properties' => [
@@ -570,6 +576,10 @@ class Theme extends DataObject
 		if ($openPanelContrast < 3.5){
 			$validationResults['errors'][] = 'Open Panel contrast does not meet accessibility guidelines, contrast is: ' . ($openPanelContrast);
 		}
+		$panelBodyContrast = ColorUtils::calculateColorContrast($this->panelBodyBackgroundColor, $this->panelBodyForegroundColor);
+		if ($panelBodyContrast < 3.5){
+			$validationResults['errors'][] = 'Open Panel contrast does not meet accessibility guidelines, contrast is: ' . ($panelBodyContrast);
+		}
 		$defaultButtonContrast = ColorUtils::calculateColorContrast($this->defaultButtonBackgroundColor, $this->defaultButtonForegroundColor);
 		if ($defaultButtonContrast < 3.5){
 			$validationResults['errors'][] = 'Default Button contrast does not meet accessibility guidelines, contrast is: ' . ($defaultButtonContrast);
@@ -715,6 +725,8 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('closedPanelForegroundColor', '#333333', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('openPanelBackgroundColor', $this->secondaryBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('openPanelForegroundColor', $this->secondaryForegroundColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('panelBodyBackgroundColor', '#ffffff', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('panelBodyForegroundColor', '#404040', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('defaultButtonBackgroundColor', Theme::$defaultDefaultButtonBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('defaultButtonForegroundColor', Theme::$defaultDefaultButtonForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('defaultButtonBorderColor', Theme::$defaultDefaultButtonBorderColor, $appliedThemes);
@@ -823,6 +835,8 @@ class Theme extends DataObject
 		$interface->assign('closedPanelForegroundColor', $this->closedPanelForegroundColor);
 		$interface->assign('openPanelBackgroundColor', $this->openPanelBackgroundColor);
 		$interface->assign('openPanelForegroundColor', $this->openPanelForegroundColor);
+		$interface->assign('panelBodyBackgroundColor', $this->panelBodyBackgroundColor);
+		$interface->assign('panelBodyForegroundColor', $this->panelBodyForegroundColor);
 		$interface->assign('defaultButtonBackgroundColor', $this->defaultButtonBackgroundColor);
 		$interface->assign('defaultButtonForegroundColor', $this->defaultButtonForegroundColor);
 		$interface->assign('defaultButtonBorderColor', $this->defaultButtonBorderColor);
@@ -939,13 +953,6 @@ class Theme extends DataObject
 					}
 				}
 			}
-		}
-
-		if ($interface->getVariable('openPanelBackgroundColor') == null && $interface->getVariable('secondaryBackgroundColor') != null) {
-			$interface->assign('openPanelBackgroundColor', $interface->getVariable('secondaryBackgroundColor'));
-		}
-		if ($interface->getVariable('openPanelForegroundColor') == null && $interface->getVariable('secondaryForegroundColor') != null) {
-			$interface->assign('openPanelForegroundColor', $interface->getVariable('secondaryForegroundColor'));
 		}
 
 		$interface->assign('additionalCSS', $additionalCSS);

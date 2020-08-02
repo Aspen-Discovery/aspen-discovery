@@ -121,6 +121,10 @@ body .container{ldelim}
 .facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,#more-details-accordion .active .panel-title,#account-link-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
     color: {$openPanelForegroundColor};
 {rdelim}
+.panel-body,.sidebar-links .panel-body,#more-details-accordion .panel-body,.facetDetails,.sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn), .sidebar-links .panel-body a:hover:not(.btn){ldelim}
+    background-color: {$panelBodyBackgroundColor};
+    color: {$panelBodyForegroundColor};
+{rdelim}
 
 #footer-container{ldelim}
     border-top-color: {$tertiaryBackgroundColor};

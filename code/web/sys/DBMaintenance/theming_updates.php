@@ -332,7 +332,7 @@ function getThemingUpdates()
 
 		'themes_panel_design' => [
 			'title' => 'Theme Panels',
-			'description' => 'Initial setup of footer colors and optional logos. ',
+			'description' => 'Initial setup of panel colors. ',
 			'continueOnError' => false,
 			'sql' => [
 				"ALTER TABLE themes ADD COLUMN closedPanelBackgroundColor CHAR(7) DEFAULT '#e7e7e7'",
@@ -343,6 +343,18 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN openPanelBackgroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE themes ADD COLUMN openPanelForegroundColor CHAR(7) DEFAULT '#ffffff'",
 				"ALTER TABLE themes ADD COLUMN openPanelForegroundColorDefault tinyint(1) DEFAULT 1",
+			],
+		],
+
+		'themes_panel_body_design' => [
+			'title' => 'Theme Panel Body',
+			'description' => 'Allow Panel body to be themed. ',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN panelBodyBackgroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE themes ADD COLUMN panelBodyBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN panelBodyForegroundColor CHAR(7) DEFAULT '#404040'",
+				"ALTER TABLE themes ADD COLUMN panelBodyForegroundColorDefault tinyint(1) DEFAULT 1",
 			],
 		],
 
