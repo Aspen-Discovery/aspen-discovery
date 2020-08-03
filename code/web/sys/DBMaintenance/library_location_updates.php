@@ -1772,6 +1772,14 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+		'location_add_notes_to_hours' =>[
+			'title' => 'Location add notes to hours',
+			'description' => 'Add a column for notes for the time period when the library is open',
+			'sql' => [
+				'ALTER TABLE location_hours ADD COLUMN notes VARCHAR(255)'
+			]
+		],
+
 		'facets_remove_author_results' => [
 			'title' => 'Remove showInAuthorResults from facets',
 			'description' => 'Remove showInAuthorResults from facets.',

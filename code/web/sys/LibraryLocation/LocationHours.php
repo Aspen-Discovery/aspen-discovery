@@ -10,6 +10,7 @@ class LocationHours extends DataObject
 	public $open;                         // varchar(10)
 	public $close;                        // varchar(10)
 	public $closed;
+	public $notes;
 	
 	function keys() {
 		return array('id');
@@ -34,14 +35,14 @@ class LocationHours extends DataObject
 		foreach ($time as $t) {
 			$timeList[$t] = $t;
 		}
-		$structure = array(
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the hours within the database'),
 			'locationId' => array('property'=>'locationId', 'type'=>'enum', 'values'=>$locationList, 'label'=>'Location', 'description'=>'The library location.'),
 			'day' => array('property'=>'day', 'type'=>'enum', 'values'=>$days, 'label'=>'Day of Week', 'description'=>'The day of the week 0 to 6 (0 = Sunday to 6 = Saturday)'),
 			'closed' => array('property'=>'closed', 'type'=>'checkbox', 'label'=>'Closed', 'description'=>'Check to indicate that the library is closed on this day.'),
 			'open' => array('property'=>'open', 'type'=>'enum', 'values'=>$timeList, 'label'=>'Opening Hour', 'description'=>'The opening hour. Use 24 hour format HH:MM, eg: 08:30'),
 			'close' => array('property'=>'close', 'type'=>'enum', 'values'=>$timeList, 'label'=>'Closing Hour', 'description'=>'The closing hour. Use 24 hour format HH:MM, eg: 16:30'),
+			'notes' => array('property'=>'notes','type'=>'text','label'=>'Notes','description'=>'Notes to show for the the hours', 'maxLength' => 255)
 		);
-		return $structure;
 	}
 }
