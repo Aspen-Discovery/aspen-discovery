@@ -2190,6 +2190,14 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+		'libraryProfileRequireNumericPhoneNumbersWhenUpdatingProfile' => [
+			'title' => 'Library User Profile - require numeric phone numbers',
+			'description' => 'Add options for how profile updates are done for phone numbers',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN requireNumericPhoneNumbersWhenUpdatingProfile TINYINT(1) DEFAULT 0",
+			]
+		],
+
 		'libraryAvailableHoldDelay' => [
 			'title' => 'Library Available Hold Delay',
 			'description' => 'Add option for delaying when a hold moves from unavailable to available',

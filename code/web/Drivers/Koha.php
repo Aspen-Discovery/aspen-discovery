@@ -75,7 +75,7 @@ class Koha extends AbstractIlsDriver
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_country', 'borrower_B_country', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_email', 'borrower_B_email', $library->useAllCapsWhenUpdatingProfile);
 					//altaddress_notes
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_phone', 'borrower_B_phone', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_phone', 'borrower_B_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_postal_code', 'borrower_B_zipcode', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_state', 'borrower_B_state', $library->useAllCapsWhenUpdatingProfile);
 					//altaddress_street_number
@@ -85,7 +85,7 @@ class Koha extends AbstractIlsDriver
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_city', 'borrower_altcontactaddress3', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_country', 'borrower_altcontactcountry', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_firstname', 'borrower_altcontactfirstname', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_phone', 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_phone', 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_postal_code', 'borrower_altcontactzipcode', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_state', 'borrower_altcontactstate', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_surname', 'borrower_altcontactsurname', $library->useAllCapsWhenUpdatingProfile);
@@ -95,7 +95,7 @@ class Koha extends AbstractIlsDriver
 					$postVariables['date_of_birth'] = $this->aspenDateToKohaApiDate($_REQUEST['borrower_dateofbirth']);
 				}
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'email', 'borrower_email', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'fax', 'borrower_fax', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'fax', 'borrower_fax', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'firstname', 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'gender', 'borrower_sex', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'initials', 'borrower_initials', $library->useAllCapsWhenUpdatingProfile);
@@ -107,10 +107,10 @@ class Koha extends AbstractIlsDriver
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'mobile', 'borrower_mobile', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'opac_notes', 'borrower_contactnote', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'other_name', 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'phone', 'borrower_phone', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'phone', 'borrower_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'postal_code', 'borrower_zipcode', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'secondary_email', 'borrower_emailpro', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'secondary_phone', 'borrower_phonepro', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'secondary_phone', 'borrower_phonepro', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'state', 'borrower_state', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
@@ -188,19 +188,19 @@ class Koha extends AbstractIlsDriver
 				$postVariables = $this->setPostField($postVariables, 'borrower_state', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_zipcode', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_country', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_phone', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostField($postVariables, 'borrower_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_email', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_phonepro', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_mobile', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostField($postVariables, 'borrower_phonepro', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+				$postVariables = $this->setPostField($postVariables, 'borrower_mobile', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_emailpro', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_fax', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostField($postVariables, 'borrower_fax', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_B_address' , $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_B_address2', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_B_city', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_B_state', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_B_zipcode', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_B_country', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_B_phone', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostField($postVariables, 'borrower_B_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_B_email', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_contactnote', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactsurname', $library->useAllCapsWhenUpdatingProfile);
@@ -211,7 +211,7 @@ class Koha extends AbstractIlsDriver
 				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactstate', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactzipcode', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactcountry', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 
 				$postVariables['csrf_token'] = $csr_token;
 				$postVariables['action'] = 'update';
@@ -249,10 +249,6 @@ class Koha extends AbstractIlsDriver
 
 	private $checkouts = array();
 
-	/**
-	 * @param User $patron
-	 * @return array
-	 */
 	public function getCheckouts($patron)
 	{
 		if (isset($this->checkouts[$patron->id])) {
@@ -304,8 +300,13 @@ class Koha extends AbstractIlsDriver
 			$checkout['return_claim'] = '';
 			if ($claimsReturnedResults !== false) { //This is false if Koha does not support volumes
 				if ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
-					$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
-					$checkout['return_claim'] = translate(['text'=>'return_claim_message','defaultText'=> 'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y')]);
+					try {
+						$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
+						$checkout['return_claim'] = translate(['text'=>'return_claim_message','defaultText'=> 'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y')]);
+					} catch (Exception $e) {
+						global $logger;
+						$logger->log("Error parsing claims returned info " . $claimsReturnedResult['created_on'] . " $e", Logger::LOG_ERROR);
+					}
 				}
 				$claimsReturnedResults->close();
 			}
@@ -1785,6 +1786,12 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 
+		if ($library->requireNumericPhoneNumbersWhenUpdatingProfile){
+			$phoneFormat = '';
+		}else{
+			$phoneFormat = ' (xxx-xxx-xxxx)';
+		}
+
 		//Library
 		$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'borrower_branchcode' => array('property' => 'borrower_branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true)
@@ -1820,15 +1827,15 @@ class Koha extends AbstractIlsDriver
 		]);
 		//Contact information
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'borrower_phone' => array('property' => 'borrower_phone', 'type' => 'text', 'label' => 'Primary Phone (xxx-xxx-xxxx)', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
+			'borrower_phone' => array('property' => 'borrower_phone', 'type' => 'text', 'label' => 'Primary Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
 			'borrower_email' => array('property' => 'borrower_email', 'type' => 'email', 'label' => 'Primary Email', 'description' => 'Email', 'maxLength' => 128, 'required' => false),
 		]);
 		//Contact information
 		$fields['additionalContactInformationSection'] = array('property' => 'additionalContactInformationSection', 'type' => 'section', 'label' => 'Additional Contact Information', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
-			'borrower_phonepro' => array('property' => 'borrower_phonepro', 'type' => 'text', 'label' => 'Secondary Phone (xxx-xxx-xxxx)', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
-			'borrower_mobile' => array('property' => 'borrower_mobile', 'type' => 'text', 'label' => 'Other Phone (xxx-xxx-xxxx)', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
+			'borrower_phonepro' => array('property' => 'borrower_phonepro', 'type' => 'text', 'label' => 'Secondary Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
+			'borrower_mobile' => array('property' => 'borrower_mobile', 'type' => 'text', 'label' => 'Other Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
 			'borrower_emailpro' => array('property' => 'borrower_emailpro', 'type' => 'email', 'label' => 'Secondary Email', 'description' => 'Email', 'maxLength' => 128, 'required' => false),
-			'borrower_fax' => array('property' => 'borrower_fax', 'type' => 'text', 'label' => 'Fax (xxx-xxx-xxxx)', 'description' => 'Fax', 'maxLength' => 128, 'required' => false),
+			'borrower_fax' => array('property' => 'borrower_fax', 'type' => 'text', 'label' => 'Fax' . $phoneFormat, 'description' => 'Fax', 'maxLength' => 128, 'required' => false),
 		]);
 		//Alternate address
 		$fields['alternateAddressSection'] = array('property' => 'alternateAddressSection', 'type' => 'section', 'label' => 'Alternate address', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
@@ -1838,7 +1845,7 @@ class Koha extends AbstractIlsDriver
 			'borrower_B_state' => array('property' => 'borrower_B_state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => false),
 			'borrower_B_zipcode' => array('property' => 'borrower_B_zipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => false),
 			'borrower_B_country' => array('property' => 'borrower_B_country', 'type' => 'text', 'label' => 'Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
-			'borrower_B_phone' => array('property' => 'borrower_B_phone', 'type' => 'text', 'label' => 'Phone (xxx-xxx-xxxx)', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
+			'borrower_B_phone' => array('property' => 'borrower_B_phone', 'type' => 'text', 'label' => 'Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
 			'borrower_B_email' => array('property' => 'borrower_B_email', 'type' => 'email', 'label' => 'Email', 'description' => 'Email', 'maxLength' => 128, 'required' => false),
 			'borrower_contactnote' => array('property' => 'borrower_contactnote', 'type' => 'textarea', 'label' => 'Contact  Notes', 'description' => 'Additional information for the alternate contact', 'maxLength' => 128, 'required' => false),
 		]);
@@ -1852,7 +1859,7 @@ class Koha extends AbstractIlsDriver
 			'borrower_altcontactstate' => array('property' => 'borrower_altcontactstate', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => false),
 			'borrower_altcontactzipcode' => array('property' => 'borrower_altcontactzipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => false),
 			'borrower_altcontactcountry' => array('property' => 'borrower_altcontactcountry', 'type' => 'text', 'label' => 'Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
-			'borrower_altcontactphone' => array('property' => 'borrower_altcontactphone', 'type' => 'text', 'label' => 'Phone (xxx-xxx-xxxx)', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
+			'borrower_altcontactphone' => array('property' => 'borrower_altcontactphone', 'type' => 'text', 'label' => 'Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
 		]);
 		if ($type == 'selfReg') {
 			$passwordLabel = $library->loginFormPasswordLabel;
@@ -1936,19 +1943,19 @@ class Koha extends AbstractIlsDriver
 		$postFields = $this->setPostField($postFields, 'borrower_state', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_country', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_phone', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_phone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 		$postFields = $this->setPostField($postFields, 'borrower_email', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_phonepro', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_mobile', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_phonepro', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+		$postFields = $this->setPostField($postFields, 'borrower_mobile', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 		$postFields = $this->setPostField($postFields, 'borrower_emailpro', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_fax', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_fax', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 		$postFields = $this->setPostField($postFields, 'borrower_B_address', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_B_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_B_city', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_B_state', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_B_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_B_country', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_phone', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_B_phone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 		$postFields = $this->setPostField($postFields, 'borrower_B_email', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_contactnote', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_altcontactsurname', $library->useAllCapsWhenSubmittingSelfRegistration);
@@ -1959,7 +1966,7 @@ class Koha extends AbstractIlsDriver
 		$postFields = $this->setPostField($postFields, 'borrower_altcontactstate', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_altcontactzipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
 		$postFields = $this->setPostField($postFields, 'borrower_altcontactcountry', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactphone', $library->useAllCapsWhenSubmittingSelfRegistration);
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactphone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 		$postFields = $this->setPostField($postFields, 'borrower_password');
 		$postFields = $this->setPostField($postFields, 'borrower_password2');
 		$postFields['captcha'] = $captcha;
@@ -2453,7 +2460,6 @@ class Koha extends AbstractIlsDriver
 			if ($library->availableHoldDelay > 0){
 				/** @noinspection SqlResolve */
 				$holdsRS = mysqli_query($this->dbConnection, 'SELECT waitingdate, found FROM reserves WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-				$numAvailableHolds = 0;
 				if ($holdsRS) {
 					while ($curRow = $holdsRS->fetch_assoc()) {
 						if ($curRow['found'] !== 'W'){
@@ -2536,15 +2542,20 @@ class Koha extends AbstractIlsDriver
 	 * @param string $postFieldName
 	 * @param string $requestFieldName
 	 * @param bool $convertToUpperCase
+	 * @param bool $stripNonNumericCharacters
 	 * @return array
 	 */
-	private function setPostFieldWithDifferentName(array $postFields, string $postFieldName, string $requestFieldName, $convertToUpperCase = false): array
+	private function setPostFieldWithDifferentName(array $postFields, string $postFieldName, string $requestFieldName, $convertToUpperCase = false, $stripNonNumericCharacters = false): array
 	{
 		if (isset($_REQUEST[$requestFieldName])) {
+			$field = $_REQUEST[$requestFieldName];
+			if ($stripNonNumericCharacters){
+				$field = preg_replace('/[^0-9]/', '', $field );
+			}
 			if ($convertToUpperCase){
-				$postFields[$postFieldName] = strtoupper($_REQUEST[$requestFieldName]);
+				$postFields[$postFieldName] = strtoupper($field);
 			}else{
-				$postFields[$postFieldName] = $_REQUEST[$requestFieldName];
+				$postFields[$postFieldName] = $field;
 			}
 
 		}
@@ -2555,15 +2566,20 @@ class Koha extends AbstractIlsDriver
 	 * @param array $postFields
 	 * @param string $variableName
 	 * @param bool $convertToUpperCase
+	 * @param bool $stripNonNumericCharacters
 	 * @return array
 	 */
-	private function setPostField(array $postFields, string $variableName, $convertToUpperCase = false): array
+	private function setPostField(array $postFields, string $variableName, $convertToUpperCase = false, $stripNonNumericCharacters = false): array
 	{
 		if (isset($_REQUEST[$variableName])) {
+			$field = $_REQUEST[$variableName];
+			if ($stripNonNumericCharacters){
+				$field = preg_replace('/[^0-9]/', '', $field );
+			}
 			if ($convertToUpperCase){
-				$postFields[$variableName] = strtoupper($_REQUEST[$variableName]);
+				$postFields[$variableName] = strtoupper($field);
 			}else{
-				$postFields[$variableName] = $_REQUEST[$variableName];
+				$postFields[$variableName] = $field;
 			}
 
 		}
@@ -2749,6 +2765,7 @@ class Koha extends AbstractIlsDriver
 						$getParams[] = urlencode($key) . '=' . urlencode($arrayValue);
 					}
 				} else {
+					/** @noinspection SpellCheckingInspection */
 					if ($key == 'SMSnumber') {
 						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/\\D/', '', $value));
 					}else{
@@ -3249,6 +3266,7 @@ class Koha extends AbstractIlsDriver
 		];
 		$this->initDatabaseConnection();
 		//Check to see if the username is already in use
+		/** @noinspection SqlResolve */
 		$sql = "SELECT * FROM borrowers where userId = '{$username}' and borrowernumber != {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if ($results !== false) {
