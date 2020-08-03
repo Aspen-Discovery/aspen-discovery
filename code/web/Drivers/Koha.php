@@ -367,6 +367,8 @@ class Koha extends AbstractIlsDriver
 					$checkout['groupedWorkId'] = "";
 					$checkout['format'] = "Unknown";
 				}
+				$recordDriver->__destruct();
+				$recordDriver = null;
 			}
 
 			$checkout['user'] = $patron->getNameAndLibraryLabel();

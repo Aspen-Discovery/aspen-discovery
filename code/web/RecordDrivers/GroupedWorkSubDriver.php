@@ -49,12 +49,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	function getBookcoverUrl($size = 'small', $absolutePath = false)
 	{
 		$id = $this->getIdWithSource();
-		$formatCategory = $this->getFormatCategory();
-		if (is_array($formatCategory)) {
-			$formatCategory = reset($formatCategory);
-		}
-		$format = $this->getPrimaryFormat();
-		$bookCoverUrl = "/bookcover.php?id={$id}&amp;size={$size}&amp;category=" . urlencode($formatCategory) . "&amp;format=" . urlencode($format);
+		$bookCoverUrl = "/bookcover.php?id={$id}&amp;size={$size}" ;
 		$isbn = $this->getCleanISBN();
 		if ($isbn) {
 			$bookCoverUrl .= "&amp;isn={$isbn}";
@@ -626,5 +621,11 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	public function hasMarcRecord()
 	{
 		return false;
+	}
+
+	public function __destruct()
+	{
+		$this->groupedWork = null;
+		$this->groupedWorkDriver = null;
 	}
 }

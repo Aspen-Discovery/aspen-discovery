@@ -7,7 +7,6 @@ class BookCoverProcessor{
 	private $bookCoverInfo;
 	private $bookCoverPath;
 	private $localFile;
-	private $category;
 	private $size;
 	private $id;
 	private $isn;
@@ -402,7 +401,6 @@ class BookCoverProcessor{
 		$this->bookCoverInfo->recordType = $this->type;
 		$this->bookCoverInfo->find(true);
 
-		$this->category = !empty($_GET['category']) ? strtolower($_GET['category']) : null;
 		//First check to see if this has a custom cover due to being an e-book
 		if (!is_null($this->id)){
 			if ($this->isEContent){
@@ -634,7 +632,6 @@ class BookCoverProcessor{
 			if ($this->groupedWork){
 				$title = ucwords($this->groupedWork->getTitle());
 				$author = ucwords($this->groupedWork->getPrimaryAuthor());
-				$this->category = 'blank';
 			}
 		}else{
 			if ($recordDriver == null){
