@@ -250,7 +250,9 @@ class BookCoverProcessor{
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
 		$overDriveProduct = new OverDriveAPIProduct();
-		list(, $id) = explode(":", $id);
+		if (strpos($id, ':') !== false) {
+			list(, $id) = explode(":", $id);
+		}
 		$overDriveProduct->overdriveId = $id == null ? $this->id : $id;
 		if ($overDriveProduct->find(true)){
 			$overDriveMetadata = new OverDriveAPIProductMetaData();

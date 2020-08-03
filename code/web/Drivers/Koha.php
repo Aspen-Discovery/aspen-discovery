@@ -291,7 +291,7 @@ class Koha extends AbstractIlsDriver
 
 			//Check to see if the item is Claims Returned
 			/** @noinspection SqlResolve */
-			$claimsReturnedSql = "SELECT * from return_claims where issue_id = {$curRow['issue_id']}";
+			$claimsReturnedSql = "SELECT created_on from return_claims where issue_id = {$curRow['issue_id']}";
 			$claimsReturnedResults = mysqli_query($this->dbConnection, $claimsReturnedSql);
 			$checkout['return_claim'] = '';
 			if ($claimsReturnedResults !== false) { //This is false if Koha does not support volumes
@@ -299,8 +299,8 @@ class Koha extends AbstractIlsDriver
 					$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
 					$checkout['return_claim'] = translate(['text'=>'return_claim_message','defaultText'=> 'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y')]);
 				}
+				$claimsReturnedResults->close();
 			}
-			$claimsReturnedResults->close();
 
 			$checkout['author'] = $curRow['author'];
 
@@ -335,17 +335,19 @@ class Koha extends AbstractIlsDriver
 			}
 			$checkout['autoRenewError'] = $autoRenewError;
 
-			//Get the max checkouts by figuring out what rule the checkout was issued under
+			//Get the max renewals by figuring out what rule the checkout was issued under
 			$patronType = $patron->patronType;
 			$itemType = $curRow['itype'];
 			$checkoutBranch = $curRow['branchcode'];
 			/** @noinspection SqlResolve */
-			$issuingRulesSql = "SELECT branchcode, categorycode, itemtype, auto_renew, renewalsallowed, renewalperiod FROM issuingrules where categorycode IN ('{$patronType}', '*') and itemtype IN('{$itemType}', '*') and branchcode IN ('{$checkoutBranch}', '*') order by branchcode desc, categorycode desc, itemtype desc limit 1";
+			$issuingRulesSql = "SELECT renewalsallowed FROM issuingrules where categorycode IN ('{$patronType}', '*') and itemtype IN('{$itemType}', '*') and branchcode IN ('{$checkoutBranch}', '*') order by branchcode desc, categorycode desc, itemtype desc limit 1";
 			$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
-			while ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
-				$checkout['maxRenewals'] = $issuingRulesRow['renewalsallowed'];
+			if ($issuingRulesRS !== false) {
+				if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+					$checkout['maxRenewals'] = $issuingRulesRow['renewalsallowed'];
+				}
+				$issuingRulesRS->close();
 			}
-			$issuingRulesRS->close();
 
 			if ($checkout['id'] && strlen($checkout['id']) > 0) {
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
