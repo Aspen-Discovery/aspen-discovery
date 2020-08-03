@@ -66,18 +66,22 @@ body{ldelim}
     color: {$headerButtonColor} !important;
 {rdelim}
 
-body, #home-page-browse-header {ldelim}
+body {ldelim}
     background-color: {$pageBackgroundColor};
     color: {$bodyTextColor};
 {rdelim}
 
-a,.result-head{ldelim}
+a,.result-head,#selected-browse-label a{ldelim}
     color: {$linkColor};
 {rdelim}
 
-body .container{ldelim}
+body .container, #home-page-browse-content{ldelim}
     background-color: {$bodyBackgroundColor};
     color: {$bodyTextColor};
+{rdelim}
+
+#selected-browse-label{ldelim}
+    background-color: {$bodyBackgroundColor};
 {rdelim}
 
 #home-page-search, #horizontal-search-box, #explore-more-sidebar,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar {ldelim}

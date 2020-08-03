@@ -9175,7 +9175,6 @@ a.placard-link {
 #selected-browse-label > div.btn-group {
   margin-right: 20px;
   float: right;
-  background-color: #fff;
   padding: 0 8px;
 }
 #selected-browse-label > div.btn-group span.thumbnail-icon {
@@ -9240,7 +9239,6 @@ a.placard-link {
   vertical-align: top;
   margin-left: 20px;
   float: left;
-  background-color: #fff;
   padding: 0 8px;
 }
 .selected-browse-label-search a {
