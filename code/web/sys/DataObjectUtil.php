@@ -25,6 +25,7 @@ class DataObjectUtil
 			}
 		}
 		$interface->assign('contentType', $contentType);
+		$interface->assign('formLabel', 'Edit ' . $contentType);
 		return  $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 

@@ -111,6 +111,7 @@ class Archive_RequestCopy extends Action{
 			$interface->assign('captcha', $captchaCode);
 		}
 
+		$interface->assign('formLabel', 'Archival Material Copy Request');
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);
 

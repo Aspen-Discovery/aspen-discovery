@@ -184,6 +184,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 					$captchaCode        = recaptcha_get_html($recaptcha->publicKey);
 					$interface->assign('captcha', $captchaCode);
 				}
+				$interface->assign('formLabel', 'Register for Rosen LevelUP');
 
 				$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 				$interface->assign('registerRosenLevelUPForm', $fieldsForm);
