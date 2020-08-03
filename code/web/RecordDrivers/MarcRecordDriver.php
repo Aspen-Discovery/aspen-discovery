@@ -91,9 +91,16 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		global $timer;
 		$timer->logTime("Base initialization of MarcRecord Driver");
 		if ($this->valid){
-            parent::__construct($groupedWork);
-        }
-    }
+			parent::__construct($groupedWork);
+		}
+	}
+
+	public function __destruct()
+	{
+		$this->marcRecord = null;
+		$this->indexingProfile = null;
+		parent::__destruct();
+	}
 
 	public function getModule(){
 		return isset($this->indexingProfile) ? $this->indexingProfile->recordUrlComponent : 'Record';

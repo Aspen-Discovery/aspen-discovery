@@ -65,6 +65,8 @@ class WorkAPI extends Action{
 				}
 			}
 		}
+		$reviewData->__destruct();
+		$reviewData = null;
 		if ($ratingData['count'] > 0){
 			$ratingData['average'] = $totalRating / $ratingData['count'];
 			$ratingData['barWidth5Star'] = 100 * $ratingData['num5star'] / $ratingData['count'];
