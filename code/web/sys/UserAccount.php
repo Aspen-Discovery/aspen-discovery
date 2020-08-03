@@ -112,7 +112,7 @@ class UserAccount
 
 				if (UserAccount::isUserMasquerading()){
 					//Remove any roles that the guiding user does not have
-					$masqueradeRoles = new Role();
+					$masqueradeRoles = [];
 					$role->query("SELECT * FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getGuidingUserId() . " ORDER BY name");
 					while ($role->fetch()) {
 						$masqueradeRoles[$role->name] = $role->name;
