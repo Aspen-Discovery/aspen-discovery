@@ -792,6 +792,14 @@ class User extends DataObject
 				return $result;
 			}
 		}
+
+		if ($this->getShowAutoRenewSwitch()){
+			$allowAutoRenewal = ($_REQUEST['allowAutoRenewal'] == 'on' || $_REQUEST['allowAutoRenewal'] == 'true');
+			$result = $this->updateAutoRenewal($allowAutoRenewal);
+			if ($result['success'] == false){
+				return $result;
+			}
+		}
 		$this->clearCache();
 		$saveResult = $this->update();
 		if ($saveResult === false){

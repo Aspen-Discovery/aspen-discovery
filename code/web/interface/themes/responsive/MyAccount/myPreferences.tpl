@@ -126,7 +126,7 @@
 					{/if}
 
 					<div class="form-group">
-						<div class="col-xs-4"><label for="rememberHoldPickupLocation" class="control-label" style="text-align:left">{translate text='one_click_hold_prefs' defaultText='Bypass pickup location prompt when placing holds'}</label></div>
+						<div class="col-xs-4"><label for="rememberHoldPickupLocation" class="control-label" style="text-align: left">{translate text='one_click_hold_prefs' defaultText='Bypass pickup location prompt when placing holds'}</label></div>
 						<div class="col-xs-8">
 							{if $edit == true}
 								<input type="checkbox" class="form-control" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation" {if $profile->rememberHoldPickupLocation==1}checked='checked'{/if} data-switch="">
@@ -135,6 +135,19 @@
 							{/if}
 						</div>
 					</div>
+
+					{if $showAutoRenewSwitch}
+						<div class="form-group">
+							<div class="col-xs-4"><label for="allowAutoRenewal" class="control-label">{translate text='allow_autorenew' defaultText='Allow Auto Renewal'}</label></div>
+							<div class="col-xs-8">
+								{if $edit == true}
+									<input type="checkbox" class="form-control" name="allowAutoRenewal" id="allowAutoRenewal" {if $autoRenewalEnabled==1}checked='checked'{/if} data-switch="">
+								{else}
+									{if $profile->autoRenewalEnabled==0}No{else}Yes{/if}
+								{/if}
+							</div>
+						</div>
+					{/if}
 
 					{if !$offline && $edit == true}
 						<div class="form-group">

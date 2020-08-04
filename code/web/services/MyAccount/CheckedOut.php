@@ -3,8 +3,6 @@
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_CheckedOut extends MyAccount{
 
-	const SORT_LAST_ALPHA = 'zzzzz';
-
 	function launch(){
 		global $interface;
 		global $library;
@@ -19,12 +17,6 @@ class MyAccount_CheckedOut extends MyAccount{
 		if ($library->showLibraryHoursNoticeOnAccountPages) {
 			$libraryHoursMessage = Location::getLibraryHoursMessage($user->homeLocationId);
 			$interface->assign('libraryHoursMessage', $libraryHoursMessage);
-		}
-
-		$showAutoRenewSwitch = $user->getShowAutoRenewSwitch();
-		$interface->assign('showAutoRenewSwitch', $showAutoRenewSwitch);
-		if ($showAutoRenewSwitch){
-			$interface->assign('autoRenewalEnabled', $user->isAutoRenewalEnabledForUser());
 		}
 
 		$interface->assign('profile', $user);

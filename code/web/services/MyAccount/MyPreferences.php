@@ -45,6 +45,12 @@ class MyAccount_MyPreferences extends MyAccount
 				$interface->assign('showUsernameField', false);
 			}
 
+			$showAutoRenewSwitch = $user->getShowAutoRenewSwitch();
+			$interface->assign('showAutoRenewSwitch', $showAutoRenewSwitch);
+			if ($showAutoRenewSwitch){
+				$interface->assign('autoRenewalEnabled', $user->isAutoRenewalEnabledForUser());
+			}
+
 			// Save/Update Actions
 			global $offlineMode;
 			if (isset($_POST['updateScope']) && !$offlineMode) {

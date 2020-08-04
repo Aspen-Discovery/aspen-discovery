@@ -17,15 +17,6 @@
 		{if $offline}
 			<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 		{else}
-			{if $showAutoRenewSwitch}
-				<div class="row">
-					<div class="col-tn-12">
-						<input type="checkbox" name="allowAutoRenewal" id="allowAutoRenewal" {if $autoRenewalEnabled==1}checked='checked'{/if} onchange="AspenDiscovery.Account.updateAutoRenewal('{$profile->id}')">&nbsp;
-						<label for="allowAutoRenewal" class="control-label" style="text-align:left">{translate text='allow_autorenew' defaultText='Allow Auto Renewal'}</label>
-					</div>
-				</div>
-			{/if}
-
 			<ul class="nav nav-tabs" role="tablist" id="checkoutsTab">
 				<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All"} <span class="badge"><span class="checkouts-placeholder">&nbsp;</span></span></a></li>
 				<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials"} <span class="badge"><span class="ils-checkouts-placeholder">&nbsp;</span></span></a></li>
