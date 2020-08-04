@@ -575,15 +575,17 @@ class SirsiDynixROA extends HorizonAPI
 			$summary['totalFines'] = $finesVal;
 
 			$summary['expires'] = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-			list ($yearExp, $monthExp, $dayExp) = explode("-", $summary['expires']);
-			$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-			$timeNow      = time();
-			$timeToExpire = $timeExpire - $timeNow;
-			if ($timeToExpire <= 30 * 24 * 60 * 60) {
-				if ($timeToExpire <= 0) {
-					$summary['expired'] = 1;
+			if ($summary['expires'] != null){
+				list ($yearExp, $monthExp, $dayExp) = explode("-", $summary['expires']);
+				$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+				$timeNow      = time();
+				$timeToExpire = $timeExpire - $timeNow;
+				if ($timeToExpire <= 30 * 24 * 60 * 60) {
+					if ($timeToExpire <= 0) {
+						$summary['expired'] = 1;
+					}
+					$summary['expireClose'] = 1;
 				}
-				$summary['expireClose'] = 1;
 			}
 		}
 
