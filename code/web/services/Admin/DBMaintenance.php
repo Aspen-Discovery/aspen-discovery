@@ -86,6 +86,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		$overdrive_updates = getOverDriveUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/ebsco_updates.php';
 		$ebscoUpdates = getEbscoUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/axis360_updates.php';
+		$axis360Updates = getAxis360Updates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
 		$theming_updates = getThemingUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/translation_updates.php';
@@ -140,6 +142,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$islandora_updates,
 			$overdrive_updates,
 			$ebscoUpdates,
+			$axis360Updates,
 			$hoopla_updates,
 			$rbdigital_updates,
 			$sierra_api_updates,
