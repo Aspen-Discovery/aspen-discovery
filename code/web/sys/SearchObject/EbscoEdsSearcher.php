@@ -782,27 +782,34 @@ BODY;
 
 	public function getLimitList(){
 		global $memCache;
-		$limitList = $memCache->get('ebsco_eds_limit_list_' . $this->getSettings()->edsApiProfile);
-		if ($limitList === false) {
+		$limitOptions = $memCache->get('ebsco_eds_limit_options_' . $this->getSettings()->edsApiProfile);
+		if ($limitOptions === false) {
 			$searchOptions = $this->getSearchOptions();
-			$limitList = array();
+			$limitOptions = array();
 			if ($searchOptions != null) {
 				foreach ($searchOptions->AvailableSearchCriteria->AvailableLimiters as $limitOption) {
 					if ($limitOption->Type == 'select') {
 						$limit = $limitOption->Id;
 						$desc = $limitOption->Label;
-						$limitList[$limit] = array(
-							'url' => $this->renderLinkWithLimiter($limit),
-							'removalUrl' => $this->renderLinkWithoutLimiter($limit),
+						$limitOptions[$limit] = [
 							'display' => $desc,
 							'value' => $limit,
-							'isApplied' => array_key_exists($limit, $this->limiters),
-						);
+						];
 					}
 				}
 				global $configArray;
-				$memCache->set('ebsco_eds_limit_list_' . $this->getSettings()->edsApiProfile, $limitList, $configArray['Caching']['ebsco_options']);
+				$memCache->set('ebsco_eds_limit_options_' . $this->getSettings()->edsApiProfile, $limitOptions, $configArray['Caching']['ebsco_options']);
 			}
+		}
+		$limitList = [];
+		foreach ($limitOptions as $limit => $limitOption){
+			$limitList[$limit] = [
+				'url' => $this->renderLinkWithLimiter($limit),
+				'removalUrl' => $this->renderLinkWithoutLimiter($limit),
+				'display' => $limitOption['display'],
+				'value' => $limit,
+				'isApplied' => array_key_exists($limit, $this->limiters),
+			];
 		}
 
 		return $limitList;
