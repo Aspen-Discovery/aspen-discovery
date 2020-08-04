@@ -842,7 +842,7 @@ class SirsiDynixROA extends HorizonAPI
 				$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
 			} elseif (isset($loginUserResponse->messageList)) {
 				global $logger;
-				$errorMessage = 'Sirsi ROA Webservice Login Error: ';
+				$errorMessage = 'Sirsi ROA Staff Webservice Login Error: ';
 				foreach ($loginUserResponse->messageList as $error){
 					$errorMessage .= $error->message.'; ';
 				}
