@@ -18,7 +18,7 @@
 				{else} {* Not Logged In *}
 					<div class="menu-bar-option">
 						<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
-							<div class="menu-bar-label rotated-text"><i class="fas fa-sign-in fa-lg"></i><span class="rotated-text-inner">{translate text="Login"}</span></div>
+							<div class="menu-bar-label rotated-text"><i class="fas fa-sign-in-alt fa-lg"></i><span class="rotated-text-inner">{translate text="Login"}</span></div>
 						</a>
 					</div>
 				{/if}
