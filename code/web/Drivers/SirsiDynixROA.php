@@ -785,11 +785,11 @@ class SirsiDynixROA extends HorizonAPI
 			$session = array(false, false, false);
 			$webServiceURL = $this->getWebServiceURL();
 			//$loginDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/login/describe');
-			$loginUserUrl      = $webServiceURL . '/user/patron/login';
-			$params            = array(
+			$loginUserUrl = $webServiceURL . '/user/patron/login';
+			$params  = [
 				'login' => $username,
 				'password' => $password,
-			);
+			];
 			$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
 			if ($loginUserResponse && isset($loginUserResponse->sessionToken)) {
 				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
@@ -806,6 +806,7 @@ class SirsiDynixROA extends HorizonAPI
 					$errorMessage .= $error->message.'; ';
 				}
 				$logger->log($errorMessage, Logger::LOG_ERROR);
+				$logger->log(print_r($loginUserResponse, true), Logger::LOG_ERROR);
 			}
 		}
 		return $session;
