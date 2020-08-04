@@ -5,10 +5,10 @@
 }
 #home-page-search-label {
   font-size: 35px;
-  color: #FFF;
+  color: #ffffff;
 }
 #home-page-advanced-search-link {
-  color: #FFF;
+  color: #ffffff;
 }
 #lookfor:-ms-input-placeholder {
   font-size: 0;
@@ -45,9 +45,11 @@
 }
 #keepFiltersSwitchLabel,
 #advancedSearchLink {
-  color: #FFF;
-  font-weight: normal;
+  color: #ffffff;
+  font-weight: bold;
   font-size: 85%;
+  display: inline-block;
+  margin-top: 6px;
 }
 #horizontal-search-box {
   background-color: #00a4e3;
@@ -87,10 +89,19 @@
   }
 }
 #horizontal-search-box #horizontal-search-label {
-  color: #FFF;
+  color: #ffffff;
   font-size: 14px;
-  margin-top: 4px;
   line-height: 20px;
+}
+@media (max-width: 1199px) {
+  #horizontal-search-box #horizontal-search-label {
+    margin-top: 4px;
+  }
+}
+@media (min-width: 1200px) {
+  #horizontal-search-box #horizontal-search-label {
+    margin-top: 0;
+  }
 }
 #horizontal-search-box #lookfor {
   height: 34px;
@@ -173,7 +184,7 @@
 .sidebar-links .panel-body a:not(.btn),
 .sidebar-links .panel-body a:visited:not(.btn),
 .sidebar-links .panel-body a:hover:not(.btn) {
-  color: #428bca;
+  color: #3174AF;
 }
 .ui-helper-hidden {
   display: none;
