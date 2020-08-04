@@ -377,4 +377,8 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'message' => 'This functionality has not been implemented for this ILS'
 		];
 	}
+
+	public function logout(User $user){
+		//Nothing by default
+	}
 }

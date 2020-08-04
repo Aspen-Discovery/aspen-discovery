@@ -655,6 +655,10 @@ class UserAccount
 	public static function softLogout()
 	{
 		if (isset($_SESSION['activeUserId'])) {
+			$user = UserAccount::getActiveUserObj();
+			if ($user != false){
+				$user->logout();
+			}
 			//global $logger;
 			//$logger->log("Logging user {$_SESSION['activeUserId']} out", Logger::LOG_DEBUG);
 			if (isset($_SESSION['guidingUserId'])) {

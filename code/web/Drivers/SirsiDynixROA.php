@@ -53,8 +53,7 @@ class SirsiDynixROA extends HorizonAPI
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		global $instanceName;
 		if (stripos($instanceName, 'localhost') !== false) {
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // TODO: debugging only: comment out for production
-
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // TODO: debugging only: comment out for production
 		}
 		//TODO: need switch to set this option when using on local machine
 		if ($params != null) {
@@ -776,9 +775,10 @@ class SirsiDynixROA extends HorizonAPI
 	protected function loginViaWebService($username, $password)
 	{
 		global $memCache;
-		$memCacheKey = "sirsiROA_session_token_info_$username";
+		global $library;
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
 		$session = $memCache->get($memCacheKey);
-		if ($session) {
+		if ($session != false) {
 			list(, $sessionToken, $sirsiRoaUserID) = $session;
 			SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserID] = $sessionToken;
 		} else {
@@ -793,12 +793,12 @@ class SirsiDynixROA extends HorizonAPI
 			$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
 			if ($loginUserResponse && isset($loginUserResponse->sessionToken)) {
 				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
-					$sirsiRoaUserID                                     = $loginUserResponse->patronKey;
-					$sessionToken                                       = $loginUserResponse->sessionToken;
-					SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
-					$session = array(true, $sessionToken, $sirsiRoaUserID);
-					global $configArray;
-					$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
+				$sirsiRoaUserID = $loginUserResponse->patronKey;
+				$sessionToken = $loginUserResponse->sessionToken;
+				SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
+				$session = array(true, $sessionToken, $sirsiRoaUserID);
+				global $configArray;
+				$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
 			} elseif (isset($loginUserResponse->messageList)) {
 				global $logger;
 				$errorMessage = 'Sirsi ROA Webservice Login Error: ';
@@ -814,7 +814,8 @@ class SirsiDynixROA extends HorizonAPI
 	protected function staffLoginViaWebService($username, $password)
 	{
 		global $memCache;
-		$memCacheKey = "sirsiROA_session_token_info_$username";
+		global $library;
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
 		$session = $memCache->get($memCacheKey);
 		if ($session) {
 			list(, $sessionToken, $sirsiRoaUserID) = $session;
@@ -832,13 +833,13 @@ class SirsiDynixROA extends HorizonAPI
 			if ($loginUserResponse && isset($loginUserResponse->sessionToken)) {
 				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
 
-					$sirsiRoaUserID                                     = $loginUserResponse->staffKey;
-					//this is the same value as patron Key, if user is logged in with that call.
-					$sessionToken                                       = $loginUserResponse->sessionToken;
-					SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
-					$session = array(true, $sessionToken, $sirsiRoaUserID);
-					global $configArray;
-					$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
+				$sirsiRoaUserID                                     = $loginUserResponse->staffKey;
+				//this is the same value as patron Key, if user is logged in with that call.
+				$sessionToken                                       = $loginUserResponse->sessionToken;
+				SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
+				$session = array(true, $sessionToken, $sirsiRoaUserID);
+				global $configArray;
+				$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
 			} elseif (isset($loginUserResponse->messageList)) {
 				global $logger;
 				$errorMessage = 'Sirsi ROA Webservice Login Error: ';
@@ -1913,5 +1914,11 @@ class SirsiDynixROA extends HorizonAPI
 
 		);
 		return isset($statusMap[$statusCode]) ? $statusMap[$statusCode] : 'Unknown (' . $statusCode . ')';
+	}
+	public function logout(User $user){
+		global $memCache;
+		global $library;
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$user->getBarcode()}";
+		$memCache->delete($memCacheKey);
 	}
 }

@@ -1097,4 +1097,9 @@ class CatalogConnection
 	{
 		return $this->driver->updateEditableUsername($user, $username);
 	}
+
+	public function logout(User $user)
+	{
+		return $this->driver->logout($user);
+	}
 }

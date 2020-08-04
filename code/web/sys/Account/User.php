@@ -1876,6 +1876,10 @@ class User extends DataObject
 			];
 		}
 	}
+
+	public function logout(){
+		if ($this->hasIlsConnection()) return $this->getCatalogDriver()->logout($this);
+	}
 }
 
 function modifiedEmpty($var) {
