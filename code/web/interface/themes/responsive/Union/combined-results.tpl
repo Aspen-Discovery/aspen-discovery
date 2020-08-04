@@ -14,9 +14,9 @@
 			{foreach from=$combinedResultSections item=combinedResultSection name=searchSection}
 				{if ($smarty.foreach.searchSection.index%2 == $smarty.section.column.index)}
 					<div class="combined-results-section combined-results-column-{$smarty.section.column.index}">
-						<h3 class="combined-results-section-title">
+						<h2 class="combined-results-section-title">
 							{$combinedResultSection->displayName}
-						</h3>
+						</h2>
 						<div class="combined-results-section-results" id="combined-results-section-results-{$combinedResultSection->id}">
 							<img src="/images/loading.gif" alt="loading">
 						</div>

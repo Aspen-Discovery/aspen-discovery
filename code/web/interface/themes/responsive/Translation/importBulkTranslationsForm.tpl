@@ -1,6 +1,6 @@
 {strip}
 <div id="main-content" class="col-md-12">
-	<h3>{translate text="Import Translations"}</h3>
+	<h1>{translate text="Import Translations"}</h1>
 
 	{if !empty($error)}
 		<div class="alert-warning alert">

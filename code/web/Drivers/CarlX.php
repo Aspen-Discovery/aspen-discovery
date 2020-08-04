@@ -706,31 +706,34 @@ class CarlX extends SIP2Driver{
 					if (!$success) {
 						// TODO: might not want to include sending message back to user
 						$errorMessage = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
-						return ['success' => false, 'errors' => 'Failed to update your pin'. ($errorMessage ? ' : ' .$errorMessage : '')];
+						return ['success' => false, 'message' => 'Failed to update your pin'. ($errorMessage ? ' : ' .$errorMessage : '')];
 					} else {
 						$user->cat_password = $newPin;
 						$user->update();
-						return ['success' => true, 'errors' => "Your pin number was updated successfully."];
+						return ['success' => true, 'message' => "Your pin number was updated successfully."];
 					}
 
 				} else {
 					global $logger;
 					$logger->log('Unable to read XML from CarlX response when attempting to update Patron PIN.', Logger::LOG_ERROR);
-					return ['success' => false, 'errors' => 'Unable to update your pin.'];
+					return ['success' => false, 'message' => 'Unable to update your pin.'];
 				}
 
 			} else {
 				global $logger;
 				$logger->log('CarlX ILS gave no response when attempting to update Patron PIN.', Logger::LOG_ERROR);
-				return ['success' => false, 'errors' => 'Unable to update your pin.'];
+				return ['success' => false, 'message' => 'Unable to update your pin.'];
 			}
 		} elseif (!$result) {
-			return ['success' => false, 'errors' => 'Failed to contact Circulation System.'];
+			return ['success' => false, 'message' => 'Failed to contact Circulation System.'];
 		}
 	}
 
 	public function updatePatronInfo($user, $canUpdateContactInfo) {
-		$updateErrors = array();
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
 		if ($canUpdateContactInfo){
 
 			$request = $this->getSearchbyPatronIdRequest($user);
@@ -798,26 +801,33 @@ class CarlX extends SIP2Driver{
 						$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
 						if (!$success) {
 							$errorMessage = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
-							$updateErrors[] = 'Failed to update your information'. ($errorMessage ? ' : ' .$errorMessage : '');
+							$result['messages'][] = 'Failed to update your information'. ($errorMessage ? ' : ' .$errorMessage : '');
+						}else{
+							$result['success'] = true;
+							$result['messages'][] = 'Your account was updated successfully.';
 						}
 
 					} else {
-						$updateErrors[] = 'Unable to update your information.';
+						$result['messages'][] = 'Unable to update your information.';
 						global $logger;
 						$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', Logger::LOG_ERROR);
 					}
 
 				} else {
-					$updateErrors[] = 'Unable to update your information.';
+					$result['messages'][] = 'Unable to update your information.';
 					global $logger;
 					$logger->log('CarlX ILS gave no response when attempting to update Patron Information.', Logger::LOG_ERROR);
 				}
 			}
 
 		} else {
-			$updateErrors[] = 'You can not update your information.';
+			$result['messages'][] = 'You can not update your information.';
 		}
-		return $updateErrors;
+
+		if ($result['success'] == false && empty($result['messages'])){
+			$result['messages'][] = 'Unknown error updating your account';
+		}
+		return $result;
 	}
 
 	public function getSelfRegistrationFields() {

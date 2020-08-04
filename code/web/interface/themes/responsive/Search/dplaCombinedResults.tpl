@@ -3,7 +3,18 @@
 		{foreach from=$searchResults item=result name="recordLoop"}
 			<div class="result">
 				<div class="dplaResult resultsList row">
-					<div class="col-xs-12">
+					{if $showCovers}
+						<div class="coversColumn col-xs-3 text-center">
+							{if $disableCoverArt != 1}
+								{if $result.object}
+									<a href="{$result.link}">
+										<img src="{$result.object}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
+									</a>
+								{/if}
+							{/if}
+						</div>
+					{/if}
+					<div class="{if $showCovers}col-xs-9{else}col-xs-12{/if}">
 						<div class="row">
 							<div class="col-xs-12">
 								<span class="result-index">{$smarty.foreach.recordLoop.iteration})</span>&nbsp;

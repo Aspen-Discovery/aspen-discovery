@@ -4,6 +4,34 @@ require_once ROOT_DIR . '/JSON_Action.php';
 
 class EBSCO_JSON extends JSON_Action
 {
+	public function dismissResearchStarter(){
+		if (!isset($_REQUEST['id'])) {
+			return ['success' => false, 'message' => 'ID was not provided'];
+		}
+		$result = ['success' => false, 'message' => 'Unknown error'];
+		$id = $_REQUEST['id'];
+
+		require_once ROOT_DIR . '/sys/Ebsco/ResearchStarter.php';
+		$researchStarter = new ResearchStarter();
+		$researchStarter->id = $id;
+		if ($researchStarter->find(true)){
+			require_once ROOT_DIR . '/sys/Ebsco/ResearchStarterDismissal.php';
+			$dismissal = new ResearchStarterDismissal();
+			$dismissal->researchStarterId = $id;
+			$dismissal->userId = UserAccount::getActiveUserId();
+			$dismissal->insert();
+			$result = [
+				'success' => true,
+				'title' => 'Research Starter Dismissed',
+				'message' => "This research starter will not be shown again.  You can hide all research starters by editing <a href='/MyAccount/MyPreferences'>your preferences</a>."
+			];
+		}else{
+			$result['message'] = 'Could not find that Research Starter';
+		}
+
+		return $result;
+	}
+
 	/** @noinspection PhpUnused */
 	public function trackEdsUsage()
 	{
@@ -49,5 +77,27 @@ class EBSCO_JSON extends JSON_Action
 		}
 
 		return ['success' => true, 'message' => 'Updated usage for EBSCO EDS record ' . $id];
+	}
+
+	function getResearchStarters(){
+		global $enabledModules;
+		if (array_key_exists('EBSCO EDS', $enabledModules)){
+			require_once ROOT_DIR . '/sys/SearchObject/EbscoEdsSearcher.php';
+			$edsSearcher = new SearchObject_EbscoEdsSearcher();
+			$researchStarters = $edsSearcher->getResearchStarters($_REQUEST['lookfor']);
+			$result = [
+				'success' => true,
+				'researchStarters' => ''
+			];
+			foreach ($researchStarters as $researchStarter){
+				$result['researchStarters'] .= $researchStarter->getDisplayHtml();
+			}
+			return $result;
+		}else{
+			return [
+				'success' => true,
+				'researchStarters' => ''
+			];
+		}
 	}
 }

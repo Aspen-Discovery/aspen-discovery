@@ -197,6 +197,8 @@ class EbscoRecordDriver extends RecordInterface
 		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
 		$interface->assign('summHasFullText', $this->hasFullText());
 
+		$interface->assign('summDescription', $this->getDescription());
+
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
@@ -317,7 +319,12 @@ class EbscoRecordDriver extends RecordInterface
 	 */
 	public function hasFullText()
 	{
-		return $this->recordData->FullText->Text->Availability == 1;
+		if ($this->recordData->FullText->Text->Availability == 1){
+			return true;
+		}elseif (!empty($this->recordData->FullText->Links)){
+			return true;
+		}
+		return false;
 	}
 
 	public function getFullText()

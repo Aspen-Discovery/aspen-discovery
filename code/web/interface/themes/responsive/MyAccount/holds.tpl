@@ -33,16 +33,16 @@
 
 			<!-- Tab panes -->
 			<div class="tab-content" id="holds">
-				<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all"><div id="allHoldsPlaceholder">{translate text="Loading holds from all sources"}</div></div>
-				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils"><div id="ilsHoldsPlaceholder">{translate text="Loading holds of physical materials"}</div></div>
+				<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all"><div id="allHoldsPlaceholder" aria-label="All Holds List">{translate text="Loading holds from all sources"}</div></div>
+				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils"><div id="ilsHoldsPlaceholder" aria-label="List of Holds on Physical Materials">{translate text="Loading holds of physical materials"}</div></div>
 				{if $user->isValidForEContentSource('overdrive')}
-					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive"><div id="overdriveHoldsPlaceholder">{translate text="Loading holds from OverDrive"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="List of Holds on OverDrive Titles"><div id="overdriveHoldsPlaceholder">{translate text="Loading holds from OverDrive"}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('rbdigital')}
-					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital"><div id="rbdigitalHoldsPlaceholder">{translate text="Loading holds from RBdigital"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital" aria-label="List of Holds on RBdigital Titles"><div id="rbdigitalHoldsPlaceholder">{translate text="Loading holds from RBdigital"}</div></div>
 				{/if}
                 {if $user->isValidForEContentSource('cloud_library')}
-					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library"><div id="cloud_libraryHoldsPlaceholder">{translate text="Loading holds from Cloud Library"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="List of Holds on Cloud Library Titles"><div id="cloud_libraryHoldsPlaceholder">{translate text="Loading holds from Cloud Library"}</div></div>
                 {/if}
 			</div>
 			<script type="text/javascript">

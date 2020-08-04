@@ -19,7 +19,7 @@ class UserAccount
 	 * When logged in we store information the id of the active user within the session.
 	 * The actual user is stored within memcache
 	 *
-	 * @return bool|User
+	 * @return bool
 	 */
 	public static function isLoggedIn()
 	{
@@ -110,6 +110,21 @@ class UserAccount
 					}
 				}
 
+				if (UserAccount::isUserMasquerading()){
+					//Remove any roles that the guiding user does not have
+					$masqueradeRoles = [];
+					$role->query("SELECT * FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getGuidingUserId() . " ORDER BY name");
+					while ($role->fetch()) {
+						$masqueradeRoles[$role->name] = $role->name;
+					}
+					//Now remove any roles that the masquerade user doesn't have
+					foreach (UserAccount::$userRoles as $roleKey => $roleName){
+						if (!array_key_exists($roleKey, $masqueradeRoles)){
+							unset(UserAccount::$userRoles[$roleKey]);
+						}
+					}
+				}
+
 				//Test roles if we are doing overrides
 				$testRole = '';
 				if (isset($_REQUEST['test_role'])) {
@@ -138,9 +153,6 @@ class UserAccount
 						}
 					}
 				}
-
-				//TODO: Figure out roles for masquerade mode see User.php line 251
-
 			} else {
 				UserAccount::$userRoles = array();
 			}
@@ -246,6 +258,14 @@ class UserAccount
 	public static function isUserMasquerading()
 	{
 		return !empty($_SESSION['guidingUserId']);
+	}
+
+	public static function getGuidingUserId(){
+		if (empty($_SESSION['guidingUserId'])){
+			return false;
+		}else{
+			return $_SESSION['guidingUserId'];
+		}
 	}
 
 	public static function getGuidingUserObject()

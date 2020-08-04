@@ -102,6 +102,7 @@ class Archive_ClaimAuthorship extends Action{
 		$interface->assign('structure', $archiveRequestFields);
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('claimAuthorshipHeader', $owningLibrary->claimAuthorshipHeader);
+		$interface->assign('formLabel', 'Claim Authorship');
 
 		// Set up captcha to limit spam self registrations
 		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
@@ -110,7 +111,7 @@ class Archive_ClaimAuthorship extends Action{
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);
 
-		$this->display('claimAuthorship.tpl', 'Archival Material Copy Request');
+		$this->display('claimAuthorship.tpl', 'Claim Authorship');
 	}
 
 	function insertObject($structure){

@@ -1,7 +1,7 @@
 {strip}
 	<div id="page-content" class="content">
 		<div id="main-content">
-			<div class="resulthead"><h3>{translate text='Password Recovery Results'}</h3></div>
+			<div class="resultHead"><h1>{translate text='Password Recovery Results'}</h1></div>
 			<div class="page">
 				{if !empty($error)}
 					<div class="alert alert-danger">{$error}</div>

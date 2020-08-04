@@ -1,4 +1,5 @@
 <?php
+/** @noinspection SqlResolve */
 function getEbscoUpdates(){
 	return [
 		'createEbscoModules' => [
@@ -75,6 +76,24 @@ function getEbscoUpdates(){
 			'sql' => [
 				"ALTER TABLE ebsco_eds_usage CHANGE COLUMN ebscoId ebscoId VARCHAR(100) NOT NULL",
 			],
-		]
+		],
+		'ebsco_eds_research_starters' => [
+			'title' => 'EBSCO EDS research starters',
+			'description' => 'Setup information to handle research starters form EBSCO',
+			'sql' => [
+				'CREATE table ebsco_research_starter (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					ebscoId VARCHAR(100) NOT NULL UNIQUE,
+					title VARCHAR(255)
+				)',
+				'CREATE table ebsco_research_starter_dismissals (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					researchStarterId INT NOT NULL,
+					userId INT NOT NULL
+				)',
+				'ALTER TABLE ebsco_research_starter_dismissals ADD UNIQUE INDEX (userId, researchStarterId)',
+				'ALTER TABLE user ADD COLUMN hideResearchStarters TINYINT(1) DEFAULT 0',
+			]
+		],
 	];
 }

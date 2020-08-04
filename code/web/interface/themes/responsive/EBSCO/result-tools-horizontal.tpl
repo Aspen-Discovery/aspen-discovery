@@ -5,12 +5,12 @@
 			{if $showMoreInfo}
 				{if $showMoreInfo !== false}
 					<div class="btn-group btn-group-sm">
-						<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getLinkUrl()}{/if}" class="btn btn-sm " onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$recordDriver->getPermanentId()}')" target="_blank">{translate text="More Info"}</a>
+						<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getLinkUrl()}{/if}" class="btn btn-sm btn-tools" onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$recordDriver->getPermanentId()}')" target="_blank">{translate text="More Info"}</a>
 					</div>
 				{/if}
 				{if $showFavorites == 1}
 					<div class="btn-group btn-group-sm">
-						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'EbscoEds', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm ">{translate text='Add to list'}</button>
+						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'EbscoEds', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm btn-tools">{translate text='Add to list'}</button>
 					</div>
 				{/if}
 			{/if}

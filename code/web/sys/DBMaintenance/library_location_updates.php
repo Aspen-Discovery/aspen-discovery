@@ -1764,6 +1764,14 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+		'location_add_notes_to_hours' =>[
+			'title' => 'Location add notes to hours',
+			'description' => 'Add a column for notes for the time period when the library is open',
+			'sql' => [
+				'ALTER TABLE location_hours ADD COLUMN notes VARCHAR(255)'
+			]
+		],
+
 		'facets_remove_author_results' => [
 			'title' => 'Remove showInAuthorResults from facets',
 			'description' => 'Remove showInAuthorResults from facets.',
@@ -2188,6 +2196,14 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				"ALTER TABLE library ADD COLUMN useAllCapsWhenUpdatingProfile TINYINT(1) DEFAULT 0",
 				"ALTER TABLE library ADD COLUMN bypassReviewQueueWhenUpdatingProfile TINYINT(1) DEFAULT 0"
+			]
+		],
+
+		'libraryProfileRequireNumericPhoneNumbersWhenUpdatingProfile' => [
+			'title' => 'Library User Profile - require numeric phone numbers',
+			'description' => 'Add options for how profile updates are done for phone numbers',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN requireNumericPhoneNumbersWhenUpdatingProfile TINYINT(1) DEFAULT 0",
 			]
 		],
 

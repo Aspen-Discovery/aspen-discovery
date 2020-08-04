@@ -1282,7 +1282,10 @@ abstract class HorizonROA extends AbstractIlsDriver
 	 * @return array                         Array of error messages for errors that occurred
 	 */
 	function updatePatronInfo($patron, $canUpdateContactInfo) {
-		$updateErrors = array();
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
 		if ($canUpdateContactInfo) {
 			$sessionToken = $this->getSessionToken($patron);
 			if ($sessionToken) {
@@ -1314,18 +1317,22 @@ abstract class HorizonROA extends AbstractIlsDriver
 				$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $horizonRoaUserId, $updatePatronInfoParameters, $sessionToken, 'PUT');
 				if (isset($updateAccountInfoResponse->messageList)) {
 					foreach ($updateAccountInfoResponse->messageList as $message) {
-						$updateErrors[] = $message->message;
+						$result['messages'][] = $message->message;
 					}
 					global $logger;
-					$logger->log('Horizon ROA Driver - Patron Info Update Error - Error from ILS : '.implode(';', $updateErrors), Logger::LOG_ERROR);
+					$logger->log('Horizon ROA Driver - Patron Info Update Error - Error from ILS : '.implode(';', $result['messages']), Logger::LOG_ERROR);
 				}
 			} else {
-				$updateErrors[] = 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+				$result['messages'][] = 'Sorry, it does not look like you are logged in currently.  Please login and try again';
 			}
 		} else {
-			$updateErrors[] = 'You do not have permission to update profile information.';
+			$result['messages'][] = 'You do not have permission to update profile information.';
 		}
-		return $updateErrors;
+		if (empty($result['messages'])){
+			$result['success'] = true;
+			$result['messages'][] = 'Your account was updated successfully.';
+		}
+		return $result;
 	}
 	public function selfRegister() {
 		global $configArray;

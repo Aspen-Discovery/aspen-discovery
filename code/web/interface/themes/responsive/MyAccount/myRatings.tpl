@@ -16,7 +16,7 @@
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
-	<div class="resulthead">
+	<div class="resultHead">
 		<h1>{translate text='Titles You Rated'}</h1>
 
 		<div class="page">

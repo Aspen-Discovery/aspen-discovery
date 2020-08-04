@@ -5,7 +5,7 @@
 			{if $showMoreInfo || $showComments || $showFavorites}
 				{if $showMoreInfo !== false}
 					<div class="btn-group btn-group-sm">
-						<a href="{$pageUrl}" class="btn btn-sm ">{translate text="More Info"}</a>
+						<a href="{$pageUrl}" class="btn btn-sm btn-tools">{translate text="More Info"}</a>
 					</div>
 				{/if}
 			{/if}

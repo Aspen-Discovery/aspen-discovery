@@ -5,7 +5,7 @@
 			{if $ilsSummary.totalFines > 0 && $showFines}
 				{if $finePaymentType && $ilsSummary.totalFines > $minimumFineAmount}
 					<div class="myAccountLink">
-						<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:red; font-weight:bold;">
+						<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:#c62828; font-weight:bold;">
 							{if count($user->getLinkedUsers())>0}
 								{translate text="Your accounts have %1% in fines." 1=$ilsSummary.totalFines|number_format:2}
 							{else}
@@ -19,7 +19,7 @@
 						</a>
 					</div>
 				{else}
-					<div class="myAccountLink" title="Please contact your local library to pay fines or charges." style="color:red; font-weight:bold;" onclick="alert('Please contact your local library to pay fines or charges.')">
+					<div class="myAccountLink" title="Please contact your local library to pay fines or charges." style="color:#c62828; font-weight:bold;" onclick="alert('Please contact your local library to pay fines or charges.')">
 						{if count($user->getLinkedUsers())>0}
 							{translate text="Your accounts have $%1% in fines." 1=$ilsSummary.totalFines|number_format:2}
 						{else}
@@ -31,7 +31,7 @@
 
 			{if $showExpirationWarnings && $ilsSummary.expireClose}
 				<div class="myAccountLink">
-					<a class="alignright" title="Please contact your local library to have your library card renewed." style="color:red; font-weight:bold;" onclick="alert('Please Contact your local library to have your library card renewed.')" href="#">
+					<a class="alignright" title="Please contact your local library to have your library card renewed." style="color:#c62828; font-weight:bold;" onclick="alert('Please Contact your local library to have your library card renewed.')" href="#">
 						{if $ilsSummary.expired}
 							{if $expiredMessage}
 								{$expiredMessage}

@@ -64,7 +64,7 @@ var AspenDiscovery = (function(){
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
 				if (callback !== undefined){
-					var closeLightboxListener = modalDialog.on('hidden.bs.modal', function (e) {
+					modalDialog.on('hidden.bs.modal', function (e) {
 						modalDialog.off('hidden.bs.modal');
 						callback();
 					});
@@ -84,14 +84,14 @@ var AspenDiscovery = (function(){
 
 			jcarousel.on('jcarousel:reload jcarousel:create', function() {
 
-				var Carousel       = $(this);
-				var width          = Carousel.innerWidth();
-				var liTags         = Carousel.find('li');
+				var Carousel	   = $(this);
+				var width		  = Carousel.innerWidth();
+				var liTags		 = Carousel.find('li');
 				if (liTags == null ||liTags.length === 0){
 					return;
 				}
-				var leftMargin     = +liTags.css('margin-left').replace('px', ''),
-						rightMargin    = +liTags.css('margin-right').replace('px', ''),
+				var leftMargin	 = +liTags.css('margin-left').replace('px', ''),
+						rightMargin	= +liTags.css('margin-right').replace('px', ''),
 						numCategories  = Carousel.jcarousel('items').length || 1,
 						numItemsToShow = 1;
 
@@ -216,13 +216,13 @@ var AspenDiscovery = (function(){
 		},
 
 		getSelectedTitles: function(){
-			var selectedTitles = $("input.titleSelect:checked ").map(function() {
+			let selectedTitles = $("input.titleSelect:checked ").map(function() {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
-			if (selectedTitles.length == 0){
-				var ret = confirm('You have not selected any items, process all items?');
-				if (ret == true){
-					var titleSelect = $("input.titleSelect");
+			if (selectedTitles.length === 0){
+				let ret = confirm('You have not selected any items, process all items?');
+				if (ret === true){
+					let titleSelect = $("input.titleSelect");
 					titleSelect.attr('checked', 'checked');
 					selectedTitles = titleSelect.map(function() {
 						return $(this).attr('name') + "=" + $(this).val();
@@ -243,7 +243,7 @@ var AspenDiscovery = (function(){
 			input.onblur = elem.onblur;
 			input.className = elem.className;
 			input.maxLength = elem.maxLength;
-			if (elem.type == 'text' ){
+			if (elem.type === 'text' ){
 				input.type = 'password';
 			} else {
 				input.type = 'text';
@@ -265,10 +265,10 @@ var AspenDiscovery = (function(){
 			});
 
 			$('fieldset.fieldset-collapsible').each(function() {
-				var collapsible = $(this);
-				var legend = collapsible.find('legend:first');
+				let collapsible = $(this);
+				let legend = collapsible.find('legend:first');
 				legend.addClass('fieldset-collapsible-label').bind('click', {collapsible: collapsible}, function(event) {
-					var collapsible = event.data.collapsible;
+					let collapsible = event.data.collapsible;
 					if (collapsible.hasClass('fieldset-collapsed')) {
 						collapsible.removeClass('fieldset-collapsed');
 					} else {
@@ -282,7 +282,7 @@ var AspenDiscovery = (function(){
 
 		showMessage: function(title, body, autoClose, refreshAfterClose){
 			// if autoclose is set as number greater than 1 autoClose will be the custom timeout interval in milliseconds, otherwise
-			//     autoclose is treated as an on/off switch. Default timeout interval of 3 seconds.
+			//	 autoclose is treated as an on/off switch. Default timeout interval of 3 seconds.
 			// if refreshAfterClose is set but not autoClose, the page will reload when the box is closed by the user.
 			if (autoClose === undefined){
 				autoClose = false;
@@ -325,13 +325,6 @@ var AspenDiscovery = (function(){
 			if (!Globals.LeavingPage) AspenDiscovery.showMessage('Request Failed', 'There was an error with this AJAX Request.');
 		},
 
-		toggleHiddenElementWithButton: function(button){
-			let hiddenElementName = $(button).data('hidden_element');
-			let hiddenElement = $(hiddenElementName);
-			hiddenElement.val($(button).hasClass('active') ? '1' : '0');
-			return false;
-		},
-
 		showElementInPopup: function(title, elementId, buttonsElementId){
 			// buttonsElementId is optional
 			let modalDialog = $("#modalDialog");
@@ -351,20 +344,20 @@ var AspenDiscovery = (function(){
 		},
 
 		showLocationHoursAndMap: function(){
-			var selectedId = $("#selectLibrary").find(":selected").val();
+			let selectedId = $("#selectLibrary").find(":selected").val();
 			$(".locationInfo").hide();
 			$("#locationAddress" + selectedId).show();
 			return false;
 		},
 
 		toggleCheckboxes: function (checkboxSelector, toggleSelector){
-			var toggle = $(toggleSelector);
-			var value = toggle.prop('checked');
+			let toggle = $(toggleSelector);
+			let value = toggle.prop('checked');
 			$(checkboxSelector).prop('checked', value);
 		},
 
 		submitOnEnter: function(event, formToSubmit){
-			if (event.keyCode == 13){
+			if (event.keyCode === 13){
 				$(formToSubmit).submit();
 			}
 		},
@@ -378,7 +371,7 @@ var AspenDiscovery = (function(){
 				if ("localStorage" in window) {
 					try {
 						window.localStorage.setItem('_tmptest', 'temp');
-						arguments.callee.haslocalStorage = (window.localStorage.getItem('_tmptest') == 'temp');
+						arguments.callee.haslocalStorage = (window.localStorage.getItem('_tmptest') === 'temp');
 						// if we get the same info back, we are good. Otherwise, we don't have localStorage.
 						window.localStorage.removeItem('_tmptest');
 					} catch(error) { // something failed, so we don't have localStorage available.
@@ -415,8 +408,8 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 
-        setLanguage: function() {
-            //Update the user interface with the selected language
+		setLanguage: function() {
+			//Update the user interface with the selected language
 			let newLanguage = $("#selected-language option:selected").val();
 			let curLocation = window.location.href;
 			let newParam = 'myLang=' + newLanguage;
@@ -429,23 +422,15 @@ var AspenDiscovery = (function(){
 			}
 
 			return false;
-        },
+		},
 
-		showLanguagePreferencesForm: function(){
-			let url = Globals.path + "/AJAX/JSON?method=getLanguagePreferencesForm";
+		showTranslateForm: function(termId) {
+			let url = Globals.path + "/AJAX/JSON?method=getTranslationForm&termId=" + termId;
 			$.getJSON(url, function(data){
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-
-        showTranslateForm: function(termId) {
-		    let url = Globals.path + "/AJAX/JSON?method=getTranslationForm&termId=" + termId;
-			$.getJSON(url, function(data){
-				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-			}).fail(AspenDiscovery.ajaxFail);
-			return false;
-        },
 
 		saveTranslation: function(){
 			let termId = $("#termId").val();
@@ -495,9 +480,9 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 	if (this.optional(element)) {
 		return true;
 	}
-	var emails = value.split(/[,;]/),
-			valid = true;
-	for (var i = 0, limit = emails.length; i < limit; i++) {
+	let emails = value.split(/[,;]/);
+	let valid = true;
+	for (let i = 0, limit = emails.length; i < limit; i++) {
 		value = emails[i];
 		valid = valid && jQuery.validator.methods.email.call(this, value, element);
 	}
@@ -528,14 +513,14 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 jQuery.validator.addMethod(
 		"dateAspen",
 		function(value, element) {
-			var check = false;
-			var re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
+			let check = false;
+			let re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
 			if( re.test(value)){
-				var adata = value.split('-');
-				var mm = parseInt(adata[0],10);
-				var dd = parseInt(adata[1],10);
-				var aaaa = parseInt(adata[2],10);
-				var xdata = new Date(aaaa,mm-1,dd);
+				let adata = value.split('-');
+				let mm = parseInt(adata[0],10);
+				let dd = parseInt(adata[1],10);
+				let aaaa = parseInt(adata[2],10);
+				let xdata = new Date(aaaa,mm-1,dd);
 				if ( ( xdata.getFullYear() == aaaa ) && ( xdata.getMonth () == mm - 1 ) && ( xdata.getDate() == dd ) )
 					check = true;
 				else

@@ -1,6 +1,6 @@
 <h1>Terms and Conditions/Privacy Policy</h1>
 
-<h3>Arlington Public Library SMS Alerts Service Description</h3>
+<h2>Arlington Public Library SMS Alerts Service Description</h2>
 <p>The SMS Alerts service gives you the option to receive text messages from
 	Arlington Public Library on your mobile device. After you opt into SMS Alerts,
 	Arlington Public Library will send you library notices via text messages when you have overdue items, holds ready for pickup, etc. Contact the library for specific information about when you'll receive alerts.</p>

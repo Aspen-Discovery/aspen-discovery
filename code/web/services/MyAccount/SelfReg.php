@@ -51,6 +51,7 @@ class SelfReg extends Action {
 			$interface->assign('captcha', $captchaCode);
 		}
 
+		$interface->assign('formLabel', 'Self Registration');
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('selfRegForm', $fieldsForm);
 

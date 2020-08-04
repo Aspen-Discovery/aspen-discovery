@@ -34,73 +34,78 @@ body{ldelim}
 {/if}
 
 #header-container{ldelim}
-    {if $headerBackgroundColor}
     background-color: {$headerBackgroundColor};
     background-image: none;
-    {/if}
-    {if $headerForegroundColor}
-        color: {$headerForegroundColor};
-    {/if}
+    color: {$headerForegroundColor};
     {if $headerBottomBorderWidth}
         border-bottom-width: {$headerBottomBorderWidth};
     {/if}
 {rdelim}
 
-{if $headerForegroundColor}
 #library-name-header{ldelim}
     color: {$headerForegroundColor};
 {rdelim}
-{/if}
 
-{if !empty($footerBackgroundColor) || !empty($footerForegroundColor)}
 #footer-container{ldelim}
-    {if !empty($footerBackgroundColor)}
     background-color: {$footerBackgroundColor};
-    {/if}
-    {if !empty($footerForegroundColor)}
     color: {$footerForegroundColor};
-    {/if}
 {rdelim}
-{/if}
 
 .header-button{ldelim}
-    {if $headerButtonBackgroundColor}
-        background-color: {$headerButtonBackgroundColor};
-    {/if}
-    {if $headerButtonColor}
-        color: {$headerButtonColor};
-    {/if}
+    background-color: {$headerButtonBackgroundColor};
+    color: {$headerButtonColor} !important;
     {if $headerButtonRadius}
         border-radius: {$headerButtonRadius};
     {/if}
 {rdelim}
-
-{if $pageBackgroundColor}
-body, #home-page-browse-header {ldelim}
-    background-color: {$pageBackgroundColor};
+#home-page-login{ldelim}
+    background-color: {$headerButtonBackgroundColor};
+    color: {$headerButtonColor} !important;
 {rdelim}
-{/if}
+#home-page-login a{ldelim}
+    color: {$headerButtonColor} !important;
+{rdelim}
 
-{if $bodyBackgroundColor}
-body .container{ldelim}
+body {ldelim}
+    background-color: {$pageBackgroundColor};
+    color: {$bodyTextColor};
+{rdelim}
+
+a,.result-head,#selected-browse-label a{ldelim}
+    color: {$linkColor};
+{rdelim}
+
+body .container, #home-page-browse-content{ldelim}
+    background-color: {$bodyBackgroundColor};
+    color: {$bodyTextColor};
+{rdelim}
+
+#selected-browse-label{ldelim}
     background-color: {$bodyBackgroundColor};
 {rdelim}
-{/if}
 
-{if $primaryBackgroundColor}
-#home-page-search, #horizontal-search-box, #explore-more-sidebar,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar{ldelim}
+#home-page-search, #horizontal-search-box, #explore-more-sidebar,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar {ldelim}
     background-color: {$primaryBackgroundColor};
+    color: {$primaryForegroundColor};
 {rdelim}
+#vertical-menu-bar .menu-icon .menu-bar-label, #horizontal-search-label,#horizontal-search-box #horizontal-search-label {ldelim}
+    color: {$primaryForegroundColor};
+{rdelim}
+
 #vertical-menu-bar .menu-bar-option.menu-icon-selected,.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
-    background-color: {$primaryBackgroundColorLightened80};
+    background-color: {$sidebarHighlightBackgroundColor};
+    color: {$sidebarHighlightForegroundColor};
+{rdelim}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label,#vertical-menu-bar .menu-icon:hover .menu-bar-label,.exploreMoreBar .exploreMoreBarLabel{ldelim}
+    color: {$sidebarHighlightForegroundColor};
 {rdelim}
 .exploreMoreBar{ldelim}
-    border-color: {$primaryBackgroundColorLightened80};
+    border-color: {$primaryBackgroundColor};
 {rdelim}
 #vertical-menu-bar .menu-bar-option:hover{ldelim}
-    background-color: {$primaryBackgroundColorLightened60};
+    background-color: {$sidebarHighlightBackgroundColor};
+    color: {$sidebarHighlightForegroundColor};
 {rdelim}
-{/if}
 
 {if $primaryForegroundColor}
 #home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel, #advancedSearchLink,.menu-bar,#vertical-menu-bar{ldelim}
@@ -108,104 +113,51 @@ body .container{ldelim}
 {rdelim}
 {/if}
 
-{if $bodyTextColor}
-.browse-category{ldelim}
-    color: {$bodyTextColor}
-{rdelim}
-{/if}
-
-{if $secondaryBackgroundColor}
-.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover, .titleScrollerHeader{ldelim}
-    border-color: {$secondaryBackgroundColor} !important;
-    background: {$secondaryBackgroundColor} !important;
-{rdelim}
-{/if}
-
-{if $secondaryForegroundColor}
-.browse-category{ldelim}
-    background-color: {$secondaryForegroundColor};
-    border-color: {$secondaryForegroundColor};
-{rdelim}
-.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover, .titleScrollerHeader{ldelim}
-    color: {$secondaryForegroundColor} !important;
-{rdelim}
-{/if}
-
-{if $closedPanelBackgroundColor}
 .facetTitle, .exploreMoreTitle,.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title{ldelim}
     background-color: {$closedPanelBackgroundColor};
 {rdelim}
-{/if}
-{if $closedPanelForegroundColor}
 .facetTitle, .exploreMoreTitle,.panel-title,.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title, .panel-title > a,.panel-default > .panel-heading{ldelim}
     color: {$closedPanelForegroundColor};
 {rdelim}
-{/if}
-{if $openPanelBackgroundColor}
 .facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,.active .panel-default > .panel-heading, .sidebar-links .active .panel-heading, #account-link-accordion .panel.active .panel-title, #account-settings-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
     background-color: {$openPanelBackgroundColor};
 {rdelim}
-{/if}
-{if $openPanelForegroundColor}
 .facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,#more-details-accordion .active .panel-title,#account-link-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
     color: {$openPanelForegroundColor};
 {rdelim}
-{/if}
+.panel-body,.sidebar-links .panel-body,#more-details-accordion .panel-body,.facetDetails,.sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn), .sidebar-links .panel-body a:hover:not(.btn){ldelim}
+    background-color: {$panelBodyBackgroundColor};
+    color: {$panelBodyForegroundColor};
+{rdelim}
 
-{if $tertiaryBackgroundColor}
 #footer-container{ldelim}
     border-top-color: {$tertiaryBackgroundColor};
 {rdelim}
 #header-container{ldelim}
     border-bottom-color: {$tertiaryBackgroundColor};
 {rdelim}
-{/if}
 
-{if $sidebarHighlightBackgroundColor || $sidebarHighlightForegroundColor}
 #vertical-menu-bar .menu-bar-option.menu-icon-selected,#vertical-menu-bar .menu-bar-option:hover{ldelim}
-    {if $sidebarHighlightBackgroundColor}
-        background-color: {$sidebarHighlightBackgroundColor};
-    {/if}
-    {if $sidebarHighlightForegroundColor}
-        color: {$sidebarHighlightForegroundColor};
-    {/if}
+    background-color: {$sidebarHighlightBackgroundColor};
+    color: {$sidebarHighlightForegroundColor};
 {rdelim}
-{/if}
 
 {* Browse Categories *}
-{if $browseCategoryPanelColor}
 #home-page-browse-header{ldelim}
     background-color: {$browseCategoryPanelColor};
 {rdelim}
-{/if}
 
-{if $deselectedBrowseCategoryBackgroundColor || $deselectedBrowseCategoryForegroundColor || $deselectedBrowseCategoryBorderColor}
 .browse-category,#browse-sub-category-menu button{ldelim}
-    {if $deselectedBrowseCategoryBackgroundColor}
-        background-color: {$deselectedBrowseCategoryBackgroundColor} !important;
-    {/if}
-    {if $deselectedBrowseCategoryBorderColor}
-        border-color: {$deselectedBrowseCategoryBorderColor} !important;
-    {/if}
-    {if $deselectedBrowseCategoryForegroundColor}
-        color: {$deselectedBrowseCategoryForegroundColor} !important;
-    {/if}
+    background-color: {$deselectedBrowseCategoryBackgroundColor} !important;
+    border-color: {$deselectedBrowseCategoryBorderColor} !important;
+    color: {$deselectedBrowseCategoryForegroundColor} !important;
 {rdelim}
-{/if}
 
-{if $selectedBrowseCategoryBackgroundColor || $selectedBrowseCategoryForegroundColor || $selectedBrowseCategoryBorderColor}
 .browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover{ldelim}
-    {if $selectedBrowseCategoryBorderColor}
-        border-color: {$selectedBrowseCategoryBorderColor} !important;
-    {/if}
-    {if $selectedBrowseCategoryBackgroundColor}
-        background-color: {$selectedBrowseCategoryBackgroundColor} !important;
-    {/if}
-    {if $selectedBrowseCategoryForegroundColor}
-        color: {$selectedBrowseCategoryForegroundColor} !important;
-    {/if}
+    border-color: {$selectedBrowseCategoryBorderColor} !important;
+    background-color: {$selectedBrowseCategoryBackgroundColor} !important;
+    color: {$selectedBrowseCategoryForegroundColor} !important;
 {rdelim}
-{/if}
 
 {if !empty($capitalizeBrowseCategories)}
 .browse-category div{ldelim}
@@ -225,173 +177,107 @@ body .container{ldelim}
 {rdelim}
 {/if}
 
-{if !empty($defaultButtonBackgroundColor) || !empty($defaultButtonForegroundColor) || !empty($defaultButtonBorderColor)}
 .btn-default{ldelim}
-    {if !empty($defaultButtonBackgroundColor)}
     background-color: {$defaultButtonBackgroundColor};
-    {/if}
-    {if !empty($defaultButtonForegroundColor)}
     color: {$defaultButtonForegroundColor};
-    {/if}
-    {if !empty($defaultButtonBorderColor)}
     border-color: {$defaultButtonBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($defaultButtonHoverBackgroundColor) || !empty($defaultButtonHoverForegroundColor) || !empty($defaultButtonHoverBorderColor)}
 .btn-default:hover, .btn-default:focus, .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default{ldelim}
-    {if !empty($defaultButtonHoverBackgroundColor)}
     background-color: {$defaultButtonHoverBackgroundColor};
-    {/if}
-    {if !empty($defaultButtonHoverForegroundColor)}
     color: {$defaultButtonHoverForegroundColor};
-    {/if}
-    {if !empty($defaultButtonHoverBorderColor)}
     border-color: {$defaultButtonHoverBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($primaryButtonBackgroundColor) || !empty($primaryButtonForegroundColor) || !empty($primaryButtonBorderColor)}
 .btn-primary{ldelim}
-    {if !empty($primaryButtonBackgroundColor)}
     background-color: {$primaryButtonBackgroundColor};
-    {/if}
-    {if !empty($primaryButtonForegroundColor)}
     color: {$primaryButtonForegroundColor};
-    {/if}
-    {if !empty($primaryButtonBorderColor)}
     border-color: {$primaryButtonBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($primaryButtonHoverBackgroundColor) || !empty($primaryButtonHoverForegroundColor) || !empty($primaryButtonHoverBorderColor)}
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary{ldelim}
-    {if !empty($primaryButtonHoverBackgroundColor)}
     background-color: {$primaryButtonHoverBackgroundColor};
-    {/if}
-    {if !empty($primaryButtonHoverForegroundColor)}
     color: {$primaryButtonHoverForegroundColor};
-    {/if}
-    {if !empty($primaryButtonHoverBorderColor)}
     border-color: {$primaryButtonHoverBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($actionButtonBackgroundColor) || !empty($actionButtonForegroundColor) || !empty($actionButtonBorderColor)}
 .btn-action{ldelim}
-    {if !empty($actionButtonBackgroundColor)}
     background-color: {$actionButtonBackgroundColor};
-    {/if}
-    {if !empty($actionButtonForegroundColor)}
     color: {$actionButtonForegroundColor};
-    {/if}
-    {if !empty($actionButtonBorderColor)}
     border-color: {$actionButtonBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($actionButtonHoverBackgroundColor) || !empty($actionButtonHoverForegroundColor) || !empty($actionButtonHoverBorderColor)}
 .btn-action:hover, .btn-action:focus, .btn-action:active, .btn-action.active, .open .dropdown-toggle.btn-action{ldelim}
-    {if !empty($actionButtonHoverBackgroundColor)}
     background-color: {$actionButtonHoverBackgroundColor};
-    {/if}
-    {if !empty($actionButtonHoverForegroundColor)}
     color: {$actionButtonHoverForegroundColor};
-    {/if}
-    {if !empty($actionButtonHoverBorderColor)}
     border-color: {$actionButtonHoverBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($infoButtonBackgroundColor) || !empty($infoButtonForegroundColor) || !empty($infoButtonBorderColor)}
 .btn-info{ldelim}
-    {if !empty($infoButtonBackgroundColor)}
     background-color: {$infoButtonBackgroundColor};
-    {/if}
-    {if !empty($infoButtonForegroundColor)}
     color: {$infoButtonForegroundColor};
-    {/if}
-    {if !empty($infoButtonBorderColor)}
     border-color: {$infoButtonBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($infoButtonHoverBackgroundColor) || !empty($infoButtonHoverForegroundColor) || !empty($infoButtonHoverBorderColor)}
 .btn-info:hover, .btn-info:focus, .btn-info:active, .btn-info.active, .open .dropdown-toggle.btn-info{ldelim}
-    {if !empty($infoButtonHoverBackgroundColor)}
     background-color: {$infoButtonHoverBackgroundColor};
-    {/if}
-    {if !empty($infoButtonHoverForegroundColor)}
     color: {$infoButtonHoverForegroundColor};
-    {/if}
-    {if !empty($infoButtonHoverBorderColor)}
     border-color: {$infoButtonHoverBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($warningButtonBackgroundColor) || !empty($warningButtonForegroundColor) || !empty($warningButtonBorderColor)}
 .btn-warning{ldelim}
-    {if !empty($warningButtonBackgroundColor)}
     background-color: {$warningButtonBackgroundColor};
-    {/if}
-    {if !empty($warningButtonForegroundColor)}
     color: {$warningButtonForegroundColor};
-    {/if}
-    {if !empty($warningButtonBorderColor)}
     border-color: {$warningButtonBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($warningButtonHoverBackgroundColor) || !empty($warningButtonHoverForegroundColor) || !empty($warningButtonHoverBorderColor)}
 .btn-warning:hover, .btn-warning:focus, .btn-warning:active, .btn-warning.active, .open .dropdown-toggle.btn-warning{ldelim}
-    {if !empty($warningButtonHoverBackgroundColor)}
     background-color: {$warningButtonHoverBackgroundColor};
-    {/if}
-    {if !empty($warningButtonHoverForegroundColor)}
     color: {$warningButtonHoverForegroundColor};
-    {/if}
-    {if !empty($warningButtonHoverBorderColor)}
     border-color: {$warningButtonHoverBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($dangerButtonBackgroundColor) || !empty($dangerButtonForegroundColor) || !empty($dangerButtonBorderColor)}
+.label-warning{ldelim}
+    background-color: {$warningButtonBackgroundColor};
+    color: {$warningButtonForegroundColor};
+{rdelim}
+
 .btn-danger{ldelim}
-    {if !empty($dangerButtonBackgroundColor)}
     background-color: {$dangerButtonBackgroundColor};
-    {/if}
-    {if !empty($dangerButtonForegroundColor)}
     color: {$dangerButtonForegroundColor};
-    {/if}
-    {if !empty($dangerButtonBorderColor)}
     border-color: {$dangerButtonBorderColor};
-    {/if}
 {rdelim}
-{/if}
 
-{if !empty($dangerButtonHoverBackgroundColor) || !empty($dangerButtonHoverForegroundColor) || !empty($dangerButtonHoverBorderColor)}
 .btn-danger:hover, .btn-danger:focus, .btn-danger:active, .btn-danger.active, .open .dropdown-toggle.btn-danger{ldelim}
-    {if !empty($dangerButtonHoverBackgroundColor)}
     background-color: {$dangerButtonHoverBackgroundColor};
-    {/if}
-    {if !empty($dangerButtonHoverForegroundColor)}
     color: {$dangerButtonHoverForegroundColor};
-    {/if}
-    {if !empty($dangerButtonHoverBorderColor)}
     border-color: {$dangerButtonHoverBorderColor};
+{rdelim}
+
+.label-danger{ldelim}
+    background-color: {$dangerButtonBackgroundColor};
+    color: {$dangerButtonForegroundColor};
+{rdelim}
+
+.btn-editions{ldelim}
+    background-color: {$editionsButtonBackgroundColor};
+    color: {$editionsButtonForegroundColor};
+    border-color: {$editionsButtonBorderColor};
+{rdelim}
+
+.btn-editions:hover, .btn-editions:focus, .btn-editions:active, .btn-editions.active{ldelim}
+    background-color: {$editionsButtonHoverBackgroundColor};
+    color: {$editionsButtonHoverForegroundColor};
+    border-color: {$editionsButtonHoverBorderColor};
+{rdelim}
+
+.badge{ldelim}
+    background-color: {$badgeBackgroundColor};
+    color: {$badgeForegroundColor};
+    {if (!empty($badgeBorderRadius))}
+    border-radius: {$badgeBorderRadius};
     {/if}
 {rdelim}
-{/if}
 
 {* Webbuilder*}
 #webMenuNavBar{ldelim}

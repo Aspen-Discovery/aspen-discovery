@@ -610,13 +610,6 @@ if (isset($_REQUEST['followup'])) {
 	$timer->logTime('Process followup');
 }
 
-//If there is a hold_message, make sure it gets displayed.
-/* //TODO deprecated, but there are still references in scripts that likely need removed
-if (isset($_SESSION['hold_message'])) {
-	$interface->assign('hold_message', formatHoldMessage($_SESSION['hold_message']));
-	unset($_SESSION['hold_message']);
-}*/
-
 //Load Menu if Web Builder is on
 global $enabledModules;
 if (array_key_exists('Web Builder', $enabledModules)){

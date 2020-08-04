@@ -50,7 +50,7 @@
 						</div>
 					{/if}
 				{/foreach}
-				</div>
+			</div>
 		{/if}
 	</div>
 {/if}

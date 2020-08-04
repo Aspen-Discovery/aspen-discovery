@@ -146,13 +146,13 @@
 							<div class="result-value col-tn-8 col-lg-9">
 								{$record.dueDate|date_format}
 								{if $record.overdue}
-									<span class="overdueLabel"> {translate text="OVERDUE"}</span>
+									&nbsp;<span class="label label-danger">{translate text="OVERDUE"}</span>
 								{elseif $record.daysUntilDue == 0}
-									<span class="dueSoonLabel"> ({translate text="Due today"})</span>
+									&nbsp;<span class="label label-warning">({translate text="Due today"})</span>
 								{elseif $record.daysUntilDue == 1}
-									<span class="dueSoonLabel"> ({translate text="Due tomorrow"})</span>
+									&nbsp;<span class="label label-warning"> {translate text="Due tomorrow"})</span>
 								{elseif $record.daysUntilDue <= 7}
-									<span class="dueSoonLabel"> ({translate text="Due in %1% days" 1=$record.daysUntilDue})</span>
+									&nbsp;<span class="label label-warning">({translate text="Due in %1% days" 1=$record.daysUntilDue})</span>
 								{/if}
 							</div>
 						</div>

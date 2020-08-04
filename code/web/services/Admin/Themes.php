@@ -46,4 +46,12 @@ class Admin_Themes extends ObjectEditor
 		//return 'For more information on themes see TBD';
 		return '';
 	}
+
+	function getExistingObjectById($id){
+		$existingObject = parent::getExistingObjectById($id);
+		if ($existingObject != null && $existingObject instanceof Theme){
+			$existingObject->applyDefaults();
+		}
+		return $existingObject;
+	}
 }

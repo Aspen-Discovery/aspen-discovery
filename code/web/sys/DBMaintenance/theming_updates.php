@@ -278,6 +278,44 @@ function getThemingUpdates()
 			]
 		],
 
+		'themes_editions_button_colors' => [
+			'title' => 'Theme - editions button colors',
+			'description' => 'Add definition for editions button colors',
+			'sql' => [
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonBackgroundColor CHAR(7) DEFAULT '#f8f9fa'",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonForegroundColor CHAR(7) DEFAULT '#212529'",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonBorderColor CHAR(7) DEFAULT '#999999'",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonHoverBackgroundColor CHAR(7) DEFAULT '#e2e6ea'",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonHoverBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonHoverForegroundColor CHAR(7) DEFAULT '#212529'",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonHoverBorderColor CHAR(7) DEFAULT '#dae0e5'",
+				"ALTER TABLE `themes` ADD COLUMN editionsButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
+			]
+		],
+
+		'themes_tools_button_colors' => [
+			'title' => 'Theme - tools button colors',
+			'description' => 'Add definition for tools button colors',
+			'sql' => [
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonBackgroundColor CHAR(7) DEFAULT '#4F4F4F'",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonBorderColor CHAR(7) DEFAULT '#636363'",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonHoverBackgroundColor CHAR(7) DEFAULT '#636363'",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonHoverBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonHoverForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonHoverBorderColor CHAR(7) DEFAULT '#636363'",
+				"ALTER TABLE `themes` ADD COLUMN toolsButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
+			]
+		],
+
 		'themes_footer_design' => [
 			'title' => 'Theme Footer',
 			'description' => 'Initial setup of footer colors and optional logos. ',
@@ -294,7 +332,7 @@ function getThemingUpdates()
 
 		'themes_panel_design' => [
 			'title' => 'Theme Panels',
-			'description' => 'Initial setup of footer colors and optional logos. ',
+			'description' => 'Initial setup of panel colors. ',
 			'continueOnError' => false,
 			'sql' => [
 				"ALTER TABLE themes ADD COLUMN closedPanelBackgroundColor CHAR(7) DEFAULT '#e7e7e7'",
@@ -306,6 +344,41 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN openPanelForegroundColor CHAR(7) DEFAULT '#ffffff'",
 				"ALTER TABLE themes ADD COLUMN openPanelForegroundColorDefault tinyint(1) DEFAULT 1",
 			],
+		],
+
+		'themes_panel_body_design' => [
+			'title' => 'Theme Panel Body',
+			'description' => 'Allow Panel body to be themed. ',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN panelBodyBackgroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE themes ADD COLUMN panelBodyBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN panelBodyForegroundColor CHAR(7) DEFAULT '#404040'",
+				"ALTER TABLE themes ADD COLUMN panelBodyForegroundColorDefault tinyint(1) DEFAULT 1",
+			],
+		],
+
+		'themes_link_color' => [
+			'title' => 'Theme Link Color',
+			'description' => 'Define Link Color. ',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN linkColor CHAR(7) DEFAULT '#3174AF'",
+				"ALTER TABLE themes ADD COLUMN linkColorDefault tinyint(1) DEFAULT 1",
+			]
+		],
+
+		'themes_badges' => [
+			'title' => 'Theme Badges',
+			'description' => 'Setup Theming for badges ',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN badgeBackgroundColor CHAR(7) DEFAULT '#666666'",
+				"ALTER TABLE themes ADD COLUMN badgeBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN badgeForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE themes ADD COLUMN badgeForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN badgeBorderRadius VARCHAR(6) DEFAULT null",
+			]
 		],
 	];
 }

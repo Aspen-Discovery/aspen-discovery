@@ -1,5 +1,5 @@
 {strip}
-	<h3>Contribute Content To The Archive</h3>
+	<h1>Contribute Content To The Archive</h1>
 	<div class="page">
 		{if $requestSubmitted}
 			{if !empty($error)}

@@ -613,7 +613,10 @@ class Millennium extends AbstractIlsDriver
 	 * @return array                         Array of error messages for errors that occurred
 	 */
 	public function updatePatronInfo($user, $canUpdateContactInfo){
-		$updateErrors = array();
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
 
 		if ($canUpdateContactInfo){
 			//Setup the call to Millennium
@@ -682,14 +685,14 @@ class Millennium extends AbstractIlsDriver
 			//Validate we have required info for notices
 			if (isset($extraPostInfo['notices'])){
 				if ($extraPostInfo['notices'] == 'z' && strlen($extraPostInfo['email']) == 0){
-					$updateErrors[] = 'To receive notices by email you must set an email address.';
+					$result['messages'][] = 'To receive notices by email you must set an email address.';
 				}elseif ($extraPostInfo['notices'] == 'p' && strlen($extraPostInfo['tele1']) == 0){
-					$updateErrors[] = 'To receive notices by phone you must provide a telephone number.';
+					$result['messages'][] = 'To receive notices by phone you must provide a telephone number.';
 				}elseif (strlen($extraPostInfo['addr1a']) == 0 || strlen($extraPostInfo['addr1b']) == 0){
-					$updateErrors[] = 'To receive notices by mail you must provide a complete mailing address.';
+					$result['messages'][] = 'To receive notices by mail you must provide a complete mailing address.';
 				}
-				if (count($updateErrors) > 0){
-					return $updateErrors;
+				if (count($result['messages']) > 0){
+					return $result;
 				}
 			}
 
@@ -708,6 +711,8 @@ class Millennium extends AbstractIlsDriver
 				$user->update();
 				global $memCache;
 				$memCache->delete("patron_dump_$barcode"); // because the update will affect the patron dump information also clear that cache as well
+				$result['success'] = true;
+				$result['messages'][] = 'Your account was updated successfully.';
 			}else{
 				// Doesn't look like the millennium (actually sierra) server ever provides error messages. plb 4-29-2015
 				if (preg_match('/<h2 class="errormessage">(.*?)<\/h2>/i', $sresult, $errorMatches)){
@@ -716,12 +721,12 @@ class Millennium extends AbstractIlsDriver
 					$errorMsg = 'There were errors updating your information.'; // generic error message
 				}
 
-				$updateErrors[] = $errorMsg;
+				$result['messages'][] = $errorMsg;
 			}
 		} else {
-			$updateErrors[] = 'You can not update your information.';
+			$result['messages'][] = 'You can not update your information.';
 		}
-		return $updateErrors;
+		return $result;
 	}
 
 	/** @var  int[] */

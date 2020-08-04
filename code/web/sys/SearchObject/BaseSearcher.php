@@ -40,6 +40,9 @@ abstract class SearchObject_BaseSearcher
 	// Used to pass hidden filter queries to Solr
 	protected $hiddenFilters = array();
 
+	//Limiters applied to the search
+	protected $limiters = array();
+
 	// STATS
 	protected $resultsTotal = 0;
 
@@ -914,6 +917,20 @@ abstract class SearchObject_BaseSearcher
 		$this->sort = $sort;
 	}
 
+	protected function initLimiters(){
+		if (isset($_REQUEST['limiters'])){
+			if (is_array($_REQUEST['limiters'])) {
+				foreach ($_REQUEST['limiters'] as $limiter) {
+					if (!is_array($limiter)) {
+						$this->limiters[strip_tags($limiter)] = true;
+					}
+				}
+			} else {
+				$this->limiters[strip_tags($_REQUEST['limiters'])] = true;
+			}
+		}
+	}
+
 	/**
 	 * Add filters to the object based on values found in the $_REQUEST super global.
 	 *
@@ -980,6 +997,12 @@ abstract class SearchObject_BaseSearcher
 						}
 					}
 				}
+			}
+		}
+
+		if (!empty($this->limiters)){
+			foreach ($this->limiters as $limit => $value){
+				$params[] = "limiters[]=$limit";
 			}
 		}
 
@@ -1128,7 +1151,7 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	/**
-	 * Return a url for the current search with a new limit
+	 * Return a url for the current search with a new limit (number of results)
 	 *
 	 * @param string $newLimit The new limit
 	 *
@@ -1154,6 +1177,58 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	/**
+	 * Return a url for the current search with a new limiter (checkbox)
+	 *
+	 * @param string $newLimit The new limit
+	 *
+	 * @return string         URL of a new search
+	 * @access public
+	 */
+	public function renderLinkWithLimiter($newLimit)
+	{
+		// Stash our old data for a minute
+		$oldLimiters = $this->limiters;
+		$oldPage = $this->page;
+		// Add the new limit
+		$this->limiters[$newLimit] = true;
+		// Remove page number
+		$this->page = 1;
+		// Get the new url
+		$url = $this->renderSearchUrl();
+		// Restore the old data
+		$this->limiters = $oldLimiters;
+		$this->page = $oldPage;
+		// Return the URL
+		return $url;
+	}
+
+	/**
+	 * Return a url for the current search with a new limiter (checkbox)
+	 *
+	 * @param string $newLimit The new limit
+	 *
+	 * @return string         URL of a new search
+	 * @access public
+	 */
+	public function renderLinkWithoutLimiter($newLimit)
+	{
+		// Stash our old data for a minute
+		$oldLimiters = $this->limiters;
+		$oldPage = $this->page;
+		// Add the new limit
+		unset($this->limiters[$newLimit]);
+		// Remove page number
+		$this->page = 1;
+		// Get the new url
+		$url = $this->renderSearchUrl();
+		// Restore the old data
+		$this->limiters = $oldLimiters;
+		$this->page = $oldPage;
+		// Return the URL
+		return $url;
+	}
+
+	/**
 	 * Return a list of urls for possible limits, along with which option
 	 *    should be currently selected.
 	 *
@@ -1168,9 +1243,10 @@ abstract class SearchObject_BaseSearcher
 		if (is_array($valid) && count($valid) > 0) {
 			foreach ($valid as $limit) {
 				$list[$limit] = array(
-					'limitUrl' => $this->renderLinkWithLimit($limit),
-					'desc' => $limit,
-					'selected' => ($limit == $this->limit)
+					'url' => $this->renderLinkWithLimit($limit),
+					'display' => $limit,
+					'value' => $limit,
+					'isApplied' => ($limit == $this->limit)
 				);
 			}
 		}

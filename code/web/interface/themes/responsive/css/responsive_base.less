@@ -156,6 +156,29 @@ body {
   }
 }
 
+.btn-editions{
+  display:inline;
+  color: #212529;
+  background-color: #f8f9fa;
+  border-color: #999999;
+  &:hover, &:focus, &:active{
+    color: #212529;
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+  }
+}
+
+.btn-tools{
+  color: #ffffff;
+  background-color: #747474;
+  border-color: #636363;
+  &:hover, &:focus, &:active{
+    color: #ffffff;
+    background-color: #636363;
+    border-color: #636363;
+  }
+}
+
 .tab-content {
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
@@ -223,7 +246,7 @@ div.striped {
 
 // Used on Checked Out Page
 .bg-overdue {
-  background-color: @state-danger-bg !important; // important is needed to override .striped on checked out page
+  background-color: #fcf2f2 !important; // important is needed to override .striped on checked out page
   a&:hover,
   a&:focus {
     background-color: darken(@state-danger-bg, 10%);
@@ -290,3 +313,4 @@ thead .sortAscHeader{
 @import "repository.less";
 @import "admin.less";
 @import "web-builder.less";
+@import "ebsco.less";

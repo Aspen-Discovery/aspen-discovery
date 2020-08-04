@@ -716,8 +716,13 @@ class LibrarySolution extends AbstractIlsDriver {
 		return $fines;
 	}
 
-    function updatePatronInfo($patron, $canUpdateContactInfo)
-    {
-        // TODO: Implement updatePatronInfo() method.
-    }
+	function updatePatronInfo($patron, $canUpdateContactInfo)
+	{
+		return [
+			'success' => false,
+			'messages' => [
+				'Cannot update patron information in Library.Solution'
+			]
+		];
+	}
 }

@@ -7,7 +7,6 @@ class BookCoverProcessor{
 	private $bookCoverInfo;
 	private $bookCoverPath;
 	private $localFile;
-	private $category;
 	private $size;
 	private $id;
 	private $isn;
@@ -253,7 +252,9 @@ class BookCoverProcessor{
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
 		$overDriveProduct = new OverDriveAPIProduct();
-		list(, $id) = explode(":", $id);
+		if (strpos($id, ':') !== false) {
+			list(, $id) = explode(":", $id);
+		}
 		$overDriveProduct->overdriveId = $id == null ? $this->id : $id;
 		if ($overDriveProduct->find(true)){
 			$overDriveMetadata = new OverDriveAPIProductMetaData();
@@ -403,7 +404,6 @@ class BookCoverProcessor{
 		$this->bookCoverInfo->recordType = $this->type;
 		$this->bookCoverInfo->find(true);
 
-		$this->category = !empty($_GET['category']) ? strtolower($_GET['category']) : null;
 		//First check to see if this has a custom cover due to being an e-book
 		if (!is_null($this->id)){
 			if ($this->isEContent){
@@ -635,7 +635,6 @@ class BookCoverProcessor{
 			if ($this->groupedWork){
 				$title = ucwords($this->groupedWork->getTitle());
 				$author = ucwords($this->groupedWork->getPrimaryAuthor());
-				$this->category = 'blank';
 			}
 		}else{
 			if ($recordDriver == null){

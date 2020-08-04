@@ -330,6 +330,15 @@ function getUserUpdates()
 				"ALTER TABLE user CHANGE COLUMN password password VARCHAR(60) DEFAULT ''",
 			]
 		],
+
+		'user_update_messages' => [
+			'title' => 'User Update Messages',
+			'description' => 'Add a field to store user update messages to avoid storing them wihtin a session',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN updateMessage TEXT',
+				'ALTER TABLE user ADD COLUMN updateMessageIsError TINYINT(0)'
+			]
+		]
 	);
 }
 

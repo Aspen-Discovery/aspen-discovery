@@ -186,7 +186,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
 	function updatePin(/** @noinspection PhpUnusedParameterInspection */ User $user, string $oldPin, string $newPin)
 	{
-		return ['success' => false, 'errors' => 'Can not update PINs, this ILS does not support updating PINs'];
+		return ['success' => false, 'message' => 'Can not update PINs, this ILS does not support updating PINs'];
 	}
 
 	function hasMaterialsRequestSupport()

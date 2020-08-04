@@ -52,6 +52,7 @@ class Redwood_ContributeContent extends Action{
 			$interface->assign('captcha', $captchaCode);
 		}
 
+		$interface->assign('formLabel', 'Contribute Content');
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);
 

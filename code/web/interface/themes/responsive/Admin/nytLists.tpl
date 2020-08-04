@@ -8,7 +8,7 @@
 		<div class="alert alert-info">{$successMessage}</div>
 	{/if}
 
-	<h3>{translate text="Create or Update a List"}</h3>
+	<h2>{translate text="Create or Update a List"}</h2>
 
 	<form action="" method="post" id="buildList">
 		<div class="form-group">
@@ -25,7 +25,7 @@
 	</form>
 
 	{if !empty($existingLists)}
-		<h3>Existing New York Times Lists</h3>
+		<h2>Existing New York Times Lists</h2>
 		<table class="table table-bordered table-hover">
 			<tr>
 				<th>

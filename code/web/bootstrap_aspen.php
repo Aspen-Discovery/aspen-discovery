@@ -62,7 +62,7 @@ function loadSearchInformation(){
 				$location = $locationSingleton->getActiveLocation();
 				list($enableCombinedResults, $showCombinedResultsFirst) = $searchSources::getCombinedSearchSetupParameters($location, $library);
 				if ($enableCombinedResults && $showCombinedResultsFirst){
-					$searchSource = 'combinedResults';
+					$searchSource = 'combined';
 				}else{
 					$searchSource = 'local';
 				}

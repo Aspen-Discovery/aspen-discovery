@@ -8876,7 +8876,7 @@ a.placard-link {
     padding-right: 1px;
   }
 }
-#horizontal-search-box #horizontal-search-label {
+#horizontal-search-label {
   color: #FFF;
   font-size: 14px;
   margin-top: 4px;
@@ -9524,10 +9524,6 @@ a.browse-thumbnail-sorted.active {
 }
 .return_claim {
   color: green;
-  font-weight: bold;
-}
-.dueSoonLabel {
-  color: #e58e29;
   font-weight: bold;
 }
 .holdDisclaimerLibrary {

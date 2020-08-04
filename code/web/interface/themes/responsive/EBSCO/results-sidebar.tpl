@@ -1,6 +1,15 @@
 {strip}
 	{include file="login-sidebar.tpl"}
 
+	{if $recordCount || $limitList}
+		<div id="refineSearch">
+			{* Narrow Results *}
+			<div class="row">
+				{include file="Search/Recommend/limits.tpl"}
+			</div>
+		</div>
+	{/if}
+
 	{if $recordCount || $sideRecommendations}
 		<div id="refineSearch">
 			{* Narrow Results *}

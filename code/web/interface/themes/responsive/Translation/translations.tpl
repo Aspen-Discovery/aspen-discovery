@@ -1,6 +1,6 @@
 {strip}
 <div id="main-content" class="col-md-12">
-	<h3>{translate text="Translations"}</h3>
+	<h1>{translate text="Translations"}</h1>
 	<form class="form" id="translationSettings">
 		<div class="form-group">
 			{if $translationModeActive}

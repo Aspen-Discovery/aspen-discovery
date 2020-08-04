@@ -26,27 +26,24 @@ class MyAccount_ResetPinPage extends MyAccount
 			// Save/Update Actions
 			global $offlineMode;
 			if (isset($_POST['updateScope']) && !$offlineMode) {
-				$updateResult = $user->updatePin();
-				if (!$updateResult['success']){
-					$interface->assign('profileUpdateErrors', $updateResult['errors']);
-				}else{
-					$interface->assign('profileUpdateMessage', $updateResult['message']);
-				}
+				$result = $user->updatePin();
+				$user->updateMessage = $result['message'];
+				$user->updateMessageIsError = !$result['success'];
+				$user->update();
 			} elseif (!$offlineMode) {
 				$interface->assign('edit', true);
 			} else {
 				$interface->assign('edit', false);
 			}
 
-			if (!empty($_SESSION['profileUpdateErrors'])) {
-				$interface->assign('profileUpdateErrors', $_SESSION['profileUpdateErrors']);
-				@session_start();
-				unset($_SESSION['profileUpdateErrors']);
-			}
-			if (!empty($_SESSION['profileUpdateMessage'])) {
-				$interface->assign('profileUpdateMessage', $_SESSION['profileUpdateMessage']);
-				@session_start();
-				unset($_SESSION['profileUpdateMessage']);
+			if (!empty($user->updateMessage)) {
+				if ($user->updateMessageIsError){
+					$interface->assign('profileUpdateErrors', $user->updateMessage);
+				}else{
+					$interface->assign('profileUpdateMessage', $user->updateMessage);
+				}
+				$user->updateMessage = '';
+				$user->update();
 			}
 
 			$interface->assign('profile', $user);

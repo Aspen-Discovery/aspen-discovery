@@ -11,26 +11,6 @@
 		</div>
 		<a name="top"></a>
 		<div class="col-xs-12 col-sm-3 text-right">
-			{if $google_translate_key}
-			{literal}
-				<div id="google_translate_element">
-				<script type="text/javascript">
-							function googleTranslateElementInit() {
-							new google.translate.TranslateElement({
-							pageLanguage: 'en',
-							layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-			{/literal}
-				{if $google_included_languages}
-				, includedLanguages: '{$google_included_languages}'
-				{/if}
-			{literal}
-							}, 'google_translate_element');
-							}
-				</script>
-				<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-				</div>
-			{/literal}
-			{/if}
 		</div>
 	</div>
 {/strip}

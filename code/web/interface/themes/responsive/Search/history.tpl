@@ -42,7 +42,7 @@
 			{/if}
 
 			{if $links}
-				<div class="resulthead"><h3>{translate text="history_recent_searches"}</h3></div>
+				<div class="resultHead"><h1>{translate text="history_recent_searches"}</h1></div>
 				<table class="table table-bordered table-striped" width="100%">
 					<tr>
 						<th width="15%">{translate text="history_time"}</th>
@@ -53,7 +53,7 @@
 						<th width="5%">{translate text="history_save"}</th>
 					</tr>
 					{foreach item=info from=$links name=historyLoop}
-					<tr>
+						<tr>
 							<td>{$info.time}</td>
 							<td><a href="{$info.url|escape}">{if empty($info.description)}{translate text="history_empty_search"}{else}{$info.description|escape}{/if}</a></td>
 							<td>
@@ -72,7 +72,7 @@
 			{/if}
 
 		{else}
-			<h3>{translate text="history_recent_searches"}</h3>
+			<h1>{translate text="history_recent_searches"}</h1>
 			{translate text="history_no_searches"}
 		{/if}
 	</div>

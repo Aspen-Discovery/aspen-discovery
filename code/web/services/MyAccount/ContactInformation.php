@@ -35,7 +35,6 @@ class MyAccount_ContactInformation extends MyAccount
 				$interface->assign('patronUpdateForm', $patronUpdateForm);
 			}
 
-			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
@@ -87,9 +86,10 @@ class MyAccount_ContactInformation extends MyAccount
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$updateScope = $_REQUEST['updateScope'];
 				if ($updateScope == 'contact') {
-					$errors = $patron->updatePatronInfo($canUpdateContactInfo);
-					session_start(); // any writes to the session storage also closes session. Happens in updatePatronInfo (for Horizon). plb 4-21-2015
-					$_SESSION['profileUpdateErrors'] = $errors;
+					$result = $patron->updatePatronInfo($canUpdateContactInfo);
+					$user->updateMessage = implode('<br/>', $result['messages']);
+					$user->updateMessageIsError = !$result['success'];
+					$user->update();
 				}
 
 				session_write_close();
@@ -102,15 +102,14 @@ class MyAccount_ContactInformation extends MyAccount
 				$interface->assign('edit', false);
 			}
 
-			if (!empty($_SESSION['profileUpdateErrors'])) {
-				$interface->assign('profileUpdateErrors', $_SESSION['profileUpdateErrors']);
-				@session_start();
-				unset($_SESSION['profileUpdateErrors']);
-			}
-			if (!empty($_SESSION['profileUpdateMessage'])) {
-				$interface->assign('profileUpdateMessage', $_SESSION['profileUpdateMessage']);
-				@session_start();
-				unset($_SESSION['profileUpdateMessage']);
+			if (!empty($user->updateMessage)) {
+				if ($user->updateMessageIsError){
+					$interface->assign('profileUpdateErrors', $user->updateMessage);
+				}else{
+					$interface->assign('profileUpdateMessage', $user->updateMessage);
+				}
+				$user->updateMessage = '';
+				$user->update();
 			}
 
 			$interface->assign('profile', $patron);

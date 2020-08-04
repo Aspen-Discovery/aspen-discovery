@@ -87,9 +87,10 @@ class MyAccount_Profile extends MyAccount
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$updateScope = $_REQUEST['updateScope'];
 				if ($updateScope == 'contact') {
-					$errors = $patron->updatePatronInfo($canUpdateContactInfo);
-					session_start(); // any writes to the session storage also closes session. Happens in updatePatronInfo (for Horizon). plb 4-21-2015
-					$_SESSION['profileUpdateErrors'] = $errors;
+					$result = $patron->updatePatronInfo($canUpdateContactInfo);
+					$user->updateMessage = implode('<br/>', $result['messages']);
+					$user->updateMessageIsError = !$result['success'];
+					$user->update();
 
 				}  elseif ($updateScope == 'userPreference') {
 					$patron->updateUserPreferences();
@@ -100,15 +101,10 @@ class MyAccount_Profile extends MyAccount
 				} elseif ($updateScope == 'hoopla') {
 					$patron->updateHooplaOptions();
 				} elseif ($updateScope == 'pin') {
-					$updateResult = $patron->updatePin();
-					if (!$updateResult['success']){
-						session_start(); // any writes to the session storage also closes session. possibly happens in updatePin. plb 4-21-2015
-						$_SESSION['profileUpdateErrors'] = $updateResult['errors'];
-						// Template checks for update Pin success message and presents as success even though stored in this errors variable
-					}else{
-						session_start();
-						$_SESSION['profileUpdateMessage'] = $updateResult['message'];
-					}
+					$result = $patron->updatePin();
+					$user->updateMessage = $result['message'];
+					$user->updateMessageIsError = !$result['success'];
+					$user->update();
 
 				}
 
@@ -122,27 +118,24 @@ class MyAccount_Profile extends MyAccount
 				$interface->assign('edit', false);
 			}
 
-			/** @var Translator $translator */
 			global $translator;
 			$notice         = $translator->translate('overdrive_account_preferences_notice');
-            require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-            $overDriveSettings = new OverDriveSetting();
-            $overDriveSettings->find((true));
-            $overDriveUrl = $overDriveSettings->url;
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+			$overDriveSettings = new OverDriveSetting();
+			$overDriveSettings->find((true));
+			$overDriveUrl = $overDriveSettings->url;
 			$replacementUrl = empty($overDriveUrl) ? '#' : $overDriveUrl;
 			$notice         = str_replace('{OVERDRIVEURL}', $replacementUrl, $notice); // Insert the Overdrive URL into the notice
 			$interface->assign('overdrivePreferencesNotice', $notice);
 
-
-			if (!empty($_SESSION['profileUpdateErrors'])) {
-				$interface->assign('profileUpdateErrors', $_SESSION['profileUpdateErrors']);
-				@session_start();
-				unset($_SESSION['profileUpdateErrors']);
-			}
-			if (!empty($_SESSION['profileUpdateMessage'])) {
-				$interface->assign('profileUpdateMessage', $_SESSION['profileUpdateMessage']);
-				@session_start();
-				unset($_SESSION['profileUpdateMessage']);
+			if (!empty($user->updateMessage)) {
+				if ($user->updateMessageIsError){
+					$interface->assign('profileUpdateErrors', $user->updateMessage);
+				}else{
+					$interface->assign('profileUpdateMessage', $user->updateMessage);
+				}
+				$user->updateMessage = '';
+				$user->update();
 			}
 
 			if ($showAlternateLibraryOptionsInProfile) {

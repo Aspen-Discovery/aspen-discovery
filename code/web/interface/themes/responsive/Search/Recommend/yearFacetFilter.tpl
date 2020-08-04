@@ -1,11 +1,11 @@
 <form id='{$title}Filter' action='{$fullPath}' class="form-inline">
 	<div class="facet-form">
 		<div class="form-group">
-			<label for="{$title}yearfrom" class='yearboxlabel sr-only control-label'>{translate text="From"}</label>
+			<label for="{$title}yearfrom" class='yearboxlabel sr-only control-label'>{$cluster.label} {translate text="from"}</label>
 			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="from" name="{$title}yearfrom" id="{$title}yearfrom" value="" />
 		</div>
 		<div class="form-group">
-			<label for="{$title}yearto" class='yearboxlabel sr-only control-label'>{translate text="To"}</label>
+			<label for="{$title}yearto" class='yearboxlabel sr-only control-label'>{$cluster.label} {translate text="to"}</label>
 			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="to" name="{$title}yearto" id="{$title}yearto" value="" />
 		</div>
 

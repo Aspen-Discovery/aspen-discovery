@@ -341,6 +341,10 @@ class ExploreMore {
 
 		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
+			$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		}
+
 		if (array_key_exists('Events', $enabledModules)) {
 			$exploreMoreOptions = $this->loadEventOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
@@ -353,10 +357,6 @@ class ExploreMore {
 
 		if (array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives) {
 			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
-		}
-
-		if (array_key_exists('EBSCO EDS', $enabledModules)) {
-			$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
 		if ($islandoraActive){
@@ -792,7 +792,7 @@ class ExploreMore {
 									if (in_array($facetValueStr, array('Magazines', 'News', 'Academic Journals', 'Primary Source Documents'))) {
 										$numFacetMatches = (int)$facetValue->Count;
 										$iconName = 'ebsco_' . str_replace(' ', '_', strtolower($facetValueStr));
-										$exploreMoreOptions['sampleRecords']['ebsco_eds'][] = array(
+										$exploreMoreOptions['searchLinks'][] = array(
 											'label' => "$facetValueStr ({$numFacetMatches})",
 											'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",
 											'image' => "/interface/themes/responsive/images/{$iconName}.png",

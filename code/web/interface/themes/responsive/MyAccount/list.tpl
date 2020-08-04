@@ -2,7 +2,7 @@
 	<form action="/MyAccount/MyList/{$userList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
-			<h3 id="listTitle">{$userList->title|escape:"html"}</h3>
+			<h1 id="listTitle">{$userList->title|escape:"html"}</h1>
 			{if $notes}
 				<div id="listNotes">
 				{foreach from=$notes item="note"}

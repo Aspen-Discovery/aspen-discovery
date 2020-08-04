@@ -14,7 +14,7 @@
 				<div class='libraryHours alert alert-success'>{$libraryHoursMessage}</div>
 			{/if}
 
-			<h3>My Scheduled Items</h3>
+			<h1>My Scheduled Items</h1>
 
 			{if $offline}
 				<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your scheduled items at this time.</div>

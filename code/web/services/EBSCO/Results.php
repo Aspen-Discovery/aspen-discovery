@@ -5,6 +5,11 @@ class EBSCO_Results extends Action{
 		global $interface;
 		global $timer;
 		global $aspenUsage;
+
+		if (!isset($_REQUEST['lookfor']) || empty($_REQUEST['lookfor'])){
+			$this->display('noSearchTerm.tpl', 'Please enter a search term');
+		}
+
 		$aspenUsage->ebscoEdsSearches++;
 
 		//Include Search Engine
@@ -63,6 +68,8 @@ class EBSCO_Results extends Action{
 
 		$appliedFacets = $searchObject->getFilterList();
 		$interface->assign('filterList', $appliedFacets);
+		$limitList = $searchObject->getLimitList();
+		$interface->assign('limitList', $limitList);
 		$facetSet = $searchObject->getFacetSet();
 		$interface->assign('sideFacetSet', $facetSet);
 
@@ -94,6 +101,14 @@ class EBSCO_Results extends Action{
 		$interface->assign('exploreMoreSection', 'ebsco_eds');
 		$interface->assign('showExploreMoreBar', $showExploreMoreBar);
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
+
+		//Check for research starters
+		$researchStarters = $searchObject->getResearchStarters($_REQUEST['lookfor']);
+		$researchStarterHtml = '';
+		foreach ($researchStarters as $researchStarter){
+			$researchStarterHtml .= $researchStarter->getDisplayHtml();
+		}
+		$interface->assign('researchStarters', $researchStarterHtml);
 
 		$displayTemplate = 'EBSCO/list-list.tpl'; // structure for regular results
 		$interface->assign('subpage', $displayTemplate);

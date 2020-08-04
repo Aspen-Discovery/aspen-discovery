@@ -11,8 +11,9 @@ class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 	private $edsSettings;
 	private $edsBaseApi = 'https://eds-api.ebscohost.com/edsapi/rest';
 	private $curl_connection;
-	private $sessionId;
-	private $authenticationToken;
+	private static $sessionId;
+	private static $authenticationToken;
+	private static $searchOptions;
 
 	protected $queryStartTime = null;
 	protected $queryEndTime = null;
@@ -74,6 +75,7 @@ class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 		$this->initPage();
 		$this->initSort();
 		$this->initFilters();
+		$this->initLimiters();
 
 		//********************
 		// Basic Search logic
@@ -111,23 +113,9 @@ class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 		return $this->edsSettings;
 	}
 
-	public function authenticate(){
-		global $library;
-		$settings = $this->getSettings();
-		if ($settings->edsApiProfile){
-			$this->curl_connection = curl_init("https://eds-api.ebscohost.com/authservice/rest/uidauth");
-			/** @noinspection XmlUnusedNamespaceDeclaration */
-			$params =
-				"<UIDAuthRequestMessage xmlns=\"http://www.ebscohost.com/services/public/AuthService/Response/2012/06/01\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">
-				    <UserId>{$settings->edsApiUsername}</UserId>
-				    <Password>{$settings->edsApiPassword}</Password>
-				    <InterfaceId>{$settings->edsApiProfile}</InterfaceId>
-				</UIDAuthRequestMessage>";
-			$headers = array(
-				'Content-Type: application/xml',
-				'Content-Length: ' . strlen($params)
-			);
-
+	public function getCurlConnection(){
+		if ($this->curl_connection == null){
+			$this->curl_connection = curl_init();
 			curl_setopt($this->curl_connection, CURLOPT_CONNECTTIMEOUT, 15);
 			curl_setopt($this->curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, true);
@@ -135,65 +123,91 @@ class SearchObject_EbscoEdsSearcher extends SearchObject_BaseSearcher {
 			curl_setopt($this->curl_connection, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($this->curl_connection, CURLOPT_TIMEOUT, 30);
 			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, TRUE);
-			curl_setopt($this->curl_connection, CURLOPT_POST, true);
-			curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, $headers);
-			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $params);
+		}
+		return $this->curl_connection;
+	}
 
-			$return = curl_exec($this->curl_connection);
-			$authenticationResponse = new SimpleXMLElement($return);
-			if ($authenticationResponse && isset($authenticationResponse->AuthToken)){
-				$this->authenticationToken = (string)$authenticationResponse->AuthToken;
-
-				curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, $headers);
-
+	public function authenticate(){
+		if (SearchObject_EbscoEdsSearcher::$authenticationToken == null){
+			global $library;
+			$settings = $this->getSettings();
+			if ($settings->edsApiProfile){
+				$curlConnection = $this->getCurlConnection();
+				curl_setopt($curlConnection, CURLOPT_URL, "https://eds-api.ebscohost.com/authservice/rest/uidauth");
+				$isGuest = UserAccount::isLoggedIn() ? 'N' : 'Y';
 				/** @noinspection XmlUnusedNamespaceDeclaration */
-				$params =<<<BODY
+				$params =
+					"<UIDAuthRequestMessage xmlns=\"http://www.ebscohost.com/services/public/AuthService/Response/2012/06/01\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">
+				    <UserId>{$settings->edsApiUsername}</UserId>
+				    <Password>{$settings->edsApiPassword}</Password>
+				    <InterfaceId>{$settings->edsApiProfile}</InterfaceId>
+				    <Guest>$isGuest</Guest>
+				</UIDAuthRequestMessage>";
+				$headers = array(
+					'Content-Type: application/xml',
+					'Content-Length: ' . strlen($params)
+				);
+
+				curl_setopt($curlConnection, CURLOPT_POST, true);
+				curl_setopt($curlConnection, CURLOPT_HTTPHEADER, $headers);
+				curl_setopt($curlConnection, CURLOPT_POSTFIELDS, $params);
+
+				$return = curl_exec($curlConnection);
+				$authenticationResponse = new SimpleXMLElement($return);
+				if ($authenticationResponse && isset($authenticationResponse->AuthToken)){
+					SearchObject_EbscoEdsSearcher::$authenticationToken = (string)$authenticationResponse->AuthToken;
+
+					/** @noinspection XmlUnusedNamespaceDeclaration */
+					$params =<<<BODY
 <CreateSessionRequestMessage xmlns="http://epnet.com/webservices/EbscoApi/Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
   <Profile>{$settings->edsApiProfile}</Profile>
-  <Guest>n</Guest>
+  <Guest>$isGuest</Guest>
   <Org>{$library->displayName}</Org>
 </CreateSessionRequestMessage>
 BODY;
 
-				$headers = array(
+					$headers = array(
 						'Content-Type: application/xml',
 						'Content-Length: ' . strlen($params),
-						'x-authenticationToken: ' . $this->authenticationToken
-				);
-				curl_setopt($this->curl_connection, CURLOPT_POST, true);
-				curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, $headers);
-				curl_setopt($this->curl_connection, CURLOPT_URL, $this->edsBaseApi . '/createsession');
-				curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $params);
-				$result = curl_exec($this->curl_connection);
-				if ($result == false){
-					echo("Error getting session token");
-					echo(curl_error($this->curl_connection));
-					return false;
-				}else {
-					/** @var stdClass $createSessionResponse */
-					$createSessionResponse = new SimpleXMLElement($result);
-					if ($createSessionResponse->SessionToken) {
-						$this->sessionId = (string)$createSessionResponse->SessionToken;
-						//echo("Authenticated in EDS!");
-						return true;
-					} elseif ($createSessionResponse->ErrorDescription) {
-						echo("create session failed, " . print_r($createSessionResponse));
+						'x-authenticationToken: ' . SearchObject_EbscoEdsSearcher::$authenticationToken
+					);
+					curl_setopt($curlConnection, CURLOPT_POST, true);
+					curl_setopt($curlConnection, CURLOPT_HTTPHEADER, $headers);
+					curl_setopt($curlConnection, CURLOPT_URL, $this->edsBaseApi . '/createsession');
+					curl_setopt($curlConnection, CURLOPT_POSTFIELDS, $params);
+					$result = curl_exec($curlConnection);
+					if ($result == false){
+						echo("Error getting session token");
+						echo(curl_error($curlConnection));
 						return false;
+					}else {
+						/** @var stdClass $createSessionResponse */
+						$createSessionResponse = new SimpleXMLElement($result);
+						if ($createSessionResponse->SessionToken) {
+							SearchObject_EbscoEdsSearcher::$sessionId = (string)$createSessionResponse->SessionToken;
+							//echo("Authenticated in EDS!");
+							return true;
+						} elseif ($createSessionResponse->ErrorDescription) {
+							echo("create session failed, " . print_r($createSessionResponse));
+							return false;
+						}
 					}
+				}else{
+					echo("Authentication failed!, $return");
+					return false;
 				}
 			}else{
-				echo("Authentication failed!, $return");
 				return false;
 			}
-		}else{
 			return false;
+		}else{
+			return true;
 		}
-		return false;
 	}
 
 	public function endSession(){
 		if ($this->curl_connection) {
-			curl_setopt($this->curl_connection, CURLOPT_URL, $this->edsBaseApi . '/endsession?sessiontoken=' . $this->sessionId);
+			curl_setopt($this->curl_connection, CURLOPT_URL, $this->edsBaseApi . '/endsession?sessiontoken=' . SearchObject_EbscoEdsSearcher::$sessionId);
 			curl_exec($this->curl_connection);
 		}
 	}
@@ -333,8 +347,8 @@ BODY;
 		//global $logger;
 		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults->Data->Records)) {
-			for ($x = 0; $x < count($this->lastSearchResults->Data->Records->Record); $x++) {
-				$current = &$this->lastSearchResults->Data->Records->Record[$x];
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 
@@ -352,33 +366,32 @@ BODY;
 	}
 
 	public function getSearchOptions() {
-		if (!$this->authenticate()){
-			return null;
-		}
+		if (SearchObject_EbscoEdsSearcher::$searchOptions == null){
+			if (!$this->authenticate()){
+				return null;
+			}
 
-		global $memCache;
-		global $library;
-		global $configArray;
-		$searchOptionsStr = $memCache->get('ebsco_search_options_' . $library->subdomain);
-		if ($searchOptionsStr == false || isset ($_REQUEST['reload'])){
-			curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
-			curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
-					'x-authenticationToken: ' . $this->authenticationToken,
-					'x-sessionToken: ' . $this->sessionId,
+			$curlConnection = $this->getCurlConnection();
+			curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
+			curl_setopt($curlConnection, CURLOPT_HTTPHEADER, array(
+				'Content-Type: application/json',
+				'Accept: application/json',
+				'x-authenticationToken: ' . SearchObject_EbscoEdsSearcher::$authenticationToken,
+				'x-sessionToken: ' . SearchObject_EbscoEdsSearcher::$sessionId,
 			));
 			$infoUrl = $this->edsBaseApi . '/info';
-			curl_setopt($this->curl_connection, CURLOPT_URL, $infoUrl);
-			$searchOptionsStr = curl_exec($this->curl_connection);
-			$memCache->set('ebsco_search_options_' . $library->subdomain, $searchOptionsStr, $configArray['Caching']['ebsco_options']);
-		}
+			curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
+			$searchOptionsStr = curl_exec($curlConnection);
 
-		$infoData = new SimpleXMLElement($searchOptionsStr);
-		if ($infoData){
-			return $infoData;
+			SearchObject_EbscoEdsSearcher::$searchOptions = json_decode($searchOptionsStr);
+			if (SearchObject_EbscoEdsSearcher::$searchOptions){
+				return SearchObject_EbscoEdsSearcher::$searchOptions;
+			}else{
+				return null;
+			}
 		}else{
-			return null;
+			return SearchObject_EbscoEdsSearcher::$searchOptions;
 		}
-
 	}
 
 	public function getSearchIndexes(){
@@ -392,8 +405,8 @@ BODY;
 				$searchOptions = $this->getSearchOptions();
 				$searchIndexes = array();
 				if ($searchOptions != null) {
-					foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields->AvailableSearchField as $searchField) {
-						$searchIndexes[(string)$searchField->FieldCode] = (string)$searchField->Label;
+					foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields as $searchField) {
+						$searchIndexes[$searchField->FieldCode] = $searchField->Label;
 					}
 				}
 				global $configArray;
@@ -405,15 +418,13 @@ BODY;
 	}
 
 	public function getSortList() {
-		$searchOptions = $this->getSearchOptions();
+		$sortOptions = $this->getSortOptions();
 		$list = array();
-		if ($searchOptions != null){
-			foreach ($searchOptions->AvailableSearchCriteria->AvailableSorts->AvailableSort as $sortOption){
-				$sort = (string)$sortOption->Id;
-				$desc = (string)$sortOption->Label;
+		if ($sortOptions != null){
+			foreach ($sortOptions as $sort => $label){
 				$list[$sort] = array(
 						'sortUrl' => $this->renderLinkWithSort($sort),
-						'desc' => $desc,
+						'desc' => $label,
 						'selected' => ($sort == $this->sort)
 				);
 
@@ -424,17 +435,23 @@ BODY;
 	}
 
 	public function getSortOptions() {
-		$searchOptions = $this->getSearchOptions();
-		$list = array();
-		if ($searchOptions != null){
-			foreach ($searchOptions->AvailableSearchCriteria->AvailableSorts->AvailableSort as $sortOption){
-				$sort = (string)$sortOption->Id;
-				$desc = (string)$sortOption->Label;
-				$list[$sort] = $desc;
+		global $memCache;
+		$sortOptions = $memCache->get('ebsco_eds_sort_options_' . $this->getSettings()->edsApiProfile);
+		if ($sortOptions === false) {
+			$searchOptions = $this->getSearchOptions();
+			$sortOptions = array();
+			if ($searchOptions != null) {
+				foreach ($searchOptions->AvailableSearchCriteria->AvailableSorts as $sortOption) {
+					$sort = $sortOption->Id;
+					$desc = $sortOption->Label;
+					$sortOptions[$sort] = $desc;
+				}
 			}
+			global $configArray;
+			$memCache->set('ebsco_eds_sort_options_' . $this->getSettings()->edsApiProfile, $sortOptions, $configArray['Caching']['ebsco_options']);
 		}
 
-		return $list;
+		return $sortOptions;
 	}
 
 	/**
@@ -498,16 +515,17 @@ BODY;
 		if (!$this->authenticate()){
 			return null;
 		}else{
-			curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
-			curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
+			$curlConnection = $this->getCurlConnection();
+			curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
+			curl_setopt($curlConnection, CURLOPT_HTTPHEADER, array(
 				'Content-Type: application/json',
 				'Accept: application/json',
-				'x-authenticationToken: ' . $this->authenticationToken,
-				'x-sessionToken: ' . $this->sessionId,
+				'x-authenticationToken: ' . SearchObject_EbscoEdsSearcher::$authenticationToken,
+				'x-sessionToken: ' . SearchObject_EbscoEdsSearcher::$sessionId,
 			));
 			$infoUrl = $this->edsBaseApi . "/Retrieve?an=$an&dbid=$dbId";
-			curl_setopt($this->curl_connection, CURLOPT_URL, $infoUrl);
-			$recordInfoStr = curl_exec($this->curl_connection);
+			curl_setopt($curlConnection, CURLOPT_URL, $infoUrl);
+			$recordInfoStr = curl_exec($curlConnection);
 			if ($recordInfoStr == false){
 				return null;
 			}else{
@@ -524,7 +542,8 @@ BODY;
 
 	function getSearchesFile()
 	{
-		// TODO: Implement getSearchesFile() method.
+		// EBSCO does not have a searches file, we load dynamically
+		return false;
 	}
 
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
@@ -534,34 +553,45 @@ BODY;
 		}
 
 		$this->startQueryTimer();
+		$hasSearchTerm = false;
 		if (is_array($this->searchTerms)){
 			$searchUrl = $this->edsBaseApi . '/search?';
 			$termIndex = 1;
 			foreach ($this->searchTerms as $term){
-				if ($termIndex > 1) $searchUrl .= '&';
-				$term = str_replace(',', '', $term);
-				$searchIndex = $term['index'];
-				$searchUrl .= "query-{$termIndex}=AND," . urlencode($searchIndex . ":" . $term['lookfor']);
-				$termIndex++;
+				if (!empty($term)) {
+					if ($termIndex > 1) $searchUrl .= '&';
+					$term = str_replace(',', '', $term);
+					$searchIndex = $term['index'];
+					$searchUrl .= "query-{$termIndex}=AND," . urlencode($searchIndex . ":" . $term['lookfor']);
+					$termIndex++;
+					$hasSearchTerm = true;
+				}
 			}
 		}else{
 			if (isset($_REQUEST['searchIndex'])) {
 				$this->searchIndex = $_REQUEST['searchIndex'];
 			}
 			$searchTerms = str_replace(',', '', $this->searchTerms);
-			$searchTerms = $this->searchIndex . ':' .$searchTerms;
-			$searchUrl = $this->edsBaseApi . '/Search?query=' . urlencode($searchTerms);
+			if (!empty($searchTerms)) {
+				$searchTerms = $this->searchIndex . ':' . $searchTerms;
+				$searchUrl = $this->edsBaseApi . '/Search?query=' . urlencode($searchTerms);
+				$hasSearchTerm = true;
+			}
+		}
+		if (!$hasSearchTerm){
+			return new AspenError('Please specify a search term');
 		}
 		$searchUrl .= '&searchmode=all';
 
-		$searchUrl .= '&sort=' . $this->sort;
-
-		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
+		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page']) && $_REQUEST['page'] != 1){
 			$this->page = $_REQUEST['page'];
 			$searchUrl .= '&pagenumber=' . $this->page;
 		}else{
 			$this->page = 1;
+			$searchUrl .= '&relatedcontent=rs';
 		}
+
+		$searchUrl .= '&sort=' . $this->sort;
 
 		$searchUrl .= "&highlight=n&view=detailed&autosuggest=n&autocorrect=n";
 
@@ -585,16 +615,21 @@ BODY;
 			$facetIndex++;
 		}
 
-		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
+		foreach ($this->limiters as $limiter => $value) {
+			$searchUrl .= '&limiter=' . $limiter . ':y';
+		}
 
-		curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, array(
+		$curlConnection = $this->getCurlConnection();
+		curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
+
+		curl_setopt($curlConnection, CURLOPT_HTTPHEADER, array(
 			'Content-Type: application/json',
 			'Accept: application/json',
-			'x-authenticationToken: ' . $this->authenticationToken,
-			'x-sessionToken: ' . $this->sessionId,
+			'x-authenticationToken: ' . SearchObject_EbscoEdsSearcher::$authenticationToken,
+			'x-sessionToken: ' . SearchObject_EbscoEdsSearcher::$sessionId,
 		));
-		curl_setopt($this->curl_connection, CURLOPT_URL, $searchUrl);
-		$result = curl_exec($this->curl_connection);
+		curl_setopt($curlConnection, CURLOPT_URL, $searchUrl);
+		$result = curl_exec($curlConnection);
 		try {
 			$searchData = json_decode($result);
 			$this->stopQueryTimer();
@@ -607,7 +642,7 @@ BODY;
 				global $configArray;
 				global $logger;
 				if ($configArray['System']['debug']) {
-					$curlInfo = curl_getinfo($this->curl_connection);
+					$curlInfo = curl_getinfo($curlConnection);
 					$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
 				}
 				$this->lastSearchResults = false;
@@ -743,5 +778,109 @@ BODY;
 			$records[$index] = new EbscoRecordDriver($id);
 		}
 		return $records;
+	}
+
+	public function getLimitList(){
+		global $memCache;
+		$limitOptions = $memCache->get('ebsco_eds_limit_options_' . $this->getSettings()->edsApiProfile);
+		if ($limitOptions === false) {
+			$searchOptions = $this->getSearchOptions();
+			$limitOptions = array();
+			if ($searchOptions != null) {
+				foreach ($searchOptions->AvailableSearchCriteria->AvailableLimiters as $limitOption) {
+					if ($limitOption->Type == 'select') {
+						$limit = $limitOption->Id;
+						$desc = $limitOption->Label;
+						$limitOptions[$limit] = [
+							'display' => $desc,
+							'value' => $limit,
+						];
+					}
+				}
+				global $configArray;
+				$memCache->set('ebsco_eds_limit_options_' . $this->getSettings()->edsApiProfile, $limitOptions, $configArray['Caching']['ebsco_options']);
+			}
+		}
+		$limitList = [];
+		foreach ($limitOptions as $limit => $limitOption){
+			$limitList[$limit] = [
+				'url' => $this->renderLinkWithLimiter($limit),
+				'removalUrl' => $this->renderLinkWithoutLimiter($limit),
+				'display' => $limitOption['display'],
+				'value' => $limit,
+				'isApplied' => array_key_exists($limit, $this->limiters),
+			];
+		}
+
+		return $limitList;
+	}
+
+	public function getResearchStarters($searchTerm = null){
+		$researchStarters = [];
+		if (UserAccount::isLoggedIn()){
+			$user = UserAccount::getActiveUserObj();
+			if ($user->hideResearchStarters == 1){
+				return $researchStarters;
+			}
+		}
+		if (empty($this->lastSearchResults) || $this->searchIndex == 'TX'){
+			$searchResults = null;
+			if (!empty($searchTerm)){
+				if ($this->authenticate()){
+
+					$searchUrl = $this->edsBaseApi . '/Search?query=' . urlencode($searchTerm);
+
+					$searchUrl .= '&includefacets=n&searchmode=all&relatedcontent=rs&highlight=n&view=title&autosuggest=n&autocorrect=n';
+
+					$curlConnection = $this->getCurlConnection();
+					curl_setopt($curlConnection, CURLOPT_HTTPGET, true);
+
+					curl_setopt($curlConnection, CURLOPT_HTTPHEADER, array(
+						'Content-Type: application/json',
+						'Accept: application/json',
+						'x-authenticationToken: ' . SearchObject_EbscoEdsSearcher::$authenticationToken,
+						'x-sessionToken: ' . SearchObject_EbscoEdsSearcher::$sessionId,
+					));
+					curl_setopt($curlConnection, CURLOPT_URL, $searchUrl);
+					$result = curl_exec($curlConnection);
+					try {
+						$searchData = json_decode($result);
+						if ($searchData && empty($searchData->ErrorNumber)){
+							$searchResults = $searchData->SearchResult;
+						}else{
+							global $configArray;
+							global $logger;
+							if ($configArray['System']['debug']) {
+								$curlInfo = curl_getinfo($curlConnection);
+								$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
+							}
+						}
+					}catch (Exception $e){
+						global $logger;
+						$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
+					}
+				}
+			}
+		}else{
+			$searchResults = $this->lastSearchResults;
+		}
+		if ($searchResults != null){
+			if (!empty($searchResults->RelatedContent)){
+				foreach ($searchResults->RelatedContent->RelatedRecords as $relatedRecord){
+					if ($relatedRecord->Type == 'rs'){
+						foreach ($relatedRecord->Records as $record) {
+							require_once ROOT_DIR . '/sys/Ebsco/ResearchStarter.php';
+							$researchStarter = new ResearchStarter();
+							$researchStarter->setRecordDriver(new EbscoRecordDriver($record));
+							if (!$researchStarter->isHidden()) {
+								$researchStarters[] = $researchStarter;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return $researchStarters;
 	}
 }

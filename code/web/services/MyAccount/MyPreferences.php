@@ -45,17 +45,19 @@ class MyAccount_MyPreferences extends MyAccount
 				$interface->assign('showUsernameField', false);
 			}
 
+			$showAutoRenewSwitch = $user->getShowAutoRenewSwitch();
+			$interface->assign('showAutoRenewSwitch', $showAutoRenewSwitch);
+			if ($showAutoRenewSwitch){
+				$interface->assign('autoRenewalEnabled', $user->isAutoRenewalEnabledForUser());
+			}
+
 			// Save/Update Actions
 			global $offlineMode;
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$result = $patron->updateUserPreferences();
-				if ($result['success'] == false){
-					$_SESSION['profileUpdateErrors'] = [];
-					$_SESSION['profileUpdateErrors'][] = $result['message'];
-				}else{
-					$_SESSION['profileUpdateMessage'] = [];
-					$_SESSION['profileUpdateMessage'][] = $result['message'];
-				}
+				$user->updateMessage = implode('<br/>', $result['messages']);
+				$user->updateMessageIsError = !$result['success'];
+				$user->update();
 
 				session_write_close();
 				$actionUrl = '/MyAccount/MyPreferences' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
@@ -66,6 +68,14 @@ class MyAccount_MyPreferences extends MyAccount
 			} else {
 				$interface->assign('edit', false);
 			}
+
+			global $enabledModules;
+			global $library;
+			$showEdsPreferences = false;
+			if (array_key_exists('EBSCO EDS', $enabledModules) && !empty($library->edsSettingsId)){
+				$showEdsPreferences = true;
+			}
+			$interface->assign('showEdsPreferences', $showEdsPreferences);
 
 			if ($showAlternateLibraryOptionsInProfile) {
 				//Get the list of locations for display in the user interface.
@@ -82,15 +92,14 @@ class MyAccount_MyPreferences extends MyAccount
 
 			$interface->assign('profile', $patron);
 
-			if (!empty($_SESSION['profileUpdateErrors'])) {
-				$interface->assign('profileUpdateErrors', $_SESSION['profileUpdateErrors']);
-				@session_start();
-				unset($_SESSION['profileUpdateErrors']);
-			}
-			if (!empty($_SESSION['profileUpdateMessage'])) {
-				$interface->assign('profileUpdateMessage', $_SESSION['profileUpdateMessage']);
-				@session_start();
-				unset($_SESSION['profileUpdateMessage']);
+			if (!empty($user->updateMessage)) {
+				if ($user->updateMessageIsError){
+					$interface->assign('profileUpdateErrors', $user->updateMessage);
+				}else{
+					$interface->assign('profileUpdateMessage', $user->updateMessage);
+				}
+				$user->updateMessage = '';
+				$user->update();
 			}
 		}
 

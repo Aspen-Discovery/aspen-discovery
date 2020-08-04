@@ -40,11 +40,12 @@ class User extends DataObject
 	public $lockedFacets;
 	public $alternateLibraryCard;
 	public $alternateLibraryCardPassword;
+	public $hideResearchStarters;
 
 	/** @var Role[] */
 	private $_roles;
-	private $masqueradingRoles;
-	private $masqueradeLevel;
+	private $_masqueradingRoles;
+	private $_masqueradeLevel;
 
 	public $interfaceLanguage;
 	public $searchPreferenceLanguage;
@@ -54,6 +55,9 @@ class User extends DataObject
 	public $lastListUsed;
 
 	public $lastLoginValidation;
+
+	public $updateMessage;
+	public $updateMessageIsError;
 
 	/** @var User $parentUser */
 	private $parentUser;
@@ -106,7 +110,7 @@ class User extends DataObject
 
 	function getNumericColumnNames()
 	{
-		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded'];
+		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
 	}
 
 	function getLists() {
@@ -264,17 +268,17 @@ class User extends DataObject
 
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		if ($masqueradeMode && !$isGuidingUser) {
-			if (is_null($this->masqueradingRoles)) {
+			if (is_null($this->_masqueradingRoles)) {
 				/** @var User $guidingUser */
 				$guidingUser = UserAccount::getGuidingUserObject();
 				$guidingUserRoles = $guidingUser->getRoles(true);
 				if (in_array('opacAdmin', $guidingUserRoles)) {
-					$this->masqueradingRoles = $this->_roles;
+					$this->_masqueradingRoles = $this->_roles;
 				} else {
-					$this->masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
+					$this->_masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
 				}
 			}
-			return $this->masqueradingRoles;
+			return $this->_masqueradingRoles;
 		}
 		return $this->_roles;
 	}
@@ -776,9 +780,22 @@ class User extends DataObject
 
 		$this->noPromptForUserReviews = (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on')? 1 : 0;
 		$this->rememberHoldPickupLocation = (isset($_POST['rememberHoldPickupLocation']) && $_POST['rememberHoldPickupLocation'] == 'on')? 1 : 0;
+		global $enabledModules;
+		global $library;
+		if (array_key_exists('EBSCO EDS', $enabledModules) && !empty($library->edsSettingsId)){
+			$this->hideResearchStarters = (isset($_POST['hideResearchStarters']) && $_POST['hideResearchStarters'] == 'on')? 1 : 0;
+		}
 
 		if ($this->hasEditableUsername()){
 			$result = $this->updateEditableUsername($_POST['username']);
+			if ($result['success'] == false){
+				return $result;
+			}
+		}
+
+		if ($this->getShowAutoRenewSwitch()){
+			$allowAutoRenewal = ($_REQUEST['allowAutoRenewal'] == 'on' || $_REQUEST['allowAutoRenewal'] == 'true');
+			$result = $this->updateAutoRenewal($allowAutoRenewal);
 			if ($result['success'] == false){
 				return $result;
 			}
@@ -1477,23 +1494,23 @@ class User extends DataObject
 		if (isset($_REQUEST['pin'])){
 			$oldPin = $_REQUEST['pin'];
 		}else{
-			return ['success' => false, 'errors' => "Please enter your current pin number"];
+			return ['success' => false, 'message' => "Please enter your current pin number"];
 		}
 		if ($this->cat_password != $oldPin){
-			return ['success' => false, 'errors' => "The old pin number is incorrect"];
+			return ['success' => false, 'message' => "The old pin number is incorrect"];
 		}
 		if (!empty($_REQUEST['pin1'])){
 			$newPin = $_REQUEST['pin1'];
 		}else{
-			return ['success' => false, 'errors' => "Please enter the new pin number"];
+			return ['success' => false, 'message' => "Please enter the new pin number"];
 		}
 		if (!empty($_REQUEST['pin2'])){
 			$confirmNewPin = $_REQUEST['pin2'];
 		}else{
-			return ['success' => false, 'errors' => "Please enter the new pin number again"];
+			return ['success' => false, 'message' => "Please enter the new pin number again"];
 		}
 		if ($newPin != $confirmNewPin){
-			return ['success' => false, 'errors' => "New PINs do not match. Please try again."];
+			return ['success' => false, 'message' => "New PINs do not match. Please try again."];
 		}
 		$result = $this->getCatalogDriver()->updatePin($this, $oldPin, $newPin);
 		if ($result['success']){
@@ -1529,22 +1546,22 @@ class User extends DataObject
 	 */
 	public function getMasqueradeLevel()
 	{
-		if (empty($this->masqueradeLevel)) $this->setMasqueradeLevel();
-		return $this->masqueradeLevel;
+		if (empty($this->_masqueradeLevel)) $this->setMasqueradeLevel();
+		return $this->_masqueradeLevel;
 	}
 
 	private function setMasqueradeLevel()
 	{
-		$this->masqueradeLevel = 'none';
+		$this->_masqueradeLevel = 'none';
 		if (!empty($this->patronType)) {
 			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
 			$pType = new pType();
 			$pType->get('pType', $this->patronType);
 			if ($pType->getNumResults() > 0) {
-				$this->masqueradeLevel = $pType->masquerade;
+				$this->_masqueradeLevel = $pType->masquerade;
 			}
 		}else if ($this->hasRole('userAdmin')){
-			$this->masqueradeLevel = 'any';
+			$this->_masqueradeLevel = 'any';
 		}
 	}
 

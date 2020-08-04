@@ -432,46 +432,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	}
 
 	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results.
-	 *
-	 * @access  public
-	 * @return  array   Array of HTML chunks for individual records.
-	 */
-	public function getCombinedResultsHTML()
-	{
-		global $interface;
-		global $memoryWatcher;
-		$html = array();
-		if (isset($this->indexResult['response'])) {
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-				$memoryWatcher->logMemory("Started loading record information for index $x");
-				$current = &$this->indexResult['response']['docs'][$x];
-				if (!$this->debug) {
-					unset($current['explain']);
-					unset($current['score']);
-				}
-				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-				/** @var GroupedWorkDriver $record */
-				$record = RecordDriverFactory::initRecordDriver($current);
-				if (!($record instanceof AspenError)) {
-					$interface->assign('recordDriver', $record);
-					$html[] = $interface->fetch($record->getCombinedResult($this->view));
-				} else {
-					$html[] = "Unable to find record";
-				}
-				//Free some memory
-				$record = 0;
-				unset($record);
-				$memoryWatcher->logMemory("Finished loading record information for index $x");
-			}
-		}
-		return $html;
-	}
-
-	/**
 	 * Set an overriding array of record IDs.
 	 *
 	 * @access  public

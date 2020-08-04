@@ -211,13 +211,6 @@ AspenDiscovery.Searches = (function(){
 			);
 		},
 
-		resetSearchType: function(){
-			if ($("#lookfor").val() === ""){
-				$("#searchSource").val($("#default_search_type").val());
-			}
-			return true;
-		},
-
 		loadExploreMoreBar: function(section, searchTerm){
 			let url = Globals.path + "/Search/AJAX";
 			let params = "method=loadExploreMoreBar&section=" + encodeURIComponent(section);

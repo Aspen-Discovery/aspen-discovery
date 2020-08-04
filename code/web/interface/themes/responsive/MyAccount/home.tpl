@@ -7,15 +7,15 @@
 
 			{* Alternate Mobile MyAccount Menu *}
 			{include file="MyAccount/mobilePageHeader.tpl"}
-
+			<h1>{translate text='My Account'}</h1>
 			{if $userHasCatalogConnection}
-				<h3>{translate text='Account Summary'}</h3>
+				<h2>{translate text='Account Summary'}</h2>
 				<div>
 					{if $offline}
 						<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 					{else}
 
-						You currently have:
+						{translate text='You currently have'}
 						<ul>
 							<li><strong><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles <a href="/MyAccount/CheckedOut">checked out</a></li>
 							<li><strong><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles on <a href="/MyAccount/Holds">hold</a></li>
@@ -26,23 +26,16 @@
 				</div>
 			{/if}
 			{if $showRatings}
-				<h3>{translate text='Recommended for you'}</h3>
+				<h2>{translate text='Recommended for you'}</h2>
 				{if !$hasRatings}
 					<p>
-						You have not rated any titles.
+						{translate text='You have not rated any titles.'}
 					</p>
 					<p>
-						If you rate titles, we can provide you with suggestions for titles you might like to read.
-						Suggestions are based on titles you like and information within the catalog.
-						Library staff does not have access to your suggestions.
+						{translate text ='If you rate titles, we can provide you with suggestions for titles you might like to read. Suggestions are based on titles you like and information within the catalog. Library staff does not have access to your suggestions.'}
 					</p>
 				{else}
 					<p>Based on the titles you have <a href="/MyAccount/MyRatings">rated</a>, we have <a href="/MyAccount/SuggestedTitles">suggestions for you</a>.  To improve your suggestions keep rating more titles.</p>
-					{foreach from=$suggestions item=suggestion name=recordLoop}
-						<div class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">
-							{$suggestion}
-						</div>
-					{/foreach}
 				{/if}
 			{/if}
 		{else}
