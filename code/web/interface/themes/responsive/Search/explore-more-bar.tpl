@@ -3,8 +3,7 @@
 <div class="exploreMoreBar row">
 	{*<div class="label-left">*}
 	<div class="label-top">
-		<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt="{translate text='Explore More' inAttribute=true}">
-		<div class="exploreMoreBarLabel">{translate text='Explore More'}</div>
+		<div class="exploreMoreBarLabel"><i class="fas fa-share-square fa-x2"></i> {translate text='Explore More'}</div>
 	</div>
 
 	<div class="exploreMoreContainer">

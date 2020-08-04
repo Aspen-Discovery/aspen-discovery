@@ -49,9 +49,9 @@
 				{if !empty($message->action1Title) && !empty($message->action1)}
 					&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{$message->action1Title}</a>
 				{/if}
-                {if !empty($message->action2Title) && !empty($message->action2)}
-	                &nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{$message->action2Title}</a>
-                {/if}
+				{if !empty($message->action2Title) && !empty($message->action2)}
+					<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{$message->action2Title}</a>
+				{/if}
 			</div>
 		{/foreach}
 

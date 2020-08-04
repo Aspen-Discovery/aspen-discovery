@@ -76,6 +76,7 @@
 		{* Code is minified using uglify.js *}
 		<script src="/interface/themes/responsive/js/aspen.js?v={$gitBranch|urlencode}"></script>
 	{/if}
+	<script src="https://kit.fontawesome.com/0e1b9a056d.js" crossorigin="anonymous"></script>
 
 	{/strip}
 	<script type="text/javascript">

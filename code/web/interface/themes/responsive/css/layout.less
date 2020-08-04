@@ -233,9 +233,6 @@ hr.menu{
   .menu-icon {
     @menu-icon-padding: 5px;
     padding: @menu-icon-padding;
-    img {
-      width: @vertical-menu-bar-width - 2*@menu-icon-padding;
-    }
     &:visited,&:hover,&:focus {
       text-decoration: none;
       color: @menu-bar-color;
@@ -248,6 +245,7 @@ hr.menu{
       font-size:16px;
 
       margin-top: 10px;
+      text-align: center;
     }
   }
 }
@@ -258,8 +256,8 @@ hr.menu{
   display: inline-block;
   overflow: hidden;
 
-  width: @vertical-menu-bar-width;
-  line-height: @vertical-menu-bar-width; // need a set height for the rotated space to flow properly
+  width: 30px;
+  line-height: 30px; // need a set height for the rotated space to flow properly
 }
 .rotated-text-inner {
   display: inline-block;
