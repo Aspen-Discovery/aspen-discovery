@@ -4,4 +4,8 @@
 - When you create a browse category, you can also had sub browse categories to further define searches.
 - Check out a tutorial on how to create browse categories and how to organize your view of those browse categories on the home page here: [https://bywatersolutions.com/education/creating-browse-categories-in-aspen-discovery](https://bywatersolutions.com/education/creating-browse-categories-in-aspen-discovery)
 
+[![Browse Categories](/manual/images/browse.png)](https://www.youtube.com/watch?v=9v0ei0HyKPU&list=PLV_OXyJ1D3Bjr49J9FQ3M0uNhiNv4E04f&index=12)
+
+![Watch on YouTube](https://www.youtube.com/watch?v=9v0ei0HyKPU&list=PLV_OXyJ1D3Bjr49J9FQ3M0uNhiNv4E04f&index=12)
+
 See Also: [Browse Category Groups](/Admin/HelpManual?page=Browse-Category-Groups)
