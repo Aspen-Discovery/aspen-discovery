@@ -7,6 +7,7 @@ class SirsiDynixROA extends HorizonAPI
 {
 	//TODO: Additional caching of sessionIds by patron
 	private static $sessionIdsForUsers = array();
+	private static $logAllAPICalls = true;
 
 	private function staffOrPatronSessionTokenSwitch(){
 		$useStaffAccountForWebServices = true;
@@ -55,11 +56,15 @@ class SirsiDynixROA extends HorizonAPI
 		if (stripos($instanceName, 'localhost') !== false) {
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // TODO: debugging only: comment out for production
 		}
-		//TODO: need switch to set this option when using on local machine
 		if ($params != null) {
 			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
 		}
 		$json = curl_exec($ch);
+		if (SirsiDynixROA::$logAllAPICalls){
+			$logger->log($url, Logger::LOG_WARNING);
+			$logger->log(print_r($headers, true), Logger::LOG_WARNING);
+			$logger->log(print_r($json, true), Logger::LOG_WARNING);
+		}
 		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
