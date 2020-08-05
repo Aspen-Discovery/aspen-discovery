@@ -61,16 +61,16 @@ class SirsiDynixROA extends HorizonAPI
 		}
 		$json = curl_exec($ch);
 		if (SirsiDynixROA::$logAllAPICalls){
-			$logger->log($url, Logger::LOG_WARNING);
-			$logger->log(print_r($headers, true), Logger::LOG_WARNING);
-			$logger->log(print_r($json, true), Logger::LOG_WARNING);
+			$logger->log($url, Logger::LOG_ERROR);
+			$logger->log(print_r($headers, true), Logger::LOG_ERROR);
+			$logger->log(print_r($json, true), Logger::LOG_ERROR);
 		}
 		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
 			return json_decode($json);
 		} else {
-			$logger->log('Curl problem in getWebServiceResponse', Logger::LOG_WARNING);
+			$logger->log('Curl problem in getWebServiceResponse', Logger::LOG_ERROR);
 			return false;
 		}
 	}
