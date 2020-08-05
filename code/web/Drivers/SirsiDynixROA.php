@@ -31,7 +31,7 @@ class SirsiDynixROA extends HorizonAPI
 			'Accept: application/json',
 			'Content-Type: application/json',
 			'SD-Originating-App-Id: Aspen Discovery',
-			'SD-Working-LibraryID: ' . $library->subdomain,
+			'SD-Working-LibraryID: ' . $library->ilsCode,
 			'x-sirs-clientID: ' . $clientId,
 		);
 		if ($sessionToken != null) {
