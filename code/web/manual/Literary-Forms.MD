@@ -9,68 +9,69 @@ https://www.loc.gov/marc/bibliographic/bd008.html
 At this point, the code looks at the subjects in the 650$v and 651$v. Additionally, there are some checks to look in the 655$a. The code looks for specfic subjects and determines nonfiction vs. fiction. You can see below the list of subjects per literary form.
 
 Fiction
-- Young adult fiction
-- Juvenile fiction
-- Junior fiction
+- Cartoons and comics
+- Children's fiction
+- Comedy
 - Comic books, strips, etc
 - Comic books,strips, etc
-- Children's fiction
-- Fictional Works
-- Cartoons and comics
-- Folklore
-- Legends
-- Stories
+- Drama
+- Dramas
 - Fantasy
+- Fictional Works
+- Folklore
+- Humor
+- Humor, Juvenile
+- Humour
+- Juvenile drama
+- Juvenile fiction
+- Juvenile Humor
+- Juvenile Poetry
+- Junior fiction
+- Legends
 - Mystery fiction
-- Romances
 - Novela juvenil
 - Novela
 - Novels
-- Drama
-- Dramas
-- Juvenile drama
 - Poetry
-- Juvenile Poetry
-- Humor
-- Juvenile Humor
-- Comedy
-- Wit and humor
+- Romances
 - Satire
-- Humor, Juvenile
-- Humour
+- Science fiction comics
 - Short stories
+- Stories
+- Wit and humor
+- Young adult fiction
 
 If any of the above subjects are in the 650$v or 651$v, they will have a fiction literary form. 
 
 Non Fiction
+- Autobiography
 - Biography
-- Letters
+- Biographies
+- Case studies
+- Catalogs
+- Cookbooks
+- Dictionaries
+- Dictionaries, Juvenile
+- Encyclopedias
+- Encyclopedias, Juvenile
 - essays
 - Essays
+- Guidebooks
+- Guide-books
+- Handbooks
+- Handbooks, manuals, etc
+- Interviews
+- Juvenile non-fiction
+- Letters
+- Maps
+- Nonfiction
+- Non-fiction
 - Personal narratives, American
 - Personal narratives, Polish
 - Personal narratives, Sudanese
 - Personal narratives, Jewish
 - Personal narratives
-- Guidebooks
-- Guide-books
-- Handbooks, manuals, etc
 - Problems, exercises, etc
-- Case studies
-- Handbooks
-- Biographies
-- Interviews
-- Autobiography
-- Cookbooks
-- Dictionaries
-- Encyclopedias
-- Encyclopedias, Juvenile
-- Dictionaries, Juvenile
-- Nonfiction
-- Non-fiction
-- Juvenile non-fiction
-- Maps
-- Catalogs
 - Recipes
 - Diaries
 - Designs and Plans

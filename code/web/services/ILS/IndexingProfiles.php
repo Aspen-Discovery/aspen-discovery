@@ -97,4 +97,7 @@ class ILS_IndexingProfiles extends ObjectEditor {
 		return $actions;
 	}
 
+	function getInitializationJs(){
+		return 'return AspenDiscovery.Admin.updateIndexingProfileFields();';
+	}
 }

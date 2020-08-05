@@ -62,6 +62,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	boolean suppressItemlessBibs;
 
 	private int determineAudienceBy;
+	private char audienceSubfield;
 
 	//Fields for loading order information
 	private String orderTag;
@@ -196,6 +197,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
 
 			determineAudienceBy = indexingProfileRS.getInt("determineAudienceBy");
+			audienceSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "audienceSubfield");
 
 			//loadAvailableItemBarcodes(marcRecordPath, logger);
 			loadHoldsByIdentifier(dbConn, logger);
@@ -1486,6 +1488,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					String shelfLocationCode = printItem.getShelfLocationCode();
 					if (shelfLocationCode != null) {
 						targetAudiences.add(shelfLocationCode.toLowerCase());
+					}
+				}
+			}else if (determineAudienceBy == 3){
+				//Load based on a specified subfield
+				for (ItemInfo printItem : printItems){
+					String audienceCode = printItem.getSubfield(audienceSubfield);
+					if (audienceCode != null) {
+						targetAudiences.add(audienceCode.toLowerCase());
 					}
 				}
 			}

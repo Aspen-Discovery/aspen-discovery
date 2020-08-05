@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 import org.marc4j.marc.DataField;
+import org.marc4j.marc.Subfield;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -360,5 +361,14 @@ public class ItemInfo {
 
 	DataField getMarcField() {
 		return  this.marcField;
+	}
+
+	public String getSubfield(char audienceSubfield) {
+		Subfield subfield = this.marcField.getSubfield(audienceSubfield);
+		if (subfield == null){
+			return null;
+		}else{
+			return subfield.getData();
+		}
 	}
 }

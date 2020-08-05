@@ -629,6 +629,7 @@ abstract class MarcRecordProcessor {
 					|| subjectForm.equalsIgnoreCase("Junior fiction" )
 					|| subjectForm.equalsIgnoreCase("Comic books, strips, etc")
 					|| subjectForm.equalsIgnoreCase("Comic books,strips, etc")
+					|| subjectForm.equalsIgnoreCase("Science fiction comics")
 					|| subjectForm.equalsIgnoreCase("Children's fiction" )
 					|| subjectForm.equalsIgnoreCase("Fictional Works" )
 					|| subjectForm.equalsIgnoreCase("Cartoons and comics" )

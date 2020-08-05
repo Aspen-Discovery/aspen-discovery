@@ -162,6 +162,14 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowdefaultSort").show();
 				$("#propertyRowsourceListId").hide();
 			}
+		},
+		updateIndexingProfileFields: function () {
+			let audienceType = $('#determineAudienceBySelect').val();
+			if (audienceType === '3') {
+				$("#propertyRowaudienceSubfield").show();
+			}else{
+				$("#propertyRowaudienceSubfield").hide();
+			}
 		}
 	};
 }(AspenDiscovery.Admin || {}));
