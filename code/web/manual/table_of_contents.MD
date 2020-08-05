@@ -117,7 +117,7 @@
 - Searching
   - Search Types
   - Facets
-    -[Literary Forms](/Admin/HelpManual?page=Literary-Forms)
+    - [Literary Forms](/Admin/HelpManual?page=Literary-Forms)
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - [User Lists](/Admin/HelpManual?page=User-Lists)
 - Patron Account
