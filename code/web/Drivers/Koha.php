@@ -2045,8 +2045,12 @@ class Koha extends AbstractIlsDriver
 		$itemTypesSQL = "SELECT * FROM authorised_values where category = 'SUGGEST_FORMAT' order by lib_opac";
 		$itemTypesRS = mysqli_query($this->dbConnection, $itemTypesSQL);
 		$itemTypes = [];
+		$defaultItemType = '';
 		while ($curRow = $itemTypesRS->fetch_assoc()) {
 			$itemTypes[$curRow['authorised_value']] = $curRow['lib_opac'];
+			if (strtoupper($curRow['authorised_value']) == 'BOOK' || strtoupper($curRow['authorised_value']) == 'BOOKS'){
+				$defaultItemType = $curRow['authorised_value'];
+			}
 		}
 
 		global $interface;
@@ -2070,9 +2074,9 @@ class Koha extends AbstractIlsDriver
 			array('property' => 'publishercode', 'type' => 'text', 'label' => 'Publisher', 'description' => '', 'maxLength' => 80, 'required' => false),
 			array('property' => 'collectiontitle', 'type' => 'text', 'label' => 'Collection', 'description' => '', 'maxLength' => 80, 'required' => false),
 			array('property' => 'place', 'type' => 'text', 'label' => 'Publication place', 'description' => '', 'maxLength' => 80, 'required' => false),
-			array('property' => 'quantity', 'type' => 'text', 'label' => 'Quantity', 'description' => '', 'maxLength' => 4, 'required' => false),
-			array('property' => 'itemtype', 'type' => 'enum', 'values' => $itemTypes, 'label' => 'Item type', 'description' => '', 'required' => false),
-			array('property' => 'branchcode', 'type' => 'enum', 'values' => $pickupLocations, 'label' => 'Library', 'description' => '', 'required' => false),
+			array('property' => 'quantity', 'type' => 'text', 'label' => 'Quantity', 'description' => '', 'maxLength' => 4, 'required' => false, 'default' => 1),
+			array('property' => 'itemtype', 'type' => 'enum', 'values' => $itemTypes, 'label' => 'Item type', 'description' => '', 'required' => false, 'default' => $defaultItemType),
+			array('property' => 'branchcode', 'type' => 'enum', 'values' => $pickupLocations, 'label' => 'Library', 'description' => '', 'required' => false, 'default' => $user->getHomeLocation()->code),
 			array('property' => 'note', 'type' => 'textarea', 'label' => 'Note', 'description' => '', 'required' => false),
 		];
 
