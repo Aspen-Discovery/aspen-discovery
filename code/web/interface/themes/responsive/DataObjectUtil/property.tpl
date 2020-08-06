@@ -4,17 +4,16 @@
 		{assign var=propValue value=$object->$propName}
 		{assign var=objectId value=$object->getPrimaryKeyValue()}
 	{else}
-		{assign var=propValue value=""}
+		{if isset($property.default)}
+			{assign var=propValue value=$property.default}
+		{else}
+			{assign var=propValue value=""}
+		{/if}
 		{assign var=objectId value=""}
 	{/if}
 {else}
 	{assign var=propValue value=""}
 {/if}
-{* This can't use empty($propValue) because it will cause values for existing objects to be reset. *}
-{if !isset($propValue) && isset($property.default)}
-	{assign var=propValue value=$property.default}
-{/if}
-
 {strip}
 {if ((!isset($property.storeDb) || $property.storeDb == true) && !($property.type == 'oneToManyAssociation' || $property.type == 'hidden' || $property.type == 'method'))}
 	<div class="form-group" id="propertyRow{$propName}">
