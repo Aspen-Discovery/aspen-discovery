@@ -135,6 +135,13 @@ class DataObjectUtil
 			foreach ($property['properties'] as $subProperty){
 				DataObjectUtil::processProperty($object, $subProperty);
 			}
+		}else if (in_array($property['type'], array('regularExpression'))){
+			if (isset($_REQUEST[$propertyName])){
+				$object->setProperty($propertyName, trim($_REQUEST[$propertyName]), $property);
+			} else {
+				$object->setProperty($propertyName, "", $property);
+			}
+
 		}else if (in_array($property['type'], array('text', 'enum', 'hidden', 'url', 'email', 'multiemail'))){
 			if (isset($_REQUEST[$propertyName])){
 				$object->setProperty($propertyName, strip_tags(trim($_REQUEST[$propertyName])), $property);

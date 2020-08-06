@@ -35,7 +35,6 @@ public class WebsiteIndexerMain {
 
 		while (true) {
 			Date startTime = new Date();
-			Long startTimeForLogging = startTime.getTime() / 1000;
 			logger.info("Starting " + processName + ": " + startTime.toString());
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
@@ -54,6 +53,8 @@ public class WebsiteIndexerMain {
 					Long websiteId = sitesToIndexRS.getLong("id");
 					String websiteName = sitesToIndexRS.getString("name");
 					String siteUrl = sitesToIndexRS.getString("siteUrl");
+					String pageTitleExpression = sitesToIndexRS.getString("pageTitleExpression");
+					String descriptionExpression = sitesToIndexRS.getString("descriptionExpression");
 					String searchCategory = sitesToIndexRS.getString("searchCategory");
 					String fetchFrequency = sitesToIndexRS.getString("indexFrequency");
 					String pathsToExclude = sitesToIndexRS.getString("pathsToExclude");
@@ -84,7 +85,7 @@ public class WebsiteIndexerMain {
 					}
 					if (needsIndexing) {
 						WebsiteIndexLogEntry logEntry = createDbLogEntry(websiteName, startTime, aspenConn);
-						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pathsToExclude, fullReload, logEntry, aspenConn, solrUpdateServer);
+						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pageTitleExpression, descriptionExpression, pathsToExclude, fullReload, logEntry, aspenConn, solrUpdateServer);
 						indexer.spiderWebsite();
 
 						//TODO: Update the lastIndex time

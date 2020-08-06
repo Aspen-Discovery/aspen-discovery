@@ -394,4 +394,20 @@ class GroupedWorksSolrConnector extends Solr
 
 		return $filter;
 	}
+
+	protected function getHighlightOptions($fields, &$options){
+		global $solrScope;
+		$highlightFields = $fields . ",table_of_contents";
+		$highlightFields = str_replace(",related_record_ids_$solrScope", '', $highlightFields);
+		$highlightFields = str_replace(",related_items_$solrScope", '', $highlightFields);
+		$highlightFields = str_replace(",format_$solrScope", '', $highlightFields);
+		$highlightFields = str_replace(",format_category_$solrScope", '', $highlightFields);
+		$options['hl'] = 'true';
+		$options['hl.fl'] = $highlightFields;
+		$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
+		$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
+		$options['f.display_description.hl.fragsize'] = 50000;
+		$options['f.title_display.hl.fragsize'] = 1000;
+		$options['f.title_full.hl.fragsize'] = 1000;
+	}
 }

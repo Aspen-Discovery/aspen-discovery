@@ -46,6 +46,8 @@
 									{if $dataItem->class != 'objectDeleted'}
 										<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'> {$propValue}</a>
 									{/if}
+								{elseif $property.type == 'regularExpression'}
+									{$propValue|escape}
 								{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email' || $property.type == 'url'}
 									{$propValue}
 								{elseif $property.type == 'date'}

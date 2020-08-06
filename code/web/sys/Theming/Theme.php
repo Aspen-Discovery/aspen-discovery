@@ -694,11 +694,11 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('bodyTextColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('linkColor', '#3174AF', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerBackgroundColor', '#f1f1f1', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('headerForegroundColor', '#8b8b8b', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('headerForegroundColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerButtonColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('headerButtonBackgroundColor', '#848484', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('headerButtonBackgroundColor', '#747474', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('footerBackgroundColor', '#f1f1f1', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('footerForegroundColor', '#8b8b8b', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('footerForegroundColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('primaryBackgroundColor', '#0a7589', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('primaryForegroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('secondaryBackgroundColor', '#de9d03', $appliedThemes);

@@ -7160,6 +7160,9 @@ body > .container {
   background-color: #636363;
   border-color: #636363;
 }
+.btn-tools:visited {
+  color: #ffffff;
+}
 .tab-content {
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;

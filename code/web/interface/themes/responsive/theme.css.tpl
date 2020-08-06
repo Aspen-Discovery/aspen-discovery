@@ -225,6 +225,18 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$infoButtonHoverBorderColor};
 {rdelim}
 
+.btn-tools{ldelim}
+    background-color: {$toolsButtonBackgroundColor};
+    color: {$toolsButtonForegroundColor};
+    border-color: {$toolsButtonBorderColor};
+{rdelim}
+
+.btn-tools:hover, .btn-tools:focus, .btn-tools:active, .btn-tools.active, .open .dropdown-toggle.btn-tools{ldelim}
+    background-color: {$toolsButtonHoverBackgroundColor};
+    color: {$toolsButtonHoverForegroundColor};
+    border-color: {$toolsButtonHoverBorderColor};
+{rdelim}
+
 .btn-warning{ldelim}
     background-color: {$warningButtonBackgroundColor};
     color: {$warningButtonForegroundColor};

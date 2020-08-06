@@ -77,7 +77,7 @@ abstract class Solr
 	/**
 	 * Should we collect highlighting data?
 	 */
-	private $_highlight = false;
+	protected $_highlight = false;
 
 	/**
 	 * How should we cache the search specs?
@@ -1364,19 +1364,7 @@ abstract class Solr
 
 		// Enable highlighting
 		if ($this->_highlight) {
-			global $solrScope;
-			$highlightFields = $fields . ",table_of_contents";
-			$highlightFields = str_replace(",related_record_ids_$solrScope", '', $highlightFields);
-			$highlightFields = str_replace(",related_items_$solrScope", '', $highlightFields);
-			$highlightFields = str_replace(",format_$solrScope", '', $highlightFields);
-			$highlightFields = str_replace(",format_category_$solrScope", '', $highlightFields);
-			$options['hl'] = 'true';
-			$options['hl.fl'] = $highlightFields;
-			$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
-			$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
-			$options['f.display_description.hl.fragsize'] = 50000;
-			$options['f.title_display.hl.fragsize'] = 1000;
-			$options['f.title_full.hl.fragsize'] = 1000;
+			$this->getHighlightOptions($fields, $options);
 		}
 
 		$solrSearchDebug = print_r($options, true) . "\n";
@@ -2109,6 +2097,14 @@ abstract class Solr
 	function getIndex()
 	{
 		return $this->index;
+	}
+
+	protected function getHighlightOptions($fields, &$options){
+		$highlightFields = $fields;
+		$options['hl'] = 'true';
+		$options['hl.fl'] = $highlightFields;
+		$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
+		$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
 	}
 }
 
