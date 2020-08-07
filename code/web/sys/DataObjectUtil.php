@@ -105,6 +105,12 @@ class DataObjectUtil
 					$validationResults['errors'][] = $property['property'] . ' is required.';
 				}
 			}
+			if (isset($property['repeat']) && $property['repeat'] == true) {
+				$valueRepeat = isset($_REQUEST[$property['property'].'Repeat']) ? $_REQUEST[$property['property'].'Repeat'] : null;
+				if ($value != $valueRepeat) {
+					$validationResults['errors'][] = $property['property'] . ' does not match ' . $property['property'] . 'Repeat';
+				}
+			}
 			//Check to see if there is a custom validation routine
 			if (isset($property['serverValidation'])) {
 				$validationRoutine = $property['serverValidation'];
