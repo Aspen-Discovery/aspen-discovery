@@ -1799,6 +1799,10 @@ class User extends DataObject
 		return null;
 	}
 
+	function getHomeLocationCode(){
+		return $this->getHomeLocation()->code;
+	}
+
 	/**
 	 * @param string $pickupBranch
 	 * @return bool
