@@ -468,6 +468,10 @@ class Koha extends AbstractIlsDriver
 					return $result;
 				}
 			} else {
+				if (isset($authenticationResponse->message) && preg_match('/ILS-DI is disabled/', $authenticationResponse->message)){
+					global $logger;
+					$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
+				}
 				//User is not valid, check to see if they have a valid account in Koha so we can return a different error
 				/** @noinspection SqlResolve */
 				$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '$barcode' OR userId = '$barcode'";

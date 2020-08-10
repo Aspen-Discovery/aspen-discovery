@@ -11,14 +11,15 @@ import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -303,15 +304,10 @@ public class Axis360ExportMain {
 	private static String getAxis360AccessToken(Axis360Setting setting) {
 		long curTime = new Date().getTime();
 		if (accessToken == null || accessTokenExpiration >= curTime){
-			HashMap<String, String> headers = new HashMap<>();
 			String authentication = setting.getVendorUsername() + ":" + setting.getVendorPassword() + ":" + setting.getLibraryPrefix();
 
 			String authorizationUrl = setting.getBaseUrl() + "/Services/VendorAPI/accesstoken";
-			String body =
-				"VendorId=" + Base64.encodeBase64String(setting.getVendorUsername().getBytes()) +
-				"&Password=" + Base64.encodeBase64String(setting.getVendorPassword().getBytes()) +
-				"&LibraryId=" + Base64.encodeBase64String(setting.getLibraryPrefix().getBytes());
-			WebServiceResponse response = NetworkUtils.postToURL(authorizationUrl, body, "application/json", null, logger, authentication);
+			WebServiceResponse response = NetworkUtils.postToURL(authorizationUrl, "", "application/json", null, logger, authentication, 10000, 300000, StandardCharsets.UTF_16LE);
 			if (!response.isSuccess()) {
 				logEntry.incErrors("Error calling " + authorizationUrl + ": " + response.getResponseCode() + " " + response.getMessage());
 			}else{
@@ -359,6 +355,11 @@ public class Axis360ExportMain {
 
 	private static int extractBooks(Axis360Setting setting, int numChanges) {
 		HashMap<String, String> headers = new HashMap<>();
+		String accessToken = getAxis360AccessToken(setting);
+		if (accessToken == null){
+			logEntry.incErrors("Did not get access token");
+			return 0;
+		}
 		headers.put("Authorization", "Bearer " + getAxis360AccessToken(setting));
 		headers.put("Content-Type", "application/json");
 		headers.put("Accept", "application/json");
