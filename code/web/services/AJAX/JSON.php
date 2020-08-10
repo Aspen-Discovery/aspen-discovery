@@ -255,6 +255,11 @@ class AJAX_JSON extends Action {
 			$tmpLocation->find();
 		}
 
+		$locationsToProcess = [];
+		while ($tmpLocation->fetch()){
+			$locationsToProcess[] = clone $tmpLocation;
+		}
+
 		require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 		$googleSettings = new GoogleApiSetting();
 		if ($googleSettings->find(true)){
@@ -262,10 +267,9 @@ class AJAX_JSON extends Action {
 		}else{
 			$mapsKey = null;
 		}
-		while ($tmpLocation->fetch()){
-			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $tmpLocation->address));
-			$clonedLocation = clone $tmpLocation;
-			$hours = $clonedLocation->getHours();
+		foreach ($locationsToProcess as $locationToProcess){
+			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $locationToProcess->address));
+			$hours = $locationToProcess->getHours();
 			foreach ($hours as $key => $hourObj){
 				if (!$hourObj->closed){
 					$hourString = $hourObj->open;
@@ -305,20 +309,20 @@ class AJAX_JSON extends Action {
 				}
 				$hours[$key] = $hourObj;
 			}
-			$libraryLocation = array(
-				'id' => $tmpLocation->locationId,
-				'name' => $tmpLocation->displayName,
-				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $tmpLocation->address),
-				'phone' => $tmpLocation->phone,
+			$libraryLocation = [
+				'id' => $locationToProcess->locationId,
+				'name' => $locationToProcess->displayName,
+				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $locationToProcess->address),
+				'phone' => $locationToProcess->phone,
 				//'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
 				'hours' => $hours,
-				'hasValidHours' => $tmpLocation->hasValidHours()
-			);
+				'hasValidHours' => $locationToProcess->hasValidHours()
+			];
 
 			if (!empty($mapsKey)){
 				$libraryLocation['map_link'] = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m&key=$mapsKey";
 			}
-			$libraryLocations[] = $libraryLocation;
+			$libraryLocations[$locationToProcess->locationId] = $libraryLocation;
 		}
 
 		global $interface;
