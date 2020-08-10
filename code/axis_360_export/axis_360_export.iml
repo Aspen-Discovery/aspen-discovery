@@ -9,17 +9,19 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="java_shared_libraries" />
+    <orderEntry type="module" module-name="record_grouping" />
+    <orderEntry type="module" module-name="reindexer" />
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
           <root url="file://$MODULE_DIR$/../java_shared_libraries" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../java_shared_libraries/src" />
+        </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/../java_shared_libraries" recursive="false" />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="record_grouping" />
-    <orderEntry type="module" module-name="reindexer" />
   </component>
 </module>

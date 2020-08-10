@@ -598,6 +598,31 @@
 					</div>
 				{/if}
 
+				{if array_key_exists('Axis 360', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
+					{if $module == 'Axis360' && in_array($action, array('Settings', 'IndexingLog', 'Scopes', 'Dashboard'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#axis360Menu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+									{translate text="Axis 360"}
+								</div>
+							</div>
+						</a>
+						<div id="axis360Menu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="/Axis360/Settings">{translate text="Settings"}</a></div>
+								<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Axis360/Scopes">{translate text="Scopes"}</a></div>
+								<div class="adminMenuLink"><a href="/Axis360/IndexingLog">{translate text="Indexing Log"}</a></div>
+								<div class="adminMenuLink"><a href="/Axis360/Dashboard">{translate text="Dashboard"}</a></div>
+							</div>
+						</div>
+					</div>
+				{/if}
+
 				{if array_key_exists('Cloud Library', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
 					{if $module == 'CloudLibrary' && in_array($action, array('Settings', 'IndexingLog', 'Scopes', 'Dashboard'))}
 						{assign var="curSection" value=true}

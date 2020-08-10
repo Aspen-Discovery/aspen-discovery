@@ -1,40 +1,32 @@
 <?php
 
-require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
-class RBdigitalScope extends DataObject
+require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
+class Axis360Scope extends DataObject
 {
-	public $__table = 'rbdigital_scopes';
+	public $__table = 'axis360_scopes';
 	public $id;
 	public $settingId;
 	public $name;
-	public $includeEAudiobook;
-	public $includeEBooks;
-	public $includeEMagazines;
-	public $restrictToChildrensMaterial;
 
 	private $_libraries;
 	private $_locations;
 
 	public static function getObjectStructure()
 	{
-		$rbDigitalSettings =[];
-		$rbDigitalSetting = new RBdigitalSetting();
-		$rbDigitalSetting->find();
-		while ($rbDigitalSetting->fetch()){
-			$rbDigitalSettings[$rbDigitalSetting->id] = (string)$rbDigitalSetting;
+		$axis360Settings = [];
+		$axis360Setting = new Axis360Setting();
+		$axis360Setting->find();
+		while ($axis360Setting->fetch()){
+			$axis360Settings[$axis360Setting->id] = (string)$axis360Setting;
 		}
 
 		$libraryList = Library::getLibraryList();
 		$locationList = Location::getLocationList();
 
-		return array(
-			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
-			'settingId' => ['property' => 'settingId', 'type' => 'enum', 'values' => $rbDigitalSettings, 'label' => 'Setting Id'],
-			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
-			'includeEAudiobook' => array('property'=>'includeEAudiobook', 'type'=>'checkbox', 'label'=>'Include eAudio books', 'description'=>'Whether or not EAudiobook are included', 'default'=>1, 'forcesReindex' => true),
-			'includeEBooks' => array('property'=>'includeEBooks', 'type'=>'checkbox', 'label'=>'Include eBooks', 'description'=>'Whether or not EBooks are included', 'default'=>1, 'forcesReindex' => true),
-			'includeEMagazines' => array('property'=>'includeEMagazines', 'type'=>'checkbox', 'label'=>'Include eMagazines', 'description'=>'Whether or not EMagazines are included', 'default'=>1, 'forcesReindex' => true),
-			'restrictToChildrensMaterial' => array('property'=>'restrictToChildrensMaterial', 'type'=>'checkbox', 'label'=>'Include Children\'s Materials Only', 'description'=>'If checked only includes titles identified as children by RBdigital', 'default'=>0, 'forcesReindex' => true),
+		return [
+			'id' => ['property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'],
+			'settingId' => ['property' => 'settingId', 'type' => 'enum', 'values' => $axis360Settings, 'label' => 'Setting Id'],
+			'name' => ['property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50],
 			'libraries' => array(
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -56,7 +48,7 @@ class RBdigitalScope extends DataObject
 				'hideInLists' => true,
 				'forcesReindex' => true
 			),
-		);
+		];
 	}
 
 	/** @noinspection PhpUnused */
@@ -131,14 +123,14 @@ class RBdigitalScope extends DataObject
 				$library->find(true);
 				if (in_array($libraryId, $this->_libraries)){
 					//We want to apply the scope to this library
-					if ($library->rbdigitalScopeId != $this->id){
-						$library->rbdigitalScopeId = $this->id;
+					if ($library->axis360ScopeId != $this->id){
+						$library->axis360ScopeId = $this->id;
 						$library->update();
 					}
 				}else{
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->rbdigitalScopeId == $this->id){
-						$library->rbdigitalScopeId = -1;
+					if ($library->axis360ScopeId == $this->id){
+						$library->axis360ScopeId = -1;
 						$library->update();
 					}
 				}
@@ -181,37 +173,5 @@ class RBdigitalScope extends DataObject
 			}
 			unset($this->_locations);
 		}
-	}
-
-	/** @return Library[] */
-	public function getLibraries()
-	{
-		return $this->_libraries;
-	}
-
-	/** @return Location[] */
-	public function getLocations()
-	{
-		return $this->_locations;
-	}
-
-	public function setLibraries($val)
-	{
-		$this->_libraries = $val;
-	}
-
-	public function setLocations($val)
-	{
-		$this->_libraries = $val;
-	}
-
-	public function clearLibraries(){
-		$this->clearOneToManyOptions('Library', 'rbdigitalScopeId');
-		unset($this->_libraries);
-	}
-
-	public function clearLocations(){
-		$this->clearOneToManyOptions('Location', 'rbdigitalScopeId');
-		unset($this->_locations);
 	}
 }

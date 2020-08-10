@@ -51,6 +51,7 @@ class Location extends DataObject
 	public /** @noinspection PhpUnused */ $hooplaScopeId;
 	public /** @noinspection PhpUnused */ $rbdigitalScopeId;
 	public /** @noinspection PhpUnused */ $cloudLibraryScopeId;
+	public /** @noinspection PhpUnused */ $axis360ScopeId;
 	public $showHoldButton;
 	public $repeatSearchOption;
 	public $repeatInOnlineCollection;
@@ -190,6 +191,17 @@ class Location extends DataObject
 			$hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
 		}
 
+		require_once ROOT_DIR . '/sys/Axis360/Axis360Scope.php';
+		$axis360Scope = new Axis360Scope();
+		$axis360Scope->orderBy('name');
+		$axis360Scopes = [];
+		$axis360Scope->find();
+		$axis360Scopes[-2] = 'None';
+		$axis360Scopes[-1] = 'Use Library Setting';
+		while ($axis360Scope->fetch()) {
+			$axis360Scopes[$axis360Scope->id] = $axis360Scope->name;
+		}
+
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
 		$overDriveScope = new OverDriveScope();
 		$overDriveScope->orderBy('name');
@@ -324,8 +336,12 @@ class Location extends DataObject
 
 			'browseCategoryId' => array('property' => 'browseCategoryId', 'type' => 'enum', 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true),
 
-			'overdriveSection' => array('property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
-				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
+			'axis360Section' => array('property' => 'axis360Section', 'type' => 'section', 'label' => 'Axis 360', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
+				'axis360ScopeId' => array('property' => 'axis360ScopeId', 'type' => 'enum', 'values' => $axis360Scopes, 'label' => 'Axis 360 Scope', 'description' => 'The Axis 360 scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
+			)),
+			
+			'cloudLibrarySection' => array('property' => 'cloudLibrarySection', 'type' => 'section', 'label' => 'Cloud Library', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
+				'cloudLibraryScopeId' => array('property' => 'cloudLibraryScopeId', 'type' => 'enum', 'values' => $cloudLibraryScopes, 'label' => 'Cloud Library Scope', 'description' => 'The Cloud Library scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
 			)),
 
 			'hooplaSection' => array('property' => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
@@ -336,8 +352,8 @@ class Location extends DataObject
 				'rbdigitalScopeId' => array('property' => 'rbdigitalScopeId', 'type' => 'enum', 'values' => $rbdigitalScopes, 'label' => 'RBdigital Scope', 'description' => 'The RBdigital scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
 			)),
 
-			'cloudLibrarySection' => array('property' => 'cloudLibrarySection', 'type' => 'section', 'label' => 'Cloud Library', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
-				'cloudLibraryScopeId' => array('property' => 'cloudLibraryScopeId', 'type' => 'enum', 'values' => $cloudLibraryScopes, 'label' => 'Cloud Library Scope', 'description' => 'The Cloud Library scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
+			'overdriveSection' => array('property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
+				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
 			)),
 
 			array(

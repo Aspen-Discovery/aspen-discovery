@@ -1755,6 +1755,15 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+		'library_location_axis360_scoping' => [
+			'title' => 'Library and Location Scoping of Axis360',
+			'description' => 'Add information about how to scope Axis360 records',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN axis360ScopeId INT(11) default -1',
+				'ALTER TABLE location ADD COLUMN axis360ScopeId INT(11) default -1',
+			]
+		],
+
 		'library_show_quick_copy' => [
 			'title' => 'Library Show Quick Copy',
 			'description' => 'Add a column for whether or not quick copy should be shown',
