@@ -152,8 +152,8 @@ class Axis360Scope extends DataObject
 				$location->find(true);
 				if (in_array($locationId, $this->_locations)){
 					//We want to apply the scope to this library
-					if ($location->rbdigitalScopeId != $this->id){
-						$location->rbdigitalScopeId = $this->id;
+					if ($location->axis360ScopeId != $this->id){
+						$location->axis360ScopeId = $this->id;
 						$location->update();
 					}
 				}else{
@@ -162,10 +162,10 @@ class Axis360Scope extends DataObject
 						$library = new Library();
 						$library->libraryId = $location->libraryId;
 						$library->find(true);
-						if ($library->rbdigitalScopeId != -1){
-							$location->rbdigitalScopeId = -1;
+						if ($library->axis360ScopeId != -1){
+							$location->axis360ScopeId = -1;
 						}else{
-							$location->rbdigitalScopeId = -2;
+							$location->axis360ScopeId = -2;
 						}
 						$location->update();
 					}
