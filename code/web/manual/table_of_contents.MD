@@ -43,7 +43,9 @@
     - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
   - Cataloging 
   - ILS Integration
-    - Account Profiles
+    - Indexing Profiles
+      - Format Information
+        - [Bib Level Format](/Admin/HelpManual?page=Bib-Level-Format)
     - Carl.X
     - Horizon
     - Koha
