@@ -43,7 +43,9 @@
     - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
   - Cataloging 
   - ILS Integration
-    - Account Profiles
+    - Indexing Profiles
+      - Format Information
+        - [Bib Level Format](/Admin/HelpManual?page=Bib-Level-Format)
     - Carl.X
     - Horizon
     - Koha
@@ -117,7 +119,7 @@
 - Searching
   - Search Types
   - Facets
-    -[Literary Forms](/Admin/HelpManual?page=Literary-Forms)
+    - [Literary Forms](/Admin/HelpManual?page=Literary-Forms)
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - [User Lists](/Admin/HelpManual?page=User-Lists)
 - Patron Account
