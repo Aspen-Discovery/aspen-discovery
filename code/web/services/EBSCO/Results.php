@@ -8,6 +8,7 @@ class EBSCO_Results extends Action{
 
 		if (!isset($_REQUEST['lookfor']) || empty($_REQUEST['lookfor'])){
 			$this->display('noSearchTerm.tpl', 'Please enter a search term');
+			return;
 		}
 
 		$aspenUsage->ebscoEdsSearches++;
