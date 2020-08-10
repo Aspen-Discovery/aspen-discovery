@@ -271,25 +271,35 @@ class AJAX_JSON extends Action {
 					$hourString = $hourObj->open;
 					list($hour, $minutes) = explode(':', $hourString);
 					if ($hour < 12){
+						if ($hour == 0) {
+							$hour += 12;
+						}
 						$hourObj->open = +$hour.":$minutes AM"; // remove leading zeros in the hour
-					}elseif ($hour == 12){
+					}elseif ($hour == 12 && $minutes == '00'){
 						$hourObj->open = 'Noon';
-					}elseif ($hour == 24){
+					}elseif ($hour == 24 && $minutes == '00'){
 						$hourObj->open = 'Midnight';
 					}else{
-						$hour -= 12;
+						if ($hour != 12) {
+							$hour -= 12;
+						}
 						$hourObj->open = "$hour:$minutes PM";
 					}
 					$hourString = $hourObj->close;
 					list($hour, $minutes) = explode(':', $hourString);
 					if ($hour < 12){
-						$hourObj->close .= ' AM';
-					}elseif ($hour == 12){
+						if ($hour == 0) {
+							$hour += 12;
+						}
+						$hourObj->close = "$hour:$minutes AM";
+					}elseif ($hour == 12 && $minutes == '00'){
 						$hourObj->close = 'Noon';
-					}elseif ($hour == 24){
+					}elseif ($hour == 24 && $minutes == '00'){
 						$hourObj->close = 'Midnight';
 					}else{
-						$hour -= 12;
+						if ($hour != 12) {
+							$hour -= 12;
+						}
 						$hourObj->close = "$hour:$minutes PM";
 					}
 				}
