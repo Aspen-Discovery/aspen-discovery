@@ -71,7 +71,7 @@ body {ldelim}
     color: {$bodyTextColor};
 {rdelim}
 
-a,.result-head,#selected-browse-label a{ldelim}
+a,a:visited,.result-head,#selected-browse-label a,#selected-browse-label a:visited{ldelim}
     color: {$linkColor};
 {rdelim}
 
@@ -128,6 +128,17 @@ body .container, #home-page-browse-content{ldelim}
 .panel-body,.sidebar-links .panel-body,#more-details-accordion .panel-body,.facetDetails,.sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn), .sidebar-links .panel-body a:hover:not(.btn){ldelim}
     background-color: {$panelBodyBackgroundColor};
     color: {$panelBodyForegroundColor};
+{rdelim}
+.facetValue, .facetValue a{ldelim}
+    color: {$panelBodyForegroundColor};
+{rdelim}
+
+.breadcrumbs{ldelim}
+    background-color: {$breadcrumbsBackgroundColor};
+    color: {$breadcrumbsForegroundColor};
+{rdelim}
+.breadcrumb > li + li::before{ldelim}
+    color: {$breadcrumbsForegroundColor};
 {rdelim}
 
 #footer-container{ldelim}
@@ -291,6 +302,16 @@ body .container, #home-page-browse-content{ldelim}
     {/if}
 {rdelim}
 
+.result-label{ldelim}
+    color: {$resultLabelColor}
+{rdelim}
+.result-value{ldelim}
+    color: {$resultValueColor}
+{rdelim}
+.search_tools{ldelim}
+    background-color: {$searchToolsBackgroundColor};
+    color: {$searchToolsForegroundColor};
+{rdelim}
 {$additionalCSS}
 </style>
 {/strip}

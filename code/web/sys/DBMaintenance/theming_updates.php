@@ -380,5 +380,35 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN badgeBorderRadius VARCHAR(6) DEFAULT null",
 			]
 		],
+
+		'themes_results_breadcrumbs' => [
+			'title' => 'Theme results and breadcrumbs',
+			'description' => 'Add theming for results text and breadcrumbs',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN resultLabelColor CHAR(7) DEFAULT '#44484a'",
+				"ALTER TABLE themes ADD COLUMN resultLabelColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN resultValueColor CHAR(7) DEFAULT '#6B6B6B'",
+				"ALTER TABLE themes ADD COLUMN resultValueColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN breadcrumbsBackgroundColor CHAR(7) DEFAULT '#f5f5f5'",
+				"ALTER TABLE themes ADD COLUMN breadcrumbsBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN breadcrumbsForegroundColor CHAR(7) DEFAULT '#6B6B6B'",
+				"ALTER TABLE themes ADD COLUMN breadcrumbsForegroundColorDefault tinyint(1) DEFAULT 1",
+			]
+		],
+
+		'themes_search_tools' => [
+			'title' => 'Theme Search tools',
+			'description' => 'Add theming for search tools',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN searchToolsBackgroundColor CHAR(7) DEFAULT '#f5f5f5'",
+				"ALTER TABLE themes ADD COLUMN searchToolsBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN searchToolsBorderColor CHAR(7) DEFAULT '#e3e3e3'",
+				"ALTER TABLE themes ADD COLUMN searchToolsBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN searchToolsForegroundColor CHAR(7) DEFAULT '#6B6B6B'",
+				"ALTER TABLE themes ADD COLUMN searchToolsForegroundColorDefault tinyint(1) DEFAULT 1",
+			]
+		]
 	];
 }

@@ -33,6 +33,22 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $bodyTextColorDefault;
 	public $linkColor;
 	public /** @noinspection PhpUnused */ $linkColorDefault;
+	public $resultLabelColor;
+	public /** @noinspection PhpUnused */ $resultLabelColorDefault;
+	public $resultValueColor;
+	public /** @noinspection PhpUnused */ $resultValueColorDefault;
+
+	public $breadcrumbsBackgroundColor;
+	public /** @noinspection PhpUnused */ $breadcrumbsBackgroundColorDefault;
+	public $breadcrumbsForegroundColor;
+	public /** @noinspection PhpUnused */ $breadcrumbsForegroundColorDefault;
+
+	public $searchToolsBackgroundColor;
+	public /** @noinspection PhpUnused */ $searchToolsBackgroundColorDefault;
+	public $searchToolsBorderColor;
+	public /** @noinspection PhpUnused */ $searchToolsBorderColorDefault;
+	public $searchToolsForegroundColor;
+	public /** @noinspection PhpUnused */ $searchToolsForegroundColorDefault;
 
 	public $footerLogo;
 	public $footerLogoLink;
@@ -341,6 +357,8 @@ class Theme extends DataObject
 			'bodyBackgroundColor' => ['property' => 'bodyBackgroundColor', 'type' => 'color', 'label' => 'Body Background Color', 'description' => 'Body Background Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'bodyTextColor'],
 			'bodyTextColor' => ['property' => 'bodyTextColor', 'type' => 'color', 'label' => 'Body Text Color', 'description' => 'Body Text Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor'],
 			'linkColor' => ['property' => 'linkColor', 'type' => 'color', 'label' => 'Link Color', 'description' => 'Color of Links', 'required' => false, 'hideInLists' => true, 'default' => '#3174AF', 'checkContrastWith'=>'bodyBackgroundColor'],
+			'resultLabelColor' => ['property' => 'resultLabelColor', 'type' => 'color', 'label' => 'Result Label Color', 'description' => 'Color of Labels within Results', 'required' => false, 'hideInLists' => true, 'default' => '#44484a', 'checkContrastWith'=>'bodyBackgroundColor'],
+			'resultValueColor' => ['property' => 'resultValueColor', 'type' => 'color', 'label' => 'Result Value Color', 'description' => 'Color of Values within Results', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor'],
 
 			//Header Colors
 			'headerBackgroundColor' => ['property' => 'headerBackgroundColor', 'type' => 'color', 'label' => 'Header Background Color', 'description' => 'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'headerForegroundColor'],
@@ -350,6 +368,15 @@ class Theme extends DataObject
 			'headerButtonBackgroundColor' => ['property' => 'headerButtonBackgroundColor', 'type' => 'color', 'label' => 'Header Button Background Color', 'description' => 'Header Button Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#747474', 'checkContrastWith'=>'headerButtonColor'],
 			'headerButtonColor' => ['property' => 'headerButtonColor', 'type' => 'color', 'label' => 'Header Button Color', 'description' => 'Header Button Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'headerButtonBackgroundColor'],
 			'headerButtonRadius' => ['property' => 'headerButtonRadius', 'type' => 'text', 'label' => 'Header Button Radius', 'description' => 'Header Button Radius', 'required' => false, 'hideInLists' => true],
+
+			//Breadcrumbs
+			'breadcrumbsBackgroundColor' => ['property' => 'breadcrumbsBackgroundColor', 'type' => 'color', 'label' => 'Breadcrumbs Background Color', 'description' => 'Breadcrumbs Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f5f5f5', 'checkContrastWith'=>'breadcrumbsForegroundColor'],
+			'breadcrumbsForegroundColor' => ['property' => 'breadcrumbsForegroundColor', 'type' => 'color', 'label' => 'Breadcrumbs Text Color', 'description' => 'Breadcrumbs Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'breadcrumbsBackgroundColor'],
+
+			//Breadcrumbs
+			'searchToolsBackgroundColor' => ['property' => 'searchToolsBackgroundColor', 'type' => 'color', 'label' => 'Search Tools Background Color', 'description' => 'Search Tools Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f5f5f5', 'checkContrastWith'=>'searchToolsForegroundColor'],
+			'searchToolsForegroundColor' => ['property' => 'searchToolsForegroundColor', 'type' => 'color', 'label' => 'Search Tools Text Color', 'description' => 'Search Tools Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'searchToolsBackgroundColor'],
+			'searchToolsBorderColor' => ['property' => 'searchToolsBorderColor', 'type' => 'color', 'label' => 'Search Tools Border Color', 'description' => 'Search Tools Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#e3e3e3'],
 
 			//Footer Colors
 			'footerBackgroundColor' => ['property' => 'footerBackgroundColor', 'type' => 'color', 'label' => 'Footer Background Color', 'description' => 'Footer Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'footerForegroundColor'],
@@ -528,6 +555,14 @@ class Theme extends DataObject
 		if ($linkContrast < 3.5){
 			$validationResults['errors'][] = 'Link contrast does not meet accessibility guidelines, contrast is: ' . $linkContrast;
 		}
+		$resultLabelContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->resultLabelColor);
+		if ($resultLabelContrast < 3.5){
+			$validationResults['errors'][] = 'Result Label contrast does not meet accessibility guidelines, contrast is: ' . $resultLabelContrast;
+		}
+		$resultValueContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->resultValueColor);
+		if ($resultValueContrast < 3.5){
+			$validationResults['errors'][] = 'Result Value contrast does not meet accessibility guidelines, contrast is: ' . $resultValueContrast;
+		}
 		$headerContrast = ColorUtils::calculateColorContrast($this->headerBackgroundColor, $this->headerForegroundColor);
 		if ($headerContrast < 3.5){
 			$validationResults['errors'][] = 'Header contrast does not meet accessibility guidelines, contrast is: ' . ($headerContrast);
@@ -539,6 +574,14 @@ class Theme extends DataObject
 		$footerContrast = ColorUtils::calculateColorContrast($this->footerBackgroundColor, $this->footerForegroundColor);
 		if ($footerContrast < 3.5){
 			$validationResults['errors'][] = 'Footer contrast does not meet accessibility guidelines, contrast is: ' . ($footerContrast);
+		}
+		$breadcrumbsContrast = ColorUtils::calculateColorContrast($this->breadcrumbsBackgroundColor, $this->breadcrumbsForegroundColor);
+		if ($breadcrumbsContrast < 3.5){
+			$validationResults['errors'][] = 'Breadcrumbs contrast does not meet accessibility guidelines, contrast is: ' . ($breadcrumbsContrast);
+		}
+		$searchToolsContrast = ColorUtils::calculateColorContrast($this->searchToolsBackgroundColor, $this->searchToolsForegroundColor);
+		if ($searchToolsContrast < 3.5){
+			$validationResults['errors'][] = 'Search Tools contrast does not meet accessibility guidelines, contrast is: ' . ($searchToolsContrast);
 		}
 		$primaryContrast = ColorUtils::calculateColorContrast($this->primaryBackgroundColor, $this->primaryForegroundColor);
 		if ($primaryContrast < 3.5){
@@ -693,10 +736,17 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('bodyBackgroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('bodyTextColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('linkColor', '#3174AF', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('resultLabelColor', '#44484a', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('resultValueColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerBackgroundColor', '#f1f1f1', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerForegroundColor', '#303030', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerButtonColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerButtonBackgroundColor', '#747474', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('breadcrumbsBackgroundColor', '#f5f5f5', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('breadcrumbsForegroundColor', '#6B6B6B', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('searchToolsBackgroundColor', '#f5f5f5', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('searchToolsBorderColor', '#e3e3e3', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('searchToolsForegroundColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('footerBackgroundColor', '#f1f1f1', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('footerForegroundColor', '#303030', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('primaryBackgroundColor', '#0a7589', $appliedThemes);
@@ -805,6 +855,11 @@ class Theme extends DataObject
 		$interface->assign('headerButtonColor', $this->headerButtonColor);
 		$interface->assign('headerButtonBackgroundColor', $this->headerButtonBackgroundColor);
 		$interface->assign('pageBackgroundColor', $this->pageBackgroundColor);
+		$interface->assign('breadcrumbsBackgroundColor', $this->breadcrumbsBackgroundColor);
+		$interface->assign('breadcrumbsForegroundColor', $this->breadcrumbsForegroundColor);
+		$interface->assign('searchToolsBackgroundColor', $this->searchToolsBackgroundColor);
+		$interface->assign('searchToolsBorderColor', $this->searchToolsBorderColor);
+		$interface->assign('searchToolsForegroundColor', $this->searchToolsForegroundColor);
 		$interface->assign('footerBackgroundColor', $this->footerBackgroundColor);
 		$interface->assign('footerForegroundColor', $this->footerForegroundColor);
 		$interface->assign('primaryBackgroundColor', $this->primaryBackgroundColor);
@@ -820,6 +875,8 @@ class Theme extends DataObject
 		$interface->assign('bodyBackgroundColor', $this->bodyBackgroundColor);
 		$interface->assign('bodyTextColor', $this->bodyTextColor);
 		$interface->assign('linkColor', $this->linkColor);
+		$interface->assign('resultLabelColor', $this->resultLabelColor);
+		$interface->assign('resultValueColor', $this->resultValueColor);
 		$interface->assign('sidebarHighlightBackgroundColor', $this->sidebarHighlightBackgroundColor);
 		$interface->assign('sidebarHighlightForegroundColor', $this->sidebarHighlightForegroundColor);
 		$interface->assign('browseCategoryPanelColor', $this->browseCategoryPanelColor);
