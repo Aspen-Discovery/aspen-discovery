@@ -33,6 +33,8 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $bodyTextColorDefault;
 	public $linkColor;
 	public /** @noinspection PhpUnused */ $linkColorDefault;
+	public $linkHoverColor;
+	public /** @noinspection PhpUnused */ $linkHoverColorDefault;
 	public $resultLabelColor;
 	public /** @noinspection PhpUnused */ $resultLabelColorDefault;
 	public $resultValueColor;
@@ -356,9 +358,10 @@ class Theme extends DataObject
 			'pageBackgroundColor' => ['property' => 'pageBackgroundColor', 'type' => 'color', 'label' => 'Page Background Color', 'description' => 'Page Background Color behind all content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'serverValidation' => 'validateColorContrast'],
 			'bodyBackgroundColor' => ['property' => 'bodyBackgroundColor', 'type' => 'color', 'label' => 'Body Background Color', 'description' => 'Body Background Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'bodyTextColor'],
 			'bodyTextColor' => ['property' => 'bodyTextColor', 'type' => 'color', 'label' => 'Body Text Color', 'description' => 'Body Text Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor'],
-			'linkColor' => ['property' => 'linkColor', 'type' => 'color', 'label' => 'Link Color', 'description' => 'Color of Links', 'required' => false, 'hideInLists' => true, 'default' => '#3174AF', 'checkContrastWith'=>'bodyBackgroundColor'],
-			'resultLabelColor' => ['property' => 'resultLabelColor', 'type' => 'color', 'label' => 'Result Label Color', 'description' => 'Color of Labels within Results', 'required' => false, 'hideInLists' => true, 'default' => '#44484a', 'checkContrastWith'=>'bodyBackgroundColor'],
-			'resultValueColor' => ['property' => 'resultValueColor', 'type' => 'color', 'label' => 'Result Value Color', 'description' => 'Color of Values within Results', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor'],
+			'linkColor' => ['property' => 'linkColor', 'type' => 'color', 'label' => 'Link Color', 'description' => 'Color of Links', 'required' => false, 'hideInLists' => true, 'default' => '#3174AF', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
+			'linkHoverColor' => ['property' => 'linkHoverColor', 'type' => 'color', 'label' => 'Link Hover Color', 'description' => 'Color of Links when being hovered over', 'required' => false, 'hideInLists' => true, 'default' => '#265a87', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
+			'resultLabelColor' => ['property' => 'resultLabelColor', 'type' => 'color', 'label' => 'Result Label Color', 'description' => 'Color of Labels within Results', 'required' => false, 'hideInLists' => true, 'default' => '#44484a', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
+			'resultValueColor' => ['property' => 'resultValueColor', 'type' => 'color', 'label' => 'Result Value Color', 'description' => 'Color of Values within Results', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
 
 			//Header Colors
 			'headerBackgroundColor' => ['property' => 'headerBackgroundColor', 'type' => 'color', 'label' => 'Header Background Color', 'description' => 'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'headerForegroundColor'],
@@ -555,6 +558,10 @@ class Theme extends DataObject
 		if ($linkContrast < 3.5){
 			$validationResults['errors'][] = 'Link contrast does not meet accessibility guidelines, contrast is: ' . $linkContrast;
 		}
+		$linkHoverContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->linkHoverColor);
+		if ($linkHoverContrast < 3.5){
+			$validationResults['errors'][] = 'Link hover contrast does not meet accessibility guidelines, contrast is: ' . $linkHoverContrast;
+		}
 		$resultLabelContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->resultLabelColor);
 		if ($resultLabelContrast < 3.5){
 			$validationResults['errors'][] = 'Result Label contrast does not meet accessibility guidelines, contrast is: ' . $resultLabelContrast;
@@ -736,6 +743,7 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('bodyBackgroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('bodyTextColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('linkColor', '#3174AF', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('linkHoverColor', '#265a87', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('resultLabelColor', '#44484a', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('resultValueColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerBackgroundColor', '#f1f1f1', $appliedThemes);
@@ -875,6 +883,7 @@ class Theme extends DataObject
 		$interface->assign('bodyBackgroundColor', $this->bodyBackgroundColor);
 		$interface->assign('bodyTextColor', $this->bodyTextColor);
 		$interface->assign('linkColor', $this->linkColor);
+		$interface->assign('linkHoverColor', $this->linkHoverColor);
 		$interface->assign('resultLabelColor', $this->resultLabelColor);
 		$interface->assign('resultValueColor', $this->resultValueColor);
 		$interface->assign('sidebarHighlightBackgroundColor', $this->sidebarHighlightBackgroundColor);

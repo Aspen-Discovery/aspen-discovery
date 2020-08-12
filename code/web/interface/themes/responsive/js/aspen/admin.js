@@ -32,7 +32,7 @@ AspenDiscovery.Admin = (function(){
 			$('head').append('<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=' + fontName + '">');
 			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
 		},
-		checkContrast: function (property1, property2){
+		checkContrast: function (property1, property2,oneWay=false){
 			let color1 = $('#' + property1).val();
 			let color2 = $('#' + property2).val();
 			if (color1.length === 7 && color2.length === 7){
@@ -72,9 +72,13 @@ AspenDiscovery.Admin = (function(){
 				}
 			}else{
 				$("#contrastCheck_" + property1).hide();
-				$("#contrastCheck_" + property2).hide();
+				if (!oneWay) {
+					$("#contrastCheck_" + property2).hide();
+				}
 				$("#contrast_" + property1).innerHTML = 'Unknown';
-				$("#contrast_" + property2).innerHTML = 'Unknown';
+				if (!oneWay) {
+					$("#contrast_" + property2).innerHTML = 'Unknown';
+				}
 			}
 
 		},

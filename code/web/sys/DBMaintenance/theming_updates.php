@@ -368,6 +368,16 @@ function getThemingUpdates()
 			]
 		],
 
+		'themes_link_hover_color' => [
+			'title' => 'Theme Link Hover Color',
+			'description' => 'Define Link Hover Color. ',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN linkHoverColor CHAR(7) DEFAULT '#265a87'",
+				"ALTER TABLE themes ADD COLUMN linkHoverColorDefault tinyint(1) DEFAULT 1",
+			]
+		],
+
 		'themes_badges' => [
 			'title' => 'Theme Badges',
 			'description' => 'Setup Theming for badges ',

@@ -74,6 +74,9 @@ body {ldelim}
 a,a:visited,.result-head,#selected-browse-label a,#selected-browse-label a:visited{ldelim}
     color: {$linkColor};
 {rdelim}
+a:hover,.result-head:hover,#selected-browse-label a:hover{ldelim}
+    color: {$linkHoverColor};
+{rdelim}
 
 body .container, #home-page-browse-content{ldelim}
     background-color: {$bodyBackgroundColor};

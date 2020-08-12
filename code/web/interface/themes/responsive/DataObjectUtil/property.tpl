@@ -126,7 +126,7 @@
 						&nbsp;{translate text='Contrast Ratio'}&nbsp;<span id="contrast_{$propName}" class="contrast_warning"></span>
 						<script type="text/javascript">
 							$(document).ready(function(){ldelim}
-								AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');
+								AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}'{if !empty($property.checkContrastOneWay) && $property.checkContrastOneWay==true},true{/if});
 							{rdelim});
 						</script>
 					{/if}
