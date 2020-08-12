@@ -54,8 +54,8 @@
 	{if $showSearchTools}
 		<div class="well small">
 			<strong>{translate text='Search Tools'}:</strong>
-			<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>
-			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);"><span class="silk email">&nbsp;</span>{translate text='Email this Search'}</a>
+			<a href="{$rssLink|escape}">{translate text='Get RSS Feed'}</a>
+			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search'}</a>
 		</div>
 	{/if}
 </div>

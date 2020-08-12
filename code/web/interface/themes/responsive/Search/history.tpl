@@ -68,7 +68,7 @@
 						</tr>
 					{/foreach}
 				</table>
-				<br><a class="btn btn-warning" role="button" href="/Search/History?purge=true"><span class="silk delete">&nbsp;</span>{translate text="history_purge"}</a>
+				<br><a class="btn btn-warning" role="button" href="/Search/History?purge=true">{translate text="history_purge"}</a>
 			{/if}
 
 		{else}

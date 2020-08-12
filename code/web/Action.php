@@ -1,7 +1,5 @@
 <?php
 
-//require_once 'PEAR.php';
-
 // Abstract Base Class for Actions
 abstract class Action
 {
