@@ -7160,6 +7160,9 @@ body > .container {
   background-color: #636363;
   border-color: #636363;
 }
+.btn-tools:visited {
+  color: #ffffff;
+}
 .tab-content {
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
@@ -8591,9 +8594,6 @@ hr.menu {
 #vertical-menu-bar .menu-icon {
   padding: 5px;
 }
-#vertical-menu-bar .menu-icon img {
-  width: 30px;
-}
 #vertical-menu-bar .menu-icon:visited,
 #vertical-menu-bar .menu-icon:hover,
 #vertical-menu-bar .menu-icon:focus {
@@ -8607,12 +8607,13 @@ hr.menu {
   text-transform: uppercase;
   font-size: 16px;
   margin-top: 10px;
+  text-align: center;
 }
 .rotated-text {
   display: inline-block;
   overflow: hidden;
-  width: 40px;
-  line-height: 40px;
+  width: 30px;
+  line-height: 30px;
 }
 .rotated-text-inner {
   display: inline-block;
@@ -10564,6 +10565,8 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
   text-transform: uppercase;
   white-space: nowrap;
+  font-size: 18px;
+  padding: 4px;
 }
 @media (max-width: 479px) {
   .exploreMoreBar .exploreMoreBarLabel {

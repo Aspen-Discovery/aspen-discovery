@@ -188,7 +188,7 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 {/if}
 
-.btn-default{ldelim}
+.btn-default,.btn-default:visited{ldelim}
     background-color: {$defaultButtonBackgroundColor};
     color: {$defaultButtonForegroundColor};
     border-color: {$defaultButtonBorderColor};
@@ -200,7 +200,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$defaultButtonHoverBorderColor};
 {rdelim}
 
-.btn-primary{ldelim}
+.btn-primary,.btn-primary:visited{ldelim}
     background-color: {$primaryButtonBackgroundColor};
     color: {$primaryButtonForegroundColor};
     border-color: {$primaryButtonBorderColor};
@@ -212,7 +212,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$primaryButtonHoverBorderColor};
 {rdelim}
 
-.btn-action{ldelim}
+.btn-action,.btn-action:visited{ldelim}
     background-color: {$actionButtonBackgroundColor};
     color: {$actionButtonForegroundColor};
     border-color: {$actionButtonBorderColor};
@@ -224,7 +224,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$actionButtonHoverBorderColor};
 {rdelim}
 
-.btn-info{ldelim}
+.btn-info,.btn-info:visited{ldelim}
     background-color: {$infoButtonBackgroundColor};
     color: {$infoButtonForegroundColor};
     border-color: {$infoButtonBorderColor};
@@ -236,7 +236,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$infoButtonHoverBorderColor};
 {rdelim}
 
-.btn-tools{ldelim}
+.btn-tools,.btn-tools:visited{ldelim}
     background-color: {$toolsButtonBackgroundColor};
     color: {$toolsButtonForegroundColor};
     border-color: {$toolsButtonBorderColor};
@@ -248,7 +248,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$toolsButtonHoverBorderColor};
 {rdelim}
 
-.btn-warning{ldelim}
+.btn-warning,.btn-warning:visited{ldelim}
     background-color: {$warningButtonBackgroundColor};
     color: {$warningButtonForegroundColor};
     border-color: {$warningButtonBorderColor};
@@ -265,7 +265,7 @@ body .container, #home-page-browse-content{ldelim}
     color: {$warningButtonForegroundColor};
 {rdelim}
 
-.btn-danger{ldelim}
+.btn-danger,.btn-danger:visited{ldelim}
     background-color: {$dangerButtonBackgroundColor};
     color: {$dangerButtonForegroundColor};
     border-color: {$dangerButtonBorderColor};
@@ -282,7 +282,7 @@ body .container, #home-page-browse-content{ldelim}
     color: {$dangerButtonForegroundColor};
 {rdelim}
 
-.btn-editions{ldelim}
+.btn-editions,.btn-editions:visited{ldelim}
     background-color: {$editionsButtonBackgroundColor};
     color: {$editionsButtonForegroundColor};
     border-color: {$editionsButtonBorderColor};
