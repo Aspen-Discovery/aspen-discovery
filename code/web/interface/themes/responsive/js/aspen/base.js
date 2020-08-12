@@ -530,3 +530,14 @@ jQuery.validator.addMethod(
 		"Please enter a correct date"
 );
 
+$.validator.addMethod('repeat', function(value, element){
+	if(element.id.lastIndexOf('Repeat') == element.id.length - 6) {
+		idOriginal = element.id.slice(0,-6);
+		valueOriginal = $('#' + idOriginal).val();
+		if (value == valueOriginal) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}, "Repeat fields do not match");

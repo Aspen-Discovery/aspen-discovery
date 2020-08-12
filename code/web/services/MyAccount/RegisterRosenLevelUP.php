@@ -127,18 +127,15 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 
 						// check student username for availability
 						$this->levelUPResult->student_username_avail = 0;
-						if ($this->student_username != $_REQUEST['student_username']) { // because we already checked whether the patronid is in use as a Rosen LevelUP username
-							$this->levelUPResult->student_username_avail = 0;
-							$this->levelUPResult->studentQueryResponse = $this->levelUPQuery($_REQUEST['student_username'], 'STUDENT');
-							if ($this->levelUPResult->studentQueryResponse->status != '404') {
-								global $logger;
-								$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->studentQueryResponse->message;
-								$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->studentQueryResponse->error, Logger::LOG_NOTICE);
-								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
-							} elseif ($this->levelUPResult->studentQueryResponse->status == '404') {
-								$this->student_username = $_REQUEST['student_username'];
-								$this->levelUPResult->student_username_avail = 1;
-							}
+						$this->levelUPResult->studentQueryResponse = $this->levelUPQuery($_REQUEST['student_username'], 'STUDENT');
+						if ($this->levelUPResult->studentQueryResponse->status != '404') {
+							global $logger;
+							$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->studentQueryResponse->message;
+							$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->studentQueryResponse->error, Logger::LOG_NOTICE);
+							$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
+						} elseif ($this->levelUPResult->studentQueryResponse->status == '404') {
+							$this->student_username = $_REQUEST['student_username'];
+							$this->levelUPResult->student_username_avail = 1;
 						}
 
 						// register new users
@@ -157,18 +154,18 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 							}
 						}
+					}
 
-						// Pre-fill form with user supplied data
-						foreach ($fields as &$property) {
-							if ($property['type'] == 'section') {
-								foreach ($property['properties'] as &$propertyInSection) {
-									$userValue = $_REQUEST[$propertyInSection['property']];
-									$propertyInSection['default'] = $userValue;
-								}
-							} else {
-								$userValue = $_REQUEST[$property['property']];
-								$property['default'] = $userValue;
+					// Pre-fill form with user supplied data
+					foreach ($fields as &$property) {
+						if ($property['type'] == 'section') {
+							foreach ($property['properties'] as &$propertyInSection) {
+								$userValue = $_REQUEST[$propertyInSection['property']];
+								$propertyInSection['default'] = $userValue;
 							}
+						} else {
+							$userValue = $_REQUEST[$property['property']];
+							$property['default'] = $userValue;
 						}
 					}
 				}
@@ -180,8 +177,8 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				// Set up captcha to limit spam self registrations
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				$recaptcha = new RecaptchaSetting();
-				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)){
-					$captchaCode        = recaptcha_get_html($recaptcha->publicKey);
+				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
+					$captchaCode = recaptcha_get_html($recaptcha->publicKey);
 					$interface->assign('captcha', $captchaCode);
 				}
 				$interface->assign('formLabel', 'Register for Rosen LevelUP');
@@ -196,7 +193,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 	function getLevelUPRegistrationFields() {
 		$fields = array();
 		$fields[] = array('property' => 'student_username', 'default' => $this->student_username, 'type' => 'text', 'label' => 'Student Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property' => 'student_pw', 'type' => 'storedPassword', 'label' => 'Student Rosen LevelUP Password', 'maxLength' => 40, 'required' => true);
+		$fields[] = array('property' => 'student_pw', 'type' => 'storedPassword', 'label' => 'Student Rosen LevelUP Password', 'maxLength' => 40, 'required' => true, 'repeat' => true);
 		$fields[] = array('property' => 'student_first_name', 'default' => $this->student_first_name, 'type' => 'text', 'label' => 'Student First Name', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'student_last_name', 'default' => $this->student_last_name, 'type' => 'text', 'label' => 'Student Last Name', 'maxLength' => 40, 'required' => true);
 		$locationList = array();
@@ -205,7 +202,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$fields[] = array('property' => 'student_school', 'default' => $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
 		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => array('K', '1', '2'), 'required' => true);
 		$fields[] = array('property' => 'parent_username', 'default' => $this->parent_username, 'type' => 'text', 'label' => 'Parent Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true);
+		$fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true, 'repeat' => true);
 		$fields[] = array('property' => 'parent_first_name', 'default' => $this->parent_first_name, 'type' => 'text', 'label' => 'Parent First Name', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'parent_last_name', 'default' => $this->parent_last_name, 'type' => 'text', 'label' => 'Parent Last Name', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'parent_email', 'default' => $this->parent_email, 'type' => 'email', 'label' => 'Parent Email', 'maxLength' => 128, 'required' => true);
