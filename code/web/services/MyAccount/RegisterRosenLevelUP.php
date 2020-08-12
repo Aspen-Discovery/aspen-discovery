@@ -157,13 +157,16 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 					}
 
 					// Pre-fill form with user supplied data
+					//TODO: Move this to DataObjectUtil so we can reload forms based on submission when they fail validation
 					foreach ($fields as &$property) {
 						if ($property['type'] == 'section') {
 							foreach ($property['properties'] as &$propertyInSection) {
-								$userValue = $_REQUEST[$propertyInSection['property']];
-								$propertyInSection['default'] = $userValue;
+								if ($property['type'] != 'storedPassword' && $property['type'] != 'password'){
+									$userValue = $_REQUEST[$propertyInSection['property']];
+									$propertyInSection['default'] = $userValue;
+								}
 							}
-						} else {
+						} elseif ($property['type'] != 'storedPassword' && $property['type'] != 'password'){
 							$userValue = $_REQUEST[$property['property']];
 							$property['default'] = $userValue;
 						}
