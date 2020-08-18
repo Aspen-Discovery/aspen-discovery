@@ -87,6 +87,13 @@ body .container, #home-page-browse-content{ldelim}
     background-color: {$bodyBackgroundColor};
 {rdelim}
 
+.table-striped > tbody > tr:nth-child(2n+1) > td, .table-striped > tbody > tr:nth-child(2n+1) > th{ldelim}
+    background-color: {$tableStripeBackgroundColor};
+{rdelim}
+.table-sticky thead tr th{ldelim}
+    background-color: {$bodyBackgroundColor};
+{rdelim}
+
 #home-page-search, #horizontal-search-box, #explore-more-sidebar,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar {ldelim}
     background-color: {$primaryBackgroundColor};
     color: {$primaryForegroundColor};
@@ -122,17 +129,17 @@ body .container, #home-page-browse-content{ldelim}
 .facetTitle, .exploreMoreTitle,.panel-title,.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title, .panel-title > a,.panel-default > .panel-heading{ldelim}
     color: {$closedPanelForegroundColor};
 {rdelim}
-.facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,.active .panel-default > .panel-heading, .sidebar-links .active .panel-heading, #account-link-accordion .panel.active .panel-title, #account-settings-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
+.facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,.active .panel-default > .panel-heading, .sidebar-links .active .panel-heading, #account-link-accordion .panel.active .panel-title, #account-settings-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading, .adminSection .adminPanel .adminSectionLabel{ldelim}
     background-color: {$openPanelBackgroundColor};
 {rdelim}
-.facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,#more-details-accordion .active .panel-title,#account-link-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
+.facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,#more-details-accordion .active .panel-title,#account-link-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading,.adminSection .adminPanel .adminSectionLabel{ldelim}
     color: {$openPanelForegroundColor};
 {rdelim}
-.panel-body,.sidebar-links .panel-body,#more-details-accordion .panel-body,.facetDetails,.sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn), .sidebar-links .panel-body a:hover:not(.btn){ldelim}
+.panel-body,.sidebar-links .panel-body,#more-details-accordion .panel-body,.facetDetails,.sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn), .sidebar-links .panel-body a:hover:not(.btn),.adminSection .adminPanel{ldelim}
     background-color: {$panelBodyBackgroundColor};
     color: {$panelBodyForegroundColor};
 {rdelim}
-.facetValue, .facetValue a{ldelim}
+.facetValue, .facetValue a,.adminSection .adminPanel .adminActionLabel,.adminSection .adminPanel .adminActionLabel a{ldelim}
     color: {$panelBodyForegroundColor};
 {rdelim}
 

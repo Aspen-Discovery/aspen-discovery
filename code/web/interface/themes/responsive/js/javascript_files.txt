@@ -5,9 +5,9 @@ lib/bootstrap.min.js
 lib/bootstrap-datepicker.min.js
 lib/bootstrap-switch.min.js
 lib/jcarousel.min.js
-lib/jquery.tablesorter.min.js
+lib/jquery.tablesorter.js
 lib/jquery.tablesorter.pager.min.js
-lib/jquery.tablesorter.widgets.min.js
+lib/jquery.tablesorter.widgets.js
 lib/jquery.validate.min.js
 lib/jquery.touchwipe.min.js
 lib/jquery.rwdImageMaps.min.js

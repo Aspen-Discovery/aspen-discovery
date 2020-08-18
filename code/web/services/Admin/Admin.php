@@ -6,7 +6,6 @@ abstract class Admin_Admin extends Action {
 	protected $db;
 
 	function __construct() {
-		global $configArray;
 		$user = UserAccount::getLoggedInUser();
 
 		//If the user isn't logged in, take them to the login page

@@ -21,11 +21,13 @@
 
 		<script src="/js/jquery-1.11.0.min.js?v={$gitBranch|urlencode}"></script>
 		{* Load Libraries*}
-		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.pager.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.min.js?v={$gitBranch|urlencode}"></script>
 		{*<script src="/interface/themes/responsive/js/lib/jquery.validate.js"></script>*}
 		<script src="/interface/themes/responsive/js/lib/jquery.validate.min.js?v={$gitBranch|urlencode}"></script>
+
+		<script src="/interface/themes/responsive/js/lib/fontawesome.min.js?v={$gitBranch|urlencode}"></script>
 
 		<script src="/interface/themes/responsive/js/lib/recaptcha_ajax.js?v={$gitBranch|urlencode}"></script>
 		{* Combined into ratings.js (part of the aspen.min.js)*}
@@ -76,7 +78,6 @@
 		{* Code is minified using uglify.js *}
 		<script src="/interface/themes/responsive/js/aspen.js?v={$gitBranch|urlencode}"></script>
 	{/if}
-	<script src="https://kit.fontawesome.com/0e1b9a056d.js" crossorigin="anonymous"></script>
 
 	{/strip}
 	<script type="text/javascript">

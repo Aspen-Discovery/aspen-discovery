@@ -437,7 +437,7 @@ class Theme extends DataObject
 				'closedPanelForegroundColor' => ['property' => 'closedPanelForegroundColor', 'type' => 'color', 'label' => 'Closed Panel Text Color', 'description' => 'Panel Foreground Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#333333', 'checkContrastWith'=>'closedPanelBackgroundColor'],
 				'openPanelBackgroundColor' => ['property' => 'openPanelBackgroundColor', 'type' => 'color', 'label' => 'Open Panel Background Color', 'description' => 'Panel Category Background Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#4DACDE', 'checkContrastWith'=>'openPanelForegroundColor'],
 				'openPanelForegroundColor' => ['property' => 'openPanelForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Category Foreground Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'openPanelBackgroundColor'],
-				'panelBodyBackgroundColor' => ['property' => 'panelBodyBackgroundColor', 'type' => 'color', 'label' => 'Panel Body Background Color', 'description' => 'Panel Body Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'panelBodyForegroundColor'],
+				'panelBodyBackgroundColor' => ['property' => 'panelBodyBackgroundColor', 'type' => 'color', 'label' => 'Panel Body Background Color', 'description' => 'Panel Body Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f8f8f8', 'checkContrastWith'=>'panelBodyForegroundColor'],
 				'panelBodyForegroundColor' => ['property' => 'panelBodyForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Body Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'panelBodyBackgroundColor'],
 			]],
 
@@ -872,10 +872,6 @@ class Theme extends DataObject
 		$interface->assign('footerForegroundColor', $this->footerForegroundColor);
 		$interface->assign('primaryBackgroundColor', $this->primaryBackgroundColor);
 		$interface->assign('primaryForegroundColor', $this->primaryForegroundColor);
-		$lightened80 = ColorUtils::lightenColor($this->primaryBackgroundColor, 1.8);
-		$interface->assign('primaryBackgroundColorLightened80', $lightened80);
-		$lightened60 = ColorUtils::lightenColor($this->primaryBackgroundColor, 1.6);
-		$interface->assign('primaryBackgroundColorLightened60', $lightened60);
 		$interface->assign('secondaryBackgroundColor', $this->secondaryBackgroundColor);
 		$interface->assign('secondaryForegroundColor', $this->secondaryForegroundColor);
 		$interface->assign('tertiaryBackgroundColor', $this->tertiaryBackgroundColor);
@@ -884,6 +880,14 @@ class Theme extends DataObject
 		$interface->assign('bodyTextColor', $this->bodyTextColor);
 		$interface->assign('linkColor', $this->linkColor);
 		$interface->assign('linkHoverColor', $this->linkHoverColor);
+		$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 1.1);
+		if (ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->bodyTextColor) < 4.5 ||
+			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkColor) < 4.5 ||
+			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkHoverColor) < 4.5){
+
+			$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 0.9);
+		}
+		$interface->assign('tableStripeBackgroundColor', $tableStripeBackgroundColor);
 		$interface->assign('resultLabelColor', $this->resultLabelColor);
 		$interface->assign('resultValueColor', $this->resultValueColor);
 		$interface->assign('sidebarHighlightBackgroundColor', $this->sidebarHighlightBackgroundColor);

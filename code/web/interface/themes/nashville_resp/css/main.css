@@ -1,3 +1,4 @@
+@import "lib/fontawesome-all.min.css";
 article,
 aside,
 details,
@@ -7226,22 +7227,6 @@ a.bg-overdue:hover,
 a.bg-overdue:focus {
   background-color: #e4b9b9;
 }
-.unsortedHeader {
-  background-image: url(/images/unsorted_icon.gif);
-  cursor: pointer;
-  font-weight: bold;
-  background-repeat: no-repeat;
-  background-position: center right;
-  padding-right: 20px;
-}
-thead .sortDescHeader {
-  background-image: url(/images/sort_desc_icon.gif);
-  background-color: #3399FF;
-}
-thead .sortAscHeader {
-  background-image: url(/images/sort_asc_icon.gif);
-  background-color: #3399FF;
-}
 .tablesorter-filter {
   width: 98%;
 }
@@ -8355,44 +8340,49 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
 }
 /* tables */
 table.tablesorter {
-  font-family: arial;
-  background-color: #CDCDCD;
-  margin: 10px 0pt 15px;
+  margin: 10px 0 15px;
   font-size: 8pt;
   width: 100%;
   text-align: left;
 }
 table.tablesorter thead tr th,
 table.tablesorter tfoot tr th {
-  background-color: #e6EEEE;
-  border: 1px solid #FFF;
   font-size: 8pt;
   padding: 4px;
 }
 table.tablesorter thead tr .header {
-  background-image: url(lib/tablesorter/bg.gif);
-  background-repeat: no-repeat;
-  background-position: center right;
   cursor: pointer;
 }
 table.tablesorter tbody td {
-  color: #3D3D3D;
   padding: 4px;
-  background-color: #FFF;
   vertical-align: top;
 }
-table.tablesorter tbody tr.odd td {
-  background-color: #F0F0F6;
+.tablesorter-headerUnSorted .tablesorter-header-inner:after {
+  display: inline-block;
+  font-family: "Font Awesome 5 Free";
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  margin-left: 2px;
+  content: "\f0dc";
 }
-table.tablesorter thead tr .headerSortUp {
-  background-image: url(lib/tablesorter/asc.gif);
+.tablesorter-headerAsc .tablesorter-header-inner:after {
+  display: inline-block;
+  font-family: "Font Awesome 5 Free";
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  margin-left: 2px;
+  content: "\f0de";
 }
-table.tablesorter thead tr .headerSortDown {
-  background-image: url(lib/tablesorter/desc.gif);
-}
-table.tablesorter thead tr .headerSortDown,
-table.tablesorter thead tr .headerSortUp {
-  background-color: #8dbdd8;
+.tablesorter-headerDesc .tablesorter-header-inner:after {
+  display: inline-block;
+  font-family: "Font Awesome 5 Free";
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  margin-left: 2px;
+  content: "\f0dd";
 }
 body {
   color: #404040;
@@ -11097,6 +11087,34 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .contrast_warning {
   padding: 3px 5px;
+}
+.adminSection .adminPanel {
+  margin: 10px 0;
+  border: 1px solid #cccccc;
+  background-color: #f8f8f8;
+  color: #404040;
+}
+.adminSection .adminPanel .adminSectionLabel {
+  font-size: 18px;
+  margin: 0;
+  padding: 3px 0;
+  text-transform: uppercase;
+  border-bottom: 1px solid #cccccc;
+  background-color: #4DACDE;
+  color: #333333;
+}
+.adminSection .adminPanel .adminSectionActions {
+  padding: 5px 20px 5px 5px;
+}
+.adminSection .adminPanel .adminAction {
+  margin-bottom: 6px;
+}
+.adminSection .adminPanel .adminActionLabel {
+  font-size: 14px;
+  font-weight: bold;
+}
+.adminSection .adminPanel .adminActionDescription {
+  font-size: 12px;
 }
 /* ---------------- Base Changes ---------------- */
 body {
