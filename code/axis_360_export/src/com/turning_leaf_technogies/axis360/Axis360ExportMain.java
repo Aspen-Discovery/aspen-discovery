@@ -17,8 +17,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
@@ -303,7 +305,7 @@ public class Axis360ExportMain {
 
 	private static String getAxis360AccessToken(Axis360Setting setting) {
 		long curTime = new Date().getTime();
-		if (accessToken == null || accessTokenExpiration >= curTime){
+		if (accessToken == null || accessTokenExpiration <= curTime){
 			String authentication = setting.getVendorUsername() + ":" + setting.getVendorPassword() + ":" + setting.getLibraryPrefix();
 
 			String authorizationUrl = setting.getBaseUrl() + "/Services/VendorAPI/accesstoken";
@@ -360,13 +362,16 @@ public class Axis360ExportMain {
 			logEntry.incErrors("Did not get access token");
 			return 0;
 		}
-		headers.put("Authorization", "Bearer " + getAxis360AccessToken(setting));
-		headers.put("Content-Type", "application/json");
-		headers.put("Accept", "application/json");
+		headers.put("Authorization", getAxis360AccessToken(setting));
+		headers.put("Library", setting.getLibraryPrefix());
+		headers.put("Content-Type", "text/xml");
+		headers.put("Accept", "text/xml");
 		//Get a list of titles to process
 		String itemDetailsUrl = setting.getBaseUrl() + "/Services/VendorAPI/getItemDetails/v2";
-		if (!setting.doFullReload()){
-			itemDetailsUrl += "?istartDateTime=" + setting.getLastUpdateOfChangedRecords();
+		if (!setting.doFullReload() && (setting.getLastUpdateOfChangedRecords() != 0)){
+			itemDetailsUrl += "?startDateTime=" + new SimpleDateFormat("MM-dd-YYYY HH:mm:ss").format(new Date(setting.getLastUpdateOfChangedRecords() * 1000));
+		}else{
+			itemDetailsUrl += "?startDateTime=" + URLEncoder.encode(new SimpleDateFormat("MM-dd-YYYY HH:mm:ss").format(new Date(946684800000L))); //January 1st 2000
 		}
 
 		WebServiceResponse response = NetworkUtils.getURL(itemDetailsUrl, logger, headers, 120000);
