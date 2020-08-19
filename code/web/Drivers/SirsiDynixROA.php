@@ -282,7 +282,7 @@ class SirsiDynixROA extends HorizonAPI
 				$user->_numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
 				$user->_numHoldsAvailableIls  = $numHoldsAvailable;
 				$user->_numHoldsRequestedIls  = $numHoldsRequested;
-				$user->patronType            = 0; //TODO: not getting this info here?
+				$user->patronType            = $lookupMyAccountInfoResponse->fields->profile->key;
 				$user->_notices               = '-';
 				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
@@ -509,7 +509,7 @@ class SirsiDynixROA extends HorizonAPI
 				$user->_zip                   = $Zip;
 				$user->_fines                 = sprintf('$%01.2f', $finesVal);
 				$user->_finesVal              = $finesVal;
-				$user->patronType            = $lookupMyAccountInfoResponse->fields->profile->key;
+				$user->patronType             = $lookupMyAccountInfoResponse->fields->profile->key;
 				$user->_notices               = '-';
 				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
