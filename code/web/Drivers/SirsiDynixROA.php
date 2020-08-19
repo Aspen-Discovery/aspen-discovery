@@ -313,6 +313,7 @@ class SirsiDynixROA extends HorizonAPI
 		//First call loginUser
 		$timer->logTime("Logging in through Symphony APIs");
 		list($userValid, $sessionToken, $sirsiRoaUserID) = $this->loginViaWebService($username, $password);
+		$staffSessionToken = $this->getStaffSessionToken();
 		if ($validatedViaSSO) {
 			$userValid = true;
 		}
@@ -327,11 +328,11 @@ class SirsiDynixROA extends HorizonAPI
 			//	$patronStatusInfoDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patronStatusInfo/describe', null, $sessionToken);
 			//	$patronAddress1PolicyDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/address1/describe', null, $sessionToken);
 
-			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,blockList{owed}");
+			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
 			$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $sirsiRoaUserID . '?includeFields=' . $includeFields;
 
 			// phoneList is for texting notification preferences
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $staffSessionToken);
 			if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 				$lastName  = $lookupMyAccountInfoResponse->fields->lastName;
 				$firstName = $lookupMyAccountInfoResponse->fields->firstName;
@@ -508,7 +509,7 @@ class SirsiDynixROA extends HorizonAPI
 				$user->_zip                   = $Zip;
 				$user->_fines                 = sprintf('$%01.2f', $finesVal);
 				$user->_finesVal              = $finesVal;
-				$user->patronType            = 0; //TODO: not getting this info here?
+				$user->patronType            = $lookupMyAccountInfoResponse->fields->profile->key;
 				$user->_notices               = '-';
 				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
