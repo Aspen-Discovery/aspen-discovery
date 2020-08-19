@@ -201,8 +201,8 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$fields[] = array('property' => 'student_last_name', 'default' => $this->student_last_name, 'type' => 'text', 'label' => 'Student Last Name', 'maxLength' => 40, 'required' => true);
 		$locationList = array();
 		$locationList[0] = "school not listed";
-		$locationList[$this->student_school_code] = $this->student_school_name;
-		$fields[] = array('property' => 'student_school', 'default' => $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
+		$locationList["Nashville ".substr($this->student_school_code,-3)] = $this->student_school_name;
+		$fields[] = array('property' => 'student_school', 'default' => "Nashville ".substr($this->student_school_code,-3), 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
 		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => array('K', '1', '2'), 'required' => true);
 		$fields[] = array('property' => 'parent_username', 'default' => $this->parent_username, 'type' => 'text', 'label' => 'Parent Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true);
