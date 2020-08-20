@@ -257,16 +257,6 @@ class Library extends DataObject
 		'list'  => 'List',
 	);
 
-	static $subdomains = null;
-	public static function getAllSubdomains()
-	{
-		if (Library::$subdomains == null){
-			$libraries = new Library();
-			Library::$subdomains = $libraries->fetchAll('subdomain');
-		}
-		return Library::$subdomains;
-	}
-
 	function keys() {
 		return array('libraryId', 'subdomain');
 	}
@@ -286,7 +276,6 @@ class Library extends DataObject
 		unset($archiveSearchFacetSettingStructure['showAsDropDown']);
 		unset($archiveSearchFacetSettingStructure['showAboveResults']);
 		unset($archiveSearchFacetSettingStructure['showInAdvancedSearch']);
-		//unset($archiveSearchFacetSettingStructure['sortMode']);
 
 		$libraryArchiveMoreDetailsStructure = LibraryArchiveMoreDetails::getObjectStructure();
 		unset($libraryArchiveMoreDetailsStructure['weight']);
@@ -472,7 +461,7 @@ class Library extends DataObject
 			'baseUrl' => array('property'=>'baseUrl', 'type'=>'text', 'label'=>'Base URL', 'description'=>'The Base URL for the library instance including the protocol (http or https).'),
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'A name to identify the library within the system', 'size'=>'40', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true),
 			'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false),
-			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
+			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => "<a><b><em><div><span><p><strong><sub><sup><script>", 'hideInLists' => true),
 			'generateSitemap' => array('property'=>'generateSitemap', 'type'=>'checkbox', 'label'=>'Generate Sitemap', 'description'=>'Whether or not a sitemap should be generated for the library.', 'hideInLists' => true,),
 
 			// Basic Display //
@@ -682,7 +671,7 @@ class Library extends DataObject
 				'externalMaterialsRequestUrl' => array('property'=>'externalMaterialsRequestUrl', 'type'=>'text', 'label'=>'External Materials Request URL', 'description'=>'A link to an external Materials Request System to be used instead of the built in Aspen Discovery system', 'hideInList' => true),
 				'maxRequestsPerYear'          => array('property'=>'maxRequestsPerYear', 'type'=>'integer', 'label'=>'Max Requests Per Year', 'description'=>'The maximum number of requests that a user can make within a year', 'hideInLists' => true, 'default' => 60),
 				'maxOpenRequests'             => array('property'=>'maxOpenRequests', 'type'=>'integer', 'label'=>'Max Open Requests', 'description'=>'The maximum number of requests that a user can have open at one time', 'hideInLists' => true, 'default' => 5),
-				'newMaterialsRequestSummary'  => array('property'=>'newMaterialsRequestSummary', 'type'=>'html', 'label'=>'New Request Summary', 'description'=>'Text displayed at the top of Materials Request form to give users important information about the request they submit', 'size'=>'40', 'maxLength' =>'512', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
+				'newMaterialsRequestSummary'  => array('property'=>'newMaterialsRequestSummary', 'type'=>'html', 'label'=>'New Request Summary', 'description'=>'Text displayed at the top of Materials Request form to give users important information about the request they submit', 'size'=>'40', 'maxLength' =>'512', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><script>', 'hideInLists' => true),
 				'materialsRequestDaysToPreserve' => array('property' => 'materialsRequestDaysToPreserve', 'type'=>'integer', 'label'=>'Delete Closed Requests Older than (days)', 'description' => 'The number of days to preserve closed requests.  Requests will be preserved for a minimum of 366 days.  We suggest preserving for at least 395 days.  Setting to a value of 0 will preserve all requests', 'hideInLists' => true, 'default' => 396),
 
 				'materialsRequestFieldsToDisplay' => array(
@@ -1085,7 +1074,7 @@ class Library extends DataObject
 		if ($searchSource == null){
 			global $searchSource;
 		}
-		if ($searchSource == 'combinedResults'){
+		if ($searchSource == 'combined'){
 			$searchSource = 'local';
 		}
 		if (!array_key_exists($searchSource, Library::$searchLibrary)){
@@ -1144,7 +1133,6 @@ class Library extends DataObject
 			die();
 		}
 		//Next check to see if we are in a library.
-		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		$physicalLocation = $locationSingleton->getActiveLocation();
 		if (!is_null($physicalLocation)){
@@ -1209,29 +1197,9 @@ class Library extends DataObject
 			}
 			return $this->holidays;
 		}elseif ($name == "archiveMoreDetailsOptions") {
-			if (!isset($this->archiveMoreDetailsOptions) && $this->libraryId){
-				$this->archiveMoreDetailsOptions = array();
-				$moreDetailsOptions = new LibraryArchiveMoreDetails();
-				$moreDetailsOptions->libraryId = $this->libraryId;
-				$moreDetailsOptions->orderBy('weight');
-				$moreDetailsOptions->find();
-				while($moreDetailsOptions->fetch()){
-					$this->archiveMoreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
-				}
-			}
-			return $this->archiveMoreDetailsOptions;
+			return $this->getArchiveMoreDetailsOptions();
 		}elseif ($name == "archiveSearchFacets") {
-			if (!isset($this->archiveSearchFacets) && $this->libraryId){
-				$this->archiveSearchFacets = array();
-				$facet = new LibraryArchiveSearchFacetSetting();
-				$facet->libraryId = $this->libraryId;
-				$facet->orderBy('weight');
-				$facet->find();
-				while($facet->fetch()){
-					$this->archiveSearchFacets[$facet->id] = clone($facet);
-				}
-			}
-			return $this->archiveSearchFacets;
+			return $this->getArchiveSearchFacets();
 		}elseif ($name == 'libraryLinks'){
 			if (!isset($this->libraryLinks) && $this->libraryId){
 				$this->libraryLinks = array();
@@ -1304,44 +1272,11 @@ class Library extends DataObject
 				return $this->materialsRequestFieldsToDisplay;
 			}
 		} elseif ($name == 'materialsRequestFormats') {
-			if (!isset($this->materialsRequestFormats) && $this->libraryId) {
-				$this->materialsRequestFormats = array();
-				$materialsRequestFormats = new MaterialsRequestFormats();
-				$materialsRequestFormats->libraryId = $this->libraryId;
-				$materialsRequestFormats->orderBy('weight');
-				if ($materialsRequestFormats->find()) {
-					while ($materialsRequestFormats->fetch()) {
-						$this->materialsRequestFormats[$materialsRequestFormats->id] = clone $materialsRequestFormats;
-					}
-				}
-				return $this->materialsRequestFormats;
-			}
+			return $this->getMaterialsRequestFormats();
 		} elseif ($name == 'materialsRequestFormFields') {
-			if (!isset($this->materialsRequestFormFields) && $this->libraryId) {
-				$this->materialsRequestFormFields = array();
-				$materialsRequestFormFields = new MaterialsRequestFormFields();
-				$materialsRequestFormFields->libraryId = $this->libraryId;
-				$materialsRequestFormFields->orderBy('weight');
-				if ($materialsRequestFormFields->find()) {
-					while ($materialsRequestFormFields->fetch()) {
-						$this->materialsRequestFormFields[$materialsRequestFormFields->id] = clone $materialsRequestFormFields;
-					}
-				}
-				return $this->materialsRequestFormFields;
-			}
+			return $this->getMaterialsRequestFormFields();
 		} elseif ($name == 'exploreMoreBar') {
-			if (!isset($this->exploreMoreBar) && $this->libraryId) {
-				$this->exploreMoreBar = array();
-				$exploreMoreBar = new ArchiveExploreMoreBar();
-				$exploreMoreBar->libraryId = $this->libraryId;
-				$exploreMoreBar->orderBy('weight');
-				if ($exploreMoreBar->find()) {
-					while ($exploreMoreBar->fetch()) {
-						$this->exploreMoreBar[$exploreMoreBar->id] = clone $exploreMoreBar;
-					}
-				}
-				return $this->exploreMoreBar;
-			}
+			return $this->getExploreMoreBar();
 		} elseif ($name == 'combinedResultSections') {
 			if (!isset($this->combinedResultSections) && $this->libraryId) {
 				$this->combinedResultSections = array();
@@ -1368,11 +1303,9 @@ class Library extends DataObject
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->holidays = $value;
 		}elseif ($name == "archiveMoreDetailsOptions") {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->archiveMoreDetailsOptions = $value;
+			$this->_archiveMoreDetailsOptions = $value;
 		}elseif ($name == "archiveSearchFacets") {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->archiveSearchFacets = $value;
+			$this->_archiveSearchFacets = $value;
 		}elseif ($name == 'libraryLinks'){
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->libraryLinks = $value;
@@ -1392,14 +1325,11 @@ class Library extends DataObject
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->materialsRequestFieldsToDisplay = $value;
 		}elseif ($name == 'materialsRequestFormats') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->materialsRequestFormats = $value;
+			$this->_materialsRequestFormats = $value;
 		}elseif ($name == 'materialsRequestFormFields') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->materialsRequestFormFields = $value;
+			$this->_materialsRequestFormFields = $value;
 		}elseif ($name == 'exploreMoreBar') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->exploreMoreBar = $value;
+			$this->_exploreMoreBar = $value;
 		}elseif ($name == 'combinedResultSections') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->combinedResultSections = $value;
@@ -1458,7 +1388,7 @@ class Library extends DataObject
 		$deleteCheck = $this->saveMaterialsRequestFormats();
 		if ($deleteCheck instanceof AspenError) {
 			$ret = false;
-		};
+		}
 
 		return $ret;
 	}
@@ -1530,15 +1460,14 @@ class Library extends DataObject
 	}
 
 	public function saveMaterialsRequestFormats(){
-		if (isset ($this->materialsRequestFormats) && is_array($this->materialsRequestFormats)){
+		if (isset ($this->_materialsRequestFormats) && is_array($this->_materialsRequestFormats)){
 			/** @var MaterialsRequestFormats $object */
-			foreach ($this->materialsRequestFormats as $object){
+			foreach ($this->_materialsRequestFormats as $object){
 				if (isset($object->deleteOnSave) && $object->deleteOnSave == true){
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck) {
 						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';
-						$error = new AspenError($errorString);
-						return $error;
+						return new AspenError($errorString);
 					}
 				}else{
 					if (isset($object->id) && is_numeric($object->id)){ // (negative ids need processed with insert)
@@ -1549,42 +1478,40 @@ class Library extends DataObject
 					}
 				}
 			}
-			unset($this->materialsRequestFormats);
+			unset($this->_materialsRequestFormats);
 		}
 		return true;
 	}
 
 	public function saveMaterialsRequestFormFields(){
-		if (isset ($this->materialsRequestFormFields) && is_array($this->materialsRequestFormFields)){
-			$this->saveOneToManyOptions($this->materialsRequestFormFields, 'libraryId');
-			unset($this->materialsRequestFormFields);
+		if (isset ($this->_materialsRequestFormFields) && is_array($this->_materialsRequestFormFields)){
+			$this->saveOneToManyOptions($this->_materialsRequestFormFields, 'libraryId');
+			unset($this->_materialsRequestFormFields);
 		}
 	}
 
 	private function saveExploreMoreBar() {
-		if (isset ($this->exploreMoreBar) && is_array($this->exploreMoreBar)){
-			$this->saveOneToManyOptions($this->exploreMoreBar, 'libraryId');
-			unset($this->exploreMoreBar);
+		if (isset ($this->_exploreMoreBar) && is_array($this->_exploreMoreBar)){
+			$this->saveOneToManyOptions($this->_exploreMoreBar, 'libraryId');
+			unset($this->_exploreMoreBar);
 		}
 	}
 
 	public function clearExploreMoreBar(){
 		$this->clearOneToManyOptions('ArchiveExploreMoreBar', 'libraryId');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->exploreMoreBar = array();
+		$this->_exploreMoreBar = array();
 	}
 
 	public function saveArchiveMoreDetailsOptions(){
-		if (isset ($this->archiveMoreDetailsOptions) && is_array($this->archiveMoreDetailsOptions)){
-			$this->saveOneToManyOptions($this->archiveMoreDetailsOptions, 'libraryId');
-			unset($this->archiveMoreDetailsOptions);
+		if (isset ($this->_archiveMoreDetailsOptions) && is_array($this->_archiveMoreDetailsOptions)){
+			$this->saveOneToManyOptions($this->_archiveMoreDetailsOptions, 'libraryId');
+			unset($this->_archiveMoreDetailsOptions);
 		}
 	}
 
 	public function clearArchiveMoreDetailsOptions(){
 		$this->clearOneToManyOptions('LibraryArchiveMoreDetails', 'libraryId');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->archiveMoreDetailsOptions = array();
+		$this->_archiveMoreDetailsOptions = array();
 	}
 
 	public function clearMaterialsRequestFormFields(){
@@ -1595,21 +1522,19 @@ class Library extends DataObject
 
 	public function clearMaterialsRequestFormats(){
 		$this->clearOneToManyOptions('MaterialsRequestFormats', 'libraryId');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->materialsRequestFormats = array();
+		$this->_materialsRequestFormats = array();
 	}
 
 	public function saveArchiveSearchFacets(){
-		if (isset ($this->archiveSearchFacets) && is_array($this->archiveSearchFacets)){
-			$this->saveOneToManyOptions($this->archiveSearchFacets, 'libraryId');
-			unset($this->archiveSearchFacets);
+		if (isset ($this->_archiveSearchFacets) && is_array($this->_archiveSearchFacets)){
+			$this->saveOneToManyOptions($this->_archiveSearchFacets, 'libraryId');
+			unset($this->_archiveSearchFacets);
 		}
 	}
 
 	public function clearArchiveSearchFacets(){
 		$this->clearOneToManyOptions('LibraryArchiveSearchFacetSetting', 'libraryId');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->archiveSearchfacets = array();
+		$this->_archiveSearchFacets = array();
 	}
 
 	public function saveCombinedResultSections(){
@@ -1763,4 +1688,121 @@ class Library extends DataObject
 		}
 		return $this->_overdriveScope;
 	}
+
+	private $_exploreMoreBar;
+	public function getExploreMoreBar()
+	{
+		if (!isset($this->_exploreMoreBar) && $this->libraryId) {
+			$this->_exploreMoreBar = array();
+			$exploreMoreBar = new ArchiveExploreMoreBar();
+			$exploreMoreBar->libraryId = $this->libraryId;
+			$exploreMoreBar->orderBy('weight');
+			if ($exploreMoreBar->find()) {
+				while ($exploreMoreBar->fetch()) {
+					$this->_exploreMoreBar[$exploreMoreBar->id] = clone $exploreMoreBar;
+				}
+			}
+		}
+		return $this->_exploreMoreBar;
+	}
+
+	public function setExploreMoreBar($value){
+		$this->_exploreMoreBar = $value;
+	}
+
+	private $_archiveSearchFacets;
+	public function getArchiveSearchFacets()
+	{
+		if (!isset($this->_archiveSearchFacets) && $this->libraryId){
+			$this->_archiveSearchFacets = array();
+			$facet = new LibraryArchiveSearchFacetSetting();
+			$facet->libraryId = $this->libraryId;
+			$facet->orderBy('weight');
+			$facet->find();
+			while($facet->fetch()){
+				$this->_archiveSearchFacets[$facet->id] = clone($facet);
+			}
+		}
+		return $this->_archiveSearchFacets;
+	}
+
+	public function setArchiveSearchFacets($value){
+		$this->_archiveSearchFacets = $value;
+	}
+
+	private $_archiveMoreDetailsOptions;
+	public function setArchiveMoreDetailsOptions($value)
+	{
+		$this->_archiveMoreDetailsOptions = $value;
+	}
+
+	/**
+	 * @return array|null
+	 */
+	public function getArchiveMoreDetailsOptions()
+	{
+		if (!isset($this->_archiveMoreDetailsOptions) && $this->libraryId) {
+			$this->_archiveMoreDetailsOptions = array();
+			$moreDetailsOptions = new LibraryArchiveMoreDetails();
+			$moreDetailsOptions->libraryId = $this->libraryId;
+			$moreDetailsOptions->orderBy('weight');
+			$moreDetailsOptions->find();
+			while ($moreDetailsOptions->fetch()) {
+				$this->_archiveMoreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
+			}
+		}
+		return $this->_archiveMoreDetailsOptions;
+	}
+
+	private $_materialsRequestFormFields;
+	public function setMaterialsRequestFormFields($value)
+	{
+		$this->_materialsRequestFormFields = $value;
+	}
+
+	/**
+	 * @return array|null
+	 */
+	public function getMaterialsRequestFormFields()
+	{
+		if (!isset($this->_materialsRequestFormFields) && $this->libraryId) {
+			$this->_materialsRequestFormFields = array();
+			$materialsRequestFormFields = new MaterialsRequestFormFields();
+			$materialsRequestFormFields->libraryId = $this->libraryId;
+			$materialsRequestFormFields->orderBy('weight');
+			if ($materialsRequestFormFields->find()) {
+				while ($materialsRequestFormFields->fetch()) {
+					$this->_materialsRequestFormFields[$materialsRequestFormFields->id] = clone $materialsRequestFormFields;
+				}
+			}
+		}
+		return $this->_materialsRequestFormFields;
+	}
+
+	private $_materialsRequestFormats;
+	public function setMaterialsRequestFormats($value)
+	{
+		$this->_materialsRequestFormats = $value;
+	}
+
+	/**
+	 * @return array|null
+	 */
+	public function getMaterialsRequestFormats()
+	{
+		if (!isset($this->_materialsRequestFormats) && $this->libraryId) {
+			$this->_materialsRequestFormats = array();
+			$materialsRequestFormats = new MaterialsRequestFormats();
+			$materialsRequestFormats->libraryId = $this->libraryId;
+			$materialsRequestFormats->orderBy('weight');
+			if ($materialsRequestFormats->find()) {
+				while ($materialsRequestFormats->fetch()) {
+					$this->_materialsRequestFormats[$materialsRequestFormats->id] = clone $materialsRequestFormats;
+				}
+			}
+		}
+		return $this->_materialsRequestFormats;
+	}
+
+
 }
