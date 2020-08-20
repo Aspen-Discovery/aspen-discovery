@@ -13,26 +13,28 @@
 	</div>
 {/if}
 
+{if $canCompare || $canAddNew || !empty($customListActions)}
 <form action="" method="get" id='compare' class="form-inline">
+{/if}
 	<div class='adminTableRegion'>
-		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable">
+		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects" role="grid">
 			<thead>
-				<tr>
+				<tr role="row">
 					{if $canCompare}
-						<th>{translate text='Select'} </th>
+						<th role="columnheader">{translate text='Select'} </th>
 					{/if}
 					{foreach from=$structure item=property key=id}
 						{if !isset($property.hideInLists) || $property.hideInLists == false}
-						<th><label title='{$property.description}'>{$property.label|translate}</label></th>
+						<th role="columnheader"><span title='{$property.description}' role="columnheader">{$property.label|translate}</span></th>
 						{/if}
 					{/foreach}
-					<th>Actions</th>
+					<th role="columnheader">{translate text='Actions'}</th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody role="rowgroup">
 				{if isset($dataList) && is_array($dataList)}
 					{foreach from=$dataList item=dataItem key=id}
-					<tr class='{cycle values="odd,even"} {$dataItem->class}'>
+					<tr class='{cycle values="odd,even"} {$dataItem->class}' role="row">
 						{if $canCompare}
 							<td><input type="checkbox" class="selectedObject" name="selectedObject[{$id}]" aria-label="Select Item {$id}"> </td>
 						{/if}
@@ -41,10 +43,10 @@
 							{assign var=propValue value=$dataItem->$propName}
 
 							{if !isset($property.hideInLists) || $property.hideInLists == false}
-								<td>
+								<td role="gridcell" aria-label="{$dataItem} {$propName}{if empty($propValue)} - empty{/if}">
 								{if $property.type == 'label'}
 									{if $dataItem->class != 'objectDeleted'}
-										<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'> {$propValue}</a>
+										<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>{$propValue}</a>
 									{/if}
 								{elseif $property.type == 'regularExpression'}
 									{$propValue|escape}
@@ -127,7 +129,9 @@
 			<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}')">{$customAction.label}</button>
 		{/foreach}
 	</div>
+{if $canCompare || $canAddNew || !empty($customListActions)}
 </form>
+{/if}
 
 {if isset($dataList) && is_array($dataList) && count($dataList) > 5}
 <script type="text/javascript">

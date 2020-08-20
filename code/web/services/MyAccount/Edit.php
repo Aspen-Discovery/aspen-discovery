@@ -4,8 +4,15 @@ require_once ROOT_DIR . "/Action.php";
 
 require_once 'Home.php';
 
+/**
+ * Class MyAccount_Edit
+ *
+ * Used to edit notes for a list entry
+ */
 class MyAccount_Edit extends Action
 {
+	private $listId;
+	private $listTitle;
 	function launch($msg = null)
 	{
 		global $interface;
@@ -15,8 +22,6 @@ class MyAccount_Edit extends Action
 			$launchAction = new MyAccount_Login();
 			$launchAction->launch();
 			exit();
-		}else{
-			$user = UserAccount::getLoggedInUser();
 		}
 
 		// Save Data
@@ -33,6 +38,8 @@ class MyAccount_Edit extends Action
 				if ($userObj == false){
 					$interface->assign('error', 'You must be logged in to edit list entries, please login again.');
 				}else {
+					$this->listId = $userList->id;
+					$this->listTitle = $userList->title;
 					$userCanEdit = $userObj->canEditList($userList);
 					if (!$userCanEdit){
 						$interface->assign('error', 'Sorry, you don\'t have permissions to edit this list.');
@@ -90,6 +97,17 @@ class MyAccount_Edit extends Action
 			$userListEntry->notes = strip_tags($_REQUEST['notes']);
 			$userListEntry->update();
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		if (!empty($this->listId)) {
+			$breadcrumbs[] = new Breadcrumb('/MyAccount/MyList/' . $this->listId, $this->listTitle);
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Edit');
+		return $breadcrumbs;
 	}
 }
 

@@ -76,4 +76,13 @@ class CloudLibrary_Settings extends ObjectEditor
 	{
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'Cloud Library');
+		$breadcrumbs[] = new Breadcrumb('/CloudLibrary/Settings', 'Settings');
+		return $breadcrumbs;
+	}
 }

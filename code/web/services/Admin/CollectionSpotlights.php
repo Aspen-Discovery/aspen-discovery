@@ -97,6 +97,8 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])){
 			$spotlight = $availableSpotlights[$_REQUEST['id']];
 			$interface->assign('object', $spotlight);
+		}else{
+			$spotlight = null;
 		}
 
 		//Do actions that require pre-processing
@@ -145,6 +147,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 						break;
 					case 'single' :
 					case 'single-with-next' :
+					default:
 						$width = ($spotlight->coverSize == 'medium') ? 300 : 225;
 						$height = ($spotlight->coverSize == 'medium') ? 350 : 275;
 						break;
@@ -156,6 +159,14 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		}
 
 		$this->display($interface->getTemplate(), 'Collection Spotlights');
+	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/CollectionSpotlights', 'Collection Spotlights');
+		return $breadcrumbs;
 	}
 }

@@ -21,4 +21,9 @@ class CheckInGrid extends Action {
 		);
 		echo json_encode($results);
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

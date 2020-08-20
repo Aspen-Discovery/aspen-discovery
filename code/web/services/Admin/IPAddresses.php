@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 
-class IPAddresses extends ObjectEditor
+class Admin_IPAddresses extends ObjectEditor
 {
 	function getObjectType(){
 		return 'IPAddress';
@@ -41,5 +41,12 @@ class IPAddresses extends ObjectEditor
 	{
 		return '/Admin/HelpManual?page=Location-IP-Addresses';
 	}
-
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		$breadcrumbs[] = new Breadcrumb('/Admin/IPAddresses', 'IP Addresses');
+		return $breadcrumbs;
+	}
 }

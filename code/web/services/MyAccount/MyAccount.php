@@ -17,8 +17,6 @@ abstract class MyAccount extends Action
 		global $interface;
 		global $configArray;
 
-		$interface->assign('page_body_style', 'sidebar_left');
-
 		if ($this->requireLogin && !UserAccount::isLoggedIn()) {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
 			$myAccountAction = new MyAccount_Login();

@@ -887,4 +887,9 @@ class Record_AJAX extends Action
 		}
 		return $result;
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

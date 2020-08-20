@@ -76,4 +76,13 @@ class Enrichment_DPLASettings extends ObjectEditor
 	{
 		return '/Admin/HelpManual?page=DPLA';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Enrichment/DPLASettings', 'DP.LA Settings');
+		return $breadcrumbs;
+	}
 }

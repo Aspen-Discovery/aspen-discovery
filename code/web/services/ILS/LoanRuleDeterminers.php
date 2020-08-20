@@ -82,4 +82,13 @@ class LoanRuleDeterminers extends ObjectEditor {
 	{
 		return false;
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('/ILS/LoanRuleDeterminers', 'Loan Rule Determiners');
+		return $breadcrumbs;
+	}
 }

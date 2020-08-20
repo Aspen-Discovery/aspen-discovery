@@ -89,4 +89,13 @@ class Admin_UsageDashboard extends Admin_Admin
 			'totalBlockedApiRequests' => $usage->totalBlockedApiRequests,
 		];
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Dashboard');
+		return $breadcrumbs;
+	}
 }

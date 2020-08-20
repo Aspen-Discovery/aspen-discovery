@@ -43,11 +43,9 @@ class LibraryArchiveSearchFacetSettings extends ObjectEditor
 		return array('opacAdmin', 'libraryAdmin');
 	}
 	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 	function getAdditionalObjectActions($existingObject){
@@ -59,5 +57,17 @@ class LibraryArchiveSearchFacetSettings extends ObjectEditor
 			);
 		}
 		return $objectActions;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		if (!empty($this->activeObject) && $this->activeObject instanceof LibraryArchiveSearchFacetSetting){
+			$breadcrumbs[] = new Breadcrumb('/Admin/Libraries?objectAction=edit&id=' . $this->activeObject->libraryId, 'Library');
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Archive Facet Settings');
+		return $breadcrumbs;
 	}
 }

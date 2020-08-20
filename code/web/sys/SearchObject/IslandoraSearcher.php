@@ -6,15 +6,8 @@ require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 
 class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 {
-	// Field List
-	//private $fields = '*,score';
-	private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
-
 	//Whether or not filters should be applied
 	private $applyStandardFilters = true;
-
-	// Facets information
-	private $allFacetSettings = array();
 
 	// Display Modes //
 	public $viewOptions = array('list', 'covers');
@@ -30,12 +23,14 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		// Call base class constructor
 		parent::__construct();
 
+		$this->fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
+
 		$this->idFieldName = 'PID';
 
 		global $configArray;
 		global $timer;
 		// Include our solr index
-		require_once ROOT_DIR . "/sys/SolrConnector/Solr.php";
+		require_once ROOT_DIR . "/sys/SolrConnector/IslandoraSolrConnector.php";
 		$this->searchType = 'islandora';
 		$this->basicSearchType = 'islandora';
 		// Initialise the index
@@ -617,42 +612,41 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$namespaceLookup = $field == 'namespace_s';
 			foreach ($values as $value) {
 				// Add to the list unless it's in the list of fields to skip:
-				if (!in_array($field, $skipList)) {
-					$facetLabel = $this->getFacetLabel($field);
-					if ($namespaceLookup) {
-						$tmpLibrary = new Library();
-						$tmpLibrary->archiveNamespace = $value;
-						if ($tmpLibrary->find(true)) {
-							$display = $tmpLibrary->displayName;
-						}
-					} elseif ($lookupPid) {
-						$pid = str_replace('info:fedora/', '', $value);
-						if ($field == 'RELS_EXT_isMemberOfCollection_uri_ms') {
-							$okToShow = $this->showCollectionAsFacet($pid);
-						} else {
-							$okToShow = true;
-						}
-						if ($okToShow) {
-							$display = $fedoraUtils->getObjectLabel($pid);
-							if ($display == 'Invalid Object') {
-								continue;
-							}
-						} else {
+
+				$facetLabel = $this->getFacetLabel($field);
+				if ($namespaceLookup) {
+					$tmpLibrary = new Library();
+					$tmpLibrary->archiveNamespace = $value;
+					if ($tmpLibrary->find(true)) {
+						$display = $tmpLibrary->displayName;
+					}
+				} elseif ($lookupPid) {
+					$pid = str_replace('info:fedora/', '', $value);
+					if ($field == 'RELS_EXT_isMemberOfCollection_uri_ms') {
+						$okToShow = $this->showCollectionAsFacet($pid);
+					} else {
+						$okToShow = true;
+					}
+					if ($okToShow) {
+						$display = $fedoraUtils->getObjectLabel($pid);
+						if ($display == 'Invalid Object') {
 							continue;
 						}
-					} elseif ($translate) {
-						$display = translate($value);
 					} else {
-						$display = $value;
+						continue;
 					}
-
-					$list[$facetLabel][] = array(
-						'value' => $value,     // raw value for use with Solr
-						'display' => $display,   // version to display to user
-						'field' => $field,
-						'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
-					);
+				} elseif ($translate) {
+					$display = translate($value);
+				} else {
+					$display = $value;
 				}
+
+				$list[$facetLabel][] = array(
+					'value' => $value,     // raw value for use with Solr
+					'display' => $display,   // version to display to user
+					'field' => $field,
+					'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
+				);
 			}
 		}
 		return $list;

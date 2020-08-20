@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 
-class ManageStatuses extends ObjectEditor
+class MaterialsRequest_ManageStatuses extends ObjectEditor
 {
 
 	function getObjectType(){
@@ -17,8 +17,6 @@ class ManageStatuses extends ObjectEditor
 		return 'Materials Request Statuses';
 	}
 	function getAllObjects(){
-		$user = UserAccount::getLoggedInUser();
-
 		$status = new MaterialsRequestStatus();
 		if (UserAccount::userHasRole('library_material_requests')){
 			$homeLibrary = Library::getPatronHomeLibrary();
@@ -49,7 +47,6 @@ class ManageStatuses extends ObjectEditor
 	}
 	function customListActions(){
 		$objectActions = array();
-		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('library_material_requests')){
 			$objectActions[] = array(
 				'label' => 'Reset to Default',
@@ -78,5 +75,13 @@ class ManageStatuses extends ObjectEditor
 			}
 		}
 		header("Location: /Admin/ManageStatuses");
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageStatuses', 'Manage Materials Requests Statuses');
+		return $breadcrumbs;
 	}
 }

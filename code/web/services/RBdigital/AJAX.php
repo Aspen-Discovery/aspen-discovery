@@ -14,8 +14,7 @@ class RBdigital_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
-				$holdMessage = $driver->placeHold($patron, $id);
-				return $holdMessage;
+				return $driver->placeHold($patron, $id);
 			} else {
 				return array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.']));
 			}
@@ -222,8 +221,7 @@ class RBdigital_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
-				$result = $driver->cancelHold($patron, $id);
-				return $result;
+				return $driver->cancelHold($patron, $id);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.');
 			}
@@ -242,8 +240,7 @@ class RBdigital_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
-				$result = $driver->renewCheckout($patron, $id);
-				return $result;
+				return $driver->renewCheckout($patron, $id);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
@@ -263,8 +260,7 @@ class RBdigital_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
-				$result = $driver->returnCheckout($patron, $id);
-				return $result;
+				return $driver->returnCheckout($patron, $id);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
@@ -284,9 +280,8 @@ class RBdigital_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
-				list($magzineId, $issueId) = explode('_', $id);
-				$result = $driver->returnMagazine($patron, $magzineId, $issueId);
-				return $result;
+				list($magazineId, $issueId) = explode('_', $id);
+				return $driver->returnMagazine($patron, $magazineId, $issueId);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
@@ -336,6 +331,7 @@ class RBdigital_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getMagazineStaffView(){
 		$result = [
 			'success' => false,

@@ -41,4 +41,12 @@ class Admin_AuthorEnrichment extends ObjectEditor
 		return '/Admin/HelpManual?page=Wikipedia';
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/AuthorEnrichment', 'Wikipedia Integration');
+		return $breadcrumbs;
+	}
 }

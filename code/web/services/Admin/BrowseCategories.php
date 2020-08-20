@@ -17,7 +17,6 @@ class Admin_BrowseCategories extends ObjectEditor
 		return 'Browse Categories';
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 	function getAllObjects(){
@@ -49,5 +48,14 @@ class Admin_BrowseCategories extends ObjectEditor
 
 	function getInitializationJs(){
 		return 'return AspenDiscovery.Admin.updateBrowseSearchForSource();';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/BrowseCategories', 'Browse Categories');
+		return $breadcrumbs;
 	}
 }

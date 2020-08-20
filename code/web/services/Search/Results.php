@@ -1,12 +1,12 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+require_once ROOT_DIR . '/ResultsAction.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Search_Results extends Action {
+class Search_Results extends ResultsAction {
 
 	function launch() {
 		global $interface;
@@ -273,7 +273,6 @@ class Search_Results extends Action {
 		//Enable and disable functionality based on library settings
 		//This must be done before we process each result
 		$interface->assign('showNotInterested', false);
-		$interface->assign('page_body_style', 'sidebar_left');
 
 		$enableProspectorIntegration = ($library->enableProspectorIntegration == 1);
 		if ($enableProspectorIntegration){
@@ -304,7 +303,7 @@ class Search_Results extends Action {
 			}
 		}
 		if (!$hasAppliedFacets && $searchObject->getResultTotal() <= 5) {
-			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
+			require_once ROOT_DIR . '/sys/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
 			$allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex(), 'grouped_works');
 			$interface->assign('searchSuggestions', $allSuggestions);
@@ -531,6 +530,11 @@ class Search_Results extends Action {
 		}catch (Exception $e){
 			//Placards are not defined yet
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		return parent::getResultsBreadcrumbs('Catalog Search');
 	}
 
 }

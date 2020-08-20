@@ -587,6 +587,9 @@ abstract class DataObject
 		}
 	}
 
+	/**
+	 * @return integer
+	 */
 	public function getNumResults()
 	{
 		return $this->__N;

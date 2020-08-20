@@ -40,4 +40,13 @@ class Events_IndexingLog extends Admin_Admin
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#events', 'Events');
+		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
+		return $breadcrumbs;
+	}
 }

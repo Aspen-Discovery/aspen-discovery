@@ -474,4 +474,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 	function getAllowableRoles(){
 		return array('library_material_requests');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
+		return $breadcrumbs;
+	}
 }

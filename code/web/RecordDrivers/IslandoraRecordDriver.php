@@ -69,7 +69,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		return $this->islandoraObjectCache;
 	}
 
-	function getBookcoverUrl($size = 'small'){
+	function getBookcoverUrl($size = 'small', $absolutePath = false){
 		global $configArray;
 
 		$cachedData = $this->getCachedData();

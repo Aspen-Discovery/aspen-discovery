@@ -43,4 +43,12 @@ class Admin_NonGroupedRecords extends ObjectEditor
 		return '';
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cataloging', 'Catalog / Grouped Works');
+		$breadcrumbs[] = new Breadcrumb('/Admin/NonGroupedRecords', 'Records To Not Group');
+		return $breadcrumbs;
+	}
 }

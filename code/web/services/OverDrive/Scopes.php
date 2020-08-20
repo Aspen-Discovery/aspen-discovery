@@ -77,4 +77,13 @@ class OverDrive_Scopes extends ObjectEditor
 	{
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
+		$breadcrumbs[] = new Breadcrumb('/OverDrive/Scopes', 'Scopes');
+		return $breadcrumbs;
+	}
 }

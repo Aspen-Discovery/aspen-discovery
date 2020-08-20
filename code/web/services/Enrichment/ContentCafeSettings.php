@@ -76,4 +76,13 @@ class Enrichment_ContentCafeSettings extends ObjectEditor
 	{
 		return '/Admin/HelpManual?page=Content-Cafe';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Enrichment/ContentCafeSettings', 'Content Cafe Settings');
+		return $breadcrumbs;
+	}
 }

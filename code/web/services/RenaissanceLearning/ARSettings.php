@@ -76,4 +76,13 @@ class RenaissanceLearning_ARSettings extends ObjectEditor
 	{
 		return '/Admin/HelpManual?page=Accelerated-Reader';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/RenaissanceLearning/ARSettings', 'Accelerated Reader Settings');
+		return $breadcrumbs;
+	}
 }

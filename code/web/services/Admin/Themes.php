@@ -6,7 +6,6 @@ require_once ROOT_DIR . '/sys/Theming/Theme.php';
 
 class Admin_Themes extends ObjectEditor
 {
-
 	function getObjectType(){
 		return 'Theme';
 	}
@@ -53,5 +52,26 @@ class Admin_Themes extends ObjectEditor
 			$existingObject->applyDefaults();
 		}
 		return $existingObject;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#configuration_templates', 'Configuration Templates');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Themes', 'Themes');
+		if (!empty($this->activeObject) && $this->activeObject instanceof Theme){
+			$themes = $this->activeObject->getAllAppliedThemes();
+			$themeBreadcrumbs = [];
+			foreach ($themes as $theme){
+				if ($theme->id == $this->activeObject->id){
+					$themeBreadcrumbs[] = new Breadcrumb('', $theme->themeName);
+				}else{
+					$themeBreadcrumbs[] = new Breadcrumb('/Admin/Themes?objectAction=edit&id=' . $theme->id, $theme->themeName);
+				}
+			}
+			$breadcrumbs = array_merge($breadcrumbs, array_reverse($themeBreadcrumbs));
+		}
+		return $breadcrumbs;
 	}
 }

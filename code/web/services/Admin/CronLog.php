@@ -5,12 +5,11 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once(ROOT_DIR . "/PHPExcel.php");
 
-class CronLog extends Admin_Admin
+class Admin_CronLog extends Admin_Admin
 {
 	function launch()
 	{
-		global $interface,
-		       $configArray;
+		global $interface;
 
 		$logEntries = array();
 		$cronLogEntry = new CronLogEntry();
@@ -38,5 +37,14 @@ class CronLog extends Admin_Admin
 
 	function getAllowableRoles(){
 		return array('opacAdmin');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'Cron Log');
+		return $breadcrumbs;
 	}
 }

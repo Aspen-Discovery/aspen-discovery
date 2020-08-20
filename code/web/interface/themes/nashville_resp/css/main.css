@@ -8800,6 +8800,20 @@ a.placard-link {
 .badge {
   background-color: #666666;
 }
+/* with flexbox */
+.grid {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+.grid-col {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  padding: 5px;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;
@@ -11087,6 +11101,16 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .contrast_warning {
   padding: 3px 5px;
+}
+@media (max-width: 991px) {
+  #adminSections .grid-col--2 {
+    display: none;
+  }
+}
+@media (min-width: 768px) {
+  #adminSections .grid-col--2 {
+    display: block;
+  }
 }
 .adminSection .adminPanel {
   margin: 10px 0;

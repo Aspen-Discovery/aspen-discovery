@@ -43,4 +43,8 @@ class RedwoodUserContributions extends ObjectEditor {
     function canDelete(){
         return UserAccount::userHasRole('opacAdmin');
     }
+    function getBreadcrumbs()
+    {
+		return [];
+    }
 }

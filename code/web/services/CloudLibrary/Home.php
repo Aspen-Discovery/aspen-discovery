@@ -1,48 +1,36 @@
 <?php
-
+require_once ROOT_DIR . '/GroupedWorkSubRecordHomeAction.php';
 require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryProduct.php';
 require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 
-class CloudLibrary_Home extends Action{
-	private $id;
+class CloudLibrary_Home extends GroupedWorkSubRecordHomeAction{
 
 	function launch(){
 		global $interface;
 
-		if (isset($_REQUEST['searchId'])){
-			$_SESSION['searchId'] = $_REQUEST['searchId'];
-			$interface->assign('searchId', $_SESSION['searchId']);
-		}else if (isset($_SESSION['searchId'])){
-			$interface->assign('searchId', $_SESSION['searchId']);
-		}
-
-		$this->id = strip_tags($_REQUEST['id']);
-		$interface->assign('id', $this->id);
-		$recordDriver = new CloudLibraryRecordDriver($this->id);
-
-		if (!$recordDriver->isValid()){
+		if (!$this->recordDriver->isValid()){
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
 			die();
 		}
 
-		$groupedWork = $recordDriver->getGroupedWorkDriver();
+		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
 		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
 			die();
 		}else{
-			$interface->assign('recordDriver', $recordDriver);
-			$interface->assign('groupedWorkDriver', $recordDriver->getGroupedWorkDriver());
+			$interface->assign('recordDriver', $this->recordDriver);
+			$interface->assign('groupedWorkDriver', $this->recordDriver->getGroupedWorkDriver());
 
 			//Load status summary
-            $holdingsSummary = $recordDriver->getStatusSummary();
+            $holdingsSummary = $this->recordDriver->getStatusSummary();
 			$interface->assign('holdingsSummary', $holdingsSummary);
 
 			//Load the citations
-			$this->loadCitations($recordDriver);
+			$this->loadCitations();
 
 			// Retrieve User Search History
-			$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ?
-			$_SESSION['lastSearchURL'] : false);
+			$this->lastSearch = isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false;
+			$interface->assign('lastSearch', $this->lastSearch);
 
 			//Get Next/Previous Links
 			$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
@@ -53,33 +41,21 @@ class CloudLibrary_Home extends Action{
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;
-			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailoption) {
-				$interface->assign($detailoption, true);
+			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
+				$interface->assign($detailOption, true);
 			}
 
-			$interface->assign('moreDetailsOptions', $recordDriver->getMoreDetailsOptions());
+			$interface->assign('moreDetailsOptions', $this->recordDriver->getMoreDetailsOptions());
 
-			$interface->assign('semanticData', json_encode($recordDriver->getSemanticData()));
+			$interface->assign('semanticData', json_encode($this->recordDriver->getSemanticData()));
 
 			// Display Page
-			$this->display('full-record.tpl', $recordDriver->getTitle(), 'Search/home-sidebar.tpl', false);
+			$this->display('full-record.tpl', $this->recordDriver->getTitle(), 'Search/home-sidebar.tpl', false);
 
 		}
 	}
 
-
-	/**
-	 * @param GroupedWorkSubDriver $recordDriver
-	 */
-	function loadCitations($recordDriver){
-		global $interface;
-
-		$citationCount = 0;
-		$formats = $recordDriver->getCitationFormats();
-		foreach($formats as $current) {
-			$interface->assign(strtolower($current), $recordDriver->getCitation($current));
-			$citationCount++;
-		}
-		$interface->assign('citationCount', $citationCount);
+	function loadRecordDriver($id){
+		$this->recordDriver = new CloudLibraryRecordDriver($id);
 	}
 }

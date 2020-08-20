@@ -293,7 +293,7 @@ class Archive_Exhibit extends Archive_Object{
 		//Don't show pages of books or parts of an album
 		$searchObject->addHiddenFilter('!RELS_EXT_isConstituentOf_uri_ms', "*");
 		$searchObject->clearFilters();
-		if (isset($additionalCollections) && count($additionalCollections > 0)){
+		if (isset($additionalCollections) && count($additionalCollections) > 0){
 			$filter = "RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/{$this->pid}\"";
 			foreach ($additionalCollections as $collection){
 				$filter .= " OR RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/" . trim($collection) . "\"";

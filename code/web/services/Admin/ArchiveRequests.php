@@ -52,4 +52,12 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#islandora_archive', 'Islandora Archives');
+		$breadcrumbs[] = new Breadcrumb('/Admin/ArchiveRequests', 'Material Requests');
+		return $breadcrumbs;
+	}
 }

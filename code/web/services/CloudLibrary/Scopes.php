@@ -53,4 +53,13 @@ class CloudLibrary_Scopes extends ObjectEditor
 	function getInstructions(){
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'Cloud Library');
+		$breadcrumbs[] = new Breadcrumb('/CloudLibrary/Scopes', 'Scopes');
+		return $breadcrumbs;
+	}
 }

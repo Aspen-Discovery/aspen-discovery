@@ -76,4 +76,13 @@ class EBSCO_EDSSettings extends ObjectEditor
 	{
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ebsco', 'EBSCO');
+		$breadcrumbs[] = new Breadcrumb('/EBSCO/EDS Settings', 'Settings');
+		return $breadcrumbs;
+	}
 }

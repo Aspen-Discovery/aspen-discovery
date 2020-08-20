@@ -39,12 +39,18 @@ class Admin_AccountProfiles extends ObjectEditor {
 		return 'id';
 	}
 	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		$breadcrumbs[] = new Breadcrumb('', 'Account Profiles');
+		return $breadcrumbs;
+	}
 }

@@ -29,4 +29,13 @@ class CloudLibrary_IndexingLog extends Admin_IndexingLog
 			$indexingObject->whereAdd('numProducts >= ' . $minProcessed);
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'Cloud Library');
+		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
+		return $breadcrumbs;
+	}
 }

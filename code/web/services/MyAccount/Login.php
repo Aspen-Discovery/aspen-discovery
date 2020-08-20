@@ -91,5 +91,12 @@ class MyAccount_Login extends Action
 
 		$this->display('../MyAccount/login.tpl', 'Login');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('', 'Login');
+		return $breadcrumbs;
+	}
 }
 

@@ -86,4 +86,13 @@ class Admin_ArchiveUsage extends Admin_Admin{
 	function getAllowableRoles() {
 		return array('opacAdmin', 'archives');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#islandora_archive', 'Islandora Archives');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Statistics');
+		return $breadcrumbs;
+	}
 }

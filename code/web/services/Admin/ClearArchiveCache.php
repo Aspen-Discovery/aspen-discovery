@@ -23,4 +23,13 @@ class Admin_ClearArchiveCache extends Admin_Admin{
 	function getAllowableRoles() {
 		return array('opacAdmin');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#islandora_archive', 'Islandora Archives');
+		$breadcrumbs[] = new Breadcrumb('', 'Clear Archive Cache');
+		return $breadcrumbs;
+	}
 }

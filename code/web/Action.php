@@ -1,6 +1,7 @@
 <?php
 
 // Abstract Base Class for Actions
+require_once ROOT_DIR . '/sys/Breadcrumb.php';
 abstract class Action
 {
     abstract function launch();
@@ -14,6 +15,7 @@ abstract class Action
 	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Search/home-sidebar.tpl', $translateTitle = true) {
 		global $interface;
 		if (!empty($sidebarTemplate)) $interface->assign('sidebar', $sidebarTemplate);
+		$interface->assign('breadcrumbs', $this->getBreadcrumbs());
 		$interface->setTemplate($mainContentTemplate);
 		$interface->setPageTitle($pageTitle, $translateTitle);
 		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
@@ -54,4 +56,6 @@ abstract class Action
 		echo("<h1>Forbidden</h1><p><strong>API requests from {$clientIP} are forbidden.</strong></p>");
 		die();
 	}
+
+	abstract function getBreadcrumbs();
 }

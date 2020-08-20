@@ -57,7 +57,7 @@ class MyAccount_Masquerade extends MyAccount
 							$accountProfile->selectAdd();
 							$accountProfile->selectAdd('loginConfiguration');
 							$accountProfile->groupBy('loginConfiguration');
-							$numConfigurations = $accountProfile->find();
+							$accountProfile->find();
 							if ($accountProfile->getNumResults() > 1) {
 								// Now that we know there is more than loginConfiguration type, check the opposite column
 								$masqueradedUser = new User();
@@ -153,14 +153,16 @@ class MyAccount_Masquerade extends MyAccount
 								return array('success' => true);
 							} else {
 								unset($_SESSION['guidingUserId']);
-								$user = $guidingUser;
 								return array(
-										'success' => false,
-										'error'   => 'Failed to initiate masquerade as specified user.'
+									'success' => false,
+									'error'   => 'Failed to initiate masquerade as specified user.'
 								);
 							}
 						} else {
-
+							return array(
+								'success' => false,
+								'error'   => 'Could not load user to masquerade as.'
+							);
 						}
 					} else {
 						return array(
@@ -190,7 +192,6 @@ class MyAccount_Masquerade extends MyAccount
 
 	static function endMasquerade() {
 		if (UserAccount::isLoggedIn()) {
-			/** @var User $guidingUser */
 			global $guidingUser;
 			global $masqueradeMode;
 			@session_start();  // (suppress notice if the session is already started)
@@ -210,4 +211,11 @@ class MyAccount_Masquerade extends MyAccount
 		return array('success' => false);
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Masquerade as another user');
+		return $breadcrumbs;
+	}
 }

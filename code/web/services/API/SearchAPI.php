@@ -49,8 +49,9 @@ class SearchAPI extends Action
 		$checks = [];
 
 		//Check if solr is running by pinging it
+		/** @var SearchObject_GroupedWorkSearcher $solrSearcher */
 		$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
-		if (!$solrSearcher->ping(false)) {
+		if (!$solrSearcher->ping()) {
 			$this->addCheck($checks, 'Solr', self::STATUS_CRITICAL, "Solr is not responding");
 		}else{
 			$this->addCheck($checks, 'Solr');
@@ -638,4 +639,8 @@ class SearchAPI extends Action
 		return $jsonResults;
 	}
 
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

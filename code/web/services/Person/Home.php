@@ -6,10 +6,14 @@ require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
 class Person_Home extends Action
 {
-	function __construct($subAction = false, $record_id = null)
+	private $record;
+	/** @var PersonRecord  */
+	private $recordDriver;
+	private $lastSearch;
+
+	function __construct()
 	{
 		global $interface;
-		global $configArray;
 		global $timer;
 		$user = UserAccount::getLoggedInUser();
 
@@ -23,11 +27,7 @@ class Person_Home extends Action
 		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		//Load basic information needed in subclasses
-		if ($record_id == null || !isset($record_id)){
-			$this->id = $_GET['id'];
-		}else{
-			$this->id = $record_id;
-		}
+		$id = $_GET['id'];
 
 		// Setup Search Engine Connection
 		// Include Search Engine Class
@@ -35,19 +35,19 @@ class Person_Home extends Action
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
-		$this->db = SearchObjectFactory::initSearchObject('Genealogy');
-		$this->db->init($searchSource);
+		/** @var SearchObject_GenealogySearcher $db */
+		$db = SearchObjectFactory::initSearchObject('Genealogy');
+		$db->init($searchSource);
 
 		// Retrieve Full Marc Record
-		if (!($record = $this->db->getRecord($this->id))) {
+		if (!($record = $db->getRecord($id))) {
 			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 		$this->record = $record;
 
 		//Load person from the database to get additional information
-		/* @var Person $person */
 		$person = new Person();
-		$person->get($this->id);
+		$person->get($id);
 		$record['picture'] = $person->picture;
 
 		$interface->assign('record', $record);
@@ -57,7 +57,7 @@ class Person_Home extends Action
 		$timer->logTime('Initialized the Record Driver');
 
 		$marriages = array();
-		$personMarriages = $person->marriages;
+		$personMarriages = $person->getMarriages();
 		if (isset($personMarriages)){
 			foreach ($personMarriages as $marriage){
 				$marriageArray = (array)$marriage;
@@ -67,7 +67,7 @@ class Person_Home extends Action
 		}
 		$interface->assign('marriages', $marriages);
 		$obituaries = array();
-		$personObituaries =$person->obituaries;
+		$personObituaries =$person->getObituaries();
 		if (isset($personObituaries)){
 			foreach ($personObituaries as $obit){
 				$obitArray = (array)$obit;
@@ -78,13 +78,11 @@ class Person_Home extends Action
 		$interface->assign('obituaries', $obituaries);
 
 		//Do actions needed if this is the main action.
-		$interface->assign('id', $this->id);
+		$interface->assign('id', $id);
 
 		// Retrieve User Search History
-		$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ?
-		$_SESSION['lastSearchURL'] : false);
-
-		$this->cacheId = 'Person|' . $_GET['id'] . '|' . get_class($this);
+		$this->lastSearch = isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false;
+		$interface->assign('lastSearch', $this->lastSearch);
 
 		$formattedBirthdate = $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear);
 		$interface->assign('birthDate', $formattedBirthdate);
@@ -130,12 +128,9 @@ class Person_Home extends Action
 					$nextResults = $nextSearchObject->getResultRecordSet();
 				}
 
-				if ($result instanceof AspenError) {
-					//If we get an error excuting the search, just eat it for now.
-				}else{
-					if ($searchObject->getResultTotal() < 1) {
-						//No results found
-					}else{
+				//If we get an error executing the search, just eat it for now.
+				if (!($result instanceof AspenError)) {
+					if ($searchObject->getResultTotal() > 0) {
 						$recordSet = $searchObject->getResultRecordSet();
 						//Record set is 0 based, but we are passed a 1 based index
 						if ($currentResultIndex > 0){
@@ -171,10 +166,20 @@ class Person_Home extends Action
 
 	function launch()
 	{
-
 		$titleField = $this->recordDriver->getName(); //$this->record['firstName'] . ' ' . $this->record['lastName'];
 
 		// Display Page
 		$this->display('full-record.tpl', $titleField);
+	}
+
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->lastSearch)){
+			$breadcrumbs[] = new Breadcrumb($this->lastSearch, 'Genealogy Search Results');
+		}
+		$breadcrumbs[] = new Breadcrumb('', $this->recordDriver->getTitle());
+		return $breadcrumbs;
 	}
 }

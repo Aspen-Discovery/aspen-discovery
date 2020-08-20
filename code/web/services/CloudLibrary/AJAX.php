@@ -139,8 +139,7 @@ class CloudLibrary_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
-				$result = $driver->cancelHold($patron, $id);
-				return $result;
+				return $driver->cancelHold($patron, $id);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.');
 			}
@@ -159,8 +158,7 @@ class CloudLibrary_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
-				$result = $driver->renewCheckout($patron, $id);
-				return $result;
+				return $driver->renewCheckout($patron, $id);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
@@ -180,8 +178,7 @@ class CloudLibrary_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
-				$result = $driver->returnCheckout($patron, $id);
-				return $result;
+				return $driver->returnCheckout($patron, $id);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
@@ -274,5 +271,10 @@ class CloudLibrary_AJAX extends JSON_Action
 			$result['message'] = 'Could not find that record';
 		}
 		return $result;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

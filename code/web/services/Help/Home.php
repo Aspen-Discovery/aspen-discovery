@@ -44,4 +44,10 @@ class Help_Home extends Action
 
 		$interface->display('Help/help.tpl');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		return $breadcrumbs;
+	}
 }

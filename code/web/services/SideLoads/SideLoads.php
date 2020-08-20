@@ -129,4 +129,12 @@ class SideLoads_SideLoads extends ObjectEditor
 		return $actions;
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#side_loads', 'Side Load');
+		$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads', 'Side Load Settings');
+		return $breadcrumbs;
+	}
 }

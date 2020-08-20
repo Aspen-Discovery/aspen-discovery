@@ -40,6 +40,7 @@
 		<script src="/interface/themes/responsive/js/lib/bootstrap-switch.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.touchwipe.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.rwdImageMaps.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/colcade.js?v={$gitBranch|urlencode}"></script>
 
 		{* Load application specific Javascript *}
 		<script src="/interface/themes/responsive/js/aspen/globals.js?v={$gitBranch|urlencode}"></script>

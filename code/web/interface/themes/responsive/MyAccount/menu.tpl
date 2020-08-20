@@ -16,7 +16,7 @@
 					{* With SidebarMenu on, we should always keep the MyAccount Panel open. *}
 
 					{* Clickable header for my account section *}
-					<a data-toggle="collapse" data-parent="#account-link-accordion" href="#myAccountPanel">
+					<a data-toggle="collapse" data-parent="#account-link-accordion" href="#myAccountPanel" aria-label="{translate text="My Account Menu"}">
 						<div class="panel-heading">
 							<div class="panel-title">
 								{*MY ACCOUNT*}
@@ -37,14 +37,14 @@
 								<ul class="account-submenu">
 									<li class="myAccountLink">
 										&nbsp;&nbsp;&raquo;&nbsp;
-										<a href="/MyAccount/CheckedOut?tab=ils" id="checkedOutIls">
+										<a href="/MyAccount/CheckedOut?tab=ils" id="checkedOutIls" title="View checkouts of physical materials">
 											{translate text="Physical Materials"} {if !$offline}<span class="badge"><span class="ils-checkouts-placeholder">??</span></span> <span class="ils-overdue" style="display: none"> <span class="label label-danger"><span class="ils-overdue-placeholder"></span> {translate text="Overdue"}</span></span>{/if}
 										</a>
 									</li>
 									{if $user->isValidForEContentSource('overdrive')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/CheckedOut?tab=overdrive" id="checkedOutOverDrive">
+											<a href="/MyAccount/CheckedOut?tab=overdrive" id="checkedOutOverDrive" title="View checkouts from OverDrive">
 												{translate text="OverDrive"} {if !$offline}<span class="badge"><span class="overdrive-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
@@ -52,7 +52,7 @@
 									{if $user->isValidForEContentSource('hoopla')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/CheckedOut?tab=hoopla" id="checkedOutHoopla">
+											<a href="/MyAccount/CheckedOut?tab=hoopla" id="checkedOutHoopla" title="View checkouts from Hoopla">
 												{translate text="Hoopla"} {if !$offline}<span class="badge"><span class="hoopla-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
@@ -60,7 +60,7 @@
 									{if $user->isValidForEContentSource('rbdigital')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/CheckedOut?tab=rbdigital" id="checkedOutRBdigital">
+											<a href="/MyAccount/CheckedOut?tab=rbdigital" id="checkedOutRBdigital" title="View checkouts from RBdigital">
 												{translate text="RBdigital"} {if !$offline}<span class="badge"><span class="rbdigital-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
@@ -68,7 +68,7 @@
 									{if $user->isValidForEContentSource('cloud_library')}
 										<li class="myAccountLink">
 										&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/CheckedOut?tab=cloud_library" id="checkedOutCloudLibrary">
+											<a href="/MyAccount/CheckedOut?tab=cloud_library" id="checkedOutCloudLibrary" title="View checkouts from CloudLibrary">
 												{translate text="Cloud Library"} {if !$offline}<span class="badge"><span class="cloud_library-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
@@ -83,14 +83,14 @@
 								<ul class="account-submenu">
 									<li class="myAccountLink">
 										&nbsp;&nbsp;&raquo;&nbsp;
-										<a href="/MyAccount/Holds?tab=ils" id="holdsIls">
+										<a href="/MyAccount/Holds?tab=ils" id="holdsIls" title="View holds on physical materials">
 											{translate text="Physical Materials"} {if !$offline}<span class="badge"><span class="ils-holds-placeholder">??</span></span> <span class="ils-available-holds" style="display: none"> <span class="label label-success"><span class="ils-available-holds-placeholder"></span> {translate text="Ready for Pickup"}</span></span>{/if}
 										</a>
 									</li>
 									{if $user->isValidForEContentSource('overdrive')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/Holds?tab=overdrive" id="holdsOverDrive">
+											<a href="/MyAccount/Holds?tab=overdrive" id="holdsOverDrive" title="View holds from OverDrive">
 												{translate text="OverDrive"} {if !$offline}<span class="badge"><span class="overdrive-holds-placeholder">??</span></span> <span class="overdrive-available-holds" style="display: none"> <span class="label label-success"><span class="overdrive-available-holds-placeholder"></span> {translate text="Available Now"}</span></span>{/if}
 											</a>
 										</li>
@@ -98,7 +98,7 @@
 									{if $user->isValidForEContentSource('rbdigital')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/Holds?tab=rbdigital" id="holdsRBdigital">
+											<a href="/MyAccount/Holds?tab=rbdigital" id="holdsRBdigital" title="View holds from RBdigital">
 												{translate text="RBdigital"} {if !$offline}<span class="badge"><span class="rbdigital-holds-placeholder">??</span></span>{/if}
 											</a>
 										</li>
@@ -106,7 +106,7 @@
 									{if $user->isValidForEContentSource('cloud_library')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/Holds?tab=cloud_library" id="holdsCloudLibrary">
+											<a href="/MyAccount/Holds?tab=cloud_library" id="holdsCloudLibrary" title="View holds from CloudLibrary">
 												{translate text="Cloud Library"} {if !$offline}<span class="badge"><span class="cloud_library-holds-placeholder">??</span></span> <span class="cloud_library-available-holds" style="display: none"> <span class="label label-success"><span class="cloud_library-available-holds-placeholder"></span> {translate text="Available Now"}</span></span>{/if}
 											</a>
 										</li>
@@ -247,7 +247,6 @@
 								{if array_key_exists('opacAdmin', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/DBMaintenance">{translate text="DB Maintenance"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/SendGridSettings">{translate text="SendGrid Settings"}</a></div>
-									<div class="adminMenuLink"><a href="/Admin/Home">{translate text="Solr Information"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/PHPInfo">{translate text="PHP Information"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/Variables">{translate text="Variables"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/SystemVariables">{translate text="System Variables"}</a></div>
@@ -273,7 +272,8 @@
 						</a>
 						<div id="reportsMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
-								{if array_key_exists('opacAdmin', $userRoles)}
+								<div class="adminMenuLink"><a href="/Admin/SiteStatus">{translate text="Site Status"}</a></div>
+                                {if array_key_exists('opacAdmin', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/UsageDashboard">{translate text="Usage Dashboard"}</a></div>
 								{/if}
 								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles)}
@@ -462,7 +462,7 @@
 								<div class="adminMenuLink"><a href="/MaterialsRequest/ManageRequests">{translate text="Manage Requests"}</a></div>
 								<div class="adminMenuLink"><a href="/MaterialsRequest/SummaryReport">{translate text="Summary Report"}</a></div>
 								<div class="adminMenuLink"><a href="/MaterialsRequest/UserReport">{translate text="Report By User"}</a></div>
-								<div class="adminMenuLink"><a href="/Admin/ManageStatuses">{translate text="Manage Statuses"}</a></div>
+								<div class="adminMenuLink"><a href="/MaterialsRequest/ManageStatuses">{translate text="Manage Statuses"}</a></div>
 							</div>
 						</div>
 					</div>
@@ -749,7 +749,7 @@
 					</div>
 				{/if}
 
-				{if array_key_exists('Events', $enabledModules) && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+				{if array_key_exists('Events', $enabledModules) && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 					{if $module == 'Events' && in_array($action, array('LMLibraryCalendarSettings', 'Dashboard', 'IndexingLog'))}
 						{assign var="curSection" value=true}
 					{else}

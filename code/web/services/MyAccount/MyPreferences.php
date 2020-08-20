@@ -106,4 +106,11 @@ class MyAccount_MyPreferences extends MyAccount
 		$this->display('myPreferences.tpl', 'My Preferences');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'My Preferences');
+		return $breadcrumbs;
+	}
 }

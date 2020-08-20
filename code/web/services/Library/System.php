@@ -1,6 +1,6 @@
 <?php
 
-class System extends Action{
+class Library_System extends Action{
 
 	function launch() {
 		global $interface;
@@ -43,5 +43,10 @@ class System extends Action{
 		$interface->assign('semanticData', json_encode($semanticData));
 
 		$this->display('system.tpl', $librarySystem->displayName);
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

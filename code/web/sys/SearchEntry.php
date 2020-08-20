@@ -84,7 +84,7 @@ class SearchEntry extends DataObject
     {
         $searches = array();
 
-        $sql = "SELECT * FROM search WHERE searchSource = " . $this->escape($searchSource) . " AND searchUrl = NULL AND (session_id = " . $this->escape($sid);
+        $sql = "SELECT * FROM search WHERE searchSource = " . $this->escape($searchSource) . " AND searchUrl is NULL AND (session_id = " . $this->escape($sid);
         if ($uid != null) {
             $sql .= " OR user_id = " . $this->escape($uid);
         }
@@ -114,13 +114,14 @@ class SearchEntry extends DataObject
 		$expirationDate = date('Y-m-d', time() - $daysOld * 24 * 60 * 60);
 
 		// Find expired, unsaved searches:
+		/** @noinspection SqlResolve */
 		$sql = 'SELECT * FROM search WHERE saved=0 AND created<"' . $expirationDate . '"';
 		$s = new SearchEntry();
 		$s->query($sql);
 		$searches = array();
 		if ($s->getNumResults()) {
 				while ($s->fetch()) {
-						$searches[] = clone($s);
+					$searches[] = clone($s);
 				}
 		}
 		return $searches;

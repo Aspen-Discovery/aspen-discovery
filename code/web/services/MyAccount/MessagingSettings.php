@@ -16,4 +16,12 @@ class MyAccount_MessagingSettings extends MyAccount
 		}
 		$this->display($catalog->getMessagingSettingsTemplate($user), 'Notification Settings');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Messaging Settings');
+		return $breadcrumbs;
+	}
 }

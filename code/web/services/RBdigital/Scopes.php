@@ -53,4 +53,16 @@ class RBdigital_Scopes extends ObjectEditor
 	function getInstructions(){
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#rbdigital', 'RBdigital');
+		if (!empty($this->activeObject) && $this->activeObject instanceof RBdigitalScope){
+			$breadcrumbs[] = new Breadcrumb('/RBdigital/Settings?objectAction=edit&id=' . $this->activeObject->settingId , 'Settings');
+		}
+		$breadcrumbs[] = new Breadcrumb('/RBdigital/Scopes', 'Scopes');
+		return $breadcrumbs;
+	}
 }

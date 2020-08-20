@@ -95,4 +95,13 @@ class OverDrive_APIData extends Admin_Admin
 	{
 		return array('opacAdmin', 'cataloging', 'superCataloger');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
+		$breadcrumbs[] = new Breadcrumb('/OverDrive/APIData', 'API Information');
+		return $breadcrumbs;
+	}
 }

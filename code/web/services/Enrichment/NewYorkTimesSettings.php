@@ -76,4 +76,13 @@ class Enrichment_NewYorkTimesSettings extends ObjectEditor
 	{
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Enrichment/NewYorkTimesSettings', 'New York Times Settings');
+		return $breadcrumbs;
+	}
 }

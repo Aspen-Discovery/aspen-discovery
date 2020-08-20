@@ -54,5 +54,10 @@ class Search_Advanced extends Search_AdvancedBase {
 
 		$this->display('advanced.tpl', 'Advanced Search', 'Search/results-sidebar.tpl');
 	}
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs = new Breadcrumb('', 'Catalog Advanced Search');
+		return $breadcrumbs;
+	}
 }
-?>

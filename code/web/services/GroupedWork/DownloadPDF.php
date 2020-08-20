@@ -3,6 +3,9 @@
 
 class GroupedWork_DownloadPDF
 {
+	/** @var MarcRecordDriver $recordDriver */
+	private $recordDriver;
+	private $title;
 	function launch()
 	{
 		$id = strip_tags($_REQUEST['id']);
@@ -24,14 +27,14 @@ class GroupedWork_DownloadPDF
 				$fileUpload->id = $fileId;
 				if ($fileUpload->find(true)){
 					if (file_exists($fileUpload->fullPath)) {
-						$recordDriver = RecordDriverFactory::initRecordDriverById($recordFile->type . ':' . $recordFile->identifier);
-						if ($recordDriver->getIndexingProfile() != null){
+						$this->recordDriver = RecordDriverFactory::initRecordDriverById($recordFile->type . ':' . $recordFile->identifier);
+						if ($this->recordDriver->getIndexingProfile() != null){
 							//Record the usage of the PDF
 							if (UserAccount::isLoggedIn()){
 								require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 								$userUsage = new UserILSUsage();
 								$userUsage->userId = UserAccount::getActiveUserId();
-								$userUsage->indexingProfileId = $recordDriver->getIndexingProfile()->id;
+								$userUsage->indexingProfileId = $this->recordDriver->getIndexingProfile()->id;
 								$userUsage->year = date('Y');
 								$userUsage->month = date('n');
 								if ($userUsage->find(true)) {
@@ -46,8 +49,8 @@ class GroupedWork_DownloadPDF
 							//Track usage of the record
 							require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
 							$recordUsage = new ILSRecordUsage();
-							$recordUsage->indexingProfileId = $recordDriver->getIndexingProfile()->id;
-							$recordUsage->recordId = $recordDriver->getUniqueID();
+							$recordUsage->indexingProfileId = $this->recordDriver->getIndexingProfile()->id;
+							$recordUsage->recordId = $this->recordDriver->getUniqueID();
 							$recordUsage->year = date('Y');
 							$recordUsage->month = date('n');
 							if ($recordUsage->find(true)) {
@@ -67,7 +70,7 @@ class GroupedWork_DownloadPDF
 						header('Content-Type: application/octet-stream');
 						header('Content-Transfer-Encoding: binary');
 						header('Content-Length: ' . $size);
-						$fileName = str_replace($recordDriver->getUniqueID() . '_', '', basename($fileUpload->fullPath));
+						$fileName = str_replace($this->recordDriver->getUniqueID() . '_', '', basename($fileUpload->fullPath));
 						header('Content-Disposition: attachment;filename="' . $fileName . '"');
 
 						if ($size > $chunkSize) {
@@ -97,6 +100,15 @@ class GroupedWork_DownloadPDF
 				AspenError::raiseError(new AspenError("Invalid file($fileId) specified for record ({$id})"));
 			}
 		}
+	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->recordDriver)) {
+			$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);
+		}
+		$breadcrumbs[] = new Breadcrumb('', $this->title, false);
+		return $breadcrumbs;
 	}
 }

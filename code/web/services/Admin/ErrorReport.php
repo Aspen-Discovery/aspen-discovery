@@ -48,4 +48,13 @@ class Admin_ErrorReport extends ObjectEditor
 	{
 		return 'id';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('/Admin/ErrorReport', 'Error Log');
+		return $breadcrumbs;
+	}
 }

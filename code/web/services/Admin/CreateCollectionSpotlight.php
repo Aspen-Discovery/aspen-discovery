@@ -6,7 +6,7 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-class CreateCollectionSpotlight extends Action
+class Admin_CreateCollectionSpotlight extends Action
 {
 	function launch()
 	{
@@ -38,7 +38,6 @@ class CreateCollectionSpotlight extends Action
 				$collectionSpotlight->description = '';
 				$collectionSpotlight->showTitleDescriptions = 1;
 				$collectionSpotlight->onSelectCallback = '';
-				$collectionSpotlight->fullListLink = '';
 				$collectionSpotlight->listDisplayType = 'tabs';
 				$collectionSpotlight->showMultipleTitles = 1;
 				$collectionSpotlight->insert();
@@ -74,11 +73,21 @@ class CreateCollectionSpotlight extends Action
 
 			//Redirect to the collection spotlight
 			header("Location: /Admin/CollectionSpotlights?objectAction=view&id={$collectionSpotlight->id}");
+			return false;
 		}else{
 			return array(
 				'success' => false,
 				'message' => "You must be logged in and provide information about the search to create the spotlight."
 			);
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/BrowseCategories', 'Browse Categories');
+		return $breadcrumbs;
 	}
 }

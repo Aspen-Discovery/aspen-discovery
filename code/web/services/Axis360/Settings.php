@@ -76,4 +76,13 @@ class Axis360_Settings extends ObjectEditor
 	{
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Axis 360');
+		$breadcrumbs[] = new Breadcrumb('/Axis360/Settings', 'Settings');
+		return $breadcrumbs;
+	}
 }

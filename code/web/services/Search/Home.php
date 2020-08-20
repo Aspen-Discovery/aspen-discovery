@@ -139,4 +139,8 @@ class Search_Home extends Action {
 		}
 	}
 
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

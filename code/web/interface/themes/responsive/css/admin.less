@@ -100,3 +100,48 @@ body.masqueradeMode {
 .contrast_warning{
   padding: 3px 5px;
 }
+
+#adminSections .grid-col--2{
+  @media (max-width: @screen-sm-max) {
+    display: none;
+  }
+  @media (min-width: @screen-sm-min) {
+    display: block;
+  }
+}
+
+.adminSection{
+  .adminPanel {
+    margin: 10px 0;
+    border: 1px solid #cccccc;
+    background-color: #f8f8f8;
+    color: #404040;
+
+    .adminSectionLabel {
+      font-size: 18px;
+      margin: 0;
+      padding: 3px 0;
+      text-transform: uppercase;
+      border-bottom: 1px solid #cccccc;
+      background-color: #4DACDE;
+      color: #333333;
+    }
+
+    .adminSectionActions {
+      padding: 5px 20px 5px 5px;
+    }
+
+    .adminAction {
+      margin-bottom: 6px;
+    }
+
+    .adminActionLabel {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .adminActionDescription {
+      font-size: 12px;
+    }
+  }
+}

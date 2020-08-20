@@ -56,4 +56,13 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 	function showReturnToList(){
 		return false;
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('', 'Collection Spotlight List');
+		return $breadcrumbs;
+	}
 }

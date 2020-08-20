@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class ReindexLog extends Admin_Admin
+class Admin_ReindexLog extends Admin_Admin
 {
 	function launch()
 	{
@@ -46,5 +46,14 @@ class ReindexLog extends Admin_Admin
 
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'Nightly Index Log');
+		return $breadcrumbs;
 	}
 }

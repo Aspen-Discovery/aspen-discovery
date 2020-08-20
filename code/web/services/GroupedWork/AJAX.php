@@ -1297,7 +1297,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 				$results = array(
 					'success' => true,
-					'title' => translate("Group this with another work"),
+					'title' => translate("Set display information"),
 					'modalBody' => $interface->fetch("GroupedWork/groupedWorkDisplayInfoForm.tpl"),
 					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupedWorkDisplayInfoForm(\"{$id}\")'>" . translate("Set Display Info") . "</button>"
 				);
@@ -1310,6 +1310,7 @@ class GroupedWork_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function processDisplayInfoForm(){
 		$results = [
 			'success' => false,

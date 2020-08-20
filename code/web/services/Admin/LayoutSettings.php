@@ -41,4 +41,13 @@ class Admin_LayoutSettings extends ObjectEditor
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#configuration_templates', 'Configuration Templates');
+		$breadcrumbs[] = new Breadcrumb('/Admin/LayoutSettings', 'Layout Settings');
+		return $breadcrumbs;
+	}
 }

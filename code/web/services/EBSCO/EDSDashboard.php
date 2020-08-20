@@ -98,4 +98,12 @@ class EBSCO_EDSDashboard extends Admin_Admin
 		];
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ebsco', 'EBSCO');
+		$breadcrumbs[] = new Breadcrumb('/EBSCO/EDSDashboard', 'EDS Usage Dashboard');
+		return $breadcrumbs;
+	}
 }

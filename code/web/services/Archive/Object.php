@@ -15,12 +15,16 @@ abstract class Archive_Object extends Action {
 
 	protected $formattedSubjects;
 	protected $links;
+	
+	protected $lastSearch;
+	protected $exhibitUrl;
+	protected $exhibitName;
 
 	/**
 	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the Full Record View Pages
 	 * @param string $pageTitle What to display is the html title tag
 	 */
-	function display($mainContentTemplate, $pageTitle = null) {
+	function display($mainContentTemplate, $pageTitle = null, $sidebarTemplate = 'Search/home-sidebar.tpl', $translateTitle = true) {
 		global $interface;
 		global $logger;
 
@@ -128,7 +132,7 @@ abstract class Archive_Object extends Action {
 
 //		$this->updateCookieForExhibitContextData();
 
-		parent::display($mainContentTemplate, $pageTitle);
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, false);
 	}
 
 	//TODO: This should eventually move onto a Record Driver
@@ -396,13 +400,13 @@ abstract class Archive_Object extends Action {
 
 		// Return to Exhibit URLs
 		$exhibitObject = RecordDriverFactory::initRecordDriver(array('PID' => $_SESSION['ExhibitContext']));
-		$exhibitUrl    = $exhibitObject->getLinkUrl();
-		$exhibitName   = $exhibitObject->getTitle();
+		$this->exhibitUrl    = $exhibitObject->getLinkUrl();
+		$this->exhibitName   = $exhibitObject->getTitle();
 		$isMapExhibit  = !empty($_SESSION['placePid']);
 		if ($isMapExhibit) {
-			$exhibitUrl .= '?style=map&placePid=' . urlencode($_SESSION['placePid']);
+			$this->exhibitUrl .= '?style=map&placePid=' . urlencode($_SESSION['placePid']);
 			if (!empty($_SESSION['placeLabel'])) {
-				$exhibitName .= ' - ' . $_SESSION['placeLabel'];
+				$this->exhibitName .= ' - ' . $_SESSION['placeLabel'];
 			}
 			$logger->log("Navigating from a map exhibit", Logger::LOG_DEBUG);
 		}else{
@@ -411,8 +415,8 @@ abstract class Archive_Object extends Action {
 
 		//TODO: rename to template vars exhibitName and exhibitUrl;  does it affect other navigation contexts
 
-		$interface->assign('lastCollection', $exhibitUrl);
-		$interface->assign('collectionName', $exhibitName);
+		$interface->assign('lastCollection', $this->exhibitUrl);
+		$interface->assign('collectionName', $this->exhibitName);
 		$isExhibit = get_class($this) == 'Archive_Exhibit';
 		if (!empty($_COOKIE['exhibitInAExhibitParentPid']) && $_COOKIE['exhibitInAExhibitParentPid'] == $_SESSION['ExhibitContext']) {
 			$_COOKIE['exhibitInAExhibitParentPid'] = null;
@@ -459,7 +463,8 @@ abstract class Archive_Object extends Action {
 	{
 		global $interface;
 		global $logger;
-		$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
+		$this->lastSearch = isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false;
+		$interface->assign('lastSearch', $this->lastSearch);
 		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'islandora';
 		//TODO: What if it ain't islandora? (direct navigation to archive object page)
 		/** @var SearchObject_IslandoraSearcher $searchObject */
@@ -469,7 +474,7 @@ abstract class Archive_Object extends Action {
 		$logger->log("Setting search navigation for archive search", Logger::LOG_DEBUG);
 	}
 
-	private function initializeExhibitContextDataFromCookie() {
+	/*private function initializeExhibitContextDataFromCookie() {
 		global $logger;
 		$logger->log("Initializing exhibit context from Cookie Data", Logger::LOG_DEBUG);
 		$_SESSION['ExhibitContext']             = empty($_COOKIE['ExhibitContext'])             ? $_SESSION['ExhibitContext'] : $_COOKIE['ExhibitContext'];
@@ -485,9 +490,9 @@ abstract class Archive_Object extends Action {
 //		$_SESSION['placeLabel']                 = empty($_COOKIE['placeLabel'])                 ? null : $_COOKIE['placeLabel'];
 //		$_SESSION['exhibitInAExhibitParentPid'] = empty($_COOKIE['exhibitInAExhibitParentPid']) ? null : $_COOKIE['exhibitInAExhibitParentPid'];
 ////		$_SESSION['dateFilter']      = null;
-	}
+	}*/
 
-	private function updateCookieForExhibitContextData() {
+	/*private function updateCookieForExhibitContextData() {
 		global $logger;
 		$logger->log("Initializing exhibit context from Cookie Data", Logger::LOG_DEBUG);
 		$_COOKIE['ExhibitContext']             = empty($_SESSION['ExhibitContext'])             ? null : $_SESSION['ExhibitContext'];
@@ -500,7 +505,7 @@ abstract class Archive_Object extends Action {
 		foreach ($_COOKIE as $cookieName => $cookieValue) {
 			setcookie($cookieName, $cookieValue, time() + 3600);
 		}
-	}
+	}*/
 
 	protected function archiveCollectionDisplayMode($displayMode = null) {
 		if (empty($displayMode)) {
@@ -523,4 +528,18 @@ abstract class Archive_Object extends Action {
 		return $displayMode;
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->lastSearch)){
+			$breadcrumbs[] = new Breadcrumb($this->lastSearch, 'Local Archive Search Results');
+		}else{
+			$breadcrumbs[] = new Breadcrumb('/Archive/Home', 'Local Digital Archive');
+		}
+		if (!empty($this->exhibitUrl)){
+			$breadcrumbs[] = new Breadcrumb($this->exhibitUrl, $this->exhibitName);
+		}
+		$breadcrumbs[] = new Breadcrumb('', $this->recordDriver->getTitle());
+		return $breadcrumbs;
+	}
 }

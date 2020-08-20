@@ -1,10 +1,10 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+require_once ROOT_DIR . '/ResultsAction.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Genealogy_Results extends Action {
+class Genealogy_Results extends ResultsAction {
 
 	function launch()
 	{
@@ -250,5 +250,10 @@ class Genealogy_Results extends Action {
 		$interface->assign('sectionLabel', 'Genealogy Database');
 		$interface->assign('sidebar', 'Search/results-sidebar.tpl');
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $displayQuery, 'Search/results-sidebar.tpl', false);
+	}
+
+	function getBreadcrumbs()
+	{
+		return parent::getResultsBreadcrumbs('Genealogy Search');
 	}
 }

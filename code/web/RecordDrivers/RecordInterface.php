@@ -23,7 +23,7 @@ abstract class RecordInterface
 	 */
 	public abstract function __construct($recordData);
 
-	public abstract function getBookcoverUrl($size = 'small');
+	public abstract function getBookcoverUrl($size = 'small', $absolutePath = false);
 
 	/**
 	 * Get text that can be displayed to represent this record in

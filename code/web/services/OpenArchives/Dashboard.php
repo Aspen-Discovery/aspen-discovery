@@ -163,4 +163,12 @@ class OpenArchives_Dashboard extends Admin_Admin
 		return $usageStats;
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#open_archives', 'Open Archives');
+		$breadcrumbs[] = new Breadcrumb('/OpenArchives/Dashboard', 'Usage Dashboard');
+		return $breadcrumbs;
+	}
 }

@@ -268,4 +268,12 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 	function getAllowableRoles(){
 		return array('library_material_requests');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
+		$breadcrumbs[] = new Breadcrumb('', 'Summary Report');
+		return $breadcrumbs;
+	}
 }

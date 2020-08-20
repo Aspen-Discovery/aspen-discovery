@@ -30,4 +30,13 @@ class ILS_IndexingLog extends Admin_IndexingLog
 		}
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
+		return $breadcrumbs;
+	}
+
 }

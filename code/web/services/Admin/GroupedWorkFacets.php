@@ -45,4 +45,12 @@ class Admin_GroupedWorkFacets extends ObjectEditor
 		return '/Admin/HelpManual?page=Grouped-Work-Facets';
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cataloging', 'Catalog / Grouped Works');
+		$breadcrumbs[] = new Breadcrumb('/Admin/GroupedWorkFacets', 'Grouped Work Facets');
+		return $breadcrumbs;
+	}
 }

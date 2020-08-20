@@ -5,15 +5,27 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 	public function launch(){
 		global $interface;
 
+		$startDate = null;
 		if (isset($_REQUEST['startDate'])){
-			$startDate = new DateTime($_REQUEST['startDate']);
-		}else{
+			try {
+				$startDate = new DateTime($_REQUEST['startDate']);
+			} catch (Exception $e) {
+				$startDate = null;
+			}
+		}
+		if ($startDate == null){
 			$startDate = new DateTime();
 			date_sub($startDate, new DateInterval('P1D')); // one day ago
 		}
+		$endDate = null;
 		if (isset($_REQUEST['endDate'])){
-			$endDate = new DateTime($_REQUEST['endDate']);
-		}else{
+			try {
+				$endDate = new DateTime($_REQUEST['endDate']);
+			} catch (Exception $e) {
+				$endDate = null;
+			}
+		}
+		if ($endDate == null){
 			$endDate = new DateTime();
 		}
 		$endDate->setTime(23,59,59); //second before midnight
@@ -62,5 +74,14 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 
 	function getAllowableRoles() {
 		return array('opacAdmin', 'libraryAdmin', 'circulationReports');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('', 'Offline Holds Report');
+		return $breadcrumbs;
 	}
 }

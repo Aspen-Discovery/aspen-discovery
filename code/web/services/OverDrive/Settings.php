@@ -76,4 +76,13 @@ class OverDrive_Settings extends ObjectEditor
 	{
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
+		$breadcrumbs[] = new Breadcrumb('/OverDrive/Settings', 'Settings');
+		return $breadcrumbs;
+	}
 }

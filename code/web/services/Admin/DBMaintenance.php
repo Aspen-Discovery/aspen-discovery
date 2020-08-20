@@ -2129,12 +2129,12 @@ class Admin_DBMaintenance extends Admin_Admin
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	public function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */ &$update)
 	{
 		global $configArray;
 		$sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$configArray['Database']['database_aspen_dbname']}' AND ENGINE = 'MyISAM'";
 
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		$results = $aspen_db->query($sql, PDO::FETCH_ASSOC);
 		$row = $results->fetchObject();
@@ -2149,7 +2149,6 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	private function checkWhichUpdatesHaveRun($availableUpdates)
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		foreach ($availableUpdates as $key => $update) {
 			$update['alreadyRun'] = false;
@@ -2164,7 +2163,6 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	private function markUpdateAsRun($update_key)
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		$result = $aspen_db->query("SELECT * from db_update where update_key = " . $aspen_db->quote($update_key));
 		if ($result->rowCount() != false) {
@@ -2182,7 +2180,6 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	private function createUpdatesTable()
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		//Check to see if the updates table exists
 		$result = $aspen_db->query("SHOW TABLES");
@@ -2206,7 +2203,6 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	function runSQLStatement(&$update, $sql)
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		set_time_limit(500);
 		$updateOk = true;
@@ -2230,6 +2226,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		return $updateOk;
 	}
 
+	/** @noinspection PhpUnused */
 	function createDefaultIpRanges()
 	{
 		require_once ROOT_DIR . 'sys/IP/IPAddress.php';
@@ -2240,20 +2237,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	/**
-	 * @param $resource
-	 * @return null|string
-	 */
-	public function getGroupedWorkForResource($resource)
-	{
-		//Get the identifier for the resource
-		if ($resource->source == 'VuFind') {
-			$primaryIdentifier = $resource->record_id;
-			return $primaryIdentifier;
-		}
-		return null;
-	}
-
+	/** @noinspection PhpUnused */
 	function updateDueDateFormat()
 	{
 		global $configArray;
@@ -2274,6 +2258,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function updateShowSeriesInMainDetails()
 	{
 		$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
@@ -2286,6 +2271,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function populateNovelistSettings()
 	{
 		global $configArray;
@@ -2298,6 +2284,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function populateContentCafeSettings()
 	{
 		global $configArray;
@@ -2314,6 +2301,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function populateSyndeticsSettings()
 	{
 		global $configArray;
@@ -2333,6 +2321,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function populateRecaptchaSettings()
 	{
 		global $configArray;
@@ -2343,5 +2332,14 @@ class Admin_DBMaintenance extends Admin_Admin
 			$recaptchaSetting->privateKey = $configArray['ReCaptcha']['privateKey'];
 			$recaptchaSetting->insert();
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
+		$breadcrumbs[] = new Breadcrumb('', 'Database Maintenance');
+		return $breadcrumbs;
 	}
 }

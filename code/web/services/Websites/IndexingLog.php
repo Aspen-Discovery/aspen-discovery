@@ -34,4 +34,13 @@ class Websites_IndexingLog extends Admin_IndexingLog
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_indexer', 'Website Indexing');
+		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
+		return $breadcrumbs;
+	}
 }

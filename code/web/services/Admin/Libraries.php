@@ -72,13 +72,13 @@ class Admin_Libraries extends ObjectEditor
 			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
 			$library->find(true);
 
-			$facetsToCopy = $libraryToCopyFrom->archiveSearchFacets;
+			$facetsToCopy = $libraryToCopyFrom->getArchiveSearchFacets();
 			foreach ($facetsToCopy as $facetKey => $facet){
 				$facet->libraryId = $libraryId;
 				$facet->id = null;
 				$facetsToCopy[$facetKey] = $facet;
 			}
-			$library->facets = $facetsToCopy;
+			$library->setArchiveSearchFacets($facetsToCopy);
 			$library->update();
 			header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 		}else{
@@ -100,6 +100,7 @@ class Admin_Libraries extends ObjectEditor
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function resetArchiveSearchFacetsToDefault(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
@@ -109,7 +110,7 @@ class Admin_Libraries extends ObjectEditor
 
 			$defaultFacets = Library::getDefaultArchiveSearchFacets($libraryId);
 
-			$library->archiveSearchFacets = $defaultFacets;
+			$library->setArchiveSearchFacets($defaultFacets);
 			$library->update();
 
 			$_REQUEST['objectAction'] = 'edit';
@@ -117,6 +118,7 @@ class Admin_Libraries extends ObjectEditor
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 	}
 
+	/** @noinspection PhpUnused */
 	function resetArchiveMoreDetailsToDefault(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
@@ -127,7 +129,7 @@ class Admin_Libraries extends ObjectEditor
 			require_once ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php';
 			$defaultArchiveMoreDetailsOptions = LibraryArchiveMoreDetails::getDefaultOptions($libraryId);
 
-			$library->archiveMoreDetailsOptions = $defaultArchiveMoreDetailsOptions;
+			$library->setArchiveMoreDetailsOptions($defaultArchiveMoreDetailsOptions);
 			$library->update();
 
 			$_REQUEST['objectAction'] = 'edit';
@@ -135,6 +137,7 @@ class Admin_Libraries extends ObjectEditor
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 	}
 
+	/** @noinspection PhpUnused */
 	function defaultMaterialsRequestForm(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
@@ -143,7 +146,7 @@ class Admin_Libraries extends ObjectEditor
 			$library->clearMaterialsRequestFormFields();
 
 			$defaultFieldsToDisplay = MaterialsRequestFormFields::getDefaultFormFields($libraryId);
-			$library->materialsRequestFormFields = $defaultFieldsToDisplay;
+			$library->setMaterialsRequestFormFields($defaultFieldsToDisplay);
 			$library->update();
 		}
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
@@ -151,6 +154,7 @@ class Admin_Libraries extends ObjectEditor
 
 	}
 
+	/** @noinspection PhpUnused */
 	function defaultMaterialsRequestFormats(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
@@ -159,20 +163,21 @@ class Admin_Libraries extends ObjectEditor
 			$library->clearMaterialsRequestFormats();
 
 			$defaultMaterialsRequestFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats($libraryId);
-			$library->materialsRequestFormats = $defaultMaterialsRequestFormats;
+			$library->setMaterialsRequestFormats($defaultMaterialsRequestFormats);
 			$library->update();
 		}
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 		die();
 	}
 
+	/** @noinspection PhpUnused */
 	function defaultArchiveExploreMoreOptions(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearExploreMoreBar();
-			$library->exploreMoreBar = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions($libraryId);
+			$library->setExploreMoreBar(ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions($libraryId));
 			$library->update();
 		}
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
@@ -185,5 +190,14 @@ class Admin_Libraries extends ObjectEditor
 
 	function getInitializationJs(){
 		return 'return AspenDiscovery.Admin.updateMaterialsRequestFields();';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Libraries', 'Library Systems');
+		return $breadcrumbs;
 	}
 }

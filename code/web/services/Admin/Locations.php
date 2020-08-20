@@ -51,17 +51,14 @@ class Locations extends ObjectEditor
 		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager');
 	}
 	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 	function getAdditionalObjectActions($existingObject){
-		$user = UserAccount::getLoggedInUser();
- 		$objectActions = array();
-		if ($existingObject != null){
+		$objectActions = array();
+		if ($existingObject != null && $existingObject instanceof Location){
 			$objectActions[] = array(
 				'text' => 'Reset Facets To Default',
 				'url' => '/Admin/Locations?objectAction=resetFacetsToDefault&amp;id=' . $existingObject->locationId,
@@ -74,5 +71,17 @@ class Locations extends ObjectEditor
 
 	function getInstructions(){
 		return '/Admin/HelpManual?page=Library-Systems-Locations';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		if (!empty($this->activeObject) && $this->activeObject instanceof Location){
+			$breadcrumbs[] = new Breadcrumb('/Admin/Libraries?objectAction=edit&id=' . $this->activeObject->libraryId, 'Library');
+		}
+		$breadcrumbs[] = new Breadcrumb('/Admin/Locations', 'Locations');
+		return $breadcrumbs;
 	}
 }

@@ -30,7 +30,7 @@
 						onfocus="$(this).select()"
 						autocomplete="off"
 						rows="1"
-						aria-label="Search Terms"
+						aria-labelledby="horizontal-search-label"
 						{strip}>
 						{if !empty($lookfor)}{$lookfor|escape:"html"}{/if}
 					</textarea>

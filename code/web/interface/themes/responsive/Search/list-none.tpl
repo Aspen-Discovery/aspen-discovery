@@ -6,7 +6,7 @@
 		{/foreach}
 	{/if}
 
-	<h2>{translate text='nohit_heading'}</h2>
+	<h1>{translate text='nohit_heading'}</h1>
 
 	<p class="alert alert-info">{translate text='nohit_prefix'} - <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> - {translate text='nohit_suffix'}</p>
 

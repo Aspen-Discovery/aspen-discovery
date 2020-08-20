@@ -17,7 +17,6 @@ class Admin_BrowseCategoryGroups extends ObjectEditor
 		return 'Browse Category Groups';
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 	function getAllObjects(){
@@ -45,5 +44,14 @@ class Admin_BrowseCategoryGroups extends ObjectEditor
 
 	function getInstructions(){
 		return '';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/BrowseCategoryGroups', 'Browse Category Groups');
+		return $breadcrumbs;
 	}
 }

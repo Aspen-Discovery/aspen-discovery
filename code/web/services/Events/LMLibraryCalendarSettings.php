@@ -79,4 +79,13 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	{
 		return 'id';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#events', 'Events');
+		$breadcrumbs[] = new Breadcrumb('/Events/LMLibraryCalendarSettings', 'Library Market - Library Calendar Settings');
+		return $breadcrumbs;
+	}
 }

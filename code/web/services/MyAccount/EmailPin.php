@@ -27,4 +27,9 @@ class EmailPin extends Action{
 			$this->display('emailPin.tpl', 'Email Pin');
 		}
 	}
+
+	public function getBreadcrumbs()
+	{
+		return [];
+	}
 }

@@ -5,7 +5,7 @@
 				{if $action == 'Results' || $action == 'CombinedResults' || ($module == 'Author' && $action == 'Home')}
 					<div class="menu-bar-option">
 						<a href="#" onclick="AspenDiscovery.Menu.SideBar.showSearch(this)" class="menu-icon" title="Filter Search" id="vertical-menu-search-button">
-							<div class="menu-bar-label rotated-text"><i class="fas fa-search fa-lg"></i><span class="rotated-text-inner">{translate text="Search"}</span></div>
+							<div class="menu-bar-label rotated-text"><i class="fas fa-filter fa-lg"></i><span class="rotated-text-inner">{translate text="Filter"}</span></div>
 						</a>
 					</div>
 				{/if}
@@ -24,9 +24,16 @@
 				{/if}
 				<div class="menu-bar-option">
 					<a href="#" onclick="AspenDiscovery.Menu.SideBar.showMenu(this)" class="menu-icon" title="Additional menu options including links to information about the library and other library resources">
-						<div class="menu-bar-label rotated-text"><i class="fas fa-bars fa-lg"></i><span class="rotated-text-inner">{translate text=$sidebarMenuButtonText}</span></div>
+						<div class="menu-bar-label rotated-text"><i class="fas fa-info-circle fa-lg"></i><span class="rotated-text-inner">{translate text=$sidebarMenuButtonText}</span></div>
 					</a>
 				</div>
+				{if !empty($userRoles)}
+					<div class="menu-bar-option">
+						<a href="/Admin/Home" class="menu-icon" title="Aspen Administration">
+							<div class="menu-bar-label rotated-text"><i class="fas fa-cogs fa-lg"></i><span class="rotated-text-inner">{translate text="Admin"}</span></div>
+						</a>
+					</div>
+				{/if}
 				{if !empty($showExploreMore)}
 					<div id="sidebar-menu-option-explore-more" class="menu-bar-option">
 						<a href="#" onclick="AspenDiscovery.Menu.SideBar.showExploreMore(this)" class="menu-icon" title="{translate text='Explore More'}">

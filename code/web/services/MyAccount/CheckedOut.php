@@ -23,4 +23,11 @@ class MyAccount_CheckedOut extends MyAccount{
 		$this->display('checkedout.tpl','Checked Out Titles');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'My Checked Out Titles');
+		return $breadcrumbs;
+	}
 }

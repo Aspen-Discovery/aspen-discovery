@@ -472,7 +472,7 @@ class Theme extends DataObject
 				]],
 
 				'editionsButtonSection' =>['property'=>'editionsButtonSection', 'type' => 'section', 'label' =>'Editions Button', 'hideInLists' => true, 'properties' => [
-					'editionsButtonBackgroundColor' => ['property' => 'editionsButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonBackgroundColor, 'checkContrastWith'=>'editionsButtonHoverBackgroundColor'],
+					'editionsButtonBackgroundColor' => ['property' => 'editionsButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonBackgroundColor, 'checkContrastWith'=>'editionsButtonForegroundColor'],
 					'editionsButtonForegroundColor' => ['property' => 'editionsButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonForegroundColor, 'checkContrastWith'=>'editionsButtonBackgroundColor'],
 					'editionsButtonBorderColor' => ['property' => 'editionsButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonBorderColor],
 					'editionsButtonHoverBackgroundColor' => ['property' => 'editionsButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonHoverBackgroundColor, 'checkContrastWith'=>'editionsButtonHoverForegroundColor'],
@@ -481,7 +481,7 @@ class Theme extends DataObject
 				]],
 
 				'toolsButtonSection' =>['property'=>'toolsButtonSection', 'type' => 'section', 'label' =>'Tools Button', 'hideInLists' => true, 'properties' => [
-					'toolsButtonBackgroundColor' => ['property' => 'toolsButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonBackgroundColor, 'checkContrastWith'=>'toolsButtonHoverBackgroundColor'],
+					'toolsButtonBackgroundColor' => ['property' => 'toolsButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonBackgroundColor, 'checkContrastWith'=>'toolsButtonForegroundColor'],
 					'toolsButtonForegroundColor' => ['property' => 'toolsButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonForegroundColor, 'checkContrastWith'=>'toolsButtonBackgroundColor'],
 					'toolsButtonBorderColor' => ['property' => 'toolsButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonBorderColor],
 					'toolsButtonHoverBackgroundColor' => ['property' => 'toolsButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonHoverBackgroundColor, 'checkContrastWith'=>'toolsButtonHoverForegroundColor'],
@@ -490,7 +490,7 @@ class Theme extends DataObject
 				]],
 
 				'infoButtonSection' =>['property'=>'infoButtonSection', 'type' => 'section', 'label' =>'Info Button', 'hideInLists' => true, 'properties' => [
-					'infoButtonBackgroundColor' => ['property' => 'infoButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultInfoButtonBackgroundColor, 'checkContrastWith'=>'infoButtonHoverBackgroundColor'],
+					'infoButtonBackgroundColor' => ['property' => 'infoButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultInfoButtonBackgroundColor, 'checkContrastWith'=>'infoButtonForegroundColor'],
 					'infoButtonForegroundColor' => ['property' => 'infoButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultInfoButtonForegroundColor, 'checkContrastWith'=>'infoButtonBackgroundColor'],
 					'infoButtonBorderColor' => ['property' => 'infoButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultInfoButtonBorderColor],
 					'infoButtonHoverBackgroundColor' => ['property' => 'infoButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultInfoButtonHoverBackgroundColor, 'checkContrastWith'=>'infoButtonHoverForegroundColor'],
@@ -499,7 +499,7 @@ class Theme extends DataObject
 				]],
 
 				'warningButtonSection' =>['property'=>'warningButtonSection', 'type' => 'section', 'label' =>'Warning Button', 'hideInLists' => true, 'properties' => [
-					'warningButtonBackgroundColor' => ['property' => 'warningButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultWarningButtonBackgroundColor, 'checkContrastWith'=>'warningButtonHoverBackgroundColor'],
+					'warningButtonBackgroundColor' => ['property' => 'warningButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultWarningButtonBackgroundColor, 'checkContrastWith'=>'warningButtonForegroundColor'],
 					'warningButtonForegroundColor' => ['property' => 'warningButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultWarningButtonForegroundColor, 'checkContrastWith'=>'warningButtonBackgroundColor'],
 					'warningButtonBorderColor' => ['property' => 'warningButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultWarningButtonBorderColor],
 					'warningButtonHoverBackgroundColor' => ['property' => 'warningButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultWarningButtonHoverBackgroundColor, 'checkContrastWith'=>'warningButtonHoverForegroundColor'],
@@ -508,7 +508,7 @@ class Theme extends DataObject
 				]],
 
 				'dangerButtonSection' =>['property'=>'dangerButtonSection', 'type' => 'section', 'label' =>'Danger Button', 'hideInLists' => true, 'properties' => [
-					'dangerButtonBackgroundColor' => ['property' => 'dangerButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultDangerButtonBackgroundColor, 'checkContrastWith'=>'dangerButtonHoverBackgroundColor'],
+					'dangerButtonBackgroundColor' => ['property' => 'dangerButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultDangerButtonBackgroundColor, 'checkContrastWith'=>'dangerButtonForegroundColor'],
 					'dangerButtonForegroundColor' => ['property' => 'dangerButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultDangerButtonForegroundColor, 'checkContrastWith'=>'dangerButtonBackgroundColor'],
 					'dangerButtonBorderColor' => ['property' => 'dangerButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultDangerButtonBorderColor],
 					'dangerButtonHoverBackgroundColor' => ['property' => 'dangerButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultDangerButtonHoverBackgroundColor, 'checkContrastWith'=>'dangerButtonHoverForegroundColor'],

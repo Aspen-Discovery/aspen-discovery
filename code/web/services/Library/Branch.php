@@ -2,6 +2,8 @@
 
 class Branch extends Action{
 
+	/** @var Location */
+	private $activeLocation;
 	function launch() {
 		global $interface;
 		global $configArray;
@@ -10,6 +12,7 @@ class Branch extends Action{
 		$location->locationId = $_REQUEST['id'];
 		if ($location->find(true)){
 			$interface->assign('location', $location);
+			$this->activeLocation = $location;
 
 			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $location->address));
 			$hours = $location->getHours();
@@ -91,5 +94,14 @@ class Branch extends Action{
 		}
 
 		$this->display('branch.tpl', $location->displayName,'Search/home-sidebar.tpl', false);
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->activeLocation)){
+			$breadcrumbs[] = new Breadcrumb('/Library/' . $this->activeLocation->libraryId . '/System', 'Library System');
+		}
+		return $breadcrumbs;
 	}
 }

@@ -114,4 +114,14 @@ class Translation_ImportTranslations extends Admin_Admin
 	{
 		return ['opacAdmin', 'translator'];
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#translations', 'Languages and Translations');
+		$breadcrumbs[] = new Breadcrumb('/Translation/Translations', 'Translations');
+		$breadcrumbs[] = new Breadcrumb('', 'Import Translations');
+		return $breadcrumbs;
+	}
 }

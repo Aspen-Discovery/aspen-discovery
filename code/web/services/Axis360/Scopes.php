@@ -53,4 +53,16 @@ class Axis360_Scopes extends ObjectEditor
 	function getInstructions(){
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Axis 360');
+		if (!empty($this->activeObject) && $this->activeObject instanceof Axis360Scope){
+			$breadcrumbs[] = new Breadcrumb('/Axis360/Settings?objectAction=edit&id=' . $this->activeObject->settingId , 'Settings');
+		}
+		$breadcrumbs[] = new Breadcrumb('/Axis360/Scopes', 'Scopes');
+		return $breadcrumbs;
+	}
 }

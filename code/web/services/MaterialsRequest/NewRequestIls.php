@@ -38,4 +38,12 @@ class MaterialsRequest_NewRequestIls extends Action
 			$this->display($requestForm, 'Materials Request');
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'New Materials Request');
+		return $breadcrumbs;
+	}
 }

@@ -4,11 +4,6 @@ require_once ROOT_DIR . '/Action.php';
 
 class AJAX_JSON extends Action {
 
-	// define some status constants
- 	const STATUS_OK        = 'OK';           // good
-	const STATUS_ERROR     = 'ERROR';        // bad
-	const STATUS_NEED_AUTH = 'NEED_AUTH';    // must login first
-
 	function launch()
 	{
 		//header('Content-type: application/json');
@@ -34,6 +29,7 @@ class AJAX_JSON extends Action {
 		echo $output;
 	}
 
+	/** @noinspection PhpUnused */
 	function deleteTranslationTerm(){
 		$termId = $_REQUEST['termId'];
 		$translation = new Translation();
@@ -57,6 +53,7 @@ class AJAX_JSON extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function saveLanguagePreference(){
 		if (UserAccount::isLoggedIn()){
 			$userObj = UserAccount::getActiveUserObj();
@@ -75,6 +72,7 @@ class AJAX_JSON extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getTranslationForm(){
 		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator')){
 			$translationTerm = new TranslationTerm();
@@ -121,6 +119,7 @@ class AJAX_JSON extends Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function saveTranslation(){
 		$translationId = strip_tags($_REQUEST['translationId']);
 		$newTranslation = $_REQUEST['translation'];
@@ -151,6 +150,7 @@ class AJAX_JSON extends Action {
 		return UserAccount::isLoggedIn();
 	}
 
+	/** @noinspection PhpUnused */
 	function getUserLists(){
 		$user = UserAccount::getLoggedInUser();
 		$lists = $user->getLists();
@@ -161,6 +161,7 @@ class AJAX_JSON extends Action {
 		return $userLists;
 	}
 
+	/** @noinspection PhpUnused */
 	function loginUser(){
 		//Login the user.  Must be called via Post parameters.
 		global $interface;
@@ -238,6 +239,7 @@ class AJAX_JSON extends Action {
 		exit;
 	}
 
+	/** @noinspection PhpUnused */
 	function getHoursAndLocations(){
 		//Get a list of locations for the current library
 		global $library;
@@ -330,10 +332,11 @@ class AJAX_JSON extends Action {
 		return $interface->fetch('AJAX/libraryHoursAndLocations.tpl');
 	}
 
+	/** @noinspection PhpUnused */
 	function getAutoLogoutPrompt(){
 		global $interface;
 		$masqueradeMode = UserAccount::isUserMasquerading();
-		$result = array(
+		return array(
 			'title'        => 'Still There?',
 			'modalBody'    => $interface->fetch('AJAX/autoLogoutPrompt.tpl'),
 			'modalButtons' => "<div id='continueSession' class='btn btn-primary' onclick='continueSession();'>Continue</div>" .
@@ -343,26 +346,30 @@ class AJAX_JSON extends Action {
 					:
 												"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>" )
 		);
-		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getReturnToHomePrompt(){
 		global $interface;
-		$result = array(
+		return array(
 				'title'        => 'Still There?',
 				'modalBody'    => $interface->fetch('AJAX/autoReturnToHomePrompt.tpl'),
 				'modalButtons' => "<a id='continueSession' class='btn btn-primary' onclick='continueSession();'>Continue</a>"
 		);
-		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getPayFinesAfterAction(){
 		global $interface;
-		$result = array(
+		return array(
 				'title'        => 'Pay Fines',
 				'modalBody'    => $interface->fetch('AJAX/refreshFinesAccountInfo.tpl'),
 				'modalButtons' => '<a class="btn btn-primary" href="/MyAccount/Fines?reload">Refresh My Fines Information</a>'
 		);
-		return $result;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

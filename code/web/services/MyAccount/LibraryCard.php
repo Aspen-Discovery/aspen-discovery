@@ -29,6 +29,14 @@ class LibraryCard extends MyAccount
 
 		$interface->assign('profile', $user);
 
-		$this->display('libraryCard.tpl','LibraryCard');
+		$this->display('libraryCard.tpl','Library Card');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'My Library Card');
+		return $breadcrumbs;
 	}
 }

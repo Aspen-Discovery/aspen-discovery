@@ -222,4 +222,9 @@ class Admin_AJAX extends JSON_Action
 		}
 		return $results;
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

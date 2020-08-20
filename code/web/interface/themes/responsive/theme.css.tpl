@@ -198,7 +198,7 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 {/if}
 
-.btn-default,.btn-default:visited{ldelim}
+.btn-default,.btn-default:visited,a.btn-default,a.btn-default:visited{ldelim}
     background-color: {$defaultButtonBackgroundColor};
     color: {$defaultButtonForegroundColor};
     border-color: {$defaultButtonBorderColor};
@@ -210,7 +210,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$defaultButtonHoverBorderColor};
 {rdelim}
 
-.btn-primary,.btn-primary:visited{ldelim}
+.btn-primary,.btn-primary:visited,a.btn-primary,a.btn-primary:visited{ldelim}
     background-color: {$primaryButtonBackgroundColor};
     color: {$primaryButtonForegroundColor};
     border-color: {$primaryButtonBorderColor};
@@ -222,7 +222,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$primaryButtonHoverBorderColor};
 {rdelim}
 
-.btn-action,.btn-action:visited{ldelim}
+.btn-action,.btn-action:visited,a.btn-action,a.btn-action:visited{ldelim}
     background-color: {$actionButtonBackgroundColor};
     color: {$actionButtonForegroundColor};
     border-color: {$actionButtonBorderColor};
@@ -234,7 +234,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$actionButtonHoverBorderColor};
 {rdelim}
 
-.btn-info,.btn-info:visited{ldelim}
+.btn-info,.btn-info:visited,a.btn-info,a.btn-info:visited{ldelim}
     background-color: {$infoButtonBackgroundColor};
     color: {$infoButtonForegroundColor};
     border-color: {$infoButtonBorderColor};
@@ -246,7 +246,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$infoButtonHoverBorderColor};
 {rdelim}
 
-.btn-tools,.btn-tools:visited{ldelim}
+.btn-tools,.btn-tools:visited,a.btn-tools,a.btn-tools:visited{ldelim}
     background-color: {$toolsButtonBackgroundColor};
     color: {$toolsButtonForegroundColor};
     border-color: {$toolsButtonBorderColor};
@@ -258,7 +258,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$toolsButtonHoverBorderColor};
 {rdelim}
 
-.btn-warning,.btn-warning:visited{ldelim}
+.btn-warning,.btn-warning:visited,a.btn-warning,a.btn-warning:visited{ldelim}
     background-color: {$warningButtonBackgroundColor};
     color: {$warningButtonForegroundColor};
     border-color: {$warningButtonBorderColor};
@@ -275,7 +275,7 @@ body .container, #home-page-browse-content{ldelim}
     color: {$warningButtonForegroundColor};
 {rdelim}
 
-.btn-danger,.btn-danger:visited{ldelim}
+.btn-danger,.btn-danger:visited,a.btn-danger,a.btn-danger:visited{ldelim}
     background-color: {$dangerButtonBackgroundColor};
     color: {$dangerButtonForegroundColor};
     border-color: {$dangerButtonBorderColor};

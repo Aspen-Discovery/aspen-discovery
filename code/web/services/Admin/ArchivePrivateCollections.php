@@ -24,4 +24,13 @@ class Admin_ArchivePrivateCollections extends Admin_Admin{
 	function getAllowableRoles() {
 		return array('opacAdmin');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#islandora_archive', 'Islandora Archives');
+		$breadcrumbs[] = new Breadcrumb('/Admin/ArchivePrivateCollections', 'Private Collections');
+		return $breadcrumbs;
+	}
 }

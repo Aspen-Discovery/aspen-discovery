@@ -76,4 +76,8 @@ class RosenLevelUPSettings extends ObjectEditor
 	{
 		return '/Admin/HelpManual?page=Rosen-LevelUP';
 	}
+
+	function getBreadcrumbs(){
+		return [];
+	}
 }

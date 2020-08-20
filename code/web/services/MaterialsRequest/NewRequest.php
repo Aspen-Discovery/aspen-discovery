@@ -109,4 +109,12 @@ class MaterialsRequest_NewRequest extends Action
 			$this->display('new.tpl', 'Materials Request');
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'New Materials Request');
+		return $breadcrumbs;
+	}
 }

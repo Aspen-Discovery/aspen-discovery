@@ -4,8 +4,13 @@ require_once ROOT_DIR . '/Action.php';
 
 class Help_OverDriveError extends Action{
 	function launch() {
-		global $interface;
-
 		$this->display('Help/overdriveError.tpl', 'Error in OverDrive');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('', 'OverDrive Error');
+		return $breadcrumbs;
 	}
 }

@@ -6,7 +6,7 @@
 			<table class="table">
 				<thead>
 					<tr>
-						<th><input type="checkbox" id="selectAll" onclick="AspenDiscovery.toggleCheckboxes('.selectedUpdate:visible', '#selectAll');" checked="checked"></th>
+						<th><input type="checkbox" id="selectAll" onclick="AspenDiscovery.toggleCheckboxes('.selectedUpdate:visible', '#selectAll');" checked="checked" title="Select All Rows"></th>
 						<th>Name</th>
 						<th>Description</th>
 						<th>Already Run?</th>

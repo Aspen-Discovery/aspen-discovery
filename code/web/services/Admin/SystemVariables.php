@@ -42,4 +42,13 @@ class Admin_SystemVariables extends ObjectEditor{
 	function canDelete(){
 		return false;
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
+		$breadcrumbs[] = new Breadcrumb('/Admin/SystemVariables', 'System Variables');
+		return $breadcrumbs;
+	}
 }

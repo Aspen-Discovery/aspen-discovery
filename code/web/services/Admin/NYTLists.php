@@ -9,10 +9,8 @@ class NYTLists extends Admin_Admin
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
-		global $configArray;
 		$nytSettings = new NewYorkTimesSetting();
 		if (!$nytSettings->find(true)) {
 			$interface->assign('error', 'The New York Times API is not configured properly, create settings at <a href="/Admin/NewYorkTimesSettings"></a>');
@@ -40,11 +38,15 @@ class NYTLists extends Admin_Admin
 					//Find and update the correct Aspen Discovery list, creating a new list as needed.
 					require_once ROOT_DIR . '/services/API/ListAPI.php';
 					$listApi = new ListAPI();
-					$results = $listApi->createUserListFromNYT($selectedList);
-					if ($results['success'] == false) {
-						$interface->assign('error', $results['message']);
-					} else {
-						$interface->assign('successMessage', $results['message']);
+					try{
+						$results = $listApi->createUserListFromNYT($selectedList);
+						if ($results['success'] == false) {
+							$interface->assign('error', $results['message']);
+						} else {
+							$interface->assign('successMessage', $results['message']);
+						}
+					}catch (Exception $e){
+						$interface->assign('error', $e->getMessage());
 					}
 				}
 			}
@@ -72,5 +74,14 @@ class NYTLists extends Admin_Admin
 	function getAllowableRoles()
 	{
 		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'contentEditor');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Catalog / Grouped Works');
+		$breadcrumbs[] = new Breadcrumb('/Enrichment/NYTLists', 'New York Times Lists');
+		return $breadcrumbs;
 	}
 }

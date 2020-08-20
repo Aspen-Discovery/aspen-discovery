@@ -76,4 +76,13 @@ class Hoopla_Settings extends ObjectEditor
 	{
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#hoopla', 'Hoopla');
+		$breadcrumbs[] = new Breadcrumb('/Hoopla/Settings', 'Settings');
+		return $breadcrumbs;
+	}
 }

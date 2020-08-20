@@ -12,12 +12,6 @@ class Admin_PerformanceReport extends Admin_Admin
 
 		$thisMonth = date('n');
 		$thisYear = date('Y');
-		$lastMonth = $thisMonth - 1;
-		$lastMonthYear = $thisYear;
-		if ($lastMonth == 0){
-			$lastMonth = 12;
-			$lastMonthYear--;
-		}
 
 		$slowPages = [];
 		$slowPages = $this->getSlowPageStats($thisMonth, $thisYear, 'this_month', $slowPages);
@@ -28,7 +22,6 @@ class Admin_PerformanceReport extends Admin_Admin
 			$slowPages[$key]['average'] = $averageSlowness;
 			$slowPages[$key]['total'] = $totalCount;
 		}
-		//$slowPages = $this->getSlowPageStats($lastMonth, $lastMonthYear, 'last_month', $slowPages);
 		ksort($slowPages);
 		$interface->assign('slowPages', $slowPages);
 
@@ -111,5 +104,14 @@ class Admin_PerformanceReport extends Admin_Admin
 			}
 		}
 		return $stats;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'Performance Report');
+		return $breadcrumbs;
 	}
 }

@@ -184,4 +184,15 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return $actions;
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		if (!empty($this->activeObject) && $this->activeObject instanceof TranslationMap){
+			$breadcrumbs[] = new Breadcrumb('/ILS/IndexingProfiles?objectAction=edit&id=' . $this->activeObject->indexingProfileId, 'Indexing Profile');
+		}
+		$breadcrumbs[] = new Breadcrumb('/ILS/TranslationMaps', 'Translation Maps');
+		return $breadcrumbs;
+	}
 }

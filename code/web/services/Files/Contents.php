@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/sys/File/FileUpload.php';
-class Contents extends Action
+class Files_Contents extends Action
 {
 	function launch()
 	{
@@ -33,5 +33,10 @@ class Contents extends Action
 		require_once ROOT_DIR . "/services/Error/Handle404.php";
 		$actionClass = new Error_Handle404();
 		$actionClass->launch();
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

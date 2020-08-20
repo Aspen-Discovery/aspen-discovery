@@ -17,8 +17,7 @@ class Admin_Placards extends ObjectEditor
 		return 'Placards';
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager', 'contentEditor');
+		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('contentEditor');
 	}
 	function getAllObjects(){
 		$placard = new Placard();
@@ -45,5 +44,13 @@ class Admin_Placards extends ObjectEditor
 	function getInstructions()
 	{
 		return '/Admin/HelpManual?page=Placards';
+	}
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Placards', 'Placards');
+		return $breadcrumbs;
 	}
 }

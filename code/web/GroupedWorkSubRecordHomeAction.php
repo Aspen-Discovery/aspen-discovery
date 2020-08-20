@@ -1,0 +1,54 @@
+<?php
+
+
+abstract class GroupedWorkSubRecordHomeAction extends Action
+{
+	/** @var GroupedWorkSubDriver  */
+	protected $recordDriver;
+	protected $lastSearch;
+	protected $id;
+
+	public function __construct()
+	{
+		global $interface;
+		if (isset($_REQUEST['searchId'])){
+			$_SESSION['searchId'] = $_REQUEST['searchId'];
+			$interface->assign('searchId', $_SESSION['searchId']);
+		}else if (isset($_SESSION['searchId'])){
+			$interface->assign('searchId', $_SESSION['searchId']);
+		}
+
+		$this->id = strip_tags($_REQUEST['id']);
+		$interface->assign('id', $this->id);
+
+		$this->loadRecordDriver($this->id);
+	}
+
+	abstract function loadRecordDriver($id);
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->lastSearch)){
+			$breadcrumbs[] = new Breadcrumb($this->lastSearch, 'Catalog Search Results');
+		}
+		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getGroupedWorkDriver()->getRecordUrl(), $this->recordDriver->getGroupedWorkDriver()->getTitle(), false);
+		$breadcrumbs[] = new Breadcrumb('', $this->recordDriver->getPrimaryFormat(), false);
+		return $breadcrumbs;
+	}
+
+	/**
+	 * @param GroupedWorkSubDriver $recordDriver
+	 */
+	function loadCitations(){
+		global $interface;
+
+		$citationCount = 0;
+		$formats = $this->recordDriver->getCitationFormats();
+		foreach($formats as $current) {
+			$interface->assign(strtolower($current), $this->recordDriver->getCitation($current));
+			$citationCount++;
+		}
+		$interface->assign('citationCount', $citationCount);
+	}
+}

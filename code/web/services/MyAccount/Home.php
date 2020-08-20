@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
+require_once ROOT_DIR . '/sys/Suggestions.php';
 class MyAccount_Home extends MyAccount{
 	function launch(){
 		global $interface;
@@ -14,5 +14,12 @@ class MyAccount_Home extends MyAccount{
 
 			$this->display('home.tpl');
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('', 'My Account');
+		return $breadcrumbs;
 	}
 }

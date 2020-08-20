@@ -27,4 +27,9 @@ class RequestPinReset extends Action{
 
 		$this->display($template, 'Pin Reset');
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

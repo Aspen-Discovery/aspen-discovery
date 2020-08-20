@@ -128,7 +128,7 @@ class ListAPI extends Action
 				);
 			}
 		}
-		require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+		require_once(ROOT_DIR . '/sys/Suggestions.php');
 		$suggestions = Suggestions::getSuggestions($userId);
 		if (count($suggestions) > 0) {
 			$results[] = array(
@@ -348,7 +348,7 @@ class ListAPI extends Action
 					return array('success' => false, 'message' => 'A valid user must be provided to load recommendations.');
 				} else {
 					$userId = $user->id;
-					require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+					require_once(ROOT_DIR . '/sys/Suggestions.php');
 					$suggestions = Suggestions::getSuggestions($userId);
 					$titles = array();
 					foreach ($suggestions as $id => $suggestion) {
@@ -688,6 +688,7 @@ class ListAPI extends Action
 		$listTitles = $memCache->get('system_list_titles_' . $listName);
 		if ($listTitles == false || isset($_REQUEST['reload'])) {
 			//return a random selection of 30 titles from the list.
+			/** @var SearchObject_GroupedWorkSearcher $searchObj */
 			$searchObj = SearchObjectFactory::initSearchObject();
 			$searchObj->init();
 			$searchObj->setBasicQuery("*:*");
@@ -904,5 +905,10 @@ class ListAPI extends Action
 		}
 
 		return $results;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

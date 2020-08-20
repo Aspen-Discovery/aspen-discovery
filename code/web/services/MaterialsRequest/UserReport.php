@@ -15,8 +15,6 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 	{
 		global $configArray;
 		global $interface;
-		$user = UserAccount::getLoggedInUser();
-
 		//Load status information
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
@@ -166,5 +164,13 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 
 	function getAllowableRoles(){
 		return array('library_material_requests');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
+		$breadcrumbs[] = new Breadcrumb('', 'User Report');
+		return $breadcrumbs;
 	}
 }

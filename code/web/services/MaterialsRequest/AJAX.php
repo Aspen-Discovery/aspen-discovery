@@ -143,8 +143,11 @@ class MaterialsRequest_AJAX extends Action{
 										foreach ($defaultFormats as $format) {
 											// Get the default values for this request
 											if ($materialsRequest->format == $format->format ){
+												/** @noinspection PhpUndefinedFieldInspection */
 												$materialsRequest->formatLabel = $format->formatLabel;
+												/** @noinspection PhpUndefinedFieldInspection */
 												$materialsRequest->authorLabel = $format->authorLabel;
+												/** @noinspection PhpUndefinedFieldInspection */
 												$materialsRequest->specialFields = $format->specialFields;
 												break;
 											}
@@ -223,14 +226,14 @@ class MaterialsRequest_AJAX extends Action{
 				$interface->assign('error', 'Sorry, invalid id for a '. translate('materials request') .'.');
 			}
 		}
-		$return = array(
+		return array(
 			'title' => 'Update Materials Request',
 			'modalBody' => $interface->fetch('MaterialsRequest/ajax-update-request.tpl'),
 			'modalButtons' => $interface->get_template_vars('error') == null ?  "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>Update Request</button>" : ''
 		);
-		return $return;
 	}
 
+	/** @noinspection PhpUnused */
 	function MaterialsRequestDetails(){
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
@@ -279,8 +282,11 @@ class MaterialsRequest_AJAX extends Action{
 							/** @var MaterialsRequestFormats $format */
 							foreach ($defaultFormats as $format) {
 								if ($materialsRequest->format == $format->format ){
+									/** @noinspection PhpUndefinedFieldInspection */
 									$materialsRequest->formatLabel = $format->formatLabel;
+									/** @noinspection PhpUndefinedFieldInspection */
 									$materialsRequest->authorLabel = $format->authorLabel;
+									/** @noinspection PhpUndefinedFieldInspection */
 									$materialsRequest->specialFields = $format->specialFields;
 									break;
 								}
@@ -318,14 +324,14 @@ class MaterialsRequest_AJAX extends Action{
 				$interface->assign('error', 'Invalid Request ID.');
 			}
 		}
-		$return = array(
+		return array(
 				'title'        => translate('Materials Request Details'),
 				'modalBody'    => $interface->fetch('MaterialsRequest/ajax-request-details.tpl'),
 				'modalButtons' => '' //TODO idea: add Update Request button (for staff only?)
 		);
-		return $return;
 	}
 
+	/** @noinspection PhpUnused */
 	function GetWorldCatIdentifiers(){
 		$worldCatTitles = $this->GetWorldCatTitles();
 		if ($worldCatTitles['success'] == false){
@@ -385,11 +391,13 @@ class MaterialsRequest_AJAX extends Action{
 			$worldCatUrl .= "&wskey=" . $configArray['WorldCat']['apiKey'];
 			$worldCatUrl .= "&format=rss&cformat=mla";
 			//echo($worldCatUrl);
+			/** @var stdClass $worldCatData */
 			$worldCatData = simplexml_load_file($worldCatUrl);
 			//print_r($worldCatData);
 			$worldCatResults = array();
 			foreach($worldCatData->channel->item as $item){
 				/** @var SimpleXMLElement $item */
+				/** @noinspection PhpUndefinedFieldInspection */
 				$curTitle= array(
 					'title' => (string)$item->title,
 					'author' => (string)$item->author->name,
@@ -446,12 +454,11 @@ class MaterialsRequest_AJAX extends Action{
 	function getImportRequestForm(){
 		global $interface;
 
-		$results = array(
+		return array(
 			'title' => 'Import Materials Requests',
 			'modalBody' => $interface->fetch("MaterialsRequest/import-requests.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#importRequestsForm\").submit()'>Import Requests</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -594,5 +601,10 @@ class MaterialsRequest_AJAX extends Action{
 			}
 		}
 		return json_encode($result);
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

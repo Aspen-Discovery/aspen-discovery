@@ -174,4 +174,12 @@ class MaterialsRequest_Submit extends Action
 
 		$this->display('submission-result.tpl', 'Submission Result');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/MyRequests', 'My Materials Requests');
+		return $breadcrumbs;
+	}
 }

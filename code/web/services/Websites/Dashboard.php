@@ -134,4 +134,13 @@ class Websites_Dashboard extends Admin_Admin
 		}
 		return $usageStats;
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_indexer', 'Website Indexing');
+		$breadcrumbs[] = new Breadcrumb('/Websites/Dashboard', 'Usage Dashboard');
+		return $breadcrumbs;
+	}
 }

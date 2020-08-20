@@ -65,11 +65,20 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 				$defaultOptions[] = $optionObj;
 			}
 
-			$groupedWorkSetting->moreDetailsOptions = $defaultOptions;
+			$groupedWorkSetting->setMoreDetailsOptions($defaultOptions);
 			$groupedWorkSetting->update();
 
 			$_REQUEST['objectAction'] = 'edit';
 		}
 		header("Location: /Admin/GroupedWorkDisplay?objectAction=edit&id=" . $groupedWorkSettingId);
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cataloging', 'Catalog / Grouped Works');
+		$breadcrumbs[] = new Breadcrumb('/Admin/GroupedWorkDisplay', 'Grouped Work Display');
+		return $breadcrumbs;
 	}
 }

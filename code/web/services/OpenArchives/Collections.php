@@ -49,4 +49,12 @@ class OpenArchives_Collections extends ObjectEditor {
 		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('archives');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#open_archives', 'Open Archives');
+		$breadcrumbs[] = new Breadcrumb('/OpenArchives/Collections', 'Collections');
+		return $breadcrumbs;
+	}
 }

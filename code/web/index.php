@@ -114,9 +114,6 @@ $interface->assign('scopeType', $scopeType);
 $interface->assign('solrScope', "$solrScope - $scopeType");
 $interface->assign('isGlobalScope', $isGlobalScope);
 
-//Set that the interface is a single column by default
-$interface->assign('page_body_style', 'one_column');
-
 $interface->assign('showFines', $configArray['Catalog']['showFines']);
 
 $interface->assign('activeIp', IPAddress::getActiveIp());

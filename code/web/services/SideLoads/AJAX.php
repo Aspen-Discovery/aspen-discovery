@@ -3,6 +3,7 @@ require_once ROOT_DIR . '/JSON_Action.php';
 
 class SideLoads_AJAX extends JSON_Action
 {
+	/** @noinspection PhpUnused */
 	public function deleteMarc(){
 		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('catalogging')){
 			$id = $_REQUEST['id'];
@@ -29,6 +30,5 @@ class SideLoads_AJAX extends JSON_Action
 		}else{
 			return['success' => false, 'message' => 'You do not have permissions to perform this action.'];
 		}
-
 	}
 }

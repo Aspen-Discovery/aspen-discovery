@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
-class People extends ObjectEditor
+class Admin_People extends ObjectEditor
 {
 	function getObjectType(){
 		return 'Person';
@@ -42,10 +42,20 @@ class People extends ObjectEditor
 		if ($objectAction == 'delete'){
 			return '/Union/Search?searchSource=genealogy&lookfor=&searchIndex=GenealogyName&submit=Find';
 		}else{
-			return '/Person/' . $curObject->personId;
+			if ($curObject instanceof Person){
+				return '/Person/' . $curObject->personId;
+			}else{
+				return '/Union/Search?searchSource=genealogy&lookfor=&searchIndex=GenealogyName&submit=Find';
+			}
 		}
 	}
 	function showReturnToList(){
 		return false;
+	}
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('', 'Person');
+		return $breadcrumbs;
 	}
 }
