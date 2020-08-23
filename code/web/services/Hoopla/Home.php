@@ -46,8 +46,8 @@ class Hoopla_Home extends GroupedWorkSubRecordHomeAction{
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;
-			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailoption) {
-				$interface->assign($detailoption, true);
+			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
+				$interface->assign($detailOption, true);
 			}
 
 			$interface->assign('moreDetailsOptions', $this->recordDriver->getMoreDetailsOptions());

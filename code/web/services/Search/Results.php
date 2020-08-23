@@ -53,8 +53,8 @@ class Search_Results extends ResultsAction {
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
 		global $library;
-		foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailoption) {
-			$interface->assign($detailoption, true);
+		foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
+			$interface->assign($detailOption, true);
 		}
 
 

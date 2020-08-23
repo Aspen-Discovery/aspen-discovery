@@ -19,6 +19,7 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 	private int numAdded = 0;
 	private int numDeleted = 0;
 	private int numUpdated = 0;
+	private int numSkipped = 0;
 	private int numAvailabilityChanges = 0;
 	private int numMetadataChanges = 0;
 	private final Logger logger;
@@ -28,11 +29,12 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 		this.startTime = new Date();
 		this.settingId = settingId;
 		try {
-			insertLogEntry = dbConn.prepareStatement("INSERT into rbdigital_export_log (startTime, settingId) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE rbdigital_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			insertLogEntry = dbConn.prepareStatement("INSERT into axis360_export_log (startTime, settingId) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE axis360_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
+		saveResults();
 	}
 
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -88,6 +90,7 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numAdded);
 				updateLogEntry.setInt(++curCol, numUpdated);
 				updateLogEntry.setInt(++curCol, numDeleted);
+				updateLogEntry.setInt(++curCol, numSkipped);
 				updateLogEntry.setInt(++curCol, numAvailabilityChanges);
 				updateLogEntry.setInt(++curCol, numMetadataChanges);
 				updateLogEntry.setLong(++curCol, logEntryId);
@@ -125,21 +128,24 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 	void incUpdated(){
 		numUpdated++;
 	}
+	void incSkipped(){
+		numSkipped++;
+	}
 	void incAvailabilityChanges(){
 		numAvailabilityChanges++;
 	}
 	void incMetadataChanges(){
 		numMetadataChanges++;
 	}
-	void setNumProducts(int size) {
-		numProducts = size;
-	}
 
 	boolean hasErrors() {
 		return numErrors > 0;
 	}
 
-	void incNumProducts(int numResults) {
-		this.numProducts += numResults;
+	void incNumProducts() {
+		this.numProducts++;
+		if (this.numProducts % 250 == 0) {
+			this.saveResults();
+		}
 	}
 }

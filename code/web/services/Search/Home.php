@@ -24,7 +24,6 @@ class Search_Home extends Action {
 		$activeLocation = $locationSingleton->getActiveLocation();
 		/** @var BrowseCategory[] $browseCategories */
 		if ($activeLocation != null){
-			/** @noinspection PhpUndefinedFieldInspection */
 			$browseCategories = $this->getBrowseCategories($activeLocation->getBrowseCategoryGroup()->getBrowseCategories());
 		}else{
 			$browseCategories = $this->getBrowseCategories($library->getBrowseCategoryGroup()->getBrowseCategories());
@@ -124,7 +123,6 @@ class Search_Home extends Action {
 			/** @var SubBrowseCategories $subCategory */
 			foreach ($selectedBrowseCategory->subBrowseCategories as $subCategory) {
 				// Get Needed Info about sub-category
-				/** @var BrowseCategory $temp */
 				$temp = new BrowseCategory();
 				$temp->get($subCategory->subCategoryId);
 				if ($temp) {

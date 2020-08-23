@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.CloudLibraryScope;
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -33,7 +34,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier) {
+	public void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -62,7 +63,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 						primaryFormat = "eBook";
 						break;
 					default:
-						logger.warn("Unhandled cloud_library format " + format);
+						logEntry.addNote("Unhandled cloud_library format " + format);
 						formatCategory = format;
 						primaryFormat = format;
 						break;
@@ -88,7 +89,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 
 					//TODO: Cloud Library does not code target audience.  Load from subjects
 				} else {
-					logger.error("Error getting MARC record for Cloud Library record from database");
+					logEntry.incErrors("Error getting MARC record for Cloud Library record from database");
 				}
 
 				ItemInfo itemInfo = new ItemInfo();
@@ -155,9 +156,9 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 			}
 			productRS.close();
 		} catch (NullPointerException e) {
-			logger.error("Null pointer exception processing Cloud Library record ", e);
+			logEntry.incErrors("Null pointer exception processing Cloud Library record ", e);
 		} catch (SQLException e) {
-			logger.error("Error loading information from Database for Cloud Library title", e);
+			logEntry.incErrors("Error loading information from Database for Cloud Library title", e);
 		}
 	}
 

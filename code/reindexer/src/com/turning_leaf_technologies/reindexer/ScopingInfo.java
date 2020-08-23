@@ -3,8 +3,8 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.indexing.Scope;
 
 class ScopingInfo {
-	private ItemInfo item;
-	private Scope scope;
+	private final ItemInfo item;
+	private final Scope scope;
 	private String status;
 	private String groupedStatus;
 	private boolean available;

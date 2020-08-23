@@ -103,6 +103,9 @@ class Admin_AJAX extends JSON_Action
 		} elseif ($source == 'cloud_library') {
 			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryExportLogEntry.php';
 			$extractLog = new CloudLibraryExportLogEntry();
+		} elseif ($source == 'axis360') {
+			require_once ROOT_DIR . '/sys/Axis360/Axis360ExportLogEntry.php';
+			$extractLog = new Axis360ExportLogEntry();
 		} elseif ($source == 'sideload') {
 			require_once ROOT_DIR . '/sys/Indexing/SideLoadLogEntry.php';
 			$extractLog = new SideLoadLogEntry();

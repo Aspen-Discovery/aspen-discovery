@@ -88,8 +88,6 @@ function getAxis360Updates(){
 					libraryPrefix VARCHAR(50),
 					ownedQty INT,
 					availableQty INT,
-					copiesAvailable INT,
-					totalReserves INT,
 					totalHolds INT,
 					totalCheckouts INT,
 					INDEX (titleId),
@@ -109,5 +107,40 @@ function getAxis360Updates(){
 				'ALTER table axis360_title_availability ADD UNIQUE titleId(titleId, settingId)',
 			]
 		],
+
+		'axis360_add_response_info_to_availability' => [
+			'title' => 'Axis 360 Availability Response Info',
+			'description' => 'Add additional response information to Axis 360 Availability',
+			'sql' => [
+				'ALTER table axis360_title_availability ADD column rawChecksum BIGINT',
+				'ALTER table axis360_title_availability ADD column rawResponse MEDIUMTEXT',
+				'ALTER table axis360_title_availability ADD column lastChange INT(11) NOT NULL',
+			]
+		],
+
+		'axis360_availability_remove_unused_fields' => [
+			'title' => 'Axis 360 Availability remove unused fields',
+			'description' => 'Remove unused fields from Axis 360 Availability',
+			'sql' => [
+				'ALTER table axis360_title_availability DROP column copiesAvailable',
+				'ALTER table axis360_title_availability DROP column totalReserves',
+			]
+		],
+
+		'add_settings_axis360_exportLog' => array(
+			'title' => 'Add Settings to Axis 360 export log',
+			'description' => 'Add settings to axis 360 export log.',
+			'sql' => array(
+				'ALTER table axis360_export_log ADD column settingId INT(11)'
+			)
+		),
+
+		'axis360_exportLog_num_skipped' => array(
+			'title' => 'Add numSkipped to Axis 360 export log',
+			'description' => 'Add numSkipped to axis 360 export log.',
+			'sql' => array(
+				'ALTER table axis360_export_log ADD column numSkipped INT(11)'
+			)
+		),
 	];
 }

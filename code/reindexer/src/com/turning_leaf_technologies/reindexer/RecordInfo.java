@@ -12,8 +12,8 @@ public class RecordInfo {
 
 	//Formats exist at both the item and record level because
 	//Various systems define them in both ways.
-	private HashSet<String> formats = new HashSet<>();
-	private HashSet<String> formatCategories = new HashSet<>();
+	private final HashSet<String> formats = new HashSet<>();
+	private final HashSet<String> formatCategories = new HashSet<>();
 	private long formatBoost = 1;
 
 	private String edition;
@@ -22,7 +22,7 @@ public class RecordInfo {
 	private String publicationDate;
 	private String physicalDescription;
 
-	private HashSet<ItemInfo> relatedItems = new HashSet<>();
+	private final HashSet<ItemInfo> relatedItems = new HashSet<>();
 	public RecordInfo(String source, String recordIdentifier){
 		this.source = source;
 		this.recordIdentifier = recordIdentifier;
@@ -160,7 +160,7 @@ public class RecordInfo {
 	}
 
 	private HashSet<String> allFormats = null;
-	private Pattern nonWordPattern = Pattern.compile("\\W");
+	private static final Pattern nonWordPattern = Pattern.compile("\\W");
 	HashSet<String> getAllSolrFieldEscapedFormats() {
 		if (allFormats == null){
 			allFormats = new HashSet<>();

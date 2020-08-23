@@ -8,7 +8,7 @@ class OverDrive_Home extends GroupedWorkSubRecordHomeAction{
 	function launch(){
 		global $interface;
 
-		if (!$recordDriver->isValid()){
+		if (!$this->recordDriver->isValid()){
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
 			die();
 		}
@@ -57,5 +57,9 @@ class OverDrive_Home extends GroupedWorkSubRecordHomeAction{
 			$this->display('full-record.tpl', $this->recordDriver->getTitle(), 'Search/home-sidebar.tpl', false);
 
 		}
+	}
+
+	function loadRecordDriver($id){
+		$this->recordDriver = new OverDriveRecordDriver($id);
 	}
 }

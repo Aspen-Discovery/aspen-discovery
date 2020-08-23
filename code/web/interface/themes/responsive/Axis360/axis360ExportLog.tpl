@@ -12,6 +12,7 @@
 					{foreach from=$logEntries item=logEntry}
 						<tr>
 							<td>{$logEntry->id}</td>
+							<td>{$logEntry->settingId}</td>
 							<td>{$logEntry->startTime|date_format:"%D %T"}</td>
 							<td>{$logEntry->lastUpdate|date_format:"%D %T"}</td>
 							<td>{$logEntry->endTime|date_format:"%D %T"}</td>
@@ -23,7 +24,7 @@
 							<td>{$logEntry->numUpdated}</td>
 							<td>{$logEntry->numAvailabilityChanges}</td>
 							<td>{$logEntry->numMetadataChanges}</td>
-							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'cloud_library');">Show Notes</a></td>
+							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'axis360');">Show Notes</a></td>
 						</tr>
 					{/foreach}
 				</tbody>
