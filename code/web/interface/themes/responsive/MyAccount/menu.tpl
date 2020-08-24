@@ -376,7 +376,7 @@
 				{/if}
 
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('catalogging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
-					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'OMDBSettings', 'NewYorkTimesSettings', 'RecaptchaSettings', 'RosenLevelUPSettings'))}
+					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'CoceServerSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'OMDBSettings', 'NewYorkTimesSettings', 'RecaptchaSettings', 'RosenLevelUPSettings'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -407,6 +407,9 @@
 								{/if}
  								{if array_key_exists('opacAdmin', $userRoles)}
 									<div class="adminMenuLink"><a href="/RenaissanceLearning/ARSettings">{translate text="Accelerated Reader Settings"}</a></div>
+								{/if}
+								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink"><a href="/Enrichment/CoceServerSettings">{translate text="Coce Server Settings"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/ContentCafeSettings">{translate text="ContentCafe Settings"}</a></div>

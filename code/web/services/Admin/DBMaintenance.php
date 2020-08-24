@@ -2031,6 +2031,17 @@ class Admin_DBMaintenance extends Admin_Admin
 					],
 				],
 
+				'coce_settings' => [
+					'title' => 'Coce server settings',
+					'description' => 'Add the ability to connect to a Coce server to load covers',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS coce_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							coceServerUrl VARCHAR(100) NOT NULL
+						) ENGINE = INNODB;',
+					],
+				],
+
 				'nyt_api_settings' => [
 					'title' => 'New York Times API settings',
 					'description' => 'Add the ability to store New York Times api settings in the DB rather than config file',

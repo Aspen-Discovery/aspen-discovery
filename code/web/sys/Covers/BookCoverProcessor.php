@@ -514,6 +514,14 @@ class BookCoverProcessor{
 					return true;
 				}
 			}
+
+			require_once ROOT_DIR . '/sys/Enrichment/CoceServerSetting.php';
+			$coceServerSettings = new CoceServerSetting();
+			if ($coceServerSettings->find(true)){
+				if ($this->coce($coceServerSettings)){
+					return true;
+				}
+			}
 		}
 		return false;
 	}
@@ -886,6 +894,51 @@ class BookCoverProcessor{
 		return false;
 	}
 
+	function coce(CoceServerSetting $coceServerSetting)
+	{
+		if (!empty($this->isn)){
+			$url = $coceServerSetting->coceServerUrl;
+			if (substr($url, -1, 1) !== '/'){
+				$url .= '/';
+			}
+			//Use ISBN 10 if possible
+			$isbn = $this->isn;
+			if (strlen($isbn) == 13){
+				require_once ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php';
+				$isbn = ISBNConverter::convertISBN13to10($isbn);
+				if (empty($isbn)){
+					$isbn = $this->isn;
+				}
+			}
+
+			$url .= "cover?id={$isbn}&provider=gb,aws,ol&all";
+			$results = file_get_contents($url);
+			$jsonResults = json_decode($results);
+			if ($jsonResults){
+				$bookCovers = $jsonResults->$isbn;
+				if (!empty($bookCovers->gb)){
+					if ($this->processImageURL('coce_google_books', $bookCovers->gb, true)){
+						return true;
+					}
+				}
+				if (!empty($bookCovers->aws)){
+					if ($this->processImageURL('coce_amazon', $bookCovers->aws, true)){
+						return true;
+					}
+				}
+				if (!empty($bookCovers->ol)){
+					if ($this->processImageURL('coce_open_library', $bookCovers->ol, true)){
+						return true;
+					}
+				}
+			}
+		}else{
+			return false;
+		}
+
+		return false;
+	}
+
 	function google(GoogleApiSetting $googleApiSettings,$title = null, $author = null)
 	{
 		//Only load from google if we are looking at a grouped work to be sure uploaded covers have a chance to load
@@ -1131,32 +1184,46 @@ class BookCoverProcessor{
 				}
 			}
 
-			if (!empty($driver)) {
+			if (!empty($this->groupedWork)) {
 				$groupedWork = new GroupedWork();
 				$groupedWork->permanent_id = $this->groupedWork->getPermanentId();
 				if ($groupedWork->find(true)) {
+					$groupedWorkDriver = new GroupedWorkDriver($groupedWork->permanent_id);
 					if ($groupedWork->grouping_category == 'book') {
+						$hasGoogleSettings = false;
 						require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 						$googleApiSettings = new GoogleApiSetting();
 						if ($googleApiSettings->find(true)) {
-							$groupedWorkDriver = new GroupedWorkDriver($groupedWork->permanent_id);
-							//Load based on ISBNs first
-							$allIsbns = $groupedWorkDriver->getISBNs();
-							foreach ($allIsbns as $isbn){
-								$this->isn = $isbn;
-								if ($this->google($googleApiSettings)) {
+							$hasGoogleSettings = true;
+						}
+
+						//Only look by ISBN if we don't have Coce support
+						require_once ROOT_DIR . '/sys/Enrichment/CoceServerSetting.php';
+						$coceServerSettings = new CoceServerSetting();
+						$hasCoceSettings = false;
+						if ($coceServerSettings->find(true)) {
+							$hasCoceSettings = true;
+						}
+						//Load based on ISBNs first
+						$allIsbns = $groupedWorkDriver->getISBNs();
+						foreach ($allIsbns as $isbn) {
+							$this->isn = $isbn;
+							if ($this->getCoverFromProvider()){
+								return true;
+							}else {
+								if (!$hasCoceSettings && $hasGoogleSettings && $this->google($googleApiSettings)) {
 									return true;
 								}
 							}
-							if ($this->google($googleApiSettings, $driver->getTitle(), $driver->getPrimaryAuthor())) {
-								return true;
-							}
+						}
+						if ($hasGoogleSettings && $this->google($googleApiSettings, $groupedWorkDriver->getTitle(), $groupedWorkDriver->getPrimaryAuthor())) {
+							return true;
 						}
 					}elseif ($groupedWork->grouping_category == 'movie') {
 						require_once ROOT_DIR . '/sys/Enrichment/OMDBSetting.php';
 						$omdbSettings = new OMDBSetting();
 						if ($omdbSettings->find(true)) {
-							if ($this->omdb($omdbSettings, $driver->getTitle(), $driver->getPublicationDates())) {
+							if ($this->omdb($omdbSettings, $groupedWorkDriver->getTitle(), $groupedWorkDriver->getPublicationDates())) {
 								return true;
 							}
 						}

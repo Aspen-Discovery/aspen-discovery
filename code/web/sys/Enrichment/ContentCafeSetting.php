@@ -14,7 +14,7 @@ class ContentCafeSetting extends DataObject
 
 	public static function getObjectStructure()
 	{
-		$structure = array(
+		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'contentCafeId' => array('property' => 'contentCafeId', 'type' => 'text', 'label' => 'Content Cafe Id', 'description' => 'The ID of the Content Cafe subscription'),
 			'pwd' => array('property' => 'pwd', 'type' => 'storedPassword', 'label' => 'Profile Password', 'description' => 'The password for the Profile', 'hideInLists' => true),
@@ -23,6 +23,5 @@ class ContentCafeSetting extends DataObject
 			'hasExcerpt' => array('property' => 'hasExcerpt', 'type' => 'checkbox', 'label' => 'Has Excerpt', 'description' => 'Whether or not the excerpt is available in the subscription'),
 			'hasAuthorNotes' => array('property' => 'hasAuthorNotes', 'type' => 'checkbox', 'label' => 'Has Author Notes', 'description' => 'Whether or not author notes are available in the subscription'),
 		);
-		return $structure;
 	}
 }
