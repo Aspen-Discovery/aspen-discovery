@@ -8812,6 +8812,8 @@ a.placard-link {
   -webkit-flex-grow: 1;
   -ms-flex-positive: 1;
   flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
   padding: 5px;
 }
 #home-page-search {
@@ -9094,6 +9096,59 @@ a.placard-link {
 .dropdown-menu-right {
   right: 0;
   left: auto;
+}
+#home-page-browse-results .grid-col {
+  text-align: center;
+}
+@media (max-width: 479px) {
+  #home-page-browse-results .grid-col--2 {
+    display: none;
+  }
+}
+@media (min-width: 480px) {
+  #home-page-browse-results .grid-col--2 {
+    display: block;
+  }
+}
+@media (max-width: 479px) {
+  #home-page-browse-results .grid-col--3 {
+    display: none;
+  }
+}
+@media (min-width: 480px) {
+  #home-page-browse-results .grid-col--3 {
+    display: block;
+  }
+}
+@media (max-width: 991px) {
+  #home-page-browse-results .grid-col--4 {
+    display: none;
+  }
+}
+@media (min-width: 992px) {
+  #home-page-browse-results .grid-col--4 {
+    display: block;
+  }
+}
+@media (max-width: 1199px) {
+  #home-page-browse-results .grid-col--5 {
+    display: none;
+  }
+}
+@media (min-width: 1200px) {
+  #home-page-browse-results .grid-col--5 {
+    display: block;
+  }
+}
+@media (max-width: 1199px) {
+  #home-page-browse-results .grid-col--6 {
+    display: none;
+  }
+}
+@media (min-width: 1200px) {
+  #home-page-browse-results .grid-col--6 {
+    display: block;
+  }
 }
 #home-page-browse-header {
   background-color: #d7dce3;
@@ -9434,6 +9489,7 @@ a.browse-thumbnail.active {
 }
 .browse-thumbnail img {
   width: 100%;
+  min-height: 158px;
 }
 .browse-thumbnail-sorted {
   display: block;
@@ -11107,7 +11163,7 @@ fieldset[disabled] .btn-masquerade.active {
     display: none;
   }
 }
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   #adminSections .grid-col--2 {
     display: block;
   }

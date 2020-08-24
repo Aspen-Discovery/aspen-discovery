@@ -450,6 +450,7 @@ class Browse_AJAX extends Action {
 		if ($this->browseCategory) {
 			$result['textId'] = $this->browseCategory->textId;
 			$result['label']  = $this->browseCategory->label;
+			$result['subcategories'] = $this->getSubCategories();
 		}
 
 		// Reload with sub-category

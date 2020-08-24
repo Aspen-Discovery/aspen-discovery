@@ -56,7 +56,14 @@
 			</div>
 
 			<div id="home-page-browse-results">
-				<div class="row">
+				<div class="grid">
+					<!-- columns -->
+					<div class="grid-col grid-col--1"></div>
+					<div class="grid-col grid-col--2"></div>
+					<div class="grid-col grid-col--3"></div>
+					<div class="grid-col grid-col--4"></div>
+					<div class="grid-col grid-col--5"></div>
+					<div class="grid-col grid-col--6"></div>
 				</div>
 			</div>
 

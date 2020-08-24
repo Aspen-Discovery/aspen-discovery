@@ -35,6 +35,12 @@ var AspenDiscovery = (function(){
 				$(selector).tab('show');
 			}else if (history.state && history.state.page === "ReadingHistory") {
 				AspenDiscovery.Account.loadReadingHistory(history.state.selectedUser, history.state.sort, history.state.pageNumber, history.state.showCovers, history.state.filter);
+			}else if (history.state && history.state.page === "Browse") {
+				if (history.state.subBrowseCategory){
+					AspenDiscovery.Browse.changeBrowseSubCategory(history.state.subBrowseCategory, history.state.selectedBrowseCategory, false);
+				}else{
+					AspenDiscovery.Browse.changeBrowseCategory(history.state.selectedBrowseCategory, false);
+				}
 			}
 		});
 	});
@@ -84,16 +90,16 @@ var AspenDiscovery = (function(){
 
 			jcarousel.on('jcarousel:reload jcarousel:create', function() {
 
-				var Carousel	   = $(this);
-				var width		  = Carousel.innerWidth();
-				var liTags		 = Carousel.find('li');
+				let Carousel	   = $(this);
+				let width		  = Carousel.innerWidth();
+				let liTags		 = Carousel.find('li');
 				if (liTags == null ||liTags.length === 0){
 					return;
 				}
-				var leftMargin	 = +liTags.css('margin-left').replace('px', ''),
-						rightMargin	= +liTags.css('margin-right').replace('px', ''),
-						numCategories  = Carousel.jcarousel('items').length || 1,
-						numItemsToShow = 1;
+				let leftMargin	 = +liTags.css('margin-left').replace('px', '');
+				let rightMargin	= +liTags.css('margin-right').replace('px', '');
+				let numCategories  = Carousel.jcarousel('items').length || 1;
+				let numItemsToShow = 1;
 
 				// Adjust Browse Category Carousels
 				if (jcarousel.is('#browse-category-carousel')){
@@ -178,9 +184,9 @@ var AspenDiscovery = (function(){
 		initializeModalDialogs: function() {
 			$(".modalDialogTrigger").each(function(){
 				$(this).click(function(){
-					var trigger = $(this),
-							dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title"),
-							dialogDestination = trigger.attr("href");
+					let trigger = $(this);
+					let dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
+					let dialogDestination = trigger.attr("href");
 					$("#myModalLabel").text(dialogTitle);
 					$(".modal-body").html('Loading.').load(dialogDestination);
 					$(".extraModalButton").hide();
@@ -509,35 +515,31 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
  * @cat Plugins/Validate/Methods
  */
 jQuery.validator.addMethod(
-		"dateAspen",
-		function(value, element) {
-			let check = false;
-			let re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
-			if( re.test(value)){
-				let adata = value.split('-');
-				let mm = parseInt(adata[0],10);
-				let dd = parseInt(adata[1],10);
-				let aaaa = parseInt(adata[2],10);
-				let xdata = new Date(aaaa,mm-1,dd);
-				if ( ( xdata.getFullYear() == aaaa ) && ( xdata.getMonth () == mm - 1 ) && ( xdata.getDate() == dd ) )
-					check = true;
-				else
-					check = false;
-			} else
+	"dateAspen",
+	function(value, element) {
+		let check = false;
+		let re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
+		if( re.test(value)){
+			let adata = value.split('-');
+			let mm = parseInt(adata[0],10);
+			let dd = parseInt(adata[1],10);
+			let aaaa = parseInt(adata[2],10);
+			let xdata = new Date(aaaa,mm-1,dd);
+			if ( ( xdata.getFullYear() == aaaa ) && ( xdata.getMonth () == mm - 1 ) && ( xdata.getDate() == dd ) )
+				check = true;
+			else
 				check = false;
-			return this.optional(element) || check;
-		},
-		"Please enter a correct date"
+		} else
+			check = false;
+		return this.optional(element) || check;
+	},
+	"Please enter a correct date"
 );
 
 $.validator.addMethod('repeat', function(value, element){
-	if(element.id.lastIndexOf('Repeat') == element.id.length - 6) {
-		idOriginal = element.id.slice(0,-6);
-		valueOriginal = $('#' + idOriginal).val();
-		if (value == valueOriginal) {
-			return true;
-		} else {
-			return false;
-		}
+	if(element.id.lastIndexOf('Repeat') === element.id.length - 6) {
+		let idOriginal = element.id.slice(0,-6);
+		let valueOriginal = $('#' + idOriginal).val();
+		return value === valueOriginal;
 	}
 }, "Repeat fields do not match");
