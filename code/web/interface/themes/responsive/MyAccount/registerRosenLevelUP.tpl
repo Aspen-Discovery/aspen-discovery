@@ -1,14 +1,4 @@
 {strip}
-	<script type="text/javascript">
-		document.getElementById('system-message-header').style.display = 'none';
-		document.getElementById('header-wrapper').style.display = 'none';
-		document.getElementById('horizontal-menu-bar-wrapper').style.display = 'none';
-		document.getElementById('horizontal-search-wrapper').style.display = 'none';
-		document.getElementById('side-bar').style.display = 'none';
-//		document.querySelector('breadcrumb').style.display = 'none';
-//		document.getElementById('navbar-inner').style.display = 'none';
-//		document.querySelector('navbar-static-bottom').style.display = 'none';
-	</script>
 <h3>{translate text='Register Parent and Student for Rosen LevelUP'}</h3>
 <div class="page">
 	{if (isset($registerRosenLevelUPResult) && $registerRosenLevelUPResult.success)}
