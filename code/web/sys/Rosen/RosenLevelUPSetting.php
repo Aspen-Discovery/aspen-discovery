@@ -26,6 +26,7 @@ class RosenLevelUPSetting extends DataObject
 			'lu_multi_district_name' => array('property' => 'lu_multi_district_name', 'type' => 'text', 'label' => 'LevelUP Multi-District Name', 'maxLength' => 50, 'description' => 'The label name of the multi-district organization.'),
 			'lu_district_name' => array('property' => 'lu_district_name', 'type' => 'text', 'label' => 'LevelUP District Name', 'maxLength' => 50, 'description' => 'The label name of the school district.'),
 			'lu_school_name' => array('property' => 'lu_school_name', 'type' => 'text', 'label' => 'LevelUP School Name', 'maxLength' => 50, 'description' => 'The domain of the school.'),
+			'lu_location_code_prefix' => array('property' => 'lu_location_code_prefix', 'type' => 'text', 'label' => 'School Location Code Prefix', 'maxLength' => 50, 'description' => 'Rosen LevelUP requires school values be not just numbers. Coordinate with Rosen to add a text prefix, e.g., Amqui Elementary location code "105" becomes "Nashville 105"'),
 		);
 		return $structure;
 	}
