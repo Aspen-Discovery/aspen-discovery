@@ -28,6 +28,11 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 	private $student_school_name;
 	private $student_username;
 
+	function __construct($isStandalonePage = false)
+	{
+		parent::__construct(true);
+	}
+
 	function launch()
 	{
 		global $interface;
@@ -192,22 +197,9 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 
 				$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 				$interface->assign('registerRosenLevelUPForm', $fieldsForm);
-				$this->displayStandalone('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
+				$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
 			}
 		}
-	}
-
-	/**
-	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the Full Record View Pages
-	 * @param string $pageTitle What to display is the html title tag
-	 * @param string $sidebarTemplate Sets the sidebar template, set to false or empty string for no sidebar
-	 * @param boolean $translateTitle
-	 */
-	function displayStandalone($mainContentTemplate, $pageTitle, $translateTitle = true) {
-		global $interface;
-		$interface->setTemplate($mainContentTemplate);
-		$interface->setPageTitle($pageTitle, $translateTitle);
-		$interface->display('standalone-layout.tpl');
 	}
 
 	function getLevelUPRegistrationFields() {

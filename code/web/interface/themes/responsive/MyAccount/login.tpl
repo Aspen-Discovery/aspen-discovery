@@ -45,11 +45,11 @@
 								</p>
 							{/if}
 
-							{if $enableSelfRegistration == 1}
+							{if $enableSelfRegistration == 1 && !$isStandalonePage}
 								<p class="help-block">
 									Don't have a library card?  <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
 								</p>
-							{elseif $enableSelfRegistration == 2}
+							{elseif $enableSelfRegistration == 2 && !$isStandalonePage}
 								<p class="help-block">
 									Don't have a library card? <a href="{$selfRegistrationUrl}">Register for a new Library Card</a>.
 								</p>
@@ -64,7 +64,7 @@
 								{translate text="Reveal Password"}
 							</label>
 
-							{if !$inLibrary && !$isOpac}
+							{if !$inLibrary && !$isOpac && !$isStandalonePage}
 								<label for="rememberMe" class="checkbox">
 									<input type="checkbox" id="rememberMe" name="rememberMe">
 									{translate text="Remember Me"}

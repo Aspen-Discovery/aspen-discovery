@@ -14,8 +14,8 @@ abstract class MyAccount extends Action
 	protected $requireLogin = true;
 
 	function __construct($isStandalonePage = false) {
-		global $interface;
 		global $configArray;
+		parent::__construct($isStandalonePage);
 
 		if ($this->requireLogin && !UserAccount::isLoggedIn()) {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';

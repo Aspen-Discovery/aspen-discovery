@@ -59,12 +59,14 @@
 
 		<div id="content-container">
 			<div class="row">
-				<div role="main">
-					{if $module}
-						{include file="$module/$pageTemplate"}
-					{else}
-						{include file="$pageTemplate"}
-					{/if}
+				<div class="col-xs-12" id="main-content">
+					<div role="main">
+						{if $module}
+							{include file="$module/$pageTemplate"}
+						{else}
+							{include file="$pageTemplate"}
+						{/if}
+					</div>
 				</div>
 			</div>
 		</div>

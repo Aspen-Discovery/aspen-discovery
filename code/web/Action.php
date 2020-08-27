@@ -7,6 +7,8 @@ abstract class Action
 	private $isStandalonePage;
 	function __construct($isStandalonePage = false) {
 		$this->isStandalonePage = $isStandalonePage;
+		global $interface;
+		$interface->assign('isStandalonePage', true);
 	}
 
 	abstract function launch();
@@ -33,7 +35,11 @@ abstract class Action
 				//Messages table doesn't exist, ignore
 			}
 		}
-		$interface->display('layout.tpl');
+		if ($this->isStandalonePage){
+			$interface->display('standalone-layout.tpl');
+		}else {
+			$interface->display('layout.tpl');
+		}
 	}
 
 	function setShowCovers() {
