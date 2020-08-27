@@ -9,7 +9,7 @@
 			{if $showCovers}
 				<div class="coversColumn col-xs-3 col-sm-3{if !empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center">
 					{if $disableCoverArt != 1}
-						<a href="{$summUrl}">
+						<a href="{$summUrl}" aria-hidden="true">
 							<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
 						</a>
 					{/if}

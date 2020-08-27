@@ -376,15 +376,6 @@ AspenDiscovery.Archive = (function(){
 			});
 		},
 
-		loadExploreMore: function(pid){
-			$.getJSON(Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getExploreMoreContent", function(data){
-				if (data.success){
-					$("#explore-more-body").html(data.exploreMore);
-					AspenDiscovery.initCarousels("#explore-more-body .panel-collapse.in .jcarousel"); // Only initialize browse categories in open accordions
-				}
-			}).fail(AspenDiscovery.ajaxFail);
-		},
-
 		loadMetadata: function(pid, secondaryId){
 			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getMetadata";
 			if (secondaryId !== undefined){
@@ -604,7 +595,7 @@ AspenDiscovery.Archive = (function(){
 		},
 
 		showBrowseFilterPopup: function(exhibitPid, facetName, title){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getFacetValuesForExhibit&facetName=" + encodeURI(facetName);
+			let url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getFacetValuesForExhibit&facetName=" + encodeURI(facetName);
 			AspenDiscovery.loadingMessage();
 			$.getJSON(url, function(data){
 				AspenDiscovery.showMessage(title, data.modalBody);

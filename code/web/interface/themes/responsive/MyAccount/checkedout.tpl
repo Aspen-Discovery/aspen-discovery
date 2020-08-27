@@ -29,8 +29,11 @@
 				{if $user->isValidForEContentSource('rbdigital')}
 					<li role="presentation"{if $tab=='rbdigital'} class="active"{/if}><a href="#rbdigital" aria-controls="rbdigital" role="tab" data-toggle="tab">{translate text="RBdigital"} <span class="badge"><span class="rbdigital-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
-                {if $user->isValidForEContentSource('cloud_library')}
+				{if $user->isValidForEContentSource('cloud_library')}
 					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="Cloud Library"} <span class="badge"><span class="cloud_library-checkouts-placeholder">&nbsp;</span></span></a></li>
+				{/if}
+                {if $user->isValidForEContentSource('axis_360')}
+					<li role="presentation"{if $tab=='axis_360'} class="active"{/if}><a href="#axis_360" aria-controls="axis_360" role="tab" data-toggle="tab">{translate text="Axis 360"} <span class="badge"><span class="axis_360-checkouts-placeholder">&nbsp;</span></span></a></li>
                 {/if}
 			</ul>
 
@@ -47,36 +50,42 @@
 				{if $user->isValidForEContentSource('rbdigital')}
 					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital" aria-label="RBdigital Checkouts List"><div id="rbdigitalCheckoutsPlaceholder">{translate text="Loading checkouts from RBdigital"}</div></div>
 				{/if}
-                {if $user->isValidForEContentSource('cloud_library')}
+				{if $user->isValidForEContentSource('cloud_library')}
 					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="Cloud Library Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from Cloud Library"}</div></div>
+				{/if}
+                {if $user->isValidForEContentSource('axis_360')}
+					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="axis_360" aria-label="Axis 360 Checkouts List"><div id="axis_360CheckoutsPlaceholder">{translate text="Loading checkouts from Axis 360"}</div></div>
                 {/if}
 			</div>
 			<script type="text/javascript">
 				{literal}
 				$(document).ready(function() {
-                    $("a[href='#all']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('all');
-                    });
-                    $("a[href='#ils']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('ils');
-                    });
-                    $("a[href='#overdrive']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('overdrive');
-                    });
-                    $("a[href='#hoopla']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('hoopla');
-                    });
-                    $("a[href='#rbdigital']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('rbdigital');
-                    });
-                    $("a[href='#cloud_library']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('cloud_library');
-                    });
-                    {/literal}
-                    AspenDiscovery.Account.loadCheckouts('{$tab}');
+					$("a[href='#all']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('all');
+					});
+					$("a[href='#ils']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('ils');
+					});
+					$("a[href='#overdrive']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('overdrive');
+					});
+					$("a[href='#hoopla']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('hoopla');
+					});
+					$("a[href='#rbdigital']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('rbdigital');
+					});
+					$("a[href='#cloud_library']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('cloud_library');
+					});
+					$("a[href='#axis_360']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('axis_360');
+					});
+					{/literal}
+					AspenDiscovery.Account.loadCheckouts('{$tab}');
 					{literal}
-                });
-                {/literal}
+				});
+				{/literal}
 			</script>
 		{/if}
 	{else}

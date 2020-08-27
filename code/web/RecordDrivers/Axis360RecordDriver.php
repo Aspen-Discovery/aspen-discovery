@@ -2,28 +2,28 @@
 
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
-require_once ROOT_DIR . '/sys/RBdigital/RBdigitalProduct.php';
+require_once ROOT_DIR . '/sys/Axis360/Axis360Title.php';
 
-class RBdigitalRecordDriver extends GroupedWorkSubDriver
+class Axis360RecordDriver extends GroupedWorkSubDriver
 {
 	private $id;
-	/** @var RBdigitalProduct */
-	private $rbdigitalProduct;
-	private $rbdigitalRawMetadata;
+	/** @var Axis360Title */
+	private $axis360Title;
+	private $axis360RawMetadata;
 	private $valid;
 
 	public function __construct($recordId, $groupedWork = null)
 	{
 		$this->id = $recordId;
 
-		$this->rbdigitalProduct = new RBdigitalProduct();
-		$this->rbdigitalProduct->rbdigitalId = $recordId;
-		if ($this->rbdigitalProduct->find(true)) {
+		$this->axis360Title = new Axis360Title();
+		$this->axis360Title->axis360Id = $recordId;
+		if ($this->axis360Title->find(true)) {
 			$this->valid = true;
-			$this->rbdigitalRawMetadata = json_decode($this->rbdigitalProduct->rawResponse);
+			$this->axis360RawMetadata = json_decode($this->axis360Title->rawResponse);
 		} else {
 			$this->valid = false;
-			$this->rbdigitalProduct = null;
+			$this->axis360Title = null;
 		}
 		if ($this->valid) {
 			parent::__construct($groupedWork);
@@ -32,7 +32,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 
 	public function getIdWithSource()
 	{
-		return 'rbdigital:' . $this->id;
+		return 'axis360:' . $this->id;
 	}
 
 	/**
@@ -44,7 +44,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
-			$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital' AND identifier = '" . $this->getUniqueID() . "'";
+			$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='axis360' AND identifier = '" . $this->getUniqueID() . "'";
 			$groupedWork->query($query);
 
 			if ($groupedWork->getNumResults() == 1) {
@@ -54,26 +54,9 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 		}
 	}
 
-	public function getRBdigitalBookcoverUrl($size = 'small')
-	{
-		$images = $this->rbdigitalRawMetadata->images;
-		foreach ($images as $image) {
-			if ($image->name == 'medium' && $size == 'small') {
-				return $image->url;
-			}
-			if ($image->name == 'large' && $size == 'medium') {
-				return $image->url;
-			}
-			if ($image->name == 'xx-large' && $size == 'large') {
-				return $image->url;
-			}
-		}
-		return null;
-	}
-
 	public function getModule()
 	{
-		return 'RBdigital';
+		return 'Axis360';
 	}
 
 	/**
@@ -91,8 +74,8 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
-		$interface->assign('rbdigitalExtract', $this->rbdigitalRawMetadata);
-		return 'RecordDrivers/RBdigital/staff-view.tpl';
+		$interface->assign('axis360Extract', $this->axis360RawMetadata);
+		return 'RecordDrivers/Axis360/staff-view.tpl';
 	}
 
 	/**
@@ -102,7 +85,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getTitle()
 	{
-		$title = $this->rbdigitalProduct->title;
+		$title = $this->axis360Title->title;
 		$subtitle = $this->getSubtitle();
 		if (strlen($subtitle) > 0) {
 			$title .= ': ' . $subtitle;
@@ -119,7 +102,6 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getTableOfContents()
 	{
-		// TODO: Implement getTableOfContents() method.
 		return array();
 	}
 
@@ -138,7 +120,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 
 	public function getDescription()
 	{
-		return $this->rbdigitalRawMetadata->shortDescription;
+		return '';
 	}
 
 	public function getMoreDetailsOptions()
@@ -171,12 +153,12 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 
 		$moreDetailsOptions['moreDetails'] = array(
 			'label' => 'More Details',
-			'body' => $interface->fetch('RBdigital/view-more-details.tpl'),
+			'body' => $interface->fetch('Axis360/view-more-details.tpl'),
 		);
 		$this->loadSubjects();
 		$moreDetailsOptions['subjects'] = array(
 			'label' => 'Subjects',
-			'body' => $interface->fetch('RecordDrivers/RBdigital/view-subjects.tpl'),
+			'body' => $interface->fetch('RecordDrivers/Axis360/view-subjects.tpl'),
 		);
 		$moreDetailsOptions['citations'] = array(
 			'label' => 'Citations',
@@ -186,7 +168,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'onShow' => "AspenDiscovery.RBdigital.getStaffView('{$this->id}');",
+				'onShow' => "AspenDiscovery.Axis360.getStaffView('{$this->id}');",
 				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
@@ -197,7 +179,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	public function getISBNs()
 	{
 		$isbns = [];
-		$isbns[] = $this->rbdigitalRawMetadata->isbn;
+		$isbns[] = $this->axis360RawMetadata->isbn;
 		return $isbns;
 	}
 
@@ -211,17 +193,17 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 		$actions = array();
 		if ($isAvailable) {
 			$actions[] = array(
-				'title' => 'Check Out RBdigital',
-				'onclick' => "return AspenDiscovery.RBdigital.checkOutTitle('{$this->id}');",
+				'title' => 'Check Out Axis 360',
+				'onclick' => "return AspenDiscovery.Axis360.checkOutTitle('{$this->id}');",
 				'requireLogin' => false,
-				'type' => 'rbdigital_checkout'
+				'type' => 'axis360_checkout'
 			);
 		} else {
 			$actions[] = array(
-				'title' => 'Place Hold RBdigital',
-				'onclick' => "return AspenDiscovery.RBdigital.placeHold('{$this->id}');",
+				'title' => 'Place Hold Axis 360',
+				'onclick' => "return AspenDiscovery.Axis360.placeHold('{$this->id}');",
 				'requireLogin' => false,
-				'type' => 'rbdigital_hold'
+				'type' => 'axis360_hold'
 			);
 		}
 		return $actions;
@@ -235,18 +217,24 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	{
 		// TODO: Implement getContributors() method.
 		$contributors = array();
-		if (isset($this->rbdigitalRawMetadata->authors)) {
-			$authors = $this->rbdigitalRawMetadata->authors;
-			foreach ($authors as $author) {
-				//TODO: Reverse name?
-				$contributors[] = $author->text;
+		if (!empty($this->axis360RawMetadata->authors)) {
+			$authors = $this->axis360RawMetadata->authors;
+			if (is_array($authors->author)){
+				foreach ($authors->author as $author) {
+					$contributors[] = $author;
+				}
+			}else{
+				$contributors[] = $authors->author;
 			}
 		}
-		if (isset($this->rbdigitalRawMetadata->narrators)) {
-			$authors = $this->rbdigitalRawMetadata->narrators;
-			foreach ($authors as $author) {
-				//TODO: Reverse name?
-				$contributors[] = $author->text . '|Narrator';
+		if (!empty($this->axis360RawMetadata->narrators)) {
+			$authors = $this->axis360RawMetadata->narrators;
+			if (is_array($authors->author)){
+				foreach ($authors->author as $author) {
+					$contributors[] = $author . '|Narrator';
+				}
+			}else{
+				$contributors[] = $authors->author . '|Narrator';
 			}
 		}
 		return $contributors;
@@ -260,7 +248,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	 */
 	function getEditions()
 	{
-		// No specific information provided by RBdigital
+		// No specific information provided by Axis 360
 		return array();
 	}
 
@@ -269,13 +257,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	 */
 	function getFormats()
 	{
-		if ($this->rbdigitalProduct->mediaType == "eAudio") {
-			return ['eAudiobook'];
-		} elseif ($this->rbdigitalProduct->mediaType == "eMagazine") {
-			return ['eMagazine'];
-		} else {
-			return ['eBook'];
-		}
+		return ['eBook'];
 	}
 
 	/**
@@ -285,16 +267,12 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	 */
 	function getFormatCategory()
 	{
-		if ($this->rbdigitalProduct->mediaType == "eAudio") {
-			return ['eBook', 'Audio Books'];
-		} else {
-			return ['eBook'];
-		}
+		return ['eBook'];
 	}
 
 	public function getLanguage()
 	{
-		return $this->rbdigitalProduct->language;
+		return 'English';
 	}
 
 	public function getNumHolds()
@@ -318,7 +296,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	 */
 	function getPrimaryAuthor()
 	{
-		return $this->rbdigitalProduct->primaryAuthor;
+		return $this->axis360Title->primaryAuthor;
 	}
 
 	/**
@@ -326,7 +304,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	 */
 	function getPublishers()
 	{
-		return [$this->rbdigitalRawMetadata->publisher->text];
+		return [];
 	}
 
 	/**
@@ -334,17 +312,17 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	 */
 	function getPublicationDates()
 	{
-		return [$this->rbdigitalRawMetadata->releasedDate];
+		return [];
 	}
 
 	public function getRecordType()
 	{
-		return 'rbdigital';
+		return 'axis360';
 	}
 
 	function getRelatedRecord()
 	{
-		$id = 'rbdigital:' . $this->id;
+		$id = 'axis360:' . $this->id;
 		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
 	}
 
@@ -385,7 +363,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	 */
 	function getShortTitle()
 	{
-		return $this->rbdigitalProduct->title;
+		return $this->axis360Title->title;
 	}
 
 	/**
@@ -395,8 +373,8 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	 */
 	function getSubtitle()
 	{
-		if ($this->rbdigitalRawMetadata->hasSubtitle) {
-			return $this->rbdigitalRawMetadata->subtitle;
+		if (!empty($this->axis360RawMetadata->subtitle)) {
+			return $this->axis360RawMetadata->subtitle;
 		} else {
 			return "";
 		}
@@ -410,9 +388,10 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	function loadSubjects()
 	{
 		$subjects = [];
-		if ($this->rbdigitalRawMetadata->genres) {
-			foreach ($this->rbdigitalRawMetadata->genres as $genre) {
-				$subjects[] = $genre->text;
+		if (!empty($this->axis360RawMetadata->subjects)) {
+			$subjects = explode('# ', $this->axis360RawMetadata->subjects);
+			foreach ($subjects as $key => $subject){
+				$subjects[$key] = str_replace('/', ' -- ', $subject);
 			}
 		}
 		global $interface;
@@ -426,7 +405,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	public function getAccessOnlineLinkUrl($patron)
 	{
 		global $configArray;
-		return $configArray['Site']['url'] . '/RBdigital/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
+		return $configArray['Site']['url'] . '/Axis360/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
 	}
 
 	function getStatusSummary()
@@ -441,7 +420,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 			$statusSummary['showCheckout'] = false;
 		}else{
 			if ($relatedRecord->getAvailableCopies() > 0) {
-				$statusSummary['status'] = "Available from RBdigital";
+				$statusSummary['status'] = "Available from Axis 360";
 				$statusSummary['available'] = true;
 				$statusSummary['class'] = 'available';
 				$statusSummary['showPlaceHold'] = false;

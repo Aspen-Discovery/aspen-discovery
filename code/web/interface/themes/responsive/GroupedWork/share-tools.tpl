@@ -11,11 +11,11 @@
 {*			<a href="http://twitter.com/home?status={$recordDriver->getTitle()|urlencode}+{$url}/GroupedWork/{$recordDriver->getPermanentId()}/Home" target="_blank" title="Share on Twitter">*}
 {*				<img src="{img filename='twitter-icon.png'}" alt="Share on Twitter">*}
 {*			</a>*}
-			<a href="http://www.facebook.com/sharer/sharer.php?u={$url}/{$recordDriver->getLinkUrl()|escape:'url'}" target="_blank" title="Share on Facebook">
+			<a href="http://www.facebook.com/sharer/sharer.php?u={$url}/{$recordDriver->getLinkUrl()|escape:'url'}" target="_blank" title="Share on Facebook" aria-label="Share {$summTitle|escape:css}, by {$recordDriver->getPrimaryAuthor()|escape} on Facebook">
 				<img src="{img filename='facebook-icon.png'}" alt="Share on Facebook">
 			</a>
 
-			<a href="http://www.pinterest.com/pin/create/button/?url={$url}/{$recordDriver->getLinkUrl()}&media={$url}{$recordDriver->getBookcoverUrl('medium')}&description=Pin%20on%20Pinterest" target="_blank" title="Pin on Pinterest">
+			<a href="http://www.pinterest.com/pin/create/button/?url={$url}/{$recordDriver->getLinkUrl()}&media={$url}{$recordDriver->getBookcoverUrl('medium')}&description=Pin%20on%20Pinterest" target="_blank" title="Pin on Pinterest" aria-label="Pin {$summTitle|escape:css}, by {$recordDriver->getPrimaryAuthor()|escape} on Pinterest">
 				<img src="{img filename='pinterest-icon.png'}" alt="Pin on Pinterest">
 			</a>
 		{/if}

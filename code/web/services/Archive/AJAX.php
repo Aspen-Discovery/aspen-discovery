@@ -597,6 +597,7 @@ class Archive_AJAX extends Action {
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getFacetValuesForExhibit(){
 		if (!isset($_REQUEST['id'])){
 			return array(
@@ -661,52 +662,6 @@ class Archive_AJAX extends Action {
 				'modalBody' => $interface->fetch("Archive/browseFacetPopup.tpl"),
 		);
 		return $results;
-	}
-
-	function getExploreMoreContent(){
-		if (!isset($_REQUEST['id'])){
-			return array(
-					'success' => false,
-					'message' => 'You must supply the id to load explore more content for'
-			);
-		}
-		global $interface;
-		global $timer;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-		$fedoraUtils = FedoraUtils::getInstance();
-		$pid = urldecode($_REQUEST['id']);
-		$interface->assign('pid', $pid);
-		$archiveObject = $fedoraUtils->getObject($pid);
-		$recordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
-		$interface->assign('recordDriver', $recordDriver);
-		$timer->logTime("Loaded record driver for main object");
-
-		require_once ROOT_DIR . '/sys/ExploreMore.php';
-		$exploreMore = new ExploreMore();
-		$exploreMore->loadExploreMoreSidebar('archive', $recordDriver);
-		$timer->logTime("Called loadExploreMoreSidebar");
-
-		$relatedSubjects = $recordDriver->getAllSubjectHeadings();
-
-		$ebscoMatches = $exploreMore->loadEbscoOptions('archive', array(), implode($relatedSubjects, " or "));
-		if (count($ebscoMatches) > 0){
-			$interface->assign('relatedArticles', $ebscoMatches);
-		}
-		$timer->logTime("Loaded Ebsco options");
-
-		global $library;
-		$exploreMoreSettings = $library->exploreMoreBar;
-		if (empty($exploreMoreSettings)) {
-			$exploreMoreSettings = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
-		}
-		$interface->assign('exploreMoreSettings', $exploreMoreSettings);
-		$interface->assign('archiveSections', ArchiveExploreMoreBar::$archiveSections);
-		$timer->logTime("Loaded Settings");
-
-		return array(
-				'success' => true,
-				'exploreMore' => $interface->fetch('explore-more-sidebar.tpl')
-		);
 	}
 
 	/** @noinspection PhpUnused */

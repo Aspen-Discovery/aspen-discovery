@@ -23,7 +23,7 @@
 		{* Load Libraries*}
 		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.pager.min.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.js?v={$gitBranch|urlencode}"></script>
 		{*<script src="/interface/themes/responsive/js/lib/jquery.validate.js"></script>*}
 		<script src="/interface/themes/responsive/js/lib/jquery.validate.min.js?v={$gitBranch|urlencode}"></script>
 
@@ -49,6 +49,7 @@
 		<script src="/interface/themes/responsive/js/aspen/admin.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/archive.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/authors.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/aspen/axis360.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/browse.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/cloud-library.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/dpla.js?v={$gitBranch|urlencode}"></script>

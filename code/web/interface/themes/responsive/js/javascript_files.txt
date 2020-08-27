@@ -21,6 +21,7 @@ aspen/account.js
 aspen/admin.js
 aspen/archive.js
 aspen/authors.js
+aspen/axis360.js
 aspen/browse.js
 aspen/cloud-library.js
 aspen/dpla.js

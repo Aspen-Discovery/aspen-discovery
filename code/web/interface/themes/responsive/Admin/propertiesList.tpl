@@ -17,24 +17,24 @@
 <form action="" method="get" id='compare' class="form-inline">
 {/if}
 	<div class='adminTableRegion'>
-		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects" role="grid">
+		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects">
 			<thead>
-				<tr role="row">
+				<tr>
 					{if $canCompare}
-						<th role="columnheader">{translate text='Select'} </th>
+						<th>{translate text='Select'}</th>
 					{/if}
 					{foreach from=$structure item=property key=id}
 						{if !isset($property.hideInLists) || $property.hideInLists == false}
-						<th role="columnheader"><span title='{$property.description}' role="columnheader">{$property.label|translate}</span></th>
+						<th><span title='{$property.description}'>{$property.label|translate}</span></th>
 						{/if}
 					{/foreach}
-					<th role="columnheader">{translate text='Actions'}</th>
+					<th>{translate text='Actions'}</th>
 				</tr>
 			</thead>
-			<tbody role="rowgroup">
+			<tbody>
 				{if isset($dataList) && is_array($dataList)}
 					{foreach from=$dataList item=dataItem key=id}
-					<tr class='{cycle values="odd,even"} {$dataItem->class}' role="row">
+					<tr class='{cycle values="odd,even"} {$dataItem->class}'>
 						{if $canCompare}
 							<td><input type="checkbox" class="selectedObject" name="selectedObject[{$id}]" aria-label="Select Item {$id}"> </td>
 						{/if}
@@ -43,10 +43,12 @@
 							{assign var=propValue value=$dataItem->$propName}
 
 							{if !isset($property.hideInLists) || $property.hideInLists == false}
-								<td role="gridcell" aria-label="{$dataItem} {$propName}{if empty($propValue)} - empty{/if}">
+								<td aria-label="{$dataItem} {$propName}{if empty($propValue)} - empty{/if}">
 								{if $property.type == 'label'}
 									{if $dataItem->class != 'objectDeleted'}
-										<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>{$propValue}</a>
+										{if $propName == $dataItem->getPrimaryKey()}<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>{/if}
+										{$propValue}
+										{if $propName == $dataItem->getPrimaryKey()}</a>{/if}
 									{/if}
 								{elseif $property.type == 'regularExpression'}
 									{$propValue|escape}
@@ -96,11 +98,11 @@
 						{if $dataItem->class != 'objectDeleted'}
 							<td>
 								<div class="btn-group-vertical">
-								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm">Edit</a>
-								<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm">History</a>
+								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm" aria-label="Edit Item {$id}">{translate text="Edit"}</a>
+								<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}">{translate text="History"}</a>
 								{if $additionalActions}
 									{foreach from=$additionalActions item=action}
-										<a href='{$action.path}&amp;id={$id}' class="btn btn-default btn-sm">{$action.name}</a>
+										<a href='{$action.path}&amp;id={$id}' class="btn btn-default btn-sm" aria-label="{$action.name} for Item {$id}">{$action.name|translate}</a>
 									{/foreach}
 								{/if}
 								</div>

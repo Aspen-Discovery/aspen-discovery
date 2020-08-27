@@ -3,7 +3,7 @@
 		<h1>{translate text='Reindex Log'}</h1>
 		<hr>
 
-		<h4>Filter by</h4>
+		<legend>Filter by</legend>
 
 		<form class="navbar form-inline row">
 			<div class="form-group col-xs-7">
@@ -24,7 +24,7 @@
 			</div>
 		</form>
 		<div id="econtentAttachLogContainer">
-			<table class="logEntryDetails table table-condensed table-hover">
+			<table class="logEntryDetails table table-condensed table-hover" aria-label="Index Log">
 				<thead>
 					<tr><th>Id</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Works Processed</th><th>Num Errors</th><th>Notes</th></tr>
 				</thead>

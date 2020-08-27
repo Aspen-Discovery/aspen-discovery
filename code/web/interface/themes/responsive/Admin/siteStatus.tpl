@@ -1,26 +1,28 @@
 {strip}
 <div id="main-content" class="col-tn-12 col-xs-12">
 	<h1>Aspen Discovery Status</h1>
-	<hr>
-	{if $aspenStatus}
-	<h2>Aspen Discovery Status</h2>
-		<table class="table table-bordered">
-			<tr class="{if $aspenStatus == 'critical'}danger{elseif $aspenStatus == 'warning'}warning{else}success{/if}">
-				<th>{$aspenStatus|capitalize}</th>
+	<h2>Server Self Check</h2>
+	<div class="alert {if $aspenStatus.aspen_health_status == 'critical'}alert-danger{elseif $aspenStatus.aspen_health_status == 'warning'}alert-warning{else}alert-success{/if}">
+		{$aspenStatus.aspen_health_status|capitalize}
+	</div>
+	<table class="table table-bordered" aria-label="Self Checks">
+		<thead>
+			<th>Check Name</th>
+			<th>Status</th>
+		</thead>
+		{foreach from=$aspenStatus.checks item=check}
+			<tr>
+				<td>{$check.name}</td>
+				<td class="{if $check.status == 'critical'}danger{elseif $check.status == 'warning'}warning{else}success{/if}">{$check.status}</td>
 			</tr>
-			{foreach from=$aspenStatusMessages item=message}
-				<tr>
-					<td>{$message}</td>
-				</tr>
-			{/foreach}
-		</table>
-	{/if}
+		{/foreach}
+	</table>
 
 	<h2>Solr Cores</h2>
 
 	{foreach from=$data item=searchIndex}
 		<h3>{$searchIndex.name}</h3>
-		<table class="table table-bordered">
+		<table class="table table-bordered" aria-label="Status of {$searchIndex.name} Solr index">
 			<tr>
 				<th>Record Count: </th>
 				<td>{$searchIndex.index.numDocs}</td>

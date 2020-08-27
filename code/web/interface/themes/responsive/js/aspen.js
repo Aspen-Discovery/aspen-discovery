@@ -851,12 +851,11 @@ date=new Date;var parsed={},setters_order=["yyyy","yy","M","MM","m","mm","d","dd
 					// add cell to headerList
 					c.headerList[index] = this;
 					// add to parent in case there are multiple rows
-					$t.parent().addClass(ts.css.headerRow + ' ' + c.cssHeaderRow).attr('role', 'row');
+					$t.parent().addClass(ts.css.headerRow + ' ' + c.cssHeaderRow);
 					// allow keyboard cursor to focus on element
 					if (c.tabIndex) { $t.attr("tabindex", 0); }
 				}).attr({
-					scope: 'col',
-					role : 'columnheader'
+					scope: 'col'
 				});
 				// enable/disable sorting
 				updateHeader(table);
@@ -1276,7 +1275,7 @@ date=new Date;var parsed={},setters_order=["yyyy","yy","M","MM","m","mm","d","dd
 								updateHeader(table);
 								commonUpdate(table, resort, callback);
 							} else {
-								$row = $($row).attr('role', 'row'); // make sure we're using a jQuery object
+								$row = $($row); // make sure we're using a jQuery object
 								var i, j, l, t, v, rowData, cells,
 										rows = $row.filter('tr').length,
 										tbdy = $table.find('tbody').index( $row.parents('tbody').filter(':first') );
@@ -1437,8 +1436,7 @@ date=new Date;var parsed={},setters_order=["yyyy","yy","M","MM","m","mm","d","dd
 				}
 				c.table = table;
 				c.$table = $table
-						.addClass(ts.css.table + ' ' + c.tableClass + k)
-						.attr('role', 'grid');
+						.addClass(ts.css.table + ' ' + c.tableClass + k);
 				c.$headers = $table.find(c.selectorHeaders);
 
 				// give the table a unique id, which will be used in namespace binding
@@ -1449,7 +1447,7 @@ date=new Date;var parsed={},setters_order=["yyyy","yy","M","MM","m","mm","d","dd
 					c.namespace = '.' + c.namespace.replace(/\W/g,'');
 				}
 
-				c.$table.children().children('tr').attr('role', 'row');
+				c.$table.children().children('tr');
 				c.$tbodies = $table.children('tbody:not(.' + c.cssInfoBlock + ')').attr({
 					'aria-live' : 'polite',
 					'aria-relevant' : 'all'
@@ -3071,7 +3069,7 @@ date=new Date;var parsed={},setters_order=["yyyy","yy","M","MM","m","mm","d","dd
 			var col, column, $header, buildSelect, disabled, name, ffxn,
 			// c.columns defined in computeThIndexes()
 					columns = c.columns,
-					buildFilter = '<tr role="row" class="' + ts.css.filterRow + '">';
+					buildFilter = '<tr class="' + ts.css.filterRow + '">';
 			for (column = 0; column < columns; column++) {
 				buildFilter += '<td></td>';
 			}
@@ -4848,6 +4846,8 @@ AspenDiscovery.Account = (function(){
 					label = 'RBdigital Checkouts';
 				}else if (source === 'cloud_library'){
 					label = 'Cloud Library Checkouts';
+				}else if (source === 'axis_360'){
+					label = 'Axis 360 Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -4891,6 +4891,8 @@ AspenDiscovery.Account = (function(){
 					label = 'OverDrive Holds';
 				}else if (source === 'rbdigital'){
 					label = 'RBdigital Holds';
+				}else if (source === 'axis_360'){
+					label = 'Axis 360 Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -6376,15 +6378,6 @@ AspenDiscovery.Archive = (function(){
 			});
 		},
 
-		loadExploreMore: function(pid){
-			$.getJSON(Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getExploreMoreContent", function(data){
-				if (data.success){
-					$("#explore-more-body").html(data.exploreMore);
-					AspenDiscovery.initCarousels("#explore-more-body .panel-collapse.in .jcarousel"); // Only initialize browse categories in open accordions
-				}
-			}).fail(AspenDiscovery.ajaxFail);
-		},
-
 		loadMetadata: function(pid, secondaryId){
 			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getMetadata";
 			if (secondaryId !== undefined){
@@ -6604,7 +6597,7 @@ AspenDiscovery.Archive = (function(){
 		},
 
 		showBrowseFilterPopup: function(exhibitPid, facetName, title){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getFacetValuesForExhibit&facetName=" + encodeURI(facetName);
+			let url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getFacetValuesForExhibit&facetName=" + encodeURI(facetName);
 			AspenDiscovery.loadingMessage();
 			$.getJSON(url, function(data){
 				AspenDiscovery.showMessage(title, data.modalBody);
@@ -6643,6 +6636,243 @@ AspenDiscovery.Authors = (function(){
         }
     };
 }(AspenDiscovery.Authors));
+AspenDiscovery.Axis360 = (function () {
+	return {
+		cancelHold: function (patronId, id) {
+			let url = Globals.path + "/Axis360/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
+						$("#axis360Hold_" + id).hide();
+						AspenDiscovery.Account.loadMenuData();
+					} else {
+						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Axis 360.  Please try again in a few minutes.", false);
+				}
+			});
+		},
+
+		checkOutTitle: function (id) {
+			if (Globals.loggedIn) {
+				//Get any prompts needed for checking out a title
+				let promptInfo = AspenDiscovery.Axis360.getCheckOutPrompts(id);
+				// noinspection JSUnresolvedVariable
+				if (!promptInfo.promptNeeded) {
+					AspenDiscovery.Axis360.doCheckOut(promptInfo.patronId, id);
+				}
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Axis360.checkOutTitle(id);
+				});
+			}
+			return false;
+		},
+
+		doCheckOut: function (patronId, id) {
+			if (Globals.loggedIn) {
+				let ajaxUrl = Globals.path + "/Axis360/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
+				$.ajax({
+					url: ajaxUrl,
+					cache: false,
+					success: function (data) {
+						if (data.success === true) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
+							AspenDiscovery.Account.loadMenuData();
+						} else {
+							// noinspection JSUnresolvedVariable
+							if (data.noCopies === true) {
+								AspenDiscovery.closeLightbox();
+								let ret = confirm(data.message);
+								if (ret === true) {
+									AspenDiscovery.Axis360.doHold(patronId, id);
+								}
+							} else {
+								AspenDiscovery.showMessage(data.title, data.message, false);
+							}
+						}
+					},
+					dataType: 'json',
+					async: false,
+					error: function () {
+						alert("An error occurred processing your request in Axis 360.  Please try again in a few minutes.");
+						//alert("ajaxUrl = " + ajaxUrl);
+						AspenDiscovery.closeLightbox();
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Axis360.checkOutTitle(id);
+				}, false);
+			}
+			return false;
+		},
+
+		doHold: function (patronId, id) {
+			let url = Globals.path + "/Axis360/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					// noinspection JSUnresolvedVariable
+					if (data.availableForCheckout) {
+						AspenDiscovery.Axis360.doCheckOut(patronId, id);
+					} else {
+						AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
+						AspenDiscovery.Account.loadMenuData();
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Axis 360.  Please try again in a few minutes.", false);
+				}
+			});
+		},
+
+		getCheckOutPrompts: function (id) {
+			let url = Globals.path + "/Axis360/" + id + "/AJAX?method=getCheckOutPrompts";
+			let result = true;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					result = data;
+					// noinspection JSUnresolvedVariable
+					if (data.promptNeeded) {
+						// noinspection JSUnresolvedVariable
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					alert("An error occurred processing your request.  Please try again in a few minutes.");
+					AspenDiscovery.closeLightbox();
+				}
+			});
+			return result;
+		},
+
+		getHoldPrompts: function (id) {
+			let url = Globals.path + "/Axis360/" + id + "/AJAX?method=getHoldPrompts";
+			let result = true;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					result = data;
+					// noinspection JSUnresolvedVariable
+					if (data.promptNeeded) {
+						// noinspection JSUnresolvedVariable
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					alert("An error occurred processing your request in Axis 360.  Please try again in a few minutes.");
+					AspenDiscovery.closeLightbox();
+				}
+			});
+			return result;
+		},
+
+		placeHold: function (id) {
+			if (Globals.loggedIn) {
+				//Get any prompts needed for placing holds (email and format depending on the interface.
+				let promptInfo = AspenDiscovery.Axis360.getHoldPrompts(id, 'hold');
+				// noinspection JSUnresolvedVariable
+				if (!promptInfo.promptNeeded) {
+					AspenDiscovery.Axis360.doHold(promptInfo.patronId, id);
+				}
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Axis360.placeHold(id);
+				});
+			}
+			return false;
+		},
+
+		processCheckoutPrompts: function () {
+			let id = $("#id").val();
+			let checkoutType = $("#checkoutType").val();
+			let patronId = $("#patronId option:selected").val();
+			AspenDiscovery.closeLightbox();
+			return AspenDiscovery.Axis360.doCheckOut(patronId, id);
+		},
+
+		processHoldPrompts: function () {
+			let id = $("#id").val();
+			let patronId = $("#patronId option:selected").val();
+			AspenDiscovery.closeLightbox();
+			return AspenDiscovery.Axis360.doHold(patronId, id);
+		},
+
+		renewCheckout: function (patronId, recordId) {
+			let url = Globals.path + "/Axis360/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Title Renewed", data.message, true);
+					} else {
+						AspenDiscovery.showMessage("Unable to Renew Title", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in Axis 360.  Please try again in a few minutes.", false);
+				}
+			});
+		},
+
+		returnCheckout: function (patronId, recordId) {
+			let url = Globals.path + "/Axis360/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Title Returned", data.message, true);
+						$("#axis360Checkout_" + recordId).hide();
+						AspenDiscovery.Account.loadMenuData();
+					} else {
+						AspenDiscovery.showMessage("Error Returning Title", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Axis 360.  Please try again in a few minutes.", false);
+				}
+			});
+		},
+
+		getStaffView: function (id) {
+			let url = Globals.path + "/Axis360/" + id + "/AJAX?method=getStaffView";
+			$.getJSON(url, function (data) {
+				if (!data.success) {
+					AspenDiscovery.showMessage('Error', data.message);
+				} else {
+					$("#staffViewPlaceHolder").replaceWith(data.staffView);
+				}
+			});
+		}
+	}
+}(AspenDiscovery.Axis360 || {}));
 AspenDiscovery.Browse = (function(){
 	return {
 		colcade: null,
@@ -8287,92 +8517,7 @@ AspenDiscovery.Menu = (function(){
 				AspenDiscovery.Menu.ExploreMoreSelectors;
 
 		// Set up Sticky Menus
-		AspenDiscovery.Menu.stickyMenu('#horizontal-menu-bar-container', 'sticky-menu-bar');
-		AspenDiscovery.Menu.stickyMenu('#vertical-menu-bar', 'sticky-sidebar');
-
-		if ($('#horizontal-menu-bar-container').is(':visible')) {
-			AspenDiscovery.Menu.hideAllFast();
-			AspenDiscovery.Menu.mobileMode = true;
-		}
-
-		// Trigger mode on resize between horizontal menu & vertical menu
-		$(window).resize(function(){
-			if (AspenDiscovery.Menu.mobileMode) {
-				// Entered Sidebar Mode
-				if (!$('#horizontal-menu-bar-container').is(':visible')) { // this depends on horizontal menu always being present
-				//	console.log('Entered SideBar Mode');
-					AspenDiscovery.Menu.mobileMode = false;
-
-					if ($('#vertical-menu-bar').length) { // Sidebar Menu is in use
-						//console.log('SideBar Menu is on');
-
-						//Always show horizontal search bar if it being used when not in mobile menu
-						$('#horizontal-search-box').show();
-
-						// Un-select any sidebar option previously selected
-						$('.menu-bar-option').removeClass('menu-icon-selected'); // Remove from any selected
-
-						// Hide SideBar Content
-						AspenDiscovery.Menu.hideAllFast();
-
-						// Select the sidebar menu that was selected in the mobile menu, if any
-						if ($('#mobile-menu-search-icon', '#horizontal-menu-bar-container').is('.menu-icon-selected')) {
-
-							// Reset Refine Search Button
-							AspenDiscovery.Menu.Mobile.resetRefineSearch();
-
-							AspenDiscovery.Menu.SideBar.showSearch('.menu-bar-option:nth-child(1)>a')
-						}
-						else if ($('#mobile-menu-account-icon', '#horizontal-menu-bar-container').is('.menu-icon-selected')) {
-							AspenDiscovery.Menu.SideBar.showAccount('.menu-bar-option:nth-child(2)>a')
-						}
-						else if ($('#mobile-menu-menu-icon', '#horizontal-menu-bar-container').is('.menu-icon-selected')) {
-							AspenDiscovery.Menu.SideBar.showMenu('.menu-bar-option:nth-child(3)>a')
-						}
-						else if ($('#mobile-menu-explore-more-icon', '#horizontal-menu-bar-container').is('.menu-icon-selected')) {
-							AspenDiscovery.Menu.SideBar.showExploreMore('.menu-bar-option:nth-child(4)>a')
-						} else {
-							// if nothing selected, Collapse sidebar
-							if ($(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').length == 0) {
-								AspenDiscovery.Menu.collapseSideBar();
-							}
-						}
-					} else {
-						//console.log('No Sidebar Menu. Side bar content being displayed');
-						// Show All Sidebar Stuff when Sidebar menu is not in use.
-						$(AspenDiscovery.Menu.AllSideBarSelectors).show();
-					}
-				}
-			} else {
-				// Entered Mobile Mode
-				if ($('#horizontal-menu-bar-container').is(':visible')) {
-					//console.log('Entered Mobile Mode');
-					AspenDiscovery.Menu.mobileMode = true;
-
-					// Un-select any horizontal option that might have been selected previously
-					$('.menu-icon-selected', '#horizontal-menu-bar-container').removeClass('menu-icon-selected');
-
-					// Hide SideBar Content
-					AspenDiscovery.Menu.hideAllFast();
-
-					// Select the corresponding menu option if one was selected in the sidebar menu
-					if ($('.menu-bar-option:nth-child(1)', '#vertical-menu-bar').is('.menu-icon-selected')) {
-						AspenDiscovery.Menu.Mobile.showSearch('#mobile-menu-search-icon')
-					}
-					else if ($('.menu-bar-option:nth-child(2)', '#vertical-menu-bar').is('.menu-icon-selected')) {
-						AspenDiscovery.Menu.Mobile.showAccount('#mobile-menu-account-icon')
-					}
-					else if ($('.menu-bar-option:nth-child(3)', '#vertical-menu-bar').is('.menu-icon-selected')) {
-						AspenDiscovery.Menu.Mobile.showMenu('#mobile-menu-menu-icon')
-					}
-					else if ($('.menu-bar-option:nth-child(4)', '#vertical-menu-bar').is('.menu-icon-selected')) {
-						AspenDiscovery.Menu.Mobile.showExploreMore('#mobile-menu-explore-more-icon')
-					}
-				}
-			}
-		});
-
-
+		AspenDiscovery.Menu.stickyMenu('#horizontal-menu-bar-wrapper', 'sticky-menu-bar');
 	});
 
 	// Private Function for Menu.js functions only
@@ -8383,7 +8528,6 @@ AspenDiscovery.Menu = (function(){
 	};
 
 	return {
-		mobileMode: false,
 		SearchBoxSelectors:      '#home-page-search',
 		SideBarSearchSelectors:  '#narrow-search-label,#facet-accordion,#remove-search-label,#remove-search-label+.applied-filters,#similar-authors',
 		SideBarAccountSelectors: '#home-page-login,#home-account-links',
@@ -8392,11 +8536,10 @@ AspenDiscovery.Menu = (function(){
 		AllSideBarSelectors:     '', // Set above
 
 		stickyMenu: function(menuContainerSelector, stickyMenuClass){
-			var menu = $(menuContainerSelector),
-					viewportHeight = $(window).height(),
-					switchPosition, // Meant to remain constant for the event handler below
-					// masqueradeMode = $('#masquerade-header').is(':visible'),
-					switchPositionAdjustment = $('#masquerade-header').height();
+			let menu = $(menuContainerSelector);
+			let viewportHeight = $(window).height();
+			let switchPosition; // Meant to remain constant for the event handler below
+			let switchPositionAdjustment = $('#masquerade-header').height();
 			// if (menu.is(':visible')) {
 			// 	switchPosition = menu.offset().top - switchPositionAdjustment;
 			// 	// console.log('Initial offset : ' + menu.offset().top, 'switch position : ' + switchPosition);
@@ -8406,22 +8549,22 @@ AspenDiscovery.Menu = (function(){
 				viewportHeight = $(this).height()
 			})
 			.scroll(function(){
-				if (menu.is(':visible') && viewportHeight < $('#main-content-with-sidebar').height()) { // only do this if the menu is visible & the page is larger than the viewport
+				if (menu.is(':visible') && viewportHeight < $('#content-container ').height()) { // only do this if the menu is visible & the page is larger than the viewport
 					if (typeof switchPosition == 'undefined') {
 						switchPosition = menu.offset().top - switchPositionAdjustment;
-						// console.log('Initial offset after becoming visible : ' + menu.offset().top, 'switch position : ' + switchPosition);
 					}
-					var fixedOffset = menu.offset().top,
-							notFixedScrolledPosition = $(this).scrollTop();
-					// console.log('Selector :', menuContainerSelector, 'fixedOffset : ', fixedOffset, ' notFixedScrolledPosition : ', notFixedScrolledPosition, 'switch position : ', switchPosition, 'offset : ' + menu.offset().top);
+					let fixedOffset = menu.offset().top;
+					let notFixedScrolledPosition = $(this).scrollTop();
 
 					// Toggle into an embedded mode
 					if (menu.is('.' + stickyMenuClass) && fixedOffset <= switchPosition) {
-						menu.removeClass(stickyMenuClass)
+						menu.removeClass(stickyMenuClass);
+						$('#horizontal-search-box').show();
 					}
 					// Toggle into a fixed mode
 					if (!menu.is('.' + stickyMenuClass) && notFixedScrolledPosition >= switchPosition) {
 						menu.addClass(stickyMenuClass);
+						$('#horizontal-search-box').hide();
 						if (switchPositionAdjustment) {
 							menu.css('top', switchPositionAdjustment);
 						}
@@ -8430,145 +8573,10 @@ AspenDiscovery.Menu = (function(){
 			}).scroll();
 		},
 
-		// This version is for hiding content without using an animation.
-		// This is important for the initial page load, putting content in the necessary state with out being distracting
-		hideAllFast: function(){
-			return $(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').hide() // return of object is needed for $when(AspenDiscovery.Menu.hideAll()).done() calls
-		},
-
-		collapseSideBar: function(){
-			AspenDiscovery.Menu.SideBar.initialLoadDone = true;
-			$('#side-bar,#vertical-menu-bar-container').addClass('collapsedSidebar');
-			$('#main-content-with-sidebar').addClass('mainContentWhenSideBarCollapsed');
-			$('#main-content-with-sidebar .jcarousel').jcarousel('reload'); // resize carousels in the main content sections
-		},
-
-		openSideBar: function(){
-			$('#main-content-with-sidebar').removeClass('mainContentWhenSideBarCollapsed');
-			$('#side-bar,#vertical-menu-bar-container').removeClass('collapsedSidebar');
-			$('#main-content-with-sidebar .jcarousel').jcarousel('reload'); // resize carousels in the main content sections
-		},
-
-		reloadRelatedTitles: function() {
-			if ($(AspenDiscovery.Menu.ExploreMoreSelectors).is(':visible')) {
-				$('.jcarousel').jcarousel('reload')
-			}
-		},
-
-		// Functions for the Vertical Sidebar Menu
-		SideBar: {
-			initialLoadDone: false,
-
-			hideAll: function(){
-				var animationLength = 0;
-				if (AspenDiscovery.Menu.SideBar.initialLoadDone) {
-					animationLength = 350;
-				}
-				return $(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').animate({width:'toggle'},animationLength); // slide left to right
-			},
-
-			showMenuSection: function(sectionSelector, clickedElement, afterAnimationAction){
-				$.when( this.hideAll() ).done(function(){
-					var elem = $(clickedElement),
-							parent = elem.parent('.menu-bar-option'); // For Vertical Menu Bar only
-					if (parent.length > 0) {
-
-						// Un-select Menu option
-						if (parent.is('.menu-icon-selected')) {
-							parent.removeClass('menu-icon-selected');
-						}
-
-						// Select a Menu Option
-						else {
-							$('.menu-bar-option').removeClass('menu-icon-selected'); // Remove from any selected
-							parent.addClass('menu-icon-selected');
-							AspenDiscovery.Menu.openSideBar();
-							var animationLength = 0;
-							if (AspenDiscovery.Menu.SideBar.initialLoadDone) {
-								animationLength = 350;
-							} else {
-								AspenDiscovery.Menu.SideBar.initialLoadDone = true;
-							}
-							$.when( $(sectionSelector).animate({width:'toggle'},animationLength) ).done(afterAnimationAction); // slide left to right
-						}
-					}
-				})
-
-				// Collapse side bar when no content is visible in it
-				//   Sometimes a Selected Menu option may be empty any way (ie search menu w/ horizontal search box on home page)
-				.done(function(){
-					if ($(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').length == 0) {
-						AspenDiscovery.Menu.collapseSideBar();
-					}
-				})
-			},
-
-			showSearch: function(clickedElement){
-				this.showMenuSection(AspenDiscovery.Menu.SideBarSearchSelectors, clickedElement);
-			},
-
-			showMenu: function(clickedElement){
-				this.showMenuSection(AspenDiscovery.Menu.SideBarMenuSelectors, clickedElement)
-			},
-
-			showAccount: function(clickedElement){
-				this.showMenuSection(AspenDiscovery.Menu.SideBarAccountSelectors, clickedElement)
-			},
-
-			showExploreMore: function(clickedElement){
-				this.showMenuSection(AspenDiscovery.Menu.ExploreMoreSelectors, clickedElement, reloadRelatedTitles)
-			},
-
-		},
-
 		// Functions for the Mobile/Horizontal Menu
 		Mobile: {
 			hideAll: function(){
 				return $(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').slideUp() // return of object is needed for $.when(AspenDiscovery.Menu.hideAll()).done() calls
-			},
-
-			showMenuSection: function(sectionSelector, clickedElement){
-				return $.when(this.hideAll() ).done(function(){
-					var elem = $(clickedElement);
-						AspenDiscovery.Menu.openSideBar();  // covers the case when view has switched from sidebar mode to mobile mode
-						if ( elem.is('.menu-icon-selected')){
-							elem.removeClass('menu-icon-selected');
-
-							// Show MyAccount Mini Menu
-							$('#mobileHeader').show();  // If the mobileHeader is present, show when no menu option is selected.
-							$(sectionSelector).slideUp()
-
-						}else { // selecting an option
-							$('.menu-icon-selected', '#horizontal-menu-bar-container').removeClass('menu-icon-selected');
-							elem.addClass('menu-icon-selected');
-
-							// Hide MyAccount Mini Menu
-							$('#mobileHeader').hide();  // If the mobileHeader section is present, hide when a menu option is selected
-									// May need an exception for selecting search icon, when horizontal search is used. plb 2-12-2016  (Maybe even sidebar search box)
-
-							$(sectionSelector).slideDown()
-						}
-
-				})
-			},
-
-			showSearch: function(clickedElement){
-				this.showMenuSection('#home-page-search', clickedElement);
-				this.resetRefineSearch();
-			},
-
-			showMenu: function(clickedElement){
-				this.showMenuSection(AspenDiscovery.Menu.SideBarMenuSelectors, clickedElement)
-			},
-
-			showAccount: function(clickedElement){
-				this.showMenuSection(AspenDiscovery.Menu.SideBarAccountSelectors, clickedElement);
-				$('#myAccountPanel').filter(':not(.in)').collapse('show');  // Open up the MyAccount Section, if it is not open. (.collapse('show') acts like a toggle instead of always showing. plb 2-12-2016)
-			},
-
-			showExploreMore: function(clickedElement){
-				this.showMenuSection(AspenDiscovery.Menu.ExploreMoreSelectors, clickedElement)
-						.done(reloadRelatedTitles)
 			},
 
 			showSearchFacets: function(){
@@ -8586,11 +8594,11 @@ AspenDiscovery.Menu = (function(){
 				}
 				let btn = $('#refineSearchButton');
 				let text = btn.text();
-				if (text == 'Refine Search') {
+				if (text === 'Refine Search') {
 					$(AspenDiscovery.Menu.SideBarSearchSelectors).slideDown();
 					btn.text('Hide Refine Search');
 				}
-				if (text == 'Hide Refine Search') {
+				if (text === 'Hide Refine Search') {
 					$(AspenDiscovery.Menu.SideBarSearchSelectors).slideUp();
 					btn.text('Refine Search');
 				}

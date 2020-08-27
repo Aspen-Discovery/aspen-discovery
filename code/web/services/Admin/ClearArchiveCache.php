@@ -32,4 +32,9 @@ class Admin_ClearArchiveCache extends Admin_Admin{
 		$breadcrumbs[] = new Breadcrumb('', 'Clear Archive Cache');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'islandora_archive';
+	}
 }

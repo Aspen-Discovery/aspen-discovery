@@ -880,12 +880,12 @@ class Theme extends DataObject
 		$interface->assign('bodyTextColor', $this->bodyTextColor);
 		$interface->assign('linkColor', $this->linkColor);
 		$interface->assign('linkHoverColor', $this->linkHoverColor);
-		$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 1.1);
+		$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 1.02);
 		if (ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->bodyTextColor) < 4.5 ||
 			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkColor) < 4.5 ||
 			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkHoverColor) < 4.5){
 
-			$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 0.9);
+			$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 0.98);
 		}
 		$interface->assign('tableStripeBackgroundColor', $tableStripeBackgroundColor);
 		$interface->assign('resultLabelColor', $this->resultLabelColor);

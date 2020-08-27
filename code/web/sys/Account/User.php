@@ -502,6 +502,18 @@ class User extends DataObject
 						}
 					}
 					return false;
+				} elseif ($source == 'axis_360') {
+					if (array_key_exists('Axis 360', $enabledModules)){
+						require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
+						try {
+							$axis360Settings = new Axis360Setting();
+							$axis360Settings->find();
+							return $axis360Settings->getNumResults() > 0;
+						} catch (Exception $e) {
+							return false;
+						}
+					}
+					return false;
 				}
 			}
 		}

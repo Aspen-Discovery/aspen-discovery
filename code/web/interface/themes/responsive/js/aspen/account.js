@@ -156,6 +156,8 @@ AspenDiscovery.Account = (function(){
 					label = 'RBdigital Checkouts';
 				}else if (source === 'cloud_library'){
 					label = 'Cloud Library Checkouts';
+				}else if (source === 'axis_360'){
+					label = 'Axis 360 Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -199,6 +201,8 @@ AspenDiscovery.Account = (function(){
 					label = 'OverDrive Holds';
 				}else if (source === 'rbdigital'){
 					label = 'RBdigital Holds';
+				}else if (source === 'axis_360'){
+					label = 'Axis 360 Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
