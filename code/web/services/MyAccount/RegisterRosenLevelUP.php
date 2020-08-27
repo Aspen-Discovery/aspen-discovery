@@ -64,7 +64,11 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				$this->student_first_name = $user->firstname;
 				$this->student_last_name = $user->lastname;
 				$this->student_username = $user->cat_username;
-				$this->student_school_code = $user->getHomeLocation()->code;
+				if (!empty($user->getHomeLocation()->subdomain)) {
+					$this->student_school_code = $user->getHomeLocation()->subdomain;
+				} else {
+					$this->student_school_code = $user->getHomeLocation()->code;
+				}
 				$this->student_school_name = $user->getHomeLocation()->displayName;
 
 				if (!empty($this->rosenLevelUPSetting->lu_ptypes_k) && preg_match($this->rosenLevelUPSetting->lu_ptypes_k, $user->patronType) == 1) {
@@ -188,9 +192,22 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 
 				$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 				$interface->assign('registerRosenLevelUPForm', $fieldsForm);
-				$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
+				$this->displayStandalone('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
 			}
 		}
+	}
+
+	/**
+	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the Full Record View Pages
+	 * @param string $pageTitle What to display is the html title tag
+	 * @param string $sidebarTemplate Sets the sidebar template, set to false or empty string for no sidebar
+	 * @param boolean $translateTitle
+	 */
+	function displayStandalone($mainContentTemplate, $pageTitle, $translateTitle = true) {
+		global $interface;
+		$interface->setTemplate($mainContentTemplate);
+		$interface->setPageTitle($pageTitle, $translateTitle);
+		$interface->display('standalone-layout.tpl');
 	}
 
 	function getLevelUPRegistrationFields() {
@@ -201,8 +218,8 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$fields[] = array('property' => 'student_last_name', 'default' => $this->student_last_name, 'type' => 'text', 'label' => 'Student Last Name', 'maxLength' => 40, 'required' => true);
 		$locationList = array();
 		$locationList[0] = "school not listed";
-		$locationList[$this->student_school_code] = $this->student_school_name;
-		$fields[] = array('property' => 'student_school', 'default' => $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
+		$locationList[$this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code] = $this->student_school_name;
+		$fields[] = array('property' => 'student_school', 'default' => $this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
 		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => array('K', '1', '2'), 'required' => true);
 		$fields[] = array('property' => 'parent_username', 'default' => $this->parent_username, 'type' => 'text', 'label' => 'Parent Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true, 'repeat' => true);

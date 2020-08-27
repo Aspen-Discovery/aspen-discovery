@@ -2136,6 +2136,14 @@ class Admin_DBMaintenance extends Admin_Admin
 						) ENGINE = INNODB;'
 					]
 				],
+
+				'rosen_levelup_settings_school_prefix' => [
+					'title' => 'Rosen LevelUP API Settings - School Code Prefix',
+					'description' => 'Add the ability to generate a prefix for location code to accommodate Rosen requirement that school codes be not just numbers. E.g., change Amqui Elementary location code 105 to "Nashville 105"',
+					'sql' => [
+						'ALTER TABLE rosen_levelup_settings ADD lu_location_code_prefix VARCHAR(50)'
+					]
+				],
 			)
 		);
 	}
