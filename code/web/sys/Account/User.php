@@ -2019,76 +2019,90 @@ class User extends DataObject
 		$sections['ils_integration']->addAction(new AdminAction('Offline Holds Report', 'View a report of holds that were submitted while the ILS was offline.', '/Circa/OfflineHoldsReport'), 'view_ils_offline_holds_report');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), 'view_ils_dashboard');
 
-		$sections['axis360'] = new AdminSection('Axis 360');
-		$axis360SettingsAction = new AdminAction('Settings', 'Define connection information between Axis 360 and Aspen Discovery.', '/Axis360/Settings');
-		$axis360ScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Axis360/Scopes');
-		if ($sections['axis360']->addAction($axis360SettingsAction, 'view_axis360_settings')){
-			$axis360SettingsAction->addSubAction($axis360ScopesAction, 'view_axis360_settings');
-		}else{
-			$sections['axis360']->addAction($axis360ScopesAction, 'view_axis360_settings');
+		if (array_key_exists('Axis 360', $enabledModules)) {
+			$sections['axis360'] = new AdminSection('Axis 360');
+			$axis360SettingsAction = new AdminAction('Settings', 'Define connection information between Axis 360 and Aspen Discovery.', '/Axis360/Settings');
+			$axis360ScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Axis360/Scopes');
+			if ($sections['axis360']->addAction($axis360SettingsAction, 'view_axis360_settings')) {
+				$axis360SettingsAction->addSubAction($axis360ScopesAction, 'view_axis360_settings');
+			} else {
+				$sections['axis360']->addAction($axis360ScopesAction, 'view_axis360_settings');
+			}
+			$sections['axis360']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Axis 360.', '/Axis360/IndexingLog'), 'view_axis360_indexing_log');
+			$sections['axis360']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Axis 360 integration.', '/Axis360/Dashboard'), 'view_axis360_dashboard');
 		}
-		$sections['axis360']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Axis 360.', '/Axis360/IndexingLog'), 'view_axis360_indexing_log');
-		$sections['axis360']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Axis 360 integration.', '/Axis360/Dashboard'), 'view_axis360_dashboard');
 
-		$sections['cloud_library'] = new AdminSection('Cloud Library');
-		$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between Cloud Library and Aspen Discovery.', '/CloudLibrary/Settings');
-		$cloudLibraryScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/CloudLibrary/Scopes');
-		if ($sections['cloud_library']->addAction($cloudLibrarySettingsAction, 'view_cloud_library_settings')){
-			$cloudLibrarySettingsAction->addSubAction($cloudLibraryScopesAction, 'view_cloud_library_settings');
-		}else{
-			$sections['cloud_library']->addAction($cloudLibraryScopesAction, 'view_cloud_library_settings');
+		if (array_key_exists('Cloud Library', $enabledModules)) {
+			$sections['cloud_library'] = new AdminSection('Cloud Library');
+			$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between Cloud Library and Aspen Discovery.', '/CloudLibrary/Settings');
+			$cloudLibraryScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/CloudLibrary/Scopes');
+			if ($sections['cloud_library']->addAction($cloudLibrarySettingsAction, 'view_cloud_library_settings')) {
+				$cloudLibrarySettingsAction->addSubAction($cloudLibraryScopesAction, 'view_cloud_library_settings');
+			} else {
+				$sections['cloud_library']->addAction($cloudLibraryScopesAction, 'view_cloud_library_settings');
+			}
+			$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Cloud Library.', '/CloudLibrary/IndexingLog'), 'view_cloud_library_indexing_log');
+			$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Cloud Library integration.', '/CloudLibrary/Dashboard'), 'view_cloud_library_dashboard');
 		}
-		$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Cloud Library.', '/CloudLibrary/IndexingLog'), 'view_cloud_library_indexing_log');
-		$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Cloud Library integration.', '/CloudLibrary/Dashboard'), 'view_cloud_library_dashboard');
 
-		$sections['ebsco'] = new AdminSection('EBSCO');
-		$sections['ebsco']->addAction(new AdminAction('Settings', 'Define connection information between Hoopla and Aspen Discovery.', '/EBSCO/EDSSettings'), 'view_ebsco_settings');
-		$sections['ebsco']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Hoopla integration.', '/EBSCO/EDSDashboard'), 'view_ebsco_dashboard');
-
-		$sections['hoopla'] = new AdminSection('Hoopla');
-		$hooplaSettingsAction = new AdminAction('Settings', 'Define connection information between Hoopla and Aspen Discovery.', '/Hoopla/Settings');
-		$hooplaScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Hoopla/Scopes');
-		if ($sections['hoopla']->addAction($hooplaSettingsAction, 'view_hoopla_settings')){
-			$hooplaSettingsAction->addSubAction($hooplaScopesAction, 'view_hoopla_settings');
-		}else{
-			$sections['hoopla']->addAction($hooplaScopesAction, 'view_hoopla_settings');
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
+			$sections['ebsco'] = new AdminSection('EBSCO');
+			$sections['ebsco']->addAction(new AdminAction('Settings', 'Define connection information between Hoopla and Aspen Discovery.', '/EBSCO/EDSSettings'), 'view_ebsco_settings');
+			$sections['ebsco']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Hoopla integration.', '/EBSCO/EDSDashboard'), 'view_ebsco_dashboard');
 		}
-		$sections['hoopla']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Hoopla.', '/Hoopla/IndexingLog'), 'view_hoopla_indexing_log');
-		$sections['hoopla']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Hoopla integration.', '/Hoopla/Dashboard'), 'view_hoopla_dashboard');
 
-		$sections['overdrive'] = new AdminSection('OverDrive');
-		$overDriveSettingsAction = new AdminAction('Settings', 'Define connection information between OverDrive and Aspen Discovery.', '/OverDrive/Settings');
-		$overDriveScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/OverDrive/Scopes');
-		if ($sections['overdrive']->addAction($overDriveSettingsAction, 'view_overdrive_settings')){
-			$overDriveSettingsAction->addSubAction($overDriveScopesAction, 'view_overdrive_settings');
-		}else{
-			$sections['overdrive']->addAction($overDriveScopesAction, 'view_overdrive_settings');
+		if (array_key_exists('Hoopla', $enabledModules)) {
+			$sections['hoopla'] = new AdminSection('Hoopla');
+			$hooplaSettingsAction = new AdminAction('Settings', 'Define connection information between Hoopla and Aspen Discovery.', '/Hoopla/Settings');
+			$hooplaScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Hoopla/Scopes');
+			if ($sections['hoopla']->addAction($hooplaSettingsAction, 'view_hoopla_settings')) {
+				$hooplaSettingsAction->addSubAction($hooplaScopesAction, 'view_hoopla_settings');
+			} else {
+				$sections['hoopla']->addAction($hooplaScopesAction, 'view_hoopla_settings');
+			}
+			$sections['hoopla']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Hoopla.', '/Hoopla/IndexingLog'), 'view_hoopla_indexing_log');
+			$sections['hoopla']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Hoopla integration.', '/Hoopla/Dashboard'), 'view_hoopla_dashboard');
 		}
-		$sections['overdrive']->addAction(new AdminAction('Indexing Log', 'View the indexing log for OverDrive.', '/OverDrive/IndexingLog'), 'view_overdrive_indexing_log');
-		$sections['overdrive']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for OverDrive integration.', '/OverDrive/Dashboard'), 'view_overdrive_dashboard');
-		$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for OverDrive integration to test connections.', '/OverDrive/APIData'), 'view_overdrive_api_data');
 
-		$sections['rbdigital'] = new AdminSection('RBdigital');
-		$rbdigitalSettingsAction = new AdminAction('Settings', 'Define connection information between RBdigital and Aspen Discovery.', '/RBdigital/Settings');
-		$rbdigitalScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/RBdigital/Scopes');
-		if ($sections['rbdigital']->addAction($rbdigitalSettingsAction, 'view_rbdigital_settings')){
-			$rbdigitalSettingsAction->addSubAction($rbdigitalScopesAction, 'view_rbdigital_settings');
-		}else{
-			$sections['rbdigital']->addAction($rbdigitalScopesAction, 'view_rbdigital_settings');
+		if (array_key_exists('OverDrive', $enabledModules)) {
+			$sections['overdrive'] = new AdminSection('OverDrive');
+			$overDriveSettingsAction = new AdminAction('Settings', 'Define connection information between OverDrive and Aspen Discovery.', '/OverDrive/Settings');
+			$overDriveScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/OverDrive/Scopes');
+			if ($sections['overdrive']->addAction($overDriveSettingsAction, 'view_overdrive_settings')) {
+				$overDriveSettingsAction->addSubAction($overDriveScopesAction, 'view_overdrive_settings');
+			} else {
+				$sections['overdrive']->addAction($overDriveScopesAction, 'view_overdrive_settings');
+			}
+			$sections['overdrive']->addAction(new AdminAction('Indexing Log', 'View the indexing log for OverDrive.', '/OverDrive/IndexingLog'), 'view_overdrive_indexing_log');
+			$sections['overdrive']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for OverDrive integration.', '/OverDrive/Dashboard'), 'view_overdrive_dashboard');
+			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for OverDrive integration to test connections.', '/OverDrive/APIData'), 'view_overdrive_api_data');
 		}
-		$sections['rbdigital']->addAction(new AdminAction('Indexing Log', 'View the indexing log for RBdigital.', '/RBdigital/IndexingLog'), 'view_rbdigital_indexing_log');
-		$sections['rbdigital']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for RBdigital integration.', '/RBdigital/Dashboard'), 'view_rbdigital_dashboard');
 
-		$sections['side_loads'] = new AdminSection('Side Loads');
-		$sideLoadsSettingsAction = new AdminAction('Settings', 'Define connection information between Side Loads and Aspen Discovery.', '/SideLoads/SideLoads');
-		$sideLoadsScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/SideLoads/Scopes');
-		if ($sections['side_loads']->addAction($sideLoadsSettingsAction, 'view_side_loads_settings')){
-			$sideLoadsSettingsAction->addSubAction($sideLoadsScopesAction, 'view_side_loads_settings');
-		}else{
-			$sections['side_loads']->addAction($sideLoadsScopesAction, 'view_side_loads_settings');
+		if (array_key_exists('RBdigital', $enabledModules)) {
+			$sections['rbdigital'] = new AdminSection('RBdigital');
+			$rbdigitalSettingsAction = new AdminAction('Settings', 'Define connection information between RBdigital and Aspen Discovery.', '/RBdigital/Settings');
+			$rbdigitalScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/RBdigital/Scopes');
+			if ($sections['rbdigital']->addAction($rbdigitalSettingsAction, 'view_rbdigital_settings')) {
+				$rbdigitalSettingsAction->addSubAction($rbdigitalScopesAction, 'view_rbdigital_settings');
+			} else {
+				$sections['rbdigital']->addAction($rbdigitalScopesAction, 'view_rbdigital_settings');
+			}
+			$sections['rbdigital']->addAction(new AdminAction('Indexing Log', 'View the indexing log for RBdigital.', '/RBdigital/IndexingLog'), 'view_rbdigital_indexing_log');
+			$sections['rbdigital']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for RBdigital integration.', '/RBdigital/Dashboard'), 'view_rbdigital_dashboard');
 		}
-		$sections['side_loads']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Side Loads.', '/SideLoads/IndexingLog'), 'view_side_loads_indexing_log');
-		$sections['side_loads']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Side Loads integration.', '/SideLoads/Dashboard'), 'view_side_loads_dashboard');
+
+		if (array_key_exists('Side Loads', $enabledModules)) {
+			$sections['side_loads'] = new AdminSection('Side Loads');
+			$sideLoadsSettingsAction = new AdminAction('Settings', 'Define connection information between Side Loads and Aspen Discovery.', '/SideLoads/SideLoads');
+			$sideLoadsScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/SideLoads/Scopes');
+			if ($sections['side_loads']->addAction($sideLoadsSettingsAction, 'view_side_loads_settings')) {
+				$sideLoadsSettingsAction->addSubAction($sideLoadsScopesAction, 'view_side_loads_settings');
+			} else {
+				$sections['side_loads']->addAction($sideLoadsScopesAction, 'view_side_loads_settings');
+			}
+			$sections['side_loads']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Side Loads.', '/SideLoads/IndexingLog'), 'view_side_loads_indexing_log');
+			$sections['side_loads']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Side Loads integration.', '/SideLoads/Dashboard'), 'view_side_loads_dashboard');
+		}
 
 		if ($configArray['Islandora']['enabled']){
 			$sections['islandora_archive'] = new AdminSection('Islandora Archives');
