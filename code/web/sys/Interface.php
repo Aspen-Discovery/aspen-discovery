@@ -63,15 +63,7 @@ class UInterface extends Smarty
 		//to just set the themes in use globally someplace rather than passing through the INI
 		$themeArray = explode(',', $configArray['Site']['theme']);
 		$this->themes = $themeArray;
-		if (count($themeArray) > 1) {
-			$this->template_dir = array();
-			foreach ($themeArray as $currentTheme) {
-				$currentTheme = trim($currentTheme);
-				$this->template_dir[] = "$local/interface/themes/$currentTheme";
-			}
-		} else {
-			$this->template_dir  = "$local/interface/themes/" . $themeArray[0];
-		}
+		$this->template_dir  = "$local/interface/themes/responsive/";
 		if (isset($timer)){
 			$timer->logTime('Set theme');
 		}
@@ -179,7 +171,7 @@ class UInterface extends Smarty
 
 		$timer->logTime('Basic configuration');
 
-		if ($configArray['System']['debug']){
+		if (IPAddress::showDebuggingInformation()){
 			$this->assign('debug', true);
 		}
 		if ($configArray['System']['debugJs']){

@@ -152,7 +152,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 							$logger->log("Patron is not valid for OverDrive, patronTokenData returned unauthorized_client", Logger::LOG_ERROR);
 							return false;
 						}else{
-							if ($configArray['System']['debug']){
+							if (IPAddress::showDebuggingInformation()){
 								echo("Error connecting to overdrive apis ". $patronTokenData->error);
 								$logger->log("Patron is not valid for OverDrive, { $patronTokenData->error}", Logger::LOG_ERROR);
 							}

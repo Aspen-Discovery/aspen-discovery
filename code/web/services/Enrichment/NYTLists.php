@@ -3,7 +3,7 @@
 include_once ROOT_DIR . '/services/Admin/Admin.php';
 include_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 
-class NYTLists extends Admin_Admin
+class Enrichment_NYTLists extends Admin_Admin
 {
 
 	function launch()

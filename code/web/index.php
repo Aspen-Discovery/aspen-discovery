@@ -794,7 +794,7 @@ function getGitBranch(){
 			if (!empty($stringFromFile)) {
 				$stringFromFile = $stringFromFile[0]; //get the string from the array
 				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
-					if ($configArray['System']['debug']) {
+					if (IPAddress::showDebuggingInformation()) {
 						$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
 					} else {
 						$branchName = $matches[2]; //get the branch name

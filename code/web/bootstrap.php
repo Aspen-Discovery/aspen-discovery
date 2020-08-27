@@ -31,11 +31,6 @@ global $logger;
 $logger = new Logger();
 $timer->logTime("Read Config");
 
-if ($configArray['System']['debug']) {
-	ini_set('display_errors', true);
-	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
-}
-
 //Use output buffering to allow session cookies to have different values
 // this can't be determined before session_start is called
 ob_start();
@@ -61,6 +56,10 @@ if (IPAddress::isClientIpBlocked()){
 	http_response_code(403);
 	echo("<h1>Forbidden</h1><p><strong>We are unable to handle your request.</strong></p>");
 	die();
+}
+if (IPAddress::showDebuggingInformation()) {
+	ini_set('display_errors', true);
+	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 }
 
 global $enabledModules;

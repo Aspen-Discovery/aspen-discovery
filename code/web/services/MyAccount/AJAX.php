@@ -684,7 +684,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		} catch (PDOException $e) {
 			// What should we do with this error?
-			if ($configArray['System']['debug']) {
+			if (IPAddress::showDebuggingInformation()) {
 				echo '<pre>';
 				echo 'DEBUG: ' . $e->getMessage();
 				echo '</pre>';

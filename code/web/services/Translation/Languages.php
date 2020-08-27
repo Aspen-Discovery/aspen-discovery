@@ -59,12 +59,12 @@ class Translation_Languages extends ObjectEditor
 
 	function canAddNew()
 	{
-		return UserAccount::userHasRole('opacAdmin', 'libraryAdmin', 'translator');
+		return UserAccount::userHasRole('opacAdmin') ||  UserAccount::userHasRole('libraryAdmin') ||  UserAccount::userHasRole('translator');
 	}
 
 	function canDelete()
 	{
-		return UserAccount::userHasRole('opacAdmin', 'libraryAdmin', 'translator');
+		return UserAccount::userHasRole('opacAdmin') ||  UserAccount::userHasRole('libraryAdmin') ||  UserAccount::userHasRole('translator');
 	}
 
 	function getAdditionalObjectActions($existingObject)

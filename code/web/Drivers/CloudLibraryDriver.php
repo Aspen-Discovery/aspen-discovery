@@ -152,7 +152,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}else if ($responseCode == '400'){
 			$result['message'] = translate("Bad Request returning checkout.");
 			global $configArray;
-			if ($configArray['System']['debug']){
+			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 		}else if ($responseCode == '403'){
@@ -283,7 +283,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}else if ($responseCode == '405'){
 			$result['message'] = translate("Bad Request placing hold.");
 			global $configArray;
-			if ($configArray['System']['debug']){
+			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 		}else if ($responseCode == '403'){
@@ -327,7 +327,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}else if ($responseCode == '400'){
 			$result['message'] = translate("Bad Request cancelling hold.");
 			global $configArray;
-			if ($configArray['System']['debug']){
+			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 		}else if ($responseCode == '403'){

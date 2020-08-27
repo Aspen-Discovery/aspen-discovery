@@ -673,6 +673,15 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'ip_debugging' =>[
+					'title' => 'IP Lookup Debugging',
+					'description' => 'Allow debugging based on IP address of the user',
+					'sql' => [
+						'ALTER TABLE ip_lookup ADD COLUMN showDebuggingInformation TINYINT NOT NULL DEFAULT 0',
+						"UPDATE ip_lookup set showDebuggingInformation = 1 where ip ='127.0.0.1'"
+					]
+				],
+
 				'remove_merged_records' => [
 					'title' => 'Remove unused Merged Records Table',
 					'description' => 'Remove unused Merged Records Table',

@@ -84,7 +84,7 @@ class CurlWrapper
 			);
 
 			global $configArray;
-			if ($configArray['System']['debug'] && $configArray['System']['debugCurl']){
+			if (IPAddress::showDebuggingInformation() && $configArray['System']['debugCurl']){
 				$default_curl_options[CURLOPT_VERBOSE] = true;
 			}
 

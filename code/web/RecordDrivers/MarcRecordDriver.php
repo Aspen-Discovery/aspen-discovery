@@ -1021,7 +1021,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				MarcRecordDriver::$catalogDriver = CatalogFactory::getCatalogConnectionInstance();
 			} catch (PDOException $e) {
 				// What should we do with this error?
-				if ($configArray['System']['debug']) {
+				if (IPAddress::showDebuggingInformation()) {
 					echo '<pre>';
 					echo 'DEBUG: ' . $e->getMessage();
 					echo '</pre>';

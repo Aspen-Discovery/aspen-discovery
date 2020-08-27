@@ -1943,7 +1943,7 @@ class User extends DataObject
 		$sections['primary_configuration'] = new AdminSection('Primary Configuration');
 		$librarySettingsAction = new AdminAction('Library Systems', 'Configure library settings.', '/Admin/Libraries');
 		$locationSettingsAction = new AdminAction('Locations', 'Configure location settings.', '/Admin/Locations');
-		$ipAddressesAction = new AdminAction('IP Addresses', 'Configure IP addresses for each location and configure rules to block access to Aspen Discovery.', '/Admin/Locations');
+		$ipAddressesAction = new AdminAction('IP Addresses', 'Configure IP addresses for each location and configure rules to block access to Aspen Discovery.', '/Admin/IPAddresses');
 		if ($sections['primary_configuration']->addAction($librarySettingsAction, ['view_all_library_settings', 'view_my_library_settings'])){
 			$librarySettingsAction->addSubAction($locationSettingsAction, ['view_all_location_settings', 'view_library_location_settings', 'view_my_location_settings']);
 			$librarySettingsAction->addSubAction($ipAddressesAction, 'view_ip_addresses');
