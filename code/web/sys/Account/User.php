@@ -2080,7 +2080,7 @@ class User extends DataObject
 		$sections['rbdigital']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for RBdigital integration.', '/RBdigital/Dashboard'), 'view_rbdigital_dashboard');
 
 		$sections['side_loads'] = new AdminSection('Side Loads');
-		$sideLoadsSettingsAction = new AdminAction('Settings', 'Define connection information between Side Loads and Aspen Discovery.', '/SideLoads/Settings');
+		$sideLoadsSettingsAction = new AdminAction('Settings', 'Define connection information between Side Loads and Aspen Discovery.', '/SideLoads/SideLoads');
 		$sideLoadsScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/SideLoads/Scopes');
 		if ($sections['side_loads']->addAction($sideLoadsSettingsAction, 'view_side_loads_settings')){
 			$sideLoadsSettingsAction->addSubAction($sideLoadsScopesAction, 'view_side_loads_settings');
