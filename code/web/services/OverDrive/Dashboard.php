@@ -112,4 +112,9 @@ class OverDrive_Dashboard extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('/OverDrive/Dashboard', 'Usage Dashboard');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'overdrive';
+	}
 }

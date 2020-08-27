@@ -200,4 +200,9 @@ class Admin_Libraries extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/Libraries', 'Library Systems');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
 }

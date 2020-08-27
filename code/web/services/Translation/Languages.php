@@ -85,4 +85,9 @@ class Translation_Languages extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Translation/Languages', 'Languages');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'translations';
+	}
 }

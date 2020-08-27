@@ -51,7 +51,7 @@ abstract class ObjectEditor extends Admin_Admin
 				$this->viewIndividualObject($structure);
 			}
 		}
-		$this->display($interface->getTemplate(), $this->getPageTitle(), 'Search/home-sidebar.tpl');
+		$this->display($interface->getTemplate(), $this->getPageTitle());
 	}
 	/**
 	 * The class name of the object which is being edited

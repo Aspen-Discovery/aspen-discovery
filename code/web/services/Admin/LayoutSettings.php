@@ -50,4 +50,9 @@ class Admin_LayoutSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/LayoutSettings', 'Layout Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'configuration_templates';
+	}
 }

@@ -1,13 +1,13 @@
 <?php
 
 require_once ROOT_DIR . '/services/Admin/IndexingLog.php';
-require_once ROOT_DIR . '/sys/Axis360/Axis360ExportLogEntry.php';
+require_once ROOT_DIR . '/sys/Axis360/Axis360LogEntry.php';
 
 class Axis360_IndexingLog extends Admin_IndexingLog
 {
 	function getIndexLogEntryObject(): BaseLogEntry
 	{
-		return new Axis360ExportLogEntry();
+		return new Axis360LogEntry();
 	}
 
 	function getTemplateName() : string
@@ -25,7 +25,7 @@ class Axis360_IndexingLog extends Admin_IndexingLog
 	}
 
 	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed){
-		if ($indexingObject instanceof Axis360ExportLogEntry){
+		if ($indexingObject instanceof Axis360LogEntry){
 			$indexingObject->whereAdd('numProducts >= ' . $minProcessed);
 		}
 	}
@@ -37,5 +37,10 @@ class Axis360_IndexingLog extends Admin_IndexingLog
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Axis 360');
 		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
 		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'axis360';
 	}
 }

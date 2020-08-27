@@ -85,4 +85,9 @@ class Enrichment_OMDBSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Enrichment/OMDBSettings', 'OMDB Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
 }

@@ -98,4 +98,9 @@ class Admin_UsageDashboard extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Usage Dashboard');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
 }

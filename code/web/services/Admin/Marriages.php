@@ -62,4 +62,14 @@ class Admin_Marriages extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('', 'Marriage');
 		return $breadcrumbs;
 	}
+
+	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true)
+	{
+		parent::display($mainContentTemplate, $pageTitle, '', false);
+	}
+
+	function getActiveAdminSection()
+	{
+		return '';
+	}
 }

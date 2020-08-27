@@ -2353,4 +2353,9 @@ class Admin_DBMaintenance extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Database Maintenance');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
 }

@@ -60,4 +60,9 @@ class Websites_Settings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Websites/Settings', 'Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_indexer';
+	}
 }

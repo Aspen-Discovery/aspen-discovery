@@ -54,4 +54,9 @@ class Admin_BrowseCategoryGroups extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/BrowseCategoryGroups', 'Browse Category Groups');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'local_enrichment';
+	}
 }

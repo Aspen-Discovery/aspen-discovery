@@ -51,4 +51,9 @@ class Admin_NonGroupedRecords extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/NonGroupedRecords', 'Records To Not Group');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'cataloging';
+	}
 }

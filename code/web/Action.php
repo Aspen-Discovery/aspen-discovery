@@ -4,7 +4,12 @@
 require_once ROOT_DIR . '/sys/Breadcrumb.php';
 abstract class Action
 {
-    abstract function launch();
+	private $isStandalonePage;
+	function __construct($isStandalonePage = false) {
+		$this->isStandalonePage = $isStandalonePage;
+	}
+
+	abstract function launch();
 
 	/**
 	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the Full Record View Pages

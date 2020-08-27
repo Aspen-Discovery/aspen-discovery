@@ -85,4 +85,9 @@ class CloudLibrary_Settings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/CloudLibrary/Settings', 'Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'cloud_library';
+	}
 }

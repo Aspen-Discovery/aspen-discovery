@@ -137,4 +137,9 @@ class SideLoads_SideLoads extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads', 'Side Load Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'side_loads';
+	}
 }

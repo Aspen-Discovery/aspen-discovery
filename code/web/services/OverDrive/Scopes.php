@@ -86,4 +86,9 @@ class OverDrive_Scopes extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/OverDrive/Scopes', 'Scopes');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'overdrive';
+	}
 }

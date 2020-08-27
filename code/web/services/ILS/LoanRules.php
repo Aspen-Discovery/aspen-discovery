@@ -95,4 +95,9 @@ class LoanRules extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/ILS/LoanRules', 'Loan Rules');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
 }

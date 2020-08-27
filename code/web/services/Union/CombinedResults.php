@@ -30,7 +30,7 @@ class Union_CombinedResults extends Action{
 
 		$interface->assign('combinedResultSections', $combinedResultSections);
 
-		$this->display('combined-results.tpl', $combinedResultsName);
+		$this->display('combined-results.tpl', $combinedResultsName, '');
 	}
 
 	function getBreadcrumbs()

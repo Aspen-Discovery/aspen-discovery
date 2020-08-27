@@ -85,4 +85,9 @@ class Enrichment_SyndeticsSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Enrichment/SyndeticsSettings', 'Syndetics Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
 }

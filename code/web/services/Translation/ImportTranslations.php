@@ -124,4 +124,9 @@ class Translation_ImportTranslations extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Import Translations');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'translations';
+	}
 }

@@ -481,4 +481,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'materials_request';
+	}
 }

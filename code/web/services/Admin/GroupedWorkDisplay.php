@@ -81,4 +81,9 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/GroupedWorkDisplay', 'Grouped Work Display');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'cataloging';
+	}
 }

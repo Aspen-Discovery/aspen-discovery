@@ -46,7 +46,8 @@ class Search_Home extends Action {
 			$interface->assign('browseMode', 'covers'); // fail safe: if no browseMode is set at all, go with covers
 		}
 
-		$this->display('home.tpl', 'Catalog Home');
+		$interface->assign('activeMenuOption', 'home');
+		$this->display('home.tpl', 'Catalog Home', '');
 	}
 
 

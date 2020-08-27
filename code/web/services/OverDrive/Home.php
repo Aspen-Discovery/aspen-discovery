@@ -54,7 +54,7 @@ class OverDrive_Home extends GroupedWorkSubRecordHomeAction{
 			$interface->assign('semanticData', json_encode($this->recordDriver->getSemanticData()));
 
 			// Display Page
-			$this->display('full-record.tpl', $this->recordDriver->getTitle(), 'Search/home-sidebar.tpl', false);
+			$this->display('full-record.tpl', $this->recordDriver->getTitle(), '', false);
 
 		}
 	}

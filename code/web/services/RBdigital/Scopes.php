@@ -65,4 +65,9 @@ class RBdigital_Scopes extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/RBdigital/Scopes', 'Scopes');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'rbdigital';
+	}
 }

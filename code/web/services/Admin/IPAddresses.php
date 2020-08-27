@@ -49,4 +49,9 @@ class Admin_IPAddresses extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/IPAddresses', 'IP Addresses');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
 }

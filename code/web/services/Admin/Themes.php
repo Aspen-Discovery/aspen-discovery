@@ -74,4 +74,9 @@ class Admin_Themes extends ObjectEditor
 		}
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'configuration_templates';
+	}
 }

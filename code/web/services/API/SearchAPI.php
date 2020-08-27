@@ -85,19 +85,23 @@ class SearchAPI extends Action
 		}
 
 		//Check free disk space
-		$freeSpace = disk_free_space('/data');
-		if ($freeSpace < 7500000000){
-			$this->addCheck($checks, 'Data Disk Space', self::STATUS_CRITICAL, "The data drive currently has less than 7.5GB of space available");
-		}else{
-			$this->addCheck($checks, 'Data Disk Space');
+		if (is_dir('/data')) {
+			$freeSpace = disk_free_space('/data');
+			if ($freeSpace < 7500000000) {
+				$this->addCheck($checks, 'Data Disk Space', self::STATUS_CRITICAL, "The data drive currently has less than 7.5GB of space available");
+			} else {
+				$this->addCheck($checks, 'Data Disk Space');
+			}
 		}
 
 		//Check free disk space
-		$freeSpace = disk_free_space('/usr');
-		if ($freeSpace < 5000000000){
-			$this->addCheck($checks, 'Usr Disk Space', self::STATUS_CRITICAL, "The usr drive currently has less than 5GB of space available");
-		}else{
-			$this->addCheck($checks, 'Usr Disk Space');
+		if (is_dir('/usr')) {
+			$freeSpace = disk_free_space('/usr');
+			if ($freeSpace < 5000000000) {
+				$this->addCheck($checks, 'Usr Disk Space', self::STATUS_CRITICAL, "The usr drive currently has less than 5GB of space available");
+			} else {
+				$this->addCheck($checks, 'Usr Disk Space');
+			}
 		}
 
 		//Check free memory

@@ -41,4 +41,9 @@ class Admin_ReleaseNotes extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Release Notes');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'aspen_help';
+	}
 }

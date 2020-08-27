@@ -62,7 +62,7 @@ class GroupedWork_Home extends Action{
 		$timer->logTime('Loaded semantic data');
 
 		// Display Page
-		$this->display('full-record.tpl', $this->recordDriver->getTitle(),'Search/home-sidebar.tpl', false);
+		$this->display('full-record.tpl', $this->recordDriver->getTitle(),'', false);
 	}
 
 	function getBreadcrumbs()

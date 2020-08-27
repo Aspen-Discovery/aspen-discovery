@@ -95,4 +95,9 @@ class Admin_ArchiveUsage extends Admin_Admin{
 		$breadcrumbs[] = new Breadcrumb('', 'Usage Statistics');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'islandora_archive';
+	}
 }

@@ -106,4 +106,9 @@ class EBSCO_EDSDashboard extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('/EBSCO/EDSDashboard', 'EDS Usage Dashboard');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'ebsco';
+	}
 }

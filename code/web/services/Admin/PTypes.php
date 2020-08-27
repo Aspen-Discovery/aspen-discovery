@@ -57,4 +57,9 @@ class Admin_PTypes extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/PTypes', 'Patron Types');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
 }

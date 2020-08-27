@@ -62,4 +62,9 @@ class CloudLibrary_Scopes extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/CloudLibrary/Scopes', 'Scopes');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'cloud_library';
+	}
 }

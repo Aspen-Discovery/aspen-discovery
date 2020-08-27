@@ -57,4 +57,9 @@ class OpenArchives_Collections extends ObjectEditor {
 		$breadcrumbs[] = new Breadcrumb('/OpenArchives/Collections', 'Collections');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'open_archives';
+	}
 }

@@ -85,4 +85,9 @@ class RBdigital_Settings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/RBdigital/Settings', 'Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'rbdigital';
+	}
 }

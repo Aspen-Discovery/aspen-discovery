@@ -85,4 +85,9 @@ class Hoopla_Settings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Hoopla/Settings', 'Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'hoopla';
+	}
 }

@@ -34,4 +34,9 @@ class Admin_HelpManual extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('/Admin/HelpManual?page=table_of_contents', 'Table of Contents');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'aspen_help';
+	}
 }

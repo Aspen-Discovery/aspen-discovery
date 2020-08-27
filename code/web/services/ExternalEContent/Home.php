@@ -56,7 +56,7 @@ class ExternalEContent_Home extends GroupedWorkSubRecordHomeAction{
 			$interface->assign('staffDetails', $this->recordDriver->getStaffView());
 
 			// Display Page
-			$this->display('full-record.tpl', $this->recordDriver->getTitle(),'Search/home-sidebar.tpl', false);
+			$this->display('full-record.tpl', $this->recordDriver->getTitle(),'', false);
 
 		}
 	}

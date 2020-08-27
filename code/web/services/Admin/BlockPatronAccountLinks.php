@@ -99,4 +99,9 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/BlockPatronAccountLinks', 'Block Patron Account Linking');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
 }

@@ -57,4 +57,9 @@ class Admin_Modules extends ObjectEditor {
 		$breadcrumbs[] = new Breadcrumb('', 'Modules');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
 }

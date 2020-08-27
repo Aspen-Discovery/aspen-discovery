@@ -65,4 +65,9 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('', 'Collection Spotlight List');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'local_enrichment';
+	}
 }

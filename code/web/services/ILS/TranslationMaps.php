@@ -195,4 +195,9 @@ class ILS_TranslationMaps extends ObjectEditor {
 		$breadcrumbs[] = new Breadcrumb('/ILS/TranslationMaps', 'Translation Maps');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
 }

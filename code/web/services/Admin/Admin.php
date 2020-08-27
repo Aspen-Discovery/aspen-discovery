@@ -28,7 +28,20 @@ abstract class Admin_Admin extends Action {
 			$this->display('../Admin/noPermission.tpl', 'Access Error');
 			exit();
 		}
+
+		global $interface;
+		$adminActions = UserAccount::getActiveUserObj()->getAdminActions();
+		$interface->assign('adminActions', $adminActions);
+		$interface->assign('activeAdminSection', $this->getActiveAdminSection());
+		$interface->assign('activeMenuOption', 'admin');
+	}
+
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true)
+	{
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 
 	abstract function getAllowableRoles();
+
+	abstract function getActiveAdminSection();
 }

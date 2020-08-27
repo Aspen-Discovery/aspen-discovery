@@ -70,4 +70,9 @@ class LibraryFacetSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('', 'Archive Facet Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
 }

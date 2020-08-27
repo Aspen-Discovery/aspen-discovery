@@ -85,4 +85,9 @@ class Enrichment_GoogleApiSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Enrichment/GoogleApiSettings', 'Google API Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
 }

@@ -85,4 +85,9 @@ class Enrichment_RecaptchaSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Enrichment/RecaptchaSettings', 'reCaptcha Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
 }

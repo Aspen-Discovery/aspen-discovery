@@ -166,4 +166,9 @@ class SideLoads_Scopes extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/SideLoads/Scopes', 'Scopes');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'side_loads';
+	}
 }

@@ -85,4 +85,9 @@ class Enrichment_DPLASettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Enrichment/DPLASettings', 'DP.LA Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
 }

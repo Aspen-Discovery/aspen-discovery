@@ -85,4 +85,9 @@ class OverDrive_Settings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/OverDrive/Settings', 'Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'overdrive';
+	}
 }

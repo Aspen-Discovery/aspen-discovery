@@ -53,4 +53,9 @@ class Admin_AccountProfiles extends ObjectEditor {
 		$breadcrumbs[] = new Breadcrumb('', 'Account Profiles');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
 }

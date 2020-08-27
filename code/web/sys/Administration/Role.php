@@ -74,7 +74,6 @@ class Role extends DataObject
 				'group_works',
 				'run_database_maintenance',
 				'view_account_profiles',
-				'view_account_profiles',
 				'view_all_browse_categories',
 				'view_all_collection_spotlights',
 				'view_all_grouped_work_display_settings',

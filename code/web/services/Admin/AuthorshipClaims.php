@@ -59,4 +59,9 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 		$breadcrumbs[] = new Breadcrumb('/Admin/AuthorshipClaims', 'Authorship Claims');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'islandora_archive';
+	}
 }

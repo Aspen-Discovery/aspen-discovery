@@ -104,4 +104,9 @@ class OverDrive_APIData extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('/OverDrive/APIData', 'API Information');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'overdrive';
+	}
 }

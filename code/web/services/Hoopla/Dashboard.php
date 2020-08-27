@@ -105,4 +105,9 @@ class Hoopla_Dashboard extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('/Hoopla/Dashboard', 'Usage Dashboard');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'hoopla';
+	}
 }

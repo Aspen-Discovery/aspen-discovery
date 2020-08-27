@@ -1924,7 +1924,7 @@ class User extends DataObject
 		$sections['system_reports']->addAction(new AdminAction('Error Log', 'View Aspen Error Log.', '/Admin/ErrorReport'), 'view_system_reports');
 		$sections['system_reports']->addAction(new AdminAction('PHP Information', 'Display configuration information for PHP on the server.', '/Admin/PHPInfo'), 'view_system_reports');
 
-		$sections['configuration_templates'] = new AdminSection('Configuration Templates');
+		$sections['configuration_templates'] = new AdminSection('Theme & Layout');
 		$sections['configuration_templates']->addAction(new AdminAction('Themes', 'Define colors, fonts, images etc used within Aspen Discovery.', '/Admin/Themes'), ['view_all_themes', 'view_library_themes']);
 		$sections['configuration_templates']->addAction(new AdminAction('Layout Settings', 'Define basic information about how pages are displayed in Aspen Discovery.', '/Admin/LayoutSettings'), ['view_all_layout_settings', 'view_library_layout_settings']);
 

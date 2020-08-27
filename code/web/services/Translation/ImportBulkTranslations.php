@@ -106,4 +106,9 @@ class Translation_ImportBulkTranslations extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Import Bulk Translations');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'translations';
+	}
 }

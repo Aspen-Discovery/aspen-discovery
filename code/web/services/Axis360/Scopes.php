@@ -65,4 +65,9 @@ class Axis360_Scopes extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Axis360/Scopes', 'Scopes');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'axis360';
+	}
 }

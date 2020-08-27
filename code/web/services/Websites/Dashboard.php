@@ -143,4 +143,9 @@ class Websites_Dashboard extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('/Websites/Dashboard', 'Usage Dashboard');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_indexer';
+	}
 }

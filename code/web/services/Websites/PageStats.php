@@ -111,4 +111,9 @@ class Websites_PageStats extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Page Stats');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_indexer';
+	}
 }

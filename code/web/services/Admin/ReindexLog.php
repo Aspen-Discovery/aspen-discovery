@@ -56,4 +56,9 @@ class Admin_ReindexLog extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Nightly Index Log');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
 }

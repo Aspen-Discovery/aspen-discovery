@@ -63,4 +63,9 @@ class Admin_LibraryLinks extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('', 'Sidebar Link');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
 }

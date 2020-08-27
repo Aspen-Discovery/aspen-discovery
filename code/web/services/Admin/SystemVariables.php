@@ -51,4 +51,9 @@ class Admin_SystemVariables extends ObjectEditor{
 		$breadcrumbs[] = new Breadcrumb('/Admin/SystemVariables', 'System Variables');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
 }

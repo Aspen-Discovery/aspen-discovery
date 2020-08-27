@@ -47,4 +47,9 @@ class Admin_CronLog extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Cron Log');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
 }

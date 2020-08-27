@@ -57,4 +57,9 @@ h2 {font-size: 125%;}
 		$breadcrumbs[] = new Breadcrumb('', 'PHP Information');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
 }

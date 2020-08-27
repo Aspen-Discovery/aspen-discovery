@@ -91,4 +91,9 @@ class LoanRuleDeterminers extends ObjectEditor {
 		$breadcrumbs[] = new Breadcrumb('/ILS/LoanRuleDeterminers', 'Loan Rule Determiners');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
 }

@@ -40,4 +40,9 @@ class OverDrive_IndexingLog extends Admin_IndexingLog
 		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'overdrive';
+	}
 }

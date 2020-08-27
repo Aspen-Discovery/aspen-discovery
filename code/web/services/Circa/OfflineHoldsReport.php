@@ -84,4 +84,9 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 		$breadcrumbs[] = new Breadcrumb('', 'Offline Holds Report');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
 }

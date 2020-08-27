@@ -115,4 +115,9 @@ class CloudLibrary_Dashboard extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('/CloudLibrary/Dashboard', 'Usage Dashboard');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'cloud_library';
+	}
 }

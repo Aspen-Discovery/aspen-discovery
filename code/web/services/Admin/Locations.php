@@ -84,4 +84,9 @@ class Locations extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/Locations', 'Locations');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
 }

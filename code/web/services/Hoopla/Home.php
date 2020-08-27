@@ -55,24 +55,8 @@ class Hoopla_Home extends GroupedWorkSubRecordHomeAction{
 			$interface->assign('semanticData', json_encode($this->recordDriver->getSemanticData()));
 
 			// Display Page
-			$this->display('full-record.tpl', $this->recordDriver->getTitle());
+			$this->display('full-record.tpl', $this->recordDriver->getTitle(), '', false);
 		}
-	}
-
-	/**
-	 * @param HooplaRecordDriver $recordDriver
-	 */
-	function loadCitations($recordDriver)
-	{
-		global $interface;
-
-		$citationCount = 0;
-		$formats = $recordDriver->getCitationFormats();
-		foreach($formats as $current) {
-			$interface->assign(strtolower($current), $recordDriver->getCitation($current));
-			$citationCount++;
-		}
-		$interface->assign('citationCount', $citationCount);
 	}
 
 	function loadRecordDriver($id){

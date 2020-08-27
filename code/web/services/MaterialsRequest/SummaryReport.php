@@ -276,4 +276,9 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$breadcrumbs[] = new Breadcrumb('', 'Summary Report');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'materials_request';
+	}
 }

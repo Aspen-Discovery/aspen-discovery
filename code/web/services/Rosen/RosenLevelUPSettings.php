@@ -80,4 +80,9 @@ class RosenLevelUPSettings extends ObjectEditor
 	function getBreadcrumbs(){
 		return [];
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
 }

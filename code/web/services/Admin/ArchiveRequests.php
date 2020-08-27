@@ -60,4 +60,9 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		$breadcrumbs[] = new Breadcrumb('/Admin/ArchiveRequests', 'Material Requests');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'islandora_archive';
+	}
 }

@@ -58,4 +58,14 @@ class Admin_People extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('', 'Person');
 		return $breadcrumbs;
 	}
+
+	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true)
+	{
+		parent::display($mainContentTemplate, $pageTitle, '', false);
+	}
+
+	function getActiveAdminSection()
+	{
+		return '';
+	}
 }

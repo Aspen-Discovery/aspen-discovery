@@ -62,4 +62,14 @@ class Obituaries extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('', 'Obituary');
 		return $breadcrumbs;
 	}
+
+	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true)
+	{
+		parent::display($mainContentTemplate, $pageTitle, '', false);
+	}
+
+	function getActiveAdminSection()
+	{
+		return '';
+	}
 }

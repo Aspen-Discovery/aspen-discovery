@@ -85,4 +85,9 @@ class Enrichment_NovelistSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Enrichment/NovelistSettings', 'Novelist Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
 }

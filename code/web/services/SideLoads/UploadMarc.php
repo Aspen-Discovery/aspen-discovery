@@ -93,4 +93,9 @@ class SideLoads_UploadMarc extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Upload MARC Record');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'side_loads';
+	}
 }

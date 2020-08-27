@@ -85,4 +85,9 @@ class Enrichment_CoceServerSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Enrichment/CoceServerSettings', 'Coce Server Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
 }

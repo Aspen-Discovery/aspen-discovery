@@ -131,4 +131,9 @@ class ILS_IndexingProfiles extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/ILS/IndexingProfiles', 'Indexing Profiles');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
 }

@@ -85,4 +85,9 @@ class Axis360_Settings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Axis360/Settings', 'Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'axis360';
+	}
 }

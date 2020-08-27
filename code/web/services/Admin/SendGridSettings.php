@@ -85,4 +85,9 @@ class Admin_SendGridSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/SendGridSettings', 'Send Grid Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
 }

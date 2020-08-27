@@ -39,4 +39,8 @@ class ILS_IndexingLog extends Admin_IndexingLog
 		return $breadcrumbs;
 	}
 
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
 }

@@ -38,4 +38,9 @@ class Admin_ArchiveSubjects extends Admin_Admin{
 		$breadcrumbs[] = new Breadcrumb('/Admin/ArchiveSubjects', 'Subject Control');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'islandora_archive';
+	}
 }

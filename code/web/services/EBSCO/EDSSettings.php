@@ -85,4 +85,9 @@ class EBSCO_EDSSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/EBSCO/EDS Settings', 'Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'ebsco';
+	}
 }

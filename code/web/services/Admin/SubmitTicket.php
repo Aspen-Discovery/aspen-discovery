@@ -76,4 +76,9 @@ class SubmitTicket extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Submit Support Ticket');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'aspen_help';
+	}
 }

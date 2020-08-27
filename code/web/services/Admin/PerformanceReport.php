@@ -114,4 +114,9 @@ class Admin_PerformanceReport extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Performance Report');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
 }

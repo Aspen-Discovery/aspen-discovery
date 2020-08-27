@@ -173,4 +173,9 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$breadcrumbs[] = new Breadcrumb('', 'User Report');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'materials_request';
+	}
 }

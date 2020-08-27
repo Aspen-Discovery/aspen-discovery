@@ -171,4 +171,9 @@ class OpenArchives_Dashboard extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('/OpenArchives/Dashboard', 'Usage Dashboard');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'open_archives';
+	}
 }

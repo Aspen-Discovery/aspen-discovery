@@ -57,4 +57,9 @@ class Admin_ErrorReport extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/ErrorReport', 'Error Log');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
 }

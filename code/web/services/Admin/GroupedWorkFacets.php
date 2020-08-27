@@ -53,4 +53,9 @@ class Admin_GroupedWorkFacets extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/GroupedWorkFacets', 'Grouped Work Facets');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'cataloging';
+	}
 }

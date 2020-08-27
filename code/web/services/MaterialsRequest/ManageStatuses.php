@@ -84,4 +84,9 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageStatuses', 'Manage Materials Requests Statuses');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'materials_request';
+	}
 }

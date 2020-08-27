@@ -16,7 +16,7 @@ class Admin_Home extends Admin_Admin
 			$interface->assign('error', 'You must be logged in to access the Administration Interface');
 		}
 
-		$this->display('home.tpl', 'Aspen Discovery Administration');
+		$this->display('home.tpl', 'Aspen Discovery Administration', '');
 	}
 
 	function getAllowableRoles()
@@ -29,5 +29,10 @@ class Admin_Home extends Admin_Admin
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Administration Home');
 		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'home';
 	}
 }

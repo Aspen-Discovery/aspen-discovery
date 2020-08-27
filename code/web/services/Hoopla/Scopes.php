@@ -62,4 +62,9 @@ class Hoopla_Scopes extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Hoopla/Scopes', 'Scopes');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'hoopla';
+	}
 }

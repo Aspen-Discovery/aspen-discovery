@@ -53,4 +53,9 @@ class Admin_Placards extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/Placards', 'Placards');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'local_enrichment';
+	}
 }

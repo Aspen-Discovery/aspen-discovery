@@ -188,4 +188,9 @@ class Translation_Translations extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Translations');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'translations';
+	}
 }

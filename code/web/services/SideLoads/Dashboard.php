@@ -136,4 +136,9 @@ class SideLoads_Dashboard extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('/SideLoads/Dashboard', 'Usage Dashboard');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'side_loads';
+	}
 }

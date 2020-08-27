@@ -49,4 +49,9 @@ class Admin_AuthorEnrichment extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Admin/AuthorEnrichment', 'Wikipedia Integration');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
 }

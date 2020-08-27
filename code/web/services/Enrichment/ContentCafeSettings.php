@@ -85,4 +85,9 @@ class Enrichment_ContentCafeSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Enrichment/ContentCafeSettings', 'Content Cafe Settings');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
 }

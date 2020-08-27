@@ -33,4 +33,9 @@ class Admin_ArchivePrivateCollections extends Admin_Admin{
 		$breadcrumbs[] = new Breadcrumb('/Admin/ArchivePrivateCollections', 'Private Collections');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'islandora_archive';
+	}
 }

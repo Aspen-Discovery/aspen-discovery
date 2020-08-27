@@ -138,4 +138,9 @@ class Admin_Administrators extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('', 'Administrators');
 		return $breadcrumbs;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
 }
