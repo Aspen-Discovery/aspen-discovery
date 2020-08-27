@@ -13,13 +13,13 @@ abstract class MyAccount extends Action
 	protected $catalog;
 	protected $requireLogin = true;
 
-	function __construct() {
+	function __construct($isStandalonePage = false) {
 		global $interface;
 		global $configArray;
 
 		if ($this->requireLogin && !UserAccount::isLoggedIn()) {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
-			$myAccountAction = new MyAccount_Login();
+			$myAccountAction = new MyAccount_Login($isStandalonePage);
 			$myAccountAction->launch();
 			exit();
 		}
