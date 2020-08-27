@@ -2,6 +2,13 @@
 {if false}
 <!--suppress CssUnusedSymbol -->
 {/if}
+{if $headingFont}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$headingFont}">
+{/if}
+{if $bodyFont}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$bodyFont}">
+{/if}
+
 <style type="text/css">
 
 {if !empty($customHeadingFont) && !empty($customHeadingFontName)}
@@ -9,16 +16,12 @@
     font-family: '{$customHeadingFontName}';
     src: url('/fonts/{$customHeadingFont}');
 {rdelim}
-{elseif $headingFont}
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$headingFont}">
 {/if}
 {if !empty($customBodyFont) && !empty($customBodyFontName)}
 @font-face {ldelim}
     font-family: '{$customBodyFontName}';
     src: url('/fonts/{$customBodyFont}');
 {rdelim}
-{elseif $bodyFont}
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$bodyFont}">
 {/if}
 
 {if $headingFont}
@@ -32,6 +35,9 @@ body{ldelim}
     font-family: "{$bodyFont}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
 {/if}
+h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
+    color: {$bodyTextColor};
+{rdelim}
 
 #header-container{ldelim}
     background-color: {$headerBackgroundColor};
@@ -94,31 +100,37 @@ body .container, #home-page-browse-content{ldelim}
     background-color: {$bodyBackgroundColor};
 {rdelim}
 
-#home-page-search, #horizontal-search-box, #explore-more-sidebar,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar {ldelim}
+#home-page-search, #horizontal-search-box,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar,#horizontal-menu-bar-container {ldelim}
     background-color: {$primaryBackgroundColor};
     color: {$primaryForegroundColor};
 {rdelim}
-#vertical-menu-bar .menu-icon .menu-bar-label, #horizontal-search-label,#horizontal-search-box #horizontal-search-label {ldelim}
+#vertical-menu-bar .menu-icon .menu-bar-label,
+ #horizontal-menu-bar-container .menu-icon, #horizontal-menu-bar-container .menu-icon .menu-bar-label,
+ #horizontal-menu-bar-container .menu-icon:visited, #horizontal-menu-bar-container .menu-icon:hover, #horizontal-menu-bar-container .menu-icon:focus,
+ #horizontal-search-label,#horizontal-search-box #horizontal-search-label {ldelim}
     color: {$primaryForegroundColor};
 {rdelim}
 
-#vertical-menu-bar .menu-bar-option.menu-icon-selected,.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected, #horizontal-menu-bar-container  .menu-bar-option.menu-icon-selected,.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
     background-color: {$sidebarHighlightBackgroundColor};
     color: {$sidebarHighlightForegroundColor};
 {rdelim}
-#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label,#vertical-menu-bar .menu-icon:hover .menu-bar-label,.exploreMoreBar .exploreMoreBarLabel{ldelim}
+
+#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label,#vertical-menu-bar .menu-icon:hover .menu-bar-label,
+#horizontal-menu-bar-container .menu-bar-option.menu-icon-selected .menu-bar-label,#horizontal-menu-bar-container .menu-icon:hover .menu-bar-label,
+.exploreMoreBar .exploreMoreBarLabel{ldelim}
     color: {$sidebarHighlightForegroundColor};
 {rdelim}
 .exploreMoreBar{ldelim}
     border-color: {$primaryBackgroundColor};
 {rdelim}
-#vertical-menu-bar .menu-bar-option:hover{ldelim}
+#vertical-menu-bar .menu-bar-option:hover,#horizontal-menu-bar-container .menu-bar-option:hover{ldelim}
     background-color: {$sidebarHighlightBackgroundColor};
     color: {$sidebarHighlightForegroundColor};
 {rdelim}
 
 {if $primaryForegroundColor}
-#home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel, #advancedSearchLink,.menu-bar,#vertical-menu-bar{ldelim}
+#home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel,.menu-bar,#vertical-menu-bar, #horizontal-menu-bar-container {ldelim}
     color: {$primaryForegroundColor}
 {rdelim}
 {/if}
@@ -158,7 +170,8 @@ body .container, #home-page-browse-content{ldelim}
     border-bottom-color: {$tertiaryBackgroundColor};
 {rdelim}
 
-#vertical-menu-bar .menu-bar-option.menu-icon-selected,#vertical-menu-bar .menu-bar-option:hover{ldelim}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected,#vertical-menu-bar .menu-bar-option:hover,
+#horizontal-menu-bar-container .menu-bar-option.menu-icon-selected,#horizontal-menu-bar-container .menu-bar-option:hover{ldelim}
     background-color: {$sidebarHighlightBackgroundColor};
     color: {$sidebarHighlightForegroundColor};
 {rdelim}

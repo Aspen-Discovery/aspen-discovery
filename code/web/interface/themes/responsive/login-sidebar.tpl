@@ -1,5 +1,5 @@
 {strip}
-	<div id="home-page-login" class="text-center row"{if $displaySidebarMenu} style="display: none"{/if}>
+	<div id="home-page-login" class="text-center row">
 		{if $masqueradeMode}
 			<div class="sidebar-masquerade-section">
 				<div class="logoutOptions hidden-phone" >

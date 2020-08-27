@@ -68,13 +68,10 @@
 			</div>
 		</div>
 
-		<div id="horizontal-menu-bar-wrapper" class="row visible-xs">
-			<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar" role="navigation" aria-labelledby="mobileNav">
+		<div id="horizontal-menu-bar-wrapper" class="row">
+			<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar" role="navigation" aria-label="Top Navigation">
 				{include file='horizontal-menu-bar.tpl'}
 			</div>
-		</div>
-
-		<div id="horizontal-search-wrapper" class="row">
 			<div id="horizontal-search-container" class="col-xs-12" role="search">
 				{include file="Search/horizontal-searchbox.tpl"}
 			</div>
@@ -84,10 +81,10 @@
 			<div class="row">
 				{if !empty($sidebar)} {* Main Content & Sidebars *}
 					{* Sidebar on the left *}
-					<div class="col-xs-12 col-sm-4 col-md-3 col-lg-3 " id="side-bar" role="navigation" aria-labelledby="sidebarNav">
+					<div class="col-tn-12 col-xs-12 col-sm-4 col-md-3 col-lg-3" id="side-bar" role="navigation" aria-labelledby="sidebarNav">
 						{include file="sidebar.tpl"}
 					</div>
-					<div class="col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
+					<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
 						{if $showBreadcrumbs}
 							<div role="navigation" aria-label="Breadcrumbs">
 							{include file="breadcrumbs.tpl"}
@@ -102,12 +99,14 @@
 						</div>
 					</div>
 				{else} {* Main Content Only, no sidebar *}
-					<div role="main">
-						{if $module}
-							{include file="$module/$pageTemplate"}
-						{else}
-							{include file="$pageTemplate"}
-						{/if}
+					<div class="col-xs-12" id="main-content">
+						<div role="main">
+							{if $module}
+								{include file="$module/$pageTemplate"}
+							{else}
+								{include file="$pageTemplate"}
+							{/if}
+						</div>
 					</div>
 				{/if}
 			</div>

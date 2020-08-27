@@ -18,8 +18,8 @@
 
 		<div class="col-sm-9 col-xs-12">
 			<div class="row">
-				<div class="col-lg-1 col-md-1 col-sm-2 col-xs-12">
-					<label id="horizontal-search-label" for="lookfor" class="">{translate text="Search for"} </label>
+				<div class="col-lg-1 col-md-1 col-sm-2 col-xs-12 hidden-xs">
+					<label id="horizontal-search-label" for="lookfor" class="">{translate text="Search"} </label>
 				</div>
 				<div class="{if $hiddenSearchSource}col-lg-9 col-md-9{else}col-lg-6 col-md-6{/if} col-sm-10 col-xs-12">
 					{* Main Search Term Box *}
@@ -67,7 +67,7 @@
 			<div class="row">
 				<div class="col-tn-3 col-xs-3 col-sm-4 col-md-4">
 					<button class="btn btn-default" type="submit">
-						<span class="glyphicon glyphicon-search"></span>
+						<i class="fas fa-search fas-lg"></i>
 						<span id="horizontal-search-box-submit-text">&nbsp;{translate text='GO'}</span>
 					</button>
 				</div>
@@ -75,22 +75,22 @@
 				<div id="horizontal-search-additional" class="col-tn-5 col-xs-5 col-sm-12 col-md-8">
 					{* Return to Advanced Search Link *}
 					{if !empty($searchType) && $searchType == 'advanced'}
-						<div>
-							&nbsp;<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
-						</div>
+						<a id="advancedSearchLink" href="/Search/Advanced">
+							<button class="btn btn-default">{translate text='Edit Advanced Search'}</button>
+						</a>
 
 					{* Show Advanced Search Link *}
 					{elseif $showAdvancedSearchbox}
-						<div>
-							&nbsp;<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Advanced Search'}</a>
-						</div>
+						<a id="advancedSearchLink" href="/Search/Advanced" >
+							<button class="btn btn-default">{translate text='Advanced Search'}</button>
+						</a>
 					{/if}
 				</div>
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if !empty($recordCount) || !empty($sideRecommendations)}
 					<div class="col-tn-3 col-xs-3 visible-xs text-right">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="AspenDiscovery.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="$('#side-bar').slideToggle('slow');return false;"><i class="fas fa-filter"></i>{translate text='Filter'}</a>
 					</div>
 				{/if}
 			</div>

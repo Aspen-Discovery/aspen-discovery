@@ -1927,6 +1927,14 @@ function getLibraryLocationUpdates(){
 			],
 		],
 
+		'layout_settings_remove_showSidebarMenu' => [
+			'title' => 'Layout Settings - Remove Show Sidebar Menu',
+			'description' => 'Remove Show Sidebar menu since it is no longer used',
+			'sql' => [
+				'ALTER TABLE layout_settings DROP COLUMN showSidebarMenu'
+			]
+		],
+
 		'grouped_work_display_settings' => [
 			'title' => 'Create Grouped Work Display Settings',
 			'description' => 'Create tables to store display settings in a separate table to make administration easier',

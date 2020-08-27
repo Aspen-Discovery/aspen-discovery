@@ -1,5 +1,5 @@
 {strip}
-	<div id="home-page-library-section" class="row"{if $displaySidebarMenu} style="display: none"{/if}>
+	<div id="home-page-library-section" class="row">
 		{if $showLibraryHoursAndLocationsLink}
 			<a href="/AJAX/JSON?method=getHoursAndLocations" data-title="{translate text="Library Hours and Locations" inAttribute=true}" class="modalDialogTrigger">
 				<div id="home-page-hours-locations" class="sidebar-button">

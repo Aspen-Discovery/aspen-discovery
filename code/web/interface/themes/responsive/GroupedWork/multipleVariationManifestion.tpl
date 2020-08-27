@@ -9,7 +9,7 @@
 		<div class="row {if $variation->isHideByDefault()}hiddenManifestation_{$summId}{/if}" {if $variation->isHideByDefault()}style="display: none"{/if}>
 			<div class="col-tn-4 col-xs-4{if !$viewingCombinedResults} col-md-3{/if} manifestation-format">
 				&nbsp;&nbsp;&nbsp;
-				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">
+				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');"aria-label="View Manifestations for {$relatedManifestation->format|translate} {$variation->label} of {$summTitle}">
 					{$variation->label}
 				</a>
 				<br>&nbsp;&nbsp;&nbsp;

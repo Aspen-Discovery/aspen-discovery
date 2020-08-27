@@ -5,7 +5,7 @@
 			{if $showMoreInfo || $showComments || $showFavorites}
 				{if $showMoreInfo !== false}
 					<div class="btn-group btn-group-sm">
-						<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" class="btn btn-sm btn-tools">{translate text="More Info"}</a>
+						<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" class="btn btn-sm btn-tools" aria-label="More Info for {$summTitle|escape:css} record {$recordDriver->getPermanentId()}">{translate text="More Info"}</a>
 					</div>
 				{/if}
 				{if $showComments == 1}

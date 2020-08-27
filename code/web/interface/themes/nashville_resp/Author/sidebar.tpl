@@ -8,7 +8,7 @@
 			{* Sort the results - moved to results-displayMode-toggle.tpl for Nashville - 2015 07 07 by Jenny *}
 
 			{if $enrichment.novelist->getAuthorCount() != 0}
-				<div id="similar-authors" class="sidebar-links row"{if $displaySidebarMenu} style="display: none"{/if}>
+				<div id="similar-authors" class="sidebar-links row">
 					<div>
 						<div id="similar-authors-label" class="sidebar-label">
 							{translate text="Similar Authors"}

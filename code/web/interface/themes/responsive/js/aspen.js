@@ -8578,37 +8578,6 @@ AspenDiscovery.Menu = (function(){
 			hideAll: function(){
 				return $(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').slideUp() // return of object is needed for $.when(AspenDiscovery.Menu.hideAll()).done() calls
 			},
-
-			showSearchFacets: function(){
-				//// If using the horizontal SearchBox, ensure Search menu is selected
-				//if ($('#horizontal-search-box').is(':visible') && !$('#mobile-menu-search-icon').is('.menu-icon-selected')) {
-				if (!$('#mobile-menu-search-icon').is('.menu-icon-selected')) {
-					if ($('#horizontal-search-box').is(':visible')) {
-						// always shows, so refine button can be clicked while other menus are open
-						this.showSearch('#mobile-menu-search-icon');
-					}
-					else {
-						// make selected so that sidebar mode will open correctly on resize
-						$('#mobile-menu-search-icon').addClass('menu-icon-selected')
-					}
-				}
-				let btn = $('#refineSearchButton');
-				let text = btn.text();
-				if (text === 'Refine Search') {
-					$(AspenDiscovery.Menu.SideBarSearchSelectors).slideDown();
-					btn.text('Hide Refine Search');
-				}
-				if (text === 'Hide Refine Search') {
-					$(AspenDiscovery.Menu.SideBarSearchSelectors).slideUp();
-					btn.text('Refine Search');
-				}
-			},
-
-			resetRefineSearch: function(){
-				$(AspenDiscovery.Menu.SideBarSearchSelectors).hide();
-				$('#refineSearchButton').text('Refine Search');
-			}
-
 		}
 	}
 }(AspenDiscovery.Menu || {}));
