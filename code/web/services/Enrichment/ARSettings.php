@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/RenaissanceLearning/ARSetting.php';
 
-class RenaissanceLearning_ARSettings extends ObjectEditor
+class Enrichment_ARSettings extends ObjectEditor
 {
 	function getObjectType()
 	{
@@ -82,7 +82,7 @@ class RenaissanceLearning_ARSettings extends ObjectEditor
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
-		$breadcrumbs[] = new Breadcrumb('/RenaissanceLearning/ARSettings', 'Accelerated Reader Settings');
+		$breadcrumbs[] = new Breadcrumb('/Enrichment/ARSettings', 'Accelerated Reader Settings');
 		return $breadcrumbs;
 	}
 

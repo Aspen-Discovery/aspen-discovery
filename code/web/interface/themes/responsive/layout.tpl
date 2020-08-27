@@ -79,9 +79,6 @@
 
 		<div id="content-container">
 			<div class="row">
-				{if $debug}
-					Template directory is {$template_dir}.  Module is {$module}.
-				{/if}
 				{if !empty($sidebar)} {* Main Content & Sidebars *}
 					{* Sidebar on the left *}
 					<div class="col-tn-12 col-xs-12 col-sm-4 col-md-3 col-lg-3" id="side-bar" role="navigation" aria-labelledby="sidebarNav">
