@@ -6,9 +6,6 @@
 		</div>
 	{/if}
 
-	{* Alternate Mobile MyAccount Menu *}
-	{include file="MyAccount/mobilePageHeader.tpl"}
-
 	<h1>{translate text="Library Card"}</h1>
 	<div class="row">
 		<div class="col-xs-12" id="library-barcode">

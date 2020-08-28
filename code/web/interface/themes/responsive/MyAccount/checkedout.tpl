@@ -6,8 +6,6 @@
 			</div>
 		{/if}
 
-		{* Alternate Mobile MyAccount Menu *}
-		{include file="MyAccount/mobilePageHeader.tpl"}
 		<span class='availableHoldsNoticePlaceHolder'></span>
 		<h1>{translate text='Checked Out Titles'}</h1>
 		{if $libraryHoursMessage}

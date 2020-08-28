@@ -6,9 +6,6 @@
 			</div>
 		{/if}
 
-		{* Alternate Mobile MyAccount Menu *}
-		{include file="MyAccount/mobilePageHeader.tpl"}
-
 		<span class='availableHoldsNoticePlaceHolder'></span>
 
 		<h1 class="myAccountTitle">{translate text='Recommended for you'}</h1>

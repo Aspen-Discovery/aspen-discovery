@@ -5,8 +5,6 @@
 		</div>
 	{/if}
 
-	{* Alternate Mobile MyAccount Menu *}
-	{include file="MyAccount/mobilePageHeader.tpl"}
 	<span class='availableHoldsNoticePlaceHolder'></span>
 	<h1>{translate text='Fines'}</h1>
 	{if $offline}
