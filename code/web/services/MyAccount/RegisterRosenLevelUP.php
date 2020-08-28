@@ -61,10 +61,11 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 			}
 			if ($this->student_is_eligible == false) {
 				global $logger;
-				$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_error_ineligible', 'defaultText' => 'Error: patron is not eligible to register for Rosen LevelUP']);
+				$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_error_ineligible', 'defaultText' => 'Error: patron is not eligible to register for Rosen LevelUP. <a href=\"/MyAccount/RegisterRosenLevelUP\">Log in with a different Library account</a>.']);
 				$logger->log('Error from LevelUP. User ID : ' . $user->id . 'Ineligible user', Logger::LOG_NOTICE);
 				$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 				$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
+				UserAccount::softLogout();
 			} elseif ($this->student_is_eligible == true) {
 				$this->student_first_name = $user->firstname;
 				$this->student_last_name = $user->lastname;
@@ -109,7 +110,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 						$interface->assign('captchaMessage', translate('The CAPTCHA response was incorrect, please try again.'));
 					} else {
 						//Submit the form to Rosen
-
 						// check parent username for availability; if it ain't available, check for identical email; if identical email, allow parent to register additional students
 						$this->levelUPResult->parent_username_avail = 0;
 						$this->levelUPResult->parent_username_ok = 0;
@@ -153,12 +153,13 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 							if ($this->levelUPResult->UploadResponse->status == '200') {
 								global $logger;
 								$this->levelUPResult->interfaceArray['success'] = 'success';
-								$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "Congratulations! you have successfully registered STUDENT Username %1% with PARENT Username %2%. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a>.", 1 => $this->student_username, 2 => $this->parent_username]);
+								$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "Congratulations! You have successfully registered STUDENT Username %1% with PARENT Username %2%. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or <a href=\"/MyAccount/RegisterRosenLevelUP\">register another student</a>.", 1 => $this->student_username, 2 => $this->parent_username]);
 								$logger->log('LevelUP. User ID : ' . $user->id . ' successfully registered STUDENT ' . $this->student_username . ' with PARENT ' . $this->parent_username, Logger::LOG_NOTICE);
 								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
+								UserAccount::softLogout();
 							} else {
 								global $logger;
-								$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->UploadResponse->message;
+				 				$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->UploadResponse->message;
 								$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->UploadResponse->error, Logger::LOG_NOTICE);
 								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 							}
@@ -185,7 +186,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				$interface->assign('submitUrl', '/MyAccount/RegisterRosenLevelUP');
 				$interface->assign('structure', $fields);
 				$interface->assign('saveButtonText', 'Register');
-
 				// Set up captcha to limit spam self registrations
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				$recaptcha = new RecaptchaSetting();
