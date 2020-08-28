@@ -56,10 +56,11 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 			}
 			if ($this->student_is_eligible == false) {
 				global $logger;
-				$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_error_ineligible', 'defaultText' => 'Error: patron is not eligible to register for Rosen LevelUP']);
+				$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_error_ineligible', 'defaultText' => 'Error: patron is not eligible to register for Rosen LevelUP. <a href=\"/MyAccount/RegisterRosenLevelUP\">Log in with a different Library account</a>.']);
 				$logger->log('Error from LevelUP. User ID : ' . $user->id . 'Ineligible user', Logger::LOG_NOTICE);
 				$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 				$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
+				UserAccount::softLogout();
 			} elseif ($this->student_is_eligible == true) {
 				$this->student_first_name = $user->firstname;
 				$this->student_last_name = $user->lastname;
