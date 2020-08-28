@@ -90,7 +90,7 @@
 				{* Show/Hide Search Facets & Sort Options *}
 				{if !empty($recordCount) || !empty($sideRecommendations)}
 					<div class="col-tn-3 col-xs-3 visible-xs text-right">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="$('#side-bar').slideToggle('slow');return false;"><i class="fas fa-filter"></i>{translate text='Filter'}</a>
+						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="$('#side-bar').slideToggle('slow');return false;"><i class="fas fa-filter"></i> {translate text='Filters'}</a>
 					</div>
 				{/if}
 			</div>

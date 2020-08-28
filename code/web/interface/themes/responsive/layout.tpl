@@ -55,13 +55,6 @@
 			</div>
 		{/foreach}
 
-		{if $enableLanguageSelector}
-			{include file="language-selection-navbar.tpl"}
-		{/if}
-		{if $showLanguagePreferencesBar}
-			{include file="languagePreferences.tpl"}
-		{/if}
-
 		<div id="header-wrapper" class="row">
 			<div id="header-container" role="banner">
 				{include file='header_responsive.tpl'}
@@ -72,7 +65,7 @@
 			<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar" role="navigation" aria-label="Top Navigation">
 				{include file='horizontal-menu-bar.tpl'}
 			</div>
-			<div id="horizontal-search-container" class="col-xs-12" role="search">
+			<div id="horizontal-search-container" class="col-tn-12" role="search">
 				{include file="Search/horizontal-searchbox.tpl"}
 			</div>
 		</div>

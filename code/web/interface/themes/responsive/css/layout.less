@@ -25,7 +25,7 @@ hr.menu{
   border-top: 1px solid #d3d3d3;
 }
 
-//Breadcrumbs (above header)
+//Breadcrumbs (within main content)
 .breadcrumbs{
   background-color: @breadcrumb-bg;
   padding: 3px;
@@ -60,6 +60,11 @@ hr.menu{
   margin-bottom: 0;
   min-height: 110px;
 }
+#header-logo-container{
+  @media(max-width: @screen-tn-max) {
+    text-align: center;
+  }
+}
 #header-logo{
   padding: 10px 10px 0 0;
   @media(max-width: @screen-xs-max){
@@ -68,6 +73,52 @@ hr.menu{
   }
 }
 
+.availableLanguage{
+  display: inline-block;
+  padding-right: 10px;
+}
+
+#menuToggleButton > a{
+  width: 30px;
+  text-align: center;
+  background-color: transparent;
+}
+
+#menuToggleButton > a.selected{
+  background-color: #dee3ea;
+}
+
+#header-menu {
+  display: none;
+  position: absolute;
+  right: 10px;
+  top: 36px;
+  background-color: #dee3ea;
+  min-width: 220px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 3;
+}
+
+.header-menu-option{
+  margin-bottom: 3px;
+
+  i {
+    float:right;
+  }
+}
+
+.childMenuItem{
+  margin-left: 15px;
+}
+
+.header-menu-section{
+  margin-bottom: 3px;
+
+  i {
+    float:right;
+  }
+}
 
 // New Version, markup is a > div.header-button
 .header-button{
@@ -156,17 +207,6 @@ hr.menu{
   @media print {
     display: none;
   }
-
-  &.sticky-menu-bar {
-    // sticks to top of view port
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: @menu-bar-z-index;
-    padding-left: 15px;
-    padding-right: 15px;
-  }
 }
 // Horizontal Menu Bar for small devices
 #horizontal-menu-bar-container {
@@ -188,64 +228,6 @@ hr.menu{
   }
   padding-left: @padding-xs-horizontal;
   padding-right: @padding-xs-horizontal;
-}
-
-// Vertical Menu Bar
-
-.sticky-sidebar {
-  // sticks to top-right of view port
-  position: fixed;
-  top: 0;
-  z-index: @menu-bar-z-index;
-}
-
-#vertical-menu-bar-wrapper {
-  width: @vertical-menu-bar-width;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-#vertical-menu-bar {
-  width: @vertical-menu-bar-width;
-  //height: 2000px; // needs to extend out of view, fallback option
-  height: 100vh;  // best solution, height of the view port
-  background-color: @menu-bar-background-color;
-  color: @menu-bar-color;
-  padding-left: 0;
-  padding-right: 0;
-  margin-top: 2px;
-  border-right: 3px solid @content-bg;
-
-  .menu-bar-option {
-    width: 100%;
-    padding-top: @padding-base-vertical;
-    border-top: 3px solid @content-bg;
-    &.menu-icon-selected {
-      background-color: @menu-bar-selected-background-color;
-      color: @menu-bar-selected-color;
-    }
-
-    // To Get Labeling to display Nicely
-    position: relative;
-  }
-  .menu-icon {
-    @menu-icon-padding: 5px;
-    padding: @menu-icon-padding;
-    &:visited,&:hover,&:focus {
-      text-decoration: none;
-      color: @menu-bar-color;
-      outline: none;
-    }
-    .menu-bar-label {
-      color: @menu-bar-color;
-      font-weight: bold;
-      text-transform: uppercase;
-      font-size:16px;
-
-      margin-top: 10px;
-      text-align: center;
-    }
-  }
 }
 
 #horizontal-menu-bar-container{
@@ -293,41 +275,6 @@ hr.menu{
     content: "";
     float: left;
     margin-top: 100%;
-  }
-}
-
-// Toggles Collapsed Sidebar
-// Applied to container divs, remove class to restore original width classes
-.collapsedSidebar {
-  width: @vertical-menu-bar-width;
-  &.rightSidebar {
-    @media (min-width: @screen-sm) {
-      left: 100% - percentage( round(@vertical-menu-bar-width/(@container-sm - @grid-gutter-width), 4) );
-    }
-    @media (min-width: @screen-md) {
-      left:  100% - percentage( round(@vertical-menu-bar-width/(@container-md - @grid-gutter-width), 4) );
-    }
-    @media (min-width: @screen-lg-min) {
-      left: 100% - percentage( round(@vertical-menu-bar-width/(@container-lg - @grid-gutter-width), 4) );
-    }
-  }
-}
-
-// Toggles Expanding Main Content when Sidebar is collapsed
-.mainContentWhenSideBarCollapsed {
-
-  @media (min-width: @screen-sm) {
-    width: 100% - percentage( round(@vertical-menu-bar-width/(@container-sm - @grid-gutter-width), 4) );
-  }
-  @media (min-width: @screen-md) {
-    width: 100% - percentage( round(@vertical-menu-bar-width/(@container-md - @grid-gutter-width), 4) );
-  }
-  @media (min-width: @screen-lg-min) {
-    width: 100% - percentage( round(@vertical-menu-bar-width/(@container-lg - @grid-gutter-width), 4) );
-  }
-  &.rightSidebar {
-    // Adjustments to display when the sidebar is on the right hand side.
-    right: @vertical-menu-bar-width;
   }
 }
 

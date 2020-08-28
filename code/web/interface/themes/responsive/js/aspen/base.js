@@ -412,15 +412,17 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 
-		setLanguage: function() {
+		setLanguage: function(selectedLanguage) {
 			//Update the user interface with the selected language
-			let newLanguage = $("#selected-language option:selected").val();
+			if (selectedLanguage === undefined) {
+				selectedLanguage = $("#selected-language option:selected").val();
+			}
 			let curLocation = window.location.href;
-			let newParam = 'myLang=' + newLanguage;
+			let newParam = 'myLang=' + selectedLanguage;
 			if (curLocation.indexOf(newParam) === -1){
 				let newLocation = curLocation.replace(new RegExp('([?&])myLang=(.*?)(?:&|$)'), '$1' + newParam);
 				if (newLocation === curLocation){
-					newLocation = AspenDiscovery.buildUrl(curLocation, 'myLang', newLanguage);
+					newLocation = AspenDiscovery.buildUrl(curLocation, 'myLang', selectedLanguage);
 				}
 				window.location.href = newLocation;
 			}
@@ -475,7 +477,39 @@ var AspenDiscovery = (function(){
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
-		}
+		},
+		toggleMenu: function() {
+			let headerMenu = $('#header-menu');
+			let menuButton = $('#menuToggleButton > a');
+			let menuButtonIcon = $('#menuToggleButton > a > i');
+			if (headerMenu.is(':visible')){
+				headerMenu.slideUp('slow');
+				menuButtonIcon.addClass('fa-bars');
+				menuButtonIcon.removeClass('fa-times');
+				menuButton.removeClass('selected');
+			}else{
+				menuButton.addClass('selected');
+				headerMenu.slideDown('slow');
+				menuButtonIcon.removeClass('fa-bars');
+				menuButtonIcon.addClass('fa-times');
+
+			}
+			return false;
+		},
+		toggleMenuSection: function(categoryName) {
+			let menuSectionHeaderIcon = $('#' + categoryName + "MenuSection > i");
+			let menuSectionBody = $('#' + categoryName + "MenuSectionBody");
+			if (menuSectionBody.is(':visible')){
+				menuSectionBody.slideUp();
+				menuSectionHeaderIcon.addClass('fa-caret-right');
+				menuSectionHeaderIcon.removeClass('fa-caret-down');
+			}else{
+				menuSectionBody.slideDown();
+				menuSectionHeaderIcon.removeClass('fa-caret-right');
+				menuSectionHeaderIcon.addClass('fa-caret-down');
+			}
+			return false;
+		},
 	}
 
 }(AspenDiscovery || {}));

@@ -546,36 +546,26 @@ class UInterface extends Smarty
 
 		//Load library links
 		$links = $library->libraryLinks;
-		$libraryHelpLinks = array();
-		$libraryAccountLinks = array();
+		$libraryLinks = array();
 		$expandedLinkCategories = array();
 		/** @var LibraryLink $libraryLink */
 		foreach ($links as $libraryLink){
 			if ($libraryLink->showToLoggedInUsersOnly && !UserAccount::isLoggedIn()){
 				continue;
 			}
-			if ($libraryLink->showInHelp || (!$libraryLink->showInHelp && !$libraryLink->showInAccount)){
-				if (!array_key_exists($libraryLink->category, $libraryHelpLinks)){
-					$libraryHelpLinks[$libraryLink->category] = array();
-				}
-				$libraryHelpLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+			if (empty($libraryLink->category)){
+				$libraryLink->category = 'none-' . $libraryLink->id;
 			}
-			if ($libraryLink->showInAccount){
-				if (!array_key_exists($libraryLink->category, $libraryAccountLinks)){
-					$libraryAccountLinks[$libraryLink->category] = array();
-				}
-				$libraryAccountLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+			if (!array_key_exists($libraryLink->category, $libraryLinks)){
+				$libraryLinks[$libraryLink->category] = array();
 			}
+			$libraryLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
 			if ($libraryLink->showExpanded){
 				$expandedLinkCategories[$libraryLink->category] = 1;
 			}
 		}
-		$this->assign('libraryAccountLinks', $libraryAccountLinks);
-		$this->assign('libraryHelpLinks', $libraryHelpLinks);
+		$this->assign('libraryLinks', $libraryLinks);
 		$this->assign('expandedLinkCategories', $expandedLinkCategories);
-
-		$topLinks = $library->libraryTopLinks;
-		$this->assign('topLinks', $topLinks);
 	}
 
 	/**

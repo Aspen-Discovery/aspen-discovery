@@ -158,13 +158,6 @@ hr.menu {
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
   background-color: #80d2f1;
 }
-#horizontal-menu-bar-container.sticky-menu-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 101;
-}
 @media print {
   #horizontal-search-wrapper {
     display: none;
