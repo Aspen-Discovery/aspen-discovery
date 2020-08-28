@@ -93,17 +93,13 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 						$this->levelUPResult->student_username_avail = 1;
 					}
 				} elseif (isset($_REQUEST['submit'])) {
-/*
 					// recaptcha evaluation
 					require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 					$recaptchaValid = RecaptchaSetting::validateRecaptcha();
 					if (!$recaptchaValid) {
 						$interface->assign('captchaMessage', translate('The CAPTCHA response was incorrect, please try again.'));
 					} else {
-*/ if (true) {
-
 						//Submit the form to Rosen
-
 						// check parent username for availability; if it ain't available, check for identical email; if identical email, allow parent to register additional students
 						$this->levelUPResult->parent_username_avail = 0;
 						$this->levelUPResult->parent_username_ok = 0;
@@ -180,7 +176,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				$interface->assign('submitUrl', '/MyAccount/RegisterRosenLevelUP');
 				$interface->assign('structure', $fields);
 				$interface->assign('saveButtonText', 'Register');
-/*
 				// Set up captcha to limit spam self registrations
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				$recaptcha = new RecaptchaSetting();
@@ -188,7 +183,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 					$captchaCode        = recaptcha_get_html($recaptcha->publicKey);
 					$interface->assign('captcha', $captchaCode);
 				}
-*/
 				$interface->assign('formLabel', 'Register for Rosen LevelUP');
 
 				$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
