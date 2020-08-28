@@ -2,7 +2,7 @@
 
 	{* In mobile view this is the top div and spans across the screen *}
 	{* Logo Div *}
-	<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
+	<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3" id="header-logo-container">
 		<a href="{$logoLink}/">
 			<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{$logoAlt}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
 		</a>
@@ -48,13 +48,4 @@
 			</a>
 		{/if}
 	</div>
-	{if $topLinks}
-		<div class="col-tn-12" id="header-links">
-			{foreach from=$topLinks item=link}
-				<div class="header-link-wrapper">
-					<a href="{$link->url}" class="library-header-link">{$link->linkText}</a>
-				</div>
-			{/foreach}
-		</div>
-	{/if}
 {/strip}
