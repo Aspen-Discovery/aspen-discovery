@@ -8514,14 +8514,14 @@ hr.menu {
   background-color: transparent;
 }
 #menuToggleButton > a.selected {
-  background-color: #dee3ea;
+  background-color: #ededed;
 }
 #header-menu {
   display: none;
   position: absolute;
   right: 10px;
   top: 36px;
-  background-color: #dee3ea;
+  background-color: #ededed;
   min-width: 220px;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   padding: 12px 16px;
