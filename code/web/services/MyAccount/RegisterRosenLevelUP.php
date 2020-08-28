@@ -93,12 +93,15 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 						$this->levelUPResult->student_username_avail = 1;
 					}
 				} elseif (isset($_REQUEST['submit'])) {
+/*
 					// recaptcha evaluation
 					require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 					$recaptchaValid = RecaptchaSetting::validateRecaptcha();
 					if (!$recaptchaValid) {
 						$interface->assign('captchaMessage', translate('The CAPTCHA response was incorrect, please try again.'));
 					} else {
+*/ if (true) {
+
 						//Submit the form to Rosen
 
 						// check parent username for availability; if it ain't available, check for identical email; if identical email, allow parent to register additional students
@@ -147,12 +150,13 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 							if ($this->levelUPResult->UploadResponse->status == '200') {
 								global $logger;
 								$this->levelUPResult->interfaceArray['success'] = 'success';
-								$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "Congratulations! you have successfully registered STUDENT Username %1% with PARENT Username %2%. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a>.", 1 => $this->student_username, 2 => $this->parent_username]);
+								$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "Congratulations! You have successfully registered STUDENT Username %1% with PARENT Username %2%. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or <a href=\"/MyAccount/RegisterRosenLevelUP\">register another student</a>.", 1 => $this->student_username, 2 => $this->parent_username]);
 								$logger->log('LevelUP. User ID : ' . $user->id . ' successfully registered STUDENT ' . $this->student_username . ' with PARENT ' . $this->parent_username, Logger::LOG_NOTICE);
 								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
+								UserAccount::softLogout();
 							} else {
 								global $logger;
-								$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->UploadResponse->message;
+				 				$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->UploadResponse->message;
 								$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->UploadResponse->error, Logger::LOG_NOTICE);
 								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 							}
@@ -176,7 +180,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				$interface->assign('submitUrl', '/MyAccount/RegisterRosenLevelUP');
 				$interface->assign('structure', $fields);
 				$interface->assign('saveButtonText', 'Register');
-
+/*
 				// Set up captcha to limit spam self registrations
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				$recaptcha = new RecaptchaSetting();
@@ -184,6 +188,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 					$captchaCode        = recaptcha_get_html($recaptcha->publicKey);
 					$interface->assign('captcha', $captchaCode);
 				}
+*/
 				$interface->assign('formLabel', 'Register for Rosen LevelUP');
 
 				$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
