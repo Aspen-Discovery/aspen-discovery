@@ -31,7 +31,6 @@ aspen/grouped-work.js
 aspen/lists.js
 aspen/collection-spotlights.js
 aspen/materials-request.js
-aspen/menu.js
 aspen/overdrive.js
 aspen/open-archives.js
 aspen/hoopla.js

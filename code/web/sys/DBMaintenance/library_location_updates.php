@@ -454,6 +454,14 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
+		'remove_library_top_links' => [
+			'title' => 'Remove Library Top Links',
+			'description' => 'Remove unused Library Top Links',
+			'sql' => [
+				'DROP TABLE library_top_links'
+			]
+		],
+
 		'library_pin_reset' => array(
 			'title' => 'Library PIN Reset',
 			'description' => 'Allow libraries to offer a link to reset a PIN (for libraries that use PINs.)',

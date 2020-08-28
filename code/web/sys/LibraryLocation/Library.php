@@ -21,7 +21,6 @@ if (file_exists(ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php')) {
 	require_once ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php';
 }
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLink.php';
-require_once ROOT_DIR . '/sys/LibraryLocation/LibraryTopLinks.php';
 if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php')) {
 	require_once ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php';
 }
@@ -284,10 +283,6 @@ class Library extends DataObject
 		$libraryLinksStructure = LibraryLink::getObjectStructure();
 		unset($libraryLinksStructure['weight']);
 		unset($libraryLinksStructure['libraryId']);
-
-		$libraryTopLinksStructure = LibraryTopLinks::getObjectStructure();
-		unset($libraryTopLinksStructure['weight']);
-		unset($libraryTopLinksStructure['libraryId']);
 
 		$libraryRecordOwnedStructure = LibraryRecordOwned::getObjectStructure();
 		unset($libraryRecordOwnedStructure['libraryId']);
@@ -925,22 +920,6 @@ class Library extends DataObject
 				'canEdit' => true,
 			),
 
-			'libraryTopLinks' => array(
-				'property' => 'libraryTopLinks',
-				'type' => 'oneToMany',
-				'label' => 'Header Links',
-				'description' => 'Links To Show in the header',
-				'helpLink' => '',
-				'keyThis' => 'libraryId',
-				'keyOther' => 'libraryId',
-				'subObjectType' => 'LibraryTopLinks',
-				'structure' => $libraryTopLinksStructure,
-				'sortable' => true,
-				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
-			),
-
 			'recordsOwned' => array(
 				'property' => 'recordsOwned',
 				'type' => 'oneToMany',
@@ -1212,18 +1191,6 @@ class Library extends DataObject
 				}
 			}
 			return $this->libraryLinks;
-		}elseif ($name == 'libraryTopLinks'){
-			if (!isset($this->libraryTopLinks) && $this->libraryId){
-				$this->libraryTopLinks = array();
-				$libraryLink = new LibraryTopLinks();
-				$libraryLink->libraryId = $this->libraryId;
-				$libraryLink->orderBy('weight');
-				$libraryLink->find();
-				while($libraryLink->fetch()){
-					$this->libraryTopLinks[$libraryLink->id] = clone($libraryLink);
-				}
-			}
-			return $this->libraryTopLinks;
 		}elseif ($name == 'recordsOwned'){
 			if (!isset($this->recordsOwned) && $this->libraryId){
 				$this->recordsOwned = array();
@@ -1318,9 +1285,6 @@ class Library extends DataObject
 		}elseif ($name == 'sideLoadScopes'){
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->sideLoadScopes = $value;
-		}elseif ($name == 'libraryTopLinks'){
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->libraryTopLinks = $value;
 		}elseif ($name == 'materialsRequestFieldsToDisplay') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->materialsRequestFieldsToDisplay = $value;
@@ -1370,7 +1334,6 @@ class Library extends DataObject
 			$this->saveMaterialsRequestFieldsToDisplay();
 			$this->saveMaterialsRequestFormFields();
 			$this->saveLibraryLinks();
-			$this->saveLibraryTopLinks();
 			$this->saveArchiveMoreDetailsOptions();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
@@ -1410,7 +1373,6 @@ class Library extends DataObject
 			$this->saveMaterialsRequestFormats();
 			$this->saveMaterialsRequestFormFields();
 			$this->saveLibraryLinks();
-			$this->saveLibraryTopLinks();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
 		}
@@ -1421,13 +1383,6 @@ class Library extends DataObject
 		if (isset ($this->libraryLinks) && is_array($this->libraryLinks)){
 			$this->saveOneToManyOptions($this->libraryLinks, 'libraryId');
 			unset($this->libraryLinks);
-		}
-	}
-
-	public function saveLibraryTopLinks(){
-		if (isset ($this->libraryTopLinks) && is_array($this->libraryTopLinks)){
-			$this->saveOneToManyOptions($this->libraryTopLinks, 'libraryId');
-			unset($this->libraryTopLinks);
 		}
 	}
 

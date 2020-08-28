@@ -59,7 +59,6 @@
 		<script src="/interface/themes/responsive/js/aspen/lists.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/collection-spotlights.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/materials-request.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/aspen/menu.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/overdrive.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/open-archives.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/hoopla.js?v={$gitBranch|urlencode}"></script>
