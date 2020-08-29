@@ -8533,6 +8533,20 @@ hr.menu {
 .header-menu-option i {
   float: right;
 }
+#account-menu {
+  display: none;
+  position: absolute;
+  right: 50px;
+  top: 36px;
+  background-color: #ededed;
+  min-width: 220px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  padding: 12px 16px;
+  z-index: 3;
+}
+#accountMenuToggleButton > a.selected {
+  background-color: #ededed;
+}
 .childMenuItem {
   margin-left: 15px;
 }

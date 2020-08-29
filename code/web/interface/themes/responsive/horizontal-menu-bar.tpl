@@ -18,20 +18,23 @@
 		{include file="header-menu.tpl"}
 	</span>
 	{if $loggedIn}{* Logged In *}
-		<a href="/MyAccount/Home" id="mobile-menu-account-icon" class="menu-icon menu-bar-option" title="Account">
-			{if $masqueradeMode}
-				<i class="fas fa-user fa-theater-masks"></i>
-			{else}
-				<i class="fas fa-user fa-lg"></i>
-			{/if}
-			<span class="menu-bar-label hidden-inline-block-xs">
+		<span id="accountMenuToggleButton">
+			<a href="/MyAccount/Home" onclick="return AspenDiscovery.toggleAccountMenu();" id="mobile-menu-account-icon" class="menu-icon menu-bar-option" title="Account">
 				{if $masqueradeMode}
-					{translate text="Masquerading As %1%" 1=$userDisplayName}
+					<i class="fas fa-user fa-theater-masks"></i>
 				{else}
-					{$userDisplayName}
+					<i class="fas fa-user fa-lg"></i>
 				{/if}
-			</span>
-		</a>
+				<span class="menu-bar-label hidden-inline-block-xs">
+					{if $masqueradeMode}
+						{translate text="Masquerading As %1%" 1=$userDisplayName}
+					{else}
+						{$userDisplayName}
+					{/if}
+				</span>
+			</a>
+			{include file="account-menu.tpl"}
+		</span>
 	{else} {* Not Logged In *}
 		<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" data-login="true" class="menu-icon menu-bar-option" title="{translate text='Login'}">
 			<i class="fas fa-sign-in-alt fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs">{translate text="Login"}</span>

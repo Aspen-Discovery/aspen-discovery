@@ -483,18 +483,24 @@ var AspenDiscovery = (function(){
 			let menuButton = $('#menuToggleButton > a');
 			let menuButtonIcon = $('#menuToggleButton > a > i');
 			if (headerMenu.is(':visible')){
-				headerMenu.slideUp('slow');
-				menuButtonIcon.addClass('fa-bars');
-				menuButtonIcon.removeClass('fa-times');
-				menuButton.removeClass('selected');
+				this.closeMenu();
 			}else{
+				this.closeAccountMenu();
 				menuButton.addClass('selected');
 				headerMenu.slideDown('slow');
 				menuButtonIcon.removeClass('fa-bars');
 				menuButtonIcon.addClass('fa-times');
-
 			}
 			return false;
+		},
+		closeMenu: function(){
+			let headerMenu = $('#header-menu');
+			let menuButton = $('#menuToggleButton > a');
+			let menuButtonIcon = $('#menuToggleButton > a > i');
+			headerMenu.slideUp('slow');
+			menuButtonIcon.addClass('fa-bars');
+			menuButtonIcon.removeClass('fa-times');
+			menuButton.removeClass('selected');
 		},
 		toggleMenuSection: function(categoryName) {
 			let menuSectionHeaderIcon = $('#' + categoryName + "MenuSection > i");
@@ -510,6 +516,24 @@ var AspenDiscovery = (function(){
 			}
 			return false;
 		},
+		toggleAccountMenu: function() {
+			let accountMenu = $('#account-menu');
+			let accountMenuButton = $('#accountMenuToggleButton > a');
+			if (accountMenu.is(':visible')){
+				this.closeAccountMenu();
+			}else{
+				this.closeMenu();
+				accountMenuButton.addClass('selected');
+				accountMenu.slideDown('slow');
+			}
+			return false;
+		},
+		closeAccountMenu: function(){
+			let accountMenu = $('#account-menu');
+			let accountMenuButton = $('#accountMenuToggleButton > a');
+			accountMenu.slideUp('slow');
+			accountMenuButton.removeClass('selected');
+		}
 	}
 
 }(AspenDiscovery || {}));

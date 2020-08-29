@@ -7,15 +7,4 @@
 		{include file="MyAccount/menu.tpl"}
 	{/if}
 
-	{if !empty($showExploreMore)}
-		<div id="explore-more-header" class="row">Explore More</div>
-		<div id="explore-more-body" class="row">
-			<div id="loadingExploreMore">
-				<img src="{img filename=loading.gif}" alt="loading...">
-				Loading...
-			</div>
-		</div>
-	{/if}
-
-	{include file="library-sidebar.tpl"}
 {/strip}
