@@ -221,8 +221,6 @@
 					</div>
 				</div>
 			</div>
-
-			{include file="library-links.tpl" libraryLinks=$libraryAccountLinks linksId='home-library-account-links' section='Account'}
 		</div>
 	{/if}
 	{if $userHasCatalogConnection}

@@ -14,11 +14,4 @@
 			{/if}
 		</div>
 	{/if}
-
-	{if $loggedIn}
-		{* Account Menu *}
-		{include file="MyAccount/menu.tpl"}
-	{/if}
-
-	{include file="library-sidebar.tpl"}
 {/strip}
