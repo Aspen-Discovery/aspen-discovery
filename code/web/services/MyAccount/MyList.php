@@ -1,5 +1,4 @@
 <?php
-
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
@@ -285,6 +284,9 @@ class MyAccount_MyList extends MyAccount {
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		if (UserAccount::isLoggedIn()){
+			$breadcrumbs[] = new Breadcrumb('/MyAccount/Lists', 'Lists');
+		}
 		$breadcrumbs[] = new Breadcrumb('', 'List');
 		return $breadcrumbs;
 	}

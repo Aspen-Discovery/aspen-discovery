@@ -22,7 +22,7 @@
 							<input type="text" id="listTitleEdit" name="newTitle" value="{$userList->title|escape:"html"}" maxlength="255" size="80" class="form-control">
 						</div>
 						<div class="form-group">
-							<label for="listDescriptionEdit" class="control-label">{translate text="Description"}"</label>&nbsp;
+							<label for="listDescriptionEdit" class="control-label">{translate text="Description"}</label>&nbsp;
 							<textarea name="newDescription" id="listDescriptionEdit" rows="3" cols="80" class="form-control">{$userList->getCleanDescription()|escape:"html"}</textarea>
 						</div>
 					</div>
