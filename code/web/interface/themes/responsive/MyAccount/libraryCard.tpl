@@ -10,16 +10,12 @@
 	<div class="row">
 		<div class="col-xs-12" id="library-barcode">
 			{if $libraryCardBarcodeStyle != 'none'}
-				<svg class="barcode" id="library-barcode-svg"
-					data-format="{$libraryCardBarcodeStyle}"
-					 data-value="{$profile->getBarcode()}"
-					 data-textmargin="0"
-					 data-fontoptions="bold"
-					 data-displayValue="true">
+				<svg class="barcode" id="library-barcode-svg">
 				</svg>
-			{else}
-                {$profile->getBarcode()}
 			{/if}
+			<div>
+				{$profile->getBarcode()}
+			</div>
 		</div>
 	</div>
 
@@ -27,12 +23,8 @@
 		<h1>{$alternateLibraryCardLabel|translate}</h1>
 		{if $alternateLibraryCardStyle != 'none'}
 			<div class="row">
-				<div class="col-xs-12 hidden" id="library-alternateLibraryCard">
-					<svg class="barcode" id="library-alternateLibraryCard-svg"
-					     data-format="{$alternateLibraryCardStyle}"
-					     data-textmargin="0"
-					     data-fontoptions="bold"
-					     data-displayValue="true">
+				<div class="col-xs-12 text-center" id="library-alternateLibraryCard" style="display: none">
+					<svg class="barcode" id="library-alternateLibraryCard-svg">
 					</svg>
 				</div>
 			</div>
@@ -64,22 +56,21 @@
 	<script type="text/javascript">
 		$(document).ready(
 			function () {ldelim}
-				$("#library-barcode-svg").JsBarcode().init();
-				{if $showAlternateLibraryOptionsInProfile}
-				$("#library-alternateLibraryCard-svg").JsBarcode().init();
+				$("#library-barcode-svg").JsBarcode('{$profile->getBarcode()}', {ldelim}format:'{$libraryCardBarcodeStyle}',displayValue:false{rdelim});
+				{if $showAlternateLibraryCard}
 				updateAlternateLibraryCardBarcode();
 				{/if}
 			{rdelim}
 		);
-        {if $showAlternateLibraryOptionsInProfile}
+        {if $showAlternateLibraryCard}
 		function updateAlternateLibraryCardBarcode(){ldelim}
 			let alternateLibraryCardVal = $("#alternateLibraryCard").val();
 			let alternateLibraryCardSvg = $("#library-alternateLibraryCard-svg");
 			if (alternateLibraryCardVal.length > 0){ldelim}
-				alternateLibraryCardSvg.JsBarcode(alternateLibraryCardVal);
-				$("#library-alternateLibraryCard").removeClass("hidden");
+				alternateLibraryCardSvg.JsBarcode(alternateLibraryCardVal, {ldelim}format:'{$alternateLibraryCardStyle}',displayValue:false{rdelim});
+				$("#library-alternateLibraryCard").show();
 			{rdelim}else{ldelim}
-				$("#library-alternateLibraryCard").addClass('hidden');
+				$("#library-alternateLibraryCard").hide();
 			{rdelim}
 		{rdelim}
 		{/if}

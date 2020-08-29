@@ -436,6 +436,7 @@ class Library extends DataObject
 		$barcodeTypes = [
 			'none' => 'Do not show the barcode',
 			'CODE128' => 'CODE128 (automatic mode switching)',
+			'codabar' => 'CODABAR',
 			'CODE128A' => 'CODE128 Mode A',
 			'CODE128B' => 'CODE128 Mode B',
 			'CODE128C' => 'CODE128 Mode C',

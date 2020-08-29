@@ -9656,6 +9656,10 @@ a.browse-thumbnail-sorted.active {
   box-shadow: none;
   color: #fff;
 }
+#library-barcode {
+  text-align: center;
+  font-weight: bold;
+}
 /**
  * Additional Styling related to the help system
  */
@@ -11157,6 +11161,9 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .adminTableRegion {
   width: 100%;
+  overflow-x: auto;
+}
+.oneToManyTable {
   overflow-x: auto;
 }
 @media (max-width: 991px) {
