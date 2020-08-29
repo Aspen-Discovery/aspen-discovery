@@ -25,7 +25,7 @@
 						<div class="col-tn-12">
 							<ul>
 								{foreach from=$profile->roles item=role}
-									<li>{$role}</li>
+									<li>{$role->name} - {$role->description}</li>
 								{/foreach}
 							</ul>
 						</div>
