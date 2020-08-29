@@ -64,7 +64,9 @@
 				</div>
 			</a>
 			<div id="accountSettingsMenuSectionBody" class="menuSectionBody" style="display: none">
-				<div class="header-menu-option childMenuItem" ><a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='My Library Card(s)'}{else}{translate text='My Library Card'}{/if}</a></div>
+				{if $userHasCatalogConnection}
+					<div class="header-menu-option childMenuItem" ><a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='My Library Card(s)'}{else}{translate text='My Library Card'}{/if}</a></div>
+				{/if}
 				<div class="header-menu-option childMenuItem" ><a href="/MyAccount/MyPreferences">{translate text='My Preferences'}</a></div>
 				<div class="header-menu-option childMenuItem" ><a href="/MyAccount/ContactInformation">{translate text='Contact Information'}</a></div>
 				{if $user->showMessagingSettings()}

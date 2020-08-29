@@ -14,7 +14,7 @@
 
 	{if $loggedIn}
 		{* Account Menu *}
-		{include file="MyAccount/menu.tpl"}
+		{include file="MyAccount/account-sidebar.tpl"}
 	{/if}
 
 {/strip}
