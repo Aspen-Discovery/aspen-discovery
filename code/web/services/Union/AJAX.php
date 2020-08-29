@@ -23,7 +23,7 @@ class Union_AJAX extends JSON_Action {
 		}else{
 			return array(
 					'success' => false,
-					'error' => 'Invalid section id pased in'
+					'error' => 'Invalid section id passed in'
 			);
 		}
 		$searchTerm = $_REQUEST['searchTerm'];
@@ -112,6 +112,7 @@ class Union_AJAX extends JSON_Action {
 		if ($searchTerm == ''){
 			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
 		}else {
+			/** @var SearchObject_EbscoEdsSearcher $edsSearcher */
 			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");
 			$edsSearcher->init();
 			$edsSearcher->setSearchTerms(array(
@@ -173,7 +174,7 @@ class Union_AJAX extends JSON_Action {
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		}else {
 			$formattedNumResults = number_format($summary['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 
 			global $interface;
 			$interface->assign('recordSet', $records);
@@ -200,7 +201,7 @@ class Union_AJAX extends JSON_Action {
 			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 		}else {
 			$formattedNumResults = number_format($dplaResults['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 			$results .= $dpla->formatCombinedResults($dplaResults['records'], false);
 		}
 
@@ -233,7 +234,7 @@ class Union_AJAX extends JSON_Action {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
 				$formattedNumResults = number_format($prospectorResults['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-info combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 				$interface->assign('prospectorResults', $prospectorResults['records']);
 				$results .= $interface->fetch('Union/prospector.tpl');
 			}
