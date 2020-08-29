@@ -3,7 +3,7 @@
 	{if !empty($userRoles)}
 		<div id="home-page-home-button" class="header-menu-option">
 			<a href="/Admin/Home">
-				<i class="fas fa-tools"></i>{translate text='Aspen Configuration'}
+				<i class="fas fa-tools"></i>{translate text='Aspen Administration'}
 			</a>
 		</div>
 	{/if}
@@ -94,6 +94,10 @@
 			</a>
 			{/if}
 		{/foreach}
+	{/if}
+
+	{if $masqueradeMode}
+		<a class="btn btn-default btn-sm btn-block" onclick="AspenDiscovery.Account.endMasquerade()">{translate text="End Masquerade"}</a>
 	{/if}
 
 	{if $loggedIn}

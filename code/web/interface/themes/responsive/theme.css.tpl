@@ -68,7 +68,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
     background-color: {$headerButtonBackgroundColor};
     color: {$headerButtonColor} !important;
 {rdelim}
-#home-page-login a{ldelim}
+.logoutOptions a,.loginOptions a{ldelim}
     color: {$headerButtonColor} !important;
 {rdelim}
 

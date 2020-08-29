@@ -8829,7 +8829,7 @@ a.placard-link {
   position: sticky;
   top: 0;
   background-color: white;
-  z-index: 5;
+  z-index: 2;
 }
 .help-link {
   margin-top: 20px;
@@ -8978,6 +8978,7 @@ a.placard-link {
   color: #FFF;
   font-size: 18px;
   padding: 5px;
+  margin-top: 5px;
   margin-bottom: 5px;
 }
 #home-page-login a {
@@ -11086,25 +11087,6 @@ a.browse-thumbnail-sorted.active {
 .sidebar-masquerade-section {
   background-color: #8a00e6;
   color: #FFF;
-}
-body.masqueradeMode {
-  padding-top: 50px;
-  border-left: 3px solid #8a00e6;
-  border-right: 3px solid #8a00e6;
-}
-body.masqueradeMode:before,
-body.masqueradeMode:after {
-  content: "";
-  position: fixed;
-  background: #8a00e6;
-  left: 0;
-  right: 0;
-}
-body.masqueradeMode:before {
-  top: 0;
-}
-body.masqueradeMode:after {
-  bottom: 0;
 }
 .btn-masquerade {
   color: #003366;

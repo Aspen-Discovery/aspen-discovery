@@ -5,7 +5,7 @@
 		<div id="account-menu" style="display: none">
 			<span class="expirationFinesNotice-placeholder"></span>
 			{if $userHasCatalogConnection}
-				<a href="/Account/CheckedOut">
+				<a href="/MyAccount/CheckedOut">
 					<div class="header-menu-option" >
 						{translate text="Checked Out Titles"}
 					</div>
@@ -88,10 +88,15 @@
 			</div>
 			{* Only highlight saved searches as active if user is logged in: *}
 			<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='history_saved_searches'}</a></div>
+
 			{if $allowMasqueradeMode && !$masqueradeMode}
 				{if $canMasquerade}
 					<div class="header-menu-option" ><a onclick="AspenDiscovery.Account.getMasqueradeForm();" href="#">{translate text="Masquerade"}</a></div>
 				{/if}
+			{/if}
+
+			{if $masqueradeMode}
+				<a class="btn btn-default btn-sm btn-block" onclick="AspenDiscovery.Account.endMasquerade()">{translate text="End Masquerade"}</a>
 			{/if}
 
 			{if $loggedIn}

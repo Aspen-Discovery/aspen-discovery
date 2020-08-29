@@ -8,7 +8,7 @@
 	<a href="/" id="homeLink" class="menu-icon menu-bar-option menu-left" title="{translate text='Browse the catalog'}" aria-label="{translate text='Browse the catalog'}">
 		<i class="fas {if empty($homeLink)}fa-home{else}fa-th{/if} fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs"></span>
 	</a>
-	<a onclick="$('#horizontal-search-box').slideToggle('slow');return false;" class="menu-icon menu-bar-option menu-left hidden-inline-md hidden-inline-lg" title="{translate text="Search"}" aria-label="{translate text="Search"}">
+	<a onclick="AspenDiscovery.closeMenu();AspenDiscovery.closeAccountMenu();$('#horizontal-search-box').slideToggle('slow');return false;" class="menu-icon menu-bar-option menu-left hidden-inline-md hidden-inline-lg" title="{translate text="Search"}" aria-label="{translate text="Search"}">
 		<i class="fas fa-search fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs">{translate text="Search"}</span>
 	</a>
 	<span id="menuToggleButton">
@@ -21,13 +21,13 @@
 		<span id="accountMenuToggleButton">
 			<a href="/MyAccount/Home" onclick="return AspenDiscovery.toggleAccountMenu();" id="mobile-menu-account-icon" class="menu-icon menu-bar-option" title="Account">
 				{if $masqueradeMode}
-					<i class="fas fa-user fa-theater-masks"></i>
+					<i class="fas fa-theater-masks fa-lg"></i>
 				{else}
 					<i class="fas fa-user fa-lg"></i>
 				{/if}
 				<span class="menu-bar-label hidden-inline-block-xs">
 					{if $masqueradeMode}
-						{translate text="Masquerading As %1%" 1=$userDisplayName}
+						{translate text="Acting As %1%" 1=$userDisplayName}
 					{else}
 						{$userDisplayName}
 					{/if}

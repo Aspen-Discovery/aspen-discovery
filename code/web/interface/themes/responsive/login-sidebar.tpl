@@ -2,12 +2,12 @@
 	<div id="home-page-login" class="text-center row">
 		{if $masqueradeMode}
 			<div class="sidebar-masquerade-section">
-				<div class="logoutOptions hidden-phone" >
+				<div class="endMasqueradeOptions hidden-phone" >
 					<a id="masqueradedMyAccountNameLink" href="/MyAccount/Home">{translate text="Masquerading As %1%" 1=$userDisplayName}</a>
 					<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 				</div>
-				<div class="logoutOptions">
-					<a href="#" onclick="AspenDiscovery.Account.endMasquerade()" id="logoutLink">{translate text="End Masquerading"}</a>
+				<div class="endMasqueradeOptions">
+					<a href="#" onclick="AspenDiscovery.Account.endMasquerade()" id="endMasqueradeLink">{translate text="End Masquerading"}</a>
 					<div class="bottom-border-line"></div>
 				</div>
 			</div>
