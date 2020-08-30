@@ -141,7 +141,7 @@ class SearchAPI extends Action
 			$load = sys_getloadavg();
 			$this->addServerStat($serverStats, '1 minute Load Average', $load[0]);
 			$this->addServerStat($serverStats, '5 minute Load Average', $load[1]);
-			$this->addServerStat($serverStats, '15 minute Load Average', $load[15]);
+			$this->addServerStat($serverStats, '15 minute Load Average', $load[2]);
 			$this->addServerStat($serverStats, 'Load Per CPU', ($load[1] / $numCPUs));
 			if ($load[1] > $numCPUs * 1.5){
 				if ($load[0] >= $load[1]){
