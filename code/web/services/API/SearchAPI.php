@@ -45,8 +45,10 @@ class SearchAPI extends Action
 
 	function getIndexStatus()
 	{
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		global $configArray;
 		$checks = [];
+		$serverStats = [];
 
 		//Check if solr is running by pinging it
 		/** @var SearchObject_GroupedWorkSearcher $solrSearcher */
@@ -87,6 +89,7 @@ class SearchAPI extends Action
 		//Check free disk space
 		if (is_dir('/data')) {
 			$freeSpace = disk_free_space('/data');
+			$this->addServerStat($serverStats, 'Data Disk Space', StringUtils::formatBytes($freeSpace));
 			if ($freeSpace < 7500000000) {
 				$this->addCheck($checks, 'Data Disk Space', self::STATUS_CRITICAL, "The data drive currently has less than 7.5GB of space available");
 			} else {
@@ -97,6 +100,7 @@ class SearchAPI extends Action
 		//Check free disk space
 		if (is_dir('/usr')) {
 			$freeSpace = disk_free_space('/usr');
+			$this->addServerStat($serverStats, 'Usr Disk Space', StringUtils::formatBytes($freeSpace));
 			if ($freeSpace < 5000000000) {
 				$this->addCheck($checks, 'Usr Disk Space', self::STATUS_CRITICAL, "The usr drive currently has less than 5GB of space available");
 			} else {
@@ -117,13 +121,14 @@ class SearchAPI extends Action
 					$freeMem = $pieces[1];
 				}
 			}
+			$this->addServerStat($serverStats, 'Total Memory', StringUtils::formatBytes($totalMem));
+			$this->addServerStat($serverStats, 'Available Memory', StringUtils::formatBytes($freeMem));
 			$percentMemoryUsage = round((1 - ($freeMem / $totalMem)) * 100, 1);
+			$this->addServerStat($serverStats, 'Percent Memory In Use', $percentMemoryUsage);
 			if ($freeMem < 1000000){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "Less than 1GB ($freeMem) of available memory exists, increase available resources");
 			}elseif ($percentMemoryUsage > 95){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "{$percentMemoryUsage}% of total memory is in use, increase available resources");
-			}elseif ($percentMemoryUsage < 40){
-				$this->addCheck($checks, 'Memory Usage', self::STATUS_WARN, "$percentMemoryUsage% of memory is in use, may be able to reduce resources");
 			}else{
 				$this->addCheck($checks, 'Memory Usage');
 			}
@@ -134,14 +139,16 @@ class SearchAPI extends Action
 
 			//Check load (use the 5 minute load)
 			$load = sys_getloadavg();
+			$this->addServerStat($serverStats, '1 minute Load Average', $load[0]);
+			$this->addServerStat($serverStats, '5 minute Load Average', $load[1]);
+			$this->addServerStat($serverStats, '15 minute Load Average', $load[15]);
+			$this->addServerStat($serverStats, 'Load Per CPU', ($load[1] / $numCPUs));
 			if ($load[1] > $numCPUs * 1.5){
 				if ($load[0] >= $load[1]){
 					$this->addCheck($checks, 'Load Average', self::STATUS_CRITICAL, "Load is very high {$load[1]} and is increasing");
 				}else{
 					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is very high {$load[1]}, but it is decreasing");
 				}
-			}elseif ($load[1] > $numCPUs){
-				$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is higher than optimal {$load[1]}");
 			}else{
 				$this->addCheck($checks, 'Load Average');
 			}
@@ -243,13 +250,15 @@ class SearchAPI extends Action
 			$result = array(
 				'aspen_health_status' => $hasCriticalErrors ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
 				'message' => "Errors have been found",
-				'checks' => $checks
+				'checks' => $checks,
+				'serverStats' => $serverStats
 			);
 		} else {
 			$result = array(
 				'aspen_health_status' => self::STATUS_OK,
 				'message' => "Everything is current",
-				'checks' => $checks
+				'checks' => $checks,
+				'serverStats' => $serverStats
 			);
 		}
 
@@ -296,6 +305,15 @@ class SearchAPI extends Action
 		if (!empty($note)){
 			$checks[$checkNameMachine]['note'] = $note;
 		}
+	}
+
+	private function addServerStat(array &$serverStats, string $statName, $value)
+	{
+		$statNameMachine = str_replace(' ', '_', strtolower($statName));
+		$serverStats[$statNameMachine] = [
+			'name' => $statName,
+			'value' => $value
+		];
 	}
 
 	/**

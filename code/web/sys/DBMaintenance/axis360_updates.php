@@ -121,6 +121,7 @@ function getAxis360Updates(){
 		'axis360_availability_remove_unused_fields' => [
 			'title' => 'Axis 360 Availability remove unused fields',
 			'description' => 'Remove unused fields from Axis 360 Availability',
+			'continueOnError' => true,
 			'sql' => [
 				'ALTER table axis360_title_availability DROP column copiesAvailable',
 				'ALTER table axis360_title_availability DROP column totalReserves',
