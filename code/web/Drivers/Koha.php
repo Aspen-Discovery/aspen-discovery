@@ -2845,6 +2845,7 @@ class Koha extends AbstractIlsDriver
 
 	public function completeFinePayment(User $patron, UserPayment $payment)
 	{
+		global $logger;
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error completing fine payment'
@@ -2859,6 +2860,7 @@ class Koha extends AbstractIlsDriver
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$logger->log('Unable to authenticate with Koha while completing fine payment', Logger::LOG_ERROR);
 		} else {
 			$accountLinesPaid = explode(',', $payment->finesPaid);
 			$partialPayments = [];
@@ -2907,6 +2909,7 @@ class Koha extends AbstractIlsDriver
 						}
 					} else {
 						$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
+						$logger->log("Unable to authenticate with Koha while completing fine payment response code: {$this->apiCurlWrapper->getResponseCode()}", Logger::LOG_ERROR);
 					}
 					$allPaymentsSucceed = false;
 				}
@@ -2934,6 +2937,7 @@ class Koha extends AbstractIlsDriver
 							}
 						} else {
 							$result['message'] .= "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
+							$logger->log("Error {$this->apiCurlWrapper->getResponseCode()} updating your payment", Logger::LOG_ERROR);
 						}
 						$allPaymentsSucceed = false;
 					}
