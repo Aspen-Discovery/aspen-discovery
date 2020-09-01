@@ -75,14 +75,14 @@
 				<div id="horizontal-search-additional" class="col-tn-5 col-xs-5 col-sm-12 col-md-8">
 					{* Return to Advanced Search Link *}
 					{if !empty($searchType) && $searchType == 'advanced'}
-						<a id="advancedSearchLink" href="/Search/Advanced">
-							<button class="btn btn-default">{translate text='Edit Advanced Search'}</button>
+						<a id="advancedSearchLink" href="/Search/Advanced" class="btn btn-default">
+							{translate text='Edit Advanced Search'}
 						</a>
 
 					{* Show Advanced Search Link *}
 					{elseif $showAdvancedSearchbox}
-						<a id="advancedSearchLink" href="/Search/Advanced" >
-							<button class="btn btn-default">{translate text='Advanced Search'}</button>
+						<a id="advancedSearchLink" href="/Search/Advanced"  class="btn btn-default">
+							{translate text='Advanced Search'}
 						</a>
 					{/if}
 				</div>
