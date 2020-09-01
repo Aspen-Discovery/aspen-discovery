@@ -45,7 +45,12 @@ if (!$solrRunning){
 	if ($configArray['System']['operatingSystem'] == 'windows') {
 		$solrCmd = "/web/aspen-discovery/sites/{$serverName}/{$serverName}.bat start";
 	}else{
-		$solrCmd = "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh start";
+		if (!file_exists("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
+			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh does not exist";
+		}elseif (!is_executable("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
+			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh is not executable";
+		}
+		$solrCmd = "cd /usr/local/aspen-discovery/sites/{$serverName}; {$serverName}.sh start";
 	}
 	execInBackground($solrCmd);
 	$results .= "Started solr using command \r\n$solrCmd\r\n";

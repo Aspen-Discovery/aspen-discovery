@@ -2043,7 +2043,12 @@ class Koha extends AbstractIlsDriver
 			$kohaPreferences[$curRow['variable']] = $curRow['value'];
 		}
 
-		$mandatoryFields = array_flip(explode(',', $kohaPreferences['OPACSuggestionMandatoryFields']));
+		if (isset($kohaPreferences['OPACSuggestionMandatoryFields'])){
+			$mandatoryFields = array_flip(explode(',', $kohaPreferences['OPACSuggestionMandatoryFields']));
+		}else{
+			$mandatoryFields = [];
+		}
+
 
 		/** @noinspection SqlResolve */
 		$itemTypesSQL = "SELECT * FROM authorised_values where category = 'SUGGEST_FORMAT' order by lib_opac";
