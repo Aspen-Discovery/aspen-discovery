@@ -67,6 +67,7 @@ class SearchAPI extends Action
 		}else{
 			$backupFiles = scandir($backupDir);
 			$backupFileFound = false;
+			$backupFileTooSmall = false;
 			foreach ($backupFiles as $backupFile){
 				if (preg_match('/.*\.sql\.gz/', $backupFile)){
 					$fileCreationTime = filectime($backupDir . $backupFile);
@@ -75,6 +76,9 @@ class SearchAPI extends Action
 						if ($fileSize > 1000) {
 							//We have a backup file created in the last 24.5 hours (30 min buffer to give time for the backup to be created)
 							$backupFileFound = true;
+						}else{
+							$backupFileFound = true;
+							$backupFileTooSmall = true;
 						}
 					}
 				}
@@ -82,7 +86,11 @@ class SearchAPI extends Action
 			if (!$backupFileFound){
 				$this->addCheck($checks, 'Backup', self::STATUS_CRITICAL, "A current backup of Aspen was not found in $backupDir.  Check my.cnf to be sure mysqldump credentials exist.");
 			}else{
-				$this->addCheck($checks, 'Backup');
+				if ($backupFileTooSmall){
+					$this->addCheck($checks, 'Backup', self::STATUS_CRITICAL, "The backup for Aspen was found, but is too small.  Check my.cnf to be sure mysqldump credentials exist.");
+				}else{
+					$this->addCheck($checks, 'Backup');
+				}
 			}
 		}
 
@@ -151,6 +159,18 @@ class SearchAPI extends Action
 				}
 			}else{
 				$this->addCheck($checks, 'Load Average');
+			}
+
+			//Check wait time
+			$topInfo = shell_exec("top -n 1 -b | grep %Cpu");
+			if (preg_match('/(\d+.\\.\d+) wa,/', $topInfo, $matches)){
+				$waitTime = $matches[1];
+				$this->addServerStat($serverStats, 'Wait Time', $waitTime);
+				if ($waitTime > 15){
+					$this->addCheck($checks, 'Wait Time', self::STATUS_WARN, "Wait time is over 15 $waitTime");
+				}elseif ($waitTime > 30){
+					$this->addCheck($checks, 'Wait Time', self::STATUS_WARN, "Wait time is over 30 $waitTime");
+				}
 			}
 		}
 
