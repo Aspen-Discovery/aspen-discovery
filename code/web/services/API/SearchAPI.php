@@ -163,7 +163,7 @@ class SearchAPI extends Action
 
 			//Check wait time
 			$topInfo = shell_exec("top -n 1 -b | grep %Cpu");
-			if (preg_match('/(\d+.\.\d+) wa,/', $topInfo, $matches)){
+			if (preg_match('/(\d+\.\d+) wa,/', $topInfo, $matches)){
 				$waitTime = $matches[1];
 				$this->addServerStat($serverStats, 'Wait Time', $waitTime);
 				if ($waitTime > 15){
