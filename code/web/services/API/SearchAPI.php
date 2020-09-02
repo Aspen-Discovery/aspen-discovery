@@ -163,14 +163,16 @@ class SearchAPI extends Action
 
 			//Check wait time
 			$topInfo = shell_exec("top -n 1 -b | grep %Cpu");
-			if (preg_match('/(\d+.\\.\d+) wa,/', $topInfo, $matches)){
+			if (preg_match('/(\d+.\.\d+) wa,/', $topInfo, $matches)){
 				$waitTime = $matches[1];
 				$this->addServerStat($serverStats, 'Wait Time', $waitTime);
 				if ($waitTime > 15){
 					$this->addCheck($checks, 'Wait Time', self::STATUS_WARN, "Wait time is over 15 $waitTime");
 				}elseif ($waitTime > 30){
-					$this->addCheck($checks, 'Wait Time', self::STATUS_WARN, "Wait time is over 30 $waitTime");
+					$this->addCheck($checks, 'Wait Time', self::STATUS_CRITICAL, "Wait time is over 30 $waitTime");
 				}
+			}else{
+				$this->addCheck($checks, 'Wait Time', self::STATUS_CRITICAL, "Wait time not found in $topInfo");
 			}
 		}
 
