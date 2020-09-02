@@ -170,11 +170,11 @@ class SearchAPI extends Action
 					$this->addCheck($checks, 'Wait Time', self::STATUS_WARN, "Wait time is over 15 $waitTime");
 				}elseif ($waitTime > 30){
 					$this->addCheck($checks, 'Wait Time', self::STATUS_CRITICAL, "Wait time is over 30 $waitTime");
+				}else{
+					$this->addCheck($checks, 'Wait Time');
 				}
 			}else{
 				$this->addCheck($checks, 'Wait Time', self::STATUS_CRITICAL, "Wait time not found in $topInfo");
-			}else{
-				$this->addCheck($checks, 'Wait Time');
 			}
 		}
 
