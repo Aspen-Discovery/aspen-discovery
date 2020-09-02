@@ -173,6 +173,8 @@ class SearchAPI extends Action
 				}
 			}else{
 				$this->addCheck($checks, 'Wait Time', self::STATUS_CRITICAL, "Wait time not found in $topInfo");
+			}else{
+				$this->addCheck($checks, 'Wait Time');
 			}
 		}
 
