@@ -90,6 +90,11 @@
 					</div>
 				{else} {* Main Content Only, no sidebar *}
 					<div class="col-xs-12" id="main-content">
+						{if $showBreadcrumbs}
+							<div role="navigation" aria-label="Breadcrumbs">
+							{include file="breadcrumbs.tpl"}
+							</div>
+						{/if}
 						<div role="main">
 							{if $module}
 								{include file="$module/$pageTemplate"}

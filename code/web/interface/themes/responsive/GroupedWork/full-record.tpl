@@ -119,6 +119,8 @@
 					</div>
 				{/if}
 
+				{include file="GroupedWork/relatedLists.tpl"}
+
 				{include file="GroupedWork/relatedManifestations.tpl" relatedManifestations=$recordDriver->getRelatedManifestations() workId=$recordDriver->getPermanentId()}
 
 				<div class="row">

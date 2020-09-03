@@ -57,6 +57,11 @@ class Person_Home extends Action
 		$interface->assign('recordDriver', $this->recordDriver);
 		$timer->logTime('Initialized the Record Driver');
 
+		//Check to see if there are lists the record is on
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		$appearsOnLists = UserList::getUserListsForRecord('Genealogy', $this->recordDriver->getPermanentId());
+		$interface->assign('appearsOnLists', $appearsOnLists);
+
 		$marriages = array();
 		$personMarriages = $person->getMarriages();
 		if (isset($personMarriages)){

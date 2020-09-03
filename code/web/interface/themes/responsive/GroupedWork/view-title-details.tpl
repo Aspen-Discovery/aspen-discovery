@@ -96,4 +96,6 @@
 			</div>
 		</div>
 	{/if}
+
+	{include file="GroupedWork/relatedLists.tpl"}
 {/strip}

@@ -14,6 +14,11 @@ class EBSCO_Home extends Action{
 		$exploreMoreInfo = $this->recordDriver->getExploreMoreInfo();
 		$interface->assign('exploreMoreInfo', $exploreMoreInfo);
 
+		//Check to see if there are lists the record is on
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		$appearsOnLists = UserList::getUserListsForRecord('EbscoEds', $this->recordDriver->getPermanentId());
+		$interface->assign('appearsOnLists', $appearsOnLists);
+
 		// Display Page
 		global $configArray;
 		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {

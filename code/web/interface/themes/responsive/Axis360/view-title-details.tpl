@@ -58,6 +58,7 @@
 		</div>
 	{/if}
 
+	{include file="GroupedWork/relatedLists.tpl"}
 
 	<div class="row">
 		<div class="result-label col-md-3">{translate text='Status'}</div>

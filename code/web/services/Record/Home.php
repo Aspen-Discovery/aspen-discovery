@@ -41,6 +41,11 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 
 			$interface->assign('recordDriver', $this->recordDriver);
 
+			//Check to see if there are lists the record is on
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
+			$interface->assign('appearsOnLists', $appearsOnLists);
+
 			//Load information for display in the template rather than processing specific fields in the template
 			$marcField = $marcRecord->getField('245');
 			$recordTitle = $this->getSubfieldData($marcField, 'a');

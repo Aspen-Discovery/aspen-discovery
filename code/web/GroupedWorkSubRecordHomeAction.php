@@ -10,6 +10,7 @@ abstract class GroupedWorkSubRecordHomeAction extends Action
 
 	public function __construct()
 	{
+		parent::__construct(false);
 		global $interface;
 		if (isset($_REQUEST['searchId'])){
 			$_SESSION['searchId'] = $_REQUEST['searchId'];

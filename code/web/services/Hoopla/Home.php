@@ -32,7 +32,7 @@ class Hoopla_Home extends GroupedWorkSubRecordHomeAction{
 			$interface->assign('summaryActions', $summaryActions);
 
 			//Load the citations
-			$this->loadCitations($this->recordDriver);
+			$this->loadCitations();
 
 			// Retrieve User Search History
 			$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
@@ -42,6 +42,11 @@ class Hoopla_Home extends GroupedWorkSubRecordHomeAction{
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init($searchSource);
 			$searchObject->getNextPrevLinks();
+
+			//Check to see if there are lists the record is on
+			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
+			$interface->assign('appearsOnLists', $appearsOnLists);
 
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
