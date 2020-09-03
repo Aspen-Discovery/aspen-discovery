@@ -99,9 +99,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$timer->logTime("Connected to OverDrive API");
 			if ($tokenData){
 				$settings = $this->getSettings();
-				global $configArray;
 				$ch = curl_init("https://oauth-patron.overdrive.com/patrontoken");
 				if (empty($settings->websiteId)){
+					if (IPAddress::showDebuggingInformation()) {
+						$logger->log("Patron is not valid for OverDrive, website id is not set", Logger::LOG_ERROR);
+					}
 					return false;
 				}
 				$websiteId = $settings->websiteId;
