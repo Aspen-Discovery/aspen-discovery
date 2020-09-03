@@ -166,6 +166,16 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
+		'library_remove_overdrive_advantage_info' => [
+			'title' => 'Library remove OverDrive Advantage Info',
+			'description' => 'Remove OverDrive Advantage Info from library info because it already exists in the scopes',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE library DROP COLUMN overdriveAdvantageName',
+				'ALTER TABLE library DROP COLUMN overdriveAdvantageProductsKey',
+			]
+		],
+
 		'library_17' => array(
 			'title' => 'Library 17',
 			'description' => 'Add defaultNotNeededAfterDays and homePageWidgetId. ',
