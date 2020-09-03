@@ -42,12 +42,6 @@ class OpenArchives_Collections extends ObjectEditor {
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function canAddNew(){
-		return true;
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('archives');
-	}
 
 	function getBreadcrumbs()
 	{
@@ -61,5 +55,10 @@ class OpenArchives_Collections extends ObjectEditor {
 	function getActiveAdminSection()
 	{
 		return 'open_archives';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Open Archives');
 	}
 }

@@ -193,4 +193,9 @@ class Translation_Translations extends Admin_Admin
 	{
 		return 'translations';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Translate Aspen');
+	}
 }

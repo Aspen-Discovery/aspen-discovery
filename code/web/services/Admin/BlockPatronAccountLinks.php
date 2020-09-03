@@ -7,11 +7,6 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 class Admin_BlockPatronAccountLinks extends ObjectEditor
 {
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager');
-	}
-
 	/**
 	 * The class name of the object which is being edited
 	 */
@@ -103,5 +98,10 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Block Patron Account Linking');
 	}
 }

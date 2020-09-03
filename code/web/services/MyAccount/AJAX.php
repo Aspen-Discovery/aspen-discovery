@@ -501,7 +501,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		//Check to see if we will index the list if it is public
 		$location = Location::getSearchLocation();
-		$ownerHasListPublisherRole = UserAccount::userHasRole('listPublisher');
+		$ownerHasListPublisherRole = UserAccount::userHasPermission('Include Lists In Search Results');
 		if ($location != null){
 			$publicListWillBeIndexed = ($location->publicListsToInclude == 3) || //All public lists
 				($location->publicListsToInclude == 1) || //All lists for the current library

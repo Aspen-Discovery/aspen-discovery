@@ -1,6 +1,4 @@
 {strip}
-	{include file="login-sidebar.tpl"}
-
 	{if $recordCount || $sideRecommendations}
 		<div id="refineSearch">
 			<div id="similar-authors-placeholder-sidebar"></div>

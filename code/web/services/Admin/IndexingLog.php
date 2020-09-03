@@ -48,10 +48,6 @@ abstract class Admin_IndexingLog extends Admin_Admin
 		$this->display($this->getTemplateName(), $this->getTitle());
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
-
 	abstract function getIndexLogEntryObject() : BaseLogEntry;
 
 	abstract function getTemplateName() : string;
@@ -65,5 +61,10 @@ abstract class Admin_IndexingLog extends Admin_Admin
 	function applyShowErrorsOnlyFilter(DataObject $logEntry)
 	{
 		$logEntry->whereAdd('numErrors > 0');
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports','View Indexing Logs']);
 	}
 }

@@ -173,7 +173,8 @@ class Websites_Results extends ResultsAction
 
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Web Page Results');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Web Page Search Results', 'Search/results-sidebar.tpl');
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Web Page Search Results', $sidebar);
 	}
 
 	function getBreadcrumbs()

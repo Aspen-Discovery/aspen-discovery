@@ -56,7 +56,7 @@ hr.menu{
   height: @header-height;
   background-color: @header-top-color;
   //background: linear-gradient(to bottom, @header-top-color, @header-middle-color 85%, @header-bottom-color);
-  border-bottom: @header-bottom-border-width solid @header-bottom-border-color;
+
   margin-bottom: 0;
   min-height: 110px;
 }
@@ -71,6 +71,10 @@ hr.menu{
     max-width: 100%;
     height:auto;
   }
+}
+#horizontal-menu-bar-container{
+  background-color: @header-top-color;
+  border-bottom: @header-bottom-border-width solid @header-bottom-border-color;
 }
 
 .availableLanguage{
@@ -269,31 +273,6 @@ hr.menu{
   }
 }
 
-// Gives Vertical Rotated Text space that tracks with the document flow
-// requires two nested tags: <span class="rotated-text"><span class="rotated-text-inner">{text}</span></span>
-.rotated-text {
-  display: inline-block;
-  overflow: hidden;
-
-  width: 30px;
-  line-height: 30px; // need a set height for the rotated space to flow properly
-}
-.rotated-text-inner {
-  display: inline-block;
-  white-space: nowrap;  // multiple word labels need to stay on the same line
-
-  // Rotate Text Vertically
-  transform: rotate(-90deg) translateX(-100%);
-  transform-origin: 0 0;
-
-  // puts the rotated text into the document flow like we want
-  &:after {
-    content: "";
-    float: left;
-    margin-top: 100%;
-  }
-}
-
 // Sidebar & Main content
 #side-bar{
   // padding-left: 0;
@@ -305,15 +284,10 @@ hr.menu{
   }
 }
 #main-content-with-sidebar{
-  //padding-right: 0; //TODO delete; undone for right side bar
   padding-bottom: 15px;
   @media print{
     width:100%;
     display: block !important;
-  }
-  & > .row{
-    //margin-right: -30px;// TODO delete; undone for right side bar
-    //margin-right: 15px;
   }
 }
 

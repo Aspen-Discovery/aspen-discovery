@@ -16,11 +16,15 @@ class Admin_Themes extends ObjectEditor
 		return 'Themes';
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
+		return UserAccount::userHasPermission('Administer All Themes');
 	}
 	function getAllObjects(){
 		$object = new Theme();
 		$object->orderBy('themeName');
+		if (!UserAccount::userHasPermission('Administer All Themes')){
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$object->id = $library->theme;
+		}
 		$object->find();
 		$list = array();
 		while ($object->fetch()){
@@ -78,5 +82,10 @@ class Admin_Themes extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'configuration_templates';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Themes','Administer Library Themes']);
 	}
 }

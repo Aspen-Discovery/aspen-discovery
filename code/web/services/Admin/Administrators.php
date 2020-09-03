@@ -59,9 +59,6 @@ class Admin_Administrators extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('userAdmin');
-	}
 	function canAddNew(){
 		return false;
 	}
@@ -142,5 +139,10 @@ class Admin_Administrators extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'system_admin';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Users');
 	}
 }

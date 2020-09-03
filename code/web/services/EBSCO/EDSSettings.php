@@ -57,16 +57,6 @@ class EBSCO_EDSSettings extends ObjectEditor
 		return array('opacAdmin', 'libraryAdmin');
 	}
 
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];

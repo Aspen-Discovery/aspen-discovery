@@ -52,19 +52,14 @@ class Hoopla_Settings extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
-
 	function canAddNew()
 	{
-		return UserAccount::userHasRole('opacAdmin');
+		return true;
 	}
 
 	function canDelete()
 	{
-		return UserAccount::userHasRole('opacAdmin');
+		return true;
 	}
 
 	function getAdditionalObjectActions($existingObject)
@@ -89,5 +84,10 @@ class Hoopla_Settings extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'hoopla';
+	}
+
+	function canView()
+	{
+		UserAccount::userHasPermission('Administer Hoopla');
 	}
 }

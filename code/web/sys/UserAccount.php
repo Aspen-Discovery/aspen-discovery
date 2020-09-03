@@ -11,6 +11,7 @@ class UserAccount
 	/** @var User|false $guidingUserObjectFromDB */
 	private static $guidingUserObjectFromDB = null;
 	private static $userRoles = null;
+	private static $userPermissions = null;
 
 	/**
 	 *
@@ -86,10 +87,23 @@ class UserAccount
 		}
 	}
 
-	public static function userHasRole($roleName)
+	/**
+	 * @param string[]|string $permission
+	 * @return bool
+	 */
+	public static function userHasPermission($permission)
 	{
-		$userRoles = UserAccount::getActiveRoles();
-		return array_key_exists($roleName, $userRoles);
+		$userPermissions = UserAccount::getActivePermissions();
+		if (is_array($permission)){
+			foreach ($permission as $tmpPermission){
+				if (in_array($tmpPermission, $userPermissions)){
+					return true;
+				}
+			}
+			return false;
+		}else{
+			return in_array($permission, $userPermissions);
+		}
 	}
 
 	public static function getActiveRoles()
@@ -104,7 +118,7 @@ class UserAccount
 				$canUseTestRoles = false;
 				$role->query("SELECT * FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getActiveUserId() . " ORDER BY name");
 				while ($role->fetch()) {
-					UserAccount::$userRoles[$role->name] = $role->name;
+					UserAccount::$userRoles[$role->roleId] = $role->name;
 					if ($role->name == 'userAdmin') {
 						$canUseTestRoles = true;
 					}
@@ -115,7 +129,7 @@ class UserAccount
 					$masqueradeRoles = [];
 					$role->query("SELECT * FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getGuidingUserId() . " ORDER BY name");
 					while ($role->fetch()) {
-						$masqueradeRoles[$role->name] = $role->name;
+						$masqueradeRoles[$role->roleId] = $role->name;
 					}
 					//Now remove any roles that the masquerade user doesn't have
 					foreach (UserAccount::$userRoles as $roleKey => $roleName){
@@ -149,7 +163,7 @@ class UserAccount
 						}
 						$found = $role->find(true);
 						if ($found == true) {
-							UserAccount::$userRoles[$role->name] = $role->name;
+							UserAccount::$userRoles[$role->roleId] = $role->name;
 						}
 					}
 				}
@@ -158,6 +172,60 @@ class UserAccount
 			}
 		}
 		return UserAccount::$userRoles;
+	}
+
+	public static function getActivePermissions()
+	{
+		if (UserAccount::$userPermissions == null) {
+			if (UserAccount::isLoggedIn()) {
+				UserAccount::$userPermissions = array();
+
+				$roles = UserAccount::getActiveRoles();
+				$loadDefaultPermissions = false;
+				try{
+					$permissionIds = [];
+					require_once ROOT_DIR . '/sys/Administration/Permission.php';
+					require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
+					foreach ($roles as $roleId => $roleName){
+						$rolePermissions = new RolePermissions();
+						$rolePermissions->roleId = $roleId;
+						$rolePermissions->find();
+						while ($rolePermissions->fetch()){
+							$permissionIds[$rolePermissions->permissionId] = $rolePermissions->permissionId;
+						}
+					}
+					foreach ($permissionIds as $permissionId){
+						$permission = new Permission();
+						$permission->id = $permissionId;
+						if ($permission->find(true)){
+							if (!in_array($permission->name, UserAccount::$userPermissions)){
+								UserAccount::$userPermissions[] = $permission->name;
+							}
+						}
+					}
+				}catch (Exception $e){
+					$loadDefaultPermissions = true;
+				}
+				if ($loadDefaultPermissions || count(UserAccount::$userPermissions) == 0){
+					//Permission system has not been setup, load default permissions
+					foreach ($roles as $roleId => $roleName){
+						$role = new Role();
+						$role->roleId = $roleId;
+						if ($role->find(true)){
+							$defaultPermissions = $role->getDefaultPermissions();
+							foreach ($defaultPermissions as $permissionName){
+								if (!in_array($permissionName, UserAccount::$userPermissions)){
+									UserAccount::$userPermissions[] = $permissionName;
+								}
+							}
+						}
+					}
+				}
+			} else {
+				UserAccount::$userPermissions = array();
+			}
+		}
+		return UserAccount::$userPermissions;
 	}
 
 	private static function loadUserObjectFromDatabase()

@@ -122,9 +122,19 @@ function getBrowseUpdates(){
 				'updateBrowseCategorySources'
 			]
 		],
+
+		'browse_category_library_updates' => [
+			'title' => 'Browse Category Library Updates',
+			'description' => 'Update Browse Category to store the library the category belongs to',
+			'sql' => [
+				'ALTER TABLE browse_category ADD COLUMN libraryId INT(11) DEFAULT -1',
+				'updateBrowseCategoryLibraries'
+			]
+		]
 	];
 }
 
+/** @noinspection PhpUnused */
 function populateBrowseCategoryGroups(){
 	//Convert library browse categories to browse category groups
 	global $aspen_db;
@@ -349,5 +359,30 @@ function updateBrowseCategorySources(){
 				$browseCategory->update();
 			}
 		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function updateBrowseCategoryLibraries(){
+	require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+	$browseCategory = new BrowseCategory();
+	$browseCategory->find();
+	$allBrowseCategories = [];
+	$users = [];
+	while ($browseCategory->fetch()) {
+		if (!array_key_exists($browseCategory->userId, $users)){
+			$user = new User();
+			$user->id = $browseCategory->userId;
+			if ($user->find(true)){
+				$users[$user->id] = $user;
+			}else{
+				continue;
+			}
+		}
+		$userLibrary = $user->getHomeLibrary();
+		if ($userLibrary != null){
+			$browseCategory->libraryId = $userLibrary->libraryId;
+		}
+		$browseCategory->update();
 	}
 }

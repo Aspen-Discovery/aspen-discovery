@@ -17,8 +17,7 @@ class AdminSection
 	 * @return boolean
 	 */
 	public function addAction($adminAction, $requiredPermission){
-		$user = UserAccount::getActiveUserObj();
-		if ($user->hasPermission($requiredPermission)){
+		if (UserAccount::userHasPermission($requiredPermission)){
 			$this->actions[] = $adminAction;
 			return true;
 		}else{

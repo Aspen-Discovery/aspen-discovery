@@ -38,6 +38,9 @@ class Admin_Modules extends ObjectEditor {
 	function getIdKeyColumn(){
 		return 'id';
 	}
+	function canView(){
+		return UserAccount::userHasPermission('Administer Modules');
+	}
 	function canAddNew(){
 		return false;
 	}

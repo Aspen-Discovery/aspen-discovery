@@ -60,11 +60,6 @@ class RedwoodUserContributions extends ObjectEditor
 		return false;
 	}
 
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
 	function getBreadcrumbs()
 	{
 		return [];
@@ -78,5 +73,10 @@ class RedwoodUserContributions extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return '';
+	}
+
+	function canView()
+	{
+		return true;
 	}
 }

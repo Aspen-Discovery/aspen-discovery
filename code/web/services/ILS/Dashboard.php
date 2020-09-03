@@ -54,11 +54,6 @@ class ILS_Dashboard extends Admin_Admin
 		$this->display('dashboard.tpl', 'ILS Usage Dashboard');
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'cataloger', 'superCataloger');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year
@@ -175,5 +170,10 @@ class ILS_Dashboard extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'ils_integration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}
 }

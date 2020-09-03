@@ -121,8 +121,8 @@ class MaterialsRequest_AJAX extends Action{
 
 								if ($user->id == $materialsRequest->createdBy) {
 									$canUpdate = true;
-									$isAdminUser = UserAccount::userHasRole('library_material_requests');
-								} elseif (UserAccount::userHasRole('library_material_requests')) {
+									$isAdminUser = UserAccount::userHasPermission('Manage Library Materials Requests');
+								} elseif (UserAccount::userHasPermission('Manage Library Materials Requests')) {
 									//User can update if the home library of the requester is their library
 
 									$requestUserLibrary = $requestUser->getHomeLibrary();
@@ -295,7 +295,7 @@ class MaterialsRequest_AJAX extends Action{
 
 						$interface->assign('materialsRequest', $materialsRequest);
 
-						if ($user && UserAccount::userHasRole('library_material_requests')) {
+						if ($user && UserAccount::userHasPermission('Manage Library Materials Requests')) {
 							$interface->assign('showUserInformation', true);
 							//Load user information
 							$requestUser     = new User();
@@ -468,7 +468,7 @@ class MaterialsRequest_AJAX extends Action{
 			'title' => 'Importing Requests',
 			'message' => 'Sorry your requests could not be imported'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('library_material_requests'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Import Materials Requests'))){
 			if (isset($_FILES['exportFile'])) {
 				$uploadedFile = $_FILES['exportFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {

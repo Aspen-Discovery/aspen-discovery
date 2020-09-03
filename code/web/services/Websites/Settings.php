@@ -36,15 +36,6 @@ class Websites_Settings extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
-	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
 	}
@@ -64,5 +55,10 @@ class Websites_Settings extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'web_indexer';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Website Indexing Settings');
 	}
 }

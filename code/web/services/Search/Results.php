@@ -243,7 +243,7 @@ class Search_Results extends ResultsAction {
 
 			$interface->assign('searchError', $result);
 			$this->getKeywordSearchResults($searchObject, $interface);
-			$this->display('searchError.tpl', 'Error in Search');
+			$this->display('searchError.tpl', 'Error in Search', '');
 			return;
 		}
 		$timer->logTime('Process Search');
@@ -447,7 +447,8 @@ class Search_Results extends ResultsAction {
 
 		$interface->assign('sectionLabel', 'Library Catalog');
 		// Done, display the page
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'Search/results-sidebar.tpl', false);
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, $sidebar, false);
 	} // End launch()
 
 	/**

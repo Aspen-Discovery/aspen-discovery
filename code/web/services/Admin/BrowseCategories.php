@@ -16,12 +16,15 @@ class Admin_BrowseCategories extends ObjectEditor
 	function getPageTitle(){
 		return 'Browse Categories';
 	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
-	}
 	function getAllObjects(){
 		$browseCategory = new BrowseCategory();
 		$browseCategory->orderBy('label');
+		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$libraryId = $library == null ? -1 : $library->libraryId;
+			$browseCategory->whereAdd("sharing = 'everyone'");
+			$browseCategory->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+		}
 		$browseCategory->find();
 		$list = array();
 		while ($browseCategory->fetch()){
@@ -37,9 +40,6 @@ class Admin_BrowseCategories extends ObjectEditor
 	}
 	function getIdKeyColumn(){
 		return 'id';
-	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager', 'contentEditor');
 	}
 
 	function getInstructions(){
@@ -62,5 +62,10 @@ class Admin_BrowseCategories extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'local_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Browse Categories','Administer Library Browse Categories']);
 	}
 }

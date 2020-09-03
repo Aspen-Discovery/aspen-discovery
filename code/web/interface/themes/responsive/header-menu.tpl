@@ -1,6 +1,6 @@
 {strip}
 <div id="header-menu" style="display: none">
-	{if !empty($userRoles)}
+	{if !empty($userPermissions)}
 		<div id="home-page-home-button" class="header-menu-option">
 			<a href="/Admin/Home">
 				<i class="fas fa-tools"></i>{translate text='Aspen Administration'}
@@ -101,8 +101,8 @@
 	{/if}
 
 	{if $loggedIn}
-		<a href="/MyAccount/Logout" id="logoutLink" title="{translate text="Log Out"}" class="btn btn-default btn-sm btn-block">
-			{translate text="Log Out"}
+		<a href="/MyAccount/Logout" id="logoutLink" title="{translate text="Sign Out"}" class="btn btn-default btn-sm btn-block">
+			{translate text="Sign Out"}
 		</a>
 	{/if}
 </div>

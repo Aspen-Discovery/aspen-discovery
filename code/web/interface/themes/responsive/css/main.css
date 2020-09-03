@@ -8484,7 +8484,6 @@ hr.menu {
   padding-top: 0;
   height: 120px;
   background-color: #f2f2f2;
-  border-bottom: 8px solid #b7b7b7;
   margin-bottom: 0;
   min-height: 110px;
 }
@@ -8501,6 +8500,10 @@ hr.menu {
     max-width: 100%;
     height: auto;
   }
+}
+#horizontal-menu-bar-container {
+  background-color: #f2f2f2;
+  border-bottom: 8px solid #b7b7b7;
 }
 .availableLanguage {
   display: inline-block;
@@ -8676,23 +8679,6 @@ hr.menu {
   margin-left: 5px;
   text-align: left;
   display: inline-block;
-}
-.rotated-text {
-  display: inline-block;
-  overflow: hidden;
-  width: 30px;
-  line-height: 30px;
-}
-.rotated-text-inner {
-  display: inline-block;
-  white-space: nowrap;
-  transform: rotate(-90deg) translateX(-100%);
-  transform-origin: 0 0;
-}
-.rotated-text-inner:after {
-  content: "";
-  float: left;
-  margin-top: 100%;
 }
 @media print {
   #side-bar {
@@ -11203,5 +11189,13 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .adminSection .adminPanel .adminActionDescription {
   font-size: 12px;
+}
+.permissionName,
+.permissionDescription {
+  margin-left: 10px;
+}
+.permissionDescription {
+  font-style: italic;
+  font-size: 10px;
 }
 /*# sourceMappingURL=main.css.map */

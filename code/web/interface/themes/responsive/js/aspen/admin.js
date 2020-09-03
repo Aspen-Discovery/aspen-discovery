@@ -38,7 +38,7 @@ AspenDiscovery.Admin = (function(){
 			if (color1.length === 7 && color2.length === 7){
 				let luminance1 = AspenDiscovery.Admin.getLuminanceForColor(color1);
 				let luminance2 = AspenDiscovery.Admin.getLuminanceForColor(color2);
-				let contrastRatio = 0;
+				let contrastRatio;
 				if (luminance1 > luminance2) {
 					contrastRatio = ((luminance1 + 0.05) / (luminance2 + 0.05));
 				} else {
@@ -174,6 +174,44 @@ AspenDiscovery.Admin = (function(){
 			}else{
 				$("#propertyRowaudienceSubfield").hide();
 			}
+		},
+		showCreateRoleForm: function(){
+			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getCreateRoleForm', true);
+			return false;
+		},
+		createRole: function () {
+			let url = Globals.path + '/Admin/AJAX';
+			let params = {
+				method: 'createRole',
+				roleName: $('#roleName').val(),
+				description: $('#description').val()
+			}
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						window.location.href = Globals.path + '/Admin/Permissions?roleId=' + data.roleId;
+					} else {
+						AspenDiscovery.showMessage('Error', data.message, false);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+		},
+
+		deleteRole: function(roleId){
+			let url = Globals.path + '/Admin/AJAX';
+			let params = {
+				method: 'deleteRole',
+				roleId: $("#roleId").find("option:selected").val()
+			}
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						window.location.href = Globals.path + '/Admin/Permissions';
+					} else {
+						AspenDiscovery.showMessage('Error', data.message, false);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
 		}
 	};
 }(AspenDiscovery.Admin || {}));

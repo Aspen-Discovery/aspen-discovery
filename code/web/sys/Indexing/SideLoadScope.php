@@ -7,15 +7,15 @@ class SideLoadScope extends DataObject
 	public $id;
 	public $name;
 	public $sideLoadId;
-	public $restrictToChildrensMaterial;
+	public /** @noinspection PhpUnused */ $restrictToChildrensMaterial;
 
 	//The next 3 fields allow inclusion or exclusion of records based on a marc tag
-	public $marcTagToMatch;
-	public $marcValueToMatch;
-	public $includeExcludeMatches;
+	public /** @noinspection PhpUnused */ $marcTagToMatch;
+	public /** @noinspection PhpUnused */ $marcValueToMatch;
+	public /** @noinspection PhpUnused */ $includeExcludeMatches;
 	//The next 2 fields determine how urls are constructed
-	public $urlToMatch;
-	public $urlReplacement;
+	public /** @noinspection PhpUnused */ $urlToMatch;
+	public /** @noinspection PhpUnused */ $urlReplacement;
 
 	private $_libraries;
 	private $_locations;
@@ -185,26 +185,22 @@ class SideLoadScope extends DataObject
 	/** @return LibrarySideLoadScope[] */
 	public function getLibraries()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_libraries;
 	}
 
 	/** @return LocationSideLoadScope[] */
 	public function getLocations()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_locations;
 	}
 
 	public function setLibraries($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
 	public function setLocations($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_locations = $val;
 	}
 

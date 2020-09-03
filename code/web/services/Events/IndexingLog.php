@@ -37,10 +37,6 @@ class Events_IndexingLog extends Admin_Admin
 		$this->display('eventsIndexLog.tpl', 'Events Index Log');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

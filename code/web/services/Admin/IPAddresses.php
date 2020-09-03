@@ -34,9 +34,6 @@ class Admin_IPAddresses extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 	function getInstructions()
 	{
 		return '/Admin/HelpManual?page=Location-IP-Addresses';
@@ -53,5 +50,10 @@ class Admin_IPAddresses extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer IP Addresses');
 	}
 }

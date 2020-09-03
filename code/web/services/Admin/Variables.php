@@ -41,7 +41,7 @@ class Admin_Variables extends ObjectEditor{
 		return false;
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
+		return true;
 	}
 
 	/**
@@ -137,5 +137,10 @@ class Admin_Variables extends ObjectEditor{
 	function getActiveAdminSection()
 	{
 		return 'system_admin';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer System Variables');
 	}
 }

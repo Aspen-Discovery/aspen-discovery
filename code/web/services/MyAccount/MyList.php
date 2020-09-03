@@ -34,7 +34,7 @@ class MyAccount_MyList extends MyAccount {
 		}
 		if (!$list->public && $list->user_id != UserAccount::getActiveUserId()) {
 			//Allow the user to view if they are admin
-			if (!UserAccount::isLoggedIn() || !UserAccount::userHasRole('opacAdmin')) {
+			if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Edit All Lists')) {
 				$this->display('invalidList.tpl', 'Invalid List');
 				return;
 			}

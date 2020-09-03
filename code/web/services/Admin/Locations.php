@@ -21,12 +21,14 @@ class Locations extends ObjectEditor
 
 		$location = new Location();
 		$location->orderBy('displayName');
-		if (UserAccount::userHasRole('locationManager')){
-			$location->locationId = $user->homeLocationId;
-		} else if (!UserAccount::userHasRole('opacAdmin')){
-			//Scope to just locations for the user based on home library
-			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$location->libraryId = $patronLibrary->libraryId;
+		if (!UserAccount::userHasPermission('Administer All Locations')){
+			if (!UserAccount::userHasPermission('Administer Home Library Locations')){
+				//Scope to just locations for the user based on home library
+				$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
+				$location->libraryId = $patronLibrary->libraryId;
+			}else{
+				$location->locationId = $user->homeLocationId;
+			}
 		}
 		$location->find();
 		$locationList = array();
@@ -46,15 +48,6 @@ class Locations extends ObjectEditor
 
 	function getIdKeyColumn(){
 		return 'locationId';
-	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager');
-	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
 	}
 	function getAdditionalObjectActions($existingObject){
 		$objectActions = array();
@@ -88,5 +81,10 @@ class Locations extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
 	}
 }

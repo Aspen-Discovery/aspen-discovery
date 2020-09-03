@@ -1,6 +1,4 @@
 {strip}
-	{include file="login-sidebar.tpl"}
-
 	{if $recordCount || $limitList}
 		<div id="refineSearch">
 			{* Narrow Results *}

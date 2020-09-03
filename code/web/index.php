@@ -174,7 +174,7 @@ try{
 	$validLanguage = new Language();
 	$validLanguage->orderBy("weight");
 	$validLanguage->find();
-	$userIsTranslator = UserAccount::userHasRole('translator') || UserAccount::userHasRole('opacAdmin');
+	$userIsTranslator = UserAccount::userHasPermission('Translate Aspen');
 	while ($validLanguage->fetch()){
 		if (!$validLanguage->displayToTranslatorsOnly || $userIsTranslator){
 			$validLanguages[$validLanguage->code] = clone $validLanguage;
@@ -206,7 +206,7 @@ $interface->setLanguage($activeLanguage);
 
 //Check to see if we should show the submit ticket option
 $interface->assign('showSubmitTicket', false);
-if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin'))) {
+if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')) {
 	try {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = new SystemVariables();
@@ -360,8 +360,8 @@ $timer->logTime('User authentication');
 if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logout')){
 	$userDisplayName = UserAccount::getUserDisplayName();
 	$interface->assign('userDisplayName', $userDisplayName);
-	$userRoles = UserAccount::getActiveRoles();
-	$interface->assign('userRoles', $userRoles);
+	$userPermissions = UserAccount::getActivePermissions();
+	$interface->assign('userPermissions', $userPermissions);
 	$disableCoverArt = UserAccount::getDisableCoverArt();
 	$interface->assign('disableCoverArt', $disableCoverArt);
 	$hasLinkedUsers = UserAccount::hasLinkedUsers();
@@ -657,15 +657,6 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")){
 	}
 } else {
 	//We have a bad URL, just serve a 404 page
-	/*$interface->assign('showBreadcrumbs', false);
-	$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-	$requestURI = $_SERVER['REQUEST_URI'];
-	$cleanedUrl = strip_tags(urldecode($_SERVER['REQUEST_URI']));
-	if ($cleanedUrl != $requestURI){
-		AspenError::raiseError(new AspenError("Cannot Load Action and Module the URL provided is invalid"));
-	}else{
-		AspenError::raiseError(new AspenError("Cannot Load Action '$action' for Module '$module' request '$requestURI'"));
-	}*/
 	$module = 'Error';
 	$action = 'Handle404';
 	$interface->assign('module','Error');

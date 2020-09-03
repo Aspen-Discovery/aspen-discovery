@@ -20,10 +20,6 @@ class Admin_ClearArchiveCache extends Admin_Admin{
 		$this->display('clearArchiveCache.tpl', 'Clear Archive Cache');
 	}
 
-	function getAllowableRoles() {
-		return array('opacAdmin');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
@@ -36,5 +32,10 @@ class Admin_ClearArchiveCache extends Admin_Admin{
 	function getActiveAdminSection()
 	{
 		return 'islandora_archive';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Islandora Archive');
 	}
 }

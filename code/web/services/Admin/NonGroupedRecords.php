@@ -34,9 +34,6 @@ class Admin_NonGroupedRecords extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging', 'superCataloger');
-	}
 	function getInstructions(){
 //		global $interface;
 //		return $interface->fetch('Admin/ungrouping_work_instructions.tpl');
@@ -55,5 +52,10 @@ class Admin_NonGroupedRecords extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'cataloging';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Manually Group and Ungroup Works');
 	}
 }

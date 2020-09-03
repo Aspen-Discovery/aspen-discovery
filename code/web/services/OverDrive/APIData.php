@@ -91,11 +91,6 @@ class OverDrive_APIData extends Admin_Admin
 		return $contents;
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'cataloging', 'superCataloger');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
@@ -108,5 +103,10 @@ class OverDrive_APIData extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'overdrive';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View OverDrive Test Interface');
 	}
 }

@@ -97,16 +97,6 @@ class SideLoads_SideLoads extends ObjectEditor
 		return 'id';
 	}
 
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
 	function getInstructions()
 	{
 		return '/Admin/HelpManual?page=Side-Loaded-eContent';
@@ -141,5 +131,10 @@ class SideLoads_SideLoads extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'side_loads';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Side Loads');
 	}
 }

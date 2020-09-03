@@ -102,8 +102,8 @@
 			{/if}
 
 			{if $loggedIn}
-				<a href="/MyAccount/Logout" id="logoutLink" title="{translate text="Log Out"}" class="btn btn-default btn-sm btn-block">
-					{translate text="Log Out"}
+				<a href="/MyAccount/Logout" id="logoutLink" title="{translate text="Sign Out"}" class="btn btn-default btn-sm btn-block">
+					{translate text="Sign Out"}
 				</a>
 			{/if}
 		</div>

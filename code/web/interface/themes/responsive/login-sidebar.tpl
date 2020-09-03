@@ -16,7 +16,7 @@
 				<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 			</div>
 			<div class="logoutOptions">
-				<a href="/MyAccount/Logout" id="logoutLink" >{translate text="Log Out"}</a>
+				<a href="/MyAccount/Logout" id="logoutLink" >{translate text="Sign Out"}</a>
 				<div class="bottom-border-line"></div>
 			</div>
 
@@ -26,16 +26,16 @@
 				<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 			</div>
 			<div class="logoutOptions" {if !$loggedIn} style="display: none;"{/if}>
-				<a href="/MyAccount/Logout" id="logoutLink" >{translate text="Log Out"}</a>
+				<a href="/MyAccount/Logout" id="logoutLink" >{translate text="Sign Out"}</a>
 				<div class="bottom-border-line"></div>
 			</div>
 			{if !$loggedIn}
 				<div class="loginOptions" {if $loggedIn} style="display: none;"{/if}> {* TODO: don't write at all? Does it get unhidden? *}
 					{if $showLoginButton == 1}
 						{if $isLoginPage}
-							<a class="loginLink" href="#" title="Login To My Account" onclick="$('#username').focus(); return false">{translate text="LOGIN TO MY ACCOUNT"}</a>
+							<a class="loginLink" href="#" title="Sign in to My Account" onclick="$('#username').focus(); return false">{translate text="SIGN IN TO MY ACCOUNT"}</a>
 						{else}
-							<a href="/MyAccount/Home" class="loginLink" title="Login To My Account" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);" data-login="true">{translate text="LOGIN TO MY ACCOUNT"}</a>
+							<a href="/MyAccount/Home" class="loginLink" title="Sign In To My Account" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);" data-login="true">{translate text="LOGIN TO MY ACCOUNT"}</a>
 						{/if}
 						<div class="bottom-border-line"></div>
 					{/if}

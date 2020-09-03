@@ -1,4 +1,5 @@
-<?php /** @noinspection RequiredAttributes */
+<?php
+/** @noinspection RequiredAttributes */
 /** @noinspection HtmlRequiredAltAttribute */
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
@@ -103,7 +104,7 @@ class Location extends DataObject
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin') && !UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')) {
+		if (!UserAccount::userHasPermission('Administer All Libraries')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
@@ -419,33 +420,7 @@ class Location extends DataObject
 			),
 		);
 
-		if (UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('libraryManager')) {
-			unset($structure['code']);
-			unset($structure['subLocation']);
-			$structure['displayName']['type'] = 'label';
-			unset($structure['showDisplayNameInHeader']);
-			unset($structure['displaySection']);
-			unset($structure['ilsSection']);
-			unset($structure['enrichmentSection']);
-			unset($structure['fullRecordSection']);
-			unset($structure['searchingSection']);
-			unset($structure['overdriveSection']);
-			unset($structure['facets']);
-			unset($structure['recordsOwned']);
-			unset($structure['recordsToInclude']);
-			unset($structure['sideLoadScopes']);
-		}
-
-		if (UserAccount::userHasRole('locationManager')) {
-			unset($structure['nearbyLocation1']);
-			unset($structure['nearbyLocation2']);
-			unset($structure['showInLocationsAndHoursList']);
-			unset($structure['address']);
-			unset($structure['phone']);
-			unset($structure['automaticTimeoutLength']);
-			unset($structure['automaticTimeoutLengthLoggedOut']);
-		}
-		if (!UserAccount::userHasRole('opacAdmin') && !UserAccount::userHasRole('libraryAdmin')) {
+		if (!UserAccount::userHasPermission('Administer All Libraries')) {
 			unset($structure['isMainBranch']);
 		}
 		global $configArray;
@@ -1369,7 +1344,7 @@ class Location extends DataObject
 	{
 		$location = new Location();
 		$location->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin')) {
+		if (UserAccount::userHasPermission('Administer Home Library Locations')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$location->libraryId = $homeLibrary->libraryId;
 		}

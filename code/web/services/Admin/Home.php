@@ -19,10 +19,6 @@ class Admin_Home extends Admin_Admin
 		$this->display('home.tpl', 'Aspen Discovery Administration', '');
 	}
 
-	function getAllowableRoles()
-	{
-		return array('userAdmin', 'opacAdmin');
-	}
 
 	function getBreadcrumbs()
 	{
@@ -34,5 +30,10 @@ class Admin_Home extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'home';
+	}
+
+	function canView()
+	{
+		return !empty(UserAccount::getActiveRoles());
 	}
 }

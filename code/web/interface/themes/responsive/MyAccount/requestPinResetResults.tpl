@@ -10,7 +10,7 @@
 				</div>
 			{else}
 				<div>
-					<a href="/MyAccount/Login">Login here</a>
+					<a href="/MyAccount/Login">Sign in here</a>
 				</div>
 			{/if}
 		</div>

@@ -211,23 +211,7 @@ hr.menu {
   margin-top: 10px;
   text-align: center;
 }
-.rotated-text {
-  display: inline-block;
-  overflow: hidden;
-  width: 30px;
-  line-height: 30px;
-}
-.rotated-text-inner {
-  display: inline-block;
-  white-space: nowrap;
-  transform: rotate(-90deg) translateX(-100%);
-  transform-origin: 0 0;
-}
-.rotated-text-inner:after {
-  content: "";
-  float: left;
-  margin-top: 100%;
-}
+
 .collapsedSidebar {
   width: 40px;
 }

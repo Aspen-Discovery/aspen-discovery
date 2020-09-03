@@ -1,8 +1,6 @@
 <?php
 require_once ROOT_DIR . '/JSON_Action.php';
 
-/** @noinspection PhpUnused */
-
 class CloudLibrary_AJAX extends JSON_Action
 {
 	function placeHold()
@@ -271,10 +269,5 @@ class CloudLibrary_AJAX extends JSON_Action
 			$result['message'] = 'Could not find that record';
 		}
 		return $result;
-	}
-
-	function getBreadcrumbs()
-	{
-		return [];
 	}
 }

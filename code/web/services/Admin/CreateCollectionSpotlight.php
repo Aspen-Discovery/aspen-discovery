@@ -21,7 +21,7 @@ class Admin_CreateCollectionSpotlight extends Action
 			if ($existingSpotlightId == -1) {
 				$collectionSpotlight = new CollectionSpotlight();
 				$collectionSpotlight->name = $spotlightName;
-				if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')) {
+				if (UserAccount::userHasPermission('Administer All Collection Spotlights')) {
 					//Get all spotlights for the library
 					$userLibrary = Library::getPatronHomeLibrary();
 					$collectionSpotlight->libraryId = $userLibrary->libraryId;

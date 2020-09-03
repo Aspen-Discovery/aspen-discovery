@@ -55,11 +55,6 @@ class SideLoads_Dashboard extends Admin_Admin
 		$this->display('dashboard.tpl', 'Side Load Dashboard');
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year
@@ -140,5 +135,10 @@ class SideLoads_Dashboard extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'side_loads';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}
 }

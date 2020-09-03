@@ -581,7 +581,7 @@ class Record_AJAX extends Action
 			'title' => 'Uploading PDF',
 			'message' => 'Sorry your pdf could not be uploaded'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload PDFs'))){
 			if (isset($_FILES['pdfFile'])) {
 				$uploadedFile = $_FILES['pdfFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
@@ -658,7 +658,7 @@ class Record_AJAX extends Action
 			'title' => 'Uploading Supplemental File',
 			'message' => 'Sorry your file could not be uploaded'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Supplemental Files'))){
 			if (isset($_FILES['supplementalFile'])) {
 				$uploadedFile = $_FILES['supplementalFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
@@ -746,7 +746,7 @@ class Record_AJAX extends Action
 			'title' => 'Deleting Uploaded File',
 			'message' => 'Unknown error deleting file'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission(['Upload PDFs', 'Upload Supplemental Files']))){
 			$fileId = $_REQUEST['fileId'];
 			$id = $_REQUEST['id'];
 

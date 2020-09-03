@@ -23,7 +23,7 @@ class Admin_LibraryLinks extends ObjectEditor
 		$object = new LibraryLink();
 		$location = new Location();
 		$location->orderBy('displayName');
-		if (!UserAccount::userHasRole('opacAdmin')){
+		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			//Scope to just locations for the user based on home library
 			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
 			$object->libraryId = $patronLibrary->libraryId;
@@ -48,9 +48,6 @@ class Admin_LibraryLinks extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
 
 	function getBreadcrumbs()
 	{
@@ -67,5 +64,10 @@ class Admin_LibraryLinks extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}
 }

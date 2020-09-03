@@ -64,9 +64,6 @@ class LoanRuleDeterminers extends ObjectEditor {
 	function getIdKeyColumn(){
 		return 'rowNumber';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 	function customListActions(){
 		$actions = array();
 		$actions[] = array(
@@ -95,5 +92,10 @@ class LoanRuleDeterminers extends ObjectEditor {
 	function getActiveAdminSection()
 	{
 		return 'ils_integration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Loan Rules');
 	}
 }

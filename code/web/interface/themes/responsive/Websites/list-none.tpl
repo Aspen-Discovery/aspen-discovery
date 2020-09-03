@@ -51,7 +51,7 @@
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
 
-	{if $showSearchTools || ($loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles)))}
+	{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 		<div class="search_tools well small">
 			<strong>{translate text='Search Tools'}:</strong>
 			{if $showSearchTools}

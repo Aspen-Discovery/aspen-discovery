@@ -46,4 +46,9 @@ class Admin_ReleaseNotes extends Admin_Admin
 	{
 		return 'aspen_help';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View Release Notes');
+	}
 }

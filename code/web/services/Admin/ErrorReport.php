@@ -40,10 +40,6 @@ class Admin_ErrorReport extends ObjectEditor
 		return true;
 	}
 
-	function getAllowableRoles() {
-		return array('opacAdmin');
-	}
-
 	function getPrimaryKeyColumn()
 	{
 		return 'id';
@@ -61,5 +57,10 @@ class Admin_ErrorReport extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'system_reports';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View System Reports');
 	}
 }

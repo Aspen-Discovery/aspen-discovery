@@ -52,11 +52,6 @@ class Hoopla_Dashboard extends Admin_Admin
 		$this->display('dashboard.tpl', 'Hoopla Dashboard');
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year
@@ -109,5 +104,10 @@ class Hoopla_Dashboard extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'hoopla';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}
 }

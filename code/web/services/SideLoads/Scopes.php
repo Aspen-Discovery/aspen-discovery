@@ -59,12 +59,6 @@ class SideLoads_Scopes extends ObjectEditor
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
 	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger');
-	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
 	}
@@ -170,5 +164,10 @@ class SideLoads_Scopes extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'side_loads';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Side Loads');
 	}
 }

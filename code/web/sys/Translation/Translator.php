@@ -71,7 +71,7 @@ class Translator
 		}
 
 		global $activeLanguage;
-		$translationMode = $this->translationModeActive() && !$inAttribute && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator'));
+		$translationMode = $this->translationModeActive() && !$inAttribute && (UserAccount::userHasPermission('Translate Aspen'));
 		try{
 			global $memCache;
 
@@ -88,7 +88,7 @@ class Translator
 					try{
 						$translationTerm->insert();
 					}catch(Exception $e){
-						if (UserAccount::isLoggedIn() && UserAccount::userHasRole('translator')) {
+						if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
 							return "TERM TOO LONG for translation \"$phrase\"";
 						}else{
 							return $phrase;

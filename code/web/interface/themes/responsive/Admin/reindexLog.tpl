@@ -3,13 +3,13 @@
 		<h1>{translate text='Reindex Log'}</h1>
 		<hr>
 
-		<legend>Filter by</legend>
+		<legend>{translate text="Filter by"}</legend>
 
 		<form class="navbar form-inline row">
 			<div class="form-group col-xs-7">
-				<label for="worksLimit" class="control-label">Min Works Processed: </label>
+				<label for="worksLimit" class="control-label">{translate text="Min Works Processed"}</label>
 				<input style="width: 125px;" id="worksLimit" name="worksLimit" type="number" min="0" class="form-control" {if !empty($smarty.request.worksLimit)} value="{$smarty.request.worksLimit}"{/if}>
-				<button class="btn btn-primary" type="submit">Go</button>
+				<button class="btn btn-primary" type="submit">{translate text="Go"}</button>
 			</div>
 			<div class="form-group col-xs-5">
 				<span class="pull-right">

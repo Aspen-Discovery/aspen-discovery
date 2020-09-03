@@ -21,7 +21,7 @@
 						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm btn-tools">{translate text='Add to list'}</button>
 					</div>
 				{/if}
-				{if $loggedIn && $module == 'Search' && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
+				{if $loggedIn && $module == 'Search' && in_array('Manually Group and Ungroup Works', $userPermissions)}
 					<div class="btn-group btn-group-sm">
 						<button onclick="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{$page}')" class="btn btn-sm btn-tools">{translate text='Group With'}</button>
 					</div>

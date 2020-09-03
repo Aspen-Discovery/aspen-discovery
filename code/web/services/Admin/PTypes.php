@@ -19,13 +19,11 @@ class Admin_PTypes extends ObjectEditor
 	function getAllObjects(){
 		$libraryList = array();
 
-		if (UserAccount::userHasRole('opacAdmin')){
-			$library = new PType();
-			$library->orderBy('pType');
-			$library->find();
-			while ($library->fetch()){
-				$libraryList[$library->id] = clone $library;
-			}
+		$library = new PType();
+		$library->orderBy('pType');
+		$library->find();
+		while ($library->fetch()){
+			$libraryList[$library->id] = clone $library;
 		}
 
 		return $libraryList;
@@ -38,15 +36,6 @@ class Admin_PTypes extends ObjectEditor
 	}
 	function getIdKeyColumn(){
 		return 'id';
-	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
 	}
 
 	function getBreadcrumbs()
@@ -61,5 +50,10 @@ class Admin_PTypes extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Patron Types');
 	}
 }

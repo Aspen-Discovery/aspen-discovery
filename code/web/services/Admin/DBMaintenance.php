@@ -2201,11 +2201,6 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	function getAllowableRoles()
-	{
-		return array('userAdmin', 'opacAdmin');
-	}
-
 	private function createUpdatesTable()
 	{
 		global $aspen_db;
@@ -2374,5 +2369,10 @@ class Admin_DBMaintenance extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'system_admin';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Run Database Maintenance');
 	}
 }

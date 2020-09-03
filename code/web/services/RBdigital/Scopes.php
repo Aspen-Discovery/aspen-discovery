@@ -37,15 +37,6 @@ class RBdigital_Scopes extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger');
-	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
 	}
@@ -69,5 +60,10 @@ class RBdigital_Scopes extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'rbdigital';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer RBdigital');
 	}
 }

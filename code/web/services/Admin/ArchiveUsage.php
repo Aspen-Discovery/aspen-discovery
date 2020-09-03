@@ -83,10 +83,6 @@ class Admin_ArchiveUsage extends Admin_Admin{
 		$this->display('archiveUsage.tpl', 'Archive Usage By Library');
 	}
 
-	function getAllowableRoles() {
-		return array('opacAdmin', 'archives');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
@@ -99,5 +95,10 @@ class Admin_ArchiveUsage extends Admin_Admin{
 	function getActiveAdminSection()
 	{
 		return 'islandora_archive';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View Archive Material Requests');
 	}
 }

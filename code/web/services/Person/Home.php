@@ -15,10 +15,11 @@ class Person_Home extends Action
 	{
 		global $interface;
 		global $timer;
+		parent::__construct(false);
 		$user = UserAccount::getLoggedInUser();
 
 		//Check to see if a user is logged in with admin permissions
-		if ($user && UserAccount::userHasRole('genealogyContributor')){
+		if ($user && UserAccount::userHasPermission('Administer Genealogy')){
 			$interface->assign('userIsAdmin', true);
 		}else{
 			$interface->assign('userIsAdmin', false);

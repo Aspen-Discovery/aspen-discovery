@@ -89,4 +89,9 @@ class Enrichment_NYTLists extends Admin_Admin
 	{
 		return 'third_party_enrichment';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View New York Times Lists');
+	}
 }

@@ -26,10 +26,6 @@ class Admin_ArchiveSubjects extends Admin_Admin{
 		$this->display('archiveSubjects.tpl', 'Archive Subjects');
 	}
 
-	function getAllowableRoles() {
-		return array('opacAdmin', 'archives');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
@@ -42,5 +38,10 @@ class Admin_ArchiveSubjects extends Admin_Admin{
 	function getActiveAdminSection()
 	{
 		return 'islandora_archive';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Islandora Archive');
 	}
 }

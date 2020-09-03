@@ -100,23 +100,26 @@ body .container, #home-page-browse-content{ldelim}
     background-color: {$bodyBackgroundColor};
 {rdelim}
 
-#home-page-search, #horizontal-search-box,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar,#horizontal-menu-bar-container {ldelim}
+#home-page-search, #horizontal-search-box,.searchTypeHome,.searchSource,.menu-bar {ldelim}
     background-color: {$primaryBackgroundColor};
     color: {$primaryForegroundColor};
 {rdelim}
-#vertical-menu-bar .menu-icon .menu-bar-label,
- #horizontal-menu-bar-container .menu-icon, #horizontal-menu-bar-container .menu-icon .menu-bar-label,
- #horizontal-menu-bar-container .menu-icon:visited, #horizontal-menu-bar-container .menu-icon:hover, #horizontal-menu-bar-container .menu-icon:focus,
- #horizontal-search-label,#horizontal-search-box #horizontal-search-label {ldelim}
-    color: {$primaryForegroundColor};
+#horizontal-menu-bar-container{ldelim}
+    background-color: {$headerBackgroundColor};
+    color: {$headerForegroundColor};
 {rdelim}
 
-#vertical-menu-bar .menu-bar-option.menu-icon-selected, #horizontal-menu-bar-container  .menu-bar-option.menu-icon-selected,.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
+#horizontal-menu-bar-container .menu-icon, #horizontal-menu-bar-container .menu-icon .menu-bar-label,
+ #horizontal-menu-bar-container .menu-icon:visited, #horizontal-menu-bar-container .menu-icon:hover, #horizontal-menu-bar-container .menu-icon:focus,
+ #horizontal-search-label,#horizontal-search-box #horizontal-search-label {ldelim}
+    color: {$headerForegroundColor};
+{rdelim}
+
+#horizontal-menu-bar-container  .menu-bar-option.menu-icon-selected,.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
     background-color: {$sidebarHighlightBackgroundColor};
     color: {$sidebarHighlightForegroundColor};
 {rdelim}
 
-#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label,#vertical-menu-bar .menu-icon:hover .menu-bar-label,
 #horizontal-menu-bar-container .menu-bar-option.menu-icon-selected .menu-bar-label,#horizontal-menu-bar-container .menu-icon:hover .menu-bar-label,
 .exploreMoreBar .exploreMoreBarLabel{ldelim}
     color: {$sidebarHighlightForegroundColor};
@@ -124,13 +127,13 @@ body .container, #home-page-browse-content{ldelim}
 .exploreMoreBar{ldelim}
     border-color: {$primaryBackgroundColor};
 {rdelim}
-#vertical-menu-bar .menu-bar-option:hover,#horizontal-menu-bar-container .menu-bar-option:hover{ldelim}
+#horizontal-menu-bar-container .menu-bar-option:hover{ldelim}
     background-color: {$sidebarHighlightBackgroundColor};
     color: {$sidebarHighlightForegroundColor};
 {rdelim}
 
 {if $primaryForegroundColor}
-#home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel,.menu-bar,#vertical-menu-bar, #horizontal-menu-bar-container {ldelim}
+#home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel,.menu-bar, #horizontal-menu-bar-container {ldelim}
     color: {$primaryForegroundColor}
 {rdelim}
 {/if}
@@ -166,11 +169,11 @@ body .container, #home-page-browse-content{ldelim}
 #footer-container{ldelim}
     border-top-color: {$tertiaryBackgroundColor};
 {rdelim}
-#header-container{ldelim}
+
+#horizontal-menu-bar-container{ldelim}
     border-bottom-color: {$tertiaryBackgroundColor};
 {rdelim}
 
-#vertical-menu-bar .menu-bar-option.menu-icon-selected,#vertical-menu-bar .menu-bar-option:hover,
 #horizontal-menu-bar-container .menu-bar-option.menu-icon-selected,#horizontal-menu-bar-container .menu-bar-option:hover{ldelim}
     background-color: {$sidebarHighlightBackgroundColor};
     color: {$sidebarHighlightForegroundColor};

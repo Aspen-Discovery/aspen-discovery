@@ -57,11 +57,6 @@ class CloudLibrary_Dashboard extends Admin_Admin
 		$this->display('dashboard.tpl', 'Cloud Library Dashboard');
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year
@@ -119,5 +114,10 @@ class CloudLibrary_Dashboard extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'cloud_library';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}
 }

@@ -14,7 +14,7 @@ class Genealogy_Results extends ResultsAction {
 		$aspenUsage->genealogySearches++;
 
 		//Check to see if a user is logged in with admin permissions
-		if (UserAccount::isLoggedIn() && UserAccount::userHasRole('genealogyContributor')){
+		if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Administer Genealogy')){
 			$interface->assign('userIsAdmin', true);
 		}else{
 			$interface->assign('userIsAdmin', false);
@@ -249,7 +249,8 @@ class Genealogy_Results extends ResultsAction {
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Genealogy Database');
 		$interface->assign('sidebar', 'Search/results-sidebar.tpl');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $displayQuery, 'Search/results-sidebar.tpl', false);
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $displayQuery, $sidebar, false);
 	}
 
 	function getBreadcrumbs()

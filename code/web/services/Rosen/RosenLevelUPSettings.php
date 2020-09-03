@@ -52,21 +52,6 @@ class RosenLevelUPSettings extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin');
-	}
-
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];
@@ -84,5 +69,15 @@ class RosenLevelUPSettings extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'third_party_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Third Party Enrichment API Keys');
+	}
+
+	function canAddNew()
+	{
+		return count($this->getAllObjects()) == 0;
 	}
 }

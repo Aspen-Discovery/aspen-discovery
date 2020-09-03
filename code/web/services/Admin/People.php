@@ -68,4 +68,9 @@ class Admin_People extends ObjectEditor
 	{
 		return '';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer Genealogy']);
+	}
 }

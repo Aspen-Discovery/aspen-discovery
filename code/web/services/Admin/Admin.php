@@ -6,6 +6,8 @@ abstract class Admin_Admin extends Action {
 	protected $db;
 
 	function __construct() {
+		parent::__construct(false);
+
 		$user = UserAccount::getLoggedInUser();
 
 		//If the user isn't logged in, take them to the login page
@@ -15,14 +17,7 @@ abstract class Admin_Admin extends Action {
 		}
 
 		//Make sure the user has permission to access the page
-		$allowableRoles = $this->getAllowableRoles();
-		$userCanAccess = false;
-		foreach($allowableRoles as $roleId => $roleName){
-			if (UserAccount::userHasRole($roleName)){
-				$userCanAccess = true;
-				break;
-			}
-		}
+		$userCanAccess = $this->canView();
 
 		if (!$userCanAccess){
 			$this->display('../Admin/noPermission.tpl', 'Access Error');
@@ -41,7 +36,7 @@ abstract class Admin_Admin extends Action {
 		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
 	}
 
-	abstract function getAllowableRoles();
+	abstract function canView();
 
 	abstract function getActiveAdminSection();
 }

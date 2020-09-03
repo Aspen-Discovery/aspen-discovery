@@ -34,9 +34,6 @@ class Admin_AuthorEnrichment extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging', 'superCataloger');
-	}
 	function getInstructions(){
 		return '/Admin/HelpManual?page=Wikipedia';
 	}
@@ -53,5 +50,10 @@ class Admin_AuthorEnrichment extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'third_party_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Wikipedia Integration');
 	}
 }

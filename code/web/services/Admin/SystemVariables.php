@@ -56,4 +56,9 @@ class Admin_SystemVariables extends ObjectEditor{
 	{
 		return 'system_admin';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer System Variables');
+	}
 }

@@ -1,4 +1,4 @@
-<dic class="col-xs-12">
+<div class="col-xs-12">
 	<h1>
 		{translate text="Active IP Address"}
 	</h1>

@@ -308,6 +308,7 @@ class Theme extends DataObject
 			'Helvetica Neue',
 			'Josefin Sans',
 			'Lato',
+			'Merriweather',
 			'Montserrat',
 			'Noto Sans',
 			'Open Sans',

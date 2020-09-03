@@ -88,4 +88,9 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 		$breadcrumbs[] = new Breadcrumb('/Events/LMLibraryCalendarSettings', 'Library Market - Library Calendar Settings');
 		return $breadcrumbs;
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Library Calendar Settings');
+	}
 }

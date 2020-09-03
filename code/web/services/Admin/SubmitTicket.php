@@ -81,4 +81,9 @@ class SubmitTicket extends Admin_Admin
 	{
 		return 'aspen_help';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Submit Ticket');
+	}
 }

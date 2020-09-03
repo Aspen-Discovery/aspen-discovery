@@ -3,7 +3,7 @@
 	{include file="login-sidebar.tpl"}
 
 	<div class="row">
-		{if !empty($userRoles)}
+		{if !empty($userPermissions)}
 			<a href="/Admin/Home">
 				<div class="sidebar-button custom-sidebar-button">
 					{translate text="Aspen Administration"}

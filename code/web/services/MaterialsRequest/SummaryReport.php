@@ -80,7 +80,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 		$locationsToRestrictTo = '';
 		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('library_material_requests')){
+		if (UserAccount::userHasPermission('View Materials Requests Reports')){
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary = Library::getPatronHomeLibrary();
 			$locations = new Location();
@@ -123,7 +123,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$materialsRequest->selectAdd();
 			$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests,description');
 			$materialsRequest->whereAdd('dateUpdated >= ' . $periodStart->getTimestamp() . ' AND dateUpdated < ' . $periodEnd->getTimestamp());
-			if (UserAccount::userHasRole('library_material_requests')){
+			if (UserAccount::userHasPermission('View Materials Requests Reports')){
 				//Need to limit to only requests submitted for the user's home location
 				$userHomeLibrary = Library::getPatronHomeLibrary();
 				$locations = new Location();
@@ -280,5 +280,10 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 	function getActiveAdminSection()
 	{
 		return 'materials_request';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View Materials Requests Reports');
 	}
 }

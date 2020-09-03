@@ -72,10 +72,6 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 		$this->display('offlineHoldsReport.tpl', 'Offline Holds Report');
 	}
 
-	function getAllowableRoles() {
-		return array('opacAdmin', 'libraryAdmin', 'circulationReports');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
@@ -88,5 +84,10 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 	function getActiveAdminSection()
 	{
 		return 'ils_integration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View Offline Holds Report');
 	}
 }

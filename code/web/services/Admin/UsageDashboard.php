@@ -103,4 +103,9 @@ class Admin_UsageDashboard extends Admin_Admin
 	{
 		return 'system_reports';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View System Reports');
+	}
 }

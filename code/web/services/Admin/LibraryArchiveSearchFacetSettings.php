@@ -39,15 +39,6 @@ class LibraryArchiveSearchFacetSettings extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
-	}
 	function getAdditionalObjectActions($existingObject){
 		$objectActions = array();
 		if (isset($existingObject) && $existingObject != null){
@@ -74,5 +65,10 @@ class LibraryArchiveSearchFacetSettings extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}
 }

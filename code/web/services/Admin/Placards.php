@@ -17,11 +17,24 @@ class Admin_Placards extends ObjectEditor
 		return 'Placards';
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('contentEditor');
+		return UserAccount::userHasPermission('Administer All Placards');
 	}
 	function getAllObjects(){
 		$placard = new Placard();
 		$placard->orderBy('title');
+		if (!UserAccount::userHasPermission('Administer All Placards')){
+			$libraryPlacard = new PlacardLibrary();
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			if ($library != null){
+				$libraryPlacard->libraryId = $library->libraryId;
+				$placardsForLibrary = [];
+				$libraryPlacard->find();
+				while ($libraryPlacard->fetch()){
+					$placardsForLibrary[] = $libraryPlacard->placardId;
+				}
+				$placard->whereAddIn('id', $placardsForLibrary, false);
+			}
+		}
 		$placard->find();
 		$list = array();
 		while ($placard->fetch()){
@@ -57,5 +70,15 @@ class Admin_Placards extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'local_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Placards','Administer Library Placards']);
+	}
+
+	function canAddNew()
+	{
+		return count($this->getAllObjects()) == 0;
 	}
 }

@@ -37,14 +37,11 @@ class CloudLibrary_Scopes extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
 	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger');
+		return true;
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger');
+		return true;
 	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
@@ -66,5 +63,10 @@ class CloudLibrary_Scopes extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'cloud_library';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Cloud Library');
 	}
 }

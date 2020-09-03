@@ -7,13 +7,6 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-/**
- * Provides a method of running SQL updates to the database.
- * Shows a list of updates that are available with a description of the
- *
- * @author Mark Noble
- *
- */
 class Admin_CollectionSpotlights extends ObjectEditor {
 	function getObjectType(){
 		return 'CollectionSpotlight';
@@ -28,7 +21,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		$list = array();
 
 		$collectionSpotlight = new CollectionSpotlight();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')){
 			$patronLibrary = Library::getPatronHomeLibrary();
 			$collectionSpotlight->libraryId = $patronLibrary->libraryId;
 		}
@@ -43,9 +36,6 @@ class Admin_CollectionSpotlights extends ObjectEditor {
     function getObjectStructure(){
 		return CollectionSpotlight::getObjectStructure();
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
@@ -57,7 +47,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		return false;
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
+		return true;
 	}
 	function launch() {
 		global $interface;
@@ -82,7 +72,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		//Get all available spotlights
 		$availableSpotlights = array();
 		$collectionSpotlight = new CollectionSpotlight();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$collectionSpotlight->whereAdd('libraryId = ' . $homeLibrary->libraryId . ' OR libraryId = -1');
 		}
@@ -173,5 +163,10 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 	function getActiveAdminSection()
 	{
 		return 'local_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Collection Spotlights','Administer Library Collection Spotlights']);
 	}
 }

@@ -44,10 +44,6 @@ class Admin_ReindexLog extends Admin_Admin
 		$this->display('reindexLog.tpl', 'Nightly Index Log');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
@@ -60,5 +56,10 @@ class Admin_ReindexLog extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'system_reports';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports','View Indexing Logs']);
 	}
 }

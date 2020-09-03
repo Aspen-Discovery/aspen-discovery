@@ -18,10 +18,9 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		//Load status information
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
-		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
-		}
+		$homeLibrary = Library::getPatronHomeLibrary();
+		$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
+
 		$materialsRequestStatus->find();
 		$availableStatuses = array();
 		$defaultStatusesToShow = array();
@@ -47,7 +46,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->selectAdd();
 		$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests');
 		$materialsRequest->selectAdd('user.id as userId, status, description, user.firstName, user.lastName, user.cat_username, user.cat_password');
-		if (UserAccount::userHasRole('library_material_requests')){
+		if (UserAccount::userHasPermission('View Materials Requests Reports')){
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary = Library::getPatronHomeLibrary();
 			$locations = new Location();
@@ -177,5 +176,10 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 	function getActiveAdminSection()
 	{
 		return 'materials_request';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View Materials Requests Reports');
 	}
 }

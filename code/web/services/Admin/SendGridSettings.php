@@ -57,16 +57,6 @@ class Admin_SendGridSettings extends ObjectEditor
 		return array('opacAdmin');
 	}
 
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];
@@ -90,4 +80,11 @@ class Admin_SendGridSettings extends ObjectEditor
 	{
 		return 'system_admin';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer SendGrid');
+	}
+
+
 }

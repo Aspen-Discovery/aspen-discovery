@@ -57,16 +57,6 @@ class Translation_Languages extends ObjectEditor
 		return array('opacAdmin', 'libraryAdmin', 'translator');
 	}
 
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin') ||  UserAccount::userHasRole('libraryAdmin') ||  UserAccount::userHasRole('translator');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin') ||  UserAccount::userHasRole('libraryAdmin') ||  UserAccount::userHasRole('translator');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];
@@ -89,5 +79,10 @@ class Translation_Languages extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'translations';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Languages');
 	}
 }

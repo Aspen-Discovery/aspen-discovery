@@ -666,7 +666,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		$repositoryLink = $configArray['Islandora']['repositoryUrl'] . '/islandora/object/' . $this->getUniqueID();
 		$interface->assign('repositoryLink', $repositoryLink);
 		$user = UserAccount::getLoggedInUser();
-		if($user && (UserAccount::userHasRole('archives') || UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin'))) {
+		if($user && (UserAccount::userHasPermission('Administer Islandora Archive'))) {
 			$moreDetailsOptions['staffView'] = array(
 				'label' => 'Staff View',
 				'body' => $interface->fetch('Archive/staffViewSection.tpl'),

@@ -11,7 +11,7 @@
 				{elseif $result.message}
 					<div class="alert alert-success">{$result.message}</div>
 					<p>
-						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Sign in'}</a>
 					</p>
 				{/if}
 			</div>

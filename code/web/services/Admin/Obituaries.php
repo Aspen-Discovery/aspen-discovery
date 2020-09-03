@@ -72,4 +72,9 @@ class Obituaries extends ObjectEditor
 	{
 		return '';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer Genealogy']);
+	}
 }

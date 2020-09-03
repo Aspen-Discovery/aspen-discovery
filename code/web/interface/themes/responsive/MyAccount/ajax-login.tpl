@@ -1,7 +1,7 @@
 {strip}
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal">×</button>
-		<h4 class="modal-title" id="myModalLabel">Login</h4>
+		<h4 class="modal-title" id="myModalLabel">{translate text="Sign In"}</h4>
 	</div>
 	<div class="modal-body">
 		<p class="alert alert-danger" id="loginError" style="display: none"></p>
@@ -73,7 +73,7 @@
 	<div class="modal-footer">
 		<button class="btn" data-dismiss="modal" id="modalClose">{translate text=Close}</button>
 		<span class="modal-buttons">
-		<input type="submit" name="submit" value="{if !empty($multiStep)}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
+		<input type="submit" name="submit" value="{if !empty($multiStep)}Continue{else}Sign In{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
 	</span>
 	</div>
 {/strip}

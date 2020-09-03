@@ -5,7 +5,7 @@ class SideLoads_AJAX extends JSON_Action
 {
 	/** @noinspection PhpUnused */
 	public function deleteMarc(){
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('catalogging')){
+		if (UserAccount::userHasPermission('Administer Side Loads')){
 			$id = $_REQUEST['id'];
 			$sideLoadConfiguration = new SideLoad();
 			$sideLoadConfiguration->id = $id;

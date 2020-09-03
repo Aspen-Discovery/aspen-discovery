@@ -63,7 +63,7 @@ class CollectionSpotlight extends DataObject
 	{
 		//Load Libraries for lookup values
 		$libraryList = array();
-		if (UserAccount::userHasRole('opacAdmin')) {
+		if (UserAccount::userHasPermission('Administer All Collection Spotlights')) {
 			$library = new Library();
 			$library->orderBy('displayName');
 			$library->find();
@@ -71,7 +71,7 @@ class CollectionSpotlight extends DataObject
 			while ($library->fetch()) {
 				$libraryList[$library->libraryId] = $library->displayName;
 			}
-		} elseif (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('contentEditor')) {
+		} else{
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
 		}

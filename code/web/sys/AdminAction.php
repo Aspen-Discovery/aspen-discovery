@@ -19,8 +19,7 @@ class AdminAction
 	 * @param string|string[] $requiredPermission
 	 */
 	public function addSubAction($adminAction, $requiredPermission){
-		$user = UserAccount::getActiveUserObj();
-		if ($user->hasPermission($requiredPermission)){
+		if (UserAccount::userHasPermission($requiredPermission)){
 			$this->subActions[] = $adminAction;
 		}
 	}

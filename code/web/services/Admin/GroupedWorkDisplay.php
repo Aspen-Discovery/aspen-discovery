@@ -15,11 +15,15 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 		return 'Grouped Work Display Settings';
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
+		return UserAccount::userHasPermission('Administer All Grouped Work Display Settings');
 	}
 	function getAllObjects(){
 		$object = new GroupedWorkDisplaySetting();
 		$object->orderBy('name');
+		if (!UserAccount::userHasPermission('Administer All Grouped Work Display Settings')){
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$object->id = $library->groupedWorkDisplaySettingId;
+		}
 		$object->find();
 		$list = array();
 		while ($object->fetch()){
@@ -35,9 +39,6 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 	}
 	function getIdKeyColumn(){
 		return 'id';
-	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
 	}
 
 	function getInstructions(){
@@ -85,5 +86,10 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'cataloging';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Grouped Work Display Settings','Administer Library Grouped Work Display Settings']);
 	}
 }

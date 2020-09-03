@@ -18,10 +18,10 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 	}
 	function getAllObjects(){
 		$status = new MaterialsRequestStatus();
-		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$status->libraryId = $homeLibrary->libraryId;
-		}
+
+		$homeLibrary = Library::getPatronHomeLibrary();
+		$status->libraryId = $homeLibrary->libraryId;
+
 		$status->orderBy('isDefault DESC');
 		$status->orderBy('isPatronCancel DESC');
 		$status->orderBy('isOpen DESC');
@@ -42,37 +42,31 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('library_material_requests');
-	}
 	function customListActions(){
 		$objectActions = array();
-		if (UserAccount::userHasRole('library_material_requests')){
-			$objectActions[] = array(
-				'label' => 'Reset to Default',
-				'action' => 'resetToDefault',
-			);
-		}
+
+		$objectActions[] = array(
+			'label' => 'Reset to Default',
+			'action' => 'resetToDefault',
+		);
 
 		return $objectActions;
 	}
 
 	/** @noinspection PhpUnused */
 	function resetToDefault(){
-		if (UserAccount::userHasRole('library_material_requests')){
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$materialRequestStatus = new MaterialsRequestStatus();
-			$materialRequestStatus->libraryId = $homeLibrary->libraryId;
-			$materialRequestStatus->delete(true);
+		$homeLibrary = Library::getPatronHomeLibrary();
+		$materialRequestStatus = new MaterialsRequestStatus();
+		$materialRequestStatus->libraryId = $homeLibrary->libraryId;
+		$materialRequestStatus->delete(true);
 
-			$materialRequestStatus = new MaterialsRequestStatus();
-			$materialRequestStatus->libraryId = -1;
-			$materialRequestStatus->find();
-			while ($materialRequestStatus->fetch()){
-				$materialRequestStatus->id = null;
-				$materialRequestStatus->libraryId = $homeLibrary->libraryId;
-				$materialRequestStatus->insert();
-			}
+		$materialRequestStatus = new MaterialsRequestStatus();
+		$materialRequestStatus->libraryId = -1;
+		$materialRequestStatus->find();
+		while ($materialRequestStatus->fetch()){
+			$materialRequestStatus->id = null;
+			$materialRequestStatus->libraryId = $homeLibrary->libraryId;
+			$materialRequestStatus->insert();
 		}
 		header("Location: /Admin/ManageStatuses");
 	}
@@ -88,5 +82,10 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 	function getActiveAdminSection()
 	{
 		return 'materials_request';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Materials Requests');
 	}
 }

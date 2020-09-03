@@ -175,7 +175,8 @@ class Archive_Results extends ResultsAction {
 
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Local Digital Archive Results');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl','Archive Search Results', 'Search/results-sidebar.tpl');
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl','Archive Search Results', $sidebar);
 	}
 
 	function getBreadcrumbs()

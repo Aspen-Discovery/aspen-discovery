@@ -87,6 +87,6 @@
 			</script>
 		{/if}
 	{else}
-		{translate text="login_to_view_account_notice" defaultText="You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login."}
+		{translate text="login_to_view_account_notice" defaultText="You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in."}
 	{/if}
 {/strip}

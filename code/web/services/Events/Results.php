@@ -170,7 +170,8 @@ class Events_Results extends ResultsAction
 
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Library Event Results');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Library Event Search Results', 'Search/results-sidebar.tpl');
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Library Event Search Results', $sidebar);
 	}
 
 	function getBreadcrumbs()

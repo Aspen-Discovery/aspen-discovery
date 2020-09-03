@@ -94,7 +94,7 @@
 		<p>{translate text="Can't find what you are looking for?"} <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
 	{/if}
 
-	{if $showSearchTools || ($loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)))}
+	{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 	<div class="search_tools well small">
 		<strong>{translate text='Search Tools'} </strong>
 		{if $showSearchTools}
@@ -107,10 +107,10 @@
 			{/if}
 			<a href="{$excelLink|escape}">{translate text='Export To Excel'}</a>
 		{/if}
-		{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
+		{if $loggedIn && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 			<a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight'}</a>
 		{/if}
-		{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
+		{if $loggedIn && (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
 			<a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')">{translate text='Add To Browse'}</a>
 		{/if}
 	</div>

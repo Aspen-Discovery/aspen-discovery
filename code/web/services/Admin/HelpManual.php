@@ -22,10 +22,6 @@ class Admin_HelpManual extends Admin_Admin
 		}
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
@@ -38,5 +34,10 @@ class Admin_HelpManual extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'aspen_help';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View Help Manual');
 	}
 }

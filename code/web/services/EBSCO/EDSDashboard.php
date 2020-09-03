@@ -47,10 +47,6 @@ class EBSCO_EDSDashboard extends Admin_Admin
 		$this->display('edsDashboard.tpl', 'EBSCO EDS Dashboard');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year
@@ -110,5 +106,10 @@ class EBSCO_EDSDashboard extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'ebsco';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}
 }

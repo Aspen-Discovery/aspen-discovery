@@ -35,10 +35,6 @@ class Admin_CronLog extends Admin_Admin
 		$this->display('cronLog.tpl', 'Cron Log');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
@@ -51,5 +47,10 @@ class Admin_CronLog extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'system_reports';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View System Reports');
 	}
 }

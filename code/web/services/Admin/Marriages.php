@@ -72,4 +72,9 @@ class Admin_Marriages extends ObjectEditor
 	{
 		return '';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer Genealogy']);
+	}
 }

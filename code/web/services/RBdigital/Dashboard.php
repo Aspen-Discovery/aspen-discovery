@@ -68,11 +68,6 @@ class RBdigital_Dashboard extends Admin_Admin
 		$this->display('dashboard.tpl', 'RBdigital Dashboard');
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year
@@ -145,5 +140,10 @@ class RBdigital_Dashboard extends Admin_Admin
 	function getActiveAdminSection()
 	{
 		return 'rbdigital';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}
 }

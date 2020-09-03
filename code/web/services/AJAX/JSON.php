@@ -74,7 +74,7 @@ class AJAX_JSON extends Action {
 
 	/** @noinspection PhpUnused */
 	function getTranslationForm(){
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator')){
+		if (UserAccount::userHasPermission('Translate Aspen')){
 			$translationTerm = new TranslationTerm();
 			$translationTerm->id = $_REQUEST['termId'];
 			if ($translationTerm->find(true)){
@@ -129,7 +129,7 @@ class AJAX_JSON extends Action {
 			'success' => false,
 			'message' => 'Unknown Error'
 		];
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator')){
+		if (UserAccount::userHasPermission('Translate Aspen')){
 			if ($translation->find(true)){
 				$translation->setTranslation($newTranslation);
 				$result = [
