@@ -65,6 +65,15 @@ function getThemingUpdates()
 			],
 		],
 
+		'theme_defaults_for_logo_and_favicon' => [
+			'title' => 'Theme - Set defaults for logo and favicon',
+			'description' => 'Update theme table to have default values for logo and favicon to prevent errors',
+			'sql' => [
+				"ALTER TABLE themes CHANGE COLUMN logoName logoName VARCHAR(100) default ''",
+				"ALTER TABLE themes CHANGE COLUMN favicon favicon VARCHAR(100) default ''"
+			]
+		],
+
 		'themes_primary_colors' => [
 			'title' => 'Theme Primary Colors',
 			'description' => 'Initial setup of primary colors. ',
@@ -419,6 +428,6 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN searchToolsForegroundColor CHAR(7) DEFAULT '#6B6B6B'",
 				"ALTER TABLE themes ADD COLUMN searchToolsForegroundColorDefault tinyint(1) DEFAULT 1",
 			]
-		]
+		],
 	];
 }
