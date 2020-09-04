@@ -2,7 +2,7 @@
 	{if $loggedIn}
 		{* Setup the accoridon *}
 		<!--suppress HtmlUnknownTarget -->
-		<div id="account-menu" style="display: none">
+		<div id="account-menu" class="dropdownMenu" style="display: none">
 			<span class="expirationFinesNotice-placeholder"></span>
 			{if $userHasCatalogConnection}
 				<a href="/MyAccount/CheckedOut">

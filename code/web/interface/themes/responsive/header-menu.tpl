@@ -1,5 +1,5 @@
 {strip}
-<div id="header-menu" style="display: none">
+<div id="header-menu" class="dropdownMenu" style="display: none">
 	{if !empty($userPermissions)}
 		<div id="home-page-home-button" class="header-menu-option">
 			<a href="/Admin/Home">

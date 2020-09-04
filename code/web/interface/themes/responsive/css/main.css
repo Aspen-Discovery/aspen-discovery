@@ -8640,9 +8640,6 @@ hr.menu {
 #horizontal-menu-bar-container .menu-icon.menu-left {
   float: left;
 }
-#horizontal-menu-bar-container .menu-icon.menu-icon-selected {
-  background-color: #80d2f1;
-}
 #horizontal-menu-bar-container .menu-icon {
   margin-top: 3px;
   padding: 5px;
@@ -8651,11 +8648,9 @@ hr.menu {
 #horizontal-menu-bar-container .menu-icon:hover,
 #horizontal-menu-bar-container .menu-icon:focus {
   text-decoration: none;
-  color: #FFF;
   outline: none;
 }
 #horizontal-menu-bar-container .menu-icon .menu-bar-label {
-  color: #FFF;
   font-weight: bold;
   text-transform: uppercase;
   font-size: 16px;
@@ -9636,7 +9631,7 @@ a.browse-thumbnail-sorted.active {
 @media (max-width: 767px) {
   .wikipedia_image {
     display: block;
-    margin: 0px auto 10px;
+    margin: 0 auto 10px;
   }
 }
 .titleScrollerHeader {

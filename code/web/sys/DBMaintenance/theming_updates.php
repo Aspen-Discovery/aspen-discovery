@@ -429,5 +429,41 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN searchToolsForegroundColorDefault tinyint(1) DEFAULT 1",
 			]
 		],
+
+		'theme_reorganize_menu' => [
+			'title' => 'Theme remove vertical bar',
+			'description' => "Remove options related to the vertical bar and add new options for horizontal menu",
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE themes DROP COLUMN headerButtonBackgroundColor",
+				"ALTER TABLE themes DROP COLUMN headerButtonBackgroundColorDefault",
+				"ALTER TABLE themes DROP COLUMN headerButtonColor",
+				"ALTER TABLE themes DROP COLUMN headerButtonColorDefault",
+				"ALTER TABLE themes DROP COLUMN headerButtonRadius",
+				"ALTER TABLE themes DROP COLUMN headerBottomBorderColor",
+				"ALTER TABLE themes DROP COLUMN headerBottomBorderColorDefault",
+				"ALTER TABLE themes CHANGE COLUMN sidebarHighlightBackgroundColor menubarHighlightBackgroundColor CHAR(7) DEFAULT '#f1f1f1'",
+				"ALTER TABLE themes CHANGE COLUMN sidebarHighlightBackgroundColorDefault menubarHighlightBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes CHANGE COLUMN sidebarHighlightForegroundColor menubarHighlightForegroundColor CHAR(7) DEFAULT '#265a87'",
+				"ALTER TABLE themes CHANGE COLUMN sidebarHighlightForegroundColorDefault menubarHighlightForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN menubarBackgroundColor CHAR(7) DEFAULT '#f1f1f1'",
+				"ALTER TABLE themes ADD COLUMN menubarBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN menubarForegroundColor CHAR(7) DEFAULT '#303030'",
+				"ALTER TABLE themes ADD COLUMN menubarForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN menuDropdownBackgroundColor CHAR(7) DEFAULT '#ededed'",
+				"ALTER TABLE themes ADD COLUMN menuDropdownBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN menuDropdownForegroundColor CHAR(7) DEFAULT '#404040'",
+				"ALTER TABLE themes ADD COLUMN menuDropdownForegroundColorDefault tinyint(1) DEFAULT 1",
+				"updateAllThemes"
+			]
+		]
 	];
+}
+
+function updateAllThemes(){
+	$theme = new Theme();
+	$theme->find();
+	while ($theme->fetch()){
+		$theme->generateCss(true);
+	}
 }

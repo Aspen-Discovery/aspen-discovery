@@ -57,10 +57,6 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
     color: {$footerForegroundColor};
 {rdelim}
 
-.logoutOptions a,.loginOptions a{ldelim}
-    color: {$headerButtonColor} !important;
-{rdelim}
-
 body {ldelim}
     background-color: {$pageBackgroundColor};
     color: {$bodyTextColor};
@@ -93,33 +89,47 @@ body .container, #home-page-browse-content{ldelim}
     background-color: {$primaryBackgroundColor};
     color: {$primaryForegroundColor};
 {rdelim}
+
 #horizontal-menu-bar-container{ldelim}
     background-color: {$headerBackgroundColor};
     color: {$headerForegroundColor};
 {rdelim}
 
-#horizontal-menu-bar-container .menu-icon, #horizontal-menu-bar-container .menu-icon .menu-bar-label,
- #horizontal-menu-bar-container .menu-icon:visited, #horizontal-menu-bar-container .menu-icon:hover, #horizontal-menu-bar-container .menu-icon:focus,
- #horizontal-search-label,#horizontal-search-box #horizontal-search-label {ldelim}
-    color: {$headerForegroundColor};
+#horizontal-menu-bar-container, #horizontal-menu-bar-container .menu-icon, #horizontal-menu-bar-container .menu-icon .menu-bar-label,
+ #horizontal-menu-bar-container .menu-icon:visited{ldelim}
+    background-color: {$menubarBackgroundColor};
+    color: {$menubarForegroundColor};
 {rdelim}
 
-#horizontal-menu-bar-container  .menu-bar-option.menu-icon-selected,.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
-    background-color: {$sidebarHighlightBackgroundColor};
-    color: {$sidebarHighlightForegroundColor};
+#horizontal-menu-bar-container .menu-icon:hover, #horizontal-menu-bar-container .menu-icon:focus,
+#horizontal-menu-bar-container .menu-icon:hover .menu-bar-label, #horizontal-menu-bar-container .menu-iconn:focus .menu-bar-label{ldelim}
+    background-color: {$menubarHighlightBackgroundColor};
+    color: {$menubarHighlightForegroundColor};
+{rdelim}
+#horizontal-search-label,#horizontal-search-box #horizontal-search-label{ldelim}
+    color: {$primaryForegroundColor};
 {rdelim}
 
-#horizontal-menu-bar-container .menu-bar-option.menu-icon-selected .menu-bar-label,#horizontal-menu-bar-container .menu-icon:hover .menu-bar-label,
-.exploreMoreBar .exploreMoreBarLabel{ldelim}
-    color: {$sidebarHighlightForegroundColor};
+.dropdownMenu{ldelim}
+    background-color: {$menuDropdownBackgroundColor};
+    color: {$menuDropdownForegroundColor};
 {rdelim}
+
+.dropdownMenu a, .dropdownMenu a:visited{ldelim}
+    color: {$menuDropdownForegroundColor};
+{rdelim}
+
 .exploreMoreBar{ldelim}
     border-color: {$primaryBackgroundColor};
 {rdelim}
-#horizontal-menu-bar-container .menu-bar-option:hover{ldelim}
-    background-color: {$sidebarHighlightBackgroundColor};
-    color: {$sidebarHighlightForegroundColor};
+.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
+    background-color: {$primaryBackgroundColor};
+    color: {$primaryForegroundColor};
 {rdelim}
+.exploreMoreBar .exploreMoreBarLabel{ldelim}
+    color: {$primaryForegroundColor};
+{rdelim}
+
 
 {if $primaryForegroundColor}
 #home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel,.menu-bar, #horizontal-menu-bar-container {ldelim}
@@ -161,11 +171,6 @@ body .container, #home-page-browse-content{ldelim}
 
 #horizontal-menu-bar-container{ldelim}
     border-bottom-color: {$tertiaryBackgroundColor};
-{rdelim}
-
-#horizontal-menu-bar-container .menu-bar-option.menu-icon-selected,#horizontal-menu-bar-container .menu-bar-option:hover{ldelim}
-    background-color: {$sidebarHighlightBackgroundColor};
-    color: {$sidebarHighlightForegroundColor};
 {rdelim}
 
 {* Browse Categories *}

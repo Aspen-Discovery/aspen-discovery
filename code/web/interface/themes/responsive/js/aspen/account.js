@@ -410,10 +410,6 @@ AspenDiscovery.Account = (function(){
 				$.post(url, params, function(response){
 					loadingElem.hide();
 					if (response.result.success === true) {
-						// Hide "log in" options and show "log out" options:
-						$('.loginOptions, #loginOptions').hide();
-						$('.logoutOptions, #logoutOptions').show();
-
 						// Show user name on page in case page doesn't reload
 						let name = $.trim(response.result.name);
 						//name = 'Logged In As ' + name.slice(0, name.lastIndexOf(' ') + 2) + '.';
