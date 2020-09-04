@@ -14,6 +14,7 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $headerBackgroundColorDefault;
 	public $headerForegroundColor;
 	public /** @noinspection PhpUnused */ $headerForegroundColorDefault;
+	public $headerBottomBorderWidth;
 
 	public $pageBackgroundColor;
 	public /** @noinspection PhpUnused */ $pageBackgroundColorDefault;
@@ -1025,6 +1026,14 @@ class Theme extends DataObject
 				$interface->assign('capitalizeBrowseCategories', $theme->capitalizeBrowseCategories);
 			}
 
+
+			if ($interface->getVariable('headerBottomBorderWidth') == null && $theme->headerBottomBorderWidth != null) {
+				$headerBottomBorderWidth = $theme->headerBottomBorderWidth;
+				if (is_numeric($headerBottomBorderWidth)){
+					$headerBottomBorderWidth = $headerBottomBorderWidth . 'px';
+				}
+				$interface->assign('headerBottomBorderWidth', $headerBottomBorderWidth);
+			}
 			if ($interface->getVariable('buttonRadius') == null && $theme->buttonRadius != null) {
 				$buttonRadius = $theme->buttonRadius;
 				if (is_numeric($buttonRadius)){

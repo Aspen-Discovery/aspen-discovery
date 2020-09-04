@@ -43,9 +43,6 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
     background-color: {$headerBackgroundColor};
     background-image: none;
     color: {$headerForegroundColor};
-    {if $headerBottomBorderWidth}
-        border-bottom-width: {$headerBottomBorderWidth};
-    {/if}
 {rdelim}
 
 #library-name-header{ldelim}
@@ -190,6 +187,9 @@ body .container, #home-page-browse-content{ldelim}
 
 #horizontal-menu-bar-container{ldelim}
     border-bottom-color: {$tertiaryBackgroundColor};
+    {if $headerBottomBorderWidth}
+        border-bottom-width: {$headerBottomBorderWidth};
+    {/if}
 {rdelim}
 
 {* Browse Categories *}
