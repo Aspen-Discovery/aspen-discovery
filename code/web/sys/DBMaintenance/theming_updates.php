@@ -456,7 +456,7 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN menuDropdownForegroundColorDefault tinyint(1) DEFAULT 1",
 				"updateAllThemes"
 			]
-		]
+		],
 	];
 }
 

@@ -14,16 +14,6 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $headerBackgroundColorDefault;
 	public $headerForegroundColor;
 	public /** @noinspection PhpUnused */ $headerForegroundColorDefault;
-	//TODO: Delete header bottom border color from settings?
-//    public $headerBottomBorderColor;
-//    public $headerBottomBorderColorDefault;
-
-	public $headerButtonRadius;
-	public $headerButtonColor;
-	public /** @noinspection PhpUnused */ $headerButtonColorDefault;
-	public $headerButtonBackgroundColor;
-	public /** @noinspection PhpUnused */ $headerButtonBackgroundColorDefault;
-	public $headerBottomBorderWidth;
 
 	public $pageBackgroundColor;
 	public /** @noinspection PhpUnused */ $pageBackgroundColorDefault;
@@ -240,11 +230,19 @@ class Theme extends DataObject
 	public $dangerButtonHoverBorderColor;
 	public /** @noinspection PhpUnused */ $dangerButtonHoverBorderColorDefault;
 
-	//Sidebar Menu
-	public $sidebarHighlightBackgroundColor;
-	public /** @noinspection PhpUnused */ $sidebarHighlightBackgroundColorDefault;
-	public $sidebarHighlightForegroundColor;
-	public /** @noinspection PhpUnused */ $sidebarHighlightForegroundColorDefault;
+	//Top Menu
+	public $menubarBackgroundColor;
+	public /** @noinspection PhpUnused */ $menubarBackgroundColorDefault;
+	public $menubarForegroundColor;
+	public /** @noinspection PhpUnused */ $menubarForegroundColorDefault;
+	public $menubarHighlightBackgroundColor;
+	public /** @noinspection PhpUnused */ $menubarHighlightBackgroundColorDefault;
+	public $menubarHighlightForegroundColor;
+	public /** @noinspection PhpUnused */ $menubarHighlightForegroundColorDefault;
+	public $menuDropdownBackgroundColor;
+	public /** @noinspection PhpUnused */ $menuDropdownBackgroundColorDefault;
+	public $menuDropdownForegroundColor;
+	public /** @noinspection PhpUnused */ $menuDropdownForegroundColorDefault;
 
 	//Browse Category Colors
 	public $browseCategoryPanelColor;
@@ -368,10 +366,6 @@ class Theme extends DataObject
 			'headerBackgroundColor' => ['property' => 'headerBackgroundColor', 'type' => 'color', 'label' => 'Header Background Color', 'description' => 'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'headerForegroundColor'],
 			'headerForegroundColor' => ['property' => 'headerForegroundColor', 'type' => 'color', 'label' => 'Header Text Color', 'description' => 'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'headerBackgroundColor'],
 			'headerBottomBorderWidth' => ['property' => 'headerBottomBorderWidth', 'type' => 'text', 'label' => 'Header Bottom Border Width', 'description' => 'Header Bottom Border Width', 'required' => false, 'hideInLists' => true],
-			//Header Buttons
-			'headerButtonBackgroundColor' => ['property' => 'headerButtonBackgroundColor', 'type' => 'color', 'label' => 'Header Button Background Color', 'description' => 'Header Button Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#747474', 'checkContrastWith'=>'headerButtonColor'],
-			'headerButtonColor' => ['property' => 'headerButtonColor', 'type' => 'color', 'label' => 'Header Button Color', 'description' => 'Header Button Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'headerButtonBackgroundColor'],
-			'headerButtonRadius' => ['property' => 'headerButtonRadius', 'type' => 'text', 'label' => 'Header Button Radius', 'description' => 'Header Button Radius', 'required' => false, 'hideInLists' => true],
 
 			//Breadcrumbs
 			'breadcrumbsBackgroundColor' => ['property' => 'breadcrumbsBackgroundColor', 'type' => 'color', 'label' => 'Breadcrumbs Background Color', 'description' => 'Breadcrumbs Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f5f5f5', 'checkContrastWith'=>'breadcrumbsForegroundColor'],
@@ -409,8 +403,14 @@ class Theme extends DataObject
 			'additionalCssType' => ['property' => 'additionalCssType', 'type' => 'enum', 'values' => ['0' => 'Append to parent css', '1' => 'Override parent css'], 'label' => 'Additional CSS Application', 'description' => 'How to apply css to the theme', 'required' => false, 'default' => 0, 'hideInLists' => true],
 
 			//Menu
-			'sidebarHighlightBackgroundColor' => ['property' => 'sidebarHighlightBackgroundColor', 'type' => 'color', 'label' => 'Sidebar Highlight Background Color', 'description' => 'Sidebar Highlight Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#16ceff', 'checkContrastWith'=>'sidebarHighlightForegroundColor'],
-			'sidebarHighlightForegroundColor' => ['property' => 'sidebarHighlightForegroundColor', 'type' => 'color', 'label' => 'Sidebar Highlight Text Color', 'description' => 'Sidebar Highlight Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'sidebarHighlightBackgroundColor'],
+			'menuSection' =>['property'=>'menuSection', 'type' => 'section', 'label' =>'Menu', 'hideInLists' => true, 'properties' => [
+				'menubarBackgroundColor' => ['property' => 'menubarBackgroundColor', 'type' => 'color', 'label' => 'Menubar Background Color', 'description' => 'Menubar Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'menubarForegroundColor'],
+				'menubarForegroundColor' => ['property' => 'menubarForegroundColor', 'type' => 'color', 'label' => 'Menubar Text Color', 'description' => 'Menubar Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'menubarBackgroundColor'],
+				'menubarHighlightBackgroundColor' => ['property' => 'menubarHighlightBackgroundColor', 'type' => 'color', 'label' => 'Menubar Highlight Background Color', 'description' => 'Menubar Highlight Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'menubarHighlightForegroundColor'],
+				'menubarHighlightForegroundColor' => ['property' => 'menubarHighlightForegroundColor', 'type' => 'color', 'label' => 'Menubar Highlight Text Color', 'description' => 'Menubar Highlight Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#265a87', 'checkContrastWith'=>'menubarHighlightBackgroundColor'],
+				'menuDropdownBackgroundColor' => ['property' => 'menuDropdownBackgroundColor', 'type' => 'color', 'label' => 'Menu Dropdown Background Color', 'description' => 'Menubar Dropdown Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ededed', 'checkContrastWith'=>'menuDropdownForegroundColor'],
+				'menuDropdownForegroundColor' => ['property' => 'menuDropdownForegroundColor', 'type' => 'color', 'label' => 'Menu Dropdown Text Color', 'description' => 'Menubar Dropdown Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'menuDropdownBackgroundColor'],
+			]],
 
 			//Browse category theming
 			'browseCategorySection' =>['property'=>'browseCategorySection', 'type' => 'section', 'label' =>'Browse Categories', 'hideInLists' => true, 'properties' => [
@@ -575,10 +575,6 @@ class Theme extends DataObject
 		if ($headerContrast < 3.5){
 			$validationResults['errors'][] = 'Header contrast does not meet accessibility guidelines, contrast is: ' . ($headerContrast);
 		}
-		$headerButtonContrast = ColorUtils::calculateColorContrast($this->headerButtonColor, $this->headerButtonBackgroundColor);
-		if ($headerButtonContrast < 3.5){
-			$validationResults['errors'][] = 'Header Button contrast does not meet accessibility guidelines, contrast is: ' . ($headerButtonContrast);
-		}
 		$footerContrast = ColorUtils::calculateColorContrast($this->footerBackgroundColor, $this->footerForegroundColor);
 		if ($footerContrast < 3.5){
 			$validationResults['errors'][] = 'Footer contrast does not meet accessibility guidelines, contrast is: ' . ($footerContrast);
@@ -603,7 +599,7 @@ class Theme extends DataObject
 		if ($tertiaryContrast < 3.5){
 			$validationResults['errors'][] = 'Tertiary color contrast does not meet accessibility guidelines, contrast is: ' . ($tertiaryContrast);
 		}
-		$sidebarHighlightContrast = ColorUtils::calculateColorContrast($this->sidebarHighlightBackgroundColor, $this->sidebarHighlightForegroundColor);
+		$sidebarHighlightContrast = ColorUtils::calculateColorContrast($this->menubarHighlightBackgroundColor, $this->sidebarHighlightForegroundColor);
 		if ($sidebarHighlightContrast < 3.5){
 			$validationResults['errors'][] = 'Sidebar highlight contrast does not meet accessibility guidelines, contrast is: ' . ($sidebarHighlightContrast);
 		}
@@ -705,7 +701,7 @@ class Theme extends DataObject
 
 	public function insert()
 	{
-		$this->generatedCss = $this->generateCss($this->getAllAppliedThemes());
+		$this->generatedCss = $this->generateCss();
 		$this->clearDefaultCovers();
 		$ret = parent::insert();
 		if ($ret !== FALSE ){
@@ -717,23 +713,24 @@ class Theme extends DataObject
 
 	public function update()
 	{
-		$this->generatedCss = $this->generateCss($this->getAllAppliedThemes());
+		$this->generatedCss = $this->generateCss();
 		$this->clearDefaultCovers();
 		$ret = parent::update();
 		if ($ret !== FALSE ){
 			$this->saveLibraries();
 			$this->saveLocations();
-		}
 
-		//Check to see what has been derived from this theme and regenerate CSS for those themes as well
-		$childTheme = new Theme();
-		$childTheme->extendsTheme = $this->themeName;
-		$childTheme->find();
-		while ($childTheme->fetch()){
-			if ($childTheme->id != $this->id) {
-				$childTheme->update();
+			//Check to see what has been derived from this theme and regenerate CSS for those themes as well
+			$childTheme = new Theme();
+			$childTheme->extendsTheme = $this->themeName;
+			$childTheme->find();
+			while ($childTheme->fetch()){
+				if ($childTheme->id != $this->id) {
+					$childTheme->generateCss(true);
+				}
 			}
 		}
+
 		return $ret;
 	}
 
@@ -749,8 +746,6 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('resultValueColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerBackgroundColor', '#f1f1f1', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerForegroundColor', '#303030', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('headerButtonColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('headerButtonBackgroundColor', '#747474', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('breadcrumbsBackgroundColor', '#f5f5f5', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('breadcrumbsForegroundColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('searchToolsBackgroundColor', '#f5f5f5', $appliedThemes);
@@ -764,13 +759,12 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('secondaryForegroundColor', '#303030', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('tertiaryBackgroundColor', '#de1f0b', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('tertiaryForegroundColor', '#000000', $appliedThemes);
-		$defaultSidebarBackgroundColor = ColorUtils::lightenColor($this->primaryBackgroundColor, 1.2);
-		$this->getValueForPropertyUsingDefaults('sidebarHighlightBackgroundColor', $defaultSidebarBackgroundColor, $appliedThemes);
-		$defaultSidebarHighlight = '#ffffff';
-		if (ColorUtils::calculateColorContrast($defaultSidebarBackgroundColor, $defaultSidebarHighlight) < 3.5){
-			$defaultSidebarHighlight = '#000000';
-		}
-		$this->getValueForPropertyUsingDefaults('sidebarHighlightForegroundColor', $defaultSidebarHighlight, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarBackgroundColor', '#f1f1f1', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarForegroundColor', '#303030', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarHighlightBackgroundColor', '#f1f1f1', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarHighlightForegroundColor', '#265a87', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menuDropdownBackgroundColor', '#ededed', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menuDropdownForegroundColor', '#404040', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('browseCategoryPanelColor', '#d7dce3', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBackgroundColor', '#0087AB', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
@@ -848,12 +842,11 @@ class Theme extends DataObject
 	}
 
 	/**
-	 * @param Theme[] $allAppliedThemes an array of themes that have been applied in order of inheritance
-	 *
 	 * @return string the resulting css
 	 */
-	public function generateCss($allAppliedThemes)
+	public function generateCss($saveChanges = false)
 	{
+		$allAppliedThemes = $this->getAllAppliedThemes();
 		global $interface;
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$additionalCSS = '';
@@ -861,8 +854,6 @@ class Theme extends DataObject
 		$this->applyDefaults();
 		$interface->assign('headerBackgroundColor', $this->headerBackgroundColor);
 		$interface->assign('headerForegroundColor', $this->headerForegroundColor);
-		$interface->assign('headerButtonColor', $this->headerButtonColor);
-		$interface->assign('headerButtonBackgroundColor', $this->headerButtonBackgroundColor);
 		$interface->assign('pageBackgroundColor', $this->pageBackgroundColor);
 		$interface->assign('breadcrumbsBackgroundColor', $this->breadcrumbsBackgroundColor);
 		$interface->assign('breadcrumbsForegroundColor', $this->breadcrumbsForegroundColor);
@@ -891,8 +882,12 @@ class Theme extends DataObject
 		$interface->assign('tableStripeBackgroundColor', $tableStripeBackgroundColor);
 		$interface->assign('resultLabelColor', $this->resultLabelColor);
 		$interface->assign('resultValueColor', $this->resultValueColor);
-		$interface->assign('sidebarHighlightBackgroundColor', $this->sidebarHighlightBackgroundColor);
-		$interface->assign('sidebarHighlightForegroundColor', $this->sidebarHighlightForegroundColor);
+		$interface->assign('menubarHighlightBackgroundColor', $this->menubarHighlightBackgroundColor);
+		$interface->assign('menubarHighlightForegroundColor', $this->menubarHighlightForegroundColor);
+		$interface->assign('menubarBackgroundColor', $this->menubarBackgroundColor);
+		$interface->assign('menubarForegroundColor', $this->menubarForegroundColor);
+		$interface->assign('menuDropdownBackgroundColor', $this->menuDropdownBackgroundColor);
+		$interface->assign('menuDropdownForegroundColor', $this->menuDropdownForegroundColor);
 		$interface->assign('browseCategoryPanelColor', $this->browseCategoryPanelColor);
 		$interface->assign('selectedBrowseCategoryBackgroundColor', $this->selectedBrowseCategoryBackgroundColor);
 		$interface->assign('selectedBrowseCategoryForegroundColor', $this->selectedBrowseCategoryForegroundColor);
@@ -957,13 +952,8 @@ class Theme extends DataObject
 		$interface->assign('dangerButtonHoverForegroundColor', $this->dangerButtonHoverForegroundColor);
 		$interface->assign('dangerButtonHoverBorderColor', $this->dangerButtonHoverBorderColor);
 
+
 		foreach ($allAppliedThemes as $theme) {
-			if ($interface->getVariable('headerBottomBorderWidth') == null && $theme->headerBottomBorderWidth != null) {
-				$interface->assign('headerBottomBorderWidth', $theme->headerBottomBorderWidth);
-			}
-			if ($interface->getVariable('headerButtonRadius') == null && !empty($theme->headerButtonRadius)) {
-				$interface->assign('headerButtonRadius', $theme->headerButtonRadius);
-			}
 			if ($interface->getVariable('headingFont') == null && !$theme->headingFontDefault) {
 				$interface->assign('headingFont', $theme->headingFont);
 			}
@@ -1028,7 +1018,11 @@ class Theme extends DataObject
 
 		$interface->assign('additionalCSS', $additionalCSS);
 
-		return $interface->fetch('theme.css.tpl');
+		$this->generatedCss = $interface->fetch('theme.css.tpl');
+		if ($saveChanges) {
+			$this->update();
+		}
+		return $this->generatedCss;
 	}
 
 	/**
@@ -1036,6 +1030,7 @@ class Theme extends DataObject
 	 */
 	public function getAllAppliedThemes()
 	{
+		$allAppliedThemes = [];
 		$primaryTheme = clone($this);
 		$allAppliedThemes[$primaryTheme->themeName] = $primaryTheme;
 		$theme = $primaryTheme;
