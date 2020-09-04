@@ -41,9 +41,9 @@
 									{include file="Search/Recommend/sliderFacet.tpl" cluster=$cluster title=$title}
 								{elseif !empty($cluster.showAsDropDown)}
 									{include file="Search/Recommend/dropDownFacet.tpl" cluster=$cluster title=$title}
-                                {elseif !empty($cluster.multiSelect)}
-                                    {include file="Search/Recommend/multiSelectFacet.tpl" cluster=$cluster title=$title}
-                                {else}
+								{elseif !empty($cluster.multiSelect)}
+									{include file="Search/Recommend/multiSelectFacet.tpl" cluster=$cluster title=$title}
+								{else}
 									{include file="Search/Recommend/standardFacet.tpl" cluster=$cluster title=$title}
 								{/if}
 							</div>

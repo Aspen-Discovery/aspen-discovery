@@ -10190,6 +10190,10 @@ a.browse-thumbnail-sorted.active {
     column-count: 2;
   }
 }
+.moreFacetPopup .checkboxFacet {
+  text-indent: -17px;
+  padding-left: 30px;
+}
 .highlight {
   font-weight: bolder;
   background-color: lemonchiffon;
