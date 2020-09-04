@@ -11056,6 +11056,8 @@ a.browse-thumbnail-sorted.active {
 }
 .oneToManyTable {
   overflow-x: auto;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 @media (max-width: 991px) {
   #adminSections .grid-col--2 {
