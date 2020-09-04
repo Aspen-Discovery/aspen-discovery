@@ -120,6 +120,24 @@ body .container, #home-page-browse-content{ldelim}
     color: {$menuDropdownForegroundColor};
 {rdelim}
 
+.modal-header, .modal-footer{ldelim}
+    background-color: {$modalDialogHeaderFooterBackgroundColor};
+    color: {$modalDialogHeaderFooterForegroundColor};
+{rdelim}
+.close, .close:hover, .close:focus{ldelim}
+    color: {$modalDialogHeaderFooterForegroundColor};
+{rdelim}
+.modal-header{ldelim}
+    border-bottom-color: {$modalDialogHeaderFooterBorderColor};
+{rdelim}
+.modal-footer{ldelim}
+    border-top-color: {$modalDialogHeaderFooterBorderColor};
+{rdelim}
+.modal-content{ldelim}
+    background-color: {$modalDialogBackgroundColor};
+    color: {$modalDialogForegroundColor};
+{rdelim}
+
 .exploreMoreBar{ldelim}
     border-color: {$primaryBackgroundColor};
 {rdelim}

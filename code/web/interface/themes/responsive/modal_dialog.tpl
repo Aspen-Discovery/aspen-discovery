@@ -3,8 +3,8 @@
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title" id="myModalLabel">{translate text='Loading, please wait'}</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fas fa-times"></i></button>
+					<div class="modal-title" id="myModalLabel">{translate text='Loading, please wait'}</div>
 				</div>
 				<div class="modal-body">
 					...

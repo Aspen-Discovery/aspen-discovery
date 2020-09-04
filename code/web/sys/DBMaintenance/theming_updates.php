@@ -457,6 +457,24 @@ function getThemingUpdates()
 				"updateAllThemes"
 			]
 		],
+
+		'theme_modal_dialog' => [
+			'title' => 'Theme Modal Dialog',
+			'description' => "Add the ability to theme the modal dialog",
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN modalDialogBackgroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE themes ADD COLUMN modalDialogBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN modalDialogForegroundColor CHAR(7) DEFAULT '#333333'",
+				"ALTER TABLE themes ADD COLUMN modalDialogForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBackgroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterForegroundColor CHAR(7) DEFAULT '#333333'",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBorderColor CHAR(7) DEFAULT '#e5e5e5'",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBorderColorDefault tinyint(1) DEFAULT 1",
+				"updateAllThemes"
+			],
+		]
 	];
 }
 

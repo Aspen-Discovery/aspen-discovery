@@ -49,7 +49,7 @@ class Theme extends DataObject
 	public $footerForegroundColor;
 	public /** @noinspection PhpUnused */ $footerForegroundColorDefault;
 
-	//Primary color is used for the header bar and menu bar
+	//Primary color is used for the search bar
 	public $primaryBackgroundColor;
 	public $primaryBackgroundColorDefault;
 	public $primaryForegroundColor;
@@ -244,6 +244,18 @@ class Theme extends DataObject
 	public $menuDropdownForegroundColor;
 	public /** @noinspection PhpUnused */ $menuDropdownForegroundColorDefault;
 
+	//Modal dialog
+	public $modalDialogHeaderFooterBackgroundColor;
+	public /** @noinspection PhpUnused */ $modalDialogHeaderFooterBackgroundColorDefault;
+	public $modalDialogHeaderFooterForegroundColor;
+	public /** @noinspection PhpUnused */ $modalDialogHeaderFooterForegroundColorDefault;
+	public $modalDialogBackgroundColor;
+	public /** @noinspection PhpUnused */ $modalDialogBackgroundColorDefault;
+	public $modalDialogForegroundColor;
+	public /** @noinspection PhpUnused */ $modalDialogForegroundColorDefault;
+	public $modalDialogHeaderFooterBorderColor;
+	public /** @noinspection PhpUnused */ $modalDialogHeaderFooterBorderColorDefault;
+
 	//Browse Category Colors
 	public $browseCategoryPanelColor;
 	public /** @noinspection PhpUnused */ $browseCategoryPanelColorDefault;
@@ -410,6 +422,14 @@ class Theme extends DataObject
 				'menubarHighlightForegroundColor' => ['property' => 'menubarHighlightForegroundColor', 'type' => 'color', 'label' => 'Menubar Highlight Text Color', 'description' => 'Menubar Highlight Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#265a87', 'checkContrastWith'=>'menubarHighlightBackgroundColor'],
 				'menuDropdownBackgroundColor' => ['property' => 'menuDropdownBackgroundColor', 'type' => 'color', 'label' => 'Menu Dropdown Background Color', 'description' => 'Menubar Dropdown Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ededed', 'checkContrastWith'=>'menuDropdownForegroundColor'],
 				'menuDropdownForegroundColor' => ['property' => 'menuDropdownForegroundColor', 'type' => 'color', 'label' => 'Menu Dropdown Text Color', 'description' => 'Menubar Dropdown Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'menuDropdownBackgroundColor'],
+			]],
+
+			'modalDialogSection' =>['property'=>'modalDialogSection', 'type' => 'section', 'label' =>'Modal Dialog', 'hideInLists' => true, 'properties' => [
+				'modalDialogBackgroundColor' => ['property' => 'modalDialogBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Modal Dialog Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'modalDialogForegroundColor'],
+				'modalDialogForegroundColor' => ['property' => 'modalDialogForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Modal Dialog Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#333333', 'checkContrastWith'=>'modalDialogBackgroundColor'],
+				'modalDialogHeaderFooterBackgroundColor' => ['property' => 'modalDialogHeaderFooterBackgroundColor', 'type' => 'color', 'label' => 'Header/Footer Background Color', 'description' => 'Modal Dialog Header & Footer Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'modalDialogHeaderFooterForegroundColor'],
+				'modalDialogHeaderFooterForegroundColor' => ['property' => 'modalDialogHeaderFooterForegroundColor', 'type' => 'color', 'label' => 'Header/Footer Text Color', 'description' => 'Modal Dialog Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#333333', 'checkContrastWith'=>'modalDialogHeaderFooterBackgroundColor'],
+				'modalDialogHeaderFooterBorderColor' => ['property' => 'modalDialogHeaderFooterBorderColor', 'type' => 'color', 'label' => 'Header/Footer Border', 'description' => 'The color of the border between the header and footer and the content', 'required' => false, 'hideInLists' => true, 'default' => '#e5e5e5'],
 			]],
 
 			//Browse category theming
@@ -765,6 +785,11 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('menubarHighlightForegroundColor', '#265a87', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('menuDropdownBackgroundColor', '#ededed', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('menuDropdownForegroundColor', '#404040', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('modalDialogBackgroundColor', '#ffffff', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('modalDialogForegroundColor', '#333333', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBackgroundColor', '#ffffff', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterForegroundColor', '#333333', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBorderColor', '#e5e5e5', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('browseCategoryPanelColor', '#d7dce3', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBackgroundColor', '#0087AB', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
@@ -888,6 +913,11 @@ class Theme extends DataObject
 		$interface->assign('menubarForegroundColor', $this->menubarForegroundColor);
 		$interface->assign('menuDropdownBackgroundColor', $this->menuDropdownBackgroundColor);
 		$interface->assign('menuDropdownForegroundColor', $this->menuDropdownForegroundColor);
+		$interface->assign('modalDialogBackgroundColor', $this->modalDialogBackgroundColor);
+		$interface->assign('modalDialogForegroundColor', $this->modalDialogForegroundColor);
+		$interface->assign('modalDialogHeaderFooterBackgroundColor', $this->modalDialogHeaderFooterBackgroundColor);
+		$interface->assign('modalDialogHeaderFooterForegroundColor', $this->modalDialogHeaderFooterForegroundColor);
+		$interface->assign('modalDialogHeaderFooterBorderColor', $this->modalDialogHeaderFooterBorderColor);
 		$interface->assign('browseCategoryPanelColor', $this->browseCategoryPanelColor);
 		$interface->assign('selectedBrowseCategoryBackgroundColor', $this->selectedBrowseCategoryBackgroundColor);
 		$interface->assign('selectedBrowseCategoryForegroundColor', $this->selectedBrowseCategoryForegroundColor);

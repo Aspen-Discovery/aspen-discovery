@@ -5278,6 +5278,8 @@ button.close {
 .modal-body {
   position: relative;
   padding: 20px;
+  max-height: 56vh;
+  overflow-y: auto;
 }
 .modal-footer {
   margin-top: 15px;
@@ -7177,9 +7179,11 @@ body > .container {
   margin-left: 3px;
   margin-right: 3px;
 }
+.modal-header {
+  font-weight: bold;
+  font-size: 18px;
+}
 .modal-header .close {
-  margin-top: -10px;
-  font-size: 40px;
   opacity: 0.4;
 }
 @media print {
