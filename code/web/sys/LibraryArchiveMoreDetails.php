@@ -43,7 +43,7 @@ class LibraryArchiveMoreDetails extends DataObject{
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (UserAccount::userHasPermission('Administer All Libraries')){
+		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}

@@ -972,27 +972,6 @@ class Library extends DataObject
 			),
 		);
 
-		$structure['subdomain']['type'] = 'label';
-		$structure['displayName']['type'] = 'label';
-		unset($structure['showDisplayNameInHeader']);
-		unset($structure['displaySection']);
-		unset($structure['ilsSection']);
-		unset($structure['ecommerceSection']);
-		unset($structure['searchingSection']);
-		unset($structure['enrichmentSection']);
-		unset($structure['fullRecordSection']);
-		unset($structure['holdingsSummarySection']);
-		unset($structure['materialsRequestSection']);
-		unset($structure['prospectorSection']);
-		unset($structure['worldCatSection']);
-		unset($structure['overdriveSection']);
-		unset($structure['archiveSection']);
-		unset($structure['edsSection']);
-		unset($structure['dplaSection']);
-		unset($structure['recordsOwned']);
-		unset($structure['recordsToInclude']);
-		unset($structure['sideLoadScopes']);
-
 		//Update settings based on what we have access to
 		global $configArray;
 		if (!$configArray['Islandora']['enabled']) {
