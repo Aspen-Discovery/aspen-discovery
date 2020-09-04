@@ -60,23 +60,6 @@ hr.menu {
     height: auto;
   }
 }
-.header-button {
-  white-space: nowrap;
-  overflow-x: hidden;
-  text-align: center;
-  vertical-align: middle;
-  background-color: rgba(51, 51, 51, 0.6);
-  margin-top: 20px;
-  line-height: 60px !important;
-  border: 0;
-  border-radius: 0.5em;
-  color: white !important;
-}
-.header-button:hover {
-  text-decoration: underline;
-  border-bottom: 0;
-  box-shadow: 2px 2px 5px #fff;
-}
 #library-name-header {
   font-size: 26px;
   color: #8b8b8b;

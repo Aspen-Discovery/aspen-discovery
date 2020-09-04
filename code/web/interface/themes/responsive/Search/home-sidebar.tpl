@@ -1,7 +1,5 @@
 {strip}
 {* Search box *}
-	{include file="login-sidebar.tpl"}
-
 	<div class="row">
 		{if !empty($userPermissions)}
 			<a href="/Admin/Home">

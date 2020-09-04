@@ -8451,23 +8451,6 @@ hr.menu {
     height: auto;
   }
 }
-.header-button {
-  white-space: nowrap;
-  overflow-x: hidden;
-  text-align: center;
-  vertical-align: middle;
-  background-color: rgba(51, 51, 51, 0.6);
-  margin-top: 20px;
-  line-height: 60px !important;
-  border: 0;
-  border-radius: 0.5em;
-  color: white !important;
-}
-.header-button:hover {
-  text-decoration: underline;
-  border-bottom: 0;
-  box-shadow: 2px 2px 5px #fff;
-}
 #library-name-header {
   font-size: 26px;
   color: #8b8b8b;
@@ -11011,48 +10994,6 @@ body.masqueradeMode:before {
 }
 body.masqueradeMode:after {
   bottom: 0;
-}
-.btn-masquerade {
-  color: #003366;
-  background-color: #ebccff;
-  border-color: #ccc;
-  font-weight: bold;
-}
-.btn-masquerade:hover,
-.btn-masquerade:focus,
-.btn-masquerade:active,
-.btn-masquerade.active,
-.open .dropdown-toggle.btn-masquerade {
-  color: #003366;
-  background-color: #dba3ff;
-  border-color: #adadad;
-}
-.btn-masquerade:active,
-.btn-masquerade.active,
-.open .dropdown-toggle.btn-masquerade {
-  background-image: none;
-}
-.btn-masquerade.disabled,
-.btn-masquerade[disabled],
-fieldset[disabled] .btn-masquerade,
-.btn-masquerade.disabled:hover,
-.btn-masquerade[disabled]:hover,
-fieldset[disabled] .btn-masquerade:hover,
-.btn-masquerade.disabled:focus,
-.btn-masquerade[disabled]:focus,
-fieldset[disabled] .btn-masquerade:focus,
-.btn-masquerade.disabled:active,
-.btn-masquerade[disabled]:active,
-fieldset[disabled] .btn-masquerade:active,
-.btn-masquerade.disabled.active,
-.btn-masquerade[disabled].active,
-fieldset[disabled] .btn-masquerade.active {
-  background-color: #ebccff;
-  border-color: #ccc;
-}
-.btn-masquerade .badge {
-  color: #ebccff;
-  background-color: #fff;
 }
 .dashboardCategory .dashboardCategoryLabel {
   font-size: 24px;

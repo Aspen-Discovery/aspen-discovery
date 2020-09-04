@@ -8557,23 +8557,6 @@ hr.menu {
 .header-menu-section i {
   float: right;
 }
-.header-button {
-  white-space: nowrap;
-  overflow-x: hidden;
-  text-align: center;
-  vertical-align: middle;
-  background-color: rgba(51, 51, 51, 0.6);
-  margin-top: 20px;
-  line-height: 60px !important;
-  border: 0;
-  border-radius: 0.5em;
-  color: white !important;
-}
-.header-button:hover {
-  text-decoration: underline;
-  border-bottom: 0;
-  box-shadow: 2px 2px 5px #fff;
-}
 #library-name-header {
   font-size: 26px;
   color: #8b8b8b;
@@ -8958,20 +8941,6 @@ a.placard-link {
 }
 #horizontal-search-box #keepFiltersSwitchLabel {
   margin-bottom: 0;
-}
-#home-page-login {
-  background-color: #AFAFAF;
-  color: #FFF;
-  font-size: 18px;
-  padding: 5px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-}
-#home-page-login a {
-  color: #FFF;
-}
-#horizontal-search-wrapper + #content-container #home-page-login {
-  margin-top: 5px;
 }
 #home-page-library-section {
   padding: 15px 0;
@@ -9631,10 +9600,6 @@ a.browse-thumbnail-sorted.active {
 }
 .holdDisclaimerLibrary {
   font-weight: bold;
-}
-#mobileHeader .myAccountLink {
-  font-weight: bold;
-  font-size: 18px;
 }
 #contactUpdateForm .btn-group .btn-default.active {
   background-color: #3174AF;
@@ -11059,66 +11024,6 @@ a.browse-thumbnail-sorted.active {
 }
 .editor .panel-group .panel-body > .form-group > .controls {
   overflow-x: auto;
-}
-#browseCategories tr td:nth-child(3) > select {
-  max-width: 400px;
-}
-#masquerade-header {
-  height: 50px;
-  background-color: #8a00e6;
-  color: #FFF;
-}
-#masquerade-header-content {
-  padding: 5px;
-}
-#masquerade-header-end {
-  padding-top: 5px;
-}
-.sidebar-masquerade-section {
-  background-color: #8a00e6;
-  color: #FFF;
-}
-.btn-masquerade {
-  color: #003366;
-  background-color: #ebccff;
-  border-color: #ccc;
-  font-weight: bold;
-}
-.btn-masquerade:hover,
-.btn-masquerade:focus,
-.btn-masquerade:active,
-.btn-masquerade.active,
-.open .dropdown-toggle.btn-masquerade {
-  color: #003366;
-  background-color: #dba3ff;
-  border-color: #adadad;
-}
-.btn-masquerade:active,
-.btn-masquerade.active,
-.open .dropdown-toggle.btn-masquerade {
-  background-image: none;
-}
-.btn-masquerade.disabled,
-.btn-masquerade[disabled],
-fieldset[disabled] .btn-masquerade,
-.btn-masquerade.disabled:hover,
-.btn-masquerade[disabled]:hover,
-fieldset[disabled] .btn-masquerade:hover,
-.btn-masquerade.disabled:focus,
-.btn-masquerade[disabled]:focus,
-fieldset[disabled] .btn-masquerade:focus,
-.btn-masquerade.disabled:active,
-.btn-masquerade[disabled]:active,
-fieldset[disabled] .btn-masquerade:active,
-.btn-masquerade.disabled.active,
-.btn-masquerade[disabled].active,
-fieldset[disabled] .btn-masquerade.active {
-  background-color: #ebccff;
-  border-color: #ccc;
-}
-.btn-masquerade .badge {
-  color: #ebccff;
-  background-color: #fff;
 }
 .dashboardCategory .dashboardCategoryLabel {
   font-size: 24px;

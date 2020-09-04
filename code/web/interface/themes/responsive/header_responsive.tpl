@@ -39,31 +39,4 @@
 			{/foreach}
 		</div>
 	{/if}
-
-{*	<div class="logoutOptions"{if !$loggedIn} style="display: none;"{/if}>*}
-{*		<div class="hidden-xs col-sm-2 col-sm-offset-5 col-md-2 col-md-offset-0 col-lg-2 col-lg-offset-0">*}
-{*			<a id="myAccountNameLink" href="/MyAccount/Home">*}
-{*				<div class="header-button header-primary">*}
-{*					{translate text="Your Account"}*}
-{*				</div>*}
-{*			</a>*}
-{*		</div>*}
-
-{*		<div class="hidden-xs col-sm-2 col-md-2 col-lg-2">*}
-{*			<a href="/MyAccount/Logout"{if $masqueradeMode} onclick="return confirm('This will end both Masquerade Mode and your session as well. Continue to log out?')"{/if} id="logoutLink">*}
-{*				<div class="header-button header-primary">*}
-{*					{translate text="Log Out"}*}
-{*				</div>*}
-{*			</a>*}
-{*		</div>*}
-{*	</div>*}
-{*	<div class="loginOptions col-sm-2 col-sm-offset-7 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2"{if $loggedIn} style="display: none;"{/if}>*}
-{*		{if $showLoginButton == 1}*}
-{*			<a id="headerLoginLink" href="/MyAccount/Home" class="loginLink" data-login="true" title="Login" onclick="{if !empty($isLoginPage)}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}">*}
-{*				<div class="hidden-xs header-button header-primary">*}
-{*					{translate text="LOGIN"}*}
-{*				</div>*}
-{*			</a>*}
-{*		{/if}*}
-{*	</div>*}
 {/strip}

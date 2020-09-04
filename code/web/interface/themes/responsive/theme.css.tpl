@@ -25,7 +25,7 @@
 {/if}
 
 {if $headingFont}
-h1, h2, h3, h4, h5, .header-button, .menu-bar-label, .panel-title, label,.browse-category,#browse-sub-category-menu,button,
+h1, h2, h3, h4, h5, .menu-bar-label, .panel-title, label,.browse-category,#browse-sub-category-menu,button,
 .btn,.myAccountLink,.adminMenuLink,.selected-browse-label-search,.result-label,.result-title,.label,#remove-search-label,#narrow-search-label,#library-name-header{ldelim}
     font-family: "{$headingFont}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
@@ -57,17 +57,6 @@ h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
     color: {$footerForegroundColor};
 {rdelim}
 
-.header-button{ldelim}
-    background-color: {$headerButtonBackgroundColor};
-    color: {$headerButtonColor} !important;
-    {if $headerButtonRadius}
-        border-radius: {$headerButtonRadius};
-    {/if}
-{rdelim}
-#home-page-login{ldelim}
-    background-color: {$headerButtonBackgroundColor};
-    color: {$headerButtonColor} !important;
-{rdelim}
 .logoutOptions a,.loginOptions a{ldelim}
     color: {$headerButtonColor} !important;
 {rdelim}
