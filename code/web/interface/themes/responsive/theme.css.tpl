@@ -102,7 +102,8 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 
 #horizontal-menu-bar-container .menu-icon:hover, #horizontal-menu-bar-container .menu-icon:focus,
-#horizontal-menu-bar-container .menu-icon:hover .menu-bar-label, #horizontal-menu-bar-container .menu-iconn:focus .menu-bar-label{ldelim}
+#horizontal-menu-bar-container .menu-icon:hover .menu-bar-label, #horizontal-menu-bar-container .menu-icon:focus .menu-bar-label,
+#menuToggleButton > a.selected{ldelim}
     background-color: {$menubarHighlightBackgroundColor};
     color: {$menubarHighlightForegroundColor};
 {rdelim}
@@ -110,7 +111,7 @@ body .container, #home-page-browse-content{ldelim}
     color: {$primaryForegroundColor};
 {rdelim}
 
-.dropdownMenu{ldelim}
+.dropdownMenu, #account-menu, #header-menu{ldelim}
     background-color: {$menuDropdownBackgroundColor};
     color: {$menuDropdownForegroundColor};
 {rdelim}
