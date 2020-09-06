@@ -79,7 +79,6 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$periodData = array();
 
 		$locationsToRestrictTo = '';
-		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasPermission('View Materials Requests Reports')){
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary = Library::getPatronHomeLibrary();
