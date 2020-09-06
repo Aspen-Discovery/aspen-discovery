@@ -2,10 +2,10 @@
 {if false}
 <!--suppress CssUnusedSymbol -->
 {/if}
-{if $headingFont}
+{if !empty($headingFont)}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$headingFont}">
 {/if}
-{if $bodyFont}
+{if !empty($bodyFont)}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$bodyFont}">
 {/if}
 
@@ -187,7 +187,7 @@ body .container, #home-page-browse-content{ldelim}
 
 #horizontal-menu-bar-container{ldelim}
     border-bottom-color: {$tertiaryBackgroundColor};
-    {if $headerBottomBorderWidth}
+    {if !empty($headerBottomBorderWidth)}
         border-bottom-width: {$headerBottomBorderWidth};
     {/if}
 {rdelim}
