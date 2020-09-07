@@ -64,10 +64,6 @@ class SubmitTicket extends Admin_Admin
 		$this->display('submitTicket.tpl', 'Submit Ticket');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

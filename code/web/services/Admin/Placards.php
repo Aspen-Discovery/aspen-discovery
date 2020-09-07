@@ -51,9 +51,6 @@ class Admin_Placards extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager', 'contentEditor');
-	}
 	function getInstructions()
 	{
 		return '/Admin/HelpManual?page=Placards';

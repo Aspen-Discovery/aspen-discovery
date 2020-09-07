@@ -110,11 +110,6 @@ class Translation_ImportTranslations extends Admin_Admin
 		$this->display('importTranslationsForm.tpl', 'Import Translations');
 	}
 
-	function getAllowableRoles()
-	{
-		return ['opacAdmin', 'translator'];
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

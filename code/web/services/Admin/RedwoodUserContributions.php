@@ -40,11 +40,6 @@ class RedwoodUserContributions extends ObjectEditor
 		return UserContribution::getObjectStructure();
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'archives');
-	}
-
 	function getPrimaryKeyColumn()
 	{
 		return 'id';

@@ -85,11 +85,6 @@ class Translation_Translations extends Admin_Admin
 		$this->display('translations.tpl', 'Translations');
 	}
 
-	function getAllowableRoles()
-	{
-		return ['opacAdmin', 'translator'];
-	}
-
 	private function exportAllTranslations()
 	{
 		header('Content-type: application/csv');

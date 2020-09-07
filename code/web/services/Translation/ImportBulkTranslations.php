@@ -92,11 +92,6 @@ class Translation_ImportBulkTranslations extends Admin_Admin
 		$this->display('importBulkTranslationsForm.tpl', 'Import Bulk Translations');
 	}
 
-	function getAllowableRoles()
-	{
-		return ['opacAdmin', 'translator'];
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

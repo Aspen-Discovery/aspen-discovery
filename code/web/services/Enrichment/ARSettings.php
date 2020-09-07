@@ -52,11 +52,6 @@ class Enrichment_ARSettings extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'cataloging', 'superCataloger');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];

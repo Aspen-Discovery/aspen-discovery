@@ -45,10 +45,6 @@ h2 {font-size: 125%;}
 		$this->display('adminInfo.tpl', 'PHP Information');
 	}
 
-	function getAllowableRoles() {
-		return array('opacAdmin');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

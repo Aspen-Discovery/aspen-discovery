@@ -32,10 +32,6 @@ class OpenArchives_Collections extends ObjectEditor {
 	function getObjectStructure(){
 		return OpenArchivesCollection::getObjectStructure();
 	}
-	function getAllowableRoles(){
-
-		return array('opacAdmin', 'libraryAdmin', 'archives');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}

@@ -38,10 +38,6 @@ class SideLoads_DownloadMarc extends Admin_Admin
 		$this->display('sideloadError.tpl', 'Error Downloading File');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging', 'superCataloger');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

@@ -34,9 +34,6 @@ class Admin_Variables extends ObjectEditor{
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 	function canAddNew(){
 		return false;
 	}

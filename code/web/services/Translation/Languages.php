@@ -52,11 +52,6 @@ class Translation_Languages extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin', 'translator');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];

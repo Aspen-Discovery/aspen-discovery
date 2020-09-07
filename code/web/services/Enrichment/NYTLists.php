@@ -71,11 +71,6 @@ class Enrichment_NYTLists extends Admin_Admin
 		$this->display('nytLists.tpl', 'Lists from New York Times');
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'contentEditor');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

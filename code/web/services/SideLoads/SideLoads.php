@@ -82,11 +82,6 @@ class SideLoads_SideLoads extends ObjectEditor
 		return SideLoad::getObjectStructure();
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin');
-	}
-
 	function getPrimaryKeyColumn()
 	{
 		return 'id';

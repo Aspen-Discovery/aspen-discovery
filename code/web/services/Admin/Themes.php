@@ -41,9 +41,6 @@ class Admin_Themes extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
 
 	function getInstructions(){
 		//return 'For more information on themes see TBD';

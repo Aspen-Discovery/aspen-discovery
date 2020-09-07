@@ -55,10 +55,6 @@ class Websites_PageStats extends Admin_Admin
 		$this->display('pageStats.tpl', 'Page Stats');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year

@@ -29,9 +29,6 @@ class Admin_Modules extends ObjectEditor {
 	function getObjectStructure(){
 		return Module::getObjectStructure();
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}

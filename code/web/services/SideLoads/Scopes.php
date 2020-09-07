@@ -56,9 +56,6 @@ class SideLoads_Scopes extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
 	}

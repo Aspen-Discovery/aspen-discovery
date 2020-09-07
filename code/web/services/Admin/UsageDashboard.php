@@ -35,10 +35,6 @@ class Admin_UsageDashboard extends Admin_Admin
 		$this->display('usage_dashboard.tpl', 'Aspen Usage Dashboard');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year

@@ -7,11 +7,6 @@ require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
 class Events_LMLibraryCalendarSettings extends ObjectEditor
 {
 
-	function getAllowableRoles()
-	{
-		return ['opacAdmin', 'libraryAdmin'];
-	}
-
 	/**
 	 * The class name of the object which is being edited
 	 */
@@ -92,5 +87,10 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	function canView()
 	{
 		return UserAccount::userHasPermission('Administer Library Calendar Settings');
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'events';
 	}
 }

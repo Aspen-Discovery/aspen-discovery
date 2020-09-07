@@ -52,11 +52,6 @@ class EBSCO_EDSSettings extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];

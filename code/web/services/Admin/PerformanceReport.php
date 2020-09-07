@@ -41,10 +41,6 @@ class Admin_PerformanceReport extends Admin_Admin
 		$this->display('performance_report.tpl', 'Performance Report');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
-
 	private function getSlowPageStats(int $month, int $year, $setName, array $stats) : array
 	{
 		$usage = new SlowPage();

@@ -29,10 +29,6 @@ class Admin_ReleaseNotes extends Admin_Admin
 		$this->display('releaseNotes.tpl', 'Release Notes');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

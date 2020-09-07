@@ -77,10 +77,6 @@ class SideLoads_UploadMarc extends Admin_Admin
 		$this->display('uploadMarc.tpl', 'Upload MARC File');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging', 'superCataloger');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

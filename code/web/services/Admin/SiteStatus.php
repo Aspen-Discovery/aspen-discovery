@@ -27,11 +27,6 @@ class Admin_SiteStatus extends Admin_Admin
 		$this->display('siteStatus.tpl', 'Aspen Discovery Status');
 	}
 
-	function getAllowableRoles()
-	{
-		return array('userAdmin', 'opacAdmin');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
