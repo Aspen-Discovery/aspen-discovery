@@ -481,7 +481,7 @@ function getUserUpdates()
 				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Masquerader') WHERE masquerade = 'any'",
 				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Library Masquerader') WHERE masquerade = 'library'",
 				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Location Masquerader') WHERE masquerade = 'location'",
-				"ALTER TABLE pType drop column masquerade"
+				"ALTER TABLE ptype drop column masquerade"
 			]
 		],
 
@@ -499,7 +499,7 @@ function getUserUpdates()
 			'title' => 'Staff patron types',
 			'description' => 'Add the ability to treat specific patron types as staff',
 			'sql' => [
-				'ALTER TABLE pType add column isStaff TINYINT(1) DEFAULT 0',
+				'ALTER TABLE ptype add column isStaff TINYINT(1) DEFAULT 0',
 			]
 		]
 	);
