@@ -376,7 +376,6 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	}
 	$interface->assign('userHasCatalogConnection', UserAccount::getUserHasCatalogConnection());
 
-
 	$homeLibrary = Library::getLibraryForLocation(UserAccount::getUserHomeLocationId());
 	if (isset($homeLibrary)){
 		$interface->assign('homeLibrary', $homeLibrary->displayName);
@@ -539,6 +538,7 @@ $onInternalIP = false;
 $includeAutoLogoutCode = false;
 $automaticTimeoutLength = 0;
 $automaticTimeoutLengthLoggedOut = 0;
+$onInternalIP = false;
 if (($isOpac || $masqueradeMode || (!empty($ipLocation) && $ipLocation->getOpacStatus()) ) && !$offlineMode) {
 	// Make sure we don't have timeouts if we are offline (because it's super annoying when doing offline checkouts and holds)
 
@@ -552,7 +552,7 @@ if (($isOpac || $masqueradeMode || (!empty($ipLocation) && $ipLocation->getOpacS
 
 	if ($masqueradeMode) {
 		// Masquerade Time Out Lengths
-			$automaticTimeoutLength = empty($library->masqueradeAutomaticTimeoutLength) ? 90 : $library->masqueradeAutomaticTimeoutLength;
+		$automaticTimeoutLength = empty($library->masqueradeAutomaticTimeoutLength) ? 90 : $library->masqueradeAutomaticTimeoutLength;
 	} else {
 		// Determine Regular Time Out Lengths
 		if (UserAccount::isLoggedIn()) {

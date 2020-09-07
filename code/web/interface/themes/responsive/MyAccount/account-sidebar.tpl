@@ -176,7 +176,7 @@
 								{if $user->isValidForEContentSource('hoopla')}
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options'}</a></li>
 								{/if}
-								{if $userIsStaff || count($user->roles) > 0}
+								{if $userIsStaff}
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/StaffSettings">{translate text='Staff Settings'}</a></li>
 								{/if}
 							</ul>

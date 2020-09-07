@@ -449,6 +449,58 @@ function getUserUpdates()
 			'sql' => [
 				'updateDefaultPermissions'
 			]
+		],
+
+		'user_assign_role_by_ptype' => [
+			'title' => 'Assign Role by PType',
+			'description' => 'Allow roles to be assigned automatically based on patron type',
+			'sql' => [
+				'ALTER TABLE ptype ADD COLUMN assignedRoleId INT(11) DEFAULT -1',
+				"ALTER TABLE ptype ADD COLUMN restrictMasquerade TINYINT(1) DEFAULT 0"
+			]
+		],
+
+		'masquerade_permissions' => [
+			'title' => 'Create masquerade permissions and roles',
+			'description' => 'Create masquerade permissions and roles',
+			'sql' => [
+				"INSERT INTO roles (name, description) VALUES 
+					('Masquerader', 'Allows the user to masquerade as any other user.'),
+					('Library Masquerader', 'Allows the user to masquerade as patrons of their home library only.'),
+					('Location Masquerader', 'Allows the user to masquerade as patrons of their home location only.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Masquerade', 'Masquerade as any user', '', 0, 'Allows the user to masquerade as any other user including restricted patron types.'),
+					('Masquerade', 'Masquerade as unrestricted patron types', '', 10, 'Allows the user to masquerade as any other user if their patron type is unrestricted.'),
+					('Masquerade', 'Masquerade as patrons with same home library', '', 20, 'Allows the user to masquerade as patrons with the same home library including restricted patron types.'),
+					('Masquerade', 'Masquerade as unrestricted patrons with same home library', '', 30, 'Allows the user to masquerade as patrons with the same home library if their patron type is unrestricted.'),
+					('Masquerade', 'Masquerade as patrons with same home location', '', 40, 'Allows the user to masquerade as patrons with the same home location including restricted patron types.'),
+					('Masquerade', 'Masquerade as unrestricted patrons with same home location', '', 50, 'Allows the user to masquerade as patrons with the same home location if their patron type is unrestricted.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Masquerader'), (SELECT id from permissions where name='Masquerade as any user'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Masquerader'), (SELECT id from permissions where name='Masquerade as patrons with same home library'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Location Masquerader'), (SELECT id from permissions where name='Masquerade as patrons with same home location'))",
+				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Masquerader') WHERE masquerade = 'any'",
+				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Library Masquerader') WHERE masquerade = 'library'",
+				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Location Masquerader') WHERE masquerade = 'location'",
+				"ALTER TABLE pType drop column masquerade"
+			]
+		],
+
+		'test_roles_permission' => [
+			'title' => 'Add permissions for testing roles',
+			'description' => 'Add permissions for testing roles',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('System Administration', 'Test Roles', '', 17, 'Allows the user to use the test_role parameter to act as different role.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='userAdmin'), (SELECT id from permissions where name='Test Roles'))",
+			]
+		],
+
+		'staff_ptypes' => [
+			'title' => 'Staff patron types',
+			'description' => 'Add the ability to treat specific patron types as staff',
+			'sql' => [
+				'ALTER TABLE pType add column isStaff TINYINT(1) DEFAULT 0',
+			]
 		]
 	);
 }

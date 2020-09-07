@@ -1,0 +1,43 @@
+<?php
+
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+
+class PType extends DataObject
+{
+	public $__table = 'ptype';   // table name
+	public $id;
+	public $pType;                //varchar(45)
+	public $maxHolds;            //int(11)
+	public $assignedRoleId;
+	public $restrictMasquerade;
+	public $isStaff;
+
+	function keys()
+	{
+		return array('id');
+	}
+
+	static function getObjectStructure()
+	{
+		$roles = [];
+		$roles[-1] = 'None';
+		$role = new Role();
+		$role->orderBy('name');
+		$role->find();
+		while ($role->fetch()){
+			$roles[$role->roleId] = $role->name;
+		}
+		$structure = array(
+			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the p-type within the database', 'hideInLists' => false),
+			'pType' => array('property' => 'pType', 'type' => 'text', 'label' => 'P-Type', 'description' => 'The P-Type for the patron'),
+			'maxHolds' => array('property' => 'maxHolds', 'type' => 'integer', 'label' => 'Max Holds', 'description' => 'The maximum holds that a patron can have.', 'default' => 300),
+			'assignedRoleId' => array('property' => 'assignedRoleId', 'type' => 'enum', 'values' => $roles, 'label' => 'Assigned Role', 'description' => 'Automatically assign a role to a user based on patron type', 'default' => '-1'),
+			'isStaff' => array('property' => 'isStaff', 'type' => 'checkbox', 'label' => 'Treat as staff', 'description' => 'Treat the user as staff, but without specific permissions in Aspen','default' => 0),
+			'restrictMasquerade' => array('property' => 'restrictMasquerade', 'type' => 'checkbox', 'label' => 'Restrict masquerade from accessing patrons of this type', 'description' => 'Users without the ability to masquerade as restricted patrons will not be able to masquerade as this type','default' => 0)
+		);
+		if (!UserAccount::userHasPermission('Administer Permissions')){
+			unset($structure['assignedRoleId']);
+		}
+		return $structure;
+	}
+}

@@ -84,7 +84,7 @@
 				{if $user->isValidForEContentSource('hoopla')}
 					<div class="header-menu-option childMenuItem" ><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options'}</a></div>
 				{/if}
-				{if $userIsStaff || count($user->roles) > 0}
+				{if $userIsStaff}
 					<div class="header-menu-option childMenuItem" ><a href="/MyAccount/StaffSettings">{translate text='Staff Settings'}</a></div>
 				{/if}
 			</div>

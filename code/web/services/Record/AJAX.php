@@ -67,7 +67,7 @@ class Record_AJAX extends Action
 			}
 
 			//Get information to show a warning if the user does not have sufficient holds
-			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
+			require_once ROOT_DIR . '/sys/Account/PType.php';
 			$maxHolds = -1;
 			//Determine if we should show a warning
 			$ptype = new PType();

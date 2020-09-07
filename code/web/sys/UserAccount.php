@@ -336,7 +336,7 @@ class UserAccount
 		}
 	}
 
-	public static function getGuidingUserObject()
+	public static function getGuidingUserObject(): ?User
 	{
 		if (UserAccount::$guidingUserObjectFromDB == null) {
 			if (UserAccount::isUserMasquerading()) {
@@ -397,15 +397,19 @@ class UserAccount
 					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
 
 					if ($userData == false) {
-						global $isAJAX;
-						if (!$isAJAX){
-							UserAccount::softLogout();
+						//This happens when the PIN has been reset in the ILS, redirect to the login page
+						if (UserAccount::isUserMasquerading()){
+							AspenError::raiseError("The patron's password has been reset, please ask the patron to login before masquerading.");
+						}else{
+							global $isAJAX;
+							if (!$isAJAX){
+								UserAccount::softLogout();
 
-							//This happens when the PIN has been reset in the ILS, redirect to the login page
-							require_once ROOT_DIR . '/services/MyAccount/Login.php';
-							$launchAction = new MyAccount_Login();
-							$launchAction->launch();
-							exit();
+								require_once ROOT_DIR . '/services/MyAccount/Login.php';
+								$launchAction = new MyAccount_Login();
+								$launchAction->launch();
+								exit();
+							}
 						}
 						AspenError::raiseError("We could not validate your account, please logout and login again. If this error persists, please contact the library. Error ($activeUserId)");
 					}

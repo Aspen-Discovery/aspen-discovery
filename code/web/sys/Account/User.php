@@ -46,7 +46,6 @@ class User extends DataObject
 	private $_roles;
 	private $_permissions;
 	private $_masqueradingRoles;
-	private $_masqueradeLevel;
 
 	public $interfaceLanguage;
 	public $searchPreferenceLanguage;
@@ -226,14 +225,31 @@ class User extends DataObject
 			$this->_roles = array();
 			//Load roles for the user from the user
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
+			require_once ROOT_DIR . '/sys/Account/PType.php';
 			$role = new Role();
 			$canUseTestRoles = false;
 			if ($this->id){
+				//Get role based on patron type
+				$patronType = new PType();
+				$patronType->pType = $this->patronType;
+				if ($patronType->find(true)){
+					if ($patronType->assignedRoleId != -1) {
+						$role = new Role();
+						$role->roleId = $patronType->assignedRoleId;
+						if ($role->find(true)){
+							$this->_roles[$role->roleId] = clone $role;
+							if ($this->_roles[$role->roleId]->hasPermission('Test Roles')){
+								$canUseTestRoles = true;
+							}
+						}
+					}
+				}
+
 				$escapedId = $this->escape($this->id);
 				$role->query("SELECT roles.* FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . $escapedId . " ORDER BY name");
 				while ($role->fetch()){
 					$this->_roles[$role->roleId] = clone $role;
-					if ($role->name == 'userAdmin'){
+					if ($this->_roles[$role->roleId]->hasPermission('Test Roles')){
 						$canUseTestRoles = true;
 					}
 				}
@@ -270,14 +286,9 @@ class User extends DataObject
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		if ($masqueradeMode && !$isGuidingUser) {
 			if (is_null($this->_masqueradingRoles)) {
-				/** @var User $guidingUser */
 				$guidingUser = UserAccount::getGuidingUserObject();
 				$guidingUserRoles = $guidingUser->getRoles(true);
-				if (in_array('opacAdmin', $guidingUserRoles)) {
-					$this->_masqueradingRoles = $this->_roles;
-				} else {
-					$this->_masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
-				}
+				$this->_masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
 			}
 			return $this->_masqueradingRoles;
 		}
@@ -836,29 +847,8 @@ class User extends DataObject
 	 * @return  bool       true if this user can edit passed list
 	 */
 	function canEditList($list) {
-		if ($this->id == $list->user_id){
+		if (($this->id == $list->user_id) || $this->hasPermission('Edit All Lists')){
 			return true;
-		}elseif ($this->hasRole('opacAdmin')){
-			return true;
-		}elseif ($this->hasRole('libraryAdmin') || $this->hasRole('contentEditor') || $this->hasRole('libraryManager')){
-			$listUser = new User();
-			$listUser->id = $list->user_id;
-			$listUser->find(true);
-			$listLibrary = Library::getLibraryForLocation($listUser->homeLocationId);
-			$userLibrary = Library::getLibraryForLocation($this->homeLocationId);
-			if ($userLibrary->libraryId == $listLibrary->libraryId){
-				return true;
-			}elseif(strpos($list->title, 'NYT - ') === 0 && ($this->hasRole('libraryAdmin') || $this->hasRole('contentEditor'))){
-				//Allow NYT Times lists to be edited by any library admins and library managers
-				return true;
-			}
-		}elseif ($this->hasRole('locationManager')){
-			$listUser = new User();
-			$listUser->id = $list->user_id;
-			$listUser->find(true);
-			if ($this->homeLocationId == $listUser->homeLocationId){
-				return true;
-			}
 		}
 		return false;
 	}
@@ -1479,14 +1469,14 @@ class User extends DataObject
 	 * @return bool
 	 */
 	public function isStaff(){
-		global $configArray;
 		if (count($this->getRoles()) > 0){
 			return true;
-		}elseif (isset($configArray['Staff P-Types'])){
-			$staffPTypes = $configArray['Staff P-Types'];
-			$pType = $this->patronType;
-			if ($pType && array_key_exists($pType, $staffPTypes)){
-				return true;
+		}else{
+			require_once ROOT_DIR . '/sys/Account/PType.php';
+			$pType = new PType();
+			$pType->pType = $this->patronType;
+			if ($pType->find(true)){
+				return $pType->isStaff;
 			}
 		}
 		return false;
@@ -1554,32 +1544,10 @@ class User extends DataObject
 		return $this->getCatalogDriver()->importListsFromIls($this);
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getMasqueradeLevel()
-	{
-		if (empty($this->_masqueradeLevel)) $this->setMasqueradeLevel();
-		return $this->_masqueradeLevel;
-	}
-
-	private function setMasqueradeLevel()
-	{
-		$this->_masqueradeLevel = 'none';
-		if (!empty($this->patronType)) {
-			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
-			$pType = new pType();
-			$pType->get('pType', $this->patronType);
-			if ($pType->getNumResults() > 0) {
-				$this->_masqueradeLevel = $pType->masquerade;
-			}
-		}else if ($this->hasRole('userAdmin')){
-			$this->_masqueradeLevel = 'any';
-		}
-	}
-
 	public function canMasquerade() {
-		return $this->getMasqueradeLevel() != 'none';
+		return $this->hasPermission(['Masquerade as any user', 'Masquerade as unrestricted patron types',
+			'Masquerade as patrons with same home library', 'Masquerade as unrestricted patrons with same home library',
+			'Masquerade as patrons with same home location', 'Masquerade as unrestricted patrons with same home location']);
 	}
 
 	/**
@@ -2174,12 +2142,12 @@ class User extends DataObject
 		$permissions = $this->getPermissions();
 		if (is_array($allowablePermissions)){
 			foreach ($allowablePermissions as $allowablePermission){
-				if (array_key_exists($allowablePermission, $permissions)){
+				if (in_array($allowablePermission, $permissions)){
 					return true;
 				}
 			}
 		}else{
-			if (array_key_exists($allowablePermissions, $permissions)){
+			if (in_array($allowablePermissions, $permissions)){
 				return true;
 			}
 		}
