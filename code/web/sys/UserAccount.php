@@ -394,15 +394,15 @@ class UserAccount
 				$userData->id = $activeUserId;
 				if ($userData->find(true)) {
 					$logger->log("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache", Logger::LOG_DEBUG);
-					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
+					if (UserAccount::isUserMasquerading()){
+						return $userData;
+					}else {
+						$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
 
-					if ($userData == false) {
-						//This happens when the PIN has been reset in the ILS, redirect to the login page
-						if (UserAccount::isUserMasquerading()){
-							AspenError::raiseError("The patron's password has been reset, please ask the patron to login before masquerading.");
-						}else{
+						if ($userData == false) {
+							//This happens when the PIN has been reset in the ILS, redirect to the login page
 							global $isAJAX;
-							if (!$isAJAX){
+							if (!$isAJAX) {
 								UserAccount::softLogout();
 
 								require_once ROOT_DIR . '/services/MyAccount/Login.php';
@@ -410,10 +410,10 @@ class UserAccount
 								$launchAction->launch();
 								exit();
 							}
+							AspenError::raiseError("We could not validate your account, please logout and login again. If this error persists, please contact the library. Error ($activeUserId)");
 						}
-						AspenError::raiseError("We could not validate your account, please logout and login again. If this error persists, please contact the library. Error ($activeUserId)");
+						self::updateSession($userData);
 					}
-					self::updateSession($userData);
 				}else{
 					AspenError::raiseError("Error validating saved session for user $activeUserId, the user was not found in the database.");
 				}

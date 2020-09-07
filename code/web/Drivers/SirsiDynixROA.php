@@ -83,7 +83,8 @@ class SirsiDynixROA extends HorizonAPI
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' .$barcode . '&rw=1&ct=1&includeFields=firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,circRecordList,blockList,holdRecordList,primaryPhone', null, $sessionToken);
+			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' .$barcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1) {
 				$userID = $lookupMyAccountInfoResponse->result[0]->key;
 				$lookupMyAccountInfoResponse = $lookupMyAccountInfoResponse->result[0];
