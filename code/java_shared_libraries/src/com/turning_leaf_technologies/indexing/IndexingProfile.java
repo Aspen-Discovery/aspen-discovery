@@ -138,6 +138,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 				indexingProfile.setLastYearCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS, "lastYearCheckouts"));
 				indexingProfile.setBarcodeSubfield(getCharFromRecordSet(indexingProfileRS, "barcode"));
+				if (indexingProfile.getItemRecordNumberSubfield() == ' '){
+					indexingProfile.setItemRecordNumberSubfield(indexingProfile.getBarcodeSubfield());
+				}
 				indexingProfile.setTotalRenewalsSubfield(getCharFromRecordSet(indexingProfileRS, "totalRenewals"));
 				indexingProfile.setICode2Subfield(getCharFromRecordSet(indexingProfileRS, "iCode2"));
 
