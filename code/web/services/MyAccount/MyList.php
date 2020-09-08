@@ -122,10 +122,7 @@ class MyAccount_MyList extends MyAccount {
 			$list->update();
 		}
 
-		$listEntries = $list->getListEntries($activeSort);
-		$allListEntries = $listEntries['listEntries'];
-
-		$this->buildListForDisplay($list, $allListEntries, $userCanEdit, $activeSort);
+		$this->buildListForDisplay($list, $userCanEdit, $activeSort);
 
 		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), 'Search/home-sidebar.tpl', false);
 	}
@@ -135,30 +132,12 @@ class MyAccount_MyList extends MyAccount {
 	 *
 	 * @access  public
 	 * @param UserList $list
-	 * @param $allEntries
 	 * @param bool $allowEdit
 	 * @param string $sortName
 	 */
-	public function buildListForDisplay(UserList $list, $allEntries, $allowEdit = false, $sortName = 'dateAdded')
+	public function buildListForDisplay(UserList $list, $allowEdit = false, $sortName = 'dateAdded')
 	{
 		global $interface;
-
-		$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
-		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$startRecord = ($page - 1) * $recordsPerPage;
-		if ($startRecord < 0){
-			$startRecord = 0;
-		}
-		$endRecord = $page * $recordsPerPage;
-		if ($endRecord > count($allEntries)){
-			$endRecord = count($allEntries);
-		}
-		$pageInfo = array(
-			'resultTotal' => count($allEntries),
-			'startRecord' => $startRecord,
-			'endRecord'   => $endRecord,
-			'perPage'     => $recordsPerPage
-		);
 
 		$queryParams = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
 		if ($queryParams == null){
@@ -199,7 +178,24 @@ class MyAccount_MyList extends MyAccount {
 		$interface->assign('sortList', $sortOptions);
 		$interface->assign('userSort', ($sortName == 'custom')); // switch for when users can sort their list
 
-		$resourceList = $list->getListRecords($startRecord , $recordsPerPage, $allowEdit, 'html');
+		$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
+		$totalRecords = $list->numValidListItems();
+		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$startRecord = ($page - 1) * $recordsPerPage;
+		if ($startRecord < 0){
+			$startRecord = 0;
+		}
+		$endRecord = $page * $recordsPerPage;
+		if ($endRecord > $totalRecords){
+			$endRecord = $totalRecords;
+		}
+		$pageInfo = array(
+			'resultTotal' => $totalRecords,
+			'startRecord' => $startRecord,
+			'endRecord'   => $endRecord,
+			'perPage'     => $recordsPerPage
+		);
+		$resourceList = $list->getListRecords($startRecord , $recordsPerPage, $allowEdit, 'html', null, $sortName);
 		$interface->assign('resourceList', $resourceList);
 
 		// Set up paging of list contents:

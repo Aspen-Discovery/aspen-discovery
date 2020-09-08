@@ -317,11 +317,16 @@ class UserList extends DataObject
 	 * @param int $numItems Number of items to fetch for this result
 	 * @param boolean $allowEdit whether or not the list should be editable
 	 * @param string $format The format of the records, valid values are html, summary, recordDrivers, citation
+	 * @param string $citationFormat How citations should be formatted
+	 * @param string $sortName How records should be sorted, if no sort is provided, will use the default for the list
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null) {
+	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null, $sortName = null) {
 		//Get all entries for the list
-		$listEntryInfo = $this->getListEntries($this->defaultSort);
+		if ($sortName == null) {
+			$sortName = $this->defaultSort;
+		}
+		$listEntryInfo = $this->getListEntries($sortName);
 
 		//Trim to the number of records we want to return
 		if ($numItems > 0){
