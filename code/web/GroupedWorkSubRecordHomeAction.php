@@ -38,9 +38,6 @@ abstract class GroupedWorkSubRecordHomeAction extends Action
 		return $breadcrumbs;
 	}
 
-	/**
-	 * @param GroupedWorkSubDriver $recordDriver
-	 */
 	function loadCitations(){
 		global $interface;
 

@@ -34,8 +34,8 @@
 						<div id="additionalContributors" style="display:none">
 					{/if}
 					<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
-					{if $contributor.role}
-						&nbsp;{$contributor.role|translate}
+					{if !empty($contributor.roles)}
+						&nbsp;{implode subject=$contributor.roles glue=", " translate=true}
 					{/if}
 					{if $contributor.title}
 						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>

@@ -860,15 +860,23 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$contributorInfo = explode('|', $contributor);
 						$curContributor = array(
 							'name' => $contributorInfo[0],
-							'role' => $contributorInfo[1],
+							'roles' =>explode(',', $contributorInfo[1]),
 						);
+						ksort($curContributor['roles']);
 					} else {
 						$curContributor = array(
 							'name' => $contributor,
+							'roles' => []
 						);
 					}
-					$this->detailedContributors[] = $curContributor;
+					if (array_key_exists($curContributor['name'], $this->detailedContributors)){
+						$this->detailedContributors[$curContributor['name']]['roles'] = array_keys(array_merge(array_flip($this->detailedContributors[$curContributor['name']]['roles']), array_flip($curContributor['roles'])));
+						ksort($this->detailedContributors[$curContributor['name']]['roles']);
+					}else{
+						$this->detailedContributors[$curContributor['name']] = $curContributor;
+					}
 				}
+				ksort($this->detailedContributors);
 			}
 		}
 		return $this->detailedContributors;

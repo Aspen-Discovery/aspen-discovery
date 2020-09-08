@@ -886,10 +886,16 @@ abstract class MarcRecordProcessor {
 		List<DataField> contributorFields = MarcUtil.getDataFields(record, new String[]{"700","710"});
 		HashSet<String> contributors = new HashSet<>();
 		for (DataField contributorField : contributorFields){
-			StringBuilder contributor = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "abcdetmnr", "");
-			if (contributorField.getTag().equals("700") && contributorField.getSubfield('4') != null){
-				String role = indexer.translateSystemValue("contributor_role", StringUtils.trimTrailingPunctuation(contributorField.getSubfield('4').getData()), identifier);
-				contributor.append("|").append(role);
+			StringBuilder contributor = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "abcd", "");
+			if (contributor.length() == 0){
+				continue;
+			}
+			if (contributor.substring(contributor.length() - 1, contributor.length()).equals(",")){
+				contributor = new StringBuilder(contributor.substring(0, contributor.length() - 1));
+			}
+			StringBuilder roles = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "e4", ",");
+			if (roles.length() > 0){
+				contributor.append("|").append(roles.toString().replaceAll(",,", ","));
 			}
 			contributors.add(contributor.toString());
 		}
