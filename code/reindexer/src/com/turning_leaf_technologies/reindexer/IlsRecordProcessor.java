@@ -135,6 +135,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			formatSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "format");
 			checkRecordForLargePrint = indexingProfileRS.getBoolean("checkRecordForLargePrint");
 			barcodeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "barcode");
+			if (itemRecordNumberSubfieldIndicator == ' '){
+				itemRecordNumberSubfieldIndicator = barcodeSubfield;
+			}
 			statusSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "status");
 			String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
 			if (statusesToSuppress.length() > 0){
@@ -782,12 +785,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (lastCheckInFormatter != null) {
 			String lastCheckInDate = getItemSubfieldData(lastCheckInSubfield, itemField);
 			Date lastCheckIn = null;
-			if (lastCheckInDate != null && lastCheckInDate.length() > 0)
+			if (lastCheckInDate != null && lastCheckInDate.length() > 0) {
 				try {
 					lastCheckIn = lastCheckInFormatter.parse(lastCheckInDate);
 				} catch (ParseException e) {
 					logger.debug("Could not parse check in date " + lastCheckInDate, e);
 				}
+			}
 			itemInfo.setLastCheckinDate(lastCheckIn);
 		}
 
