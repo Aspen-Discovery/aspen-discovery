@@ -124,7 +124,12 @@ class MyAccount_MyList extends MyAccount {
 
 		$this->buildListForDisplay($list, $userCanEdit, $activeSort);
 
-		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), 'Search/home-sidebar.tpl', false);
+		if (UserAccount::isLoggedIn()){
+			$sidebar = 'Search/home-sidebar.tpl';
+		}else{
+			$sidebar = '';
+		}
+		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), $sidebar, false);
 	}
 
 	/**
