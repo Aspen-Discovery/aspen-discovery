@@ -2085,7 +2085,7 @@ class User extends DataObject
 
 		if (array_key_exists('Open Archives', $enabledModules)){
 			$sections['open_archives'] = new AdminSection('Open Archives');
-			$sections['open_archives']->addAction(new AdminAction('Collections', 'Define collections to be loaded into Aspen Discovery.', '/OpenArchives/Collections'), 'Open Archives');
+			$sections['open_archives']->addAction(new AdminAction('Collections', 'Define collections to be loaded into Aspen Discovery.', '/OpenArchives/Collections'), 'Administer Open Archives');
 			$sections['open_archives']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Open Archives.', '/OpenArchives/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['open_archives']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Open Archives integration.', '/OpenArchives/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}

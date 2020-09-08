@@ -432,7 +432,7 @@ function getUserUpdates()
 					,('Islandora Archives', 'View Islandora Archive Usage', 'Islandora', 30, 'Allows the view a report of objects in the repository by library.')
 					,('Open Archives', 'Administer Open Archives', 'Open Archives', 0, 'Allows the user to administer integration with Open Archives repositories for all libraries.')
 					,('Events', 'Administer Library Calendar Settings', 'Events', 10, 'Allows the user to administer integration with Library Calendar for all libraries.')
-					,('Website Indexing', 'Administer Website Indexing Settings', 'Website Indexing', 0, 'Allows the user to administer the indexing of websites for all libraries.')
+					,('Website Indexing', 'Administer Website Indexing Settings', 'Web Indexer', 0, 'Allows the user to administer the indexing of websites for all libraries.')
 					,('Aspen Discovery Help', 'View Help Manual', '', 0, 'Allows the user to view the help manual for Aspen Discovery.')
 					,('Aspen Discovery Help', 'View Release Notes', '', 10, 'Allows the user to view release notes for Aspen Discovery.')
 					,('Aspen Discovery Help', 'Submit Ticket', '', 20, 'Allows the user to submit Aspen Discovery tickets.')
@@ -500,6 +500,16 @@ function getUserUpdates()
 			'description' => 'Add the ability to treat specific patron types as staff',
 			'sql' => [
 				'ALTER TABLE ptype add column isStaff TINYINT(1) DEFAULT 0',
+			]
+		],
+
+		'oai_website_permissions' => [
+			'title' => 'Fix permissions for OAI and Website Indexing',
+			'description' => 'Fix permissions for OAI and Website Indexing',
+			'sql' => [
+				"UPDATE permissions set requiredModule = 'Web Indexer' where requiredModule = 'Website Indexing'",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Website Indexing Settings'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Open Archives'))",
 			]
 		]
 	);

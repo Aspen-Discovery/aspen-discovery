@@ -55,6 +55,6 @@ class OpenArchives_Collections extends ObjectEditor {
 
 	function canView()
 	{
-		return UserAccount::userHasPermission('Open Archives');
+		return UserAccount::userHasPermission('Administer Open Archives');
 	}
 }
