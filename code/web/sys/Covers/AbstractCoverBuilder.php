@@ -79,6 +79,7 @@ abstract class AbstractCoverBuilder
 		//We want a number from 10 to 360
 		$color_seed = (int)_map(_clip($counts, 2, 80), 2, 80, 10, 360);
 
+		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$this->backgroundColor = ColorUtils::colorHSLToRGB(
 			($color_seed + $color_distance) % 360,
 			$base_saturation,

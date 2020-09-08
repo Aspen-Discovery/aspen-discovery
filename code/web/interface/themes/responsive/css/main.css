@@ -8534,6 +8534,7 @@ hr.menu {
 }
 .header-menu-option {
   margin-bottom: 3px;
+  cursor: pointer;
 }
 .header-menu-option i {
   float: right;
@@ -8557,6 +8558,7 @@ hr.menu {
 }
 .header-menu-section {
   margin-bottom: 3px;
+  cursor: pointer;
 }
 .header-menu-section i {
   float: right;
