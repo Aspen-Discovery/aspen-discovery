@@ -1299,7 +1299,7 @@ class Location extends DataObject
 		if ($this->_groupedWorkDisplaySettings == null) {
 			try {
 				if ($this->groupedWorkDisplaySettingId == -1) {
-					$library = Library::getLibraryForLocation($this->libraryId);
+					$library = Library::getLibraryForLocation($this->locationId);
 					$this->groupedWorkDisplaySettingId = $library->groupedWorkDisplaySettingId;
 				}
 				$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();

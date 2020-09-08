@@ -1094,7 +1094,7 @@ class Library extends DataObject
 		$physicalLocation = $locationSingleton->getActiveLocation();
 		if (!is_null($physicalLocation)){
 			//Load the library based on the home branch for the user
-			return self::getLibraryForLocation($physicalLocation->libraryId);
+			return self::getLibraryForLocation($physicalLocation->locationId);
 		}
 
 		//Return the active library
