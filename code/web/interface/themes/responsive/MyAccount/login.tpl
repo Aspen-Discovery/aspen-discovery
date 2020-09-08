@@ -97,13 +97,13 @@
 	$('#username').focus().select();
 	$(function(){
 		AspenDiscovery.Account.validateCookies();
-		var haslocalStorage = AspenDiscovery.hasLocalStorage() || false;
-		if (haslocalStorage) {
-			var rememberMe = (window.localStorage.getItem('rememberMe') == 'true'), // localStorage saves everything as strings
-							showCovers = window.localStorage.getItem('showCovers') || false;
+		let hasLocalStorage = AspenDiscovery.hasLocalStorage() || false;
+		if (hasLocalStorage) {
+			let rememberMe = (window.localStorage.getItem('rememberMe') == 'true'); // localStorage saves everything as strings
+			let showCovers = window.localStorage.getItem('showCovers') || false;
 			if (rememberMe) {
-				var lastUserName = window.localStorage.getItem('lastUserName'),
-								lastPwd = window.localStorage.getItem('lastPwd');
+				let lastUserName = window.localStorage.getItem('lastUserName');
+				let lastPwd = window.localStorage.getItem('lastPwd');
 				{/literal}{*// showPwd = (window.localStorage.getItem('showPwd') == 'true'); // localStorage saves everything as strings *}{literal}
 				$("#username").val(lastUserName);
 				$("#password").val(lastPwd);

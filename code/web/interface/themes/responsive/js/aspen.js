@@ -5159,11 +5159,9 @@ AspenDiscovery.Account = (function(){
 				$.post(url, params, function(response){
 					loadingElem.hide();
 					if (response.result.success === true) {
-						// Show user name on page in case page doesn't reload
-						let name = $.trim(response.result.name);
-						//name = 'Logged In As ' + name.slice(0, name.lastIndexOf(' ') + 2) + '.';
-						name = 'Logged In As ' + name.slice(0, 1) + '. ' + name.slice(name.lastIndexOf(' ') + 1, name.length) + '.';
-						$('#side-bar #myAccountNameLink').html(name);
+						$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
+						$('#login-button-label').html(response.result.name);
+						$('#logoutLink').show();
 
 						if (AspenDiscovery.Account.closeModalOnAjaxSuccess) {
 							AspenDiscovery.closeLightbox();

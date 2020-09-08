@@ -100,10 +100,8 @@
 		<a class="btn btn-default btn-sm btn-block" onclick="AspenDiscovery.Account.endMasquerade()">{translate text="End Masquerade"}</a>
 	{/if}
 
-	{if $loggedIn}
-		<a href="/MyAccount/Logout" id="logoutLink" title="{translate text="Sign Out"}" class="btn btn-default btn-sm btn-block">
-			{translate text="Sign Out"}
-		</a>
-	{/if}
+	<a href="/MyAccount/Logout" id="logoutLink" title="{translate text="Sign Out"}" class="btn btn-default btn-sm btn-block" {if !$loggedIn}style="display:none"{/if}>
+		{translate text="Sign Out"}
+	</a>
 </div>
 {/strip}
