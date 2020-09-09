@@ -506,6 +506,7 @@ function getUserUpdates()
 		'oai_website_permissions' => [
 			'title' => 'Fix permissions for OAI and Website Indexing',
 			'description' => 'Fix permissions for OAI and Website Indexing',
+			'continueOnError' => true,
 			'sql' => [
 				"UPDATE permissions set requiredModule = 'Web Indexer' where requiredModule = 'Website Indexing'",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Website Indexing Settings'))",
