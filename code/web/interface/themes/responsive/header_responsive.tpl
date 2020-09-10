@@ -22,7 +22,7 @@
 			</div>
 		{/if}
 	</div>
-	{if count($validLanguages) > 1}
+	{if !empty($validLanguages)}
 		<div id="language-selection-header" class="hidden-tn col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
 			{foreach from=$validLanguages key=languageCode item=language}
 				<div class="availableLanguage">

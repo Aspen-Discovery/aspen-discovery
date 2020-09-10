@@ -76,7 +76,7 @@
 		{/foreach}
 	{/if}
 
-	{if count($validLanguages) > 1}
+	{if !empty($validLanguages)}
 		<div class="header-menu-section" id="aspenLanguagesMenuSection">
 			<i class="fas fa-globe"></i>{translate text="Language"}
 		</div>

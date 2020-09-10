@@ -626,7 +626,12 @@ function translate($params) {
 	// object.
 	if (!is_object($translator)) {
 		global $activeLanguage;
-		$translator = new Translator('lang', $activeLanguage->code);
+		if (empty($activeLanguage)){
+			$code = 'en';
+		}else{
+			$code = $activeLanguage->code;
+		}
+		$translator = new Translator('lang', $code);
 	}
 	if (is_array($params)) {
 		$defaultText = isset($params['defaultText']) ? $params['defaultText'] : null;
