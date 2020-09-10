@@ -43,17 +43,14 @@
   border: none;
   width: 90% !important;
 }
-#keepFiltersSwitchLabel,
-#advancedSearchLink {
-  color: #ffffff;
-  font-weight: bold;
-  font-size: 85%;
-  display: inline-block;
-  margin-top: 6px;
-}
 #horizontal-search-box {
   background-color: #00a4e3;
   padding: 15px 0;
+}
+@media (max-width: 991px) {
+  #horizontal-search-box {
+    display: none;
+  }
 }
 #horizontal-search-box #searchForm .row {
   margin-left: 0;
@@ -100,7 +97,7 @@
 }
 @media (min-width: 1200px) {
   #horizontal-search-box #horizontal-search-label {
-    margin-top: 0;
+    margin-top: 7px;
   }
 }
 #horizontal-search-box #lookfor {
@@ -115,19 +112,6 @@
 }
 #horizontal-search-box #keepFiltersSwitchLabel {
   margin-bottom: 0;
-}
-#home-page-login {
-  background-color: #AFAFAF;
-  color: #FFF;
-  font-size: 18px;
-  padding: 5px;
-  margin-bottom: 5px;
-}
-#home-page-login a {
-  color: #FFF;
-}
-#horizontal-search-wrapper + #content-container #home-page-login {
-  margin-top: 5px;
 }
 #home-page-library-section {
   padding: 15px 0;
@@ -144,10 +128,6 @@
   color: #fff;
   padding: 3px 0;
   margin-bottom: 15px;
-}
-#home-page-hours-locations,
-#home-page-home-button {
-  text-transform: uppercase;
 }
 .sidebar-links .panel-group .panel + .panel {
   margin-top: 0;
@@ -278,5 +258,48 @@
 .dropdown-menu-right {
   right: 0;
   left: auto;
+}
+#home-page-browse-results .grid-col {
+  text-align: center;
+}
+@media (max-width: 479px) {
+  #home-page-browse-results .grid-col--3 {
+    display: none;
+  }
+}
+@media (min-width: 480px) {
+  #home-page-browse-results .grid-col--3 {
+    display: block;
+  }
+}
+@media (max-width: 991px) {
+  #home-page-browse-results .grid-col--4 {
+    display: none;
+  }
+}
+@media (min-width: 992px) {
+  #home-page-browse-results .grid-col--4 {
+    display: block;
+  }
+}
+@media (max-width: 1199px) {
+  #home-page-browse-results .grid-col--5 {
+    display: none;
+  }
+}
+@media (min-width: 1200px) {
+  #home-page-browse-results .grid-col--5 {
+    display: block;
+  }
+}
+@media (max-width: 1199px) {
+  #home-page-browse-results .grid-col--6 {
+    display: none;
+  }
+}
+@media (min-width: 1200px) {
+  #home-page-browse-results .grid-col--6 {
+    display: block;
+  }
 }
 /*# sourceMappingURL=home.css.map */

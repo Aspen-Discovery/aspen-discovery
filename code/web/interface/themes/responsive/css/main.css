@@ -1,5 +1,5 @@
-@import "simplemde.min.css";
 @import "lib/fontawesome-all.min.css";
+@import "simplemde.min.css";
 article,
 aside,
 details,
@@ -11055,58 +11055,6 @@ a.browse-thumbnail-sorted.active {
 .contrast_warning {
   padding: 3px 5px;
 }
-.staff-member {
-  padding: 5px 10px;
-  border: 1px solid #bbb;
-  margin: 10px 0;
-}
-.staff-name {
-  font-size: 20px;
-  font-weight: bold;
-}
-.portal-row-edit {
-  border-color: dimgrey;
-  border-style: dashed;
-  border-width: 1px;
-  min-height: 100px;
-  padding: 5px;
-}
-.portal-cell-edit {
-  border-color: dimgrey;
-  border-style: dotted;
-  border-width: 1px;
-  min-height: 90px;
-}
-.portal-cell-title-edit {
-  padding: 5px;
-  background-color: dimgrey;
-  color: white;
-  height: 50px;
-}
-.researchStarter {
-  border: solid 1px #00a4e3;
-  margin: 10px 5px 15px;
-}
-.researchStarter .label-top {
-  color: #FFF;
-  width: 100%;
-  padding: 5px;
-  background-color: #00a4e3;
-  display: inline-block;
-  vertical-align: center;
-  font-weight: bold;
-  padding-top: 10px;
-  height: 40px;
-}
-.researchStarterBody {
-  padding: 10px;
-}
-.researchStarter-dismiss {
-  position: absolute;
-  right: 0;
-  top: 0;
-  font-weight: bold;
-}
 .adminTableRegion {
   width: 100%;
   overflow-x: auto;
@@ -11161,5 +11109,57 @@ a.browse-thumbnail-sorted.active {
 .permissionDescription {
   font-style: italic;
   font-size: 10px;
+}
+.staff-member {
+  padding: 5px 10px;
+  border: 1px solid #bbb;
+  margin: 10px 0;
+}
+.staff-name {
+  font-size: 20px;
+  font-weight: bold;
+}
+.portal-row-edit {
+  border-color: dimgrey;
+  border-style: dashed;
+  border-width: 1px;
+  min-height: 100px;
+  padding: 5px;
+}
+.portal-cell-edit {
+  border-color: dimgrey;
+  border-style: dotted;
+  border-width: 1px;
+  min-height: 90px;
+}
+.portal-cell-title-edit {
+  padding: 5px;
+  background-color: dimgrey;
+  color: white;
+  height: 50px;
+}
+.researchStarter {
+  border: solid 1px #00a4e3;
+  margin: 10px 5px 15px;
+}
+.researchStarter .label-top {
+  color: #FFF;
+  width: 100%;
+  padding: 5px;
+  background-color: #00a4e3;
+  display: inline-block;
+  vertical-align: center;
+  font-weight: bold;
+  padding-top: 10px;
+  height: 40px;
+}
+.researchStarterBody {
+  padding: 10px;
+}
+.researchStarter-dismiss {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-weight: bold;
 }
 /*# sourceMappingURL=main.css.map */
