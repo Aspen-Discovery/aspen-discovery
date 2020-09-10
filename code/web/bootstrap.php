@@ -12,7 +12,7 @@ $aspenUsage->year = date('Y');
 $aspenUsage->month = date('n');
 
 global $errorHandlingEnabled;
-$errorHandlingEnabled = true;
+$errorHandlingEnabled = 0;
 
 $startTime = microtime(true);
 require_once ROOT_DIR . '/sys/Logger.php';
@@ -180,11 +180,11 @@ function loadLibraryAndLocation(){
 
 function disableErrorHandler(){
 	global $errorHandlingEnabled;
-	$errorHandlingEnabled = false;
+	$errorHandlingEnabled--;
 }
 function enableErrorHandler(){
 	global $errorHandlingEnabled;
-	$errorHandlingEnabled = true;
+	$errorHandlingEnabled++;
 }
 
 function array_remove_by_value($array, $value){

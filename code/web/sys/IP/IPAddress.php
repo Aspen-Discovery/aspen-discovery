@@ -135,12 +135,16 @@ class IPAddress extends DataObject
 		}
 	}
 
+	static $ipAddressesForIP = [];
 	/**
 	 * @param $activeIP
 	 * @return bool|IPAddress
 	 */
 	static function getIPAddressForIP($activeIP){
 		$ipVal = ip2long($activeIP);
+		if (array_key_exists($ipVal, IPAddress::$ipAddressesForIP)){
+			return IPAddress::$ipAddressesForIP[$ipVal];
+		}
 
 		if (is_numeric($ipVal)) {
 			disableErrorHandler();
@@ -150,12 +154,15 @@ class IPAddress extends DataObject
 			$subnet->orderBy('(endIpVal - startIpVal)');
 			if ($subnet->find(true)) {
 				enableErrorHandler();
+				IPAddress::$ipAddressesForIP[$ipVal] = $subnet;
 				return $subnet;
 			}else{
 				enableErrorHandler();
+				IPAddress::$ipAddressesForIP[$ipVal] = false;
 				return false;
 			}
 		}else{
+			IPAddress::$ipAddressesForIP[$ipVal] = false;
 			return false;
 		}
 	}

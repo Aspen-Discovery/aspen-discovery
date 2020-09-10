@@ -120,10 +120,9 @@ class AspenError extends DataObject
 	function handleAspenError()
 	{
 		global $errorHandlingEnabled;
-		if (isset($errorHandlingEnabled) && $errorHandlingEnabled == false) {
+		if (isset($errorHandlingEnabled) && ($errorHandlingEnabled < 0)) {
 			return;
 		}
-		global $configArray;
 
 		// It would be really bad if an error got raised from within the error handler;
 		// we would go into an infinite loop and run out of memory.  To avoid this,
