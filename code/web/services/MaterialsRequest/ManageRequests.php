@@ -46,9 +46,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$assigneesToShow = array();
 		if (isset($_REQUEST['assigneesFilter'])) {
 			$assigneesToShow = $_REQUEST['assigneesFilter'];
-//			$_SESSION['materialsRequestAssigneesFilter'] = $assigneesToShow;
-//		} elseif (!empty($_SESSION['materialsRequestAssigneesFilter'])) {
-//			$assigneesToShow = $_SESSION['materialsRequestAssigneesFilter'];
 		}
 		$interface->assign('assigneesFilter', $assigneesToShow);
 		$showUnassigned = !empty($_REQUEST['showUnassigned']) && $_REQUEST['showUnassigned'] == 'on';
@@ -261,7 +258,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					$materialsRequestManagers->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
 
 					if ($materialsRequestManagers->find()) {
-						$assignees = array_merge($assignees, $materialsRequestManagers->fetchAll('id', 'displayName'));
+						while ($materialsRequestManagers->fetch()){
+							$assignees[$materialsRequestManagers->id] = $materialsRequestManagers->displayName;
+						}
 					}
 				}
 				$interface->assign('assignees', $assignees);

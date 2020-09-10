@@ -8485,12 +8485,12 @@ AspenDiscovery.MaterialsRequest = (function(){
 		},
 
 		assignSelectedRequests: function(){
-			var newAssignee = $("#newAssignee").val();
+			let newAssignee = $("#newAssignee").val();
 			if (newAssignee == "unselected"){
 				alert("Please select a user to assign the requests to.");
 				return false;
 			}
-			var selectedRequests = this.getSelectedRequests(false);
+			let selectedRequests = this.getSelectedRequests(false);
 			if (selectedRequests.length != 0){
 				$("#updateRequests").submit();
 			}
