@@ -1545,8 +1545,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$field = 'detailed_location_' . $solrScope;
 			} elseif ($field === 'owning_location') {
 				$field = 'owning_location_' . $solrScope;
-			} elseif ($field === 'owning_system') {
-				$field = 'owning_system_' . $solrScope;
+			} elseif ($field === 'owning_library') {
+				$field = 'owning_library_' . $solrScope;
 			} elseif ($field === 'available_at') {
 				$field = 'available_at_' . $solrScope;
 			} elseif ($field === 'time_since_added') {
