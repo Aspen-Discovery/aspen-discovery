@@ -15,10 +15,6 @@ class Obituary extends DataObject {
 	public $contents;
 	public $picture;
 
-	function keys() {
-		return array('obituaryId');
-	}
-
 	function id() {
 		return $this->obituaryId;
 	}

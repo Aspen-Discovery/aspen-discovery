@@ -7,8 +7,14 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		editListAction: function (){
-			$('#listDescription,#listTitle,#FavEdit').hide();
-			$('#listEditControls,#FavSave').show();
+			$('#listDescription,#listTitle,#FavEdit,.listViewButton').hide();
+			$('#listEditControls,#FavSave,.listEditButton').show();
+			return false;
+		},
+
+		cancelEditListAction: function (){
+			$('#listDescription,#listTitle,#FavEdit,.listViewButton').show();
+			$('#listEditControls,#FavSave,.listEditButton').hide();
 			return false;
 		},
 

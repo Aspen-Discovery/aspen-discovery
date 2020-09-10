@@ -11,11 +11,6 @@ class Role extends DataObject
 	public $description;
 	private $_permissions;
 
-	function keys()
-	{
-		return array('roleId');
-	}
-
 	static function getObjectStructure()
 	{
 		$permissionsList = [];
@@ -116,6 +111,7 @@ class Role extends DataObject
 				'Administer Islandora Archive',
 				'Administer Languages',
 				'Administer Library Calendar Settings',
+				'Administer List Indexing Settings',
 				'Administer Loan Rules',
 				'Administer Modules',
 				'Administer Open Archives',

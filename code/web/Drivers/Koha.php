@@ -2350,7 +2350,7 @@ class Koha extends AbstractIlsDriver
 	 */
 	function importListsFromIls($patron)
 	{
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$this->initDatabaseConnection();

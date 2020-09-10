@@ -9,8 +9,5 @@ class UserRoles extends DataObject
 	public $userId; // int(11)
 	public $roleId; // int(11)
 
-	function keys() {
-		return array('userId', 'roleId');
-	}
 
 }

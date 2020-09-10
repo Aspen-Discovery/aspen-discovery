@@ -57,7 +57,11 @@
 								{elseif $property.type == 'date'}
 									{$propValue|date_format}
 								{elseif $property.type == 'timestamp'}
-									{$propValue|date_format:"%D %T"}
+									{if $propValue == 0}
+										{translate text="Never"}
+									{else}
+										{$propValue|date_format:"%D %T"}
+									{/if}
 								{elseif $property.type == 'partialDate'}
 									{assign var=propNameMonth value=$property.propNameMonth}
 									{assign var=propMonthValue value=$dataItem->$propNameMonth}

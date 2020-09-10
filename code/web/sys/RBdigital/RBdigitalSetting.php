@@ -20,7 +20,7 @@ class RBdigitalSetting extends DataObject
 		$rbdigitalScopeStructure = RBdigitalScope::getObjectStructure();
 		unset($rbdigitalScopeStructure['settingId']);
 
-		$structure = array(
+		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'apiUrl' => array('property' => 'apiUrl', 'type' => 'url', 'label' => 'url', 'description' => 'The URL to the API'),
 			'userInterfaceUrl' => array('property' => 'userInterfaceUrl', 'type' => 'url', 'label' => 'User Interface URL', 'description' => 'The URL where the Patron can access the catalog'),
@@ -47,7 +47,6 @@ class RBdigitalSetting extends DataObject
 				'additionalOneToManyActions' => []
 			]
 		);
-		return $structure;
 	}
 
 	public function __toString()

@@ -11,10 +11,6 @@ class LocationHours extends DataObject
 	public $close;                        // varchar(10)
 	public $closed;
 	public $notes;
-	
-	function keys() {
-		return array('id');
-	}
 
 	static function getObjectStructure(){
 		$location = new Location();

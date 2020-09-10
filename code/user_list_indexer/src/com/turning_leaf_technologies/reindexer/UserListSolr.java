@@ -20,7 +20,7 @@ class UserListSolr {
 	private long created;
 	private long owningLibrary;
 	private String owningLocation;
-	private boolean ownerHasListPublisherRole = false;
+	private boolean ownerCanShareListsInSearchResults = false;
 
 	UserListSolr(UserListIndexer userListIndexer) {
 		this.userListIndexer = userListIndexer;
@@ -59,16 +59,16 @@ class UserListSolr {
 			if (scope.isLibraryScope()) {
 				okToInclude = (scope.getPublicListsToInclude() == 2) || //All public lists
 						((scope.getPublicListsToInclude() == 1) && (scope.getLibraryId() == owningLibrary)) || //All lists for the current library
-						((scope.getPublicListsToInclude() == 3) && ownerHasListPublisherRole && (scope.getLibraryId() == owningLibrary || scope.getLibraryId() == -1)) || //All lists for list publishers at the current library
-						((scope.getPublicListsToInclude() == 4) && ownerHasListPublisherRole) //All lists for list publishers
+						((scope.getPublicListsToInclude() == 3) && ownerCanShareListsInSearchResults && (scope.getLibraryId() == owningLibrary || scope.getLibraryId() == -1)) || //All lists for list publishers at the current library
+						((scope.getPublicListsToInclude() == 4) && ownerCanShareListsInSearchResults) //All lists for list publishers
 						;
 			} else {
 				okToInclude = (scope.getPublicListsToInclude() == 3) || //All public lists
 						((scope.getPublicListsToInclude() == 1) && (scope.getLibraryId() == owningLibrary)) || //All lists for the current library
 						((scope.getPublicListsToInclude() == 2) && scope.getScopeName().equals(owningLocation)) || //All lists for the current location
-						((scope.getPublicListsToInclude() == 4) && ownerHasListPublisherRole && (scope.getLibraryId() == owningLibrary || scope.getLibraryId() == -1)) || //All lists for list publishers at the current library
-						((scope.getPublicListsToInclude() == 5) && ownerHasListPublisherRole && scope.getScopeName().equals(owningLocation)) || //All lists for list publishers the current location
-						((scope.getPublicListsToInclude() == 6) && ownerHasListPublisherRole) //All lists for list publishers
+						((scope.getPublicListsToInclude() == 4) && ownerCanShareListsInSearchResults && (scope.getLibraryId() == owningLibrary || scope.getLibraryId() == -1)) || //All lists for list publishers at the current library
+						((scope.getPublicListsToInclude() == 5) && ownerCanShareListsInSearchResults && scope.getScopeName().equals(owningLocation)) || //All lists for list publishers the current location
+						((scope.getPublicListsToInclude() == 6) && ownerCanShareListsInSearchResults) //All lists for list publishers
 						;
 			}
 			if (okToInclude) {
@@ -122,8 +122,8 @@ class UserListSolr {
 		this.owningLibrary = owningLibrary;
 	}
 
-	void setOwnerHasListPublisherRole(boolean ownerHasListPublisherRole){
-		this.ownerHasListPublisherRole = ownerHasListPublisherRole;
+	void setOwnerCanShareListsInSearchResults(boolean ownerCanShareListsInSearchResults){
+		this.ownerCanShareListsInSearchResults = ownerCanShareListsInSearchResults;
 	}
 
 	long getNumTitles(){

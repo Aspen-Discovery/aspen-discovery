@@ -15,10 +15,6 @@ class IPAddress extends DataObject
 	public $startIpVal;
 	public $endIpVal;
 
-	function keys() {
-		return array('id', 'locationid', 'ip');
-	}
-
 	function getNumericColumnNames()
 	{
 		return ['isOpac', 'blockAccess', 'allowAPIAccess', 'startIpVal', 'endIpVal'];

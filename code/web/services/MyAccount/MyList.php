@@ -12,8 +12,8 @@ class MyAccount_MyList extends MyAccount {
 
 		// Fetch List object
 		$listId = $_REQUEST['id'];
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$list = new UserList();
 		$list->id = $listId;
 
@@ -56,15 +56,15 @@ class MyAccount_MyList extends MyAccount {
 		if ($userCanEdit && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) || isset($_GET['delete']))){
 			if (isset($_REQUEST['myListActionHead']) && strlen($_REQUEST['myListActionHead']) > 0){
 				$actionToPerform = $_REQUEST['myListActionHead'];
-				if ($actionToPerform == 'makePublic'){
-					$list->public = 1;
-					$list->update();
-				}elseif ($actionToPerform == 'makePrivate'){
-					$list->public = 0;
-					$list->update();
-				}elseif ($actionToPerform == 'saveList'){
+				if ($actionToPerform == 'saveList'){
 					$list->title = $_REQUEST['newTitle'];
 					$list->description = strip_tags($_REQUEST['newDescription']);
+					$list->public = isset($_REQUEST['public']) && ($_REQUEST['public'] == 'true' || $_REQUEST['public'] == 'on');
+					if (!$list->public){
+						$list->searchable = false;
+					}else {
+						$list->searchable = isset($_REQUEST['searchable']) && ($_REQUEST['searchable'] == 'true' || $_REQUEST['searchable'] == 'on');
+					}
 					$list->update();
 				}elseif ($actionToPerform == 'deleteList'){
 					$list->delete();

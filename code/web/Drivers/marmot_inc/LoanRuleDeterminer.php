@@ -13,10 +13,6 @@ class LoanRuleDeterminer extends DataObject
 	public $loanRuleId;
 	public $active;
 
-	function keys() {
-		return array('id');
-	}
-
 	function getNumericColumnNames()
 	{
 		return ['rowNumber','loanRuleId','active'];

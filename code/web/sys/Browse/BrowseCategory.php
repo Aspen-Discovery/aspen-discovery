@@ -159,7 +159,7 @@ class BrowseCategory extends BaseBrowsable
 	static function getObjectStructure()
 	{
 		// Get All User Lists
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$sourceLists = UserList::getSourceListsForBrowsingAndCarousels();
 
 		// Get Structure for Sub-categories

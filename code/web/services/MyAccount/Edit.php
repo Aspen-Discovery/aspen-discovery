@@ -30,7 +30,7 @@ class MyAccount_Edit extends Action
 			$listId = array_pop($listId);
 		}
 		if (!empty($listId) && is_numeric($listId)) {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$userList     = new UserList();
 			$userList->id = $listId;
 			if ($userList->find(true)) {
@@ -65,7 +65,7 @@ class MyAccount_Edit extends Action
 						if (!empty($listEntryId)) {
 
 							// Retrieve saved information about record
-							require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+							require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 							$userListEntry = new UserListEntry();
 							$userListEntry->id = $listEntryId;
 							if ($userListEntry->find(true)) {
@@ -90,7 +90,7 @@ class MyAccount_Edit extends Action
 
 	private function saveChanges()
 	{
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$userListEntry = new UserListEntry();
 		$userListEntry->id = $_REQUEST['listEntry'];
 		if ($userListEntry->find(true)){

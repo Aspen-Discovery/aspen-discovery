@@ -8,10 +8,7 @@ class Holiday extends DataObject
 	public $libraryId;             // int(11)
 	public $date;                  // date
 	public $name;                  // varchar(100)
-	
-	function keys() {
-		return array('id');
-	}
+
 
 	static function getObjectStructure(){
 		$library = new Library();

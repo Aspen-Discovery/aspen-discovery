@@ -9,8 +9,5 @@ class RolePermissions extends DataObject
 	public $roleId; // int(11)
 	public $permissionId; // int(11)
 
-	function keys() {
-		return array('roleId', 'permissionId');
-	}
 
 }

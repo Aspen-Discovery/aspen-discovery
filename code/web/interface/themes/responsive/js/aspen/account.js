@@ -22,6 +22,11 @@ AspenDiscovery.Account = (function(){
 			let source = form.find("input[name=source]").val();
 			let sourceId = form.find("input[name=sourceId]").val();
 			let isPublic = form.find("#public").prop("checked");
+			let isSearchable = false;
+			let searchableControl = $("#searchable");
+			if (searchableControl){
+				isSearchable = searchableControl.prop("checked");
+			}
 			let title = form.find("input[name=title]").val();
 			let desc = $("#listDesc").val();
 			let url = Globals.path + "/MyAccount/AJAX";
@@ -29,6 +34,7 @@ AspenDiscovery.Account = (function(){
 				'method':'addList',
 				title: title,
 				public: isPublic,
+				searchable: isSearchable,
 				desc: desc,
 				source: source,
 				sourceId: sourceId

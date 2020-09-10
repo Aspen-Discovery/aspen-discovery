@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 
 class CiteList extends Action {
 	private $listId;

@@ -12,11 +12,6 @@ class PType extends DataObject
 	public $restrictMasquerade;
 	public $isStaff;
 
-	function keys()
-	{
-		return array('id');
-	}
-
 	static function getObjectStructure()
 	{
 		$roles = [];

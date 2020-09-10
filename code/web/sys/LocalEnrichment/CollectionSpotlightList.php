@@ -13,15 +13,10 @@ class CollectionSpotlightList extends BaseBrowsable
 
 	public $weight;
 
-	function keys()
-	{
-		return array('id');
-	}
-
 	static function getObjectStructure()
 	{
 		// Get All User Lists
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$sourceLists = UserList::getSourceListsForBrowsingAndCarousels();
 
 		$spotlightSources = BaseBrowsable::getBrowseSources();
@@ -80,7 +75,7 @@ class CollectionSpotlightList extends BaseBrowsable
 
 	/** @noinspection PhpUnused */
 	function getSourceListName(){
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		if ($this->sourceListId != null && $this->sourceListId > 0){
 			$userList = new UserList();
 			$userList->id = $this->sourceListId;

@@ -1426,6 +1426,58 @@ class Admin_DBMaintenance extends Admin_Admin
 					)
 				),
 
+				'user_list_searching' => [
+					'title' => 'User List Searching',
+					'description' => 'Add searchable setting to user lists to give additional control over what is found in search results',
+					'continueOnError' => true,
+					'sql' => [
+						'ALTER TABLE user_list ADD searchable TINYINT(1) DEFAULT 0',
+						'updateSearchableLists'
+					]
+				],
+
+				'user_list_indexing_settings' => [
+					'title' => 'User List Indexing Settings',
+					'description' => 'Create a table to store List Indexing Settings',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS list_indexing_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							runFullUpdate TINYINT(1) DEFAULT 1,
+							lastUpdateOfChangedLists INT(11) DEFAULT 0,
+							lastUpdateOfAllLists INT(11) DEFAULT 0
+						) ENGINE = InnoDB;'
+					]
+				],
+
+				'default_list_indexing' => [
+					'title' => 'User List Indexing Settings - setup defaults',
+					'description' => 'Setup default indexing settings by converting from variables',
+					'sql' => [
+						'createDefaultListIndexingSettings'
+					]
+				],
+
+				'user_list_indexing_log' => [
+					'title' => 'User List Indexing Log',
+					'description' => 'Create a table to store List Indexing Log',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS list_indexing_log(
+						    id INT NOT NULL AUTO_INCREMENT,
+						    startTime INT(11) NOT NULL,
+						    endTime INT(11) NULL, 
+						    lastUpdate INT(11) NULL, 
+						    notes TEXT,
+						    numLists INT(11) DEFAULT 0,
+						    numAdded INT(11) DEFAULT 0,
+						    numDeleted INT(11) DEFAULT 0,
+						    numUpdated INT(11) DEFAULT 0,
+						    numSkipped INT(11) DEFAULT 0,
+						    numErrors INT(11) DEFAULT 0, 
+						    PRIMARY KEY ( `id` )
+						) ENGINE = InnoDB;'
+					]
+				],
+
 				'remove_old_resource_tables' => array(
 					'title' => 'Remove old Resource Tables',
 					'description' => 'Remove old tables that were used for storing information based on resource',
@@ -2354,6 +2406,88 @@ class Admin_DBMaintenance extends Admin_Admin
 			$recaptchaSetting->publicKey = $configArray['ReCaptcha']['publicKey'];
 			$recaptchaSetting->privateKey = $configArray['ReCaptcha']['privateKey'];
 			$recaptchaSetting->insert();
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function updateSearchableLists(){
+		//Get a list of users who have permission to create searchable lists
+		require_once ROOT_DIR . '/sys/Administration/Permission.php';
+		require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
+		require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$permission = new Permission();
+		$permission->name = 'Include Lists In Search Results';
+		$permission->find(true);
+
+		$permissionRoles = new RolePermissions();
+		$permissionRoles->permissionId = $permission->id;
+		$permissionRoles->find();
+		while ($permissionRoles->fetch()){
+			$userRole = new UserRoles();
+			$userRole->roleId = $permissionRoles->roleId;
+			$userRole->find();
+			while($userRole->fetch()){
+				$this->makeListsSearchableForUser($userRole->userId);
+			}
+		}
+
+		//Also update based on ptype
+		$pType = new PType();
+		$pType->whereAdd('assignedRoleId > -1');
+		$pType->find();
+		while ($pType->fetch()){
+			$user = new User();
+			$user->patronType = $pType;
+			$user->find();
+			while ($user->fetch()){
+				$this->makeListsSearchableForUser($user->id);
+			}
+		}
+
+		//finally update nyt user
+		$user = new User();
+		$user->cat_username = 'nyt_user';
+		if ($user->find(true)){
+			$this->makeListsSearchableForUser($user->id);
+		}
+	}
+
+	/**
+	 * @param int $userId
+	 */
+	protected function makeListsSearchableForUser($userId)
+	{
+		$userList = new UserList();
+		$userList->user_id = $userId;
+		$userList->find();
+		$allLists = [];
+		while ($userList->fetch()) {
+			$allLists[] = clone $userList;
+		}
+		foreach ($allLists as $list){
+			if ($list->searchable == 0) {
+				$list->searchable = 1;
+				$list->update();
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function createDefaultListIndexingSettings(){
+		require_once ROOT_DIR . '/sys/UserLists/ListIndexingSettings.php';
+		$listIndexingSettings = new ListIndexingSettings();
+		$listIndexingSettings->find();
+		if (!$listIndexingSettings->fetch()){
+			$listIndexingSettings = new ListIndexingSettings();
+			$variable = new Variable();
+			$variable->name = 'last_user_list_index_time';
+			if ($variable->find(true)){
+				$listIndexingSettings->lastUpdateOfChangedLists = $variable->value;
+				$variable->delete();
+			}
+			$listIndexingSettings->insert();
 		}
 	}
 

@@ -89,11 +89,6 @@ class Location extends DataObject
 	private $_sideLoadScopes;
 	private $_combinedResultSections;
 
-	function keys()
-	{
-		return array('locationId', 'code');
-	}
-
 	function getNumericColumnNames()
 	{
 		return ['scope'];

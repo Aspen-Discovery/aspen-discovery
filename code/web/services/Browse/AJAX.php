@@ -257,7 +257,7 @@ class Browse_AJAX extends Action {
 
 				// User List Browse Category //
 				if ($browseCategory->source == 'List') {
-					require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 					$sourceList     = new UserList();
 					$sourceList->id = $browseCategory->sourceListId;
 					if ($sourceList->find(true)) {

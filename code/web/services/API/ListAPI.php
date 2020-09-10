@@ -2,7 +2,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pager.php';
-require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 require_once ROOT_DIR . '/sys/Utils/Pagination.php';
 
 class ListAPI extends Action
@@ -596,7 +596,7 @@ class ListAPI extends Action
 			} else {
 				$numAdded = 0;
 				foreach ($recordIds as $id) {
-					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
 					if (preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)) {
@@ -775,7 +775,7 @@ class ListAPI extends Action
 		$lastModifiedDay = date("M j, Y", $lastModified);
 
 		// Look for selected List
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$nytList = new UserList();
 		$nytList->user_id = $nytListUser->id;
 		$nytList->title = $selectedListTitle;
@@ -829,7 +829,7 @@ class ListAPI extends Action
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		// Include UserListEntry Class
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
 		$numTitlesAdded = 0;
 		foreach ($listTitles->results as $titleResult) {

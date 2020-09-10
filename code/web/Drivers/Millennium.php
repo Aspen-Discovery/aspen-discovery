@@ -1434,7 +1434,7 @@ class Millennium extends AbstractIlsDriver
 	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
 	 */
 	function importListsFromIls($patron){
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$user = UserAccount::getLoggedInUser();
 		$results = array(
 			'totalTitles' => 0,

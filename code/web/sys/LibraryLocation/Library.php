@@ -256,10 +256,6 @@ class Library extends DataObject
 		'list'  => 'List',
 	);
 
-	function keys() {
-		return array('libraryId', 'subdomain');
-	}
-
 	static function getObjectStructure(){
 		// get the structure for the library system's holidays
 		$holidaysStructure = Holiday::getObjectStructure();

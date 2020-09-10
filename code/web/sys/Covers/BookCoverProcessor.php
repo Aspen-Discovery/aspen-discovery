@@ -1329,7 +1329,7 @@ class BookCoverProcessor{
 		//Build a cover based on the titles within list
 		require_once ROOT_DIR . '/sys/Covers/ListCoverBuilder.php';
 		$coverBuilder = new ListCoverBuilder();
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$userList = new UserList();
 		$userList->id = $id;
 		if ($userList->find(true)) {

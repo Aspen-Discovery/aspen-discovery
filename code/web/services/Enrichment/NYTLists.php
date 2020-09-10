@@ -1,7 +1,7 @@
 <?php
 
 include_once ROOT_DIR . '/services/Admin/Admin.php';
-include_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+include_once ROOT_DIR . '/sys/UserLists/UserList.php';
 
 class Enrichment_NYTLists extends Admin_Admin
 {

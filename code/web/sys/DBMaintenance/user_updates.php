@@ -512,6 +512,18 @@ function getUserUpdates()
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Website Indexing Settings'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Open Archives'))",
 			]
+		],
+
+		'list_indexing_permission' => [
+			'title' => 'List indexing permissions',
+			'description' => 'Create permission to administer list indexing',
+			'sql' => [
+
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('User Lists', 'Administer List Indexing Settings', '', 0, 'Allows the user to administer list indexing settings.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer List Indexing Settings'))",
+
+			]
 		]
 	);
 }

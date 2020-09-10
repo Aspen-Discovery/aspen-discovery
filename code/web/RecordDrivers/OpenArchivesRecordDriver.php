@@ -63,7 +63,7 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 
 		//Check to see if there are lists the record is on
 		if ($showListsAppearingOn) {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$appearsOnLists = UserList::getUserListsForRecord('OpenArchives', $this->getId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 		}

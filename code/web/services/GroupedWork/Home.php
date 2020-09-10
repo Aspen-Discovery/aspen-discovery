@@ -50,7 +50,7 @@ class GroupedWork_Home extends Action{
 		$timer->logTime('Got next and previous links');
 
 		//Check to see if there are lists the record is on
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
 		$interface->assign('appearsOnLists', $appearsOnLists);
 

@@ -223,7 +223,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 
 		//Get information from list entry
 		if ($listId) {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 			$listEntry = new UserListEntry();
 			$listEntry->source = 'Islandora';
 			$listEntry->sourceId = $this->getUniqueID();

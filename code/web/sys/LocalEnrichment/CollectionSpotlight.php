@@ -54,11 +54,6 @@ class CollectionSpotlight extends DataObject
 		return CollectionSpotlight::$_displayTypes[$typeName];
 	}
 
-	function keys()
-	{
-		return array('id');
-	}
-
 	static function getObjectStructure()
 	{
 		//Load Libraries for lookup values

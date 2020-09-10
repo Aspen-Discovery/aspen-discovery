@@ -1615,7 +1615,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$timer->logTime("Loaded highlighted snippets");
 
 		//Check to see if there are lists the record is on
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->getPermanentId());
 		$interface->assign('appearsOnLists', $appearsOnLists);
 

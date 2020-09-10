@@ -63,10 +63,6 @@ class Person extends SolrDataObject
 	private $_obituaries = null;
 	private $_marriages = null;
 
-	function keys() {
-		return array('personId');
-	}
-
 	function getCore(){
 		return 'genealogy';
 	}

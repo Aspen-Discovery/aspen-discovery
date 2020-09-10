@@ -59,7 +59,7 @@ class Admin_Themes extends ObjectEditor
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#configuration_templates', 'Configuration Templates');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#theme_and_layout', 'Configuration Templates');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Themes', 'Themes');
 		if (!empty($this->activeObject) && $this->activeObject instanceof Theme){
 			$themes = $this->activeObject->getAllAppliedThemes();
@@ -78,7 +78,7 @@ class Admin_Themes extends ObjectEditor
 
 	function getActiveAdminSection()
 	{
-		return 'configuration_templates';
+		return 'theme_and_layout';
 	}
 
 	function canView()

@@ -15,10 +15,6 @@ class Marriage extends DataObject
     public $marriageDateYear;
 	public $comments;
 
-	function keys() {
-		return array('marriageId');
-	}
-
 	function id(){
 		return $this->marriageId;
 	}

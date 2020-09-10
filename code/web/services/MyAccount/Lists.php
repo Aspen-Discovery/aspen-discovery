@@ -1,6 +1,6 @@
 <?php
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 
 class Lists extends MyAccount
 {
