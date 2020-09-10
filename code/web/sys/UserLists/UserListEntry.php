@@ -76,6 +76,9 @@ class UserListEntry extends DataObject{
 		if ($this->source == 'GroupedWork'){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($this->sourceId);
+			if (!$recordDriver->isValid()){
+				return null;
+			}
 			return $recordDriver;
 		}elseif ($this->source == 'OpenArchives'){
 			require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
