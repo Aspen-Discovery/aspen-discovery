@@ -184,7 +184,7 @@ class AspenError extends DataObject
 			echo json_encode($result);
 		}else {
 			global $module;
-			if (empty($module)) {
+			if (!empty($module)) {
 				$interface->setTemplate('../error.tpl');
 			}else{
 				$interface->setTemplate('error.tpl');
