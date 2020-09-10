@@ -65,11 +65,11 @@ if (IPAddress::showDebuggingInformation()) {
 global $enabledModules;
 $enabledModules = [];
 try {
-	$module = new Module();
-	$module->enabled = true;
-	$module->find();
-	while ($module->fetch()) {
-		$enabledModules[$module->name] = clone $module;
+	$aspenModule = new Module();
+	$aspenModule->enabled = true;
+	$aspenModule->find();
+	while ($aspenModule->fetch()) {
+		$enabledModules[$aspenModule->name] = clone $aspenModule;
 	}
 }catch (Exception $e){
 	//Modules are not installed yet

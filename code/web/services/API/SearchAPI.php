@@ -195,15 +195,15 @@ class SearchAPI extends Action
 
 		//Check for errors within the logs
 		require_once ROOT_DIR . '/sys/Module.php';
-		$module = new Module();
-		$module->enabled = true;
-		$module->find();
-		while ($module->fetch()){
-			if (!empty($module->logClassPath) && !empty($module->logClassName)){
+		$aspenModule = new Module();
+		$aspenModule->enabled = true;
+		$aspenModule->find();
+		while ($aspenModule->fetch()){
+			if (!empty($aspenModule->logClassPath) && !empty($aspenModule->logClassName)){
 				/** @noinspection PhpIncludeInspection */
-				require_once ROOT_DIR . $module->logClassPath;
+				require_once ROOT_DIR . $aspenModule->logClassPath;
 				/** @var BaseLogEntry $logEntry */
-				$logEntry = new $module->logClassName();
+				$logEntry = new $aspenModule->logClassName();
 				$logEntry->orderBy("id DESC");
 				$logEntry->limit(0, 3);
 				$logErrors = 0;
@@ -214,9 +214,9 @@ class SearchAPI extends Action
 					}
 				}
 				if ($logErrors > 0){
-					$this->addCheck($checks, $module->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$module->name} had errors");
+					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
 				}else{
-					$this->addCheck($checks, $module->name);
+					$this->addCheck($checks, $aspenModule->name);
 				}
 			}
 		}
