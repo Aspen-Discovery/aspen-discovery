@@ -183,7 +183,12 @@ class AspenError extends DataObject
 			}
 			echo json_encode($result);
 		}else {
-			$interface->setTemplate('../error.tpl');
+			global $module;
+			if (empty($module)) {
+				$interface->setTemplate('../error.tpl');
+			}else{
+				$interface->setTemplate('error.tpl');
+			}
 			$interface->setPageTitle('An Error has occurred');
 			$interface->display('layout.tpl');
 		}
