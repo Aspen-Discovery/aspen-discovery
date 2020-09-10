@@ -468,6 +468,10 @@ class Koha extends AbstractIlsDriver
 					return $result;
 				}
 			} else {
+				if (isset($authenticationResponse->message) && preg_match('/ILS-DI is disabled/', $authenticationResponse->message)){
+					global $logger;
+					$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
+				}
 				//User is not valid, check to see if they have a valid account in Koha so we can return a different error
 				/** @noinspection SqlResolve */
 				$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '$barcode' OR userId = '$barcode'";
@@ -2039,14 +2043,23 @@ class Koha extends AbstractIlsDriver
 			$kohaPreferences[$curRow['variable']] = $curRow['value'];
 		}
 
-		$mandatoryFields = array_flip(explode(',', $kohaPreferences['OPACSuggestionMandatoryFields']));
+		if (isset($kohaPreferences['OPACSuggestionMandatoryFields'])){
+			$mandatoryFields = array_flip(explode(',', $kohaPreferences['OPACSuggestionMandatoryFields']));
+		}else{
+			$mandatoryFields = [];
+		}
+
 
 		/** @noinspection SqlResolve */
 		$itemTypesSQL = "SELECT * FROM authorised_values where category = 'SUGGEST_FORMAT' order by lib_opac";
 		$itemTypesRS = mysqli_query($this->dbConnection, $itemTypesSQL);
 		$itemTypes = [];
+		$defaultItemType = '';
 		while ($curRow = $itemTypesRS->fetch_assoc()) {
 			$itemTypes[$curRow['authorised_value']] = $curRow['lib_opac'];
+			if (strtoupper($curRow['authorised_value']) == 'BOOK' || strtoupper($curRow['authorised_value']) == 'BOOKS'){
+				$defaultItemType = $curRow['authorised_value'];
+			}
 		}
 
 		global $interface;
@@ -2070,9 +2083,9 @@ class Koha extends AbstractIlsDriver
 			array('property' => 'publishercode', 'type' => 'text', 'label' => 'Publisher', 'description' => '', 'maxLength' => 80, 'required' => false),
 			array('property' => 'collectiontitle', 'type' => 'text', 'label' => 'Collection', 'description' => '', 'maxLength' => 80, 'required' => false),
 			array('property' => 'place', 'type' => 'text', 'label' => 'Publication place', 'description' => '', 'maxLength' => 80, 'required' => false),
-			array('property' => 'quantity', 'type' => 'text', 'label' => 'Quantity', 'description' => '', 'maxLength' => 4, 'required' => false),
-			array('property' => 'itemtype', 'type' => 'enum', 'values' => $itemTypes, 'label' => 'Item type', 'description' => '', 'required' => false),
-			array('property' => 'branchcode', 'type' => 'enum', 'values' => $pickupLocations, 'label' => 'Library', 'description' => '', 'required' => false),
+			array('property' => 'quantity', 'type' => 'text', 'label' => 'Quantity', 'description' => '', 'maxLength' => 4, 'required' => false, 'default' => 1),
+			array('property' => 'itemtype', 'type' => 'enum', 'values' => $itemTypes, 'label' => 'Item type', 'description' => '', 'required' => false, 'default' => $defaultItemType),
+			array('property' => 'branchcode', 'type' => 'enum', 'values' => $pickupLocations, 'label' => 'Library', 'description' => '', 'required' => false, 'default' => $user->getHomeLocation()->code),
 			array('property' => 'note', 'type' => 'textarea', 'label' => 'Note', 'description' => '', 'required' => false),
 		];
 
@@ -2337,7 +2350,7 @@ class Koha extends AbstractIlsDriver
 	 */
 	function importListsFromIls($patron)
 	{
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$this->initDatabaseConnection();
@@ -2837,6 +2850,7 @@ class Koha extends AbstractIlsDriver
 
 	public function completeFinePayment(User $patron, UserPayment $payment)
 	{
+		global $logger;
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error completing fine payment'
@@ -2851,6 +2865,7 @@ class Koha extends AbstractIlsDriver
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$logger->log('Unable to authenticate with Koha while completing fine payment', Logger::LOG_ERROR);
 		} else {
 			$accountLinesPaid = explode(',', $payment->finesPaid);
 			$partialPayments = [];
@@ -2899,6 +2914,7 @@ class Koha extends AbstractIlsDriver
 						}
 					} else {
 						$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
+						$logger->log("Unable to authenticate with Koha while completing fine payment response code: {$this->apiCurlWrapper->getResponseCode()}", Logger::LOG_ERROR);
 					}
 					$allPaymentsSucceed = false;
 				}
@@ -2926,6 +2942,7 @@ class Koha extends AbstractIlsDriver
 							}
 						} else {
 							$result['message'] .= "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
+							$logger->log("Error {$this->apiCurlWrapper->getResponseCode()} updating your payment", Logger::LOG_ERROR);
 						}
 						$allPaymentsSucceed = false;
 					}

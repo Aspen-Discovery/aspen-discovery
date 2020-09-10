@@ -1009,16 +1009,25 @@ class CatalogConnection
 
 	public function patronEligibleForHolds(User $patron)
 	{
+		if (empty($this->driver)){
+			return false;
+		}
 		return $this->driver->patronEligibleForHolds($patron);
 	}
 
 	public function getShowAutoRenewSwitch(User $patron)
 	{
+		if (empty($this->driver)){
+			return false;
+		}
 		return $this->driver->getShowAutoRenewSwitch($patron);
 	}
 
 	public function isAutoRenewalEnabledForUser(User $patron)
 	{
+		if (empty($this->driver)){
+			return false;
+		}
 		return $this->driver->isAutoRenewalEnabledForUser($patron);
 	}
 
@@ -1096,5 +1105,10 @@ class CatalogConnection
 	public function updateEditableUsername(User $user, $username)
 	{
 		return $this->driver->updateEditableUsername($user, $username);
+	}
+
+	public function logout(User $user)
+	{
+		$this->driver->logout($user);
 	}
 }

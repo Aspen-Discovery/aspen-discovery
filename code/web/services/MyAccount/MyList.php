@@ -1,7 +1,5 @@
 <?php
-
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class MyAccount_MyList extends MyAccount {
@@ -14,8 +12,8 @@ class MyAccount_MyList extends MyAccount {
 
 		// Fetch List object
 		$listId = $_REQUEST['id'];
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$list = new UserList();
 		$list->id = $listId;
 
@@ -36,7 +34,7 @@ class MyAccount_MyList extends MyAccount {
 		}
 		if (!$list->public && $list->user_id != UserAccount::getActiveUserId()) {
 			//Allow the user to view if they are admin
-			if (!UserAccount::isLoggedIn() || !UserAccount::userHasRole('opacAdmin')) {
+			if (!UserAccount::isLoggedIn() || !UserAccount::userHasPermission('Edit All Lists')) {
 				$this->display('invalidList.tpl', 'Invalid List');
 				return;
 			}
@@ -58,15 +56,15 @@ class MyAccount_MyList extends MyAccount {
 		if ($userCanEdit && (isset($_REQUEST['myListActionHead']) || isset($_REQUEST['myListActionItem']) || isset($_GET['delete']))){
 			if (isset($_REQUEST['myListActionHead']) && strlen($_REQUEST['myListActionHead']) > 0){
 				$actionToPerform = $_REQUEST['myListActionHead'];
-				if ($actionToPerform == 'makePublic'){
-					$list->public = 1;
-					$list->update();
-				}elseif ($actionToPerform == 'makePrivate'){
-					$list->public = 0;
-					$list->update();
-				}elseif ($actionToPerform == 'saveList'){
+				if ($actionToPerform == 'saveList'){
 					$list->title = $_REQUEST['newTitle'];
 					$list->description = strip_tags($_REQUEST['newDescription']);
+					$list->public = isset($_REQUEST['public']) && ($_REQUEST['public'] == 'true' || $_REQUEST['public'] == 'on');
+					if (!$list->public){
+						$list->searchable = false;
+					}else {
+						$list->searchable = isset($_REQUEST['searchable']) && ($_REQUEST['searchable'] == 'true' || $_REQUEST['searchable'] == 'on');
+					}
 					$list->update();
 				}elseif ($actionToPerform == 'deleteList'){
 					$list->delete();
@@ -106,19 +104,6 @@ class MyAccount_MyList extends MyAccount {
 		$interface->assign('userList', $list);
 		$interface->assign('listSelected', $list->id);
 
-		// Load the User object for the owner of the list (if necessary):
-		if (UserAccount::isLoggedIn() && (UserAccount::getActiveUserId() == $list->user_id)) {
-			$listUser = UserAccount::getActiveUserObj();
-		} elseif ($list->user_id != 0){
-			$listUser = new User();
-			$listUser->id = $list->user_id;
-			if (!$listUser->find(true)){
-				$listUser = false;
-			}
-		}else{
-			$listUser = false;
-		}
-
 		// Create a handler for displaying favorites and use it to assign
 		// appropriate template variables:
 		$interface->assign('allowEdit', $userCanEdit);
@@ -137,13 +122,109 @@ class MyAccount_MyList extends MyAccount {
 			$list->update();
 		}
 
-		$listEntries = $list->getListEntries($activeSort);
-		$allListEntries = $listEntries['listEntries'];
+		$this->buildListForDisplay($list, $userCanEdit, $activeSort);
 
-		$favoriteHandler = new FavoriteHandler();
-		$favoriteHandler->buildListForDisplay($list, $allListEntries, $userCanEdit, $activeSort);
+		if (UserAccount::isLoggedIn()){
+			$sidebar = 'Search/home-sidebar.tpl';
+		}else{
+			$sidebar = '';
+		}
+		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), $sidebar, false);
+	}
 
-		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), 'Search/home-sidebar.tpl', false);
+	/**
+	 * Assign all necessary values to the interface.
+	 *
+	 * @access  public
+	 * @param UserList $list
+	 * @param bool $allowEdit
+	 * @param string $sortName
+	 */
+	public function buildListForDisplay(UserList $list, $allowEdit = false, $sortName = 'dateAdded')
+	{
+		global $interface;
+
+		$queryParams = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
+		if ($queryParams == null){
+			$queryParams = [];
+		}else{
+			$queryParamsTmp = explode("&", $queryParams);
+			$queryParams = [];
+			foreach ($queryParamsTmp as $param) {
+				list($name, $value) = explode("=", $param);
+				if ($name != 'sort'){
+					$queryParams[$name] = $value;
+				}
+			}
+		}
+		$sortOptions = array(
+			'title' => [
+				'desc' => 'Title',
+				'selected' => $sortName == 'title',
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'title']))
+			],
+			'dateAdded' => [
+				'desc' => 'Date Added',
+				'selected' => $sortName == 'dateAdded',
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'dateAdded']))
+			],
+			'recentlyAdded' => [
+				'desc' => 'Recently Added',
+				'selected' => $sortName == 'recentlyAdded',
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'recentlyAdded']))
+			],
+			'custom' => [
+				'desc' => 'User Defined',
+				'selected' => $sortName == 'custom',
+				'sortUrl' => "/MyAccount/MyList/{$list->id}?" . http_build_query(array_merge($queryParams, ['sort' => 'custom']))
+			],
+		);
+
+		$interface->assign('sortList', $sortOptions);
+		$interface->assign('userSort', ($sortName == 'custom')); // switch for when users can sort their list
+
+		$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
+		$totalRecords = $list->numValidListItems();
+		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$startRecord = ($page - 1) * $recordsPerPage;
+		if ($startRecord < 0){
+			$startRecord = 0;
+		}
+		$endRecord = $page * $recordsPerPage;
+		if ($endRecord > $totalRecords){
+			$endRecord = $totalRecords;
+		}
+		$pageInfo = array(
+			'resultTotal' => $totalRecords,
+			'startRecord' => $startRecord,
+			'endRecord'   => $endRecord,
+			'perPage'     => $recordsPerPage
+		);
+		$resourceList = $list->getListRecords($startRecord , $recordsPerPage, $allowEdit, 'html', null, $sortName);
+		$interface->assign('resourceList', $resourceList);
+
+		// Set up paging of list contents:
+		$interface->assign('recordCount', $pageInfo['resultTotal']);
+		$interface->assign('recordStart', $pageInfo['startRecord']);
+		$interface->assign('recordEnd',   $pageInfo['endRecord']);
+		$interface->assign('recordsPerPage', $pageInfo['perPage']);
+
+		$link = $_SERVER['REQUEST_URI'];
+		if (preg_match('/[&?]page=/', $link)){
+			$link = preg_replace("/page=\\d+/", "page=%d", $link);
+		}else if (strpos($link, "?") > 0){
+			$link .= "&page=%d";
+		}else{
+			$link .= "?page=%d";
+		}
+		$options = array('totalItems' => $pageInfo['resultTotal'],
+			'perPage' => $pageInfo['perPage'],
+			'fileName' => $link,
+			'append'    => false);
+		require_once ROOT_DIR . '/sys/Pager.php';
+		$pager = new Pager($options);
+		$interface->assign('pageLinks', $pager->getLinks());
+
 	}
 
 	function bulkAddTitles($list){
@@ -198,5 +279,16 @@ class MyAccount_MyList extends MyAccount {
 		}
 
 		return $notes;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		if (UserAccount::isLoggedIn()){
+			$breadcrumbs[] = new Breadcrumb('/MyAccount/Lists', 'Lists');
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'List');
+		return $breadcrumbs;
 	}
 }

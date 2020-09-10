@@ -28,12 +28,12 @@
 				{if $anonymousLcDownload || ($loggedIn && $verifiedLcDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadLC">Download Large Image</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Login to Download Large Image</a>
+					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Sign in to Download Large Image</a>
 				{/if}
 				{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original Image</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Login to Download Original Image</a>
+					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Sign in to Download Original Image</a>
 				{/if}
 			{/if}
 			{if $allowRequestsForArchiveMaterials}

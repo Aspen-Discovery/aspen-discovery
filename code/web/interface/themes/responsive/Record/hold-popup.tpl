@@ -36,7 +36,19 @@
 				</p>
 
 				<div id="holdOptions">
-					{if !$rememberHoldPickupLocation}
+					{assign var="onlyOnePickupLocation" value=false}
+					{if count($pickupLocations) == 1}
+						{foreach from=$pickupLocations item=firstLocation}
+							{if !is_string($firstLocation) && ($firstLocation->code == $user->getHomeLocationCode())}
+								{assign var="onlyOnePickupLocation" value=true}
+							{/if}
+						{/foreach}
+					{/if}
+					{if $rememberHoldPickupLocation || $onlyOnePickupLocation }
+						<input type="hidden" name="pickupBranch" id="pickupBranch" value="{$user->getHomeLocationCode()}">
+						<input type="hidden" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation" value="true">
+						<input type="hidden" name="user" id="user" value="{$user->id}">
+					{else}
 						<div id="pickupLocationOptions" class="form-group">
 							<label class="control-label" for="pickupBranch">{translate text="I want to pick this up at"} </label>
 							<div class="controls">
@@ -95,10 +107,6 @@
 								{rdelim}).change(); /* trigger on initial load */
 							{rdelim});
 						</script>
-					{else}
-						<input type="hidden" name="pickupBranch" id="pickupBranch" value="{$user->_homeLocationCode}">
-						<input type="hidden" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation" value="true">
-						<input type="hidden" name="user" id="user" value="{$user->id}">
 					{/if}
 
 					{if $holdType == 'either' || $holdType == 'item'}

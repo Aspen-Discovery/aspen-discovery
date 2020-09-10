@@ -11,7 +11,7 @@
 				{else}
 					<p class="alert alert-success"> Your PIN number has been sent to the email address we have on file.</p>
 					<p>
-						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Sign in'}</a>
 					</p>
 				{/if}
 			</div>

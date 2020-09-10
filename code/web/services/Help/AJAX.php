@@ -54,4 +54,8 @@ class Help_AJAX extends Action {
 		return json_encode($results);
 	}
 
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

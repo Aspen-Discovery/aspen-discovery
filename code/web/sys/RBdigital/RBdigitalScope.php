@@ -94,10 +94,8 @@ class RBdigitalScope extends DataObject
 
 	public function __set($name, $value){
 		if ($name == "libraries") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_libraries = $value;
 		}elseif ($name == "locations") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_locations = $value;
 		}else {
 			$this->_data[$name] = $value;
@@ -188,26 +186,22 @@ class RBdigitalScope extends DataObject
 	/** @return Library[] */
 	public function getLibraries()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_libraries;
 	}
 
 	/** @return Location[] */
 	public function getLocations()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_locations;
 	}
 
 	public function setLibraries($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
 	public function setLocations($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 

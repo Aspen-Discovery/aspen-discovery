@@ -183,4 +183,12 @@ class MyAccount_Profile extends MyAccount
 		$this->display('profile.tpl', 'Account Settings');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Account Settings');
+		return $breadcrumbs;
+	}
+
 }

@@ -120,10 +120,9 @@ class AspenError extends DataObject
 	function handleAspenError()
 	{
 		global $errorHandlingEnabled;
-		if (isset($errorHandlingEnabled) && $errorHandlingEnabled == false) {
+		if (isset($errorHandlingEnabled) && ($errorHandlingEnabled < 0)) {
 			return;
 		}
-		global $configArray;
 
 		// It would be really bad if an error got raised from within the error handler;
 		// we would go into an infinite loop and run out of memory.  To avoid this,
@@ -155,7 +154,7 @@ class AspenError extends DataObject
 		}
 
 		//Clear any output that has been generated so far so the user just gets the error message.
-		if (!$configArray['System']['debug']) {
+		if (IPAddress::showDebuggingInformation()) {
 			@ob_clean();
 		}
 
@@ -167,7 +166,7 @@ class AspenError extends DataObject
 		}
 
 		$interface->assign('error', $this);
-		$debug = $configArray['System']['debug'];
+		$debug = IPAddress::showDebuggingInformation();
 		$interface->assign('debug', $debug);
 
 		global $isAJAX;
@@ -183,7 +182,12 @@ class AspenError extends DataObject
 			}
 			echo json_encode($result);
 		}else {
-			$interface->setTemplate('../error.tpl');
+			global $module;
+			if (!empty($module)) {
+				$interface->setTemplate('../error.tpl');
+			}else{
+				$interface->setTemplate('error.tpl');
+			}
 			$interface->setPageTitle('An Error has occurred');
 			$interface->display('layout.tpl');
 		}

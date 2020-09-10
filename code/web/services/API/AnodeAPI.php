@@ -48,6 +48,7 @@ class AnodeAPI extends Action
 	 * @param string $listId - The list to show
 	 * @param integer $numGroupedWorksToShow - the maximum number of titles that should be shown
 	 * @return array
+	 * @noinspection PhpUnused
 	 */
 	function getAnodeListGroupedWorks($listId = NULL, $numGroupedWorksToShow = NULL)
 	{
@@ -70,6 +71,7 @@ class AnodeAPI extends Action
 	 *
 	 * @param string $id - The initial grouped work
 	 * @return    array
+	 * @noinspection PhpUnused
 	 */
 	function getAnodeRelatedGroupedWorks($id = NULL)
 	{
@@ -84,7 +86,6 @@ class AnodeAPI extends Action
 		}
 		//Load Similar titles (from Solr)
 		$url = $configArray['Index']['url'];
-		/** @var Solr $db */
 		$db = new GroupedWorksSolrConnector($url);
 		$similar = $db->getMoreLikeThis($id);
 		if (isset($similar) && count($similar['response']['docs']) > 0) {
@@ -228,5 +229,10 @@ class AnodeAPI extends Action
 			}
 		}
 		return $result;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

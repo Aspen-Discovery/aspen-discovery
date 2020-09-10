@@ -86,6 +86,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		$overdrive_updates = getOverDriveUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/ebsco_updates.php';
 		$ebscoUpdates = getEbscoUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/axis360_updates.php';
+		$axis360Updates = getAxis360Updates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
 		$theming_updates = getThemingUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/translation_updates.php';
@@ -142,6 +144,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$islandora_updates,
 			$overdrive_updates,
 			$ebscoUpdates,
+			$axis360Updates,
 			$hoopla_updates,
 			$rbdigital_updates,
 			$sierra_api_updates,
@@ -670,6 +673,15 @@ class Admin_DBMaintenance extends Admin_Admin
 						"ALTER TABLE ip_lookup ADD COLUMN blockAccess TINYINT NOT NULL DEFAULT 0",
 						"ALTER TABLE ip_lookup ADD COLUMN allowAPIAccess TINYINT NOT NULL DEFAULT 0",
 						"INSERT INTO ip_lookup (location, ip, locationid, startIpVal, endIpVal, blockAccess, allowAPIAccess, isOpac) VALUES ('Internal', '127.0.0.1', -1, 2130706433, 2130706433, 0, 1, 0)",
+					]
+				],
+
+				'ip_debugging' =>[
+					'title' => 'IP Lookup Debugging',
+					'description' => 'Allow debugging based on IP address of the user',
+					'sql' => [
+						'ALTER TABLE ip_lookup ADD COLUMN showDebuggingInformation TINYINT NOT NULL DEFAULT 0',
+						"UPDATE ip_lookup set showDebuggingInformation = 1 where ip ='127.0.0.1'"
 					]
 				],
 
@@ -1417,6 +1429,58 @@ class Admin_DBMaintenance extends Admin_Admin
 					)
 				),
 
+				'user_list_searching' => [
+					'title' => 'User List Searching',
+					'description' => 'Add searchable setting to user lists to give additional control over what is found in search results',
+					'continueOnError' => true,
+					'sql' => [
+						'ALTER TABLE user_list ADD searchable TINYINT(1) DEFAULT 0',
+						'updateSearchableLists'
+					]
+				],
+
+				'user_list_indexing_settings' => [
+					'title' => 'User List Indexing Settings',
+					'description' => 'Create a table to store List Indexing Settings',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS list_indexing_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							runFullUpdate TINYINT(1) DEFAULT 1,
+							lastUpdateOfChangedLists INT(11) DEFAULT 0,
+							lastUpdateOfAllLists INT(11) DEFAULT 0
+						) ENGINE = InnoDB;'
+					]
+				],
+
+				'default_list_indexing' => [
+					'title' => 'User List Indexing Settings - setup defaults',
+					'description' => 'Setup default indexing settings by converting from variables',
+					'sql' => [
+						'createDefaultListIndexingSettings'
+					]
+				],
+
+				'user_list_indexing_log' => [
+					'title' => 'User List Indexing Log',
+					'description' => 'Create a table to store List Indexing Log',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS list_indexing_log(
+						    id INT NOT NULL AUTO_INCREMENT,
+						    startTime INT(11) NOT NULL,
+						    endTime INT(11) NULL, 
+						    lastUpdate INT(11) NULL, 
+						    notes TEXT,
+						    numLists INT(11) DEFAULT 0,
+						    numAdded INT(11) DEFAULT 0,
+						    numDeleted INT(11) DEFAULT 0,
+						    numUpdated INT(11) DEFAULT 0,
+						    numSkipped INT(11) DEFAULT 0,
+						    numErrors INT(11) DEFAULT 0, 
+						    PRIMARY KEY ( `id` )
+						) ENGINE = InnoDB;'
+					]
+				],
+
 				'remove_old_resource_tables' => array(
 					'title' => 'Remove old Resource Tables',
 					'description' => 'Remove old tables that were used for storing information based on resource',
@@ -2031,6 +2095,17 @@ class Admin_DBMaintenance extends Admin_Admin
 					],
 				],
 
+				'coce_settings' => [
+					'title' => 'Coce server settings',
+					'description' => 'Add the ability to connect to a Coce server to load covers',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS coce_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							coceServerUrl VARCHAR(100) NOT NULL
+						) ENGINE = INNODB;',
+					],
+				],
+
 				'nyt_api_settings' => [
 					'title' => 'New York Times API settings',
 					'description' => 'Add the ability to store New York Times api settings in the DB rather than config file',
@@ -2125,16 +2200,24 @@ class Admin_DBMaintenance extends Admin_Admin
 						) ENGINE = INNODB;'
 					]
 				],
+
+				'rosen_levelup_settings_school_prefix' => [
+					'title' => 'Rosen LevelUP API Settings - School Code Prefix',
+					'description' => 'Add the ability to generate a prefix for location code to accommodate Rosen requirement that school codes be not just numbers. E.g., change Amqui Elementary location code 105 to "Nashville 105"',
+					'sql' => [
+						'ALTER TABLE rosen_levelup_settings ADD lu_location_code_prefix VARCHAR(50)'
+					]
+				],
 			)
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	public function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */ &$update)
 	{
 		global $configArray;
 		$sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$configArray['Database']['database_aspen_dbname']}' AND ENGINE = 'MyISAM'";
 
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		$results = $aspen_db->query($sql, PDO::FETCH_ASSOC);
 		$row = $results->fetchObject();
@@ -2149,7 +2232,6 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	private function checkWhichUpdatesHaveRun($availableUpdates)
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		foreach ($availableUpdates as $key => $update) {
 			$update['alreadyRun'] = false;
@@ -2164,7 +2246,6 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	private function markUpdateAsRun($update_key)
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		$result = $aspen_db->query("SELECT * from db_update where update_key = " . $aspen_db->quote($update_key));
 		if ($result->rowCount() != false) {
@@ -2175,14 +2256,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	function getAllowableRoles()
-	{
-		return array('userAdmin', 'opacAdmin');
-	}
-
 	private function createUpdatesTable()
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		//Check to see if the updates table exists
 		$result = $aspen_db->query("SHOW TABLES");
@@ -2206,7 +2281,6 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	function runSQLStatement(&$update, $sql)
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		set_time_limit(500);
 		$updateOk = true;
@@ -2230,6 +2304,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		return $updateOk;
 	}
 
+	/** @noinspection PhpUnused */
 	function createDefaultIpRanges()
 	{
 		require_once ROOT_DIR . 'sys/IP/IPAddress.php';
@@ -2240,20 +2315,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	/**
-	 * @param $resource
-	 * @return null|string
-	 */
-	public function getGroupedWorkForResource($resource)
-	{
-		//Get the identifier for the resource
-		if ($resource->source == 'VuFind') {
-			$primaryIdentifier = $resource->record_id;
-			return $primaryIdentifier;
-		}
-		return null;
-	}
-
+	/** @noinspection PhpUnused */
 	function updateDueDateFormat()
 	{
 		global $configArray;
@@ -2274,6 +2336,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function updateShowSeriesInMainDetails()
 	{
 		$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
@@ -2286,6 +2349,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function populateNovelistSettings()
 	{
 		global $configArray;
@@ -2298,6 +2362,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function populateContentCafeSettings()
 	{
 		global $configArray;
@@ -2314,6 +2379,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function populateSyndeticsSettings()
 	{
 		global $configArray;
@@ -2333,6 +2399,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function populateRecaptchaSettings()
 	{
 		global $configArray;
@@ -2343,5 +2410,106 @@ class Admin_DBMaintenance extends Admin_Admin
 			$recaptchaSetting->privateKey = $configArray['ReCaptcha']['privateKey'];
 			$recaptchaSetting->insert();
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function updateSearchableLists(){
+		//Get a list of users who have permission to create searchable lists
+		require_once ROOT_DIR . '/sys/Administration/Permission.php';
+		require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
+		require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$permission = new Permission();
+		$permission->name = 'Include Lists In Search Results';
+		$permission->find(true);
+
+		$permissionRoles = new RolePermissions();
+		$permissionRoles->permissionId = $permission->id;
+		$permissionRoles->find();
+		while ($permissionRoles->fetch()){
+			$userRole = new UserRoles();
+			$userRole->roleId = $permissionRoles->roleId;
+			$userRole->find();
+			while($userRole->fetch()){
+				$this->makeListsSearchableForUser($userRole->userId);
+			}
+		}
+
+		//Also update based on ptype
+		$pType = new PType();
+		$pType->whereAdd('assignedRoleId > -1');
+		$pType->find();
+		while ($pType->fetch()){
+			$user = new User();
+			$user->patronType = $pType;
+			$user->find();
+			while ($user->fetch()){
+				$this->makeListsSearchableForUser($user->id);
+			}
+		}
+
+		//finally update nyt user
+		$user = new User();
+		$user->cat_username = 'nyt_user';
+		if ($user->find(true)){
+			$this->makeListsSearchableForUser($user->id);
+		}
+	}
+
+	/**
+	 * @param int $userId
+	 */
+	protected function makeListsSearchableForUser($userId)
+	{
+		$userList = new UserList();
+		$userList->user_id = $userId;
+		$userList->find();
+		$allLists = [];
+		while ($userList->fetch()) {
+			$allLists[] = clone $userList;
+		}
+		foreach ($allLists as $list){
+			if ($list->searchable == 0) {
+				$list->searchable = 1;
+				$list->update();
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function createDefaultListIndexingSettings(){
+		require_once ROOT_DIR . '/sys/UserLists/ListIndexingSettings.php';
+		$listIndexingSettings = new ListIndexingSettings();
+		$listIndexingSettings->find();
+		if (!$listIndexingSettings->fetch()){
+			$listIndexingSettings = new ListIndexingSettings();
+			$variable = new Variable();
+			$variable->name = 'last_user_list_index_time';
+			if ($variable->find(true)){
+				$listIndexingSettings->lastUpdateOfChangedLists = $variable->value;
+				$variable->delete();
+			}
+			$listIndexingSettings->insert();
+		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
+		$breadcrumbs[] = new Breadcrumb('', 'Database Maintenance');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Run Database Maintenance');
 	}
 }

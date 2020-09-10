@@ -9,47 +9,57 @@ class LibraryArchiveMoreDetails extends DataObject{
 	public $weight;
 
 	static $moreDetailsOptions = array(
-  'description' => 'Description',
-	'bio' => 'Biographical Information',
-	'wikipedia' => 'From Wikipedia',
-	'familyDetails' => 'Family Details',
-	'addresses' => 'Addresses',
-	'details' => 'Details',
-	'militaryService' => 'Military Service',
-	'transcription' => 'Transcription',
-  'correspondence' => 'Correspondence Information',
-  'academicResearch' => 'Academic Research Information',
-	'artworkDetails' => 'Art Information',
-	'musicDetails' => 'Music Information',
-	'relatedObjects' => 'Related Objects',
-  'obituaries' => 'Obituaries',
-  'burialDetails' => 'Burial Details',
-	'relatedPeople' => 'Related People',
-  'relatedOrganizations' => 'Related Organizations',
-  'relatedPlaces' => 'Related Places',
-  'relatedEvents' => 'Related Events',
-	'demographics' => 'Demographic Details',
-  'education' => 'Academic Record',
-  'notes' => 'Notes',
-  'subject' => 'Subjects',
-  'acknowledgements' => 'Acknowledgements', //production Team
-  'externalLinks' => 'Links',
-  'moreDetails' => 'More Details',
-  'rightsStatements' => 'Rights Statements',
-  'staffView' => 'Staff View',
-);
+		'description' => 'Description',
+		'bio' => 'Biographical Information',
+		'wikipedia' => 'From Wikipedia',
+		'familyDetails' => 'Family Details',
+		'addresses' => 'Addresses',
+		'details' => 'Details',
+		'militaryService' => 'Military Service',
+		'transcription' => 'Transcription',
+		'correspondence' => 'Correspondence Information',
+		'academicResearch' => 'Academic Research Information',
+		'artworkDetails' => 'Art Information',
+		'musicDetails' => 'Music Information',
+		'relatedObjects' => 'Related Objects',
+		'obituaries' => 'Obituaries',
+		'burialDetails' => 'Burial Details',
+		'relatedPeople' => 'Related People',
+		'relatedOrganizations' => 'Related Organizations',
+		'relatedPlaces' => 'Related Places',
+		'relatedEvents' => 'Related Events',
+		'demographics' => 'Demographic Details',
+		'education' => 'Academic Record',
+		'notes' => 'Notes',
+		'subject' => 'Subjects',
+		'acknowledgements' => 'Acknowledgements', //production Team
+		'externalLinks' => 'Links',
+		'moreDetails' => 'More Details',
+		'rightsStatements' => 'Rights Statements',
+		'staffView' => 'Staff View',
+	);
 
 	static function getObjectStructure(){
-		$libraryList = Library::getLibraryList();
+		//Load Libraries for lookup values
+		$library = new Library();
+		$library->orderBy('displayName');
+		if (!UserAccount::userHasPermission('Administer All Libraries')){
+			$homeLibrary = Library::getPatronHomeLibrary();
+			$library->libraryId = $homeLibrary->libraryId;
+		}
+		$library->find();
+		$libraryList = array();
+		while ($library->fetch()){
+			$libraryList[$library->libraryId] = $library->displayName;
+		}
 
-		$structure = array(
+		return array(
 			'id'                => array('property'=>'id',                'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the hours within the database'),
 			'libraryId'         => array('property'=>'libraryId',         'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'A link to the library which the location belongs to'),
 			'section'           => array('property'=>'section',           'type'=>'enum', 'label'=>'Section', 'values' => self::$moreDetailsOptions, 'description'=>'The section to display'),
 			'collapseByDefault' => array('property'=>'collapseByDefault', 'type'=>'checkbox', 'label'=>'Collapse By Default', 'description'=>'Whether or not the section should be collapsed by default', 'default' => true),
 			'weight'            => array('property'=>'weight',            'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how lists are sorted within the accordion.  Lower weights are displayed to the left of the screen.', 'required'=> true),
 		);
-		return $structure;
 	}
 
 //	function getEditLink(){
@@ -262,7 +272,7 @@ class LibraryArchiveMoreDetails extends DataObject{
 //		$defaultOption->weight = count($defaultOptions) + 101;
 //		$defaultOptions[] = $defaultOption;
 
-	return $defaultOptions;
+		return $defaultOptions;
 	}
 
 

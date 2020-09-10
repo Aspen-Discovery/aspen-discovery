@@ -16,12 +16,6 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 	function getPageTitle(){
 		return 'Collection Spotlight Lists';
 	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
-	}
 	function getAllObjects(){
 		$object = new CollectionSpotlightList();
 		$object->orderBy('weight');
@@ -41,9 +35,6 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager');
-	}
 
 	function getInstructions(){
 		return '';
@@ -55,5 +46,24 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 
 	function showReturnToList(){
 		return false;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('', 'Collection Spotlight List');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'local_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Collection Spotlights','Administer Library Collection Spotlights']);
 	}
 }

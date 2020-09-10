@@ -397,23 +397,22 @@ class GroupedWorkDisplaySetting extends DataObject
 
 	public function clearMoreDetailsOptions(){
 		$this->clearOneToManyOptions('GroupedWorkMoreDetails', 'groupedWorkSettingsId');
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_moreDetailsOptions = array();
 	}
 
 	public static function getDefaultDisplaySettings(){
-		$defaultDiplaySettings = new GroupedWorkDisplaySetting();
-		$defaultDiplaySettings->name = 'default';
-		$defaultDiplaySettings->applyNumberOfHoldingsBoost = true;
-		$defaultDiplaySettings->includeOutOfSystemExternalLinks = false;
-		$defaultDiplaySettings->showSearchTools = true;
-		$defaultDiplaySettings->showQuickCopy = true;
-		$defaultDiplaySettings->alwaysShowSearchResultsMainDetails = false;
-		$defaultDiplaySettings->availabilityToggleLabelSuperScope = 'Entire Collection';
-		$defaultDiplaySettings->availabilityToggleLabelLocal = '';
-		$defaultDiplaySettings->availabilityToggleLabelAvailable = 'Available Now';
-		$defaultDiplaySettings->availabilityToggleLabelAvailableOnline = 'Available Online';
-		return $defaultDiplaySettings;
+		$defaultDisplaySettings = new GroupedWorkDisplaySetting();
+		$defaultDisplaySettings->name = 'default';
+		$defaultDisplaySettings->applyNumberOfHoldingsBoost = true;
+		$defaultDisplaySettings->includeOutOfSystemExternalLinks = false;
+		$defaultDisplaySettings->showSearchTools = true;
+		$defaultDisplaySettings->showQuickCopy = true;
+		$defaultDisplaySettings->alwaysShowSearchResultsMainDetails = false;
+		$defaultDisplaySettings->availabilityToggleLabelSuperScope = 'Entire Collection';
+		$defaultDisplaySettings->availabilityToggleLabelLocal = '';
+		$defaultDisplaySettings->availabilityToggleLabelAvailable = 'Available Now';
+		$defaultDisplaySettings->availabilityToggleLabelAvailableOnline = 'Available Online';
+		return $defaultDisplaySettings;
 	}
 
 	public function saveLibraries(){
@@ -473,37 +472,41 @@ class GroupedWorkDisplaySetting extends DataObject
 		}
 	}
 
-	/** @return Library[] */
+	/** @return Library[]
+	 * @noinspection PhpUnused
+	 */
 	public function getLibraries()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_libraries;
 	}
 
-	/** @return Location[] */
+	/** @return Location[]
+	 * @noinspection PhpUnused
+	 */
 	public function getLocations()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_locations;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setLibraries($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setLocations($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearLibraries(){
 		$this->clearOneToManyOptions('Library', 'groupedWorkDisplaySettingId');
 		unset($this->_libraries);
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearLocations(){
 		$this->clearOneToManyOptions('Location', 'groupedWorkDisplaySettingId');
 		unset($this->_locations);

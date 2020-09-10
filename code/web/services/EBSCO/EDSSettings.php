@@ -52,21 +52,6 @@ class EBSCO_EDSSettings extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin');
-	}
-
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];
@@ -75,5 +60,19 @@ class EBSCO_EDSSettings extends ObjectEditor
 	function getInstructions()
 	{
 		return '';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ebsco', 'EBSCO');
+		$breadcrumbs[] = new Breadcrumb('/EBSCO/EDS Settings', 'Settings');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'ebsco';
 	}
 }

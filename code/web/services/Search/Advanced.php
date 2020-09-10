@@ -52,7 +52,12 @@ class Search_Advanced extends Search_AdvancedBase {
 			$interface->assign('searchFilters', $savedSearch->getFilterList());
 		}
 
-		$this->display('advanced.tpl', 'Advanced Search', 'Search/results-sidebar.tpl');
+		$this->display('advanced.tpl', 'Advanced Search', '');
+	}
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('', 'Catalog Advanced Search');
+		return $breadcrumbs;
 	}
 }
-?>

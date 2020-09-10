@@ -5,8 +5,6 @@
 				<div id="web_note" class="text-info text-center alert alert-warning"><strong>{$profile->_web_note}</strong></div>
 			{/if}
 
-			{* Alternate Mobile MyAccount Menu *}
-			{include file="MyAccount/mobilePageHeader.tpl"}
 			<h1>{translate text='My Account'}</h1>
 			{if $userHasCatalogConnection}
 				<h2>{translate text='Account Summary'}</h2>
@@ -39,7 +37,7 @@
 				{/if}
 			{/if}
 		{else}
-			You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
+			You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
 		{/if}
 	</div>
 {/strip}

@@ -152,4 +152,13 @@ class Events_Calendar extends Action
 
 		$this->display('calendar.tpl', 'Events Calendar ' . $formattedMonthYear, 'Search/results-sidebar.tpl');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#events', 'Events');
+		$breadcrumbs[] = new Breadcrumb('/Events/Calendar', 'Events Calendar');
+		return $breadcrumbs;
+	}
 }

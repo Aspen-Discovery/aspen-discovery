@@ -11,12 +11,9 @@ class IPAddress extends DataObject
 	public $isOpac;                   //tinyint(1)
 	public $blockAccess;
 	public $allowAPIAccess;
+	public $showDebuggingInformation;
 	public $startIpVal;
 	public $endIpVal;
-
-	function keys() {
-		return array('id', 'locationid', 'ip');
-	}
 
 	function getNumericColumnNames()
 	{
@@ -42,6 +39,7 @@ class IPAddress extends DataObject
 			'isOpac' => array('property' => 'isOpac', 'type' => 'checkbox', 'label' => 'Treat as a Public OPAC', 'description' => 'This IP address will be treated as a public OPAC with autologout features turned on.', 'default' => true),
 			'blockAccess' => array('property' => 'blockAccess', 'type' => 'checkbox', 'label' => 'Block Access from this IP', 'description' => 'Traffic from this IP will not be allowed to use Aspen.', 'default' => false),
 			'allowAPIAccess' => array('property' => 'allowAPIAccess', 'type' => 'checkbox', 'label' => 'Allow API Access', 'description' => 'Traffic from this IP will be allowed to use Aspen APIs.', 'default' => false),
+			'showDebuggingInformation' => array('property' => 'showDebuggingInformation', 'type' => 'checkbox', 'label' => 'Show Debugging Information', 'description' => 'Traffic from this IP will have debugging information emitted for it.', 'default' => false),
 		);
 	}
 
@@ -137,12 +135,16 @@ class IPAddress extends DataObject
 		}
 	}
 
+	static $ipAddressesForIP = [];
 	/**
 	 * @param $activeIP
 	 * @return bool|IPAddress
 	 */
 	static function getIPAddressForIP($activeIP){
 		$ipVal = ip2long($activeIP);
+		if (array_key_exists($ipVal, IPAddress::$ipAddressesForIP)){
+			return IPAddress::$ipAddressesForIP[$ipVal];
+		}
 
 		if (is_numeric($ipVal)) {
 			disableErrorHandler();
@@ -152,12 +154,15 @@ class IPAddress extends DataObject
 			$subnet->orderBy('(endIpVal - startIpVal)');
 			if ($subnet->find(true)) {
 				enableErrorHandler();
+				IPAddress::$ipAddressesForIP[$ipVal] = $subnet;
 				return $subnet;
 			}else{
 				enableErrorHandler();
+				IPAddress::$ipAddressesForIP[$ipVal] = false;
 				return false;
 			}
 		}else{
+			IPAddress::$ipAddressesForIP[$ipVal] = false;
 			return false;
 		}
 	}
@@ -224,6 +229,16 @@ class IPAddress extends DataObject
 		$ipInfo = IPAddress::getIPAddressForIP($clientIP);
 		if (!empty($ipInfo)) {
 			return $ipInfo->allowAPIAccess;
+		}else{
+			return false;
+		}
+	}
+
+	public static function showDebuggingInformation(){
+		$clientIP = IPAddress::getClientIP();
+		$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+		if (!empty($ipInfo)) {
+			return $ipInfo->showDebuggingInformation;
 		}else{
 			return false;
 		}

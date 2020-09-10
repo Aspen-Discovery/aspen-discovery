@@ -11,4 +11,9 @@ class MyAccount_Logout extends Action {
 		header('Location: /');
 		die();
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

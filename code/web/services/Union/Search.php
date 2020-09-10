@@ -1,6 +1,6 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/ResultsAction.php';
 
 /**
  * Union Results
@@ -8,7 +8,9 @@ require_once ROOT_DIR . '/Action.php';
  * providing joined results between the sources or by including results from
  * a single source
  */
-class Union_Search extends Action {
+class Union_Search extends ResultsAction {
+	/** @var Action */
+	private $searchResultsAction;
 	function launch(){
 		global $module;
 		global $action;
@@ -36,72 +38,77 @@ class Union_Search extends Action {
 			$interface->assign('module', $module);
 			$action = 'Results';
 			$interface->assign('action', $action);
-			$results = new Genealogy_Results();
-			$results->launch();
+			$this->searchResultsAction = new Genealogy_Results();
+			$this->searchResultsAction->launch();
 		}else if ($searchSource == 'islandora'){
 			require_once (ROOT_DIR . '/services/Archive/Results.php');
 			$module = 'Archive';
 			$interface->assign('module', $module);
 			$action = 'Results';
 			$interface->assign('action', $action);
-			$results = new Archive_Results();
-			$results->launch();
+			$this->searchResultsAction = new Archive_Results();
+			$this->searchResultsAction->launch();
 		} else if ($searchSource == 'open_archives') {
 			require_once(ROOT_DIR . '/services/OpenArchives/Results.php');
 			$module = 'OpenArchives';
 			$interface->assign('module', $module);
 			$action = 'Results';
 			$interface->assign('action', $action);
-			$results = new OpenArchives_Results();
-			$results->launch();
+			$this->searchResultsAction = new OpenArchives_Results();
+			$this->searchResultsAction->launch();
 		} else if ($searchSource == 'lists') {
 			require_once(ROOT_DIR . '/services/Lists/Results.php');
 			$module = 'Lists';
 			$interface->assign('module', $module);
 			$action = 'Results';
 			$interface->assign('action', $action);
-			$results = new Lists_Results();
-			$results->launch();
+			$this->searchResultsAction = new Lists_Results();
+			$this->searchResultsAction->launch();
 		}else if ($searchSource == 'websites'){
 			require_once(ROOT_DIR . '/services/Websites/Results.php');
 			$module = 'Websites';
 			$interface->assign('module', $module);
 			$action = 'Results';
 			$interface->assign('action', $action);
-			$results = new Websites_Results();
-			$results->launch();
+			$this->searchResultsAction = new Websites_Results();
+			$this->searchResultsAction->launch();
 		}else if ($searchSource == 'events'){
 			require_once(ROOT_DIR . '/services/Events/Results.php');
 			$module = 'Events';
 			$interface->assign('module', $module);
 			$action = 'Results';
 			$interface->assign('action', $action);
-			$results = new Events_Results();
-			$results->launch();
+			$this->searchResultsAction = new Events_Results();
+			$this->searchResultsAction->launch();
 		}else if ($searchSource == 'ebsco_eds'){
 			require_once (ROOT_DIR . '/services/EBSCO/Results.php');
 			$module = 'EBSCO';
 			$interface->assign('module', $module);
 			$action = 'Results';
 			$interface->assign('action', $action);
-			$results = new EBSCO_Results();
-			$results->launch();
+			$this->searchResultsAction = new EBSCO_Results();
+			$this->searchResultsAction->launch();
 		}else if ($searchSource == 'combined'){
 			require_once (ROOT_DIR . '/services/Union/CombinedResults.php');
 			$module = 'Union';
 			$interface->assign('module', $module);
 			$action = 'CombinedResults';
 			$interface->assign('action', $action);
-			$results = new Union_CombinedResults();
-			$results->launch();
+			$this->searchResultsAction = new Union_CombinedResults();
+			$this->searchResultsAction->launch();
 		}else{
 			require_once (ROOT_DIR . '/services/Search/Results.php');
 			$module = 'Search';
 			$interface->assign('module', $module);
 			$action = 'Results';
 			$interface->assign('action', $action);
-			$results = new Search_Results();
-			$results->launch();
+			$this->searchResultsAction = new Search_Results();
+			$this->searchResultsAction->launch();
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		return $this->searchResultsAction->getBreadcrumbs();
 	}
 }

@@ -71,7 +71,7 @@ class ListsRecordDriver extends IndexRecordDriver
 
 		if ($showListsAppearingOn) {
 			//Check to see if there are lists the record is on
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$appearsOnLists = UserList::getUserListsForRecord('Lists', $this->getId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 		}
@@ -176,7 +176,7 @@ class ListsRecordDriver extends IndexRecordDriver
 	private function getListObject()
 	{
 		if ($this->listObject == null){
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$this->listObject = new UserList();
 			$this->listObject->id = $this->getId();
 			if (!$this->listObject->find(true)){

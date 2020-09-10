@@ -408,7 +408,7 @@ class MyAccount_AJAX extends JSON_Action
 		$return = array();
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getLoggedInUser();
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
 			if (strlen(trim($title)) == 0) {
 				$return['success'] = "false";
@@ -444,6 +444,7 @@ class MyAccount_AJAX extends JSON_Action
 
 				$list->description = strip_tags(urldecode($desc));
 				$list->public = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
+				$list->searchable = isset($_REQUEST['searchable']) && $_REQUEST['searchable'] == 'true';
 				if ($existingList) {
 					$list->update();
 				} else {
@@ -453,7 +454,7 @@ class MyAccount_AJAX extends JSON_Action
 				if (!empty($_REQUEST['sourceId']) && !is_array($_REQUEST['sourceId'])) {
 					$sourceId = urldecode($_REQUEST['sourceId']);
 					$source = urldecode($_REQUEST['source']);
-					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 					//Check to see if the user has already added the title to the list.
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
@@ -501,7 +502,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		//Check to see if we will index the list if it is public
 		$location = Location::getSearchLocation();
-		$ownerHasListPublisherRole = UserAccount::userHasRole('listPublisher');
+		$ownerHasListPublisherRole = UserAccount::userHasPermission('Include Lists In Search Results');
 		if ($location != null){
 			$publicListWillBeIndexed = ($location->publicListsToInclude == 3) || //All public lists
 				($location->publicListsToInclude == 1) || //All lists for the current library
@@ -649,8 +650,6 @@ class MyAccount_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function changeHoldLocation()
 	{
-		global $configArray;
-
 		try {
 			$holdId = $_REQUEST['holdId'];
 			$newPickupLocation = $_REQUEST['newLocation'];
@@ -684,7 +683,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		} catch (PDOException $e) {
 			// What should we do with this error?
-			if ($configArray['System']['debug']) {
+			if (IPAddress::showDebuggingInformation()) {
 				echo '<pre>';
 				echo 'DEBUG: ' . $e->getMessage();
 				echo '</pre>';
@@ -734,7 +733,7 @@ class MyAccount_AJAX extends JSON_Action
 			$message = $_REQUEST['message'];
 
 			//Load the list
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$list = new UserList();
 			$list->id = $listId;
 			if ($list->find(true)) {
@@ -977,11 +976,11 @@ class MyAccount_AJAX extends JSON_Action
 		$updates = $_REQUEST['updates'];
 		if (ctype_digit($listId) && !empty($updates)) {
 			$user = UserAccount::getLoggedInUser();
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$list = new UserList();
 			$list->id = $listId;
 			if ($list->find(true) && $user->canEditList($list)) { // list exists & user can edit
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+				require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 				$success = true; // assume success now
 				foreach ($updates as $update) {
 					$userListEntry = new UserListEntry();
@@ -1259,7 +1258,7 @@ class MyAccount_AJAX extends JSON_Action
 			$userListData = $memCache->get('user_list_data_' . UserAccount::getActiveUserId());
 			if ($userListData == null || isset($_REQUEST['reload'])) {
 				$lists = array();
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 				$tmpList = new UserList();
 				$tmpList->user_id = UserAccount::getActiveUserId();
 				$tmpList->whereAdd('deleted = 0');
@@ -2569,7 +2568,7 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('sourceId', $sourceId);
 		$interface->assign('source', $source);
 
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		UserList::getUserListsForSaveForm($source, $sourceId);
 
 		return array(
@@ -2587,8 +2586,8 @@ class MyAccount_AJAX extends JSON_Action
 			$result['success'] = false;
 			$result['message'] = 'Please login before adding a title to list.';
 		}else{
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 			$result['success'] = true;
 			$sourceId = $_REQUEST['sourceId'];
 			$source = $_REQUEST['source'];

@@ -127,7 +127,7 @@ class EbscoRecordDriver extends RecordInterface
 
 		//Check to see if there are lists the record is on
 		if ($showListsAppearingOn) {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$appearsOnLists = UserList::getUserListsForRecord('EbscoEds', $this->getId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 		}
@@ -436,5 +436,55 @@ class EbscoRecordDriver extends RecordInterface
 
 		//Switch template
 		return 'RecordDrivers/EBSCO/listEntry.tpl';
+	}
+
+	/**
+	 * Assign necessary Smarty variables and return a template name
+	 * to load in order to display the requested citation format.
+	 * For legal values, see getCitationFormats().  Returns null if
+	 * format is not supported.
+	 *
+	 * @param string $format Citation format to display.
+	 * @access  public
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getCitation($format)
+	{
+		require_once ROOT_DIR . '/sys/CitationBuilder.php';
+
+		// Build author list:
+		$authors = array();
+		$primary = $this->getAuthor();
+		if (!empty($primary)) {
+			$authors[] = $primary;
+		}
+
+		//$pubPlaces = $this->getPlacesOfPublication();
+		$details = array(
+			'authors' => $authors,
+			'title' => $this->getTitle(),
+			'subtitle' => '',
+			//'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
+			'pubName' => null,
+			'pubDate' => null,
+			'edition' => null,
+			'format' => $this->getFormats()
+		);
+
+		// Build the citation:
+		$citation = new CitationBuilder($details);
+		switch ($format) {
+			case 'APA':
+				return $citation->getAPA();
+			case 'AMA':
+				return $citation->getAMA();
+			case 'ChicagoAuthDate':
+				return $citation->getChicagoAuthDate();
+			case 'ChicagoHumanities':
+				return $citation->getChicagoHumanities();
+			case 'MLA':
+				return $citation->getMLA();
+		}
+		return '';
 	}
 }

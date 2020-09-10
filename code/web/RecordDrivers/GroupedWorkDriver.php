@@ -860,15 +860,23 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$contributorInfo = explode('|', $contributor);
 						$curContributor = array(
 							'name' => $contributorInfo[0],
-							'role' => $contributorInfo[1],
+							'roles' =>explode(',', $contributorInfo[1]),
 						);
+						ksort($curContributor['roles']);
 					} else {
 						$curContributor = array(
 							'name' => $contributor,
+							'roles' => []
 						);
 					}
-					$this->detailedContributors[] = $curContributor;
+					if (array_key_exists($curContributor['name'], $this->detailedContributors)){
+						$this->detailedContributors[$curContributor['name']]['roles'] = array_keys(array_merge(array_flip($this->detailedContributors[$curContributor['name']]['roles']), array_flip($curContributor['roles'])));
+						ksort($this->detailedContributors[$curContributor['name']]['roles']);
+					}else{
+						$this->detailedContributors[$curContributor['name']] = $curContributor;
+					}
 				}
+				ksort($this->detailedContributors);
 			}
 		}
 		return $this->detailedContributors;
@@ -1607,7 +1615,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$timer->logTime("Loaded highlighted snippets");
 
 		//Check to see if there are lists the record is on
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->getPermanentId());
 		$interface->assign('appearsOnLists', $appearsOnLists);
 
@@ -1857,7 +1865,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getAlternateTitles(){
 		//Load alternate titles
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger')){
+		if (UserAccount::userHasPermission('Set Grouped Work Display Information')){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
 			$alternateTitle->permanent_id = $this->getPermanentId();
@@ -1873,7 +1881,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getPrimaryIdentifiers(){
 		$primaryIdentifiers = [];
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger')){
+		if (UserAccount::userHasPermission('Manually Group and Ungroup Works')){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$groupedWork->permanent_id = $this->getUniqueID();

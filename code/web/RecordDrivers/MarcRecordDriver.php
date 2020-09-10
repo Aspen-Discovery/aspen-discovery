@@ -623,16 +623,18 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$nameSubfieldArray = $this->getSubfieldArray($field, array('a', 'b', 'c', 'd'), true);
 				$titleSubfieldArray = $this->getSubfieldArray($field, array('t', 'm', 'n', 'r'), true);
 				$curContributor = array(
-						'name' => reset($nameSubfieldArray),
-						'title' => reset($titleSubfieldArray),
+					'name' => reset($nameSubfieldArray),
+					'title' => reset($titleSubfieldArray),
+					'roles' => []
 				);
 				if ($field->getSubfield('4') != null) {
 					$contributorRole = $field->getSubfield('4')->getData();
 					$contributorRole = preg_replace('/[\s,.;]+$/', '', $contributorRole);
-					$curContributor['role'] = mapValue('contributor_role', $contributorRole);
+					$curContributor['roles'][] = mapValue('contributor_role', $contributorRole);
 				} elseif ($field->getSubfield('e') != null) {
-					$curContributor['role'] = $field->getSubfield('e')->getData();
+					$curContributor['roles'][] = $field->getSubfield('e')->getData();
 				}
+				ksort($curContributor['roles']);
 				$this->detailedContributors[] = $curContributor;
 			}
 		}
@@ -1021,7 +1023,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				MarcRecordDriver::$catalogDriver = CatalogFactory::getCatalogConnectionInstance();
 			} catch (PDOException $e) {
 				// What should we do with this error?
-				if ($configArray['System']['debug']) {
+				if (IPAddress::showDebuggingInformation()) {
 					echo '<pre>';
 					echo 'DEBUG: ' . $e->getMessage();
 					echo '</pre>';

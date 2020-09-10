@@ -82,7 +82,7 @@ class File_MARC_Field extends File_MARC_List
         // Check if valid tag
         if (!preg_match("/^[0-9A-Za-z]{3}$/", $tag)) {
              $errorMessage = File_MARC_Exception::formatError(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_TAG], array("tag" => $tag));
-             throw new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_TAG);
+             return new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_TAG);
         }
 
     }

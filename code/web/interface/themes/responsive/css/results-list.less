@@ -45,6 +45,7 @@
   padding: 0 0 0 30px;
   color: #888888;
   font-size: small;
+  font-weight: bold;
   a {
     color: #888888;
   }
@@ -186,18 +187,12 @@
   }
 }
 .related-manifestation-shelf-status{
-   font-size: 13px;
-   font-weight: bold;
- }
-.related-manifestation-shelf-status.available{
-  color: #2e7d32;
+  font-size: 13px;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 3px;
 }
-.related-manifestation-shelf-status.checked_out{
-  color: #c62828;
-}
-.related-manifestation-shelf-status.availableOther{
-  color: #BB0099;
-}
+
 .related_record_status{
   font-size: 13px;
   font-weight: bold;
@@ -241,6 +236,10 @@
     -webkit-column-count: 2;
     -moz-column-count:    2;
     column-count:         2;
+  }
+  .checkboxFacet{
+    text-indent: -17px;
+    padding-left: 30px;
   }
 }
 .highlight{

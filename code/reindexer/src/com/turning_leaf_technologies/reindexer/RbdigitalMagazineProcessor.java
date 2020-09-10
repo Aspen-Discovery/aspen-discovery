@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.RbdigitalScope;
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +40,7 @@ class RbdigitalMagazineProcessor {
 		}
 	}
 
-	void processRecord(GroupedWorkSolr groupedWork, String identifier) {
+	void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -77,7 +78,7 @@ class RbdigitalMagazineProcessor {
 				try {
 					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_rbdigital", primaryFormat, identifier));
 				} catch (Exception e) {
-					logger.warn("Could not translate format boost for " + primaryFormat + " create translation map format_boost_rbdigital");
+					logEntry.addNote("Could not translate format boost for " + primaryFormat + " create translation map format_boost_rbdigital");
 				}
 
 				String genre = rawResponse.getString("genre");
@@ -137,7 +138,7 @@ class RbdigitalMagazineProcessor {
 						String releaseYear = coverDate.substring(coverDate.lastIndexOf("/") + 1);
 						groupedWork.addPublicationDate(releaseYear);
 					} catch (ParseException e) {
-						logger.error("Unable to parse cover date", e);
+						logEntry.addNote("Unable to parse cover date " + e.toString());
 					}
 
 					itemInfo.setFormat(primaryFormat);
@@ -149,7 +150,7 @@ class RbdigitalMagazineProcessor {
 					try {
 						dateAdded = dateFormatter.parse(getMagazineIssuesRS.getString("publishedOn"));
 					} catch (ParseException e) {
-						logger.error("Error parsing publication date for RBdigital magazine ", e);
+						logEntry.addNote("Error parsing publication date for RBdigital magazine " + e.toString());
 					}
 					itemInfo.setDateAdded(dateAdded);
 
@@ -202,11 +203,11 @@ class RbdigitalMagazineProcessor {
 			}
 			productRS.close();
 		} catch (NullPointerException e) {
-			logger.error("Null pointer exception processing rbdigital magazine ", e);
+			logEntry.incErrors("Null pointer exception processing rbdigital magazine ", e);
 		} catch (JSONException e) {
-			logger.error("Error parsing raw data for rbdigital magazine", e);
+			logEntry.incErrors("Error parsing raw data for rbdigital magazine", e);
 		} catch (SQLException e) {
-			logger.error("Error loading information from Database for rbdigital magazine", e);
+			logEntry.incErrors("Error loading information from Database for rbdigital magazine", e);
 		}
 	}
 

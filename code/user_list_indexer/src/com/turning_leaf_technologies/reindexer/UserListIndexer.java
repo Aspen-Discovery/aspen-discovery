@@ -26,13 +26,13 @@ import java.util.TreeSet;
 
 class UserListIndexer {
 	private Connection dbConn;
-	private Logger logger;
+	private final Logger logger;
 	private ConcurrentUpdateSolrClient updateServer;
 	private SolrClient groupedWorkServer;
 	private TreeSet<Scope> scopes;
 	private HashMap<Long, Long> librariesByHomeLocation = new HashMap<>();
 	private HashMap<Long, String> locationCodesByHomeLocation = new HashMap<>();
-	private HashSet<Long> listPublisherUsers = new HashSet<>();
+	private HashSet<Long> usersThatCanShareLists = new HashSet<>();
 	private SolrClient openArchivesServer;
 	private PreparedStatement getListDisplayNameAndAuthorStmt;
 
@@ -44,7 +44,7 @@ class UserListIndexer {
 			PreparedStatement listPublishersStmt = dbConn.prepareStatement("SELECT userId FROM `user_roles` INNER JOIN roles on user_roles.roleId = roles.roleId where name = 'listPublisher'");
 			ResultSet listPublishersRS = listPublishersStmt.executeQuery();
 			while (listPublishersRS.next()){
-				listPublisherUsers.add(listPublishersRS.getLong(1));
+				usersThatCanShareLists.add(listPublishersRS.getLong(1));
 			}
 			getListDisplayNameAndAuthorStmt = dbConn.prepareStatement("SELECT title, displayName FROM user_list inner join user on user_id = user.id where user_list.id = ?");
 		}catch (Exception e){
@@ -90,22 +90,28 @@ class UserListIndexer {
 		scopes = null;
 		librariesByHomeLocation = null;
 		locationCodesByHomeLocation = null;
-		listPublisherUsers = null;
+		usersThatCanShareLists = null;
 	}
 
-	Long processPublicUserLists(boolean fullReindex, long lastReindexTime) {
-		Long numListsProcessed = 0L;
+	Long processPublicUserLists(boolean fullReindex, long lastReindexTime, ListIndexingLogEntry logEntry) {
+		long numListsProcessed = 0L;
 		long numListsIndexed = 0;
 		try{
 			PreparedStatement listsStmt;
+			PreparedStatement numListsStmt;
 			if (fullReindex){
 				//Delete all lists from the index
 				updateServer.deleteByQuery("recordtype:list");
 				//Get a list of all public lists
-				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND deleted = 0");
+				numListsStmt = dbConn.prepareStatement("select count(id) as numLists from user_list WHERE deleted = 0 AND public = 1 and searchable = 1");
+				//noinspection SpellCheckingInspection
+				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND deleted = 0");
 			}else{
 				//Get a list of all lists that are were changed since the last update
-				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated > ?");
+				//Have to process all lists because one could have been deleted, made private, or made non searchable.
+				numListsStmt = dbConn.prepareStatement("select count(id) as numLists from user_list");
+				//noinspection SpellCheckingInspection
+				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated > ?");
 				listsStmt.setLong(1, lastReindexTime);
 			}
 
@@ -126,8 +132,13 @@ class UserListIndexer {
 			codesByHomeLocationRS.close();
 
 			ResultSet allPublicListsRS = listsStmt.executeQuery();
+			ResultSet numListsRS = numListsStmt.executeQuery();
+			if (numListsRS.next()){
+				logEntry.setNumLists(numListsRS.getInt("numLists"));
+			}
+
 			while (allPublicListsRS.next()){
-				if (updateSolrForList(updateServer, getTitlesForListStmt, allPublicListsRS)){
+				if (updateSolrForList(updateServer, getTitlesForListStmt, allPublicListsRS, lastReindexTime, logEntry)){
 					numListsIndexed++;
 				}
 				numListsProcessed++;
@@ -143,32 +154,37 @@ class UserListIndexer {
 		return numListsProcessed;
 	}
 
-	private boolean updateSolrForList(ConcurrentUpdateSolrClient updateServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
+	private boolean updateSolrForList(ConcurrentUpdateSolrClient updateServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS, long lastReindexTime, ListIndexingLogEntry logEntry) throws SQLException, SolrServerException, IOException {
 		UserListSolr userListSolr = new UserListSolr(this);
 		long listId = allPublicListsRS.getLong("id");
 
 		int deleted = allPublicListsRS.getInt("deleted");
 		int isPublic = allPublicListsRS.getInt("public");
+		int isSearchable = allPublicListsRS.getInt("searchable");
 		long userId = allPublicListsRS.getLong("user_id");
 		boolean indexed = false;
-		if (deleted == 1 || isPublic == 0){
+		if (deleted == 1 || isPublic == 0 || isSearchable == 0){
 			updateServer.deleteByQuery("id:" + listId);
+			logEntry.incDeleted();
 		}else{
 			logger.info("Processing list " + listId + " " + allPublicListsRS.getString("title"));
 			userListSolr.setId(listId);
 			userListSolr.setTitle(allPublicListsRS.getString("title"));
 			userListSolr.setDescription(allPublicListsRS.getString("description"));
-			userListSolr.setCreated(allPublicListsRS.getLong("created"));
+			long created = allPublicListsRS.getLong("created");
+			userListSolr.setCreated(created);
 
 			String displayName = allPublicListsRS.getString("displayName");
+			//noinspection SpellCheckingInspection
 			String firstName = allPublicListsRS.getString("firstname");
+			//noinspection SpellCheckingInspection
 			String lastName = allPublicListsRS.getString("lastname");
 			String userName = allPublicListsRS.getString("username");
 
 			if (userName.equalsIgnoreCase("nyt_user")) {
-				userListSolr.setOwnerHasListPublisherRole(true);
+				userListSolr.setOwnerCanShareListsInSearchResults(true);
 			}else{
-				userListSolr.setOwnerHasListPublisherRole(listPublisherUsers.contains(userId));
+				userListSolr.setOwnerCanShareListsInSearchResults(usersThatCanShareLists.contains(userId));
 			}
 			if (displayName != null && displayName.length() > 0){
 				userListSolr.setAuthor(displayName);
@@ -242,10 +258,10 @@ class UserListIndexer {
 						}
 						listDisplayNameAndAuthorRS.close();
 					}else{
-						logger.error("Unhandled source " + source);
+						logEntry.incErrors("Unhandled source " + source);
 					}
 					//TODO: Handle other types of objects within a User List
-					//Sub-lists, open archives, people, etc.
+					//people, etc.
 				}
 			}
 			if (userListSolr.getNumTitles() >= 3) {
@@ -253,12 +269,19 @@ class UserListIndexer {
 				SolrInputDocument document = userListSolr.getSolrDocument();
 				if (document != null){
 					updateServer.add(userListSolr.getSolrDocument());
+					if (created > lastReindexTime){
+						logEntry.incAdded();
+					}else{
+						logEntry.incUpdated();
+					}
 					indexed = true;
 				}else{
 					updateServer.deleteByQuery("id:" + listId);
+					logEntry.incDeleted();
 				}
 			} else {
 				updateServer.deleteByQuery("id:" + listId);
+				logEntry.incDeleted();
 			}
 		}
 

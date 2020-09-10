@@ -1,6 +1,6 @@
 {strip}
 <div id="page-content" class="col-xs-12">
-	<h1>{translate text='Login to your account'}</h1>
+	<h1>{translate text='Sign in to your account'}</h1>
 	<div id="loginFormWrapper">
 		{if $message}{* Errors for Full Login Page *}
 			<p class="alert alert-danger" id="loginError" >{$message|translate}</p>
@@ -45,11 +45,11 @@
 								</p>
 							{/if}
 
-							{if $enableSelfRegistration == 1}
+							{if $enableSelfRegistration == 1 && !$isStandalonePage}
 								<p class="help-block">
 									Don't have a library card?  <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
 								</p>
-							{elseif $enableSelfRegistration == 2}
+							{elseif $enableSelfRegistration == 2 && !$isStandalonePage}
 								<p class="help-block">
 									Don't have a library card? <a href="{$selfRegistrationUrl}">Register for a new Library Card</a>.
 								</p>
@@ -64,7 +64,7 @@
 								{translate text="Reveal Password"}
 							</label>
 
-							{if !$inLibrary && !$isOpac}
+							{if !$inLibrary && !$isOpac && !$isStandalonePage}
 								<label for="rememberMe" class="checkbox">
 									<input type="checkbox" id="rememberMe" name="rememberMe">
 									{translate text="Remember Me"}
@@ -97,13 +97,13 @@
 	$('#username').focus().select();
 	$(function(){
 		AspenDiscovery.Account.validateCookies();
-		var haslocalStorage = AspenDiscovery.hasLocalStorage() || false;
-		if (haslocalStorage) {
-			var rememberMe = (window.localStorage.getItem('rememberMe') == 'true'), // localStorage saves everything as strings
-							showCovers = window.localStorage.getItem('showCovers') || false;
+		let hasLocalStorage = AspenDiscovery.hasLocalStorage() || false;
+		if (hasLocalStorage) {
+			let rememberMe = (window.localStorage.getItem('rememberMe') == 'true'); // localStorage saves everything as strings
+			let showCovers = window.localStorage.getItem('showCovers') || false;
 			if (rememberMe) {
-				var lastUserName = window.localStorage.getItem('lastUserName'),
-								lastPwd = window.localStorage.getItem('lastPwd');
+				let lastUserName = window.localStorage.getItem('lastUserName');
+				let lastPwd = window.localStorage.getItem('lastPwd');
 				{/literal}{*// showPwd = (window.localStorage.getItem('showPwd') == 'true'); // localStorage saves everything as strings *}{literal}
 				$("#username").val(lastUserName);
 				$("#password").val(lastPwd);

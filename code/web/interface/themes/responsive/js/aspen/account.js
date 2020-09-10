@@ -22,6 +22,11 @@ AspenDiscovery.Account = (function(){
 			let source = form.find("input[name=source]").val();
 			let sourceId = form.find("input[name=sourceId]").val();
 			let isPublic = form.find("#public").prop("checked");
+			let isSearchable = false;
+			let searchableControl = $("#searchable");
+			if (searchableControl){
+				isSearchable = searchableControl.prop("checked");
+			}
 			let title = form.find("input[name=title]").val();
 			let desc = $("#listDesc").val();
 			let url = Globals.path + "/MyAccount/AJAX";
@@ -29,6 +34,7 @@ AspenDiscovery.Account = (function(){
 				'method':'addList',
 				title: title,
 				public: isPublic,
+				searchable: isSearchable,
 				desc: desc,
 				source: source,
 				sourceId: sourceId
@@ -71,7 +77,7 @@ AspenDiscovery.Account = (function(){
 				}
 				AspenDiscovery.Account.ajaxCallback = ajaxCallback;
 				AspenDiscovery.Account.closeModalOnAjaxSuccess = closeModalOnAjaxSuccess;
-				let dialogTitle = "Login";
+				let dialogTitle = "Sign In";
 				if (trigger !== undefined && trigger !== null) {
 					dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 					loginLink = trigger.data('login');
@@ -157,6 +163,8 @@ AspenDiscovery.Account = (function(){
 					label = 'RBdigital Checkouts';
 				}else if (source === 'cloud_library'){
 					label = 'Cloud Library Checkouts';
+				}else if (source === 'axis_360'){
+					label = 'Axis 360 Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -200,6 +208,8 @@ AspenDiscovery.Account = (function(){
 					label = 'OverDrive Holds';
 				}else if (source === 'rbdigital'){
 					label = 'RBdigital Holds';
+				}else if (source === 'axis_360'){
+					label = 'Axis 360 Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -407,15 +417,9 @@ AspenDiscovery.Account = (function(){
 				$.post(url, params, function(response){
 					loadingElem.hide();
 					if (response.result.success === true) {
-						// Hide "log in" options and show "log out" options:
-						$('.loginOptions, #loginOptions').hide();
-						$('.logoutOptions, #logoutOptions').show();
-
-						// Show user name on page in case page doesn't reload
-						let name = $.trim(response.result.name);
-						//name = 'Logged In As ' + name.slice(0, name.lastIndexOf(' ') + 2) + '.';
-						name = 'Logged In As ' + name.slice(0, 1) + '. ' + name.slice(name.lastIndexOf(' ') + 1, name.length) + '.';
-						$('#side-bar #myAccountNameLink').html(name);
+						$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
+						$('#login-button-label').html(response.result.name);
+						$('#logoutLink').show();
 
 						if (AspenDiscovery.Account.closeModalOnAjaxSuccess) {
 							AspenDiscovery.closeLightbox();

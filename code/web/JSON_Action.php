@@ -53,4 +53,9 @@ class JSON_Action extends Action
 			echo($encodedData);
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

@@ -12,7 +12,6 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	private $rbdigitalRawMetadata;
 	private $valid;
 
-	/** @noinspection PhpMissingParentConstructorInspection */
 	public function __construct($recordId, $groupedWork = null)
 	{
 		$this->id = $recordId;

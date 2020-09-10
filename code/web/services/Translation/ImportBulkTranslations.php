@@ -92,8 +92,18 @@ class Translation_ImportBulkTranslations extends Admin_Admin
 		$this->display('importBulkTranslationsForm.tpl', 'Import Bulk Translations');
 	}
 
-	function getAllowableRoles()
+	function getBreadcrumbs()
 	{
-		return ['opacAdmin', 'translator'];
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#translations', 'Languages and Translations');
+		$breadcrumbs[] = new Breadcrumb('/Translation/Translations', 'Translations');
+		$breadcrumbs[] = new Breadcrumb('', 'Import Bulk Translations');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'translations';
 	}
 }

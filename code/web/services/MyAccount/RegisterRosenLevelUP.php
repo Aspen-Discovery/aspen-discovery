@@ -28,6 +28,11 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 	private $student_school_name;
 	private $student_username;
 
+	function __construct($isStandalonePage = false)
+	{
+		parent::__construct(true);
+	}
+
 	function launch()
 	{
 		global $interface;
@@ -56,15 +61,20 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 			}
 			if ($this->student_is_eligible == false) {
 				global $logger;
-				$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_error_ineligible', 'defaultText' => 'Error: patron is not eligible to register for Rosen LevelUP']);
+				$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_error_ineligible', 'defaultText' => 'Error: patron is not eligible to register for Rosen LevelUP. <a href=\"/MyAccount/RegisterRosenLevelUP\">Log in with a different Library account</a>.']);
 				$logger->log('Error from LevelUP. User ID : ' . $user->id . 'Ineligible user', Logger::LOG_NOTICE);
 				$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 				$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
+				UserAccount::softLogout();
 			} elseif ($this->student_is_eligible == true) {
 				$this->student_first_name = $user->firstname;
 				$this->student_last_name = $user->lastname;
 				$this->student_username = $user->cat_username;
-				$this->student_school_code = $user->getHomeLocation()->code;
+				if (!empty($user->getHomeLocation()->subdomain)) {
+					$this->student_school_code = $user->getHomeLocation()->subdomain;
+				} else {
+					$this->student_school_code = $user->getHomeLocation()->code;
+				}
 				$this->student_school_name = $user->getHomeLocation()->displayName;
 
 				if (!empty($this->rosenLevelUPSetting->lu_ptypes_k) && preg_match($this->rosenLevelUPSetting->lu_ptypes_k, $user->patronType) == 1) {
@@ -100,7 +110,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 						$interface->assign('captchaMessage', translate('The CAPTCHA response was incorrect, please try again.'));
 					} else {
 						//Submit the form to Rosen
-
 						// check parent username for availability; if it ain't available, check for identical email; if identical email, allow parent to register additional students
 						$this->levelUPResult->parent_username_avail = 0;
 						$this->levelUPResult->parent_username_ok = 0;
@@ -127,18 +136,15 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 
 						// check student username for availability
 						$this->levelUPResult->student_username_avail = 0;
-						if ($this->student_username != $_REQUEST['student_username']) { // because we already checked whether the patronid is in use as a Rosen LevelUP username
-							$this->levelUPResult->student_username_avail = 0;
-							$this->levelUPResult->studentQueryResponse = $this->levelUPQuery($_REQUEST['student_username'], 'STUDENT');
-							if ($this->levelUPResult->studentQueryResponse->status != '404') {
-								global $logger;
-								$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->studentQueryResponse->message;
-								$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->studentQueryResponse->error, Logger::LOG_NOTICE);
-								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
-							} elseif ($this->levelUPResult->studentQueryResponse->status == '404') {
-								$this->student_username = $_REQUEST['student_username'];
-								$this->levelUPResult->student_username_avail = 1;
-							}
+						$this->levelUPResult->studentQueryResponse = $this->levelUPQuery($_REQUEST['student_username'], 'STUDENT');
+						if ($this->levelUPResult->studentQueryResponse->status != '404') {
+							global $logger;
+							$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->studentQueryResponse->message;
+							$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->studentQueryResponse->error, Logger::LOG_NOTICE);
+							$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
+						} elseif ($this->levelUPResult->studentQueryResponse->status == '404') {
+							$this->student_username = $_REQUEST['student_username'];
+							$this->levelUPResult->student_username_avail = 1;
 						}
 
 						// register new users
@@ -147,28 +153,32 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 							if ($this->levelUPResult->UploadResponse->status == '200') {
 								global $logger;
 								$this->levelUPResult->interfaceArray['success'] = 'success';
-								$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "Congratulations! you have successfully registered STUDENT Username %1% with PARENT Username %2%. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a>.", 1 => $this->student_username, 2 => $this->parent_username]);
+								$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "Congratulations! You have successfully registered STUDENT Username %1% with PARENT Username %2%. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or <a href=\"/MyAccount/RegisterRosenLevelUP\">register another student</a>.", 1 => $this->student_username, 2 => $this->parent_username]);
 								$logger->log('LevelUP. User ID : ' . $user->id . ' successfully registered STUDENT ' . $this->student_username . ' with PARENT ' . $this->parent_username, Logger::LOG_NOTICE);
 								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
+								UserAccount::softLogout();
 							} else {
 								global $logger;
-								$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->UploadResponse->message;
+				 				$this->levelUPResult->interfaceArray['message'] = $this->levelUPResult->UploadResponse->message;
 								$logger->log('Error from LevelUP. User ID : ' . $user->id . '. ' . $this->levelUPResult->UploadResponse->error, Logger::LOG_NOTICE);
 								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 							}
 						}
+					}
 
-						// Pre-fill form with user supplied data
-						foreach ($fields as &$property) {
-							if ($property['type'] == 'section') {
-								foreach ($property['properties'] as &$propertyInSection) {
+					// Pre-fill form with user supplied data
+					//TODO: Move this to DataObjectUtil so we can reload forms based on submission when they fail validation
+					foreach ($fields as &$property) {
+						if ($property['type'] == 'section') {
+							foreach ($property['properties'] as &$propertyInSection) {
+								if ($property['type'] != 'storedPassword' && $property['type'] != 'password'){
 									$userValue = $_REQUEST[$propertyInSection['property']];
 									$propertyInSection['default'] = $userValue;
 								}
-							} else {
-								$userValue = $_REQUEST[$property['property']];
-								$property['default'] = $userValue;
 							}
+						} elseif ($property['type'] != 'storedPassword' && $property['type'] != 'password'){
+							$userValue = $_REQUEST[$property['property']];
+							$property['default'] = $userValue;
 						}
 					}
 				}
@@ -176,12 +186,11 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				$interface->assign('submitUrl', '/MyAccount/RegisterRosenLevelUP');
 				$interface->assign('structure', $fields);
 				$interface->assign('saveButtonText', 'Register');
-
 				// Set up captcha to limit spam self registrations
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 				$recaptcha = new RecaptchaSetting();
-				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)){
-					$captchaCode        = recaptcha_get_html($recaptcha->publicKey);
+				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
+					$captchaCode = recaptcha_get_html($recaptcha->publicKey);
 					$interface->assign('captcha', $captchaCode);
 				}
 				$interface->assign('formLabel', 'Register for Rosen LevelUP');
@@ -196,16 +205,16 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 	function getLevelUPRegistrationFields() {
 		$fields = array();
 		$fields[] = array('property' => 'student_username', 'default' => $this->student_username, 'type' => 'text', 'label' => 'Student Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property' => 'student_pw', 'type' => 'storedPassword', 'label' => 'Student Rosen LevelUP Password', 'maxLength' => 40, 'required' => true);
+		$fields[] = array('property' => 'student_pw', 'type' => 'storedPassword', 'label' => 'Student Rosen LevelUP Password', 'maxLength' => 40, 'required' => true, 'repeat' => true);
 		$fields[] = array('property' => 'student_first_name', 'default' => $this->student_first_name, 'type' => 'text', 'label' => 'Student First Name', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'student_last_name', 'default' => $this->student_last_name, 'type' => 'text', 'label' => 'Student Last Name', 'maxLength' => 40, 'required' => true);
 		$locationList = array();
 		$locationList[0] = "school not listed";
-		$locationList[$this->student_school_code] = $this->student_school_name;
-		$fields[] = array('property' => 'student_school', 'default' => $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
+		$locationList[$this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code] = $this->student_school_name;
+		$fields[] = array('property' => 'student_school', 'default' => $this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
 		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => array('K', '1', '2'), 'required' => true);
 		$fields[] = array('property' => 'parent_username', 'default' => $this->parent_username, 'type' => 'text', 'label' => 'Parent Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true);
+		$fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true, 'repeat' => true);
 		$fields[] = array('property' => 'parent_first_name', 'default' => $this->parent_first_name, 'type' => 'text', 'label' => 'Parent First Name', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'parent_last_name', 'default' => $this->parent_last_name, 'type' => 'text', 'label' => 'Parent Last Name', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'parent_email', 'default' => $this->parent_email, 'type' => 'email', 'label' => 'Parent Email', 'maxLength' => 128, 'required' => true);
@@ -365,5 +374,9 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		return $uploadResponse;
 	}
 
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }
 

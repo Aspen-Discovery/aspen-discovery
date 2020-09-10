@@ -53,6 +53,9 @@ abstract class DataObject
 		return $this->$primaryKeyProperty;
 	}
 
+	function getPrimaryKey(){
+		return $this->__primaryKey;
+	}
 	public function find($fetchFirst = false){
 		if (!isset($this->__table)) {
 			echo("Table not defined for class " . self::class);
@@ -587,6 +590,9 @@ abstract class DataObject
 		}
 	}
 
+	/**
+	 * @return integer
+	 */
 	public function getNumResults()
 	{
 		return $this->__N;

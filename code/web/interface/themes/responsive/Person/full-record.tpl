@@ -38,9 +38,9 @@
 			{if $disableCoverArt != 1}
 				<div id="recordCover" class="text-center">
 					{if $person->picture}
-						<a target='_blank' href='/files/original/{$person->picture|escape}'><img src="/files/medium/{$person->picture|escape}" class="alignleft listResultImage" alt="{translate text='Picture' inAttribute=true}"></a><br>
+						<a target='_blank' href='/files/original/{$person->picture|escape}' aria-hidden="true"><img src="/files/medium/{$person->picture|escape}" class="alignleft listResultImage" alt="{translate text='Picture' inAttribute=true}"></a><br>
 					{else}
-						<img src="/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true}"><br>
+						<img src="/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true}" aria-hidden="true"><br>
 					{/if}
 				</div>
 			{/if}
@@ -74,7 +74,7 @@
 		</div>
 	</div>
 	{if count($marriages) > 0 || $userIsAdmin}
-		<h3 class="blockhead">{translate text="Marriages"}</h3>
+		<h2 class="blockhead">{translate text="Marriages"}</h2>
 		{foreach from=$marriages item=marriage}
 			<div class="marriageTitle">
 				{$marriage.spouseName}{if $marriage.formattedMarriageDate} - {$marriage.formattedMarriageDate}{/if}
@@ -96,7 +96,7 @@
 
 	{/if}
 	{if $person->cemeteryName || $person->cemeteryLocation || $person->mortuaryName || $person->cemeteryAvenue || $person->lot || $person->block || $person->grave || $person->addition}
-		<h3 class="blockhead">Burial Details</h3>
+		<h2 class="blockhead">Burial Details</h2>
 		{if $person->cemeteryName}
 		<div class='personDetail'><span class='result-label'>{translate text="Cemetery Name"} </span><span class='personDetailValue'>{$person->cemeteryName}</span></div>
 		{/if}
@@ -123,7 +123,7 @@
 		{/if}
 	{/if}
 	{if count($obituaries) > 0 || $userIsAdmin}
-		<h3 class="blockhead">{translate text="Obituaries"}</h3>
+		<h2 class="blockhead">{translate text="Obituaries"}</h2>
 		{foreach from=$obituaries item=obituary}
 			<div class="obituaryTitle">
 			{$obituary.source}{if $obituary.sourcePage} page {$obituary.sourcePage}{/if}{if $obituary.formattedObitDate} - {$obituary.formattedObitDate}{/if}
@@ -153,7 +153,7 @@
 
 	{/if}
 	{if $person->ledgerVolume || $person->ledgerYear || $person->ledgerEntry}
-		<h3 class="blockhead">{translate text="Ledger Information"}</h3>
+		<h2 class="blockhead">{translate text="Ledger Information"}</h2>
 		{if $person->ledgerVolume}
 			<div class='personDetail'><span class='result-label'>{translate text="Volume"}</span><span class='result-value-bold'>{$person->ledgerVolume}</span></div>
 		{/if}
@@ -164,7 +164,7 @@
 			<div class='personDetail'><span class='result-label'>{translate text="Entry"}</span><span class='personDetailValue'>{$person->ledgerEntry}</span></div>
 		{/if}
 	{/if}
-	<h3 class="blockhead">{translate text="Comments"}</h3>
+	<h2 class="blockhead">{translate text="Comments"}</h2>
 	{if $person->comments}
 	<div class='personComments'>{$person->comments|escape}</div>
 	{else}

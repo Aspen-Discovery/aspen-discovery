@@ -1,17 +1,12 @@
 package com.turning_leaf_technologies.reindexer;
 
 import org.apache.logging.log4j.Logger;
-import org.marc4j.MarcReader;
-import org.marc4j.MarcStreamReader;
 import org.marc4j.marc.*;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 
 class SymphonyRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> bibsWithOrders = new HashSet<>();
@@ -82,41 +77,6 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 			location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
 		}
 		return location;
-	}
-
-	@Override
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Arlington we can load the literary forms based off of the location code:
-		// ??f?? = Fiction
-		// ??n?? = Non-Fiction
-		// ??x?? = Other
-		String literaryForm = null;
-		for (ItemInfo printItem : printItems){
-			String locationCode = printItem.getShelfLocationCode();
-			if (locationCode != null) {
-				literaryForm = getLiteraryFormForLocation(locationCode);
-				if (literaryForm != null){
-					break;
-				}
-			}
-		}
-		if (literaryForm == null){
-			literaryForm = "Other";
-		}
-		groupedWork.addLiteraryForm(literaryForm);
-		groupedWork.addLiteraryFormFull(literaryForm);
-	}
-
-	private Pattern nonFicPattern = Pattern.compile(".*nonfic.*", Pattern.CASE_INSENSITIVE);
-	private Pattern ficPattern = Pattern.compile(".*fic.*", Pattern.CASE_INSENSITIVE);
-	private String getLiteraryFormForLocation(String locationCode) {
-		String literaryForm = null;
-		if (nonFicPattern.matcher(locationCode).matches()) {
-			literaryForm = "Non Fiction";
-		}else if (ficPattern.matcher(locationCode).matches()){
-			literaryForm = "Fiction";
-		}
-		return literaryForm;
 	}
 
 	protected void setShelfLocationCode(DataField itemField, ItemInfo itemInfo, String recordIdentifier) {

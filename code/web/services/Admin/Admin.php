@@ -6,7 +6,8 @@ abstract class Admin_Admin extends Action {
 	protected $db;
 
 	function __construct() {
-		global $configArray;
+		parent::__construct(false);
+
 		$user = UserAccount::getLoggedInUser();
 
 		//If the user isn't logged in, take them to the login page
@@ -16,20 +17,26 @@ abstract class Admin_Admin extends Action {
 		}
 
 		//Make sure the user has permission to access the page
-		$allowableRoles = $this->getAllowableRoles();
-		$userCanAccess = false;
-		foreach($allowableRoles as $roleId => $roleName){
-			if (UserAccount::userHasRole($roleName)){
-				$userCanAccess = true;
-				break;
-			}
-		}
+		$userCanAccess = $this->canView();
 
 		if (!$userCanAccess){
 			$this->display('../Admin/noPermission.tpl', 'Access Error');
 			exit();
 		}
+
+		global $interface;
+		$adminActions = UserAccount::getActiveUserObj()->getAdminActions();
+		$interface->assign('adminActions', $adminActions);
+		$interface->assign('activeAdminSection', $this->getActiveAdminSection());
+		$interface->assign('activeMenuOption', 'admin');
 	}
 
-	abstract function getAllowableRoles();
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true)
+	{
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
+	}
+
+	abstract function canView();
+
+	abstract function getActiveAdminSection();
 }

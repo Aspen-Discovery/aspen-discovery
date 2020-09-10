@@ -13,20 +13,22 @@
 	</div>
 {/if}
 
+{if $canCompare || $canAddNew || !empty($customListActions)}
 <form action="" method="get" id='compare' class="form-inline">
+{/if}
 	<div class='adminTableRegion'>
-		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable">
+		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects">
 			<thead>
 				<tr>
 					{if $canCompare}
-						<th>{translate text='Select'} </th>
+						<th>{translate text='Select'}</th>
 					{/if}
 					{foreach from=$structure item=property key=id}
 						{if !isset($property.hideInLists) || $property.hideInLists == false}
-						<th><label title='{$property.description}'>{$property.label|translate}</label></th>
+						<th><span title='{$property.description}'>{$property.label|translate}</span></th>
 						{/if}
 					{/foreach}
-					<th>Actions</th>
+					<th>{translate text='Actions'}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -41,17 +43,25 @@
 							{assign var=propValue value=$dataItem->$propName}
 
 							{if !isset($property.hideInLists) || $property.hideInLists == false}
-								<td>
+								<td aria-label="{$dataItem} {$propName}{if empty($propValue)} - empty{/if}">
 								{if $property.type == 'label'}
 									{if $dataItem->class != 'objectDeleted'}
-										<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'> {$propValue}</a>
+										{if $propName == $dataItem->getPrimaryKey()}<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>{/if}
+										{$propValue}
+										{if $propName == $dataItem->getPrimaryKey()}</a>{/if}
 									{/if}
+								{elseif $property.type == 'regularExpression'}
+									{$propValue|escape}
 								{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email' || $property.type == 'url'}
 									{$propValue}
 								{elseif $property.type == 'date'}
 									{$propValue|date_format}
 								{elseif $property.type == 'timestamp'}
-									{$propValue|date_format:"%D %T"}
+									{if $propValue == 0}
+										{translate text="Never"}
+									{else}
+										{$propValue|date_format:"%D %T"}
+									{/if}
 								{elseif $property.type == 'partialDate'}
 									{assign var=propNameMonth value=$property.propNameMonth}
 									{assign var=propMonthValue value=$dataItem->$propNameMonth}
@@ -94,11 +104,11 @@
 						{if $dataItem->class != 'objectDeleted'}
 							<td>
 								<div class="btn-group-vertical">
-								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm">Edit</a>
-								<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm">History</a>
+								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm" aria-label="Edit Item {$id}">{translate text="Edit"}</a>
+								<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}">{translate text="History"}</a>
 								{if $additionalActions}
 									{foreach from=$additionalActions item=action}
-										<a href='{$action.path}&amp;id={$id}' class="btn btn-default btn-sm">{$action.name}</a>
+										<a href='{$action.path}&amp;id={$id}' class="btn btn-default btn-sm" aria-label="{$action.name} for Item {$id}">{$action.name|translate}</a>
 									{/foreach}
 								{/if}
 								</div>
@@ -127,7 +137,9 @@
 			<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}')">{$customAction.label}</button>
 		{/foreach}
 	</div>
+{if $canCompare || $canAddNew || !empty($customListActions)}
 </form>
+{/if}
 
 {if isset($dataList) && is_array($dataList) && count($dataList) > 5}
 <script type="text/javascript">

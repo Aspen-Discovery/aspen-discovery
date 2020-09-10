@@ -1,11 +1,11 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+require_once ROOT_DIR . '/ResultsAction.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Websites_Results extends Action
+class Websites_Results extends ResultsAction
 {
 	function launch()
 	{
@@ -173,6 +173,12 @@ class Websites_Results extends Action
 
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Web Page Results');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Web Page Search Results', 'Search/results-sidebar.tpl');
-	} // End launch()
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Web Page Search Results', $sidebar);
+	}
+
+	function getBreadcrumbs()
+	{
+		return parent::getResultsBreadcrumbs('Website Search');
+	}
 }

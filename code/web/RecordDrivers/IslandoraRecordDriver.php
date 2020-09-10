@@ -69,7 +69,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		return $this->islandoraObjectCache;
 	}
 
-	function getBookcoverUrl($size = 'small'){
+	function getBookcoverUrl($size = 'small', $absolutePath = false){
 		global $configArray;
 
 		$cachedData = $this->getCachedData();
@@ -223,7 +223,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 
 		//Get information from list entry
 		if ($listId) {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 			$listEntry = new UserListEntry();
 			$listEntry->source = 'Islandora';
 			$listEntry->sourceId = $this->getUniqueID();
@@ -666,7 +666,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		$repositoryLink = $configArray['Islandora']['repositoryUrl'] . '/islandora/object/' . $this->getUniqueID();
 		$interface->assign('repositoryLink', $repositoryLink);
 		$user = UserAccount::getLoggedInUser();
-		if($user && (UserAccount::userHasRole('archives') || UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin'))) {
+		if($user && (UserAccount::userHasPermission('Administer Islandora Archive'))) {
 			$moreDetailsOptions['staffView'] = array(
 				'label' => 'Staff View',
 				'body' => $interface->fetch('Archive/staffViewSection.tpl'),

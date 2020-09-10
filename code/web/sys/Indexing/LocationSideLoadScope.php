@@ -21,7 +21,7 @@ class LocationSideLoadScope extends DataObject
 		$locationsList = [];
 		$location = new Location();
 		$location->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin')){
+		if (!UserAccount::userHasPermission('Administer All Locations')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$location->libraryId = $homeLibrary->libraryId;
 		}

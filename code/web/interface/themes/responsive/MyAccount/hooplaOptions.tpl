@@ -7,10 +7,7 @@
 				</div>
 		    {/if}
 
-		    {* Alternate Mobile MyAccount Menu *}
-		    {include file="MyAccount/mobilePageHeader.tpl"}
-
-			<span class='availableHoldsNoticePlaceHolder'></span>
+		    <span class='availableHoldsNoticePlaceHolder'></span>
 			<h1>{translate text="Hoopla Options"}</h1>
 	        {if $offline}
 				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
@@ -46,7 +43,7 @@
             {/if}
         {else}
 	        <div class="page">
-		        You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
+		        You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
 	        </div>
         {/if}
 	</div>

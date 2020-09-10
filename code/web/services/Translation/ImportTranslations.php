@@ -110,8 +110,18 @@ class Translation_ImportTranslations extends Admin_Admin
 		$this->display('importTranslationsForm.tpl', 'Import Translations');
 	}
 
-	function getAllowableRoles()
+	function getBreadcrumbs()
 	{
-		return ['opacAdmin', 'translator'];
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#translations', 'Languages and Translations');
+		$breadcrumbs[] = new Breadcrumb('/Translation/Translations', 'Translations');
+		$breadcrumbs[] = new Breadcrumb('', 'Import Translations');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'translations';
 	}
 }

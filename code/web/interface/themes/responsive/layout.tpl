@@ -33,9 +33,6 @@
 	{/strip}
 </head>
 <body class="module_{$module} action_{$action}{if $masqueradeMode} masqueradeMode{/if}{if $loggedIn} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}">
-{if $masqueradeMode}
-	{include file="masquerade-top-navbar.tpl"}
-{/if}
 {strip}
 	<div class="container">
 		{if !empty($systemMessage)}
@@ -49,18 +46,11 @@
 				{if !empty($message->action1Title) && !empty($message->action1)}
 					&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{$message->action1Title}</a>
 				{/if}
-                {if !empty($message->action2Title) && !empty($message->action2)}
-	                &nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{$message->action2Title}</a>
-                {/if}
+				{if !empty($message->action2Title) && !empty($message->action2)}
+					<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{$message->action2Title}</a>
+				{/if}
 			</div>
 		{/foreach}
-
-		{if $enableLanguageSelector}
-			{include file="language-selection-navbar.tpl"}
-		{/if}
-		{if $showLanguagePreferencesBar}
-			{include file="languagePreferences.tpl"}
-		{/if}
 
 		<div id="header-wrapper" class="row">
 			<div id="header-container" role="banner">
@@ -68,14 +58,11 @@
 			</div>
 		</div>
 
-		<div id="horizontal-menu-bar-wrapper" class="row visible-xs">
-			<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar" role="navigation" aria-labelledby="mobileNav">
+		<div id="horizontal-menu-bar-wrapper" class="row">
+			<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar" role="navigation" aria-label="Top Navigation">
 				{include file='horizontal-menu-bar.tpl'}
 			</div>
-		</div>
-
-		<div id="horizontal-search-wrapper" class="row">
-			<div id="horizontal-search-container" class="col-xs-12" role="search">
+			<div id="horizontal-search-container" class="col-tn-12" role="search">
 				{include file="Search/horizontal-searchbox.tpl"}
 			</div>
 
@@ -88,10 +75,10 @@
 			<div class="row">
 				{if !empty($sidebar)} {* Main Content & Sidebars *}
 					{* Sidebar on the left *}
-					<div class="col-xs-12 col-sm-4 col-md-3 col-lg-3 " id="side-bar" role="navigation" aria-labelledby="sidebarNav">
+					<div class="col-tn-12 col-xs-12 col-sm-4 col-md-3 col-lg-3" id="side-bar" role="navigation" aria-labelledby="sidebarNav">
 						{include file="sidebar.tpl"}
 					</div>
-					<div class="col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
+					<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
 						{if $showBreadcrumbs}
 							<div role="navigation" aria-label="Breadcrumbs">
 							{include file="breadcrumbs.tpl"}
@@ -106,12 +93,19 @@
 						</div>
 					</div>
 				{else} {* Main Content Only, no sidebar *}
-					<div role="main">
-						{if $module}
-							{include file="$module/$pageTemplate"}
-						{else}
-							{include file="$pageTemplate"}
+					<div class="col-xs-12" id="main-content">
+						{if $showBreadcrumbs}
+							<div role="navigation" aria-label="Breadcrumbs">
+							{include file="breadcrumbs.tpl"}
+							</div>
 						{/if}
+						<div role="main">
+							{if $module}
+								{include file="$module/$pageTemplate"}
+							{else}
+								{include file="$pageTemplate"}
+							{/if}
+						</div>
 					</div>
 				{/if}
 			</div>

@@ -394,10 +394,6 @@ class MillenniumHolds{
 						$bibid = '';
 						$shortId = '';
 						$title = trim($sCols[$i]);
-						/*global $configArray;
-						if ($configArray['System']['debug']){
-							echo("Unexpected format in title column.  Got " . htmlentities($sCols[$i]) . "<br/>");
-						}*/
 					}
 					if (preg_match('/.*<span class="patFuncVol">(.*?)<\/span>.*/si', $sCols[$i], $matches)) {
 						$curHold['volume'] = $matches[1];

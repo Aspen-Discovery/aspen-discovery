@@ -1,31 +1,43 @@
 {strip}
-	<h2 class="hiddenTitle" id="mobileNav">{translate text="Mobile Navigation"}</h2>
-	{if $loggedIn}{* Logged In *}
-		<a href="/MyAccount/Logout" id="logoutLink" class="menu-icon" title="{translate text="Log Out"}">
-			<img src="{img filename='/interface/themes/responsive/images/Logout.png'}" alt="{translate text="Log Out"}">
-		</a>
-		<a href="#{*home-page-login*}" id="mobile-menu-account-icon" onclick="AspenDiscovery.Menu.Mobile.showAccount(this)" class="menu-icon" title="Account">
-			<img src="{img filename='/interface/themes/responsive/images/Account.png'}" alt="Account">
-		</a>
-	{else} {* Not Logged In *}
-		<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
-			{*<img src="{img filename='/interface/themes/responsive/images/Account.png'}" alt="{translate text='Login'}">*}
-			<img src="{img filename='/interface/themes/responsive/images/Login.png'}" alt="{translate text='Login'}">
+	<h2 class="hiddenTitle" id="mobileNav">{translate text="Navigation"}</h2>
+	{if !empty($homeLink)}
+		<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option menu-left" title="{translate text='Library Home Page'}" aria-label="{translate text="Return to $homeLinkText"}">
+			<i class="fas fa-home fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs"></span>
 		</a>
 	{/if}
-	<a href="#{*home-page-login*}" id="mobile-menu-menu-icon" onclick="AspenDiscovery.Menu.Mobile.showMenu(this)" class="menu-icon" title="Menu">
-		<img src="{img filename='/interface/themes/responsive/images/Menu.png'}" alt="Menu">
+	<a href="/" id="homeLink" class="menu-icon menu-bar-option menu-left" title="{translate text='Browse the catalog'}" aria-label="{translate text='Browse the catalog'}">
+		<i class="fas {if empty($homeLink)}fa-home{else}fa-th{/if} fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs"></span>
 	</a>
-
-	<a href="#{*horizontal-menu-bar-wrapper*}" id="mobile-menu-search-icon" onclick="AspenDiscovery.Menu.Mobile.showSearch(this)" class="menu-icon menu-left" title="Search">
-		{* mobile-menu-search-icon id used by Refine Search button to set the menu to search (in case another menu option has been selected) *}
-		<img src="{img filename='/interface/themes/responsive/images/Search.png'}" alt="Search">
+	<a onclick="AspenDiscovery.closeMenu();AspenDiscovery.closeAccountMenu();$('#horizontal-search-box').slideToggle('slow');return false;" class="menu-icon menu-bar-option menu-left hidden-inline-md hidden-inline-lg" title="{translate text="Search"}" aria-label="{translate text="Search"}">
+		<i class="fas fa-search fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs">{translate text="Search"}</span>
 	</a>
-
-	{if !empty($showExploreMore)}
-		{* TODO: set explore more anchor tag so exploremore is moved into view on mobile *}
-		<a href="#" id="mobile-menu-explore-more-icon" onclick="AspenDiscovery.Menu.Mobile.showExploreMore(this)" class="menu-icon menu-left" title="{translate text='Explore More'}">
-			<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt="{translate text='Explore More'}">
+	<span id="menuToggleButton">
+		<a onclick="return AspenDiscovery.toggleMenu();" class="menu-icon menu-bar-option" title="{translate text="Show Menu"}">
+			<i class="fas fa-bars fa-lg"></i>
+		</a>
+		{include file="header-menu.tpl"}
+	</span>
+	{if $loggedIn}{* Logged In *}
+		<span id="accountMenuToggleButton">
+			<a href="/MyAccount/Home" onclick="return AspenDiscovery.toggleAccountMenu();" id="mobile-menu-account-icon" class="menu-icon menu-bar-option" title="Account">
+				{if $masqueradeMode}
+					<i class="fas fa-theater-masks fa-lg"></i>
+				{else}
+					<i class="fas fa-user fa-lg"></i>
+				{/if}
+				<span class="menu-bar-label hidden-inline-block-xs">
+					{if $masqueradeMode}
+						{translate text="Acting As %1%" 1=$userDisplayName}
+					{else}
+						{$userDisplayName}
+					{/if}
+				</span>
+			</a>
+			{include file="account-menu.tpl"}
+		</span>
+	{else} {* Not Logged In *}
+		<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" data-login="true" class="menu-icon menu-bar-option" title="{translate text='Login'}">
+			<i id="loginLinkIcon" class="fas fa-sign-in-alt fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs" id="login-button-label">{translate text="Sign in"}</span>
 		</a>
 	{/if}
 {/strip}

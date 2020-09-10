@@ -1,12 +1,8 @@
 <?php
-
+require_once ROOT_DIR . '/GroupedWorkSubRecordHomeAction.php';
 require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 
-class Hoopla_Home extends Action{
-	/** @var  SearchObject_GroupedWorkSearcher $db */
-	protected $db;
-	private $id;
-
+class Hoopla_Home extends GroupedWorkSubRecordHomeAction{
 	function launch(){
 		global $interface;
 
@@ -17,26 +13,26 @@ class Hoopla_Home extends Action{
 			$interface->assign('searchId', $_SESSION['searchId']);
 		}
 
-		$this->id = strip_tags($_REQUEST['id']);
-		$interface->assign('id', $this->id);
-		$recordDriver = new HooplaRecordDriver($this->id);
+		$id = strip_tags($_REQUEST['id']);
+		$interface->assign('id', $id);
+		$this->recordDriver = new HooplaRecordDriver($id);
 
-		if (!$recordDriver->isValid()){
+		if (!$this->recordDriver->isValid()){
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
 			die();
 		}
-		$groupedWork = $recordDriver->getGroupedWorkDriver();
+		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
 		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
 			die();
 		}else{
-			$interface->assign('recordDriver', $recordDriver);
+			$interface->assign('recordDriver', $this->recordDriver);
 
-			$summaryActions = $recordDriver->getActions();
+			$summaryActions = $this->recordDriver->getActions();
 			$interface->assign('summaryActions', $summaryActions);
 
 			//Load the citations
-			$this->loadCitations($recordDriver);
+			$this->loadCitations();
 
 			// Retrieve User Search History
 			$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
@@ -47,36 +43,29 @@ class Hoopla_Home extends Action{
 			$searchObject->init($searchSource);
 			$searchObject->getNextPrevLinks();
 
+			//Check to see if there are lists the record is on
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
+			$interface->assign('appearsOnLists', $appearsOnLists);
+
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;
-			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailoption) {
-				$interface->assign($detailoption, true);
+			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
+				$interface->assign($detailOption, true);
 			}
 
-			$interface->assign('moreDetailsOptions', $recordDriver->getMoreDetailsOptions());
+			$interface->assign('moreDetailsOptions', $this->recordDriver->getMoreDetailsOptions());
 
-			$interface->assign('semanticData', json_encode($recordDriver->getSemanticData()));
+			$interface->assign('semanticData', json_encode($this->recordDriver->getSemanticData()));
 
 			// Display Page
-			$this->display('full-record.tpl', $recordDriver->getTitle());
+			$this->display('full-record.tpl', $this->recordDriver->getTitle(), '', false);
 		}
 	}
 
-	/**
-	 * @param HooplaRecordDriver $recordDriver
-	 */
-	function loadCitations($recordDriver)
-	{
-		global $interface;
-
-		$citationCount = 0;
-		$formats = $recordDriver->getCitationFormats();
-		foreach($formats as $current) {
-			$interface->assign(strtolower($current), $recordDriver->getCitation($current));
-			$citationCount++;
-		}
-		$interface->assign('citationCount', $citationCount);
+	function loadRecordDriver($id){
+		$this->recordDriver = new HooplaRecordDriver($id);
 	}
 
 }

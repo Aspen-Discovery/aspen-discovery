@@ -32,21 +32,29 @@ class OpenArchives_Collections extends ObjectEditor {
 	function getObjectStructure(){
 		return OpenArchivesCollection::getObjectStructure();
 	}
-	function getAllowableRoles(){
-
-		return array('opacAdmin', 'libraryAdmin', 'archives');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function canAddNew(){
-		return true;
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('archives');
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#open_archives', 'Open Archives');
+		$breadcrumbs[] = new Breadcrumb('/OpenArchives/Collections', 'Collections');
+		return $breadcrumbs;
 	}
 
+	function getActiveAdminSection()
+	{
+		return 'open_archives';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Open Archives');
+	}
 }

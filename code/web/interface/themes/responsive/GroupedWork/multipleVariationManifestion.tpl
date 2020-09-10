@@ -9,7 +9,7 @@
 		<div class="row {if $variation->isHideByDefault()}hiddenManifestation_{$summId}{/if}" {if $variation->isHideByDefault()}style="display: none"{/if}>
 			<div class="col-tn-4 col-xs-4{if !$viewingCombinedResults} col-md-3{/if} manifestation-format">
 				&nbsp;&nbsp;&nbsp;
-				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">
+				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');"aria-label="View Manifestations for {$relatedManifestation->format|translate} {$variation->label} of {$summTitle}">
 					{$variation->label}
 				</a>
 				<br>&nbsp;&nbsp;&nbsp;
@@ -31,9 +31,9 @@
 					<div class="btn-group btn-group-vertical btn-block">
 						{foreach from=$variation->getActions() item=curAction}
 							{if $curAction.url && strlen($curAction.url) > 0}
-								<a href="{$curAction.url}" class="btn btn-sm btn-primary btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=false}"{/if}>{$curAction.title|translate}</a>
+								<a href="{$curAction.url}" class="btn btn-sm btn-action btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=false}"{/if}>{$curAction.title|translate}</a>
 							{else}
-								<a href="#" class="btn btn-sm btn-primary btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=false}"{/if}>{$curAction.title|translate}</a>
+								<a href="#" class="btn btn-sm btn-action btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=false}"{/if}>{$curAction.title|translate}</a>
 							{/if}
 						{/foreach}
 					</div>

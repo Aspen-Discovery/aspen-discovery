@@ -7,11 +7,6 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 class Admin_BlockPatronAccountLinks extends ObjectEditor
 {
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager');
-	}
-
 	/**
 	 * The class name of the object which is being edited
 	 */
@@ -89,5 +84,24 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 // 		<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> Blocking a patron from linking accounts will not prevent a user from manually logging into other accounts.
 // 		If you suspect that someone has been accessing other accounts incorrectly, you should issue new cards or change PINs for the accounts they have accessed in addition to blocking them.
 //		</p>';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		$breadcrumbs[] = new Breadcrumb('/Admin/BlockPatronAccountLinks', 'Block Patron Account Linking');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Block Patron Account Linking');
 	}
 }

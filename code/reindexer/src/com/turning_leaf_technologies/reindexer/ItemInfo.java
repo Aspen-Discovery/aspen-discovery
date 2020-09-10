@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 import org.marc4j.marc.DataField;
+import org.marc4j.marc.Subfield;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,7 +36,7 @@ public class ItemInfo {
 	private Date lastCheckinDate;
 	private RecordInfo recordInfo;
 
-	private HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
+	private final HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
 	private String shelfLocationCode;
 	private Long autoReindexTime = null;
 	private DataField marcField;
@@ -76,14 +77,17 @@ public class ItemInfo {
 		this.locationCode = locationCode;
 	}
 
+	@SuppressWarnings("SpellCheckingInspection")
 	String geteContentUrl() {
 		return eContentUrl;
 	}
 
+	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentUrl(String eContentUrl) {
 		this.eContentUrl = eContentUrl;
 	}
 
+	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentFilename(String eContentFilename) {
 		this.eContentFilename = eContentFilename;
 	}
@@ -164,7 +168,7 @@ public class ItemInfo {
 		this.isEContent = isEContent;
 	}
 
-	private SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
+	private static final SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
 	private String baseDetails = null;
 	String getDetails(){
 		if (baseDetails == null){
@@ -214,10 +218,12 @@ public class ItemInfo {
 		this.IType = IType;
 	}
 
+	@SuppressWarnings("SpellCheckingInspection")
 	String geteContentSource() {
 		return eContentSource;
 	}
 
+	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentSource(String eContentSource) {
 		this.eContentSource = eContentSource;
 	}
@@ -322,6 +328,7 @@ public class ItemInfo {
 		return recordInfo.getFullIdentifier();
 	}
 
+	@SuppressWarnings("unused")
 	String getSubLocation() {
 		return subLocation;
 	}
@@ -360,5 +367,14 @@ public class ItemInfo {
 
 	DataField getMarcField() {
 		return  this.marcField;
+	}
+
+	public String getSubfield(char audienceSubfield) {
+		Subfield subfield = this.marcField.getSubfield(audienceSubfield);
+		if (subfield == null){
+			return null;
+		}else{
+			return subfield.getData();
+		}
 	}
 }

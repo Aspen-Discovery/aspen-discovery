@@ -27,6 +27,7 @@ class API_ArchiveAPI extends Action {
 	 * a full number of results due to filtering at the collection level.
 	 *
 	 * Future libraries may require different information.
+	 * @noinspection PhpUnused
 	 */
 	function getDPLAFeed(){
 		$curPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
@@ -136,15 +137,13 @@ class API_ArchiveAPI extends Action {
 		}
 
 		$summary = $searchObject->getResultSummary();
-		$results = array(
+		return array(
 				'numResults' => $summary['resultTotal'],
 				'numPages' => ceil($summary['resultTotal'] / $pageSize),
 				'recordsByLibrary' => $recordsByLibrary,
 				'includedCollections' => $collectionsToInclude,
 				'docs' => $dplaDocs,
 		);
-
-		return $results;
 	}
 
 	private $formatMap = array(
@@ -252,7 +251,7 @@ class API_ArchiveAPI extends Action {
 		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 100;
 		$changesSince = isset($_REQUEST['changesSince']) ? $_REQUEST['changesSince'] : null;
 		$namespace = isset($_REQUEST['namespace']) ? $_REQUEST['namespace'] : null;
-		list($searchObject, $collectionsToInclude, $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
+		list(, , $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
 
 		$recordsByLibrary = array();
 		if (isset($searchResult['facet_counts'])){
@@ -263,5 +262,10 @@ class API_ArchiveAPI extends Action {
 		}
 
 		return $recordsByLibrary;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

@@ -44,8 +44,8 @@ class User extends DataObject
 
 	/** @var Role[] */
 	private $_roles;
+	private $_permissions;
 	private $_masqueradingRoles;
-	private $_masqueradeLevel;
 
 	public $interfaceLanguage;
 	public $searchPreferenceLanguage;
@@ -114,7 +114,7 @@ class User extends DataObject
 	}
 
 	function getLists() {
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 
 		$lists = array();
 
@@ -225,14 +225,31 @@ class User extends DataObject
 			$this->_roles = array();
 			//Load roles for the user from the user
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
+			require_once ROOT_DIR . '/sys/Account/PType.php';
 			$role = new Role();
 			$canUseTestRoles = false;
 			if ($this->id){
+				//Get role based on patron type
+				$patronType = new PType();
+				$patronType->pType = $this->patronType;
+				if ($patronType->find(true)){
+					if ($patronType->assignedRoleId != -1) {
+						$role = new Role();
+						$role->roleId = $patronType->assignedRoleId;
+						if ($role->find(true)){
+							$this->_roles[$role->roleId] = clone $role;
+							if ($this->_roles[$role->roleId]->hasPermission('Test Roles')){
+								$canUseTestRoles = true;
+							}
+						}
+					}
+				}
+
 				$escapedId = $this->escape($this->id);
 				$role->query("SELECT roles.* FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . $escapedId . " ORDER BY name");
 				while ($role->fetch()){
-					$this->_roles[$role->roleId] = $role->name;
-					if ($role->name == 'userAdmin'){
+					$this->_roles[$role->roleId] = clone $role;
+					if ($this->_roles[$role->roleId]->hasPermission('Test Roles')){
 						$canUseTestRoles = true;
 					}
 				}
@@ -260,7 +277,7 @@ class User extends DataObject
 					}
 					$found = $role->find(true);
 					if ($found == true){
-						$this->_roles[$role->roleId] = $role->name;
+						$this->_roles[$role->roleId] = clone $role;
 					}
 				}
 			}
@@ -269,14 +286,9 @@ class User extends DataObject
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		if ($masqueradeMode && !$isGuidingUser) {
 			if (is_null($this->_masqueradingRoles)) {
-				/** @var User $guidingUser */
 				$guidingUser = UserAccount::getGuidingUserObject();
 				$guidingUserRoles = $guidingUser->getRoles(true);
-				if (in_array('opacAdmin', $guidingUserRoles)) {
-					$this->_masqueradingRoles = $this->_roles;
-				} else {
-					$this->_masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
-				}
+				$this->_masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
 			}
 			return $this->_masqueradingRoles;
 		}
@@ -496,6 +508,18 @@ class User extends DataObject
 							$cloudLibrarySettings = new CloudLibrarySetting();
 							$cloudLibrarySettings->find();
 							return $cloudLibrarySettings->getNumResults() > 0;
+						} catch (Exception $e) {
+							return false;
+						}
+					}
+					return false;
+				} elseif ($source == 'axis_360') {
+					if (array_key_exists('Axis 360', $enabledModules)){
+						require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
+						try {
+							$axis360Settings = new Axis360Setting();
+							$axis360Settings->find();
+							return $axis360Settings->getNumResults() > 0;
 						} catch (Exception $e) {
 							return false;
 						}
@@ -823,29 +847,8 @@ class User extends DataObject
 	 * @return  bool       true if this user can edit passed list
 	 */
 	function canEditList($list) {
-		if ($this->id == $list->user_id){
+		if (($this->id == $list->user_id) || $this->hasPermission('Edit All Lists')){
 			return true;
-		}elseif ($this->hasRole('opacAdmin')){
-			return true;
-		}elseif ($this->hasRole('libraryAdmin') || $this->hasRole('contentEditor') || $this->hasRole('libraryManager')){
-			$listUser = new User();
-			$listUser->id = $list->user_id;
-			$listUser->find(true);
-			$listLibrary = Library::getLibraryForLocation($listUser->homeLocationId);
-			$userLibrary = Library::getLibraryForLocation($this->homeLocationId);
-			if ($userLibrary->libraryId == $listLibrary->libraryId){
-				return true;
-			}elseif(strpos($list->title, 'NYT - ') === 0 && ($this->hasRole('libraryAdmin') || $this->hasRole('contentEditor'))){
-				//Allow NYT Times lists to be edited by any library admins and library managers
-				return true;
-			}
-		}elseif ($this->hasRole('locationManager')){
-			$listUser = new User();
-			$listUser->id = $list->user_id;
-			$listUser->find(true);
-			if ($this->homeLocationId == $listUser->homeLocationId){
-				return true;
-			}
 		}
 		return false;
 	}
@@ -1466,14 +1469,14 @@ class User extends DataObject
 	 * @return bool
 	 */
 	public function isStaff(){
-		global $configArray;
 		if (count($this->getRoles()) > 0){
 			return true;
-		}elseif (isset($configArray['Staff P-Types'])){
-			$staffPTypes = $configArray['Staff P-Types'];
-			$pType = $this->patronType;
-			if ($pType && array_key_exists($pType, $staffPTypes)){
-				return true;
+		}else{
+			require_once ROOT_DIR . '/sys/Account/PType.php';
+			$pType = new PType();
+			$pType->pType = $this->patronType;
+			if ($pType->find(true)){
+				return $pType->isStaff;
 			}
 		}
 		return false;
@@ -1541,32 +1544,10 @@ class User extends DataObject
 		return $this->getCatalogDriver()->importListsFromIls($this);
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getMasqueradeLevel()
-	{
-		if (empty($this->_masqueradeLevel)) $this->setMasqueradeLevel();
-		return $this->_masqueradeLevel;
-	}
-
-	private function setMasqueradeLevel()
-	{
-		$this->_masqueradeLevel = 'none';
-		if (!empty($this->patronType)) {
-			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
-			$pType = new pType();
-			$pType->get('pType', $this->patronType);
-			if ($pType->getNumResults() > 0) {
-				$this->_masqueradeLevel = $pType->masquerade;
-			}
-		}else if ($this->hasRole('userAdmin')){
-			$this->_masqueradeLevel = 'any';
-		}
-	}
-
 	public function canMasquerade() {
-		return $this->getMasqueradeLevel() != 'none';
+		return $this->hasPermission(['Masquerade as any user', 'Masquerade as unrestricted patron types',
+			'Masquerade as patrons with same home library', 'Masquerade as unrestricted patrons with same home library',
+			'Masquerade as patrons with same home location', 'Masquerade as unrestricted patrons with same home location']);
 	}
 
 	/**
@@ -1714,15 +1695,24 @@ class User extends DataObject
 
 	function eligibleForHolds()
 	{
+		if (empty($this->getCatalogDriver())){
+			return false;
+		}
 		return $this->getCatalogDriver()->patronEligibleForHolds($this);
 	}
 
 	function getShowAutoRenewSwitch()
 	{
+		if (empty($this->getCatalogDriver())){
+			return false;
+		}
 		return $this->getCatalogDriver()->getShowAutoRenewSwitch($this);
 	}
 
 	function isAutoRenewalEnabledForUser(){
+		if (empty($this->getCatalogDriver())){
+			return false;
+		}
 		return $this->getCatalogDriver()->isAutoRenewalEnabledForUser($this);
 	}
 
@@ -1797,6 +1787,10 @@ class User extends DataObject
 			return $location;
 		}
 		return null;
+	}
+
+	function getHomeLocationCode(){
+		return $this->getHomeLocation()->code;
 	}
 
 	/**
@@ -1875,6 +1869,296 @@ class User extends DataObject
 				'message' => 'This user is not connected to an ILS'
 			];
 		}
+	}
+
+	public function logout(){
+		if ($this->hasIlsConnection()) {
+			$this->getCatalogDriver()->logout($this);
+		}
+	}
+
+	public function getAdminActions(){
+		require_once ROOT_DIR . '/sys/AdminSection.php';
+		global $library;
+		global $configArray;
+		global $enabledModules;
+		$sections = [];
+
+		if (count($this->getRoles()) == 0){
+			return $sections;
+		}
+		$sections['system_admin'] = new AdminSection('System Administration');
+		$sections['system_admin']->addAction(new AdminAction('Modules', 'Enable and disable sections of Aspen Discovery.', '/Admin/Modules'), 'Administer Modules');
+		$sections['system_admin']->addAction(new AdminAction('Administrators', 'Define who should have administration privileges.', '/Admin/Administrators'), 'Administer Users');
+		$sections['system_admin']->addAction(new AdminAction('Permissions', 'Define who what each role in the system can do.', '/Admin/Permissions'), 'Administer Permissions');
+		$sections['system_admin']->addAction(new AdminAction('DB Maintenance', 'Update the database when new versions of Aspen Discovery are released.', '/Admin/DBMaintenance'), 'Run Database Maintenance');
+		$sections['system_admin']->addAction(new AdminAction('Send Grid Settings', 'Settings to allow Aspen Discovery to send emails via SendGrid.', '/Admin/SendGridSettings'), 'Administer SendGrid');
+		$sections['system_admin']->addAction(new AdminAction('Variables', 'Variables set by the Aspen Discovery itself as part of background processes.', '/Admin/Variables'), 'Administer System Variables');
+		$sections['system_admin']->addAction(new AdminAction('System Variables', 'Settings for Aspen Discovery that apply to all libraries on this installation.', '/Admin/SystemVariables'), 'Administer System Variables');
+
+		$sections['system_reports'] = new AdminSection('System Reports');
+		$sections['system_reports']->addAction(new AdminAction('Site Status', 'View Status of Aspen Discovery.', '/Admin/SiteStatus'), 'View System Reports');
+		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), 'View System Reports');
+		$sections['system_reports']->addAction(new AdminAction('Nightly Index Log', 'Nightly indexing log for Aspen Discovery.  The nightly index updates all records if needed.', '/Admin/ReindexLog'), ['View System Reports', 'View Indexing Logs']);
+		$sections['system_reports']->addAction(new AdminAction('Cron Log', 'View Cron Log. The cron process handles periodic cleanup tasks and updates reading history for users.', '/Admin/CronLog'), 'View System Reports');
+		$sections['system_reports']->addAction(new AdminAction('Performance Report', 'View Aspen Performance Report.', '/Admin/PerformanceReport'), 'View System Reports');
+		$sections['system_reports']->addAction(new AdminAction('Error Log', 'View Aspen Error Log.', '/Admin/ErrorReport'), 'View System Reports');
+		$sections['system_reports']->addAction(new AdminAction('PHP Information', 'Display configuration information for PHP on the server.', '/Admin/PHPInfo'), 'View System Reports');
+
+		$sections['theme_and_layout'] = new AdminSection('Theme & Layout');
+		$sections['theme_and_layout']->addAction(new AdminAction('Themes', 'Define colors, fonts, images etc used within Aspen Discovery.', '/Admin/Themes'), ['Administer All Themes', 'Administer Library Themes']);
+		$sections['theme_and_layout']->addAction(new AdminAction('Layout Settings', 'Define basic information about how pages are displayed in Aspen Discovery.', '/Admin/LayoutSettings'), ['Administer All Layout Settings', 'Administer Library Layout Settings']);
+
+		$sections['primary_configuration'] = new AdminSection('Primary Configuration');
+		$librarySettingsAction = new AdminAction('Library Systems', 'Configure library settings.', '/Admin/Libraries');
+		$locationSettingsAction = new AdminAction('Locations', 'Configure location settings.', '/Admin/Locations');
+		$ipAddressesAction = new AdminAction('IP Addresses', 'Configure IP addresses for each location and configure rules to block access to Aspen Discovery.', '/Admin/IPAddresses');
+		if ($sections['primary_configuration']->addAction($librarySettingsAction, ['Administer All Libraries', 'Administer Home Library'])){
+			$librarySettingsAction->addSubAction($locationSettingsAction, ['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
+			$librarySettingsAction->addSubAction($ipAddressesAction, 'Administer IP Addresses');
+		}else{
+			$sections['primary_configuration']->addAction($locationSettingsAction, ['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
+			$sections['primary_configuration']->addAction($ipAddressesAction, 'Administer IP Addresses');
+		}
+		$sections['primary_configuration']->addAction(new AdminAction('Block Patron Account Linking', 'Prevent accounts from linking to other accounts.', '/Admin/BlockPatronAccountLinks'), 'Block Patron Account Linking');
+		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
+		$sections['primary_configuration']->addAction(new AdminAction('Account Profiles', 'Define how account information is loaded from the ILS.', '/Admin/AccountProfiles'), 'Administer Account Profiles');
+
+		//Materials Request if enabled
+		if (MaterialsRequest::enableAspenMaterialsRequest()){
+			if ($library->enableMaterialsRequest == 1) {
+				$sections['materials_request'] = new AdminSection('Materials Requests');
+				$sections['materials_request']->addAction(new AdminAction('Manage Requests', 'Manage Materials Requests from users.', '/MaterialsRequest/ManageRequests'), 'Manage Library Materials Requests');
+				$sections['materials_request']->addAction(new AdminAction('Summary Report', 'A Summary Report of all requests that have been submitted.', '/MaterialsRequest/SummaryReport'), 'View Materials Requests Reports');
+				$sections['materials_request']->addAction(new AdminAction('Report By User', 'A Report of all requests that have been submitted by users who submitted them.', '/MaterialsRequest/UserReport'), 'View Materials Requests Reports');
+				$sections['materials_request']->addAction(new AdminAction('Manage Statuses', 'Define the statuses of Materials Requests for the library.', '/MaterialsRequest/ManageStatuses'), 'Administer Materials Requests');
+			}
+		}
+
+		$sections['translations'] = new AdminSection('Languages and Translations');
+		$sections['translations']->addAction(new AdminAction('Languages', 'Define which languages are available within Aspen Discovery.', '/Translation/Languages'), 'Administer Languages');
+		$sections['translations']->addAction(new AdminAction('Translations', 'Translate the user interface of Aspen Discovery.', '/Translation/Translations'), 'Translate Aspen');
+
+		$sections['cataloging'] = new AdminSection('Catalog / Grouped Works');
+		$groupedWorkAction = new AdminAction('Grouped Work Display', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/GroupedWorkDisplay');
+		$groupedWorkAction->addSubAction(new AdminAction('Grouped Work Facets', 'Define information about what facets are displayed for grouped works in search results and Advanced Search.', '/Admin/GroupedWorkFacets'), ['Administer All Grouped Work Facets', 'Administer Library Grouped Work Facets']);
+		$sections['cataloging']->addAction($groupedWorkAction, ['Administer All Grouped Work Display Settings', 'Administer Library Grouped Work Display Settings']);
+		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
+
+		$sections['local_enrichment'] = new AdminSection('Local Catalog Enrichment');
+		$browseCategoryGroupsAction = new AdminAction('Browse Category Groups', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/BrowseCategoryGroups');
+		$browseCategoryGroupsAction->addSubAction(new AdminAction('Browse Categories', 'Define browse categories shown on the library home page.', '/Admin/BrowseCategories'), ['Administer All Browse Categories', 'Administer Library Browse Categories']);
+		$sections['local_enrichment']->addAction($browseCategoryGroupsAction, ['Administer All Browse Categories', 'Administer Library Browse Categories']);
+		$sections['local_enrichment']->addAction(new AdminAction('Collection Spotlights', 'Define basic information about how pages are displayed in Aspen Discovery.', '/Admin/CollectionSpotlights'), ['Administer All Collection Spotlights', 'Administer Library Collection Spotlights']);
+		$sections['local_enrichment']->addAction(new AdminAction('Placards', 'Placards allow you to promote services that do not have MARC records or APIs for inclusion in the catalog.', '/Admin/Placards'), ['Administer All Placards', 'Administer Library Placards']);
+
+		$sections['third_party_enrichment'] = new AdminSection('Third Party Enrichment');
+		$sections['third_party_enrichment']->addAction(new AdminAction('Accelerated Reader Settings', 'Define settings to load Accelerated Reader information directly from Renaissance Learning.', '/Enrichment/ARSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('Coce Server Settings', 'Define settings to load covers from a Coce server.', '/Enrichment/CoceServerSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('ContentCafe Settings', 'Define settings for ContentCafe integration.', '/Enrichment/ContentCafeSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('DP.LA Settings', 'Define settings for DP.LA integration.', '/Enrichment/DPLASettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('Google API Settings', 'Define settings for integrating Google APIs within Aspen Discovery.', '/Enrichment/GoogleApiSettings'), 'Administer Third Party Enrichment API Keys');
+		$nytSettingsAction = new AdminAction('New York Times Settings', 'Define settings for integrating New York Times Content within Aspen Discovery.', '/Enrichment/NewYorkTimesSettings');
+		$nytListsAction = new AdminAction('New York Times Lists', 'View Lists from the New York Times and manually refresh content.', '/Enrichment/NYTLists');
+		if ($sections['third_party_enrichment']->addAction($nytSettingsAction, 'Administer Third Party Enrichment API Keys')){
+			$nytSettingsAction->addSubAction($nytListsAction, 'View New York Times Lists');
+		}else{
+			$sections['third_party_enrichment']->addAction($nytListsAction, 'View New York Times Lists');
+		}
+		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist Settings', 'Define settings for integrating Novelist within Aspen Discovery.', '/Enrichment/NovelistSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('OMDB Settings', 'Define settings for integrating OMDB within Aspen Discovery.', '/Enrichment/OMDBSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('reCAPTCHA Settings', 'Define settings for using reCAPTCHA within Aspen Discovery.', '/Enrichment/RecaptchaSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('Rosen LevelUP Settings', 'Define settings for allowing students and parents to register for Rosen LevelUP.', '/Rosen/RosenLevelUPSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('Syndetics Settings', 'Define settings for Syndetics integration.', '/Enrichment/SyndeticsSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('Wikipedia Integration', 'Modify which Wikipedia content is displayed for authors.', '/Admin/AuthorEnrichment'), 'Administer Wikipedia Integration');
+
+		$sections['ils_integration'] = new AdminSection('ILS Integration');
+		$indexingProfileAction = new AdminAction('Indexing Profiles', 'Define how records from the ILS are loaded into Aspen Discovery.', '/ILS/IndexingProfiles');
+		$translationMapsAction = new AdminAction('Translation Maps', 'Define how field values are mapped between the ILS and Aspen Discovery.', '/ILS/TranslationMaps');
+		if ($sections['ils_integration']->addAction($indexingProfileAction, 'Administer Indexing Profiles')){
+			$indexingProfileAction->addSubAction($translationMapsAction, 'Administer Translation Maps');
+		}else{
+			$sections['ils_integration']->addAction($translationMapsAction, 'Administer Translation Maps');
+		}
+		if ($configArray['Catalog']['ils'] == 'Millennium' || $configArray['Catalog']['ils'] == 'Sierra'){
+			$sections['ils_integration']->addAction(new AdminAction('Loan Rules', 'View and load loan rules used by the ILS to determine if an patron is eligible to use materials.', '/ILS/LoanRules'), 'Administer Loan Rules');
+			$sections['ils_integration']->addAction(new AdminAction('Loan Rule Determiners', 'View and load loan rule determiners used by the ILS to determine if an patron is eligible to use materials.', '/ILS/LoanRuleDeterminers'), 'Administer Loan Rules');
+		}
+		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
+		$sections['ils_integration']->addAction(new AdminAction('Offline Holds Report', 'View a report of holds that were submitted while the ILS was offline.', '/Circa/OfflineHoldsReport'), 'View Offline Holds Report');
+		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
+
+		if (array_key_exists('Axis 360', $enabledModules)) {
+			$sections['axis360'] = new AdminSection('Axis 360');
+			$axis360SettingsAction = new AdminAction('Settings', 'Define connection information between Axis 360 and Aspen Discovery.', '/Axis360/Settings');
+			$axis360ScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Axis360/Scopes');
+			if ($sections['axis360']->addAction($axis360SettingsAction, 'Administer Axis 360')) {
+				$axis360SettingsAction->addSubAction($axis360ScopesAction, 'Administer Axis 360');
+			} else {
+				$sections['axis360']->addAction($axis360ScopesAction, 'Administer Axis 360');
+			}
+			$sections['axis360']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Axis 360.', '/Axis360/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['axis360']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Axis 360 integration.', '/Axis360/Dashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		if (array_key_exists('Cloud Library', $enabledModules)) {
+			$sections['cloud_library'] = new AdminSection('Cloud Library');
+			$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between Cloud Library and Aspen Discovery.', '/CloudLibrary/Settings');
+			$cloudLibraryScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/CloudLibrary/Scopes');
+			if ($sections['cloud_library']->addAction($cloudLibrarySettingsAction, 'Administer Cloud Library')) {
+				$cloudLibrarySettingsAction->addSubAction($cloudLibraryScopesAction, 'Administer Cloud Library');
+			} else {
+				$sections['cloud_library']->addAction($cloudLibraryScopesAction, 'Administer Cloud Library');
+			}
+			$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Cloud Library.', '/CloudLibrary/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Cloud Library integration.', '/CloudLibrary/Dashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
+			$sections['ebsco'] = new AdminSection('EBSCO');
+			$sections['ebsco']->addAction(new AdminAction('Settings', 'Define connection information between Hoopla and Aspen Discovery.', '/EBSCO/EDSSettings'), 'Administer EBSCO EDS');
+			$sections['ebsco']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Hoopla integration.', '/EBSCO/EDSDashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		if (array_key_exists('Hoopla', $enabledModules)) {
+			$sections['hoopla'] = new AdminSection('Hoopla');
+			$hooplaSettingsAction = new AdminAction('Settings', 'Define connection information between Hoopla and Aspen Discovery.', '/Hoopla/Settings');
+			$hooplaScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Hoopla/Scopes');
+			if ($sections['hoopla']->addAction($hooplaSettingsAction, 'Administer Hoopla')) {
+				$hooplaSettingsAction->addSubAction($hooplaScopesAction, 'Administer Hoopla');
+			} else {
+				$sections['hoopla']->addAction($hooplaScopesAction, 'Administer Hoopla');
+			}
+			$sections['hoopla']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Hoopla.', '/Hoopla/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['hoopla']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Hoopla integration.', '/Hoopla/Dashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		if (array_key_exists('OverDrive', $enabledModules)) {
+			$sections['overdrive'] = new AdminSection('OverDrive');
+			$overDriveSettingsAction = new AdminAction('Settings', 'Define connection information between OverDrive and Aspen Discovery.', '/OverDrive/Settings');
+			$overDriveScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/OverDrive/Scopes');
+			if ($sections['overdrive']->addAction($overDriveSettingsAction, 'Administer OverDrive')) {
+				$overDriveSettingsAction->addSubAction($overDriveScopesAction, 'Administer OverDrive');
+			} else {
+				$sections['overdrive']->addAction($overDriveScopesAction, 'Administer OverDrive');
+			}
+			$sections['overdrive']->addAction(new AdminAction('Indexing Log', 'View the indexing log for OverDrive.', '/OverDrive/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['overdrive']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for OverDrive integration.', '/OverDrive/Dashboard'), ['View Dashboards', 'View System Reports']);
+			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for OverDrive integration to test connections.', '/OverDrive/APIData'), 'View OverDrive Test Interface');
+		}
+
+		if (array_key_exists('RBdigital', $enabledModules)) {
+			$sections['rbdigital'] = new AdminSection('RBdigital');
+			$rbdigitalSettingsAction = new AdminAction('Settings', 'Define connection information between RBdigital and Aspen Discovery.', '/RBdigital/Settings');
+			$rbdigitalScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/RBdigital/Scopes');
+			if ($sections['rbdigital']->addAction($rbdigitalSettingsAction, 'Administer RBdigital')) {
+				$rbdigitalSettingsAction->addSubAction($rbdigitalScopesAction, 'Administer RBdigital');
+			} else {
+				$sections['rbdigital']->addAction($rbdigitalScopesAction, 'Administer RBdigital');
+			}
+			$sections['rbdigital']->addAction(new AdminAction('Indexing Log', 'View the indexing log for RBdigital.', '/RBdigital/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['rbdigital']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for RBdigital integration.', '/RBdigital/Dashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		if (array_key_exists('Side Loads', $enabledModules)) {
+			$sections['side_loads'] = new AdminSection('Side Loads');
+			$sideLoadsSettingsAction = new AdminAction('Settings', 'Define connection information between Side Loads and Aspen Discovery.', '/SideLoads/SideLoads');
+			$sideLoadsScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/SideLoads/Scopes');
+			if ($sections['side_loads']->addAction($sideLoadsSettingsAction, 'Administer Side Loads')) {
+				$sideLoadsSettingsAction->addSubAction($sideLoadsScopesAction, 'Administer Side Loads');
+			} else {
+				$sections['side_loads']->addAction($sideLoadsScopesAction, 'Administer Side Loads');
+			}
+			$sections['side_loads']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Side Loads.', '/SideLoads/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['side_loads']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Side Loads integration.', '/SideLoads/Dashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		if ($configArray['Islandora']['enabled'] && array_key_exists('Islandora Archives', $enabledModules)){
+			$sections['islandora_archive'] = new AdminSection('Islandora Archives');
+			$sections['islandora_archive']->addAction(new AdminAction('Authorship Claims', 'View submissions from users that they are the author of materials within the archive.', '/Admin/AuthorshipClaims'), 'View Archive Authorship Claims');
+			$sections['islandora_archive']->addAction(new AdminAction('Clear Cache', 'Clear Archive information that has been cached within Aspen Discovery.', '/Admin/ClearArchiveCache'), 'Administer Islandora Archive');
+			$sections['islandora_archive']->addAction(new AdminAction('Material Requests', 'View requests for copies of materials from the archive.', '/Admin/ArchiveRequests'), 'View Archive Material Requests');
+			$sections['islandora_archive']->addAction(new AdminAction('Subject Control', 'Determine how subjects are handled when loading explore more information from the archive.', '/Admin/ArchiveSubjects'), 'Administer Islandora Archive');
+			$sections['islandora_archive']->addAction(new AdminAction('Private Collections', 'Setup collections within the archive that should not be private.', '/Admin/ArchivePrivateCollections'), 'Administer Islandora Archive');
+			$sections['islandora_archive']->addAction(new AdminAction('Usage Statistics', 'View statistics for number of records and drive space used by each library contributing content to the archive.', '/Admin/ArchiveUsage'), 'View Islandora Archive Usage');
+		}
+
+		if (array_key_exists('Open Archives', $enabledModules)){
+			$sections['open_archives'] = new AdminSection('Open Archives');
+			$sections['open_archives']->addAction(new AdminAction('Collections', 'Define collections to be loaded into Aspen Discovery.', '/OpenArchives/Collections'), 'Administer Open Archives');
+			$sections['open_archives']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Open Archives.', '/OpenArchives/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['open_archives']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Open Archives integration.', '/OpenArchives/Dashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		if (array_key_exists('Events', $enabledModules)){
+			$sections['events'] = new AdminSection('Events');
+			$sections['events']->addAction(new AdminAction('Library Market - Calendar Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/LMLibraryCalendarSettings'), 'Administer Library Calendar Settings');
+			$sections['events']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Events.', '/Events/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+		}
+
+		if (array_key_exists('Web Indexer', $enabledModules)){
+			$sections['web_indexer'] = new AdminSection('Website Indexing');
+			$sections['web_indexer']->addAction(new AdminAction('Settings', 'Define settings for indexing websites within Aspen Discovery.', '/Websites/Settings'), 'Administer Website Indexing Settings');
+			$sections['web_indexer']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Websites.', '/Websites/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['web_indexer']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for indexed websites.', '/Websites/Dashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		if (array_key_exists('User Lists', $enabledModules)){
+			$sections['user_lists'] = new AdminSection('User Lists');
+			$sections['user_lists']->addAction(new AdminAction('Settings', 'Define settings for indexing user lists within Aspen Discovery.', '/UserLists/Settings'), 'Administer List Indexing Settings');
+			$sections['user_lists']->addAction(new AdminAction('Indexing Log', 'View the indexing log for User Lists.', '/UserLists/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			//$sections['user_lists']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for indexed User Lists.', '/UserLists/Dashboard'), ['View Dashboards', 'View System Reports']);
+		}
+
+		$sections['aspen_help'] = new AdminSection('Aspen Discovery Help');
+		$sections['aspen_help']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), 'View Help Manual');
+		$sections['aspen_help']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), 'View Release Notes');
+		$showSubmitTicket = false;
+		try {
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = new SystemVariables();
+			if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
+				$showSubmitTicket = true;
+			}
+		}catch (Exception $e) {
+			//This happens before the table is setup
+		}
+		if ($showSubmitTicket) {
+			$sections['aspen_help']->addAction(new AdminAction('Submit Ticket', 'Submit a support ticket for assistance with Aspen Discovery.', '/Admin/SubmitTicket'), 'Submit Ticket');
+		}
+
+		return $sections;
+	}
+
+	public function getPermissions(){
+		if ($this->_permissions == null){
+			$this->_permissions = [];
+			$roles = $this->getRoles();
+			foreach ($roles as $role){
+				$this->_permissions = array_merge($this->_permissions, $role->getPermissions());
+			}
+		}
+		return $this->_permissions;
+	}
+
+	/**
+	 * @param string[]|string $allowablePermissions
+	 * @return bool
+	 */
+	public function hasPermission($allowablePermissions){
+		$permissions = $this->getPermissions();
+		if (is_array($allowablePermissions)){
+			foreach ($allowablePermissions as $allowablePermission){
+				if (in_array($allowablePermission, $permissions)){
+					return true;
+				}
+			}
+		}else{
+			if (in_array($allowablePermissions, $permissions)){
+				return true;
+			}
+		}
+		return false;
 	}
 }
 

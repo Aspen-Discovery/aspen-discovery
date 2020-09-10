@@ -158,6 +158,16 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
+		'library_remove_overdrive_advantage_info' => [
+			'title' => 'Library remove OverDrive Advantage Info',
+			'description' => 'Remove OverDrive Advantage Info from library info because it already exists in the scopes',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE library DROP COLUMN overdriveAdvantageName',
+				'ALTER TABLE library DROP COLUMN overdriveAdvantageProductsKey',
+			]
+		],
+
 		'library_17' => array(
 			'title' => 'Library 17',
 			'description' => 'Add defaultNotNeededAfterDays and homePageWidgetId. ',
@@ -445,6 +455,14 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE `library_top_links` ADD INDEX `libraryId` (`libraryId`)",
 			),
 		),
+
+		'remove_library_top_links' => [
+			'title' => 'Remove Library Top Links',
+			'description' => 'Remove unused Library Top Links',
+			'sql' => [
+				'DROP TABLE library_top_links'
+			]
+		],
 
 		'library_pin_reset' => array(
 			'title' => 'Library PIN Reset',
@@ -1747,6 +1765,15 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+		'library_location_axis360_scoping' => [
+			'title' => 'Library and Location Scoping of Axis360',
+			'description' => 'Add information about how to scope Axis360 records',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN axis360ScopeId INT(11) default -1',
+				'ALTER TABLE location ADD COLUMN axis360ScopeId INT(11) default -1',
+			]
+		],
+
 		'library_show_quick_copy' => [
 			'title' => 'Library Show Quick Copy',
 			'description' => 'Add a column for whether or not quick copy should be shown',
@@ -1908,6 +1935,14 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library DROP COLUMN homeLinkText",
 				"ALTER TABLE library DROP COLUMN showLibraryHoursAndLocationsLink",
 			],
+		],
+
+		'layout_settings_remove_showSidebarMenu' => [
+			'title' => 'Layout Settings - Remove Show Sidebar Menu',
+			'description' => 'Remove Show Sidebar menu since it is no longer used',
+			'sql' => [
+				'ALTER TABLE layout_settings DROP COLUMN showSidebarMenu'
+			]
 		],
 
 		'grouped_work_display_settings' => [

@@ -34,41 +34,41 @@ class Admin_Variables extends ObjectEditor{
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 	function canAddNew(){
 		return false;
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
+		return true;
 	}
 
-
+	/**
+	 * @param DataObject $existingObject
+	 * @return array
+	 */
 	function getAdditionalObjectActions($existingObject){
 		$actions = array();
-		if ($existingObject && $existingObject->id != ''){
+		if ($existingObject && $existingObject->getPrimaryKeyValue() != ''){
 			$actions[] = array(
 				'text' => '<span class="glyphicon glyphicon-time" aria-hidden="true"></span> Set to Current Timestamp (seconds)',
-				'url' => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;id=" . $existingObject->id,
+				'url' => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;id=" . $existingObject->getPrimaryKeyValue(),
 			);
 			$actions[] = array(
 				'text' => '<span class="glyphicon glyphicon-time" aria-hidden="true"></span> Set to Current Timestamp (milliseconds)',
-				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;ms=1&amp;id=" . $existingObject->id,
+				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=setToNow&amp;ms=1&amp;id=" . $existingObject->getPrimaryKeyValue(),
 			);
 			$actions[] = array(
 				'text' => '<span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span> Increase by 10,000',
-				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=up&amp;id=" . $existingObject->id,
+				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=up&amp;id=" . $existingObject->getPrimaryKeyValue(),
 			);
 			$actions[] = array(
 				'text' => '<span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span> Decrease by 500',
-				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=down&amp;id=" . $existingObject->id,
+				'url'  => "/{$this->getModule()}/{$this->getToolName()}?objectAction=IncrementVariable&amp;direction=down&amp;id=" . $existingObject->getPrimaryKeyValue(),
 			);
 		}
 		return $actions;
 	}
 
+	/** @noinspection PhpUnused */
 	function setToNow(){
 		$id = $_REQUEST['id'];
 		$useMilliseconds = isset($_REQUEST['ms']) && ($_REQUEST['ms'] == 1 || $_REQUEST['ms'] == 'true');
@@ -83,6 +83,7 @@ class Admin_Variables extends ObjectEditor{
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function IncrementVariable(){
 		$id = $_REQUEST['id'];
 		if (!empty($id) && ctype_digit($id)) {
@@ -121,5 +122,22 @@ class Admin_Variables extends ObjectEditor{
 		parent::editObject($objectAction, $structure);
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Variables', 'Variables');
+		return $breadcrumbs;
+	}
 
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer System Variables');
+	}
 }

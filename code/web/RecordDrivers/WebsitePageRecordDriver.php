@@ -42,11 +42,14 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 		$interface->assign('website_name', $this->fields['website_name']);
 		$interface->assign('title', $this->getTitle());
 		if (isset($this->fields['description'])) {
-			$interface->assign('description', $this->getDescription());
+			$interface->assign('description', strip_tags($this->getDescription()));
 		} else {
 			$interface->assign('description', '');
 		}
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
+		// Obtain and assign snippet (highlighting) information:
+		$snippets = $this->getHighlightedSnippets();
+		$interface->assign('summSnippets', $snippets);
 
 		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 		$webPageUsage = new WebPageUsage();

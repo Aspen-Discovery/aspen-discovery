@@ -4,22 +4,21 @@
 		{assign var=propValue value=$object->$propName}
 		{assign var=objectId value=$object->getPrimaryKeyValue()}
 	{else}
-		{assign var=propValue value=""}
-		{assign var=objectId value=""}
+		{if !empty($property.default)}
+			{assign var=propValue value=$property.default}
+		{else}
+			{assign var=propValue value=""}
+		{/if}
 	{/if}
 {else}
 	{assign var=propValue value=""}
 {/if}
-{if empty($propValue) && isset($property.default)}
-	{assign var=propValue value=$property.default}
-{/if}
-
 {strip}
 {if ((!isset($property.storeDb) || $property.storeDb == true) && !($property.type == 'oneToManyAssociation' || $property.type == 'hidden' || $property.type == 'method'))}
 	<div class="form-group" id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
-			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required}<span class="required-input">*</span>{/if}</label>
+			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required}({translate text="required"}){/if}</label>
 		{elseif $property.type == 'oneToMany' && !empty($property.helpLink)}
 			<div class="row">
 				<div class="col-xs-11">
@@ -30,7 +29,7 @@
 				</div>
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'hidden'}
-			<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required}<span class="required-input">*</span>{/if}</label>
+			<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required}({translate text="required"}){/if}</label>
 		{/if}
 		{if !empty($property.showDescription)}
 			<div class='propertyDescription'><em>{$property.description}</em></div>
@@ -86,7 +85,7 @@
 					<a class="btn btn-default btn-sm" href="{$property.editLink|replace:'propertyValue':$propValue}">Edit {$property.label}</a>
 				</div>
 			</div>
-        {elseif $property.type == 'text' || $property.type == 'folder'}
+        {elseif $property.type == 'text' || $property.type == 'regularExpression' || $property.type == 'folder'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'integer'}
 			<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
@@ -96,7 +95,11 @@
 					<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 				</div>
 				<div class="col-sm-8">
-					{$propValue|date_format:"%D %T"}
+					{if $propValue == 0}
+						{translate text="Never"}
+					{else}
+						{$propValue|date_format:"%D %T"}
+					{/if}
 				</div>
 			</div>
 		{elseif $property.type == 'url'}
@@ -106,10 +109,10 @@
 		{elseif $property.type == 'color'}
 			<div class="row">
 				<div class="col-tn-3">
-					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}' class='form-control{if $property.required}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}" {if !empty($property.readOnly)}readonly{/if}>
+					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}'  aria-label='{$property.label} color picker' class='form-control{if $property.required}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}" {if !empty($property.readOnly)}readonly{/if}>
 				</div>
 				<div class="col-tn-3">
-					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
+					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' aria-label='{$property.label} hex code' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
 				</div>
 				<div class="col-tn-3">
 					{assign var=defaultVariableName value="`$propName`Default"}
@@ -126,7 +129,7 @@
 						&nbsp;{translate text='Contrast Ratio'}&nbsp;<span id="contrast_{$propName}" class="contrast_warning"></span>
 						<script type="text/javascript">
 							$(document).ready(function(){ldelim}
-								AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');
+								AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}'{if !empty($property.checkContrastOneWay) && $property.checkContrastOneWay==true},true{/if});
 							{rdelim});
 						</script>
 					{/if}

@@ -21,11 +21,13 @@
 
 		<script src="/js/jquery-1.11.0.min.js?v={$gitBranch|urlencode}"></script>
 		{* Load Libraries*}
-		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.pager.min.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/jquery.tablesorter.widgets.js?v={$gitBranch|urlencode}"></script>
 		{*<script src="/interface/themes/responsive/js/lib/jquery.validate.js"></script>*}
 		<script src="/interface/themes/responsive/js/lib/jquery.validate.min.js?v={$gitBranch|urlencode}"></script>
+
+		<script src="/interface/themes/responsive/js/lib/fontawesome.min.js?v={$gitBranch|urlencode}"></script>
 
 		<script src="/interface/themes/responsive/js/lib/recaptcha_ajax.js?v={$gitBranch|urlencode}"></script>
 		{* Combined into ratings.js (part of the aspen.min.js)*}
@@ -39,6 +41,7 @@
 		<script src="/interface/themes/responsive/js/lib/jquery.touchwipe.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.rwdImageMaps.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/simplemde.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/colcade.js?v={$gitBranch|urlencode}"></script>
 
 		{* Load application specific Javascript *}
 		<script src="/interface/themes/responsive/js/aspen/globals.js?v={$gitBranch|urlencode}"></script>
@@ -47,6 +50,7 @@
 		<script src="/interface/themes/responsive/js/aspen/admin.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/archive.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/authors.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/aspen/axis360.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/browse.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/cloud-library.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/dpla.js?v={$gitBranch|urlencode}"></script>
@@ -56,7 +60,6 @@
 		<script src="/interface/themes/responsive/js/aspen/lists.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/collection-spotlights.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/materials-request.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/aspen/menu.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/overdrive.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/open-archives.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/hoopla.js?v={$gitBranch|urlencode}"></script>
@@ -89,7 +92,7 @@
 			Globals.opac = {if $onInternalIP}true{else}false{/if};
 			Globals.activeModule = '{$module}';
 			Globals.activeAction = '{$action}';
-			{*Globals.masqueradeMode = {if $masqueradeMode}true{else}false{/if};*}
+			Globals.masqueradeMode = {if $masqueradeMode}true{else}false{/if};
 			{if $repositoryUrl}
 				Globals.repositoryUrl = '{$repositoryUrl}';
 				Globals.encodedRepositoryUrl = '{$encodedRepositoryUrl}';

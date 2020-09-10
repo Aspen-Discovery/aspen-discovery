@@ -114,9 +114,6 @@ $interface->assign('scopeType', $scopeType);
 $interface->assign('solrScope', "$solrScope - $scopeType");
 $interface->assign('isGlobalScope', $isGlobalScope);
 
-//Set that the interface is a single column by default
-$interface->assign('page_body_style', 'one_column');
-
 $interface->assign('showFines', $configArray['Catalog']['showFines']);
 
 $interface->assign('activeIp', IPAddress::getActiveIp());
@@ -177,7 +174,7 @@ try{
 	$validLanguage = new Language();
 	$validLanguage->orderBy("weight");
 	$validLanguage->find();
-	$userIsTranslator = UserAccount::userHasRole('translator') || UserAccount::userHasRole('opacAdmin');
+	$userIsTranslator = UserAccount::userHasPermission('Translate Aspen');
 	while ($validLanguage->fetch()){
 		if (!$validLanguage->displayToTranslatorsOnly || $userIsTranslator){
 			$validLanguages[$validLanguage->code] = clone $validLanguage;
@@ -209,7 +206,7 @@ $interface->setLanguage($activeLanguage);
 
 //Check to see if we should show the submit ticket option
 $interface->assign('showSubmitTicket', false);
-if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin'))) {
+if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')) {
 	try {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = new SystemVariables();
@@ -363,8 +360,8 @@ $timer->logTime('User authentication');
 if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logout')){
 	$userDisplayName = UserAccount::getUserDisplayName();
 	$interface->assign('userDisplayName', $userDisplayName);
-	$userRoles = UserAccount::getActiveRoles();
-	$interface->assign('userRoles', $userRoles);
+	$userPermissions = UserAccount::getActivePermissions();
+	$interface->assign('userPermissions', $userPermissions);
 	$disableCoverArt = UserAccount::getDisableCoverArt();
 	$interface->assign('disableCoverArt', $disableCoverArt);
 	$hasLinkedUsers = UserAccount::hasLinkedUsers();
@@ -378,7 +375,6 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 		$interface->assign('guidingUser', $guidingUser);
 	}
 	$interface->assign('userHasCatalogConnection', UserAccount::getUserHasCatalogConnection());
-
 
 	$homeLibrary = Library::getLibraryForLocation(UserAccount::getUserHomeLocationId());
 	if (isset($homeLibrary)){
@@ -542,6 +538,7 @@ $onInternalIP = false;
 $includeAutoLogoutCode = false;
 $automaticTimeoutLength = 0;
 $automaticTimeoutLengthLoggedOut = 0;
+$onInternalIP = false;
 if (($isOpac || $masqueradeMode || (!empty($ipLocation) && $ipLocation->getOpacStatus()) ) && !$offlineMode) {
 	// Make sure we don't have timeouts if we are offline (because it's super annoying when doing offline checkouts and holds)
 
@@ -555,7 +552,7 @@ if (($isOpac || $masqueradeMode || (!empty($ipLocation) && $ipLocation->getOpacS
 
 	if ($masqueradeMode) {
 		// Masquerade Time Out Lengths
-			$automaticTimeoutLength = empty($library->masqueradeAutomaticTimeoutLength) ? 90 : $library->masqueradeAutomaticTimeoutLength;
+		$automaticTimeoutLength = empty($library->masqueradeAutomaticTimeoutLength) ? 90 : $library->masqueradeAutomaticTimeoutLength;
 	} else {
 		// Determine Regular Time Out Lengths
 		if (UserAccount::isLoggedIn()) {
@@ -814,7 +811,7 @@ function getGitBranch(){
 			if (!empty($stringFromFile)) {
 				$stringFromFile = $stringFromFile[0]; //get the string from the array
 				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
-					if ($configArray['System']['debug']) {
+					if (IPAddress::showDebuggingInformation()) {
 						$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
 					} else {
 						$branchName = $matches[2]; //get the branch name
@@ -869,7 +866,7 @@ function loadModuleActionId(){
 	global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */
 	global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}

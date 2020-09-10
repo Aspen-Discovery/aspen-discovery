@@ -641,7 +641,7 @@ BODY;
 			}else{
 				global $configArray;
 				global $logger;
-				if ($configArray['System']['debug']) {
+				if (IPAddress::showDebuggingInformation()) {
 					$curlInfo = curl_getinfo($curlConnection);
 					$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
 				}
@@ -850,7 +850,7 @@ BODY;
 						}else{
 							global $configArray;
 							global $logger;
-							if ($configArray['System']['debug']) {
+							if (IPAddress::showDebuggingInformation()) {
 								$curlInfo = curl_getinfo($curlConnection);
 								$logger->log(print_r($curlInfo(true)), Logger::LOG_WARNING);
 							}

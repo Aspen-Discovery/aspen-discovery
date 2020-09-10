@@ -13,11 +13,11 @@
 						{if $disableCoverArt != 1}{*TODO: should become part of $showCovers *}
 							{if $record.coverUrl}
 								{if $record.recordId && $record.linkUrl}
-									<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+									<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}" aria-hidden="true">
 										<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 									</a>
 								{else} {* Cover Image but no Record-View link *}
-									<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+									<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 								{/if}
 							{/if}
 						{/if}
@@ -110,7 +110,7 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $record.hooplaUrl}
-						<a href="{$record.hooplaUrl}" target="_blank" {*onclick="alert('Dummy button');return false"*} class="btn btn-sm btn-primary">Access&nbsp;Online</a>
+						<a href="{$record.hooplaUrl}" target="_blank" {*onclick="alert('Dummy button');return false"*} class="btn btn-sm btn-action">Access&nbsp;Online</a>
 						{/if}
 						<a href="#" onclick="return AspenDiscovery.Hoopla.returnCheckout('{$record.userId}', '{$record.hooplaId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
 

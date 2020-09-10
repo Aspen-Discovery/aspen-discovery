@@ -36,20 +36,29 @@ class Websites_Settings extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
-	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
 	}
 
 	function getInstructions(){
 		return '';
+	}
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_indexer', 'Website Indexing');
+		$breadcrumbs[] = new Breadcrumb('/Websites/Settings', 'Settings');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_indexer';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Website Indexing Settings');
 	}
 }

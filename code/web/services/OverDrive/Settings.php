@@ -52,21 +52,6 @@ class OverDrive_Settings extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
-
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];
@@ -75,5 +60,24 @@ class OverDrive_Settings extends ObjectEditor
 	function getInstructions()
 	{
 		return '';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
+		$breadcrumbs[] = new Breadcrumb('/OverDrive/Settings', 'Settings');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'overdrive';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer OverDrive');
 	}
 }

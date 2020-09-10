@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 
 function getUserUpdates()
 {
@@ -333,13 +333,227 @@ function getUserUpdates()
 
 		'user_update_messages' => [
 			'title' => 'User Update Messages',
-			'description' => 'Add a field to store user update messages to avoid storing them wihtin a session',
+			'description' => 'Add a field to store user update messages to avoid storing them within a session',
 			'sql' => [
 				'ALTER TABLE user ADD COLUMN updateMessage TEXT',
 				'ALTER TABLE user ADD COLUMN updateMessageIsError TINYINT(0)'
 			]
+		],
+
+		'user_permissions' => [
+			'title' => 'User Permissions',
+			'description' => 'Setup permissions table and create discrete permissions for Aspen',
+			'continueOnError' => true,
+			'sql' => [
+				"CREATE TABLE permissions (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(75) NOT NULL UNIQUE ,
+					sectionName VARCHAR(75) NOT NULL,
+					requiredModule VARCHAR(50) NOT NULL DEFAULT '',
+					weight INT NOT NULL DEFAULT 0,
+					description VARCHAR(250) NOT NULL
+				) ENGINE INNODB",
+				'CREATE TABLE role_permissions (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					roleId INT(11) NOT NULL,
+					permissionId INT(11) NOT NULL,
+					INDEX roleId(roleId),
+					UNIQUE (roleId, permissionId)
+				) ENGINE INNODB',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					 ('System Administration', 'Administer Modules', '', 0, 'Allow information about Aspen Discovery Modules to be displayed and enabled or disabled.')
+					,('System Administration', 'Administer Users', '', 10, 'Allows configuration of who has administration privileges within Aspen Discovery. <i>Give to trusted users, this has security implications.</i>')
+					,('System Administration', 'Administer Permissions', '', 15, 'Allows configuration of the roles within Aspen Discovery and what each role can do. <i>Give to trusted users, this has security implications.</i>')
+					,('System Administration', 'Run Database Maintenance', '', 20, 'Controls if the user can run database maintenance or not.')
+					,('System Administration', 'Administer SendGrid', '', 30, 'Controls if the user can change SendGrid settings. <em>This has potential security and cost implications.</em>')
+					,('System Administration', 'Administer System Variables','', 40, 'Controls if the user can change system variables.')
+					,('Reporting', 'View System Reports', '', 0, 'Controls if the user can view System Reports that show how Aspen Discovery performs and how background tasks are operating. Includes Indexing Logs and Dashboards.')
+					,('Reporting', 'View Indexing Logs', '', 10, 'Controls if the user can view Indexing Logs for the ILS and eContent.')
+					,('Reporting', 'View Dashboards', '', 20, 'Controls if the user can view Dashboards showing usage information.')
+					,('Theme & Layout', 'Administer All Themes', '', 0, 'Allows the user to control all themes within Aspen Discovery.')
+					,('Theme & Layout', 'Administer Library Themes', '', 10, 'Allows the user to control theme for their home library within Aspen Discovery.')
+					,('Theme & Layout', 'Administer All Layout Settings', '', 20, 'Allows the user to view and change all layout settings within Aspen Discovery.')
+					,('Theme & Layout', 'Administer Library Layout Settings', '', 30, 'Allows the user to view and change layout settings for their home library within Aspen Discovery.')
+					,('Primary Configuration', 'Administer All Libraries', '', 0, 'Allows the user to control settings for all libraries within Aspen Discovery.')
+					,('Primary Configuration', 'Administer Home Library', '', 10, 'Allows the user to control settings for their home library')
+					,('Primary Configuration', 'Administer All Locations', '', 20, 'Allows the user to control settings for all locations.')
+					,('Primary Configuration', 'Administer Home Library Locations', '', 30, 'Allows the user to control settings for all locations that are part of their home library.')
+					,('Primary Configuration', 'Administer Home Location', '', 40, 'Allows the user to control settings for their home location.')
+					,('Primary Configuration', 'Administer IP Addresses', '', 50, 'Allows the user to administer IP addresses for Aspen Discovery. <em>This has potential security implications</em>')
+					,('Primary Configuration', 'Administer Patron Types', '', 60, 'Allows the user to administer how patron types in the ILS are handled within for Aspen Discovery. <i>Give to trusted users, this has security implications.</i>')
+					,('Primary Configuration', 'Administer Account Profiles', '', 70, 'Allows the user to administer patrons are loaded from the ILS and/or the database. <i>Give to trusted users, this has security implications.</i>')
+					,('Primary Configuration', 'Block Patron Account Linking', '', 80, 'Allows the user to prevent users from linking to other users.')
+					,('Materials Requests', 'Manage Library Materials Requests', '', 0, 'Allows the user to update and process materials requests for patrons.')
+					,('Materials Requests', 'Administer Materials Requests', '', 10, 'Allows the user to configure the materials requests system for their library.')
+					,('Materials Requests', 'View Materials Requests Reports', '', 20, 'Allows the user to view reports about the materials requests system for their library.')
+					,('Materials Requests', 'Import Materials Requests', '', 30, 'Allows the user to import materials requests from older systems. <em>Not recommended in most cases unless an active conversion is being done.</em>')
+					,('Languages and Translations', 'Administer Languages', '', 0, 'Allows the user to control which languages are available for the Aspen Discovery interface.')
+					,('Languages and Translations', 'Translate Aspen', '', 10, 'Allows the user to translate the Aspen Discovery interface.')
+					,('Cataloging & eContent', 'Manually Group and Ungroup Works', '', 0, 'Allows the user to manually group and ungroup works.')
+					,('Cataloging & eContent', 'Set Grouped Work Display Information', '', 10, 'Allows the user to override title, author, and series information for a grouped work.')
+					,('Cataloging & eContent', 'Force Reindexing of Records', '', 20, 'Allows the user to force individual records to be indexed.')
+					,('Cataloging & eContent', 'Upload Covers', '', 30, 'Allows the user to upload covers for a record.')
+					,('Cataloging & eContent', 'Upload PDFs', '', 40, 'Allows the user to upload PDFs for a record.')
+					,('Cataloging & eContent', 'Upload Supplemental Files', '', 50, 'Allows the user to upload supplemental for a record.')
+					,('Cataloging & eContent', 'Download MARC Records', '', 52, 'Allows the user to download MARC records for individual records.')
+					,('Cataloging & eContent', 'View ILS records in native OPAC', '', 55, 'Allows the user to view ILS records in the native OPAC for the ILS if available.')
+					,('Cataloging & eContent', 'View ILS records in native Staff Client', '', 56, 'Allows the user to view ILS records in the staff client for the ILS if available.')
+					,('Cataloging & eContent', 'Administer Indexing Profiles', '', 60, 'Allows the user to administer Indexing Profiles to define how record from the ILS are indexed in Aspen Discovery.')
+					,('Cataloging & eContent', 'Administer Translation Maps', '', 70, 'Allows the user to administer how fields within the ILS are mapped to Aspen Discovery.')
+					,('Cataloging & eContent', 'Administer Loan Rules', '', 80, 'Allows the user to administer load loan rules and loan rules into Aspen Discovery (Sierra & Millenium only).')
+					,('Cataloging & eContent', 'View Offline Holds Report', '', 90, 'Allows the user to see any holds that were entered while the ILS was offline.')
+					,('Cataloging & eContent', 'Administer Axis 360', 'Axis 360', 100, 'Allows the user configure Axis 360 integration for all libraries.')
+					,('Cataloging & eContent', 'Administer Cloud Library', 'Cloud Library', 110, 'Allows the user configure Cloud Library integration for all libraries.')
+					,('Cataloging & eContent', 'Administer EBSCO EDS', 'EBSCO EDS', 120, 'Allows the user configure EBSCO EDS integration for all libraries.')
+					,('Cataloging & eContent', 'Administer Hoopla', 'Hoopla', 130, 'Allows the user configure Hoopla integration for all libraries.')
+					,('Cataloging & eContent', 'Administer OverDrive', 'OverDrive', 140, 'Allows the user configure OverDrive integration for all libraries.')
+					,('Cataloging & eContent', 'View OverDrive Test Interface', 'OverDrive', 150, 'Allows the user view OverDrive API information and call OverDrive for specific records.')
+					,('Cataloging & eContent', 'Administer RBdigital', 'RBdigital', 160, 'Allows the user configure RBdigital integration for all libraries.')
+					,('Cataloging & eContent', 'Administer Side Loads', 'Side Loads', 170, 'Controls if the user can administer side loads.')
+					,('Grouped Work Display', 'Administer All Grouped Work Display Settings', '', 0, 'Allows the user to view and change all grouped work display settings within Aspen Discovery.')
+					,('Grouped Work Display', 'Administer Library Grouped Work Display Settings', '', 10, 'Allows the user to view and change grouped work display settings for their home library within Aspen Discovery.')
+					,('Grouped Work Display', 'Administer All Grouped Work Facets', '', 20, 'Allows the user to view and change all grouped work facets within Aspen Discovery.')
+					,('Grouped Work Display', 'Administer Library Grouped Work Facets', '', 30, 'Allows the user to view and change grouped work facets for their home library within Aspen Discovery.')
+					,('Local Enrichment', 'Administer All Browse Categories', '', 0, 'Allows the user to view and change all browse categories within Aspen Discovery.')
+					,('Local Enrichment', 'Administer Library Browse Categories', '', 10, 'Allows the user to view and change browse categories for their home library within Aspen Discovery.')
+					,('Local Enrichment', 'Administer All Collection Spotlights', '', 20, 'Allows the user to view and change all collection spotlights within Aspen Discovery.')
+					,('Local Enrichment', 'Administer Library Collection Spotlights', '', 30, 'Allows the user to view and change collection spotlights for their home library within Aspen Discovery.')
+					,('Local Enrichment', 'Administer All Placards', '', 40, 'Allows the user to view and change all placards within Aspen Discovery.')
+					,('Local Enrichment', 'Administer Library Placards', '', 50, 'Allows the user to view and change placards for their home library within Aspen Discovery.')
+					,('Local Enrichment', 'Moderate User Reviews', '', 60, 'Allows the delete any user review within Aspen Discovery.')
+					,('Third Party Enrichment', 'Administer Third Party Enrichment API Keys', '', 0, 'Allows the user to define connection to external enrichment systems like Content Cafe, Syndetics, Google, Novelist etc.')
+					,('Third Party Enrichment', 'Administer Wikipedia Integration', '', 10, 'Allows the user to control how authors are matched to Wikipedia entries.')
+					,('Third Party Enrichment', 'View New York Times Lists', '', 20, 'Allows the user to view and update lists loaded from the New York Times.')
+					,('Islandora Archives', 'Administer Islandora Archive', 'Islandora', 0, 'Allows the user to administer integration with an Islandora archive.')
+					,('Islandora Archives', 'View Archive Authorship Claims', 'Islandora', 10, 'Allows the user to view authorship claims for Islandora archive materials.')
+					,('Islandora Archives', 'View Library Archive Authorship Claims', 'Islandora', 12, 'Allows the user to view authorship claims for Islandora archive materials.')
+					,('Islandora Archives', 'View Archive Material Requests', 'Islandora', 20, 'Allows the user to view material requests for Islandora archive materials.')
+					,('Islandora Archives', 'View Library Archive Material Requests', 'Islandora', 22, 'Allows the user to view material requests for Islandora archive materials.')
+					,('Islandora Archives', 'View Islandora Archive Usage', 'Islandora', 30, 'Allows the view a report of objects in the repository by library.')
+					,('Open Archives', 'Administer Open Archives', 'Open Archives', 0, 'Allows the user to administer integration with Open Archives repositories for all libraries.')
+					,('Events', 'Administer Library Calendar Settings', 'Events', 10, 'Allows the user to administer integration with Library Calendar for all libraries.')
+					,('Website Indexing', 'Administer Website Indexing Settings', 'Web Indexer', 0, 'Allows the user to administer the indexing of websites for all libraries.')
+					,('Aspen Discovery Help', 'View Help Manual', '', 0, 'Allows the user to view the help manual for Aspen Discovery.')
+					,('Aspen Discovery Help', 'View Release Notes', '', 10, 'Allows the user to view release notes for Aspen Discovery.')
+					,('Aspen Discovery Help', 'Submit Ticket', '', 20, 'Allows the user to submit Aspen Discovery tickets.')
+					,('Genealogy', 'Administer Genealogy', 'Genealogy', 0, 'Allows the user to add people, marriages, and obituaries to the genealogy interface.')
+					,('User Lists', 'Include Lists In Search Results', '', 0, 'Allows the user to add public lists to search results.')
+					,('User Lists', 'Edit All Lists', '', 10, 'Allows the user to edit public lists created by any user.')
+				"
+			]
+		],
+
+		'user_permission_defaults' => [
+			'title' => 'Set Default Permissions for Roles',
+			'description' => 'Update database tables with defaults from old roles',
+			'sql' => [
+				'updateDefaultPermissions'
+			]
+		],
+
+		'user_assign_role_by_ptype' => [
+			'title' => 'Assign Role by PType',
+			'description' => 'Allow roles to be assigned automatically based on patron type',
+			'sql' => [
+				'ALTER TABLE ptype ADD COLUMN assignedRoleId INT(11) DEFAULT -1',
+				"ALTER TABLE ptype ADD COLUMN restrictMasquerade TINYINT(1) DEFAULT 0"
+			]
+		],
+
+		'masquerade_permissions' => [
+			'title' => 'Create masquerade permissions and roles',
+			'description' => 'Create masquerade permissions and roles',
+			'sql' => [
+				"INSERT INTO roles (name, description) VALUES 
+					('Masquerader', 'Allows the user to masquerade as any other user.'),
+					('Library Masquerader', 'Allows the user to masquerade as patrons of their home library only.'),
+					('Location Masquerader', 'Allows the user to masquerade as patrons of their home location only.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Masquerade', 'Masquerade as any user', '', 0, 'Allows the user to masquerade as any other user including restricted patron types.'),
+					('Masquerade', 'Masquerade as unrestricted patron types', '', 10, 'Allows the user to masquerade as any other user if their patron type is unrestricted.'),
+					('Masquerade', 'Masquerade as patrons with same home library', '', 20, 'Allows the user to masquerade as patrons with the same home library including restricted patron types.'),
+					('Masquerade', 'Masquerade as unrestricted patrons with same home library', '', 30, 'Allows the user to masquerade as patrons with the same home library if their patron type is unrestricted.'),
+					('Masquerade', 'Masquerade as patrons with same home location', '', 40, 'Allows the user to masquerade as patrons with the same home location including restricted patron types.'),
+					('Masquerade', 'Masquerade as unrestricted patrons with same home location', '', 50, 'Allows the user to masquerade as patrons with the same home location if their patron type is unrestricted.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Masquerader'), (SELECT id from permissions where name='Masquerade as any user'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Masquerader'), (SELECT id from permissions where name='Masquerade as patrons with same home library'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Location Masquerader'), (SELECT id from permissions where name='Masquerade as patrons with same home location'))",
+				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Masquerader') WHERE masquerade = 'any'",
+				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Library Masquerader') WHERE masquerade = 'library'",
+				"UPDATE ptype set assignedRoleId = (SELECT roleId from roles where name='Location Masquerader') WHERE masquerade = 'location'",
+				"ALTER TABLE ptype drop column masquerade"
+			]
+		],
+
+		'test_roles_permission' => [
+			'title' => 'Add permissions for testing roles',
+			'description' => 'Add permissions for testing roles',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('System Administration', 'Test Roles', '', 17, 'Allows the user to use the test_role parameter to act as different role.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='userAdmin'), (SELECT id from permissions where name='Test Roles'))",
+			]
+		],
+
+		'staff_ptypes' => [
+			'title' => 'Staff patron types',
+			'description' => 'Add the ability to treat specific patron types as staff',
+			'sql' => [
+				'ALTER TABLE ptype add column isStaff TINYINT(1) DEFAULT 0',
+			]
+		],
+
+		'oai_website_permissions' => [
+			'title' => 'Fix permissions for OAI and Website Indexing',
+			'description' => 'Fix permissions for OAI and Website Indexing',
+			'continueOnError' => true,
+			'sql' => [
+				"UPDATE permissions set requiredModule = 'Web Indexer' where requiredModule = 'Website Indexing'",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Website Indexing Settings'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Open Archives'))",
+			]
+		],
+
+		'list_indexing_permission' => [
+			'title' => 'List indexing permissions',
+			'description' => 'Create permission to administer list indexing',
+			'sql' => [
+
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('User Lists', 'Administer List Indexing Settings', '', 0, 'Allows the user to administer list indexing settings.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer List Indexing Settings'))",
+
+			]
 		]
 	);
+}
+
+/** @noinspection PhpUnused */
+function updateDefaultPermissions(){
+	require_once ROOT_DIR . '/sys/Administration/Role.php';
+	require_once ROOT_DIR . '/sys/Administration/Permission.php';
+	require_once  ROOT_DIR . '/sys/Administration/RolePermissions.php';
+	$permissions = [];
+	$permission = new Permission();
+	$permission->find();
+	while ($permission->fetch()){
+		$permissions[$permission->name] = $permission->id;
+	}
+
+	$role = new Role();
+	$role->orderBy('name');
+	$role->find();
+	while ($role->fetch()){
+		$defaultPermissions = $role->getDefaultPermissions();
+		foreach ($defaultPermissions as $permissionName){
+			$rolePermission = new RolePermissions();
+			$rolePermission->roleId = $role->roleId;
+			if (array_key_exists($permissionName, $permissions)){
+				$rolePermission->permissionId = $permissions[$permissionName];
+				$rolePermission->insert();
+			}
+		}
+	}
 }
 
 /** @noinspection PhpUnused */

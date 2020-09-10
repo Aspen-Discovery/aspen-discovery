@@ -5,7 +5,7 @@
 			{if $showMoreInfo || $showComments || $showFavorites}
 				{if $showMoreInfo !== false}
 					<div class="btn-group btn-group-sm">
-						<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" class="btn btn-sm btn-tools">{translate text="More Info"}</a>
+						<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" class="btn btn-sm btn-tools" aria-label="More Info for {$summTitle|escape:css} record {$recordDriver->getPermanentId()}">{translate text="More Info"}</a>
 					</div>
 				{/if}
 				{if $showComments == 1}
@@ -21,7 +21,7 @@
 						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm btn-tools">{translate text='Add to list'}</button>
 					</div>
 				{/if}
-				{if $loggedIn && $module == 'Search' && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('superCataloger', $userRoles))}
+				{if $loggedIn && $module == 'Search' && in_array('Manually Group and Ungroup Works', $userPermissions)}
 					<div class="btn-group btn-group-sm">
 						<button onclick="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{$page}')" class="btn btn-sm btn-tools">{translate text='Group With'}</button>
 					</div>

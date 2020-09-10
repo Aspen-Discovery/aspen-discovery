@@ -91,4 +91,9 @@ class MyAccount_SelectInterface extends Action{
 		// Display Page
 		$this->display('selectInterface.tpl', 'Select Library Catalog', '');
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

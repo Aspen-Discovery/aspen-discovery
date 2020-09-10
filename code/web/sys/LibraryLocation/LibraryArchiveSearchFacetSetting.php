@@ -21,7 +21,7 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 	static function getObjectStructure($availableFacets = NULL){
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager')){
+		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}

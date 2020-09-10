@@ -45,36 +45,41 @@ if (!$solrRunning){
 	if ($configArray['System']['operatingSystem'] == 'windows') {
 		$solrCmd = "/web/aspen-discovery/sites/{$serverName}/{$serverName}.bat start";
 	}else{
-		$solrCmd = "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh start";
+		if (!file_exists("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
+			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh does not exist";
+		}elseif (!is_executable("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
+			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh is not executable";
+		}
+		$solrCmd = "cd /usr/local/aspen-discovery/sites/{$serverName}; {$serverName}.sh start";
 	}
 	execInBackground($solrCmd);
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
 }
 require_once ROOT_DIR . '/sys/Module.php';
-$module = new Module();
-$module->enabled = true;
-$module->find();
+$aspenModule = new Module();
+$aspenModule->enabled = true;
+$aspenModule->find();
 
-while ($module->fetch()){
-	if (!empty($module->backgroundProcess)){
-		if (isset($runningProcesses[$module->backgroundProcess])){
-			unset($runningProcesses[$module->backgroundProcess]);
+while ($aspenModule->fetch()){
+	if (!empty($aspenModule->backgroundProcess)){
+		if (isset($runningProcesses[$aspenModule->backgroundProcess])){
+			unset($runningProcesses[$aspenModule->backgroundProcess]);
 		}else{
-			$results .= "No process found for '{$module->name}' expected '{$module->backgroundProcess}'\r\n";
+			$results .= "No process found for '{$aspenModule->name}' expected '{$aspenModule->backgroundProcess}'\r\n";
 			//Attempt to restart the service
 			$local = $configArray['Site']['local'];
 			//The local path include web, get rid of that
 			$local = substr($local, 0, strrpos($local, '/'));
-			$processPath = $local . '/' . $module->backgroundProcess;
+			$processPath = $local . '/' . $aspenModule->backgroundProcess;
 			if (file_exists($processPath)){
-				if (file_exists($processPath . "/{$module->backgroundProcess}.jar")){
-					execInBackground("cd $processPath; java -jar {$module->backgroundProcess}.jar $serverName");
-					$results .= "Restarted '{$module->name}'\r\n";
+				if (file_exists($processPath . "/{$aspenModule->backgroundProcess}.jar")){
+					execInBackground("cd $processPath; java -jar {$aspenModule->backgroundProcess}.jar $serverName");
+					$results .= "Restarted '{$aspenModule->name}'\r\n";
 				}else{
-					$results .= "Could not automatically restart {$module->name}, the jar $processPath/{$module->backgroundProcess}.jar did not exist\r\n";
+					$results .= "Could not automatically restart {$aspenModule->name}, the jar $processPath/{$aspenModule->backgroundProcess}.jar did not exist\r\n";
 				}
 			}else{
-				$results .= "Could not automatically restart {$module->name}, the directory $processPath did not exist\r\n";
+				$results .= "Could not automatically restart {$aspenModule->name}, the directory $processPath did not exist\r\n";
 			}
 		}
 	}

@@ -2,7 +2,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pager.php';
-require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 require_once ROOT_DIR . '/sys/Utils/Pagination.php';
 
 class ListAPI extends Action
@@ -128,7 +128,7 @@ class ListAPI extends Action
 				);
 			}
 		}
-		require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+		require_once(ROOT_DIR . '/sys/Suggestions.php');
 		$suggestions = Suggestions::getSuggestions($userId);
 		if (count($suggestions) > 0) {
 			$results[] = array(
@@ -348,7 +348,7 @@ class ListAPI extends Action
 					return array('success' => false, 'message' => 'A valid user must be provided to load recommendations.');
 				} else {
 					$userId = $user->id;
-					require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+					require_once(ROOT_DIR . '/sys/Suggestions.php');
 					$suggestions = Suggestions::getSuggestions($userId);
 					$titles = array();
 					foreach ($suggestions as $id => $suggestion) {
@@ -596,7 +596,7 @@ class ListAPI extends Action
 			} else {
 				$numAdded = 0;
 				foreach ($recordIds as $id) {
-					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
 					if (preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)) {
@@ -688,6 +688,7 @@ class ListAPI extends Action
 		$listTitles = $memCache->get('system_list_titles_' . $listName);
 		if ($listTitles == false || isset($_REQUEST['reload'])) {
 			//return a random selection of 30 titles from the list.
+			/** @var SearchObject_GroupedWorkSearcher $searchObj */
 			$searchObj = SearchObjectFactory::initSearchObject();
 			$searchObj->init();
 			$searchObj->setBasicQuery("*:*");
@@ -774,7 +775,7 @@ class ListAPI extends Action
 		$lastModifiedDay = date("M j, Y", $lastModified);
 
 		// Look for selected List
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$nytList = new UserList();
 		$nytList->user_id = $nytListUser->id;
 		$nytList->title = $selectedListTitle;
@@ -828,7 +829,7 @@ class ListAPI extends Action
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		// Include UserListEntry Class
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
 		$numTitlesAdded = 0;
 		foreach ($listTitles->results as $titleResult) {
@@ -904,5 +905,10 @@ class ListAPI extends Action
 		}
 
 		return $results;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

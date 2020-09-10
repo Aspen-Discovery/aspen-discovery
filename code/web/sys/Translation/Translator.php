@@ -71,92 +71,106 @@ class Translator
 		}
 
 		global $activeLanguage;
-		$translationMode = $this->translationModeActive() && !$inAttribute && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator'));
+		$translationMode = $this->translationModeActive() && !$inAttribute && (UserAccount::userHasPermission('Translate Aspen'));
 		try{
 			global $memCache;
 
-			$existingTranslation = $memCache->get('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase);
-			if ($existingTranslation == false || isset($_REQUEST['reload'])){
-				//Search for the term
-				$translationTerm = new TranslationTerm();
-				$translationTerm->term = $phrase;
-				$defaultTextChanged = false;
-				if (!$translationTerm->find(true)){
-					$translationTerm->defaultText = $defaultText;
-					//Insert the translation term
-					$translationTerm->samplePageUrl = $_SERVER['REQUEST_URI'];
-					try{
-						$translationTerm->insert();
-					}catch(Exception $e){
-						if (UserAccount::isLoggedIn() && UserAccount::userHasRole('translator')) {
-							return "TERM TOO LONG for translation \"$phrase\"";
-						}else{
-							return $phrase;
-						}
-					}
-				}elseif ($defaultText != $translationTerm->defaultText) {
-					$defaultTextChanged = true;
-					$translationTerm->defaultText = $defaultText;
-					$translationTerm->update();
-				}
-
-				//Search for the translation
-				$translation = new Translation();
-				$translation->termId = $translationTerm->id;
-				$translation->languageId = $activeLanguage->id;
-				if (!$translation->find(true)){
-					if (!empty($defaultText)){
-						$defaultTranslation = $defaultText;
-						$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
-					}else{
-						//We don't have a translation in the database, load a default from the ini file if possible
-						$this->loadTranslationsFromIniFile();
-						if (isset($this->words[$phrase])) {
-							$defaultTranslation = $this->words[$phrase];
-							$translation->translated = 1;
-						} else {
-							$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
-							//Nothing in the ini, just return default
-							if ($this->debug) {
-								$defaultTranslation = "translate_index_not_found($phrase)";
+			if (!empty($activeLanguage)) {
+				$existingTranslation = $memCache->get('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase);
+				if ($existingTranslation == false || isset($_REQUEST['reload'])) {
+					//Search for the term
+					$translationTerm = new TranslationTerm();
+					$translationTerm->term = $phrase;
+					$defaultTextChanged = false;
+					if (!$translationTerm->find(true)) {
+						$translationTerm->defaultText = $defaultText;
+						//Insert the translation term
+						$translationTerm->samplePageUrl = $_SERVER['REQUEST_URI'];
+						try {
+							$translationTerm->insert();
+						} catch (Exception $e) {
+							if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
+								return "TERM TOO LONG for translation \"$phrase\"";
 							} else {
-								$defaultTranslation = $phrase;
+								return $phrase;
 							}
 						}
+					} elseif ($defaultText != $translationTerm->defaultText) {
+						$defaultTextChanged = true;
+						$translationTerm->defaultText = $defaultText;
+						$translationTerm->update();
 					}
 
-					$translation->translation = $defaultTranslation;
-					$ret = $translation->update();
-					if (!$ret){
-						global $logger;
-						$logger->log("Could not update translation", Logger::LOG_ERROR);
+					//Search for the translation
+					$translation = new Translation();
+					$translation->termId = $translationTerm->id;
+					$translation->languageId = $activeLanguage->id;
+					if (!$translation->find(true)) {
+						if (!empty($defaultText)) {
+							$defaultTranslation = $defaultText;
+							$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
+						} else {
+							//We don't have a translation in the database, load a default from the ini file if possible
+							$this->loadTranslationsFromIniFile();
+							if (isset($this->words[$phrase])) {
+								$defaultTranslation = $this->words[$phrase];
+								$translation->translated = 1;
+							} else {
+								$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
+								//Nothing in the ini, just return default
+								if ($this->debug) {
+									$defaultTranslation = "translate_index_not_found($phrase)";
+								} else {
+									$defaultTranslation = $phrase;
+								}
+							}
+						}
+
+						$translation->translation = $defaultTranslation;
+						$ret = $translation->update();
+						if (!$ret) {
+							global $logger;
+							$logger->log("Could not update translation", Logger::LOG_ERROR);
+						}
+					} else if ($defaultTextChanged) {
+						$translation->needsReview = 1;
+						$translation->update();
 					}
-				}else if ($defaultTextChanged){
-					$translation->needsReview = 1;
-					$translation->update();
+
+					if ($translationMode) {
+						if ($translation->translated) {
+							$translationStatus = 'translated';
+						} else {
+							$translationStatus = 'not_translated';
+						}
+						$translationIdentifier = "<span class='translation_id translation_id_{$translation->id} {$translationStatus}' onclick=\"event.stopPropagation();return AspenDiscovery.showTranslateForm('{$translationTerm->id}');\">{$translationTerm->id}</span> ";
+						$fullTranslation = "<span class='term_{$translationTerm->id}'>$translation->translation</span> $translationIdentifier";
+					} else {
+						$fullTranslation = $translation->translation;
+					}
+
+					global $configArray;
+					$memCache->set('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase, $fullTranslation, $configArray['Caching']['translation']);
+					$returnString = $fullTranslation;
+				} else {
+					$returnString = $existingTranslation;
 				}
-
-				if ($translationMode){
-					if ($translation->translated){
-						$translationStatus = 'translated';
-					}else{
-						$translationStatus = 'not_translated';
-					}
-					$translationIdentifier = "<span class='translation_id translation_id_{$translation->id} {$translationStatus}' onclick=\"event.stopPropagation();return AspenDiscovery.showTranslateForm('{$translationTerm->id}');\">{$translationTerm->id}</span> ";
-					$fullTranslation = "<span class='term_{$translationTerm->id}'>$translation->translation</span> $translationIdentifier";
-				}else{
-					$fullTranslation = $translation->translation;
-				}
-
-				global $configArray;
-				$memCache->set('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase, $fullTranslation, $configArray['Caching']['translation']);
-				$returnString = $fullTranslation;
 			}else{
-				$returnString = $existingTranslation;
+				//Translation not setup (happens from book covers)
+				if (!empty($defaultText)){
+					$returnString = $defaultText;
+				}else{
+					$returnString = $phrase;
+				}
 			}
 		}catch (PDOException $e){
 			//tables likely don't exist, ignore
 			$returnString = $phrase;
+			if (!empty($defaultText)){
+				$returnString = $defaultText;
+			}else{
+				$returnString = $phrase;
+			}
 		}
 		if (count($replacementValues) > 0){
 			foreach ($replacementValues as $index => $replacementValue){

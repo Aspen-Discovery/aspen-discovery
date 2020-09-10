@@ -103,12 +103,18 @@ class Admin_AJAX extends JSON_Action
 		} elseif ($source == 'cloud_library') {
 			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryExportLogEntry.php';
 			$extractLog = new CloudLibraryExportLogEntry();
+		} elseif ($source == 'axis360') {
+			require_once ROOT_DIR . '/sys/Axis360/Axis360LogEntry.php';
+			$extractLog = new Axis360LogEntry();
 		} elseif ($source == 'sideload') {
 			require_once ROOT_DIR . '/sys/Indexing/SideLoadLogEntry.php';
 			$extractLog = new SideLoadLogEntry();
 		} elseif ($source == 'website') {
 			require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexLogEntry.php';
 			$extractLog = new WebsiteIndexLogEntry();
+		} elseif ($source == 'lists') {
+			require_once ROOT_DIR . '/sys/UserLists/ListIndexingLogEntry.php';
+			$extractLog = new ListIndexingLogEntry();
 		}
 
 		if ($extractLog == null) {
@@ -147,7 +153,7 @@ class Admin_AJAX extends JSON_Action
 		$interface->assign('source', strip_tags($_REQUEST['source']));
 		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 		$collectionSpotlight = new CollectionSpotlight();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')) {
+		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')) {
 			//Get all spotlights for the library
 			$userLibrary = Library::getPatronHomeLibrary();
 			$collectionSpotlight->libraryId = $userLibrary->libraryId;
@@ -168,7 +174,7 @@ class Admin_AJAX extends JSON_Action
 			'success' => false,
 			'message' => 'Unknown Error'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))) {
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
 			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
 			$ungroupedRecord = new NonGroupedRecord();
 			/** @var GroupedWorkSubDriver $record */
@@ -221,5 +227,98 @@ class Admin_AJAX extends JSON_Action
 			];
 		}
 		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getCreateRoleForm()
+	{
+		global $interface;
+		if (UserAccount::userHasPermission('Administer Permissions')) {
+			return [
+				'title' => 'Create a Spotlight',
+				'modalBody' => $interface->fetch('Admin/createRoleForm.tpl'),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Admin.createRole();'>Create Role</button>"
+			];
+		}else{
+			return [
+				'success' => false,
+				'message' => "Sorry, you don't have permissions to add roles",
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function createRole(){
+		if (UserAccount::userHasPermission('Administer Permissions')) {
+			if (isset($_REQUEST['roleName'])){
+				$name = $_REQUEST['roleName'];
+				$description = $_REQUEST['description'];
+				require_once ROOT_DIR . '/sys/Administration/Role.php';
+				$existingRole = new Role;
+				$existingRole->name = $name;
+				if ($existingRole->find(true)){
+					return [
+						'success' => false,
+						'message' => "$name already exists",
+					];
+				}else{
+					$newRole = new Role();
+					$newRole->name = $name;
+					$newRole->description = $description;
+					$newRole->insert();
+					return [
+						'success' => true,
+						'message' => "$name was created successfully",
+						'roleId' => $newRole->roleId
+					];
+				}
+			}else{
+				return [
+					'success' => false,
+					'message' => "The role name must be provided",
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'message' => "Sorry, you don't have permissions to add roles",
+			];
+		}
+	}
+
+	function deleteRole(){
+		if (UserAccount::userHasPermission('Administer Permissions')) {
+			if (isset($_REQUEST['roleId']) && is_numeric($_REQUEST['roleId'])){
+				//Check to be sure the role is not used by anyone
+				require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+				$usersForRole = new UserRoles();
+				$usersForRole->roleId = $_REQUEST['roleId'];
+				$usersForRole->find();
+				if ($usersForRole->getNumResults() > 0){
+					return [
+						'success' => false,
+						'message' => "The role is in use by " . $usersForRole->getNumResults() . " users, please remove them from the role before deleting",
+					];
+				}else{
+					$role = new Role();
+					$role->roleId = $_REQUEST['roleId'];
+					$role->delete();
+					return [
+						'success' => true,
+						'message' => "The role was deleted successfully",
+					];
+				}
+			}else{
+				return [
+					'success' => false,
+					'message' => "The role to delete must be provided",
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'message' => "Sorry, you don't have permissions to delete roles",
+			];
+		}
 	}
 }

@@ -62,6 +62,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	boolean suppressItemlessBibs;
 
 	private int determineAudienceBy;
+	private char audienceSubfield;
 
 	//Fields for loading order information
 	private String orderTag;
@@ -134,6 +135,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			formatSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "format");
 			checkRecordForLargePrint = indexingProfileRS.getBoolean("checkRecordForLargePrint");
 			barcodeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "barcode");
+			if (itemRecordNumberSubfieldIndicator == ' '){
+				itemRecordNumberSubfieldIndicator = barcodeSubfield;
+			}
 			statusSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "status");
 			String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
 			if (statusesToSuppress.length() > 0){
@@ -196,6 +200,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
 
 			determineAudienceBy = indexingProfileRS.getInt("determineAudienceBy");
+			audienceSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "audienceSubfield");
 
 			//loadAvailableItemBarcodes(marcRecordPath, logger);
 			loadHoldsByIdentifier(dbConn, logger);
@@ -780,12 +785,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (lastCheckInFormatter != null) {
 			String lastCheckInDate = getItemSubfieldData(lastCheckInSubfield, itemField);
 			Date lastCheckIn = null;
-			if (lastCheckInDate != null && lastCheckInDate.length() > 0)
+			if (lastCheckInDate != null && lastCheckInDate.length() > 0) {
 				try {
 					lastCheckIn = lastCheckInFormatter.parse(lastCheckInDate);
 				} catch (ParseException e) {
 					logger.debug("Could not parse check in date " + lastCheckInDate, e);
 				}
+			}
 			itemInfo.setLastCheckinDate(lastCheckIn);
 		}
 
@@ -1486,6 +1492,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					String shelfLocationCode = printItem.getShelfLocationCode();
 					if (shelfLocationCode != null) {
 						targetAudiences.add(shelfLocationCode.toLowerCase());
+					}
+				}
+			}else if (determineAudienceBy == 3){
+				//Load based on a specified subfield
+				for (ItemInfo printItem : printItems){
+					String audienceCode = printItem.getSubfield(audienceSubfield);
+					if (audienceCode != null) {
+						targetAudiences.add(audienceCode.toLowerCase());
 					}
 				}
 			}

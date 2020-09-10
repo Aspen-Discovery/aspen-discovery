@@ -1,24 +1,74 @@
 <?php
-
+require_once ROOT_DIR . '/GroupedWorkSubRecordHomeAction.php';
 require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 
-class ExternalEContent_Home extends Action{
-	private $id;
+class ExternalEContent_Home extends GroupedWorkSubRecordHomeAction{
 
 	function launch(){
 		global $interface;
 
-		if (isset($_REQUEST['searchId'])){
-			$_SESSION['searchId'] = $_REQUEST['searchId'];
-			$interface->assign('searchId', $_SESSION['searchId']);
-		}else if (isset($_SESSION['searchId'])){
-			$interface->assign('searchId', $_SESSION['searchId']);
+		if (!$this->recordDriver->isValid()){
+			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+			die();
 		}
 
-		$this->id = strip_tags($_REQUEST['id']);
-		$interface->assign('id', $this->id);
+		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
+		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
+			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+			die();
+		}else{
+			$interface->assign('recordDriver', $this->recordDriver);
 
+			$this->loadCitations($this->recordDriver);
+
+			$interface->assign('cleanDescription', strip_tags($this->recordDriver->getDescriptionFast(), '<p><br><b><i><em><strong>'));
+
+			// Retrieve User Search History
+			$this->lastSearch = isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false;
+			$interface->assign('lastSearch', $this->lastSearch);
+
+			//Get Next/Previous Links
+			$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+			$searchObject = SearchObjectFactory::initSearchObject();
+			$searchObject->init($searchSource);
+			$searchObject->getNextPrevLinks();
+
+			//Check to see if there are lists the record is on
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
+			$interface->assign('appearsOnLists', $appearsOnLists);
+
+			//Get Related Records to make sure we initialize items
+			$recordInfo = $this->recordDriver->getGroupedWorkDriver()->getRelatedRecord($this->recordDriver->getIdWithSource());
+			if ($recordInfo == null){
+				$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+				die();
+			}
+			$interface->assign('actions', $recordInfo->getActions());
+
+			// Set Show in Main Details Section options for templates
+			// (needs to be set before moreDetailsOptions)
+			global $library;
+			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
+				$interface->assign($detailOption, true);
+			}
+
+			$interface->assign('moreDetailsOptions', $this->recordDriver->getMoreDetailsOptions());
+
+			$interface->assign('semanticData', json_encode($this->recordDriver->getSemanticData()));
+
+			//Load Staff Details
+			$interface->assign('staffDetails', $this->recordDriver->getStaffView());
+
+			// Display Page
+			$this->display('full-record.tpl', $this->recordDriver->getTitle(),'', false);
+
+		}
+	}
+
+	function loadRecordDriver($id){
 		global $activeRecordProfile;
+		$subType = '';
 		if (isset($activeRecordProfile)){
 			$subType = $activeRecordProfile;
 		}else{
@@ -35,77 +85,7 @@ class ExternalEContent_Home extends Action{
 			}
 		}
 
-		/** @var ExternalEContentDriver $recordDriver */
-		$recordDriver = new ExternalEContentDriver($subType . ':'. $this->id);
 
-		if (!$recordDriver->isValid()){
-			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
-			die();
-		}
-
-		$groupedWork = $recordDriver->getGroupedWorkDriver();
-		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
-			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
-			die();
-		}else{
-			$interface->assign('recordDriver', $recordDriver);
-
-			$this->loadCitations($recordDriver);
-
-			$interface->assign('cleanDescription', strip_tags($recordDriver->getDescriptionFast(), '<p><br><b><i><em><strong>'));
-
-			// Retrieve User Search History
-			$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ?
-			$_SESSION['lastSearchURL'] : false);
-
-			//Get Next/Previous Links
-			$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init($searchSource);
-			$searchObject->getNextPrevLinks();
-
-			//Get Related Records to make sure we initialize items
-			$recordInfo = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($recordDriver->getIdWithSource());
-			if ($recordInfo == null){
-				$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
-				die();
-			}
-			$interface->assign('actions', $recordInfo->getActions());
-
-			// Set Show in Main Details Section options for templates
-			// (needs to be set before moreDetailsOptions)
-			global $library;
-			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
-				$interface->assign($detailOption, true);
-			}
-
-			$interface->assign('moreDetailsOptions', $recordDriver->getMoreDetailsOptions());
-
-			$interface->assign('semanticData', json_encode($recordDriver->getSemanticData()));
-
-			//Load Staff Details
-			$interface->assign('staffDetails', $recordDriver->getStaffView());
-
-			// Display Page
-			$this->display('full-record.tpl', $recordDriver->getTitle(),'Search/home-sidebar.tpl', false);
-
-		}
+		$this->recordDriver = new ExternalEContentDriver($subType . ':'. $id);
 	}
-
-	/**
-	 * @param ExternalEContentDriver $recordDriver
-	 */
-	function loadCitations($recordDriver)
-	{
-		global $interface;
-
-		$citationCount = 0;
-		$formats = $recordDriver->getCitationFormats();
-		foreach($formats as $current) {
-			$interface->assign(strtolower($current), $recordDriver->getCitation($current));
-			$citationCount++;
-		}
-		$interface->assign('citationCount', $citationCount);
-	}
-
 }

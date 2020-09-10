@@ -21,7 +21,22 @@ class Admin_ArchivePrivateCollections extends Admin_Admin{
 		$this->display('archivePrivateCollections.tpl', 'Archive Private Collections');
 	}
 
-	function getAllowableRoles() {
-		return array('opacAdmin');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#islandora_archive', 'Islandora Archives');
+		$breadcrumbs[] = new Breadcrumb('/Admin/ArchivePrivateCollections', 'Private Collections');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'islandora_archive';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Islandora Archive');
 	}
 }

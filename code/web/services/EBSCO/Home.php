@@ -3,15 +3,21 @@
 require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
 class EBSCO_Home extends Action{
 
+	private $recordDriver;
 	function launch() {
 		global $interface;
 		$id = urldecode($_REQUEST['id']);
 
-		$recordDriver = new EbscoRecordDriver($id);
-		$interface->assign('recordDriver', $recordDriver);
+		$this->recordDriver = new EbscoRecordDriver($id);
+		$interface->assign('recordDriver', $this->recordDriver);
 
-		$exploreMoreInfo = $recordDriver->getExploreMoreInfo();
+		$exploreMoreInfo = $this->recordDriver->getExploreMoreInfo();
 		$interface->assign('exploreMoreInfo', $exploreMoreInfo);
+
+		//Check to see if there are lists the record is on
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		$appearsOnLists = UserList::getUserListsForRecord('EbscoEds', $this->recordDriver->getPermanentId());
+		$interface->assign('appearsOnLists', $appearsOnLists);
 
 		// Display Page
 		global $configArray;
@@ -19,6 +25,16 @@ class EBSCO_Home extends Action{
 			$interface->assign('showExploreMore', true);
 		}
 
-		$this->display('full-record.tpl', $recordDriver->getTitle(), 'Search/home-sidebar.tpl', false);
+		$this->display('full-record.tpl', $this->recordDriver->getTitle(), 'Search/home-sidebar.tpl', false);
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->lastSearch)){
+			$breadcrumbs[] = new Breadcrumb($this->lastSearch, 'Article & Database Search Results');
+		}
+		$breadcrumbs[] = new Breadcrumb('', $this->recordDriver->getTitle());
+		return $breadcrumbs;
 	}
 }

@@ -105,6 +105,13 @@ class DataObjectUtil
 					$validationResults['errors'][] = $property['property'] . ' is required.';
 				}
 			}
+			if ($property['type'] == 'password' || $property['type'] == 'storedPassword'){
+				$valueRepeat = isset($_REQUEST[$property['property'].'Repeat']) ? $_REQUEST[$property['property'].'Repeat'] : null;
+				if ($value != $valueRepeat) {
+					$validationResults['errors'][] = $property['property'] . ' does not match ' . $property['property'] . 'Repeat';
+				}
+			}
+
 			//Check to see if there is a custom validation routine
 			if (isset($property['serverValidation'])) {
 				$validationRoutine = $property['serverValidation'];
@@ -135,6 +142,13 @@ class DataObjectUtil
 			foreach ($property['properties'] as $subProperty){
 				DataObjectUtil::processProperty($object, $subProperty);
 			}
+		}else if (in_array($property['type'], array('regularExpression'))){
+			if (isset($_REQUEST[$propertyName])){
+				$object->setProperty($propertyName, trim($_REQUEST[$propertyName]), $property);
+			} else {
+				$object->setProperty($propertyName, "", $property);
+			}
+
 		}else if (in_array($property['type'], array('text', 'enum', 'hidden', 'url', 'email', 'multiemail'))){
 			if (isset($_REQUEST[$propertyName])){
 				if ($object instanceof UnsavedDataObject && $property['type'] == 'enum'){

@@ -44,19 +44,14 @@
   width: 90% !important;
 }
 
-#keepFiltersSwitchLabel, #advancedSearchLink{
-  color: @home-search-label-color;
-  font-weight: bold;
-  font-size: 85%;
-  display: inline-block;
-  margin-top: 6px;
-}
-
 // Horizontal Search Box Styling
 #horizontal-search-box {
   background-color: @home-search-top-color;
   //background: linear-gradient(to bottom, @home-search-top-color, @home-search-bottom-color);
   padding: 15px 0;
+  @media (max-width: @screen-sm-max){
+    display: none;
+  }
   #searchForm {
     .row {
       // undo margin-adjusting for this row.
@@ -98,7 +93,7 @@
       margin-top: 4px;
     }
     @media (min-width: @screen-lg-min) {
-      margin-top: 0;
+      margin-top: 7px;
     }
 
     line-height: 20px;
@@ -119,22 +114,6 @@
   }
 }
 
-
-#home-page-login{
-  background-color: @home-page-login-background-color;
-  color: @home-page-login-color;
-  font-size:18px;
-  //text-shadow: 1px 1px @gray-light;
-  padding: 5px;
-  margin-bottom: 5px;
-  a {
-    color: @home-page-login-color;
-  }
-  #horizontal-search-wrapper + #content-container & {
-    margin-top:5px; // Add some space between horizontal spacing
-  }
-}
-
 #home-page-library-section{
   padding: 15px 0;
   > a {
@@ -150,9 +129,6 @@
   color: #fff;
   padding: 3px 0;
   margin-bottom: 15px;
-}
-#home-page-hours-locations, #home-page-home-button {
-  text-transform: uppercase;
 }
 
 // Library Link Formatting
@@ -325,4 +301,39 @@
 .dropdown-menu-right{
   right:0;
   left:auto
+}
+#home-page-browse-results .grid-col{
+  text-align: center;
+}
+#home-page-browse-results .grid-col--3{
+  @media (max-width: @screen-tn-max) {
+    display: none;
+  }
+  @media (min-width: @screen-xs-min) {
+    display: block;
+  }
+}
+#home-page-browse-results .grid-col--4{
+  @media (max-width: @screen-sm-max) {
+    display: none;
+  }
+  @media (min-width: @screen-md-min) {
+    display: block;
+  }
+}
+#home-page-browse-results .grid-col--5{
+  @media (max-width: @screen-md-max) {
+    display: none;
+  }
+  @media (min-width: @screen-lg-min) {
+    display: block;
+  }
+}
+#home-page-browse-results .grid-col--6{
+  @media (max-width: @screen-md-max) {
+    display: none;
+  }
+  @media (min-width: @screen-lg-min) {
+    display: block;
+  }
 }

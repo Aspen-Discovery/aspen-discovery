@@ -7,9 +7,6 @@
 				</div>
 			{/if}
 
-			{* Alternate Mobile MyAccount Menu *}
-			{include file="MyAccount/mobilePageHeader.tpl"}
-
 			<span class='availableHoldsNoticePlaceHolder'></span>
 
 			<h1>{translate text='Reset PIN/Password'}</h1>
@@ -76,7 +73,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
+				You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
 			</div>
 		{/if}
 	</div>

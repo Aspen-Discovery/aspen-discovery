@@ -1,7 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.sql.Connection;
@@ -11,8 +10,8 @@ import java.sql.SQLException;
 import org.apache.logging.log4j.Logger;
 
 class ArTitlesHandler extends DefaultHandler {
-	private PreparedStatement addArTitleStmt;
-	private Logger logger;
+	private final PreparedStatement addArTitleStmt;
+	private final Logger logger;
 
 	ArTitlesHandler(Connection dbConn, Logger logger) throws SQLException {
 		addArTitleStmt = dbConn.prepareStatement("INSERT INTO accelerated_reading_titles " +

@@ -3,10 +3,10 @@
 	<div id="maintenanceOptions"></div>
 	<form id="dbMaintenance" action="/Admin/{$action}" method="post">
 		<div>
-			<table class="table">
+			<table class="table" aria-label="List of Database Updates to Run">
 				<thead>
 					<tr>
-						<th><input type="checkbox" id="selectAll" onclick="AspenDiscovery.toggleCheckboxes('.selectedUpdate:visible', '#selectAll');" checked="checked"></th>
+						<th><input type="checkbox" id="selectAll" onclick="AspenDiscovery.toggleCheckboxes('.selectedUpdate:visible', '#selectAll');" checked="checked" title="Select All Rows"></th>
 						<th>Name</th>
 						<th>Description</th>
 						<th>Already Run?</th>

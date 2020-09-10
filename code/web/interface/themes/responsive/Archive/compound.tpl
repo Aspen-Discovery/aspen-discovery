@@ -85,7 +85,7 @@
 			{if $hasPdf && ($anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload))}
 				<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">{translate text="Download PDF"}</a>
 			{elseif ($hasPdf && !$loggedIn && $verifiedOriginalDownload)}
-				<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">{translate text="Login to Download PDF"}</a>
+				<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">{translate text="Sign in to Download PDF"}</a>
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
 				<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">{translate text="Request Copy"}</a>

@@ -1,7 +1,7 @@
 <?php
 
-if (file_exists(ROOT_DIR . '/services/MyResearch/lib/Search.php')) {
-	require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+if (file_exists(ROOT_DIR . '/sys/SearchEntry.php')) {
+	require_once ROOT_DIR . '/sys/SearchEntry.php';
 }
 
 class SessionInterface implements SessionHandlerInterface{

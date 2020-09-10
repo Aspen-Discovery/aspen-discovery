@@ -17,7 +17,7 @@ class CloudLibrarySetting extends DataObject
 	{
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'apiUrl' => array('property' => 'apiUrl', 'type' => 'url', 'label' => 'url', 'description' => 'The URL to the API'),
+			'apiUrl' => array('property' => 'apiUrl', 'type' => 'url', 'label' => 'API URL', 'description' => 'The URL to the API'),
 			'userInterfaceUrl' => array('property' => 'userInterfaceUrl', 'type' => 'url', 'label' => 'User Interface URL', 'description' => 'The URL where the Patron can access the catalog'),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'text', 'label' => 'Library Id', 'description' => 'The library id provided by Cloud Library'),
 			'accountId' => array('property' => 'accountId', 'type' => 'text', 'label' => 'Account Id', 'description' => 'The Account Id provided by Cloud Library when registering'),

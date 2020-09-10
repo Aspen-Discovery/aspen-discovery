@@ -29,4 +29,18 @@ class SideLoads_IndexingLog extends Admin_IndexingLog
 			$indexingObject->whereAdd('(numAdded + numDeleted + numUpdated) >= ' . $minProcessed);
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#side_loads', 'Side Loads');
+		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'side_loads';
+	}
 }

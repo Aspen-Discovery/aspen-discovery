@@ -65,6 +65,15 @@ function getThemingUpdates()
 			],
 		],
 
+		'theme_defaults_for_logo_and_favicon' => [
+			'title' => 'Theme - Set defaults for logo and favicon',
+			'description' => 'Update theme table to have default values for logo and favicon to prevent errors',
+			'sql' => [
+				"ALTER TABLE themes CHANGE COLUMN logoName logoName VARCHAR(100) default ''",
+				"ALTER TABLE themes CHANGE COLUMN favicon favicon VARCHAR(100) default ''"
+			]
+		],
+
 		'themes_primary_colors' => [
 			'title' => 'Theme Primary Colors',
 			'description' => 'Initial setup of primary colors. ',
@@ -368,6 +377,16 @@ function getThemingUpdates()
 			]
 		],
 
+		'themes_link_hover_color' => [
+			'title' => 'Theme Link Hover Color',
+			'description' => 'Define Link Hover Color. ',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN linkHoverColor CHAR(7) DEFAULT '#265a87'",
+				"ALTER TABLE themes ADD COLUMN linkHoverColorDefault tinyint(1) DEFAULT 1",
+			]
+		],
+
 		'themes_badges' => [
 			'title' => 'Theme Badges',
 			'description' => 'Setup Theming for badges ',
@@ -380,5 +399,89 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN badgeBorderRadius VARCHAR(6) DEFAULT null",
 			]
 		],
+
+		'themes_results_breadcrumbs' => [
+			'title' => 'Theme results and breadcrumbs',
+			'description' => 'Add theming for results text and breadcrumbs',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN resultLabelColor CHAR(7) DEFAULT '#44484a'",
+				"ALTER TABLE themes ADD COLUMN resultLabelColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN resultValueColor CHAR(7) DEFAULT '#6B6B6B'",
+				"ALTER TABLE themes ADD COLUMN resultValueColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN breadcrumbsBackgroundColor CHAR(7) DEFAULT '#f5f5f5'",
+				"ALTER TABLE themes ADD COLUMN breadcrumbsBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN breadcrumbsForegroundColor CHAR(7) DEFAULT '#6B6B6B'",
+				"ALTER TABLE themes ADD COLUMN breadcrumbsForegroundColorDefault tinyint(1) DEFAULT 1",
+			]
+		],
+
+		'themes_search_tools' => [
+			'title' => 'Theme Search tools',
+			'description' => 'Add theming for search tools',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN searchToolsBackgroundColor CHAR(7) DEFAULT '#f5f5f5'",
+				"ALTER TABLE themes ADD COLUMN searchToolsBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN searchToolsBorderColor CHAR(7) DEFAULT '#e3e3e3'",
+				"ALTER TABLE themes ADD COLUMN searchToolsBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN searchToolsForegroundColor CHAR(7) DEFAULT '#6B6B6B'",
+				"ALTER TABLE themes ADD COLUMN searchToolsForegroundColorDefault tinyint(1) DEFAULT 1",
+			]
+		],
+
+		'theme_reorganize_menu' => [
+			'title' => 'Theme remove vertical bar',
+			'description' => "Remove options related to the vertical bar and add new options for horizontal menu",
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE themes DROP COLUMN headerButtonBackgroundColor",
+				"ALTER TABLE themes DROP COLUMN headerButtonBackgroundColorDefault",
+				"ALTER TABLE themes DROP COLUMN headerButtonColor",
+				"ALTER TABLE themes DROP COLUMN headerButtonColorDefault",
+				"ALTER TABLE themes DROP COLUMN headerButtonRadius",
+				"ALTER TABLE themes DROP COLUMN headerBottomBorderColor",
+				"ALTER TABLE themes DROP COLUMN headerBottomBorderColorDefault",
+				"ALTER TABLE themes CHANGE COLUMN sidebarHighlightBackgroundColor menubarHighlightBackgroundColor CHAR(7) DEFAULT '#f1f1f1'",
+				"ALTER TABLE themes CHANGE COLUMN sidebarHighlightBackgroundColorDefault menubarHighlightBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes CHANGE COLUMN sidebarHighlightForegroundColor menubarHighlightForegroundColor CHAR(7) DEFAULT '#265a87'",
+				"ALTER TABLE themes CHANGE COLUMN sidebarHighlightForegroundColorDefault menubarHighlightForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN menubarBackgroundColor CHAR(7) DEFAULT '#f1f1f1'",
+				"ALTER TABLE themes ADD COLUMN menubarBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN menubarForegroundColor CHAR(7) DEFAULT '#303030'",
+				"ALTER TABLE themes ADD COLUMN menubarForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN menuDropdownBackgroundColor CHAR(7) DEFAULT '#ededed'",
+				"ALTER TABLE themes ADD COLUMN menuDropdownBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN menuDropdownForegroundColor CHAR(7) DEFAULT '#404040'",
+				"ALTER TABLE themes ADD COLUMN menuDropdownForegroundColorDefault tinyint(1) DEFAULT 1",
+				"updateAllThemes"
+			]
+		],
+
+		'theme_modal_dialog' => [
+			'title' => 'Theme Modal Dialog',
+			'description' => "Add the ability to theme the modal dialog",
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN modalDialogBackgroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE themes ADD COLUMN modalDialogBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN modalDialogForegroundColor CHAR(7) DEFAULT '#333333'",
+				"ALTER TABLE themes ADD COLUMN modalDialogForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBackgroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterForegroundColor CHAR(7) DEFAULT '#333333'",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBorderColor CHAR(7) DEFAULT '#e5e5e5'",
+				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBorderColorDefault tinyint(1) DEFAULT 1",
+				"updateAllThemes"
+			],
+		]
 	];
+}
+
+function updateAllThemes(){
+	$theme = new Theme();
+	$theme->find();
+	while ($theme->fetch()){
+		$theme->generateCss(true);
+	}
 }

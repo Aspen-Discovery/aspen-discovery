@@ -238,38 +238,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
 		}
 
-		global $solrScope;
 		foreach ($facets as &$facet) {
 			//Adjust facet name for local scoping
-			if ($solrScope) {
-				if ($facet->facetName == 'availability_toggle') {
-					$facet->facetName = 'availability_toggle_' . $solrScope;
-				} elseif ($facet->facetName == 'format') {
-					$facet->facetName = 'format_' . $solrScope;
-				} elseif ($facet->facetName == 'format_category') {
-					$facet->facetName = 'format_category_' . $solrScope;
-				} elseif ($facet->facetName == 'econtent_source') {
-					$facet->facetName = 'econtent_source_' . $solrScope;
-				} elseif ($facet->facetName == 'econtent_protection_type') {
-					$facet->facetName = 'econtent_protection_type_' . $solrScope;
-				} elseif ($facet->facetName == 'shelf_location') {
-					$facet->facetName = 'shelf_location_' . $solrScope;
-				} elseif ($facet->facetName == 'detailed_location') {
-					$facet->facetName = 'detailed_location_' . $solrScope;
-				} elseif ($facet->facetName == 'owning_location') {
-					$facet->facetName = 'owning_location_' . $solrScope;
-				} elseif ($facet->facetName == 'owning_library') {
-					$facet->facetName = 'owning_library_' . $solrScope;
-				} elseif ($facet->facetName == 'available_at') {
-					$facet->facetName = 'available_at_' . $solrScope;
-				} elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group') {
-					$facet->facetName = 'collection_' . $solrScope;
-				} elseif ($facet->facetName == 'time_since_added') {
-					$facet->facetName = 'local_time_since_added_' . $solrScope;
-				} elseif ($facet->facetName == 'itype') {
-					$facet->facetName = 'itype_' . $solrScope;
-				}
-			}
+			$facet->facetName = $this->getScopedFieldName($facet->facetName);
 		}
 
 		//********************
@@ -1480,35 +1451,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			global $solrScope;
 			foreach ($facets as &$facet) {
 				//Adjust facet name for local scoping
-				if ($solrScope) {
-					if ($facet->facetName == 'availability_toggle') {
-						$facet->facetName = 'availability_toggle_' . $solrScope;
-					} elseif ($facet->facetName == 'format') {
-						$facet->facetName = 'format_' . $solrScope;
-					} elseif ($facet->facetName == 'format_category') {
-						$facet->facetName = 'format_category_' . $solrScope;
-					} elseif ($facet->facetName == 'econtent_source') {
-						$facet->facetName = 'econtent_source_' . $solrScope;
-					} elseif ($facet->facetName == 'econtent_protection_type') {
-						$facet->facetName = 'econtent_protection_type_' . $solrScope;
-					} elseif ($facet->facetName == 'shelf_location') {
-						$facet->facetName = 'shelf_location_' . $solrScope;
-					} elseif ($facet->facetName == 'detailed_location') {
-						$facet->facetName = 'detailed_location_' . $solrScope;
-					} elseif ($facet->facetName == 'owning_location') {
-						$facet->facetName = 'owning_location_' . $solrScope;
-					} elseif ($facet->facetName == 'owning_library') {
-						$facet->facetName = 'owning_library_' . $solrScope;
-					} elseif ($facet->facetName == 'available_at') {
-						$facet->facetName = 'available_at_' . $solrScope;
-					} elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group') {
-						$facet->facetName = 'collection_' . $solrScope;
-					} elseif ($facet->facetName == 'time_since_added') {
-						$facet->facetName = 'local_time_since_added_' . $solrScope;
-					} elseif ($facet->facetName == 'itype') {
-						$facet->facetName = 'itype_' . $solrScope;
-					}
-				}
+				$facet->facetName = $this->getScopedFieldName($facet->facetName);
 
 				if ($this->isAdvanced()) {
 					if ($facet->showInAdvancedSearch == 1) {
@@ -1538,5 +1481,84 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	public function getDefaultIndex()
 	{
 		return 'Keyword';
+	}
+
+	/**
+	 * @param string $scopedFieldName
+	 * @return string
+	 */
+	protected function getUnscopedFieldName(string $scopedFieldName): string
+	{
+		if (strpos($scopedFieldName, 'availability_toggle_') === 0) {
+			$scopedFieldName = 'availability_toggle';
+		} elseif (strpos($scopedFieldName, 'format') === 0) {
+			$scopedFieldName = 'format';
+		} elseif (strpos($scopedFieldName, 'format_category') === 0) {
+			$scopedFieldName = 'format_category';
+		} elseif (strpos($scopedFieldName, 'econtent_source') === 0) {
+			$scopedFieldName = 'econtent_source';
+		} elseif (strpos($scopedFieldName, 'econtent_protection_type') === 0) {
+			$scopedFieldName = 'econtent_protection_type';
+		} elseif (strpos($scopedFieldName, 'shelf_location') === 0) {
+			$scopedFieldName = 'shelf_location';
+		} elseif (strpos($scopedFieldName, 'detailed_location') === 0) {
+			$scopedFieldName = 'detailed_location';
+		} elseif (strpos($scopedFieldName, 'owning_location') === 0) {
+			$scopedFieldName = 'owning_location';
+		} elseif (strpos($scopedFieldName, 'owning_library') === 0) {
+			$scopedFieldName = 'owning_library';
+		} elseif (strpos($scopedFieldName, 'available_at') === 0) {
+			$scopedFieldName = 'available_at';
+		} elseif (strpos($scopedFieldName, 'collection') === 0 || strpos($scopedFieldName, 'collection_group') === 0) {
+			$scopedFieldName = 'collection';
+		} elseif (strpos($scopedFieldName, 'local_time_since_added') === 0) {
+			$scopedFieldName = 'local_time_since_added';
+		} elseif (strpos($scopedFieldName, 'itype') === 0) {
+			$scopedFieldName = 'itype';
+		}
+		return $scopedFieldName;
+	}
+
+	/**
+	 * @param $field
+	 * @return string
+	 */
+	protected function getScopedFieldName($field): string
+	{
+		global $solrScope;
+		if ($solrScope) {
+			if ($field === 'availability_toggle') {
+				$field = 'availability_toggle_' . $solrScope;
+			} elseif ($field === 'format') {
+				$field = 'format_' . $solrScope;
+			} elseif ($field === 'format_category') {
+				$field = 'format_category_' . $solrScope;
+			} elseif ($field === 'econtent_source') {
+				$field = 'econtent_source_' . $solrScope;
+			} elseif ($field === 'econtent_protection_type') {
+				$field = 'econtent_protection_type_' . $solrScope;
+			} elseif (($field === 'collection') || ($field === 'collection_group')) {
+				$field = 'collection_' . $solrScope;
+			} elseif ($field === 'shelf_location') {
+				$field = 'shelf_location_' . $solrScope;
+			} elseif ($field === 'detailed_location') {
+				$field = 'detailed_location_' . $solrScope;
+			} elseif ($field === 'owning_location') {
+				$field = 'owning_location_' . $solrScope;
+			} elseif ($field === 'owning_library') {
+				$field = 'owning_library_' . $solrScope;
+			} elseif ($field === 'available_at') {
+				$field = 'available_at_' . $solrScope;
+			} elseif ($field === 'time_since_added') {
+				$field = 'local_time_since_added_' . $solrScope;
+			} elseif ($field === 'itype') {
+				$field = 'itype_' . $solrScope;
+			} elseif ($field === 'shelf_location') {
+				$field = 'shelf_location_' . $solrScope;
+			} elseif ($field === 'detailed_location') {
+				$field = 'detailed_location_' . $solrScope;
+			}
+		}
+		return $field;
 	}
 }

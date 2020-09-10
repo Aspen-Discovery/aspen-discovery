@@ -1,11 +1,11 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+require_once ROOT_DIR . '/ResultsAction.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Events_Results extends Action
+class Events_Results extends ResultsAction
 {
 	function launch()
 	{
@@ -170,6 +170,12 @@ class Events_Results extends Action
 
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Library Event Results');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Library Event Search Results', 'Search/results-sidebar.tpl');
-	} // End launch()
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Library Event Search Results', $sidebar);
+	}
+
+	function getBreadcrumbs()
+	{
+		return parent::getResultsBreadcrumbs('Events Search');
+	}
 }

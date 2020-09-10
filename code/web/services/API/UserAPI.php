@@ -1700,4 +1700,9 @@ class UserAPI extends Action
 		}
 		return $user;
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

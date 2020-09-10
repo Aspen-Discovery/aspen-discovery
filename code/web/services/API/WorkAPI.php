@@ -108,4 +108,9 @@ class WorkAPI extends Action{
 			return $record['isbn'];
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

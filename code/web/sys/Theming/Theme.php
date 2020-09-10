@@ -14,15 +14,6 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $headerBackgroundColorDefault;
 	public $headerForegroundColor;
 	public /** @noinspection PhpUnused */ $headerForegroundColorDefault;
-	//TODO: Delete header bottom border color from settings?
-//    public $headerBottomBorderColor;
-//    public $headerBottomBorderColorDefault;
-
-	public $headerButtonRadius;
-	public $headerButtonColor;
-	public /** @noinspection PhpUnused */ $headerButtonColorDefault;
-	public $headerButtonBackgroundColor;
-	public /** @noinspection PhpUnused */ $headerButtonBackgroundColorDefault;
 	public $headerBottomBorderWidth;
 
 	public $pageBackgroundColor;
@@ -33,6 +24,24 @@ class Theme extends DataObject
 	public /** @noinspection PhpUnused */ $bodyTextColorDefault;
 	public $linkColor;
 	public /** @noinspection PhpUnused */ $linkColorDefault;
+	public $linkHoverColor;
+	public /** @noinspection PhpUnused */ $linkHoverColorDefault;
+	public $resultLabelColor;
+	public /** @noinspection PhpUnused */ $resultLabelColorDefault;
+	public $resultValueColor;
+	public /** @noinspection PhpUnused */ $resultValueColorDefault;
+
+	public $breadcrumbsBackgroundColor;
+	public /** @noinspection PhpUnused */ $breadcrumbsBackgroundColorDefault;
+	public $breadcrumbsForegroundColor;
+	public /** @noinspection PhpUnused */ $breadcrumbsForegroundColorDefault;
+
+	public $searchToolsBackgroundColor;
+	public /** @noinspection PhpUnused */ $searchToolsBackgroundColorDefault;
+	public $searchToolsBorderColor;
+	public /** @noinspection PhpUnused */ $searchToolsBorderColorDefault;
+	public $searchToolsForegroundColor;
+	public /** @noinspection PhpUnused */ $searchToolsForegroundColorDefault;
 
 	public $footerLogo;
 	public $footerLogoLink;
@@ -41,7 +50,7 @@ class Theme extends DataObject
 	public $footerForegroundColor;
 	public /** @noinspection PhpUnused */ $footerForegroundColorDefault;
 
-	//Primary color is used for the header bar and menu bar
+	//Primary color is used for the search bar
 	public $primaryBackgroundColor;
 	public $primaryBackgroundColorDefault;
 	public $primaryForegroundColor;
@@ -222,11 +231,31 @@ class Theme extends DataObject
 	public $dangerButtonHoverBorderColor;
 	public /** @noinspection PhpUnused */ $dangerButtonHoverBorderColorDefault;
 
-	//Sidebar Menu
-	public $sidebarHighlightBackgroundColor;
-	public /** @noinspection PhpUnused */ $sidebarHighlightBackgroundColorDefault;
-	public $sidebarHighlightForegroundColor;
-	public /** @noinspection PhpUnused */ $sidebarHighlightForegroundColorDefault;
+	//Top Menu
+	public $menubarBackgroundColor;
+	public /** @noinspection PhpUnused */ $menubarBackgroundColorDefault;
+	public $menubarForegroundColor;
+	public /** @noinspection PhpUnused */ $menubarForegroundColorDefault;
+	public $menubarHighlightBackgroundColor;
+	public /** @noinspection PhpUnused */ $menubarHighlightBackgroundColorDefault;
+	public $menubarHighlightForegroundColor;
+	public /** @noinspection PhpUnused */ $menubarHighlightForegroundColorDefault;
+	public $menuDropdownBackgroundColor;
+	public /** @noinspection PhpUnused */ $menuDropdownBackgroundColorDefault;
+	public $menuDropdownForegroundColor;
+	public /** @noinspection PhpUnused */ $menuDropdownForegroundColorDefault;
+
+	//Modal dialog
+	public $modalDialogHeaderFooterBackgroundColor;
+	public /** @noinspection PhpUnused */ $modalDialogHeaderFooterBackgroundColorDefault;
+	public $modalDialogHeaderFooterForegroundColor;
+	public /** @noinspection PhpUnused */ $modalDialogHeaderFooterForegroundColorDefault;
+	public $modalDialogBackgroundColor;
+	public /** @noinspection PhpUnused */ $modalDialogBackgroundColorDefault;
+	public $modalDialogForegroundColor;
+	public /** @noinspection PhpUnused */ $modalDialogForegroundColorDefault;
+	public $modalDialogHeaderFooterBorderColor;
+	public /** @noinspection PhpUnused */ $modalDialogHeaderFooterBorderColorDefault;
 
 	//Browse Category Colors
 	public $browseCategoryPanelColor;
@@ -290,6 +319,7 @@ class Theme extends DataObject
 			'Helvetica Neue',
 			'Josefin Sans',
 			'Lato',
+			'Merriweather',
 			'Montserrat',
 			'Noto Sans',
 			'Open Sans',
@@ -340,20 +370,28 @@ class Theme extends DataObject
 			'pageBackgroundColor' => ['property' => 'pageBackgroundColor', 'type' => 'color', 'label' => 'Page Background Color', 'description' => 'Page Background Color behind all content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'serverValidation' => 'validateColorContrast'],
 			'bodyBackgroundColor' => ['property' => 'bodyBackgroundColor', 'type' => 'color', 'label' => 'Body Background Color', 'description' => 'Body Background Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'bodyTextColor'],
 			'bodyTextColor' => ['property' => 'bodyTextColor', 'type' => 'color', 'label' => 'Body Text Color', 'description' => 'Body Text Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor'],
-			'linkColor' => ['property' => 'linkColor', 'type' => 'color', 'label' => 'Link Color', 'description' => 'Color of Links', 'required' => false, 'hideInLists' => true, 'default' => '#3174AF', 'checkContrastWith'=>'bodyBackgroundColor'],
+			'linkColor' => ['property' => 'linkColor', 'type' => 'color', 'label' => 'Link Color', 'description' => 'Color of Links', 'required' => false, 'hideInLists' => true, 'default' => '#3174AF', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
+			'linkHoverColor' => ['property' => 'linkHoverColor', 'type' => 'color', 'label' => 'Link Hover Color', 'description' => 'Color of Links when being hovered over', 'required' => false, 'hideInLists' => true, 'default' => '#265a87', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
+			'resultLabelColor' => ['property' => 'resultLabelColor', 'type' => 'color', 'label' => 'Result Label Color', 'description' => 'Color of Labels within Results', 'required' => false, 'hideInLists' => true, 'default' => '#44484a', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
+			'resultValueColor' => ['property' => 'resultValueColor', 'type' => 'color', 'label' => 'Result Value Color', 'description' => 'Color of Values within Results', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'bodyBackgroundColor','checkContrastOneWay'=>true],
 
 			//Header Colors
 			'headerBackgroundColor' => ['property' => 'headerBackgroundColor', 'type' => 'color', 'label' => 'Header Background Color', 'description' => 'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'headerForegroundColor'],
-			'headerForegroundColor' => ['property' => 'headerForegroundColor', 'type' => 'color', 'label' => 'Header Text Color', 'description' => 'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#8b8b8b', 'checkContrastWith'=>'headerBackgroundColor'],
+			'headerForegroundColor' => ['property' => 'headerForegroundColor', 'type' => 'color', 'label' => 'Header Text Color', 'description' => 'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'headerBackgroundColor'],
 			'headerBottomBorderWidth' => ['property' => 'headerBottomBorderWidth', 'type' => 'text', 'label' => 'Header Bottom Border Width', 'description' => 'Header Bottom Border Width', 'required' => false, 'hideInLists' => true],
-			//Header Buttons
-			'headerButtonBackgroundColor' => ['property' => 'headerButtonBackgroundColor', 'type' => 'color', 'label' => 'Header Button Background Color', 'description' => 'Header Button Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#848484', 'checkContrastWith'=>'headerButtonColor'],
-			'headerButtonColor' => ['property' => 'headerButtonColor', 'type' => 'color', 'label' => 'Header Button Color', 'description' => 'Header Button Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'headerButtonBackgroundColor'],
-			'headerButtonRadius' => ['property' => 'headerButtonRadius', 'type' => 'text', 'label' => 'Header Button Radius', 'description' => 'Header Button Radius', 'required' => false, 'hideInLists' => true],
+
+			//Breadcrumbs
+			'breadcrumbsBackgroundColor' => ['property' => 'breadcrumbsBackgroundColor', 'type' => 'color', 'label' => 'Breadcrumbs Background Color', 'description' => 'Breadcrumbs Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f5f5f5', 'checkContrastWith'=>'breadcrumbsForegroundColor'],
+			'breadcrumbsForegroundColor' => ['property' => 'breadcrumbsForegroundColor', 'type' => 'color', 'label' => 'Breadcrumbs Text Color', 'description' => 'Breadcrumbs Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'breadcrumbsBackgroundColor'],
+
+			//Breadcrumbs
+			'searchToolsBackgroundColor' => ['property' => 'searchToolsBackgroundColor', 'type' => 'color', 'label' => 'Search Tools Background Color', 'description' => 'Search Tools Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f5f5f5', 'checkContrastWith'=>'searchToolsForegroundColor'],
+			'searchToolsForegroundColor' => ['property' => 'searchToolsForegroundColor', 'type' => 'color', 'label' => 'Search Tools Text Color', 'description' => 'Search Tools Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#6B6B6B', 'checkContrastWith'=>'searchToolsBackgroundColor'],
+			'searchToolsBorderColor' => ['property' => 'searchToolsBorderColor', 'type' => 'color', 'label' => 'Search Tools Border Color', 'description' => 'Search Tools Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#e3e3e3'],
 
 			//Footer Colors
 			'footerBackgroundColor' => ['property' => 'footerBackgroundColor', 'type' => 'color', 'label' => 'Footer Background Color', 'description' => 'Footer Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'footerForegroundColor'],
-			'footerForegroundColor' => ['property' => 'footerForegroundColor', 'type' => 'color', 'label' => 'Footer Text Color', 'description' => 'Footer Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#8b8b8b', 'checkContrastWith'=>'footerBackgroundColor'],
+			'footerForegroundColor' => ['property' => 'footerForegroundColor', 'type' => 'color', 'label' => 'Footer Text Color', 'description' => 'Footer Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'footerBackgroundColor'],
 			'footerImage' => ['property' => 'footerLogo', 'type' => 'image', 'label' => 'Footer Image (250px x 150px max)', 'description' => 'An image to be displayed in the footer', 'required' => false, 'maxWidth' => 250, 'maxHeight' => 150, 'hideInLists' => true],
 			'footerImageLink' => ['property' => 'footerLogoLink', 'type' => 'url', 'label' => 'Footer Image Link', 'description' => 'A link to be added to the footer logo', 'required' => false, 'hideInLists' => true],
 			//Primary Color
@@ -362,11 +400,11 @@ class Theme extends DataObject
 
 			//Secondary Color
 			'secondaryBackgroundColor' => ['property' => 'secondaryBackgroundColor', 'type' => 'color', 'label' => 'Secondary Background Color', 'description' => 'Secondary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#de9d03', 'checkContrastWith'=>'secondaryForegroundColor'],
-			'secondaryForegroundColor' => ['property' => 'secondaryForegroundColor', 'type' => 'color', 'label' => 'Secondary Text Color', 'description' => 'Secondary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'secondaryBackgroundColor'],
+			'secondaryForegroundColor' => ['property' => 'secondaryForegroundColor', 'type' => 'color', 'label' => 'Secondary Text Color', 'description' => 'Secondary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'secondaryBackgroundColor'],
 
 			//Tertiary Color
 			'tertiaryBackgroundColor' => ['property' => 'tertiaryBackgroundColor', 'type' => 'color', 'label' => 'Tertiary Background Color', 'description' => 'Tertiary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#de1f0b', 'checkContrastWith'=>'tertiaryForegroundColor'],
-			'tertiaryForegroundColor' => ['property' => 'tertiaryForegroundColor', 'type' => 'color', 'label' => 'Tertiary Text Color', 'description' => 'Tertiary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'tertiaryBackgroundColor'],
+			'tertiaryForegroundColor' => ['property' => 'tertiaryForegroundColor', 'type' => 'color', 'label' => 'Tertiary Text Color', 'description' => 'Tertiary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#000000', 'checkContrastWith'=>'tertiaryBackgroundColor'],
 
 			'headingFont' => ['property' => 'headingFont', 'type' => 'font', 'label' => 'Heading Font', 'description' => 'Heading Font', 'validFonts' => $validHeadingFonts, 'previewFontSize' => '20px', 'required' => false, 'hideInLists' => true, 'default' => 'Ubuntu'],
 			'customHeadingFont' => ['property' => 'customHeadingFont', 'type' => 'uploaded_font', 'label' => 'Custom Heading Font', 'description' => 'Upload a custom font to use for headings', 'required' => false, 'hideInLists' => true],
@@ -378,8 +416,22 @@ class Theme extends DataObject
 			'additionalCssType' => ['property' => 'additionalCssType', 'type' => 'enum', 'values' => ['0' => 'Append to parent css', '1' => 'Override parent css'], 'label' => 'Additional CSS Application', 'description' => 'How to apply css to the theme', 'required' => false, 'default' => 0, 'hideInLists' => true],
 
 			//Menu
-			'sidebarHighlightBackgroundColor' => ['property' => 'sidebarHighlightBackgroundColor', 'type' => 'color', 'label' => 'Sidebar Highlight Background Color', 'description' => 'Sidebar Highlight Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#16ceff', 'checkContrastWith'=>'sidebarHighlightForegroundColor'],
-			'sidebarHighlightForegroundColor' => ['property' => 'sidebarHighlightForegroundColor', 'type' => 'color', 'label' => 'Sidebar Highlight Text Color', 'description' => 'Sidebar Highlight Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'sidebarHighlightBackgroundColor'],
+			'menuSection' =>['property'=>'menuSection', 'type' => 'section', 'label' =>'Menu', 'hideInLists' => true, 'properties' => [
+				'menubarBackgroundColor' => ['property' => 'menubarBackgroundColor', 'type' => 'color', 'label' => 'Menubar Background Color', 'description' => 'Menubar Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'menubarForegroundColor'],
+				'menubarForegroundColor' => ['property' => 'menubarForegroundColor', 'type' => 'color', 'label' => 'Menubar Text Color', 'description' => 'Menubar Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'menubarBackgroundColor'],
+				'menubarHighlightBackgroundColor' => ['property' => 'menubarHighlightBackgroundColor', 'type' => 'color', 'label' => 'Menubar Highlight Background Color', 'description' => 'Menubar Highlight Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1', 'checkContrastWith'=>'menubarHighlightForegroundColor'],
+				'menubarHighlightForegroundColor' => ['property' => 'menubarHighlightForegroundColor', 'type' => 'color', 'label' => 'Menubar Highlight Text Color', 'description' => 'Menubar Highlight Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#265a87', 'checkContrastWith'=>'menubarHighlightBackgroundColor'],
+				'menuDropdownBackgroundColor' => ['property' => 'menuDropdownBackgroundColor', 'type' => 'color', 'label' => 'Menu Dropdown Background Color', 'description' => 'Menubar Dropdown Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ededed', 'checkContrastWith'=>'menuDropdownForegroundColor'],
+				'menuDropdownForegroundColor' => ['property' => 'menuDropdownForegroundColor', 'type' => 'color', 'label' => 'Menu Dropdown Text Color', 'description' => 'Menubar Dropdown Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'menuDropdownBackgroundColor'],
+			]],
+
+			'modalDialogSection' =>['property'=>'modalDialogSection', 'type' => 'section', 'label' =>'Modal Dialog', 'hideInLists' => true, 'properties' => [
+				'modalDialogBackgroundColor' => ['property' => 'modalDialogBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Modal Dialog Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'modalDialogForegroundColor'],
+				'modalDialogForegroundColor' => ['property' => 'modalDialogForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Modal Dialog Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#333333', 'checkContrastWith'=>'modalDialogBackgroundColor'],
+				'modalDialogHeaderFooterBackgroundColor' => ['property' => 'modalDialogHeaderFooterBackgroundColor', 'type' => 'color', 'label' => 'Header/Footer Background Color', 'description' => 'Modal Dialog Header & Footer Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'modalDialogHeaderFooterForegroundColor'],
+				'modalDialogHeaderFooterForegroundColor' => ['property' => 'modalDialogHeaderFooterForegroundColor', 'type' => 'color', 'label' => 'Header/Footer Text Color', 'description' => 'Modal Dialog Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#333333', 'checkContrastWith'=>'modalDialogHeaderFooterBackgroundColor'],
+				'modalDialogHeaderFooterBorderColor' => ['property' => 'modalDialogHeaderFooterBorderColor', 'type' => 'color', 'label' => 'Header/Footer Border', 'description' => 'The color of the border between the header and footer and the content', 'required' => false, 'hideInLists' => true, 'default' => '#e5e5e5'],
+			]],
 
 			//Browse category theming
 			'browseCategorySection' =>['property'=>'browseCategorySection', 'type' => 'section', 'label' =>'Browse Categories', 'hideInLists' => true, 'properties' => [
@@ -406,8 +458,8 @@ class Theme extends DataObject
 				'closedPanelBackgroundColor' => ['property' => 'closedPanelBackgroundColor', 'type' => 'color', 'label' => 'Closed Panel Background Color', 'description' => 'Panel Background Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#e7e7e7', 'checkContrastWith'=>'closedPanelForegroundColor'],
 				'closedPanelForegroundColor' => ['property' => 'closedPanelForegroundColor', 'type' => 'color', 'label' => 'Closed Panel Text Color', 'description' => 'Panel Foreground Color while closed', 'required' => false, 'hideInLists' => true, 'default' => '#333333', 'checkContrastWith'=>'closedPanelBackgroundColor'],
 				'openPanelBackgroundColor' => ['property' => 'openPanelBackgroundColor', 'type' => 'color', 'label' => 'Open Panel Background Color', 'description' => 'Panel Category Background Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#4DACDE', 'checkContrastWith'=>'openPanelForegroundColor'],
-				'openPanelForegroundColor' => ['property' => 'openPanelForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Category Foreground Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'openPanelBackgroundColor'],
-				'panelBodyBackgroundColor' => ['property' => 'panelBodyBackgroundColor', 'type' => 'color', 'label' => 'Panel Body Background Color', 'description' => 'Panel Body Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'panelBodyForegroundColor'],
+				'openPanelForegroundColor' => ['property' => 'openPanelForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Category Foreground Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'openPanelBackgroundColor'],
+				'panelBodyBackgroundColor' => ['property' => 'panelBodyBackgroundColor', 'type' => 'color', 'label' => 'Panel Body Background Color', 'description' => 'Panel Body Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f8f8f8', 'checkContrastWith'=>'panelBodyForegroundColor'],
 				'panelBodyForegroundColor' => ['property' => 'panelBodyForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Body Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'panelBodyBackgroundColor'],
 			]],
 
@@ -442,7 +494,7 @@ class Theme extends DataObject
 				]],
 
 				'editionsButtonSection' =>['property'=>'editionsButtonSection', 'type' => 'section', 'label' =>'Editions Button', 'hideInLists' => true, 'properties' => [
-					'editionsButtonBackgroundColor' => ['property' => 'editionsButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonBackgroundColor, 'checkContrastWith'=>'editionsButtonHoverBackgroundColor'],
+					'editionsButtonBackgroundColor' => ['property' => 'editionsButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonBackgroundColor, 'checkContrastWith'=>'editionsButtonForegroundColor'],
 					'editionsButtonForegroundColor' => ['property' => 'editionsButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonForegroundColor, 'checkContrastWith'=>'editionsButtonBackgroundColor'],
 					'editionsButtonBorderColor' => ['property' => 'editionsButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonBorderColor],
 					'editionsButtonHoverBackgroundColor' => ['property' => 'editionsButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultEditionsButtonHoverBackgroundColor, 'checkContrastWith'=>'editionsButtonHoverForegroundColor'],
@@ -451,7 +503,7 @@ class Theme extends DataObject
 				]],
 
 				'toolsButtonSection' =>['property'=>'toolsButtonSection', 'type' => 'section', 'label' =>'Tools Button', 'hideInLists' => true, 'properties' => [
-					'toolsButtonBackgroundColor' => ['property' => 'toolsButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonBackgroundColor, 'checkContrastWith'=>'toolsButtonHoverBackgroundColor'],
+					'toolsButtonBackgroundColor' => ['property' => 'toolsButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonBackgroundColor, 'checkContrastWith'=>'toolsButtonForegroundColor'],
 					'toolsButtonForegroundColor' => ['property' => 'toolsButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonForegroundColor, 'checkContrastWith'=>'toolsButtonBackgroundColor'],
 					'toolsButtonBorderColor' => ['property' => 'toolsButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonBorderColor],
 					'toolsButtonHoverBackgroundColor' => ['property' => 'toolsButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultToolsButtonHoverBackgroundColor, 'checkContrastWith'=>'toolsButtonHoverForegroundColor'],
@@ -460,7 +512,7 @@ class Theme extends DataObject
 				]],
 
 				'infoButtonSection' =>['property'=>'infoButtonSection', 'type' => 'section', 'label' =>'Info Button', 'hideInLists' => true, 'properties' => [
-					'infoButtonBackgroundColor' => ['property' => 'infoButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultInfoButtonBackgroundColor, 'checkContrastWith'=>'infoButtonHoverBackgroundColor'],
+					'infoButtonBackgroundColor' => ['property' => 'infoButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultInfoButtonBackgroundColor, 'checkContrastWith'=>'infoButtonForegroundColor'],
 					'infoButtonForegroundColor' => ['property' => 'infoButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultInfoButtonForegroundColor, 'checkContrastWith'=>'infoButtonBackgroundColor'],
 					'infoButtonBorderColor' => ['property' => 'infoButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultInfoButtonBorderColor],
 					'infoButtonHoverBackgroundColor' => ['property' => 'infoButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultInfoButtonHoverBackgroundColor, 'checkContrastWith'=>'infoButtonHoverForegroundColor'],
@@ -469,7 +521,7 @@ class Theme extends DataObject
 				]],
 
 				'warningButtonSection' =>['property'=>'warningButtonSection', 'type' => 'section', 'label' =>'Warning Button', 'hideInLists' => true, 'properties' => [
-					'warningButtonBackgroundColor' => ['property' => 'warningButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultWarningButtonBackgroundColor, 'checkContrastWith'=>'warningButtonHoverBackgroundColor'],
+					'warningButtonBackgroundColor' => ['property' => 'warningButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultWarningButtonBackgroundColor, 'checkContrastWith'=>'warningButtonForegroundColor'],
 					'warningButtonForegroundColor' => ['property' => 'warningButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultWarningButtonForegroundColor, 'checkContrastWith'=>'warningButtonBackgroundColor'],
 					'warningButtonBorderColor' => ['property' => 'warningButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultWarningButtonBorderColor],
 					'warningButtonHoverBackgroundColor' => ['property' => 'warningButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultWarningButtonHoverBackgroundColor, 'checkContrastWith'=>'warningButtonHoverForegroundColor'],
@@ -478,7 +530,7 @@ class Theme extends DataObject
 				]],
 
 				'dangerButtonSection' =>['property'=>'dangerButtonSection', 'type' => 'section', 'label' =>'Danger Button', 'hideInLists' => true, 'properties' => [
-					'dangerButtonBackgroundColor' => ['property' => 'dangerButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultDangerButtonBackgroundColor, 'checkContrastWith'=>'dangerButtonHoverBackgroundColor'],
+					'dangerButtonBackgroundColor' => ['property' => 'dangerButtonBackgroundColor', 'type' => 'color', 'label' => 'Background Color', 'description' => 'Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultDangerButtonBackgroundColor, 'checkContrastWith'=>'dangerButtonForegroundColor'],
 					'dangerButtonForegroundColor' => ['property' => 'dangerButtonForegroundColor', 'type' => 'color', 'label' => 'Text Color', 'description' => 'Text Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultDangerButtonForegroundColor, 'checkContrastWith'=>'dangerButtonBackgroundColor'],
 					'dangerButtonBorderColor' => ['property' => 'dangerButtonBorderColor', 'type' => 'color', 'label' => 'Border Color', 'description' => 'Border Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultDangerButtonBorderColor],
 					'dangerButtonHoverBackgroundColor' => ['property' => 'dangerButtonHoverBackgroundColor', 'type' => 'color', 'label' => 'Hover Background Color', 'description' => 'Hover Background Color', 'required' => false, 'hideInLists' => true, 'default' => Theme::$defaultDangerButtonHoverBackgroundColor, 'checkContrastWith'=>'dangerButtonHoverForegroundColor'],
@@ -528,17 +580,33 @@ class Theme extends DataObject
 		if ($linkContrast < 3.5){
 			$validationResults['errors'][] = 'Link contrast does not meet accessibility guidelines, contrast is: ' . $linkContrast;
 		}
+		$linkHoverContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->linkHoverColor);
+		if ($linkHoverContrast < 3.5){
+			$validationResults['errors'][] = 'Link hover contrast does not meet accessibility guidelines, contrast is: ' . $linkHoverContrast;
+		}
+		$resultLabelContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->resultLabelColor);
+		if ($resultLabelContrast < 3.5){
+			$validationResults['errors'][] = 'Result Label contrast does not meet accessibility guidelines, contrast is: ' . $resultLabelContrast;
+		}
+		$resultValueContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->resultValueColor);
+		if ($resultValueContrast < 3.5){
+			$validationResults['errors'][] = 'Result Value contrast does not meet accessibility guidelines, contrast is: ' . $resultValueContrast;
+		}
 		$headerContrast = ColorUtils::calculateColorContrast($this->headerBackgroundColor, $this->headerForegroundColor);
 		if ($headerContrast < 3.5){
 			$validationResults['errors'][] = 'Header contrast does not meet accessibility guidelines, contrast is: ' . ($headerContrast);
 		}
-		$headerButtonContrast = ColorUtils::calculateColorContrast($this->headerButtonColor, $this->headerButtonBackgroundColor);
-		if ($headerButtonContrast < 3.5){
-			$validationResults['errors'][] = 'Header Button contrast does not meet accessibility guidelines, contrast is: ' . ($headerButtonContrast);
-		}
 		$footerContrast = ColorUtils::calculateColorContrast($this->footerBackgroundColor, $this->footerForegroundColor);
 		if ($footerContrast < 3.5){
 			$validationResults['errors'][] = 'Footer contrast does not meet accessibility guidelines, contrast is: ' . ($footerContrast);
+		}
+		$breadcrumbsContrast = ColorUtils::calculateColorContrast($this->breadcrumbsBackgroundColor, $this->breadcrumbsForegroundColor);
+		if ($breadcrumbsContrast < 3.5){
+			$validationResults['errors'][] = 'Breadcrumbs contrast does not meet accessibility guidelines, contrast is: ' . ($breadcrumbsContrast);
+		}
+		$searchToolsContrast = ColorUtils::calculateColorContrast($this->searchToolsBackgroundColor, $this->searchToolsForegroundColor);
+		if ($searchToolsContrast < 3.5){
+			$validationResults['errors'][] = 'Search Tools contrast does not meet accessibility guidelines, contrast is: ' . ($searchToolsContrast);
 		}
 		$primaryContrast = ColorUtils::calculateColorContrast($this->primaryBackgroundColor, $this->primaryForegroundColor);
 		if ($primaryContrast < 3.5){
@@ -552,9 +620,25 @@ class Theme extends DataObject
 		if ($tertiaryContrast < 3.5){
 			$validationResults['errors'][] = 'Tertiary color contrast does not meet accessibility guidelines, contrast is: ' . ($tertiaryContrast);
 		}
-		$sidebarHighlightContrast = ColorUtils::calculateColorContrast($this->sidebarHighlightBackgroundColor, $this->sidebarHighlightForegroundColor);
-		if ($sidebarHighlightContrast < 3.5){
-			$validationResults['errors'][] = 'Sidebar highlight contrast does not meet accessibility guidelines, contrast is: ' . ($sidebarHighlightContrast);
+		$menubarContrast = ColorUtils::calculateColorContrast($this->menubarBackgroundColor, $this->menubarForegroundColor);
+		if ($menubarContrast < 3.5){
+			$validationResults['errors'][] = 'Menu contrast does not meet accessibility guidelines, contrast is: ' . ($menubarContrast);
+		}
+		$menubarHighlightContrast = ColorUtils::calculateColorContrast($this->menubarHighlightBackgroundColor, $this->menubarHighlightForegroundColor);
+		if ($menubarHighlightContrast < 3.5){
+			$validationResults['errors'][] = 'Menu Highlight contrast does not meet accessibility guidelines, contrast is: ' . ($menubarHighlightContrast);
+		}
+		$menubarDropdownContrast = ColorUtils::calculateColorContrast($this->menuDropdownBackgroundColor, $this->menuDropdownForegroundColor);
+		if ($menubarDropdownContrast < 3.5){
+			$validationResults['errors'][] = 'Menu dropdown contrast does not meet accessibility guidelines, contrast is: ' . ($menubarDropdownContrast);
+		}
+		$modalDialogContrast = ColorUtils::calculateColorContrast($this->modalDialogBackgroundColor, $this->modalDialogForegroundColor);
+		if ($modalDialogContrast < 3.5){
+			$validationResults['errors'][] = 'Modal Dialog contrast does not meet accessibility guidelines, contrast is: ' . ($modalDialogContrast);
+		}
+		$modalDialogHeaderFooterContrast = ColorUtils::calculateColorContrast($this->modalDialogHeaderFooterBackgroundColor, $this->modalDialogHeaderFooterForegroundColor);
+		if ($modalDialogHeaderFooterContrast < 3.5){
+			$validationResults['errors'][] = 'Modal Dialog Header Footer contrast does not meet accessibility guidelines, contrast is: ' . ($modalDialogHeaderFooterContrast);
 		}
 		$selectedBrowseCategoryContrast = ColorUtils::calculateColorContrast($this->selectedBrowseCategoryBackgroundColor, $this->selectedBrowseCategoryForegroundColor);
 		if ($selectedBrowseCategoryContrast < 3.5){
@@ -654,7 +738,7 @@ class Theme extends DataObject
 
 	public function insert()
 	{
-		$this->generatedCss = $this->generateCss($this->getAllAppliedThemes());
+		$this->generatedCss = $this->generateCss();
 		$this->clearDefaultCovers();
 		$ret = parent::insert();
 		if ($ret !== FALSE ){
@@ -666,23 +750,24 @@ class Theme extends DataObject
 
 	public function update()
 	{
-		$this->generatedCss = $this->generateCss($this->getAllAppliedThemes());
+		$this->generatedCss = $this->generateCss();
 		$this->clearDefaultCovers();
 		$ret = parent::update();
 		if ($ret !== FALSE ){
 			$this->saveLibraries();
 			$this->saveLocations();
-		}
 
-		//Check to see what has been derived from this theme and regenerate CSS for those themes as well
-		$childTheme = new Theme();
-		$childTheme->extendsTheme = $this->themeName;
-		$childTheme->find();
-		while ($childTheme->fetch()){
-			if ($childTheme->id != $this->id) {
-				$childTheme->update();
+			//Check to see what has been derived from this theme and regenerate CSS for those themes as well
+			$childTheme = new Theme();
+			$childTheme->extendsTheme = $this->themeName;
+			$childTheme->find();
+			while ($childTheme->fetch()){
+				if ($childTheme->id != $this->id) {
+					$childTheme->generateCss(true);
+				}
 			}
 		}
+
 		return $ret;
 	}
 
@@ -693,25 +778,35 @@ class Theme extends DataObject
 		$this->getValueForPropertyUsingDefaults('bodyBackgroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('bodyTextColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('linkColor', '#3174AF', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('linkHoverColor', '#265a87', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('resultLabelColor', '#44484a', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('resultValueColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('headerBackgroundColor', '#f1f1f1', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('headerForegroundColor', '#8b8b8b', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('headerButtonColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('headerButtonBackgroundColor', '#848484', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('headerForegroundColor', '#303030', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('breadcrumbsBackgroundColor', '#f5f5f5', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('breadcrumbsForegroundColor', '#6B6B6B', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('searchToolsBackgroundColor', '#f5f5f5', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('searchToolsBorderColor', '#e3e3e3', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('searchToolsForegroundColor', '#6B6B6B', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('footerBackgroundColor', '#f1f1f1', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('footerForegroundColor', '#8b8b8b', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('footerForegroundColor', '#303030', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('primaryBackgroundColor', '#0a7589', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('primaryForegroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('secondaryBackgroundColor', '#de9d03', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('secondaryForegroundColor', '#ffffff', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('secondaryForegroundColor', '#303030', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('tertiaryBackgroundColor', '#de1f0b', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('tertiaryForegroundColor', '#ffffff', $appliedThemes);
-		$defaultSidebarBackgroundColor = ColorUtils::lightenColor($this->primaryBackgroundColor, 1.2);
-		$this->getValueForPropertyUsingDefaults('sidebarHighlightBackgroundColor', $defaultSidebarBackgroundColor, $appliedThemes);
-		$defaultSidebarHighlight = '#ffffff';
-		if (ColorUtils::calculateColorContrast($defaultSidebarBackgroundColor, $defaultSidebarHighlight) < 3.5){
-			$defaultSidebarHighlight = '#000000';
-		}
-		$this->getValueForPropertyUsingDefaults('sidebarHighlightForegroundColor', $defaultSidebarHighlight, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('tertiaryForegroundColor', '#000000', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarBackgroundColor', '#f1f1f1', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarForegroundColor', '#303030', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarHighlightBackgroundColor', '#f1f1f1', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menubarHighlightForegroundColor', '#265a87', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menuDropdownBackgroundColor', '#ededed', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('menuDropdownForegroundColor', '#404040', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('modalDialogBackgroundColor', '#ffffff', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('modalDialogForegroundColor', '#333333', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBackgroundColor', '#ffffff', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterForegroundColor', '#333333', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBorderColor', '#e5e5e5', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('browseCategoryPanelColor', '#d7dce3', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBackgroundColor', '#0087AB', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
@@ -789,12 +884,11 @@ class Theme extends DataObject
 	}
 
 	/**
-	 * @param Theme[] $allAppliedThemes an array of themes that have been applied in order of inheritance
-	 *
 	 * @return string the resulting css
 	 */
-	public function generateCss($allAppliedThemes)
+	public function generateCss($saveChanges = false)
 	{
+		$allAppliedThemes = $this->getAllAppliedThemes();
 		global $interface;
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$additionalCSS = '';
@@ -802,17 +896,16 @@ class Theme extends DataObject
 		$this->applyDefaults();
 		$interface->assign('headerBackgroundColor', $this->headerBackgroundColor);
 		$interface->assign('headerForegroundColor', $this->headerForegroundColor);
-		$interface->assign('headerButtonColor', $this->headerButtonColor);
-		$interface->assign('headerButtonBackgroundColor', $this->headerButtonBackgroundColor);
 		$interface->assign('pageBackgroundColor', $this->pageBackgroundColor);
+		$interface->assign('breadcrumbsBackgroundColor', $this->breadcrumbsBackgroundColor);
+		$interface->assign('breadcrumbsForegroundColor', $this->breadcrumbsForegroundColor);
+		$interface->assign('searchToolsBackgroundColor', $this->searchToolsBackgroundColor);
+		$interface->assign('searchToolsBorderColor', $this->searchToolsBorderColor);
+		$interface->assign('searchToolsForegroundColor', $this->searchToolsForegroundColor);
 		$interface->assign('footerBackgroundColor', $this->footerBackgroundColor);
 		$interface->assign('footerForegroundColor', $this->footerForegroundColor);
 		$interface->assign('primaryBackgroundColor', $this->primaryBackgroundColor);
 		$interface->assign('primaryForegroundColor', $this->primaryForegroundColor);
-		$lightened80 = ColorUtils::lightenColor($this->primaryBackgroundColor, 1.8);
-		$interface->assign('primaryBackgroundColorLightened80', $lightened80);
-		$lightened60 = ColorUtils::lightenColor($this->primaryBackgroundColor, 1.6);
-		$interface->assign('primaryBackgroundColorLightened60', $lightened60);
 		$interface->assign('secondaryBackgroundColor', $this->secondaryBackgroundColor);
 		$interface->assign('secondaryForegroundColor', $this->secondaryForegroundColor);
 		$interface->assign('tertiaryBackgroundColor', $this->tertiaryBackgroundColor);
@@ -820,8 +913,28 @@ class Theme extends DataObject
 		$interface->assign('bodyBackgroundColor', $this->bodyBackgroundColor);
 		$interface->assign('bodyTextColor', $this->bodyTextColor);
 		$interface->assign('linkColor', $this->linkColor);
-		$interface->assign('sidebarHighlightBackgroundColor', $this->sidebarHighlightBackgroundColor);
-		$interface->assign('sidebarHighlightForegroundColor', $this->sidebarHighlightForegroundColor);
+		$interface->assign('linkHoverColor', $this->linkHoverColor);
+		$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 1.02);
+		if (ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->bodyTextColor) < 4.5 ||
+			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkColor) < 4.5 ||
+			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkHoverColor) < 4.5){
+
+			$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 0.98);
+		}
+		$interface->assign('tableStripeBackgroundColor', $tableStripeBackgroundColor);
+		$interface->assign('resultLabelColor', $this->resultLabelColor);
+		$interface->assign('resultValueColor', $this->resultValueColor);
+		$interface->assign('menubarHighlightBackgroundColor', $this->menubarHighlightBackgroundColor);
+		$interface->assign('menubarHighlightForegroundColor', $this->menubarHighlightForegroundColor);
+		$interface->assign('menubarBackgroundColor', $this->menubarBackgroundColor);
+		$interface->assign('menubarForegroundColor', $this->menubarForegroundColor);
+		$interface->assign('menuDropdownBackgroundColor', $this->menuDropdownBackgroundColor);
+		$interface->assign('menuDropdownForegroundColor', $this->menuDropdownForegroundColor);
+		$interface->assign('modalDialogBackgroundColor', $this->modalDialogBackgroundColor);
+		$interface->assign('modalDialogForegroundColor', $this->modalDialogForegroundColor);
+		$interface->assign('modalDialogHeaderFooterBackgroundColor', $this->modalDialogHeaderFooterBackgroundColor);
+		$interface->assign('modalDialogHeaderFooterForegroundColor', $this->modalDialogHeaderFooterForegroundColor);
+		$interface->assign('modalDialogHeaderFooterBorderColor', $this->modalDialogHeaderFooterBorderColor);
 		$interface->assign('browseCategoryPanelColor', $this->browseCategoryPanelColor);
 		$interface->assign('selectedBrowseCategoryBackgroundColor', $this->selectedBrowseCategoryBackgroundColor);
 		$interface->assign('selectedBrowseCategoryForegroundColor', $this->selectedBrowseCategoryForegroundColor);
@@ -886,13 +999,8 @@ class Theme extends DataObject
 		$interface->assign('dangerButtonHoverForegroundColor', $this->dangerButtonHoverForegroundColor);
 		$interface->assign('dangerButtonHoverBorderColor', $this->dangerButtonHoverBorderColor);
 
+
 		foreach ($allAppliedThemes as $theme) {
-			if ($interface->getVariable('headerBottomBorderWidth') == null && $theme->headerBottomBorderWidth != null) {
-				$interface->assign('headerBottomBorderWidth', $theme->headerBottomBorderWidth);
-			}
-			if ($interface->getVariable('headerButtonRadius') == null && !empty($theme->headerButtonRadius)) {
-				$interface->assign('headerButtonRadius', $theme->headerButtonRadius);
-			}
 			if ($interface->getVariable('headingFont') == null && !$theme->headingFontDefault) {
 				$interface->assign('headingFont', $theme->headingFont);
 			}
@@ -918,6 +1026,14 @@ class Theme extends DataObject
 				$interface->assign('capitalizeBrowseCategories', $theme->capitalizeBrowseCategories);
 			}
 
+
+			if ($interface->getVariable('headerBottomBorderWidth') == null && $theme->headerBottomBorderWidth != null) {
+				$headerBottomBorderWidth = $theme->headerBottomBorderWidth;
+				if (is_numeric($headerBottomBorderWidth)){
+					$headerBottomBorderWidth = $headerBottomBorderWidth . 'px';
+				}
+				$interface->assign('headerBottomBorderWidth', $headerBottomBorderWidth);
+			}
 			if ($interface->getVariable('buttonRadius') == null && $theme->buttonRadius != null) {
 				$buttonRadius = $theme->buttonRadius;
 				if (is_numeric($buttonRadius)){
@@ -957,7 +1073,11 @@ class Theme extends DataObject
 
 		$interface->assign('additionalCSS', $additionalCSS);
 
-		return $interface->fetch('theme.css.tpl');
+		$this->generatedCss = $interface->fetch('theme.css.tpl');
+		if ($saveChanges) {
+			$this->update();
+		}
+		return $this->generatedCss;
 	}
 
 	/**
@@ -965,6 +1085,7 @@ class Theme extends DataObject
 	 */
 	public function getAllAppliedThemes()
 	{
+		$allAppliedThemes = [];
 		$primaryTheme = clone($this);
 		$allAppliedThemes[$primaryTheme->themeName] = $primaryTheme;
 		$theme = $primaryTheme;

@@ -11,7 +11,7 @@
 					<span class="ui-rater-starsOn{if $loggedIn && ($review->userid == $activeUserId)} userRated{/if}" style="width:{math equation="90*rating/5" rating=$review->rating}px"></span>
 				</span>
 			{/if}
-			{if $loggedIn && ($review->userid == $activeUserId || array_key_exists('opacAdmin', $userRoles))}
+			{if $loggedIn && ($review->userid == $activeUserId || in_array('Moderate User Reviews', $userPermissions))}
 				&nbsp;<span onclick='return AspenDiscovery.GroupedWork.deleteReview("{$id|escape:"url"}", "{$review->id}");' class="btn btn-danger btn-xs">&times; {translate text='Delete'}</span>
 			{/if}</h5>
 	</div>

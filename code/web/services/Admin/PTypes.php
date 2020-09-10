@@ -2,9 +2,9 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
+require_once ROOT_DIR . '/sys/Account/PType.php';
 
-class PTypes extends ObjectEditor
+class Admin_PTypes extends ObjectEditor
 {
 
 	function getObjectType(){
@@ -19,14 +19,11 @@ class PTypes extends ObjectEditor
 	function getAllObjects(){
 		$libraryList = array();
 
-		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('opacAdmin')){
-			$library = new PType();
-			$library->orderBy('pType');
-			$library->find();
-			while ($library->fetch()){
-				$libraryList[$library->id] = clone $library;
-			}
+		$library = new PType();
+		$library->orderBy('pType');
+		$library->find();
+		while ($library->fetch()){
+			$libraryList[$library->id] = clone $library;
 		}
 
 		return $libraryList;
@@ -40,16 +37,23 @@ class PTypes extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
-	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		$breadcrumbs[] = new Breadcrumb('/Admin/PTypes', 'Patron Types');
+		return $breadcrumbs;
 	}
 
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Patron Types');
+	}
 }

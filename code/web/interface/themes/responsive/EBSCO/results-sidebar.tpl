@@ -1,6 +1,4 @@
 {strip}
-	{include file="login-sidebar.tpl"}
-
 	{if $recordCount || $limitList}
 		<div id="refineSearch">
 			{* Narrow Results *}
@@ -18,11 +16,4 @@
 			</div>
 		</div>
 	{/if}
-
-	{if $loggedIn}
-		{* Account Menu *}
-		{include file="MyAccount/menu.tpl"}
-	{/if}
-
-	{include file="library-sidebar.tpl"}
 {/strip}

@@ -7,11 +7,11 @@
 				<div class="{*col-xs-10 *}text-center">
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
-							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}" aria-hidden="true">
 								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 						{/if}
 					{/if}
 				</div>
@@ -124,7 +124,7 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
-							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-primary">{translate text="Checkout"}</button>
+							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-action">{translate text="Checkout"}</button>
 						{/if}
 						<button onclick="return AspenDiscovery.OverDrive.cancelOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
 						{if $record.allowFreezeHolds}

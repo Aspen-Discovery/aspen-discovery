@@ -12,7 +12,7 @@ $aspenUsage->year = date('Y');
 $aspenUsage->month = date('n');
 
 global $errorHandlingEnabled;
-$errorHandlingEnabled = true;
+$errorHandlingEnabled = 0;
 
 $startTime = microtime(true);
 require_once ROOT_DIR . '/sys/Logger.php';
@@ -30,11 +30,6 @@ $memoryWatcher = new MemoryWatcher();
 global $logger;
 $logger = new Logger();
 $timer->logTime("Read Config");
-
-if ($configArray['System']['debug']) {
-	ini_set('display_errors', true);
-	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
-}
 
 //Use output buffering to allow session cookies to have different values
 // this can't be determined before session_start is called
@@ -62,15 +57,19 @@ if (IPAddress::isClientIpBlocked()){
 	echo("<h1>Forbidden</h1><p><strong>We are unable to handle your request.</strong></p>");
 	die();
 }
+if (IPAddress::showDebuggingInformation()) {
+	ini_set('display_errors', true);
+	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+}
 
 global $enabledModules;
 $enabledModules = [];
 try {
-	$module = new Module();
-	$module->enabled = true;
-	$module->find();
-	while ($module->fetch()) {
-		$enabledModules[$module->name] = clone $module;
+	$aspenModule = new Module();
+	$aspenModule->enabled = true;
+	$aspenModule->find();
+	while ($aspenModule->fetch()) {
+		$enabledModules[$aspenModule->name] = clone $aspenModule;
 	}
 }catch (Exception $e){
 	//Modules are not installed yet
@@ -181,11 +180,11 @@ function loadLibraryAndLocation(){
 
 function disableErrorHandler(){
 	global $errorHandlingEnabled;
-	$errorHandlingEnabled = false;
+	$errorHandlingEnabled--;
 }
 function enableErrorHandler(){
 	global $errorHandlingEnabled;
-	$errorHandlingEnabled = true;
+	$errorHandlingEnabled++;
 }
 
 function array_remove_by_value($array, $value){

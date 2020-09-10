@@ -22,7 +22,22 @@ class Admin_HelpManual extends Admin_Admin
 		}
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_help', 'Aspen Discovery Help');
+		$breadcrumbs[] = new Breadcrumb('/Admin/HelpManual?page=table_of_contents', 'Table of Contents');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'aspen_help';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View Help Manual');
 	}
 }

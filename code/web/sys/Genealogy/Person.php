@@ -16,9 +16,9 @@ class Person extends SolrDataObject
 	public $otherName;
 	public $nickName;
 	public $veteranOf;
-	public $sex;
-	public $race;
-	public $residence;
+	public /** @noinspection PhpUnused */ $sex;
+	public /** @noinspection PhpUnused */ $race;
+	public /** @noinspection PhpUnused */ $residence;
 	public $causeOfDeath;
 
 	//Age information
@@ -26,11 +26,11 @@ class Person extends SolrDataObject
     public $birthDateDay;
     public $birthDateMonth;
     public $birthDateYear;
-	public $deathDate;
+	public /** @noinspection PhpUnused */ $deathDate;
     public $deathDateDay;
     public $deathDateMonth;
     public $deathDateYear;
-	public $ageAtDeath;
+	public /** @noinspection PhpUnused */ $ageAtDeath;
 
 	//Burial information
 	public $cemeteryName;
@@ -48,42 +48,38 @@ class Person extends SolrDataObject
 	public $comments;
 
 	//Ledger information
-	public $ledgerVolume;
-	public $ledgerYear;
-	public $ledgerEntry;
+	public /** @noinspection PhpUnused */ $ledgerVolume;
+	public /** @noinspection PhpUnused */ $ledgerYear;
+	public /** @noinspection PhpUnused */ $ledgerEntry;
 
 	//Revision history information
 	public $addedBy;
 	public $dateAdded;
 	public $modifiedBy;
 	public $lastModified;
-	public $importedFrom;
-	public $privateComments;
+	public /** @noinspection PhpUnused */ $importedFrom;
+	public /** @noinspection PhpUnused */ $privateComments;
 
 	private $_obituaries = null;
 	private $_marriages = null;
-
-	function keys() {
-		return array('personId');
-	}
 
 	function getCore(){
 		return 'genealogy';
 	}
 
 	function getNumericColumnNames()
-    {
-        return [
-            'birthDateDay',
-            'birthDateMonth',
-            'birthDateYear',
-            'deathDateDay',
-            'deathDateMonth',
-            'deathDateYear',
-        ];
-    }
+	{
+		return [
+			'birthDateDay',
+			'birthDateMonth',
+			'birthDateYear',
+			'deathDateDay',
+			'deathDateMonth',
+			'deathDateYear',
+		];
+	}
 
-    function solrId(){
+	function solrId(){
 		return $this->personId;
 	}
 	function recordtype(){
@@ -115,6 +111,7 @@ class Person extends SolrDataObject
 		$keywords .= $this->lot . ' ';
 		return $keywords;
 	}
+
 	function birthYear(){
 		return $this->birthDateYear;
 	}
@@ -124,7 +121,7 @@ class Person extends SolrDataObject
 	function spouseName(){
 		$return = array();
 		//Make sure that marriages are loaded
-		$marriages = $this->__get('marriages');
+		$marriages = $this->getMarriages();
 		foreach ($marriages as $marriage){
 			$return[] = $marriage->spouseName;
 		}
@@ -133,7 +130,7 @@ class Person extends SolrDataObject
 	function marriageDate(){
 		$return = array();
 		//Make sure that marriages are loaded
-		$marriages = $this->__get('marriages');
+		$marriages = $this->getMarriages();
 		foreach ($marriages as $marriage){
 			$dateParts = date_parse($marriage->marriageDate);
 			if ($dateParts['year'] != false && $dateParts['month'] != false && $dateParts['day'] != false){
@@ -146,7 +143,7 @@ class Person extends SolrDataObject
 	function marriageComments(){
 		$return = array();
 		//Make sure that marriages are loaded
-		$marriages = $this->__get('marriages');
+		$marriages = $this->getMarriages();
 		foreach ($marriages as $marriage){
 			$return[] = $marriage->comments;
 		}
@@ -155,7 +152,7 @@ class Person extends SolrDataObject
 	function obituaryDate(){
 		$return = array();
 		//Make sure that obituaries are loaded
-		$obituaries = $this->__get('obituaries');
+		$obituaries = $this->getObituaries();
 		foreach ($obituaries as $obit){
 			$dateParts = date_parse($obit->date);
 			if ($dateParts['year'] != false && $dateParts['month'] != false && $dateParts['day'] != false){
@@ -168,7 +165,7 @@ class Person extends SolrDataObject
 	function obituarySource(){
 		$return = array();
 		//Make sure that obituaries are loaded
-		$obituaries = $this->__get('obituaries');
+		$obituaries = $this->getObituaries();
 		foreach ($obituaries as $obit){
 			$return[] = $obit->source;
 		}
@@ -177,7 +174,7 @@ class Person extends SolrDataObject
 	function obituaryText(){
 		$return = array();
 		//Make sure that obituaries are loaded
-		$obituaries = $this->__get('obituaries');
+		$obituaries = $this->getObituaries();
 		foreach ($obituaries as $obit){
 			$return[] = $obit->contents;
 		}
@@ -245,45 +242,12 @@ class Person extends SolrDataObject
 	}
 
 	function __get($name){
-		global $timer;
 		if ($name == 'displayName'){
 			return $this->firstName . ' ' . $this->lastName;
 		}else if ($name == 'marriages') {
-			if (is_null($this->_marriages)){
-				$this->_marriages = array();
-				if ($this->personId > 0){
-					//Load roles for the user from the user
-					$marriage = new Marriage();
-					$marriage->personId = $this->personId;
-					$marriage->orderBy('marriageDateYear ASC');
-					$marriage->find();
-					while ($marriage->fetch()){
-						$this->_marriages[$marriage->marriageId] = clone($marriage);
-					}
-				}
-				$timer->logTime("Loaded marriages");
-				return $this->_marriages;
-			}else{
-				return $this->_marriages;
-			}
+			return $this->getMarriages();
 		}else if ($name == 'obituaries') {
-			if (is_null($this->_obituaries)){
-				$this->_obituaries = array();
-				if ($this->personId > 0){
-					//Load roles for the user from the user
-					$obit = new Obituary();
-					$obit->personId = $this->personId;
-					$obit->orderBy('source ASC');
-					$obit->find();
-					while ($obit->fetch()){
-						$this->_obituaries[$obit->obituaryId] = clone($obit);
-					}
-				}
-				$timer->logTime("Loaded obituaries");
-				return $this->_obituaries;
-			}else{
-				return $this->_obituaries;
-			}
+			return $this->getObituaries();
 		}else{
 			return $this->_data[$name];
 		}
@@ -420,5 +384,45 @@ class Person extends SolrDataObject
 			$formattedDate .= $year;
 		}
 		return $formattedDate;
+	}
+
+	public function getMarriages()
+	{
+		global $timer;
+		if (is_null($this->_marriages)) {
+			$this->_marriages = array();
+			if ($this->personId > 0) {
+				//Load roles for the user from the user
+				$marriage = new Marriage();
+				$marriage->personId = $this->personId;
+				$marriage->orderBy('marriageDateYear ASC');
+				$marriage->find();
+				while ($marriage->fetch()) {
+					$this->_marriages[$marriage->marriageId] = clone($marriage);
+				}
+			}
+			$timer->logTime("Loaded marriages");
+		}
+		return $this->_marriages;
+	}
+
+	public function getObituaries()
+	{
+		global $timer;
+		if (is_null($this->_obituaries)){
+			$this->_obituaries = array();
+			if ($this->personId > 0){
+				//Load roles for the user from the user
+				$obit = new Obituary();
+				$obit->personId = $this->personId;
+				$obit->orderBy('source ASC');
+				$obit->find();
+				while ($obit->fetch()){
+					$this->_obituaries[$obit->obituaryId] = clone($obit);
+				}
+			}
+			$timer->logTime("Loaded obituaries");
+		}
+		return $this->_obituaries;
 	}
 }

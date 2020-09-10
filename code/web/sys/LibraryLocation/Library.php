@@ -21,7 +21,6 @@ if (file_exists(ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php')) {
 	require_once ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php';
 }
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLink.php';
-require_once ROOT_DIR . '/sys/LibraryLocation/LibraryTopLinks.php';
 if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php')) {
 	require_once ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php';
 }
@@ -104,6 +103,7 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $hooplaScopeId;
 	public /** @noinspection PhpUnused */ $rbdigitalScopeId;
 	public /** @noinspection PhpUnused */ $cloudLibraryScopeId;
+	public /** @noinspection PhpUnused */ $axis360ScopeId;
 	public /** @noinspection PhpUnused */ $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
@@ -259,20 +259,6 @@ class Library extends DataObject
 		'list'  => 'List',
 	);
 
-	static $subdomains = null;
-	public static function getAllSubdomains()
-	{
-		if (Library::$subdomains == null){
-			$libraries = new Library();
-			Library::$subdomains = $libraries->fetchAll('subdomain');
-		}
-		return Library::$subdomains;
-	}
-
-	function keys() {
-		return array('libraryId', 'subdomain');
-	}
-
 	static function getObjectStructure(){
 		// get the structure for the library system's holidays
 		$holidaysStructure = Holiday::getObjectStructure();
@@ -288,7 +274,6 @@ class Library extends DataObject
 		unset($archiveSearchFacetSettingStructure['showAsDropDown']);
 		unset($archiveSearchFacetSettingStructure['showAboveResults']);
 		unset($archiveSearchFacetSettingStructure['showInAdvancedSearch']);
-		//unset($archiveSearchFacetSettingStructure['sortMode']);
 
 		$libraryArchiveMoreDetailsStructure = LibraryArchiveMoreDetails::getObjectStructure();
 		unset($libraryArchiveMoreDetailsStructure['weight']);
@@ -297,10 +282,6 @@ class Library extends DataObject
 		$libraryLinksStructure = LibraryLink::getObjectStructure();
 		unset($libraryLinksStructure['weight']);
 		unset($libraryLinksStructure['libraryId']);
-
-		$libraryTopLinksStructure = LibraryTopLinks::getObjectStructure();
-		unset($libraryTopLinksStructure['weight']);
-		unset($libraryTopLinksStructure['libraryId']);
 
 		$libraryRecordOwnedStructure = LibraryRecordOwned::getObjectStructure();
 		unset($libraryRecordOwnedStructure['libraryId']);
@@ -393,6 +374,16 @@ class Library extends DataObject
 			$hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
 		}
 
+		require_once ROOT_DIR . '/sys/Axis360/Axis360Scope.php';
+		$axis360Scope = new Axis360Scope();
+		$axis360Scope->orderBy('name');
+		$axis360Scopes = [];
+		$axis360Scope->find();
+		$axis360Scopes[-1] = 'none';
+		while ($axis360Scope->fetch()){
+			$axis360Scopes[$axis360Scope->id] = $axis360Scope->name;
+		}
+
 		require_once ROOT_DIR . '/sys/Ebsco/EDSSettings.php';
 		$edsSetting = new EDSSettings();
 		$edsSetting->orderBy('name');
@@ -444,6 +435,7 @@ class Library extends DataObject
 		$barcodeTypes = [
 			'none' => 'Do not show the barcode',
 			'CODE128' => 'CODE128 (automatic mode switching)',
+			'codabar' => 'CODABAR',
 			'CODE128A' => 'CODE128 Mode A',
 			'CODE128B' => 'CODE128 Mode B',
 			'CODE128C' => 'CODE128 Mode C',
@@ -464,7 +456,7 @@ class Library extends DataObject
 			'baseUrl' => array('property'=>'baseUrl', 'type'=>'text', 'label'=>'Base URL', 'description'=>'The Base URL for the library instance including the protocol (http or https).'),
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'A name to identify the library within the system', 'size'=>'40', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true),
 			'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false),
-			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
+			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => "<a><b><em><div><span><p><strong><sub><sup><script>", 'hideInLists' => true),
 			'generateSitemap' => array('property'=>'generateSitemap', 'type'=>'checkbox', 'label'=>'Generate Sitemap', 'description'=>'Whether or not a sitemap should be generated for the library.', 'hideInLists' => true,),
 
 			// Basic Display //
@@ -543,7 +535,7 @@ class Library extends DataObject
 				'holdsSection' => array('property' => 'holdsSection', 'type' => 'section', 'label' => 'Holds', 'hideInLists' => true, 'helpLink'=>'', 'properties' => array(
 					'showHoldButton'                    => array('property'=>'showHoldButton', 'type'=>'checkbox', 'label'=>'Show Hold Button', 'description'=>'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => 1),
 					'showHoldButtonInSearchResults'     => array('property'=>'showHoldButtonInSearchResults', 'type'=>'checkbox', 'label'=>'Show Hold Button within the search results', 'description'=>'Whether or not the hold button is displayed within the search results so patrons can place holds on items', 'hideInLists' => true, 'default' => 1),
-					'showHoldButtonForUnavailableOnly'  => array('property'=>'showHoldButtonForUnavailableOnly', 'type'=>'checkbox', 'label'=>'Show Hold Button for items that are checked out only', 'description'=>'Whether or not the hold button is displayed within the search results so patrons can place holds on items', 'hideInLists' => true, 'default' => 1),
+					'showHoldButtonForUnavailableOnly'  => array('property'=>'showHoldButtonForUnavailableOnly', 'type'=>'checkbox', 'label'=>'Show Hold Button for items that are checked out only', 'description'=>'Whether or not the hold button is displayed within the search results so patrons can place holds on items', 'hideInLists' => true, 'default' => 0),
 					'showHoldCancelDate'                => array('property'=>'showHoldCancelDate', 'type'=>'checkbox', 'label'=>'Show Cancellation Date', 'description'=>'Whether or not the patron should be able to set a cancellation date (not needed after date) when placing holds.', 'hideInLists' => true, 'default' => 1),
 					'allowFreezeHolds'                  => array('property'=>'allowFreezeHolds', 'type'=>'checkbox', 'label'=>'Allow Freezing Holds', 'description'=>'Whether or not the user can freeze their holds.', 'hideInLists' => true, 'default' => 1),
 					'defaultNotNeededAfterDays'         => array('property'=>'defaultNotNeededAfterDays', 'type'=>'integer', 'label'=>'Default Not Needed After Days', 'description'=>'Number of days to use for not needed after date by default. Use -1 for no default.', 'hideInLists' => true,),
@@ -674,7 +666,7 @@ class Library extends DataObject
 				'externalMaterialsRequestUrl' => array('property'=>'externalMaterialsRequestUrl', 'type'=>'text', 'label'=>'External Materials Request URL', 'description'=>'A link to an external Materials Request System to be used instead of the built in Aspen Discovery system', 'hideInList' => true),
 				'maxRequestsPerYear'          => array('property'=>'maxRequestsPerYear', 'type'=>'integer', 'label'=>'Max Requests Per Year', 'description'=>'The maximum number of requests that a user can make within a year', 'hideInLists' => true, 'default' => 60),
 				'maxOpenRequests'             => array('property'=>'maxOpenRequests', 'type'=>'integer', 'label'=>'Max Open Requests', 'description'=>'The maximum number of requests that a user can have open at one time', 'hideInLists' => true, 'default' => 5),
-				'newMaterialsRequestSummary'  => array('property'=>'newMaterialsRequestSummary', 'type'=>'html', 'label'=>'New Request Summary', 'description'=>'Text displayed at the top of Materials Request form to give users important information about the request they submit', 'size'=>'40', 'maxLength' =>'512', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
+				'newMaterialsRequestSummary'  => array('property'=>'newMaterialsRequestSummary', 'type'=>'html', 'label'=>'New Request Summary', 'description'=>'Text displayed at the top of Materials Request form to give users important information about the request they submit', 'size'=>'40', 'maxLength' =>'512', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><script>', 'hideInLists' => true),
 				'materialsRequestDaysToPreserve' => array('property' => 'materialsRequestDaysToPreserve', 'type'=>'integer', 'label'=>'Delete Closed Requests Older than (days)', 'description' => 'The number of days to preserve closed requests.  Requests will be preserved for a minimum of 366 days.  We suggest preserving for at least 395 days.  Setting to a value of 0 will preserve all requests', 'hideInLists' => true, 'default' => 396),
 
 				'materialsRequestFieldsToDisplay' => array(
@@ -743,10 +735,10 @@ class Library extends DataObject
 
 				'prospectorSection' => array('property'=>'prospectorSection', 'type' => 'section', 'label' =>'Prospector', 'hideInLists' => true,
 						'helpLink'=>'', 'properties' => array(
-					'repeatInProspector'  => array('property'=>'repeatInProspector', 'type'=>'checkbox', 'label'=>'Repeat In Prospector', 'description'=>'Turn on to allow repeat search in Prospector functionality.', 'hideInLists' => true, 'default' => 1),
+					'repeatInProspector'  => array('property'=>'repeatInProspector', 'type'=>'checkbox', 'label'=>'Repeat In Prospector', 'description'=>'Turn on to allow repeat search in Prospector functionality.', 'hideInLists' => true, 'default' => 0),
 					'prospectorCode' => array('property'=>'prospectorCode', 'type'=>'text', 'label'=>'Prospector Code', 'description'=>'The code used to identify this location within Prospector. Leave blank if items for this location are not in Prospector.', 'hideInLists' => true,),
-					'enableProspectorIntegration'=> array('property'=>'enableProspectorIntegration', 'type'=>'checkbox', 'label'=>'Enable Prospector Integration', 'description'=>'Whether or not Prospector Integrations should be displayed for this library.', 'hideInLists' => true, 'default' => 1),
-					'showProspectorResultsAtEndOfSearch' => array('property'=>'showProspectorResultsAtEndOfSearch', 'type'=>'checkbox', 'label'=>'Show Prospector Results At End Of Search', 'description'=>'Whether or not Prospector Search Results should be shown at the end of search results.', 'hideInLists' => true, 'default' => 1),
+					'enableProspectorIntegration'=> array('property'=>'enableProspectorIntegration', 'type'=>'checkbox', 'label'=>'Enable Prospector Integration', 'description'=>'Whether or not Prospector Integrations should be displayed for this library.', 'hideInLists' => true, 'default' => 0),
+					'showProspectorResultsAtEndOfSearch' => array('property'=>'showProspectorResultsAtEndOfSearch', 'type'=>'checkbox', 'label'=>'Show Prospector Results At End Of Search', 'description'=>'Whether or not Prospector Search Results should be shown at the end of search results.', 'hideInLists' => true, 'default' => 0),
 				)),
 				'worldCatSection' => array('property'=>'worldCatSection', 'type' => 'section', 'label' =>'WorldCat', 'hideInLists' => true,
 						'helpLink'=>'', 'properties' => array(
@@ -755,9 +747,11 @@ class Library extends DataObject
 					'worldCatQt' => array('property'=>'worldCatQt', 'type'=>'text', 'label'=>'WorldCat QT', 'description'=>'A custom World Cat QT term to use while searching.', 'hideInLists' => true, 'size'=>'40'),
 				)),
 			)),
-
-			'overdriveSection' => array('property'=>'overdriveSection', 'type' => 'section', 'label' =>'OverDrive', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
-				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
+			'axis360Section' => array('property'=>'axis360Section', 'type' => 'section', 'label' =>'Axis 360', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
+				'axis360ScopeId'        => array('property'=>'axis360ScopeId', 'type'=>'enum','values'=>$axis360Scopes, 'label'=>'Axis 360 Scope', 'description'=>'The Axis 360 scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
+			)),
+			'cloudLibrarySection' => array('property'=>'cloudLibrarySection', 'type' => 'section', 'label' =>'Cloud Library', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
+				'cloudLibraryScopeId'        => array('property'=>'cloudLibraryScopeId', 'type'=>'enum','values'=>$cloudLibraryScopes,  'label'=>'Cloud Library Scope', 'description'=>'The Cloud Library scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
 			)),
 			'hooplaSection' => array('property' => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
 				'hooplaLibraryID' => array('property' => 'hooplaLibraryID', 'type' => 'integer', 'label' => 'Hoopla Library ID', 'description' => 'The ID Number Hoopla uses for this library', 'hideInLists' => true, 'forcesReindex' => true),
@@ -766,8 +760,8 @@ class Library extends DataObject
 			'rbdigitalSection' => array('property'=>'rbdigitalSection', 'type' => 'section', 'label' =>'RBdigital', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
 				'rbdigitalScopeId'        => array('property'=>'rbdigitalScopeId', 'type'=>'enum','values'=>$rbdigitalScopes, 'label'=>'RBdigital Scope', 'description'=>'The RBdigital scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
 			)),
-			'cloudLibrarySection' => array('property'=>'cloudLibrarySection', 'type' => 'section', 'label' =>'Cloud Library', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
-				'cloudLibraryScopeId'        => array('property'=>'cloudLibraryScopeId', 'type'=>'enum','values'=>$cloudLibraryScopes,  'label'=>'Cloud Library Scope', 'description'=>'The Cloud Library scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
+			'overdriveSection' => array('property'=>'overdriveSection', 'type' => 'section', 'label' =>'OverDrive', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
+				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
 			)),
 			'genealogySection' => array('property' => 'genealogySection', 'type' => 'section', 'label' => 'Genealogy', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => [
 				'enableGenealogy' => array('property' => 'enableGenealogy', 'type' => 'checkbox', 'label' => 'Enable Genealogy Functionality', 'description' => 'Whether or not patrons can search genealogy.', 'hideInLists' => true, 'default' => 0),
@@ -930,22 +924,6 @@ class Library extends DataObject
 				'canEdit' => true,
 			),
 
-			'libraryTopLinks' => array(
-				'property' => 'libraryTopLinks',
-				'type' => 'oneToMany',
-				'label' => 'Header Links',
-				'description' => 'Links To Show in the header',
-				'helpLink' => '',
-				'keyThis' => 'libraryId',
-				'keyOther' => 'libraryId',
-				'subObjectType' => 'LibraryTopLinks',
-				'structure' => $libraryTopLinksStructure,
-				'sortable' => true,
-				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
-			),
-
 			'recordsOwned' => array(
 				'property' => 'recordsOwned',
 				'type' => 'oneToMany',
@@ -996,29 +974,6 @@ class Library extends DataObject
 				'forcesReindex' => true
 			),
 		);
-
-		if (UserAccount::userHasRole('libraryManager')){
-			$structure['subdomain']['type'] = 'label';
-			$structure['displayName']['type'] = 'label';
-			unset($structure['showDisplayNameInHeader']);
-			unset($structure['displaySection']);
-			unset($structure['ilsSection']);
-			unset($structure['ecommerceSection']);
-			unset($structure['searchingSection']);
-			unset($structure['enrichmentSection']);
-			unset($structure['fullRecordSection']);
-			unset($structure['holdingsSummarySection']);
-			unset($structure['materialsRequestSection']);
-			unset($structure['prospectorSection']);
-			unset($structure['worldCatSection']);
-			unset($structure['overdriveSection']);
-			unset($structure['archiveSection']);
-			unset($structure['edsSection']);
-			unset($structure['dplaSection']);
-			unset($structure['recordsOwned']);
-			unset($structure['recordsToInclude']);
-			unset($structure['sideLoadScopes']);
-		}
 
 		//Update settings based on what we have access to
 		global $configArray;
@@ -1079,7 +1034,7 @@ class Library extends DataObject
 		if ($searchSource == null){
 			global $searchSource;
 		}
-		if ($searchSource == 'combinedResults'){
+		if ($searchSource == 'combined'){
 			$searchSource = 'local';
 		}
 		if (!array_key_exists($searchSource, Library::$searchLibrary)){
@@ -1138,12 +1093,11 @@ class Library extends DataObject
 			die();
 		}
 		//Next check to see if we are in a library.
-		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		$physicalLocation = $locationSingleton->getActiveLocation();
 		if (!is_null($physicalLocation)){
 			//Load the library based on the home branch for the user
-			return self::getLibraryForLocation($physicalLocation->libraryId);
+			return self::getLibraryForLocation($physicalLocation->locationId);
 		}
 
 		//Return the active library
@@ -1203,29 +1157,9 @@ class Library extends DataObject
 			}
 			return $this->holidays;
 		}elseif ($name == "archiveMoreDetailsOptions") {
-			if (!isset($this->archiveMoreDetailsOptions) && $this->libraryId){
-				$this->archiveMoreDetailsOptions = array();
-				$moreDetailsOptions = new LibraryArchiveMoreDetails();
-				$moreDetailsOptions->libraryId = $this->libraryId;
-				$moreDetailsOptions->orderBy('weight');
-				$moreDetailsOptions->find();
-				while($moreDetailsOptions->fetch()){
-					$this->archiveMoreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
-				}
-			}
-			return $this->archiveMoreDetailsOptions;
+			return $this->getArchiveMoreDetailsOptions();
 		}elseif ($name == "archiveSearchFacets") {
-			if (!isset($this->archiveSearchFacets) && $this->libraryId){
-				$this->archiveSearchFacets = array();
-				$facet = new LibraryArchiveSearchFacetSetting();
-				$facet->libraryId = $this->libraryId;
-				$facet->orderBy('weight');
-				$facet->find();
-				while($facet->fetch()){
-					$this->archiveSearchFacets[$facet->id] = clone($facet);
-				}
-			}
-			return $this->archiveSearchFacets;
+			return $this->getArchiveSearchFacets();
 		}elseif ($name == 'libraryLinks'){
 			if (!isset($this->libraryLinks) && $this->libraryId){
 				$this->libraryLinks = array();
@@ -1238,18 +1172,6 @@ class Library extends DataObject
 				}
 			}
 			return $this->libraryLinks;
-		}elseif ($name == 'libraryTopLinks'){
-			if (!isset($this->libraryTopLinks) && $this->libraryId){
-				$this->libraryTopLinks = array();
-				$libraryLink = new LibraryTopLinks();
-				$libraryLink->libraryId = $this->libraryId;
-				$libraryLink->orderBy('weight');
-				$libraryLink->find();
-				while($libraryLink->fetch()){
-					$this->libraryTopLinks[$libraryLink->id] = clone($libraryLink);
-				}
-			}
-			return $this->libraryTopLinks;
 		}elseif ($name == 'recordsOwned'){
 			if (!isset($this->recordsOwned) && $this->libraryId){
 				$this->recordsOwned = array();
@@ -1298,44 +1220,11 @@ class Library extends DataObject
 				return $this->materialsRequestFieldsToDisplay;
 			}
 		} elseif ($name == 'materialsRequestFormats') {
-			if (!isset($this->materialsRequestFormats) && $this->libraryId) {
-				$this->materialsRequestFormats = array();
-				$materialsRequestFormats = new MaterialsRequestFormats();
-				$materialsRequestFormats->libraryId = $this->libraryId;
-				$materialsRequestFormats->orderBy('weight');
-				if ($materialsRequestFormats->find()) {
-					while ($materialsRequestFormats->fetch()) {
-						$this->materialsRequestFormats[$materialsRequestFormats->id] = clone $materialsRequestFormats;
-					}
-				}
-				return $this->materialsRequestFormats;
-			}
+			return $this->getMaterialsRequestFormats();
 		} elseif ($name == 'materialsRequestFormFields') {
-			if (!isset($this->materialsRequestFormFields) && $this->libraryId) {
-				$this->materialsRequestFormFields = array();
-				$materialsRequestFormFields = new MaterialsRequestFormFields();
-				$materialsRequestFormFields->libraryId = $this->libraryId;
-				$materialsRequestFormFields->orderBy('weight');
-				if ($materialsRequestFormFields->find()) {
-					while ($materialsRequestFormFields->fetch()) {
-						$this->materialsRequestFormFields[$materialsRequestFormFields->id] = clone $materialsRequestFormFields;
-					}
-				}
-				return $this->materialsRequestFormFields;
-			}
+			return $this->getMaterialsRequestFormFields();
 		} elseif ($name == 'exploreMoreBar') {
-			if (!isset($this->exploreMoreBar) && $this->libraryId) {
-				$this->exploreMoreBar = array();
-				$exploreMoreBar = new ArchiveExploreMoreBar();
-				$exploreMoreBar->libraryId = $this->libraryId;
-				$exploreMoreBar->orderBy('weight');
-				if ($exploreMoreBar->find()) {
-					while ($exploreMoreBar->fetch()) {
-						$this->exploreMoreBar[$exploreMoreBar->id] = clone $exploreMoreBar;
-					}
-				}
-				return $this->exploreMoreBar;
-			}
+			return $this->getExploreMoreBar();
 		} elseif ($name == 'combinedResultSections') {
 			if (!isset($this->combinedResultSections) && $this->libraryId) {
 				$this->combinedResultSections = array();
@@ -1362,11 +1251,9 @@ class Library extends DataObject
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->holidays = $value;
 		}elseif ($name == "archiveMoreDetailsOptions") {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->archiveMoreDetailsOptions = $value;
+			$this->_archiveMoreDetailsOptions = $value;
 		}elseif ($name == "archiveSearchFacets") {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->archiveSearchFacets = $value;
+			$this->_archiveSearchFacets = $value;
 		}elseif ($name == 'libraryLinks'){
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->libraryLinks = $value;
@@ -1379,21 +1266,15 @@ class Library extends DataObject
 		}elseif ($name == 'sideLoadScopes'){
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->sideLoadScopes = $value;
-		}elseif ($name == 'libraryTopLinks'){
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->libraryTopLinks = $value;
 		}elseif ($name == 'materialsRequestFieldsToDisplay') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->materialsRequestFieldsToDisplay = $value;
 		}elseif ($name == 'materialsRequestFormats') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->materialsRequestFormats = $value;
+			$this->_materialsRequestFormats = $value;
 		}elseif ($name == 'materialsRequestFormFields') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->materialsRequestFormFields = $value;
+			$this->_materialsRequestFormFields = $value;
 		}elseif ($name == 'exploreMoreBar') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->exploreMoreBar = $value;
+			$this->_exploreMoreBar = $value;
 		}elseif ($name == 'combinedResultSections') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->combinedResultSections = $value;
@@ -1434,7 +1315,6 @@ class Library extends DataObject
 			$this->saveMaterialsRequestFieldsToDisplay();
 			$this->saveMaterialsRequestFormFields();
 			$this->saveLibraryLinks();
-			$this->saveLibraryTopLinks();
 			$this->saveArchiveMoreDetailsOptions();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
@@ -1452,7 +1332,7 @@ class Library extends DataObject
 		$deleteCheck = $this->saveMaterialsRequestFormats();
 		if ($deleteCheck instanceof AspenError) {
 			$ret = false;
-		};
+		}
 
 		return $ret;
 	}
@@ -1474,7 +1354,6 @@ class Library extends DataObject
 			$this->saveMaterialsRequestFormats();
 			$this->saveMaterialsRequestFormFields();
 			$this->saveLibraryLinks();
-			$this->saveLibraryTopLinks();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
 		}
@@ -1485,13 +1364,6 @@ class Library extends DataObject
 		if (isset ($this->libraryLinks) && is_array($this->libraryLinks)){
 			$this->saveOneToManyOptions($this->libraryLinks, 'libraryId');
 			unset($this->libraryLinks);
-		}
-	}
-
-	public function saveLibraryTopLinks(){
-		if (isset ($this->libraryTopLinks) && is_array($this->libraryTopLinks)){
-			$this->saveOneToManyOptions($this->libraryTopLinks, 'libraryId');
-			unset($this->libraryTopLinks);
 		}
 	}
 
@@ -1524,15 +1396,14 @@ class Library extends DataObject
 	}
 
 	public function saveMaterialsRequestFormats(){
-		if (isset ($this->materialsRequestFormats) && is_array($this->materialsRequestFormats)){
+		if (isset ($this->_materialsRequestFormats) && is_array($this->_materialsRequestFormats)){
 			/** @var MaterialsRequestFormats $object */
-			foreach ($this->materialsRequestFormats as $object){
+			foreach ($this->_materialsRequestFormats as $object){
 				if (isset($object->deleteOnSave) && $object->deleteOnSave == true){
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck) {
 						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';
-						$error = new AspenError($errorString);
-						return $error;
+						return new AspenError($errorString);
 					}
 				}else{
 					if (isset($object->id) && is_numeric($object->id)){ // (negative ids need processed with insert)
@@ -1543,42 +1414,40 @@ class Library extends DataObject
 					}
 				}
 			}
-			unset($this->materialsRequestFormats);
+			unset($this->_materialsRequestFormats);
 		}
 		return true;
 	}
 
 	public function saveMaterialsRequestFormFields(){
-		if (isset ($this->materialsRequestFormFields) && is_array($this->materialsRequestFormFields)){
-			$this->saveOneToManyOptions($this->materialsRequestFormFields, 'libraryId');
-			unset($this->materialsRequestFormFields);
+		if (isset ($this->_materialsRequestFormFields) && is_array($this->_materialsRequestFormFields)){
+			$this->saveOneToManyOptions($this->_materialsRequestFormFields, 'libraryId');
+			unset($this->_materialsRequestFormFields);
 		}
 	}
 
 	private function saveExploreMoreBar() {
-		if (isset ($this->exploreMoreBar) && is_array($this->exploreMoreBar)){
-			$this->saveOneToManyOptions($this->exploreMoreBar, 'libraryId');
-			unset($this->exploreMoreBar);
+		if (isset ($this->_exploreMoreBar) && is_array($this->_exploreMoreBar)){
+			$this->saveOneToManyOptions($this->_exploreMoreBar, 'libraryId');
+			unset($this->_exploreMoreBar);
 		}
 	}
 
 	public function clearExploreMoreBar(){
 		$this->clearOneToManyOptions('ArchiveExploreMoreBar', 'libraryId');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->exploreMoreBar = array();
+		$this->_exploreMoreBar = array();
 	}
 
 	public function saveArchiveMoreDetailsOptions(){
-		if (isset ($this->archiveMoreDetailsOptions) && is_array($this->archiveMoreDetailsOptions)){
-			$this->saveOneToManyOptions($this->archiveMoreDetailsOptions, 'libraryId');
-			unset($this->archiveMoreDetailsOptions);
+		if (isset ($this->_archiveMoreDetailsOptions) && is_array($this->_archiveMoreDetailsOptions)){
+			$this->saveOneToManyOptions($this->_archiveMoreDetailsOptions, 'libraryId');
+			unset($this->_archiveMoreDetailsOptions);
 		}
 	}
 
 	public function clearArchiveMoreDetailsOptions(){
 		$this->clearOneToManyOptions('LibraryArchiveMoreDetails', 'libraryId');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->archiveMoreDetailsOptions = array();
+		$this->_archiveMoreDetailsOptions = array();
 	}
 
 	public function clearMaterialsRequestFormFields(){
@@ -1589,21 +1458,19 @@ class Library extends DataObject
 
 	public function clearMaterialsRequestFormats(){
 		$this->clearOneToManyOptions('MaterialsRequestFormats', 'libraryId');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->materialsRequestFormats = array();
+		$this->_materialsRequestFormats = array();
 	}
 
 	public function saveArchiveSearchFacets(){
-		if (isset ($this->archiveSearchFacets) && is_array($this->archiveSearchFacets)){
-			$this->saveOneToManyOptions($this->archiveSearchFacets, 'libraryId');
-			unset($this->archiveSearchFacets);
+		if (isset ($this->_archiveSearchFacets) && is_array($this->_archiveSearchFacets)){
+			$this->saveOneToManyOptions($this->_archiveSearchFacets, 'libraryId');
+			unset($this->_archiveSearchFacets);
 		}
 	}
 
 	public function clearArchiveSearchFacets(){
 		$this->clearOneToManyOptions('LibraryArchiveSearchFacetSetting', 'libraryId');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->archiveSearchfacets = array();
+		$this->_archiveSearchFacets = array();
 	}
 
 	public function saveCombinedResultSections(){
@@ -1733,7 +1600,7 @@ class Library extends DataObject
 	{
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin')) {
+		if (!UserAccount::userHasPermission('Administer All Libraries')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
@@ -1757,4 +1624,121 @@ class Library extends DataObject
 		}
 		return $this->_overdriveScope;
 	}
+
+	private $_exploreMoreBar;
+	public function getExploreMoreBar()
+	{
+		if (!isset($this->_exploreMoreBar) && $this->libraryId) {
+			$this->_exploreMoreBar = array();
+			$exploreMoreBar = new ArchiveExploreMoreBar();
+			$exploreMoreBar->libraryId = $this->libraryId;
+			$exploreMoreBar->orderBy('weight');
+			if ($exploreMoreBar->find()) {
+				while ($exploreMoreBar->fetch()) {
+					$this->_exploreMoreBar[$exploreMoreBar->id] = clone $exploreMoreBar;
+				}
+			}
+		}
+		return $this->_exploreMoreBar;
+	}
+
+	public function setExploreMoreBar($value){
+		$this->_exploreMoreBar = $value;
+	}
+
+	private $_archiveSearchFacets;
+	public function getArchiveSearchFacets()
+	{
+		if (!isset($this->_archiveSearchFacets) && $this->libraryId){
+			$this->_archiveSearchFacets = array();
+			$facet = new LibraryArchiveSearchFacetSetting();
+			$facet->libraryId = $this->libraryId;
+			$facet->orderBy('weight');
+			$facet->find();
+			while($facet->fetch()){
+				$this->_archiveSearchFacets[$facet->id] = clone($facet);
+			}
+		}
+		return $this->_archiveSearchFacets;
+	}
+
+	public function setArchiveSearchFacets($value){
+		$this->_archiveSearchFacets = $value;
+	}
+
+	private $_archiveMoreDetailsOptions;
+	public function setArchiveMoreDetailsOptions($value)
+	{
+		$this->_archiveMoreDetailsOptions = $value;
+	}
+
+	/**
+	 * @return array|null
+	 */
+	public function getArchiveMoreDetailsOptions()
+	{
+		if (!isset($this->_archiveMoreDetailsOptions) && $this->libraryId) {
+			$this->_archiveMoreDetailsOptions = array();
+			$moreDetailsOptions = new LibraryArchiveMoreDetails();
+			$moreDetailsOptions->libraryId = $this->libraryId;
+			$moreDetailsOptions->orderBy('weight');
+			$moreDetailsOptions->find();
+			while ($moreDetailsOptions->fetch()) {
+				$this->_archiveMoreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
+			}
+		}
+		return $this->_archiveMoreDetailsOptions;
+	}
+
+	private $_materialsRequestFormFields;
+	public function setMaterialsRequestFormFields($value)
+	{
+		$this->_materialsRequestFormFields = $value;
+	}
+
+	/**
+	 * @return array|null
+	 */
+	public function getMaterialsRequestFormFields()
+	{
+		if (!isset($this->_materialsRequestFormFields) && $this->libraryId) {
+			$this->_materialsRequestFormFields = array();
+			$materialsRequestFormFields = new MaterialsRequestFormFields();
+			$materialsRequestFormFields->libraryId = $this->libraryId;
+			$materialsRequestFormFields->orderBy('weight');
+			if ($materialsRequestFormFields->find()) {
+				while ($materialsRequestFormFields->fetch()) {
+					$this->_materialsRequestFormFields[$materialsRequestFormFields->id] = clone $materialsRequestFormFields;
+				}
+			}
+		}
+		return $this->_materialsRequestFormFields;
+	}
+
+	private $_materialsRequestFormats;
+	public function setMaterialsRequestFormats($value)
+	{
+		$this->_materialsRequestFormats = $value;
+	}
+
+	/**
+	 * @return array|null
+	 */
+	public function getMaterialsRequestFormats()
+	{
+		if (!isset($this->_materialsRequestFormats) && $this->libraryId) {
+			$this->_materialsRequestFormats = array();
+			$materialsRequestFormats = new MaterialsRequestFormats();
+			$materialsRequestFormats->libraryId = $this->libraryId;
+			$materialsRequestFormats->orderBy('weight');
+			if ($materialsRequestFormats->find()) {
+				while ($materialsRequestFormats->fetch()) {
+					$this->_materialsRequestFormats[$materialsRequestFormats->id] = clone $materialsRequestFormats;
+				}
+			}
+		}
+		return $this->_materialsRequestFormats;
+	}
+
+
 }

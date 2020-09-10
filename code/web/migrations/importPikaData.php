@@ -393,7 +393,7 @@ function importNotInterested($startTime, $exportPath, &$existingUsers, &$missing
 function importRatingsAndReviews($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
 	echo ("Starting to import ratings and reviews\n");
 	set_time_limit(600);
-	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 	$patronsRatingsAndReviewsHnd = fopen($exportPath . "patronRatingsAndReviews.csv", 'r');
 	$numImports = 0;
 
@@ -457,7 +457,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 	$memoryWatcher->logMemory("Start of list import");
 
 	set_time_limit(600);
-	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 	$patronsListHnd = fopen($exportPath . "patronLists.csv", 'r');
 	$numImports = 0;
 	$batchStartTime = time();
@@ -550,7 +550,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 			continue;
 		}
 
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $listId;
 		$listEntry->source = 'GroupedWork';

@@ -22,7 +22,6 @@ class ILS_Dashboard extends Admin_Admin
 		$lastYear = $thisYear - 1;
 		//Generate stats
 
-		/** @var IndexingProfile[] $indexingProfiles */
 		global $indexingProfiles;
 		$profilesToGetStatsFor = [];
 		foreach ($indexingProfiles as $indexingProfile) {
@@ -53,11 +52,6 @@ class ILS_Dashboard extends Admin_Admin
 		$interface->assign('activeRecordsAllTime', $activeRecordsAllTime);
 
 		$this->display('dashboard.tpl', 'ILS Usage Dashboard');
-	}
-
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'cataloger', 'superCataloger');
 	}
 
 	/**
@@ -162,5 +156,24 @@ class ILS_Dashboard extends Admin_Admin
 			];
 		}
 		return $usageStats;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('/ILS/Dashboard', 'Usage Dashboard');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}
 }

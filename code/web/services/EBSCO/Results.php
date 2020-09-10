@@ -1,6 +1,6 @@
 <?php
-
-class EBSCO_Results extends Action{
+require_once ROOT_DIR . '/ResultsAction.php';
+class EBSCO_Results extends ResultsAction {
 	function launch() {
 		global $interface;
 		global $timer;
@@ -8,6 +8,7 @@ class EBSCO_Results extends Action{
 
 		if (!isset($_REQUEST['lookfor']) || empty($_REQUEST['lookfor'])){
 			$this->display('noSearchTerm.tpl', 'Please enter a search term');
+			return;
 		}
 
 		$aspenUsage->ebscoEdsSearches++;
@@ -113,6 +114,12 @@ class EBSCO_Results extends Action{
 		$displayTemplate = 'EBSCO/list-list.tpl'; // structure for regular results
 		$interface->assign('subpage', $displayTemplate);
 		$interface->assign('sectionLabel', 'EBSCO Research Databases');
-		$this->display($summary['resultTotal'] > 0 ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'EBSCO/results-sidebar.tpl', false);
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'EBSCO/results-sidebar.tpl' : '';
+		$this->display($summary['resultTotal'] > 0 ? 'list.tpl' : 'list-none.tpl', $pageTitle, $sidebar, false);
+	}
+
+	function getBreadcrumbs()
+	{
+		return parent::getResultsBreadcrumbs('Articles & Databases');
 	}
 }

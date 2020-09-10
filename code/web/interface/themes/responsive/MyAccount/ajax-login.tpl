@@ -1,7 +1,7 @@
 {strip}
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal">×</button>
-		<h4 class="modal-title" id="myModalLabel">Login</h4>
+		<h4 class="modal-title" id="myModalLabel">{translate text="Sign In"}</h4>
 	</div>
 	<div class="modal-body">
 		<p class="alert alert-danger" id="loginError" style="display: none"></p>
@@ -73,36 +73,33 @@
 	<div class="modal-footer">
 		<button class="btn" data-dismiss="modal" id="modalClose">{translate text=Close}</button>
 		<span class="modal-buttons">
-		<input type="submit" name="submit" value="{if !empty($multiStep)}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
+		<input type="submit" name="submit" value="{if !empty($multiStep)}Continue{else}Sign In{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
 	</span>
 	</div>
 {/strip}
 {literal}
 <script type="text/javascript">
-    $('#username').focus().select();
-    $(function () {
-        AspenDiscovery.Account.validateCookies();
-        var haslocalStorage = AspenDiscovery.hasLocalStorage() || false;
-        if (haslocalStorage) {
-            var rememberMe = (window.localStorage.getItem('rememberMe') == 'true'); // localStorage saves everything as strings
-            if (rememberMe) {
-                var lastUserName = window.localStorage.getItem('lastUserName'),
-                    lastPwd = window.localStorage.getItem('lastPwd');
-				{/literal}{*// showPwd = (window.localStorage.getItem('showPwd') == 'true'); // localStorage saves everything as strings *}{literal}
-                $("#username").val(lastUserName);
-                $("#password").val(lastPwd);
-				{/literal}{*// $("#showPwd").prop("checked", showPwd  ? "checked" : '');
-//					if (showPwd) AspenDiscovery.pwdToText('password');*}{literal}
-            }
-            $("#rememberMe").prop("checked", rememberMe ? "checked" : '');
-        } else {
+	$('#username').focus().select();
+	$(function () {
+		AspenDiscovery.Account.validateCookies();
+		let hasLocalStorage = AspenDiscovery.hasLocalStorage() || false;
+		if (hasLocalStorage) {
+			let rememberMe = (window.localStorage.getItem('rememberMe') === 'true'); // localStorage saves everything as strings
+			if (rememberMe) {
+				let lastUserName = window.localStorage.getItem('lastUserName');
+				let lastPwd = window.localStorage.getItem('lastPwd');
+				$("#username").val(lastUserName);
+				$("#password").val(lastPwd);
+			}
+			$("#rememberMe").prop("checked", rememberMe ? "checked" : '');
+		} else {
 			{/literal}{* // disable, uncheck & hide RememberMe checkbox if localStorage isn't available.*}{literal}
-            $("#rememberMe").prop({checked: '', disabled: true}).parent().hide();
-        }
+			$("#rememberMe").prop({checked: '', disabled: true}).parent().hide();
+		}
 		{/literal}{* // Once Box is shown, focus on username input and Select the text;*}{literal}
-        $("#modalDialog").on('shown.bs.modal', function () {
-            $('#username').focus().select();
-        })
-    });
+		$("#modalDialog").on('shown.bs.modal', function () {
+			$('#username').focus().select();
+		})
+	});
 </script>
 {/literal}

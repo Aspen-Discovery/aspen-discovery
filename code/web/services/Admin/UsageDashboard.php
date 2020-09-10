@@ -35,10 +35,6 @@ class Admin_UsageDashboard extends Admin_Admin
 		$this->display('usage_dashboard.tpl', 'Aspen Usage Dashboard');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year
@@ -88,5 +84,24 @@ class Admin_UsageDashboard extends Admin_Admin
 			'totalBlockedRequests' => $usage->totalBlockedRequests,
 			'totalBlockedApiRequests' => $usage->totalBlockedApiRequests,
 		];
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Dashboard');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View System Reports');
 	}
 }

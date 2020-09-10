@@ -45,12 +45,15 @@ class SearchAPI extends Action
 
 	function getIndexStatus()
 	{
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		global $configArray;
 		$checks = [];
+		$serverStats = [];
 
 		//Check if solr is running by pinging it
+		/** @var SearchObject_GroupedWorkSearcher $solrSearcher */
 		$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
-		if (!$solrSearcher->ping(false)) {
+		if (!$solrSearcher->ping()) {
 			$this->addCheck($checks, 'Solr', self::STATUS_CRITICAL, "Solr is not responding");
 		}else{
 			$this->addCheck($checks, 'Solr');
@@ -64,6 +67,7 @@ class SearchAPI extends Action
 		}else{
 			$backupFiles = scandir($backupDir);
 			$backupFileFound = false;
+			$backupFileTooSmall = false;
 			foreach ($backupFiles as $backupFile){
 				if (preg_match('/.*\.sql\.gz/', $backupFile)){
 					$fileCreationTime = filectime($backupDir . $backupFile);
@@ -72,6 +76,9 @@ class SearchAPI extends Action
 						if ($fileSize > 1000) {
 							//We have a backup file created in the last 24.5 hours (30 min buffer to give time for the backup to be created)
 							$backupFileFound = true;
+						}else{
+							$backupFileFound = true;
+							$backupFileTooSmall = true;
 						}
 					}
 				}
@@ -79,16 +86,34 @@ class SearchAPI extends Action
 			if (!$backupFileFound){
 				$this->addCheck($checks, 'Backup', self::STATUS_CRITICAL, "A current backup of Aspen was not found in $backupDir.  Check my.cnf to be sure mysqldump credentials exist.");
 			}else{
-				$this->addCheck($checks, 'Backup');
+				if ($backupFileTooSmall){
+					$this->addCheck($checks, 'Backup', self::STATUS_CRITICAL, "The backup for Aspen was found, but is too small.  Check my.cnf to be sure mysqldump credentials exist.");
+				}else{
+					$this->addCheck($checks, 'Backup');
+				}
 			}
 		}
 
 		//Check free disk space
-		$freeSpace = disk_free_space('/');
-		if ($freeSpace < 5000000000){
-			$this->addCheck($checks, 'Backup', self::STATUS_CRITICAL, "The disk currently has less than 5GB of space available");
-		}else{
-			$this->addCheck($checks, 'Backup');
+		if (is_dir('/data')) {
+			$freeSpace = disk_free_space('/data');
+			$this->addServerStat($serverStats, 'Data Disk Space', StringUtils::formatBytes($freeSpace));
+			if ($freeSpace < 7500000000) {
+				$this->addCheck($checks, 'Data Disk Space', self::STATUS_CRITICAL, "The data drive currently has less than 7.5GB of space available");
+			} else {
+				$this->addCheck($checks, 'Data Disk Space');
+			}
+		}
+
+		//Check free disk space
+		if (is_dir('/usr')) {
+			$freeSpace = disk_free_space('/usr');
+			$this->addServerStat($serverStats, 'Usr Disk Space', StringUtils::formatBytes($freeSpace));
+			if ($freeSpace < 5000000000) {
+				$this->addCheck($checks, 'Usr Disk Space', self::STATUS_CRITICAL, "The usr drive currently has less than 5GB of space available");
+			} else {
+				$this->addCheck($checks, 'Usr Disk Space');
+			}
 		}
 
 		//Check free memory
@@ -104,13 +129,14 @@ class SearchAPI extends Action
 					$freeMem = $pieces[1];
 				}
 			}
+			$this->addServerStat($serverStats, 'Total Memory', StringUtils::formatBytes($totalMem));
+			$this->addServerStat($serverStats, 'Available Memory', StringUtils::formatBytes($freeMem));
 			$percentMemoryUsage = round((1 - ($freeMem / $totalMem)) * 100, 1);
+			$this->addServerStat($serverStats, 'Percent Memory In Use', $percentMemoryUsage);
 			if ($freeMem < 1000000){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "Less than 1GB ($freeMem) of available memory exists, increase available resources");
 			}elseif ($percentMemoryUsage > 95){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "{$percentMemoryUsage}% of total memory is in use, increase available resources");
-			}elseif ($percentMemoryUsage < 40){
-				$this->addCheck($checks, 'Memory Usage', self::STATUS_WARN, "$percentMemoryUsage% of memory is in use, may be able to reduce resources");
 			}else{
 				$this->addCheck($checks, 'Memory Usage');
 			}
@@ -121,16 +147,34 @@ class SearchAPI extends Action
 
 			//Check load (use the 5 minute load)
 			$load = sys_getloadavg();
+			$this->addServerStat($serverStats, '1 minute Load Average', $load[0]);
+			$this->addServerStat($serverStats, '5 minute Load Average', $load[1]);
+			$this->addServerStat($serverStats, '15 minute Load Average', $load[2]);
+			$this->addServerStat($serverStats, 'Load Per CPU', ($load[1] / $numCPUs));
 			if ($load[1] > $numCPUs * 1.5){
 				if ($load[0] >= $load[1]){
 					$this->addCheck($checks, 'Load Average', self::STATUS_CRITICAL, "Load is very high {$load[1]} and is increasing");
 				}else{
 					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is very high {$load[1]}, but it is decreasing");
 				}
-			}elseif ($load[1] > $numCPUs){
-				$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is higher than optimal {$load[1]}");
 			}else{
 				$this->addCheck($checks, 'Load Average');
+			}
+
+			//Check wait time
+			$topInfo = shell_exec("top -n 1 -b | grep %Cpu");
+			if (preg_match('/(\d+\.\d+) wa,/', $topInfo, $matches)){
+				$waitTime = $matches[1];
+				$this->addServerStat($serverStats, 'Wait Time', $waitTime);
+				if ($waitTime > 15){
+					$this->addCheck($checks, 'Wait Time', self::STATUS_WARN, "Wait time is over 15 $waitTime");
+				}elseif ($waitTime > 30){
+					$this->addCheck($checks, 'Wait Time', self::STATUS_CRITICAL, "Wait time is over 30 $waitTime");
+				}else{
+					$this->addCheck($checks, 'Wait Time');
+				}
+			}else{
+				$this->addCheck($checks, 'Wait Time', self::STATUS_CRITICAL, "Wait time not found in $topInfo");
 			}
 		}
 
@@ -151,15 +195,15 @@ class SearchAPI extends Action
 
 		//Check for errors within the logs
 		require_once ROOT_DIR . '/sys/Module.php';
-		$module = new Module();
-		$module->enabled = true;
-		$module->find();
-		while ($module->fetch()){
-			if (!empty($module->logClassPath) && !empty($module->logClassName)){
+		$aspenModule = new Module();
+		$aspenModule->enabled = true;
+		$aspenModule->find();
+		while ($aspenModule->fetch()){
+			if (!empty($aspenModule->logClassPath) && !empty($aspenModule->logClassName)){
 				/** @noinspection PhpIncludeInspection */
-				require_once ROOT_DIR . $module->logClassPath;
+				require_once ROOT_DIR . $aspenModule->logClassPath;
 				/** @var BaseLogEntry $logEntry */
-				$logEntry = new $module->logClassName();
+				$logEntry = new $aspenModule->logClassName();
 				$logEntry->orderBy("id DESC");
 				$logEntry->limit(0, 3);
 				$logErrors = 0;
@@ -170,9 +214,9 @@ class SearchAPI extends Action
 					}
 				}
 				if ($logErrors > 0){
-					$this->addCheck($checks, $module->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$module->name} had errors");
+					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
 				}else{
-					$this->addCheck($checks, $module->name);
+					$this->addCheck($checks, $aspenModule->name);
 				}
 			}
 		}
@@ -230,13 +274,15 @@ class SearchAPI extends Action
 			$result = array(
 				'aspen_health_status' => $hasCriticalErrors ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
 				'message' => "Errors have been found",
-				'checks' => $checks
+				'checks' => $checks,
+				'serverStats' => $serverStats
 			);
 		} else {
 			$result = array(
 				'aspen_health_status' => self::STATUS_OK,
 				'message' => "Everything is current",
-				'checks' => $checks
+				'checks' => $checks,
+				'serverStats' => $serverStats
 			);
 		}
 
@@ -283,6 +329,15 @@ class SearchAPI extends Action
 		if (!empty($note)){
 			$checks[$checkNameMachine]['note'] = $note;
 		}
+	}
+
+	private function addServerStat(array &$serverStats, string $statName, $value)
+	{
+		$statNameMachine = str_replace(' ', '_', strtolower($statName));
+		$serverStats[$statNameMachine] = [
+			'name' => $statName,
+			'value' => $value
+		];
 	}
 
 	/**
@@ -630,4 +685,8 @@ class SearchAPI extends Action
 		return $jsonResults;
 	}
 
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

@@ -31,6 +31,7 @@ public class GroupedWorkIndexer {
 	private RbdigitalProcessor rbdigitalProcessor;
 	private RbdigitalMagazineProcessor rbdigitalMagazineProcessor;
 	private CloudLibraryProcessor cloudLibraryProcessor;
+	private Axis360Processor axis360Processor;
 	private HooplaProcessor hooplaProcessor;
 	private final HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private final HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
@@ -209,7 +210,7 @@ public class GroupedWorkIndexer {
 							okToIndex = false;
 							return;
 					}
-				}else if (!curType.equals("cloud_library") && !curType.equals("rbdigital") && !curType.equals("rbdigital_magazine") && !curType.equals("hoopla") && !curType.equals("overdrive")) {
+				}else if (!curType.equals("cloud_library") && !curType.equals("rbdigital") && !curType.equals("rbdigital_magazine") && !curType.equals("hoopla") && !curType.equals("overdrive") && !curType.equals("axis360")) {
 					getSideLoadSettings.setString(1, curType);
 					ResultSet getSideLoadSettingsRS = getSideLoadSettings.executeQuery();
 					if (getSideLoadSettingsRS.next()){
@@ -241,6 +242,8 @@ public class GroupedWorkIndexer {
 		cloudLibraryProcessor = new CloudLibraryProcessor(this, dbConn, logger);
 
 		hooplaProcessor = new HooplaProcessor(this, dbConn, logger);
+
+		axis360Processor = new Axis360Processor(this, dbConn, logger);
 
 		//Load translation maps
 		loadSystemTranslationMaps();
@@ -756,19 +759,22 @@ public class GroupedWorkIndexer {
 		type = type.toLowerCase();
 		switch (type) {
 			case "overdrive":
-				overDriveProcessor.processRecord(groupedWork, identifier);
+				overDriveProcessor.processRecord(groupedWork, identifier, logEntry);
 				break;
 			case "rbdigital":
-				rbdigitalProcessor.processRecord(groupedWork, identifier);
+				rbdigitalProcessor.processRecord(groupedWork, identifier, logEntry);
 				break;
 			case "rbdigital_magazine":
-				rbdigitalMagazineProcessor.processRecord(groupedWork, identifier);
+				rbdigitalMagazineProcessor.processRecord(groupedWork, identifier, logEntry);
 				break;
 			case "hoopla":
-				hooplaProcessor.processRecord(groupedWork, identifier);
+				hooplaProcessor.processRecord(groupedWork, identifier, logEntry);
 				break;
 			case "cloud_library":
-				cloudLibraryProcessor.processRecord(groupedWork, identifier);
+				cloudLibraryProcessor.processRecord(groupedWork, identifier, logEntry);
+				break;
+			case "axis360":
+				axis360Processor.processRecord(groupedWork, identifier, logEntry);
 				break;
 			default:
 				if (ilsRecordProcessors.containsKey(type)) {

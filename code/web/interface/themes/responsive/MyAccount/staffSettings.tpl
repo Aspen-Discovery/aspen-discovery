@@ -7,9 +7,6 @@
 				</div>
 			{/if}
 
-			{* Alternate Mobile MyAccount Menu *}
-			{include file="MyAccount/mobilePageHeader.tpl"}
-
 			<span class='availableHoldsNoticePlaceHolder'></span>
 
 			<h1>{translate text='Staff Settings'}</h1>
@@ -28,7 +25,7 @@
 						<div class="col-tn-12">
 							<ul>
 								{foreach from=$profile->roles item=role}
-									<li>{$role}</li>
+									<li>{$role->name} - {$role->description}</li>
 								{/foreach}
 							</ul>
 						</div>
@@ -103,7 +100,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
+				You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
 			</div>
 		{/if}
 	</div>

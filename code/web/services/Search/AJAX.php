@@ -68,17 +68,16 @@ class AJAX extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getAutoSuggestList(){
-		require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
+	function getAutoSuggestList()
+	{
+		require_once ROOT_DIR . '/sys/SearchSuggestions.php';
 		global $timer;
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : $_REQUEST['q'];
-        $searchIndex = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : '';
-        $searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : '';
-		$cacheKey = 'auto_suggest_list_' . urlencode($searchSource) . '_' . urlencode($searchIndex
-            ) . '_' . urlencode($searchTerm);
+		$searchIndex = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : '';
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : '';
+		$cacheKey = 'auto_suggest_list_' . urlencode($searchSource) . '_' . urlencode($searchIndex) . '_' . urlencode($searchTerm);
 		$searchSuggestions = $memCache->get($cacheKey);
 		if ($searchSuggestions == false || isset($_REQUEST['reload'])){
 			$suggestions = new SearchSuggestions();
@@ -86,11 +85,11 @@ class AJAX extends Action {
 			$commonSearchTerms = array();
 			foreach ($commonSearches as $searchTerm){
 				if (is_array($searchTerm)){
-				    $plainText = preg_replace('~</?b>~i', '', $searchTerm['phrase']);
-					$commonSearchTerms[] =[
-					    'label' => $searchTerm['phrase'],
-                        'value' => $plainText
-                    ];
+					$plainText = preg_replace('~</?b>~i', '', $searchTerm['phrase']);
+					$commonSearchTerms[] = [
+						'label' => $searchTerm['phrase'],
+						'value' => $plainText
+					];
 				}else{
 					$commonSearchTerms[] = $searchTerm;
 				}
@@ -159,7 +158,7 @@ class AJAX extends Action {
 			if (is_array($titles)){
 				foreach ($titles as $key => $rawData){
 					$interface->assign('key', $key);
-					// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
+					// 20131206 James Staub: bookTitle is in the list API and it removes the final front slash, but I didn't get $rawData['bookTitle'] to load
 
 					$titleShort = preg_replace(array('/:.*?$/', '/\s*\/$\s*/'),'', $rawData['title']);
 
@@ -223,7 +222,7 @@ class AJAX extends Action {
 
 			$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
 			if ($collectionSpotlightList->sourceListId != null && $collectionSpotlightList->sourceListId > 0){
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 				$sourceList     = new UserList();
 				$sourceList->id = $collectionSpotlightList->sourceListId;
 				if ($sourceList->find(true)) {
@@ -236,7 +235,7 @@ class AJAX extends Action {
 			}else{
 				$searchObject = $collectionSpotlightList->getSearchObject();
 
-				$searchResult = $searchObject->processSearch();
+				$searchObject->processSearch();
 
 				$result['listTitle'] = $collectionSpotlightList->name;
 				$result['listDescription'] = '';
@@ -255,12 +254,11 @@ class AJAX extends Action {
 	/** @noinspection PhpUnused */
 	function getEmailForm(){
 		global $interface;
-		$results = array(
+		return array(
 			'title' => 'Email Search',
 			'modalBody' => $interface->fetch('Search/email.tpl'),
 			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send Email</span>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -481,5 +479,10 @@ class AJAX extends Action {
 		}
 
 		return $response;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

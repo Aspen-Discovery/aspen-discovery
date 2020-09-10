@@ -839,6 +839,14 @@ function getIndexingUpdates()
 			]
 		],
 
+		'indexing_profile_audienceSubfield' => [
+			'title' => 'Indexing Profile - audienceSubfield',
+			'description' => 'Add the ability to control which field is used to determine audience',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN audienceSubfield char(1) DEFAULT null'
+			]
+		],
+
 		'indexing_exclude_locations' => [
 			'title' => 'Indexing - Exclude Records by Location and Sublocation',
 			'description' => 'Add the ability to exclude records from a library/location by location or sublocation',

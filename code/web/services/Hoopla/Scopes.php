@@ -37,20 +37,30 @@ class Hoopla_Scopes extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging', 'superCataloger');
-	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger');
-	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
 	}
 
 	function getInstructions(){
 		return '';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#hoopla', 'Hoopla');
+		$breadcrumbs[] = new Breadcrumb('/Hoopla/Scopes', 'Scopes');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'hoopla';
+	}
+
+	function canView()
+	{
+		UserAccount::userHasPermission('Administer Hoopla');
 	}
 }

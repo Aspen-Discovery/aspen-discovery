@@ -99,6 +99,17 @@ function getGenealogyUpdates(){
 			],
 		],
 
+		'genealogy_obituary_date_update' => [
+			'title' => 'Genealogy Obit date update',
+			'description' => 'Add split date information to obituaries if not already added',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE obituary ADD COLUMN dateDay INT NULL",
+				"ALTER TABLE obituary ADD COLUMN dateMonth INT NULL",
+				"ALTER TABLE obituary ADD COLUMN dateYear INT NULL"
+			]
+		],
+
 		'genealogy_module' => [
 			'title' => 'Create Genealogy Module',
 			'description' => 'Create Genealogy Module',

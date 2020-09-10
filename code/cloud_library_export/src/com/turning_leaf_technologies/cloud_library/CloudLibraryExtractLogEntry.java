@@ -10,9 +10,9 @@ import java.util.Date;
 
 class CloudLibraryExtractLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
-	private Date startTime;
+	private final Date startTime;
 	private Date endTime;
-	private ArrayList<String> notes = new ArrayList<>();
+	private final ArrayList<String> notes = new ArrayList<>();
 	private int numProducts = 0;
 	private int numErrors = 0;
 	private int numAdded = 0;
@@ -20,7 +20,7 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 	private int numUpdated = 0;
 	private int numAvailabilityChanges = 0;
 	private int numMetadataChanges = 0;
-	private Logger logger;
+	private final Logger logger;
 
 	CloudLibraryExtractLogEntry(Connection dbConn, Logger logger) {
 		this.logger = logger;

@@ -578,6 +578,7 @@ public class RecordGroupingProcessor {
 		formatsToFormatCategory.put("seedpacket", "other");
 		formatsToFormatCategory.put("magazine-overdrive", "ebook");
 		formatsToFormatCategory.put("magazine", "book");
+		formatsToFormatCategory.put("xps", "ebook");
 	}
 
 	static HashMap<String, String> categoryMap = new HashMap<>();

@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 abstract class ObjectEditor extends Admin_Admin
 {
+	protected $activeObject;
 	function launch()
 	{
 		global $interface;
@@ -50,7 +51,7 @@ abstract class ObjectEditor extends Admin_Admin
 				$this->viewIndividualObject($structure);
 			}
 		}
-		$this->display($interface->getTemplate(), $this->getPageTitle(), 'Search/home-sidebar.tpl');
+		$this->display($interface->getTemplate(), $this->getPageTitle());
 	}
 	/**
 	 * The class name of the object which is being edited
@@ -144,6 +145,8 @@ abstract class ObjectEditor extends Admin_Admin
 			$propertyName = $property['property'];
 			if (isset($_REQUEST[$propertyName])){
 				$object->$propertyName = $_REQUEST[$propertyName];
+			}elseif (!empty($property['default'])){
+				$object->$propertyName = $property['default'];
 			}
 		}
 	}
@@ -177,6 +180,7 @@ abstract class ObjectEditor extends Admin_Admin
 			if (method_exists($existingObject, 'label')){
 				$interface->assign('objectName', $existingObject->label());
 			}
+			$this->activeObject = $existingObject;
 		}else{
 			$existingObject = null;
 		}
@@ -371,6 +375,7 @@ abstract class ObjectEditor extends Admin_Admin
 	 * @param DataObject|null $object1
 	 * @param DataObject|null $object2
 	 * @param array $properties
+	 * @param string|null $sectionName
 	 * @return array
 	 */
 	protected function compareObjectProperties($structure, ?DataObject $object1, ?DataObject $object2, array $properties, $sectionName): array

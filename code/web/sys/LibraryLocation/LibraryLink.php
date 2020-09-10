@@ -19,7 +19,7 @@ class LibraryLink extends DataObject{
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin')){
+		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
@@ -28,7 +28,7 @@ class LibraryLink extends DataObject{
 		while ($library->fetch()){
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
-		$structure = array(
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the hours within the database'),
 			'libraryId' => array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'A link to the library which the location belongs to'),
 			'category' => array('property'=>'category', 'type'=>'text', 'label'=>'Category', 'description'=>'The category of the link', 'size'=>'80', 'maxLength'=>100),
@@ -43,7 +43,6 @@ class LibraryLink extends DataObject{
 			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.', 'required'=> true),
 
 		);
-		return $structure;
 	}
 
 	function getEditLink(){

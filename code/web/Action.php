@@ -1,11 +1,17 @@
 <?php
 
-//require_once 'PEAR.php';
-
 // Abstract Base Class for Actions
+require_once ROOT_DIR . '/sys/Breadcrumb.php';
 abstract class Action
 {
-    abstract function launch();
+	private $isStandalonePage;
+	function __construct($isStandalonePage = false) {
+		$this->isStandalonePage = $isStandalonePage;
+		global $interface;
+		$interface->assign('isStandalonePage', true);
+	}
+
+	abstract function launch();
 
 	/**
 	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the Full Record View Pages
@@ -16,6 +22,7 @@ abstract class Action
 	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Search/home-sidebar.tpl', $translateTitle = true) {
 		global $interface;
 		if (!empty($sidebarTemplate)) $interface->assign('sidebar', $sidebarTemplate);
+		$interface->assign('breadcrumbs', $this->getBreadcrumbs());
 		$interface->setTemplate($mainContentTemplate);
 		$interface->setPageTitle($pageTitle, $translateTitle);
 		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
@@ -28,7 +35,11 @@ abstract class Action
 				//Messages table doesn't exist, ignore
 			}
 		}
-		$interface->display('layout.tpl');
+		if ($this->isStandalonePage){
+			$interface->display('standalone-layout.tpl');
+		}else {
+			$interface->display('layout.tpl');
+		}
 	}
 
 	function setShowCovers() {
@@ -56,4 +67,6 @@ abstract class Action
 		echo("<h1>Forbidden</h1><p><strong>API requests from {$clientIP} are forbidden.</strong></p>");
 		die();
 	}
+
+	abstract function getBreadcrumbs();
 }

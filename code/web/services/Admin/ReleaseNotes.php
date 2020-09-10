@@ -29,7 +29,22 @@ class Admin_ReleaseNotes extends Admin_Admin
 		$this->display('releaseNotes.tpl', 'Release Notes');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_help', 'Aspen Discovery Help');
+		$breadcrumbs[] = new Breadcrumb('', 'Release Notes');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'aspen_help';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View Release Notes');
 	}
 }

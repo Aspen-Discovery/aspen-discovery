@@ -22,4 +22,9 @@ class MyAccount_EmailResetPin extends Action{
 			$this->display($catalog->getEmailResetPinTemplate(), 'Reset ' . $interface->getVariable('passwordLabel'));
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

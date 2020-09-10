@@ -168,4 +168,10 @@ class Archive_Home extends Action{
 		return $relatedProjects;
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('', 'Local Digital Archive');
+		return $breadcrumbs;
+	}
 }

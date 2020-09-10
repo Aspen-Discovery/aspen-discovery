@@ -4,8 +4,15 @@ require_once ROOT_DIR . "/Action.php";
 
 require_once 'Home.php';
 
+/**
+ * Class MyAccount_Edit
+ *
+ * Used to edit notes for a list entry
+ */
 class MyAccount_Edit extends Action
 {
+	private $listId;
+	private $listTitle;
 	function launch($msg = null)
 	{
 		global $interface;
@@ -15,8 +22,6 @@ class MyAccount_Edit extends Action
 			$launchAction = new MyAccount_Login();
 			$launchAction->launch();
 			exit();
-		}else{
-			$user = UserAccount::getLoggedInUser();
 		}
 
 		// Save Data
@@ -25,7 +30,7 @@ class MyAccount_Edit extends Action
 			$listId = array_pop($listId);
 		}
 		if (!empty($listId) && is_numeric($listId)) {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$userList     = new UserList();
 			$userList->id = $listId;
 			if ($userList->find(true)) {
@@ -33,6 +38,8 @@ class MyAccount_Edit extends Action
 				if ($userObj == false){
 					$interface->assign('error', 'You must be logged in to edit list entries, please login again.');
 				}else {
+					$this->listId = $userList->id;
+					$this->listTitle = $userList->title;
 					$userCanEdit = $userObj->canEditList($userList);
 					if (!$userCanEdit){
 						$interface->assign('error', 'Sorry, you don\'t have permissions to edit this list.');
@@ -58,7 +65,7 @@ class MyAccount_Edit extends Action
 						if (!empty($listEntryId)) {
 
 							// Retrieve saved information about record
-							require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+							require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 							$userListEntry = new UserListEntry();
 							$userListEntry->id = $listEntryId;
 							if ($userListEntry->find(true)) {
@@ -83,13 +90,24 @@ class MyAccount_Edit extends Action
 
 	private function saveChanges()
 	{
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$userListEntry = new UserListEntry();
 		$userListEntry->id = $_REQUEST['listEntry'];
 		if ($userListEntry->find(true)){
 			$userListEntry->notes = strip_tags($_REQUEST['notes']);
 			$userListEntry->update();
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		if (!empty($this->listId)) {
+			$breadcrumbs[] = new Breadcrumb('/MyAccount/MyList/' . $this->listId, $this->listTitle);
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Edit');
+		return $breadcrumbs;
 	}
 }
 

@@ -51,10 +51,6 @@ class MaterialsRequest extends DataObject
 	public $firstName;
 	public $lastName;
 
-	function keys() {
-		return array('id');
-	}
-
 	static function getFormats(){
 		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
 		$customFormats = new MaterialsRequestFormats();

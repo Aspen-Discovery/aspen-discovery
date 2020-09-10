@@ -13,11 +13,11 @@
 						{if $disableCoverArt != 1}{*TODO: should become part of $showCovers *}
 							{if $record.coverUrl}
 								{if $record.recordId && $record.linkUrl}
-									<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+									<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}" aria-hidden="true">
 										<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 									</a>
 								{else} {* Cover Image but no Record-View link *}
-									<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+									<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 								{/if}
 							{/if}
 						{/if}
@@ -119,23 +119,23 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $record.overdriveRead}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">{translate text="Read&nbsp;Online"}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-action">{translate text="Read&nbsp;Online"}</a>
 						{/if}
 						{if $record.overdriveListen}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-primary">{translate text="Listen&nbsp;Online"}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-action">{translate text="Listen&nbsp;Online"}</a>
 						{/if}
 						{if !empty($record.overdriveVideo)}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">{translate text="Watch&nbsp;Online"}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'video-streaming')" class="btn btn-sm btn-action">{translate text="Watch&nbsp;Online"}</a>
 						{/if}
 						{if $record.overdriveMagazine}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'magazine-overdrive')" class="btn btn-sm btn-primary">{translate text="Read&nbsp;Online"}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'magazine-overdrive')" class="btn btn-sm btn-action">{translate text="Read&nbsp;Online"}</a>
 						{/if}
 						{if $record.formatSelected && empty($record.overdriveVideo)}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.format}')" class="btn btn-sm btn-primary">{translate text="Download&nbsp;Again"}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.format}')" class="btn btn-sm btn-action">{translate text="Download&nbsp;Again"}</a>
 						{/if}
 						{if !empty($record.supplementalMaterials)}
 							{foreach from=$record.supplementalMaterials item=supplement}
-								<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$supplement.overDriveId}', '{$supplement.selectedFormat.format}')" class="btn btn-sm btn-primary btn-wrap">{translate text="Download Supplemental %1%" 1=$supplement.selectedFormat.name}</a>
+								<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$supplement.overDriveId}', '{$supplement.selectedFormat.format}')" class="btn btn-sm btn-default btn-wrap">{translate text="Download Supplemental %1%" 1=$supplement.selectedFormat.name}</a>
 							{/foreach}
 						{/if}
 						{if $record.canRenew}

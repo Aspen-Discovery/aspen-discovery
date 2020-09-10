@@ -1,4 +1,4 @@
-<h1 id='listTitle'><a href="/MyAccount/MyList/{$favList->id}"><span class="silk list">&nbsp;</span>{$favList->title|escape:"html"}</a></h1>
+<h1 id='listTitle'><a href="/MyAccount/MyList/{$favList->id}">{$favList->title|escape:"html"}</a></h1>
 
 {if $favList->description}
 	<div class="listDescription alignleft" id="listDescription">{$favList->description|escape}</div>

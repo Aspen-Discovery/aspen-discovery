@@ -468,12 +468,11 @@
 					// add cell to headerList
 					c.headerList[index] = this;
 					// add to parent in case there are multiple rows
-					$t.parent().addClass(ts.css.headerRow + ' ' + c.cssHeaderRow).attr('role', 'row');
+					$t.parent().addClass(ts.css.headerRow + ' ' + c.cssHeaderRow);
 					// allow keyboard cursor to focus on element
 					if (c.tabIndex) { $t.attr("tabindex", 0); }
 				}).attr({
-					scope: 'col',
-					role : 'columnheader'
+					scope: 'col'
 				});
 				// enable/disable sorting
 				updateHeader(table);
@@ -893,7 +892,7 @@
 								updateHeader(table);
 								commonUpdate(table, resort, callback);
 							} else {
-								$row = $($row).attr('role', 'row'); // make sure we're using a jQuery object
+								$row = $($row); // make sure we're using a jQuery object
 								var i, j, l, t, v, rowData, cells,
 										rows = $row.filter('tr').length,
 										tbdy = $table.find('tbody').index( $row.parents('tbody').filter(':first') );
@@ -1054,8 +1053,7 @@
 				}
 				c.table = table;
 				c.$table = $table
-						.addClass(ts.css.table + ' ' + c.tableClass + k)
-						.attr('role', 'grid');
+						.addClass(ts.css.table + ' ' + c.tableClass + k);
 				c.$headers = $table.find(c.selectorHeaders);
 
 				// give the table a unique id, which will be used in namespace binding
@@ -1066,7 +1064,7 @@
 					c.namespace = '.' + c.namespace.replace(/\W/g,'');
 				}
 
-				c.$table.children().children('tr').attr('role', 'row');
+				c.$table.children().children('tr');
 				c.$tbodies = $table.children('tbody:not(.' + c.cssInfoBlock + ')').attr({
 					'aria-live' : 'polite',
 					'aria-relevant' : 'all'

@@ -8,7 +8,7 @@ class LibraryCombinedResultSection extends CombinedResultSection{
 	static function getObjectStructure(){
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager')){
+		if (!UserAccount::userHasPermission('Administer All Libraries')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}

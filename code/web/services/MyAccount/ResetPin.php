@@ -68,4 +68,12 @@ class ResetPin extends Action{
 			$this->display('resetPin.tpl', 'Reset My Pin');
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Reset PIN');
+		return $breadcrumbs;
+	}
 }

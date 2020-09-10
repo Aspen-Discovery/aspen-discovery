@@ -26,7 +26,6 @@ class ISBNConverter{
 	public static function convertISBN13to10($isbn13){
 		if (substr($isbn13, 0, 3) == '978'){
 			$isbn = substr($isbn13, 3, 9);
-			$checksumDigit = 1;
 			$sumOfDigits = 0;
 			for ($i = 0; $i < 9; $i++){
 				$sumOfDigits += ($i + 1) * (int)($isbn[$i]);

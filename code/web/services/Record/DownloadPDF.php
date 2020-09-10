@@ -1,39 +1,43 @@
 <?php
 
 
-class Record_DownloadPDF
+class Record_DownloadPDF extends Action
 {
+	/** @var MarcRecordDriver $recordDriver */
+	private $recordDriver;
+	private $title;
 	function launch()
 	{
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
-		/** @var MarcRecordDriver $recordDriver */
-		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+
+		$this->recordDriver = RecordDriverFactory::initRecordDriverById($id);
 
 		$fileId = $_REQUEST['fileId'];
-		if (!$recordDriver->isValid()){
+		if (!$this->recordDriver->isValid()){
 			AspenError::raiseError(new AspenError("Invalid record ({$id}) while downloading file"));
 		}else{
 			require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
 			require_once ROOT_DIR . '/sys/File/FileUpload.php';
 			$recordFile = new RecordFile();
-			$recordFile->type = $recordDriver->getRecordType();
-			$recordFile->identifier = $recordDriver->getUniqueID();
+			$recordFile->type = $this->recordDriver->getRecordType();
+			$recordFile->identifier = $this->recordDriver->getUniqueID();
 			$recordFile->fileId = $fileId;
 			if ($recordFile->find(true)){
 				$fileUpload = new FileUpload();
 				$fileUpload->id = $fileId;
 				if ($fileUpload->find(true)){
+					$this->title = $fileUpload->title;
 					if (file_exists($fileUpload->fullPath)) {
-						if ($recordDriver->getIndexingProfile() != null){
+						if ($this->recordDriver->getIndexingProfile() != null){
 							//Record the usage of the PDF
 							if (UserAccount::isLoggedIn()){
 								require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 								$userUsage = new UserILSUsage();
 								$userUsage->userId = UserAccount::getActiveUserId();
-								$userUsage->indexingProfileId = $recordDriver->getIndexingProfile()->id;
+								$userUsage->indexingProfileId = $this->recordDriver->getIndexingProfile()->id;
 								$userUsage->year = date('Y');
 								$userUsage->month = date('n');
 								if ($userUsage->find(true)) {
@@ -48,8 +52,8 @@ class Record_DownloadPDF
 							//Track usage of the record
 							require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
 							$recordUsage = new ILSRecordUsage();
-							$recordUsage->indexingProfileId = $recordDriver->getIndexingProfile()->id;
-							$recordUsage->recordId = $recordDriver->getUniqueID();
+							$recordUsage->indexingProfileId = $this->recordDriver->getIndexingProfile()->id;
+							$recordUsage->recordId = $this->recordDriver->getUniqueID();
 							$recordUsage->year = date('Y');
 							$recordUsage->month = date('n');
 							if ($recordUsage->find(true)) {
@@ -69,7 +73,7 @@ class Record_DownloadPDF
 						header('Content-Type: application/octet-stream');
 						header('Content-Transfer-Encoding: binary');
 						header('Content-Length: ' . $size);
-						$fileName = str_replace($recordDriver->getUniqueID() . '_', '', basename($fileUpload->fullPath));
+						$fileName = str_replace($this->recordDriver->getUniqueID() . '_', '', basename($fileUpload->fullPath));
 						header('Content-Disposition: attachment;filename="' . $fileName . '"');
 
 						if ($size > $chunkSize) {
@@ -99,6 +103,15 @@ class Record_DownloadPDF
 				AspenError::raiseError(new AspenError("Invalid file($fileId) specified for record ({$id})"));
 			}
 		}
+	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->recordDriver)) {
+			$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);
+		}
+		$breadcrumbs[] = new Breadcrumb('', $this->title, false);
+		return $breadcrumbs;
 	}
 }

@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/Action.php';
 
 class Archive_AJAX extends Action {
 
-
 	function launch() {
 		global $timer;
 		$method = $_GET['method'];
@@ -16,6 +15,7 @@ class Archive_AJAX extends Action {
 		echo json_encode($this->$method());
 	}
 
+	/** @noinspection PhpUnused */
 	function getRelatedObjectsForExhibit(){
 		if (isset($_REQUEST['collectionId'])){
 			global $interface;
@@ -102,7 +102,8 @@ class Archive_AJAX extends Action {
 				}
 
 				//Get a list of sub collections to use for searching
-				$exhibitObject = $fedoraUtils->getObject($pid);
+				//TODO: This may not be required
+				$fedoraUtils->getObject($pid);
 
 				$interface->assign('relatedObjects', $relatedObjects);
 			}
@@ -118,13 +119,14 @@ class Archive_AJAX extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getRelatedObjectsForScroller(){
 		if (isset($_REQUEST['pid'])){
 			global $interface;
 			global $timer;
 			global $logger;
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-			$fedoraUtils = FedoraUtils::getInstance();
+			FedoraUtils::getInstance();
 			$pid = urldecode($_REQUEST['pid']);
 			$interface->assign('exhibitPid', $pid);
 
@@ -438,7 +440,7 @@ class Archive_AJAX extends Action {
 			$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
 			$searchObject->addHiddenFilter('!RELS_EXT_isConstituentOf_uri_ms', "*");
 			$searchObject->clearFilters();
-			if (isset($additionalCollections) && count($additionalCollections > 0)){
+			if (isset($additionalCollections) && count($additionalCollections) > 0){
 				$filter = "RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/{$pid}\"";
 				foreach ($additionalCollections as $collection){
 					$filter .= " OR RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/" . trim($collection) . "\"";
@@ -547,8 +549,7 @@ class Archive_AJAX extends Action {
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 		$exhibitObject = $fedoraUtils->getObject($pid);
-		/** @var IslandoraRecordDriver $exhibitDriver */
-		$exhibitDriver = RecordDriverFactory::initRecordDriver($exhibitObject);
+		RecordDriverFactory::initRecordDriver($exhibitObject);
 
 		global $interface;
 		$facetName = urldecode($_REQUEST['facetName']);
@@ -596,6 +597,7 @@ class Archive_AJAX extends Action {
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getFacetValuesForExhibit(){
 		if (!isset($_REQUEST['id'])){
 			return array(
@@ -616,8 +618,7 @@ class Archive_AJAX extends Action {
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 		$exhibitObject = $fedoraUtils->getObject($pid);
-		/** @var IslandoraRecordDriver $exhibitDriver */
-		$exhibitDriver = RecordDriverFactory::initRecordDriver($exhibitObject);
+		RecordDriverFactory::initRecordDriver($exhibitObject);
 
 		global $interface;
 		$facetName = urldecode($_REQUEST['facetName']);
@@ -663,52 +664,7 @@ class Archive_AJAX extends Action {
 		return $results;
 	}
 
-	function getExploreMoreContent(){
-		if (!isset($_REQUEST['id'])){
-			return array(
-					'success' => false,
-					'message' => 'You must supply the id to load explore more content for'
-			);
-		}
-		global $interface;
-		global $timer;
-		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-		$fedoraUtils = FedoraUtils::getInstance();
-		$pid = urldecode($_REQUEST['id']);
-		$interface->assign('pid', $pid);
-		$archiveObject = $fedoraUtils->getObject($pid);
-		$recordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
-		$interface->assign('recordDriver', $recordDriver);
-		$timer->logTime("Loaded record driver for main object");
-
-		require_once ROOT_DIR . '/sys/ExploreMore.php';
-		$exploreMore = new ExploreMore();
-		$exploreMore->loadExploreMoreSidebar('archive', $recordDriver);
-		$timer->logTime("Called loadExploreMoreSidebar");
-
-		$relatedSubjects = $recordDriver->getAllSubjectHeadings();
-
-		$ebscoMatches = $exploreMore->loadEbscoOptions('archive', array(), implode($relatedSubjects, " or "));
-		if (count($ebscoMatches) > 0){
-			$interface->assign('relatedArticles', $ebscoMatches);
-		}
-		$timer->logTime("Loaded Ebsco options");
-
-		global $library;
-		$exploreMoreSettings = $library->exploreMoreBar;
-		if (empty($exploreMoreSettings)) {
-			$exploreMoreSettings = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions();
-		}
-		$interface->assign('exploreMoreSettings', $exploreMoreSettings);
-		$interface->assign('archiveSections', ArchiveExploreMoreBar::$archiveSections);
-		$timer->logTime("Loaded Settings");
-
-		return array(
-				'success' => true,
-				'exploreMore' => $interface->fetch('explore-more-sidebar.tpl')
-		);
-	}
-
+	/** @noinspection PhpUnused */
 	public function getObjectInfo(){
 		global $interface;
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
@@ -725,7 +681,7 @@ class Archive_AJAX extends Action {
 		$interface->assign('description', $recordDriver->getDescription());
 		$interface->assign('image', $recordDriver->getBookcoverUrl('medium'));
 
-		$urlStr = "<a href=\"$url\" onclick='AspenDiscovery.Archive.setForExhibitNavigation({$_COOKIE['recordIndex']},{$_COOKIE['page']})'>";
+		$urlStr = "<a href=\"$url\" onclick='AspenDiscovery.Archive.setForExhibitNavigation(" . $_COOKIE['recordIndex'] . ", " . $_COOKIE['page'] . ")'>";
 		$escapedPid = urlencode($pid);
 		$addToFavoritesLabel = translate('Add to list');
 		$addToFavoritesButton = "<button onclick=\"return AspenDiscovery.Account.showSaveToListForm(this, 'archive', '$escapedPid');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$addToFavoritesLabel</button>";
@@ -736,6 +692,7 @@ class Archive_AJAX extends Action {
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	public function getMetadata(){
 		global $interface;
 		$id = urldecode($_REQUEST['id']);
@@ -781,6 +738,7 @@ class Archive_AJAX extends Action {
 
 	}
 
+	/** @noinspection PhpUnused */
 	public function getNextRandomObject(){
 		global $interface;
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
@@ -815,6 +773,7 @@ class Archive_AJAX extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	public function getTranscript(){
 		global $configArray;
 		$objectUrl = $configArray['Islandora']['objectUrl'];
@@ -856,6 +815,7 @@ class Archive_AJAX extends Action {
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	public function getAdditionalRelatedObjects(){
 		global $interface;
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
@@ -1002,6 +962,7 @@ class Archive_AJAX extends Action {
 		return $displayMode;
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearCache(){
 		if (!isset($_REQUEST['id'])){
 			return array(
@@ -1018,7 +979,6 @@ class Archive_AJAX extends Action {
 		$objectCache->pid = $id;
 		if ($objectCache->find(true)){
 			if ($objectCache->delete()){
-				/** @var Memcache $memCache */
 				global $memCache;
 				$memCache->delete('islandora_object_valid_in_pika_' . $id);
 				$mainCacheCleared = true;
@@ -1051,5 +1011,10 @@ class Archive_AJAX extends Action {
 				'success' => $mainCacheCleared || $sameRecordCleared,
 				'message' => $cacheMessage
 		);
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

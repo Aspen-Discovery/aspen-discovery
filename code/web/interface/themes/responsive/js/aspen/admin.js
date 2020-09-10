@@ -32,13 +32,13 @@ AspenDiscovery.Admin = (function(){
 			$('head').append('<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=' + fontName + '">');
 			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
 		},
-		checkContrast: function (property1, property2){
+		checkContrast: function (property1, property2,oneWay=false){
 			let color1 = $('#' + property1).val();
 			let color2 = $('#' + property2).val();
 			if (color1.length === 7 && color2.length === 7){
 				let luminance1 = AspenDiscovery.Admin.getLuminanceForColor(color1);
 				let luminance2 = AspenDiscovery.Admin.getLuminanceForColor(color2);
-				let contrastRatio = 0;
+				let contrastRatio;
 				if (luminance1 > luminance2) {
 					contrastRatio = ((luminance1 + 0.05) / (luminance2 + 0.05));
 				} else {
@@ -72,9 +72,13 @@ AspenDiscovery.Admin = (function(){
 				}
 			}else{
 				$("#contrastCheck_" + property1).hide();
-				$("#contrastCheck_" + property2).hide();
+				if (!oneWay) {
+					$("#contrastCheck_" + property2).hide();
+				}
 				$("#contrast_" + property1).innerHTML = 'Unknown';
-				$("#contrast_" + property2).innerHTML = 'Unknown';
+				if (!oneWay) {
+					$("#contrast_" + property2).innerHTML = 'Unknown';
+				}
 			}
 
 		},
@@ -162,6 +166,52 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowdefaultSort").show();
 				$("#propertyRowsourceListId").hide();
 			}
+		},
+		updateIndexingProfileFields: function () {
+			let audienceType = $('#determineAudienceBySelect').val();
+			if (audienceType === '3') {
+				$("#propertyRowaudienceSubfield").show();
+			}else{
+				$("#propertyRowaudienceSubfield").hide();
+			}
+		},
+		showCreateRoleForm: function(){
+			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getCreateRoleForm', true);
+			return false;
+		},
+		createRole: function () {
+			let url = Globals.path + '/Admin/AJAX';
+			let params = {
+				method: 'createRole',
+				roleName: $('#roleName').val(),
+				description: $('#description').val()
+			}
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						window.location.href = Globals.path + '/Admin/Permissions?roleId=' + data.roleId;
+					} else {
+						AspenDiscovery.showMessage('Error', data.message, false);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+		},
+
+		deleteRole: function(roleId){
+			let url = Globals.path + '/Admin/AJAX';
+			let params = {
+				method: 'deleteRole',
+				roleId: $("#roleId").find("option:selected").val()
+			}
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						window.location.href = Globals.path + '/Admin/Permissions';
+					} else {
+						AspenDiscovery.showMessage('Error', data.message, false);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
 		}
 	};
 }(AspenDiscovery.Admin || {}));

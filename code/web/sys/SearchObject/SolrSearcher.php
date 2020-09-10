@@ -41,7 +41,6 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		// Debugging
 		if ($configArray['System']['debugSolr']) {
 			//Verify that the ip is ok
-			global $locationSingleton;
 			$activeIp = IPAddress::getActiveIp();
 			$maintenanceIps = $configArray['System']['maintenanceIps'];
 			$debug = true;
@@ -146,7 +145,6 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		$html = array();
 		if ($IDList) {
 			//Reorder the documents based on the list of id's
-			$x = 0;
 			foreach ($IDList as $listPosition => $currentId) {
 				// use $IDList as the order guide for the html
 				$current = null; // empty out in case we don't find the matching record

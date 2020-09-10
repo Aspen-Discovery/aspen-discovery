@@ -43,7 +43,7 @@
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1557953281623" />
     <property name="extract.method.default.visibility" value="private" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../symphony_export/META-INF/MANIFEST.MF" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../java_shared_libraries" />
     <property name="project.structure.last.edited" value="Artifacts" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
@@ -70,18 +70,18 @@
       <recent name="com.turning_leaf_technologies" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\code\axis_360_export\src" />
       <recent name="C:\web\aspen-discovery\data_dir_setup\solr7" />
       <recent name="C:\web\aspen-discovery\sites" />
       <recent name="C:\web\aspen-discovery\install" />
       <recent name="C:\web\aspen-discovery\sites\nashville.production" />
-      <recent name="C:\web\aspen-discovery\code" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.turning_leaf_technogies.axis360" />
+      <recent name="" />
       <recent name="com.turning_leaf_technologies.reindexer" />
       <recent name="com.turning_leaf_technologies.indexing" />
       <recent name="com.turning_leaf_technologies.oai" />
-      <recent name="com.turning_leaf_technologies.web_indexer" />
-      <recent name="com.turning_leaf_technologies.sideloading" />
     </key>
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.turning_leaf_technologies.events" />
@@ -91,7 +91,15 @@
       <recent name="com.turning_leaf_technologies.web_indexer" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Reindexer Full">
+  <component name="RunManager" selected="Application.Axis 360 Export">
+    <configuration name="Axis 360 Export" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technogies.axis360.Axis360ExportMain" />
+      <module name="axis_360_export" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../axis_360_export" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="CARLX Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.carlx.CarlXExportMain" />
       <module name="carlx_export" />
@@ -194,7 +202,7 @@
     <configuration name="Reindexer Full" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
-      <option name="PROGRAM_PARAMETERS" value="swan.localhost fullNoClear" />
+      <option name="PROGRAM_PARAMETERS" value="swan.localhost nightly" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -251,6 +259,7 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Application.Axis 360 Export" />
       <item itemvalue="Application.CARLX Export" />
       <item itemvalue="Application.Cloud Library Export" />
       <item itemvalue="Application.Cron BookCoverCleanup" />
@@ -362,7 +371,6 @@
     <watches-manager>
       <configuration name="Application">
         <watch expression="response.getMessage()" />
-        <watch expression="new String(ch, start, length)" />
       </configuration>
     </watches-manager>
   </component>

@@ -62,11 +62,6 @@ class OpenArchives_Dashboard extends Admin_Admin
 		$this->display('dashboard.tpl', 'OpenArchives Dashboard');
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year
@@ -163,4 +158,22 @@ class OpenArchives_Dashboard extends Admin_Admin
 		return $usageStats;
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#open_archives', 'Open Archives');
+		$breadcrumbs[] = new Breadcrumb('/OpenArchives/Dashboard', 'Usage Dashboard');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'open_archives';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	}
 }

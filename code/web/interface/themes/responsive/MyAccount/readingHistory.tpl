@@ -7,8 +7,6 @@
 			</div>
 		{/if}
 
-		{* Alternate Mobile MyAccount Menu *}
-		{include file="MyAccount/mobilePageHeader.tpl"}
 		<span class='availableHoldsNoticePlaceHolder'></span>
 		<h1>{translate text='My Reading History'} {if $historyActive == true}
 				<small><a id="readingListWhatsThis" href="#" onclick="$('#readingListDisclaimer').toggle();return false;">({translate text="What's This?"})</a></small>
@@ -54,7 +52,7 @@
 		{/if}
 	{else}
 		<div class="page">
-			You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
+			You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
 		</div>
 	{/if}
 </div>

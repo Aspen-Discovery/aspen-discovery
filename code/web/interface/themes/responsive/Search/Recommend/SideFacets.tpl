@@ -3,8 +3,8 @@
 	<div id="searchFilterContainer">
 		{* Filters that have been applied *}
 		{if $filterList}
-			<div id="remove-search-label" class="sidebar-label"{if $displaySidebarMenu} style="display: none"{/if}>{translate text='Applied Filters'}</div>
-			<div class="applied-filters"{if $displaySidebarMenu} style="display: none"{/if}>
+			<div id="remove-search-label" class="sidebar-label">{translate text='Applied Filters'}</div>
+			<div class="applied-filters">
 			{foreach from=$filterList item=filters key=field }
 				{foreach from=$filters item=filter}
 					<div class="facetValue">{translate text=$field}: {$filter.display} <a href="{$filter.removalUrl|escape}"><img src="/images/silk/delete.png" alt="Delete"/></a></div>
@@ -15,8 +15,8 @@
 
 		{* Available filters *}
 		{if $sideFacetSet}
-			<div id="narrow-search-label" class="sidebar-label"{if $displaySidebarMenu} style="display: none"{/if}>{translate text='Narrow Search'}</div>
-			<div id="facet-accordion" class="accordion"{if $displaySidebarMenu} style="display: none"{/if}>
+			<div id="narrow-search-label" class="sidebar-label">{translate text='Narrow Search'}</div>
+			<div id="facet-accordion" class="accordion">
 				{foreach from=$sideFacetSet item=cluster key=title name=facetSet}
 					{if count($cluster.list) > 0}
 						<div class="facetList">
@@ -41,9 +41,9 @@
 									{include file="Search/Recommend/sliderFacet.tpl" cluster=$cluster title=$title}
 								{elseif !empty($cluster.showAsDropDown)}
 									{include file="Search/Recommend/dropDownFacet.tpl" cluster=$cluster title=$title}
-                                {elseif !empty($cluster.multiSelect)}
-                                    {include file="Search/Recommend/multiSelectFacet.tpl" cluster=$cluster title=$title}
-                                {else}
+								{elseif !empty($cluster.multiSelect)}
+									{include file="Search/Recommend/multiSelectFacet.tpl" cluster=$cluster title=$title}
+								{else}
 									{include file="Search/Recommend/standardFacet.tpl" cluster=$cluster title=$title}
 								{/if}
 							</div>

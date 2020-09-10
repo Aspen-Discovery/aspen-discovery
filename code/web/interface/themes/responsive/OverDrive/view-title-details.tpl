@@ -77,9 +77,11 @@
 		</div>
 	{/if}
 
+	{include file="GroupedWork/relatedLists.tpl"}
 
 	<div class="row">
 		<div class="result-label col-tn-3">{translate text='Status'}</div>
 		<div class="col-tn-9 result-value result-value-bold statusValue {$holdingsSummary.class}" id="statusValue">{$holdingsSummary.status|translate}</div>
 	</div>
+
 {/strip}

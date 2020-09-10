@@ -20,4 +20,12 @@ class PasswordRecovery extends Action
 			$this->display($catalog->getPasswordRecoveryTemplate(), 'Recover ' . $interface->getVariable('passwordLabel'));
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		global $interface;
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('', 'Recover ' . $interface->getVariable('passwordLabel'));
+		return $breadcrumbs;
+	}
 }

@@ -1,5 +1,5 @@
 body {
-  color: #6B6B6B;
+  color: #404040;
 }
 #content-container {
   padding: 0;
@@ -59,23 +59,6 @@ hr.menu {
     max-width: 100%;
     height: auto;
   }
-}
-.header-button {
-  white-space: nowrap;
-  overflow-x: hidden;
-  text-align: center;
-  vertical-align: middle;
-  background-color: rgba(51, 51, 51, 0.6);
-  margin-top: 20px;
-  line-height: 60px !important;
-  border: 0;
-  border-radius: 0.5em;
-  color: white !important;
-}
-.header-button:hover {
-  text-decoration: underline;
-  border-bottom: 0;
-  box-shadow: 2px 2px 5px #fff;
 }
 #library-name-header {
   font-size: 26px;
@@ -158,13 +141,6 @@ hr.menu {
 #horizontal-menu-bar-container .menu-icon.menu-icon-selected {
   background-color: #80d2f1;
 }
-#horizontal-menu-bar-container.sticky-menu-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 101;
-}
 @media print {
   #horizontal-search-wrapper {
     display: none;
@@ -203,9 +179,6 @@ hr.menu {
 #vertical-menu-bar .menu-icon {
   padding: 5px;
 }
-#vertical-menu-bar .menu-icon img {
-  width: 30px;
-}
 #vertical-menu-bar .menu-icon:visited,
 #vertical-menu-bar .menu-icon:hover,
 #vertical-menu-bar .menu-icon:focus {
@@ -219,24 +192,9 @@ hr.menu {
   text-transform: uppercase;
   font-size: 16px;
   margin-top: 10px;
+  text-align: center;
 }
-.rotated-text {
-  display: inline-block;
-  overflow: hidden;
-  width: 40px;
-  line-height: 40px;
-}
-.rotated-text-inner {
-  display: inline-block;
-  white-space: nowrap;
-  transform: rotate(-90deg) translateX(-100%);
-  transform-origin: 0 0;
-}
-.rotated-text-inner:after {
-  content: "";
-  float: left;
-  margin-top: 100%;
-}
+
 .collapsedSidebar {
   width: 40px;
 }
@@ -308,7 +266,19 @@ hr.menu {
   margin: 0 !important;
 }
 .required-input {
-  color: red;
+  color: #c62828;
+}
+.hiddenTitle {
+  font-size: 0;
+  width: 1px;
+  height: 1px;
+  display: inline-block;
+  overflow: hidden;
+  position: absolute!important;
+  border: 0!important;
+  padding: 0!important;
+  margin: 0!important;
+  clip: rect(1px, 1px, 1px, 1px);
 }
 #language-selection-header {
   margin-top: 5px;
@@ -423,5 +393,23 @@ a.placard-link {
 }
 .image-popup .modal-dialog .img-responsive {
   margin: auto;
+.badge {
+  background-color: #666666;
+}
+/* with flexbox */
+.grid {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+.grid-col {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+  padding: 5px;
 }
 /*# sourceMappingURL=layout.css.map */

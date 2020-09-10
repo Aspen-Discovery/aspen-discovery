@@ -11,7 +11,7 @@
 				{elseif $result.message}
 					<div class="alert alert-success">{$result.message|translate}</div>
 					<p>
-						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Sign in'}</a>
 					</p>
 				{else}
 					<p class="alert alert-success">
@@ -21,7 +21,7 @@
 						{translate text="email_pin_reset_check_spam" defaultText="If you do not receive an email within a few minutes, please check any spam folder your email service may have.   If you do not receive any email, please contact your library to have them reset your pin."}
 					</p>
 					<p>
-						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Sign in'}</a>
 					</p>
 				{/if}
 			</div>

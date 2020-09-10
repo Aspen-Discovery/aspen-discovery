@@ -11,13 +11,13 @@ class Browse_AJAX extends Action {
 		header ('Content-type: application/json');
 		$method = $_REQUEST['method'];
 		$allowed_methods = array(
-				'getAddBrowseCategoryForm',
-				'createBrowseCategory',
-				'getMoreBrowseResults',
-				'getBrowseCategoryInfo',
-				'getBrowseSubCategoryInfo',
-				'getActiveBrowseCategories',
-				'getSubCategories'
+			'getAddBrowseCategoryForm',
+			'createBrowseCategory',
+			'getMoreBrowseResults',
+			'getBrowseCategoryInfo',
+			'getBrowseSubCategoryInfo',
+			'getActiveBrowseCategories',
+			'getSubCategories'
 		);
 		if (in_array($method, $allowed_methods)) {
 			$response = $this->$method();
@@ -195,7 +195,7 @@ class Browse_AJAX extends Action {
 		$result['label'] = translate('Recommended for you');
 		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
 
-		require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
+		require_once ROOT_DIR . '/sys/Suggestions.php';
 		$suggestions = Suggestions::getSuggestions(-1, $pageToLoad,self::ITEMS_PER_PAGE);
 		$records = array();
 		foreach ($suggestions as $suggestedItemId => $suggestionData) {
@@ -257,7 +257,7 @@ class Browse_AJAX extends Action {
 
 				// User List Browse Category //
 				if ($browseCategory->source == 'List') {
-					require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 					$sourceList     = new UserList();
 					$sourceList->id = $browseCategory->sourceListId;
 					if ($sourceList->find(true)) {
@@ -450,6 +450,7 @@ class Browse_AJAX extends Action {
 		if ($this->browseCategory) {
 			$result['textId'] = $this->browseCategory->textId;
 			$result['label']  = $this->browseCategory->label;
+			$result['subcategories'] = $this->getSubCategories();
 		}
 
 		// Reload with sub-category
@@ -568,5 +569,10 @@ class Browse_AJAX extends Action {
 			}
 		}
 		return $formattedCategories;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

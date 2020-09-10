@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.HooplaScope;
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -33,7 +34,7 @@ class HooplaProcessor {
 		}
 	}
 
-	void processRecord(GroupedWorkSolr groupedWork, String identifier) {
+	void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -294,11 +295,11 @@ class HooplaProcessor {
 			}
 			productRS.close();
 		}catch (NullPointerException e) {
-			logger.error("Null pointer exception processing Hoopla record ", e);
+			logEntry.incErrors("Null pointer exception processing Hoopla record ", e);
 		} catch (JSONException e) {
-			logger.error("Error parsing raw data for Hoopla", e);
+			logEntry.incErrors("Error parsing raw data for Hoopla", e);
 		} catch (SQLException e) {
-			logger.error("Error loading information from Database for Hoopla title", e);
+			logEntry.incErrors("Error loading information from Database for Hoopla title", e);
 		}
 	}
 

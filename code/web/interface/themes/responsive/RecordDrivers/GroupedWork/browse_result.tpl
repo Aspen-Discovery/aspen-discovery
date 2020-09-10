@@ -1,6 +1,6 @@
 {strip}
 	{if $browseMode == '1'}
-		<div class="{*browse-title *}browse-list">
+		<div class="{*browse-title *}browse-list grid-item">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', '{$browseCategoryId}')" href="{$summUrl}">
 					<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
 				<div><strong>{$summTitle}</strong><br> by {$summAuthor}</div>
@@ -8,7 +8,7 @@
 		</div>
 
 	{else}{*Default Browse Mode (covers) *}
-		<div class="browse-thumbnail">
+		<div class="browse-thumbnail grid-item">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}','{$browseCategoryId}')" href="{$summUrl}">
 				<div>
 					<img src="{$bookCoverUrlMedium}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">

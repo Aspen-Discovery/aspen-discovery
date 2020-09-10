@@ -13,12 +13,12 @@
 		<p>{translate text="more_facet_popup_descriptions" defaultText="Please select one of the items below to narrow your search by %1%." 1=$cluster.label}</p>
 		<form id="facetPopup_{$title|escapeCSS}" onsubmit="return AspenDiscovery.ResultsList.processMultiSelectMoreFacetForm('#facetPopup_{$title|escapeCSS}', '{$cluster.field_name}');">
 			<div class="container-12">
-				<div class="row">
+				<div class="row moreFacetPopup">
 					{foreach from=$cluster.sortedList item=thisFacet name="narrowLoop"}
-						<div class="col-sm-6">
+						<div class="checkboxFacet">
 							<label>
-								<input type="checkbox" {if $thisFacet.isApplied}checked{/if} name="filter[]" value='{$cluster.field_name}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value}"{/if}'>
-								{$thisFacet.display}{if $thisFacet.count != ''}&nbsp;({$thisFacet.count|number_format}){/if}
+							<input type="checkbox" {if $thisFacet.isApplied}checked{/if} name="filter[]" value='{$cluster.field_name}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value}"{/if}'>
+							{$thisFacet.display}{if $thisFacet.count != ''}&nbsp;({$thisFacet.count|number_format}){/if}
 							</label>
 						</div>
 					{/foreach}

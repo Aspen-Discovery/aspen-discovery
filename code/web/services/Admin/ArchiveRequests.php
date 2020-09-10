@@ -20,7 +20,7 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		$object = new ArchiveRequest();
 		$object->orderBy('dateRequested desc');
 		$user = UserAccount::getLoggedInUser();
-		if (!UserAccount::userHasRole('opacAdmin')){
+		if (!UserAccount::userHasPermission('View Archive Material Requests')){
 			$homeLibrary = $user->getHomeLibrary();
 			$archiveNamespace = $homeLibrary->archiveNamespace;
 			$object->whereAdd("pid LIKE '{$archiveNamespace}:%'");
@@ -35,10 +35,6 @@ class Admin_ArchiveRequests extends ObjectEditor {
 	function getObjectStructure(){
 		return ArchiveRequest::getObjectStructure();
 	}
-	function getAllowableRoles(){
-
-		return array('opacAdmin', 'archives');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
@@ -49,7 +45,25 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		return false;
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
+		return UserAccount::userHasPermission('View Archive Material Requests');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#islandora_archive', 'Islandora Archives');
+		$breadcrumbs[] = new Breadcrumb('/Admin/ArchiveRequests', 'Material Requests');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'islandora_archive';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View Archive Material Requests');
+	}
 }

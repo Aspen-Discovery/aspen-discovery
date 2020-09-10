@@ -5,8 +5,6 @@
 		</div>
 	{/if}
 
-	{* Alternate Mobile MyAccount Menu *}
-	{include file="MyAccount/mobilePageHeader.tpl"}
 	<span class='availableHoldsNoticePlaceHolder'></span>
 	<h1>{translate text='Fines'}</h1>
 	{if $offline}
@@ -127,7 +125,5 @@
 		{/if}
 	{/if}
 {else}
-	You must login to view this information. Click
-	<a href="/MyAccount/Login">here</a>
-	to login.
+	You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
 {/if}

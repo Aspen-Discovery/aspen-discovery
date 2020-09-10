@@ -2,6 +2,13 @@
 {if false}
 <!--suppress CssUnusedSymbol -->
 {/if}
+{if !empty($headingFont)}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$headingFont}">
+{/if}
+{if !empty($bodyFont)}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$bodyFont}">
+{/if}
+
 <style type="text/css">
 
 {if !empty($customHeadingFont) && !empty($customHeadingFontName)}
@@ -9,20 +16,16 @@
     font-family: '{$customHeadingFontName}';
     src: url('/fonts/{$customHeadingFont}');
 {rdelim}
-{elseif $headingFont}
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$headingFont}">
 {/if}
 {if !empty($customBodyFont) && !empty($customBodyFontName)}
 @font-face {ldelim}
     font-family: '{$customBodyFontName}';
     src: url('/fonts/{$customBodyFont}');
 {rdelim}
-{elseif $bodyFont}
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$bodyFont}">
 {/if}
 
 {if $headingFont}
-h1, h2, h3, h4, h5, .header-button, .menu-bar-label, .panel-title, label,.browse-category,#browse-sub-category-menu,button,
+h1, h2, h3, h4, h5, .menu-bar-label, .panel-title, label,.browse-category,#browse-sub-category-menu,button,
 .btn,.myAccountLink,.adminMenuLink,.selected-browse-label-search,.result-label,.result-title,.label,#remove-search-label,#narrow-search-label,#library-name-header{ldelim}
     font-family: "{$headingFont}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
@@ -32,14 +35,14 @@ body{ldelim}
     font-family: "{$bodyFont}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
 {/if}
+h1 small, h2 small, h3 small, h4 small, h5 small{ldelim}
+    color: {$bodyTextColor};
+{rdelim}
 
 #header-container{ldelim}
     background-color: {$headerBackgroundColor};
     background-image: none;
     color: {$headerForegroundColor};
-    {if $headerBottomBorderWidth}
-        border-bottom-width: {$headerBottomBorderWidth};
-    {/if}
 {rdelim}
 
 #library-name-header{ldelim}
@@ -51,28 +54,16 @@ body{ldelim}
     color: {$footerForegroundColor};
 {rdelim}
 
-.header-button{ldelim}
-    background-color: {$headerButtonBackgroundColor};
-    color: {$headerButtonColor} !important;
-    {if $headerButtonRadius}
-        border-radius: {$headerButtonRadius};
-    {/if}
-{rdelim}
-#home-page-login{ldelim}
-    background-color: {$headerButtonBackgroundColor};
-    color: {$headerButtonColor} !important;
-{rdelim}
-#home-page-login a{ldelim}
-    color: {$headerButtonColor} !important;
-{rdelim}
-
 body {ldelim}
     background-color: {$pageBackgroundColor};
     color: {$bodyTextColor};
 {rdelim}
 
-a,.result-head,#selected-browse-label a{ldelim}
+a,a:visited,.result-head,#selected-browse-label a,#selected-browse-label a:visited{ldelim}
     color: {$linkColor};
+{rdelim}
+a:hover,.result-head:hover,#selected-browse-label a:hover{ldelim}
+    color: {$linkHoverColor};
 {rdelim}
 
 body .container, #home-page-browse-content{ldelim}
@@ -84,31 +75,80 @@ body .container, #home-page-browse-content{ldelim}
     background-color: {$bodyBackgroundColor};
 {rdelim}
 
-#home-page-search, #horizontal-search-box, #explore-more-sidebar,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar {ldelim}
+.table-striped > tbody > tr:nth-child(2n+1) > td, .table-striped > tbody > tr:nth-child(2n+1) > th{ldelim}
+    background-color: {$tableStripeBackgroundColor};
+{rdelim}
+.table-sticky thead tr th{ldelim}
+    background-color: {$bodyBackgroundColor};
+{rdelim}
+
+#home-page-search, #horizontal-search-box,.searchTypeHome,.searchSource,.menu-bar {ldelim}
     background-color: {$primaryBackgroundColor};
     color: {$primaryForegroundColor};
 {rdelim}
-#vertical-menu-bar .menu-icon .menu-bar-label, #horizontal-search-label,#horizontal-search-box #horizontal-search-label {ldelim}
+
+#horizontal-menu-bar-container{ldelim}
+    background-color: {$headerBackgroundColor};
+    color: {$headerForegroundColor};
+{rdelim}
+
+#horizontal-menu-bar-container, #horizontal-menu-bar-container .menu-icon, #horizontal-menu-bar-container .menu-icon .menu-bar-label,
+ #horizontal-menu-bar-container .menu-icon:visited{ldelim}
+    background-color: {$menubarBackgroundColor};
+    color: {$menubarForegroundColor};
+{rdelim}
+
+#horizontal-menu-bar-container .menu-icon:hover, #horizontal-menu-bar-container .menu-icon:focus,
+#horizontal-menu-bar-container .menu-icon:hover .menu-bar-label, #horizontal-menu-bar-container .menu-icon:focus .menu-bar-label,
+#menuToggleButton > a.selected{ldelim}
+    background-color: {$menubarHighlightBackgroundColor};
+    color: {$menubarHighlightForegroundColor};
+{rdelim}
+#horizontal-search-label,#horizontal-search-box #horizontal-search-label{ldelim}
     color: {$primaryForegroundColor};
 {rdelim}
 
-#vertical-menu-bar .menu-bar-option.menu-icon-selected,.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
-    background-color: {$sidebarHighlightBackgroundColor};
-    color: {$sidebarHighlightForegroundColor};
+.dropdownMenu, #account-menu, #header-menu{ldelim}
+    background-color: {$menuDropdownBackgroundColor};
+    color: {$menuDropdownForegroundColor};
 {rdelim}
-#vertical-menu-bar .menu-bar-option.menu-icon-selected .menu-bar-label,#vertical-menu-bar .menu-icon:hover .menu-bar-label,.exploreMoreBar .exploreMoreBarLabel{ldelim}
-    color: {$sidebarHighlightForegroundColor};
+
+.dropdownMenu a, .dropdownMenu a:visited{ldelim}
+    color: {$menuDropdownForegroundColor};
 {rdelim}
+
+.modal-header, .modal-footer{ldelim}
+    background-color: {$modalDialogHeaderFooterBackgroundColor};
+    color: {$modalDialogHeaderFooterForegroundColor};
+{rdelim}
+.close, .close:hover, .close:focus{ldelim}
+    color: {$modalDialogHeaderFooterForegroundColor};
+{rdelim}
+.modal-header{ldelim}
+    border-bottom-color: {$modalDialogHeaderFooterBorderColor};
+{rdelim}
+.modal-footer{ldelim}
+    border-top-color: {$modalDialogHeaderFooterBorderColor};
+{rdelim}
+.modal-content{ldelim}
+    background-color: {$modalDialogBackgroundColor};
+    color: {$modalDialogForegroundColor};
+{rdelim}
+
 .exploreMoreBar{ldelim}
     border-color: {$primaryBackgroundColor};
 {rdelim}
-#vertical-menu-bar .menu-bar-option:hover{ldelim}
-    background-color: {$sidebarHighlightBackgroundColor};
-    color: {$sidebarHighlightForegroundColor};
+.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
+    background-color: {$primaryBackgroundColor};
+    color: {$primaryForegroundColor};
+{rdelim}
+.exploreMoreBar .exploreMoreBarLabel{ldelim}
+    color: {$primaryForegroundColor};
 {rdelim}
 
+
 {if $primaryForegroundColor}
-#home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel, #advancedSearchLink,.menu-bar,#vertical-menu-bar{ldelim}
+#home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel,.menu-bar, #horizontal-menu-bar-container {ldelim}
     color: {$primaryForegroundColor}
 {rdelim}
 {/if}
@@ -119,27 +159,37 @@ body .container, #home-page-browse-content{ldelim}
 .facetTitle, .exploreMoreTitle,.panel-title,.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title, .panel-title > a,.panel-default > .panel-heading{ldelim}
     color: {$closedPanelForegroundColor};
 {rdelim}
-.facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,.active .panel-default > .panel-heading, .sidebar-links .active .panel-heading, #account-link-accordion .panel.active .panel-title, #account-settings-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
+.facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,.active .panel-default > .panel-heading, .sidebar-links .active .panel-heading, #account-link-accordion .panel.active .panel-title, #account-settings-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading, .adminSection .adminPanel .adminSectionLabel{ldelim}
     background-color: {$openPanelBackgroundColor};
 {rdelim}
-.facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,#more-details-accordion .active .panel-title,#account-link-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading{ldelim}
+.facetTitle.expanded, .exploreMoreTitle.expanded,#more-details-accordion .active .panel-heading,#more-details-accordion .active .panel-title,#account-link-accordion .panel.active .panel-title,.active .panel-title,.active .panel-title > a,.active.panel-default > .panel-heading,.adminSection .adminPanel .adminSectionLabel{ldelim}
     color: {$openPanelForegroundColor};
 {rdelim}
-.panel-body,.sidebar-links .panel-body,#more-details-accordion .panel-body,.facetDetails,.sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn), .sidebar-links .panel-body a:hover:not(.btn){ldelim}
+.panel-body,.sidebar-links .panel-body,#more-details-accordion .panel-body,.facetDetails,.sidebar-links .panel-body a:not(.btn), .sidebar-links .panel-body a:visited:not(.btn), .sidebar-links .panel-body a:hover:not(.btn),.adminSection .adminPanel{ldelim}
     background-color: {$panelBodyBackgroundColor};
     color: {$panelBodyForegroundColor};
+{rdelim}
+.facetValue, .facetValue a,.adminSection .adminPanel .adminActionLabel,.adminSection .adminPanel .adminActionLabel a{ldelim}
+    color: {$panelBodyForegroundColor};
+{rdelim}
+
+.breadcrumbs{ldelim}
+    background-color: {$breadcrumbsBackgroundColor};
+    color: {$breadcrumbsForegroundColor};
+{rdelim}
+.breadcrumb > li + li::before{ldelim}
+    color: {$breadcrumbsForegroundColor};
 {rdelim}
 
 #footer-container{ldelim}
     border-top-color: {$tertiaryBackgroundColor};
 {rdelim}
-#header-container{ldelim}
-    border-bottom-color: {$tertiaryBackgroundColor};
-{rdelim}
 
-#vertical-menu-bar .menu-bar-option.menu-icon-selected,#vertical-menu-bar .menu-bar-option:hover{ldelim}
-    background-color: {$sidebarHighlightBackgroundColor};
-    color: {$sidebarHighlightForegroundColor};
+#horizontal-menu-bar-container{ldelim}
+    border-bottom-color: {$tertiaryBackgroundColor};
+    {if !empty($headerBottomBorderWidth)}
+        border-bottom-width: {$headerBottomBorderWidth};
+    {/if}
 {rdelim}
 
 {* Browse Categories *}
@@ -177,7 +227,7 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 {/if}
 
-.btn-default{ldelim}
+.btn-default,.btn-default:visited,a.btn-default,a.btn-default:visited{ldelim}
     background-color: {$defaultButtonBackgroundColor};
     color: {$defaultButtonForegroundColor};
     border-color: {$defaultButtonBorderColor};
@@ -189,7 +239,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$defaultButtonHoverBorderColor};
 {rdelim}
 
-.btn-primary{ldelim}
+.btn-primary,.btn-primary:visited,a.btn-primary,a.btn-primary:visited{ldelim}
     background-color: {$primaryButtonBackgroundColor};
     color: {$primaryButtonForegroundColor};
     border-color: {$primaryButtonBorderColor};
@@ -201,7 +251,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$primaryButtonHoverBorderColor};
 {rdelim}
 
-.btn-action{ldelim}
+.btn-action,.btn-action:visited,a.btn-action,a.btn-action:visited{ldelim}
     background-color: {$actionButtonBackgroundColor};
     color: {$actionButtonForegroundColor};
     border-color: {$actionButtonBorderColor};
@@ -213,7 +263,7 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$actionButtonHoverBorderColor};
 {rdelim}
 
-.btn-info{ldelim}
+.btn-info,.btn-info:visited,a.btn-info,a.btn-info:visited{ldelim}
     background-color: {$infoButtonBackgroundColor};
     color: {$infoButtonForegroundColor};
     border-color: {$infoButtonBorderColor};
@@ -225,7 +275,19 @@ body .container, #home-page-browse-content{ldelim}
     border-color: {$infoButtonHoverBorderColor};
 {rdelim}
 
-.btn-warning{ldelim}
+.btn-tools,.btn-tools:visited,a.btn-tools,a.btn-tools:visited{ldelim}
+    background-color: {$toolsButtonBackgroundColor};
+    color: {$toolsButtonForegroundColor};
+    border-color: {$toolsButtonBorderColor};
+{rdelim}
+
+.btn-tools:hover, .btn-tools:focus, .btn-tools:active, .btn-tools.active, .open .dropdown-toggle.btn-tools{ldelim}
+    background-color: {$toolsButtonHoverBackgroundColor};
+    color: {$toolsButtonHoverForegroundColor};
+    border-color: {$toolsButtonHoverBorderColor};
+{rdelim}
+
+.btn-warning,.btn-warning:visited,a.btn-warning,a.btn-warning:visited{ldelim}
     background-color: {$warningButtonBackgroundColor};
     color: {$warningButtonForegroundColor};
     border-color: {$warningButtonBorderColor};
@@ -242,7 +304,7 @@ body .container, #home-page-browse-content{ldelim}
     color: {$warningButtonForegroundColor};
 {rdelim}
 
-.btn-danger{ldelim}
+.btn-danger,.btn-danger:visited,a.btn-danger,a.btn-danger:visited{ldelim}
     background-color: {$dangerButtonBackgroundColor};
     color: {$dangerButtonForegroundColor};
     border-color: {$dangerButtonBorderColor};
@@ -259,7 +321,7 @@ body .container, #home-page-browse-content{ldelim}
     color: {$dangerButtonForegroundColor};
 {rdelim}
 
-.btn-editions{ldelim}
+.btn-editions,.btn-editions:visited{ldelim}
     background-color: {$editionsButtonBackgroundColor};
     color: {$editionsButtonForegroundColor};
     border-color: {$editionsButtonBorderColor};
@@ -300,6 +362,17 @@ body .container, #home-page-browse-content{ldelim}
     {else}
     color: black;
     {/if}
+{rdelim}
+
+.result-label{ldelim}
+    color: {$resultLabelColor}
+{rdelim}
+.result-value{ldelim}
+    color: {$resultValueColor}
+{rdelim}
+.search_tools{ldelim}
+    background-color: {$searchToolsBackgroundColor};
+    color: {$searchToolsForegroundColor};
 {rdelim}
 
 {$additionalCSS}

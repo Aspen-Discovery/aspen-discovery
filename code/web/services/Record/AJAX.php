@@ -67,7 +67,7 @@ class Record_AJAX extends Action
 			}
 
 			//Get information to show a warning if the user does not have sufficient holds
-			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
+			require_once ROOT_DIR . '/sys/Account/PType.php';
 			$maxHolds = -1;
 			//Determine if we should show a warning
 			$ptype = new PType();
@@ -581,7 +581,7 @@ class Record_AJAX extends Action
 			'title' => 'Uploading PDF',
 			'message' => 'Sorry your pdf could not be uploaded'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload PDFs'))){
 			if (isset($_FILES['pdfFile'])) {
 				$uploadedFile = $_FILES['pdfFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
@@ -658,7 +658,7 @@ class Record_AJAX extends Action
 			'title' => 'Uploading Supplemental File',
 			'message' => 'Sorry your file could not be uploaded'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Supplemental Files'))){
 			if (isset($_FILES['supplementalFile'])) {
 				$uploadedFile = $_FILES['supplementalFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
@@ -746,7 +746,7 @@ class Record_AJAX extends Action
 			'title' => 'Deleting Uploaded File',
 			'message' => 'Unknown error deleting file'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('superCataloger'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission(['Upload PDFs', 'Upload Supplemental Files']))){
 			$fileId = $_REQUEST['fileId'];
 			$id = $_REQUEST['id'];
 
@@ -886,5 +886,10 @@ class Record_AJAX extends Action
 			$result['message'] = 'Could not find that record';
 		}
 		return $result;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

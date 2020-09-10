@@ -34,11 +34,26 @@ class Admin_AuthorEnrichment extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging', 'superCataloger');
-	}
 	function getInstructions(){
 		return '/Admin/HelpManual?page=Wikipedia';
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/AuthorEnrichment', 'Wikipedia Integration');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Wikipedia Integration');
+	}
 }

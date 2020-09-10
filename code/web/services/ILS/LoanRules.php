@@ -9,7 +9,6 @@ class LoanRules extends ObjectEditor
 	function launch(){
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
 		if ($objectAction == 'reloadFromCsv'){
-			global $interface;
 			$this->display('../ILS/importLoanRuleData.tpl', "Reload Loan Rules");
 			exit();
 		}elseif($objectAction == 'doLoanRuleReload'){
@@ -69,9 +68,6 @@ class LoanRules extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'loanRuleId';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 	function customListActions(){
 		$actions = array();
 		$actions[] = array(
@@ -86,5 +82,24 @@ class LoanRules extends ObjectEditor
 	public function canCompare()
 	{
 		return false;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('/ILS/LoanRules', 'Loan Rules');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Loan Rules');
 	}
 }

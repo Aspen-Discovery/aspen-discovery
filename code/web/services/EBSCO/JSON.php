@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/JSON_Action.php';
 
 class EBSCO_JSON extends JSON_Action
 {
+	/** @noinspection PhpUnused */
 	public function dismissResearchStarter(){
 		if (!isset($_REQUEST['id'])) {
 			return ['success' => false, 'message' => 'ID was not provided'];
@@ -79,6 +80,7 @@ class EBSCO_JSON extends JSON_Action
 		return ['success' => true, 'message' => 'Updated usage for EBSCO EDS record ' . $id];
 	}
 
+	/** @noinspection PhpUnused */
 	function getResearchStarters(){
 		global $enabledModules;
 		if (array_key_exists('EBSCO EDS', $enabledModules)){

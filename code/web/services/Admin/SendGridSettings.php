@@ -6,50 +6,80 @@ require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';
 
 class Admin_SendGridSettings extends ObjectEditor
 {
-    function getObjectType(){
-        return 'SendGridSetting';
-    }
-    function getToolName(){
-        return 'SendGridSettings';
-    }
-    function getModule(){
-        return 'Admin';
-    }
-    function getPageTitle(){
-        return 'SendGrid Settings';
-    }
-    function getAllObjects(){
-        $object = new SendGridSetting();
-        $object->find();
-        $objectList = array();
-        while ($object->fetch()){
-            $objectList[$object->id] = clone $object;
-        }
-        return $objectList;
-    }
-    function getObjectStructure(){
-        return SendGridSetting::getObjectStructure();
-    }
-    function getPrimaryKeyColumn(){
-        return 'id';
-    }
-    function getIdKeyColumn(){
-        return 'id';
-    }
-    function getAllowableRoles(){
-        return array('opacAdmin');
-    }
-    function canAddNew(){
-        return UserAccount::userHasRole('opacAdmin');
-    }
-    function canDelete(){
-        return UserAccount::userHasRole('opacAdmin');
-    }
-    function getAdditionalObjectActions($existingObject){
-        return [];
-    }
+	function getObjectType()
+	{
+		return 'SendGridSetting';
+	}
 
-    function getInstructions(){
-        return '';
-    }
+	function getToolName()
+	{
+		return 'SendGridSettings';
+	}
+
+	function getModule()
+	{
+		return 'Admin';
+	}
+
+	function getPageTitle()
+	{
+		return 'SendGrid Settings';
+	}
+
+	function getAllObjects()
+	{
+		$object = new SendGridSetting();
+		$object->find();
+		$objectList = array();
+		while ($object->fetch()) {
+			$objectList[$object->id] = clone $object;
+		}
+		return $objectList;
+	}
+
+	function getObjectStructure()
+	{
+		return SendGridSetting::getObjectStructure();
+	}
+
+	function getPrimaryKeyColumn()
+	{
+		return 'id';
+	}
+
+	function getIdKeyColumn()
+	{
+		return 'id';
+	}
+
+	function getAdditionalObjectActions($existingObject)
+	{
+		return [];
+	}
+
+	function getInstructions()
+	{
+		return '';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
+		$breadcrumbs[] = new Breadcrumb('/Admin/SendGridSettings', 'Send Grid Settings');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer SendGrid');
+	}
+
+
 }

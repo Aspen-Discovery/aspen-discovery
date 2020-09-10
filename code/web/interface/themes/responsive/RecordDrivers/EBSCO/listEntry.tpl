@@ -4,14 +4,14 @@
 		{if $showCovers}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1 && !empty($bookCoverUrlMedium)}
-					<a href="{$summUrl}" onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$summId}')" target="_blank">
+					<a href="{$summUrl}" onclick="AspenDiscovery.EBSCO.trackEdsUsage('{$summId}')" target="_blank" aria-hidden="true">
 						<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
 					</a>
 				{/if}
 			</div>
 		{/if}
 
-		<div class="{if !$showCovers}col-xs-10 col-sm-10 col-md-10 col-lg-11{else}col-xs-7 col-sm-7 col-md-7 col-lg-9{/if}">
+		<div class="{if !$showCovers}col-xs-10 col-sm-10 col-md-10 col-lg-11{else}col-xs-7 col-sm-7 col-md-7 col-lg-8{/if}">
 			<div class="row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
@@ -99,7 +99,7 @@
 		</div> {* End of main section *}
 
 		{* List actions *}
-		<div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
+		<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
 			{if $listEditAllowed}
 				<div class="btn-group-vertical" role="group">
 					<a href="/MyAccount/Edit?listEntryId={$listEntryId|escape:"url"}{if !is_null($listSelected)}&amp;listId={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit'}</a>

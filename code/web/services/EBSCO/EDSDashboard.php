@@ -47,10 +47,6 @@ class EBSCO_EDSDashboard extends Admin_Admin
 		$this->display('edsDashboard.tpl', 'EBSCO EDS Dashboard');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year
@@ -98,4 +94,22 @@ class EBSCO_EDSDashboard extends Admin_Admin
 		];
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ebsco', 'EBSCO');
+		$breadcrumbs[] = new Breadcrumb('/EBSCO/EDSDashboard', 'EDS Usage Dashboard');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'ebsco';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	}
 }

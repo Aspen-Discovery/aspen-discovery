@@ -45,7 +45,6 @@ public class GroupedReindexMain {
 			System.exit(1);
 		}
 		serverName = args[0];
-		System.setProperty("reindex.process.serverName", serverName);
 
 		boolean checkNightlyIndexRunning = false;
 		if (args.length >= 2 && args[1].equalsIgnoreCase("full")) {

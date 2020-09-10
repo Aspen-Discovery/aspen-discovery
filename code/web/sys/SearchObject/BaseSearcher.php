@@ -1,6 +1,6 @@
 <?php
 
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 require_once ROOT_DIR . '/sys/Recommend/RecommendationFactory.php';
 
 /**
@@ -194,8 +194,6 @@ abstract class SearchObject_BaseSearcher
 			$field = count($this->filterList) + 1;
 		}
 
-		global $solrScope;
-
 		// Check for duplicates -- if it's not in the array, we can add it
 		if (!$this->hasFilter($field, $value)) {
 			if (!is_numeric($field)) {
@@ -209,39 +207,7 @@ abstract class SearchObject_BaseSearcher
 					$field = 'target_audience_full';
 				}
 
-				if ($solrScope) {
-					if ($field === 'availability_toggle') {
-						$field = 'availability_toggle_' . $solrScope;
-					} elseif ($field === 'format') {
-						$field = 'format_' . $solrScope;
-					} elseif ($field === 'format_category') {
-						$field = 'format_category_' . $solrScope;
-					} elseif ($field === 'econtent_source') {
-						$field = 'econtent_source_' . $solrScope;
-					} elseif ($field === 'econtent_protection_type') {
-						$field = 'econtent_protection_type_' . $solrScope;
-					} elseif (($field === 'collection') || ($field === 'collection_group')) {
-						$field = 'collection_' . $solrScope;
-					} elseif ($field === 'shelf_location') {
-						$field = 'shelf_location_' . $solrScope;
-					} elseif ($field === 'detailed_location') {
-						$field = 'detailed_location_' . $solrScope;
-					} elseif ($field === 'owning_location') {
-						$field = 'owning_location_' . $solrScope;
-					} elseif ($field === 'owning_system') {
-						$field = 'owning_system_' . $solrScope;
-					} elseif ($field === 'available_at') {
-						$field = 'available_at_' . $solrScope;
-					} elseif ($field === 'time_since_added') {
-						$field = 'local_time_since_added_' . $solrScope;
-					} elseif ($field === 'itype') {
-						$field = 'itype_' . $solrScope;
-					} elseif ($field === 'shelf_location') {
-						$field = 'shelf_location_' . $solrScope;
-					} elseif ($field === 'detailed_location') {
-						$field = 'detailed_location_' . $solrScope;
-					}
-				}
+				$field = $this->getScopedFieldName($field);
 			}
 
 			$this->filterList[$field][] = $value;
@@ -291,36 +257,8 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function getFacetLabel($field)
 	{
-		global $solrScope;
-
 		$shortField = $field;
-		if (strpos($shortField, 'availability_toggle_') === 0) {
-			$shortField = 'availability_toggle';
-		} elseif (strpos($shortField, 'format') === 0) {
-			$shortField = 'format';
-		} elseif (strpos($shortField, 'format_category') === 0) {
-			$shortField = 'format_category';
-		} elseif (strpos($shortField, 'econtent_source') === 0) {
-			$shortField = 'econtent_source';
-		} elseif (strpos($shortField, 'econtent_protection_type') === 0) {
-			$shortField = 'econtent_protection_type';
-		} elseif (strpos($shortField, 'shelf_location') === 0) {
-			$shortField = 'shelf_location';
-		} elseif (strpos($shortField, 'detailed_location') === 0) {
-			$shortField = 'detailed_location';
-		} elseif (strpos($shortField, 'owning_location') === 0) {
-			$shortField = 'owning_location';
-		} elseif (strpos($shortField, 'owning_library') === 0) {
-			$shortField = 'owning_library';
-		} elseif (strpos($shortField, 'available_at') === 0) {
-			$shortField = 'available_at';
-		} elseif (strpos($shortField, 'collection') === 0 || strpos($shortField, 'collection_group') === 0) {
-			$shortField = 'collection';
-		} elseif (strpos($shortField, 'local_time_since_added') === 0) {
-			$shortField = 'local_time_since_added';
-		} elseif (strpos($shortField, 'itype') === 0) {
-			$shortField = 'itype';
-		}
+		$shortField = $this->getUnscopedFieldName($shortField);
 		$facetConfig = $this->getFacetConfig();
 		if (isset($facetConfig[$field])) {
 			$facetConfig = $facetConfig[$field];
@@ -2581,6 +2519,24 @@ abstract class SearchObject_BaseSearcher
 
 	abstract function loadValidFields();
 	abstract function loadDynamicFields();
+
+	/**
+	 * @param string $scopedFieldName
+	 * @return string
+	 */
+	protected function getUnscopedFieldName(string $scopedFieldName): string
+	{
+		return $scopedFieldName;
+	}
+
+	/**
+	 * @param $field
+	 * @return string
+	 */
+	protected function getScopedFieldName($field): string
+	{
+		return $field;
+	}
 }//End of SearchObject_Base
 
 /**

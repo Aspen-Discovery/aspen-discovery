@@ -34,8 +34,8 @@
 						<div id="additionalContributors" style="display:none">
 					{/if}
 					<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
-					{if $contributor.role}
-						&nbsp;{$contributor.role|translate}
+					{if !empty($contributor.roles)}
+						&nbsp;{implode subject=$contributor.roles glue=", " translate=true}
 					{/if}
 					{if $contributor.title}
 						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
@@ -144,6 +144,8 @@
 		</div>
 	{/if}
 
+	{include file="GroupedWork/relatedLists.tpl"}
+
 	{* Detailed status information *}
 	<div class="row">
 		<div class="result-label col-tn-3">{translate text='Status'}</div>
@@ -159,5 +161,4 @@
 		</div>
 		{* <div class="col-xs-8 result-value result-value-bold statusValue {$statusSummary.class}" id="statusValue">{$statusSummary.groupedStatus|escape}{if $statusSummary.numHolds > 0} ({$statusSummary.numHolds} people are on the wait list){/if}</div> *}
 	</div>
-
 {/strip}

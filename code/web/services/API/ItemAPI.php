@@ -37,7 +37,7 @@ class ItemAPI extends Action {
 		if ($method != 'loadSolrRecord' && method_exists($this, $method)) {
 			// Connect to Catalog
 			if ($method != 'getBookcoverById' && $method != 'getBookCover'){
-				$this->catalog = CatalogFactory::getCatalogConnectionInstance();;
+				$this->catalog = CatalogFactory::getCatalogConnectionInstance();
 				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -76,11 +76,10 @@ class ItemAPI extends Action {
 		}elseif ($author){
 			$searchResults = $this->db->search("author:$author");
 		}else{
-			$results = array(
+			return array(
 				'result' => false,
 				'message' => 'Please enter a title and/or author'
 			);
-			return $results;
 		}
 
 		if ($searchResults['response']['numFound'] == 0){
@@ -122,11 +121,10 @@ class ItemAPI extends Action {
 			}
 			$searchResults = $this->db->search("$recordId", 'Id');
 		}else{
-			$results = array(
+			return array(
 				'result' => false,
 				'message' => 'Please enter the record Id to look for'
 			);
-			return $results;
 		}
 
 		if ($searchResults['response']['numFound'] == 0){
@@ -510,5 +508,10 @@ class ItemAPI extends Action {
 			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 		return $record;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

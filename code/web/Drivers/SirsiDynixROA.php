@@ -7,6 +7,7 @@ class SirsiDynixROA extends HorizonAPI
 {
 	//TODO: Additional caching of sessionIds by patron
 	private static $sessionIdsForUsers = array();
+	private static $logAllAPICalls = true;
 
 	private function staffOrPatronSessionTokenSwitch(){
 		$useStaffAccountForWebServices = true;
@@ -30,7 +31,7 @@ class SirsiDynixROA extends HorizonAPI
 			'Accept: application/json',
 			'Content-Type: application/json',
 			'SD-Originating-App-Id: Aspen Discovery',
-			'SD-Working-LibraryID: ' . $library->subdomain,
+			'SD-Working-LibraryID: ' . $library->ilsCode,
 			'x-sirs-clientID: ' . $clientId,
 		);
 		if ($sessionToken != null) {
@@ -53,20 +54,23 @@ class SirsiDynixROA extends HorizonAPI
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		global $instanceName;
 		if (stripos($instanceName, 'localhost') !== false) {
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // TODO: debugging only: comment out for production
-
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // TODO: debugging only: comment out for production
 		}
-		//TODO: need switch to set this option when using on local machine
 		if ($params != null) {
 			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
 		}
 		$json = curl_exec($ch);
+		if (SirsiDynixROA::$logAllAPICalls){
+			$logger->log($url, Logger::LOG_ERROR);
+			$logger->log(print_r($headers, true), Logger::LOG_ERROR);
+			$logger->log(print_r($json, true), Logger::LOG_ERROR);
+		}
 		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
 			return json_decode($json);
 		} else {
-			$logger->log('Curl problem in getWebServiceResponse', Logger::LOG_WARNING);
+			$logger->log('Curl problem in getWebServiceResponse', Logger::LOG_ERROR);
 			return false;
 		}
 	}
@@ -79,7 +83,8 @@ class SirsiDynixROA extends HorizonAPI
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' .$barcode . '&rw=1&ct=1&includeFields=firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,circRecordList,blockList,holdRecordList,primaryPhone', null, $sessionToken);
+			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' .$barcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1) {
 				$userID = $lookupMyAccountInfoResponse->result[0]->key;
 				$lookupMyAccountInfoResponse = $lookupMyAccountInfoResponse->result[0];
@@ -278,7 +283,7 @@ class SirsiDynixROA extends HorizonAPI
 				$user->_numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
 				$user->_numHoldsAvailableIls  = $numHoldsAvailable;
 				$user->_numHoldsRequestedIls  = $numHoldsRequested;
-				$user->patronType            = 0; //TODO: not getting this info here?
+				$user->patronType            = $lookupMyAccountInfoResponse->fields->profile->key;
 				$user->_notices               = '-';
 				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
@@ -309,6 +314,7 @@ class SirsiDynixROA extends HorizonAPI
 		//First call loginUser
 		$timer->logTime("Logging in through Symphony APIs");
 		list($userValid, $sessionToken, $sirsiRoaUserID) = $this->loginViaWebService($username, $password);
+		$staffSessionToken = $this->getStaffSessionToken();
 		if ($validatedViaSSO) {
 			$userValid = true;
 		}
@@ -323,11 +329,11 @@ class SirsiDynixROA extends HorizonAPI
 			//	$patronStatusInfoDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patronStatusInfo/describe', null, $sessionToken);
 			//	$patronAddress1PolicyDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/address1/describe', null, $sessionToken);
 
-			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,blockList{owed}");
+			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
 			$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $sirsiRoaUserID . '?includeFields=' . $includeFields;
 
 			// phoneList is for texting notification preferences
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $staffSessionToken);
 			if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 				$lastName  = $lookupMyAccountInfoResponse->fields->lastName;
 				$firstName = $lookupMyAccountInfoResponse->fields->firstName;
@@ -504,7 +510,7 @@ class SirsiDynixROA extends HorizonAPI
 				$user->_zip                   = $Zip;
 				$user->_fines                 = sprintf('$%01.2f', $finesVal);
 				$user->_finesVal              = $finesVal;
-				$user->patronType            = 0; //TODO: not getting this info here?
+				$user->patronType             = $lookupMyAccountInfoResponse->fields->profile->key;
 				$user->_notices               = '-';
 				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
@@ -575,15 +581,17 @@ class SirsiDynixROA extends HorizonAPI
 			$summary['totalFines'] = $finesVal;
 
 			$summary['expires'] = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-			list ($yearExp, $monthExp, $dayExp) = explode("-", $summary['expires']);
-			$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-			$timeNow      = time();
-			$timeToExpire = $timeExpire - $timeNow;
-			if ($timeToExpire <= 30 * 24 * 60 * 60) {
-				if ($timeToExpire <= 0) {
-					$summary['expired'] = 1;
+			if ($summary['expires'] != null){
+				list ($yearExp, $monthExp, $dayExp) = explode("-", $summary['expires']);
+				$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+				$timeNow      = time();
+				$timeToExpire = $timeExpire - $timeNow;
+				if ($timeToExpire <= 30 * 24 * 60 * 60) {
+					if ($timeToExpire <= 0) {
+						$summary['expired'] = 1;
+					}
+					$summary['expireClose'] = 1;
 				}
-				$summary['expireClose'] = 1;
 			}
 		}
 
@@ -774,29 +782,30 @@ class SirsiDynixROA extends HorizonAPI
 	protected function loginViaWebService($username, $password)
 	{
 		global $memCache;
-		$memCacheKey = "sirsiROA_session_token_info_$username";
+		global $library;
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
 		$session = $memCache->get($memCacheKey);
-		if ($session) {
+		if ($session != false) {
 			list(, $sessionToken, $sirsiRoaUserID) = $session;
 			SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserID] = $sessionToken;
 		} else {
 			$session = array(false, false, false);
 			$webServiceURL = $this->getWebServiceURL();
 			//$loginDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/login/describe');
-			$loginUserUrl      = $webServiceURL . '/user/patron/login';
-			$params            = array(
+			$loginUserUrl = $webServiceURL . '/user/patron/login';
+			$params  = [
 				'login' => $username,
 				'password' => $password,
-			);
+			];
 			$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
 			if ($loginUserResponse && isset($loginUserResponse->sessionToken)) {
 				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
-					$sirsiRoaUserID                                     = $loginUserResponse->patronKey;
-					$sessionToken                                       = $loginUserResponse->sessionToken;
-					SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
-					$session = array(true, $sessionToken, $sirsiRoaUserID);
-					global $configArray;
-					$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
+				$sirsiRoaUserID = $loginUserResponse->patronKey;
+				$sessionToken = $loginUserResponse->sessionToken;
+				SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
+				$session = array(true, $sessionToken, $sirsiRoaUserID);
+				global $configArray;
+				$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
 			} elseif (isset($loginUserResponse->messageList)) {
 				global $logger;
 				$errorMessage = 'Sirsi ROA Webservice Login Error: ';
@@ -804,6 +813,7 @@ class SirsiDynixROA extends HorizonAPI
 					$errorMessage .= $error->message.'; ';
 				}
 				$logger->log($errorMessage, Logger::LOG_ERROR);
+				$logger->log(print_r($loginUserResponse, true), Logger::LOG_ERROR);
 			}
 		}
 		return $session;
@@ -812,7 +822,8 @@ class SirsiDynixROA extends HorizonAPI
 	protected function staffLoginViaWebService($username, $password)
 	{
 		global $memCache;
-		$memCacheKey = "sirsiROA_session_token_info_$username";
+		global $library;
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
 		$session = $memCache->get($memCacheKey);
 		if ($session) {
 			list(, $sessionToken, $sirsiRoaUserID) = $session;
@@ -830,16 +841,16 @@ class SirsiDynixROA extends HorizonAPI
 			if ($loginUserResponse && isset($loginUserResponse->sessionToken)) {
 				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
 
-					$sirsiRoaUserID                                     = $loginUserResponse->staffKey;
-					//this is the same value as patron Key, if user is logged in with that call.
-					$sessionToken                                       = $loginUserResponse->sessionToken;
-					SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
-					$session = array(true, $sessionToken, $sirsiRoaUserID);
-					global $configArray;
-					$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
+				$sirsiRoaUserID                                     = $loginUserResponse->staffKey;
+				//this is the same value as patron Key, if user is logged in with that call.
+				$sessionToken                                       = $loginUserResponse->sessionToken;
+				SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
+				$session = array(true, $sessionToken, $sirsiRoaUserID);
+				global $configArray;
+				$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
 			} elseif (isset($loginUserResponse->messageList)) {
 				global $logger;
-				$errorMessage = 'Sirsi ROA Webservice Login Error: ';
+				$errorMessage = 'Sirsi ROA Staff Webservice Login Error: ';
 				foreach ($loginUserResponse->messageList as $error){
 					$errorMessage .= $error->message.'; ';
 				}
@@ -1911,5 +1922,11 @@ class SirsiDynixROA extends HorizonAPI
 
 		);
 		return isset($statusMap[$statusCode]) ? $statusMap[$statusCode] : 'Unknown (' . $statusCode . ')';
+	}
+	public function logout(User $user){
+		global $memCache;
+		global $library;
+		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$user->getBarcode()}";
+		$memCache->delete($memCacheKey);
 	}
 }

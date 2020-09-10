@@ -85,11 +85,6 @@ class Translation_Translations extends Admin_Admin
 		$this->display('translations.tpl', 'Translations');
 	}
 
-	function getAllowableRoles()
-	{
-		return ['opacAdmin', 'translator'];
-	}
-
 	private function exportAllTranslations()
 	{
 		header('Content-type: application/csv');
@@ -177,5 +172,25 @@ class Translation_Translations extends Admin_Admin
 
 		flush();
 		exit();
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#translations', 'Languages and Translations');
+		$breadcrumbs[] = new Breadcrumb('/Translation/Translations', 'Translations');
+		$breadcrumbs[] = new Breadcrumb('', 'Translations');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'translations';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Translate Aspen');
 	}
 }
