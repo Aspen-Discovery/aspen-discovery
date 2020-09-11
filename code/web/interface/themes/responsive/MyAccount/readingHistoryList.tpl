@@ -32,7 +32,7 @@
 
 			{if $transList || !empty($readingHistoryFilter)}
 				{* Results Page Options *}
-				<div id="pager" class="col-xs-12">
+				<div class="col-xs-12">
 					<div class="row">
 						<div class="form-group col-sm-3" id="sortOptions">
 							<select aria-label="{translate text="Sort By" inAttribute=true}" class="sortMethod form-control" id="sortMethod" name="accountSort" onchange="return AspenDiscovery.Account.loadReadingHistory($('#patronId').val(),$('#sortMethod option:selected').val(), 1,undefined, $('#readingHistoryFilter').val())">
@@ -68,18 +68,6 @@
 						{foreach from=$transList item=record name="recordLoop" key=recordKey}
 							{include file="MyAccount/readingHistoryEntry.tpl" record=$record}
 						{/foreach}
-					</div>
-					<hr>
-					<div class="row">
-						<div class="col-xs-12">
-							<div id="readingListActionsBottom" class="btn-group btn-group-sm">
-								{if $historyActive == true}
-									<button class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.ReadingHistory.exportListAction()">{translate text="Export To Excel"}</button>
-								{else}
-									<button class="btn btn-sm btn-primary" onclick="return AspenDiscovery.Account.ReadingHistory.optInAction()">{translate text="Start Recording My Reading History"}</button>
-								{/if}
-							</div>
-						</div>
 					</div>
 					{if $pageLinks.all}
 						<div class="text-center">{$pageLinks.all}</div>
