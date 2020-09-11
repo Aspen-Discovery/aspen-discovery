@@ -38,6 +38,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char dateCreatedSubfield;
 	private String dateAddedFormat;
 	char locationSubfieldIndicator;
+	boolean includeLocationNameInDetailedLocation;
 	private Pattern nonHoldableLocations;
 	Pattern locationsToSuppressPattern = null;
 	Pattern collectionsToSuppressPattern = null;
@@ -105,6 +106,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			callNumberPoststampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPoststamp");
 
 			locationSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "location");
+			includeLocationNameInDetailedLocation = indexingProfileRS.getBoolean("includeLocationNameInDetailedLocation");
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableLocations");
 				if (pattern != null && pattern.length() > 0) {

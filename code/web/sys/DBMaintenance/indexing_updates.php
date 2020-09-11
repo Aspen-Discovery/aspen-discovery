@@ -860,6 +860,14 @@ function getIndexingUpdates()
 				"ALTER TABLE location_records_to_include ADD COLUMN locationsToExclude varchar(100) NOT NULL DEFAULT ''",
 				"ALTER TABLE location_records_to_include ADD COLUMN subLocationsToExclude varchar(100) NOT NULL DEFAULT ''",
 			]
+		],
+
+		'indexing_includeLocationNameInDetailedLocation' => [
+			'title' => 'Indexing - includeLocationNameInDetailedLocation',
+			'description' => 'Add a new field to determine how detailed location is built',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN includeLocationNameInDetailedLocation TINYINT(1) DEFAULT 1"
+			]
 		]
 	);
 }

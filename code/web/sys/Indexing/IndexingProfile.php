@@ -43,6 +43,7 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $callNumberCutter;
 	public /** @noinspection PhpUnused */ $callNumberPoststamp;
 	public $location;
+	public /** @noinspection PhpUnused */ $includeLocationNameInDetailedLocation;
 	public /** @noinspection PhpUnused */ $nonHoldableLocations;
 	public /** @noinspection PhpUnused */ $locationsToSuppress;
 	public $subLocation;
@@ -144,6 +145,7 @@ class IndexingProfile extends DataObject
 				'callNumberCutter' => array('property' => 'callNumberCutter', 'type' => 'text', 'label' => 'Call Number Cutter', 'maxLength' => 1, 'description' => 'Subfield for call number cutter', 'forcesReindex' => true),
 				'callNumberPoststamp' => array('property' => 'callNumberPoststamp', 'type' => 'text', 'label' => 'Call Number Poststamp', 'maxLength' => 1, 'description' => 'Subfield for call number post-stamp', 'forcesReindex' => true),
 				'location' => array('property' => 'location', 'type' => 'text', 'label' => 'Location', 'maxLength' => 1, 'description' => 'Subfield for location', 'forcesReindex' => true),
+				'includeLocationNameInDetailedLocation' => array('property' => 'includeLocationNameInDetailedLocation', 'type'=>'checkbox', 'label'=>'Include Location Name in Detailed Location', 'If disabled, the detailed location will only include the shelf location.  Only suggested for single branch locations.', 'default'=>1, 'forcesReindex'=>true),
 				'nonHoldableLocations' => array('property' => 'nonHoldableLocations', 'type' => 'text', 'label' => 'Non Holdable Locations', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should not allow holds', 'forcesReindex' => true),
 				'locationsToSuppress' => array('property' => 'locationsToSuppress', 'type' => 'text', 'label' => 'Locations To Suppress', 'maxLength' => 255, 'description' => 'A regular expression for any locations that should be suppressed', 'forcesReindex' => true),
 				'subLocation' => array('property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location', 'maxLength' => 1, 'description' => 'A secondary subfield to divide locations', 'forcesReindex' => true),
