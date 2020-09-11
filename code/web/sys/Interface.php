@@ -105,13 +105,18 @@ class UInterface extends Smarty
 		$this->register_function('char', 'char');
 
 		$this->assign('site', $configArray['Site']);
-		$url = $_SERVER['SERVER_NAME'];
-		if (isset($_SERVER['HTTPS'])){
+		if (isset($_SERVER['SERVER_NAME'])) {
+			$url = $_SERVER['SERVER_NAME'];
+		}else {
+			$url = $configArray['Site']['url'];
+		}
+		if (isset($_SERVER['HTTPS'])) {
 			$url = "https://" . $url;
-		}else{
+		} else {
 			$url = "http://" . $url;
 		}
 		$this->url = $url;
+
 		$this->assign('template_dir',$this->template_dir);
 		$this->assign('url', $url);
 

@@ -88,6 +88,6 @@ class Hoopla_Settings extends ObjectEditor
 
 	function canView()
 	{
-		UserAccount::userHasPermission('Administer Hoopla');
+		return UserAccount::userHasPermission('Administer Hoopla');
 	}
 }

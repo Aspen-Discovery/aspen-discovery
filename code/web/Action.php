@@ -8,7 +8,9 @@ abstract class Action
 	function __construct($isStandalonePage = false) {
 		$this->isStandalonePage = $isStandalonePage;
 		global $interface;
-		$interface->assign('isStandalonePage', true);
+		if ($interface) {
+			$interface->assign('isStandalonePage', $isStandalonePage);
+		}
 	}
 
 	abstract function launch();
