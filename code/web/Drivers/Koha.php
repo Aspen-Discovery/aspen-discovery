@@ -507,12 +507,13 @@ class Koha extends AbstractIlsDriver
 	{
 		global $timer;
 		/** @noinspection SqlResolve */
-		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote from borrowers where borrowernumber = $patronId";
+		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy from borrowers where borrowernumber = $patronId";
 
 		$userExistsInDB = false;
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
 		if ($lookupUserResult) {
 			$userFromDb = $lookupUserResult->fetch_assoc();
+			$lookupUserResult->close();
 
 			$user = new User();
 			//Get the unique user id from Millennium
@@ -548,6 +549,49 @@ class Koha extends AbstractIlsDriver
 				if ($passwordChanged) {
 					//The password has changed, disable account linking and give users the appropriate messages
 					$user->disableLinkingDueToPasswordChange();
+				}
+			}else{
+				//For new users, we need to check to see if they are opted into reading history or not
+				switch ($userFromDb['privacy']){
+					case 2:
+						//Never track
+						$user->trackReadingHistory = false;
+						break;
+					case 0:
+						//Track forever
+						$user->trackReadingHistory = true;
+						break;
+					default:
+						//Depends on configuration for the patron category
+						$pType = $userFromDb['categorycode'];
+						/** @noinspection SqlResolve */
+						$patronCategorySql = "select default_privacy from categories where categorycode = '$pType'";
+						$patronCategoryResult = mysqli_query($this->dbConnection, $patronCategorySql, MYSQLI_USE_RESULT);
+						if ($patronCategoryResult) {
+							$privacyInfo = mysqli_fetch_assoc($patronCategoryResult);
+							if ($privacyInfo) {
+								switch ($privacyInfo['default_privacy']) {
+									case 'forever':
+										//Never delete
+										$user->trackReadingHistory = true;
+										break;
+									case 'never':
+										//Never store
+										$user->trackReadingHistory = false;
+										break;
+									case 'default':
+										//Keep until it gets deleted (on in Aspen).
+										$user->trackReadingHistory = true;
+										break;
+								}
+							} else {
+								global $logger;
+								$logger->log("Could not get information about patron category", Logger::LOG_ERROR);
+							}
+						}else{
+							global $logger;
+							$logger->log("Could not get information about patron category", Logger::LOG_ERROR);
+						}
 				}
 			}
 			$user->cat_password = $password;

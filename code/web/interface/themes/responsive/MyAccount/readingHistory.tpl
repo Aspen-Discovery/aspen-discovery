@@ -38,7 +38,7 @@
 				</div>
 
 				<div id="readingHistoryListPlaceholder">
-					{translate text="Loading Reading History"}
+					{translate text="Loading Reading History, this may take awhile the first time."}
 				</div>
 
 				<script type="text/javascript">
