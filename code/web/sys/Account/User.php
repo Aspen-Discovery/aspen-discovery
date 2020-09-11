@@ -2016,8 +2016,8 @@ class User extends DataObject
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
 			$sections['ebsco'] = new AdminSection('EBSCO');
-			$sections['ebsco']->addAction(new AdminAction('Settings', 'Define connection information between Hoopla and Aspen Discovery.', '/EBSCO/EDSSettings'), 'Administer EBSCO EDS');
-			$sections['ebsco']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Hoopla integration.', '/EBSCO/EDSDashboard'), ['View Dashboards', 'View System Reports']);
+			$sections['ebsco']->addAction(new AdminAction('Settings', 'Define connection information between EBSCO EDS and Aspen Discovery.', '/EBSCO/EDSSettings'), 'Administer EBSCO EDS');
+			$sections['ebsco']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for EBSCO EDS integration.', '/EBSCO/EDSDashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
 		if (array_key_exists('Hoopla', $enabledModules)) {
