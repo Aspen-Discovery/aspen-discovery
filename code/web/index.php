@@ -444,7 +444,6 @@ $interface->assign('searchSource', $searchSource);
 //Does have a slight performance advantage.
 global $isAJAX;
 $isAJAX = false;
-$usageByIPAddress->numRequests++;
 if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	$isAJAX = true;
 	$interface->assign('showTopSearchBox', 0);
