@@ -145,11 +145,10 @@ class IPAddress extends DataObject
 			return false;
 		}
 		$ipVal = ip2long($activeIP);
-		if (array_key_exists($ipVal, IPAddress::$ipAddressesForIP)){
-			return IPAddress::$ipAddressesForIP[$ipVal];
-		}
-
 		if (is_numeric($ipVal)) {
+			if (array_key_exists($ipVal, IPAddress::$ipAddressesForIP)){
+				return IPAddress::$ipAddressesForIP[$ipVal];
+			}
 			disableErrorHandler();
 			$subnet = new IPAddress();
 			$subnet->whereAdd('startIpVal <= ' . $ipVal);
