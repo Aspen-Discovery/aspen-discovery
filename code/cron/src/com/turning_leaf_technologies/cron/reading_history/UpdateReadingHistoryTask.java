@@ -36,6 +36,9 @@ public class UpdateReadingHistoryTask implements Runnable {
 			URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(cat_username, "UTF-8") + "&password=" + URLEncoder.encode(cat_password, "UTF-8"));
 			//logger.error("Updating reading history for " + cat_username);
 			HttpURLConnection conn = (HttpURLConnection) patronApiUrl.openConnection();
+			conn.addRequestProperty("User-Agent","Aspen Discovery");
+			conn.addRequestProperty("Accept","*/*");
+			conn.addRequestProperty("Cache-Control","no-cache");
 			if (conn.getResponseCode() == 200) {
 				String patronDataJson = StringUtils.convertStreamToString(conn.getInputStream());
 				logger.debug(patronApiUrl.toString());
