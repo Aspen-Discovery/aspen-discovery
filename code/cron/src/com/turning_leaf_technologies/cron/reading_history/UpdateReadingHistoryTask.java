@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -34,9 +35,9 @@ public class UpdateReadingHistoryTask implements Runnable {
 			// Call the patron API to get their checked out items
 			URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(cat_username, "UTF-8") + "&password=" + URLEncoder.encode(cat_password, "UTF-8"));
 			//logger.error("Updating reading history for " + cat_username);
-			Object responseRaw = patronApiUrl.getContent();
-			if (responseRaw instanceof InputStream) {
-				String patronDataJson = StringUtils.convertStreamToString((InputStream) responseRaw);
+			HttpURLConnection conn = (HttpURLConnection) patronApiUrl.openConnection();
+			if (conn.getResponseCode() == 200) {
+				String patronDataJson = StringUtils.convertStreamToString(conn.getInputStream());
 				logger.debug(patronApiUrl.toString());
 				logger.debug("Json for patron reading history " + patronDataJson);
 				//logger.error("Got results for " + cat_username);
@@ -44,11 +45,11 @@ public class UpdateReadingHistoryTask implements Runnable {
 					JSONObject patronData = new JSONObject(patronDataJson);
 					JSONObject result = patronData.getJSONObject("result");
 					hadError = !result.getBoolean("success");
-					if (hadError){
+					if (hadError) {
 						String message = result.getString("message");
 						if (!message.equals("Login unsuccessful")) {
 							processLog.incErrors("Updating reading history failed for " + cat_username + " " + message);
-						}else{
+						} else {
 							//This happens if the patron has changed their login or no longer exists.
 							processLog.incSkipped();
 							//Don't log that we couldn't update them, the skipped is enough
@@ -61,9 +62,10 @@ public class UpdateReadingHistoryTask implements Runnable {
 					logger.error(patronDataJson);
 					hadError = true;
 				}
-			} else {
-				processLog.incErrors("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
-						+ responseRaw.getClass().getName());
+			}else{
+				//Received an error
+				String errorResponse = StringUtils.convertStreamToString(conn.getErrorStream());
+				processLog.incErrors("Error " + conn.getResponseCode() + " retrieving information from patron API for " + cat_username + " base url is " + aspenUrl + " " + errorResponse);
 				hadError = true;
 			}
 		} catch (MalformedURLException e) {
