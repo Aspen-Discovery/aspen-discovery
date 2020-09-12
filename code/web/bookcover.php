@@ -3,6 +3,7 @@ require_once 'bootstrap.php';
 require_once 'bootstrap_aspen.php';
 
 global $aspenUsage;
+global $usageByIPAddress;
 $aspenUsage->coverViews++;
 require_once ROOT_DIR . '/sys/Covers/BookCoverProcessor.php';
 
@@ -19,6 +20,11 @@ try{
 		$aspenUsage->update();
 	}else{
 		$aspenUsage->insert();
+	}
+	if ($usageByIPAddress->id){
+		$usageByIPAddress->update();
+	}else{
+		$usageByIPAddress->insert();
 	}
 }catch(Exception $e){
 	//Table not created yet, ignore

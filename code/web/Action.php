@@ -63,6 +63,13 @@ abstract class Action
 		global $aspenUsage;
 		$aspenUsage->blockedApiRequests++;
 		$aspenUsage->update();
+		global $usageByIPAddress;
+		try{
+			$usageByIPAddress->numBlockedApiRequests++;
+			$usageByIPAddress->update();
+		} catch (Exception $e) {
+			//Table does not exist yet
+		}
 
 		http_response_code(403);
 		$clientIP = IPAddress::getClientIP();

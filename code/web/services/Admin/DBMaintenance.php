@@ -2205,6 +2205,25 @@ class Admin_DBMaintenance extends Admin_Admin
 						'ALTER TABLE rosen_levelup_settings ADD lu_location_code_prefix VARCHAR(50)'
 					]
 				],
+
+				'ip_address_logs' => [
+					'title' => 'Logging by IP Address',
+					'description' => 'Add a table to track usage of Aspen by IP Address',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS usage_by_ip_address(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							instance VARCHAR(100),
+							ipAddress VARCHAR(25),
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL, 
+							numRequests INT default 0,
+							numBlockedRequests INT default 0,
+							numBlockedApiRequests INT default 0,
+							lastRequest INT default 0,
+							UNIQUE ip(year, month, instance, ipAddress)
+						) ENGINE = INNODB;'
+					]
+				]
 			)
 		);
 	}

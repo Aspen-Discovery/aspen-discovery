@@ -5,6 +5,7 @@ if (file_exists('bootstrap_aspen.php')) {
 }
 
 global $aspenUsage;
+global $usageByIPAddress;
 
 global $timer;
 global $memoryWatcher;
@@ -443,6 +444,7 @@ $interface->assign('searchSource', $searchSource);
 //Does have a slight performance advantage.
 global $isAJAX;
 $isAJAX = false;
+$usageByIPAddress->numRequests++;
 if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	$isAJAX = true;
 	$interface->assign('showTopSearchBox', 0);
@@ -712,10 +714,16 @@ try{
 	}else{
 		$aspenUsage->insert();
 	}
+
+	if ($usageByIPAddress->id){
+		$usageByIPAddress->update();
+	}else{
+		$usageByIPAddress->insert();
+	}
 }catch(Exception $e){
 	//Table not created yet, ignore
 	global $logger;
-	$logger->log("Exception updating aspen usage/slow pages: " . $e, Logger::LOG_DEBUG);
+	$logger->log("Exception updating aspen usage/slow pages/usage by IP: " . $e, Logger::LOG_DEBUG);
 }
 
 function processFollowup(){

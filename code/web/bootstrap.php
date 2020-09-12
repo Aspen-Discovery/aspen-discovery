@@ -6,6 +6,8 @@ require_once ROOT_DIR . '/sys/Interface.php';
 require_once ROOT_DIR . '/sys/AspenError.php';
 require_once ROOT_DIR . '/sys/Module.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
+require_once ROOT_DIR . '/sys/SystemLogging/UsageByIPAddress.php';
+require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 global $aspenUsage;
 $aspenUsage = new AspenUsage();
 $aspenUsage->year = date('Y');
@@ -20,6 +22,16 @@ require_once ROOT_DIR . '/sys/Logger.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 global $configArray;
 $configArray = readConfig();
+
+//This has to be done after reading configuration so we can get the servername
+global $usageByIPAddress;
+global $instanceName;
+$usageByIPAddress = new UsageByIPAddress();
+$usageByIPAddress->year = date('Y');
+$usageByIPAddress->month = date('n');
+$usageByIPAddress->ipAddress = IPAddress::getClientIP();
+$usageByIPAddress->instance = $instanceName;
+
 require_once ROOT_DIR . '/sys/Timer.php';
 global $timer;
 $timer = new Timer($startTime);
@@ -44,6 +56,14 @@ try{
 	//Table has not been created yet, ignore it
 }
 
+try{
+	$usageByIPAddress->find(true);
+}catch (Exception $e){
+	//Table has not been created yet, ignore it
+}
+$usageByIPAddress->lastRequest = time();
+$usageByIPAddress->numRequests++;
+
 $timer->logTime("Initialized Database");
 requireSystemLibraries();
 initLocale();
@@ -52,6 +72,12 @@ initLocale();
 if (IPAddress::isClientIpBlocked()){
 	$aspenUsage->blockedRequests++;
 	$aspenUsage->update();
+	try {
+		$usageByIPAddress->numBlockedRequests++;
+		$usageByIPAddress->update();
+	}catch (Exception $e){
+		//Ignore this, the class has not been created yet
+	}
 
 	http_response_code(403);
 	echo("<h1>Forbidden</h1><p><strong>We are unable to handle your request.</strong></p>");

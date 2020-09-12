@@ -146,6 +146,16 @@ class AspenError extends DataObject
 				//Table does not exist yet
 			}
 		}
+		global $usageByIPAddress;
+		try{
+			if ($usageByIPAddress->id){
+				$usageByIPAddress->update();
+			}else{
+				$usageByIPAddress->insert();
+			}
+		} catch (Exception $e) {
+			//Table does not exist yet
+		}
 
 		try {
 			$this->insert();
