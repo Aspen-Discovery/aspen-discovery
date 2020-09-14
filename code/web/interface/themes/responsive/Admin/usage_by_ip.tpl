@@ -25,3 +25,8 @@
 		</table>
 	</div>
 {/strip}
+<script type="text/javascript">
+{literal}
+	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra'] });
+{/literal}
+</script>
