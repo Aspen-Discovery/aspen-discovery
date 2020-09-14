@@ -469,6 +469,9 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	if (isset($_REQUEST['searchSource'])) {
 		$activeSearchSource = $_REQUEST['searchSource'];
 	}
+	if (!array_key_exists($activeSearchSource, $validSearchSources)){
+		$activeSearchSource = array_key_first($validSearchSources);
+	}
 	$activeSearchObject = SearchSources::getSearcherForSource($activeSearchSource);
 	$searchIndexes = SearchSources::getSearchIndexesForSource($activeSearchObject, $activeSearchSource);
 	$interface->assign('searchIndexes', $searchIndexes);
