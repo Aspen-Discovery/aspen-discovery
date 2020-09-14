@@ -486,6 +486,9 @@ BODY;
 					'label' => (string)$facet->Label,
 					'valuesToShow' => 5,
 				);
+				if ($facetId == 'SourceType') {
+					$availableFacets[$facetId]['collapseByDefault'] = false;
+				}
 				$list = array();
 				foreach ($facet->AvailableFacetValues as $value){
 					$facetValue = (string)$value->Value;
@@ -615,8 +618,11 @@ BODY;
 			$facetIndex++;
 		}
 
-		foreach ($this->limiters as $limiter => $value) {
-			$searchUrl .= '&limiter=' . $limiter . ':y';
+		$limitList = $this->getLimitList();
+		foreach ($limitList as $limiter => $limiterOptions) {
+			if ($limiterOptions['isApplied']){
+				$searchUrl .= '&limiter=' . $limiter . ':y';
+			}
 		}
 
 		$curlConnection = $this->getCurlConnection();
@@ -794,7 +800,11 @@ BODY;
 						$limitOptions[$limit] = [
 							'display' => $desc,
 							'value' => $limit,
+							'defaultOn' => false,
 						];
+						if ($limit == 'FT'){
+							$limitOptions[$limit]['defaultOn'] = true;
+						}
 					}
 				}
 				global $configArray;
@@ -803,12 +813,17 @@ BODY;
 		}
 		$limitList = [];
 		foreach ($limitOptions as $limit => $limitOption){
+			if (array_key_exists($limit, $this->limiters)){
+				$limitIsApplied = $limitOption == 'y';
+			}else{
+				$limitIsApplied = $limitOption['defaultOn'];
+			}
 			$limitList[$limit] = [
 				'url' => $this->renderLinkWithLimiter($limit),
 				'removalUrl' => $this->renderLinkWithoutLimiter($limit),
 				'display' => $limitOption['display'],
 				'value' => $limit,
-				'isApplied' => array_key_exists($limit, $this->limiters),
+				'isApplied' => $limitIsApplied,
 			];
 		}
 
@@ -848,7 +863,6 @@ BODY;
 						if ($searchData && empty($searchData->ErrorNumber)){
 							$searchResults = $searchData->SearchResult;
 						}else{
-							global $configArray;
 							global $logger;
 							if (IPAddress::showDebuggingInformation()) {
 								$curlInfo = curl_getinfo($curlConnection);
