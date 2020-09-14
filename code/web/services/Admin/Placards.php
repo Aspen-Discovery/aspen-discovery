@@ -73,9 +73,4 @@ class Admin_Placards extends ObjectEditor
 	{
 		return UserAccount::userHasPermission(['Administer All Placards','Administer Library Placards']);
 	}
-
-	function canAddNew()
-	{
-		return count($this->getAllObjects()) == 0;
-	}
 }
