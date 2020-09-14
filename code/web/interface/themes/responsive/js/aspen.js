@@ -10282,11 +10282,18 @@ AspenDiscovery.Searches = (function(){
 		loadSearchTypes: function(){
 			let searchTypeElement = $("#searchSource");
 			let catalogType = "catalog";
+			let hasAdvancedSearch = false;
 			if (searchTypeElement){
 				let selectedSearchType = $(searchTypeElement.find(":selected"));
 				if (selectedSearchType){
 					catalogType = selectedSearchType.data("catalog_type");
+					hasAdvancedSearch = selectedSearchType.data("advanced_search");
 				}
+			}
+			if (hasAdvancedSearch){
+				$('#advancedSearchLink').show();
+			}else{
+				$('#advancedSearchLink').hide();
 			}
 			let url = "/Search/AJAX";
 			$.getJSON(url,
