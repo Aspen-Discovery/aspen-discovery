@@ -37,8 +37,14 @@ class Admin_UsageByIP extends Admin_Admin
 		$allIpStats = [];
 		$usageByIP->find();
 		while ($usageByIP->fetch()){
-			$allIpStats[] = clone $usageByIP;
+			$ipAddress = ip2long($usageByIP->ipAddress);
+			if ($ipAddress !== false){
+				$allIpStats[$ipAddress] = clone $usageByIP;
+			}else{
+				$allIpStats[] = clone $usageByIP;
+			}
 		}
+		ksort($allIpStats);
 		$interface->assign('allIpStats', $allIpStats);
 
 		$this->display('usage_by_ip.tpl', 'Aspen Usage Dashboard');
