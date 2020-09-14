@@ -75,4 +75,9 @@ class EBSCO_EDSSettings extends ObjectEditor
 	{
 		return 'ebsco';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer EBSCO EDS');
+	}
 }
