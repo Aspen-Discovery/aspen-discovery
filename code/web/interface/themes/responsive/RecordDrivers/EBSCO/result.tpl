@@ -10,7 +10,7 @@
 		</div>
 	{/if}
 
-	<div class="{if !$showCovers}col-xs-12{else}col-tn-9 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}">
+	<div class="{if !$showCovers}col-xs-12{else}col-tn-9 col-sm-9{if empty($viewingCombinedResults)} col-md-9 col-lg-10{/if}{/if}">
 		<div class="row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
@@ -34,7 +34,7 @@
 			</div>
 		{/if}
 
-		{if $summPublicationDates || $summPublishers || $summPublicationPlaces}
+		{if !empty($summPublicationDates) || !empty($summPublishers) || !empty($summPublicationPlaces)}
 			<div class="row">
 
 				<div class="result-label col-tn-3">{translate text='Published'}</div>
@@ -53,7 +53,7 @@
 			</div>
 		{/if}
 
-		{if $summPhysical}
+		{if !empty($summPhysical)}
 			<div class="row hidden-phone">
 				<div class="result-label col-tn-3">{translate text='Physical Desc'}</div>
 				<div class="col-tn-9 result-value">{$summPhysical.0|escape}</div>
