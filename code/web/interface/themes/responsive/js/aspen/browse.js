@@ -102,7 +102,10 @@ AspenDiscovery.Browse = (function(){
 			});
 		},
 
-		changeBrowseCategory: function(categoryTextId, addToHistory = true) {
+		changeBrowseCategory: function(categoryTextId, addToHistory) {
+			if (addToHistory === undefined) {
+				addToHistory  = true;
+			}
 			if (AspenDiscovery.Browse.changingDisplay){
 				return;
 			}
@@ -205,9 +208,12 @@ AspenDiscovery.Browse = (function(){
 			return false;
 		},
 
-		changeBrowseSubCategory: function (subCategoryTextId, categoryId = undefined, addToHistory = true) {
+		changeBrowseSubCategory: function (subCategoryTextId, categoryId, addToHistory ) {
 			if (AspenDiscovery.Browse.changingDisplay){
 				return;
+			}
+			if (addToHistory === undefined) {
+				addToHistory = true;
 			}
 			AspenDiscovery.Browse.changingDisplay = true;
 			let url = Globals.path + '/Browse/AJAX';

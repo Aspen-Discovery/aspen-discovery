@@ -32,7 +32,10 @@ AspenDiscovery.Admin = (function(){
 			$('head').append('<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=' + fontName + '">');
 			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
 		},
-		checkContrast: function (property1, property2,oneWay=false){
+		checkContrast: function (property1, property2,oneWay) {
+			if (oneWay === undefined){
+				oneWay = false;
+			}
 			let color1 = $('#' + property1).val();
 			let color2 = $('#' + property2).val();
 			if (color1.length === 7 && color2.length === 7){
