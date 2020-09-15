@@ -1069,28 +1069,7 @@ class SirsiDynixROA extends HorizonAPI
 	 * @access  public
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
-		//For Sirsi ROA we don't really know if a record needs a copy or title level hold.  We determined that we would check
-		// the marc record and if the call numbers in the record vary we will place a copy level hold
-		$result = array();
-		$needsItemHold = false;
-		$holdableItems = array();
-		/** @var MarcRecordDriver $recordDriver */
-		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-
-		if (!$needsItemHold){
-			$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch, 'request', $cancelDate);
-		}else{
-			$result['items'] = $holdableItems;
-			if (count($holdableItems) > 0){
-				$message = 'This title requires item level holds, please select an item to place a hold on.';
-			}else{
-				$message = 'There are no holdable items for this title.';
-			}
-			$result['success'] = false;
-			$result['message'] = $message;
-		}
-
-		return $result;
+		return $this->placeItemHold($patron, $recordId, null, $pickupBranch, 'request', $cancelDate);
 	}
 
 	/**
