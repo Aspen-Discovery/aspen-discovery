@@ -313,7 +313,8 @@ class SirsiDynixROA extends HorizonAPI
 		//Authenticate the user via WebService
 		//First call loginUser
 		$timer->logTime("Logging in through Symphony APIs");
-		list($userValid, , $sirsiRoaUserID) = $this->loginViaWebService($username, $password);
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		list($userValid, $sessionToken, $sirsiRoaUserID) = $this->loginViaWebService($username, $password);
 		$staffSessionToken = $this->getStaffSessionToken();
 		if ($validatedViaSSO) {
 			$userValid = true;
@@ -1075,30 +1076,6 @@ class SirsiDynixROA extends HorizonAPI
 		$holdableItems = array();
 		/** @var MarcRecordDriver $recordDriver */
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-
-		if ($recordDriver->isValid()){
-			$result['title'] = $recordDriver->getTitle();
-			$items = $recordDriver->getCopies();
-			$firstCallNumber = null;
-			foreach ($items as $item){
-				$itemNumber = $item['itemId'];
-				if ($itemNumber && $item['holdable']){
-					$itemCallNumber = $item['callNumber'];
-					if ($firstCallNumber == null){
-						$firstCallNumber = $itemCallNumber;
-					}else if ($firstCallNumber != $itemCallNumber){
-						$needsItemHold = true;
-					}
-
-					$holdableItems[] = array(
-							'itemNumber' => $item['itemId'],
-							'location' => $item['shelfLocation'],
-							'callNumber' => $itemCallNumber,
-							'status' => $item['status'],
-					);
-				}
-			}
-		}
 
 		if (!$needsItemHold){
 			$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch, 'request', $cancelDate);
