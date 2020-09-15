@@ -8,13 +8,14 @@ class ExternalEContent_Home extends GroupedWorkSubRecordHomeAction{
 		global $interface;
 
 		if (!$this->recordDriver->isValid()){
-			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
 
 		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
 		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
-			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+			$interface->assign('invalidWork', true);
+			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}else{
 			$interface->assign('recordDriver', $this->recordDriver);
@@ -41,7 +42,7 @@ class ExternalEContent_Home extends GroupedWorkSubRecordHomeAction{
 			//Get Related Records to make sure we initialize items
 			$recordInfo = $this->recordDriver->getGroupedWorkDriver()->getRelatedRecord($this->recordDriver->getIdWithSource());
 			if ($recordInfo == null){
-				$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+				$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 				die();
 			}
 			$interface->assign('actions', $recordInfo->getActions());

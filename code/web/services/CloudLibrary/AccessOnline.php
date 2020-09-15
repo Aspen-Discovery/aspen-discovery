@@ -21,7 +21,7 @@ class CloudLibrary_AccessOnline extends Action
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
 				if (!$this->recordDriver->isValid()) {
-					$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+					$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 					die();
 				}
 

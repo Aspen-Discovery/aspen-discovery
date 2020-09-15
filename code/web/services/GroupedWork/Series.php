@@ -22,7 +22,7 @@ class GroupedWork_Series extends Action
 			$interface->assign('id', $id);
 			$logger->log("Did not find a record for id {$id} in solr." , Logger::LOG_DEBUG);
 			$interface->setTemplate('../Record/invalidRecord.tpl');
-			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
 		$timer->logTime('Initialized the Record Driver');
