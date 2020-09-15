@@ -313,7 +313,7 @@ class SirsiDynixROA extends HorizonAPI
 		//Authenticate the user via WebService
 		//First call loginUser
 		$timer->logTime("Logging in through Symphony APIs");
-		list($userValid, $sessionToken, $sirsiRoaUserID) = $this->loginViaWebService($username, $password);
+		list($userValid, , $sirsiRoaUserID) = $this->loginViaWebService($username, $password);
 		$staffSessionToken = $this->getStaffSessionToken();
 		if ($validatedViaSSO) {
 			$userValid = true;
@@ -633,28 +633,6 @@ class SirsiDynixROA extends HorizonAPI
 			// Build Address Field with existing data
 			$index = 0;
 
-			// Closure to handle the data structure of the address parameters to pass onto the ILS
-			$setField = function ($key, $value) use (&$createPatronInfoParameters, $preferredAddress, &$index) {
-				static $parameterIndex = array();
-
-				$addressField                = 'address' . $preferredAddress;
-				$patronAddressPolicyResource = '/policy/patron' . ucfirst($addressField);
-
-				$l = array_key_exists($key, $parameterIndex) ? $parameterIndex[$key] : $index++;
-				$createPatronInfoParameters['fields'][$addressField][$l] = array(
-					'resource' => '/user/patron/' . $addressField,
-					'fields' => array(
-						'code' => array(
-							'key' => $key,
-							'resource' => $patronAddressPolicyResource
-						),
-						'data' => $value
-					)
-				);
-				$parameterIndex[$key] = $l;
-
-			};
-
 			$createPatronInfoParameters['fields']['profile'] = array(
 				'resource' => '/policy/userProfile',
 				'key' => 'VIRTUAL',
@@ -696,23 +674,23 @@ class SirsiDynixROA extends HorizonAPI
 
 			// Update Address Field with new data supplied by the user
 			if (isset($_REQUEST['email'])) {
-				$setField('EMAIL', $_REQUEST['email']);
+				$this->setPatronUpdateField('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['phone'])) {
-				$setField('PHONE', $_REQUEST['phone']);
+				$this->setPatronUpdateField('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['address'])) {
-				$setField('STREET', $_REQUEST['address']);
+				$this->setPatronUpdateField('STREET', $_REQUEST['address'], $updatePatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-				$setField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state']);
+				$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['zip'])) {
-				$setField('ZIP', $_REQUEST['zip']);
+				$this->setPatronUpdateField('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress, $index);
 			}
 
 			// Update Home Location
@@ -1758,14 +1736,14 @@ class SirsiDynixROA extends HorizonAPI
 			'messages' => []
 		];
 		if ($canUpdateContactInfo) {
-			$sessionToken = $this->getSessionToken($user);
+			$sessionToken = $this->getStaffSessionToken();
 			if ($sessionToken) {
 				$webServiceURL = $this->getWebServiceURL();
 				if ($userID = $user->username) {
 					$updatePatronInfoParameters = array(
 						'fields' => array(),
-                        'key' => $userID,
-                        'resource' => '/user/patron',
+						'key' => $userID,
+						'resource' => '/user/patron',
 					);
 					if (!empty(self::$userPreferredAddresses[$userID])) {
 						$preferredAddress = self::$userPreferredAddresses[$userID];
@@ -1777,68 +1755,52 @@ class SirsiDynixROA extends HorizonAPI
 					// Build Address Field with existing data
 					$index = 0;
 
-					// Closure to handle the data structure of the address parameters to pass onto the ILS
-					$setField = function ($key, $value) use (&$updatePatronInfoParameters, $preferredAddress, &$index) {
-						static $parameterIndex = array();
-
-						$addressField = 'address' . $preferredAddress;
-						$patronAddressPolicyResource = '/policy/patron' . ucfirst($addressField);
-
-						$l = array_key_exists($key, $parameterIndex) ? $parameterIndex[$key] : $index++;
-						$updatePatronInfoParameters['fields'][$addressField][$l] = array(
-							'resource' => '/user/patron/'. $addressField,
-							'fields' => array(
-								'code' => array(
-									'key' => $key,
-									'resource' => $patronAddressPolicyResource
-								),
-								'data' => $value
-							)
-						);
-						$parameterIndex[$key] = $l;
-
-					};
-
 					if (!empty($user->email)) {
-						$setField('EMAIL', $user->email);
+						$this->setPatronUpdateField('EMAIL', $user->email, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
 					if (!empty($user->address1)) {
-						$setField('STREET', $user->_address1);
+						$this->setPatronUpdateField('STREET', $user->_address1, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
 					if (!empty($user->zip)) {
-						$setField('ZIP', $user->_zip);
+						$this->setPatronUpdateField('ZIP', $user->_zip, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
 					if (!empty($user->phone)) {
-						$setField('PHONE', $user->phone);
+						$this->setPatronUpdateField('PHONE', $user->phone, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
 					if (!empty($user->_city) && !empty($user->_state)) {
-						$setField('CITY/STATE', $user->_city .' '. $user->_state);
+						$this->setPatronUpdateField('CITY/STATE', $user->_city .' '. $user->_state, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
 
 					// Update Address Field with new data supplied by the user
 					if (isset($_REQUEST['email'])) {
-						$setField('EMAIL', $_REQUEST['email']);
+						$this->setPatronUpdateField('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress, $index);
+						$user->email = $_REQUEST['email'];
 					}
 
 					if (isset($_REQUEST['phone'])) {
-						$setField('PHONE',$_REQUEST['phone']);
+						$this->setPatronUpdateField('PHONE',$_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress, $index);
+						$user->phone = $_REQUEST['phone'];
 					}
 
 					if (isset($_REQUEST['address1'])) {
-						$setField('STREET',$_REQUEST['address1']);
+						$this->setPatronUpdateField('STREET',$_REQUEST['address1'], $updatePatronInfoParameters, $preferredAddress, $index);
+						$user->_address1 = $_REQUEST['address1'];
 					}
 
 					if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-						$setField('CITY/STATE',$_REQUEST['city'] . ' ' . $_REQUEST['state']);
+						$this->setPatronUpdateField('CITY/STATE',$_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress, $index);
+						$user->_city = $_REQUEST['city'];
+						$user->_state = $_REQUEST['state'];
 					}
 
 					if (isset($_REQUEST['zip'])) {
-						$setField('ZIP',$_REQUEST['zip']);
+						$this->setPatronUpdateField('ZIP',$_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress, $index);
+						$user->_zip = $_REQUEST['zip'];
 					}
 
 					// Update Home Location
@@ -1864,6 +1826,7 @@ class SirsiDynixROA extends HorizonAPI
 					}else{
 						$result['success'] = true;
 						$result['messages'][] = 'Your account was updated successfully.';
+						$user->update();
 					}
 				} else {
 					global $logger;
@@ -1928,5 +1891,25 @@ class SirsiDynixROA extends HorizonAPI
 		global $library;
 		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$user->getBarcode()}";
 		$memCache->delete($memCacheKey);
+	}
+
+	private function setPatronUpdateField($key, $value, &$updatePatronInfoParameters, $preferredAddress, &$index){
+		static $parameterIndex = array();
+
+		$addressField = 'address' . $preferredAddress;
+		$patronAddressPolicyResource = '/policy/patron' . ucfirst($addressField);
+
+		$l = array_key_exists($key, $parameterIndex) ? $parameterIndex[$key] : $index++;
+		$updatePatronInfoParameters['fields'][$addressField][$l] = array(
+			'resource' => '/user/patron/'. $addressField,
+			'fields' => array(
+				'code' => array(
+					'key' => $key,
+					'resource' => $patronAddressPolicyResource
+				),
+				'data' => $value
+			)
+		);
+		$parameterIndex[$key] = $l;
 	}
 }

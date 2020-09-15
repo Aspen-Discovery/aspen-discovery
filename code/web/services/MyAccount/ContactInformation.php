@@ -16,27 +16,14 @@ class MyAccount_ContactInformation extends MyAccount
 		$interface->assign('showSMSNoticesInProfile', $ils == 'Sierra' && $smsEnabled == true);
 
 		if ($user) {
-			// Determine which user we are showing/updating settings for
-			$linkedUsers = $user->getLinkedUsers();
-
-			$patronId = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
-			$patron = $user->getUserReferredTo($patronId);
-
-			// Linked Accounts Selection Form set-up
-			if (count($linkedUsers) > 0) {
-				array_unshift($linkedUsers, $user); // Adds primary account to list for display in account selector
-				$interface->assign('linkedUsers', $linkedUsers);
-				$interface->assign('selectedUser', $patronId);
-			}
-
-			$patronUpdateForm = $patron->getPatronUpdateForm();
+			$patronUpdateForm = $user->getPatronUpdateForm();
 			if ($patronUpdateForm != null){
 				$interface->assign('patronUpdateForm', $patronUpdateForm);
 			}
 
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
-			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
+			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
 			if ($patronHomeLibrary == null){
 				$canUpdateContactInfo = true;
 				$canUpdateAddress = true;
@@ -78,21 +65,21 @@ class MyAccount_ContactInformation extends MyAccount
 			$interface->assign('passwordLabel', $passwordLabel);
 
 			// Determine Pickup Locations
-			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+			$pickupLocations = $user->getValidPickupBranches($user->getAccountProfile()->recordSource);
 			$interface->assign('pickupLocations', $pickupLocations);
 
 			// Save/Update Actions
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$updateScope = $_REQUEST['updateScope'];
 				if ($updateScope == 'contact') {
-					$result = $patron->updatePatronInfo($canUpdateContactInfo);
+					$result = $user->updatePatronInfo($canUpdateContactInfo);
 					$user->updateMessage = implode('<br/>', $result['messages']);
 					$user->updateMessageIsError = !$result['success'];
 					$user->update();
 				}
 
 				session_write_close();
-				$actionUrl = '/MyAccount/ContactInformation' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
+				$actionUrl = '/MyAccount/ContactInformation'; // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {
@@ -111,7 +98,7 @@ class MyAccount_ContactInformation extends MyAccount
 				$user->update();
 			}
 
-			$interface->assign('profile', $patron);
+			$interface->assign('profile', $user);
 		}else{
 			$canUpdateContactInfo = false;
 			$canUpdateAddress = false;
