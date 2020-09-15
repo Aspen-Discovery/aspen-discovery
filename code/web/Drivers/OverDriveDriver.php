@@ -57,7 +57,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	private function _connectToAPI($forceNewConnection = false){
-		/** @var Memcache $memCache */
 		global $memCache;
 		$tokenData = $memCache->get('overdrive_token');
 		if ($forceNewConnection || $tokenData == false){
@@ -198,7 +197,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	/**
-	 User * @param $user
+	 * @param User $user
 	 * @return string
 	 */
 	private function getILSName($user){
@@ -717,7 +716,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	function freezeHold(User $user, $overDriveId, $reactivationDate)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
@@ -758,7 +756,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	function thawHold(User $user, $overDriveId)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
@@ -787,7 +784,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @return array
 	 */
 	public function cancelHold($user, $overDriveId){
-		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
@@ -864,7 +860,6 @@ class OverDriveDriver extends AbstractEContentDriver{
      * @return array
      */
 	public function returnCheckout($user, $overDriveId){
-		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts/' . $overDriveId;
@@ -887,7 +882,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	public function selectOverDriveDownloadFormat($overDriveId, $formatId, $user){
-		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts/' . $overDriveId . '/formats';
@@ -1015,7 +1009,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
 		$userUsage = new UserOverDriveUsage();
-		/** @noinspection DuplicatedCode */
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');

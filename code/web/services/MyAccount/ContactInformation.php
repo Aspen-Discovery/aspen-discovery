@@ -19,9 +19,8 @@ class MyAccount_ContactInformation extends MyAccount
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
 
-			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
-			/** @var User $patron */
-			$patron      = $user->getUserReferredTo($patronId);
+			$patronId = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
+			$patron = $user->getUserReferredTo($patronId);
 
 			// Linked Accounts Selection Form set-up
 			if (count($linkedUsers) > 0) {
@@ -128,7 +127,7 @@ class MyAccount_ContactInformation extends MyAccount
 			// Get Phone Types
 			$phoneTypes = array();
 			/** @var CarlX $driver */
-			$driver        = CatalogFactory::getCatalogConnectionInstance();
+			$driver = CatalogFactory::getCatalogConnectionInstance();
 			$rawPhoneTypes = $driver->getPhoneTypeList();
 			foreach ($rawPhoneTypes as $rawPhoneTypeSubArray){
 				foreach ($rawPhoneTypeSubArray as $phoneType => $phoneTypeLabel) {
