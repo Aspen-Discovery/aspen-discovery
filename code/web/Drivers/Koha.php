@@ -788,14 +788,14 @@ class Koha extends AbstractIlsDriver
 
 			//Borrowed from C4:Members.pm
 			/** @noinspection SqlResolve */
-			$readingHistoryTitleSql = "SELECT *,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
+			$readingHistoryTitleSql = "SELECT issues.*,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
 				FROM issues
 				LEFT JOIN items on items.itemnumber=issues.itemnumber
 				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
 				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
 				WHERE borrowernumber={$patron->username}
 				UNION ALL
-				SELECT *,old_issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
+				SELECT old_issues.*,old_issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
 				FROM old_issues
 				LEFT JOIN items on items.itemnumber=old_issues.itemnumber
 				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
@@ -804,9 +804,18 @@ class Koha extends AbstractIlsDriver
 			$readingHistoryTitleRS = mysqli_query($this->dbConnection, $readingHistoryTitleSql);
 			if ($readingHistoryTitleRS) {
 				while ($readingHistoryTitleRow = $readingHistoryTitleRS->fetch_assoc()) {
-					$checkOutDate = new DateTime($readingHistoryTitleRow['itemstimestamp']);
+					/** @noinspection SpellCheckingInspection */
+					if (!empty($readingHistoryTitleRow['issuedate'])){
+						/** @noinspection SpellCheckingInspection */
+						$checkOutDate = new DateTime($readingHistoryTitleRow['issuedate']);
+					}else{
+						$checkOutDate = new DateTime($readingHistoryTitleRow['itemstimestamp']);
+					}
+
 					$returnDate = null;
+					/** @noinspection SpellCheckingInspection */
 					if (!empty($readingHistoryTitleRow['returndate'])){
+						/** @noinspection SpellCheckingInspection */
 						$returnDate = new DateTime($readingHistoryTitleRow['returndate']);
 					}
 					$curTitle = array();
@@ -814,6 +823,8 @@ class Koha extends AbstractIlsDriver
 					$curTitle['shortId'] = $readingHistoryTitleRow['biblionumber'];
 					$curTitle['recordId'] = $readingHistoryTitleRow['biblionumber'];
 					$curTitle['title'] = $readingHistoryTitleRow['title'];
+					$curTitle['author'] = $readingHistoryTitleRow['author'];
+					$curTitle['format'] = $readingHistoryTitleRow['iType'];
 					$curTitle['checkout'] = $checkOutDate->getTimestamp();
 					if (!empty($returnDate)){
 						$curTitle['checkin'] = $returnDate->getTimestamp();
@@ -840,7 +851,6 @@ class Koha extends AbstractIlsDriver
 			$historyEntry['permanentId'] = null;
 			$historyEntry['linkUrl'] = null;
 			$historyEntry['coverUrl'] = null;
-			$historyEntry['format'] = "Unknown";
 			if (!empty($historyEntry['recordId'])) {
 //					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Constructor expects the recordId as a string.
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';

@@ -1671,7 +1671,6 @@ class MyAccount_AJAX extends JSON_Action
 					->setCellValue('A3', 'Title')
 					->setCellValue('B3', 'Author')
 					->setCellValue('C3', 'Format')
-					->setCellValue('D3', 'Times Used')
 					->setCellValue('E3', 'Last Used');
 
 				$a = 4;
@@ -1693,7 +1692,6 @@ class MyAccount_AJAX extends JSON_Action
 						->setCellValue('A' . $a, $row['title'])
 						->setCellValue('B' . $a, $row['author'])
 						->setCellValue('C' . $a, $format)
-						->setCellValue('D' . $a, $row['timesUsed'])
 						->setCellValue('E' . $a, $lastCheckout);
 
 					$a++;

@@ -82,7 +82,7 @@
 				{/if}
 			{elseif $historyActive == true}
 				{* No Items in the history, but the history is active *}
-				{translate text="empty_reading_history" defaultText="You do not have any items in your reading list. It may take up to 3 hours for your reading history to be updated after you start recording your history."}
+				{translate text="You do not have any items in your reading list."}
 			{/if}
 		</div>
 	{/if}
