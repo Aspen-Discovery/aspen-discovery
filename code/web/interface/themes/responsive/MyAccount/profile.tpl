@@ -122,7 +122,7 @@
 											<div class="form-group">
 												<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number'}</label></div>
 												<div class="col-xs-8">
-													{if $edit && $canUpdateContactInfo && ($ils != 'Horizon')}
+													{if $edit && $canUpdateContactInfo && $canUpdatePhoneNumber && ($ils != 'Horizon')}
 														<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
 													{else}
 														{$profile->phone|escape}
@@ -132,7 +132,7 @@
 											{if $showWorkPhoneInProfile}
 												<div class="form-group">
 													<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number'}</label></div>
-													<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
+													<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $canUpdatePhoneNumber && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
 												</div>
 											{/if}
 										{/if}

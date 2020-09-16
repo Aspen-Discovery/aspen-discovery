@@ -138,6 +138,7 @@ class Library extends DataObject
 	public $eContentSupportAddress;
 	public $restrictOwningBranchesAndSystems;
 	public $allowPatronAddressUpdates;
+	public $allowPatronPhoneNumberUpdates;
 	public $useAllCapsWhenUpdatingProfile;
 	public $requireNumericPhoneNumbersWhenUpdatingProfile;
 	public $bypassReviewQueueWhenUpdatingProfile;
@@ -516,6 +517,7 @@ class Library extends DataObject
 					'allowProfileUpdates'                  => array('property'=>'allowProfileUpdates', 'type'=>'checkbox', 'label'=>'Allow Profile Updates', 'description'=>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1, 'readonly' => false),
 					'allowUsernameUpdates'                 => array('property'=>'allowUsernameUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Username', 'description'=>'Whether or not the user can update their username.', 'hideInLists' => true, 'default' => 0, 'readonly' => false),
 					'allowPatronAddressUpdates'            => array('property' => 'allowPatronAddressUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Address', 'description'=>'Whether or not patrons should be able to update their own address in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false),
+					'allowPatronPhoneNumberUpdates'        => array('property' => 'allowPatronPhoneNumberUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Phone Number', 'description'=>'Whether or not patrons should be able to update their own phone number in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false),
 					'useAllCapsWhenUpdatingProfile'        => array('property' => 'useAllCapsWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Use All Caps When Updating Profile', 'description'=>'Whether or not modifications to the patron profile will be submitted using all caps', 'default'=> 0),
 					'requireNumericPhoneNumbersWhenUpdatingProfile' => array('property' => 'requireNumericPhoneNumbersWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Require Numeric Phone Numbers When Updating Profile', 'description'=>'Whether or not modifications to the patron phone numbers will be submitted with numbers only', 'default'=> 0),
 					'bypassReviewQueueWhenUpdatingProfile' => array('property' => 'bypassReviewQueueWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Bypass Review Queue Updating Profile', 'description'=>'Whether or not the Koha review queue for patron modifications is bypassed when updates are submitted', 'default'=> 0),

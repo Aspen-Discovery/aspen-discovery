@@ -136,7 +136,7 @@ class CatalogConnection
 			}else{
 				$doPatronLogin = true;
 			}
-			if ($doPatronLogin || $_REQUEST['reload']) {
+			if ($doPatronLogin || isset($_REQUEST['reload'])) {
 				//Catalog is online, do the login
 				$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
 				if ($user && !($user instanceof AspenError)) {
