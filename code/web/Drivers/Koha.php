@@ -2328,6 +2328,11 @@ class Koha extends AbstractIlsDriver
 		global $interface;
 		$patronUpdateFields[] = array('property' => 'updateScope', 'type' => 'hidden', 'label' => 'Update Scope', 'description' => '', 'default' => 'contact');
 		$patronUpdateFields[] = array('property' => 'patronId', 'type' => 'hidden', 'label' => 'Active Patron', 'description' => '', 'default' => $user->id);
+		//These need to be part of the object, not just defaults because we can't combine default settings with a provided object.
+		/** @noinspection PhpUndefinedFieldInspection */
+		$user->updateScope = 'contact';
+		/** @noinspection PhpUndefinedFieldInspection */
+		$user->patronId = $user->id;
 
 		$library = $user->getHomeLibrary();
 		if (!$library->allowProfileUpdates){
@@ -2347,7 +2352,7 @@ class Koha extends AbstractIlsDriver
 		$interface->assign('structure', $patronUpdateFields);
 		$interface->assign('object', $user);
 		$interface->assign('saveButtonText', 'Update Contact Information');
-		$interface->assign('formLabel', 'Update Contact INformation Form');
+		$interface->assign('formLabel', 'Update Contact Information Form');
 
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
