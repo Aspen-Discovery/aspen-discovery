@@ -156,7 +156,7 @@ class ExtractOverDriveInfo {
 						}
 						if (runFullUpdate || curRecord.hasAvailabilityChanges) {
 							//Load availability for the record
-							updateOverDriveAvailability(curRecord, curRecord.getDatabaseId());
+							updateOverDriveAvailability(curRecord, curRecord.getDatabaseId(), false);
 						}
 
 						String groupedWorkId = null;
@@ -246,7 +246,7 @@ class ExtractOverDriveInfo {
 
 					//Update the product in the database
 					updateOverDriveMetaData(recordInfo);
-					updateOverDriveAvailability(recordInfo, recordInfo.getDatabaseId());
+					updateOverDriveAvailability(recordInfo, recordInfo.getDatabaseId(), false);
 
 					//Reindex
 					String groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(recordInfo.getId());
@@ -309,7 +309,7 @@ class ExtractOverDriveInfo {
 
 						//Update the product in the database
 						updateOverDriveMetaData(recordInfo);
-						updateOverDriveAvailability(recordInfo, recordInfo.getDatabaseId());
+						updateOverDriveAvailability(recordInfo, recordInfo.getDatabaseId(), true);
 
 						//Reindex
 						String groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(recordInfo.getId());
@@ -1064,13 +1064,14 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private void updateOverDriveAvailability(OverDriveRecordInfo overDriveInfo, long databaseId) throws SocketTimeoutException {
+	private void updateOverDriveAvailability(OverDriveRecordInfo overDriveInfo, long databaseId, boolean singleWork) throws SocketTimeoutException {
 		//Don't need to load availability if we already have availability and the availability was checked within the last hour
 		long curTime = new Date().getTime() / 1000;
 
 		//OverDrive now returns availability for all records in one API call so we minimize the number of API calls we need to make
 		//by only calling once and then processing all the accounts within the response, but we may need to test more than one collection to get a valid response.
 		WebServiceResponse availabilityResponse = null;
+		String apiKeyForResponse = null;
 		for (AdvantageCollectionInfo collectionInfo : overDriveInfo.getCollections()){
 			String apiKey = collectionInfo.getCollectionToken();
 
@@ -1079,22 +1080,33 @@ class ExtractOverDriveInfo {
 			if (curAvailabilityResponse.getResponseCode() == 200){
 				//Got a good response
 				availabilityResponse = curAvailabilityResponse;
+				apiKeyForResponse = apiKey;
+				if (singleWork){
+					logEntry.addNote("Found availability for api key " + apiKey);
+				}
 				break;
 			}else if (availabilityResponse == null){
 				//We got an error of some sort which will get handled later
 				availabilityResponse = curAvailabilityResponse;
+				apiKeyForResponse = apiKey;
 			}
 		}
 
 		//404 is a message that availability has been deleted.
 		if (availabilityResponse == null) {
-			logEntry.incErrors("Did not get availability for product " + overDriveInfo.getId());
+			logEntry.incErrors("Did not get availability for product " + overDriveInfo.getId() + " there were " + overDriveInfo.getCollections() + " collections for the record");
 		}else if (availabilityResponse.getResponseCode() != 200 && availabilityResponse.getResponseCode() != 404){
 			//We got an error calling the OverDrive API, do nothing.
+			if (singleWork) {
+				logEntry.addNote("Found availability for api key " + apiKeyForResponse);
+			}
 			logEntry.incErrors("Error availability API for product " + overDriveInfo.getId());
 			logger.info(availabilityResponse.getResponseCode() + ":" + availabilityResponse.getMessage());
 		}else if (availabilityResponse.getMessage() == null){
 			//Delete all availability for this record
+			if (singleWork) {
+				logEntry.addNote("Availability response had no message " + apiKeyForResponse + " response code " + availabilityResponse.getResponseCode());
+			}
 			try{
 				deleteAllAvailabilityStmt.setLong(1, overDriveInfo.getDatabaseId());
 				deleteAllAvailabilityStmt.executeUpdate();
@@ -1102,6 +1114,9 @@ class ExtractOverDriveInfo {
 				logEntry.incErrors("SQL Error deleting all availability for title " + overDriveInfo.getId(), e);
 			}
 		}else {
+			if (singleWork) {
+				logEntry.addNote("Got availability response for " + apiKeyForResponse + " code was " + availabilityResponse.getResponseCode());
+			}
 			try {
 				JSONObject availability = availabilityResponse.getJSONResponse();
 				boolean available = false;
