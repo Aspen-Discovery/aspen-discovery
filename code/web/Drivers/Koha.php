@@ -2399,7 +2399,7 @@ class Koha extends AbstractIlsDriver
 						//Check to see if this title is already on the list.
 						$resourceOnList = false;
 						foreach ($currentListTitles as $currentTitle) {
-							if ($currentTitle->groupedWorkPermanentId == $groupedWork->permanent_id) {
+							if ($currentTitle->source == 'GroupedWork' && $currentTitle->sourceId == $groupedWork->permanent_id) {
 								$resourceOnList = true;
 								break;
 							}
@@ -2413,6 +2413,7 @@ class Koha extends AbstractIlsDriver
 							$listEntry->notes = '';
 							$listEntry->dateAdded = time();
 							$listEntry->insert();
+							$currentListTitles[] = $listEntry;
 						}
 					} else {
 						if (!isset($results['errors'])) {
