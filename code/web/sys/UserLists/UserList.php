@@ -182,7 +182,11 @@ class UserList extends DataObject
 				'listEntryId' => $listEntry->id
 			];
 			if ($sort == 'title') {
-				$tmpListEntry['title'] = strtolower($listEntry->getRecordDriver()->getSortableTitle());
+				if ($listEntry->getRecordDriver() != null){
+					$tmpListEntry['title'] = strtolower($listEntry->getRecordDriver()->getSortableTitle());
+				}else{
+					continue;
+				}
 			}
 			$listEntries[] = $tmpListEntry;
 		}
