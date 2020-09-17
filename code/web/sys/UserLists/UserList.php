@@ -358,6 +358,24 @@ class UserList extends DataObject
 			}
 		}
 
+		if ($format == 'html') {
+			//Add in non-owned results for anything that is left
+			global $interface;
+			foreach ($filteredListEntries as $listPosition => $listEntryInfo) {
+				if (!array_key_exists($listPosition, $listResults)) {
+					$interface->assign('recordIndex', $listPosition + 1);
+					$interface->assign('resultIndex', $listPosition + $start + 1);
+					$interface->assign('listEntryId', $listEntryInfo['listEntryId']);
+					if (!empty($listEntryInfo['title'])) {
+						$interface->assign('deletedEntryTitle', $listEntryInfo['title']);
+					} else {
+						$interface->assign('deletedEntryTitle', '');
+					}
+					$listResults[$listPosition] = $interface->fetch('MyAccount/deletedListEntry.tpl');
+				}
+			}
+		}
+
 		ksort($listResults);
 		return $listResults;
 	}
@@ -401,10 +419,6 @@ class UserList extends DataObject
 
 				$interface->assign('recordDriver', $current);
 				$html[$listPosition] = $interface->fetch($current->getListEntry($this->id, $allowEdit));
-			}else{
-				$interface->assign('listEntryId', $currentId['listEntryId']);
-				$interface->assign('deletedEntryTitle', $currentId['title']);
-				$html[$listPosition] = $interface->fetch('MyAccount/deletedListEntry.tpl');
 			}
 		}
 		return $html;
