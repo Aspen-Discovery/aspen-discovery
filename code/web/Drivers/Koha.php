@@ -2379,6 +2379,10 @@ class Koha extends AbstractIlsDriver
 			if (!$newList->find(true)) {
 				$newList->public = $curList['category'] == 2;
 				$newList->insert();
+			}elseif ($newList->deleted == 1){
+				$newList->removeAllListEntries(true);
+				$newList->deleted = 0;
+				$newList->update();
 			}
 
 			$currentListTitles = $newList->getListTitles();

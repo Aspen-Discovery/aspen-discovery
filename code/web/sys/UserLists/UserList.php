@@ -88,18 +88,6 @@ class UserList extends DataObject
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
 
-		// These conditions retrieve list items with a valid groupedWorkID or archive ID.
-		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
-		$listEntry->whereAdd(
-			'(
-			(user_list_entry.source = \'GroupedWork\' AND user_list_entry.sourceId NOT LIKE "%:%" AND user_list_entry.sourceId IN (SELECT permanent_id FROM grouped_work) )
-			OR
-			(user_list_entry.source = \'Islandora\' AND user_list_entry.sourceId LIKE "%:%" AND user_list_entry.sourceId IN (SELECT pid FROM islandora_object_cache) )
-			OR
-			user_list_entry.source NOT IN (\'GroupedWork\', \'Islandora\')
-			)'
-		);
-
 		return $listEntry->count();
 	}
 
@@ -157,15 +145,6 @@ class UserList extends DataObject
 
 		// These conditions retrieve list items with a valid groupedWorkId or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
-		$listEntry->whereAdd(
-			'(
-			(user_list_entry.source = \'GroupedWork\' AND user_list_entry.sourceId NOT LIKE "%:%" AND user_list_entry.sourceId IN (SELECT permanent_id FROM grouped_work) )
-			OR
-			(user_list_entry.source = \'Islandora\' AND user_list_entry.sourceId LIKE "%:%" AND user_list_entry.sourceId IN (SELECT pid FROM islandora_object_cache) )
-			OR
-			user_list_entry.source NOT IN (\'GroupedWork\', \'Islandora\')
-			)'
-		);
 
 		$listEntries = [];
 		$idsBySource = [];
@@ -185,7 +164,16 @@ class UserList extends DataObject
 				if ($listEntry->getRecordDriver() != null){
 					$tmpListEntry['title'] = strtolower($listEntry->getRecordDriver()->getSortableTitle());
 				}else{
-					$tmpListEntry['title'] = 'Unknown title';
+					if ($tmpListEntry['source'] == 'GroupedWork'){
+						require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+						$groupedWork = new GroupedWork();
+						$groupedWork->permanent_id = $tmpListEntry['sourceId'];
+						if ($groupedWork->find(true)){
+							$tmpListEntry['title'] = $groupedWork->full_title;
+						}
+					}else {
+						$tmpListEntry['title'] = 'Unknown title';
+					}
 				}
 			}
 			$listEntries[] = $tmpListEntry;
