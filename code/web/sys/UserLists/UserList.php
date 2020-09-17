@@ -665,7 +665,7 @@ class UserList extends DataObject
 				if (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $userList->user_id){
 					$okToShow = true;
 					$key = 0 . strtolower($userList->title);
-				}else if ($userList->public){
+				}else if ($userList->searchable){
 					$okToShow = true;
 					$key = 1 . strtolower($userList->title);
 				}
