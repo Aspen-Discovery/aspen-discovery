@@ -23,6 +23,9 @@ public class NetworkUtils {
 		return NetworkUtils.getURL(url, logger, headers, 300000);
 	}
 	public static WebServiceResponse getURL(String url, Logger logger, HashMap<String, String> headers, int readTimeout) {
+		return NetworkUtils.getURL(url, logger, headers, readTimeout, true);
+	}
+	public static WebServiceResponse getURL(String url, Logger logger, HashMap<String, String> headers, int readTimeout, boolean logFailures) {
 		WebServiceResponse retVal;
 		try {
 			URL urlToCall = new URL(url);
@@ -56,7 +59,9 @@ public class NetworkUtils {
 				rd.close();
 				retVal = new WebServiceResponse(true, 200, response.toString());
 			} else {
-				logger.error("Received error " + conn.getResponseCode() + " getting " + url);
+				if (logFailures) {
+					logger.error("Received error " + conn.getResponseCode() + " getting " + url);
+				}
 				// Get any errors
 				InputStream errorStream = conn.getErrorStream();
 				if (errorStream != null) {

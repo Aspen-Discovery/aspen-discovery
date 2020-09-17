@@ -630,7 +630,9 @@ class ExtractOverDriveInfo {
 											break;
 										}
 									}
-									allAdvantageCollections.add(collectionInfo);
+									if (!collectionInfo.getName().contains("Inactive")) {
+										allAdvantageCollections.add(collectionInfo);
+									}
 								}else{
 									int collectionId = curAdvantageAccount.getInt("id");
 									for (AdvantageCollectionInfo curCollectionInfo : allAdvantageCollections){
@@ -642,7 +644,10 @@ class ExtractOverDriveInfo {
 								}
 
 								if (collectionInfo == null){
-									logger.error("Did not get collection information");
+									//This happens when we are processing individual advantage accounts. It should only happen for collections that OverDrive has designated as Inactive
+									if (!curAdvantageAccount.getString("name").contains("Inactive")) {
+										logger.error("Did not get collection information for " + curAdvantageAccount.getString("name"));
+									}
 									continue;
 								}
 								//Need to load products for all advantage libraries since they can be shared with the entire consortium.
@@ -738,7 +743,9 @@ class ExtractOverDriveInfo {
 										break;
 									}
 								}
-								allAdvantageCollections.add(collectionInfo);
+								if (!collectionInfo.getName().contains("Inactive")) {
+									allAdvantageCollections.add(collectionInfo);
+								}
 							}
 						}
 					} else {
@@ -1062,14 +1069,27 @@ class ExtractOverDriveInfo {
 		long curTime = new Date().getTime() / 1000;
 
 		//OverDrive now returns availability for all records in one API call so we minimize the number of API calls we need to make
-		//by only calling once and then processing all the accounts within the response
-		AdvantageCollectionInfo firstCollection = overDriveInfo.getCollections().iterator().next();
-		String apiKey = firstCollection.getCollectionToken();
+		//by only calling once and then processing all the accounts within the response, but we may need to test more than one collection to get a valid response.
+		WebServiceResponse availabilityResponse = null;
+		for (AdvantageCollectionInfo collectionInfo : overDriveInfo.getCollections()){
+			String apiKey = collectionInfo.getCollectionToken();
 
-		String url = "https://api.overdrive.com/v2/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/availability";
-		WebServiceResponse availabilityResponse = callOverDriveURL(url);
+			String url = "https://api.overdrive.com/v2/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/availability";
+			WebServiceResponse curAvailabilityResponse = callOverDriveURL(url);
+			if (curAvailabilityResponse.getResponseCode() == 200){
+				//Got a good response
+				availabilityResponse = curAvailabilityResponse;
+				break;
+			}else if (availabilityResponse == null){
+				//We got an error of some sort which will get handled later
+				availabilityResponse = curAvailabilityResponse;
+			}
+		}
+
 		//404 is a message that availability has been deleted.
-		if (availabilityResponse.getResponseCode() != 200 && availabilityResponse.getResponseCode() != 404){
+		if (availabilityResponse == null) {
+			logEntry.incErrors("Did not get availability for product " + overDriveInfo.getId());
+		}else if (availabilityResponse.getResponseCode() != 200 && availabilityResponse.getResponseCode() != 404){
 			//We got an error calling the OverDrive API, do nothing.
 			logEntry.incErrors("Error availability API for product " + overDriveInfo.getId());
 			logger.info(availabilityResponse.getResponseCode() + ":" + availabilityResponse.getMessage());
@@ -1172,7 +1192,7 @@ class ExtractOverDriveInfo {
 								if (accountData.has("copiesAvailable")) {
 									copiesAvailable = accountData.getInt("copiesAvailable");
 								} else {
-									logger.info("copiesAvailable was not provided for collection " + apiKey + " title " + overDriveInfo.getId());
+									logger.info("copiesAvailable was not provided for title " + overDriveInfo.getId());
 									copiesAvailable = 0;
 								}
 
@@ -1266,11 +1286,11 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private WebServiceResponse callOverDriveURL(String overdriveUrl) throws SocketTimeoutException {
+	private WebServiceResponse callOverDriveURL(String overdriveUrl, boolean logFailures) throws SocketTimeoutException {
 		if (connectToOverDriveAPI()) {
 			HashMap<String, String> headers = new HashMap<>();
 			headers.put("Authorization", overDriveAPITokenType + " " + overDriveAPIToken);
-			WebServiceResponse response = NetworkUtils.getURL(overdriveUrl, logger, headers);
+			WebServiceResponse response = NetworkUtils.getURL(overdriveUrl, logger, headers, 300000, logFailures);
 			if (response.isCallTimedOut()) {
 				this.hadTimeoutsFromOverDrive = true;
 			}
@@ -1279,6 +1299,10 @@ class ExtractOverDriveInfo {
 			logger.error("Unable to connect to API");
 			return new WebServiceResponse(false, -1, "Failed to connect to OverDrive API");
 		}
+	}
+
+	private WebServiceResponse callOverDriveURL(String overdriveUrl) throws SocketTimeoutException {
+		return callOverDriveURL(overdriveUrl, true);
 	}
 
 	private boolean connectToOverDriveAPI() throws SocketTimeoutException {
