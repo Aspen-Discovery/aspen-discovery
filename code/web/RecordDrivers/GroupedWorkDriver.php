@@ -8,6 +8,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public $isValid = true;
 
+	/** @var SearchObject_GroupedWorkSearcher */
+	private static $recordLookupSearcher = null;
 	public function __construct($indexFields)
 	{
 		if (is_string($indexFields)) {
@@ -16,20 +18,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$id = str_replace('groupedWork:', '', $id);
 			//Just got a record id, let's load the full record from Solr
 			// Setup Search Engine Connection
-			/** @var SearchObject_GroupedWorkSearcher $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->disableScoping();
+			if (GroupedWorkDriver::$recordLookupSearcher == null){
+				GroupedWorkDriver::$recordLookupSearcher = SearchObjectFactory::initSearchObject();
+				GroupedWorkDriver::$recordLookupSearcher->disableScoping();
+			}
+
 			if (function_exists('disableErrorHandler')) {
 				disableErrorHandler();
 			}
 
 			// Retrieve the record from Solr
-			if (!($record = $searchObject->getRecord($id))) {
+			if (!($record = GroupedWorkDriver::$recordLookupSearcher->getRecord($id))) {
 				$this->isValid = false;
 			} else {
 				$this->fields = $record;
 			}
-			$searchObject->enableScoping();
 			if (function_exists('enableErrorHandler')) {
 				enableErrorHandler();
 			}

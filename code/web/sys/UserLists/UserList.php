@@ -185,7 +185,7 @@ class UserList extends DataObject
 				if ($listEntry->getRecordDriver() != null){
 					$tmpListEntry['title'] = strtolower($listEntry->getRecordDriver()->getSortableTitle());
 				}else{
-					continue;
+					$tmpListEntry['title'] = 'Unknown title';
 				}
 			}
 			$listEntries[] = $tmpListEntry;
