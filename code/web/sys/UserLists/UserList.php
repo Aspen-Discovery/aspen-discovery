@@ -390,16 +390,21 @@ class UserList extends DataObject
 					break;
 				}
 			}
-			if (!empty($current)) {
-				$interface->assign('recordIndex', $listPosition + 1);
-				$interface->assign('resultIndex', $listPosition + $startRecord + 1);
-				$interface->assign('recordDriver', $current);
+			$interface->assign('recordIndex', $listPosition + 1);
+			$interface->assign('resultIndex', $listPosition + $startRecord + 1);
 
+			if (!empty($current)) {
 				//Get information from list entry
 				$interface->assign('listEntryNotes', $current->getListNotes());
 				$interface->assign('listEntryId', $current->getListEntryId());
 				$interface->assign('listEditAllowed', $allowEdit);
+
+				$interface->assign('recordDriver', $current);
 				$html[$listPosition] = $interface->fetch($current->getListEntry($this->id, $allowEdit));
+			}else{
+				$interface->assign('listEntryId', $currentId['listEntryId']);
+				$interface->assign('deletedEntryTitle', $currentId['title']);
+				$html[$listPosition] = $interface->fetch('MyAccount/deletedListEntry.tpl');
 			}
 		}
 		return $html;

@@ -1251,9 +1251,6 @@ class MyAccount_AJAX extends JSON_Action
 		global $memCache;
 		$result = array();
 		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getLoggedInUser();
-			$interface->assign('user', $user);
-
 			//Load a list of lists
 			$userListData = $memCache->get('user_list_data_' . UserAccount::getActiveUserId());
 			if ($userListData == null || isset($_REQUEST['reload'])) {

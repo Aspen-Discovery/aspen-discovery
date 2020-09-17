@@ -101,6 +101,7 @@ class Memcache
 					Memcache::$cachedValueCleaner = new CachedValue();
 				}
 
+				Memcache::$cachedValueCleaner->whereAdd();
 				Memcache::$cachedValueCleaner->cacheKey = $name;
 				Memcache::$cachedValueCleaner->delete(true);
 			} catch (Exception $e) {
