@@ -1206,6 +1206,8 @@ class Koha extends AbstractIlsDriver
 
 			if (!empty($curRow['cancellationdate'])) {
 				$curHold['automaticCancellation'] = date_parse_from_format('Y-m-d H:i:s', $curRow['cancellationdate']);
+			}else{
+				$curHold['automaticCancellation'] = '';
 			}
 
 			$curHold['currentPickupId'] = $curRow['branchcode'];

@@ -160,7 +160,7 @@
 							</div>
 						{/if}
 
-						{if $record.automaticCancellation && $showHoldCancelDate}
+						{if !empty($record.automaticCancellation) && $showHoldCancelDate}
 							<div class="row">
 								<div class="result-label col-tn-4">{translate text='Cancels on'}</div>
 								<div class="col-tn-8 result-value">
