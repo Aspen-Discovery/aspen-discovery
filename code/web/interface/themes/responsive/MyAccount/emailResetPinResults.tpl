@@ -4,12 +4,12 @@
 			<div class="resultHead"><h1>{translate text='Reset My PIN'}</h1></div>
 			<div class="page">
 				{if !$result.success && $result.error}
-					<div class="alert alert-danger">{$result.error|translate}</div>
+					<div class="alert alert-danger">{$result.error}</div>{* Translation should be done prior to display *}
 					<div>
 						<a class="btn btn-primary" role="button" href="/MyAccount/EmailResetPin">{translate text='Try Again'}</a>
 					</div>
 				{elseif $result.message}
-					<div class="alert alert-success">{$result.message|translate}</div>
+					<div class="alert alert-success">{$result.message}</div>{* Translation should be done prior to display *}
 					<p>
 						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Sign in'}</a>
 					</p>
