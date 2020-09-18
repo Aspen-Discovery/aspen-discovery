@@ -10,6 +10,7 @@ class Lists extends MyAccount
 		global $interface;
 		$userLists = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
+		$userLists->deleted = "0";
 		$userLists->orderBy('title');
 		$userLists->find();
 		$lists = [];

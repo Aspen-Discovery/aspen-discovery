@@ -20,9 +20,9 @@ class UserListEntry extends DataObject{
 		$result = parent::insert();
 		if ($result && $updateBrowseCategories) {
 			$this->flushUserListBrowseCategory();
-			global $memCache;
-			$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		}
+		global $memCache;
+		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
 	}
 
@@ -35,9 +35,9 @@ class UserListEntry extends DataObject{
 		$result = parent::update();
 		if ($result && $updateBrowseCategories) {
 			$this->flushUserListBrowseCategory();
-			global $memCache;
-			$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		}
+		global $memCache;
+		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
 	}
 
@@ -51,9 +51,9 @@ class UserListEntry extends DataObject{
 		$result = parent::delete($useWhere);
 		if ($result && $updateBrowseCategories) {
 			$this->flushUserListBrowseCategory();
-			global $memCache;
-			$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		}
+		global $memCache;
+		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
 	}
 

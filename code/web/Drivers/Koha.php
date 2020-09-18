@@ -2433,6 +2433,10 @@ class Koha extends AbstractIlsDriver
 			if (!$newList->find(true)) {
 				$newList->public = $curList['category'] == 2;
 				$newList->insert();
+			}elseif ($newList->deleted == 1){
+				$newList->removeAllListEntries(true);
+				$newList->deleted = 0;
+				$newList->update();
 			}
 
 			$currentListTitles = $newList->getListTitles();
@@ -2453,7 +2457,7 @@ class Koha extends AbstractIlsDriver
 						//Check to see if this title is already on the list.
 						$resourceOnList = false;
 						foreach ($currentListTitles as $currentTitle) {
-							if ($currentTitle->groupedWorkPermanentId == $groupedWork->permanent_id) {
+							if ($currentTitle->source == 'GroupedWork' && $currentTitle->sourceId == $groupedWork->permanent_id) {
 								$resourceOnList = true;
 								break;
 							}
@@ -2467,6 +2471,7 @@ class Koha extends AbstractIlsDriver
 							$listEntry->notes = '';
 							$listEntry->dateAdded = time();
 							$listEntry->insert();
+							$currentListTitles[] = $listEntry;
 						}
 					} else {
 						if (!isset($results['errors'])) {
