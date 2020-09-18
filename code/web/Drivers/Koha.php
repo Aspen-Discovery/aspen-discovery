@@ -1718,7 +1718,7 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = array(
 			'success' => false,
-			'error' => "Unknown error sending password reset."
+			'error' => translate("Unknown error sending password reset.")
 		);
 
 		$catalogUrl = $this->accountProfile->vendorOpacUrl;
@@ -1739,9 +1739,9 @@ class Koha extends AbstractIlsDriver
 		$messageInformation = [];
 		if ($postResults == 'Internal Server Error') {
 			if (isset($_REQUEST['resendEmail'])) {
-				$result['error'] = 'There was an error in backend system while resending the password reset email, please contact the library.';
+				$result['error'] = translate('There was an error in backend system while resending the password reset email, please contact the library.');
 			}else{
-				$result['error'] = 'There was an error in backend system while sending the password reset email, please contact the library.';
+				$result['error'] = translate('There was an error in backend system while sending the password reset email, please contact the library.');
 			}
 		}else if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
 			$error = $messageInformation[1];

@@ -1,10 +1,9 @@
 <h1>{translate text='Invalid Record'}</h1>
-
 <p class="alert alert-warning">
 	{if empty($invalidWork)}
 		{translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog.	Please try your search again.' 1=$id}
 	{else}
-        {translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog, the record was not grouped properly.	Please try your search again.' 1=$id}
+        {translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog, the record was not grouped properly. Please try your search again.' 1=$id}
 	{/if}
 </p>
 
