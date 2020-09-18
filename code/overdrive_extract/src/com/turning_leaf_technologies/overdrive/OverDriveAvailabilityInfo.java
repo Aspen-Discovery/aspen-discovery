@@ -1,79 +1,79 @@
 package com.turning_leaf_technologies.overdrive;
 
 class OverDriveAvailabilityInfo {
-    //Information from the database
-    private long id;
-    private long libraryId;
-    private boolean available;
-    private int copiesOwned;
-    private int copiesAvailable;
-    private int numberOfHolds;
-    private String availabilityType;
+	//Information from the database
+	private long id;
+	private long libraryId;
+	private boolean available;
+	private int copiesOwned;
+	private int copiesAvailable;
+	private int numberOfHolds;
+	private String availabilityType;
 
-    //runtime
-    private boolean newAvailabilityLoaded = false;
+	//runtime
+	private boolean newAvailabilityLoaded = false;
 
-    long getId() {
-        return id;
-    }
+	long getId() {
+		return id;
+	}
 
-    void setId(long id) {
-        this.id = id;
-    }
+	void setId(long id) {
+		this.id = id;
+	}
 
-    long getLibraryId() {
-        return libraryId;
-    }
+	long getLibraryId() {
+		return libraryId;
+	}
 
-    void setLibraryId(long libraryId) {
-        this.libraryId = libraryId;
-    }
+	void setLibraryId(long libraryId) {
+		this.libraryId = libraryId;
+	}
 
-    boolean isAvailable() {
-        return available;
-    }
+	boolean isAvailable() {
+		return available;
+	}
 
-    void setAvailable(boolean available) {
-        this.available = available;
-    }
+	void setAvailable(boolean available) {
+		this.available = available;
+	}
 
-    int getCopiesOwned() {
-        return copiesOwned;
-    }
+	int getCopiesOwned() {
+		return copiesOwned;
+	}
 
-    void setCopiesOwned(int copiesOwned) {
-        this.copiesOwned = copiesOwned;
-    }
+	void setCopiesOwned(int copiesOwned) {
+		this.copiesOwned = copiesOwned;
+	}
 
-    int getCopiesAvailable() {
-        return copiesAvailable;
-    }
+	int getCopiesAvailable() {
+		return copiesAvailable;
+	}
 
-    void setCopiesAvailable(int copiesAvailable) {
-        this.copiesAvailable = copiesAvailable;
-    }
+	void setCopiesAvailable(int copiesAvailable) {
+		this.copiesAvailable = copiesAvailable;
+	}
 
-    int getNumberOfHolds() {
-        return numberOfHolds;
-    }
+	int getNumberOfHolds() {
+		return numberOfHolds;
+	}
 
-    void setNumberOfHolds(int numberOfHolds) {
-        this.numberOfHolds = numberOfHolds;
-    }
+	void setNumberOfHolds(int numberOfHolds) {
+		this.numberOfHolds = numberOfHolds;
+	}
 
-    String getAvailabilityType() {
-        return availabilityType;
-    }
+	String getAvailabilityType() {
+		return availabilityType;
+	}
 
-    void setAvailabilityType(String availabilityType) {
-        this.availabilityType = availabilityType;
-    }
+	void setAvailabilityType(String availabilityType) {
+		this.availabilityType = availabilityType;
+	}
 
-    boolean isNewAvailabilityLoaded() {
-        return newAvailabilityLoaded;
-    }
+	boolean isNewAvailabilityLoaded() {
+		return newAvailabilityLoaded;
+	}
 
-    void setNewAvailabilityLoaded() {
-        this.newAvailabilityLoaded = true;
-    }
+	void setNewAvailabilityLoaded() {
+		this.newAvailabilityLoaded = true;
+	}
 }

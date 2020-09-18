@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.sideloading;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
+import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.grouping.SideLoadedRecordGrouper;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
@@ -92,7 +93,11 @@ public class SideLoadingMain {
 
 			if (groupedWorkIndexer != null) {
 				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-				recordGroupingProcessors = new HashMap<>();
+				for (RecordGroupingProcessor recordGroupingProcessor : recordGroupingProcessors.values()){
+					recordGroupingProcessor.close();
+				}
+				recordGroupingProcessors.clear();
+				groupedWorkIndexer.close();
 				groupedWorkIndexer = null;
 			}
 
