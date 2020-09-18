@@ -2117,15 +2117,21 @@ class Koha extends AbstractIlsDriver
 		}
 
 		global $interface;
-
+		$allowPurchaseSuggestionBranchChoice = $this->getKohaSystemPreference('AllowPurchaseSuggestionBranchChoice');
 		$pickupLocations = [];
-		$locations = new Location();
-		$locations->orderBy('displayName');
-		$locations->whereAdd('validHoldPickupBranch != 2');
-		$locations->find();
-		while ($locations->fetch()) {
-			$pickupLocations[$locations->code] = $locations->displayName;
+		if ($allowPurchaseSuggestionBranchChoice == 1){
+			$locations = new Location();
+			$locations->orderBy('displayName');
+			$locations->whereAdd('validHoldPickupBranch != 2');
+			$locations->find();
+			while ($locations->fetch()) {
+				$pickupLocations[$locations->code] = $locations->displayName;
+			}
+		}else{
+			$userLocation = $user->getHomeLocation();
+			$pickupLocations[$userLocation->code] = $userLocation->displayName;
 		}
+
 		$interface->assign('pickupLocations', $pickupLocations);
 
 		$fields = [
