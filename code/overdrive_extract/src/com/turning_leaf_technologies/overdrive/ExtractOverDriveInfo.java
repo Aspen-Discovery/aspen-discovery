@@ -1152,8 +1152,14 @@ class ExtractOverDriveInfo {
 				}catch (SQLException e){
 					logger.warn("Could not load existing availability for overdrive product " + databaseId);
 				}
+				if (singleWork) {
+					logEntry.addNote("There are " + existingAvailabilities.size() + " existing availability records");
+				}
 
 				if (!availability.has("errorCode")){
+					if (singleWork) {
+						logEntry.addNote("Availability does not have an error code");
+					}
 					//Check to see if we have a default account.  There is a case where a library can own a title, but the
 					//consortium doesn't.  If the title is shared with the consortium, we need to add availability for the
 					//consortium even though OverDrive doesn't provide it.
@@ -1195,11 +1201,20 @@ class ExtractOverDriveInfo {
 						}
 
 						if (activeCollection == null) {
+							if (singleWork) {
+								logEntry.addNote("Did not find a collection for id " + libraryId);
+							}
 							logger.warn("Did not find a collection for id " + libraryId);
 						}else {
 							if (activeCollection.getAspenLibraryId() == 0){
 								//This is an overdrive collection that we don't have in Aspen, just skip it.
+								if (singleWork) {
+									logEntry.addNote("Collection is not part of Apen, skipping " + activeCollection.getName());
+								}
 								continue;
+							}
+							if (singleWork) {
+								logEntry.addNote("Updating availability for library " + libraryId);
 							}
 							//Update availability for this library/collection
 							try {
@@ -1231,6 +1246,9 @@ class ExtractOverDriveInfo {
 
 								OverDriveAvailabilityInfo existingAvailability = existingAvailabilities.get(activeCollection.getAspenLibraryId());
 								if (existingAvailability != null) {
+									if (singleWork) {
+										logEntry.addNote("Updating existing availability");
+									}
 									//Check to see if the availability has changed
 									if (available != existingAvailability.isAvailable() ||
 											copiesOwned != existingAvailability.getCopiesOwned() ||
@@ -1247,9 +1265,14 @@ class ExtractOverDriveInfo {
 										long existingId = existingAvailability.getId();
 										updateAvailabilityStmt.setLong(7, existingId);
 										updateAvailabilityStmt.executeUpdate();
+									}else if (singleWork) {
+										logEntry.addNote("Availability did not change, did not update the database");
 									}
 									existingAvailability.setNewAvailabilityLoaded();
 								} else {
+									if (singleWork) {
+										logEntry.addNote("Adding availability to the database");
+									}
 									addAvailabilityStmt.setLong(1, databaseId);
 									addAvailabilityStmt.setLong(2, activeCollection.getAspenLibraryId());
 									addAvailabilityStmt.setBoolean(3, available);
@@ -1266,6 +1289,9 @@ class ExtractOverDriveInfo {
 						}
 					}
 				}else{
+					if (singleWork) {
+						logEntry.addNote("Availability has an error code " + availability.get("errorCode"));
+					}
 					//We get NotFound when an advantage library owns the title, but they don't share it.
 					if (!availability.get("errorCode").equals("NotFound")){
 						logger.info("Error loading availability " + availability.get("errorCode") + " " + availability.get("message"));
@@ -1279,8 +1305,10 @@ class ExtractOverDriveInfo {
 							long existingId = existingAvailability.getId();
 							deleteAvailabilityStmt.setLong(1, existingId);
 							deleteAvailabilityStmt.executeUpdate();
+							if (singleWork) {
+								logEntry.addNote("Deleting availability for library " + existingAvailability.getLibraryId());
+							}
 						} catch (SQLException e) {
-
 							logEntry.incErrors("SQL Error loading availability for title " + overDriveInfo.getId(), e);
 						}
 					}
