@@ -1076,7 +1076,7 @@ class ExtractOverDriveInfo {
 			String apiKey = collectionInfo.getCollectionToken();
 
 			String url = "https://api.overdrive.com/v2/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/availability";
-			WebServiceResponse curAvailabilityResponse = callOverDriveURL(url);
+			WebServiceResponse curAvailabilityResponse = callOverDriveURL(url, false);
 			if (curAvailabilityResponse.getResponseCode() == 200){
 				//Got a good response
 				availabilityResponse = curAvailabilityResponse;
@@ -1106,6 +1106,7 @@ class ExtractOverDriveInfo {
 			//Delete all availability for this record
 			if (singleWork) {
 				logEntry.addNote("Availability response had no message " + apiKeyForResponse + " response code " + availabilityResponse.getResponseCode());
+				logEntry.addNote(availabilityResponse.getMessage());
 			}
 			try{
 				deleteAllAvailabilityStmt.setLong(1, overDriveInfo.getDatabaseId());
