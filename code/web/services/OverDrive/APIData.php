@@ -60,7 +60,7 @@ class OverDrive_APIData extends Admin_Admin
 
 			if ($advantageAccounts) {
 				foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
-					$contents .= ("<h3>Availability - {$accountInfo->name}</h3>");
+					$contents .= ("<h3>Availability - {$accountInfo->name} ({$accountInfo->id})</h3>");
 					$availability = $driver->getProductAvailability($overDriveId, $accountInfo->collectionToken);
 					if ($availability && !isset($availability->errorCode)) {
 						$contents .= ("Copies Owned (Shared Plus advantage): {$availability->copiesOwned }<br/>");
