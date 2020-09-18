@@ -1106,7 +1106,6 @@ class ExtractOverDriveInfo {
 			//Delete all availability for this record
 			if (singleWork) {
 				logEntry.addNote("Availability response had no message " + apiKeyForResponse + " response code " + availabilityResponse.getResponseCode());
-				logEntry.addNote(availabilityResponse.getMessage());
 			}
 			try{
 				deleteAllAvailabilityStmt.setLong(1, overDriveInfo.getDatabaseId());
@@ -1117,6 +1116,7 @@ class ExtractOverDriveInfo {
 		}else {
 			if (singleWork) {
 				logEntry.addNote("Got availability response for " + apiKeyForResponse + " code was " + availabilityResponse.getResponseCode());
+				logEntry.addNote(availabilityResponse.getMessage());
 			}
 			try {
 				JSONObject availability = availabilityResponse.getJSONResponse();
