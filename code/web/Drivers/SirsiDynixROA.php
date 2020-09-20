@@ -1098,9 +1098,15 @@ class SirsiDynixROA extends HorizonAPI
 				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
 		}
 
+		if (strpos($recordId, ':') !== false){
+			list(,$shortId) = explode(':', $recordId);
+		}else{
+			$shortId = $recordId;
+		}
+
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
-		$record = RecordDriverFactory::initRecordDriverById('ils:' . $recordId);
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->name . ':' . $shortId);
 		if (!$record) {
 			$title = null;
 		} else {
@@ -1111,7 +1117,7 @@ class SirsiDynixROA extends HorizonAPI
 		if ($offlineMode) {
 			require_once ROOT_DIR . '/sys/OfflineHold.php';
 			$offlineHold                = new OfflineHold();
-			$offlineHold->bibId         = $recordId;
+			$offlineHold->bibId         = $shortId;
 			$offlineHold->patronBarcode = $patron->getBarcode();
 			$offlineHold->patronId      = $patron->id;
 			$offlineHold->timeEntered   = time();
@@ -1120,13 +1126,13 @@ class SirsiDynixROA extends HorizonAPI
 				//TODO: use bib or bid ??
 				return array(
 					'title' => $title,
-					'bib' => $recordId,
+					'bib' => $shortId,
 					'success' => true,
 					'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
 			} else {
 				return array(
 					'title' => $title,
-					'bib' => $recordId,
+					'bib' => $shortId,
 					'success' => false,
 					'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
 			}
@@ -1135,7 +1141,7 @@ class SirsiDynixROA extends HorizonAPI
 			if ($type == 'cancel' || $type == 'recall' || $type == 'update') {
 				$result          = $this->updateHold($patron, $recordId, $type/*, $title*/);
 				$result['title'] = $title;
-				$result['bid']   = $recordId;
+				$result['bid']   = $shortId;
 				return $result;
 
 			} else {
@@ -1157,7 +1163,7 @@ class SirsiDynixROA extends HorizonAPI
 					$holdData['itemBarcode'] = $itemId;
 					$holdData['holdType']    = 'COPY';
 				} else {
-					$shortRecordId        = str_replace('a', '', $recordId);
+					$shortRecordId        = str_replace('a', '', $shortId);
 					$holdData['bib']      = array(
 						'resource' => '/catalog/bib',
 						'key' => $shortRecordId
@@ -1187,7 +1193,7 @@ class SirsiDynixROA extends HorizonAPI
 							$errorMessage .= $error->message.'; ';
 						}
 						if (IPAddress::showDebuggingInformation()){
-							$hold_result['message'] .= "<br>\r\n" . print_r($holdData);
+							$hold_result['message'] .= "<br>\r\n" . print_r($holdData, true);
 						}
 						$logger->log($errorMessage, Logger::LOG_ERROR);
 					}
@@ -1197,7 +1203,7 @@ class SirsiDynixROA extends HorizonAPI
 				}
 
 				$hold_result['title'] = $title;
-				$hold_result['bid']   = $recordId;
+				$hold_result['bid']   = $shortId;
 				//Clear the patron profile
 				return $hold_result;
 
