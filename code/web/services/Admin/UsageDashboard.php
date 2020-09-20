@@ -7,12 +7,6 @@ class Admin_UsageDashboard extends Admin_Admin
 	function launch()
 	{
 		global $interface;
-		global $indexingProfiles;
-		$profilesToGetStatsFor = [];
-		foreach ($indexingProfiles as $indexingProfile){
-			$profilesToGetStatsFor[$indexingProfile->id] = $indexingProfile->name;
-		}
-		$interface->assign('profiles', $profilesToGetStatsFor);
 
 		$thisMonth = date('n');
 		$thisYear = date('Y');

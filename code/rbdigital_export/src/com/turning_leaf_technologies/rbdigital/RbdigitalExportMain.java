@@ -116,7 +116,11 @@ public class RbdigitalExportMain {
 
 				if (groupedWorkIndexer != null) {
 					groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-					recordGroupingProcessorSingleton = null;
+					if (recordGroupingProcessorSingleton != null) {
+						recordGroupingProcessorSingleton.close();
+						recordGroupingProcessorSingleton = null;
+					}
+					groupedWorkIndexer.close();
 					groupedWorkIndexer = null;
 					existingRecords = null;
 					existingMagazines = null;

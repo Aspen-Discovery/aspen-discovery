@@ -567,7 +567,11 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String location;
 		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		location = translateValue("location", locationCode, identifier);
+		if (includeLocationNameInDetailedLocation) {
+			location = translateValue("location", locationCode, identifier);
+		}else{
+			location = "";
+		}
 		if (subLocationCode != null && subLocationCode.length() > 0){
 			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier);
 			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {

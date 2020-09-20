@@ -14,9 +14,6 @@ function loadSearchInformation(){
 	//Determine the Search Source, need to do this always.
 	global $searchSource;
 	global $library;
-	/** @var Memcache $memCache */
-	global $memCache;
-	global $instanceName;
 	global $configArray;
 
 	$module = (isset($_GET['module'])) ? $_GET['module'] : null;

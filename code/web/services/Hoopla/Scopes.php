@@ -61,6 +61,6 @@ class Hoopla_Scopes extends ObjectEditor
 
 	function canView()
 	{
-		UserAccount::userHasPermission('Administer Hoopla');
+		return UserAccount::userHasPermission('Administer Hoopla');
 	}
 }

@@ -88,18 +88,6 @@ class UserList extends DataObject
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
 
-		// These conditions retrieve list items with a valid groupedWorkID or archive ID.
-		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
-		$listEntry->whereAdd(
-			'(
-			(user_list_entry.source = \'GroupedWork\' AND user_list_entry.sourceId NOT LIKE "%:%" AND user_list_entry.sourceId IN (SELECT permanent_id FROM grouped_work) )
-			OR
-			(user_list_entry.source = \'Islandora\' AND user_list_entry.sourceId LIKE "%:%" AND user_list_entry.sourceId IN (SELECT pid FROM islandora_object_cache) )
-			OR
-			user_list_entry.source NOT IN (\'GroupedWork\', \'Islandora\')
-			)'
-		);
-
 		return $listEntry->count();
 	}
 
@@ -157,15 +145,6 @@ class UserList extends DataObject
 
 		// These conditions retrieve list items with a valid groupedWorkId or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
-		$listEntry->whereAdd(
-			'(
-			(user_list_entry.source = \'GroupedWork\' AND user_list_entry.sourceId NOT LIKE "%:%" AND user_list_entry.sourceId IN (SELECT permanent_id FROM grouped_work) )
-			OR
-			(user_list_entry.source = \'Islandora\' AND user_list_entry.sourceId LIKE "%:%" AND user_list_entry.sourceId IN (SELECT pid FROM islandora_object_cache) )
-			OR
-			user_list_entry.source NOT IN (\'GroupedWork\', \'Islandora\')
-			)'
-		);
 
 		$listEntries = [];
 		$idsBySource = [];
@@ -182,7 +161,20 @@ class UserList extends DataObject
 				'listEntryId' => $listEntry->id
 			];
 			if ($sort == 'title') {
-				$tmpListEntry['title'] = strtolower($listEntry->getRecordDriver()->getSortableTitle());
+				if ($listEntry->getRecordDriver() != null){
+					$tmpListEntry['title'] = strtolower($listEntry->getRecordDriver()->getSortableTitle());
+				}else{
+					if ($tmpListEntry['source'] == 'GroupedWork'){
+						require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+						$groupedWork = new GroupedWork();
+						$groupedWork->permanent_id = $tmpListEntry['sourceId'];
+						if ($groupedWork->find(true)){
+							$tmpListEntry['title'] = $groupedWork->full_title;
+						}
+					}else {
+						$tmpListEntry['title'] = 'Unknown title';
+					}
+				}
 			}
 			$listEntries[] = $tmpListEntry;
 		}
@@ -366,6 +358,24 @@ class UserList extends DataObject
 			}
 		}
 
+		if ($format == 'html') {
+			//Add in non-owned results for anything that is left
+			global $interface;
+			foreach ($filteredListEntries as $listPosition => $listEntryInfo) {
+				if (!array_key_exists($listPosition, $listResults)) {
+					$interface->assign('recordIndex', $listPosition + 1);
+					$interface->assign('resultIndex', $listPosition + $start + 1);
+					$interface->assign('listEntryId', $listEntryInfo['listEntryId']);
+					if (!empty($listEntryInfo['title'])) {
+						$interface->assign('deletedEntryTitle', $listEntryInfo['title']);
+					} else {
+						$interface->assign('deletedEntryTitle', '');
+					}
+					$listResults[$listPosition] = $interface->fetch('MyAccount/deletedListEntry.tpl');
+				}
+			}
+		}
+
 		ksort($listResults);
 		return $listResults;
 	}
@@ -398,15 +408,16 @@ class UserList extends DataObject
 					break;
 				}
 			}
-			if (!empty($current)) {
-				$interface->assign('recordIndex', $listPosition + 1);
-				$interface->assign('resultIndex', $listPosition + $startRecord + 1);
-				$interface->assign('recordDriver', $current);
+			$interface->assign('recordIndex', $listPosition + 1);
+			$interface->assign('resultIndex', $listPosition + $startRecord + 1);
 
+			if (!empty($current)) {
 				//Get information from list entry
 				$interface->assign('listEntryNotes', $current->getListNotes());
 				$interface->assign('listEntryId', $current->getListEntryId());
 				$interface->assign('listEditAllowed', $allowEdit);
+
+				$interface->assign('recordDriver', $current);
 				$html[$listPosition] = $interface->fetch($current->getListEntry($this->id, $allowEdit));
 			}
 		}
@@ -668,7 +679,7 @@ class UserList extends DataObject
 				if (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $userList->user_id){
 					$okToShow = true;
 					$key = 0 . strtolower($userList->title);
-				}else if ($userList->public){
+				}else if ($userList->searchable){
 					$okToShow = true;
 					$key = 1 . strtolower($userList->title);
 				}

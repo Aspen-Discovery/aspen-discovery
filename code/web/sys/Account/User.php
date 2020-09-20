@@ -1899,6 +1899,7 @@ class User extends DataObject
 		$sections['system_reports'] = new AdminSection('System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Site Status', 'View Status of Aspen Discovery.', '/Admin/SiteStatus'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), 'View System Reports');
+		$sections['system_reports']->addAction(new AdminAction('Usage By IP Address', 'Reports which IP addresses have used Aspen Discovery.', '/Admin/UsageByIP'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Nightly Index Log', 'Nightly indexing log for Aspen Discovery.  The nightly index updates all records if needed.', '/Admin/ReindexLog'), ['View System Reports', 'View Indexing Logs']);
 		$sections['system_reports']->addAction(new AdminAction('Cron Log', 'View Cron Log. The cron process handles periodic cleanup tasks and updates reading history for users.', '/Admin/CronLog'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Performance Report', 'View Aspen Performance Report.', '/Admin/PerformanceReport'), 'View System Reports');
@@ -2016,8 +2017,8 @@ class User extends DataObject
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
 			$sections['ebsco'] = new AdminSection('EBSCO');
-			$sections['ebsco']->addAction(new AdminAction('Settings', 'Define connection information between Hoopla and Aspen Discovery.', '/EBSCO/EDSSettings'), 'Administer EBSCO EDS');
-			$sections['ebsco']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Hoopla integration.', '/EBSCO/EDSDashboard'), ['View Dashboards', 'View System Reports']);
+			$sections['ebsco']->addAction(new AdminAction('Settings', 'Define connection information between EBSCO EDS and Aspen Discovery.', '/EBSCO/EDSSettings'), 'Administer EBSCO EDS');
+			$sections['ebsco']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for EBSCO EDS integration.', '/EBSCO/EDSDashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
 		if (array_key_exists('Hoopla', $enabledModules)) {

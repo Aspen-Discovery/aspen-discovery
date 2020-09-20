@@ -8,7 +8,9 @@ abstract class Action
 	function __construct($isStandalonePage = false) {
 		$this->isStandalonePage = $isStandalonePage;
 		global $interface;
-		$interface->assign('isStandalonePage', true);
+		if ($interface) {
+			$interface->assign('isStandalonePage', $isStandalonePage);
+		}
 	}
 
 	abstract function launch();
@@ -61,6 +63,13 @@ abstract class Action
 		global $aspenUsage;
 		$aspenUsage->blockedApiRequests++;
 		$aspenUsage->update();
+		global $usageByIPAddress;
+		try{
+			$usageByIPAddress->numBlockedApiRequests++;
+			$usageByIPAddress->update();
+		} catch (Exception $e) {
+			//Table does not exist yet
+		}
 
 		http_response_code(403);
 		$clientIP = IPAddress::getClientIP();

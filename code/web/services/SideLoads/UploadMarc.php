@@ -94,4 +94,9 @@ class SideLoads_UploadMarc extends Admin_Admin
 	{
 		return 'side_loads';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Side Loads');
+	}
 }

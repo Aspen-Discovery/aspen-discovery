@@ -313,6 +313,7 @@ class SirsiDynixROA extends HorizonAPI
 		//Authenticate the user via WebService
 		//First call loginUser
 		$timer->logTime("Logging in through Symphony APIs");
+		/** @noinspection PhpUnusedLocalVariableInspection */
 		list($userValid, $sessionToken, $sirsiRoaUserID) = $this->loginViaWebService($username, $password);
 		$staffSessionToken = $this->getStaffSessionToken();
 		if ($validatedViaSSO) {
@@ -633,28 +634,6 @@ class SirsiDynixROA extends HorizonAPI
 			// Build Address Field with existing data
 			$index = 0;
 
-			// Closure to handle the data structure of the address parameters to pass onto the ILS
-			$setField = function ($key, $value) use (&$createPatronInfoParameters, $preferredAddress, &$index) {
-				static $parameterIndex = array();
-
-				$addressField                = 'address' . $preferredAddress;
-				$patronAddressPolicyResource = '/policy/patron' . ucfirst($addressField);
-
-				$l = array_key_exists($key, $parameterIndex) ? $parameterIndex[$key] : $index++;
-				$createPatronInfoParameters['fields'][$addressField][$l] = array(
-					'resource' => '/user/patron/' . $addressField,
-					'fields' => array(
-						'code' => array(
-							'key' => $key,
-							'resource' => $patronAddressPolicyResource
-						),
-						'data' => $value
-					)
-				);
-				$parameterIndex[$key] = $l;
-
-			};
-
 			$createPatronInfoParameters['fields']['profile'] = array(
 				'resource' => '/policy/userProfile',
 				'key' => 'VIRTUAL',
@@ -696,23 +675,23 @@ class SirsiDynixROA extends HorizonAPI
 
 			// Update Address Field with new data supplied by the user
 			if (isset($_REQUEST['email'])) {
-				$setField('EMAIL', $_REQUEST['email']);
+				$this->setPatronUpdateField('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['phone'])) {
-				$setField('PHONE', $_REQUEST['phone']);
+				$this->setPatronUpdateField('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['address'])) {
-				$setField('STREET', $_REQUEST['address']);
+				$this->setPatronUpdateField('STREET', $_REQUEST['address'], $updatePatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-				$setField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state']);
+				$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['zip'])) {
-				$setField('ZIP', $_REQUEST['zip']);
+				$this->setPatronUpdateField('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress, $index);
 			}
 
 			// Update Home Location
@@ -1090,52 +1069,7 @@ class SirsiDynixROA extends HorizonAPI
 	 * @access  public
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
-		//For Sirsi ROA we don't really know if a record needs a copy or title level hold.  We determined that we would check
-		// the marc record and if the call numbers in the record vary we will place a copy level hold
-		$result = array();
-		$needsItemHold = false;
-		$holdableItems = array();
-		/** @var MarcRecordDriver $recordDriver */
-		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
-
-		if ($recordDriver->isValid()){
-			$result['title'] = $recordDriver->getTitle();
-			$items = $recordDriver->getCopies();
-			$firstCallNumber = null;
-			foreach ($items as $item){
-				$itemNumber = $item['itemId'];
-				if ($itemNumber && $item['holdable']){
-					$itemCallNumber = $item['callNumber'];
-					if ($firstCallNumber == null){
-						$firstCallNumber = $itemCallNumber;
-					}else if ($firstCallNumber != $itemCallNumber){
-						$needsItemHold = true;
-					}
-
-					$holdableItems[] = array(
-							'itemNumber' => $item['itemId'],
-							'location' => $item['shelfLocation'],
-							'callNumber' => $itemCallNumber,
-							'status' => $item['status'],
-					);
-				}
-			}
-		}
-
-		if (!$needsItemHold){
-			$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch, 'request', $cancelDate);
-		}else{
-			$result['items'] = $holdableItems;
-			if (count($holdableItems) > 0){
-				$message = 'This title requires item level holds, please select an item to place a hold on.';
-			}else{
-				$message = 'There are no holdable items for this title.';
-			}
-			$result['success'] = false;
-			$result['message'] = $message;
-		}
-
-		return $result;
+		return $this->placeItemHold($patron, $recordId, null, $pickupBranch, 'request', $cancelDate);
 	}
 
 	/**
@@ -1164,9 +1098,15 @@ class SirsiDynixROA extends HorizonAPI
 				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
 		}
 
+		if (strpos($recordId, ':') !== false){
+			list(,$shortId) = explode(':', $recordId);
+		}else{
+			$shortId = $recordId;
+		}
+
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
-		$record = RecordDriverFactory::initRecordDriverById('ils:' . $recordId);
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->name . ':' . $shortId);
 		if (!$record) {
 			$title = null;
 		} else {
@@ -1177,7 +1117,7 @@ class SirsiDynixROA extends HorizonAPI
 		if ($offlineMode) {
 			require_once ROOT_DIR . '/sys/OfflineHold.php';
 			$offlineHold                = new OfflineHold();
-			$offlineHold->bibId         = $recordId;
+			$offlineHold->bibId         = $shortId;
 			$offlineHold->patronBarcode = $patron->getBarcode();
 			$offlineHold->patronId      = $patron->id;
 			$offlineHold->timeEntered   = time();
@@ -1186,13 +1126,13 @@ class SirsiDynixROA extends HorizonAPI
 				//TODO: use bib or bid ??
 				return array(
 					'title' => $title,
-					'bib' => $recordId,
+					'bib' => $shortId,
 					'success' => true,
 					'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
 			} else {
 				return array(
 					'title' => $title,
-					'bib' => $recordId,
+					'bib' => $shortId,
 					'success' => false,
 					'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
 			}
@@ -1201,7 +1141,7 @@ class SirsiDynixROA extends HorizonAPI
 			if ($type == 'cancel' || $type == 'recall' || $type == 'update') {
 				$result          = $this->updateHold($patron, $recordId, $type/*, $title*/);
 				$result['title'] = $title;
-				$result['bid']   = $recordId;
+				$result['bid']   = $shortId;
 				return $result;
 
 			} else {
@@ -1223,7 +1163,7 @@ class SirsiDynixROA extends HorizonAPI
 					$holdData['itemBarcode'] = $itemId;
 					$holdData['holdType']    = 'COPY';
 				} else {
-					$shortRecordId        = str_replace('a', '', $recordId);
+					$shortRecordId        = str_replace('a', '', $shortId);
 					$holdData['bib']      = array(
 						'resource' => '/catalog/bib',
 						'key' => $shortRecordId
@@ -1252,6 +1192,9 @@ class SirsiDynixROA extends HorizonAPI
 						foreach ($createHoldResponse->messageList as $error){
 							$errorMessage .= $error->message.'; ';
 						}
+						if (IPAddress::showDebuggingInformation()){
+							$hold_result['message'] .= "<br>\r\n" . print_r($holdData, true);
+						}
 						$logger->log($errorMessage, Logger::LOG_ERROR);
 					}
 				} else {
@@ -1260,7 +1203,7 @@ class SirsiDynixROA extends HorizonAPI
 				}
 
 				$hold_result['title'] = $title;
-				$hold_result['bid']   = $recordId;
+				$hold_result['bid']   = $shortId;
 				//Clear the patron profile
 				return $hold_result;
 
@@ -1758,14 +1701,14 @@ class SirsiDynixROA extends HorizonAPI
 			'messages' => []
 		];
 		if ($canUpdateContactInfo) {
-			$sessionToken = $this->getSessionToken($user);
+			$sessionToken = $this->getStaffSessionToken();
 			if ($sessionToken) {
 				$webServiceURL = $this->getWebServiceURL();
 				if ($userID = $user->username) {
 					$updatePatronInfoParameters = array(
 						'fields' => array(),
-                        'key' => $userID,
-                        'resource' => '/user/patron',
+						'key' => $userID,
+						'resource' => '/user/patron',
 					);
 					if (!empty(self::$userPreferredAddresses[$userID])) {
 						$preferredAddress = self::$userPreferredAddresses[$userID];
@@ -1777,68 +1720,52 @@ class SirsiDynixROA extends HorizonAPI
 					// Build Address Field with existing data
 					$index = 0;
 
-					// Closure to handle the data structure of the address parameters to pass onto the ILS
-					$setField = function ($key, $value) use (&$updatePatronInfoParameters, $preferredAddress, &$index) {
-						static $parameterIndex = array();
-
-						$addressField = 'address' . $preferredAddress;
-						$patronAddressPolicyResource = '/policy/patron' . ucfirst($addressField);
-
-						$l = array_key_exists($key, $parameterIndex) ? $parameterIndex[$key] : $index++;
-						$updatePatronInfoParameters['fields'][$addressField][$l] = array(
-							'resource' => '/user/patron/'. $addressField,
-							'fields' => array(
-								'code' => array(
-									'key' => $key,
-									'resource' => $patronAddressPolicyResource
-								),
-								'data' => $value
-							)
-						);
-						$parameterIndex[$key] = $l;
-
-					};
-
 					if (!empty($user->email)) {
-						$setField('EMAIL', $user->email);
+						$this->setPatronUpdateField('EMAIL', $user->email, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
 					if (!empty($user->address1)) {
-						$setField('STREET', $user->_address1);
+						$this->setPatronUpdateField('STREET', $user->_address1, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
 					if (!empty($user->zip)) {
-						$setField('ZIP', $user->_zip);
+						$this->setPatronUpdateField('ZIP', $user->_zip, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
 					if (!empty($user->phone)) {
-						$setField('PHONE', $user->phone);
+						$this->setPatronUpdateField('PHONE', $user->phone, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
 					if (!empty($user->_city) && !empty($user->_state)) {
-						$setField('CITY/STATE', $user->_city .' '. $user->_state);
+						$this->setPatronUpdateField('CITY/STATE', $user->_city .' '. $user->_state, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
 
 					// Update Address Field with new data supplied by the user
 					if (isset($_REQUEST['email'])) {
-						$setField('EMAIL', $_REQUEST['email']);
+						$this->setPatronUpdateField('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress, $index);
+						$user->email = $_REQUEST['email'];
 					}
 
 					if (isset($_REQUEST['phone'])) {
-						$setField('PHONE',$_REQUEST['phone']);
+						$this->setPatronUpdateField('PHONE',$_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress, $index);
+						$user->phone = $_REQUEST['phone'];
 					}
 
 					if (isset($_REQUEST['address1'])) {
-						$setField('STREET',$_REQUEST['address1']);
+						$this->setPatronUpdateField('STREET',$_REQUEST['address1'], $updatePatronInfoParameters, $preferredAddress, $index);
+						$user->_address1 = $_REQUEST['address1'];
 					}
 
 					if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-						$setField('CITY/STATE',$_REQUEST['city'] . ' ' . $_REQUEST['state']);
+						$this->setPatronUpdateField('CITY/STATE',$_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress, $index);
+						$user->_city = $_REQUEST['city'];
+						$user->_state = $_REQUEST['state'];
 					}
 
 					if (isset($_REQUEST['zip'])) {
-						$setField('ZIP',$_REQUEST['zip']);
+						$this->setPatronUpdateField('ZIP',$_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress, $index);
+						$user->_zip = $_REQUEST['zip'];
 					}
 
 					// Update Home Location
@@ -1864,6 +1791,7 @@ class SirsiDynixROA extends HorizonAPI
 					}else{
 						$result['success'] = true;
 						$result['messages'][] = 'Your account was updated successfully.';
+						$user->update();
 					}
 				} else {
 					global $logger;
@@ -1928,5 +1856,25 @@ class SirsiDynixROA extends HorizonAPI
 		global $library;
 		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$user->getBarcode()}";
 		$memCache->delete($memCacheKey);
+	}
+
+	private function setPatronUpdateField($key, $value, &$updatePatronInfoParameters, $preferredAddress, &$index){
+		static $parameterIndex = array();
+
+		$addressField = 'address' . $preferredAddress;
+		$patronAddressPolicyResource = '/policy/patron' . ucfirst($addressField);
+
+		$l = array_key_exists($key, $parameterIndex) ? $parameterIndex[$key] : $index++;
+		$updatePatronInfoParameters['fields'][$addressField][$l] = array(
+			'resource' => '/user/patron/'. $addressField,
+			'fields' => array(
+				'code' => array(
+					'key' => $key,
+					'resource' => $patronAddressPolicyResource
+				),
+				'data' => $value
+			)
+		);
+		$parameterIndex[$key] = $l;
 	}
 }

@@ -23,12 +23,13 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 		global $timer;
 
 		if (is_null($this->recordDriver) || !$this->recordDriver->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
-			$this->display('invalidRecord.tpl', 'Invalid Record');
+			$this->display('invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
 		$groupedWork = $this->recordDriver->getGroupedWorkDriver();
 		if (is_null($groupedWork) || !$groupedWork->isValid()){  // initRecordDriverById itself does a validity check and returns null if not.
-			$this->display('invalidRecord.tpl', 'Invalid Record');
+			$interface->assign('invalidWork', true);
+			$this->display('invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
 

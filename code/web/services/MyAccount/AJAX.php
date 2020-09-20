@@ -1251,9 +1251,6 @@ class MyAccount_AJAX extends JSON_Action
 		global $memCache;
 		$result = array();
 		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getLoggedInUser();
-			$interface->assign('user', $user);
-
 			//Load a list of lists
 			$userListData = $memCache->get('user_list_data_' . UserAccount::getActiveUserId());
 			if ($userListData == null || isset($_REQUEST['reload'])) {
@@ -1671,7 +1668,6 @@ class MyAccount_AJAX extends JSON_Action
 					->setCellValue('A3', 'Title')
 					->setCellValue('B3', 'Author')
 					->setCellValue('C3', 'Format')
-					->setCellValue('D3', 'Times Used')
 					->setCellValue('E3', 'Last Used');
 
 				$a = 4;
@@ -1693,7 +1689,6 @@ class MyAccount_AJAX extends JSON_Action
 						->setCellValue('A' . $a, $row['title'])
 						->setCellValue('B' . $a, $row['author'])
 						->setCellValue('C' . $a, $format)
-						->setCellValue('D' . $a, $row['timesUsed'])
 						->setCellValue('E' . $a, $lastCheckout);
 
 					$a++;
@@ -2012,7 +2007,7 @@ class MyAccount_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function renderReadingHistoryPaginationLink($page, $options)
 	{
-		return "<a class='page-link' onclick='AspenDiscovery.Account.loadReadingHistory(\"{$options['patronId']}\", \"{$options['sort']}\", \"{$page}\", undefined, \"{$options['filter']}\");AspenDiscovery.goToAnchor(\"topOfList\")'>";
+		return "<a class='page-link btn btn-default btn-sm' onclick='AspenDiscovery.Account.loadReadingHistory(\"{$options['patronId']}\", \"{$options['sort']}\", \"{$page}\", undefined, \"{$options['filter']}\");AspenDiscovery.goToAnchor(\"topOfList\")'>";
 	}
 
 	private function isValidTimeStamp($timestamp)

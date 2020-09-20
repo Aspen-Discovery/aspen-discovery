@@ -494,46 +494,44 @@ class Location extends DataObject
 
 		$this->orderBy('displayName');
 
-		$this->find();
-
-
-		// Add the user id to each pickup location to track multiple linked accounts having the same pick-up location.
-		if ($patronProfile) {
-			$this->pickupUsers[] = $patronProfile->id;
-		}
+		$tmpLocations = $this->fetchAll();
 
 		//Load the locations and sort them based on the user profile information as well as their physical location.
 		$physicalLocation = $this->getPhysicalLocation();
 		$locationList = array();
-		while ($this->fetch()) {
-			if (($this->validHoldPickupBranch == 1) || ($this->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $this->locationId)) {
-				if (!empty($selectedBranchId) && $this->locationId == $selectedBranchId) {
+		foreach ($tmpLocations as $tmpLocation){
+			// Add the user id to each pickup location to track multiple linked accounts having the same pick-up location.
+			if ($patronProfile) {
+				$tmpLocation->pickupUsers[] = $patronProfile->id;
+			}
+			if (($tmpLocation->validHoldPickupBranch == 1) || ($tmpLocation->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $tmpLocation->locationId)) {
+				if (!empty($selectedBranchId) && $tmpLocation->locationId == $selectedBranchId) {
 					$selected = 'selected';
 				} else {
 					$selected = '';
 				}
 				$this->setSelected($selected);
 				// Each location is prepended with a number to keep precedence for given locations when sorted below
-				if (isset($physicalLocation) && $physicalLocation->locationId == $this->locationId) {
+				if (isset($physicalLocation) && $physicalLocation->locationId == $tmpLocation->locationId) {
 					//If the user is in a branch, those holdings come first.
-					$locationList['1' . $this->displayName] = clone $this;
-				} else if (!empty($patronProfile) && $this->locationId == $patronProfile->homeLocationId) {
+					$locationList['1' . $tmpLocation->displayName] = $tmpLocation;
+				} else if (!empty($patronProfile) && $tmpLocation->locationId == $patronProfile->homeLocationId) {
 					//Next come the user's home branch if the user is logged in or has the home_branch cookie set.
-					$locationList['21' . $this->displayName] = clone $this;
+					$locationList['21' . $tmpLocation->displayName] = $tmpLocation;
 					$homeLibraryInList = true;
-				} else if (isset($patronProfile->myLocation1Id) && $this->locationId == $patronProfile->myLocation1Id) {
+				} else if (isset($patronProfile->myLocation1Id) && $tmpLocation->locationId == $patronProfile->myLocation1Id) {
 					//Next come nearby locations for the user
-					$locationList['3' . $this->displayName] = clone $this;
+					$locationList['3' . $tmpLocation->displayName] = $tmpLocation;
 					$alternateLibraryInList = true;
-				} else if (isset($patronProfile->myLocation2Id) && $this->locationId == $patronProfile->myLocation2Id) {
+				} else if (isset($patronProfile->myLocation2Id) && $tmpLocation->locationId == $patronProfile->myLocation2Id) {
 					//Next come nearby locations for the user
-					$locationList['4' . $this->displayName] = clone $this;
-				} else if (isset($homeLibrary) && $this->libraryId == $homeLibrary->libraryId) {
+					$locationList['4' . $tmpLocation->displayName] = $tmpLocation;
+				} else if (isset($homeLibrary) && $tmpLocation->libraryId == $homeLibrary->libraryId) {
 					//Other locations that are within the same library system
-					$locationList['5' . $this->displayName] = clone $this;
+					$locationList['5' . $tmpLocation->displayName] = $tmpLocation;
 				} else {
 					//Finally, all other locations are shown sorted alphabetically.
-					$locationList['6' . $this->displayName] = clone $this;
+					$locationList['6' . $tmpLocation->displayName] = $tmpLocation;
 				}
 			}
 		}

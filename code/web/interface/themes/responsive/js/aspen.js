@@ -5931,7 +5931,10 @@ AspenDiscovery.Admin = (function(){
 			$('head').append('<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=' + fontName + '">');
 			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
 		},
-		checkContrast: function (property1, property2,oneWay=false){
+		checkContrast: function (property1, property2,oneWay) {
+			if (oneWay === undefined){
+				oneWay = false;
+			}
 			let color1 = $('#' + property1).val();
 			let color2 = $('#' + property2).val();
 			if (color1.length === 7 && color2.length === 7){
@@ -7092,7 +7095,10 @@ AspenDiscovery.Browse = (function(){
 			});
 		},
 
-		changeBrowseCategory: function(categoryTextId, addToHistory = true) {
+		changeBrowseCategory: function(categoryTextId, addToHistory) {
+			if (addToHistory === undefined) {
+				addToHistory  = true;
+			}
 			if (AspenDiscovery.Browse.changingDisplay){
 				return;
 			}
@@ -7195,9 +7201,12 @@ AspenDiscovery.Browse = (function(){
 			return false;
 		},
 
-		changeBrowseSubCategory: function (subCategoryTextId, categoryId = undefined, addToHistory = true) {
+		changeBrowseSubCategory: function (subCategoryTextId, categoryId, addToHistory ) {
 			if (AspenDiscovery.Browse.changingDisplay){
 				return;
+			}
+			if (addToHistory === undefined) {
+				addToHistory = true;
 			}
 			AspenDiscovery.Browse.changingDisplay = true;
 			let url = Globals.path + '/Browse/AJAX';
@@ -10300,11 +10309,18 @@ AspenDiscovery.Searches = (function(){
 		loadSearchTypes: function(){
 			let searchTypeElement = $("#searchSource");
 			let catalogType = "catalog";
+			let hasAdvancedSearch = false;
 			if (searchTypeElement){
 				let selectedSearchType = $(searchTypeElement.find(":selected"));
 				if (selectedSearchType){
 					catalogType = selectedSearchType.data("catalog_type");
+					hasAdvancedSearch = selectedSearchType.data("advanced_search");
 				}
+			}
+			if (hasAdvancedSearch){
+				$('#advancedSearchLink').show();
+			}else{
+				$('#advancedSearchLink').hide();
 			}
 			let url = "/Search/AJAX";
 			$.getJSON(url,

@@ -13,7 +13,7 @@
 			{if $loggedIn && in_array('Upload Covers', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover"}</button>
 			{/if}
-			{if $loggedIn && in_array('UploadPDFs', $userPermissions)}
+			{if $loggedIn && in_array('Upload PDFs', $userPermissions)}
 				<button onclick="return AspenDiscovery.Record.getUploadPDFForm('{$recordDriver->getId()}')" class="btn btn-sm btn-default">{translate text="Upload PDF Version"}</button>
 			{/if}
 			{if $loggedIn && in_array('Upload Supplemental Files', $userPermissions)}
@@ -39,7 +39,7 @@
 			{if $loggedIn && in_array('Download MARC Records', $userPermissions)}
 				<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
 			{/if}
-			{if $loggedIn && in_array('Administer Islandora Archive', $userPermissions)}
+			{if $loggedIn && $enableArchive && in_array('Administer Islandora Archive', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Clear Islandora Cache"}</button>
 			{/if}
 		</div>

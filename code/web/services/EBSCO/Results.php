@@ -104,12 +104,14 @@ class EBSCO_Results extends ResultsAction {
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 
 		//Check for research starters
-		$researchStarters = $searchObject->getResearchStarters($_REQUEST['lookfor']);
-		$researchStarterHtml = '';
-		foreach ($researchStarters as $researchStarter){
-			$researchStarterHtml .= $researchStarter->getDisplayHtml();
+		if (!empty($_REQUEST['lookfor'])) {
+			$researchStarters = $searchObject->getResearchStarters($_REQUEST['lookfor']);
+			$researchStarterHtml = '';
+			foreach ($researchStarters as $researchStarter) {
+				$researchStarterHtml .= $researchStarter->getDisplayHtml();
+			}
+			$interface->assign('researchStarters', $researchStarterHtml);
 		}
-		$interface->assign('researchStarters', $researchStarterHtml);
 
 		$displayTemplate = 'EBSCO/list-list.tpl'; // structure for regular results
 		$interface->assign('subpage', $displayTemplate);

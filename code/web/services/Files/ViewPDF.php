@@ -62,7 +62,7 @@ class ViewPDF extends Action
 			$interface->assign('pdfPath', $configArray['Site']['url'] . '/Files/' . $fileId . '/Contents');
 			$this->display('pdfViewer.tpl', $this->title);
 		}else{
-			$this->display('invalidRecord.tpl', 'Invalid Record');
+			$this->display('invalidRecord.tpl', 'Invalid Record', '');
 		}
 	}
 

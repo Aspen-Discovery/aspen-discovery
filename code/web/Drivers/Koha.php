@@ -507,12 +507,13 @@ class Koha extends AbstractIlsDriver
 	{
 		global $timer;
 		/** @noinspection SqlResolve */
-		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote from borrowers where borrowernumber = $patronId";
+		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy from borrowers where borrowernumber = $patronId";
 
 		$userExistsInDB = false;
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
 		if ($lookupUserResult) {
 			$userFromDb = $lookupUserResult->fetch_assoc();
+			$lookupUserResult->close();
 
 			$user = new User();
 			//Get the unique user id from Millennium
@@ -548,6 +549,49 @@ class Koha extends AbstractIlsDriver
 				if ($passwordChanged) {
 					//The password has changed, disable account linking and give users the appropriate messages
 					$user->disableLinkingDueToPasswordChange();
+				}
+			}else{
+				//For new users, we need to check to see if they are opted into reading history or not
+				switch ($userFromDb['privacy']){
+					case 2:
+						//Never track
+						$user->trackReadingHistory = false;
+						break;
+					case 0:
+						//Track forever
+						$user->trackReadingHistory = true;
+						break;
+					default:
+						//Depends on configuration for the patron category
+						$pType = $userFromDb['categorycode'];
+						/** @noinspection SqlResolve */
+						$patronCategorySql = "select default_privacy from categories where categorycode = '$pType'";
+						$patronCategoryResult = mysqli_query($this->dbConnection, $patronCategorySql, MYSQLI_USE_RESULT);
+						if ($patronCategoryResult) {
+							$privacyInfo = mysqli_fetch_assoc($patronCategoryResult);
+							if ($privacyInfo) {
+								switch ($privacyInfo['default_privacy']) {
+									case 'forever':
+										//Never delete
+										$user->trackReadingHistory = true;
+										break;
+									case 'never':
+										//Never store
+										$user->trackReadingHistory = false;
+										break;
+									case 'default':
+										//Keep until it gets deleted (on in Aspen).
+										$user->trackReadingHistory = true;
+										break;
+								}
+							} else {
+								global $logger;
+								$logger->log("Could not get information about patron category", Logger::LOG_ERROR);
+							}
+						}else{
+							global $logger;
+							$logger->log("Could not get information about patron category", Logger::LOG_ERROR);
+						}
 				}
 			}
 			$user->cat_password = $password;
@@ -744,14 +788,14 @@ class Koha extends AbstractIlsDriver
 
 			//Borrowed from C4:Members.pm
 			/** @noinspection SqlResolve */
-			$readingHistoryTitleSql = "SELECT *,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
+			$readingHistoryTitleSql = "SELECT issues.*,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
 				FROM issues
 				LEFT JOIN items on items.itemnumber=issues.itemnumber
 				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
 				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
 				WHERE borrowernumber={$patron->username}
 				UNION ALL
-				SELECT *,old_issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp
+				SELECT old_issues.*,old_issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
 				FROM old_issues
 				LEFT JOIN items on items.itemnumber=old_issues.itemnumber
 				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
@@ -760,9 +804,18 @@ class Koha extends AbstractIlsDriver
 			$readingHistoryTitleRS = mysqli_query($this->dbConnection, $readingHistoryTitleSql);
 			if ($readingHistoryTitleRS) {
 				while ($readingHistoryTitleRow = $readingHistoryTitleRS->fetch_assoc()) {
-					$checkOutDate = new DateTime($readingHistoryTitleRow['itemstimestamp']);
+					/** @noinspection SpellCheckingInspection */
+					if (!empty($readingHistoryTitleRow['issuedate'])){
+						/** @noinspection SpellCheckingInspection */
+						$checkOutDate = new DateTime($readingHistoryTitleRow['issuedate']);
+					}else{
+						$checkOutDate = new DateTime($readingHistoryTitleRow['itemstimestamp']);
+					}
+
 					$returnDate = null;
+					/** @noinspection SpellCheckingInspection */
 					if (!empty($readingHistoryTitleRow['returndate'])){
+						/** @noinspection SpellCheckingInspection */
 						$returnDate = new DateTime($readingHistoryTitleRow['returndate']);
 					}
 					$curTitle = array();
@@ -770,6 +823,8 @@ class Koha extends AbstractIlsDriver
 					$curTitle['shortId'] = $readingHistoryTitleRow['biblionumber'];
 					$curTitle['recordId'] = $readingHistoryTitleRow['biblionumber'];
 					$curTitle['title'] = $readingHistoryTitleRow['title'];
+					$curTitle['author'] = $readingHistoryTitleRow['author'];
+					$curTitle['format'] = $readingHistoryTitleRow['iType'];
 					$curTitle['checkout'] = $checkOutDate->getTimestamp();
 					if (!empty($returnDate)){
 						$curTitle['checkin'] = $returnDate->getTimestamp();
@@ -796,7 +851,6 @@ class Koha extends AbstractIlsDriver
 			$historyEntry['permanentId'] = null;
 			$historyEntry['linkUrl'] = null;
 			$historyEntry['coverUrl'] = null;
-			$historyEntry['format'] = "Unknown";
 			if (!empty($historyEntry['recordId'])) {
 //					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Constructor expects the recordId as a string.
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -1152,6 +1206,8 @@ class Koha extends AbstractIlsDriver
 
 			if (!empty($curRow['cancellationdate'])) {
 				$curHold['automaticCancellation'] = date_parse_from_format('Y-m-d H:i:s', $curRow['cancellationdate']);
+			}else{
+				$curHold['automaticCancellation'] = '';
 			}
 
 			$curHold['currentPickupId'] = $curRow['branchcode'];
@@ -1664,7 +1720,7 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = array(
 			'success' => false,
-			'error' => "Unknown error sending password reset."
+			'error' => translate("Unknown error sending password reset.")
 		);
 
 		$catalogUrl = $this->accountProfile->vendorOpacUrl;
@@ -1685,9 +1741,9 @@ class Koha extends AbstractIlsDriver
 		$messageInformation = [];
 		if ($postResults == 'Internal Server Error') {
 			if (isset($_REQUEST['resendEmail'])) {
-				$result['error'] = 'There was an error in backend system while resending the password reset email, please contact the library.';
+				$result['error'] = translate('There was an error in backend system while resending the password reset email, please contact the library.');
 			}else{
-				$result['error'] = 'There was an error in backend system while sending the password reset email, please contact the library.';
+				$result['error'] = translate('There was an error in backend system while sending the password reset email, please contact the library.');
 			}
 		}else if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
 			$error = $messageInformation[1];
@@ -2063,15 +2119,21 @@ class Koha extends AbstractIlsDriver
 		}
 
 		global $interface;
-
+		$allowPurchaseSuggestionBranchChoice = $this->getKohaSystemPreference('AllowPurchaseSuggestionBranchChoice');
 		$pickupLocations = [];
-		$locations = new Location();
-		$locations->orderBy('displayName');
-		$locations->whereAdd('validHoldPickupBranch != 2');
-		$locations->find();
-		while ($locations->fetch()) {
-			$pickupLocations[$locations->code] = $locations->displayName;
+		if ($allowPurchaseSuggestionBranchChoice == 1){
+			$locations = new Location();
+			$locations->orderBy('displayName');
+			$locations->whereAdd('validHoldPickupBranch != 2');
+			$locations->find();
+			while ($locations->fetch()) {
+				$pickupLocations[$locations->code] = $locations->displayName;
+			}
+		}else{
+			$userLocation = $user->getHomeLocation();
+			$pickupLocations[$userLocation->code] = $userLocation->displayName;
 		}
+
 		$interface->assign('pickupLocations', $pickupLocations);
 
 		$fields = [
@@ -2274,6 +2336,11 @@ class Koha extends AbstractIlsDriver
 		global $interface;
 		$patronUpdateFields[] = array('property' => 'updateScope', 'type' => 'hidden', 'label' => 'Update Scope', 'description' => '', 'default' => 'contact');
 		$patronUpdateFields[] = array('property' => 'patronId', 'type' => 'hidden', 'label' => 'Active Patron', 'description' => '', 'default' => $user->id);
+		//These need to be part of the object, not just defaults because we can't combine default settings with a provided object.
+		/** @noinspection PhpUndefinedFieldInspection */
+		$user->updateScope = 'contact';
+		/** @noinspection PhpUndefinedFieldInspection */
+		$user->patronId = $user->id;
 
 		$library = $user->getHomeLibrary();
 		if (!$library->allowProfileUpdates){
@@ -2293,7 +2360,7 @@ class Koha extends AbstractIlsDriver
 		$interface->assign('structure', $patronUpdateFields);
 		$interface->assign('object', $user);
 		$interface->assign('saveButtonText', 'Update Contact Information');
-		$interface->assign('formLabel', 'Update Contact INformation Form');
+		$interface->assign('formLabel', 'Update Contact Information Form');
 
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
@@ -2374,6 +2441,10 @@ class Koha extends AbstractIlsDriver
 			if (!$newList->find(true)) {
 				$newList->public = $curList['category'] == 2;
 				$newList->insert();
+			}elseif ($newList->deleted == 1){
+				$newList->removeAllListEntries(true);
+				$newList->deleted = 0;
+				$newList->update();
 			}
 
 			$currentListTitles = $newList->getListTitles();
@@ -2394,7 +2465,7 @@ class Koha extends AbstractIlsDriver
 						//Check to see if this title is already on the list.
 						$resourceOnList = false;
 						foreach ($currentListTitles as $currentTitle) {
-							if ($currentTitle->groupedWorkPermanentId == $groupedWork->permanent_id) {
+							if ($currentTitle->source == 'GroupedWork' && $currentTitle->sourceId == $groupedWork->permanent_id) {
 								$resourceOnList = true;
 								break;
 							}
@@ -2408,6 +2479,7 @@ class Koha extends AbstractIlsDriver
 							$listEntry->notes = '';
 							$listEntry->dateAdded = time();
 							$listEntry->insert();
+							$currentListTitles[] = $listEntry;
 						}
 					} else {
 						if (!isset($results['errors'])) {

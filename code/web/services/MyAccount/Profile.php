@@ -39,19 +39,21 @@ class MyAccount_Profile extends MyAccount
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
 			if ($patronHomeLibrary == null){
-				$canUpdateContactInfo = true;
-				$canUpdateAddress = true;
+				$canUpdateContactInfo = false;
+				$canUpdateAddress = false;
+				$canUpdatePhoneNumber = false;
 				$showWorkPhoneInProfile = false;
-				$showNoticeTypeInProfile = true;
+				$showNoticeTypeInProfile = false;
 				$showPickupLocationInProfile = false;
 				$treatPrintNoticesAsPhoneNotices = false;
 				$allowPinReset = false;
-				$showAlternateLibraryOptionsInProfile = true;
+				$showAlternateLibraryOptionsInProfile = false;
 				$allowAccountLinking = true;
 				$passwordLabel = 'Library Card Number';
 			}else{
 				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$canUpdateAddress = ($patronHomeLibrary->allowPatronAddressUpdates == 1);
+				$canUpdatePhoneNumber = ($patronHomeLibrary->allowPatronPhoneNumberUpdates == 1);
 				$showWorkPhoneInProfile = ($patronHomeLibrary->showWorkPhoneInProfile == 1);
 				$showNoticeTypeInProfile = ($patronHomeLibrary->showNoticeTypeInProfile == 1);
 				$treatPrintNoticesAsPhoneNotices = ($patronHomeLibrary->treatPrintNoticesAsPhoneNotices == 1);
@@ -67,8 +69,8 @@ class MyAccount_Profile extends MyAccount
 			}
 
 			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
-			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('canUpdateAddress', $canUpdateAddress);
+			$interface->assign('canUpdatePhoneNumber', $canUpdatePhoneNumber);
 			$interface->assign('showWorkPhoneInProfile', $showWorkPhoneInProfile);
 			$interface->assign('showPickupLocationInProfile', $showPickupLocationInProfile);
 			$interface->assign('showNoticeTypeInProfile', $showNoticeTypeInProfile);

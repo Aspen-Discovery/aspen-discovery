@@ -5,6 +5,7 @@ if (file_exists('bootstrap_aspen.php')) {
 }
 
 global $aspenUsage;
+global $usageByIPAddress;
 
 global $timer;
 global $memoryWatcher;
@@ -468,6 +469,9 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	if (isset($_REQUEST['searchSource'])) {
 		$activeSearchSource = $_REQUEST['searchSource'];
 	}
+	if (!array_key_exists($activeSearchSource, $validSearchSources)){
+		$activeSearchSource = array_key_first($validSearchSources);
+	}
 	$activeSearchObject = SearchSources::getSearcherForSource($activeSearchSource);
 	$searchIndexes = SearchSources::getSearchIndexesForSource($activeSearchObject, $activeSearchSource);
 	$interface->assign('searchIndexes', $searchIndexes);
@@ -738,10 +742,16 @@ try{
 	}else{
 		$aspenUsage->insert();
 	}
+
+	if ($usageByIPAddress->id){
+		$usageByIPAddress->update();
+	}else{
+		$usageByIPAddress->insert();
+	}
 }catch(Exception $e){
 	//Table not created yet, ignore
 	global $logger;
-	$logger->log("Exception updating aspen usage/slow pages: " . $e, Logger::LOG_DEBUG);
+	$logger->log("Exception updating aspen usage/slow pages/usage by IP: " . $e, Logger::LOG_DEBUG);
 }
 
 function processFollowup(){

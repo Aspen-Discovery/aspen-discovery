@@ -264,8 +264,6 @@ class OverDriveProcessor {
 								itemInfo.setDateAdded(dateAdded);
 							}
 
-							overDriveRecord.addItem(itemInfo);
-
 							long libraryId = availabilityRS.getLong("libraryId");
 							boolean available = availabilityRS.getBoolean("available");
 
@@ -287,6 +285,13 @@ class OverDriveProcessor {
 							} else {
 								itemInfo.setDetailedStatus("Checked Out");
 							}
+
+							if (copiesOwned == 0 && libraryId != -1){
+								//Don't add advantage info if the library does not own additional copies (or have additional copies shared with it)
+								continue;
+							}
+
+							overDriveRecord.addItem(itemInfo);
 
 							boolean isAdult = targetAudience.equals("Adult");
 							boolean isTeen = targetAudience.equals("Young Adult");

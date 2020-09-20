@@ -49,7 +49,7 @@
 					<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
 						<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="AspenDiscovery.Searches.loadSearchTypes();" class="searchSourceHorizontal form-control" aria-label="Collection to Search">
 							{foreach from=$searchSources item=searchOption key=searchKey}
-								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description}"
+								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description}" data-advanced_search="{$searchOption.hasAdvancedSearch}"
 										{if $searchKey == $searchSource} selected="selected"{/if}
 										{if $searchKey == $defaultSearchIndex} id="default_search_type"{/if}
 										>
@@ -75,13 +75,13 @@
 				<div id="horizontal-search-additional" class="col-tn-5 col-xs-5 col-sm-12 col-md-8">
 					{* Return to Advanced Search Link *}
 					{if !empty($searchType) && $searchType == 'advanced'}
-						<a id="advancedSearchLink" href="/Search/Advanced" class="btn btn-default">
+						<a id="advancedSearchLink" href="/Search/Advanced" class="btn btn-default" {if !$searchSources.$searchSource.hasAdvancedSearch}style="display: none"{/if}>
 							{translate text='Edit Advanced Search'}
 						</a>
 
 					{* Show Advanced Search Link *}
 					{elseif $showAdvancedSearchbox}
-						<a id="advancedSearchLink" href="/Search/Advanced"  class="btn btn-default">
+						<a id="advancedSearchLink" href="/Search/Advanced"  class="btn btn-default" {if !$searchSources.$searchSource.hasAdvancedSearch}style="display: none"{/if}>
 							{translate text='Advanced Search'}
 						</a>
 					{/if}

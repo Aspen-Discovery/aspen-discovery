@@ -89,7 +89,7 @@ class MyAccount_Login extends Action
 
 		$interface->assign('isLoginPage', true);
 
-		$this->display('../MyAccount/login.tpl', 'Login');
+		$this->display('../MyAccount/login.tpl', 'Login', '');
 	}
 
 	function getBreadcrumbs()

@@ -1,5 +1,6 @@
 {assign var=propName value=$property.property}
 {if $property.type != 'section'}
+	{* Note, you cannot combine both a provided object with loading from property defaults. *}
 	{if !empty($object)}
 		{assign var=propValue value=$object->$propName}
 		{assign var=objectId value=$object->getPrimaryKeyValue()}

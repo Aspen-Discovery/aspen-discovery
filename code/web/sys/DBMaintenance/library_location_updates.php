@@ -2248,7 +2248,17 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				"ALTER TABLE library ADD COLUMN availableHoldDelay INT DEFAULT 0"
 			]
-		]
+		],
+
+		'library_add_can_update_phone_number' => array(
+			'title' => 'Library Add Can Update Phone Number',
+			'description' => 'Allow control over if a library can update their phone number',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE library ADD allowPatronPhoneNumberUpdates TINYINT(1) DEFAULT 1",
+				"UPDATE library set allowPatronPhoneNumberUpdates = allowPatronAddressUpdates"
+			),
+		),
 	);
 }
 

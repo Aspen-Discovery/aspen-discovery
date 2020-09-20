@@ -21,7 +21,6 @@ public class RecordGroupingProcessor {
 	private PreparedStatement groupedWorkForIdentifierStmt;
 	private PreparedStatement updateDateUpdatedForGroupedWorkStmt;
 	private PreparedStatement addPrimaryIdentifierForWorkStmt;
-	private PreparedStatement removePrimaryIdentifiersForWorkStmt;
 
 	private PreparedStatement getWorkForPrimaryIdentifierStmt;
 	private PreparedStatement getAdditionalPrimaryIdentifierForWorkStmt;
@@ -47,8 +46,8 @@ public class RecordGroupingProcessor {
 
 	//A list of grouped works that have been manually merged.
 	//private HashMap<String, String> mergedGroupedWorks = new HashMap<>();
-	private HashSet<String> recordsToNotGroup = new HashSet<>();
-	private Long updateTime = new Date().getTime() / 1000;
+	private final HashSet<String> recordsToNotGroup = new HashSet<>();
+	private final Long updateTime = new Date().getTime() / 1000;
 
 	/**
 	 * Creates a record grouping processor that saves results to the database.  For use from external extractors
@@ -66,6 +65,44 @@ public class RecordGroupingProcessor {
 		loadTranslationMaps(serverName);
 
 		loadAuthorities(dbConnection);
+	}
+
+	public void close(){
+		translationMaps.clear();
+		recordsToNotGroup.clear();
+		updatedAndInsertedWorksThisRun.clear();
+		formatsWarned.clear();
+		formatsToFormatCategory.clear();
+		try {
+			insertGroupedWorkStmt.close();
+			updateDateUpdatedForGroupedWorkStmt.close();
+			addPrimaryIdentifierForWorkStmt.close();
+			groupedWorkForIdentifierStmt.close();
+
+			getWorkForPrimaryIdentifierStmt.close();
+			deletePrimaryIdentifierStmt.close();
+			getAdditionalPrimaryIdentifierForWorkStmt.close();
+			getPermanentIdByWorkIdStmt.close();
+
+			getAuthorAuthorityStmt.close();
+			getTitleAuthorityStmt.close();
+
+			getGroupedWorkIdByPermanentIdStmt.close();
+
+			updateRatingsStmt.close();
+			updateReadingHistoryStmt.close();
+			updateNotInterestedStmt.close();
+			updateUserListEntriesStmt.close();
+			updateNovelistStmt.close();
+			updateDisplayInfoStmt.close();
+
+			markWorkAsNeedingReindexStmt.close();
+
+			getWorkByAlternateTitleAuthorStmt.close();
+
+		} catch (Exception e) {
+			logEntry.incErrors("Error closing prepared statements in record grouping processor", e);
+		}
 	}
 
 	/**
@@ -132,7 +169,6 @@ public class RecordGroupingProcessor {
 			insertGroupedWorkStmt = dbConnection.prepareStatement("INSERT INTO grouped_work (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
 			updateDateUpdatedForGroupedWorkStmt = dbConnection.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
 			addPrimaryIdentifierForWorkStmt = dbConnection.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
-			removePrimaryIdentifiersForWorkStmt = dbConnection.prepareStatement("DELETE FROM grouped_work_primary_identifiers where grouped_work_id = ?");
 			groupedWorkForIdentifierStmt = dbConnection.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work inner join grouped_work_primary_identifiers on grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			getWorkForPrimaryIdentifierStmt = dbConnection.prepareStatement("SELECT grouped_work_primary_identifiers.id, grouped_work_primary_identifiers.grouped_work_id, permanent_id from grouped_work_primary_identifiers inner join grouped_work on grouped_work_id = grouped_work.id where type = ? and identifier = ?");
@@ -166,6 +202,7 @@ public class RecordGroupingProcessor {
 				recordsToNotGroup.add(identifier.toLowerCase());
 			}
 			nonGroupedRecordsRS.close();
+			recordsToNotGroupStmt.close();
 
 			getWorkByAlternateTitleAuthorStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work_alternate_titles where alternateTitle = ? and alternateAuthor = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
@@ -366,42 +403,7 @@ public class RecordGroupingProcessor {
 		}
 	}
 
-//	private String handleMergedWork(GroupedWorkBase groupedWork, String groupedWorkPermanentId) {
-//		//Handle the merge
-//		String originalGroupedWorkPermanentId = groupedWorkPermanentId;
-//		//Override the work id
-//		groupedWorkPermanentId = mergedGroupedWorks.get(groupedWorkPermanentId);
-//		groupedWork.overridePermanentId(groupedWorkPermanentId);
-//
-//		logger.debug("Overriding grouped work " + originalGroupedWorkPermanentId + " with " + groupedWorkPermanentId);
-//
-//		//Mark that the original was updated
-//		try {
-//			getGroupedWorkIdByPermanentIdStmt.setString(1, groupedWorkPermanentId);
-//			ResultSet existingIdRS = getGroupedWorkIdByPermanentIdStmt.executeQuery();
-//
-//			if (existingIdRS.next()) {
-//				//There is an existing grouped record
-//				long originalGroupedWorkId = existingIdRS.getLong("id");
-//
-//				//Make sure we mark the original work as updated so it can be removed from the index next time around
-//				markWorkAsNeedingReindexStmt.setString(1, originalGroupedWorkPermanentId);
-//				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 120); //Give it a buffer to make sure it indexes again
-//				markWorkAsNeedingReindexStmt.executeUpdate();
-//
-//				//move enrichment from the old id to the new if the new old no longer has any records
-//				moveGroupedWorkEnrichment(originalGroupedWorkPermanentId, groupedWorkPermanentId, "handling merged work");
-//
-//				removePrimaryIdentifiersForWorkStmt.setLong(1, originalGroupedWorkId);
-//				removePrimaryIdentifiersForWorkStmt.executeUpdate();
-//			}
-//		} catch (SQLException e) {
-//			logEntry.incErrors("Error removing primary identifiers for merged work " + originalGroupedWorkPermanentId, e);
-//		}
-//		return groupedWorkPermanentId;
-//	}
-
-	private HashSet<Long> updatedAndInsertedWorksThisRun = new HashSet<>();
+	private final HashSet<Long> updatedAndInsertedWorksThisRun = new HashSet<>();
 
 	private void markWorkUpdated(long groupedWorkId) {
 		//Optimize to not continually mark the same works as updated
@@ -473,7 +475,7 @@ public class RecordGroupingProcessor {
 	}
 
 
-	private static HashSet<String> formatsWarned = new HashSet<>();
+	private static final HashSet<String> formatsWarned = new HashSet<>();
 	static HashMap<String, String> formatsToFormatCategory = new HashMap<>();
 
 	static {
@@ -632,7 +634,7 @@ public class RecordGroupingProcessor {
 		return translationMap;
 	}
 
-	private HashSet<String> unableToTranslateWarnings = new HashSet<>();
+	private final HashSet<String> unableToTranslateWarnings = new HashSet<>();
 
 	String translateValue(@SuppressWarnings("SameParameterValue") String mapName, String value) {
 		value = value.toLowerCase();

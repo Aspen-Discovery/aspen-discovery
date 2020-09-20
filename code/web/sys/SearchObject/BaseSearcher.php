@@ -860,11 +860,13 @@ abstract class SearchObject_BaseSearcher
 			if (is_array($_REQUEST['limiters'])) {
 				foreach ($_REQUEST['limiters'] as $limiter) {
 					if (!is_array($limiter)) {
-						$this->limiters[strip_tags($limiter)] = true;
+						list($limiterName, $limiterValue) = explode(':', strip_tags($limiter));
+						$this->limiters[$limiterName] = $limiterValue;
 					}
 				}
 			} else {
-				$this->limiters[strip_tags($_REQUEST['limiters'])] = true;
+				list($limiterName, $limiterValue) = explode(':', strip_tags($_REQUEST['limiters']));
+				$this->limiters[$limiterName] = $limiterValue;
 			}
 		}
 	}
@@ -940,7 +942,7 @@ abstract class SearchObject_BaseSearcher
 
 		if (!empty($this->limiters)){
 			foreach ($this->limiters as $limit => $value){
-				$params[] = "limiters[]=$limit";
+				$params[] = "limiters[]=$limit%3A$value";
 			}
 		}
 
@@ -1128,7 +1130,7 @@ abstract class SearchObject_BaseSearcher
 		$oldLimiters = $this->limiters;
 		$oldPage = $this->page;
 		// Add the new limit
-		$this->limiters[$newLimit] = true;
+		$this->limiters[$newLimit] = 'y';
 		// Remove page number
 		$this->page = 1;
 		// Get the new url
@@ -1154,7 +1156,8 @@ abstract class SearchObject_BaseSearcher
 		$oldLimiters = $this->limiters;
 		$oldPage = $this->page;
 		// Add the new limit
-		unset($this->limiters[$newLimit]);
+		$this->limiters[$newLimit] = 'n';
+
 		// Remove page number
 		$this->page = 1;
 		// Get the new url

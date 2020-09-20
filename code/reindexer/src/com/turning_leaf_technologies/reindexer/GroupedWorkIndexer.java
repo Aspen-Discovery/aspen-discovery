@@ -266,6 +266,29 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	public void close(){
+		updateServer = null;
+		ilsRecordProcessors.clear();
+		sideLoadProcessors.clear();
+		overDriveProcessor = null;
+		rbdigitalProcessor = null;
+		rbdigitalMagazineProcessor = null;
+		cloudLibraryProcessor = null;
+		axis360Processor = null;
+		hooplaProcessor = null;
+		translationMaps.clear();
+		lexileInformation.clear();
+		scopes.clear();
+		try {
+			getRatingStmt.close();
+			getNovelistStmt.close();
+			getDisplayInfoStmt.close();
+			getGroupedWorkPrimaryIdentifiers.close();
+		} catch (Exception e) {
+			logEntry.incErrors("Error closing prepared statements in grouped work indexer", e);
+		}
+	}
+
 	private void setupIndexingStats() {
 		ArrayList<String> recordProcessorNames = new ArrayList<>(ilsRecordProcessors.keySet());
 		recordProcessorNames.add("overdrive");
@@ -456,7 +479,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	Long processGroupedWorks() {
+	void processGroupedWorks() {
 		long numWorksProcessed = 0L;
 		try {
 			PreparedStatement getAllGroupedWorks;
@@ -518,7 +541,6 @@ public class GroupedWorkIndexer {
 			logEntry.incErrors("Unexpected SQL error", e);
 		}
 		logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
-		return numWorksProcessed;
 	}
 
 	public void processGroupedWork(String permanentId) {

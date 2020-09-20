@@ -105,7 +105,7 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number'}</label></div>
 								<div class="col-xs-8">
-									{if $edit && $canUpdateContactInfo && ($ils != 'Horizon')}
+									{if $edit && $canUpdateContactInfo && $canUpdatePhoneNumber && ($ils != 'Horizon')}
 										<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
 									{else}
 										{$profile->phone|escape}
@@ -115,7 +115,7 @@
 							{if $showWorkPhoneInProfile}
 								<div class="form-group">
 									<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number'}</label></div>
-									<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
+									<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $canUpdatePhoneNumber && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
 								</div>
 							{/if}
 						{/if}
@@ -159,12 +159,12 @@
 									{if $edit == true && $canUpdateContactInfo == true}
 										<div class="btn-group btn-group-sm" data-toggle="buttons">
 											{if $treatPrintNoticesAsPhoneNotices}
-													{* Tell the User the notice is Phone even though in the ILS it will be print *}
-													{* MDN 2/24/2016 - If the user changes their notice preference, make it phone to be more accurate, but show as selected if either print or mail is shown *}
-													<label for="sendEmail" class="btn btn-sm btn-default {if $profile->_notices == 'a'}active{/if}"><input type="radio" value="p" id="sendEmail" name="notices" {if $profile->_notices == 'a' || $profile->_notices == 'p'}checked="checked"{/if}> {translate text="Telephone"}</label>
+												{* Tell the User the notice is Phone even though in the ILS it will be print *}
+												{* MDN 2/24/2016 - If the user changes their notice preference, make it phone to be more accurate, but show as selected if either print or mail is shown *}
+												<label for="sendEmail" class="btn btn-sm btn-default {if $profile->_notices == 'a'}active{/if}"><input type="radio" value="p" id="sendEmail" name="notices" {if $profile->_notices == 'a' || $profile->_notices == 'p'}checked="checked"{/if}> {translate text="Telephone"}</label>
 											{else}
-													<label for="noticesMail" class="btn btn-sm btn-default {if $profile->_notices == 'a'}active{/if}"><input type="radio" value="a" id="noticesMail" name="notices" {if $profile->_notices == 'a'}checked="checked"{/if}> {translate text="Postal Mail"}</label>
-													<label for="noticesTel" class="btn btn-sm btn-default {if $profile->_notices == 'p'}active{/if}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->_notices == 'p'}checked="checked"{/if}> {translate text="Telephone"}</label>
+												<label for="noticesMail" class="btn btn-sm btn-default {if $profile->_notices == 'a'}active{/if}"><input type="radio" value="a" id="noticesMail" name="notices" {if $profile->_notices == 'a'}checked="checked"{/if}> {translate text="Postal Mail"}</label>
+												<label for="noticesTel" class="btn btn-sm btn-default {if $profile->_notices == 'p'}active{/if}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->_notices == 'p'}checked="checked"{/if}> {translate text="Telephone"}</label>
 											{/if}
 											<label for="noticesEmail" class="btn btn-sm btn-default {if $profile->_notices == 'z'}active{/if}"><input type="radio" value="z" id="noticesEmail" name="notices" {if $profile->_notices == 'z'}checked="checked"{/if}> {translate text="Email"}</label>
 										</div>
