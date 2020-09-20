@@ -1186,6 +1186,9 @@ class SirsiDynixROA extends HorizonAPI
 						foreach ($createHoldResponse->messageList as $error){
 							$errorMessage .= $error->message.'; ';
 						}
+						if (IPAddress::showDebuggingInformation()){
+							$hold_result['message'] .= "<br>\r\n" . print_r($holdData);
+						}
 						$logger->log($errorMessage, Logger::LOG_ERROR);
 					}
 				} else {
