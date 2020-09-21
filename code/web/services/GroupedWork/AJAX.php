@@ -1124,7 +1124,6 @@ class GroupedWork_AJAX extends JSON_Action
 						$groupedWorkAlternateTitle->addedBy = UserAccount::getActiveUserId();
 						$groupedWorkAlternateTitle->dateAdded = time();
 						$groupedWorkAlternateTitle->insert();
-						$workToGroupWith->forceReindex(true);
 						$originalGroupedWork->forceReindex(true);
 						$results['success'] = true;
 						$results['message'] = "Your works have been grouped successfully, the index will update shortly.";
@@ -1235,14 +1234,7 @@ class GroupedWork_AJAX extends JSON_Action
 			$alternateTitle = new GroupedWorkAlternateTitle();
 			$alternateTitle->id = $id;
 			if ($alternateTitle->find(true)){
-				$permanentId = $alternateTitle->permanent_id;
 				$alternateTitle->delete();
-				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-				$groupedWork = new GroupedWork();
-				$groupedWork->permanent_id = $permanentId;
-				if ($groupedWork->find(true)){
-					$groupedWork->forceReindex(true);
-				}
 				$result = [
 					'success' => true,
 					'message' => "Successfully deleted the alternate title"
