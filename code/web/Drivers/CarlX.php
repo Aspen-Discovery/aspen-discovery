@@ -1586,7 +1586,10 @@ class CarlX extends SIP2Driver{
 	}
 
 	public function placeHoldViaSIP($patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null){
-		global $configArray;
+		if (strpos($holdId, $this->accountProfile->name . ':') === 0){
+			$holdId = str_replace($this->accountProfile->name . ':', '', $holdId);
+		}
+
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
