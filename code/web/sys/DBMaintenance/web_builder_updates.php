@@ -332,9 +332,57 @@ function getWebBuilderUpdates(){
 					INDEX (formId, libraryId)
 				) ENGINE INNODB'
 			]
-		]
+		],
 
-		//TODO: Add roles
+		'web_builder_roles' => [
+			'title' => 'Web Builder Roles and Permissions',
+			'description' => 'Setup roles and permissions for the Web Builder',
+			'sql' => [
+				"INSERT INTO roles (name, description) VALUES 
+					('Web Admin', 'Allows the user to administer web content for all libraries'),
+					('Library Web Admin', 'Allows the user to administer web content for their library')
+					",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Web Builder', 'Administer All Menus', 'Web Builder', 0, 'Allows the user to define the menu for all libraries.'),
+					('Web Builder', 'Administer Library Menus', 'Web Builder', 1, 'Allows the user to define the menu for their home library.'),
+					('Web Builder', 'Administer All Basic Pages', 'Web Builder', 10, 'Allows the user to define basic pages for all libraries.'),
+					('Web Builder', 'Administer Library Basic Pages', 'Web Builder', 11, 'Allows the user to define basic pages for their home library.'),
+					('Web Builder', 'Administer All Custom Pages', 'Web Builder', 20, 'Allows the user to define custom pages for all libraries.'),
+					('Web Builder', 'Administer Library Custom Pages', 'Web Builder', 21, 'Allows the user to define custom pages for their home library.'),
+					('Web Builder', 'Administer All Custom Forms', 'Web Builder', 30, 'Allows the user to define custom forms for all libraries.'),
+					('Web Builder', 'Administer Library Custom Forms', 'Web Builder', 31, 'Allows the user to define custom forms for their home library.'),
+					('Web Builder', 'Administer All Web Resources', 'Web Builder', 40, 'Allows the user to add web resources for all libraries.'),
+					('Web Builder', 'Administer Library Web Resources', 'Web Builder', 41, 'Allows the user to add web resources for their home library.'),
+					('Web Builder', 'Administer All Staff Members', 'Web Builder', 50, 'Allows the user to add staff members for all libraries.'),
+					('Web Builder', 'Administer Library Staff Members', 'Web Builder', 51, 'Allows the user to add staff members for their home library.'),
+					('Web Builder', 'Administer All Web Content', 'Web Builder', 60, 'Allows the user to add images, pdfs, and videos.'),
+					('Web Builder', 'Administer All Web Categories', 'Web Builder', 70, 'Allows the user to define audiences and categories for content.')
+					",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Menus'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Basic Pages'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Custom Pages'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Custom Forms'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Web Resources'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Staff Members'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Web Content'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Web Categories'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Web Admin'), (SELECT id from permissions where name='Administer All Menus'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Web Admin'), (SELECT id from permissions where name='Administer All Basic Pages'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Web Admin'), (SELECT id from permissions where name='Administer All Custom Pages'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Web Admin'), (SELECT id from permissions where name='Administer All Custom Forms'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Web Admin'), (SELECT id from permissions where name='Administer All Web Resources'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Web Admin'), (SELECT id from permissions where name='Administer All Staff Members'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Web Admin'), (SELECT id from permissions where name='Administer All Web Content'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Web Admin'), (SELECT id from permissions where name='Administer All Web Categories'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer Library Menus'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer Library Basic Pages'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer Library Custom Pages'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer Library Custom Forms'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer Library Web Resources'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer Library Staff Members'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer All Web Content'))",
+			]
+		]
 
 	];
 }

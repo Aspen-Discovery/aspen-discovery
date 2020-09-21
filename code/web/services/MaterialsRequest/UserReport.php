@@ -161,10 +161,6 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 
 	}
 
-	function getAllowableRoles(){
-		return array('library_material_requests');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

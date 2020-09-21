@@ -470,10 +470,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		exit;
 	}
 
-	function getAllowableRoles(){
-		return array('library_material_requests');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

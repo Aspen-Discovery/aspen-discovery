@@ -66,9 +66,9 @@
 				{include file="Search/horizontal-searchbox.tpl"}
 			</div>
 
-			{if !empty($webMenu)}
-				{include file="webmenu.tpl"}
-			{/if}
+{*			{if !empty($webMenu)}*}
+{*				{include file="webmenu.tpl"}*}
+{*			{/if}*}
 		</div>
 
 		<div id="content-container">

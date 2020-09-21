@@ -51,21 +51,6 @@ class WebBuilder_Audiences extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'web_builder_admin', 'web_builder_creator');
-	}
-
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];
@@ -74,5 +59,24 @@ class WebBuilder_Audiences extends ObjectEditor
 	function getInstructions()
 	{
 		return '';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');
+		$breadcrumbs[] = new Breadcrumb('/WebBuilder/Audiences', 'Audiences');
+		return $breadcrumbs;
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Web Categories']);
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_builder';
 	}
 }

@@ -34,9 +34,6 @@ class Obituaries extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'obituaryId';
 	}
-	function getAllowableRoles(){
-		return array('genealogyContributor');
-	}
 	function getRedirectLocation($objectAction, $curObject){
 		if ($curObject instanceof Obituary) {
 			return '/Person/' . $curObject->personId;

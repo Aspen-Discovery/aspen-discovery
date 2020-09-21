@@ -35,9 +35,6 @@ class Admin_People extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'personId';
 	}
-	function getAllowableRoles(){
-		return array('genealogyContributor');
-	}
 	function getRedirectLocation($objectAction, $curObject){
 		if ($objectAction == 'delete'){
 			return '/Union/Search?searchSource=genealogy&lookfor=&searchIndex=GenealogyName&submit=Find';

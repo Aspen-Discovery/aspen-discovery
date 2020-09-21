@@ -54,21 +54,6 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'web_builder_admin', 'web_builder_creator');
-	}
-
-	function canAddNew()
-	{
-		return false;
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin');
-	}
-
 	function canEdit(){
 		return false;
 	}

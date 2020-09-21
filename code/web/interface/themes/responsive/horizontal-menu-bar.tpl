@@ -8,6 +8,23 @@
 	<a href="/" id="homeLink" class="menu-icon menu-bar-option menu-left" title="{translate text='Browse the catalog'}" aria-label="{translate text='Browse the catalog'}">
 		<i class="fas {if empty($homeLink)}fa-home{else}fa-th{/if} fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs"></span>
 	</a>
+	{foreach from=$webMenu item=menu}
+		{assign var="childItems" value=$menu->getChildMenuItems()}
+		{if count($childItems) == 0}
+			{if $menu->url}<a href="{$menu->url}" class="menu-icon menu-bar-option menu-left visible-inline-block-lg">{/if}
+				<span class="menu-bar-label">{$menu->label}</span>
+			{if $menu->url}</a>{/if}
+		{else}
+			<a id="menu{$menu->id}Trigger" href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="menu-icon menu-bar-option menu-left visible-inline-block-lg" onclick="AspenDiscovery.toggleMenu('{$menu->id}')">
+				<span class="menu-bar-label">{$menu->label}</span>
+			</a>
+			<ul class="dropdown-menu" id="menu{$menu->id}">
+				{foreach from=$childItems item=childItem}
+					<li>{if $childItem->url}<a href="{$childItem->url}">{/if}{$childItem->label}{if $childItem->url}</a>{/if}</li>
+				{/foreach}
+			</ul>
+		{/if}
+	{/foreach}
 	<a onclick="AspenDiscovery.closeMenu();AspenDiscovery.closeAccountMenu();$('#horizontal-search-box').slideToggle('slow');return false;" class="menu-icon menu-bar-option menu-left hidden-inline-md hidden-inline-lg" title="{translate text="Search"}" aria-label="{translate text="Search"}">
 		<i class="fas fa-search fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs">{translate text="Search"}</span>
 	</a>

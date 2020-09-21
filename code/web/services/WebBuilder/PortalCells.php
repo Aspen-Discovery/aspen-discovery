@@ -50,21 +50,6 @@ class WebBuilder_PortalCells extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'web_builder_admin', 'web_builder_creator');
-	}
-
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];

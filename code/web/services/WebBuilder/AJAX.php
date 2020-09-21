@@ -37,7 +37,7 @@ class WebBuilder_AJAX extends JSON_Action
 			$list['-1'] = 'Select a spotlight';
 
 			$collectionSpotlight = new CollectionSpotlight();
-			if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+			if (!UserAccount::userHasPermission('Administer All Custom Pages')){
 				$homeLibrary = Library::getPatronHomeLibrary();
 				$collectionSpotlight->whereAdd('libraryId = ' . $homeLibrary->libraryId . ' OR libraryId = -1');
 			}
@@ -129,7 +129,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error uploading image'
 		];
 		if (UserAccount::isLoggedIn()){
-			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')){
+			if (UserAccount::userHasPermission('Administer All Web Resources')){
 				if (! empty($_FILES)) {
 					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 					$structure = ImageUpload::getObjectStructure();
@@ -180,7 +180,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error getting upload form'
 		];
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+			if (UserAccount::userHasPermission('Administer All Web Resources')) {
 				$editorName = strip_tags($_REQUEST['editorName']);
 				$interface->assign('editorName', $editorName);
 				$results = array(
@@ -206,7 +206,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error deleting cell'
 		];
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
 				if (isset($_REQUEST['id'])) {
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
 					$portalCell = new PortalCell();
@@ -237,7 +237,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error deleting row'
 		];
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
 				if (isset($_REQUEST['id'])) {
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 					$portalRow = new PortalRow();
@@ -268,7 +268,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error moving row'
 		];
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
 				if (isset($_REQUEST['rowId'])) {
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
@@ -324,7 +324,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error moving cell'
 		];
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
 				if (isset($_REQUEST['cellId'])) {
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
@@ -380,7 +380,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error adding row'
 		];
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
 				if (isset($_REQUEST['pageId'])) {
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
@@ -419,7 +419,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error adding cell'
 		];
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
 				if (isset($_REQUEST['rowId'])) {
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
@@ -462,7 +462,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error adding cell'
 		];
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin') || UserAccount::userHasRole('web_builder_creator')) {
+			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
 				if (isset($_REQUEST['cellId'])) {
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
 					$portalCell = new PortalCell();

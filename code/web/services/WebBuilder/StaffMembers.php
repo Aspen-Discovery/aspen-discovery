@@ -50,21 +50,6 @@ class WebBuilder_StaffMembers extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'web_builder_admin');
-	}
-
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('web_builder_admin');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];
@@ -73,5 +58,24 @@ class WebBuilder_StaffMembers extends ObjectEditor
 	function getInstructions()
 	{
 		return '';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');
+		$breadcrumbs[] = new Breadcrumb('/WebBuilder/StaffMembers', 'Staff Members');
+		return $breadcrumbs;
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Staff Members', 'Administer Library Staff Members']);
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_builder';
 	}
 }

@@ -535,6 +535,12 @@ var AspenDiscovery = (function(){
 			let accountMenuButton = $('#accountMenuToggleButton > a');
 			accountMenu.slideUp('slow');
 			accountMenuButton.removeClass('selected');
+		},
+		toggleMenu: function(id){
+			this.closeAccountMenu();
+			this.closeMenu();
+			$('.dropdown-menu').slideUp();
+			$('#menu' + id).slideDown();
 		}
 	}
 
