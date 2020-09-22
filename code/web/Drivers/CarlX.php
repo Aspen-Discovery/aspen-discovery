@@ -1586,8 +1586,8 @@ class CarlX extends SIP2Driver{
 	}
 
 	public function placeHoldViaSIP($patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null){
-		if (strpos($holdId, $this->accountProfile->name . ':') === 0){
-			$holdId = str_replace($this->accountProfile->name . ':', '', $holdId);
+		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0){
+			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
 		}
 
 		//Place the hold via SIP 2
