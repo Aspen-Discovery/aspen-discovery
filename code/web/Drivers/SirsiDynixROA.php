@@ -1106,7 +1106,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
-		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->name . ':' . $shortId);
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSources . ':' . $shortId);
 		if (!$record) {
 			$title = null;
 		} else {
