@@ -221,7 +221,7 @@ public class SideLoadingMain {
 						curFile.setDeletedTime(new Date().getTime() / 1000);
 					}
 					//This file has been deleted
-					if (curFile.getDeletedTime() < curFile.getLastIndexed()){
+					if (curFile.getDeletedTime() > curFile.getLastIndexed()){
 						changesMade = true;
 					}
 				}
@@ -251,7 +251,7 @@ public class SideLoadingMain {
 						processSideLoadFile(curFile.getExistingFile(), existingRecords, settings);
 						curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
 					} else if (curFile.getExistingFile() == null) {
-						if (curFile.getDeletedTime() < curFile.getLastIndexed()) {
+						if (curFile.getDeletedTime() > curFile.getLastIndexed()) {
 							curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
 						}
 					}
