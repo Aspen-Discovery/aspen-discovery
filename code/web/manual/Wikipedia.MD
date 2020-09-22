@@ -5,7 +5,7 @@
 
   ![Toggle Wikipedia Author Enrichment](/manual/images/Catalog-Enrichment.png)
 
-- You can edit which Wikipedia article is displayed, or disabled a Wikipedia article for a specific author here: [Enrichment > Author Enrichment](/Admin/AuthorEnrichment) 
+- You can edit which Wikipedia article is displayed, or disabled a Wikipedia article for a specific author here: [Third Party Enrichment  > Wikipedia Integration](/Admin/AuthorEnrichment) 
 
   ![Wikipedia author enrichment](/manual/images/Add-author-enrichment.png)
     - *To edit which Wikipedia article displays for a specific author*, click 'Add New' or 'Edit.' Enter name of the author as it appears in Aspen. Enter the URL of the Wikipedia article you wish to display; e.g.:
