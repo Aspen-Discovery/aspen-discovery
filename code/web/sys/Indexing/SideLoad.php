@@ -106,8 +106,8 @@ class SideLoad extends DataObject
 			]],
 
 			'runFullUpdate' => ['property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0],
-			'lastUpdateOfChangedRecords' => ['property' => 'lastUpdateOfChangedRecords', 'type' => 'integer', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0],
-			'lastUpdateOfAllRecords' => ['property' => 'lastUpdateOfAllRecords', 'type' => 'integer', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when all records were loaded from the API', 'default' => 0],
+			'lastUpdateOfChangedRecords' => ['property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0],
+			'lastUpdateOfAllRecords' => ['property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when all records were loaded from the API', 'default' => 0],
 
 			'scopes' => [
 				'property' => 'scopes',

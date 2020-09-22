@@ -738,6 +738,22 @@ function getIndexingUpdates()
 			]
 		],
 
+		'sideload_files' => [
+			'title' => 'Side Loads track indexed files',
+			'description' => 'Add a table to track which files were have been indexed for a sideload',
+			'sql' => [
+				"CREATE TABLE sideload_files (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					sideLoadId INT(11) NOT NULL,
+					filename VARCHAR(255),
+					lastChanged INT(11) default 0,
+					deletedTime INT(11) default 0,
+					lastIndexed INT(11) default 0,
+					UNIQUE sideloadFile(sideLoadId, filename)
+				) ENGINE INNODB"
+			]
+		],
+
 		'library_location_side_load_scoping' => [
 			'title' => 'Library and Location Scoping of Side Loads',
 			'description' => 'Add tables to determine how side loads are scoped',
