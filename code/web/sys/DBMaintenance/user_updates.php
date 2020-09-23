@@ -551,7 +551,10 @@ function getUserUpdates()
 					('Circulation Reports', 'View Location Student Reports', '', 20, 'Allows the user to view barcode and checkout reports for their home location (CARL.X) only.'),
 					('Circulation Reports', 'View All Student Reports', '', 30, 'Allows the user to view barcode and checkout reports for any location (CARL.X) only.')
 				",
-				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='Administer List Indexing Settings'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View Location Holds Reports'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View All Holds Reports'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View Location Student Reports'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View All Student Reports'))",
 			]
 		],
 	);
