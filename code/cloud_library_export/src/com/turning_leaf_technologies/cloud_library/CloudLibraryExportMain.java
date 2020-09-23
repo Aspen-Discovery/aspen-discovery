@@ -99,12 +99,13 @@ public class CloudLibraryExportMain {
 			//For any records that have been marked to reload, regroup and reindex the records
 			processRecordsToReload(logEntry);
 
+			if (recordGroupingProcessorSingleton != null) {
+				recordGroupingProcessorSingleton.close();
+				recordGroupingProcessorSingleton = null;
+			}
+
 			if (groupedWorkIndexer != null) {
 				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-				if (recordGroupingProcessorSingleton != null) {
-					recordGroupingProcessorSingleton.close();
-					recordGroupingProcessorSingleton = null;
-				}
 				groupedWorkIndexer.close();
 				groupedWorkIndexer = null;
 				existingRecords = null;

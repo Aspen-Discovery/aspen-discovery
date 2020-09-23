@@ -114,12 +114,13 @@ public class RbdigitalExportMain {
 
 				processRecordsToReload(logEntry);
 
+				if (recordGroupingProcessorSingleton != null) {
+					recordGroupingProcessorSingleton.close();
+					recordGroupingProcessorSingleton = null;
+				}
+
 				if (groupedWorkIndexer != null) {
 					groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-					if (recordGroupingProcessorSingleton != null) {
-						recordGroupingProcessorSingleton.close();
-						recordGroupingProcessorSingleton = null;
-					}
 					groupedWorkIndexer.close();
 					groupedWorkIndexer = null;
 					existingRecords = null;

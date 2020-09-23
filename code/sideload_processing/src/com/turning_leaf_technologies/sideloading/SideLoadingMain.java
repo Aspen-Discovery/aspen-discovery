@@ -81,9 +81,9 @@ public class SideLoadingMain {
 
 			//Get a list of side loads
 			try {
-				PreparedStatement getSideloadsStmt = aspenConn.prepareStatement("SELECT * FROM sideloads");
+				PreparedStatement getSideloadsStmt = aspenConn.prepareStatement("SELECT * FROM sideloads ORDER BY name");
 				if (profileToLoad.length() > 0){
-					getSideloadsStmt = aspenConn.prepareStatement("SELECT * FROM sideloads where name = ? OR id = ?");
+					getSideloadsStmt = aspenConn.prepareStatement("SELECT * FROM sideloads where name = ? OR id = ? ORDER BY name");
 					getSideloadsStmt.setString(1, profileToLoad);
 					getSideloadsStmt.setString(2, profileToLoad);
 				}
@@ -102,12 +102,13 @@ public class SideLoadingMain {
 				logger.error("Error loading sideloads to run", e);
 			}
 
+			for (RecordGroupingProcessor recordGroupingProcessor : recordGroupingProcessors.values()){
+				recordGroupingProcessor.close();
+			}
+			recordGroupingProcessors.clear();
+
 			if (groupedWorkIndexer != null) {
 				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-				for (RecordGroupingProcessor recordGroupingProcessor : recordGroupingProcessors.values()){
-					recordGroupingProcessor.close();
-				}
-				recordGroupingProcessors.clear();
 				groupedWorkIndexer.close();
 				groupedWorkIndexer = null;
 			}
@@ -154,10 +155,10 @@ public class SideLoadingMain {
 					}
 				}
 			}else {
-				//Pause 30 minutes before running the next export
+				//Pause 5 minutes before running the next export
 				try {
 					System.gc();
-					Thread.sleep(1000 * 60 * 30);
+					Thread.sleep(1000 * 60 * 5);
 				} catch (InterruptedException e) {
 					logger.info("Thread was interrupted");
 				}
@@ -243,30 +244,29 @@ public class SideLoadingMain {
 				}catch (Exception e){
 					logEntry.incErrors("Error loading existing records for " + settings.getName(), e);
 				}
-			}
 
-			for (SideLoadFile curFile : filesToProcess){
-				try {
-					if (curFile.isNeedsReindex()) {
-						processSideLoadFile(curFile.getExistingFile(), existingRecords, settings);
-						curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
-					} else if (curFile.getExistingFile() == null) {
-						if (curFile.getDeletedTime() > curFile.getLastIndexed()) {
+				RecordGroupingProcessor recordGrouper = getRecordGroupingProcessor(settings);
+
+				for (SideLoadFile curFile : filesToProcess){
+					try {
+						if (curFile.isNeedsReindex()) {
+							processSideLoadFile(curFile.getExistingFile(), existingRecords, settings);
 							curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
+						} else if (curFile.getExistingFile() == null) {
+							if (curFile.getDeletedTime() > curFile.getLastIndexed()) {
+								curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
+							}
 						}
+					}catch (SQLException sqlE){
+						logEntry.incErrors("Error processing sideload file", sqlE);
 					}
-				}catch (SQLException sqlE){
-					logEntry.incErrors("Error processing sideload file", sqlE);
 				}
-			}
 
-			//Remove any records that no longer exist
-			if (settings.isRunFullUpdate() || changesMade) {
+				//Remove any records that no longer exist
 				try {
 					PreparedStatement deleteFromIlsMarcChecksums = aspenConn.prepareStatement("DELETE FROM ils_marc_checksums where source = ? and ilsId = ?");
 					for (String existingIdentifier : existingRecords) {
 						//Delete from ils_marc_checksums
-						SideLoadedRecordGrouper recordGrouper = getRecordGroupingProcessor(settings);
 						RemoveRecordFromWorkResult result = recordGrouper.removeRecordFromGroupedWork(settings.getName(), existingIdentifier);
 						if (result.reindexWork) {
 							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
@@ -398,7 +398,7 @@ public class SideLoadingMain {
 		} catch (FileNotFoundException e) {
 			logEntry.incErrors("Could not find file " + fileToProcess.getAbsolutePath());
 		} catch (Exception e){
-			logEntry.incErrors("Error reading MARC file " + fileToProcess, e);
+			logEntry.incErrors("Error processing side load file " + fileToProcess, e);
 		}
 	}
 
