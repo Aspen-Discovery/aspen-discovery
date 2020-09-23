@@ -261,7 +261,7 @@ public class SideLoadingMain {
 			}
 
 			//Remove any records that no longer exist
-			if (settings.isRunFullUpdate()) {
+			if (settings.isRunFullUpdate() || changesMade) {
 				try {
 					PreparedStatement deleteFromIlsMarcChecksums = aspenConn.prepareStatement("DELETE FROM ils_marc_checksums where source = ? and ilsId = ?");
 					for (String existingIdentifier : existingRecords) {
