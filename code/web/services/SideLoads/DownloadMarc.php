@@ -29,6 +29,7 @@ class SideLoads_DownloadMarc extends Admin_Admin
 				ob_clean();
 				flush();
 				readfile($fullName);
+				die();
 			}else{
 				$interface->assign('error', 'Could not find the file to download.');
 			}
