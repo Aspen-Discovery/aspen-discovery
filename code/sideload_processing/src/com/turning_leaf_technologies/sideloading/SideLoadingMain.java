@@ -249,10 +249,14 @@ public class SideLoadingMain {
 
 				for (SideLoadFile curFile : filesToProcess){
 					try {
-						if (curFile.isNeedsReindex()) {
+						//When one file changes, we need to make sure that all of them are reprocessed in case a record
+						//exists in File A, but not File B. If we didn't process both, the record would be deleted.
+						//the other issue would be if a record is deleted from File B we would not necessarily know
+						//That it should be removed unless we process both.
+						if (curFile.getExistingFile() != null) {
 							processSideLoadFile(curFile.getExistingFile(), existingRecords, settings);
 							curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
-						} else if (curFile.getExistingFile() == null) {
+						} else {
 							if (curFile.getDeletedTime() > curFile.getLastIndexed()) {
 								curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
 							}
