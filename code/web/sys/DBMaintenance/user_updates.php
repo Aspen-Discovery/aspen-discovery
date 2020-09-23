@@ -544,6 +544,7 @@ function getUserUpdates()
 		'reporting_permissions' => [
 			'title' => 'Reporting permissions',
 			'description' => 'Create permissions for circulation reports and student reports',
+			'continueOnError' => true,
 			'sql' => [
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
 					('Circulation Reports', 'View Location Holds Reports', '', 0, 'Allows the user to view lists of holds to be pulled for their home location (CARL.X) only.'),
