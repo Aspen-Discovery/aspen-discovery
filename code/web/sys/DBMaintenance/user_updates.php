@@ -534,13 +534,26 @@ function getUserUpdates()
 			'title' => 'List indexing permissions',
 			'description' => 'Create permission to administer list indexing',
 			'sql' => [
-
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
 					('User Lists', 'Administer List Indexing Settings', '', 0, 'Allows the user to administer list indexing settings.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer List Indexing Settings'))",
 
 			]
-		]
+		],
+
+		'reporting_permissions' => [
+			'title' => 'Reporting permissions',
+			'description' => 'Create permissions for circulation reports and student reports',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Circulation Reports', 'View Location Holds Reports', '', 0, 'Allows the user to view lists of holds to be pulled for their home location (CARL.X) only.'),
+					('Circulation Reports', 'View All Holds Reports', '', 10, 'Allows the user to view lists of holds to be pulled for any location (CARL.X) only.'),
+					('Circulation Reports', 'View Location Student Reports', '', 20, 'Allows the user to view barcode and checkout reports for their home location (CARL.X) only.'),
+					('Circulation Reports', 'View All Student Reports', '', 30, 'Allows the user to view barcode and checkout reports for any location (CARL.X) only.')
+				",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='Administer List Indexing Settings'))",
+			]
+		],
 	);
 }
 

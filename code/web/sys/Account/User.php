@@ -1990,6 +1990,11 @@ class User extends DataObject
 		$sections['ils_integration']->addAction(new AdminAction('Offline Holds Report', 'View a report of holds that were submitted while the ILS was offline.', '/Circa/OfflineHoldsReport'), 'View Offline Holds Report');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
 
+		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
+		$sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), ['View Location Holds Reports', 'View All Holds Reports']);
+		$sections['circulation_reports']->addAction(new AdminAction('Student Barcodes', 'View/print a report of all barcodes for a class.', '/Report/StudentBarcodes'), ['View Location Student Reports', 'View All Student Reports']);
+		$sections['circulation_reports']->addAction(new AdminAction('Student Checkout Report', 'View a report of all checkouts for a given class with filtering to only show overdue items and lost items.', '/Report/StudentReport'), ['View Location Student Reports', 'View All Student Reports']);
+
 		if (array_key_exists('Axis 360', $enabledModules)) {
 			$sections['axis360'] = new AdminSection('Axis 360');
 			$axis360SettingsAction = new AdminAction('Settings', 'Define connection information between Axis 360 and Aspen Discovery.', '/Axis360/Settings');
