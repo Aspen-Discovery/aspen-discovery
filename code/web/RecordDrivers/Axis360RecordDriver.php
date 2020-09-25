@@ -178,9 +178,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 
 	public function getISBNs()
 	{
-		$isbns = [];
-		$isbns[] = $this->axis360RawMetadata->isbn;
-		return $isbns;
+		return $this->getFieldValue('isbn');
 	}
 
 	public function getISSNs()
@@ -434,5 +432,14 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 			}
 		}
 		return $statusSummary;
+	}
+
+	function getFieldValue($fieldName){
+		foreach ($this->axis360RawMetadata->fields as $field){
+			if ($field->name == $fieldName){
+				return $field->values;
+			}
+		}
+		return "";
 	}
 }

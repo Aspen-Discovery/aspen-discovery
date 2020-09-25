@@ -16,13 +16,11 @@ import org.ini4j.Ini;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.XML;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -98,7 +96,7 @@ public class Axis360ExportMain {
 				createDbLogEntry(startTime, setting.getId(), aspenConn);
 
 				//Get a list of all existing records in the database
-				HashMap<String, Axis360Title> existingRecords = loadExistingTitles(setting);
+				HashMap<String, Axis360Title> existingRecords = loadExistingTitles();
 
 				//Axis360TitleHandler handler = new Axis360TitleHandler(existingRecords, settings, startTimeForLogging, aspenConn, getRecordGroupingProcessor(), getGroupedWorkIndexer(), logEntry, logger);
 
@@ -106,7 +104,9 @@ public class Axis360ExportMain {
 				numChanges += extractAxis360Data(setting, existingRecords);
 
 				//Mark any records that no longer exist in search results as deleted
-				numChanges += deleteItems(setting, existingRecords);
+				if (setting.doFullReload()) {
+					numChanges += deleteItems(setting, existingRecords);
+				}
 
 				processRecordsToReload(logEntry);
 
@@ -262,10 +262,9 @@ public class Axis360ExportMain {
 		return numDeleted;
 	}
 
-	private static HashMap<String, Axis360Title> loadExistingTitles(Axis360Setting setting) {
+	private static HashMap<String, Axis360Title> loadExistingTitles() {
 		HashMap<String, Axis360Title> existingRecords = new HashMap<>();
 		try {
-			getAllExistingAxis360ItemsStmt.setLong(1, setting.getId());
 			ResultSet allRecordsRS = getAllExistingAxis360ItemsStmt.executeQuery();
 			while (allRecordsRS.next()) {
 				String axis360Id = allRecordsRS.getString("axis360Id");
@@ -275,13 +274,14 @@ public class Axis360ExportMain {
 						allRecordsRS.getLong("rawChecksum"),
 						allRecordsRS.getBoolean("deleted")
 				);
-				String allSettingIds = allRecordsRS.getString("all_settings");
-				String[] settingIds = allSettingIds.split(",");
-				for(String settingId : settingIds) {
-					newTitle.addSetting(Long.parseLong(settingId));
-				}
 				existingRecords.put(axis360Id, newTitle);
 			}
+			//TODO: Load the settings the title is a part of
+//			String allSettingIds = allRecordsRS.getString("all_settings");
+//			String[] settingIds = allSettingIds.split(",");
+//			for(String settingId : settingIds) {
+//				newTitle.addSetting(Long.parseLong(settingId));
+//			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing titles", e);
 			logEntry.saveResults();
@@ -369,18 +369,14 @@ public class Axis360ExportMain {
 		}
 		headers.put("Authorization", getAxis360AccessToken(setting));
 		headers.put("Library", setting.getLibraryPrefix());
-		headers.put("Content-Type", "text/xml");
-		headers.put("Accept", "text/xml");
+		headers.put("Content-Type", "application/json");
+		headers.put("Accept", "application/json");
 		//Get a list of titles to process
-		String itemDetailsUrl = setting.getBaseUrl() + "/Services/VendorAPI/getItemDetails/v2";
+		String itemDetailsUrl = setting.getBaseUrl() + "/Services/VendorAPI/titleLicense/v2?modifiedSince=";
 		if (!setting.doFullReload() && (setting.getLastUpdateOfChangedRecords() != 0)){
-			itemDetailsUrl += "?startDateTime=" + new SimpleDateFormat("MM-dd-yyyy HH:mm:ss").format(new Date(setting.getLastUpdateOfChangedRecords() * 1000));
+			itemDetailsUrl += new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(new Date(setting.getLastUpdateOfChangedRecords() * 1000));
 		}else{
-			try {
-				itemDetailsUrl += "?startDateTime=" + URLEncoder.encode(new SimpleDateFormat("MM-dd-yyyy HH:mm:ss").format(new Date(946684800000L)), StandardCharsets.UTF_8.toString()); //January 1st 2000
-			} catch (UnsupportedEncodingException e) {
-				logEntry.incErrors("Error encoding startDateTime", e);
-			}
+			itemDetailsUrl += "2000-01-01T12:00:00Z";
 		}
 
 		WebServiceResponse response = NetworkUtils.getURL(itemDetailsUrl, logger, headers, 120000);
@@ -388,14 +384,13 @@ public class Axis360ExportMain {
 			logEntry.incErrors("Error calling " + itemDetailsUrl + ": " + response.getResponseCode() + " " + response.getMessage());
 		} else {
 			try {
-				JSONObject responseJSON = XML.toJSONObject(response.getMessage());
-				JSONObject itemDetailsResponse = responseJSON.getJSONObject("getItemDetailsResponse").getJSONObject("getItemDetailsResult");
-				JSONObject itemDetailsResponseStatus = itemDetailsResponse.getJSONObject("status");
-				if (itemDetailsResponseStatus.getString("code").equals("0000")){
-					JSONArray titleDetails = itemDetailsResponse.getJSONObject("titleDetails").getJSONArray("titleDetail");
-					processAxis360Titles(setting, existingRecords, titleDetails);
+				JSONObject responseJSON = response.getJSONResponse();
+				JSONObject itemDetailsResponseStatus = responseJSON.getJSONObject("status");
+				if (itemDetailsResponseStatus.getString("Code").equals("0000")){
+					JSONArray titleDetails = responseJSON.getJSONArray("titles");
+					numChanges += processAxis360Titles(setting, existingRecords, titleDetails);
 				}else{
-					logEntry.incErrors("Did not get a good status while calling getItemDetails " + itemDetailsResponseStatus.getString("code") + " " + itemDetailsResponseStatus.getString("statusMessage"));
+					logEntry.incErrors("Did not get a good status while calling getItemDetails " + itemDetailsResponseStatus.getString("Code") + " " + itemDetailsResponseStatus.getString("Message"));
 				}
 
 			} catch (JSONException e) {
@@ -420,128 +415,124 @@ public class Axis360ExportMain {
 				checksumCalculator.update(itemDetailsAsString.getBytes());
 				long itemChecksum = checksumCalculator.getValue();
 
-				String axis360Id = itemDetails.getString("titleID");
+				String axis360Id = itemDetails.getString("TitleID");
 				logger.debug("processing " + axis360Id);
 
-				//Check to see if the title metadata has changed
-				Axis360Title existingTitle = existingRecords.get(axis360Id);
-				boolean metadataChanged = false;
-				if (existingTitle != null) {
-					logger.debug("Record already exists");
-					if (existingTitle.getChecksum() != itemChecksum || existingTitle.isDeleted()) {
-						logger.debug("Updating item details");
+				boolean active = itemDetails.getBoolean("active");
+				if (!active){
+					//TODO: See if this needs to be deleted from the index
+					logEntry.incErrors("Found an inactive record, need to make sure it has been deleted");
+				}else {
+					//Check to see if the title metadata has changed
+					Axis360Title existingTitle = existingRecords.get(axis360Id);
+					boolean metadataChanged = false;
+					if (existingTitle != null) {
+						logger.debug("Record already exists");
+						if (existingTitle.getChecksum() != itemChecksum || existingTitle.isDeleted()) {
+							logger.debug("Updating item details");
+							metadataChanged = true;
+						}
+						existingRecords.remove(axis360Id);
+					} else {
+						logger.debug("Adding record " + axis360Id);
 						metadataChanged = true;
 					}
-					existingRecords.remove(axis360Id);
-				} else {
-					logger.debug("Adding record " + axis360Id);
-					metadataChanged = true;
-				}
 
-				boolean availabilityChanged = false;
-				String itemAvailabilityAsString;
-				long availabilityChecksum;
-				//Check if availability changed
-				JSONObject itemAvailability = getAvailabilityForTitle(axis360Id, setting);
-				long aspenId = existingTitle != null ? existingTitle.getId() : -1;
-				if (itemAvailability != null) {
-					checksumCalculator.reset();
-					itemAvailabilityAsString = itemAvailability.toString();
-					checksumCalculator.update(itemAvailabilityAsString.getBytes());
-					availabilityChecksum = checksumCalculator.getValue();
-					if (aspenId != -1) {
-						getExistingAxis360AvailabilityStmt.setLong(1, aspenId);
-						getExistingAxis360AvailabilityStmt.setLong(2, setting.getId());
-						ResultSet getExistingAvailabilityRS = getExistingAxis360AvailabilityStmt.executeQuery();
-						if (getExistingAvailabilityRS.next()) {
-							long existingChecksum = getExistingAvailabilityRS.getLong("rawChecksum");
-							logger.debug("Availability already exists");
-							if (existingChecksum != availabilityChecksum) {
-								logger.debug("Updating availability details");
+					boolean availabilityChanged = false;
+					String itemAvailabilityAsString;
+					long availabilityChecksum;
+					//Check if availability changed
+					JSONObject itemAvailability = getAvailabilityForTitle(axis360Id, setting);
+					long aspenId = existingTitle != null ? existingTitle.getId() : -1;
+					if (itemAvailability != null) {
+						checksumCalculator.reset();
+						itemAvailabilityAsString = itemAvailability.toString();
+						checksumCalculator.update(itemAvailabilityAsString.getBytes());
+						availabilityChecksum = checksumCalculator.getValue();
+						if (aspenId != -1) {
+							getExistingAxis360AvailabilityStmt.setLong(1, aspenId);
+							getExistingAxis360AvailabilityStmt.setLong(2, setting.getId());
+							ResultSet getExistingAvailabilityRS = getExistingAxis360AvailabilityStmt.executeQuery();
+							if (getExistingAvailabilityRS.next()) {
+								long existingChecksum = getExistingAvailabilityRS.getLong("rawChecksum");
+								logger.debug("Availability already exists");
+								if (existingChecksum != availabilityChecksum) {
+									logger.debug("Updating availability details");
+									availabilityChanged = true;
+								}
+							} else {
+								logger.debug("Adding availability for " + axis360Id);
 								availabilityChanged = true;
 							}
 						} else {
-							logger.debug("Adding availability for " + axis360Id);
 							availabilityChanged = true;
 						}
-					}else{
-						availabilityChanged = true;
+					} else {
+						//Let's assume this is not available for now
+						logEntry.incSkipped();
+						continue;
 					}
-				}else{
-					//Let's assume this is not available for now
-					logEntry.incSkipped();
-					continue;
-				}
 
-				String primaryAuthor = null;
-				if (itemDetails.get("authors") instanceof JSONObject){
-					JSONObject authors = itemDetails.getJSONObject("authors");
-					if (authors.get("author") instanceof String) {
-						primaryAuthor = authors.getString("author");
-					}else{
-						JSONArray authorsArray = authors.getJSONArray("author");
-						if (authorsArray.length() > 0) {
-							primaryAuthor = authorsArray.getString(0);
+					String primaryAuthor = getFieldValue(itemDetails, "author");
+
+
+					if (metadataChanged || setting.doFullReload()) {
+						logEntry.incMetadataChanges();
+						//Update the database
+						updateAxis360ItemStmt.setString(1, axis360Id);
+						updateAxis360ItemStmt.setString(2, getFieldValue(itemDetails,"isbn"));
+						updateAxis360ItemStmt.setString(3, getFieldValue(itemDetails,"title"));
+						updateAxis360ItemStmt.setString(4, getFieldValue(itemDetails,"subtitle"));
+						updateAxis360ItemStmt.setString(5, primaryAuthor);
+
+						updateAxis360ItemStmt.setString(6, itemDetails.getString("formatType"));
+						updateAxis360ItemStmt.setLong(7, itemChecksum);
+						updateAxis360ItemStmt.setString(8, itemDetailsAsString);
+						updateAxis360ItemStmt.setLong(9, startTimeForLogging);
+						updateAxis360ItemStmt.setLong(10, startTimeForLogging);
+						int result = updateAxis360ItemStmt.executeUpdate();
+						if (result == 1) {
+							//A result of 1 indicates a new row was inserted
+							logEntry.incAdded();
+							ResultSet generatedKeys = updateAxis360ItemStmt.getGeneratedKeys();
+							if (generatedKeys.next()) {
+								aspenId = generatedKeys.getLong(1);
+							}
 						}
 					}
-				}else{
-					JSONArray authors = itemDetails.getJSONArray("authors");
-					if (authors.length() > 0) {
-						primaryAuthor = authors.getString(0);
-					}
-				}
 
-				if (metadataChanged || setting.doFullReload()) {
-					logEntry.incMetadataChanges();
-					//Update the database
-					updateAxis360ItemStmt.setString(1, axis360Id);
-					updateAxis360ItemStmt.setLong(2, itemDetails.getLong("isbn"));
-					updateAxis360ItemStmt.setString(3, itemDetails.getString("title"));
-					updateAxis360ItemStmt.setString(4, ( itemDetails.has("subTitle") ? itemDetails.getString("subTitle") : ""));
-					updateAxis360ItemStmt.setString(5, primaryAuthor);
-
-					updateAxis360ItemStmt.setString(6, itemDetails.getString("formatType"));
-					updateAxis360ItemStmt.setLong(7, itemChecksum);
-					updateAxis360ItemStmt.setString(8, itemDetailsAsString);
-					updateAxis360ItemStmt.setLong(9, startTimeForLogging);
-					updateAxis360ItemStmt.setLong(10, startTimeForLogging);
-					int result = updateAxis360ItemStmt.executeUpdate();
-					if (result == 1) {
-						//A result of 1 indicates a new row was inserted
-						logEntry.incAdded();
-						ResultSet generatedKeys = updateAxis360ItemStmt.getGeneratedKeys();
-						if (generatedKeys.next()) {
-							aspenId = generatedKeys.getLong(1);
+					if (availabilityChanged || setting.doFullReload()) {
+						JSONObject availabilityInfo = itemAvailability.getJSONObject("Availability");
+						logEntry.incAvailabilityChanges();
+						if (aspenId == -1){
+							logEntry.incErrors("Did not get an id for the title prior to updating availability");
+						}else {
+							updateAxis360AvailabilityStmt.setLong(1, aspenId);
+							updateAxis360AvailabilityStmt.setLong(2, setting.getId());
+							updateAxis360AvailabilityStmt.setString(3, setting.getLibraryPrefix());
+							updateAxis360AvailabilityStmt.setBoolean(4, availabilityInfo.getBoolean("Available"));
+							updateAxis360AvailabilityStmt.setLong(5, availabilityInfo.getLong("TotalCopies"));
+							updateAxis360AvailabilityStmt.setLong(6, availabilityInfo.getLong("HoldQueueSize"));
+							updateAxis360AvailabilityStmt.setLong(7, availabilityChecksum);
+							updateAxis360AvailabilityStmt.setString(8, itemAvailabilityAsString);
+							updateAxis360AvailabilityStmt.setLong(9, startTimeForLogging);
+							int numAvailabilityUpdates = updateAxis360AvailabilityStmt.executeUpdate();
+							logger.info("Availability changes made " + numAvailabilityUpdates);
 						}
 					}
-				}
 
-				if (availabilityChanged || setting.doFullReload()) {
-					logEntry.incAvailabilityChanges();
-					updateAxis360AvailabilityStmt.setLong(1, aspenId);
-					updateAxis360AvailabilityStmt.setLong(2, setting.getId());
-					updateAxis360AvailabilityStmt.setString(3, itemAvailability.getString("libraryPrefix"));
-					updateAxis360AvailabilityStmt.setLong(4, itemAvailability.getLong("ownedQty"));
-					updateAxis360AvailabilityStmt.setLong(5, itemAvailability.getLong("availableQty"));
-					updateAxis360AvailabilityStmt.setLong(6, itemAvailability.getLong("totalHolds"));
-					updateAxis360AvailabilityStmt.setLong(7, itemAvailability.getLong("totalCheckouts"));
-					updateAxis360AvailabilityStmt.setLong(8, availabilityChecksum);
-					updateAxis360AvailabilityStmt.setString(9, itemAvailabilityAsString);
-					updateAxis360AvailabilityStmt.setLong(10, startTimeForLogging);
-					updateAxis360AvailabilityStmt.executeUpdate();
-				}
-
-				String groupedWorkId = null;
-				if (metadataChanged || setting.doFullReload()) {
-					groupedWorkId = groupAxis360Record(itemDetails, axis360Id, primaryAuthor);
-				}
-				if (metadataChanged || availabilityChanged || setting.doFullReload()) {
-					logEntry.incUpdated();
-					if (groupedWorkId == null) {
-						groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("axis360", axis360Id);
+					String groupedWorkId = null;
+					if (metadataChanged || setting.doFullReload()) {
+						groupedWorkId = groupAxis360Record(itemDetails, axis360Id, primaryAuthor);
 					}
-					indexAxis360Record(groupedWorkId);
-					numChanges++;
+					if (metadataChanged || availabilityChanged || setting.doFullReload()) {
+						logEntry.incUpdated();
+						if (groupedWorkId == null) {
+							groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("axis360", axis360Id);
+						}
+						indexAxis360Record(groupedWorkId);
+						numChanges++;
+					}
 				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error processing titles", e);
@@ -549,6 +540,28 @@ public class Axis360ExportMain {
 		}
 		logEntry.saveResults();
 		return numChanges;
+	}
+
+	private static String getFieldValue(JSONObject itemDetails, String fieldName) {
+		JSONArray fields = itemDetails.getJSONArray("fields");
+		for (int i = 0; i < fields.length(); i++){
+			JSONObject field = fields.getJSONObject(i);
+			if (field.getString("name").equals(fieldName)){
+				JSONArray fieldValues = field.getJSONArray("values");
+				if (fieldValues.length() == 0) {
+					return "";
+				}else if (fieldValues.length() == 1) {
+					return fieldValues.getString(0).trim();
+				}else{
+					ArrayList<String> values = new ArrayList<>();
+					for (int j = 0; j < fieldValues.length(); j++){
+						values.add(fieldValues.getString(j));
+					}
+					return values.get(0).trim();
+				}
+			}
+		}
+		return "";
 	}
 
 	private static JSONObject getAvailabilityForTitle(String axis360Id, Axis360Setting setting) {
@@ -560,33 +573,25 @@ public class Axis360ExportMain {
 		}
 		headers.put("Authorization", getAxis360AccessToken(setting));
 		headers.put("Library", setting.getLibraryPrefix());
-		headers.put("Content-Type", "text/xml");
-		headers.put("Accept", "text/xml");
+		headers.put("Content-Type", "application/json");
+		headers.put("Accept", "application/json");
 
-		String availabilityUrl = setting.getBaseUrl() + "/Services/VendorAPI/getAvailability/v2";
-		availabilityUrl += "?titleId=" + axis360Id;
+		String availabilityUrl = setting.getBaseUrl() + "/Services/VendorAPI/titleInfo/v2?titleIds=" + axis360Id;
 		WebServiceResponse response = NetworkUtils.getURL(availabilityUrl, logger, headers, 120000);
 		if (!response.isSuccess()) {
 			logEntry.incErrors("Error calling " + availabilityUrl + ": " + response.getResponseCode() + " " + response.getMessage());
 		} else {
 			try {
-				JSONObject responseJSON = XML.toJSONObject(response.getMessage());
-				JSONObject availabilityResponse = responseJSON.getJSONObject("getAvailabilityResponse").getJSONObject("getAvailabilityResult");
-				JSONObject availabilityResponseStatus = availabilityResponse.getJSONObject("status");
-				if (availabilityResponseStatus.getString("code").equals("0000")){
-					if (availabilityResponse.has("titleAvailList")) {
-						Object titleAvailabilityObject = availabilityResponse.get("titleAvailList");
-						if (titleAvailabilityObject instanceof String){
-							return null;
-						}else if (titleAvailabilityObject instanceof JSONObject){
-							return ((JSONObject) titleAvailabilityObject).getJSONObject("titleAvail");
-						}else if (titleAvailabilityObject instanceof JSONArray){
-							return ((JSONArray) titleAvailabilityObject).getJSONObject(0);
-						}
-						logEntry.incErrors("Unknown type for titleAvailList " + titleAvailabilityObject.getClass().getName());
+				JSONObject responseJSON = response.getJSONResponse();
+				JSONObject availabilityResponseStatus = responseJSON.getJSONObject("status");
+				if (availabilityResponseStatus.getString("Code").equals("0000")){
+					if (responseJSON.has("titles")) {
+						return responseJSON.getJSONArray("titles").getJSONObject(0);
+					}else{
+						logEntry.incErrors("Did not get titles while getting availability");
 					}
 				}else{
-					logEntry.incErrors("Did not get a good status while calling getAvailability " + availabilityResponseStatus.getString("code") + " " + availabilityResponseStatus.getString("statusMessage"));
+					logEntry.incErrors("Did not get a good status while calling titleInfo " + availabilityResponseStatus.getString("Code") + " " + availabilityResponseStatus.getString("Message"));
 				}
 			} catch (JSONException e) {
 				logEntry.incErrors("Error parsing availability response for title " + axis360Id + ": " + e.toString());
@@ -608,18 +613,13 @@ public class Axis360ExportMain {
 
 	private static String groupAxis360Record(JSONObject itemDetails, String axis360Id, String primaryAuthor) throws JSONException {
 		//Perform record grouping on the record
-		String title = itemDetails.getString("title");
-		String author = primaryAuthor;
-		author = StringUtils.swapFirstLastNames(author);
+		String title = getFieldValue(itemDetails, "title");
 		String formatType = itemDetails.getString("formatType");
 
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("axis360", axis360Id);
 
-		String subtitle = "";
-		if (itemDetails.has("subTitle")) {
-			subtitle = itemDetails.getString("subTitle");
-		}
-		return getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subtitle, author, formatType, true);
+		String subtitle = getFieldValue(itemDetails, "subtitle");
+		return getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subtitle, primaryAuthor, formatType, true);
 	}
 
 	private static RecordGroupingProcessor getRecordGroupingProcessor() {
@@ -644,7 +644,7 @@ public class Axis360ExportMain {
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 			if (databaseConnectionInfo != null) {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
-				getAllExistingAxis360ItemsStmt = aspenConn.prepareStatement("SELECT axis360_title.id, axis360_title.axis360Id, axis360_title.rawChecksum, deleted, GROUP_CONCAT(settingId) as all_settings from axis360_title left join axis360_title_availability on axis360_title.id = axis360_title_availability.titleId WHERE settingId = ?  group by axis360_title.id, axis360_title.axis360Id, axis360_title.rawChecksum, deleted", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				getAllExistingAxis360ItemsStmt = aspenConn.prepareStatement("SELECT * from axis360_title", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				updateAxis360ItemStmt = aspenConn.prepareStatement(
 						"INSERT INTO axis360_title " +
 								"(axis360Id, isbn, title, subtitle, primaryAuthor, formatType, rawChecksum, rawResponse, lastChange, dateFirstDetected) " +
@@ -656,10 +656,9 @@ public class Axis360ExportMain {
 				getExistingAxis360AvailabilityStmt = aspenConn.prepareStatement("SELECT id, rawChecksum from axis360_title_availability WHERE titleId = ? and settingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				updateAxis360AvailabilityStmt = aspenConn.prepareStatement(
 						"INSERT INTO axis360_title_availability " +
-								"(titleId, settingId, libraryPrefix, ownedQty, availableQty, totalHolds, totalCheckouts, rawChecksum, rawResponse, lastChange) " +
-								"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-								"ON DUPLICATE KEY UPDATE ownedQty = VALUES(ownedQty), availableQty = VALUES(availableQty), " +
-								"totalHolds = VALUES(totalHolds), totalCheckouts = VALUES(totalCheckouts), " +
+								"(titleId, settingId, libraryPrefix, available, ownedQty, totalHolds, rawChecksum, rawResponse, lastChange) " +
+								"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+								"ON DUPLICATE KEY UPDATE available = VALUES(available), ownedQty = VALUES(ownedQty), totalHolds = VALUES(totalHolds), " +
 								"rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange)");
 				getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type=?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");

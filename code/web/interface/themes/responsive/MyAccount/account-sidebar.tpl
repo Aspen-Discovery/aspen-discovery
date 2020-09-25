@@ -73,6 +73,14 @@
 											</a>
 										</li>
 									{/if}
+									{if $user->isValidForEContentSource('axis360')}
+										<li class="myAccountLink">
+										&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/CheckedOut?tab=axis360" id="checkedOutAxis360" title="View checkouts from Axis 360">
+												{translate text="Axis 360"} {if !$offline}<span class="badge"><span class="axis360-checkouts-placeholder">??</span></span>{/if}
+											</a>
+										</li>
+									{/if}
 								</ul>
 
 								<div class="myAccountLink">
@@ -108,6 +116,14 @@
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=cloud_library" id="holdsCloudLibrary" title="View holds from CloudLibrary">
 												{translate text="Cloud Library"} {if !$offline}<span class="badge"><span class="cloud_library-holds-placeholder">??</span></span> <span class="cloud_library-available-holds" style="display: none"> <span class="label label-success"><span class="cloud_library-available-holds-placeholder"></span> {translate text="Available Now"}</span></span>{/if}
+											</a>
+										</li>
+									{/if}
+									{if $user->isValidForEContentSource('axis360')}
+										<li class="myAccountLink">
+											&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/Holds?tab=axis360" id="holdsAxis360" title="View holds from Axis 360">
+												{translate text="Axis 360"} {if !$offline}<span class="badge"><span class="axis360-holds-placeholder">??</span></span> <span class="axis360-available-holds" style="display: none"> <span class="label label-success"><span class="axis360-available-holds-placeholder"></span> {translate text="Available Now"}</span></span>{/if}
 											</a>
 										</li>
 									{/if}

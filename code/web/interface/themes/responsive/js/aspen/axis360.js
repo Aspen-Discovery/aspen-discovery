@@ -232,6 +232,41 @@ AspenDiscovery.Axis360 = (function () {
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
 			});
+		},
+
+		freezeHold: function(patronId, recordId){
+			AspenDiscovery.loadingMessage();
+			let url = Globals.path + '/Axis360/AJAX';
+			let params = {
+				'method' : 'freezeHold',
+				patronId : patronId,
+				recordId : recordId
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage("Success", data.message, true, true);
+				} else {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).error(AspenDiscovery.ajaxFail);
+		},
+
+		thawHold: function(patronId, recordId, caller){
+			let popUpBoxTitle = $(caller).text() || "Thawing Hold";  // freezing terminology can be customized, so grab text from click button: caller
+			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
+			let url = Globals.path + '/Axis360/AJAX';
+			let params = {
+				'method' : 'thawHold',
+				patronId : patronId,
+				recordId : recordId
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage("Success", data.message, true, true);
+				} else {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).error(AspenDiscovery.ajaxFail);
 		}
 	}
 }(AspenDiscovery.Axis360 || {}));

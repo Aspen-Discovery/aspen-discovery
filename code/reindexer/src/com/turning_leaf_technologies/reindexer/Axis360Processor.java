@@ -3,7 +3,6 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.indexing.Axis360Scope;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,7 +55,7 @@ class Axis360Processor {
 				String formatType = productRS.getString("formatType");
 				String formatCategory;
 				String primaryFormat;
-				if ("XPS".equals(formatType)) {
+				if ("eBook".equals(formatType)) {
 					formatCategory = "eBook";
 					primaryFormat = "eBook";
 				} else {
@@ -73,30 +73,17 @@ class Axis360Processor {
 					String subtitle = rawResponse.getString("subTitle");
 					groupedWork.setSubTitle(subtitle);
 				}
-				String primaryAuthor = StringUtils.swapFirstLastNames(productRS.getString("primaryAuthor"));
+				String primaryAuthor = productRS.getString("primaryAuthor");
 				groupedWork.setAuthor(primaryAuthor);
 				groupedWork.setAuthAuthor(primaryAuthor);
 				groupedWork.setAuthorDisplay(primaryAuthor);
 
-				String series = rawResponse.getString("series");
+				String series = getFieldValue(rawResponse,"series");
 				if (series.length() > 0){
 					groupedWork.addSeries(series);
 				}
 
-				String targetAudience = loadAxis360Subjects(groupedWork, rawResponse);
-				if (targetAudience.contains("Childrens")) {
-					groupedWork.addTargetAudience("Juvenile");
-					groupedWork.addTargetAudienceFull("Juvenile");
-				} else if (targetAudience.contains("Young Adult")) {
-					groupedWork.addTargetAudience("Young Adult");
-					groupedWork.addTargetAudienceFull("Adolescent (14-17)");
-				} else if (targetAudience.contains("Beginning Reader")) {
-					groupedWork.addTargetAudience("Juvenile");
-					groupedWork.addTargetAudienceFull("Primary (6-8)");
-				} else {
-					groupedWork.addTargetAudience("Adult");
-					groupedWork.addTargetAudienceFull("Adult");
-				}
+				loadAxis360Subjects(groupedWork, rawResponse);
 
 				//Believe these are all
 				axis360Record.setPrimaryLanguage("English");
@@ -107,73 +94,35 @@ class Axis360Processor {
 					logEntry.addNote("Could not translate format boost for " + primaryFormat + " create translation map format_boost_axis360");
 				}
 				axis360Record.setFormatBoost(formatBoost);
-				if (rawResponse.has("narrators")) {
+
+				ArrayList<String> narrators = getFieldValues(rawResponse, "narrators");
+				if (narrators.size() > 0) {
 					HashSet<String> narratorsToAdd = new HashSet<>();
 					HashSet<String> narratorsWithRoleToAdd = new HashSet<>();
-					if (rawResponse.get("narrators") instanceof JSONArray){
-						JSONArray narrators = rawResponse.getJSONArray("narrators");
-						for (int i = 0; i < narrators.length(); i++) {
-							String narratorName = narrators.getString(i);
-							narratorsToAdd.add(narratorName);
-							narratorsWithRoleToAdd.add(narratorName + "|Narrator");
-						}
-					}else if (rawResponse.get("narrators") instanceof JSONObject){
-						JSONObject narrators = rawResponse.getJSONObject("narrators");
-						if (narrators.get("narrator") instanceof String) {
-							narratorsToAdd.add(narrators.getString("narrator"));
-							narratorsWithRoleToAdd.add(narrators.getString("narrator") + "|Narrator");
-						}else{
-							JSONArray narratorsArray = narrators.getJSONArray("narrator");
-							for (int i = 0; i < narratorsArray.length(); i++){
-								narratorsToAdd.add(narratorsArray.getString(i));
-								narratorsWithRoleToAdd.add(narratorsArray.getString(i) + "|Narrator");
-							}
-						}
-						String narratorName = narrators.getString("narrator");
+					for (String narratorName : narrators) {
 						narratorsToAdd.add(narratorName);
 						narratorsWithRoleToAdd.add(narratorName + "|Narrator");
-					}else if (rawResponse.get("narrators") instanceof String){
-						String narratorName = rawResponse.getString("narrators");
-						if (narratorName.length() > 0){
-							narratorsToAdd.add(narratorName);
-							narratorsWithRoleToAdd.add(narratorName + "|Narrator");
-						}
 					}
-
 					groupedWork.addAuthor2(narratorsToAdd);
 					groupedWork.addAuthor2Role(narratorsWithRoleToAdd);
 				}
-				if (rawResponse.has("authors")) {
-					HashSet<String> authorsToAdd = new HashSet<>();
-					if (rawResponse.get("authors") instanceof JSONArray){
-						JSONArray authors = rawResponse.getJSONArray("authors");
-						for (int i = 0; i < authors.length(); i++) {
-							authorsToAdd.add(authors.getString(i));
-						}
-					}else if (rawResponse.get("authors") instanceof JSONObject){
-						JSONObject authors = rawResponse.getJSONObject("authors");
-						if (authors.get("author") instanceof String) {
-							authorsToAdd.add(authors.getString("author"));
-						}else{
-							JSONArray authorsArray = authors.getJSONArray("author");
-							for (int i = 0; i < authorsArray.length(); i++){
-								authorsToAdd.add(authorsArray.getString(i));
-							}
-						}
 
-					}else if (rawResponse.get("authors") instanceof String){
-						String authorName = rawResponse.getString("authors");
-						if (authorName.length() > 0){
-							authorsToAdd.add(authorName);
-						}
-					}
+				groupedWork.addDescription(getFieldValue(rawResponse, "description"), formatType);
 
+				String language = getFieldValue(rawResponse, "language");
+				groupedWork.addLanguage(indexer.translateSystemValue("language", language, identifier));
+
+				groupedWork.addPublisher(getFieldValue(rawResponse, "publisher"));
+
+				ArrayList<String> authors = getFieldValues(rawResponse, "author");
+				if (authors.size() > 1){
+					HashSet<String> authorsToAdd = new HashSet<>(authors);
 					groupedWork.addAuthor2(authorsToAdd);
 				}
 
 				//Axis 360 does not include publisher information or descriptions
 
-				String isbn = Long.toString(rawResponse.getLong("isbn"));
+				String isbn = getFieldValue(rawResponse, "isbn");
 				groupedWork.addIsbn(isbn, primaryFormat);
 
 				ItemInfo itemInfo = new ItemInfo();
@@ -185,8 +134,6 @@ class Axis360Processor {
 				itemInfo.setSortableCallNumber("Online Axis 360");
 				itemInfo.setFormat(primaryFormat);
 				itemInfo.setFormatCategory(formatCategory);
-				//We don't currently have a way to determine how many copies are owned
-				itemInfo.setNumCopies(0);
 
 				Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
 				itemInfo.setDateAdded(dateAdded);
@@ -194,11 +141,11 @@ class Axis360Processor {
 				getAvailabilityStmt.setLong(1, aspenId);
 				ResultSet availabilityRS = getAvailabilityStmt.executeQuery();
 				while (availabilityRS.next()) {
-					int availableQty = availabilityRS.getInt("availableQty");
+					boolean available = availabilityRS.getBoolean("available");
 					int ownedQty = availabilityRS.getInt("ownedQty");
 					itemInfo.setNumCopies(ownedQty);
 					long settingId = availabilityRS.getLong("settingId");
-					if (availableQty > 0) {
+					if (available) {
 						itemInfo.setDetailedStatus("Available Online");
 					} else {
 						itemInfo.setDetailedStatus("Checked Out");
@@ -213,8 +160,8 @@ class Axis360Processor {
 						}
 						if (okToAdd) {
 							ScopingInfo scopingInfo = itemInfo.addScope(scope);
-							scopingInfo.setAvailable(availableQty > 0);
-							if (availableQty > 0) {
+							scopingInfo.setAvailable(available);
+							if (available) {
 								scopingInfo.setStatus("Available Online");
 								scopingInfo.setGroupedStatus("Available Online");
 							} else {
@@ -246,61 +193,43 @@ class Axis360Processor {
 	 *
 	 * @param groupedWork     The Grouped Work being updated
 	 * @param titleData JSON representing the raw data metadata from OverDrive
-	 * @return The target audience for use later in scoping
 	 * @throws JSONException Exception if something goes horribly wrong
 	 */
-	private String loadAxis360Subjects(GroupedWorkSolr groupedWork, JSONObject titleData) throws JSONException {
+	private void loadAxis360Subjects(GroupedWorkSolr groupedWork, JSONObject titleData) throws JSONException {
 		//Load subject data
 
 		HashSet<String> topics = new HashSet<>();
 		HashSet<String> genres = new HashSet<>();
 		HashMap<String, Integer> literaryForm = new HashMap<>();
 		HashMap<String, Integer> literaryFormFull = new HashMap<>();
-		String targetAudience = "Adult";
-		String targetAudienceFull = "Adult";
+		String genre = getFieldValue(titleData, "genre");
+		genres.add(genre);
+		Util.addToMapWithCount(literaryForm, genre);
+		Util.addToMapWithCount(literaryFormFull, genre);
+
+		String targetAudience;
+		String targetAudienceFull;
+		String audience = getFieldValue(titleData, "audience");
+		String gradeLevel = getFieldValue(titleData, "grade level");
+		if (audience.equals("General Adult")){
+			targetAudience = "Adult";
+			targetAudienceFull = "Adult";
+		}else{
+			if (audience.contains("Children")){
+				targetAudience = "Juvenile";
+			}else if (audience.contains("Teen")) {
+				targetAudience = "Young Adult";
+			}else{
+				targetAudience = audience;
+			}
+
+			targetAudienceFull = gradeLevel;
+		}
+
 		if (titleData.has("subjects")) {
-			String[] subjects = titleData.getString("subjects").split("#\\s");
+			String[] subjects = getFieldValue(titleData,"subject").split("#\\s");
 			for (String curSubject : subjects) {
 				curSubject = curSubject.replaceAll("/", " -- ");
-				String curSubjectLower = curSubject.toLowerCase();
-				if (curSubjectLower.contains("nonfiction")) {
-					Util.addToMapWithCount(literaryForm, "Non Fiction");
-					Util.addToMapWithCount(literaryFormFull, "Non Fiction");
-					genres.add("Non Fiction");
-				} else if (curSubjectLower.contains("fiction")) {
-					Util.addToMapWithCount(literaryForm, "Fiction");
-					Util.addToMapWithCount(literaryFormFull, "Fiction");
-					genres.add("Fiction");
-				}
-
-				if (curSubjectLower.contains("poetry")) {
-					Util.addToMapWithCount(literaryForm, "Fiction");
-					Util.addToMapWithCount(literaryFormFull, "Poetry");
-				} else if (curSubjectLower.contains("essays")) {
-					Util.addToMapWithCount(literaryForm, "Non Fiction");
-					Util.addToMapWithCount(literaryFormFull, "Essays");
-				} else if (curSubjectLower.contains("short stories")) {
-					Util.addToMapWithCount(literaryForm, "Fiction");
-					Util.addToMapWithCount(literaryFormFull, "Short Stories");
-				} else if (curSubjectLower.contains("drama")) {
-					Util.addToMapWithCount(literaryForm, "Fiction");
-					Util.addToMapWithCount(literaryFormFull, "Drama");
-				}
-
-				if (curSubjectLower.contains("juvenile")) {
-					targetAudience = "Juvenile";
-					targetAudienceFull = "Juvenile";
-				} else if (curSubjectLower.contains("young adult")) {
-					targetAudience = "Young Adult";
-					targetAudienceFull = "Adolescent (14-17)";
-				} else if (curSubjectLower.contains("picture book")) {
-					targetAudience = "Juvenile";
-					targetAudienceFull = "Preschool (0-5)";
-				} else if (curSubjectLower.contains("beginning reader")) {
-					targetAudience = "Juvenile";
-					targetAudienceFull = "Primary (6-8)";
-				}
-
 				topics.add(curSubject);
 			}
 			groupedWork.addTopic(topics);
@@ -318,7 +247,55 @@ class Axis360Processor {
 
 		groupedWork.addTargetAudience(targetAudience);
 		groupedWork.addTargetAudienceFull(targetAudienceFull);
+	}
 
-		return targetAudience;
+	private static String getFieldValue(JSONObject itemDetails, String fieldName) {
+		JSONArray fields = itemDetails.getJSONArray("fields");
+		for (int i = 0; i < fields.length(); i++){
+			JSONObject field = fields.getJSONObject(i);
+			if (field.getString("name").equals(fieldName)){
+				JSONArray fieldValues = field.getJSONArray("values");
+				if (fieldValues.length() == 0) {
+					return "";
+				}else if (fieldValues.length() == 1) {
+					return fieldValues.getString(0);
+				}else{
+					ArrayList<String> values = new ArrayList<>();
+					for (int j = 0; j < fieldValues.length(); j++){
+						values.add(fieldValues.getString(j));
+					}
+					return values.get(0);
+				}
+			}
+		}
+		return "";
+	}
+
+	private static boolean fieldHasMultipleValues(JSONObject itemDetails, String fieldName) {
+		JSONArray fields = itemDetails.getJSONArray("fields");
+		for (int i = 0; i < fields.length(); i++){
+			JSONObject field = fields.getJSONObject(i);
+			if (field.getString("name").equals(fieldName)){
+				JSONArray fieldValues = field.getJSONArray("values");
+				return fieldValues.length() > 1;
+			}
+		}
+		return false;
+	}
+
+	private static ArrayList<String> getFieldValues(JSONObject itemDetails, String fieldName) {
+		ArrayList<String> values = new ArrayList<>();
+		JSONArray fields = itemDetails.getJSONArray("fields");
+		for (int i = 0; i < fields.length(); i++){
+			JSONObject field = fields.getJSONObject(i);
+			if (field.getString("name").equals(fieldName)){
+				JSONArray fieldValues = field.getJSONArray("values");
+
+				for (int j = 0; j < fieldValues.length(); j++){
+					values.add(fieldValues.getString(j));
+				}
+			}
+		}
+		return values;
 	}
 }

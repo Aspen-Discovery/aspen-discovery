@@ -128,6 +128,16 @@ function getAxis360Updates(){
 			]
 		],
 
+		'axis360_availability_update_for_new_method' => [
+			'title' => 'Axis 360 Update availability for new titleInfo method',
+			'description' => 'Remove unused fields and add available field',
+			'sql' => [
+				'ALTER table axis360_title_availability DROP column availableQty',
+				'ALTER table axis360_title_availability DROP column totalCheckouts',
+				'ALTER table axis360_title_availability ADD COLUMN available TINYINT(1) DEFAULT 1'
+			]
+		],
+
 		'add_settings_axis360_exportLog' => array(
 			'title' => 'Add Settings to Axis 360 export log',
 			'description' => 'Add settings to axis 360 export log.',

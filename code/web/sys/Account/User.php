@@ -513,7 +513,7 @@ class User extends DataObject
 						}
 					}
 					return false;
-				} elseif ($source == 'axis_360') {
+				} elseif ($source == 'axis360') {
 					if (array_key_exists('Axis 360', $enabledModules)){
 						require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
 						try {
@@ -1011,6 +1011,16 @@ class User extends DataObject
 			}
 		}
 
+		if ($source == 'all' || $source == 'axis360') {
+			if ($this->isValidForEContentSource('axis360')) {
+				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+				$axis360Driver = new Axis360Driver();
+				$axis360CheckedOutItems = $axis360Driver->getCheckouts($this);
+				$allCheckedOut = array_merge($allCheckedOut, $axis360CheckedOutItems);
+				$timer->logTime("Loaded transactions from axis 360. {$this->id}");
+			}
+		}
+
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -1065,6 +1075,16 @@ class User extends DataObject
 				$driver = new CloudLibraryDriver();
 				$cloudLibraryHolds = $driver->getHolds($this);
 				$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
+			}
+		}
+
+		if ($source == 'all' || $source == 'axis360') {
+			//Get holds from Axis 360
+			if ($this->isValidForEContentSource('axis360')) {
+				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+				$driver = new Axis360Driver();
+				$axis360Holds = $driver->getHolds($this);
+				$allHolds = array_merge_recursive($allHolds, $axis360Holds);
 			}
 		}
 
@@ -1420,6 +1440,18 @@ class User extends DataObject
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		$overDriveDriver = new OverDriveDriver();
 		return $overDriveDriver->thawHold($this, $overDriveId);
+	}
+
+	function freezeAxis360Hold($recordId){
+		require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+		$axis360Driver = new Axis360Driver();
+		return $axis360Driver->freezeHold($this,$recordId);
+	}
+
+	function thawAxis360Hold($recordId){
+		require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+		$axis360Driver = new Axis360Driver();
+		return $axis360Driver->thawHold($this, $recordId);
 	}
 
 	function renewCheckout($recordId, $itemId = null, $itemIndex = null){

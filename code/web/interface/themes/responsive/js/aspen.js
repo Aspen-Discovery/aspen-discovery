@@ -4911,7 +4911,7 @@ AspenDiscovery.Account = (function(){
 					label = 'RBdigital Checkouts';
 				}else if (source === 'cloud_library'){
 					label = 'Cloud Library Checkouts';
-				}else if (source === 'axis_360'){
+				}else if (source === 'axis360'){
 					label = 'Axis 360 Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
@@ -4956,7 +4956,7 @@ AspenDiscovery.Account = (function(){
 					label = 'OverDrive Holds';
 				}else if (source === 'rbdigital'){
 					label = 'RBdigital Holds';
-				}else if (source === 'axis_360'){
+				}else if (source === 'axis360'){
 					label = 'Axis 360 Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
@@ -5086,6 +5086,21 @@ AspenDiscovery.Account = (function(){
 					if (data.summary.numAvailableHolds > 0) {
 						$(".cloud_library-available-holds-placeholder").html(data.summary.numAvailableHolds);
 						$(".cloud_library-available-holds").show();
+					}
+				}
+			});
+			let axis360Url = Globals.path + "/MyAccount/AJAX?method=getMenuDataAxis360&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+			$.getJSON(axis360Url, function(data){
+				if (data.success) {
+					$(".axis360-checkouts-placeholder").html(data.summary.numCheckedOut);
+					totalCheckouts += parseInt(data.summary.numCheckedOut);
+					$(".checkouts-placeholder").html(totalCheckouts);
+					$(".axis360-holds-placeholder").html(data.summary.numHolds);
+					totalHolds += parseInt(data.summary.numHolds);
+					$(".holds-placeholder").html(totalHolds);
+					if (data.summary.numAvailableHolds > 0) {
+						$(".axis360-available-holds-placeholder").html(data.summary.numAvailableHolds);
+						$(".axis360-available-holds").show();
 					}
 				}
 			});
@@ -6970,6 +6985,41 @@ AspenDiscovery.Axis360 = (function () {
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
 			});
+		},
+
+		freezeHold: function(patronId, recordId){
+			AspenDiscovery.loadingMessage();
+			let url = Globals.path + '/Axis360/AJAX';
+			let params = {
+				'method' : 'freezeHold',
+				patronId : patronId,
+				recordId : recordId
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage("Success", data.message, true, true);
+				} else {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).error(AspenDiscovery.ajaxFail);
+		},
+
+		thawHold: function(patronId, recordId, caller){
+			let popUpBoxTitle = $(caller).text() || "Thawing Hold";  // freezing terminology can be customized, so grab text from click button: caller
+			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
+			let url = Globals.path + '/Axis360/AJAX';
+			let params = {
+				'method' : 'thawHold',
+				patronId : patronId,
+				recordId : recordId
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage("Success", data.message, true, true);
+				} else {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).error(AspenDiscovery.ajaxFail);
 		}
 	}
 }(AspenDiscovery.Axis360 || {}));
