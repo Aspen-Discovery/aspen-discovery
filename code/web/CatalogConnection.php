@@ -1111,4 +1111,12 @@ class CatalogConnection
 	{
 		$this->driver->logout($user);
 	}
+
+	public function getHoldsReportData($location) {
+		return $this->driver->getHoldsReportData($location);
+	}
+
+	public function getStudentReportData($location,$showOverdueOnly,$date) {
+		return $this->driver->getStudentReportData($location,$showOverdueOnly,$date);
+	}
 }
