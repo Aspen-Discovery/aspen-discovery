@@ -16,7 +16,7 @@ class CarlX extends SIP2Driver{
 
 	function initDatabaseConnection()
 	{
-		if ($this->dbConnection == null) {
+		if (!isset($this->dbConnection)) {
 			$port = empty($this->accountProfile->databasePort) ? '1521' : $this->accountProfile->databasePort;
 			$ociConnection = $this->accountProfile->databaseHost . ':' . $port . '/' . $this->accountProfile->databaseName;
 			$this->dbConnection = oci_connect($this->accountProfile->databaseUser, $this->accountProfile->databasePassword, $ociConnection);

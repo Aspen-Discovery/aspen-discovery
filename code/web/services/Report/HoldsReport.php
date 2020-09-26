@@ -16,9 +16,19 @@ class Report_HoldsReport extends Admin_Admin {
 		}
 		asort($locationLookupList);
 		$interface->assign('locationLookupList', $locationLookupList);
-		$selectedLocation = isset($_REQUEST['location']) ? $_REQUEST['location'] : reset($locationLookupList);
+		if (isset($_REQUEST['location'])) {
+			$selectedLocation = $_REQUEST['location'];
+		} elseif (count($locationLookupList) === 1){
+			$selectedLocation = array_key_first($locationLookupList);
+		} else {
+				$selectedLocation = null;
+		}
 		$interface->assign('selectedLocation', $selectedLocation);
-		$data = CatalogFactory::getCatalogConnectionInstance()->getHoldsReportData($selectedLocation);
+		if (!is_null($selectedLocation)) {
+			$data = CatalogFactory::getCatalogConnectionInstance()->getHoldsReportData($selectedLocation);
+		} else {
+			$data = null;
+		}
 		$interface->assign('reportData', $data);
 
 		/*

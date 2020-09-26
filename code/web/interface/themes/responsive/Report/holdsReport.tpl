@@ -27,15 +27,14 @@
 <style type="text/css">
 	/* TODO : GET 4 slips to fit on a page */
 	/* TODO : display as table on screen, slips in print */
-	/* TODO : hide aspen footer line in print */
 	.holdsReportSlipContainer{
 		border-bottom: 1px dashed #ccc !important;
 		border-top: 1px dashed #ccc !important;
 		display: table !important;
-		height: 2.4in !important;
-		max-height: 2.4in !important;
+		height: 2.3in !important;
+		max-height: 2.3in !important;
 		max-width: 7in !important;
-		min-height: 2.4in !important;
+		min-height: 2.3in !important;
 		min-width: 7in !important;
 		width: 7in !important;
 	}
@@ -46,7 +45,6 @@
 		color: #000;
 		display: table-row !important;
 		font-size: 12pt;
-
 		page-break-inside: avoid;
 	}
 	div.holdsReportSlip div.patron {
@@ -127,6 +125,9 @@
 			display: none !important;
 		}
 		div.doNotPrint {
+			display: none !important;
+		}
+		div#footer-container {
 			display: none !important;
 		}
 		div#system-message-header {
