@@ -31,12 +31,12 @@
 		border-bottom: 1px dashed #ccc !important;
 		border-top: 1px dashed #ccc !important;
 		display: table !important;
-		height: 2.3in !important;
-		max-height: 2.3in !important;
-		max-width: 7in !important;
-		min-height: 2.3in !important;
-		min-width: 7in !important;
-		width: 7in !important;
+		height: 2.75in !important;
+		max-height: 2.75in !important;
+		max-width: 8in !important;
+		min-height: 2.75in !important;
+		min-width: 8in !important;
+		width: 8in !important;
 	}
 	.holdsReportSlipContainer td {
 		padding: 0in !important;
@@ -49,11 +49,10 @@
 	}
 	div.holdsReportSlip div.patron {
 		display: table-cell;
-		height: 2in;
-		overflow-wrap: break-word;
-		padding: .47in !important;
+		height: 2.6in !important;
+		padding: .25in !important;
 		transform: rotate(-90deg);
-		width: 2in;
+		width: 2.75in;
 	}
 	div.holdsReportSlip div.patron div {
 		font-weight: bold;
@@ -71,17 +70,17 @@
 	}
 	div.holdsReportSlip div.placeHolder {
 		display: table-cell;
-		height: 2in;
-		overflow-wrap: break-word;
-		transform: rotate(-90deg);
-		width: 2in;
+		height: 2.6in;
+        padding: .25in !important;
+        transform: rotate(-90deg);
+		width: 2.75in;
 	}
 	div.holdsReportSlip div.item {
 		display: table-cell;
-		height: 2in;
-		overflow-wrap: break-word;
+		height: 2.6in !important;
+		padding: .25in !important;
 		transform: rotate(90deg);
-		width: 2in;
+		width: 2.75in;
 	}
 	div.holdsReportSlip div.item div {
 	}
@@ -112,8 +111,8 @@
 	}
 	@media print {
 		@page {
-			size:  auto;   /* auto is the initial value */
-			margin: .5in !important;  /* this affects the margin in the printer settings */
+			size: letter;
+			margin: 0in !important;  /* this affects the margin in the printer settings */
 		}
 		html {
 			margin: 0px;  /* this affects the margin on the html before sending to printer */
@@ -130,8 +129,17 @@
 		div#footer-container {
 			display: none !important;
 		}
+		div#main-content {
+			padding: 0in !important;
+		}
+		div#main-content-with-sidebar {
+			padding: 0in !important;
+		}
 		div#system-message-header {
 			display: none !important;
+		}
+		table#holdsReportTable {
+			margin: 0in;
 		}
 		table#holdsReportTable thead tr {
 			display: none !important;
