@@ -25,90 +25,11 @@
 		</div>
 {literal}
 <style type="text/css">
-	/* TODO : GET 4 slips to fit on a page */
-	/* TODO : display as table on screen, slips in print */
-	.holdsReportSlipContainer{
-		border-bottom: 1px dashed #ccc !important;
-		border-top: 1px dashed #ccc !important;
-		display: table !important;
-		height: 2.75in !important;
-		max-height: 2.75in !important;
-		max-width: 8in !important;
-		min-height: 2.75in !important;
-		min-width: 8in !important;
-		width: 8in !important;
-	}
-	.holdsReportSlipContainer td {
-		padding: 0in !important;
-	}
-	div.holdsReportSlip {
-		color: #000;
-		display: table-row !important;
-		font-size: 12pt;
-		page-break-inside: avoid;
-	}
-	div.holdsReportSlip div.patron {
-		display: table-cell;
-		height: 2.6in !important;
-		padding: .25in !important;
-		transform: rotate(-90deg);
-		width: 2.75in;
-	}
-	div.holdsReportSlip div.patron div {
-		font-weight: bold;
-	}
-	div.GRD_LVL {
-	}
-	div.HOME_ROOM {
-	}
-	div.P_BARCODE_SCANNABLE {
-		font-family: "3 of 9 Barcode";
-		font-size: 20pt !important;
-		font-weight: normal !important;
-	}
-	div.PATRON_NAME {
-	}
-	div.holdsReportSlip div.placeHolder {
-		display: table-cell;
-		height: 2.6in;
-        padding: .25in !important;
-        transform: rotate(-90deg);
-		width: 2.75in;
-	}
-	div.holdsReportSlip div.item {
-		display: table-cell;
-		height: 2.6in !important;
-		padding: .25in !important;
-		transform: rotate(90deg);
-		width: 2.75in;
-	}
-	div.holdsReportSlip div.item div {
-	}
-	div.CALL_NUMBER {
-	}
-	div.ITEM_ID {
-	}
-	div.TITLE {
-		font-style: italic;
-	}
-	div.DUE_DATE {
-	}
-	table#holdsReportTable {
-/*		width: 7in;
-		margin-left: 0;
-		margin-right: auto;
-		font: inherit;
-		border: 0;
-*/	}
-	table#holdsReportTable .hideit {
-		display: none;
-	}
-	table#holdsReportTable thead {
-		display: table !important;
-	}
-	table#holdsReportTable tbody tr td {
-		border: 0;
-	}
+    @media screen {
+        .displayPrint {
+            display: none !important;
+        }
+    }
 	@media print {
 		@page {
 			size: letter;
@@ -144,6 +65,83 @@
 		table#holdsReportTable thead tr {
 			display: none !important;
 		}
+        .holdsReportSlipContainer{
+            border-bottom: 1px dashed #ccc !important;
+            border-top: 1px dashed #ccc !important;
+            display: table !important;
+            height: 2.75in !important;
+            max-height: 2.75in !important;
+            max-width: 8in !important;
+            min-height: 2.75in !important;
+            min-width: 8in !important;
+            width: 8in !important;
+        }
+        .holdsReportSlipContainer td {
+            padding: 0in !important;
+        }
+        div.holdsReportSlip {
+            color: #000;
+            display: table-row !important;
+            font-size: 12pt;
+            page-break-inside: avoid;
+        }
+        div.holdsReportSlip div.patron {
+            display: table-cell;
+            height: 2.6in !important;
+            padding: .25in !important;
+            transform: rotate(-90deg);
+            width: 2.75in;
+        }
+        div.holdsReportSlip div.patron div {
+            font-weight: bold;
+        }
+        div.GRD_LVL {
+        }
+        div.HOME_ROOM {
+        }
+        div.P_BARCODE_SCANNABLE {
+            font-family: "3 of 9 Barcode";
+            font-size: 20pt !important;
+            font-weight: normal !important;
+        }
+        div.PATRON_NAME {
+        }
+        div.holdsReportSlip div.placeHolder {
+            display: table-cell;
+            height: 2.6in;
+            padding: .25in !important;
+            transform: rotate(-90deg);
+            width: 2.75in;
+        }
+        div.holdsReportSlip div.item {
+            display: table-cell;
+            height: 2.6in !important;
+            padding: .25in !important;
+            transform: rotate(90deg);
+            width: 2.75in;
+        }
+        div.holdsReportSlip div.item div {
+        }
+        div.CALL_NUMBER {
+        }
+        div.ITEM_ID {
+        }
+        div.TITLE {
+            font-style: italic;
+        }
+        div.DUE_DATE {
+        }
+        table#holdsReportTable {
+        }
+        table#holdsReportTable .displayScreen {
+            display: none;
+        }
+        table#holdsReportTable thead {
+            display: table !important;
+        }
+        table#holdsReportTable tbody tr td {
+            border: 0;
+        }
 	}
 </style>
 {/literal}
@@ -151,12 +149,14 @@
 		<table id="holdsReportTable">
 			<thead>
 				<tr>
-					<th class="filter-select filter-onlyAvail">Shelf Location</th>
 					<th class="filter-select filter-onlyAvail">Grade</th>
 					<th class="filter-select filter-onlyAvail">Homeroom</th>
 					<th class="sorter-false">Student ID</th>
 					<th class="filter">Student Name</th>
-					<th class="sorter-false">Notice</th>
+                    <th class="filter-select filter-onlyAvail">Shelf Location</th>
+                    <th class="filter">Call Number</th>
+                    <th class="filter">Title</th>
+                    <th class="sorter-false">Notice</th>
 				<tr>
 			</thead>
 			<tbody>
@@ -164,12 +164,14 @@
 {foreach from=$reportData item=dataRow name=holdsReportData}
 		{if $smarty.foreach.holdsReportData.index > 0}</div></div></td></tr>{/if}
 				<tr class="holdsReportSlipContainer">
-					<td class="hideit">{$dataRow.SHELF_LOCATION|replace:'kids ':''|replace:'teen ':''|replace:'adult ':''}</td>
-					<td class="hideit">{$dataRow.GRD_LVL|replace:' student':''|replace:'MNPS School Librar':'0.0 MNPS School Librar'|replace:'MNPS Staff':'0.1 MNPS Staff'|replace:'Pre-K':'0.2 Pre-K'|replace:'Kindergar':'0.3 Kindergar'|replace:'First':'1 First'|replace:'Second':'2 Second'|replace:'Third':'3 Third'|replace:'Fourth':'4 Fourth'|replace:'Fifth':'5 Fifth'|replace:'Sixth':'6 Sixth'|replace:'Seventh':'7 Seventh'|replace:'Eighth':'8 Eighth'|replace:'Ninth':'9 Ninth'|replace:'Tenth':'10 Tenth'|replace:'Eleventh':'11 Eleventh'|replace:'Twelfth':'12 Twelfth'|regex_replace:'/^.*no LL delivery/':'13 no LL delivery'|replace:'MNPS 18+':'13 MNPS 18+'}</td>
-					<td class="hideit">{$dataRow.HOME_ROOM|lower|capitalize:true}</td>
-					<td class="hideit">{$dataRow.P_BARCODE}</td>
-					<td class="hideit">{$dataRow.PATRON_NAME}</td>
-					<td>
+					<td class="displayScreen">{$dataRow.GRD_LVL|replace:' student':''|replace:'MNPS School Librar':'0.0 MNPS School Librar'|replace:'MNPS Staff':'0.1 MNPS Staff'|replace:'Pre-K':'0.2 Pre-K'|replace:'Kindergar':'0.3 Kindergar'|replace:'First':'1 First'|replace:'Second':'2 Second'|replace:'Third':'3 Third'|replace:'Fourth':'4 Fourth'|replace:'Fifth':'5 Fifth'|replace:'Sixth':'6 Sixth'|replace:'Seventh':'7 Seventh'|replace:'Eighth':'8 Eighth'|replace:'Ninth':'9 Ninth'|replace:'Tenth':'10 Tenth'|replace:'Eleventh':'11 Eleventh'|replace:'Twelfth':'12 Twelfth'|regex_replace:'/^.*no LL delivery/':'13 no LL delivery'|replace:'MNPS 18+':'13 MNPS 18+'}</td>
+					<td class="displayScreen">{$dataRow.HOME_ROOM|lower|capitalize:true}</td>
+					<td class="displayScreen">{$dataRow.P_BARCODE}</td>
+					<td class="displayScreen">{$dataRow.PATRON_NAME}</td>
+                    <td class="displayScreen">{$dataRow.SHELF_LOCATION|replace:'kids ':''|replace:'teen ':''|replace:'adult ':''}</td>
+                    <td class="displayScreen">{$dataRow.CALL_NUMBER}</td>
+                    <td class="displayScreen">{$dataRow.TITLE}</td>
+                    <td class="displayPrint">
 						<div class="holdsReportSlip">
 							<div class="patron">
 								<div class="PATRON_NAME">{$dataRow.PATRON_NAME|upper}</div>
