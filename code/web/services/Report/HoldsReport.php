@@ -63,7 +63,7 @@ class Report_HoldsReport extends Admin_Admin {
 		$user = UserAccount::getLoggedInUser();
 		$location = new Location();
 		$location->orderBy('code');
-		if (UserAccount::userHasPermission('View Location Holds Reports')){
+		if (!UserAccount::userHasPermission('View All Holds Reports')){
 			//Scope to just locations for the user based on home branch
 			$location->locationId = $user->homeLocationId;
 		}
