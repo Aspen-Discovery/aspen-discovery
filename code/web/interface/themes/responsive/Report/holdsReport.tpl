@@ -180,7 +180,10 @@
 								<div class="HOME_ROOM">{$dataRow.HOME_ROOM|lower|capitalize:true}</div>
 							</div>
 							<div class="placeHolder">
-&nbsp;
+                                <p>Thank you for checking out from your school library.</p>
+                                <p>Books are due in 2 weeks.</p>
+                                <p>DVDs are due in 1 week.</p>
+                                <p>Check your account online at https://school.library.nashville.org</p>
 							</div>
 							<div class="item">
 								<div class="SHELF_LOCATION">{$dataRow.SHELF_LOCATION|replace:'kids ':''|replace:'teen ':''|replace:'adult ':''|capitalize}</div>
