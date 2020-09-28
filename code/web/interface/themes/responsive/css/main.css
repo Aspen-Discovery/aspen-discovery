@@ -8648,12 +8648,13 @@ hr.menu {
   outline: none;
 }
 #horizontal-menu-bar-container {
-  height: 47px;
+  height: 42px;
 }
 #horizontal-menu-bar-container .menu-icon {
-  height: 43px;
+  height: 38px;
+  line-height: 16px;
   display: inline-block;
-  padding: 8px 5px 5px 5px;
+  padding: 13px 5px 0 5px;
   cursor: pointer;
 }
 #horizontal-menu-bar-container .menu-icon:visited,
