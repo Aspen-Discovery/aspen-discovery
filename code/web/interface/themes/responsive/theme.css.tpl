@@ -90,6 +90,7 @@ body .container, #home-page-browse-content{ldelim}
 #horizontal-menu-bar-container{ldelim}
     background-color: {$headerBackgroundColor};
     color: {$headerForegroundColor};
+    position: relative;
 {rdelim}
 
 #horizontal-menu-bar-container, #horizontal-menu-bar-container .menu-icon, #horizontal-menu-bar-container .menu-icon .menu-bar-label,

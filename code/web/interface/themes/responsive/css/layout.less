@@ -81,7 +81,10 @@ hr.menu{
   display: inline-block;
   padding-right: 10px;
 }
-
+#menuToggleButton{
+  width: 38px;
+  display: inline-block;
+}
 #menuToggleButton > a{
   width: 30px;
   text-align: center;
@@ -92,6 +95,16 @@ hr.menu{
   background-color: #ededed;
 }
 
+.dropdownMenu {
+  display: none;
+  position: absolute;
+  background-color: #ededed;
+  min-width: 220px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 3;
+}
+
 #header-menu {
   display: none;
   position: absolute;
@@ -99,7 +112,7 @@ hr.menu{
   top: 36px;
   background-color: #ededed;
   min-width: 220px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
   padding: 12px 16px;
   z-index: 3;
 }
@@ -211,16 +224,12 @@ hr.menu{
 // Horizontal Menu Bar for small devices
 #horizontal-menu-bar-container {
   .menu-icon {
-    float: right;
     padding: 5px;
     margin-left: 5px;
     margin-right: 5px;
     font-size: 16px;
     &:focus {
       outline: none;
-    }
-    &.menu-left {
-      float: left;
     }
   }
   padding-left: @padding-xs-horizontal;
@@ -232,6 +241,7 @@ hr.menu{
     margin-top: 3px;
     @menu-icon-padding: 5px;
     padding: @menu-icon-padding;
+    cursor: pointer;
     &:visited,&:hover,&:focus {
       text-decoration: none;
       outline: none;
@@ -246,6 +256,18 @@ hr.menu{
       display: inline-block;
     }
   }
+}
+
+.menu-section{
+  display: block;
+}
+.menu-section-left{
+
+}
+.menu-section-right{
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 // Sidebar & Main content

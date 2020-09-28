@@ -98,12 +98,12 @@ class LMLibraryCalendarSetting extends DataObject
 	public function getLibraries() {
 		if (!isset($this->_libraries) && $this->id){
 			$this->_libraries = array();
-			$libraryLink = new LibraryEventsSetting();
-			$libraryLink->settingSource = 'library_market';
-			$libraryLink->settingId = $this->id;
-			$libraryLink->find();
-			while($libraryLink->fetch()){
-				$this->_libraries[] = $libraryLink->libraryId;
+			$library = new LibraryEventsSetting();
+			$library->settingSource = 'library_market';
+			$library->settingId = $this->id;
+			$library->find();
+			while($library->fetch()){
+				$this->_libraries[] = $library->libraryId;
 			}
 		}
 		return $this->_libraries;
@@ -114,13 +114,12 @@ class LMLibraryCalendarSetting extends DataObject
 			$this->clearLibraries();
 
 			foreach ($this->_libraries as $libraryId) {
-				/** @var LibraryEventsSetting $libraryLink */
-				$libraryLink = new LibraryEventsSetting();
+				$libraryEventSetting = new LibraryEventsSetting();
 
-				$libraryLink->settingSource = 'library_market';
-				$libraryLink->settingId = $this->id;
-				$libraryLink->libraryId = $libraryId;
-				$libraryLink->insert();
+				$libraryEventSetting->settingSource = 'library_market';
+				$libraryEventSetting->settingId = $this->id;
+				$libraryEventSetting->libraryId = $libraryId;
+				$libraryEventSetting->insert();
 			}
 			unset($this->_libraries);
 		}
@@ -129,9 +128,9 @@ class LMLibraryCalendarSetting extends DataObject
 	private function clearLibraries()
 	{
 		//Delete links to the libraries
-		$libraryLink = new LibraryEventsSetting();
-		$libraryLink->settingSource = 'library_market';
-		$libraryLink->settingId = $this->id;
-		return $libraryLink->delete(true);
+		$libraryEventSetting = new LibraryEventsSetting();
+		$libraryEventSetting->settingSource = 'library_market';
+		$libraryEventSetting->settingId = $this->id;
+		return $libraryEventSetting->delete(true);
 	}
 }

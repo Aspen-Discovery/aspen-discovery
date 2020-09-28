@@ -39,39 +39,48 @@
 
 	{if $libraryLinks}
 		{foreach from=$libraryLinks item=linkCategory key=categoryName name=linkLoop}
-			{if $categoryName && !preg_match('/none-\\d+/', $categoryName)}
-				{* Put the links within a collapsible section *}
-				<a onclick="return AspenDiscovery.toggleMenuSection('{$categoryName|escapeCSS}');">
-					<div class="header-menu-section" id="{$categoryName|escapeCSS}MenuSection">
-						<i class="fas {if !array_key_exists($categoryName, $expandedLinkCategories)}fa-caret-right{else}fa-caret-down{/if}"></i>{$categoryName}
+			{assign var=firstCategory value=$linkCategory|@reset}
+			{if !$firstCategory->alwaysShowIconInTopMenu}
+				{if $categoryName && !preg_match('/none-\\d+/', $categoryName) && count($linkCategory) > 1}
+					{* Put the links within a collapsible section *}
+					<a onclick="return AspenDiscovery.toggleMenuSection('{$categoryName|escapeCSS}');" {if $firstCategory->showInTopMenu || $firstCategory->alwaysShowIconInTopMenu}class="hidden-lg"{/if}>
+						<div class="header-menu-section" id="{$categoryName|escapeCSS}MenuSection">
+							<i class="fas {if !array_key_exists($categoryName, $expandedLinkCategories)}fa-caret-right{else}fa-caret-down{/if}"></i>{$categoryName}
+						</div>
+					</a>
+					<div id="{$categoryName|escapeCSS}MenuSectionBody" class="menuSectionBody {if $link->showInTopMenu || $link->alwaysShowIconInTopMenu}hidden-lg{/if}" {if !array_key_exists($categoryName, $expandedLinkCategories)}style="display: none" {/if}>
+						{foreach from=$linkCategory item=link key=linkName}
+							{if !empty($link->htmlContents)}
+								{$link->htmlContents}
+							{else}
+								<div class="header-menu-option {if $categoryName && !preg_match('/none-\\d+/', $categoryName)}childMenuItem{/if}">
+									<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
+										{if !empty($link->iconName)}
+											<i class="fas fa-{$link->iconName} fa-lg"></i>
+										{/if}
+										{$linkName}
+									</a>
+								</div>
+							{/if}
+						{/foreach}
 					</div>
-				</a>
-				<div id="{$categoryName|escapeCSS}MenuSectionBody" class="menuSectionBody" {if !array_key_exists($categoryName, $expandedLinkCategories)}style="display: none" {/if}>
+				{else}
+					{* No category name, display these links as buttons *}
 					{foreach from=$linkCategory item=link key=linkName}
 						{if $link->htmlContents}
 							{$link->htmlContents}
 						{else}
-							<div class="header-menu-option {if $categoryName && !preg_match('/none-\\d+/', $categoryName)}childMenuItem{/if}">
-								<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
+							<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
+								<div class="header-menu-option {if $link->showInTopMenu || $link->alwaysShowIconInTopMenu}hidden-lg{/if}">
+									{if !empty($link->iconName)}
+										<i class="fas fa-{$link->iconName} fa-lg"></i>
+									{/if}
 									{$linkName}
-								</a>
-							</div>
+								</div>
+							</a>
 						{/if}
 					{/foreach}
-				</div>
-			{else}
-				{* No category name, display these links as buttons *}
-				{foreach from=$linkCategory item=link key=linkName}
-					{if $link->htmlContents}
-						{$link->htmlContents}
-					{else}
-						<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
-							<div class="header-menu-option">
-								{$linkName}
-							</div>
-						</a>
-					{/if}
-				{/foreach}
+				{/if}
 			{/if}
 		{/foreach}
 	{/if}

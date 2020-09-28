@@ -150,7 +150,7 @@ class Events_Calendar extends Action
 		}
 		$interface->assign('weeks', $weeks);
 
-		$this->display('calendar.tpl', 'Events Calendar ' . $formattedMonthYear, 'Search/results-sidebar.tpl');
+		$this->display('calendar.tpl', 'Events Calendar ' . $formattedMonthYear, '');
 	}
 
 	function getBreadcrumbs()

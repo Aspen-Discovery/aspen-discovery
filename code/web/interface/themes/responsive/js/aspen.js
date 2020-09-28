@@ -4632,6 +4632,7 @@ var AspenDiscovery = (function(){
 				this.closeMenu();
 			}else{
 				this.closeAccountMenu();
+				$('.dropdownMenu').slideUp('slow');
 				menuButton.addClass('selected');
 				headerMenu.slideDown('slow');
 				menuButtonIcon.removeClass('fa-bars');
@@ -4669,6 +4670,7 @@ var AspenDiscovery = (function(){
 				this.closeAccountMenu();
 			}else{
 				this.closeMenu();
+				$('.dropdownMenu').slideUp('slow');
 				accountMenuButton.addClass('selected');
 				accountMenu.slideDown('slow');
 			}
@@ -4679,6 +4681,23 @@ var AspenDiscovery = (function(){
 			let accountMenuButton = $('#accountMenuToggleButton > a');
 			accountMenu.slideUp('slow');
 			accountMenuButton.removeClass('selected');
+		},
+		showCustomMenu: function (menuName) {
+			this.closeMenu();
+			this.closeAccountMenu();
+			let customMenu = $('#' + menuName + '-menu');
+			if (customMenu.is(':visible')){
+				customMenu.slideUp('slow');
+			}else{
+				$('.dropdownMenu').slideUp('slow');
+				let customMenuTrigger = $('#' + menuName + '-menu-trigger')
+				let customMenuTriggerPosition = customMenuTrigger.position();
+				customMenu.css('left', customMenuTriggerPosition.left);
+				customMenu.css('top', customMenuTriggerPosition.top + customMenuTrigger.outerHeight());
+				customMenu.slideDown('slow');
+			}
+
+			return false;
 		}
 	}
 

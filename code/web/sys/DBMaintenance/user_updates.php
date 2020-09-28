@@ -558,6 +558,18 @@ function getUserUpdates()
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View All Student Reports'))",
 			]
 		],
+
+		'view_unpublished_content_permissions' => [
+			'title' => 'View unpublished permissions',
+			'description' => 'Create permissions to view unpublished content',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Web Builder', 'View Unpublished Content', '', 0, 'Allows the user to view unpublished menu items and content.')
+				",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Unpublished Content'))",
+			]
+		],
 	);
 }
 
