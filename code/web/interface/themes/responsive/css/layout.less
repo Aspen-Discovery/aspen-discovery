@@ -82,16 +82,12 @@ hr.menu{
   padding-right: 10px;
 }
 #menuToggleButton{
-  width: 38px;
+  width: 36px;
   display: inline-block;
-}
-#menuToggleButton > a{
-  width: 30px;
   text-align: center;
-  background-color: transparent;
 }
 
-#menuToggleButton > a.selected{
+#menuToggleButton.selected{
   background-color: #ededed;
 }
 
@@ -108,8 +104,6 @@ hr.menu{
 #header-menu {
   display: none;
   position: absolute;
-  right: 10px;
-  top: 36px;
   background-color: #ededed;
   min-width: 220px;
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
@@ -129,8 +123,6 @@ hr.menu{
 #account-menu {
   display: none;
   position: absolute;
-  right: 50px;
-  top: 36px;
   background-color: #ededed;
   min-width: 220px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
@@ -138,7 +130,7 @@ hr.menu{
   z-index: 3;
 }
 
-#accountMenuToggleButton > a.selected{
+#accountMenuToggleButton.selected{
   background-color: #ededed;
 }
 
@@ -237,10 +229,11 @@ hr.menu{
 }
 
 #horizontal-menu-bar-container{
+  height: 42px;
   .menu-icon {
-    margin-top: 3px;
-    @menu-icon-padding: 5px;
-    padding: @menu-icon-padding;
+    height: 38px;
+    display: inline-block;
+    padding: 8px 5px 5px 5px;
     cursor: pointer;
     &:visited,&:hover,&:focus {
       text-decoration: none;
@@ -262,7 +255,9 @@ hr.menu{
   display: block;
 }
 .menu-section-left{
-
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 .menu-section-right{
   position: absolute;

@@ -101,7 +101,7 @@ body .container, #home-page-browse-content{ldelim}
 
 #horizontal-menu-bar-container .menu-icon:hover, #horizontal-menu-bar-container .menu-icon:focus,
 #horizontal-menu-bar-container .menu-icon:hover .menu-bar-label, #horizontal-menu-bar-container .menu-icon:focus .menu-bar-label,
-#menuToggleButton > a.selected{ldelim}
+#menuToggleButton.selected{ldelim}
     background-color: {$menubarHighlightBackgroundColor};
     color: {$menubarHighlightForegroundColor};
 {rdelim}
