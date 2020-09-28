@@ -381,4 +381,12 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public function logout(User $user){
 		//Nothing by default
 	}
+
+	public function getHoldsReportData($location) {
+		return null;
+	}
+
+	public function getStudentReportData($location,$showOverdueOnly,$date) {
+		return null;
+	}
 }
