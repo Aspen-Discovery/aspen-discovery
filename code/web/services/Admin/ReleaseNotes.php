@@ -2,7 +2,7 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Parsedown/Parsedown.php';
 
-class Admin_ReleaseNotes extends Admin_Admin
+class Admin_ReleaseNotes extends Action
 {
 	function launch()
 	{
@@ -26,14 +26,21 @@ class Admin_ReleaseNotes extends Admin_Admin
 		$interface->assign('releaseNotesFormatted', $releaseNotesFormatted);
 
 		$interface->assign('releaseNotes', $releaseNotes);
-		$this->display('releaseNotes.tpl', 'Release Notes');
+		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
+			$sidebar = 'Search/home-sidebar.tpl';
+		}else{
+			$sidebar = '';
+		}
+		$this->display('releaseNotes.tpl', 'Release Notes', $sidebar);
 	}
 
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_help', 'Aspen Discovery Help');
+		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
+			$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+			$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_help', 'Aspen Discovery Help');
+		}
 		$breadcrumbs[] = new Breadcrumb('', 'Release Notes');
 		return $breadcrumbs;
 	}
