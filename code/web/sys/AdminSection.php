@@ -13,11 +13,11 @@ class AdminSection
 
 	/**
 	 * @param AdminAction $adminAction
-	 * @param string|string[] $requiredPermission
+	 * @param boolean|string|string[] $requiredPermission
 	 * @return boolean
 	 */
 	public function addAction($adminAction, $requiredPermission){
-		if (UserAccount::userHasPermission($requiredPermission)){
+		if ($requiredPermission == true || UserAccount::userHasPermission($requiredPermission)){
 			$this->actions[] = $adminAction;
 			return true;
 		}else{

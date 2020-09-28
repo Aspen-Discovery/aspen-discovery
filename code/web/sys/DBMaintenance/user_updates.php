@@ -476,6 +476,17 @@ function getUserUpdates()
 			]
 		],
 
+		'allow_anyone_to_view_documentation' => [
+			'title' => 'Allow anyone to view documentation',
+			'description' => 'Remove permissions to view help manual and release notes',
+			'sql' => [
+				"DELETE FROM role_permissions where permissionId = (SELECT id from permissions where name='View Help Manual')",
+				"DELETE from permissions where name = 'View Help Manual'",
+				"DELETE FROM role_permissions where permissionId = (SELECT id from permissions where name='View Release Notes')",
+				"DELETE from permissions where name = 'View Release Notes'"
+			]
+		],
+
 		'masquerade_permissions' => [
 			'title' => 'Create masquerade permissions and roles',
 			'description' => 'Create masquerade permissions and roles',

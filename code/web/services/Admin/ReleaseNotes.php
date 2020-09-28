@@ -45,6 +45,6 @@ class Admin_ReleaseNotes extends Admin_Admin
 
 	function canView()
 	{
-		return UserAccount::userHasPermission('View Release Notes');
+		return true;
 	}
 }

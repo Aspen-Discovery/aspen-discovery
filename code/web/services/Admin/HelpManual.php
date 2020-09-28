@@ -38,6 +38,6 @@ class Admin_HelpManual extends Admin_Admin
 
 	function canView()
 	{
-		return UserAccount::userHasPermission('View Help Manual');
+		return true;
 	}
 }

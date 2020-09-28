@@ -2150,8 +2150,8 @@ class User extends DataObject
 		}
 
 		$sections['aspen_help'] = new AdminSection('Aspen Discovery Help');
-		$sections['aspen_help']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), 'View Help Manual');
-		$sections['aspen_help']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), 'View Release Notes');
+		$sections['aspen_help']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), true);
+		$sections['aspen_help']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
 		$showSubmitTicket = false;
 		try {
 			require_once ROOT_DIR . '/sys/SystemVariables.php';
