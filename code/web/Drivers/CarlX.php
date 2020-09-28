@@ -14,6 +14,15 @@ class CarlX extends SIP2Driver{
 		$this->catalogWsdl = $configArray['Catalog']['catalogApiWsdl'];
 	}
 
+	public function  __destruct()
+	{
+		if (isset($this->dbConnection)) {
+			oci_close($this->dbConnection);
+			$this->dbConnection = null;
+		}
+		parent::__destruct();
+	}
+
 	function initDatabaseConnection()
 	{
 		if (!isset($this->dbConnection)) {
@@ -1602,6 +1611,9 @@ class CarlX extends SIP2Driver{
 	}
 
 	public function placeHoldViaSIP($patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null){
+		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0) {
+			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
+		}
 		global $configArray;
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
@@ -1888,10 +1900,53 @@ EOT;
 		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 			$data[] = $row;
 		}
+		oci_free_statement($stid);
 		return $data;
-//
-//		oci_free_statement($stid);
-//		oci_close($this->dbConnection);
+	}
+
+	public function getStudentBarcodeData($location) {
+		$this->initDatabaseConnection();
+		// query school branch codes and homerooms
+		$sql = <<<EOT
+			select 
+			  branchcode
+			  , homeroomid
+			  , min(homeroomname) as homeroomname
+			  , case
+				when min(grade) < max(grade)
+				  then replace(replace(trim(to_char(min(grade),'00')),'-01','PK'),'00','KI') || '-' || replace(replace(trim(to_char(max(grade),'00')),'-01','PK'),'00','KI')
+				  else replace(replace(trim(to_char(min(grade),'00')),'-01','PK'),'00','KI') || '___'
+			  end as grade
+			from (
+			  select distinct
+				b.branchcode
+				, s.street2 as homeroomid
+				, nvl(regexp_replace(upper(h.name),'[^A-Z]','_'),'_NULL_') as homeroomname
+				, s.bty-22 as grade
+			  from
+				branch_v b
+				  left join patron_v s on b.branchnumber = s.defaultbranch
+				  left join patron_v h on s.street2 = h.patronid
+			  where
+				b.branchcode = '$location'
+				and s.street2 is not null
+				and s.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+			  order by
+				b.branchcode
+				, homeroomname
+			) a
+			group by branchcode, homeroomid
+			order by branchcode, homeroomname
+EOT;
+		$stid = oci_parse($this->dbConnection, $sql);
+		// consider using oci_set_prefetch to improve performance
+		// oci_set_prefetch($stid, 1000);
+		oci_execute($stid);
+		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+			$data[] = $row;
+		}
+		oci_free_statement($stid);
+		return $data;
 	}
 
 	public function getStudentReportData($location,$showOverdueOnly,$date) {
@@ -1953,10 +2008,8 @@ EOT;
 		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 			$data[] = $row;
 		}
+		oci_free_statement($stid);
 		return $data;
-//
-//		oci_free_statement($stid);
-//		oci_close($this->dbConnection);
 	}
 
 }

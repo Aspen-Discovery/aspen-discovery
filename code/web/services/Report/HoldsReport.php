@@ -70,7 +70,6 @@ class Report_HoldsReport extends Admin_Admin {
 
 	function getBreadcrumbs()
 	{
-// TODO : is this the right section?
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#circulation_reports', 'Circulation Reports');
