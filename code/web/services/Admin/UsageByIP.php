@@ -30,7 +30,7 @@ class Admin_UsageByIP extends Admin_Admin
 		}else{
 			//TODO: Filter by the instance name
 		}
-		$usageByIP->orderBy('ipAddress');
+		$usageByIP->orderBy('lastRequest DESC');
 
 		//TODO: Apply filters
 
@@ -47,7 +47,7 @@ class Admin_UsageByIP extends Admin_Admin
 		ksort($allIpStats);
 		$interface->assign('allIpStats', $allIpStats);
 
-		$this->display('usage_by_ip.tpl', 'Aspen Usage Dashboard');
+		$this->display('usage_by_ip.tpl', 'Aspen Usage By IP');
 	}
 
 
