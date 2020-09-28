@@ -17,7 +17,11 @@ class Admin_HelpManual extends Action
 		}
 
 		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
-			$sidebar = 'Search/home-sidebar.tpl';
+			$adminActions = UserAccount::getActiveUserObj()->getAdminActions();
+			$interface->assign('adminActions', $adminActions);
+			$interface->assign('activeAdminSection', $this->getActiveAdminSection());
+			$interface->assign('activeMenuOption', 'admin');
+			$sidebar = 'Admin/admin-sidebar.tpl';
 		}else{
 			$sidebar = '';
 		}
