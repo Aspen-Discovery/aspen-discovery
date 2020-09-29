@@ -7,7 +7,7 @@
 			</a>
 		{/if}
 		<a href="/" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Browse the catalog'}" aria-label="{translate text='Browse the catalog'}">
-			<i class="fas {if empty($homeLink)}fa-home{else}fa-book-open{/if} fa-lg"></i><span class="menu-bar-label visible-inline-block-lg">Browse</span>
+			<i class="fas {if empty($homeLink)}fa-home{else}fa-book-open{/if} fa-lg"></i>{if !empty($homeLink)}<span class="menu-bar-label visible-inline-block-lg">{translate text='Browse'}</span>{/if}
 		</a>
 		<a onclick="AspenDiscovery.closeMenu();$('.dropdownMenu').slideUp('slow');AspenDiscovery.closeAccountMenu();$('#horizontal-search-box').slideToggle('slow');return false;" class="menu-icon menu-bar-option hidden-inline-md hidden-inline-lg" title="{translate text="Search"}" aria-label="{translate text="Search"}">
 			<i class="fas fa-search fa-lg"></i><span class="menu-bar-label visible-inline-block-lg hidden-inline-block-md hidden-inline-block-sm hidden-inline-block-xs">{translate text="Search"}</span>
