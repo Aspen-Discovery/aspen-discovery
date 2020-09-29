@@ -153,5 +153,65 @@ function getAxis360Updates(){
 				'ALTER table axis360_export_log ADD column numSkipped INT(11)'
 			)
 		),
+
+		'track_axis360_user_usage' => array(
+			'title' => 'Axis 360 Usage by user',
+			'description' => 'Add a table to track how often a particular user uses Axis 360.',
+			'sql' => array(
+				"CREATE TABLE user_axis360_usage (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					userId INT(11) NOT NULL,
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					usageCount INT(11) DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE user_axis360_usage ADD INDEX (instance, userId, year, month)",
+				"ALTER TABLE user_axis360_usage ADD INDEX (instance, year, month)",
+			),
+		),
+
+		'track_axis360_record_usage' => array(
+			'title' => 'Axis 360 Record Usage',
+			'description' => 'Add a table to track how records within Axis 360 are used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE axis360_record_usage (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					axis360Id INT(11),
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					timesHeld INT(11) NOT NULL DEFAULT 0,
+					timesCheckedOut INT(11) NOT NULL DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE axis360_record_usage ADD INDEX (instance, axis360Id, year, month)",
+				"ALTER TABLE axis360_record_usage ADD INDEX (instance, year, month)",
+			),
+		),
+
+		'track_axis360_stats' => array(
+			'title' => 'Axis 360 Stats',
+			'description' => 'Add a table to track how Axis 360 is used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE axis360_stats (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					numCheckouts INT(11) NOT NULL DEFAULT 0,
+					numRenewals INT(11) NOT NULL DEFAULT 0,
+					numEarlyReturns INT(11) NOT NULL DEFAULT 0,
+					numHoldsPlaced INT(11) NOT NULL DEFAULT 0,
+					numHoldsCancelled INT(11) NOT NULL DEFAULT 0,
+					numHoldsFrozen INT(11) NOT NULL DEFAULT 0,
+					numHoldsThawed INT(11) NOT NULL DEFAULT 0,
+					numApiErrors INT(11) NOT NULL DEFAULT 0,
+					numConnectionFailures INT(11) NOT NULL DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE axis360_record_usage ADD INDEX (instance, year, month)",
+			),
+		),
 	];
 }
