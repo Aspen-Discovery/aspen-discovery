@@ -1951,6 +1951,11 @@ EOT;
 
 	public function getStudentReportData($location,$showOverdueOnly,$date) {
 			$this->initDatabaseConnection();
+			if ($showOverdueOnly == 'checkedOut') {
+				$statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L' or transitem_v.transcode='C')";
+			} else if ($showOverdueOnly == 'overdue') {
+				$statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L')";
+			}
 			$sql = <<<EOT
 				select
 				  patronbranch.branchcode AS Home_Lib_Code
@@ -1987,7 +1992,7 @@ EOT;
 				  and location_v.locnumber = item_v.location
 				  and itembranch.branchnumber = transitem_v.holdingbranch
 				  and itembranchgroup.branchgroup = itembranch.branchgroup
-				  and (TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L' or transitem_v.transcode='C')
+				  and $statuses
 				  and patronbranch.branchgroup = '2'
 				  and patronbranchgroup.branchgroup = patronbranch.branchgroup
 				  and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42')
@@ -2001,6 +2006,7 @@ EOT;
 				  , item_v.cn
 				  , bbibmap_v.title
 EOT;
+			var_dump($sql);
 		$stid = oci_parse($this->dbConnection, $sql);
 		// consider using oci_set_prefetch to improve performance
 		// oci_set_prefetch($stid, 1000);

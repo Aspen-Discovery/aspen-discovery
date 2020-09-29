@@ -10,8 +10,8 @@
 				{html_options name=location options=$locationLookupList selected=$selectedLocation class="form-control input-sm"}
 
 				<select name="showOverdueOnly" id="showOverdueOnly" class="form-control input-sm">
-					<option value="overdue" {if $showOverdueOnly}selected="selected"{/if}>Overdue Items</option>
-					<option value="checkedOut" {if !$showOverdueOnly}selected="selected"{/if}>All Checked Out</option>
+					<option value="overdue" {if $showOverdueOnly == "overdue"}selected="selected"{/if}>Overdue Items</option>
+					<option value="checkedOut" {if $showOverdueOnly == "checkedOut"}selected="selected"{/if}>All Checked Out</option>
 				</select>
 				&nbsp;
 				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary"/>
@@ -26,7 +26,7 @@
 			{if $reportData}
 				<br/>
 				<p>
-					There are a total of <strong>{$reportData|@count}</strong> {if $showOverdueOnly}overdue items{else}items out{/if}.
+					There are a total of <strong>{$reportData|@count}</strong> {if $showOverdueOnly == "overdue"}overdue items{else}items out{/if}.
 				</p>
 {literal}
 <style type="text/css">

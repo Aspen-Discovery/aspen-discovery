@@ -19,7 +19,7 @@ class Report_StudentReport extends Admin_Admin {
 		$selectedLocation = isset($_REQUEST['location']) ? $_REQUEST['location'] : reset($locationLookupList);
 		$interface->assign('selectedLocation', $selectedLocation);
 // OTHER FORM VARIABLES
-		$showOverdueOnly = isset($_REQUEST['showOverdueOnly']) ? $_REQUEST['showOverdueOnly'] == 'overdue': true;
+		$showOverdueOnly = isset($_REQUEST['showOverdueOnly']) ? $_REQUEST['showOverdueOnly'] : 'overdue';
 		$interface->assign('showOverdueOnly', $showOverdueOnly);
 		$now = time();
 		$data = CatalogFactory::getCatalogConnectionInstance()->getStudentReportData($selectedLocation,$showOverdueOnly,$now);
