@@ -93,12 +93,12 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if !empty($record.accessOnlineUrl)}
-							<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Open in Cloud Library'}</a>
+							<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Open in Axis 360'}</a>
 						{/if}
 						{if $record.canRenew}
 							<a href="#" onclick="return AspenDiscovery.Axis360.renewCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout'}</a>
 						{/if}
-						<a href="#" onclick="return AspenDiscovery.Axis360.returnCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-warning">{translate text='Return&nbsp;Now'}</a>
+						<a href="#" onclick="return AspenDiscovery.Axis360.returnCheckout('{$record.userId}', '{$record.recordId}', '{$record.transactionId}');" class="btn btn-sm btn-warning">{translate text='Return&nbsp;Now'}</a>
 					</div>
 					{if $showWhileYouWait}
 						<div class="btn-group btn-group-vertical btn-block">

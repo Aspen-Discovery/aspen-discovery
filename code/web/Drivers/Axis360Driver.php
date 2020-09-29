@@ -129,30 +129,30 @@ private $checkouts = [];
 	/**
 	 * Return a title currently checked out to the user
 	 *
-	 * @param $recordId   string
+	 * @param $transactionId   string
 	 * @return array
 	 */
-	public function returnCheckout($recordId)
+	public function returnCheckout($transactionId)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		if ($this->getAxis360AccessToken()){
 			$settings = $this->getSettings();
-			$returnCheckoutUrl = $settings->apiUrl . "/Services/VendorAPI/EarlyCheckin/v2/?transactionID=$recordId";
+			$returnCheckoutUrl = $settings->apiUrl . "/Services/VendorAPI/EarlyCheckin/v2?transactionID=$transactionId";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
 				'Library: ' . $settings->libraryPrefix,
 			];
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
-			$response = $this->curlWrapper->curlSendPage($returnCheckoutUrl, 'GET');
+			$response = $this->curlWrapper->curlGetPage($returnCheckoutUrl);
 			$xmlResults = simplexml_load_string($response);
-			$removeHoldResult = $xmlResults->removeholdResult;
+			$removeHoldResult = $xmlResults->EarlyCheckinRestResult;
 			$status = $removeHoldResult->status;
 			if ($status->code != '0000'){
-				$result['message'] = "Could not cancel hold, " . (string)$status->statusMessage;
+				$result['message'] = "Could not cancel return title, " . (string)$status->statusMessage;
 			}else{
 				$result['success'] = true;
-				$result['message'] = 'Your hold was cancelled successfully';
+				$result['message'] = 'Your title was returned successfully';
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';
@@ -370,7 +370,13 @@ private $checkouts = [];
 			$checkoutResult = $xmlResults->checkoutResult;
 			$status = $checkoutResult->status;
 			if ($status->code != '0000') {
-				$result['message'] = "Could not checkout title, " . (string)$status->statusMessage;
+				$result['message'] = translate('Sorry, we could not checkout this title to you.');
+				if ($status->code == '3113'){
+					$result['noCopies'] = true;
+					$result['message'] .= "\r\n\r\n" . translate('Would you like to place a hold instead?');
+				}else{
+					$result['message'] .= (string)$status->statusMessage;
+				}
 			} else {
 				$result['success'] = true;
 				$result['message'] = translate(['text' => 'axis360_checkout_success', 'defaultText' => 'Your title was checked out successfully. You may now download the title from your Account.']);;
@@ -539,10 +545,15 @@ private $checkouts = [];
 
 		];
 
-		//TODO: Figure out renewal
-		$checkout['canRenew'] = false;
-		//TODO: Figure out due date
-		$checkout['dueDate'] = '';
+		//After a title is returned, Axis 360 will still return it for a bit, but mark it as not checked out.
+		if ((string)$title->availability->isCheckedout == 'N'){
+			return;
+		}
+		$checkout['canRenew'] = (string)$title->availability->IsButtonRenew != 'N';
+		$expirationDate = new DateTime($title->availability->checkoutEndDate);
+		$checkout['dueDate'] = $expirationDate->getTimestamp();
+		$checkout['accessOnlineUrl'] = (string)$title->titleUrl;
+		$checkout['transactionId'] = (string)$title->availability->transactionID;
 		require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 
 		$axis360Record = new Axis360RecordDriver((string)$title->titleId);

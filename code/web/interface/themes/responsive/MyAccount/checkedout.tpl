@@ -52,7 +52,7 @@
 					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="Cloud Library Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from Cloud Library"}</div></div>
 				{/if}
                 {if $user->isValidForEContentSource('axis360')}
-					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="axis360" aria-label="Axis 360 Checkouts List"><div id="axis360CheckoutsPlaceholder">{translate text="Loading checkouts from Axis 360"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="Axis 360 Checkouts List"><div id="axis360CheckoutsPlaceholder">{translate text="Loading checkouts from Axis 360"}</div></div>
                 {/if}
 			</div>
 			<script type="text/javascript">
