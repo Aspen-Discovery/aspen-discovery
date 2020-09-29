@@ -8,7 +8,7 @@ class Report_HoldsReport extends Admin_Admin {
 	{
 		parent::__construct(true);
 	}
-	
+
 	function launch(){
 		global $interface;
 		global $configArray;
