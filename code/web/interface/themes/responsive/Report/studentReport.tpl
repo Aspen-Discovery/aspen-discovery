@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		{if $loggedIn}
+		<div class="doNotPrint">
 			<h1>School Overdue Report</h1>
 			{foreach from=$errors item=error}
 				<div class="error">{$error}</div>
@@ -28,6 +28,7 @@
 				<p>
 					There are a total of <strong>{$reportData|@count}</strong> {if $showOverdueOnly == "overdue"}overdue items{else}items out{/if}.
 				</p>
+		</div>
 {literal}
 <style type="text/css">
 	div.overdueSlip {
@@ -119,6 +120,36 @@
 		border: 0;
 	}
 
+	@media print {
+		div.breadcrumbs {
+			display: none !important;
+		}
+		div.doNotPrint {
+			display: none !important;
+		}
+		div#footer-container {
+			display: none !important;
+		}
+		div#main-content {
+			padding: 0in !important;
+		}
+		div#main-content-with-sidebar {
+			padding: 0in !important;
+		}
+		div#system-message-header {
+			display: none !important;
+		}
+		table#studentReportTable {
+			margin: 0in;
+		}
+		table#studentReportTable .displayScreen {
+			display: none;
+		}
+		table#studentReportTable thead {
+			display: none !important;
+		}
+
+	}
 </style>
 {/literal}
 
@@ -141,8 +172,8 @@
 				<tr class="overdueSlipContainer">
 					<td class="hideit">{$dataRow.GRD_LVL|replace:' student':''|replace:'MNPS School Librar':'0.0 MNPS School Librar'|replace:'MNPS Staff':'0.1 MNPS Staff'|replace:'Pre-K':'0.2 Pre-K'|replace:'Kindergar':'0.3 Kindergar'|replace:'First':'1 First'|replace:'Second':'2 Second'|replace:'Third':'3 Third'|replace:'Fourth':'4 Fourth'|replace:'Fifth':'5 Fifth'|replace:'Sixth':'6 Sixth'|replace:'Seventh':'7 Seventh'|replace:'Eighth':'8 Eighth'|replace:'Ninth':'9 Ninth'|replace:'Tenth':'10 Tenth'|replace:'Eleventh':'11 Eleventh'|replace:'Twelfth':'12 Twelfth'|regex_replace:'/^.*no LL delivery/':'13 no LL delivery'|replace:'MNPS 18+':'13 MNPS 18+'}</td>
 					<td class="hideit">{$dataRow.HOME_ROOM|lower|capitalize:true}</td>
-					<td class="hideit">{$dataRow.PATRON_NAME}</td>
 					<td class="hideit">{$dataRow.P_BARCODE}</td>
+					<td class="hideit">{$dataRow.PATRON_NAME}</td>
 					<td>
 						<div class="overdueSlip">
 							<div class="patronHeader">
@@ -197,10 +228,6 @@
 				});
 			{/literal}
 		</script>
-
-{/if}
-{else}
-	You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
-{/if}
+	{/if}
 	</div>
 {/strip}
