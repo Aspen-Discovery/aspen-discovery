@@ -26,29 +26,22 @@ class Report_StudentReport extends Admin_Admin {
 		$interface->assign('reportData', $data);
 		$interface->assign('reportDateTime', date("Y-m-d\TH:i:sO", $now));
 
-		/*
-		// TODO : MAKE DOWNLOAD AVAILABLE
 		if (isset($_REQUEST['download'])){
 			header('Content-Type: text/csv');
-			header('Content-Disposition: attachment; filename=' . $selectedReport);
-			header('Content-Length:' . filesize($reportDir . '/' . $selectedReport));
-			foreach ($fileData as $row){
-				foreach ($row as $index => $cell){
-					if ($index != 0){
-						echo(",");
-					}
-					if (strpos($cell, ',') != false){
-						echo('"' . $cell . '"');
-					}else{
-						echo($cell);
-					}
-
+			header('Content-Disposition: attachment; filename=' . $selectedLocation . '.csv');
+			$fp = fopen('php://output', 'w');
+			//add BOM to fix UTF-8 in Excel
+			fputs($fp, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+			$count_row = 0;
+			foreach ($data as $row){
+				if ($count_row == 0) {
+					fputcsv($fp, array_keys($row));
 				}
-				echo("\r\n");
+				fputcsv($fp, $row);
+				$count_row++;
 			}
 			exit;
 		}
-		*/
 
 		$this->display('studentReport.tpl', 'Student Report');
 	}
