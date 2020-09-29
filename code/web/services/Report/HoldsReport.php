@@ -3,10 +3,17 @@
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
 
 class Report_HoldsReport extends Admin_Admin {
+
+	function __construct($isStandalonePage = false)
+	{
+		parent::__construct(true);
+	}
+	
 	function launch(){
 		global $interface;
 		global $configArray;
 		$user = UserAccount::getLoggedInUser();
+		$interface->assign('isStandalonePage', true);
 
 // LOCATION DROPDOWN ARRAY
 		$locationList = $this->getAllowedReportLocations();

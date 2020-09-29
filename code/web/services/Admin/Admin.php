@@ -5,8 +5,8 @@ require_once ROOT_DIR . '/Action.php';
 abstract class Admin_Admin extends Action {
 	protected $db;
 
-	function __construct() {
-		parent::__construct(false);
+	function __construct($isStandalonePage = false) {
+		parent::__construct($isStandalonePage);
 
 		$user = UserAccount::getLoggedInUser();
 
