@@ -2006,7 +2006,6 @@ EOT;
 				  , item_v.cn
 				  , bbibmap_v.title
 EOT;
-			var_dump($sql);
 		$stid = oci_parse($this->dbConnection, $sql);
 		// consider using oci_set_prefetch to improve performance
 		// oci_set_prefetch($stid, 1000);
