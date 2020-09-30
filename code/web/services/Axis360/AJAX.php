@@ -78,9 +78,9 @@ class Axis360_AJAX extends JSON_Action
 			// No Axis 360 Account Found, let the user create one if they want
 			return array(
 					'promptNeeded' => true,
-					'promptTitle' => 'Create an Account',
-					'prompts' => $interface->fetch('Axis360/ajax-create-account-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return AspenDiscovery.Axis360.createAccount(\'hold\', \'' . $user->id . '\', \'' . $id . '\');">'
+					'promptTitle' => 'No Account Found',
+					'prompts' => "Sorry, you don't have access to Axis 360",
+					'buttons' => ''
 				);
 		}
 	}
@@ -169,7 +169,7 @@ class Axis360_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 				$driver = new Axis360Driver();
-				return $driver->returnCheckout($patron, $id);
+				return $driver->returnCheckout($id);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
@@ -212,6 +212,74 @@ class Axis360_AJAX extends JSON_Action
 		}else{
 			$result['message'] = 'Could not find that record';
 		}
+		return $result;
+	}
+
+	function freezeHold()
+	{
+		$user = UserAccount::getLoggedInUser();
+		$result = array(
+			'success' => false,
+			'message' => 'Error ' . translate('freezing') . ' hold.'
+		);
+		if (!$user) {
+			$result['message'] = 'You must be logged in to ' . translate('freeze') . ' a hold.  Please close this dialog and login again.';
+		} elseif (!empty($_REQUEST['patronId'])) {
+			$patronId = $_REQUEST['patronId'];
+			$patronOwningHold = $user->getUserReferredTo($patronId);
+
+			if ($patronOwningHold == false) {
+				$result['message'] = 'Sorry, you do not have access to ' . translate('freeze') . ' holds for the supplied user.';
+			} else {
+				if (empty($_REQUEST['recordId'])) {
+					// We aren't getting all the expected data, so make a log entry & tell user.
+					$result['message'] = 'Information about the hold to be ' . translate('frozen') . ' was not provided.';
+				} else {
+					$recordId = $_REQUEST['recordId'];
+					$result = $patronOwningHold->freezeAxis360Hold($recordId);
+				}
+			}
+		} else {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$result['message'] = 'No Patron was specified.';
+		}
+
+		return $result;
+	}
+
+	function thawHold()
+	{
+		$user = UserAccount::getLoggedInUser();
+		$result = array( // set default response
+			'success' => false,
+			'message' => 'Error thawing hold.'
+		);
+
+		if (!$user) {
+			$result['message'] = 'You must be logged in to ' . translate('thaw') . ' a hold.  Please close this dialog and login again.';
+		} elseif (!empty($_REQUEST['patronId'])) {
+			$patronId = $_REQUEST['patronId'];
+			$patronOwningHold = $user->getUserReferredTo($patronId);
+
+			if ($patronOwningHold == false) {
+				$result['message'] = 'Sorry, you do not have access to ' . translate('thaw') . ' holds for the supplied user.';
+			} else {
+				if (empty($_REQUEST['recordId'])) {
+					$result['message'] = 'Information about the hold to be ' . translate('thawed') . ' was not provided.';
+				} else {
+					$recordId = $_REQUEST['recordId'];
+					$result = $patronOwningHold->thawAxis360Hold($recordId);
+				}
+			}
+		} else {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$result['message'] = 'No Patron was specified.';
+		}
+
 		return $result;
 	}
 }

@@ -1139,6 +1139,44 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function getMenuDataAxis360()
+	{
+		global $timer;
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error'
+		];
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			if ($user->isValidForEContentSource('axis360')) {
+				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+				$driver = new Axis360Driver();
+				$axis360Summary = $driver->getAccountSummary($user);
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+						$axis360Summary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
+						$axis360Summary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+						$axis360Summary['numAvailableHolds'] += $linkedUserSummary['numAvailableHolds'];
+						$axis360Summary['numHolds'] += $linkedUserSummary['numHolds'];
+					}
+				}
+				$timer->logTime("Loaded Axis 360 Summary for User and linked users");
+				$result = [
+					'success' => true,
+					'summary' => $axis360Summary
+				];
+			} else {
+				$result['message'] = 'Unknown error';
+			}
+		} else {
+			$result['message'] = 'You must be logged in to get menu data';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
 	function getMenuDataHoopla()
 	{
 		global $timer;

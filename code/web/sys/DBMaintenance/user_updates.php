@@ -158,6 +158,14 @@ function getUserUpdates()
 			]
 		],
 
+		'user_reading_history_work_index' => [
+			'title' => 'Add Reading History Index',
+			'description' => 'Add index for userid and grouped work',
+			'sql' => [
+				'ALTER TABLE user_reading_history_work ADD INDEX groupedWorkPermanentId(groupedWorkPermanentId)'
+			]
+		],
+
 		'user_hoopla_confirmation_checkout_prompt' => array(
 			'title' => 'Hoopla Checkout Confirmation Prompt',
 			'description' => 'Stores user preference whether or not to prompt for confirmation before checking out a title from Hoopla',
@@ -468,6 +476,17 @@ function getUserUpdates()
 			]
 		],
 
+		'allow_anyone_to_view_documentation' => [
+			'title' => 'Allow anyone to view documentation',
+			'description' => 'Remove permissions to view help manual and release notes',
+			'sql' => [
+				"DELETE FROM role_permissions where permissionId = (SELECT id from permissions where name='View Help Manual')",
+				"DELETE from permissions where name = 'View Help Manual'",
+				"DELETE FROM role_permissions where permissionId = (SELECT id from permissions where name='View Release Notes')",
+				"DELETE from permissions where name = 'View Release Notes'"
+			]
+		],
+
 		'masquerade_permissions' => [
 			'title' => 'Create masquerade permissions and roles',
 			'description' => 'Create masquerade permissions and roles',
@@ -526,13 +545,42 @@ function getUserUpdates()
 			'title' => 'List indexing permissions',
 			'description' => 'Create permission to administer list indexing',
 			'sql' => [
-
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
 					('User Lists', 'Administer List Indexing Settings', '', 0, 'Allows the user to administer list indexing settings.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer List Indexing Settings'))",
 
 			]
-		]
+		],
+
+		'reporting_permissions' => [
+			'title' => 'Reporting permissions',
+			'description' => 'Create permissions for circulation reports and student reports',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Circulation Reports', 'View Location Holds Reports', '', 0, 'Allows the user to view lists of holds to be pulled for their home location (CARL.X) only.'),
+					('Circulation Reports', 'View All Holds Reports', '', 10, 'Allows the user to view lists of holds to be pulled for any location (CARL.X) only.'),
+					('Circulation Reports', 'View Location Student Reports', '', 20, 'Allows the user to view barcode and checkout reports for their home location (CARL.X) only.'),
+					('Circulation Reports', 'View All Student Reports', '', 30, 'Allows the user to view barcode and checkout reports for any location (CARL.X) only.')
+				",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View Location Holds Reports'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View All Holds Reports'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View Location Student Reports'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='locationReports'), (SELECT id from permissions where name='View All Student Reports'))",
+			]
+		],
+
+		'view_unpublished_content_permissions' => [
+			'title' => 'View unpublished permissions',
+			'description' => 'Create permissions to view unpublished content',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Web Builder', 'View Unpublished Content', '', 0, 'Allows the user to view unpublished menu items and content.')
+				",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Unpublished Content'))",
+			]
+		],
 	);
 }
 

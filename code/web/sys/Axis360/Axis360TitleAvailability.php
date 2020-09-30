@@ -7,8 +7,7 @@ class Axis360TitleAvailability extends DataObject{
 	public $settingId;
 	public $titleId;
 	public $libraryPrefix;
+	public $available;
 	public $ownedQty;
-	public $availableQty;
 	public $totalHolds;
-	public $totalCheckouts;
 } 

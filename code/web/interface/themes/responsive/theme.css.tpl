@@ -90,6 +90,7 @@ body .container, #home-page-browse-content{ldelim}
 #horizontal-menu-bar-container{ldelim}
     background-color: {$headerBackgroundColor};
     color: {$headerForegroundColor};
+    position: relative;
 {rdelim}
 
 #horizontal-menu-bar-container, #horizontal-menu-bar-container .menu-icon, #horizontal-menu-bar-container .menu-icon .menu-bar-label,
@@ -100,7 +101,7 @@ body .container, #home-page-browse-content{ldelim}
 
 #horizontal-menu-bar-container .menu-icon:hover, #horizontal-menu-bar-container .menu-icon:focus,
 #horizontal-menu-bar-container .menu-icon:hover .menu-bar-label, #horizontal-menu-bar-container .menu-icon:focus .menu-bar-label,
-#menuToggleButton > a.selected{ldelim}
+#menuToggleButton.selected{ldelim}
     background-color: {$menubarHighlightBackgroundColor};
     color: {$menubarHighlightForegroundColor};
 {rdelim}

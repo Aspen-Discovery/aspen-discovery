@@ -14,6 +14,31 @@ class CarlX extends SIP2Driver{
 		$this->catalogWsdl = $configArray['Catalog']['catalogApiWsdl'];
 	}
 
+	public function  __destruct()
+	{
+		if (isset($this->dbConnection)) {
+			oci_close($this->dbConnection);
+			$this->dbConnection = null;
+		}
+		parent::__destruct();
+	}
+
+	function initDatabaseConnection()
+	{
+		if (!isset($this->dbConnection)) {
+			$port = empty($this->accountProfile->databasePort) ? '1521' : $this->accountProfile->databasePort;
+			$ociConnection = $this->accountProfile->databaseHost . ':' . $port . '/' . $this->accountProfile->databaseName;
+			$this->dbConnection = oci_connect($this->accountProfile->databaseUser, $this->accountProfile->databasePassword, $ociConnection);
+			if (!$this->dbConnection || oci_error($this->dbConnection) != 0) {
+				global $logger;
+				$logger->log("Error connecting to CARL.X database " . oci_error($this->dbConnection), Logger::LOG_ERROR);
+				$this->dbConnection = null;
+			}
+			global $timer;
+			$timer->logTime("Initialized connection to CARL.X");
+		}
+	}
+
 	public function patronLogin($username, $password, $validatedViaSSO){
 		global $timer;
 
@@ -1586,6 +1611,9 @@ class CarlX extends SIP2Driver{
 	}
 
 	public function placeHoldViaSIP($patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null){
+		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0) {
+			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
+		}
 		global $configArray;
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
@@ -1838,4 +1866,150 @@ class CarlX extends SIP2Driver{
 	{
 		return false;
 	}
+
+	public function getHoldsReportData($location) {
+		$this->initDatabaseConnection();
+		$sql = <<<EOT
+			select 
+				p.name as PATRON_NAME
+				, p.sponsor as HOME_ROOM
+				, bb.btyname as GRD_LVL
+				, p.patronid as P_BARCODE
+				, l.locname as SHELF_LOCATION
+				, b.title as TITLE
+				, i.cn as CALL_NUMBER
+				, i.item as ITEM_ID
+			from transbid_v t 
+			join patron_v p on t.patronid=p.patronid
+			join item_v i on t.bid=i.bid
+			join bbibmap_v b on t.bid=b.bid
+			join location_v l on i.location=l.locnumber
+			join bty_v bb on p.bty=bb.btynumber
+			join branch_v ib on i.branch = ib.branchnumber
+			join branch_v pb on p.defaultbranch = pb.branchnumber
+			where ib.branchcode = '$location'
+			and i.status='S'
+			and pb.branchcode = '$location'
+			and t.transcode='R*'
+			order by l.locname, i.cn
+EOT;
+		$stid = oci_parse($this->dbConnection, $sql);
+		// consider using oci_set_prefetch to improve performance
+		// oci_set_prefetch($stid, 1000);
+		oci_execute($stid);
+		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+			$data[] = $row;
+		}
+		oci_free_statement($stid);
+		return $data;
+	}
+
+	public function getStudentBarcodeData($location) {
+		$this->initDatabaseConnection();
+		// query school branch codes and homerooms
+		$sql = <<<EOT
+			select 
+			  branchcode
+			  , homeroomid
+			  , min(homeroomname) as homeroomname
+			  , case
+				when min(grade) < max(grade)
+				  then replace(replace(trim(to_char(min(grade),'00')),'-01','PK'),'00','KI') || '-' || replace(replace(trim(to_char(max(grade),'00')),'-01','PK'),'00','KI')
+				  else replace(replace(trim(to_char(min(grade),'00')),'-01','PK'),'00','KI') || '___'
+			  end as grade
+			from (
+			  select distinct
+				b.branchcode
+				, s.street2 as homeroomid
+				, nvl(regexp_replace(upper(h.name),'[^A-Z]','_'),'_NULL_') as homeroomname
+				, s.bty-22 as grade
+			  from
+				branch_v b
+				  left join patron_v s on b.branchnumber = s.defaultbranch
+				  left join patron_v h on s.street2 = h.patronid
+			  where
+				b.branchcode = '$location'
+				and s.street2 is not null
+				and s.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+			  order by
+				b.branchcode
+				, homeroomname
+			) a
+			group by branchcode, homeroomid
+			order by branchcode, homeroomname
+EOT;
+		$stid = oci_parse($this->dbConnection, $sql);
+		// consider using oci_set_prefetch to improve performance
+		// oci_set_prefetch($stid, 1000);
+		oci_execute($stid);
+		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+			$data[] = $row;
+		}
+		oci_free_statement($stid);
+		return $data;
+	}
+
+	public function getStudentReportData($location,$showOverdueOnly,$date) {
+			$this->initDatabaseConnection();
+			$sql = <<<EOT
+				select
+				  patronbranch.branchcode AS Home_Lib_Code
+				  , patronbranch.branchname AS Home_Lib
+				  , bty_v.btynumber AS P_Type
+				  , bty_v.btyname AS Grd_Lvl
+				  , patron_v.sponsor AS Home_Room
+				  , patron_v.name AS Patron_Name
+				  , patron_v.patronid AS P_Barcode
+				  , itembranch.branchgroup AS SYSTEM
+				  , item_v.cn AS Call_Number
+				  , bbibmap_v.title AS Title
+				  , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date
+				  , item_v.price AS Owed
+				  , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date_Dup
+				  , item_v.item AS Item
+				from 
+				  bbibmap_v
+				  , branch_v patronbranch
+				  , branch_v itembranch
+				  , branchgroup_v patronbranchgroup
+				  , branchgroup_v itembranchgroup
+				  , bty_v
+				  , item_v
+				  , location_v
+				  , patron_v
+				  , transitem_v
+				where
+				  patron_v.patronid = transitem_v.patronid
+				  and patron_v.bty = bty_v.btynumber
+				  and transitem_v.item = item_v.item
+				  and bbibmap_v.bid = item_v.bid
+				  and patronbranch.branchnumber = patron_v.defaultbranch
+				  and location_v.locnumber = item_v.location
+				  and itembranch.branchnumber = transitem_v.holdingbranch
+				  and itembranchgroup.branchgroup = itembranch.branchgroup
+				  and (TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L' or transitem_v.transcode='C')
+				  and patronbranch.branchgroup = '2'
+				  and patronbranchgroup.branchgroup = patronbranch.branchgroup
+				  and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42')
+				  and patronbranch.branchcode = '$location'
+				order by 
+				  patronbranch.branchcode
+				  , patron_v.bty
+				  , patron_v.sponsor
+				  , patron_v.name
+				  , itembranch.branchgroup
+				  , item_v.cn
+				  , bbibmap_v.title
+EOT;
+		$stid = oci_parse($this->dbConnection, $sql);
+		// consider using oci_set_prefetch to improve performance
+		// oci_set_prefetch($stid, 1000);
+		oci_execute($stid);
+		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+			$data[] = $row;
+		}
+		oci_free_statement($stid);
+		return $data;
+	}
+
 }

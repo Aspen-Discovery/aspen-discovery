@@ -913,8 +913,8 @@ class Library extends DataObject
 			'libraryLinks' => array(
 				'property' => 'libraryLinks',
 				'type' => 'oneToMany',
-				'label' => 'Sidebar Links',
-				'description' => 'Links To Show in the sidebar',
+				'label' => 'Menu Links',
+				'description' => 'Links To Show in the menu',
 				'helpLink' => '',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',

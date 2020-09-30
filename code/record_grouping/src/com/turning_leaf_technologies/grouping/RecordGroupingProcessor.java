@@ -45,7 +45,6 @@ public class RecordGroupingProcessor {
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 
 	//A list of grouped works that have been manually merged.
-	//private HashMap<String, String> mergedGroupedWorks = new HashMap<>();
 	private final HashSet<String> recordsToNotGroup = new HashSet<>();
 	private final Long updateTime = new Date().getTime() / 1000;
 
@@ -72,7 +71,6 @@ public class RecordGroupingProcessor {
 		recordsToNotGroup.clear();
 		updatedAndInsertedWorksThisRun.clear();
 		formatsWarned.clear();
-		formatsToFormatCategory.clear();
 		try {
 			insertGroupedWorkStmt.close();
 			updateDateUpdatedForGroupedWorkStmt.close();

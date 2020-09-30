@@ -22,7 +22,7 @@ class OverDriveScope extends DataObject
 		$libraryList = Library::getLibraryList();
 		$locationList = Location::getLocationList();
 
-		$structure = [
+		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
 			'authenticationILSName' => array('property'=>'authenticationILSName', 'type'=>'text', 'label'=>'The ILS Name Overdrive uses for user Authentication', 'description'=>'The name of the ILS that OverDrive uses to authenticate users logging into the Overdrive website.', 'size'=>'20', 'hideInLists' => true),
@@ -53,7 +53,6 @@ class OverDriveScope extends DataObject
 				'forcesReindex' => true
 			),
 		];
-		return $structure;
 	}
 
 	public function __get($name){

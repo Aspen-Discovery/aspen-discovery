@@ -513,7 +513,7 @@ class User extends DataObject
 						}
 					}
 					return false;
-				} elseif ($source == 'axis_360') {
+				} elseif ($source == 'axis360') {
 					if (array_key_exists('Axis 360', $enabledModules)){
 						require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
 						try {
@@ -1011,6 +1011,16 @@ class User extends DataObject
 			}
 		}
 
+		if ($source == 'all' || $source == 'axis360') {
+			if ($this->isValidForEContentSource('axis360')) {
+				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+				$axis360Driver = new Axis360Driver();
+				$axis360CheckedOutItems = $axis360Driver->getCheckouts($this);
+				$allCheckedOut = array_merge($allCheckedOut, $axis360CheckedOutItems);
+				$timer->logTime("Loaded transactions from axis 360. {$this->id}");
+			}
+		}
+
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -1065,6 +1075,16 @@ class User extends DataObject
 				$driver = new CloudLibraryDriver();
 				$cloudLibraryHolds = $driver->getHolds($this);
 				$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
+			}
+		}
+
+		if ($source == 'all' || $source == 'axis360') {
+			//Get holds from Axis 360
+			if ($this->isValidForEContentSource('axis360')) {
+				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+				$driver = new Axis360Driver();
+				$axis360Holds = $driver->getHolds($this);
+				$allHolds = array_merge_recursive($allHolds, $axis360Holds);
 			}
 		}
 
@@ -1420,6 +1440,18 @@ class User extends DataObject
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		$overDriveDriver = new OverDriveDriver();
 		return $overDriveDriver->thawHold($this, $overDriveId);
+	}
+
+	function freezeAxis360Hold($recordId){
+		require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+		$axis360Driver = new Axis360Driver();
+		return $axis360Driver->freezeHold($this,$recordId);
+	}
+
+	function thawAxis360Hold($recordId){
+		require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+		$axis360Driver = new Axis360Driver();
+		return $axis360Driver->thawHold($this, $recordId);
 	}
 
 	function renewCheckout($recordId, $itemId = null, $itemIndex = null){
@@ -1959,6 +1991,7 @@ class User extends DataObject
 		$groupedWorkAction = new AdminAction('Grouped Work Display', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/GroupedWorkDisplay');
 		$groupedWorkAction->addSubAction(new AdminAction('Grouped Work Facets', 'Define information about what facets are displayed for grouped works in search results and Advanced Search.', '/Admin/GroupedWorkFacets'), ['Administer All Grouped Work Facets', 'Administer Library Grouped Work Facets']);
 		$sections['cataloging']->addAction($groupedWorkAction, ['Administer All Grouped Work Display Settings', 'Administer Library Grouped Work Display Settings']);
+		$sections['cataloging']->addAction(new AdminAction('Title / Author Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
 
 		$sections['local_enrichment'] = new AdminSection('Local Catalog Enrichment');
@@ -2003,6 +2036,11 @@ class User extends DataObject
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
 		$sections['ils_integration']->addAction(new AdminAction('Offline Holds Report', 'View a report of holds that were submitted while the ILS was offline.', '/Circa/OfflineHoldsReport'), 'View Offline Holds Report');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
+
+		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
+		$sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), ['View Location Holds Reports', 'View All Holds Reports']);
+		$sections['circulation_reports']->addAction(new AdminAction('Student Barcodes', 'View/print a report of all barcodes for a class.', '/Report/StudentBarcodes'), ['View Location Student Reports', 'View All Student Reports']);
+		$sections['circulation_reports']->addAction(new AdminAction('Student Checkout Report', 'View a report of all checkouts for a given class with filtering to only show overdue items and lost items.', '/Report/StudentReport'), ['View Location Student Reports', 'View All Student Reports']);
 
 		if (array_key_exists('Axis 360', $enabledModules)) {
 			$sections['axis360'] = new AdminSection('Axis 360');
@@ -2127,8 +2165,8 @@ class User extends DataObject
 		}
 
 		$sections['aspen_help'] = new AdminSection('Aspen Discovery Help');
-		$sections['aspen_help']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), 'View Help Manual');
-		$sections['aspen_help']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), 'View Release Notes');
+		$sections['aspen_help']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), true);
+		$sections['aspen_help']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
 		$showSubmitTicket = false;
 		try {
 			require_once ROOT_DIR . '/sys/SystemVariables.php';

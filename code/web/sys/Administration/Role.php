@@ -143,7 +143,6 @@ class Role extends DataObject
 				'View Archive Authorship Claims',
 				'View Archive Material Requests',
 				'View Dashboards',
-				'View Help Manual',
 				'View Indexing Logs',
 				'View ILS records in native OPAC',
 				'View ILS records in native Staff Client',
@@ -151,15 +150,12 @@ class Role extends DataObject
 				'View New York Times Lists',
 				'View Offline Holds Report',
 				'View OverDrive Test Interface',
-				'View Release Notes',
 				'View System Reports',
 			];
 		case 'userAdmin':
 			return [
 				'Administer Permissions',
 				'Administer Users',
-				'View Help Manual',
-				'View Release Notes',
 			];
 		case 'libraryAdmin':
 			return [
@@ -175,10 +171,8 @@ class Role extends DataObject
 				'Administer Library Themes',
 				'Block Patron Account Linking',
 				'Submit Ticket',
-				'View Help Manual',
 				'View New York Times Lists',
 				'View Offline Holds Report',
-				'View Release Notes',
 			];
 		case 'libraryManager':
 			return [
@@ -187,9 +181,7 @@ class Role extends DataObject
 				'Administer Library Browse Categories',
 				'Administer Library Collection Spotlights',
 				'Block Patron Account Linking',
-				'View Help Manual',
 				'View New York Times Lists',
-				'View Release Notes',
 			];
 		case 'locationManager':
 			return [
@@ -197,23 +189,17 @@ class Role extends DataObject
 				'Administer Library Browse Categories',
 				'Administer Library Collection Spotlights',
 				'Block Patron Account Linking',
-				'View Help Manual',
-				'View Release Notes',
 			];
 		case 'translator':
 			return [
 				'Administer Languages',
 				'Translate Aspen',
-				'View Help Manual',
-				'View Release Notes',
 			];
 		case 'library_material_requests':
 			return [
 				'Administer Materials Requests',
 				'Manage Library Materials Requests',
-				'View Help Manual',
 				'View Materials Requests Reports',
-				'View Release Notes',
 			];
 		case 'superCataloger':
 			return [
@@ -229,11 +215,9 @@ class Role extends DataObject
 				'Upload PDFs',
 				'Upload Supplemental Files',
 				'View Dashboards',
-				'View Help Manual',
 				'View ILS records in native OPAC',
 				'View ILS records in native Staff Client',
 				'View Indexing Logs',
-				'View Release Notes',
 			];
 		case 'cataloging':
 			return [
@@ -244,19 +228,15 @@ class Role extends DataObject
 				'Upload Covers',
 				'Upload PDFs',
 				'Upload Supplemental Files',
-				'View Help Manual',
 				'View ILS records in native OPAC',
 				'View ILS records in native Staff Client',
 				'View Indexing Logs',
-				'View Release Notes',
 			];
 		case 'archives':
 			return [
 				'Administer Islandora Archive',
 				'View Archive Authorship Claims',
 				'View Archive Material Requests',
-				'View Help Manual',
-				'View Release Notes',
 			];
 		case 'circulationReports':
 			return [

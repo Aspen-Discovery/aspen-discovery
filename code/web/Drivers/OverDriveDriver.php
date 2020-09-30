@@ -436,7 +436,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$supplementalMaterialIds = [];
 		if (isset($response->checkouts)){
 			foreach ($response->checkouts as $curTitle){
-				$bookshelfItem = array();
+				$checkout = array();
 				if (isset($curTitle->links->bundledChildren)){
 					foreach ($curTitle->links->bundledChildren as $bundledChild){
 						if (preg_match('%.*/checkouts/(.*)%ix', $bundledChild->href, $matches)) {
@@ -462,57 +462,57 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$checkedOutTitles['OverDrive' . $parentCheckoutId] = $parentCheckout;
 				}else{
 					//Load data from api
-					$bookshelfItem['checkoutSource'] = 'OverDrive';
-					$bookshelfItem['overDriveId'] = $curTitle->reserveId;
-					$bookshelfItem['expiresOn'] = $curTitle->expires;
+					$checkout['checkoutSource'] = 'OverDrive';
+					$checkout['overDriveId'] = $curTitle->reserveId;
+					$checkout['expiresOn'] = $curTitle->expires;
 					try {
 						$expirationDate = new DateTime($curTitle->expires);
-						$bookshelfItem['dueDate'] = $expirationDate->getTimestamp();
+						$checkout['dueDate'] = $expirationDate->getTimestamp();
 					} catch (Exception $e) {
 						$logger->log("Could not parse date for overdrive expiration " . $curTitle->expires, Logger::LOG_NOTICE);
 					}
 					try {
 						$checkOutDate = new DateTime($curTitle->checkoutDate);
-						$bookshelfItem['checkoutDate'] = $checkOutDate->getTimestamp();
+						$checkout['checkoutDate'] = $checkOutDate->getTimestamp();
 					} catch (Exception $e) {
 						$logger->log("Could not parse date for overdrive checkout date " . $curTitle->checkoutDate, Logger::LOG_NOTICE);
 					}
-					$bookshelfItem['overdriveRead'] = false;
+					$checkout['overdriveRead'] = false;
 					if (isset($curTitle->isFormatLockedIn) && $curTitle->isFormatLockedIn == 1){
-						$bookshelfItem['formatSelected'] = true;
+						$checkout['formatSelected'] = true;
 					}else{
-						$bookshelfItem['formatSelected'] = false;
+						$checkout['formatSelected'] = false;
 					}
-					$bookshelfItem['formats'] = array();
+					$checkout['formats'] = array();
 					if (!$forSummary){
-						$bookshelfItem = $this->loadCheckoutFormatInformation($curTitle, $bookshelfItem);
+						$checkout = $this->loadCheckoutFormatInformation($curTitle, $checkout);
 
 						if (isset($curTitle->actions->earlyReturn)){
-							$bookshelfItem['earlyReturn']  = true;
+							$checkout['earlyReturn']  = true;
 						}
 						//Figure out which eContent record this is for.
 						require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
-						$overDriveRecord = new OverDriveRecordDriver($bookshelfItem['overDriveId']);
-						$bookshelfItem['recordId'] = $overDriveRecord->getUniqueID();
+						$overDriveRecord = new OverDriveRecordDriver($checkout['overDriveId']);
+						$checkout['recordId'] = $overDriveRecord->getUniqueID();
 						$groupedWorkId = $overDriveRecord->getGroupedWorkId();
 						if ($groupedWorkId != null){
-							$bookshelfItem['groupedWorkId'] = $overDriveRecord->getGroupedWorkId();
+							$checkout['groupedWorkId'] = $overDriveRecord->getGroupedWorkId();
 						}
 						$formats = $overDriveRecord->getFormats();
-						$bookshelfItem['groupedWorkId']     = $overDriveRecord->getPermanentId();
-						$bookshelfItem['format']     = reset($formats);
-						$bookshelfItem['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
-						$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
-						$bookshelfItem['recordUrl']  = $overDriveRecord->getLinkUrl(true);
-						$bookshelfItem['title']      = $overDriveRecord->getTitle();
-						$bookshelfItem['author']     = $overDriveRecord->getAuthor();
-						$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
+						$checkout['groupedWorkId'] = $overDriveRecord->getPermanentId();
+						$checkout['format'] = reset($formats);
+						$checkout['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
+						$checkout['ratingData'] = $overDriveRecord->getRatingData();
+						$checkout['recordUrl'] = $overDriveRecord->getLinkUrl(true);
+						$checkout['title'] = $overDriveRecord->getTitle();
+						$checkout['author'] = $overDriveRecord->getAuthor();
+						$checkout['linkUrl'] = $overDriveRecord->getLinkUrl(false);
 					}
-					$bookshelfItem['user'] = $patron->getNameAndLibraryLabel();
-					$bookshelfItem['userId'] = $patron->id;
+					$checkout['user'] = $patron->getNameAndLibraryLabel();
+					$checkout['userId'] = $patron->id;
 
-					$key = $bookshelfItem['checkoutSource'] . $bookshelfItem['overDriveId'];
-					$checkedOutTitles[$key] = $bookshelfItem;
+					$key = $checkout['checkoutSource'] . $checkout['overDriveId'];
+					$checkedOutTitles[$key] = $checkout;
 				}
 			}
 		}
@@ -581,7 +581,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$hold['groupedWorkId'] = $overDriveRecord->getPermanentId();
 					$hold['recordId'] = $overDriveRecord->getUniqueID();
 					$hold['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
-					/** @noinspection DuplicatedCode */
 					$hold['recordUrl'] = $overDriveRecord->getAbsoluteUrl();
 					$hold['title'] = $overDriveRecord->getTitle();
 					$hold['sortTitle'] = $overDriveRecord->getTitle();
@@ -829,9 +828,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if (isset($response->expires)) {
 			$result['success'] = true;
 			$result['message'] = translate(['text'=>'overdrive_checkout_success', 'defaultText'=>'Your title was checked out successfully. You may now download the title from your Account.']);
-            $this->trackUserUsageOfOverDrive($user);
-            $this->trackRecordCheckout($overDriveId);
-        }else{
+			$this->trackUserUsageOfOverDrive($user);
+			$this->trackRecordCheckout($overDriveId);
+		}else{
 			$result['message'] = translate('Sorry, we could not checkout this title to you.');
 			if (isset($response->errorCode) && $response->errorCode == 'PatronHasExceededCheckoutLimit'){
 				$result['message'] .= "\r\n\r\n" . translate(['text'=>'overdrive_exceeded_checkouts', 'defaultText'=>'You have reached the maximum number of OverDrive titles you can checkout one time.']);

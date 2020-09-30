@@ -1106,7 +1106,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
-		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->name . ':' . $shortId);
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $shortId);
 		if (!$record) {
 			$title = null;
 		} else {
@@ -1724,15 +1724,15 @@ class SirsiDynixROA extends HorizonAPI
 						$this->setPatronUpdateField('EMAIL', $user->email, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
-					if (!empty($user->address1)) {
+					if (!empty($user->_address1)) {
 						$this->setPatronUpdateField('STREET', $user->_address1, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
-					if (!empty($user->zip)) {
+					if (!empty($user->_zip)) {
 						$this->setPatronUpdateField('ZIP', $user->_zip, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 
-					if (!empty($user->phone)) {
+					if (!empty($user->_phone)) {
 						$this->setPatronUpdateField('PHONE', $user->phone, $updatePatronInfoParameters, $preferredAddress, $index);
 					}
 

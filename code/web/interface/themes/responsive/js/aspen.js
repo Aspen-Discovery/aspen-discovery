@@ -4643,12 +4643,16 @@ var AspenDiscovery = (function(){
 		},
 		toggleMenu: function() {
 			let headerMenu = $('#header-menu');
-			let menuButton = $('#menuToggleButton > a');
-			let menuButtonIcon = $('#menuToggleButton > a > i');
+			let menuButton = $('#menuToggleButton');
+			let menuButtonIcon = $('#menuToggleButton > i');
 			if (headerMenu.is(':visible')){
 				this.closeMenu();
 			}else{
 				this.closeAccountMenu();
+				$('.dropdownMenu').slideUp('slow');
+				let menuButtonPosition = menuButton.position();
+				headerMenu.css('left', menuButtonPosition.left + menuButton.outerWidth() - headerMenu.outerWidth() + 5);
+				headerMenu.css('top', menuButtonPosition.top + menuButton.outerHeight());
 				menuButton.addClass('selected');
 				headerMenu.slideDown('slow');
 				menuButtonIcon.removeClass('fa-bars');
@@ -4658,8 +4662,8 @@ var AspenDiscovery = (function(){
 		},
 		closeMenu: function(){
 			let headerMenu = $('#header-menu');
-			let menuButton = $('#menuToggleButton > a');
-			let menuButtonIcon = $('#menuToggleButton > a > i');
+			let menuButton = $('#menuToggleButton');
+			let menuButtonIcon = $('#menuToggleButton > i');
 			headerMenu.slideUp('slow');
 			menuButtonIcon.addClass('fa-bars');
 			menuButtonIcon.removeClass('fa-times');
@@ -4681,11 +4685,15 @@ var AspenDiscovery = (function(){
 		},
 		toggleAccountMenu: function() {
 			let accountMenu = $('#account-menu');
-			let accountMenuButton = $('#accountMenuToggleButton > a');
+			let accountMenuButton = $('#accountMenuToggleButton');
 			if (accountMenu.is(':visible')){
 				this.closeAccountMenu();
 			}else{
 				this.closeMenu();
+				$('.dropdownMenu').slideUp('slow');
+				let accountMenuButtonPosition = accountMenuButton.position();
+				accountMenu.css('left', accountMenuButtonPosition.left + accountMenuButton.outerWidth() - accountMenu.outerWidth() + 4);
+				accountMenu.css('top', accountMenuButtonPosition.top + accountMenuButton.outerHeight());
 				accountMenuButton.addClass('selected');
 				accountMenu.slideDown('slow');
 			}
@@ -4693,15 +4701,26 @@ var AspenDiscovery = (function(){
 		},
 		closeAccountMenu: function(){
 			let accountMenu = $('#account-menu');
-			let accountMenuButton = $('#accountMenuToggleButton > a');
+			let accountMenuButton = $('#accountMenuToggleButton');
 			accountMenu.slideUp('slow');
 			accountMenuButton.removeClass('selected');
 		},
-		toggleMenu: function(id){
-			this.closeAccountMenu();
+		showCustomMenu: function (menuName) {
 			this.closeMenu();
-			$('.dropdown-menu').slideUp();
-			$('#menu' + id).slideDown();
+			this.closeAccountMenu();
+			let customMenu = $('#' + menuName + '-menu');
+			if (customMenu.is(':visible')){
+				customMenu.slideUp('slow');
+			}else{
+				$('.dropdownMenu').slideUp('slow');
+				let customMenuTrigger = $('#' + menuName + '-menu-trigger')
+				let customMenuTriggerPosition = customMenuTrigger.position();
+				customMenu.css('left', customMenuTriggerPosition.left);
+				customMenu.css('top', customMenuTriggerPosition.top + customMenuTrigger.outerHeight());
+				customMenu.slideDown('slow');
+			}
+
+			return false;
 		}
 	}
 
@@ -4935,7 +4954,7 @@ AspenDiscovery.Account = (function(){
 					label = 'RBdigital Checkouts';
 				}else if (source === 'cloud_library'){
 					label = 'Cloud Library Checkouts';
-				}else if (source === 'axis_360'){
+				}else if (source === 'axis360'){
 					label = 'Axis 360 Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
@@ -4980,7 +4999,7 @@ AspenDiscovery.Account = (function(){
 					label = 'OverDrive Holds';
 				}else if (source === 'rbdigital'){
 					label = 'RBdigital Holds';
-				}else if (source === 'axis_360'){
+				}else if (source === 'axis360'){
 					label = 'Axis 360 Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
@@ -5110,6 +5129,21 @@ AspenDiscovery.Account = (function(){
 					if (data.summary.numAvailableHolds > 0) {
 						$(".cloud_library-available-holds-placeholder").html(data.summary.numAvailableHolds);
 						$(".cloud_library-available-holds").show();
+					}
+				}
+			});
+			let axis360Url = Globals.path + "/MyAccount/AJAX?method=getMenuDataAxis360&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+			$.getJSON(axis360Url, function(data){
+				if (data.success) {
+					$(".axis360-checkouts-placeholder").html(data.summary.numCheckedOut);
+					totalCheckouts += parseInt(data.summary.numCheckedOut);
+					$(".checkouts-placeholder").html(totalCheckouts);
+					$(".axis360-holds-placeholder").html(data.summary.numHolds);
+					totalHolds += parseInt(data.summary.numHolds);
+					$(".holds-placeholder").html(totalHolds);
+					if (data.summary.numAvailableHolds > 0) {
+						$(".axis360-available-holds-placeholder").html(data.summary.numAvailableHolds);
+						$(".axis360-available-holds").show();
 					}
 				}
 			});
@@ -6962,8 +6996,8 @@ AspenDiscovery.Axis360 = (function () {
 			});
 		},
 
-		returnCheckout: function (patronId, recordId) {
-			let url = Globals.path + "/Axis360/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
+		returnCheckout: function (patronId, recordId, transactionId) {
+			let url = Globals.path + "/Axis360/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + transactionId;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -6994,6 +7028,41 @@ AspenDiscovery.Axis360 = (function () {
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
 			});
+		},
+
+		freezeHold: function(patronId, recordId){
+			AspenDiscovery.loadingMessage();
+			let url = Globals.path + '/Axis360/AJAX';
+			let params = {
+				'method' : 'freezeHold',
+				patronId : patronId,
+				recordId : recordId
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage("Success", data.message, true, true);
+				} else {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).error(AspenDiscovery.ajaxFail);
+		},
+
+		thawHold: function(patronId, recordId, caller){
+			let popUpBoxTitle = $(caller).text() || "Thawing Hold";  // freezing terminology can be customized, so grab text from click button: caller
+			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
+			let url = Globals.path + '/Axis360/AJAX';
+			let params = {
+				'method' : 'thawHold',
+				patronId : patronId,
+				recordId : recordId
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage("Success", data.message, true, true);
+				} else {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).error(AspenDiscovery.ajaxFail);
 		}
 	}
 }(AspenDiscovery.Axis360 || {}));

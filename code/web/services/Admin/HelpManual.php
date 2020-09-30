@@ -2,7 +2,7 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Parsedown/Parsedown.php';
 
-class Admin_HelpManual extends Admin_Admin
+class Admin_HelpManual extends Action
 {
 	function launch()
 	{
@@ -10,23 +10,38 @@ class Admin_HelpManual extends Admin_Admin
 
 		//Get a list of all available release notes
 		$helpManualPath = ROOT_DIR . '/manual';
-		$page = $_REQUEST['page'];
+		if (isset($_REQUEST['page'])){
+			$page = $_REQUEST['page'];
+		}else{
+			$page = 'table_of_contents';
+		}
 
+		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
+			$adminActions = UserAccount::getActiveUserObj()->getAdminActions();
+			$interface->assign('adminActions', $adminActions);
+			$interface->assign('activeAdminSection', $this->getActiveAdminSection());
+			$interface->assign('activeMenuOption', 'admin');
+			$sidebar = 'Admin/admin-sidebar.tpl';
+		}else{
+			$sidebar = '';
+		}
 		if (file_exists($helpManualPath . '/'. $page . '.MD')){
 			$parsedown = Parsedown::instance();
 			$formattedPage = $parsedown->parse(file_get_contents($helpManualPath . '/'. $page . '.MD'));
 			$interface->assign('formattedPage', $formattedPage);
-			$this->display('manual.tpl', 'Help Manual');
+			$this->display('manual.tpl', 'Help Manual', $sidebar);
 		}else{
-			$this->display('unknownPage.tpl', 'Help Manual');
+			$this->display('unknownPage.tpl', 'Help Manual', $sidebar);
 		}
 	}
 
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_help', 'Aspen Discovery Help');
+		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
+			$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+			$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_help', 'Aspen Discovery Help');
+		}
 		$breadcrumbs[] = new Breadcrumb('/Admin/HelpManual?page=table_of_contents', 'Table of Contents');
 		return $breadcrumbs;
 	}
@@ -38,6 +53,6 @@ class Admin_HelpManual extends Admin_Admin
 
 	function canView()
 	{
-		return UserAccount::userHasPermission('View Help Manual');
+		return true;
 	}
 }

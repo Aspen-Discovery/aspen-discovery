@@ -551,11 +551,14 @@ class UInterface extends Smarty
 
 		//Load library links
 		$links = $library->libraryLinks;
-		$libraryLinks = array();
-		$expandedLinkCategories = array();
+		$libraryLinks = [];
+		$expandedLinkCategories = [];
 		/** @var LibraryLink $libraryLink */
 		foreach ($links as $libraryLink){
 			if ($libraryLink->showToLoggedInUsersOnly && !UserAccount::isLoggedIn()){
+				continue;
+			}
+			if (!$libraryLink->published && !UserAccount::userHasPermission('View Unpublished Content')){
 				continue;
 			}
 			if (empty($libraryLink->category)){

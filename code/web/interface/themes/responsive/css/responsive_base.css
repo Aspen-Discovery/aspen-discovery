@@ -8802,23 +8802,6 @@ a.placard-link {
   background-color: white;
   z-index: 2;
 }
-#webMenuNavBar {
-  background-color: #00a4e3;
-  color: #ffffff;
-  border: 0;
-  border-top: solid #ffffff 2px;
-  border-radius: 0;
-  min-height: auto;
-}
-#webMenuNavBar .nav > li > a,
-#webMenuNavBar .nav > li > a:visited {
-  color: #ffffff;
-  padding: 7px 10px;
-}
-#webMenuNavBar .navbar-nav > li.open > a,
-#webMenuNavBar .navbar-nav > li.open > a:visited {
-  color: #555555;
-}
 .help-link {
   margin-top: 20px;
   line-height: 50px;

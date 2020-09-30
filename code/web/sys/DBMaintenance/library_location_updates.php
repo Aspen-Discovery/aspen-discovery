@@ -439,6 +439,20 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+
+		'library_links_menu_update' => [
+			'title' => 'Library Links - updates for menu improvements',
+			'description' => 'Menu system improvements for library links',
+			'sql' => [
+				'ALTER TABLE library_links ADD COLUMN showInTopMenu TINYINT DEFAULT 0',
+				"ALTER TABLE library_links ADD COLUMN iconName VARCHAR(30) DEFAULT ''",
+				'ALTER TABLE library_links ADD COLUMN alwaysShowIconInTopMenu TINYINT DEFAULT 0',
+				'ALTER TABLE library_links ADD COLUMN published TINYINT DEFAULT 1',
+				'ALTER TABLE library_links DROP COLUMN showInAccount',
+				'ALTER TABLE library_links DROP COLUMN showInHelp',
+			]
+		],
+
 		'library_top_links' => array(
 			'title' => 'Library Top Links',
 			'description' => 'Add configurable links to display within the header. ',

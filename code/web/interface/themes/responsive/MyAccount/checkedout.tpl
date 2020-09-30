@@ -30,9 +30,9 @@
 				{if $user->isValidForEContentSource('cloud_library')}
 					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="Cloud Library"} <span class="badge"><span class="cloud_library-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
-                {if $user->isValidForEContentSource('axis_360')}
-					<li role="presentation"{if $tab=='axis_360'} class="active"{/if}><a href="#axis_360" aria-controls="axis_360" role="tab" data-toggle="tab">{translate text="Axis 360"} <span class="badge"><span class="axis_360-checkouts-placeholder">&nbsp;</span></span></a></li>
-                {/if}
+				{if $user->isValidForEContentSource('axis360')}
+					<li role="presentation"{if $tab=='axis360'} class="active"{/if}><a href="#axis360" aria-controls="axis360" role="tab" data-toggle="tab">{translate text="Axis 360"} <span class="badge"><span class="axis360-checkouts-placeholder">&nbsp;</span></span></a></li>
+				{/if}
 			</ul>
 
 			<!-- Tab panes -->
@@ -51,8 +51,8 @@
 				{if $user->isValidForEContentSource('cloud_library')}
 					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="Cloud Library Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from Cloud Library"}</div></div>
 				{/if}
-                {if $user->isValidForEContentSource('axis_360')}
-					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="axis_360" aria-label="Axis 360 Checkouts List"><div id="axis_360CheckoutsPlaceholder">{translate text="Loading checkouts from Axis 360"}</div></div>
+                {if $user->isValidForEContentSource('axis360')}
+					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="Axis 360 Checkouts List"><div id="axis360CheckoutsPlaceholder">{translate text="Loading checkouts from Axis 360"}</div></div>
                 {/if}
 			</div>
 			<script type="text/javascript">
@@ -76,8 +76,8 @@
 					$("a[href='#cloud_library']").on('show.bs.tab', function () {
 						AspenDiscovery.Account.loadCheckouts('cloud_library');
 					});
-					$("a[href='#axis_360']").on('show.bs.tab', function () {
-						AspenDiscovery.Account.loadCheckouts('axis_360');
+					$("a[href='#axis360']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('axis360');
 					});
 					{/literal}
 					AspenDiscovery.Account.loadCheckouts('{$tab}');

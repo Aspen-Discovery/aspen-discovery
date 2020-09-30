@@ -156,12 +156,13 @@ public class CarlXExportMain {
 						carlXInstanceInformation.carlXConn.close();
 					}
 
+					if (recordGroupingProcessorSingleton != null) {
+						recordGroupingProcessorSingleton.close();
+						recordGroupingProcessorSingleton = null;
+					}
+
 					if (groupedWorkIndexer != null) {
 						groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-						if (recordGroupingProcessorSingleton != null) {
-							recordGroupingProcessorSingleton.close();
-							recordGroupingProcessorSingleton = null;
-						}
 						groupedWorkIndexer.close();
 						groupedWorkIndexer = null;
 					}
