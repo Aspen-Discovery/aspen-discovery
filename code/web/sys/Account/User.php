@@ -1946,12 +1946,15 @@ class User extends DataObject
 		$librarySettingsAction = new AdminAction('Library Systems', 'Configure library settings.', '/Admin/Libraries');
 		$locationSettingsAction = new AdminAction('Locations', 'Configure location settings.', '/Admin/Locations');
 		$ipAddressesAction = new AdminAction('IP Addresses', 'Configure IP addresses for each location and configure rules to block access to Aspen Discovery.', '/Admin/IPAddresses');
+		$administerHostAction = new AdminAction('Host Information', 'Allows configuration of domain names to point to different sections of Aspen Discovery', '/Admin/Hosting');
 		if ($sections['primary_configuration']->addAction($librarySettingsAction, ['Administer All Libraries', 'Administer Home Library'])){
 			$librarySettingsAction->addSubAction($locationSettingsAction, ['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
 			$librarySettingsAction->addSubAction($ipAddressesAction, 'Administer IP Addresses');
+			$librarySettingsAction->addSubAction($administerHostAction, 'Administer Host Information');
 		}else{
 			$sections['primary_configuration']->addAction($locationSettingsAction, ['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
 			$sections['primary_configuration']->addAction($ipAddressesAction, 'Administer IP Addresses');
+			$sections['primary_configuration']->addAction($administerHostAction, 'Administer Host Information');
 		}
 		$sections['primary_configuration']->addAction(new AdminAction('Block Patron Account Linking', 'Prevent accounts from linking to other accounts.', '/Admin/BlockPatronAccountLinks'), 'Block Patron Account Linking');
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');

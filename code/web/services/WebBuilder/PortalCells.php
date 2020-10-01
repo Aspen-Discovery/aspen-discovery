@@ -78,4 +78,26 @@ class WebBuilder_PortalCells extends ObjectEditor
 	{
 		return 'AspenDiscovery.WebBuilder.getPortalCellValuesForSource()';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');
+		if (!empty($this->activeObject) && $this->activeObject instanceof PortalCell){
+			$breadcrumbs[] = new Breadcrumb('/WebBuilder/PortalPages?objectAction=edit&id=' . $this->activeObject->getPortalRow()->portalPageId , 'Custom Page');
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Cell Content');
+		return $breadcrumbs;
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages']);
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_builder';
+	}
 }

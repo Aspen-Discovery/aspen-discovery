@@ -3,7 +3,8 @@
 
 class WebBuilder_PortalPage extends Action
 {
-
+	/** @var PortalPage */
+	private $page;
 	function launch()
 	{
 		global $interface;
@@ -12,19 +13,23 @@ class WebBuilder_PortalPage extends Action
 		$interface->assign('id', $id);
 
 		require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
-		$page = new PortalPage();
-		$page->id = $id;
-		if (!$page->find(true)){
+		$this->page = new PortalPage();
+		$this->page->id = $id;
+		if (!$this->page->find(true)){
 			$this->display('../Record/invalidPage.tpl', 'Invalid Page');
 			die();
 		}
 
-		$interface->assign('rows', $page->getRows());
+		$interface->assign('rows', $this->page->getRows());
 
-		$sidebar = null;
-		if ($page->showSidebar){
-			$sidebar = 'Search/home-sidebar.tpl';
-		}
-		$this->display('portalPage.tpl', $page->title, $sidebar, false);
+		$this->display('portalPage.tpl', $this->page->title, '', false);
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/', 'Home');
+		$breadcrumbs[] = new Breadcrumb('', $this->page->title, true);
+		return $breadcrumbs;
 	}
 }

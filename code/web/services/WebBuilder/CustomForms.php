@@ -71,4 +71,23 @@ class WebBuilder_CustomForms extends ObjectEditor
 	{
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');
+		$breadcrumbs[] = new Breadcrumb('/WebBuilder/CustomForms', 'Custom Forms');
+		return $breadcrumbs;
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Custom Forms', 'Administer Library Custom Forms']);
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_builder';
+	}
 }

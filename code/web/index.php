@@ -872,6 +872,20 @@ function loadModuleActionId(){
 	//This ensures that we don't have to change the http.conf file when new types are added.
 	//Deal with old path based urls by removing the leading path.
 	$requestURI = $_SERVER['REQUEST_URI'];
+	if (empty($requestURI) || $requestURI == '/'){
+		//Check to see if we have a default path for the server name
+		try {
+			$host = $_SERVER['HTTP_HOST'];
+			require_once ROOT_DIR . '/sys/LibraryLocation/HostInformation.php';
+			$hostInfo = new HostInformation();
+			$hostInfo->host = $host;
+			if ($hostInfo->find(true)){
+				$requestURI = $hostInfo->defaultPath;
+			}
+		}catch (Exception $e){
+			//This happens before the table is added, just ignore it.
+		}
+	}
 	/** IndexingProfile[] $indexingProfiles */
 	global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */

@@ -2193,7 +2193,7 @@ class Admin_DBMaintenance extends Admin_Admin
 							lu_district_name VARCHAR(50) NOT NULL,
 							lu_eligible_ptypes VARCHAR(50) NOT NULL,
 							lu_multi_district_name VARCHAR(50) NOT NULL,
-							lu_school_name VARCHAR(50) NOT NULL,						
+							lu_school_name VARCHAR(50) NOT NULL,
 							lu_ptypes_1 VARCHAR(50),
 							lu_ptypes_2 VARCHAR(50),
 							lu_ptypes_k VARCHAR(50)
@@ -2225,6 +2225,20 @@ class Admin_DBMaintenance extends Admin_Admin
 							lastRequest INT default 0,
 							UNIQUE ip(year, month, instance, ipAddress)
 						) ENGINE = INNODB;'
+					]
+				],
+
+				'host_information' => [
+					'title' => 'Host Information',
+					'description' => 'Add a table to allow customization of where a patron goes by default based on host name',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS host_information(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							host VARCHAR(100),
+							libraryId INT(11), 
+							locationId INT(11) DEFAULT -1,
+							defaultPath VARCHAR(50)
+						) ENGINE = INNODB'
 					]
 				]
 			)

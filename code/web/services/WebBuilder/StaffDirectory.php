@@ -25,4 +25,12 @@ class StaffDirectory extends Action
 
 		$this->display('staffDirectory.tpl', 'Staff Directory');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/', 'Home');
+		$breadcrumbs[] = new Breadcrumb('', 'Staff Directory', true);
+		return $breadcrumbs;
+	}
 }

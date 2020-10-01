@@ -6,8 +6,7 @@ class PortalPage extends DataObject
 	public $__table = 'web_builder_portal_page';
 	public $id;
 	public $title;
-	public /** @noinspection PhpUnused */ $urlAlias;
-	public $showSidebar;
+	public $urlAlias;
 
 	private $_rows;
 
@@ -17,7 +16,6 @@ class PortalPage extends DataObject
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'title' => array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the page', 'size' => '40', 'maxLength'=>100),
 			'urlAlias' => array('property' => 'urlAlias', 'type' => 'text', 'label' => 'URL Alias (no domain)', 'description' => 'The url of the page (no domain name)', 'size' => '40', 'maxLength'=>100),
-			'showSidebar' => array('property' => 'showSidebar', 'type' => 'checkbox', 'label' => 'Show Sidebar', 'description' => 'Whether or not the sidebar should be shown', 'default'=>1),
 
 			'rows' => [
 				'property'=>'rows',

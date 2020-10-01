@@ -382,6 +382,15 @@ function getWebBuilderUpdates(){
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer Library Staff Members'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='Library Web Admin'), (SELECT id from permissions where name='Administer All Web Content'))",
 			]
+		],
+
+		'web_builder_remove_show_sidebar'=>[
+			'title' => 'Web Builder Remove Show Sidebar',
+			'description' => 'Remove Show Sidebar from Web Builder Pages',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_page DROP COLUMN showSidebar',
+				'ALTER TABLE web_builder_basic_page DROP COLUMN showSidebar',
+			]
 		]
 
 	];
