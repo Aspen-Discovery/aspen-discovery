@@ -41,7 +41,6 @@ if (!file_exists($exportPath)){
 }
 
 function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
-	/** @var PDO $aspen_db */
 	global $aspen_db;
 
 	echo ("Starting to import users\n");

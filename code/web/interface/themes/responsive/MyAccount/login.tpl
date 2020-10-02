@@ -73,16 +73,14 @@
 						</div>
 					</div>
 
-					<div id="loginPasswordRow2" class="form-group">
+					<div id="loginActions" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 							<input type="submit" name="submit" value="Login" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
-							{if $followup}<input type="hidden" name="followup" value="{$followup}">{/if}
 							{if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
 							{if $followupAction}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
 							{if $recordId}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
 							{if $comment}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
 							{if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
-							{if $returnUrl}<input type="hidden" name="returnUrl" value="{$returnUrl}">{/if}
 						</div>
 					</div>
 

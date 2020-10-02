@@ -95,7 +95,11 @@ class History extends Action {
 			$interface->assign('noHistory', true);
 		}
 
-		$this->display('history.tpl', 'Search History');
+		if (UserAccount::isLoggedIn()){
+			$this->display('history.tpl', 'Search History');
+		}else{
+			$this->display('history.tpl', 'Search History', '');
+		}
 	}
 
 	function getBreadcrumbs()
