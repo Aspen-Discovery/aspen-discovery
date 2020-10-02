@@ -39,6 +39,7 @@ class Axis360Driver extends AbstractEContentDriver
 				$this->accessTokenExpiration = $now + ($jsonResponse->expires_in - 5);
 				return true;
 			}else{
+				$this->incrementStat('numConnectionFailures');
 				return false;
 			}
 		}else{
@@ -47,7 +48,7 @@ class Axis360Driver extends AbstractEContentDriver
 	}
 
 
-private $checkouts = [];
+	private $checkouts = [];
 	/**
 	 * Get Patron Checkouts
 	 *
@@ -78,6 +79,7 @@ private $checkouts = [];
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlPostPage($checkoutsUrl, $params);
+			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$status = $xmlResults->status;
 			if ($status->code == '0000'){
@@ -87,6 +89,7 @@ private $checkouts = [];
 			}else{
 				global $logger;
 				$logger->log('Error loading checkouts ' . $status->statusMessage, Logger::LOG_ERROR);
+				$this->incrementStat('numApiErrors');
 			}
 
 			return $checkouts;
@@ -129,30 +132,33 @@ private $checkouts = [];
 	/**
 	 * Return a title currently checked out to the user
 	 *
-	 * @param $recordId   string
+	 * @param $transactionId   string
 	 * @return array
 	 */
-	public function returnCheckout($recordId)
+	public function returnCheckout($transactionId)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		if ($this->getAxis360AccessToken()){
 			$settings = $this->getSettings();
-			$returnCheckoutUrl = $settings->apiUrl . "/Services/VendorAPI/EarlyCheckin/v2/?transactionID=$recordId";
+			$returnCheckoutUrl = $settings->apiUrl . "/Services/VendorAPI/EarlyCheckin/v2?transactionID=$transactionId";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
 				'Library: ' . $settings->libraryPrefix,
 			];
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
-			$response = $this->curlWrapper->curlSendPage($returnCheckoutUrl, 'GET');
+			$response = $this->curlWrapper->curlGetPage($returnCheckoutUrl);
+			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
-			$removeHoldResult = $xmlResults->removeholdResult;
+			$removeHoldResult = $xmlResults->EarlyCheckinRestResult;
 			$status = $removeHoldResult->status;
 			if ($status->code != '0000'){
-				$result['message'] = "Could not cancel hold, " . (string)$status->statusMessage;
+				$result['message'] = "Could not cancel return title, " . (string)$status->statusMessage;
+				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
-				$result['message'] = 'Your hold was cancelled successfully';
+				$result['message'] = 'Your title was returned successfully';
+				$this->incrementStat('numEarlyReturns');
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';
@@ -191,6 +197,7 @@ private $checkouts = [];
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlSendPage($holdUrl, 'GET');
+			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$holdsResult = $xmlResults->getHoldsResult;
 			if (!empty($holdsResult->holds)){
@@ -231,14 +238,19 @@ private $checkouts = [];
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlSendPage($holdUrl, 'GET');
+			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$addToHoldResult = $xmlResults->addtoholdResult;
 			$status = $addToHoldResult->status;
 			if ($status->code != '0000'){
 				$result['message'] = "Could not place hold, " . (string)$status->statusMessage;
+				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
 				$result['message'] = 'Your hold was placed successfully';
+				$this->incrementStat('numHoldsPlaced');
+				$this->trackUserUsageOfAxis360($patron);
+				$this->trackRecordHold($recordId);
 			}
 
 		}else{
@@ -267,14 +279,17 @@ private $checkouts = [];
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlSendPage($cancelHoldUrl, 'GET');
+			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$removeHoldResult = $xmlResults->removeholdResult;
 			$status = $removeHoldResult->status;
 			if ($status->code != '0000'){
 				$result['message'] = "Could not cancel hold, " . (string)$status->statusMessage;
+				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
 				$result['message'] = 'Your hold was cancelled successfully';
+				$this->incrementStat('numHoldsCancelled');
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';
@@ -317,6 +332,7 @@ private $checkouts = [];
 				$this->initCurlWrapper();
 				$this->curlWrapper->addCustomHeaders($headers, false);
 				$response = $this->curlWrapper->curlPostPage($checkoutsUrl, $params);
+				/** @var stdClass $xmlResults */
 				$xmlResults = simplexml_load_string($response);
 				$status = $xmlResults->status;
 				if ($status->code == '0000'){
@@ -333,6 +349,8 @@ private $checkouts = [];
 							$summary['numHolds']++;
 						}
 					}
+				}else{
+					$this->incrementStat('numApiErrors');
 				}
 			}
 			$memCache->set('axis360_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);
@@ -366,14 +384,29 @@ private $checkouts = [];
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlPostPage($checkoutUrl, $params);
+			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$checkoutResult = $xmlResults->checkoutResult;
 			$status = $checkoutResult->status;
 			if ($status->code != '0000') {
-				$result['message'] = "Could not checkout title, " . (string)$status->statusMessage;
+				$result['message'] = translate('Sorry, we could not checkout this title to you.');
+				if ($status->code == '3113'){
+					$result['noCopies'] = true;
+					$result['message'] .= "\r\n\r\n" . translate('Would you like to place a hold instead?');
+				}else{
+					$result['message'] .= (string)$status->statusMessage;
+					$this->incrementStat('numApiErrors');
+				}
 			} else {
 				$result['success'] = true;
-				$result['message'] = translate(['text' => 'axis360_checkout_success', 'defaultText' => 'Your title was checked out successfully. You may now download the title from your Account.']);;
+				$result['message'] = translate(['text' => 'axis360_checkout_success', 'defaultText' => 'Your title was checked out successfully. You may now download the title from your Account.']);
+				if ($fromRenew) {
+					$this->incrementStat('numRenewals');
+				}else{
+					$this->incrementStat('numCheckouts');
+					$this->trackUserUsageOfAxis360($user);
+					$this->trackRecordCheckout($titleId);
+				}
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';
@@ -389,28 +422,6 @@ private $checkouts = [];
 		}else{
 			return false;
 		}
-	}
-
-	private function callAxis360Url(Axis360Setting $settings, string $apiPath, $method = 'GET', $requestBody = null)
-	{
-		$nowUtcDate = gmdate('D, d M Y H:i:s T');
-		$dataToSign = $nowUtcDate . "\n" . $method . "\n" . $apiPath;
-		$signature = base64_encode(hash_hmac("sha256", $dataToSign, $settings->accountKey, true));
-
-		$headers = [
-			"3mcl-Datetime: $nowUtcDate",
-			"3mcl-Authorization: 3MCLAUTH {$settings->accountId}:$signature",
-			'3mcl-APIVersion: 3.0',
-			'Content-Type: application/xml',
-			'Accept: application/xml'
-		];
-
-		//Can't reuse the curl wrapper so make sure it is initialized on each call
-		$this->initCurlWrapper();
-		$this->curlWrapper->addCustomHeaders($headers, true);
-		$response = $this->curlWrapper->curlSendPage($settings->apiUrl . $apiPath, $method, $requestBody);
-
-		return $response;
 	}
 
 	/**
@@ -466,11 +477,11 @@ private $checkouts = [];
 	{
 		require_once ROOT_DIR . '/sys/Axis360/Axis360RecordUsage.php';
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Title.php';
-		$recordUsage = new CloudLibraryRecordUsage();
+		$recordUsage = new Axis360RecordUsage();
 		$product = new Axis360Title();
-		$product->cloudLibraryId = $recordId;
+		$product->axis360Id = $recordId;
 		if ($product->find(true)){
-			$recordUsage->cloudLibraryId = $product->axis360Id;
+			$recordUsage->axis360Id = $product->axis360Id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
 			if ($recordUsage->find(true)) {
@@ -484,6 +495,7 @@ private $checkouts = [];
 		}
 	}
 
+	/** @noinspection PhpUndefinedFieldInspection */
 	private function loadHoldInfo(SimpleXMLElement $rawHold, array &$holds, User $user, $forSummary)
 	{
 		$hold = array();
@@ -530,19 +542,24 @@ private $checkouts = [];
 		}
 	}
 
+	/** @noinspection PhpUndefinedFieldInspection */
 	private function loadCheckoutInfo(SimpleXMLElement $title, &$checkouts, User $user)
 	{
 		$checkout = [
 			'checkoutSource' => 'Axis360',
 			'axis360Id' => (string)$title->titleId,
 			'recordId' => (string)$title->titleId
-
 		];
 
-		//TODO: Figure out renewal
-		$checkout['canRenew'] = false;
-		//TODO: Figure out due date
-		$checkout['dueDate'] = '';
+		//After a title is returned, Axis 360 will still return it for a bit, but mark it as not checked out.
+		if ((string)$title->availability->isCheckedout == 'N'){
+			return;
+		}
+		$checkout['canRenew'] = (string)$title->availability->IsButtonRenew != 'N';
+		$expirationDate = new DateTime($title->availability->checkoutEndDate);
+		$checkout['dueDate'] = $expirationDate->getTimestamp();
+		$checkout['accessOnlineUrl'] = (string)$title->titleUrl;
+		$checkout['transactionId'] = (string)$title->availability->transactionID;
 		require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 
 		$axis360Record = new Axis360RecordDriver((string)$title->titleId);
@@ -577,14 +594,17 @@ private $checkouts = [];
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlSendPage($freezeHoldUrl, 'GET');
+			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$freezeHoldResult = $xmlResults->HoldResult;
 			$status = $freezeHoldResult->status;
 			if ($status->code != '0000'){
 				$result['message'] = "Could not freeze hold, " . (string)$status->statusMessage;
+				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
 				$result['message'] = 'Your hold was frozen successfully';
+				$this->incrementStat('numHoldsFrozen');
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';
@@ -605,18 +625,38 @@ private $checkouts = [];
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlSendPage($freezeHoldUrl, 'GET');
+			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$thawHoldResult = $xmlResults->HoldResult;
 			$status = $thawHoldResult->status;
 			if ($status->code != '0000'){
 				$result['message'] = "Could not thaw hold, " . (string)$status->statusMessage;
+				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
 				$result['message'] = 'Your hold was thawed successfully';
+				$this->incrementStat('numHoldsThawed');
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';
 		}
 		return $result;
+	}
+
+	private function incrementStat(string $fieldName)
+	{
+		global $instanceName;
+		require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
+		$axis360Stats = new Axis360Stats();
+		$axis360Stats->instance = $instanceName;
+		$axis360Stats->year = date('Y');
+		$axis360Stats->month = date('n');
+		if ($axis360Stats->find(true)) {
+			$axis360Stats->$fieldName++;
+			$axis360Stats->update();
+		} else {
+			$axis360Stats->$fieldName = 1;
+			$axis360Stats->insert();
+		}
 	}
 }

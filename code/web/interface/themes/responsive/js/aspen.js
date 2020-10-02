@@ -6978,8 +6978,8 @@ AspenDiscovery.Axis360 = (function () {
 			});
 		},
 
-		returnCheckout: function (patronId, recordId) {
-			let url = Globals.path + "/Axis360/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
+		returnCheckout: function (patronId, recordId, transactionId) {
+			let url = Globals.path + "/Axis360/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + transactionId;
 			$.ajax({
 				url: url,
 				cache: false,

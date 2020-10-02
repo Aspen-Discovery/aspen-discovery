@@ -1,11 +1,14 @@
 <?php
 
 require_once ROOT_DIR . '/sys/SIP2.php';
-class CarlX extends SIP2Driver{
+require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
+
+class CarlX extends AbstractIlsDriver{
 	public $patronWsdl;
 	public $catalogWsdl;
 
 	private $soapClient;
+	private $dbConnection;
 
 	public function __construct($accountProfile) {
 	    parent::__construct($accountProfile);
@@ -20,7 +23,6 @@ class CarlX extends SIP2Driver{
 			oci_close($this->dbConnection);
 			$this->dbConnection = null;
 		}
-		parent::__destruct();
 	}
 
 	function initDatabaseConnection()
@@ -1869,6 +1871,7 @@ class CarlX extends SIP2Driver{
 
 	public function getHoldsReportData($location) {
 		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
 		$sql = <<<EOT
 			select 
 				p.name as PATRON_NAME
@@ -1907,6 +1910,7 @@ EOT;
 	public function getStudentBarcodeData($location) {
 		$this->initDatabaseConnection();
 		// query school branch codes and homerooms
+		/** @noinspection SqlResolve */
 		$sql = <<<EOT
 			select 
 			  branchcode

@@ -311,11 +311,6 @@ if ($isLoggedIn) {
 	}
 
 	//Check to see if there is a followup module and if so, use that module and action for the next page load
-	if (isset($_REQUEST['returnUrl'])) {
-		$followupUrl = $_REQUEST['returnUrl'];
-		header("Location: " . $followupUrl);
-		exit();
-	}
 	if ($user){
 		if (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction'])) {
 
@@ -327,22 +322,31 @@ if ($isLoggedIn) {
 				$masquerade = new MyAccount_Masquerade();
 				$masquerade->launch();
 				die;
+			}elseif ($_REQUEST['followupAction'] == 'MyList' && $_REQUEST['followupModule'] == 'MyAccount'){
+				echo("Redirecting to followup location");
+				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
+				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
+				if (!empty($_REQUEST['recordId'])) {
+					$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
+				}
+				header("Location: " . $followupUrl);
+				exit();
+			}else{
+				echo("Redirecting to followup location");
+				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
+				if (!empty($_REQUEST['recordId'])) {
+					$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
+				}
+				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
+				if(isset($_REQUEST['comment'])) $followupUrl .= "?comment=" . urlencode($_REQUEST['comment']);
+				header("Location: " . $followupUrl);
+				exit();
 			}
-
-			echo("Redirecting to followup location");
-			$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
-			if (!empty($_REQUEST['recordId'])) {
-				$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
-			}
-			$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
-			if(isset($_REQUEST['comment'])) $followupUrl .= "?comment=" . urlencode($_REQUEST['comment']);
-			header("Location: " . $followupUrl);
-			exit();
 		}
 	}
-	if (isset($_REQUEST['followup']) || isset($_REQUEST['followupModule'])){
+	if (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction'])){
 		$module = isset($_REQUEST['followupModule']) ? $_REQUEST['followupModule'] : $configArray['Site']['defaultModule'];
-		$action = isset($_REQUEST['followup']) ? $_REQUEST['followup'] : (isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : 'Home');
+		$action = isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : 'Home';
 		if (isset($_REQUEST['id'])){
 			$id = $_REQUEST['id'];
 		}elseif (isset($_REQUEST['recordId'])){
@@ -395,19 +399,6 @@ if ($module == null && $action == null){
 	$action = 'Home';
 }elseif ($action == null){
 	$action = 'Home';
-}
-//Override MyAccount Home as needed
-if ($module == 'MyAccount' && $action == 'Home' && UserAccount::isLoggedIn()){
-	//TODO: Update the redirect now that we aren't loading checkouts and holds inline
-	$user = UserAccount::getLoggedInUser();
-	if ($user->getNumCheckedOutTotal() > 0){
-		$action ='CheckedOut';
-		header('Location:/MyAccount/CheckedOut');
-		exit();
-	}elseif ($user->getNumHoldsTotal() > 0){
-		header('Location:/MyAccount/Holds');
-		exit();
-	}
 }
 
 $interface->assign('module', $module);
@@ -604,13 +595,6 @@ $interface->assign('includeAutoLogoutCode', $includeAutoLogoutCode);
 
 $timer->logTime('Check whether or not to include auto logout code');
 
-// Process Login Followup
-//TODO:  this code may need to move up with there other followUp processing above
-if (isset($_REQUEST['followup'])) {
-	processFollowup();
-	$timer->logTime('Process followup');
-}
-
 // Call Action
 // Note: ObjectEditor classes typically have the class name of DB_Object with an 's' added to the end.
 //       This distinction prevents the DB_Object from being mistakenly called as the Action class.
@@ -629,8 +613,8 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")){
 	$actionClass->launch();
 }else if (is_readable("services/$module/$action.php")) {
 	$actionFile = ROOT_DIR . "/services/$module/$action.php";
-    /** @noinspection PhpIncludeInspection */
-    require_once $actionFile;
+	/** @noinspection PhpIncludeInspection */
+	require_once $actionFile;
 	$moduleActionClass = "{$module}_{$action}";
 	if (class_exists($moduleActionClass, false)) {
 		/** @var Action $service */
@@ -726,15 +710,6 @@ try{
 	//Table not created yet, ignore
 	global $logger;
 	$logger->log("Exception updating aspen usage/slow pages/usage by IP: " . $e, Logger::LOG_DEBUG);
-}
-
-function processFollowup(){
-	switch($_REQUEST['followup']) {
-		case 'SaveSearch':
-			header("Location: /".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);
-			die();
-			break;
-	}
 }
 
 // Check for the various stages of functionality

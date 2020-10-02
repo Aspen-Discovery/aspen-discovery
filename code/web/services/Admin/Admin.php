@@ -12,8 +12,10 @@ abstract class Admin_Admin extends Action {
 
 		//If the user isn't logged in, take them to the login page
 		if (!$user){
-			header("Location: /MyAccount/Login");
-			die();
+			require_once ROOT_DIR . '/services/MyAccount/Login.php';
+			$myAccountAction = new MyAccount_Login($isStandalonePage);
+			$myAccountAction->launch();
+			exit();
 		}
 
 		//Make sure the user has permission to access the page
