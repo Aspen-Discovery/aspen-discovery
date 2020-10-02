@@ -8514,22 +8514,29 @@ hr.menu {
   display: inline-block;
   padding-right: 10px;
 }
-#menuToggleButton > a {
-  width: 30px;
+#menuToggleButton {
+  width: 36px;
+  display: inline-block;
   text-align: center;
-  background-color: transparent;
 }
-#menuToggleButton > a.selected {
+#menuToggleButton.selected {
   background-color: #ededed;
+}
+.dropdownMenu {
+  display: none;
+  position: absolute;
+  background-color: #ededed;
+  min-width: 220px;
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+  padding: 12px 16px;
+  z-index: 3;
 }
 #header-menu {
   display: none;
   position: absolute;
-  right: 10px;
-  top: 36px;
   background-color: #ededed;
   min-width: 220px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
   padding: 12px 16px;
   z-index: 3;
 }
@@ -8543,15 +8550,13 @@ hr.menu {
 #account-menu {
   display: none;
   position: absolute;
-  right: 50px;
-  top: 36px;
   background-color: #ededed;
   min-width: 220px;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   padding: 12px 16px;
   z-index: 3;
 }
-#accountMenuToggleButton > a.selected {
+#accountMenuToggleButton.selected {
   background-color: #ededed;
 }
 .childMenuItem {
@@ -8635,7 +8640,6 @@ hr.menu {
   padding-right: 5px;
 }
 #horizontal-menu-bar-container .menu-icon {
-  float: right;
   padding: 5px;
   margin-left: 5px;
   margin-right: 5px;
@@ -8644,12 +8648,15 @@ hr.menu {
 #horizontal-menu-bar-container .menu-icon:focus {
   outline: none;
 }
-#horizontal-menu-bar-container .menu-icon.menu-left {
-  float: left;
+#horizontal-menu-bar-container {
+  height: 46px;
 }
 #horizontal-menu-bar-container .menu-icon {
-  margin-top: 3px;
-  padding: 5px;
+  height: 42px;
+  line-height: 16px;
+  display: inline-block;
+  padding: 17px 5px 0 5px;
+  cursor: pointer;
 }
 #horizontal-menu-bar-container .menu-icon:visited,
 #horizontal-menu-bar-container .menu-icon:hover,
@@ -8664,6 +8671,19 @@ hr.menu {
   margin-left: 5px;
   text-align: left;
   display: inline-block;
+}
+.menu-section {
+  display: block;
+}
+.menu-section-left {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.menu-section-right {
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 @media print {
   #side-bar {
@@ -8801,6 +8821,23 @@ a.placard-link {
   top: 0;
   background-color: white;
   z-index: 2;
+}
+#webMenuNavBar {
+  background-color: #00a4e3;
+  color: #ffffff;
+  border: 0;
+  border-top: solid #ffffff 2px;
+  border-radius: 0;
+  min-height: auto;
+}
+#webMenuNavBar .nav > li > a,
+#webMenuNavBar .nav > li > a:visited {
+  color: #ffffff;
+  padding: 7px 10px;
+}
+#webMenuNavBar .navbar-nav > li.open > a,
+#webMenuNavBar .navbar-nav > li.open > a:visited {
+  color: #555555;
 }
 .help-link {
   margin-top: 20px;

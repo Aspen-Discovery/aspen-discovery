@@ -23,7 +23,7 @@ class StaffDirectory extends Action
 		$interface->assign('hasPhotos', $hasPhotos);
 		$interface->assign('staffMembers', $staffMembers);
 
-		$this->display('staffDirectory.tpl', 'Staff Directory');
+		$this->display('staffDirectory.tpl', 'Staff Directory', '');
 	}
 
 	function getBreadcrumbs()
