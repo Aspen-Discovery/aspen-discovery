@@ -7,4 +7,14 @@ class WebResourceCategory extends DataObject
 	public $id;
 	public $webResourceId;
 	public $categoryId;
+
+	public function getCategory(){
+		$category = new WebBuilderCategory();
+		$category->id = $this->categoryId;
+		if ($category->find(true)){
+			return $category;
+		}else{
+			return false;
+		}
+	}
 }

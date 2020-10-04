@@ -157,28 +157,10 @@ class WebResource extends DataObject
 			$audienceLink->webResourceId = $this->id;
 			$audienceLink->find();
 			while($audienceLink->fetch()){
-				$this->_audiences[] = $audienceLink->audienceId;
+				$this->_audiences[$audienceLink->audienceId] = $audienceLink->getAudience();
 			}
 		}
 		return $this->_audiences;
-	}
-
-	public function getDisplayAudiences() {
-		if (!isset($this->_displayAudiences) && $this->id){
-			$this->_displayAudiences = array();
-			$audienceLink = new WebResourceAudience();
-			$audienceLink->webResourceId = $this->id;
-			$audienceLink->find();
-			while($audienceLink->fetch()){
-				$audience = new WebBuilderAudience();
-				$audience->id = $audienceLink->audienceId;
-				if ($audience->find(true)){
-					$this->_displayAudiences[] = $audience->name;
-				}
-
-			}
-		}
-		return $this->_displayAudiences;
 	}
 
 	public function getCategories() {
@@ -188,27 +170,10 @@ class WebResource extends DataObject
 			$categoryLink->webResourceId = $this->id;
 			$categoryLink->find();
 			while($categoryLink->fetch()){
-				$this->_categories[] = $categoryLink->categoryId;
+				$this->_categories[$categoryLink->categoryId] = $categoryLink->getCategory();
 			}
 		}
 		return $this->_categories;
-	}
-
-	public function getDisplayCategories() {
-		if (!isset($this->_displayCategories) && $this->id){
-			$this->_displayCategories = array();
-			$categoryLink = new WebResourceCategory();
-			$categoryLink->webResourceId = $this->id;
-			$categoryLink->find();
-			while($categoryLink->fetch()){
-				$category = new WebBuilderCategory();
-				$category->id = $categoryLink->categoryId;
-				if ($category->find(true)){
-					$this->_displayCategories[] = $category->name;
-				}
-			}
-		}
-		return $this->_displayCategories;
 	}
 
 	public function saveLibraries(){

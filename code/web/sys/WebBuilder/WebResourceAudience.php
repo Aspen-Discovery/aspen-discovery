@@ -7,4 +7,14 @@ class WebResourceAudience extends DataObject
 	public $id;
 	public $webResourceId;
 	public $audienceId;
+
+	public function getAudience(){
+		$audience = new WebBuilderAudience();
+		$audience->id = $this->audienceId;
+		if ($audience->find(true)){
+			return $audience;
+		}else{
+			return false;
+		}
+	}
 }

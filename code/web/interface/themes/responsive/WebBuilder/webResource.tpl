@@ -31,31 +31,31 @@
 			<a href="{$webResource->url}" class="btn btn-primary">{translate text="Open Resource"}</a>
 		</div>
 		<div class="col-sm-12 col-md-3">
-			{if !empty($webResource->getDisplayAudiences())}
+			{if !empty($webResource->getAudiences())}
 				<div class="panel active">
 					<div class="panel-heading">
 						{translate text="Audience"}
 					</div>
 
 					<div class="panel-body">
-						{foreach from=$webResource->getDisplayAudiences() item=audience}
+						{foreach from=$webResource->getAudiences() item=audience}
 							<div class="col-xs-12">
-								<a href='/Websites/Results?filter[]=audience_facet%3A"{$audience}"'>{$audience}</a>
+								<a href='/Websites/Results?filter[]=audience_facet%3A"{$audience->name}"'>{$audience->name}</a>
 							</div>
 						{/foreach}
 					</div>
 				</div>
 
 			{/if}
-			{if !empty($webResource->getDisplayCategories())}
+			{if !empty($webResource->getCategories())}
 				<div class="panel active">
 					<div class="panel-heading">
 						{translate text="Category"}
 					</div>
 					<div class="panel-body">
-						{foreach from=$webResource->getDisplayCategories() item=category}
+						{foreach from=$webResource->getCategories() item=category}
 							<div class="col-xs-12">
-								<a href='/Websites/Results?filter[]=category_facet%3A"{$category}"'>{$category}</a>
+								<a href='/Websites/Results?filter[]=category_facet%3A"{$category->name}"'>{$category->name}</a>
 							</div>
 						{/foreach}
 					</div>
