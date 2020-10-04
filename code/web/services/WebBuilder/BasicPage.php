@@ -30,6 +30,9 @@ class WebBuilder_BasicPage extends Action{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		$breadcrumbs[] = new Breadcrumb('', $this->basicPage->title, true);
+		if (UserAccount::userHasPermission(['Administer All Basic Pages', 'Administer Library Basic Pages'])){
+			$breadcrumbs[] = new Breadcrumb('/WebBuilder/BasicPages?id=' . $this->basicPage->id . '&objectAction=edit', 'Edit', true);
+		}
 		return $breadcrumbs;
 	}
 }

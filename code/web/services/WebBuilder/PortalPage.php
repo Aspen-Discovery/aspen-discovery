@@ -30,6 +30,9 @@ class WebBuilder_PortalPage extends Action
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
 		$breadcrumbs[] = new Breadcrumb('', $this->page->title, true);
+		if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])){
+			$breadcrumbs[] = new Breadcrumb('/WebBuilder/PortalPages?id=' . $this->page->id . '&objectAction=edit', 'Edit', true);
+		}
 		return $breadcrumbs;
 	}
 }
