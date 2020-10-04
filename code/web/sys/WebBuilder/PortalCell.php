@@ -139,10 +139,10 @@ class PortalCell extends DataObject
 					$size .= '&size=small';
 				}elseif ($this->widthMd <= 4){
 					$size .= '&size=medium';
-//				}elseif ($this->widthMd <= 8){
-//					$size .= '&size=large';
-//				}else{
-//					$size .= '&size=x-large';
+				}elseif ($this->widthMd <= 8){
+					$size .= '&size=large';
+				}else{
+					$size .= '&size=x-large';
 				}
 				return "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\" alt='{$imageUpload->title}'>";
 			}

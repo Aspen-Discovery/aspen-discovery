@@ -2,6 +2,7 @@
 
 require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 class WebBuilder_ViewImage extends Action{
+	private $uploadedImage;
 	function launch()
 	{
 		global $interface;
@@ -10,9 +11,9 @@ class WebBuilder_ViewImage extends Action{
 		$interface->assign('id', $id);
 
 		require_once ROOT_DIR . '/sys/File/ImageUpload.php';
-		$uploadedImage = new ImageUpload();
-		$uploadedImage->id = $id;
-		if (!$uploadedImage->find(true)){
+		$this->uploadedImage = new ImageUpload();
+		$this->uploadedImage->id = $id;
+		if (!$this->uploadedImage->find(true)){
 			$this->display('../Record/invalidPage.tpl', 'Invalid Image');
 			die();
 		}
@@ -25,7 +26,7 @@ class WebBuilder_ViewImage extends Action{
 			$size = 'full';
 		}
 		$dataPath .= $size . '/';
-		$fullPath = $dataPath . $uploadedImage->fullSizePath;
+		$fullPath = $dataPath . $this->uploadedImage->fullSizePath;
 		if (file_exists($fullPath)) {
 			set_time_limit(300);
 			$chunkSize = 2 * (1024 * 1024);
@@ -57,5 +58,16 @@ class WebBuilder_ViewImage extends Action{
 			AspenError::raiseError(new AspenError("Image $id does not exist"));
 		}
 
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/', 'Home');
+		$breadcrumbs[] = new Breadcrumb('', $this->uploadedImage->title, true);
+		if (UserAccount::userHasPermission('Administer All Web Content')){
+			$breadcrumbs[] = new Breadcrumb('/WebBuilder/Images?id=' . $this->uploadedImage->id . '&objectAction=edit', 'Edit', true);
+		}
+		return $breadcrumbs;
 	}
 }
