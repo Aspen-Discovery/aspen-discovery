@@ -53,7 +53,7 @@ class Axis360Scope extends DataObject
 
 	/** @noinspection PhpUnused */
 	public function getEditLink(){
-		return '/RBdigital/Scopes?objectAction=edit&id=' . $this->id;
+		return '/Axis360/Scopes?objectAction=edit&id=' . $this->id;
 	}
 
 	public function __get($name){
@@ -61,7 +61,7 @@ class Axis360Scope extends DataObject
 			if (!isset($this->_libraries) && $this->id){
 				$this->_libraries = [];
 				$obj = new Library();
-				$obj->rbdigitalScopeId = $this->id;
+				$obj->axis360ScopeId = $this->id;
 				$obj->find();
 				while($obj->fetch()){
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;
@@ -72,7 +72,7 @@ class Axis360Scope extends DataObject
 			if (!isset($this->_locations) && $this->id){
 				$this->_locations = [];
 				$obj = new Location();
-				$obj->rbdigitalScopeId = $this->id;
+				$obj->axis360ScopeId = $this->id;
 				$obj->find();
 				while($obj->fetch()){
 					$this->_locations[$obj->locationId] = $obj->locationId;
@@ -158,7 +158,7 @@ class Axis360Scope extends DataObject
 					}
 				}else{
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($location->rbdigitalScopeId == $this->id){
+					if ($location->axis360ScopeId == $this->id){
 						$library = new Library();
 						$library->libraryId = $location->libraryId;
 						$library->find(true);

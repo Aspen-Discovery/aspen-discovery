@@ -80,7 +80,7 @@
 								{elseif $property.type == 'multiSelect'}
 									{if is_array($propValue) && count($propValue) > 0}
 										{foreach from=$property.values item=propertyName key=propertyValue}
-											{if in_array($propertyValue, array_keys($propValue))}{$propertyName}<br/>{/if}
+											{if array_key_exists($propertyValue, $propValue)}{$propertyName}<br/>{/if}
 										{/foreach}
 									{else}
 										No values selected

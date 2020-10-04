@@ -25,7 +25,7 @@
 				{* Modified Behavior: $propertyValue is used only as a display name to the user *}
 
 				{foreach from=$property.values item=propertyName key=propertyValue}
-					<input class="{$propName}" name='{$propName}[]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && in_array($propertyValue, $propValue)}checked='checked'{/if}> {$propertyName}<br>
+					<input class="{$propName}" name='{$propName}[]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && array_key_exists($propertyValue, $propValue)}checked='checked'{/if}> {$propertyName}<br>
 				{/foreach}
 			</div>
 		{elseif $property.listStyle == 'checkboxList'}
