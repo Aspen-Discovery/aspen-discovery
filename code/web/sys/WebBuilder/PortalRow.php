@@ -131,4 +131,42 @@ class PortalRow extends DataObject
 		}
 		return false;
 	}
+
+	public function resizeColumnWidths()
+	{
+		$cells = $this->getCells(true);
+		if (count($cells) == 1){
+			foreach ($cells as $cell){
+				$cell->widthXs = 12;
+				$cell->widthSm = 12;
+				$cell->widthMd = 12;
+				$cell->widthLg = 12;
+				$cell->update();
+			}
+		}elseif (count($cells) == 2){
+			foreach ($cells as $cell){
+				$cell->widthXs = 12;
+				$cell->widthSm = 6;
+				$cell->widthMd = 6;
+				$cell->widthLg = 6;
+				$cell->update();
+			}
+		}elseif (count($cells) == 3){
+			foreach ($cells as $cell){
+				$cell->widthXs = 12;
+				$cell->widthSm = 12;
+				$cell->widthMd = 4;
+				$cell->widthLg = 4;
+				$cell->update();
+			}
+		}elseif (count($cells) == 4){
+			foreach ($cells as $cell){
+				$cell->widthXs = 12;
+				$cell->widthSm = 12;
+				$cell->widthMd = 6;
+				$cell->widthLg = 3;
+				$cell->update();
+			}
+		}
+	}
 }

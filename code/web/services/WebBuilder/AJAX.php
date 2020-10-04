@@ -217,27 +217,7 @@ class WebBuilder_AJAX extends JSON_Action
 						$portalRow->id = $portalCell->portalRowId;
 						$portalCell->delete();
 						if ($portalRow->find(true)){
-							$cells = $portalRow->getCells(true);
-							if (count($cells) == 2){
-								foreach ($cells as $cell){
-									$cell->widthSm = 6;
-									$cell->widthMd = 6;
-									$cell->widthLg = 6;
-									$cell->update();
-								}
-							}elseif (count($cells) == 3){
-								foreach ($cells as $cell){
-									$cell->widthMd = 4;
-									$cell->widthLg = 4;
-									$cell->update();
-								}
-							}elseif (count($cells) == 4){
-								foreach ($cells as $cell){
-									$cell->widthMd = 6;
-									$cell->widthLg = 3;
-									$cell->update();
-								}
-							}
+							$portalRow->resizeColumnWidths();
 						}
 						$result['success'] = true;
 						$result['message'] = 'The cell was deleted successfully';
@@ -466,28 +446,7 @@ class WebBuilder_AJAX extends JSON_Action
 						$portalCell->widthLg = 12;
 						$portalCell->insert();
 
-						//Update the widths of the cells based on the number of cells in the row
-						$cells = $portalRow->getCells(true);
-						if (count($cells) == 2){
-							foreach ($cells as $cell){
-								$cell->widthSm = 6;
-								$cell->widthMd = 6;
-								$cell->widthLg = 6;
-								$cell->update();
-							}
-						}elseif (count($cells) == 3){
-							foreach ($cells as $cell){
-								$cell->widthMd = 4;
-								$cell->widthLg = 4;
-								$cell->update();
-							}
-						}elseif (count($cells) == 4){
-							foreach ($cells as $cell){
-								$cell->widthMd = 6;
-								$cell->widthLg = 3;
-								$cell->update();
-							}
-						}
+						$portalRow->resizeColumnWidths();
 
 						global $interface;
 						$interface->assign('portalCell', $portalCell);
