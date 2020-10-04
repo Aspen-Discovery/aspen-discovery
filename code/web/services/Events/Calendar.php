@@ -58,6 +58,7 @@ class Events_Calendar extends Action
 		$searchObject->clearHiddenFilters();
 		//Instead we limit to just this month.
 		$searchObject->addHiddenFilter("event_month", '"' . $monthFilter . '"');
+		$searchObject->setSort('start_date_sort');
 
 		$timer->logTime('Setup Search');
 
@@ -81,6 +82,8 @@ class Events_Calendar extends Action
 		$searchObject->close();
 
 		$searchResults = $searchObject->getResultRecordSet();
+
+		$defaultTimezone = new DateTimeZone(date_default_timezone_get());
 
 		//Setup the calendar display
 		//Get a list of weeks for the month
@@ -117,8 +120,10 @@ class Events_Calendar extends Action
 				foreach ($searchResults as $result) {
 					if (in_array($eventDay, $result['event_day'])){
 						$startDate = new DateTime($result['start_date']);
+						$startDate->setTimezone($defaultTimezone);
 						$formattedTime = date_format($startDate, "h:iA");
 						$endDate = new DateTime($result['end_date']);
+						$endDate->setTimezone($defaultTimezone);
 						$formattedTime .= ' - ' . date_format($endDate, "h:iA");
 						if (($endDate->getTimestamp() - $startDate-> getTimestamp()) > 24 * 60 * 60){
 							$formattedTime = 'All day';

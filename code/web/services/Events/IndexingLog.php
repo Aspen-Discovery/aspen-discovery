@@ -45,4 +45,14 @@ class Events_IndexingLog extends Admin_Admin
 		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
 		return $breadcrumbs;
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Indexing Logs']);
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'events';
+	}
 }
