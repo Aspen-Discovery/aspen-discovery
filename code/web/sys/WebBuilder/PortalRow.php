@@ -105,8 +105,11 @@ class PortalRow extends DataObject
 		}
 	}
 
-	public function getCells(){
-		if (!isset($this->_cells) && $this->id){
+	/**
+	 * @return PortalCell[]
+	 */
+	public function getCells($forceRefresh = false){
+		if ((!isset($this->_cells) || $forceRefresh) && $this->id){
 			$this->_cells = [];
 			$obj = new PortalCell();
 			$obj->portalRowId = $this->id;

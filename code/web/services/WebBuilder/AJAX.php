@@ -212,9 +212,39 @@ class WebBuilder_AJAX extends JSON_Action
 					$portalCell = new PortalCell();
 					$portalCell->id = $_REQUEST['id'];
 					if ($portalCell->find(true)){
+						//Update the widths of the cells based on the number of cells in the row
+						$portalRow = new PortalRow();
+						$portalRow->id = $portalCell->portalRowId;
 						$portalCell->delete();
+						if ($portalRow->find(true)){
+							$cells = $portalRow->getCells(true);
+							if (count($cells) == 2){
+								foreach ($cells as $cell){
+									$cell->widthSm = 6;
+									$cell->widthMd = 6;
+									$cell->widthLg = 6;
+									$cell->update();
+								}
+							}elseif (count($cells) == 3){
+								foreach ($cells as $cell){
+									$cell->widthMd = 4;
+									$cell->widthLg = 4;
+									$cell->update();
+								}
+							}elseif (count($cells) == 4){
+								foreach ($cells as $cell){
+									$cell->widthMd = 6;
+									$cell->widthLg = 3;
+									$cell->update();
+								}
+							}
+						}
 						$result['success'] = true;
 						$result['message'] = 'The cell was deleted successfully';
+						global $interface;
+						$interface->assign('portalRow', $portalRow);
+						$result['rowId'] = $portalCell->portalRowId;
+						$result['newRow'] = $interface->fetch('DataObjectUtil/portalRow.tpl');
 					}else{
 						$result['message'] = 'Unable to find that cell, it may have been deleted already';
 					}
@@ -431,16 +461,42 @@ class WebBuilder_AJAX extends JSON_Action
 						$portalCell->weight = count($portalRow->getCells());
 						$portalCell->widthTiny = 12;
 						$portalCell->widthXs = 12;
-						$portalCell->widthSm = 6;
-						$portalCell->widthMd = 4;
-						$portalCell->widthLg = 4;
+						$portalCell->widthSm = 12;
+						$portalCell->widthMd = 12;
+						$portalCell->widthLg = 12;
 						$portalCell->insert();
+
+						//Update the widths of the cells based on the number of cells in the row
+						$cells = $portalRow->getCells(true);
+						if (count($cells) == 2){
+							foreach ($cells as $cell){
+								$cell->widthSm = 6;
+								$cell->widthMd = 6;
+								$cell->widthLg = 6;
+								$cell->update();
+							}
+						}elseif (count($cells) == 3){
+							foreach ($cells as $cell){
+								$cell->widthMd = 4;
+								$cell->widthLg = 4;
+								$cell->update();
+							}
+						}elseif (count($cells) == 4){
+							foreach ($cells as $cell){
+								$cell->widthMd = 6;
+								$cell->widthLg = 3;
+								$cell->update();
+							}
+						}
+
 						global $interface;
 						$interface->assign('portalCell', $portalCell);
+						$interface->assign('portalRow', $portalRow);
 
 						$result['success'] = true;
 						$result['message'] = 'Added a new cell';
 						$result['newCell'] = $interface->fetch('DataObjectUtil/portalCell.tpl');
+						$result['newRow'] = $interface->fetch('DataObjectUtil/portalRow.tpl');
 					}else{
 						$result['message'] = 'Unable to find that row';
 					}

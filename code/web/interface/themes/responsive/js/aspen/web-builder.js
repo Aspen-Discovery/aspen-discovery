@@ -94,7 +94,7 @@ AspenDiscovery.WebBuilder = (function () {
 			};
 			$.getJSON(url, params, function (data) {
 				if (data.success){
-					$("#portal-cell-" + id).hide();
+					$('#portalRow' + data.rowId).replaceWith(data.newRow);
 				} else {
 					AspenDiscovery.showMessage('An error occurred', data.message);
 				}
@@ -145,7 +145,7 @@ AspenDiscovery.WebBuilder = (function () {
 			};
 			$.getJSON(url, params, function (data) {
 				if (data.success){
-					$('#portal-row-cells-' + rowId).append(data.newCell);
+					$('#portalRow' + rowId).replaceWith(data.newRow);
 				} else {
 					AspenDiscovery.showMessage('An error occurred', data.message);
 				}
