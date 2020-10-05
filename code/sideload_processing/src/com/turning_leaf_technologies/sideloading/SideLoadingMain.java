@@ -146,14 +146,8 @@ public class SideLoadingMain {
 
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
-				while (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
-					try {
-						System.gc();
-						Thread.sleep(1000 * 60 * 5);
-					} catch (InterruptedException e) {
-						logger.info("Thread was interrupted");
-					}
-				}
+				//Quit and we will restart after if finishes
+				System.exit(0);
 			}else {
 				//Pause 5 minutes before running the next export
 				try {
