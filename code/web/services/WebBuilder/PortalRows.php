@@ -59,4 +59,26 @@ class WebBuilder_PortalRows extends ObjectEditor
 	{
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');
+		if (!empty($this->activeObject) && $this->activeObject instanceof PortalRow){
+			$breadcrumbs[] = new Breadcrumb('/WebBuilder/PortalPages?objectAction=edit&id=' . $this->activeObject->portalPageId , 'Custom Page');
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Row Content');
+		return $breadcrumbs;
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages']);
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_builder';
+	}
 }

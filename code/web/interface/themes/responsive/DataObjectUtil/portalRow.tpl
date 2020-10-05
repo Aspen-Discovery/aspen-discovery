@@ -20,7 +20,7 @@
 			<div class="col-sm-1 text-center">
 				<div class="btn-group-vertical btn-group-xs">
 					{if $portalRow->weight != 0}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.WebBuilder.moveRow('{$portalRow->id}', 'up');" title="{translate text="Move Up"}">&#x25B2;</span>{/if}
-					<span class="btn btn-xs btn-primary">{translate text="Edit"}</span>
+					<a href="/WebBuilder/PortalRows?objectAction=edit&id={$portalRow->id}" class="btn btn-xs btn-primary">{translate text="Edit"}</a>
 					<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.WebBuilder.addCell('{$portalRow->id}')">{translate text="Add Cell"}</span>
 					<span class="btn btn-xs btn-danger" onclick="return AspenDiscovery.WebBuilder.deleteRow('{$portalRow->id}')">{translate text="Delete Row"}</span>
 					{if !$portalRow->isLastRow()}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.WebBuilder.moveRow('{$portalRow->id}', 'down');" title="{translate text="Move Down"}">&#x25BC;</span>{/if}
