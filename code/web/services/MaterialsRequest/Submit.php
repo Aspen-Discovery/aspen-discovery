@@ -148,7 +148,7 @@ class MaterialsRequest_Submit extends Action
 							$defaultStatus->libraryId = $homeLibrary->libraryId;
 							if (!$defaultStatus->find(true)) {
 								$interface->assign('success', false);
-								$interface->assign('error', 'There was an error submitting your '. translate('materials request') .', could not determine the default status.');
+								$interface->assign('error', translate('There was an error submitting your materials request, could not determine the default status.'));
 							} else {
 								$materialsRequest->status      = $defaultStatus->id;
 								$materialsRequest->dateCreated = time();
@@ -163,7 +163,7 @@ class MaterialsRequest_Submit extends Action
 									$interface->assign('openRequests', ++$openRequests);
 								} else {
 									$interface->assign('success', false);
-									$interface->assign('error', 'There was an error submitting your '. translate('materials request') .'.');
+									$interface->assign('error', translate('There was an error submitting your materials request.'));
 								}
 							}
 						}
