@@ -56,9 +56,9 @@ if (!$solrRunning){
 		}elseif (!is_executable("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
 			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh is not executable";
 		}
-		$solrCmd = "cd /usr/local/aspen-discovery/sites/{$serverName}; ./{$serverName}.sh start";
+		$solrCmd = "/usr/local/aspen-discovery/sites/{$serverName}.sh start";
 	}
-	execInBackground($solrCmd);
+	exec($solrCmd);
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
 }
 
@@ -121,8 +121,7 @@ if (strlen($results) > 0){
 function execInBackground($cmd) {
 	if (substr(php_uname(), 0, 7) == "Windows"){
 		pclose(popen("start /B ". $cmd, "r"));
-	}
-	else {
+	} else {
 		exec($cmd . " > /dev/null &");
 	}
 }
