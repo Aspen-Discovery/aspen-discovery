@@ -213,29 +213,22 @@ hr.menu{
     display: none;
   }
 }
-// Horizontal Menu Bar for small devices
-#horizontal-menu-bar-container {
+
+#horizontal-menu-bar-container{
+  display: flex;
+  flex-direction: row;
+  .menu-section{
+    display: block;
+  }
+
   .menu-icon {
-    padding: 5px;
+    line-height: 16px;
+    display: inline-block;
+    padding: 12px 5px 7px 5px;
+    cursor: pointer;
     margin-left: 5px;
     margin-right: 5px;
     font-size: 16px;
-    &:focus {
-      outline: none;
-    }
-  }
-  padding-left: @padding-xs-horizontal;
-  padding-right: @padding-xs-horizontal;
-}
-
-#horizontal-menu-bar-container{
-  height: 46px;
-  .menu-icon {
-    height: 42px;
-    line-height: 16px;
-    display: inline-block;
-    padding: 17px 5px 0 5px;
-    cursor: pointer;
     &:visited,&:hover,&:focus {
       text-decoration: none;
       outline: none;
@@ -252,18 +245,11 @@ hr.menu{
   }
 }
 
-.menu-section{
-  display: block;
-}
 .menu-section-left{
-  position: absolute;
-  left: 0;
-  top: 0;
+  flex-grow: 10;
 }
 .menu-section-right{
-  position: absolute;
-  right: 0;
-  top: 0;
+  align-self: flex-end;
 }
 
 // Sidebar & Main content
