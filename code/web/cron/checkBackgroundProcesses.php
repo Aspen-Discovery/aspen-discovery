@@ -62,8 +62,8 @@ if (!$solrRunning){
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
 }
 
-//Check to see if reindex processes are running for each module unless the nightly index is running.
-if (!$nightlyReindexRunning) {
+//Check to see if reindex processes are running for each module unless the nightly index is running or solr is not running.
+if (!$nightlyReindexRunning && $solrRunning) {
 	require_once ROOT_DIR . '/sys/Module.php';
 	$aspenModule = new Module();
 	$aspenModule->enabled = true;
