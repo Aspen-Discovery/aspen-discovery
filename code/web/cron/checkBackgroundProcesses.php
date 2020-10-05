@@ -56,7 +56,7 @@ if (!$solrRunning){
 		}elseif (!is_executable("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
 			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh is not executable";
 		}
-		$solrCmd = "/usr/local/aspen-discovery/sites/{$serverName}.sh start";
+		$solrCmd = "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh start";
 	}
 	exec($solrCmd);
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
