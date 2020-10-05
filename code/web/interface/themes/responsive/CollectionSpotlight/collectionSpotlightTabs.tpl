@@ -1,5 +1,5 @@
 {strip}
-<div id="collectionSpotlight{$collectionSpotlight->id}" class="ui-tabs collectionSpotlight {$collectionSpotlight->style}">
+<div id="collectionSpotlight{$collectionSpotlight->id}" class="{if count($collectionSpotlight->lists) > 1}ui-tabs {/if}collectionSpotlight {$collectionSpotlight->style}">
 	{if count($collectionSpotlight->lists) > 1}
 		{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
 			{* Display Tabs *}
@@ -25,50 +25,54 @@
 			</div>
 		{/if}
 	{/if}
-	<div class="tab-content">
-	{assign var="listIndex" value="0"}
-	{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
-		{assign var="active" value=$smarty.foreach.spotlightList.first}
-		{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn && $user->disableRecommendations == 0) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-			{assign var="showViewMoreLink" value=$collectionSpotlight->showViewMoreLink}
-			{assign var="showCollectionSpotlightTitle" value=$collectionSpotlight->showSpotlightTitle}
-			{assign var="listIndex" value=$listIndex+1}
-			{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
-			{assign var="scrollerName" value="$listName"}
-			{assign var="wrapperId" value="$listName"}
-			{assign var="scrollerVariable" value="listScroller$listName"}
-			{if $list->links}
-				{assign var="Links" value=$list->links}
-			{else}
-				{assign var="fullListLink" value=$list->fullListLink()}
-			{/if}
+	{if count($collectionSpotlight->lists) > 1}
+		<div class="tab-content">
+	{/if}
+		{assign var="listIndex" value="0"}
+		{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
+			{assign var="active" value=$smarty.foreach.spotlightList.first}
+			{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn && $user->disableRecommendations == 0) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
+				{assign var="showViewMoreLink" value=$collectionSpotlight->showViewMoreLink}
+				{assign var="showCollectionSpotlightTitle" value=$collectionSpotlight->showSpotlightTitle}
+				{assign var="listIndex" value=$listIndex+1}
+				{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
+				{assign var="scrollerName" value="$listName"}
+				{assign var="wrapperId" value="$listName"}
+				{assign var="scrollerVariable" value="listScroller$listName"}
+				{if $list->links}
+					{assign var="Links" value=$list->links}
+				{else}
+					{assign var="fullListLink" value=$list->fullListLink()}
+				{/if}
 
-			{if count($collectionSpotlight->lists) == 1}
-				{assign var="scrollerTitle" value=$list->name}
-			{/if}
-			{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
-				{assign var="display" value="true"}
-			{else}
-				{if $listIndex == 1}
+				{if count($collectionSpotlight->lists) == 1}
+					{assign var="scrollerTitle" value=$list->name}
+				{/if}
+				{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
 					{assign var="display" value="true"}
 				{else}
-					{assign var="display" value="false"}
+					{if $listIndex == 1}
+						{assign var="display" value="true"}
+					{else}
+						{assign var="display" value="false"}
+					{/if}
+				{/if}
+				{if $collectionSpotlight->style == 'horizontal'}
+					{include file='CollectionSpotlight/titleScroller.tpl'}
+				{elseif $collectionSpotlight->style == 'vertical'}
+					{include file='CollectionSpotlight/verticalTitleScroller.tpl'}
+				{elseif $collectionSpotlight->style == 'single-with-next'}
+					{include file='CollectionSpotlight/singleWithNextTitleSpotlight.tpl'}
+				{elseif $collectionSpotlight->style == 'text-list'}
+					{include file='CollectionSpotlight/textCollectionSpotlight.tpl'}
+				{else}
+					{include file='CollectionSpotlight/singleTitleSpotlight.tpl'}
 				{/if}
 			{/if}
-			{if $collectionSpotlight->style == 'horizontal'}
-				{include file='CollectionSpotlight/titleScroller.tpl'}
-			{elseif $collectionSpotlight->style == 'vertical'}
-				{include file='CollectionSpotlight/verticalTitleScroller.tpl'}
-			{elseif $collectionSpotlight->style == 'single-with-next'}
-				{include file='CollectionSpotlight/singleWithNextTitleSpotlight.tpl'}
-			{elseif $collectionSpotlight->style == 'text-list'}
-				{include file='CollectionSpotlight/textCollectionSpotlight.tpl'}
-			{else}
-				{include file='CollectionSpotlight/singleTitleSpotlight.tpl'}
-			{/if}
-		{/if}
-	{/foreach}
-	</div>
+		{/foreach}
+	{if count($collectionSpotlight->lists) > 1}
+		</div>
+	{/if}
 	<script type="text/javascript">
 		{* Load title scrollers *}
 
