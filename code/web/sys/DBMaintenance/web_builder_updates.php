@@ -119,6 +119,14 @@ function getWebBuilderUpdates(){
 			]
 		],
 
+		'web_builder_portal_cell_title' => [
+			'title' => 'Web Builder Portal Cell Title',
+			'description' => 'Add title to web builder portal cell',
+			'sql' => [
+				"ALTER TABLE web_builder_portal_cell ADD COLUMN title VARCHAR(255) DEFAULT ''"
+			]
+		],
+
 		'web_builder_image_upload' => [
 			'title' => 'Create Image Uploads Table',
 			'description' => 'Create Image Uploads Table to store information about images that have been uploaded to Aspen',

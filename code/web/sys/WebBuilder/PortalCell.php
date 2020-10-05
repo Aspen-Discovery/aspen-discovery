@@ -8,6 +8,8 @@ class PortalCell extends DataObject
 	public $portalRowId;
 	public $weight;
 
+	public $title;
+
 	public /** @noinspection PhpUnused */ $widthTiny;
 	public /** @noinspection PhpUnused */ $widthXs;
 	public /** @noinspection PhpUnused */ $widthSm;
@@ -47,9 +49,10 @@ class PortalCell extends DataObject
 			'youtube_video' => 'YouTube Video',
 		];
 		return [
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
-			'portalRowId' => array('property'=>'portalRowId', 'type'=>'label', 'label'=>'Portal Row', 'description'=>'The parent row'),
-			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.', 'required'=> true),
+			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
+			'portalRowId' => ['property'=>'portalRowId', 'type'=>'label', 'label'=>'Portal Row', 'description'=>'The parent row'],
+			'weight' => ['property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.', 'required'=> true],
+			'title' => ['property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'An optional title for the cell'],
 			'widthTiny' => ['property'=>'widthTiny', 'type'=>'integer', 'label'=>'Column Width Tiny Size', 'description'=>'The width of the column when viewed at tiny size', 'min'=>1, 'max'=>'12', 'default'=>12],
 			'widthXs' => ['property'=>'widthXs', 'type'=>'integer', 'label'=>'Column Width Extra Small Size', 'description'=>'The width of the column when viewed at extra small size', 'min'=>1, 'max'=>'12', 'default'=>12],
 			'widthSm' => ['property'=>'widthSm', 'type'=>'integer', 'label'=>'Column Width Small Size', 'description'=>'The width of the column when viewed at small size', 'min'=>1, 'max'=>'12', 'default'=>12],
@@ -67,39 +70,43 @@ class PortalCell extends DataObject
 	function getContents(){
 		global $interface;
 		global $configArray;
+		$contents = '';
+		if (!empty($this->title)){
+			$contents .= "<h2>{$this->title}</h2>";
+		}
 		if ($this->sourceType == 'markdown') {
 			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 			$parsedown = AspenParsedown::instance();
 			$parsedown->setBreaksEnabled(true);
-			return $parsedown->parse($this->markdown);
+			$contents .= $parsedown->parse($this->markdown);
 		}elseif ($this->sourceType == 'collection_spotlight') {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 			$collectionSpotlight = new CollectionSpotlight();
 			$collectionSpotlight->id = $this->sourceId;
 			if ($collectionSpotlight->find(true)){
 				$interface->assign('collectionSpotlight', $collectionSpotlight);
-				return $interface->fetch('CollectionSpotlight/collectionSpotlightTabs.tpl');
+				$contents .= $interface->fetch('CollectionSpotlight/collectionSpotlightTabs.tpl');
 			}
 		}elseif ($this->sourceType == 'basic_page'){
 			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
 			$basicPage = new BasicPage();
 			$basicPage->id = $this->sourceId;
 			if ($basicPage->find(true)){
-				return $basicPage->getFormattedContents();
+				$contents .= $basicPage->getFormattedContents();
 			}
 		}elseif ($this->sourceType == 'basic_page_teaser'){
 			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
 			$basicPage = new BasicPage();
 			$basicPage->id = $this->sourceId;
 			if ($basicPage->find(true)){
-				return $basicPage->teaser;
+				$contents .= $basicPage->teaser;
 			}
 		}elseif ($this->sourceType == 'custom_form'){
 			require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
 			$customForm = new CustomForm();
 			$customForm->id = $this->sourceId;
 			if ($customForm->find(true)){
-				return $customForm->getFormattedFields();
+				$contents .= $customForm->getFormattedFields();
 			}
 		}elseif ($this->sourceType == 'video'){
 			require_once ROOT_DIR . '/sys/File/FileUpload.php';
@@ -109,7 +116,7 @@ class PortalCell extends DataObject
 				$fileSize = filesize($fileUpload->fullPath);
 				$interface->assign('fileSize', StringUtils::formatBytes($fileSize));
 				$interface->assign('videoPath', $configArray['Site']['url'] . '/Files/' . $this->sourceId . '/Contents');
-				return $interface->fetch('Files/embeddedVideo.tpl');
+				$contents .= $interface->fetch('Files/embeddedVideo.tpl');
 			}
 		}elseif ($this->sourceType == 'vimeo_video'){
 			$sourceInfo = $this->sourceInfo;
@@ -119,7 +126,7 @@ class PortalCell extends DataObject
 				$sourceInfo = $matches[1];
 			}
 			$interface->assign('vimeoId', $sourceInfo);
-			return $interface->fetch('WebBuilder/vimeoVideo.tpl');
+			$contents .= $interface->fetch('WebBuilder/vimeoVideo.tpl');
 		}elseif ($this->sourceType == 'youtube_video'){
 			$sourceInfo = $this->sourceInfo;
 			if (preg_match('~https://youtu\.be/(.*)~', $sourceInfo, $matches)){
@@ -128,7 +135,7 @@ class PortalCell extends DataObject
 				$sourceInfo = $matches[1];
 			}
 			$interface->assign('youtubeId', $sourceInfo);
-			return $interface->fetch('WebBuilder/youtubeVideo.tpl');
+			$contents .= $interface->fetch('WebBuilder/youtubeVideo.tpl');
 		}elseif ($this->sourceType == 'image'){
 			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 			$imageUpload = new ImageUpload();
@@ -144,10 +151,14 @@ class PortalCell extends DataObject
 				}else{
 					$size .= '&size=x-large';
 				}
-				return "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\" alt='{$imageUpload->title}'>";
+				$contents .= "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\" alt='{$imageUpload->title}'>";
 			}
 		}
-		return 'Could not load contents for the cell';
+		if (empty($contents)) {
+			return 'Could not load contents for the cell';
+		}else{
+			return $contents;
+		}
 	}
 
 	function getPortalRow(){
