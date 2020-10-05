@@ -39,6 +39,7 @@ if (!$solrRunning){
 
 if (strlen($results) > 0){
 	//For debugging
+	echo($results);
 	try {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = new SystemVariables();
