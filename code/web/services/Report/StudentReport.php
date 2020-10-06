@@ -80,6 +80,6 @@ class Report_StudentReport extends Admin_Admin {
 
 	function canView()
 	{
-		return UserAccount::userHasPermission('View All Student Reports', 'View Location Student Reports');
+		return UserAccount::userHasPermission(['View All Student Reports', 'View Location Student Reports']);
 	}
 }

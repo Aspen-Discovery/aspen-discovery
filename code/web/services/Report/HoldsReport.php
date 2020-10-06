@@ -13,7 +13,6 @@ class Report_HoldsReport extends Admin_Admin {
 		global $interface;
 		global $configArray;
 		$user = UserAccount::getLoggedInUser();
-		$interface->assign('isStandalonePage', true);
 
 // LOCATION DROPDOWN ARRAY
 		$locationList = $this->getAllowedReportLocations();
@@ -91,6 +90,6 @@ class Report_HoldsReport extends Admin_Admin {
 
 	function canView()
 	{
-		return UserAccount::userHasPermission('View All Holds Reports', 'View Location Holds Reports');
+		return UserAccount::userHasPermission(['View All Holds Reports', 'View Location Holds Reports']);
 	}
 }
