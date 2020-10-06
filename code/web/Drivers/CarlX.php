@@ -1894,6 +1894,7 @@ class CarlX extends AbstractIlsDriver{
 			and i.status='S'
 			and pb.branchcode = '$location'
 			and t.transcode='R*'
+			and t.renew = ib.branchnumbers
 			order by l.locname, i.cn
 EOT;
 		$stid = oci_parse($this->dbConnection, $sql);
