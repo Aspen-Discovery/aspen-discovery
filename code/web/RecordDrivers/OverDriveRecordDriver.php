@@ -112,7 +112,6 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	public function getHoldings() {
         require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 
-        /** @var OverDriveAPIProductFormats[] $items */
         $items = $this->getItems();
         //Add links as needed
         $availability = $this->getAvailability();
@@ -133,15 +132,13 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
                     'onclick' => $checkoutLink,
                     'text' => 'Check Out',
                     'overDriveId' => $this->getUniqueID(),
-                    'formatId' => $item->numericId,
                     'action' => 'CheckOut'
                 );
             }else if ($addPlaceHoldLink){
                 $item->links[] = array(
-                    'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->getUniqueID()}', '{$item->numericId}');",
+                    'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->getUniqueID()}');",
                     'text' => 'Place Hold',
                     'overDriveId' => $this->getUniqueID(),
-                    'formatId' => $item->numericId,
                     'action' => 'Hold'
                 );
             }
