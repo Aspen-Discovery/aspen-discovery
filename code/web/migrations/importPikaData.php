@@ -12,7 +12,7 @@ $dataPath = '/data/aspen-discovery/' . $serverName;
 $exportPath = $dataPath . '/pika_export/';
 
 if (!file_exists($exportPath)){
-	echo("Could not find export path " . $exportPath);
+	echo("Could not find export path " . $exportPath . "\n");
 }else{
 
 	//Make sure we have all the right files
@@ -734,7 +734,7 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 function validateFileExists(string $exportPath, string $file): void
 {
 	if (!file_exists($exportPath . $file)) {
-		echo("Could not find $file in export path " . $exportPath);
+		echo("Could not find $file in export path " . $exportPath . "\n");
 		die();
 	}
 }
