@@ -163,6 +163,9 @@ class WebResource extends DataObject
 		return $this->_audiences;
 	}
 
+	/**
+	 * @return WebBuilderCategory[];
+	 */
 	public function getCategories() {
 		if (!isset($this->_categories) && $this->id){
 			$this->_categories = array();
@@ -170,7 +173,10 @@ class WebResource extends DataObject
 			$categoryLink->webResourceId = $this->id;
 			$categoryLink->find();
 			while($categoryLink->fetch()){
-				$this->_categories[$categoryLink->categoryId] = $categoryLink->getCategory();
+				$category = $categoryLink->getCategory();
+				if ($category != false){
+					$this->_categories[$categoryLink->categoryId] = $category;
+				}
 			}
 		}
 		return $this->_categories;
