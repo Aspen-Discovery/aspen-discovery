@@ -2017,4 +2017,11 @@ EOT;
 		return $data;
 	}
 
+	function getPasswordPinValidationRules(){
+		return [
+			'minLength' => 4,
+			'maxLength' => 6,
+			'onlyDigitsAllowed' => true,
+		];
+	}
 }
