@@ -80,11 +80,11 @@ class MaterialsRequest_AJAX extends Action{
 					if (!empty($staffLibrary)) {
 
 						// Material Request
-						$materialsRequest     = new MaterialsRequest();
+						$materialsRequest = new MaterialsRequest();
 						$materialsRequest->id = $id;
 
 						// Statuses
-						$statusQuery           = new MaterialsRequestStatus();
+						$statusQuery = new MaterialsRequestStatus();
 						$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 
 						// Pick-up Locations
@@ -197,7 +197,11 @@ class MaterialsRequest_AJAX extends Action{
 									$materialsRequestStatus = new MaterialsRequestStatus();
 									$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
 									$materialsRequestStatus->libraryId = $staffLibrary->libraryId;
-									$availableStatuses = $materialsRequestStatus->fetchAll('id', 'description');
+									$materialsRequestStatus->find();
+									$availableStatuses = [];
+									while ($materialsRequestStatus->fetch()){
+										$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+									}
 									$interface->assign('availableStatuses', $availableStatuses);
 
 									// Get Barcode Column

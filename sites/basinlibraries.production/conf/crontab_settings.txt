@@ -29,27 +29,28 @@
 #############
 # Indexing Tasks #
 #############
-@reboot sleep 5; cd /usr/local/aspen-discovery/sites/basinlibraries.production/; ./start_background_processes.sh
-5 2 * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php basinlibraries.production
-7 3 * * * php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php basinlibraries.production
-*/5 * * * * php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php basinlibraries.production
+@reboot       solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php basinlibraries.production
+5 2 * * *     root    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php basinlibraries.production
+7 3 * * *     root    php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php basinlibraries.production
+*/2 * * * *   solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php basinlibraries.production
+*/5 * * * *   root    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php basinlibraries.production
 
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-0 2 * * * cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar basinlibraries.production
-0 2 * * * cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar basinlibraries.production nightly
+0 2 * * *     root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar basinlibraries.production
+0 2 * * *     root    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar basinlibraries.production nightly
 
 ######################
 # MySQL Nightly Dump #
 ######################
 # backup important bits at 12:10am daily
-10 0 * * * /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh basinlibraries.production aspen 2>&1 >/dev/null
+10 0 * * *    root    /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh basinlibraries.production aspen 2>&1 >/dev/null
 
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-07 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php basinlibraries.production
+07 7 * * 0-1  root    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php basinlibraries.production
 # update on Sundays and Mondays at 7:07
 
 ###########################
@@ -57,9 +58,9 @@
 ###########################
 
 # Temp files
-26 0 * * * cd /tmp; rm -rf CURLCOOKIE*
+26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 22 * * * cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar basinlibraries.production
+00 22 * * *   root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar basinlibraries.production
 
-00 01 * * * certbot renew
+00 01 * * *   root    certbot renew

@@ -181,15 +181,8 @@ public class KohaExportMain {
 
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
-				while (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
-					try {
-						System.gc();
-						//noinspection BusyWait
-						Thread.sleep(1000 * 60 * 5);
-					} catch (InterruptedException e) {
-						logger.info("Thread was interrupted");
-					}
-				}
+				//Quit and we will restart after if finishes
+				System.exit(0);
 			}else{
 				//Pause before running the next export (longer if we didn't get any actual changes)
 				try {

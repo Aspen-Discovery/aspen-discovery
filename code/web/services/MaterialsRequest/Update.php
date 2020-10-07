@@ -73,6 +73,9 @@ class MaterialsRequest_Update extends Action {
 				$materialsRequest->holdPickupLocation  = empty($_REQUEST['holdPickupLocation']) ? '' : $_REQUEST['holdPickupLocation'];
 				$materialsRequest->bookmobileStop      = empty($_REQUEST['bookmobileStop']) ? '' : $_REQUEST['bookmobileStop'];
 				$materialsRequest->illItem             = empty($_REQUEST['illItem']) ? 0 : $_REQUEST['illItem'];
+				if (!empty($_REQUEST['status'])){
+					$materialsRequest->status = $_REQUEST['status'];
+				}
 
 				$materialsRequest->libraryId = $requestUser->getHomeLibrary()->libraryId;
 

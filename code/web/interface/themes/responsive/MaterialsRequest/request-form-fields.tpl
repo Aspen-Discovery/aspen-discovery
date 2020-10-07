@@ -227,7 +227,7 @@
 						{if $isAdminUser}
 							<select name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" class="form-control">
 								{foreach from=$availableStatuses item=statusLabel key=status}
-									<option value="{$status}"{if $materialsRequest->status == status} selected="selected"{/if}>{$statusLabel}</option>
+									<option value="{$status}"{if $materialsRequest->status == $status} selected="selected"{/if}>{$statusLabel}</option>
 								{/foreach}
 							</select>
 						{else}

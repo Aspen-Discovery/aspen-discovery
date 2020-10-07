@@ -56,6 +56,8 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
 		fclose($patronIdsHnd);
 	}
 
+	flipUserIds();
+
 	//Load users, make sure to validate that each still exists in the ILS as we load them
 	$numImports = 0;
 	$userHnd = fopen($exportPath . "users.csv", 'r');
@@ -738,4 +740,30 @@ function getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks
 	}else{
 		return $movedGroupedWorks[$groupedWorkId];
 	}
+}
+
+/**
+ * Switch any users that have a positive id in the user table to have a negative id to avoid conflicts on import
+ */
+function flipUserIds(){
+	global $aspen_db;
+	$aspen_db->query("UPDATE user set id = -id WHERE id > 1" );
+	$aspen_db->query("UPDATE grouped_work_alternate_titles set addedBy = -addedBy WHERE addedBy > 1" );
+	$aspen_db->query("UPDATE materials_request set createdBy = -createdBy WHERE createdBy > 1" );
+	$aspen_db->query("UPDATE materials_request set assignedTo = -assignedTo WHERE assignedTo > 1" );
+	$aspen_db->query("UPDATE search set user_id = -user_id WHERE user_id > 1" );
+	$aspen_db->query("UPDATE user_cloud_library_usage set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_hoopla_usage set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_ils_usage set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_list set user_id = -user_id WHERE user_id > 1" );
+	$aspen_db->query("UPDATE user_not_interested set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_open_archives_usage set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_overdrive_usage set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_payments set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_rbdigital_usage set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_reading_history_work set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_roles set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_sideload_usage set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_staff_settings set userId = -userId WHERE userId > 1" );
+	$aspen_db->query("UPDATE user_work_review set userId = -userId WHERE userId > 1" );
 }

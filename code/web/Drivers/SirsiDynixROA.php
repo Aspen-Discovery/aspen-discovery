@@ -1091,8 +1091,8 @@ class SirsiDynixROA extends HorizonAPI
 	{
 
 		//Get the session token for the user
-		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
-		if (!$sessionToken) {
+		$staffSessionToken = $this->getStaffSessionToken();
+		if (!$staffSessionToken) {
 			return array(
 				'success' => false,
 				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
@@ -1179,7 +1179,7 @@ class SirsiDynixROA extends HorizonAPI
 				}
 				//$holdRecord         = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
 				//$placeHold          = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold/describe", null, $sessionToken);
-				$createHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken);
+				$createHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $staffSessionToken);
 
 				$hold_result = array();
 				if (isset($createHoldResponse->messageList)) {
@@ -1262,8 +1262,8 @@ class SirsiDynixROA extends HorizonAPI
 
 	function changeHoldPickupLocation($patron, $recordId, $holdId, $newPickupLocation)
 	{
-		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
-		if (!$sessionToken) {
+		$staffSessionToken = $this->getStaffSessionToken();
+		if (!$staffSessionToken) {
 			return array(
 				'success' => false,
 				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
@@ -1272,18 +1272,18 @@ class SirsiDynixROA extends HorizonAPI
 		//create the hold using the web service
 		$webServiceURL = $this->getWebServiceURL();
 
-		$params = array(
-			'key' => $holdId,
-			'resource' => '/circulation/holdRecord',
-			'fields' => array(
-				'pickupLibrary' => array(
-					'resource' => '/policy/library',
-					'key' => strtoupper($newPickupLocation)
-				),
-			)
-		);
+		$params = [
+			'holdRecord' => [
+				'resource' => '/circulation/holdRecord',
+				'key'=>$holdId,
+			],
+			'pickupLibrary' => [
+				'resource' => '/policy/library',
+				'key' => strtoupper($newPickupLocation),
+			],
+		];
 
-		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$holdId", $params, $sessionToken, 'PUT');
+		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/changePickupLocation", $params, $this->getSessionToken($patron), 'POST');
 		if (isset($updateHoldResponse->key) && isset($updateHoldResponse->fields->pickupLibrary->key) && ($updateHoldResponse->fields->pickupLibrary->key == strtoupper($newPickupLocation))) {
 			return array(
 				'success' => true,
@@ -1323,22 +1323,30 @@ class SirsiDynixROA extends HorizonAPI
 		$formattedDateToReactivate = $dateToReactivate ? date('Y-m-d', strtotime($dateToReactivate)) : null;
 
 		$params = array(
-			'key' => $holdToFreezeId,
-			'resource' => '/circulation/holdRecord',
-			'fields' => array(
-					'suspendBeginDate' => $today,
-					'suspendEndDate' => $formattedDateToReactivate
-			)
+			'holdRecord' => [
+				'key' => $holdToFreezeId,
+				'resource' => '/circulation/holdRecord',
+			],
+			'suspendBeginDate' => $today,
+			'suspendEndDate' => $formattedDateToReactivate
 		);
 
-		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$holdToFreezeId", $params, $sessionToken, 'PUT');
+		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/suspendHold", $params, $sessionToken, 'POST');
 
-		if (isset($updateHoldResponse->key) && isset($updateHoldResponse->fields->status) && $updateHoldResponse->fields->status == "SUSPENDED") {
-			$frozen = translate('frozen');
-			return array(
-				'success' => true,
-				'message' => "The hold has been $frozen."
-			);
+		if (isset($updateHoldResponse->holdRecord->key)) {
+			$getHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$holdToFreezeId", null, $this->getSessionToken($patron));
+			if (isset($getHoldResponse->fields->status) && $getHoldResponse->fields->status == 'SUSPENDED'){
+				return array(
+					'success' => true,
+					'message' => "The hold has been frozen."
+				);
+			}else{
+				return array(
+					'success' => false,
+					'message' => "The hold could not be frozen."
+				);
+			}
+
 		} else {
 			$messages = array();
 			if (isset($updateHoldResponse->messageList)) {
@@ -1372,21 +1380,19 @@ class SirsiDynixROA extends HorizonAPI
 		$webServiceURL = $this->getWebServiceURL();
 
 		$params = array(
-			'key' => $holdToThawId,
-			'resource' => '/circulation/holdRecord',
-			'fields' => array(
-				'suspendBeginDate' => null,
-				'suspendEndDate' => null
-			)
+			'holdRecord' => [
+				'key' => $holdToThawId,
+				'resource' => '/circulation/holdRecord',
+			],
 		);
 
-		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$holdToThawId", $params, $sessionToken, 'PUT');
+		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/unsuspendHold", $params, $sessionToken, 'POST');
 
-		if (isset($updateHoldResponse->key) && is_null($updateHoldResponse->fields->suspendEndDate)) {
+		if (isset($updateHoldResponse->holdRecord->key)) {
 			$thawed = translate('thawed');
 			return array(
 				'success' => true,
-				'message' => "The hold has been $thawed."
+				'message' => "The hold has been thawed."
 			);
 		} else {
 			$messages = array();

@@ -8521,6 +8521,10 @@ hr.menu {
 }
 #menuToggleButton.selected {
   background-color: #ededed;
+  min-width: 220px;
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+  padding: 12px 16px;
+  z-index: 3;
 }
 .dropdownMenu {
   display: none;

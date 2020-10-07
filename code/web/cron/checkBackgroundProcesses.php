@@ -10,19 +10,25 @@ if ($configArray['System']['operatingSystem'] == 'windows'){
 	$processIdIndex = 2;
 	$processNameIndex = 1;
 	$solrRegex = "/{$serverName}\\\\solr7/ix";
+	$nightlyReindexRegex = "/.*?java\s+-jar\sreindexer\.jar\s+$serverName\s+nightly/ix";
 }else{
 	exec("ps -ef | grep java", $processes);
 	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\s(.*?)\.jar\s' . $serverName . '/ix';
 	$processIdIndex = 1;
 	$processNameIndex = 2;
 	$solrRegex = "/{$serverName}\/solr7/ix";
+	/** @noinspection SpellCheckingInspection */
+	$nightlyReindexRegex = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\sreindexer\.jar\s' . $serverName . '\snightly/ix';
 }
 
 $results = "";
 
 $solrRunning = false;
+$nightlyReindexRunning = false;
 foreach ($processes as $processInfo){
-	if (preg_match($processRegEx, $processInfo, $matches)) {
+	if (preg_match($nightlyReindexRegex, $processInfo, $matches)) {
+		$nightlyReindexRunning = true;
+	}else if (preg_match($processRegEx, $processInfo, $matches)) {
 		$processId = $matches[$processIdIndex];
 		$process = $matches[$processNameIndex];
 		if (array_key_exists($process, $runningProcesses)){
@@ -35,7 +41,7 @@ foreach ($processes as $processInfo){
 		}
 
 		//echo("Process: $process ($processId)\r\n");
-	}else if (preg_match($solrRegex, $processInfo, $matches)) {
+	}else if (preg_match($solrRegex, $processInfo)) {
 		$solrRunning = true;
 	}
 }
@@ -50,44 +56,50 @@ if (!$solrRunning){
 		}elseif (!is_executable("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
 			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh is not executable";
 		}
-		$solrCmd = "cd /usr/local/aspen-discovery/sites/{$serverName}; {$serverName}.sh start";
+		$solrCmd = "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh start";
 	}
-	execInBackground($solrCmd);
+	exec($solrCmd);
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
 }
-require_once ROOT_DIR . '/sys/Module.php';
-$aspenModule = new Module();
-$aspenModule->enabled = true;
-$aspenModule->find();
 
-while ($aspenModule->fetch()){
-	if (!empty($aspenModule->backgroundProcess)){
-		if (isset($runningProcesses[$aspenModule->backgroundProcess])){
-			unset($runningProcesses[$aspenModule->backgroundProcess]);
-		}else{
-			$results .= "No process found for '{$aspenModule->name}' expected '{$aspenModule->backgroundProcess}'\r\n";
-			//Attempt to restart the service
-			$local = $configArray['Site']['local'];
-			//The local path include web, get rid of that
-			$local = substr($local, 0, strrpos($local, '/'));
-			$processPath = $local . '/' . $aspenModule->backgroundProcess;
-			if (file_exists($processPath)){
-				if (file_exists($processPath . "/{$aspenModule->backgroundProcess}.jar")){
-					execInBackground("cd $processPath; java -jar {$aspenModule->backgroundProcess}.jar $serverName");
-					$results .= "Restarted '{$aspenModule->name}'\r\n";
-				}else{
-					$results .= "Could not automatically restart {$aspenModule->name}, the jar $processPath/{$aspenModule->backgroundProcess}.jar did not exist\r\n";
+//Check to see if reindex processes are running for each module unless the nightly index is running or solr is not running.
+if (!$nightlyReindexRunning && $solrRunning) {
+	require_once ROOT_DIR . '/sys/Module.php';
+	$aspenModule = new Module();
+	$aspenModule->enabled = true;
+	$aspenModule->find();
+
+	while ($aspenModule->fetch()) {
+		if (!empty($aspenModule->backgroundProcess)) {
+			if (isset($runningProcesses[$aspenModule->backgroundProcess])) {
+				unset($runningProcesses[$aspenModule->backgroundProcess]);
+			} else {
+				//Don't message starting background processes since this can happen nightly. Only show an error if the restart fails.
+				//$results .= "No process found for '{$aspenModule->name}' expected '{$aspenModule->backgroundProcess}'\r\n";
+				//Attempt to restart the service
+				$local = $configArray['Site']['local'];
+				//The local path include web, get rid of that
+				$local = substr($local, 0, strrpos($local, '/'));
+				$processPath = $local . '/' . $aspenModule->backgroundProcess;
+				if (file_exists($processPath)) {
+					if (file_exists($processPath . "/{$aspenModule->backgroundProcess}.jar")) {
+						execInBackground("cd $processPath; java -jar {$aspenModule->backgroundProcess}.jar $serverName");
+						//Don't send an error message when successfully starting a process.
+						//$results .= "Restarted '{$aspenModule->name}'\r\n";
+					} else {
+						$results .= "Could not automatically restart {$aspenModule->name}, the jar $processPath/{$aspenModule->backgroundProcess}.jar did not exist\r\n";
+					}
+				} else {
+					$results .= "Could not automatically restart {$aspenModule->name}, the directory $processPath did not exist\r\n";
 				}
-			}else{
-				$results .= "Could not automatically restart {$aspenModule->name}, the directory $processPath did not exist\r\n";
 			}
 		}
 	}
-}
 
-foreach ($runningProcesses as $process){
-	if ($process['name'] != 'cron' && $process['name'] != 'oai_indexer' && $process['name'] != 'reindexer'){
-		$results .= "Found process '{$process['name']}' that does not have a module for it\r\n";
+	foreach ($runningProcesses as $process) {
+		if ($process['name'] != 'cron' && $process['name'] != 'oai_indexer' && $process['name'] != 'reindexer') {
+			$results .= "Found process '{$process['name']}' that does not have a module for it\r\n";
+		}
 	}
 }
 
@@ -109,8 +121,7 @@ if (strlen($results) > 0){
 function execInBackground($cmd) {
 	if (substr(php_uname(), 0, 7) == "Windows"){
 		pclose(popen("start /B ". $cmd, "r"));
-	}
-	else {
+	} else {
 		exec($cmd . " > /dev/null &");
 	}
 }
