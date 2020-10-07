@@ -1171,16 +1171,16 @@ class ExtractOverDriveInfo {
 							JSONObject accountData = allAccounts.getJSONObject(i);
 							long libraryId = accountData.getLong("id");
 							if (libraryId == -1){
-								numConsortiumCopies += availability.getInt("copiesOwned");
-								numConsortiumCopiesAvailable += availability.getInt("copiesAvailable");
+								numConsortiumCopies += accountData.getInt("copiesOwned");
+								numConsortiumCopiesAvailable += accountData.getInt("copiesAvailable");
 							}else if (libraryId == collectionInfo.getAdvantageId()){
-								numCopiesOwned += availability.getInt("copiesOwned");
-								numCopiesAvailable += availability.getInt("copiesAvailable");
+								numCopiesOwned += accountData.getInt("copiesOwned");
+								numCopiesAvailable += accountData.getInt("copiesAvailable");
 							}else{
 								if (accountData.has("shared")){
 									if (accountData.getBoolean("shared")){
-										numSharedCopies += availability.getInt("copiesOwned");
-										numSharedCopiesAvailable += availability.getInt("copiesAvailable");
+										numSharedCopies += accountData.getInt("copiesOwned");
+										numSharedCopiesAvailable += accountData.getInt("copiesAvailable");
 									}
 								}
 							}
