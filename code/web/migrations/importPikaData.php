@@ -99,6 +99,8 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
 			$existingUser = UserAccount::validateAccount($userFromCSV->cat_username, $userFromCSV->cat_password);
 		}
 		if ($existingUser != false && !($existingUser instanceof AspenError)){
+			echo("Found an existing user with id {$existingUser->id}\n");
+			ob_flush();
 			$existingUserId = $existingUser->id;
 			if ($existingUserId != $userFromCSV->id){
 				//Have to delete the old user before inserting the new to avoid errors with primary keys
