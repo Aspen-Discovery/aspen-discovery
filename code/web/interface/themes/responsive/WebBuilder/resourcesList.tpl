@@ -7,7 +7,7 @@
 				<div class="col-xs-4 col-md-3 col-lg-2 featuredResource">
 					<a href="/WebBuilder/WebResource/{$resource->id}">
 					{if !empty($resource->logo)}
-						<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}">
+						<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}" class="img-responsive img-thumbnail">
 					{else}
 						{$resource->name}
 					{/if}
@@ -33,7 +33,7 @@
 								<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 									{if !empty($resource->logo)}
 										<a href="/WebBuilder/WebResource/{$resource->id}">
-											<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}">
+											<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}" class="img-responsive img-thumbnail">
 										</a>
 									{/if}
 								</div>
