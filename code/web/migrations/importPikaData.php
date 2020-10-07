@@ -58,15 +58,18 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
 
 	flipUserIds();
 
+	echo("Flipped User Ids\n");
+	ob_flush();
+
 	//Load users, make sure to validate that each still exists in the ILS as we load them
 	$numImports = 0;
 	$userHnd = fopen($exportPath . "users.csv", 'r');
 	$batchStartTime = time();
-	$numSkipped = 0;
 	while ($userRow = fgetcsv($userHnd)) {
 		$numImports++;
 		$userFromCSV = loadUserInfoFromCSV($userRow);
-		//echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->cat_username}\tUsername {$userFromCSV->username}\n");
+		echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->cat_username}\tUsername {$userFromCSV->username}\n");
+		ob_flush();
 		if (count($preValidatedIds) > 0){
 			if (array_key_exists($userFromCSV->cat_username, $preValidatedIds)){
 				$username = $preValidatedIds[$userFromCSV->cat_username];
