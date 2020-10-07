@@ -1064,7 +1064,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				/** @var File_MARC_Data_Field[] $rdaPublisherFields */
 				$rdaPublisherFields = $marcRecord->getFields('264');
 				foreach ($rdaPublisherFields as $rdaPublisherField) {
-					if ($rdaPublisherField->getIndicator(2) == 1 && $rdaPublisherField->getSubfield('c') != null) {
+					if (($rdaPublisherField->getIndicator(2) == 1 || $rdaPublisherField->getIndicator(2) == ' ') && $rdaPublisherField->getSubfield('c') != null) {
 						$publicationDates[] = $rdaPublisherField->getSubfield('c')->getData();
 					}
 				}
@@ -1090,7 +1090,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			/** @var File_MARC_Data_Field[] $rdaPublisherFields */
 			$rdaPublisherFields = $marcRecord->getFields('264');
 			foreach ($rdaPublisherFields as $rdaPublisherField) {
-				if ($rdaPublisherField->getIndicator(2) == 1 && $rdaPublisherField->getSubfield('b') != null) {
+				if (($rdaPublisherField->getIndicator(2) == 1 || $rdaPublisherField->getIndicator(2) == ' ') && $rdaPublisherField->getSubfield('b') != null) {
 					$publishers[] = $rdaPublisherField->getSubfield('b')->getData();
 				}
 			}

@@ -357,7 +357,7 @@ class File_MARC_Data_Field extends File_MARC_Field
      * {@link File_MARC_Subfield} is retrieved
      * @param bool   $pcre if true, then match as a regular expression
      *
-     * @return File_MARC_List|array returns a linked list of all subfields
+     * @return File_MARC_List|File_MARC_Subfield[] returns a linked list of all subfields
      * if $code is null, an array of {@link File_MARC_Subfield} objects if
      * one or more subfields match, or an empty array if no codes match $code
      */
