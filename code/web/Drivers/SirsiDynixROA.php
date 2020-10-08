@@ -1092,6 +1092,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		//Get the session token for the user
 		$staffSessionToken = $this->getStaffSessionToken();
+		$sessionToken = $this->getSessionToken($patron);
 		if (!$staffSessionToken) {
 			return array(
 				'success' => false,
@@ -1179,7 +1180,7 @@ class SirsiDynixROA extends HorizonAPI
 				}
 				//$holdRecord         = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
 				//$placeHold          = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold/describe", null, $sessionToken);
-				$createHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $staffSessionToken);
+				$createHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken);
 
 				$hold_result = array();
 				if (isset($createHoldResponse->messageList)) {
