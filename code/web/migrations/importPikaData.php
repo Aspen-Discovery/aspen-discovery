@@ -41,7 +41,7 @@ if (!file_exists($exportPath)){
 	importReadingHistory($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 }
 
-function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
+function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $serverName){
 	global $aspen_db;
 
 	echo ("Starting to import users\n");
@@ -83,13 +83,23 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
 					$existingUser = false;
 				}else{
 					$existingUser = new User();
-					$existingUser->source = 'ils';
+					//For nashville
+					if ($serverName == 'nashville.aspenlocal' || $serverName == 'nashville.production'){
+						$existingUser->source = 'carlx';
+					}else{
+						$existingUser->source = 'ils';
+					}
+
 					$existingUser->username = $username;
 					$existingUser->cat_username = $userFromCSV->cat_username;
 					if (!$existingUser->find(true)){
 						//Didn't find the combination of username and cat_username (barcode) see if it exists with just the username
 						$existingUser = new User();
-						$existingUser->source = 'ils';
+						if ($serverName == 'nashville.aspenlocal' || $serverName == 'nashville.production'){
+							$existingUser->source = 'carlx';
+						}else{
+							$existingUser->source = 'ils';
+						}
 						$existingUser->username = $username;
 						if (!$existingUser->find(true)) {
 							//The user does not exist in the database.  We can create it by first inserting it and then cloning it so the rest of the process works
