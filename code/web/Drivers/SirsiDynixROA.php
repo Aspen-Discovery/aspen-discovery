@@ -972,7 +972,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
-		$includeFields = urlencode("holdRecordList{*,bib{title}}");
+		$includeFields = urlencode("holdRecordList{*,bib{title},selectedItem{call{*},itemType{*}}}");
 		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -1033,7 +1033,7 @@ class SirsiDynixROA extends HorizonAPI
 					$curHold['ratingData'] = $recordDriver->getRatingData();
 
 					if ($hold->fields->holdType == 'COPY'){
-						$curHold['title2'] = $hold->fields->item->fields->itemType->key . ' - ' . $hold->fields->item->fields->call->fields->callNumber;
+						$curHold['title2'] = $hold->fields->selectedItem->fields->itemType->fields->description . ' - ' . $hold->fields->selectedItem->fields->call->fields->callNumber;
 					}
 
 				} else {
@@ -1092,6 +1092,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		//Get the session token for the user
 		$staffSessionToken = $this->getStaffSessionToken();
+		$sessionToken = $this->getSessionToken($patron);
 		if (!$staffSessionToken) {
 			return array(
 				'success' => false,
@@ -1179,7 +1180,7 @@ class SirsiDynixROA extends HorizonAPI
 				}
 				//$holdRecord         = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
 				//$placeHold          = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold/describe", null, $sessionToken);
-				$createHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $staffSessionToken);
+				$createHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken);
 
 				$hold_result = array();
 				if (isset($createHoldResponse->messageList)) {
