@@ -48,6 +48,10 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
 	set_time_limit(600);
 
 	$preValidatedIds = []; //Key is barcode, value is the unique id
+	//Optionally we can have a list of all patron ids in the ILS currently.
+	//Expects 2 columns
+	//Column 1: Unique ID in the ILS
+	//Column 2: Patron barcode
 	if (file_exists($exportPath . '/patron_ids.csv')){
 		$patronIdsHnd = fopen($exportPath . "patron_ids.csv", 'r');
 		while ($patronIdRow = fgetcsv($patronIdsHnd)) {
@@ -56,6 +60,8 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
 		fclose($patronIdsHnd);
 	}
 
+	//Flipping the user ids helps to deal with cases where the unique id within Aspen is different than the unique ID in Pika.
+	//This only happens after the initial conversion when users log in to Aspen and Pika in different orders.
 	flipUserIds();
 
 	echo("Flipped User Ids\n");
