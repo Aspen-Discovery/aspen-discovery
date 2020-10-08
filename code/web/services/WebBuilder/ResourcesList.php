@@ -17,7 +17,7 @@ class WebBuilder_ResourcesList extends Action
 			if ($resource->featured){
 				$featuredResources[] = $clonedResource;
 			}
-			foreach ($resource->getCategories() as $category){
+			foreach ($clonedResource->getCategories() as $category){
 				if (!array_key_exists($category->name, $resourcesByCategory)){
 					$resourcesByCategory[$category->name] = [];
 				}
