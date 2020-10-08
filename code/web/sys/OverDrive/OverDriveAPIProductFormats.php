@@ -6,7 +6,6 @@ class OverDriveAPIProductFormats extends DataObject {
 	public $id;
 	public $productId;
 	public $textId;
-	public $numericId;
 	public $name;
 	public $fileName;
 	public $fileSize;

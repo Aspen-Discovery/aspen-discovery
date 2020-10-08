@@ -12,7 +12,7 @@ $dataPath = '/data/aspen-discovery/' . $serverName;
 $exportPath = $dataPath . '/pika_export/';
 
 if (!file_exists($exportPath)){
-	echo("Could not find export path " . $exportPath);
+	echo("Could not find export path " . $exportPath . "\n");
 }else{
 
 	//Make sure we have all the right files
@@ -48,6 +48,10 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
 	set_time_limit(600);
 
 	$preValidatedIds = []; //Key is barcode, value is the unique id
+	//Optionally we can have a list of all patron ids in the ILS currently.
+	//Expects 2 columns
+	//Column 1: Unique ID in the ILS
+	//Column 2: Patron barcode
 	if (file_exists($exportPath . '/patron_ids.csv')){
 		$patronIdsHnd = fopen($exportPath . "patron_ids.csv", 'r');
 		while ($patronIdRow = fgetcsv($patronIdsHnd)) {
@@ -56,17 +60,22 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
 		fclose($patronIdsHnd);
 	}
 
+	//Flipping the user ids helps to deal with cases where the unique id within Aspen is different than the unique ID in Pika.
+	//This only happens after the initial conversion when users log in to Aspen and Pika in different orders.
 	flipUserIds();
+
+	echo("Flipped User Ids\n");
+	ob_flush();
 
 	//Load users, make sure to validate that each still exists in the ILS as we load them
 	$numImports = 0;
 	$userHnd = fopen($exportPath . "users.csv", 'r');
 	$batchStartTime = time();
-	$numSkipped = 0;
 	while ($userRow = fgetcsv($userHnd)) {
 		$numImports++;
 		$userFromCSV = loadUserInfoFromCSV($userRow);
-		//echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->cat_username}\tUsername {$userFromCSV->username}\n");
+		echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->cat_username}\tUsername {$userFromCSV->username}\n");
+		ob_flush();
 		if (count($preValidatedIds) > 0){
 			if (array_key_exists($userFromCSV->cat_username, $preValidatedIds)){
 				$username = $preValidatedIds[$userFromCSV->cat_username];
@@ -96,6 +105,8 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
 			$existingUser = UserAccount::validateAccount($userFromCSV->cat_username, $userFromCSV->cat_password);
 		}
 		if ($existingUser != false && !($existingUser instanceof AspenError)){
+			echo("Found an existing user with id {$existingUser->id}\n");
+			ob_flush();
 			$existingUserId = $existingUser->id;
 			if ($existingUserId != $userFromCSV->id){
 				//Have to delete the old user before inserting the new to avoid errors with primary keys
@@ -729,7 +740,7 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 function validateFileExists(string $exportPath, string $file): void
 {
 	if (!file_exists($exportPath . $file)) {
-		echo("Could not find $file in export path " . $exportPath);
+		echo("Could not find $file in export path " . $exportPath . "\n");
 		die();
 	}
 }

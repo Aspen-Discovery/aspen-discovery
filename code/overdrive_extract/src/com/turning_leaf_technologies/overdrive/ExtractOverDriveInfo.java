@@ -45,8 +45,7 @@ class ExtractOverDriveInfo {
 	private String overDriveAPITokenType;
 	private long overDriveAPIExpiration;
 	private final TreeMap<Long, String> libToOverDriveAPIKeyMap = new TreeMap<>();
-	private final HashMap<String, Long> overDriveFormatMap = new HashMap<>();
-	
+
 	private final HashMap<String, OverDriveRecordInfo> allProductsInOverDrive = new HashMap<>();
 	private final ArrayList<AdvantageCollectionInfo> allAdvantageCollections = new ArrayList<>();
 	private final HashMap<String, OverDriveDBInfo> existingProductsInAspen = new HashMap<>();
@@ -447,30 +446,7 @@ class ExtractOverDriveInfo {
 			libToOverDriveAPIKeyMap.put(advantageCollectionMapRS.getLong(1), advantageCollectionMapRS.getString(3));
 		}
 
-		setupOverDriveFormatMap();
-
 		return runFullUpdate;
-	}
-
-	private void setupOverDriveFormatMap() {
-		overDriveFormatMap.put("ebook-epub-adobe", 410L);
-		overDriveFormatMap.put("ebook-kindle", 420L);
-		overDriveFormatMap.put("Microsoft eBook", 1L);
-		overDriveFormatMap.put("audiobook-wma", 25L);
-		overDriveFormatMap.put("audiobook-mp3", 425L);
-		overDriveFormatMap.put("audiobook-overdrive", 625L);
-		overDriveFormatMap.put("music-wma", 30L);
-		overDriveFormatMap.put("video-wmv", 35L);
-		overDriveFormatMap.put("ebook-pdf-adobe", 50L);
-		overDriveFormatMap.put("Palm", 150L);
-		overDriveFormatMap.put("Mobipocket eBook", 90L);
-		overDriveFormatMap.put("Disney Online Book", 302L);
-		overDriveFormatMap.put("ebook-pdf-open", 450L);
-		overDriveFormatMap.put("ebook-epub-open", 810L);
-		overDriveFormatMap.put("ebook-overdrive", 610L);
-		overDriveFormatMap.put("video-streaming", 635L);
-		overDriveFormatMap.put("periodicals-nook", 304L);
-		overDriveFormatMap.put("ebook-mediado", 303L);
 	}
 
 	private void deleteProductInDB(OverDriveDBInfo overDriveDBInfo) {
@@ -1008,14 +984,8 @@ class ExtractOverDriveInfo {
 						addFormatStmt.setLong(1, overDriveInfo.getDatabaseId());
 						String textFormat = format.getString("id");
 						addFormatStmt.setString(2, textFormat);
-						Long numericFormat = overDriveFormatMap.get(textFormat);
-						if (numericFormat == null){
-							logger.warn("Could not find numeric format for format " + textFormat);
-							logEntry.addNote("Could not find numeric format for format " + textFormat);
-							addFormatStmt.setLong(3, 0L);
-						}else {
-							addFormatStmt.setLong(3, numericFormat);
-						}
+						//Numeric ids are no longer important in our integraiton with OverDrive
+						addFormatStmt.setLong(3, 0L);
 						addFormatStmt.setString(4, format.getString("name"));
 						addFormatStmt.setString(5, format.has("filename") ? format.getString("fileName") : "");
 						addFormatStmt.setLong(6, format.has("fileSize") ? format.getLong("fileSize") : 0L);
@@ -1171,16 +1141,16 @@ class ExtractOverDriveInfo {
 							JSONObject accountData = allAccounts.getJSONObject(i);
 							long libraryId = accountData.getLong("id");
 							if (libraryId == -1){
-								numConsortiumCopies += availability.getInt("copiesOwned");
-								numConsortiumCopiesAvailable += availability.getInt("copiesAvailable");
+								numConsortiumCopies += accountData.getInt("copiesOwned");
+								numConsortiumCopiesAvailable += accountData.getInt("copiesAvailable");
 							}else if (libraryId == collectionInfo.getAdvantageId()){
-								numCopiesOwned += availability.getInt("copiesOwned");
-								numCopiesAvailable += availability.getInt("copiesAvailable");
+								numCopiesOwned += accountData.getInt("copiesOwned");
+								numCopiesAvailable += accountData.getInt("copiesAvailable");
 							}else{
 								if (accountData.has("shared")){
 									if (accountData.getBoolean("shared")){
-										numSharedCopies += availability.getInt("copiesOwned");
-										numSharedCopiesAvailable += availability.getInt("copiesAvailable");
+										numSharedCopies += accountData.getInt("copiesOwned");
+										numSharedCopiesAvailable += accountData.getInt("copiesAvailable");
 									}
 								}
 							}
@@ -1412,7 +1382,6 @@ class ExtractOverDriveInfo {
 		}
 
 		libToOverDriveAPIKeyMap.clear();
-		overDriveFormatMap.clear();
 
 		allProductsInOverDrive.clear();
 		allAdvantageCollections.clear();

@@ -289,7 +289,17 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 	 */
 	public function getSubfieldData($marcField, $subField){
 		if ($marcField){
-			return $marcField->getSubfield($subField) ? $marcField->getSubfield($subField)->getData() : '';
+			//Account for cases where a subfield is repeated
+			$subFields = $marcField->getSubfields($subField);
+			$fieldData = '';
+			/** @var File_MARC_Subfield $subFieldData */
+			foreach ($subFields as $subFieldData){
+				if (strlen($fieldData) > 0){
+					$fieldData .= ' ';
+				}
+				$fieldData .= $subFieldData->getData();
+			}
+			return $fieldData;
 		}else{
 			return '';
 		}
