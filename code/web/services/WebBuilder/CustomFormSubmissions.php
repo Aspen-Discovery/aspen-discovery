@@ -78,4 +78,26 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 	{
 		return '';
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_builder', 'Web Builder');
+		if (!empty($this->activeObject) && $this->activeObject instanceof CustomFormSubmission){
+			$breadcrumbs[] = new Breadcrumb('/WebBuilder/CustomForms?id=' . $this->activeObject->formId, 'Form');
+			$breadcrumbs[] = new Breadcrumb('/WebBuilder/CustomFormSubmissions?formId='.  $this->activeObject->formId, 'All Form Submissions');
+		}
+		return $breadcrumbs;
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Custom Forms', 'Administer Library Custom Forms']);
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_builder';
+	}
 }
