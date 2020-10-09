@@ -156,7 +156,7 @@ class DataObjectUtil
 				$object->setProperty($propertyName, "", $property);
 			}
 
-		}else if (in_array( $property['type'], array('textarea', 'html', 'folder', 'crSeparated'))){
+		}else if (in_array( $property['type'], array('textarea', 'html', 'javascript', 'folder', 'crSeparated'))){
 			if (strlen(trim($_REQUEST[$propertyName])) == 0){
 				$object->setProperty($propertyName, "", $property);
 			}else{
@@ -165,7 +165,7 @@ class DataObjectUtil
 			//Strip tags from the input to avoid problems
 			if ($property['type'] == 'textarea' || $property['type'] == 'crSeparated'){
 				$object->setProperty($propertyName, strip_tags($object->$propertyName), $property);
-			}else{
+			}elseif ($property['type'] != 'javascript'){
 				$allowableTags = isset($property['allowableTags']) ? $property['allowableTags'] : '<p><a><b><em><ul><ol><em><li><strong><i><br>';
 				$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
 			}
@@ -450,7 +450,7 @@ class DataObjectUtil
 						foreach ($subStructure as $subProperty){
 							$requestKey = $propertyName . '_' . $subProperty['property'];
 							$subPropertyName = $subProperty['property'];
-							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html', 'multiSelect') )){
+							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html','javascript', 'multiSelect') )){
 								$subObject->setProperty($subPropertyName, $_REQUEST[$requestKey][$id], $subProperty);
 							}elseif (in_array($subProperty['type'], array('checkbox') )){
 								$subObject->setProperty($subPropertyName, isset($_REQUEST[$requestKey][$id]) ? 1 : 0, $subProperty);

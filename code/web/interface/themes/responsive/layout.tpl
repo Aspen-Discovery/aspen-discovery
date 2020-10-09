@@ -119,7 +119,10 @@
 	{if !empty($semanticData)}
 		{include file="jsonld.tpl"}
 	{/if}
-{/strip}
 
+	{if !empty($customJavascript)}
+		{$customJavascript}
+	{/if}
+{/strip}
 </body>
 </html>

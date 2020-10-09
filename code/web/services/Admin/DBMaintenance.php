@@ -2223,7 +2223,37 @@ class Admin_DBMaintenance extends Admin_Admin
 							UNIQUE ip(year, month, instance, ipAddress)
 						) ENGINE = INNODB;'
 					]
-				]
+				],
+
+				'javascript_snippets' => [
+					'title' => 'JavaScript Snippet setup',
+					'description' => 'Add the ability to add JavaScript Snippets to the site',
+					'continueOnError' => true,
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS javascript_snippets(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							name VARCHAR(50) NOT NULL,
+							snippet TEXT
+						) ENGINE = INNODB;',
+						'ALTER TABLE javascript_snippets ADD UNIQUE name (name)',
+						'CREATE TABLE javascript_snippet_library (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							javascriptSnippetId INT,
+							libraryId INT,
+							UNIQUE INDEX javascriptSnippetLibrary(javascriptSnippetId, libraryId)
+						) ENGINE = INNODB;',
+						'CREATE TABLE javascript_snippet_location (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							javascriptSnippetId INT,
+							locationId INT,
+							UNIQUE INDEX javascriptSnippetLocation(javascriptSnippetId, locationId)
+						) ENGINE = INNODB;',
+						"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+							('Local Enrichment', 'Administer All JavaScript Snippets', '', 70, 'Allows the user to define JavaScript Snippets to be added to the site. This permission has security implications.'),
+							('Local Enrichment', 'Administer Library JavaScript Snippets', '', 71, 'Allows the user to define JavaScript Snippets to be added to the site for their library. This permission has security implications.')",
+						"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All JavaScript Snippets'))",
+					]
+				],
 			)
 		);
 	}

@@ -191,7 +191,7 @@
 		{elseif $property.type == 'partialDate'}
 			{include file="DataObjectUtil/partialDate.tpl"}
 
-		{elseif $property.type == 'textarea' || $property.type == 'html' || $property.type == 'crSeparated'}
+		{elseif $property.type == 'textarea' || $property.type == 'html' || $property.type == 'javascript' || $property.type == 'crSeparated'}
 			{include file="DataObjectUtil/textarea.tpl"}
 
 		{elseif $property.type == 'password' || $property.type == 'storedPassword'}

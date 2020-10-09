@@ -12,14 +12,13 @@ class Placard extends DataObject
 	public $image;
 	public $link;
 	public $css;
-	public $dismissable;
+	public /** @noinspection PhpUnused */ $dismissable;
 
 	private $_libraries;
 	private $_locations;
-	//TODO: Which scopes should the Placard apply to
 	//TODO: add additional triggers
 
-	static function getObjectStructure($availableFacets = null){
+	static function getObjectStructure(){
 		$placardTriggerStructure = PlacardTrigger::getObjectStructure();
 		unset($placardTriggerStructure['browseCategoryId']);
 
@@ -62,13 +61,12 @@ class Placard extends DataObject
 				'type' => 'multiSelect',
 				'listStyle' => 'checkboxSimple',
 				'label' => 'Locations',
-				'description' => 'Define locations that use this scope',
+				'description' => 'Define locations that use this placard',
 				'values' => $locationList,
 				'hideInLists' => true,
 			),
 		];
 	}
-
 
 	public function __get($name){
 		if ($name == "libraries") {
@@ -104,10 +102,8 @@ class Placard extends DataObject
 
 	public function __set($name, $value){
 		if ($name == "libraries") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_libraries = $value;
 		}elseif ($name == "locations") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_locations = $value;
 		}elseif ($name == 'triggers') {
 			/** @noinspection PhpUndefinedFieldInspection */
@@ -216,7 +212,7 @@ class Placard extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();;
+			$locationList = Location::getLocationList();
 			foreach ($locationList as $locationId => $displayName) {
 				$obj = new PlacardLocation();
 				$obj->placardId = $this->id;
