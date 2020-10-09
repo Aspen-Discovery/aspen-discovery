@@ -55,9 +55,9 @@ class NYTApi {
 		// Close request to clear up some resources
 		curl_close($curl);
 
-        if ($list_name == 'names' && !isset(NYTApi::$allListsInfo)) {
-            NYTApi::$allListsInfo = $response;
-        }
+		if ($list_name == 'names' && !isset(NYTApi::$allListsInfo)) {
+			NYTApi::$allListsInfo = $response;
+		}
 
 		// return response
 		return $response;

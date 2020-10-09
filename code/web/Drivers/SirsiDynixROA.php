@@ -984,7 +984,7 @@ class SirsiDynixROA extends HorizonAPI
 				$reactivateDate        = $hold->fields->suspendEndDate;
 				$createDate            = $hold->fields->placedDate;
 				$fillByDate            = $hold->fields->fillByDate;
-				$curHold['id']         = $hold->key;
+				$curHold['id']         = $bibId;
 				$curHold['holdSource'] = 'ILS';
 				$curHold['itemId']     = empty($hold->fields->item->key) ? '' : $hold->fields->item->key;
 				$curHold['cancelId']   = $hold->key;

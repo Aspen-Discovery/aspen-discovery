@@ -1894,6 +1894,7 @@ class CarlX extends AbstractIlsDriver{
 			and i.status='S'
 			and pb.branchcode = '$location'
 			and t.transcode='R*'
+			and t.renew = ib.branchnumber
 			order by l.locname, i.cn
 EOT;
 		$stid = oci_parse($this->dbConnection, $sql);
@@ -1954,57 +1955,61 @@ EOT;
 	}
 
 	public function getStudentReportData($location,$showOverdueOnly,$date) {
-		$this->initDatabaseConnection();
-		/** @noinspection SqlResolve */
-		$sql = <<<EOT
-			select
-			  patronbranch.branchcode AS Home_Lib_Code
-			  , patronbranch.branchname AS Home_Lib
-			  , bty_v.btynumber AS P_Type
-			  , bty_v.btyname AS Grd_Lvl
-			  , patron_v.sponsor AS Home_Room
-			  , patron_v.name AS Patron_Name
-			  , patron_v.patronid AS P_Barcode
-			  , itembranch.branchgroup AS SYSTEM
-			  , item_v.cn AS Call_Number
-			  , bbibmap_v.title AS Title
-			  , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date
-			  , item_v.price AS Owed
-			  , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date_Dup
-			  , item_v.item AS Item
-			from 
-			  bbibmap_v
-			  , branch_v patronbranch
-			  , branch_v itembranch
-			  , branchgroup_v patronbranchgroup
-			  , branchgroup_v itembranchgroup
-			  , bty_v
-			  , item_v
-			  , location_v
-			  , patron_v
-			  , transitem_v
-			where
-			  patron_v.patronid = transitem_v.patronid
-			  and patron_v.bty = bty_v.btynumber
-			  and transitem_v.item = item_v.item
-			  and bbibmap_v.bid = item_v.bid
-			  and patronbranch.branchnumber = patron_v.defaultbranch
-			  and location_v.locnumber = item_v.location
-			  and itembranch.branchnumber = transitem_v.holdingbranch
-			  and itembranchgroup.branchgroup = itembranch.branchgroup
-			  and (TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L' or transitem_v.transcode='C')
-			  and patronbranch.branchgroup = '2'
-			  and patronbranchgroup.branchgroup = patronbranch.branchgroup
-			  and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42')
-			  and patronbranch.branchcode = '$location'
-			order by 
-			  patronbranch.branchcode
-			  , patron_v.bty
-			  , patron_v.sponsor
-			  , patron_v.name
-			  , itembranch.branchgroup
-			  , item_v.cn
-			  , bbibmap_v.title
+			$this->initDatabaseConnection();
+			if ($showOverdueOnly == 'checkedOut') {
+				$statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L' or transitem_v.transcode='C')";
+			} else if ($showOverdueOnly == 'overdue') {
+				$statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L')";
+			}
+			$sql = <<<EOT
+				select
+				  patronbranch.branchcode AS Home_Lib_Code
+				  , patronbranch.branchname AS Home_Lib
+				  , bty_v.btynumber AS P_Type
+				  , bty_v.btyname AS Grd_Lvl
+				  , patron_v.sponsor AS Home_Room
+				  , patron_v.name AS Patron_Name
+				  , patron_v.patronid AS P_Barcode
+				  , itembranch.branchgroup AS SYSTEM
+				  , item_v.cn AS Call_Number
+				  , bbibmap_v.title AS Title
+				  , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date
+				  , item_v.price AS Owed
+				  , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date_Dup
+				  , item_v.item AS Item
+				from 
+				  bbibmap_v
+				  , branch_v patronbranch
+				  , branch_v itembranch
+				  , branchgroup_v patronbranchgroup
+				  , branchgroup_v itembranchgroup
+				  , bty_v
+				  , item_v
+				  , location_v
+				  , patron_v
+				  , transitem_v
+				where
+				  patron_v.patronid = transitem_v.patronid
+				  and patron_v.bty = bty_v.btynumber
+				  and transitem_v.item = item_v.item
+				  and bbibmap_v.bid = item_v.bid
+				  and patronbranch.branchnumber = patron_v.defaultbranch
+				  and location_v.locnumber = item_v.location
+				  and itembranch.branchnumber = transitem_v.holdingbranch
+				  and itembranchgroup.branchgroup = itembranch.branchgroup
+				  and $statuses
+				  and patronbranch.branchgroup = '2'
+				  and patronbranchgroup.branchgroup = patronbranch.branchgroup
+				  and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42')
+				  and patronbranch.branchcode = '$location'
+				order by 
+				  patronbranch.branchcode
+				  , patron_v.bty
+				  , patron_v.sponsor
+				  , patron_v.name
+				  , itembranch.branchgroup
+				  , item_v.cn
+				  , bbibmap_v.title
 EOT;
 		$stid = oci_parse($this->dbConnection, $sql);
 		// consider using oci_set_prefetch to improve performance
