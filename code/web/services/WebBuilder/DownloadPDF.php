@@ -54,4 +54,9 @@ class WebBuilder_DownloadPDF extends Action{
 		}
 
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }
