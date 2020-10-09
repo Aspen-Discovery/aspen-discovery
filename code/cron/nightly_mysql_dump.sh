@@ -59,7 +59,7 @@ echo "Dumping to $DUMPFOLDER"
 
 DATABASES="$DBNAME"
 DUMPOPT1="--defaults-file=/etc/my.cnf --events"
-DUMPOPT2="--defaults-file=/etc/my.cnf --events --single-transaction"
+DUMPOPT2="--defaults-file=/etc/my.cnf --events --single-transaction --ignore-table=cached_values"
 
 #-------------------------------------------------------------------------
 # main loop
