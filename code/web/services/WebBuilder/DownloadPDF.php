@@ -19,7 +19,12 @@ class WebBuilder_DownloadPDF extends Action{
 
 		global $serverName;
 		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_pdf/';
-		$fullPath = $dataPath . $uploadedFile->fullPath;
+		if (file_exists($uploadedFile->fullPath)){
+			$fullPath = $uploadedFile->fullPath;
+		}else{
+			$fullPath = $dataPath . $uploadedFile->fullPath;
+		}
+
 		if (file_exists($fullPath)) {
 			set_time_limit(300);
 			$chunkSize = 2 * (1024 * 1024);

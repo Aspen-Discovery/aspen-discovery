@@ -22,7 +22,7 @@ class WebBuilder_Form extends Action{
 		$interface->assign('contents', $this->form->getFormattedFields());
 		$interface->assign('title', $this->form->title);
 
-		$this->display('customForm.tpl', $this->form->title, 'Search/home-sidebar.tpl', false);
+		$this->display('customForm.tpl', $this->form->title, '', false);
 	}
 
 	function getBreadcrumbs()
