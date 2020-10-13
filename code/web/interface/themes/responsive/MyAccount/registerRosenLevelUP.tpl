@@ -14,7 +14,7 @@
 			{if $registerRosenLevelUPFormMessage}
 				{$registerRosenLevelUPFormMessage}
 			{else}
-				{translate text='This page allows Limitless Libraries students to register with their parents for Rosen LevelUP'}
+				{translate text='This page allows students to register with their parents for Rosen LevelUP'}
 			{/if}
 		</div>
 		{if (isset($registerRosenLevelUPResult))}
