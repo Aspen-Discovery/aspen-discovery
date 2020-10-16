@@ -1964,6 +1964,7 @@ EOT;
 		// consider using oci_set_prefetch to improve performance
 		// oci_set_prefetch($stid, 1000);
 		oci_execute($stid);
+		$data = array();
 		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 			$data[] = $row;
 		}
@@ -2010,6 +2011,7 @@ EOT;
 		// consider using oci_set_prefetch to improve performance
 		// oci_set_prefetch($stid, 1000);
 		oci_execute($stid);
+		$data = array();
 		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 			$data[] = $row;
 		}
