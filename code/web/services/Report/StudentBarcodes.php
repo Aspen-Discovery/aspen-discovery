@@ -22,23 +22,38 @@ class Report_StudentBarcodes extends Admin_Admin {
 			$locationLookupList[$location->code] = $location->subdomain . " " . $location->displayName;
 		}
 		asort($locationLookupList);
+		if (count($locationLookupList)>1) {
+			$locationLookupList = array(''=>'Select a school') + $locationLookupList;
+		}
 		$interface->assign('locationLookupList', $locationLookupList);
-		$selectedLocation = isset($_REQUEST['location']) ? $_REQUEST['location'] : reset($locationLookupList);
-		$selectedHomeroom = !empty($_REQUEST['homeroom']) ? $_REQUEST['homeroom'] : null;
+		if (!empty($_REQUEST['location'])) {
+			$selectedLocation = $_REQUEST['location'];
+		} else {
+			$selectedLocation = array_key_first($locationLookupList);
+		}
 		$homeroomList = CatalogFactory::getCatalogConnectionInstance()->getStudentBarcodeDataHomerooms($selectedLocation);
 		$homeroomLookupList = array();
 		foreach ($homeroomList as $homeroom){
 			$homeroomLookupList[$homeroom['HOMEROOMID']] = $homeroom['GRADE'] . " " . $homeroom['HOMEROOMNAME'];
 		}
 		asort($homeroomLookupList);
+		if (count($homeroomLookupList)>1) {
+			$homeroomLookupList = array(''=>'Select a homeroom') + $homeroomLookupList;
+		}
 		$interface->assign('homeroomLookupList', $homeroomLookupList);
+		if (!empty($_REQUEST['homeroom'])) {
+			$selectedHomeroom = $_REQUEST['homeroom'];
+		} else {
+			$selectedHomeroom = array_key_first($homeroomLookupList);
+		}
 		if (!empty($selectedLocation) && empty($selectedHomeroom)) {
 			$interface->assign('selectedLocation', $selectedLocation);
 			$selectedHomeroom = reset($homeroomLookupList);
 			$data = null;
 		}
 		if (!empty($selectedLocation) && !empty($selectedHomeroom)) {
-			$interface->assign('selectedLocation', $selectedLocation);			$interface->assign('selectedHomeroom', $selectedHomeroom);
+			$interface->assign('selectedLocation', $selectedLocation);
+			$interface->assign('selectedHomeroom', $selectedHomeroom);
 			$data = CatalogFactory::getCatalogConnectionInstance()->getStudentBarcodeData($selectedLocation, $selectedHomeroom);
 		} else {
 			$data = null;
