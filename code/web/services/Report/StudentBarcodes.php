@@ -1,6 +1,6 @@
 <?php
 /**
- * Displays Student Barcodes
+ * Displays Student Barcodes in sheets by classroom to facilitate school library work
  *
  * @category Aspen
   * @author James Staub <james.staub@nashville.gov>
@@ -23,19 +23,27 @@ class Report_StudentBarcodes extends Admin_Admin {
 		}
 		asort($locationLookupList);
 		$interface->assign('locationLookupList', $locationLookupList);
-		if (isset($_REQUEST['location'])) {
-			$selectedLocation = $_REQUEST['location'];
-		} elseif (count($locationLookupList) === 1){
-			$selectedLocation = array_key_first($locationLookupList);
-		} else {
-			$selectedLocation = null;
+		$selectedLocation = isset($_REQUEST['location']) ? $_REQUEST['location'] : reset($locationLookupList);
+		$selectedHomeroom = !empty($_REQUEST['homeroom']) ? $_REQUEST['homeroom'] : null;
+		$homeroomList = CatalogFactory::getCatalogConnectionInstance()->getStudentBarcodeDataHomerooms($selectedLocation);
+		$homeroomLookupList = array();
+		foreach ($homeroomList as $homeroom){
+			$homeroomLookupList[$homeroom['HOMEROOMID']] = $homeroom['GRADE'] . " " . $homeroom['HOMEROOMNAME'];
 		}
-		$interface->assign('selectedLocation', $selectedLocation);
-		if (!is_null($selectedLocation)) {
-			$data = CatalogFactory::getCatalogConnectionInstance()->getHoldsReportData($selectedLocation);
+		asort($homeroomLookupList);
+		$interface->assign('homeroomLookupList', $homeroomLookupList);
+		if (!empty($selectedLocation) && empty($selectedHomeroom)) {
+			$interface->assign('selectedLocation', $selectedLocation);
+			$selectedHomeroom = reset($homeroomLookupList);
+			$data = null;
+		}
+		if (!empty($selectedLocation) && !empty($selectedHomeroom)) {
+			$interface->assign('selectedLocation', $selectedLocation);			$interface->assign('selectedHomeroom', $selectedHomeroom);
+			$data = CatalogFactory::getCatalogConnectionInstance()->getStudentBarcodeData($selectedLocation, $selectedHomeroom);
 		} else {
 			$data = null;
 		}
+
 		$interface->assign('reportData', $data);
 
 		if (isset($_REQUEST['download'])){
@@ -54,7 +62,7 @@ class Report_StudentBarcodes extends Admin_Admin {
 			}
 			exit;
 		}
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+
 		$this->display('studentBarcodes.tpl', 'Student Barcodes');
 	}
 
@@ -63,7 +71,7 @@ class Report_StudentBarcodes extends Admin_Admin {
 		$user = UserAccount::getLoggedInUser();
 		$location = new Location();
 		$location->orderBy('code');
-		if (!UserAccount::userHasPermission('View All Student Reports')){
+		if (UserAccount::userHasPermission('View Location Student Reports')){
 			//Scope to just locations for the user based on home branch
 			$location->locationId = $user->homeLocationId;
 		}
@@ -77,7 +85,6 @@ class Report_StudentBarcodes extends Admin_Admin {
 
 	function getBreadcrumbs()
 	{
-// TODO : is this the right section?
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#circulation_reports', 'Circulation Reports');
@@ -92,6 +99,6 @@ class Report_StudentBarcodes extends Admin_Admin {
 
 	function canView()
 	{
-		return UserAccount::userHasPermission('View All Student Reports', 'View Location Student Reports');
+		return UserAccount::userHasPermission(['View All Student Reports', 'View Location Student Reports']);
 	}
 }
