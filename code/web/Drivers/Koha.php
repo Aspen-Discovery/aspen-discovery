@@ -120,7 +120,6 @@ class Koha extends AbstractIlsDriver
 					$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 				} else {
 					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
-					//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
 					$postParams = json_encode($postVariables);
 
 					$this->apiCurlWrapper->addCustomHeaders([
@@ -3136,7 +3135,6 @@ class Koha extends AbstractIlsDriver
 			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
-			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
 			$postParams = json_encode($postVariables);
 
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -3270,7 +3268,6 @@ class Koha extends AbstractIlsDriver
 	protected function resetPinInKoha($borrowerNumber, string $newPin, string $oauthToken): array
 	{
 		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/password";
-		//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
 		$postParams = [];
 		$postParams['password'] = $newPin;
 		$postParams['password_2'] = $newPin;
@@ -3395,7 +3392,6 @@ class Koha extends AbstractIlsDriver
 			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
-			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
 			$postParams = json_encode($postVariables);
 
 			$this->apiCurlWrapper->addCustomHeaders([
