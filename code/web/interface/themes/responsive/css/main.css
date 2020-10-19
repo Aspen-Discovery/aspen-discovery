@@ -8329,7 +8329,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   box-sizing: border-box;
   cursor: pointer;
   display: inline-block !important;
-  height: 100%;
+  /*height: 100%;*/
   padding-bottom: 4px;
   padding-top: 4px;
   font-size: 14px;
