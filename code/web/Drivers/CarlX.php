@@ -341,24 +341,23 @@ class CarlX extends AbstractIlsDriver{
 		$connectionPassed = false;
 		$numTries = 0;
 		$result = false;
-		$result->response = false;
 		while (!$connectionPassed && $numTries < 2){
 			try {
 				$this->soapClient = new SoapClient($WSDL, $soapRequestOptions);
-				$result->response = $this->soapClient->$requestName($request);
+				$result = $this->soapClient->$requestName($request);
 				$connectionPassed = true;
-				if (is_null($result->response)) {
+				if (is_null($result)) {
 					$lastResponse = $this->soapClient->__getLastResponse();
 					$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
 					$lastResponse->registerXPathNamespace('soap-env', 'http://schemas.xmlsoap.org/soap/envelope/');
 					$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/patronAPI');
 					$lastResponse->registerXPathNamespace('ns2', 'http://tlcdelivers.com/cx/schemas/response');
-					$result->response->ResponseStatuses = new stdClass();
-					$result->response->ResponseStatuses->ResponseStatus = new stdClass();
+					$result->ResponseStatuses = new stdClass();
+					$result->ResponseStatuses->ResponseStatus = new stdClass();
 					$shortMessages = $lastResponse->xpath('//ns2:ShortMessage');
-					$result->response->ResponseStatuses->ResponseStatus->ShortMessage = (string) $shortMessages[0];
+					$result->ResponseStatuses->ResponseStatus->ShortMessage = (string) $shortMessages[0];
 					$longMessages = $lastResponse->xpath('//ns2:LongMessage');
-					$result->response->ResponseStatuses->ResponseStatus->LongMessage = (string) $longMessages[0];
+					$result->ResponseStatuses->ResponseStatus->LongMessage = (string) $longMessages[0];
 				}
 			} catch (SoapFault $e) {
 				if ($numTries == 2) {
@@ -372,7 +371,7 @@ class CarlX extends AbstractIlsDriver{
 		if (!$connectionPassed){
 			return false;
 		}
-		return $result->response;
+		return $result;
 	}
 
 	/**
@@ -1291,7 +1290,7 @@ class CarlX extends AbstractIlsDriver{
 	private function getPatronTransactions($user)
 	{
 		$request = $this->getSearchbyPatronIdRequest($user);
-		$result = $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl);
+		$result = $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 		return $result;
 	}
 
