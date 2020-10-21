@@ -1908,7 +1908,71 @@ EOT;
 		return $data;
 	}
 
-	public function getStudentBarcodeData($location) {
+	public function getStudentBarcodeData($location, $homeroom) {
+		$this->initDatabaseConnection();
+		// query students by school and homeroom
+		/** @noinspection SqlResolve */
+		$sql = <<<EOT
+			select
+				patronbranch.branchcode
+				, patronbranch.branchname
+				, bty_v.btynumber AS bty
+				, bty_v.btyname as grade
+				, case 
+						when bty = 13 
+						then patron_v.name
+						else patron_v.sponsor
+					end as homeroom
+				, case 
+						when bty = 13 
+						then patron_v.patronid
+						else patron_v.street2
+					end as homeroomid
+				, patron_v.name AS patronname
+				, patron_v.patronid
+				, patron_v.lastname
+				, patron_v.firstname
+				, patron_v.middlename
+				, patron_v.suffixname
+			from
+				branch_v patronbranch
+				, bty_v
+				, patron_v
+			where
+				patron_v.bty = bty_v.btynumber
+				and patronbranch.branchnumber = patron_v.defaultbranch
+				and (
+					(
+						patron_v.bty in ('21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','46','47')
+						and patronbranch.branchcode = '$location'
+						and patron_v.street2 = '$homeroom'
+					) or (
+						patron_v.bty = 13
+						and patron_v.patronid = '$homeroom'
+					)
+				)
+			order by
+				patronbranch.branchcode
+				, case
+					when patron_v.bty = 13 then 0
+					else 1
+				end
+				, patron_v.sponsor
+				, patron_v.name
+EOT;
+		$stid = oci_parse($this->dbConnection, $sql);
+		// consider using oci_set_prefetch to improve performance
+		// oci_set_prefetch($stid, 1000);
+		oci_execute($stid);
+		$data = array();
+		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+			$data[] = $row;
+		}
+		oci_free_statement($stid);
+		return $data;
+	}
+
+	public function getStudentBarcodeDataHomerooms($location) {
 		$this->initDatabaseConnection();
 		// query school branch codes and homerooms
 		/** @noinspection SqlResolve */
@@ -1947,6 +2011,7 @@ EOT;
 		// consider using oci_set_prefetch to improve performance
 		// oci_set_prefetch($stid, 1000);
 		oci_execute($stid);
+		$data = array();
 		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 			$data[] = $row;
 		}
