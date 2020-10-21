@@ -12,9 +12,8 @@ class CarlX extends AbstractIlsDriver{
 
 	public function __construct($accountProfile) {
 	    parent::__construct($accountProfile);
-		global $configArray;
-		$this->patronWsdl  = $configArray['Catalog']['patronApiWsdl'];
-		$this->catalogWsdl = $configArray['Catalog']['catalogApiWsdl'];
+		$this->patronWsdl = $this->accountProfile->patronApiUrl . '/CarlXAPI/PatronAPI.wsdl';
+		$this->catalogWsdl = $this->accountProfile->patronApiUrl . '/CarlXAPI/CatalogAPI.wsdl';
 	}
 
 	public function  __destruct()
@@ -37,7 +36,7 @@ class CarlX extends AbstractIlsDriver{
 				$this->dbConnection = null;
 			}
 			global $timer;
-			$timer->logTime("Initialized connection to CARL.X");
+			$timer->logTime("Initialized connection to CARL.X database");
 		}
 	}
 
@@ -314,8 +313,9 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	private $genericResponseSOAPCallOptions = array(
-		'features' => SOAP_WAIT_ONE_WAY_CALLS, // This setting overcomes the SOAP client's expectation that there is no response from our update request.
-		'trace' => 1,                          // enable use of __getLastResponse, so that we can determine the response.
+		'connection_timeout' => 1,
+		'features' => SOAP_SINGLE_ELEMENT_ARRAYS | SOAP_WAIT_ONE_WAY_CALLS,
+		'trace' => 1,
 	);
 
 	/**
@@ -337,9 +337,6 @@ class CarlX extends AbstractIlsDriver{
 		}
 
 		// There are exceptions in the Soap Client that need to be caught for smooth functioning
-		//MDN 6/24/2019 connection timeout is too long if we retry 3 times.
-		//  Updating to a 1 second timeout and only trying twice which means a failed call will be no more than 2 seconds rather than 9
-		$soapRequestOptions['connection_timeout'] = 1;
 		$connectionPassed = false;
 		$numTries = 0;
 		$result = false;
@@ -348,16 +345,32 @@ class CarlX extends AbstractIlsDriver{
 				$this->soapClient = new SoapClient($WSDL, $soapRequestOptions);
 				$result = $this->soapClient->$requestName($request);
 				$connectionPassed = true;
+				if (is_null($result)) {
+					$lastResponse = $this->soapClient->__getLastResponse();
+					$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
+					$lastResponse->registerXPathNamespace('soap-env', 'http://schemas.xmlsoap.org/soap/envelope/');
+					$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/patronAPI');
+					$lastResponse->registerXPathNamespace('ns2', 'http://tlcdelivers.com/cx/schemas/response');
+					$result = new stdClass();
+					$result->ResponseStatuses = new stdClass();
+					$result->ResponseStatuses->ResponseStatus = new stdClass();
+					$shortMessages = $lastResponse->xpath('//ns2:ShortMessage');
+					$result->ResponseStatuses->ResponseStatus->ShortMessage = implode('; ', $shortMessages);
+					$longMessages = $lastResponse->xpath('//ns2:LongMessage');
+					$result->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', $longMessages) ;
+				}
 			} catch (SoapFault $e) {
-				global $logger;
-				$logger->log("Error connecting to SOAP " . $e, Logger::LOG_WARNING);
+				if ($numTries == 2) {
+					global $logger;
+					$logger->log("Error connecting to SOAP " . $e, Logger::LOG_WARNING);
+					$result->error = "EXCEPTION: " . $e->getMessage();
+				}
 			}
 			$numTries++;
 		}
 		if (!$connectionPassed){
 			return false;
 		}
-
 		return $result;
 	}
 
@@ -405,8 +418,6 @@ class CarlX extends AbstractIlsDriver{
 
 			// Available Holds
 			if ($result->HoldItemsCount > 0) {
-				//TODO: a single hold is not in an array; Need to verify that multiple holds are in an array
-				if (!is_array($result->HoldItems->HoldItem)) $result->HoldItems->HoldItem = array($result->HoldItems->HoldItem); // For the case of a single hold
 				foreach($result->HoldItems->HoldItem as $hold) {
 					$curHold = array();
 					$bibId          = $hold->BID;
@@ -462,7 +473,6 @@ class CarlX extends AbstractIlsDriver{
 
 			// Unavailable Holds
 			if ($result->UnavailableHoldsCount > 0) {
-				if (!is_array($result->UnavailableHoldItems->UnavailableHoldItem)) $result->UnavailableHoldItems->UnavailableHoldItem = array($result->UnavailableHoldItems->UnavailableHoldItem); // For the case of a single hold
 				foreach($result->UnavailableHoldItems->UnavailableHoldItem as $hold) {
 					$curHold = array();
 					$bibId          = $hold->BID;
@@ -655,20 +665,10 @@ class CarlX extends AbstractIlsDriver{
 		}else{
 			//TLC provides both ChargeItems and OverdueItems as separate elements, we can combine for loading
 			if (!empty($result->ChargeItems->ChargeItem)) {
-				if (!is_array($result->ChargeItems->ChargeItem)) {
-					// Structure an single entry as an array of one.
-					$itemsToLoad[] = $result->ChargeItems->ChargeItem;
-				}else{
-					$itemsToLoad = $result->ChargeItems->ChargeItem;
-				}
+				$itemsToLoad = $result->ChargeItems->ChargeItem;
 			}
 			if (!empty($result->OverdueItems->OverdueItem)) {
-				if (!is_array($result->OverdueItems->OverdueItem)) {
-					// Structure an single entry as an array of one.
-					$itemsToLoad[] = $result->OverdueItems->OverdueItem;
-				}else{
-					$itemsToLoad = array_merge($itemsToLoad, $result->OverdueItems->OverdueItem);
-				}
+				$itemsToLoad = array_merge($itemsToLoad, $result->OverdueItems->OverdueItem);
 			}
 
 			foreach ($itemsToLoad as $chargeItem) {
@@ -718,41 +718,22 @@ class CarlX extends AbstractIlsDriver{
 
 	function updatePin($user, $oldPin, $newPin) {
 		$request = $this->getSearchbyPatronIdRequest($user);
+		$request->Patron = new stdClass();
 		$request->Patron->PatronPIN = $newPin;
 		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
-
-		if (is_null($result)) {
-			$result = $this->soapClient->__getLastResponse();
-			if ($result) {
-				$unxml   = new XML_Unserializer();
-				$unxml->unserialize($result);
-				$response = $unxml->getUnserializedData();
-
-				if ($response) {
-					$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
-					if (!$success) {
-						// TODO: might not want to include sending message back to user
-						$errorMessage = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
-						return ['success' => false, 'message' => 'Failed to update your pin'. ($errorMessage ? ' : ' .$errorMessage : '')];
-					} else {
-						$user->cat_password = $newPin;
-						$user->update();
-						return ['success' => true, 'message' => "Your pin number was updated successfully."];
-					}
-
-				} else {
-					global $logger;
-					$logger->log('Unable to read XML from CarlX response when attempting to update Patron PIN.', Logger::LOG_ERROR);
-					return ['success' => false, 'message' => 'Unable to update your pin.'];
-				}
-
+		if($result) {
+			$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+			if (!$success) {
+				return ['success' => false, 'message' => translate(['text' => 'update_pin_failed', 'defaultText' => 'Failed to update your PIN.'])];
 			} else {
-				global $logger;
-				$logger->log('CarlX ILS gave no response when attempting to update Patron PIN.', Logger::LOG_ERROR);
-				return ['success' => false, 'message' => 'Unable to update your pin.'];
+				$user->cat_password = $newPin;
+				$user->update();
+				return ['success' => true, 'message' => translate(['text'=> 'update_pin_success', 'defaultText' => 'Your PIN was updated successfully.'])];
 			}
-		} elseif (!$result) {
-			return ['success' => false, 'message' => 'Failed to contact Circulation System.'];
+		} else {
+			global $logger;
+			$logger->log('CarlX ILS gave no response when attempting to update Patron PIN.', Logger::LOG_ERROR);
+			return ['success' => false, 'message' => translate(['text' => 'update_pin_failed', 'defaultText' => 'Failed to update your PIN.'])];
 		}
 	}
 
@@ -762,25 +743,18 @@ class CarlX extends AbstractIlsDriver{
 			'messages' => []
 		];
 		if ($canUpdateContactInfo){
-
 			$request = $this->getSearchbyPatronIdRequest($user);
-
-
 			// Patron Info to update.
 			$request->Patron->Email  = $_REQUEST['email'];
 			$request->Patron->Phone1 = $_REQUEST['phone'];
-
 			if (isset($_REQUEST['workPhone'])){
 				$request->Patron->Phone2 = $_REQUEST['workPhone'];
 			}
-
 			$request->Patron->Addresses->Address->Type        = 'Primary';
 			$request->Patron->Addresses->Address->Street      = $_REQUEST['address1'];
 			$request->Patron->Addresses->Address->City        = $_REQUEST['city'];
 			$request->Patron->Addresses->Address->State       = $_REQUEST['state'];
 			$request->Patron->Addresses->Address->PostalCode  = $_REQUEST['zip'];
-
-
 				if (isset($_REQUEST['emailReceiptFlag']) && ($_REQUEST['emailReceiptFlag'] == 'yes' || $_REQUEST['emailReceiptFlag'] == 'on')){
 					// if set check & on check must be combined because checkboxes/radios don't report 'offs'
 					$request->Patron->EmailReceiptFlag = 1;
@@ -817,34 +791,20 @@ class CarlX extends AbstractIlsDriver{
 
 			$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 
-			if (is_null($result)) {
-				$result = $this->soapClient->__getLastResponse();
-				if ($result) {
-					$unxml   = new XML_Unserializer();
-					$unxml->unserialize($result);
-					$response = $unxml->getUnserializedData();
-
-					if ($response) {
-						$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
-						if (!$success) {
-							$errorMessage = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
-							$result['messages'][] = 'Failed to update your information'. ($errorMessage ? ' : ' .$errorMessage : '');
-						}else{
-							$result['success'] = true;
-							$result['messages'][] = 'Your account was updated successfully.';
-						}
-
-					} else {
-						$result['messages'][] = 'Unable to update your information.';
-						global $logger;
-						$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', Logger::LOG_ERROR);
-					}
-
-				} else {
-					$result['messages'][] = 'Unable to update your information.';
-					global $logger;
-					$logger->log('CarlX ILS gave no response when attempting to update Patron Information.', Logger::LOG_ERROR);
+			if ($result) {
+				$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+				if (!$success) {
+					$errorMessage = $result->ResponseStatuses->ResponseStatus->LongMessage;
+					$result['messages'][] = 'Failed to update your information'. ($errorMessage ? ' : ' .$errorMessage : '');
+				}else{
+					$result['success'] = true;
+					$result['messages'][] = 'Your account was updated successfully.';
 				}
+
+			} else {
+				$result['messages'][] = 'Unable to update your information.';
+				global $logger;
+				$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', Logger::LOG_ERROR);
 			}
 
 		} else {
@@ -874,8 +834,6 @@ class CarlX extends AbstractIlsDriver{
 		$fields[] = array('property'=>'zip',         'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => true);
 		$fields[] = array('property'=>'phone',       'type'=>'text',  'label'=>'Primary Phone', 'description'=>'Primary Phone', 'maxLength'=>15, 'required'=>true);
 		$fields[] = array('property'=>'email',       'type'=>'email', 'label'=>'Email', 'description'=>'Email', 'maxLength' => 128, 'required' => true);
-//		$fields[] = array('property'=>'pin',         'type'=>'pin',   'label'=>'Pin', 'description'=>'Your desired 4-digit pin', 'maxLength' => 4, 'size' => 4, 'required' => true);
-//		$fields[] = array('property'=>'pin1',        'type'=>'pin',   'label'=>'Confirm Pin', 'description'=>'Re-type your desired 4-digit pin', 'maxLength' => 4, 'size' => 4, 'required' => true);
 		return $fields;
 	}
 
@@ -902,247 +860,174 @@ class CarlX extends AbstractIlsDriver{
 			$state      = trim(strtoupper($_REQUEST['state']));
 			$zip        = trim($_REQUEST['zip']);
 			$email      = trim(strtoupper($_REQUEST['email']));
-//			$pin        = trim($_REQUEST['pin']);
-//			$pin1       = trim($_REQUEST['pin1']);
 			$phone      = preg_replace('/^(\d{3})(\d{3})(\d{4})$/','$1-$2-$3',preg_replace('/\D/','',trim($_REQUEST['phone'])));
 
-//			if (!empty($pin) && !empty($pin1) && $pin == $pin1) {
-
-
-				// DENY REGISTRATION IF EMAIL MATCHES @LOAOA.COM
-				if (substr(strtolower($email),-10,10) == '@loaoa.com' || substr(strtolower($email),-9,9) == 'zamte.com') {
+			// DENY REGISTRATION IF DUPLICATE EMAIL IS FOUND IN CARL.X
+			// searchPatron on Email appears to be case-insensitive and
+			// appears to eliminate spurious whitespace
+			$request				= new stdClass();
+			$request->Modifiers			= '';
+			$request->AllSearchTermMatch		= 'true';
+			$request->SearchTerms			= new stdClass();
+			$request->SearchTerms->ApplicationType	= 'exact match';
+			$request->SearchTerms->Attribute	= 'Email';
+			$request->SearchTerms->Value		= $email;
+			$request->PagingParameters		= new stdClass();
+			$request->PagingParameters->StartPos	= 0;
+			$request->PagingParameters->NoOfRecords	= 1;
+			$request->Modifiers			= new stdClass();
+			$request->Modifiers->InstitutionCode	= 'NASH';
+			$result = $this->doSoapRequest('searchPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+			if ($result) {
+				$noEmailMatch = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'No matching records found');
+				if ($noEmailMatch === false) {
 					global $logger;
-					$logger->log('Online Registration used forbidden email: ' . $email . ' IP: ' . $active_ip, Logger::LOG_ERROR);
+					$logger->log('Online Registration Email already exists in Carl. Email: ' . $email . ' IP: ' . $active_ip, Logger::LOG_ERROR);
 					return array(
 						'success' => false,
 						'barcode' => $tempPatronID,
 					);
 				}
+			}
 
-				// DENY REGISTRATION IF DUPLICATE EMAIL IS FOUND IN CARL.X
-				// searchPatron on Email appears to be case-insensitive and
-				// appears to eliminate spurious whitespace
-				$request				= new stdClass();
-				$request->Modifiers			= '';
-				$request->AllSearchTermMatch		= 'true';
-				$request->SearchTerms			= new stdClass();
-				$request->SearchTerms->ApplicationType	= 'exact match';
-				$request->SearchTerms->Attribute	= 'Email';
-				$request->SearchTerms->Value		= $email;
-				$request->PagingParameters		= new stdClass();
-				$request->PagingParameters->StartPos	= 0;
-				$request->PagingParameters->NoOfRecords	= 1;
-				$request->Modifiers			= new stdClass();
-				$request->Modifiers->InstitutionCode	= 'NASH';
-				$result = $this->doSoapRequest('searchPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
-				if ($result) {
-					$noEmailMatch = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'No matching records found');
-					if ($noEmailMatch === false) {
-						global $logger;
-						$logger->log('Online Registration Email already exists in Carl. Email: ' . $email . ' IP: ' . $active_ip, Logger::LOG_ERROR);
-						return array(
-							'success' => false,
-							'barcode' => $tempPatronID,
-						);
-					}
+			// CREATE PATRON REQUEST
+			$request                                         = new stdClass();
+			$request->Modifiers                              = '';
+			//$request->PatronFlags->PatronFlag                = 'DUPCHECK_ALTID'; // Duplicate check for alt id
+			$request->PatronFlags->PatronFlag[0]                = 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
+			$request->PatronFlags->PatronFlag[1]                = 'VALIDATE_ZIPCODE'; // Validate ZIP against Carl.X Admin legal ZIPs
+			$request->Patron				= new stdClass();
+			$request->Patron->PatronID                       = $tempPatronID;
+			$request->Patron->Email                          = $email;
+			$request->Patron->FirstName                      = $firstName;
+			$request->Patron->MiddleName                     = $middleName;
+			$request->Patron->LastName                       = $lastName;
+			$request->Patron->Addresses			= new stdClass();
+			$request->Patron->Addresses->Address		= new stdClass();
+			$request->Patron->Addresses->Address->Type       = 'Primary';
+			$request->Patron->Addresses->Address->Street     = $address;
+			$request->Patron->Addresses->Address->City       = $city;
+			$request->Patron->Addresses->Address->State      = $state;
+			$request->Patron->Addresses->Address->PostalCode = $zip;
+			$request->Patron->PreferredAddress		= 'Primary';
+			//$request->Patron->PatronPIN			= $pin;
+			$request->Patron->Phone1			= $phone;
+			$request->Patron->RegistrationDate		= date('c'); // Registration Date, format ISO 8601
+			$request->Patron->LastActionDate		= date('c'); // Registration Date, format ISO 8601
+			$request->Patron->LastEditDate			= date('c'); // Registration Date, format ISO 8601
+
+			$request->Patron->EmailNotices			= $configArray['Catalog']['selfRegEmailNotices'];
+			$request->Patron->DefaultBranch			= $configArray['Catalog']['selfRegDefaultBranch'];
+			$request->Patron->PatronExpirationDate		= $configArray['Catalog']['selfRegPatronExpirationDate'];
+			$request->Patron->PatronStatusCode		= $configArray['Catalog']['selfRegPatronStatusCode'];
+			$request->Patron->PatronType			= $configArray['Catalog']['selfRegPatronType'];
+			$request->Patron->RegBranch			= $configArray['Catalog']['selfRegRegBranch'];
+			$request->Patron->RegisteredBy			= $configArray['Catalog']['selfRegRegisteredBy'];
+
+			// VALIDATE BIRTH DATE.
+			// DENY REGISTRATION IF REGISTRANT IS NOT 14 - 113 YEARS OLD
+			if ($library && $library->promptForBirthDateInSelfReg) {
+				$birthDate			= trim($_REQUEST['birthDate']);
+				$date				= strtotime(str_replace('-','/',$birthDate));
+				$birthDateMin			= strtotime('-113 years');
+				$birthDateMax			= strtotime('-14 years');
+				if ($date >= $birthDateMin && $date <= $birthDateMax) {
+					$request->Patron->BirthDate = date('Y-m-d', $date);
+				} else {
+					global $logger;
+					$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), Logger::LOG_WARNING);
+					return array(
+						'success' => false,
+						'message' => 'You must be 14 years old to register.'
+					);
 				}
-
-				// CREATE PATRON REQUEST
-				$request                                         = new stdClass();
-				$request->Modifiers                              = '';
-				//$request->PatronFlags->PatronFlag                = 'DUPCHECK_ALTID'; // Duplicate check for alt id
-				$request->PatronFlags->PatronFlag[0]                = 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
-				$request->PatronFlags->PatronFlag[1]                = 'VALIDATE_ZIPCODE'; // Validate ZIP against Carl.X Admin legal ZIPs
-				$request->Patron				= new stdClass();
-				$request->Patron->PatronID                       = $tempPatronID;
-				$request->Patron->Email                          = $email;
-				$request->Patron->FirstName                      = $firstName;
-				$request->Patron->MiddleName                     = $middleName;
-				$request->Patron->LastName                       = $lastName;
-				$request->Patron->Addresses			= new stdClass();
-				$request->Patron->Addresses->Address		= new stdClass();
-				$request->Patron->Addresses->Address->Type       = 'Primary';
-				$request->Patron->Addresses->Address->Street     = $address;
-				$request->Patron->Addresses->Address->City       = $city;
-				$request->Patron->Addresses->Address->State      = $state;
-				$request->Patron->Addresses->Address->PostalCode = $zip;
-				$request->Patron->PreferredAddress		= 'Primary';
-//				$request->Patron->PatronPIN			= $pin;
-				$request->Patron->Phone1			= $phone;
-				$request->Patron->RegistrationDate		= date('c'); // Registration Date, format ISO 8601
-				$request->Patron->LastActionDate		= date('c'); // Registration Date, format ISO 8601
-				$request->Patron->LastEditDate			= date('c'); // Registration Date, format ISO 8601
-
-				$request->Patron->EmailNotices			= $configArray['Catalog']['selfRegEmailNotices'];
-				$request->Patron->DefaultBranch			= $configArray['Catalog']['selfRegDefaultBranch'];
-				$request->Patron->PatronExpirationDate		= $configArray['Catalog']['selfRegPatronExpirationDate'];
-				$request->Patron->PatronStatusCode		= $configArray['Catalog']['selfRegPatronStatusCode'];
-				$request->Patron->PatronType			= $configArray['Catalog']['selfRegPatronType'];
-				$request->Patron->RegBranch			= $configArray['Catalog']['selfRegRegBranch'];
-				$request->Patron->RegisteredBy			= $configArray['Catalog']['selfRegRegisteredBy'];
-
-				// VALIDATE BIRTH DATE.
-				// DENY REGISTRATION IF REGISTRANT IS NOT 14 - 113 YEARS OLD
-				if ($library && $library->promptForBirthDateInSelfReg) {
-					$birthDate			= trim($_REQUEST['birthDate']);
-					$date				= strtotime(str_replace('-','/',$birthDate));
-					$birthDateMin			= strtotime('-113 years');
-					$birthDateMax			= strtotime('-14 years');
-					if ($date >= $birthDateMin && $date <= $birthDateMax) {
-						$request->Patron->BirthDate = date('Y-m-d', $date);
-					} else {
-						global $logger;
-						$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), Logger::LOG_WARNING);
-						return array(
-							'success' => false,
-							'message' => 'You must be 14 years old to register.'
-						);
-					}
-				}
-
-				$result = $this->doSoapRequest('createPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
-				if (is_null($result) && $this->soapClient) {
-					$result = $this->soapClient->__getLastResponse();
-
-					if ($result) {
-						$unxml = new XML_Unserializer();
-						$unxml->unserialize($result);
-						$response = $unxml->getUnserializedData();
-
-						if ($response) {
-							$success = isset($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'])
-								&& stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
-							if (!$success) {
-								$errorMessage = array();
-								if (is_array($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus'])) {
-									foreach($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus'] as $errorResponse) {
-										$errorMessage[] = $errorResponse['ns2:LongMessage'];
-									}
-								} else {
-									$errorMessage[] = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
-								}
-								if (in_array('A patron with that id already exists', $errorMessage)) {
-									global $logger;
-									$logger->log('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter', Logger::LOG_ERROR);
-									// Increment the temp patron id number.
-									$lastPatronID->value = $currentPatronIDNumber;
-									if (!$lastPatronID->update()) {
-										$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', Logger::LOG_ERROR);
-									}
-								}
-							} else {
-								$lastPatronID->value = $currentPatronIDNumber;
-								if (!$lastPatronID->update()) {
-									global $logger;
-									$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', Logger::LOG_ERROR);
-								}
-								// Get Patron
-								$request = new stdClass();
-								$request->SearchType = 'Patron ID';
-								$request->SearchID   = $tempPatronID;
-								$request->Modifiers  = '';
-
-								$result = $this->doSoapRequest('getPatronInformation', $request);
-
-/*
-// PATRON-CREATED PIN IS BEING OVERWRITTEN BY CARL.X LAST 4 DIGITS OF PHONE NUMBER
-								// Check That the Pin was set  (the create Patron call does not seem to set the Pin)
-								if ($result && isset($result->Patron) && $result->Patron->PatronPIN == '') {
-									$request->Patron->PatronPIN = $pin;
-									$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
-									if (is_null($result)) {
-										$result = $this->soapClient->__getLastResponse();
-										if ($result) {
-											$unxml = new XML_Unserializer();
-											$unxml->unserialize($result);
-											$response = $unxml->getUnserializedData();
-
-											if ($response) {
-												$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
-												if (!$success) {
-													global $logger;
-													$logger->log('Unable to set pin for Self-Registered user on update call after initial creation call.', Logger::LOG_ERROR);
-													// The Pin will be an empty.
-													// Return Success Any way, because the account was created.
-													return array(
-														'success' => true,
-														'barcode' => $tempPatronID,
-													);
-												}
-											}
-										}
-									}
-								}
-*/
-
-								// FOLLOWING SUCCESSFUL SELF REGISTRATION, INPUT PATRON IP ADDRESS INTO PATRON RECORD NOTE
-								$request 			= new stdClass();
-								$request->Modifiers		= '';
-								$request->Note			= new stdClass();
-								$request->Note->PatronID	= $tempPatronID;
-								$request->Note->NoteType	= 2;
-								$request->Note->NoteText	= "Online registration from IP " . $active_ip;
-								$result = $this->doSoapRequest('addPatronNote', $request, $this->patronWsdl,  $this->genericResponseSOAPCallOptions);
-
-								if (is_null($result)) {
-									$result = $this->soapClient->__getLastResponse();
-									if ($result) {
-										$unxml = new XML_Unserializer();
-										$unxml->unserialize($result);
-										$response = $unxml->getUnserializedData();
-											if ($response) {
-											$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
-											if (!$success) {
-												global $logger;
-												$logger->log('Unable to write IP address in Patron Note.', Logger::LOG_ERROR);
-												// Return Success Any way, because the account was created.
-												return array(
-													'success' => true,
-													'barcode' => $tempPatronID,
-												);
-											}
-										}
-									}
-								}
-
-								// FOLLOWING SUCCESSFUL SELF REGISTRATION, EMAIL PATRON THE LIBRARY CARD NUMBER
-								$body = $interface->fetch('Emails/self-registration.tpl');
-								$body = $firstName . " " . $lastName . "\n\nThank you for registering for an Online Library Card. Your library card number is:\n\n" . $tempPatronID . "\n\n" . $body;
-								require_once ROOT_DIR . '/sys/Email/Mailer.php';
-								$mail = new Mailer();
-								$subject = 'Welcome to the Nashville Public Library';
-								$emailResult = $mail->send($email, $subject, $body);
-								if ($emailResult === true){
-									$result = array(
-										'result' => true,
-										'message' => 'Your email was sent successfully.'
-									);
-								} elseif (($emailResult instanceof AspenError)){
-									$interface->assign('error', "Your request could not be sent: {$emailResult->getMessage()}.");
-								} else {
-									$interface->assign('error', "Your request could not be sent due to an unknown error.");
-									global $logger;
-									$logger->log("Mail List Failure (unknown reason), parameters: $email, $subject, $body", Logger::LOG_ERROR);
-								}
-								return array(
-									'success' => $success,
-									'barcode' => $tempPatronID,
-									'patronName' => $firstName . ' ' . $lastName,
-								);
-							}
-						} else {
-							global $logger;
-							$logger->log('Unable to read XML from CarlX response when attempting to create Patron.', Logger::LOG_ERROR);
+			}
+			$result = $this->doSoapRequest('createPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+			if ($result) {
+				$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+				if (!$success) {
+					$errorMessage = array();
+					if (is_array($result->ResponseStatuses->ResponseStatus)) { // TODO : doSoapRequest should be able to return $result->ResponseStatuses->ResponseStatus as array. BETTER: move all this success crap up into doSoapRequest. James Staub 2020 10 19
+						foreach($result->ResponseStatuses->ResponseStatus as $errorResponse) {
+							$errorMessage[] = $errorResponse->LongMessage;
 						}
 					} else {
-						global $logger;
-						$logger->log('CarlX ILS gave no response when attempting to create Patron.', Logger::LOG_ERROR);
+						$errorMessage[] = $result->ResponseStatuses->ResponseStatus->LongMessage;;
 					}
+					if (in_array('A patron with that id already exists', $errorMessage)) {
+						global $logger;
+						$logger->log('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter', Logger::LOG_ERROR);
+						// Increment the temp patron id number.
+						$lastPatronID->value = $currentPatronIDNumber;
+						if (!$lastPatronID->update()) {
+							$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', Logger::LOG_ERROR);
+						}
+					}
+				} else {
+					$lastPatronID->value = $currentPatronIDNumber;
+					if (!$lastPatronID->update()) {
+						global $logger;
+						$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', Logger::LOG_ERROR);
+					}
+					// Get Patron
+					$request = new stdClass();
+					$request->SearchType = 'Patron ID';
+					$request->SearchID   = $tempPatronID;
+					$request->Modifiers  = '';
+
+					$result = $this->doSoapRequest('getPatronInformation', $request);
+
+					// FOLLOWING SUCCESSFUL SELF REGISTRATION, INPUT PATRON IP ADDRESS INTO PATRON RECORD NOTE
+					$request 			= new stdClass();
+					$request->Modifiers		= '';
+					$request->Note			= new stdClass();
+					$request->Note->PatronID	= $tempPatronID;
+					$request->Note->NoteType	= 2;
+					$request->Note->NoteText	= "Online registration from IP " . $active_ip;
+					$result = $this->doSoapRequest('addPatronNote', $request, $this->patronWsdl,  $this->genericResponseSOAPCallOptions);
+
+					if ($result) {
+						$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+						if (!$success) {
+							global $logger;
+							$logger->log('Unable to write IP address in Patron Note.', Logger::LOG_ERROR);
+							// Return Success Any way, because the account was created.
+							return array(
+								'success' => true,
+								'barcode' => $tempPatronID,
+							);
+						}
+					}
+
+					// FOLLOWING SUCCESSFUL SELF REGISTRATION, EMAIL PATRON THE LIBRARY CARD NUMBER
+					$body = $interface->fetch('Emails/self-registration.tpl');
+					$body = $firstName . " " . $lastName . "\n\nThank you for registering for an Online Library Card. Your library card number is:\n\n" . $tempPatronID . "\n\n" . $body;
+					require_once ROOT_DIR . '/sys/Email/Mailer.php';
+					$mail = new Mailer();
+					$subject = 'Welcome to the Nashville Public Library';
+					$emailResult = $mail->send($email, $subject, $body);
+					if ($emailResult === true){
+						$result = array(
+							'result' => true,
+							'message' => 'Your email was sent successfully.'
+						);
+					} elseif (($emailResult instanceof AspenError)){
+						$interface->assign('error', "Your request could not be sent: {$emailResult->getMessage()}.");
+					} else {
+						$interface->assign('error', "Your request could not be sent due to an unknown error.");
+						global $logger;
+						$logger->log("Mail List Failure (unknown reason), parameters: $email, $subject, $body", Logger::LOG_ERROR);
+					}
+					return array(
+						'success' => $success,
+						'barcode' => $tempPatronID,
+						'patronName' => $firstName . ' ' . $lastName,
+					);
 				}
-//			} else {
-//				global $logger;
-//				$logger->log('CarlX Self Registration Form was passed bad data for a user\'s pin.', Logger::LOG_WARNING);
-//			}
+			} else {
+				global $logger;
+				$logger->log('Unable to read XML from CarlX response when attempting to create Patron.', Logger::LOG_ERROR);
+			}
 		} else {
 			global $logger;
 			$logger->log('No value for "last_selfreg_patron_id" set in Variables table. Can not self-register patron in CarlX Driver.', Logger::LOG_ERROR);
@@ -1253,41 +1138,24 @@ class CarlX extends AbstractIlsDriver{
 				$request = $this->getSearchbyPatronIdRequest($user);
 				$request->Patron->LoanHistoryOptInFlag = ($action == 'optIn');
 				$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
-
 				$success = false;
-				// code block below has been taken from updatePatronInfo()
-				if (is_null($result)) {
-					$result = $this->soapClient->__getLastResponse();
-					if ($result) {
-						$unxml   = new XML_Unserializer();
-						$unxml->unserialize($result);
-						$response = $unxml->getUnserializedData();
-
-						if ($response) {
-							$success = stripos($response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:ShortMessage'], 'Success') !== false;
-							if (!$success) {
-								$errorMessage = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
-//								$updateErrors[] = 'Failed to update your information'. ($errorMessage ? ' : ' .$errorMessage : '');
-							}
-
-						} else {
-//							$updateErrors[] = 'Unable to update your information.';
-							global $logger;
-							$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', Logger::LOG_ERROR);
-						}
-
-					} else {
-//						$updateErrors[] = 'Unable to update your information.';
-						global $logger;
-						$logger->log('CarlX ILS gave no response when attempting to update Patron Information.', Logger::LOG_ERROR);
+				if ($result) {
+					$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+					if (!$success) {
+						$errorMessage = $result->ResponseStatuses->ResponseStatus->LongMessage;
+//						$result['messages'][] = 'Failed to update your information'. ($errorMessage ? ' : ' .$errorMessage : '');
+					}else{
+						$result['success'] = true;
+						$result['messages'][] = 'Your account was updated successfully.';
 					}
+				} else {
+//					$result['messages'][] = 'Unable to update your information.';
+					global $logger;
+					$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', Logger::LOG_ERROR);
 				}
 				return $success;
-
 				break;
-
 		}
-
 	}
 
 	public function getFines($user, $includeMessages = false) {
@@ -1372,9 +1240,6 @@ class CarlX extends AbstractIlsDriver{
 //		$request->CirculationFilter = true;
 //		$result = $this->doSoapRequest('getPatronFiscalHistory', $request);
 //		if ($result && !empty($result->FiscalHistoryItem)) {
-//			if (!is_array($result->FiscalHistoryItem)) {
-//				$result->FiscalHistoryItem = array($result->FiscalHistoryItem); // single entries are not presented as an array
-//			}
 //			foreach($result->FiscalHistoryItem as $fine) {
 //				if ($fine->FiscalType == 'Credit') {
 //					$amount = $fine->Amount > 0 ? '-$' . sprintf('%0.2f', $fine->Amount / 100) : ''; // amounts are in cents
@@ -1410,7 +1275,7 @@ class CarlX extends AbstractIlsDriver{
 	private function getPatronTransactions($user)
 	{
 		$request = $this->getSearchbyPatronIdRequest($user);
-		$result = $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl);
+		$result = $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 		return $result;
 	}
 
