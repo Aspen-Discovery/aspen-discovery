@@ -1,4 +1,11 @@
 <?php
+/**
+ * Displays Student Checkout/Overdues as slips or sheets by classroom to facilitate school library work
+ *
+ * @category Aspen
+ * @author James Staub <james.staub@nashville.gov>
+ * Date: 2020 09 28
+ */
 
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
 
@@ -65,7 +72,6 @@ class Report_StudentReport extends Admin_Admin {
 
 	function getBreadcrumbs()
 	{
-// TODO : is this the right section?
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#circulation_reports', 'Circulation Reports');
