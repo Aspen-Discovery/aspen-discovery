@@ -207,13 +207,12 @@ class GroupedWorksSolrConnector extends Solr
 	 * @access    public
 	 *
 	 * @param array[] $ids
-	 * @param string[] $notInterestedIds
 	 * @param string $fieldsToReturn
 	 * @param int $page
 	 * @param int $limit
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $notInterestedIds, $fieldsToReturn, $page = 1, $limit = 25)
+	function getMoreLikeThese($ids, $fieldsToReturn, $page = 1, $limit = 25)
 	{
 		// Query String Parameters
 		$idString = '';
@@ -231,10 +230,15 @@ class GroupedWorksSolrConnector extends Solr
 		$searchLocation = Location::getSearchLocation();
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
-		if (count($notInterestedIds) > 0) {
-			$notInterestedString = implode(' OR ', $notInterestedIds);
-			$options['fq'][] = "-id:($notInterestedString)";
+		if (UserAccount::isLoggedIn()){
+			$options['fq'][] = '-user_rating_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
+//		if (count($notInterestedIds) > 0) {
+//			$notInterestedString = implode(' OR ', $notInterestedIds);
+//			$options['fq'][] = "-id:($notInterestedString)";
+//		}
 		$options['fq'][] = "-id:($idString)";
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;

@@ -284,6 +284,11 @@
 		<field name="author_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
 
+		<!-- relations to users -->
+		<field name="user_rating_link" type="integer" indexed="true" stored="false" multiValued="true"/>
+		<field name="user_not_interested_link" type="integer" indexed="true" stored="false" multiValued="true"/>
+		<field name="user_reading_history_link" type="integer" indexed="true" stored="false" multiValued="true"/>
+
 		<!-- Boosts -->
 		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="false"/>
 		<!-- Field to get random titles -->
