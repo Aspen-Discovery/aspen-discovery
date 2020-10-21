@@ -314,9 +314,8 @@ class CarlX extends AbstractIlsDriver{
 
 	private $genericResponseSOAPCallOptions = array(
 		'connection_timeout' => 1,
-		'features' => SOAP_WAIT_ONE_WAY_CALLS, // This setting overcomes the SOAP client's expectation that there is no response from our update request.
-		// TODO: IS THERE A WAY TO HAVE features add SOAP_SINGLE_ELEMENT_ARRAYS as well?
-		'trace' => 1,                          // enable use of __getLastResponse, so that we can determine the response.
+		'features' => SOAP_SINGLE_ELEMENT_ARRAYS | SOAP_WAIT_ONE_WAY_CALLS,
+		'trace' => 1,
 	);
 
 	/**
@@ -352,12 +351,13 @@ class CarlX extends AbstractIlsDriver{
 					$lastResponse->registerXPathNamespace('soap-env', 'http://schemas.xmlsoap.org/soap/envelope/');
 					$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/patronAPI');
 					$lastResponse->registerXPathNamespace('ns2', 'http://tlcdelivers.com/cx/schemas/response');
+					$result = new stdClass();
 					$result->ResponseStatuses = new stdClass();
 					$result->ResponseStatuses->ResponseStatus = new stdClass();
 					$shortMessages = $lastResponse->xpath('//ns2:ShortMessage');
-					$result->ResponseStatuses->ResponseStatus->ShortMessage = (string) $shortMessages[0];
+					$result->ResponseStatuses->ResponseStatus->ShortMessage = implode('; ', $shortMessages);
 					$longMessages = $lastResponse->xpath('//ns2:LongMessage');
-					$result->ResponseStatuses->ResponseStatus->LongMessage = (string) $longMessages[0];
+					$result->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', $longMessages) ;
 				}
 			} catch (SoapFault $e) {
 				if ($numTries == 2) {
@@ -418,8 +418,6 @@ class CarlX extends AbstractIlsDriver{
 
 			// Available Holds
 			if ($result->HoldItemsCount > 0) {
-				//TODO: a single hold is not in an array; Need to verify that multiple holds are in an array
-				if (!is_array($result->HoldItems->HoldItem)) $result->HoldItems->HoldItem = array($result->HoldItems->HoldItem); // For the case of a single hold
 				foreach($result->HoldItems->HoldItem as $hold) {
 					$curHold = array();
 					$bibId          = $hold->BID;
@@ -475,7 +473,6 @@ class CarlX extends AbstractIlsDriver{
 
 			// Unavailable Holds
 			if ($result->UnavailableHoldsCount > 0) {
-				if (!is_array($result->UnavailableHoldItems->UnavailableHoldItem)) $result->UnavailableHoldItems->UnavailableHoldItem = array($result->UnavailableHoldItems->UnavailableHoldItem); // For the case of a single hold
 				foreach($result->UnavailableHoldItems->UnavailableHoldItem as $hold) {
 					$curHold = array();
 					$bibId          = $hold->BID;
@@ -668,20 +665,10 @@ class CarlX extends AbstractIlsDriver{
 		}else{
 			//TLC provides both ChargeItems and OverdueItems as separate elements, we can combine for loading
 			if (!empty($result->ChargeItems->ChargeItem)) {
-				if (!is_array($result->ChargeItems->ChargeItem)) {
-					// Structure an single entry as an array of one.
-					$itemsToLoad[] = $result->ChargeItems->ChargeItem;
-				}else{
-					$itemsToLoad = $result->ChargeItems->ChargeItem;
-				}
+				$itemsToLoad = $result->ChargeItems->ChargeItem;
 			}
 			if (!empty($result->OverdueItems->OverdueItem)) {
-				if (!is_array($result->OverdueItems->OverdueItem)) {
-					// Structure an single entry as an array of one.
-					$itemsToLoad[] = $result->OverdueItems->OverdueItem;
-				}else{
-					$itemsToLoad = array_merge($itemsToLoad, $result->OverdueItems->OverdueItem);
-				}
+				$itemsToLoad = array_merge($itemsToLoad, $result->OverdueItems->OverdueItem);
 			}
 
 			foreach ($itemsToLoad as $chargeItem) {
@@ -731,6 +718,7 @@ class CarlX extends AbstractIlsDriver{
 
 	function updatePin($user, $oldPin, $newPin) {
 		$request = $this->getSearchbyPatronIdRequest($user);
+		$request->Patron = new stdClass();
 		$request->Patron->PatronPIN = $newPin;
 		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 		if($result) {
@@ -1252,9 +1240,6 @@ class CarlX extends AbstractIlsDriver{
 //		$request->CirculationFilter = true;
 //		$result = $this->doSoapRequest('getPatronFiscalHistory', $request);
 //		if ($result && !empty($result->FiscalHistoryItem)) {
-//			if (!is_array($result->FiscalHistoryItem)) {
-//				$result->FiscalHistoryItem = array($result->FiscalHistoryItem); // single entries are not presented as an array
-//			}
 //			foreach($result->FiscalHistoryItem as $fine) {
 //				if ($fine->FiscalType == 'Credit') {
 //					$amount = $fine->Amount > 0 ? '-$' . sprintf('%0.2f', $fine->Amount / 100) : ''; // amounts are in cents
