@@ -508,7 +508,7 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	}else{
 		$interface->assign('showTopSearchBox', 1);
 		$interface->assign('showBreadcrumbs', 1);
-		if ($library->getLayoutSettings()->useHomeLinkInBreadcrumbs){
+		if ($library->getLayoutSettings()->useHomeLinkInBreadcrumbs && !empty($library->homeLink)){
 			$interface->assign('homeBreadcrumbLink', $library->homeLink);
 		}else{
 			$interface->assign('homeBreadcrumbLink', '/');
