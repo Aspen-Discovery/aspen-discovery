@@ -81,7 +81,6 @@ class GroupedWorksSolrConnector extends Solr
 	 *
 	 * @access    public
 	 * @param $id
-	 * @param null $notInterestedIds
 	 * @param bool $availableOnly
 	 * @param bool $limitFormat
 	 * @param null $limit
@@ -89,7 +88,7 @@ class GroupedWorksSolrConnector extends Solr
 	 * @return    array                            An array of query results
 	 *
 	 */
-	function getMoreLikeThis($id, $notInterestedIds = null, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null)
+	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null)
 	{
 		$originalResult = $this->getRecord($id, 'target_audience_full,mpaa_rating,literary_form,language,isbn,upc,series');
 		// Query String Parameters
@@ -177,9 +176,10 @@ class GroupedWorksSolrConnector extends Solr
 			$options['fq'][] = $filter;
 		}
 
-		if ($notInterestedIds != null && count($notInterestedIds) > 0) {
-			$notInterestedString = implode(' OR ', $notInterestedIds);
-			$options['fq'][] = "-id:($notInterestedString)";
+		if (UserAccount::isLoggedIn()){
+			$options['fq'][] = '-user_rating_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
 
 		$boostFactors = $this->getBoostFactors($searchLibrary);
