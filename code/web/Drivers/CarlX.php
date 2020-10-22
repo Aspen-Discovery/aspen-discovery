@@ -1128,33 +1128,29 @@ class CarlX extends AbstractIlsDriver{
 		return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
 	}
 
-    public function performsReadingHistoryUpdatesOfILS(){
-        return true;
-    }
+	public function performsReadingHistoryUpdatesOfILS(){
+		return true;
+	}
+
 	public function doReadingHistoryAction($user, $action, $selectedTitles){
-		switch ($action) {
-			case 'optIn' :
-			case 'optOut' :
-				$request = $this->getSearchbyPatronIdRequest($user);
-				$request->Patron->LoanHistoryOptInFlag = ($action == 'optIn');
-				$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
-				$success = false;
-				if ($result) {
-					$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
-					if (!$success) {
-						$errorMessage = $result->ResponseStatuses->ResponseStatus->LongMessage;
-//						$result['messages'][] = 'Failed to update your information'. ($errorMessage ? ' : ' .$errorMessage : '');
-					}else{
-						$result['success'] = true;
-						$result['messages'][] = 'Your account was updated successfully.';
-					}
-				} else {
-//					$result['messages'][] = 'Unable to update your information.';
+		if ($action == 'optIn' || $action == 'optOut'){
+			$request = $this->getSearchbyPatronIdRequest($user);
+			if (!isset ($request->Patron)){
+				$request->Patron = new stdClass();
+			}
+			$request->Patron->LoanHistoryOptInFlag = ($action == 'optIn');
+			$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+			if ($result) {
+				$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+				if (!$success) {
+					$errorMessage = $result->ResponseStatuses->ResponseStatus->LongMessage;
 					global $logger;
-					$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', Logger::LOG_ERROR);
+					$logger->log("Unable to modify reading history status $errorMessage", Logger::LOG_ERROR);
 				}
-				return $success;
-				break;
+			} else {
+				global $logger;
+				$logger->log('Unable to read XML from CarlX response when attempting to update Patron Information.', Logger::LOG_ERROR);
+			}
 		}
 	}
 

@@ -416,7 +416,7 @@ class CatalogConnection
 	 * @param User $patron The user to do the reading history action on
 	 * @param string $action The action to perform
 	 * @param array $selectedTitles The titles to do the action on if applicable
-	 * @return array
+	 * @return array success and message are the array keys
 	 */
 	function doReadingHistoryAction($patron, $action, $selectedTitles)
 	{
