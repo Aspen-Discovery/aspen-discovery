@@ -84,7 +84,6 @@ class CarlX extends AbstractIlsDriver{
 					if ($forceDisplayNameUpdate){
 						$user->displayName = '';
 					}
-					$user->_fullname     = isset($fullName) ? $fullName : '';
 					$user->cat_username = $username;
 					$user->cat_password = $result->Patron->PatronPIN;
 					$user->email        = $result->Patron->Email;
@@ -92,11 +91,6 @@ class CarlX extends AbstractIlsDriver{
 					if ($userExistsInDB && $user->trackReadingHistory != $result->Patron->LoanHistoryOptInFlag) {
 						$user->trackReadingHistory = $result->Patron->LoanHistoryOptInFlag;
 					}
-
-					$user->_emailReceiptFlag    = $result->Patron->EmailReceiptFlag;
-					$user->_availableHoldNotice = $result->Patron->SendHoldAvailableFlag;
-					$user->_comingDueNotice     = $result->Patron->SendComingDueFlag;
-					$user->_phoneType           = $result->Patron->PhoneType;
 
 					$homeBranchCode = strtolower($result->Patron->DefaultBranch);
 					$location = new Location();
@@ -130,71 +124,18 @@ class CarlX extends AbstractIlsDriver{
 							$user->homeLocationId = $location->locationId;
 							if (empty($user->myLocation1Id)) {
 								$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-								/** @var /Location $location */
-								//Get display name for preferred location 1
-								$myLocation1             = new Location();
-								$myLocation1->locationId = $user->myLocation1Id;
-								if ($myLocation1->find(true)) {
-									$user->_myLocation1 = $myLocation1->displayName;
-								}
 							}
 
 							if (empty($user->myLocation2Id)){
 								$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-								//Get display name for preferred location 2
-								$myLocation2             = new Location();
-								$myLocation2->locationId = $user->myLocation2Id;
-								if ($myLocation2->find(true)) {
-									$user->_myLocation2 = $myLocation2->displayName;
-								}
 							}
 						}
-					}
-
-					if (isset($location)){
-						//Get display names that aren't stored
-						$user->_homeLocationCode = $location->code;
-						$user->_homeLocation     = $location->displayName;
-					}
-
-					if (isset($result->Patron->Addresses)){
-						//Find the primary address
-						$primaryAddress = null;
-						foreach ($result->Patron->Addresses->Address as $address){
-							if ($address->Type == 'Primary'){
-								$primaryAddress = $address;
-								break;
-							}
-						}
-						if ($primaryAddress != null){
-							$user->_address1 = $primaryAddress->Street;
-							$user->_address2 = $primaryAddress->City . ', ' . $primaryAddress->State;
-							$user->_city     = $primaryAddress->City;
-							$user->_state    = $primaryAddress->State;
-							$user->_zip      = $primaryAddress->PostalCode;
-						}
-					}
-
-					if (isset($result->Patron->EmailNotices)) {
-						$user->_notices = $result->Patron->EmailNotices;
 					}
 
 					$user->patronType  = $result->Patron->PatronType; // Example: "ADULT"
-					$user->_web_note    = '';
 					$user->phone       = $result->Patron->Phone1;
-					$user->_expires     = $this->extractDateFromCarlXDateField($result->Patron->ExpirationDate);
-					$user->_expired     = 0; // default setting
-					$user->_expireClose = 0;
 
-					$timeExpire   = strtotime($user->_expires);
-					$timeNow      = time();
-					$timeToExpire = $timeExpire - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						if ($timeToExpire <= 0) {
-							$user->_expired = 1;
-						}
-						$user->_expireClose = 1;
-					}
+					$this->loadContactInformationFromSoapResult($user, $result);
 
 					if ($userExistsInDB){
 						$user->update();
@@ -744,38 +685,57 @@ class CarlX extends AbstractIlsDriver{
 		];
 		if ($canUpdateContactInfo){
 			$request = $this->getSearchbyPatronIdRequest($user);
+			if (!isset($request->Patron)){
+				$request->Patron = new stdClass();
+			}
 			// Patron Info to update.
 			$request->Patron->Email  = $_REQUEST['email'];
-			$request->Patron->Phone1 = $_REQUEST['phone'];
+			if (isset($_REQUEST['phone'])) {
+				$request->Patron->Phone1 = $_REQUEST['phone'];
+			}
 			if (isset($_REQUEST['workPhone'])){
 				$request->Patron->Phone2 = $_REQUEST['workPhone'];
 			}
+			if (!isset($request->Addresses)){
+				$request->Patron->Addresses = new stdClass();
+			}
+			if (!isset($request->Addresses->Address)){
+				$request->Patron->Addresses->Address = new stdClass();
+			}
 			$request->Patron->Addresses->Address->Type        = 'Primary';
-			$request->Patron->Addresses->Address->Street      = $_REQUEST['address1'];
-			$request->Patron->Addresses->Address->City        = $_REQUEST['city'];
-			$request->Patron->Addresses->Address->State       = $_REQUEST['state'];
-			$request->Patron->Addresses->Address->PostalCode  = $_REQUEST['zip'];
-				if (isset($_REQUEST['emailReceiptFlag']) && ($_REQUEST['emailReceiptFlag'] == 'yes' || $_REQUEST['emailReceiptFlag'] == 'on')){
-					// if set check & on check must be combined because checkboxes/radios don't report 'offs'
-					$request->Patron->EmailReceiptFlag = 1;
-				}else{
-					$request->Patron->EmailReceiptFlag = 0;
-				}
-				if (isset($_REQUEST['availableHoldNotice']) && ($_REQUEST['availableHoldNotice'] == 'yes' || $_REQUEST['availableHoldNotice'] == 'on')){
-					// if set check & on check must be combined because checkboxes/radios don't report 'offs'
-					$request->Patron->SendHoldAvailableFlag = 1;
-				}else{
-					$request->Patron->SendHoldAvailableFlag = 0;
-				}
-				if (isset($_REQUEST['comingDueNotice']) && ($_REQUEST['comingDueNotice'] == 'yes' || $_REQUEST['comingDueNotice'] == 'on')){
-					// if set check & on check must be combined because checkboxes/radios don't report 'offs'
-					$request->Patron->SendComingDueFlag = 1;
-				}else{
-					$request->Patron->SendComingDueFlag = 0;
-				}
-				if (isset($_REQUEST['phoneType'])) {
-					$request->Patron->PhoneType = $_REQUEST['phoneType'];
-				}
+			if (isset($_REQUEST['address1'])) {
+				$request->Patron->Addresses->Address->Street = $_REQUEST['address1'];
+			}
+			if (isset($_REQUEST['city'])) {
+				$request->Patron->Addresses->Address->City = $_REQUEST['city'];
+			}
+			if (isset($_REQUEST['state'])) {
+				$request->Patron->Addresses->Address->State = $_REQUEST['state'];
+			}
+			if (isset($_REQUEST['zip'])) {
+				$request->Patron->Addresses->Address->PostalCode = $_REQUEST['zip'];
+			}
+			if (isset($_REQUEST['emailReceiptFlag']) && ($_REQUEST['emailReceiptFlag'] == 'yes' || $_REQUEST['emailReceiptFlag'] == 'on')){
+				// if set check & on check must be combined because checkboxes/radios don't report 'offs'
+				$request->Patron->EmailReceiptFlag = 1;
+			}else{
+				$request->Patron->EmailReceiptFlag = 0;
+			}
+			if (isset($_REQUEST['availableHoldNotice']) && ($_REQUEST['availableHoldNotice'] == 'yes' || $_REQUEST['availableHoldNotice'] == 'on')){
+				// if set check & on check must be combined because checkboxes/radios don't report 'offs'
+				$request->Patron->SendHoldAvailableFlag = 1;
+			}else{
+				$request->Patron->SendHoldAvailableFlag = 0;
+			}
+			if (isset($_REQUEST['comingDueNotice']) && ($_REQUEST['comingDueNotice'] == 'yes' || $_REQUEST['comingDueNotice'] == 'on')){
+				// if set check & on check must be combined because checkboxes/radios don't report 'offs'
+				$request->Patron->SendComingDueFlag = 1;
+			}else{
+				$request->Patron->SendComingDueFlag = 0;
+			}
+			if (isset($_REQUEST['phoneType'])) {
+				$request->Patron->PhoneType = $_REQUEST['phoneType'];
+			}
 
 			if (isset($_REQUEST['notices'])){
 				$request->Patron->EmailNotices = $_REQUEST['notices'];
@@ -789,12 +749,12 @@ class CarlX extends AbstractIlsDriver{
 				}
 			}
 
-			$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+			$soapResult = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 
-			if ($result) {
-				$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+			if ($soapResult) {
+				$success = stripos($soapResult->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
 				if (!$success) {
-					$errorMessage = $result->ResponseStatuses->ResponseStatus->LongMessage;
+					$errorMessage = $soapResult->ResponseStatuses->ResponseStatus->LongMessage;
 					$result['messages'][] = 'Failed to update your information'. ($errorMessage ? ' : ' .$errorMessage : '');
 				}else{
 					$result['success'] = true;
@@ -1954,5 +1914,95 @@ EOT;
 			'maxLength' => 6,
 			'onlyDigitsAllowed' => true,
 		];
+	}
+
+	/**
+	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
+	 *
+	 * @param User $user
+	 */
+	public function loadContactInformation(User $user)
+	{
+		//This is similar to patron Login
+		$request = $this->getSearchbyPatronIdRequest($user);
+		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);
+		if ($result){
+			if (isset($result->Patron)){
+				$this->loadContactInformationFromSoapResult($user, $result);
+			}
+		}
+	}
+
+	public function loadContactInformationFromSoapResult(User $user, stdClass $soapResult){
+		$user->_fullname = isset($soapResult->Patron->FullName) ? $soapResult->Patron->FullName : '';
+		$user->_emailReceiptFlag    = $soapResult->Patron->EmailReceiptFlag;
+		$user->_availableHoldNotice = $soapResult->Patron->SendHoldAvailableFlag;
+		$user->_comingDueNotice     = $soapResult->Patron->SendComingDueFlag;
+		$user->_phoneType           = $soapResult->Patron->PhoneType;
+
+		$location = new Location();
+		$location->code = strtolower($soapResult->Patron->DefaultBranch);
+		if ($location->find(true)){
+			if ($user->myLocation1Id > 0) {
+				/** @var /Location $location */
+				//Get display name for preferred location 1
+				$myLocation1             = new Location();
+				$myLocation1->locationId = $user->myLocation1Id;
+				if ($myLocation1->find(true)) {
+					$user->_myLocation1 = $myLocation1->displayName;
+				}
+			}
+
+			if ($user->myLocation2Id > 0){
+				//Get display name for preferred location 2
+				$myLocation2             = new Location();
+				$myLocation2->locationId = $user->myLocation2Id;
+				if ($myLocation2->find(true)) {
+					$user->_myLocation2 = $myLocation2->displayName;
+				}
+			}
+
+			//Get display names that aren't stored
+			$user->_homeLocationCode = $location->code;
+			$user->_homeLocation     = $location->displayName;
+		}
+
+		if (isset($soapResult->Patron->Addresses)){
+			//Find the primary address
+			$primaryAddress = null;
+			foreach ($soapResult->Patron->Addresses->Address as $address){
+				if ($address->Type == 'Primary'){
+					$primaryAddress = $address;
+					break;
+				}
+			}
+			if ($primaryAddress != null){
+				$user->_address1 = $primaryAddress->Street;
+				$user->_address2 = $primaryAddress->City . ', ' . $primaryAddress->State;
+				$user->_city     = $primaryAddress->City;
+				$user->_state    = $primaryAddress->State;
+				$user->_zip      = $primaryAddress->PostalCode;
+			}
+		}
+
+		if (isset($soapResult->Patron->EmailNotices)) {
+			$user->_notices = $soapResult->Patron->EmailNotices;
+		}
+
+		$user->_web_note    = '';
+
+		$user->_expires     = $this->extractDateFromCarlXDateField($soapResult->Patron->ExpirationDate);
+		$user->_expired     = 0; // default setting
+		$user->_expireClose = 0;
+
+		$timeExpire   = strtotime($user->_expires);
+		$timeNow      = time();
+		$timeToExpire = $timeExpire - $timeNow;
+		if ($timeToExpire <= 30 * 24 * 60 * 60) {
+			if ($timeToExpire <= 0) {
+				$user->_expired = 1;
+			}
+			$user->_expireClose = 1;
+		}
 	}
 }

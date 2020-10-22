@@ -154,7 +154,7 @@
 
 						{if $ils != 'CarlX'}
 							<div class="form-group">
-								<div class="col-xs-4"><strong>{translate text='Receive notices by'}:</strong></div>
+								<div class="col-xs-4"><strong>{translate text='Receive notices by'}</strong></div>
 								<div class="col-xs-8">
 									{if $edit == true && $canUpdateContactInfo == true}
 										<div class="btn-group btn-group-sm" data-toggle="buttons">
@@ -192,7 +192,7 @@
 							</div>
 
 							<div class="form-group">
-								<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
+								<div class="col-xs-4"><label for="emailReceiptFlag" class="">{translate text='Email receipts for checkouts and renewals'}</label></div>
 								<div class="col-xs-8">
 									{if $edit == true}
 										<input type="checkbox" name="emailReceiptFlag" id="emailReceiptFlag" {if $profile->_emailReceiptFlag==1}checked='checked'{/if} data-switch="">

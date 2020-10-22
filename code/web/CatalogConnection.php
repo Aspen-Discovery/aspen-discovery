@@ -1119,4 +1119,15 @@ class CatalogConnection
 	public function getStudentReportData($location,$showOverdueOnly,$date) {
 		return $this->driver->getStudentReportData($location,$showOverdueOnly,$date);
 	}
+
+	/**
+	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
+	 *
+	 * @param User $user
+	 * @return mixed
+	 */
+	public function loadContactInformation(User $user)
+	{
+		return $this->driver->loadContactInformation($user);
+	}
 }

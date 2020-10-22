@@ -24,11 +24,6 @@ class MyAccount_HooplaOptions extends MyAccount
 				$interface->assign('selectedUser', $patronId);
 			}
 
-			$patronUpdateForm = $patron->getPatronUpdateForm();
-			if ($patronUpdateForm != null){
-				$interface->assign('patronUpdateForm', $patronUpdateForm);
-			}
-
 			// Save/Update Actions
 			global $offlineMode;
 			if (isset($_POST['updateScope']) && !$offlineMode) {

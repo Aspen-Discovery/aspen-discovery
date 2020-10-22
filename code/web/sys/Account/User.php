@@ -704,6 +704,16 @@ class User extends DataObject
 		}
 	}
 
+	private $_contactInformationLoaded = false;
+	function loadContactInformation(){
+		if (!$this->_contactInformationLoaded) {
+			if ($this->getCatalogDriver()) {
+				$this->getCatalogDriver()->loadContactInformation($this);
+			}
+			$this->_contactInformationLoaded = true;
+		}
+	}
+
 	function updateOverDriveOptions(){
 		if (isset($_REQUEST['promptForOverdriveEmail']) && ($_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on')){
 			// if set check & on check must be combined because checkboxes/radios don't report 'offs'
