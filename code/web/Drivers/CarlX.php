@@ -461,6 +461,7 @@ class CarlX extends AbstractIlsDriver{
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($carlID);
 					if ($recordDriver->isValid()){
+						$curHold['groupedWorkId'] = $recordDriver->getPermanentId();
 						$curHold['sortTitle']       = $recordDriver->getSortableTitle();
 						$curHold['format']          = $recordDriver->getFormat();
 						$curHold['isbn']            = $recordDriver->getCleanISBN();
