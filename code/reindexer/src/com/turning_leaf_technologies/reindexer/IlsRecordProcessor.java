@@ -734,7 +734,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private SimpleDateFormat dateAddedFormatter = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
 	private final HashSet<String> unhandledFormatBoosts = new HashSet<>();
-	void createPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
+	ItemInfo createPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
 		}
@@ -748,7 +748,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		String itemStatus = getItemStatus(itemField, recordInfo.getRecordIdentifier());
 		if (statusesToSuppress.contains(itemStatus)){
-			return;
+			return null;
 		}
 
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
@@ -765,7 +765,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		//if the status and location are null, we can assume this is not a valid item
-		if (isItemInvalid(itemStatus, itemLocation)) return;
+		if (isItemInvalid(itemStatus, itemLocation)) return null;
 
 		setShelfLocationCode(itemField, itemInfo, recordInfo.getRecordIdentifier());
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemField, recordInfo.getRecordIdentifier()));
@@ -830,6 +830,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setMarcField(itemField);
 
 		recordInfo.addItem(itemInfo);
+
+		return itemInfo;
 	}
 
 	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
