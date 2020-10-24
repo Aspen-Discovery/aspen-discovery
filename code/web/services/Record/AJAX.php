@@ -193,6 +193,25 @@ class Record_AJAX extends Action
 					}
 				}
 				$results['holdFormBypassed'] = true;
+
+				if ($results['success'] && $library->showWhileYouWait) {
+					$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+					if ($recordDriver->isValid()) {
+						$groupedWorkId = $recordDriver->getPermanentId();
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+						$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
+
+						$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+
+						if (count($whileYouWaitTitles) > 0){
+							$results['message'] .= "<h3>" . translate("While You Wait") . "</h3>";
+							$results['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
+						}
+					}
+				}else{
+					$interface->assign('whileYouWaitTitles', []);
+				}
 			}else if (count($locations) == 0) {
 				$results = array(
 					'holdFormBypassed' => false,
