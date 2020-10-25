@@ -416,7 +416,7 @@ class CatalogConnection
 	 * @param User $patron The user to do the reading history action on
 	 * @param string $action The action to perform
 	 * @param array $selectedTitles The titles to do the action on if applicable
-	 * @return array
+	 * @return array success and message are the array keys
 	 */
 	function doReadingHistoryAction($patron, $action, $selectedTitles)
 	{
@@ -1118,5 +1118,16 @@ class CatalogConnection
 
 	public function getStudentReportData($location,$showOverdueOnly,$date) {
 		return $this->driver->getStudentReportData($location,$showOverdueOnly,$date);
+	}
+
+	/**
+	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
+	 *
+	 * @param User $user
+	 * @return mixed
+	 */
+	public function loadContactInformation(User $user)
+	{
+		return $this->driver->loadContactInformation($user);
 	}
 }

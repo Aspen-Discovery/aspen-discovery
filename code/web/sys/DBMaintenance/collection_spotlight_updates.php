@@ -161,6 +161,14 @@ function getCollectionSpotlightUpdates(){
 			'sql' => [
 				'updateSpotlightSources'
 			]
+		],
+
+		'collection_spotlights_carousel_style' => [
+			'title' => 'Collection Spotlights Carousel Style',
+			'description' => 'Add carousel style to collection spotlights',
+			'sql' => [
+				"ALTER TABLE `collection_spotlights` CHANGE `style` `style` ENUM('vertical', 'horizontal', 'single', 'single-with-next', 'text-list', 'horizontal-carousel') NOT NULL DEFAULT 'horizontal'",
+			]
 		]
 	);
 }

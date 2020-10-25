@@ -6,10 +6,10 @@
 		</a>
 		{if !empty($author)}
 			{if strpos($shortId, ':') === false} {* Catalog Items *}
-					<span class="scrollerTextOnlyListBySpan"> by </span>
-					<a href="{$titleURL}" id="descriptionTrigger{$shortId}">
-						<span class="scrollerTextOnlyListAuthor">{$author}</span>
-					</a>
+				<span class="scrollerTextOnlyListBySpan"> by </span>
+				<a href="{$titleURL}" id="descriptionTrigger{$shortId}">
+					<span class="scrollerTextOnlyListAuthor">{$author}</span>
+				</a>
 			{else}{* Archive Objects *}
 				<span class="scrollerTextOnlyListBySpan">; </span>
 				<a href="{$titleURL}" id="descriptionTrigger{$shortId}">

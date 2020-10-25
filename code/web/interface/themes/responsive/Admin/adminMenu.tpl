@@ -8,7 +8,7 @@
 				{foreach from=$adminActions item=adminSection key=adminSectionKey}
 					{if !empty($adminSection->actions)}
 						<div class="panel{if $adminSectionKey==$activeAdminSection} active{/if}">
-							<a href="#{$adminSectionKey}Group" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="%1% Menu" 1=$adminSection->label}">
+							<a href="#{$adminSectionKey}Group" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="%1% Menu" 1=$adminSection->label inAttribute=true}">
 								<div class="panel-heading">
 									<div class="panel-title">
 										{$adminSection->label|translate}

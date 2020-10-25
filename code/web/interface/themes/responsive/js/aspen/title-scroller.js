@@ -24,8 +24,8 @@ function TitleScroller(scrollerId, scrollerShortName, container,
 
 TitleScroller.prototype.loadTitlesFrom = function(jsonUrl) {
 	jsonUrl = decodeURIComponent(jsonUrl);
-	var scroller = this,
-			scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
+	let scroller = this;
+	let scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	scrollerBody.hide();
 	$("#titleScrollerSelectedTitle" + this.scrollerShortName+",#titleScrollerSelectedAuthor" + this.scrollerShortName).html("");
 	$(".scrollerLoadingContainer").show();
@@ -38,8 +38,8 @@ TitleScroller.prototype.loadTitlesFrom = function(jsonUrl) {
 };
 
 TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
-	var scroller = this,
-			scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
+	let scroller = this;
+	let scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	try {
 		if (data.error) throw {description:data.error}; // throw exceptions for server error messages.
 		if (data.titles.length === 0){
@@ -79,10 +79,10 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 };
 
 TitleScroller.prototype.updateScroller = function() {
-	var scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
+	let scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	try {
-		var scrollerBodyContents = "",
-				curScroller = this;
+		let scrollerBodyContents = "";
+		let curScroller = this;
 		if (this.style === 'horizontal'){
 			for ( let i in this.scrollerTitles) {
 				scrollerBodyContents += this.scrollerTitles[i]['formattedTitle'];
@@ -130,7 +130,7 @@ TitleScroller.prototype.finishLoadingScroller = function() {
 	//scrollerBody.show();
 	$('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody").show();
 	TitleScroller.prototype.activateCurrentTitle.call(this);
-	var curScroller = this;
+	let curScroller = this;
 
 	// Whether we are hovering over an individual title or not.
 	$('.scrollerTitle').bind('mouseover', {scroller: curScroller}, function() {

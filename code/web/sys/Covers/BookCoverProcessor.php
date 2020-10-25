@@ -686,6 +686,12 @@ class BookCoverProcessor{
 				$finalFile = $this->cacheFile;
 			}
 
+			//Make sure we don't get an image not found cover
+			$imageChecksum = md5($image);
+			if ($imageChecksum == 'e89e0e364e83c0ecfba5da41007c9a2c'){
+				return false;
+			}
+
 			$this->log("Processing url $url to $finalFile", Logger::LOG_DEBUG);
 
 			// If some services can't provide an image, they will serve a 1x1 blank
@@ -918,6 +924,7 @@ class BookCoverProcessor{
 				$bookCovers = $jsonResults->$isbn;
 				if (!empty($bookCovers->gb)){
 					if ($this->processImageURL('coce_google_books', $bookCovers->gb, true)){
+						//Make sure we aren't getting their image not found image
 						return true;
 					}
 				}
@@ -1317,6 +1324,13 @@ class BookCoverProcessor{
 				if (strpos($bookcoverUrl, 'http') !== 0) {
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+				}
+				return $this->processImageURL('open_archives', $bookcoverUrl, true);
+			} elseif (preg_match('/\\\\"thumbnailUri\\\\":\\\\"(.*?)\\\\"/', $pageContents, $matches)) {
+				$bookcoverUrl = $matches[1];
+				if (strpos($bookcoverUrl, 'http') !== 0) {
+					$urlComponents = parse_url($url);
+					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . '/digital' . $bookcoverUrl;
 				}
 				return $this->processImageURL('open_archives', $bookcoverUrl, true);
 			}

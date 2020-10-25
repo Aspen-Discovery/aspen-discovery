@@ -389,4 +389,14 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public function getStudentReportData($location,$showOverdueOnly,$date) {
 		return null;
 	}
+
+	/**
+	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
+	 *
+	 * @param User $user
+	 */
+	public function loadContactInformation(User $user)
+	{
+		return;
+	}
 }

@@ -491,13 +491,8 @@ class User extends DataObject
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
 				} elseif ($source == 'rbdigital') {
 					if (array_key_exists('RBdigital', $enabledModules)){
-						require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
-						try {
-							$rbdigitalSettings = new RBdigitalSetting();
-							$rbdigitalSettings->find();
-							return $rbdigitalSettings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
+						if ($userHomeLibrary->rbdigitalScopeId > 0){
+							return true;
 						}
 					}
 					return false;
@@ -525,6 +520,22 @@ class User extends DataObject
 						}
 					}
 					return false;
+				}
+			}
+		}
+		return false;
+	}
+
+	public function showRBdigitalHolds(){
+		global $enabledModules;
+		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())) {
+			$userHomeLibrary = Library::getPatronHomeLibrary($this);
+			if ($userHomeLibrary->rbdigitalScopeId > 0){
+				require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
+				$scope = new RBdigitalScope();
+				$scope->id = $userHomeLibrary->rbdigitalScopeId;
+				if ($scope->find(true)){
+					return $scope->includeEAudiobook || $scope->includeEBooks;
 				}
 			}
 		}
@@ -701,6 +712,16 @@ class User extends DataObject
 				$this->getCatalogDriver()->updateUserWithAdditionalRuntimeInformation($this);
 			}
 			$this->_runtimeInfoUpdated = true;
+		}
+	}
+
+	private $_contactInformationLoaded = false;
+	function loadContactInformation(){
+		if (!$this->_contactInformationLoaded) {
+			if ($this->getCatalogDriver()) {
+				$this->getCatalogDriver()->loadContactInformation($this);
+			}
+			$this->_contactInformationLoaded = true;
 		}
 	}
 
@@ -1060,7 +1081,7 @@ class User extends DataObject
 
 		if ($source == 'all' || $source == 'rbdigital') {
 			//Get holds from RBdigital
-			if ($this->isValidForEContentSource('rbdigital')) {
+			if ($this->isValidForEContentSource('rbdigital') && $this->showRBdigitalHolds()) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
 				$rbdigitalHolds = $driver->getHolds($this);

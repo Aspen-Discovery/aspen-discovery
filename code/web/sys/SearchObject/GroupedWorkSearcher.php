@@ -1423,14 +1423,13 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @access    public
 	 *
 	 * @param array[] $ids
-	 * @param string[] $notInterestedIds
 	 * @param int $page
 	 * @param int $limit
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $notInterestedIds, $page = 1, $limit = 25)
+	function getMoreLikeThese($ids, $page = 1, $limit = 25)
 	{
-		return $this->indexEngine->getMoreLikeThese($ids, $notInterestedIds, $this->getFieldsToReturn(), $page, $limit);
+		return $this->indexEngine->getMoreLikeThese($ids, $this->getFieldsToReturn(), $page, $limit);
 	}
 
 	/**
@@ -1469,9 +1468,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
-	function getMoreLikeThis($id, $notInterestedIds = null, $availableOnly = false, $limitFormat = true, $limit = null)
+	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null)
 	{
-		return $this->indexEngine->getMoreLikeThis($id, $notInterestedIds, $availableOnly, $limitFormat, $limit, $this->getFieldsToReturn());
+		return $this->indexEngine->getMoreLikeThis($id, $availableOnly, $limitFormat, $limit, $this->getFieldsToReturn());
 	}
 
 	public function getEngineName(){

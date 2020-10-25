@@ -252,7 +252,7 @@ class GroupedWork_AJAX extends JSON_Action
 			$searchObject->disableScoping();
 			$user = UserAccount::getActiveUserObj();
 			/** @noinspection PhpPossiblePolymorphicInvocationInspection */
-			$similar = $searchObject->getMoreLikeThis($id, $user->getNotInterestedTitles(), false, false, 3);
+			$similar = $searchObject->getMoreLikeThis($id, false, false, 3);
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 			// Send the similar items to the template; if there is only one, we need
 			// to force it to be an array or things will not display correctly.
