@@ -34,7 +34,7 @@ if (!file_exists($exportPath)){
 	$movedGroupedWorks = [];
 
 	$startTime = time();
-	importUsers($startTime, $exportPath, $existingUsers, $missingUsers);
+	importUsers($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
 	importLists($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importNotInterested($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importRatingsAndReviews($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
