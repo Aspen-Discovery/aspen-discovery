@@ -137,6 +137,9 @@ var AspenDiscovery = (function(){
 				if (numItemsToShow >= numCategories){
 					$(this).offsetParent().children('.jcarousel-control-prev').hide();
 					$(this).offsetParent().children('.jcarousel-control-next').hide();
+				}else{
+					$(this).offsetParent().children('.jcarousel-control-prev').show();
+					$(this).offsetParent().children('.jcarousel-control-next').show();
 				}
 
 			})

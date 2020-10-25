@@ -15,7 +15,7 @@
 			</ul>
 		{else}
 			<div class="collectionSpotlightSelector">
-				<select class="availableLists" id="availableLists{$collectionSpotlight->id}" onchange="changeSelectedList();return false;">
+				<select class="availableLists" id="availableLists{$collectionSpotlight->id}" onchange="changeSelectedList();return false;" aria-label="Select a list to display">
 					{foreach from=$collectionSpotlight->lists item=list}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 					<option value="list-{$list->name|regex_replace:'/\W/':''|escape:url}">{$list->name}</option>
@@ -59,6 +59,8 @@
 				{/if}
 				{if $collectionSpotlight->style == 'horizontal'}
 					{include file='CollectionSpotlight/titleScroller.tpl'}
+				{elseif $collectionSpotlight->style == 'horizontal-carousel'}
+					{include file='CollectionSpotlight/horizontalCarousel.tpl'}
 				{elseif $collectionSpotlight->style == 'vertical'}
 					{include file='CollectionSpotlight/verticalTitleScroller.tpl'}
 				{elseif $collectionSpotlight->style == 'single-with-next'}
@@ -73,6 +75,7 @@
 	{if count($collectionSpotlight->lists) > 1}
 		</div>
 	{/if}
+	{if $collectionSpotlight->style != 'horizontal-carousel'}
 	<script type="text/javascript">
 		{* Load title scrollers *}
 
@@ -86,12 +89,10 @@
 		$(document).ready(function(){ldelim}
 			{if count($collectionSpotlight->lists) > 1 && (!isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs')}
 			$('#collectionSpotlight{$collectionSpotlight->id} a[data-toggle="tab"]').on('shown.bs.tab', function (e) {ldelim}
-{*				alert(e.target); // activated tab
-				//alert(e.relatedTarget); // previous tab *}
 				showList($(e.target).data('index'));
 			{rdelim});
-
 			{/if}
+
 			{assign var=index value=0}
 			{foreach from=$collectionSpotlight->lists item=list name=listLoop}
 		 		{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
@@ -103,28 +104,27 @@
 					{assign var=index value=$index+1}
 				{/if}
 			{/foreach}
-
-			{rdelim});
+		{rdelim});
 
 		$(window).bind('beforeunload', function(e) {ldelim}
 			{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
 
 			{else}
-				var availableListsSelector = $("#availableLists{$collectionSpotlight->id}");
-				var availableLists = availableListsSelector[0];
-				var selectedOption = availableLists.options[0];
-				var selectedValue = selectedOption.value;
+				let availableListsSelector = $("#availableLists{$collectionSpotlight->id}");
+				let availableLists = availableListsSelector[0];
+				let selectedOption = availableLists.options[0];
+				let selectedValue = selectedOption.value;
 				availableListsSelector.val(selectedValue);
 			{/if}
 		{rdelim});
 
 		function changeSelectedList(){ldelim}
 			{*//Show the correct list*}
-			var availableListsSelector = $("#availableLists{$collectionSpotlight->id}");
-			var availableLists = availableListsSelector[0];
-			var selectedOption = availableLists.options[availableLists.selectedIndex];
+			let availableListsSelector = $("#availableLists{$collectionSpotlight->id}");
+			let availableLists = availableListsSelector[0];
+			let selectedOption = availableLists.options[availableLists.selectedIndex];
 
-			var selectedList = selectedOption.value;
+			let selectedList = selectedOption.value;
 			$("#collectionSpotlight{$collectionSpotlight->id} .titleScroller.active").removeClass('active').hide();
 			$("#" + selectedList).addClass('active').show();
 			showList(availableLists.selectedIndex);
@@ -136,11 +136,11 @@
 				{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
 				{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 					{if $index == 0}
-						if (listIndex == {$index}){ldelim}
+						if (listIndex === {$index}){ldelim}
 							listScroller{$listName}.activateCurrentTitle();
 						{rdelim}
 					{else}
-						else if (listIndex == {$index}){ldelim}
+						else if (listIndex === {$index}){ldelim}
 							if (listScroller{$listName} == null){ldelim}
 								listScroller{$listName} = new TitleScroller('titleScroller{$listName}', '{$listName}', 'list{$listName}', {if $collectionSpotlight->autoRotate==1}true{else}false{/if}, '{$collectionSpotlight->style}');
 								listScroller{$listName}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listName}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if $reload}%26reload=true{/if}', false);
@@ -154,5 +154,6 @@
 			{/foreach}
 		{rdelim}
 	</script>
+	{/if}
 </div>
 {/strip}

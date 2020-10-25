@@ -4283,6 +4283,9 @@ var AspenDiscovery = (function(){
 				if (numItemsToShow >= numCategories){
 					$(this).offsetParent().children('.jcarousel-control-prev').hide();
 					$(this).offsetParent().children('.jcarousel-control-next').hide();
+				}else{
+					$(this).offsetParent().children('.jcarousel-control-prev').show();
+					$(this).offsetParent().children('.jcarousel-control-next').show();
 				}
 
 			})
@@ -8464,6 +8467,29 @@ AspenDiscovery.CollectionSpotlights = (function(){
 		createSpotlightFromSearch: function (searchId){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getAddToSpotlightForm&source=search&id=' + searchId, true);
 			return false;
+		},
+		loadCarousel: function (spotlightListId, titlesUrl){
+			$.getJSON(titlesUrl, function (data) {
+				if (data.success) {
+					//Create an unordered list for display
+					let html = '<ul>';
+
+					$.each(data.titles, function() {
+						html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
+					});
+
+					html += '</ul>';
+
+					let carouselElement = $('#collectionSpotlightCarousel' + spotlightListId);
+					carouselElement.html(html);
+					let jCarousel = carouselElement.jcarousel();
+
+					// Reload carousel
+					jCarousel.jcarousel('reload');
+				} else {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
 		}
 	};
 }(AspenDiscovery.CollectionSpotlights || {}));
@@ -10510,8 +10536,8 @@ function TitleScroller(scrollerId, scrollerShortName, container,
 
 TitleScroller.prototype.loadTitlesFrom = function(jsonUrl) {
 	jsonUrl = decodeURIComponent(jsonUrl);
-	var scroller = this,
-			scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
+	let scroller = this;
+	let scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	scrollerBody.hide();
 	$("#titleScrollerSelectedTitle" + this.scrollerShortName+",#titleScrollerSelectedAuthor" + this.scrollerShortName).html("");
 	$(".scrollerLoadingContainer").show();
@@ -10524,8 +10550,8 @@ TitleScroller.prototype.loadTitlesFrom = function(jsonUrl) {
 };
 
 TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
-	var scroller = this,
-			scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
+	let scroller = this;
+	let scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	try {
 		if (data.error) throw {description:data.error}; // throw exceptions for server error messages.
 		if (data.titles.length === 0){
@@ -10565,10 +10591,10 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 };
 
 TitleScroller.prototype.updateScroller = function() {
-	var scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
+	let scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	try {
-		var scrollerBodyContents = "",
-				curScroller = this;
+		let scrollerBodyContents = "";
+		let curScroller = this;
 		if (this.style === 'horizontal'){
 			for ( let i in this.scrollerTitles) {
 				scrollerBodyContents += this.scrollerTitles[i]['formattedTitle'];
@@ -10616,7 +10642,7 @@ TitleScroller.prototype.finishLoadingScroller = function() {
 	//scrollerBody.show();
 	$('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody").show();
 	TitleScroller.prototype.activateCurrentTitle.call(this);
-	var curScroller = this;
+	let curScroller = this;
 
 	// Whether we are hovering over an individual title or not.
 	$('.scrollerTitle').bind('mouseover', {scroller: curScroller}, function() {

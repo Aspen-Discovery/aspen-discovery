@@ -8329,7 +8329,7 @@ fieldset[disabled] .datepicker table tr td span.active.disabled:hover.active {
   box-sizing: border-box;
   cursor: pointer;
   display: inline-block !important;
-  /*height: 100%;*/
+  height: 100%;
   padding-bottom: 4px;
   padding-top: 4px;
   font-size: 14px;
@@ -9751,6 +9751,41 @@ a.browse-thumbnail-sorted.active {
 .collectionSpotlightSelector {
   width: 100%;
   text-align: right;
+}
+.horizontalCarouselSpotlightWrapper .jcarousel-control-prev,
+.horizontalCarouselSpotlightWrapper .jcarousel-control-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #9e9fa3;
+  color: #d4d4d4;
+  height: 100%;
+  font-size: 50px;
+}
+.horizontalCarouselSpotlightWrapper .jcarousel-control-prev:focus,
+.horizontalCarouselSpotlightWrapper .jcarousel-control-next:focus {
+  text-decoration: none;
+  outline: none;
+}
+.horizontalCarouselSpotlightWrapper .jcarousel-control-prev:hover,
+.horizontalCarouselSpotlightWrapper .jcarousel-control-next:hover {
+  text-decoration: none;
+}
+.horizontalCarouselSpotlightWrapper .jcarousel-pagination a,
+.horizontalCarouselSpotlightWrapper .jcarousel-pagination a:hover,
+.horizontalCarouselSpotlightWrapper .jcarousel-pagination a:active,
+.horizontalCarouselSpotlightWrapper .jcarousel-pagination a:visited {
+  outline: none;
+}
+.jcarousel li.carouselTitleWrapper {
+  border-width: 0;
+}
+.carouselScrollerTitle {
+  display: inline-block;
+  text-align: center;
+}
+.carouselScrollerTitle .carouselScrollerTitleImage {
+  display: inline-block;
 }
 .scrollerTitle {
   display: inline-block;
