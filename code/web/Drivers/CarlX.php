@@ -1695,29 +1695,55 @@ class CarlX extends AbstractIlsDriver{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
 		$sql = <<<EOT
-			select 
-				p.name as PATRON_NAME
-				, p.sponsor as HOME_ROOM
-				, bb.btyname as GRD_LVL
-				, p.patronid as P_BARCODE
-				, l.locname as SHELF_LOCATION
-				, b.title as TITLE
-				, i.cn as CALL_NUMBER
-				, i.item as ITEM_ID
-			from transbid_v t 
-			join patron_v p on t.patronid=p.patronid
-			join item_v i on t.bid=i.bid
-			join bbibmap_v b on t.bid=b.bid
-			join location_v l on i.location=l.locnumber
-			join bty_v bb on p.bty=bb.btynumber
-			join branch_v ib on i.branch = ib.branchnumber
-			join branch_v pb on p.defaultbranch = pb.branchnumber
-			where ib.branchcode = '$location'
-			and i.status='S'
-			and pb.branchcode = '$location'
-			and t.transcode='R*'
-			and t.renew = ib.branchnumber
-			order by l.locname, i.cn
+			with holds_vs_items as (
+				select
+					t.bid
+					, t.occur
+					, p.name as PATRON_NAME
+					, p.sponsor as HOME_ROOM
+					, bb.btyname as GRD_LVL
+					, p.patronid as P_BARCODE
+					, l.locname as SHELF_LOCATION
+					, b.title as TITLE
+					, i.cn as CALL_NUMBER
+					, i.item as ITEM_ID
+					, dense_rank() over (partition by t.bid order by t.occur asc) as occur_dense_rank
+					, dense_rank() over (partition by t.bid order by i.item asc) as nth_item_on_shelf
+				from transbid_v t
+				left join patron_v p on t.patronid = p.patronid
+				left join bbibmap_v b on t.bid = b.bid
+				left join bty_v bb on p.bty = bb.btynumber
+				left join branch_v ob on t.holdingbranch = ob.branchnumber -- Origin Branch
+				left join item_v i on ( t.bid = i.bid and t.holdingbranch = i.branch)
+				left join location_v l on i.location = l.locnumber
+				where ob.branchcode = '$location'
+				and t.transcode = 'R*'
+				and i.status = 'S'
+				order by 
+					t.bid
+					, t.occur
+			), 
+			fillable as (
+				select 
+					h.*
+				from holds_vs_items h
+				where h.occur_dense_rank = h.nth_item_on_shelf
+				order by 
+					h.SHELF_LOCATION
+					, h.CALL_NUMBER
+					, h.TITLE
+					, h.occur_dense_rank
+			)
+			select
+				PATRON_NAME
+				, HOME_ROOM
+				, GRD_LVL
+				, P_BARCODE
+				, SHELF_LOCATION
+				, TITLE
+				, CALL_NUMBER
+				, ITEM_ID
+			from fillable
 EOT;
 		$stid = oci_parse($this->dbConnection, $sql);
 		// consider using oci_set_prefetch to improve performance
