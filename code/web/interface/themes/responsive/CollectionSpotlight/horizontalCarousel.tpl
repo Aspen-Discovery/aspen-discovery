@@ -15,8 +15,6 @@
 
 	<a href="#" class="jcarousel-control-prev" aria-label="Previous Item"><i class="fas fa-caret-left"></i></a>
 	<a href="#" class="jcarousel-control-next" aria-label="Next Item"><i class="fas fa-caret-right"></i></a>
-
-	<p class="jcarousel-pagination"></p>
 </div>
 <script type="text/javascript">
 	$(document).ready(function(){ldelim}

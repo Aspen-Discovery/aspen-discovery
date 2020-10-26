@@ -9757,7 +9757,7 @@ a.browse-thumbnail-sorted.active {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #9e9fa3;
+  background-color: transparent;
   color: #d4d4d4;
   height: 100%;
   font-size: 50px;
