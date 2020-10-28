@@ -59,7 +59,7 @@ class SelfReg extends Action {
 		$interface->assign('selfRegistrationSuccessMessage', $library->selfRegistrationSuccessMessage);
 		$interface->assign('promptForBirthDateInSelfReg', $library->promptForBirthDateInSelfReg);
 
-		$this->display('selfReg.tpl', 'Register for a Library Card');
+		$this->display('selfReg.tpl', 'Register for a Library Card', '');
 	}
 
 	function getBreadcrumbs()
