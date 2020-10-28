@@ -235,36 +235,36 @@
 {/if}
 <script type="text/javascript">
 	{* Define our search arrays so they are usuable in the javascript *}
-	let searchFields = {ldelim}
+	var searchFields = {ldelim}
 	{foreach from=$advSearchTypes item=searchDesc key=searchVal}
 	"{$searchVal}" : "{translate text=$searchDesc inAttribute=true}",
 	{/foreach}
 	{rdelim};
-	let searchJoins = {ldelim}
+	var searchJoins = {ldelim}
 		AND: '{translate text="search_AND" inAttribute=true}'
 		,OR: '{translate text="search_OR" inAttribute=true}'
 		,NOT:'{translate text="search_NOT" inAttribute=true}'
 		{rdelim};
-	let addSearchString = "{translate text="add_search" inAttribute=true}";
-	let searchLabel     = "{translate text="adv_search_label" inAttribute=true}";
-	let searchFieldLabel = "{translate text="in" inAttribute=true}";
-	let deleteSearchGroupString = "{translate text="del_search" inAttribute=true}";
-	let searchMatch     = "{translate text="search_match" inAttribute=true}";
-	let searchFormId    = 'advSearchForm';
+	var addSearchString = "{translate text="add_search" inAttribute=true}";
+	var searchLabel     = "{translate text="adv_search_label" inAttribute=true}";
+	var searchFieldLabel = "{translate text="in" inAttribute=true}";
+	var deleteSearchGroupString = "{translate text="del_search" inAttribute=true}";
+	var searchMatch     = "{translate text="search_match" inAttribute=true}";
+	var searchFormId    = 'advSearchForm';
 	{*  Build the form *}
 	$(function(){ldelim}
 		{if $searchDetails}
 			{foreach from=$searchDetails item=searchGroup}
 				{foreach from=$searchGroup.group item=search name=groupLoop}
 					{if $smarty.foreach.groupLoop.iteration == 1}
-					let new_group = addGroup('{$search.lookfor|escape:"javascript"}', '{$search.field|escape:"javascript"}', '{$search.bool}');
+					var new_group = addGroup('{$search.lookfor|escape:"javascript"}', '{$search.field|escape:"javascript"}', '{$search.bool}');
 					{else}
 					addSearch(new_group, '{$search.lookfor|escape:"javascript"}', '{$search.field|escape:"javascript"}');
 					{/if}
 				{/foreach}
 			{/foreach}
 		{else}
-		let new_group = addGroup();
+			var new_group = addGroup();
 			addSearch(new_group);
 			addSearch(new_group);
 		{/if}

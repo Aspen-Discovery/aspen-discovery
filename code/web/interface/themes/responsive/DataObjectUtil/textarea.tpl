@@ -23,7 +23,7 @@
 {elseif $property.type == 'markdown'}
 	<script type="text/javascript">
 		$(document).ready(function(){ldelim}
-			let simplemde{$propName} = new SimpleMDE({ldelim}
+			var simplemde{$propName} = new SimpleMDE({ldelim}
 				element: $("#{$propName}")[0],
 				toolbar: ["heading-1", "heading-2", "heading-3", "heading-smaller", "heading-bigger", "|",
 					"bold", "italic", "strikethrough", "|",

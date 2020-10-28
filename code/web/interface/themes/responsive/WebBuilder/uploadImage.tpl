@@ -22,8 +22,8 @@
 			}
 		});
 		$(document).on('change', ':file', function() {
-			let input = $(this);
-			let label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+			var input = $(this);
+			var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
 			$("#selected-image-label").val(label);
 		});
         {/literal}

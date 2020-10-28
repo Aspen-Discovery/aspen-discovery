@@ -110,21 +110,21 @@
 			{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
 
 			{else}
-				let availableListsSelector = $("#availableLists{$collectionSpotlight->id}");
-				let availableLists = availableListsSelector[0];
-				let selectedOption = availableLists.options[0];
-				let selectedValue = selectedOption.value;
+				var availableListsSelector = $("#availableLists{$collectionSpotlight->id}");
+				var availableLists = availableListsSelector[0];
+				var selectedOption = availableLists.options[0];
+				var selectedValue = selectedOption.value;
 				availableListsSelector.val(selectedValue);
 			{/if}
 		{rdelim});
 
 		function changeSelectedList(){ldelim}
 			{*//Show the correct list*}
-			let availableListsSelector = $("#availableLists{$collectionSpotlight->id}");
-			let availableLists = availableListsSelector[0];
-			let selectedOption = availableLists.options[availableLists.selectedIndex];
+			var availableListsSelector = $("#availableLists{$collectionSpotlight->id}");
+			var availableLists = availableListsSelector[0];
+			var selectedOption = availableLists.options[availableLists.selectedIndex];
 
-			let selectedList = selectedOption.value;
+			var selectedList = selectedOption.value;
 			$("#collectionSpotlight{$collectionSpotlight->id} .titleScroller.active").removeClass('active').hide();
 			$("#" + selectedList).addClass('active').show();
 			showList(availableLists.selectedIndex);

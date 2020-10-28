@@ -64,8 +64,8 @@
 		);
         {if $showAlternateLibraryCard}
 		function updateAlternateLibraryCardBarcode(){ldelim}
-			let alternateLibraryCardVal = $("#alternateLibraryCard").val();
-			let alternateLibraryCardSvg = $("#library-alternateLibraryCard-svg");
+			var alternateLibraryCardVal = $("#alternateLibraryCard").val();
+			var alternateLibraryCardSvg = $("#library-alternateLibraryCard-svg");
 			if (alternateLibraryCardVal.length > 0){ldelim}
 				alternateLibraryCardSvg.JsBarcode(alternateLibraryCardVal, {ldelim}format:'{$alternateLibraryCardStyle}',displayValue:false{rdelim});
 				$("#library-alternateLibraryCard").show();

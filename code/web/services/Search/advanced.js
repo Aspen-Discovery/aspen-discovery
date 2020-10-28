@@ -52,7 +52,7 @@ function addGroup(firstTerm, firstField, join)
 	if (firstField === undefined) {firstField = '';}
 	if (join       === undefined) {join       = '';}
 
-	let newGroup = "";
+	var newGroup = "";
 	newGroup += "<div id='group" + nextGroupNumber + "' class='group group" + (nextGroupNumber % 2) + " well well-sm'>";
 
 	newGroup += "<div class='groupSearchDetails clearfix'>";
@@ -113,7 +113,7 @@ function deleteGroupJS(elem)
 // Fired by onclick event
 function addSearchJS(group)
 {
-	let groupNum = group.id.replace("add_search_link_", "");
+	var groupNum = group.id.replace("add_search_link_", "");
 	addSearch(groupNum);
 	return false;
 }
@@ -121,7 +121,7 @@ function addSearchJS(group)
 function reSortGroups()
 {
 	// Loop through all groups
-	let groups = 0;
+	var groups = 0;
 	$('#searchHolder').children().each(function(){
 		if (this.id != undefined) {
 			if (this.id != 'group'+groups) {
@@ -151,8 +151,8 @@ function reSortGroups()
 function reNumGroup(oldGroup, newNum)
 {
 	// Keep the old details for use
-	let oldId  = oldGroup.id;
-	let oldNum = oldId.substring(5, oldId.length);
+	var oldId  = oldGroup.id;
+	var oldNum = oldId.substring(5, oldId.length);
 
 	// Make sure the function was called correctly
 	if (oldNum !== newNum) {
@@ -170,7 +170,7 @@ function reNumGroup(oldGroup, newNum)
 		$('.add', oldGroup).attr('id', 'add_search_link_' + newNum);
 
 		// Update search holder ID
-		let sHolder = $('.groupSearchHolder', oldGroup).attr('id', 'group' + newNum + 'SearchHolder');
+		var sHolder = $('.groupSearchHolder', oldGroup).attr('id', 'group' + newNum + 'SearchHolder');
 
 		// Update all lookfor[] and type[] parameters
 		$('.terms', sHolder).attr('name', 'lookfor' + newNum + '[]');
@@ -181,7 +181,7 @@ function reNumGroup(oldGroup, newNum)
 
 function jsEntityEncode(str)
 {
-	let new_str = str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+	var new_str = str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 	return new_str;
 }
 function resetSearch(){

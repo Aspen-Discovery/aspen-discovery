@@ -83,7 +83,7 @@
 		{/if}
 		{if !$onInternalIP}
 		if (!Globals.opac && AspenDiscovery.hasLocalStorage()){ldelim}
-			let temp = window.localStorage.getItem('browseMode');
+			var temp = window.localStorage.getItem('browseMode');
 			if (AspenDiscovery.Browse.browseModeClasses.hasOwnProperty(temp)) AspenDiscovery.Browse.browseMode = temp; {* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
 			else AspenDiscovery.Browse.browseMode = '{$browseMode}';
 		{rdelim}

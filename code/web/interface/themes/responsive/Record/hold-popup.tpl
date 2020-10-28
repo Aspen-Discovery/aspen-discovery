@@ -88,7 +88,7 @@
 
 						<script type="text/javascript">
 							$(function(){ldelim}
-								let userNames = {ldelim}
+								var userNames = {ldelim}
 								{$activeUserId}: "{$userDisplayName|escape:javascript} - {$user->getHomeLibrarySystemName()}",
 								{assign var="linkedUsers" value=$user->getLinkedUsers()}
 								{foreach from="$linkedUsers" item="linkedUser"}
@@ -96,8 +96,8 @@
 								{/foreach}
 								{rdelim};
 								$('#pickupBranch').change(function(){ldelim}
-									let users = $('option:selected', this).data('users');
-									let options = '';
+									var users = $('option:selected', this).data('users');
+									var options = '';
 									if (typeof(users) !== "undefined") {ldelim}
 										$.each(users, function (indexIgnored, userId) {ldelim}
 											options += '<option value="' + userId + '">' + userNames[userId] + '</option>';
