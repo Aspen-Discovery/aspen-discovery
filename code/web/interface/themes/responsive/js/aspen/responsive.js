@@ -28,7 +28,7 @@ AspenDiscovery.Responsive = (function(){
 	});
 
 	try{
-		let mediaQueryList = window.matchMedia('print');
+		var mediaQueryList = window.matchMedia('print');
 		mediaQueryList.addListener(function(mql) {
 			AspenDiscovery.Responsive.isPrint = mql.matches;
 		});
@@ -38,33 +38,5 @@ AspenDiscovery.Responsive = (function(){
 
 	window.onbeforeprint = function() {
 		AspenDiscovery.Responsive.isPrint = true;
-	};
-
-
-	return {
-		originalSidebarHeight: -1,
-		adjustLayout: function(){
-			// get resolution
-			let resolutionX = document.documentElement.clientWidth;
-
-			if (resolutionX >= 768 && !AspenDiscovery.Responsive.isPrint) {
-				//Make the sidebar and main content the same size
-				let mainContentElement = $("#main-content-with-sidebar");
-				let sidebarContentElem = $("#sidebar-content");
-
-				if (AspenDiscovery.Responsive.originalSidebarHeight === -1){
-					AspenDiscovery.Responsive.originalSidebarHeight = sidebarContentElem.height();
-				}
-				//var heightToTest = Math.min(sidebarContentElem.height(), AspenDiscovery.Responsive.originalSidebarHeight);
-				let heightToTest = sidebarContentElem.height();
-				let maxHeight = Math.max(mainContentElement.height() + 15, heightToTest);
-				if (mainContentElement.height() + 15 !== maxHeight){
-					mainContentElement.height(maxHeight);
-				}
-				if (sidebarContentElem.height() !== maxHeight){
-					sidebarContentElem.height(maxHeight);
-				}
-			}
-		}
 	};
 }(AspenDiscovery.Responsive || {}));

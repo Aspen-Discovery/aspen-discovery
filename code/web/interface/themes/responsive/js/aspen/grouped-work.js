@@ -3,7 +3,7 @@ AspenDiscovery.GroupedWork = (function(){
 		hasTableOfContentsInRecord: false,
 
 		clearUserRating: function (groupedWorkId){
-			let url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUserRating';
 			$.getJSON(url, function(data){
 				if (data.result === true){
 					$('.rate' + groupedWorkId).find('.ui-rater-starsOn').width(0);
@@ -17,7 +17,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		clearNotInterested: function (notInterestedId){
-			let url = Globals.path + '/GroupedWork/' + notInterestedId + '/AJAX?method=clearNotInterested';
+			var url = Globals.path + '/GroupedWork/' + notInterestedId + '/AJAX?method=clearNotInterested';
 			$.getJSON(
 					url, function(data){
 						if (data.result === false){
@@ -31,7 +31,7 @@ AspenDiscovery.GroupedWork = (function(){
 
 		deleteReview: function(id, reviewId){
 			if (confirm("Are you sure you want to delete this review?")){
-				let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
+				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=deleteUserReview';
 				$.getJSON(url, function(data){
 					if (data.result === true){
 						$('#review_' + reviewId).hide();
@@ -45,7 +45,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		forceReindex: function (id){
-			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceReindex';
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceReindex';
 			$.getJSON(url, function (data){
 					AspenDiscovery.showMessage("Success", data.message, true, false);
 					setTimeout("AspenDiscovery.closeLightbox();", 3000);
@@ -55,7 +55,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		getGoDeeperData: function (id, dataType){
-			let placeholder;
+			var placeholder;
 			if (dataType === 'excerpt') {
 				placeholder = $("#excerptPlaceholder");
 			} else if (dataType === 'avSummary') {
@@ -67,7 +67,7 @@ AspenDiscovery.GroupedWork = (function(){
 			}
 			if (placeholder.hasClass("loaded")) return;
 			placeholder.show();
-			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {'method': 'GetGoDeeperData', dataType:dataType};
 			$.getJSON(url, params, function(data) {
 				placeholder.html(data.formattedData).addClass('loaded');
@@ -82,7 +82,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadDescription: function (id){
-			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getDescription';
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getDescription';
 			$.getJSON(url, function (data){
 					if (data.success){
 						$("#descriptionPlaceholder").html(data.description);
@@ -93,14 +93,14 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadEnrichmentInfo: function (id, forceReload) {
-			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {'method':'getEnrichmentInfo'};
 			if (forceReload !== undefined){
 				params['reload'] = true;
 			}
 			$.getJSON(url, params, function(data) {
 				try{
-					let seriesData = data.seriesInfo;
+					var seriesData = data.seriesInfo;
 					if (seriesData && seriesData.titles.length > 0) {
 						seriesScroller = new TitleScroller('titleScrollerSeries', 'Series', 'seriesList');
 						$('#seriesInfo').show();
@@ -109,16 +109,16 @@ AspenDiscovery.GroupedWork = (function(){
 					}else{
 						$('#seriesPanel').hide();
 					}
-					let seriesSummary = data.seriesSummary;
+					var seriesSummary = data.seriesSummary;
 					if (seriesSummary){
 						$('#seriesPlaceholder' + id).html(seriesSummary);
 					}
-					let showGoDeeperData = data.showGoDeeper;
+					var showGoDeeperData = data.showGoDeeper;
 					if (showGoDeeperData) {
 						//$('#goDeeperLink').show();
-						let goDeeperOptions = data.goDeeperOptions;
+						var goDeeperOptions = data.goDeeperOptions;
 						//add a tab before citation for each item
-						for (let option in goDeeperOptions){
+						for (var option in goDeeperOptions){
 							if (option === 'excerpt') {
 								$("#excerptPanel").show();
 							} else if (option === 'avSummary') {
@@ -133,20 +133,20 @@ AspenDiscovery.GroupedWork = (function(){
 					if (AspenDiscovery.GroupedWork.hasTableOfContentsInRecord){
 						$("#tableofcontentstab_label,#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
 					}
-					let similarTitlesNovelist = data.similarTitlesNovelist;
+					var similarTitlesNovelist = data.similarTitlesNovelist;
 					if (similarTitlesNovelist && similarTitlesNovelist.length > 0){
 						$("#novelistTitlesPlaceholder").html(similarTitlesNovelist);
 						$("#novelistTab_label,#similarTitlesPanel").show()
 						;
 					}
 
-					let similarAuthorsNovelist = data.similarAuthorsNovelist;
+					var similarAuthorsNovelist = data.similarAuthorsNovelist;
 					if (similarAuthorsNovelist && similarAuthorsNovelist.length > 0){
 						$("#novelistAuthorsPlaceholder").html(similarAuthorsNovelist);
 						$("#novelistTab_label,#similarAuthorsPanel").show();
 					}
 
-					let similarSeriesNovelist = data.similarSeriesNovelist;
+					var similarSeriesNovelist = data.similarSeriesNovelist;
 					if (similarSeriesNovelist && similarSeriesNovelist.length > 0){
 						$("#novelistSeriesPlaceholder").html(similarSeriesNovelist);
 						$("#novelistTab_label,#similarSeriesPanel").show();
@@ -166,8 +166,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadMoreLikeThis: function (id, forceReload) {
-			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
-			let params = {
+			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+			var params = {
 				'method':'getMoreLikeThis'
 			};
 			if (forceReload !== undefined){
@@ -175,7 +175,7 @@ AspenDiscovery.GroupedWork = (function(){
 			}
 			$.getJSON(url, params, function(data) {
 				try{
-					let similarTitleData = data.similarTitles;
+					var similarTitleData = data.similarTitles;
 					if (similarTitleData && similarTitleData.titles.length > 0) {
 						morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
 						$('#moreLikeThisInfo').show();
@@ -191,12 +191,12 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadReviewInfo: function (id) {
-			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewInfo";
+			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewInfo";
 			$.getJSON(url, function(data) {
 				if (data.numSyndicatedReviews === 0){
 					$("#syndicatedReviewsPanel").hide();
 				}else{
-					let syndicatedReviewsData = data.syndicatedReviewsHtml;
+					var syndicatedReviewsData = data.syndicatedReviewsHtml;
 					if (syndicatedReviewsData && syndicatedReviewsData.length > 0) {
 						$("#syndicatedReviewPlaceholder").html(syndicatedReviewsData);
 					}
@@ -205,7 +205,7 @@ AspenDiscovery.GroupedWork = (function(){
 				if (data.numCustomerReviews === 0){
 					$("#borrowerReviewsPanel").hide();
 				}else{
-					let customerReviewsData = data.customerReviewsHtml;
+					var customerReviewsData = data.customerReviewsHtml;
 					if (customerReviewsData && customerReviewsData.length > 0) {
 						$("#customerReviewPlaceholder").html(customerReviewsData);
 					}
@@ -215,7 +215,7 @@ AspenDiscovery.GroupedWork = (function(){
 
 		markNotInterested: function (recordId){
 			if (Globals.loggedIn){
-				let url = Globals.path + '/GroupedWork/' + recordId + '/AJAX?method=markNotInterested';
+				var url = Globals.path + '/GroupedWork/' + recordId + '/AJAX?method=markNotInterested';
 				$.getJSON(
 						url, function(data){
 							if (data.result === true){
@@ -232,7 +232,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		reloadCover: function (id){
-			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadCover';
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadCover';
 			$.getJSON(url, function (data){
 						AspenDiscovery.showMessage("Success", data.message, true, true);
 					}
@@ -245,7 +245,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		reloadIslandora: function(id){
-			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
 			$.getJSON(url, function (data){
 					AspenDiscovery.showMessage("Success", data.message, true, true);
 				}
@@ -287,12 +287,12 @@ AspenDiscovery.GroupedWork = (function(){
 
 		sendEmail: function(id){
 			if (Globals.loggedIn){
-				let from = $('#from').val();
-				let to = $('#to').val();
-				let message = $('#message').val();
-				let related_record = $('#related_record').val();
-				let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
-				let params = {
+				var from = $('#from').val();
+				var to = $('#to').val();
+				var message = $('#message').val();
+				var related_record = $('#related_record').val();
+				var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+				var params = {
 					'method' : 'sendEmail',
 					from : from,
 					to : to,
@@ -311,8 +311,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		showCopyDetails: function(id, format, recordId){
-			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
-			let params = {
+			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+			var params = {
 				'method' : 'getCopyDetails',
 				format : format,
 				recordId : recordId,
@@ -339,7 +339,7 @@ AspenDiscovery.GroupedWork = (function(){
 
 
 		showGroupedWorkInfo:function(id, browseCategoryId){
-			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
+			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
 			if (browseCategoryId !== undefined){
 				url += "&browseCategoryId=" + browseCategoryId;
 			}
@@ -365,7 +365,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		getUploadCoverForm: function (id){
-			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getUploadCoverForm';
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getUploadCoverForm';
 			$.getJSON(url, function (data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
@@ -374,8 +374,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		uploadCover: function (id){
-			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=uploadCover';
-			let uploadCoverData = new FormData($("#uploadCoverForm")[0]);
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=uploadCover';
+			var uploadCoverData = new FormData($("#uploadCoverForm")[0]);
 			$.ajax({
 				url: url,
 				type: 'POST',
@@ -393,7 +393,7 @@ AspenDiscovery.GroupedWork = (function(){
 		getGroupWithForm: function(trigger, id) {
 			if (Globals.loggedIn){
 				AspenDiscovery.loadingMessage();
-				let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getGroupWithForm";
+				var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getGroupWithForm";
 				$.getJSON(url, function(data){
 					if (data.success){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -412,7 +412,7 @@ AspenDiscovery.GroupedWork = (function(){
 		getGroupWithSearchForm: function (trigger, id, searchId, page) {
 			if (Globals.loggedIn){
 				AspenDiscovery.loadingMessage();
-				let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getGroupWithSearchForm&searchId=" + searchId + "&page=" + page;
+				var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getGroupWithSearchForm&searchId=" + searchId + "&page=" + page;
 				$.getJSON(url, function(data){
 					if (data.success){
 						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -430,9 +430,9 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		getGroupWithInfo: function() {
-			let groupWithId = $('#workToGroupWithId').val().trim();
+			var groupWithId = $('#workToGroupWithId').val().trim();
 			if (groupWithId.length === 36){
-				let url = Globals.path + "/GroupedWork/" + groupWithId + "/AJAX?method=getGroupWithInfo";
+				var url = Globals.path + "/GroupedWork/" + groupWithId + "/AJAX?method=getGroupWithInfo";
 				$.getJSON(url, function(data){
 					$("#groupWithInfo").html(data.message);
 				}).fail(AspenDiscovery.ajaxFail);
@@ -441,9 +441,9 @@ AspenDiscovery.GroupedWork = (function(){
 			}
 		},
 		processGroupWithForm: function() {
-			let id = $('#id').val();
-			let groupWithId = $('#workToGroupWithId').val().trim();
-			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=processGroupWithForm&groupWithId=" + groupWithId;
+			var id = $('#id').val();
+			var groupWithId = $('#workToGroupWithId').val().trim();
+			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=processGroupWithForm&groupWithId=" + groupWithId;
 			//AspenDiscovery.closeLightbox();
 			$.getJSON(url, function(data){
 				if (data.success){
@@ -456,7 +456,7 @@ AspenDiscovery.GroupedWork = (function(){
 
 		ungroupRecord: function(trigger, recordId) {
 			if (Globals.loggedIn){
-				let url = Globals.path + "/Admin/AJAX?method=ungroupRecord&recordId=" + recordId;
+				var url = Globals.path + "/Admin/AJAX?method=ungroupRecord&recordId=" + recordId;
 				$.getJSON(url, function(data){
 					if (data.success){
 						AspenDiscovery.showMessage("Success", data.message);
@@ -474,7 +474,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		getStaffView: function (id) {
-			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getStaffView";
+			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data){
 				if (!data.success){
 					AspenDiscovery.showMessage('Error', data.message);
@@ -485,7 +485,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		getWhileYouWait: function (id) {
-			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getWhileYouWait";
+			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getWhileYouWait";
 			$.getJSON(url, function (data){
 				if (!data.success){
 					AspenDiscovery.showMessage('Error', data.message);
@@ -497,7 +497,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		getYouMightAlsoLike: function(id) {
-			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getYouMightAlsoLike";
+			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getYouMightAlsoLike";
 			$.getJSON(url, function (data){
 				if (!data.success){
 					AspenDiscovery.showMessage('Error', data.message);
@@ -509,7 +509,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		deleteAlternateTitle: function(id) {
-			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=deleteAlternateTitle";
+			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=deleteAlternateTitle";
 			$.getJSON(url, function (data){
 				if (data.success){
 					$("#alternateTitle" + id).hide();
@@ -521,7 +521,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		getDisplayInfoForm: function(id) {
-			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getDisplayInfoForm";
+			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getDisplayInfoForm";
 			$.getJSON(url, function (data){
 				if (!data.success){
 					AspenDiscovery.showMessage('Error', data.message);
@@ -533,8 +533,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		processGroupedWorkDisplayInfoForm: function(id) {
-			let url = Globals.path + "/GroupedWork/" + id + "/AJAX";
-			let params = {
+			var url = Globals.path + "/GroupedWork/" + id + "/AJAX";
+			var params = {
 				"method": "processDisplayInfoForm",
 				"title" : $("#title").val(),
 				"author" : $("#author").val(),
@@ -552,7 +552,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		deleteDisplayInfo: function(id) {
-			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=deleteDisplayInfo";
+			var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=deleteDisplayInfo";
 			$.getJSON(url, function (data){
 				if (data.success){
 					$("#groupedWorkDisplayInfo").hide();
@@ -565,8 +565,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		selectFileDownload: function( groupedWorkId, type) {
-			let url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX';
-			let params = {
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX';
+			var params = {
 				method: 'showSelectDownloadForm',
 				type: type,
 			};
@@ -578,9 +578,9 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		downloadSelectedFile: function () {
-			let id = $('#id').val();
-			let fileType = $('#fileType').val();
-			let selectedFile = $('#selectedFile').val();
+			var id = $('#id').val();
+			var fileType = $('#fileType').val();
+			var selectedFile = $('#selectedFile').val();
 			if (fileType === 'RecordPDF'){
 				window.location = Globals.path + '/GroupedWork/' + id + '/DownloadPDF?fileId=' + selectedFile;
 			}else{
@@ -590,8 +590,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		selectFileToView: function( recordId, type) {
-			let url = Globals.path + '/GroupedWork/' + recordId + '/AJAX';
-			let params = {
+			var url = Globals.path + '/GroupedWork/' + recordId + '/AJAX';
+			var params = {
 				method: 'showSelectFileToViewForm',
 				type: type,
 			};
@@ -602,8 +602,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		viewSelectedFile: function () {
-			let id = $('#id').val();
-			let selectedFile = $('#selectedFile').val();
+			var id = $('#id').val();
+			var selectedFile = $('#selectedFile').val();
 			window.location = Globals.path + '/Files/' + selectedFile + '/ViewPDF';
 			return false;
 		},

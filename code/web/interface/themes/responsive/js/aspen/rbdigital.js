@@ -1,7 +1,7 @@
 AspenDiscovery.RBdigital = (function () {
 	return {
 		cancelHold: function (patronId, id) {
-			let url = Globals.path + "/RBdigital/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
+			var url = Globals.path + "/RBdigital/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -26,7 +26,7 @@ AspenDiscovery.RBdigital = (function () {
 		checkOutTitle: function (id) {
 			if (Globals.loggedIn) {
 				//Get any prompts needed for checking out a title
-				let promptInfo = AspenDiscovery.RBdigital.getCheckOutPrompts(id);
+				var promptInfo = AspenDiscovery.RBdigital.getCheckOutPrompts(id);
 				// noinspection JSUnresolvedVariable
 				if (!promptInfo.promptNeeded) {
 					AspenDiscovery.RBdigital.doCheckOut(promptInfo.patronId, id);
@@ -42,7 +42,7 @@ AspenDiscovery.RBdigital = (function () {
 		checkOutMagazine: function (id) {
 			if (Globals.loggedIn) {
 				//Get any prompts needed for checking out a title
-				let promptInfo = AspenDiscovery.RBdigital.getMagazineCheckOutPrompts(id);
+				var promptInfo = AspenDiscovery.RBdigital.getMagazineCheckOutPrompts(id);
 				// noinspection JSUnresolvedVariable
 				if (!promptInfo.promptNeeded) {
 					AspenDiscovery.RBdigital.doMagazineCheckOut(promptInfo.patronId, id);
@@ -58,7 +58,7 @@ AspenDiscovery.RBdigital = (function () {
 		createAccount: function (action, patronId, id) {
 			if (Globals.loggedIn) {
 				//Check form validation
-				let accountForm = $('#createRBdigitalAccount');
+				var accountForm = $('#createRBdigitalAccount');
 
 				if (!accountForm[0].checkValidity()) {
 					// If the form is invalid, submit it. The form won't actually submit;
@@ -67,9 +67,9 @@ AspenDiscovery.RBdigital = (function () {
 					return false;
 				}
 
-				let formValues = 'username=' + encodeURIComponent($("#username").val());
-				let password1 = encodeURIComponent($('#password1').val());
-				let password2 = encodeURIComponent($('#password2').val());
+				var formValues = 'username=' + encodeURIComponent($("#username").val());
+				var password1 = encodeURIComponent($('#password1').val());
+				var password2 = encodeURIComponent($('#password2').val());
 				if (password1 !== password2) {
 					$("#password_validation").show().focus();
 					return false;
@@ -87,7 +87,7 @@ AspenDiscovery.RBdigital = (function () {
 				formValues += '&id=' + encodeURIComponent(id);
 				formValues += '&method=createAccount';
 
-				let ajaxUrl = Globals.path + "/RBdigital/AJAX?" + formValues;
+				var ajaxUrl = Globals.path + "/RBdigital/AJAX?" + formValues;
 
 				$.ajax({
 					url: ajaxUrl,
@@ -113,7 +113,7 @@ AspenDiscovery.RBdigital = (function () {
 
 		doCheckOut: function (patronId, id) {
 			if (Globals.loggedIn) {
-				let ajaxUrl = Globals.path + "/RBdigital/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
+				var ajaxUrl = Globals.path + "/RBdigital/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
 				$.ajax({
 					url: ajaxUrl,
 					cache: false,
@@ -125,7 +125,7 @@ AspenDiscovery.RBdigital = (function () {
 							// noinspection JSUnresolvedVariable
 							if (data.noCopies === true) {
 								AspenDiscovery.closeLightbox();
-								let ret = confirm(data.message);
+								var ret = confirm(data.message);
 								if (ret === true) {
 									AspenDiscovery.RBdigital.doHold(patronId, id);
 								}
@@ -152,7 +152,7 @@ AspenDiscovery.RBdigital = (function () {
 
 		doMagazineCheckOut: function (patronId, id) {
 			if (Globals.loggedIn) {
-				let ajaxUrl = Globals.path + "/RBdigital/AJAX?method=checkOutMagazine&patronId=" + patronId + "&id=" + id;
+				var ajaxUrl = Globals.path + "/RBdigital/AJAX?method=checkOutMagazine&patronId=" + patronId + "&id=" + id;
 				$.ajax({
 					url: ajaxUrl,
 					cache: false,
@@ -182,7 +182,7 @@ AspenDiscovery.RBdigital = (function () {
 		},
 
 		doHold: function (patronId, id) {
-			let url = Globals.path + "/RBdigital/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
+			var url = Globals.path + "/RBdigital/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -204,8 +204,8 @@ AspenDiscovery.RBdigital = (function () {
 		},
 
 		getCheckOutPrompts: function (id) {
-			let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getCheckOutPrompts";
-			let result = true;
+			var url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getCheckOutPrompts";
+			var result = true;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -228,8 +228,8 @@ AspenDiscovery.RBdigital = (function () {
 		},
 
 		getMagazineCheckOutPrompts: function (id) {
-			let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getMagazineCheckOutPrompts";
-			let result = true;
+			var url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getMagazineCheckOutPrompts";
+			var result = true;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -252,8 +252,8 @@ AspenDiscovery.RBdigital = (function () {
 		},
 
 		getHoldPrompts: function (id) {
-			let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getHoldPrompts";
-			let result = true;
+			var url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getHoldPrompts";
+			var result = true;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -278,7 +278,7 @@ AspenDiscovery.RBdigital = (function () {
 		placeHold: function (id) {
 			if (Globals.loggedIn) {
 				//Get any prompts needed for placing holds (email and format depending on the interface.
-				let promptInfo = AspenDiscovery.RBdigital.getHoldPrompts(id, 'hold');
+				var promptInfo = AspenDiscovery.RBdigital.getHoldPrompts(id, 'hold');
 				// noinspection JSUnresolvedVariable
 				if (!promptInfo.promptNeeded) {
 					AspenDiscovery.RBdigital.doHold(promptInfo.patronId, id);
@@ -292,9 +292,9 @@ AspenDiscovery.RBdigital = (function () {
 		},
 
 		processCheckoutPrompts: function () {
-			let id = $("#id").val();
-			let checkoutType = $("#checkoutType").val();
-			let patronId = $("#patronId option:selected").val();
+			var id = $("#id").val();
+			var checkoutType = $("#checkoutType").val();
+			var patronId = $("#patronId option:selected").val();
 			AspenDiscovery.closeLightbox();
 			if (checkoutType === 'book') {
 				return AspenDiscovery.RBdigital.doCheckOut(patronId, id);
@@ -304,14 +304,14 @@ AspenDiscovery.RBdigital = (function () {
 		},
 
 		processHoldPrompts: function () {
-			let id = $("#id").val();
-			let patronId = $("#patronId option:selected").val();
+			var id = $("#id").val();
+			var patronId = $("#patronId option:selected").val();
 			AspenDiscovery.closeLightbox();
 			return AspenDiscovery.RBdigital.doHold(patronId, id);
 		},
 
 		renewCheckout: function (patronId, recordId) {
-			let url = Globals.path + "/RBdigital/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			var url = Globals.path + "/RBdigital/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -332,7 +332,7 @@ AspenDiscovery.RBdigital = (function () {
 		},
 
 		returnCheckout: function (patronId, recordId) {
-			let url = Globals.path + "/RBdigital/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			var url = Globals.path + "/RBdigital/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -355,7 +355,7 @@ AspenDiscovery.RBdigital = (function () {
 		},
 
 		returnMagazine: function (patronId, recordId) {
-			let url = Globals.path + "/RBdigital/AJAX?method=returnMagazine&patronId=" + patronId + "&recordId=" + recordId;
+			var url = Globals.path + "/RBdigital/AJAX?method=returnMagazine&patronId=" + patronId + "&recordId=" + recordId;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -378,7 +378,7 @@ AspenDiscovery.RBdigital = (function () {
 		},
 
 		getStaffView: function (id) {
-			let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getStaffView";
+			var url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data) {
 				if (!data.success) {
 					AspenDiscovery.showMessage('Error', data.message);
@@ -389,7 +389,7 @@ AspenDiscovery.RBdigital = (function () {
 		},
 
 		getMagazineStaffView: function (id) {
-			let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getMagazineStaffView";
+			var url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getMagazineStaffView";
 			$.getJSON(url, function (data) {
 				if (!data.success) {
 					AspenDiscovery.showMessage('Error', data.message);

@@ -12,7 +12,7 @@ AspenDiscovery.CollectionSpotlights = (function(){
 			$.getJSON(titlesUrl, function (data) {
 				if (data.success) {
 					//Create an unordered list for display
-					let html = '<ul>';
+					var html = '<ul>';
 
 					$.each(data.titles, function() {
 						html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
@@ -20,9 +20,9 @@ AspenDiscovery.CollectionSpotlights = (function(){
 
 					html += '</ul>';
 
-					let carouselElement = $('#collectionSpotlightCarousel' + spotlightListId);
+					var carouselElement = $('#collectionSpotlightCarousel' + spotlightListId);
 					carouselElement.html(html);
-					let jCarousel = carouselElement.jcarousel();
+					var jCarousel = carouselElement.jcarousel();
 
 					// Reload carousel
 					jCarousel.jcarousel('reload');

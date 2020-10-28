@@ -1,7 +1,7 @@
 AspenDiscovery.Axis360 = (function () {
 	return {
 		cancelHold: function (patronId, id) {
-			let url = Globals.path + "/Axis360/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
+			var url = Globals.path + "/Axis360/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -26,7 +26,7 @@ AspenDiscovery.Axis360 = (function () {
 		checkOutTitle: function (id) {
 			if (Globals.loggedIn) {
 				//Get any prompts needed for checking out a title
-				let promptInfo = AspenDiscovery.Axis360.getCheckOutPrompts(id);
+				var promptInfo = AspenDiscovery.Axis360.getCheckOutPrompts(id);
 				// noinspection JSUnresolvedVariable
 				if (!promptInfo.promptNeeded) {
 					AspenDiscovery.Axis360.doCheckOut(promptInfo.patronId, id);
@@ -41,7 +41,7 @@ AspenDiscovery.Axis360 = (function () {
 
 		doCheckOut: function (patronId, id) {
 			if (Globals.loggedIn) {
-				let ajaxUrl = Globals.path + "/Axis360/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
+				var ajaxUrl = Globals.path + "/Axis360/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
 				$.ajax({
 					url: ajaxUrl,
 					cache: false,
@@ -53,7 +53,7 @@ AspenDiscovery.Axis360 = (function () {
 							// noinspection JSUnresolvedVariable
 							if (data.noCopies === true) {
 								AspenDiscovery.closeLightbox();
-								let ret = confirm(data.message);
+								var ret = confirm(data.message);
 								if (ret === true) {
 									AspenDiscovery.Axis360.doHold(patronId, id);
 								}
@@ -79,7 +79,7 @@ AspenDiscovery.Axis360 = (function () {
 		},
 
 		doHold: function (patronId, id) {
-			let url = Globals.path + "/Axis360/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
+			var url = Globals.path + "/Axis360/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -101,8 +101,8 @@ AspenDiscovery.Axis360 = (function () {
 		},
 
 		getCheckOutPrompts: function (id) {
-			let url = Globals.path + "/Axis360/" + id + "/AJAX?method=getCheckOutPrompts";
-			let result = true;
+			var url = Globals.path + "/Axis360/" + id + "/AJAX?method=getCheckOutPrompts";
+			var result = true;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -125,8 +125,8 @@ AspenDiscovery.Axis360 = (function () {
 		},
 
 		getHoldPrompts: function (id) {
-			let url = Globals.path + "/Axis360/" + id + "/AJAX?method=getHoldPrompts";
-			let result = true;
+			var url = Globals.path + "/Axis360/" + id + "/AJAX?method=getHoldPrompts";
+			var result = true;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -151,7 +151,7 @@ AspenDiscovery.Axis360 = (function () {
 		placeHold: function (id) {
 			if (Globals.loggedIn) {
 				//Get any prompts needed for placing holds (email and format depending on the interface.
-				let promptInfo = AspenDiscovery.Axis360.getHoldPrompts(id, 'hold');
+				var promptInfo = AspenDiscovery.Axis360.getHoldPrompts(id, 'hold');
 				// noinspection JSUnresolvedVariable
 				if (!promptInfo.promptNeeded) {
 					AspenDiscovery.Axis360.doHold(promptInfo.patronId, id);
@@ -165,22 +165,22 @@ AspenDiscovery.Axis360 = (function () {
 		},
 
 		processCheckoutPrompts: function () {
-			let id = $("#id").val();
-			let checkoutType = $("#checkoutType").val();
-			let patronId = $("#patronId option:selected").val();
+			var id = $("#id").val();
+			var checkoutType = $("#checkoutType").val();
+			var patronId = $("#patronId option:selected").val();
 			AspenDiscovery.closeLightbox();
 			return AspenDiscovery.Axis360.doCheckOut(patronId, id);
 		},
 
 		processHoldPrompts: function () {
-			let id = $("#id").val();
-			let patronId = $("#patronId option:selected").val();
+			var id = $("#id").val();
+			var patronId = $("#patronId option:selected").val();
 			AspenDiscovery.closeLightbox();
 			return AspenDiscovery.Axis360.doHold(patronId, id);
 		},
 
 		renewCheckout: function (patronId, recordId) {
-			let url = Globals.path + "/Axis360/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			var url = Globals.path + "/Axis360/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -201,7 +201,7 @@ AspenDiscovery.Axis360 = (function () {
 		},
 
 		returnCheckout: function (patronId, recordId, transactionId) {
-			let url = Globals.path + "/Axis360/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + transactionId;
+			var url = Globals.path + "/Axis360/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + transactionId;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -224,7 +224,7 @@ AspenDiscovery.Axis360 = (function () {
 		},
 
 		getStaffView: function (id) {
-			let url = Globals.path + "/Axis360/" + id + "/AJAX?method=getStaffView";
+			var url = Globals.path + "/Axis360/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data) {
 				if (!data.success) {
 					AspenDiscovery.showMessage('Error', data.message);
@@ -236,8 +236,8 @@ AspenDiscovery.Axis360 = (function () {
 
 		freezeHold: function(patronId, recordId){
 			AspenDiscovery.loadingMessage();
-			let url = Globals.path + '/Axis360/AJAX';
-			let params = {
+			var url = Globals.path + '/Axis360/AJAX';
+			var params = {
 				'method' : 'freezeHold',
 				patronId : patronId,
 				recordId : recordId
@@ -252,10 +252,10 @@ AspenDiscovery.Axis360 = (function () {
 		},
 
 		thawHold: function(patronId, recordId, caller){
-			let popUpBoxTitle = $(caller).text() || "Thawing Hold";  // freezing terminology can be customized, so grab text from click button: caller
+			var popUpBoxTitle = $(caller).text() || "Thawing Hold";  // freezing terminology can be customized, so grab text from click button: caller
 			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
-			let url = Globals.path + '/Axis360/AJAX';
-			let params = {
+			var url = Globals.path + '/Axis360/AJAX';
+			var params = {
 				'method' : 'thawHold',
 				patronId : patronId,
 				recordId : recordId

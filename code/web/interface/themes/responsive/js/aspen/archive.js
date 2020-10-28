@@ -299,13 +299,13 @@ AspenDiscovery.Archive = (function(){
 			AspenDiscovery.Archive.changeActiveBookViewer(bookViewer, pagePid);
 
 			// store in browser history
-			let stateObj = {
+			var stateObj = {
 				bookPid: bookPid,
 				pagePid: pagePid,
 				viewer: bookViewer,
 				page: 'Book'
 			};
-			let newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'bookPid', bookPid);
+			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'bookPid', bookPid);
 			newUrl = AspenDiscovery.buildUrl(newUrl, 'pagePid', pagePid);
 			newUrl = AspenDiscovery.buildUrl(newUrl, 'viewer', bookViewer);
 			//Push the new url, but only if we aren't going back where we just were.
@@ -595,7 +595,7 @@ AspenDiscovery.Archive = (function(){
 		},
 
 		showBrowseFilterPopup: function(exhibitPid, facetName, title){
-			let url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getFacetValuesForExhibit&facetName=" + encodeURI(facetName);
+			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getFacetValuesForExhibit&facetName=" + encodeURI(facetName);
 			AspenDiscovery.loadingMessage();
 			$.getJSON(url, function(data){
 				AspenDiscovery.showMessage(title, data.modalBody);

@@ -1,10 +1,11 @@
 AspenDiscovery.WebBuilder = (function () {
+	// noinspection JSUnusedGlobalSymbols
 	return {
 		editors: [],
 
 		getPortalCellValuesForSource: function () {
-			let portalCellId = $("#id").val();
-			let sourceType = $("#sourceTypeSelect").val();
+			var portalCellId = $("#id").val();
+			var sourceType = $("#sourceTypeSelect").val();
 			if (sourceType === 'markdown') {
 				$('#propertyRowmarkdown').show();
 				$('#propertyRowsourceInfo').hide();
@@ -17,14 +18,14 @@ AspenDiscovery.WebBuilder = (function () {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").show();
-				let url = Globals.path + '/WebBuilder/AJAX?method=getPortalCellValuesForSource&portalCellId=' + portalCellId + '&sourceType=' + sourceType;
+				var url = Globals.path + '/WebBuilder/AJAX?method=getPortalCellValuesForSource&portalCellId=' + portalCellId + '&sourceType=' + sourceType;
 				$.getJSON(url, function(data){
 					if (data.success === true){
-						let sourceIdSelect = $("#sourceIdSelect" );
+						var sourceIdSelect = $("#sourceIdSelect" );
 						sourceIdSelect.find('option').remove();
-						let optionValues = data.values;
-						for (let key in optionValues) {
-							if (data.selected == key){
+						var optionValues = data.values;
+						for (var key in optionValues) {
+							if (data.selected === key){
 								sourceIdSelect.append('<option value="' + key + '" selected>' + optionValues[key] + '</option>')
 							}else{
 								sourceIdSelect.append('<option value="' + key + '">' + optionValues[key] + '</option>')
@@ -39,8 +40,8 @@ AspenDiscovery.WebBuilder = (function () {
 		},
 
 		getUploadImageForm: function(editorName) {
-			let url = Globals.path + "/WebBuilder/AJAX" ;
-			let params = {
+			var url = Globals.path + "/WebBuilder/AJAX" ;
+			var params = {
 				method: 'getUploadImageForm',
 				editorName: editorName
 			};
@@ -57,19 +58,19 @@ AspenDiscovery.WebBuilder = (function () {
 		},
 
 		doImageUpload: function(){
-			let url = Globals.path + '/WebBuilder/AJAX?method=uploadImage';
-			let uploadCoverData = new FormData($("#uploadImageForm")[0]);
+			var url = Globals.path + '/WebBuilder/AJAX?method=uploadImage';
+			var uploadCoverData = new FormData($("#uploadImageForm")[0]);
 			$.ajax({
 				url: url,
 				type: 'POST',
 				data: uploadCoverData,
 				dataType: 'json',
 				success: function(data) {
-					let editorName = $('#editorName').val();
-					let cm = AspenDiscovery.WebBuilder.editors[editorName].codemirror;
-					let output = '';
-					let selectedText = cm.getSelection();
-					let text = selectedText || 'placeholder';
+					var editorName = $('#editorName').val();
+					var cm = AspenDiscovery.WebBuilder.editors[editorName].codemirror;
+					var output = '';
+					var selectedText = cm.getSelection();
+					var text = selectedText || 'placeholder';
 
 					output = '![' + data.title + '](' + data.imageUrl + ')';
 					cm.replaceSelection(output);
@@ -87,8 +88,8 @@ AspenDiscovery.WebBuilder = (function () {
 			if (!confirm("Are you sure you want to delete this cell?")){
 				return false;
 			}
-			let url = Globals.path + '/WebBuilder/AJAX';
-			let params = {
+			var url = Globals.path + '/WebBuilder/AJAX';
+			var params = {
 				method: 'deleteCell',
 				id: id
 			};
@@ -106,8 +107,8 @@ AspenDiscovery.WebBuilder = (function () {
 			if (!confirm("Are you sure you want to delete this row?")){
 				return false;
 			}
-			let url = Globals.path + '/WebBuilder/AJAX';
-			let params = {
+			var url = Globals.path + '/WebBuilder/AJAX';
+			var params = {
 				method: 'deleteRow',
 				id: id
 			};
@@ -122,8 +123,8 @@ AspenDiscovery.WebBuilder = (function () {
 		},
 
 		addRow: function(pageId) {
-			let url = Globals.path + '/WebBuilder/AJAX';
-			let params = {
+			var url = Globals.path + '/WebBuilder/AJAX';
+			var params = {
 				method: 'addRow',
 				pageId: pageId
 			};
@@ -138,8 +139,8 @@ AspenDiscovery.WebBuilder = (function () {
 		},
 
 		addCell: function(rowId) {
-			let url = Globals.path + '/WebBuilder/AJAX';
-			let params = {
+			var url = Globals.path + '/WebBuilder/AJAX';
+			var params = {
 				method: 'addCell',
 				rowId: rowId
 			};
@@ -154,16 +155,16 @@ AspenDiscovery.WebBuilder = (function () {
 		},
 
 		moveRow: function(rowId, direction) {
-			let url = Globals.path + '/WebBuilder/AJAX';
-			let params = {
+			var url = Globals.path + '/WebBuilder/AJAX';
+			var params = {
 				method: 'moveRow',
 				rowId: rowId,
 				direction: direction
 			};
 			$.getJSON(url, params, function (data) {
 				if (data.success){
-					let row1 = $("#portalRow" + rowId);
-					let row2 = $("#portalRow" + data.swappedWithId);
+					var row1 = $("#portalRow" + rowId);
+					var row2 = $("#portalRow" + data.swappedWithId);
 					if (direction === 'up'){
 						row2.before(row1);
 					}else{
@@ -177,16 +178,16 @@ AspenDiscovery.WebBuilder = (function () {
 		},
 
 		moveCell: function(cellId, direction) {
-			let url = Globals.path + '/WebBuilder/AJAX';
-			let params = {
+			var url = Globals.path + '/WebBuilder/AJAX';
+			var params = {
 				method: 'moveCell',
 				cellId: cellId,
 				direction: direction
 			};
 			$.getJSON(url, params, function (data) {
 				if (data.success){
-					let cell1 = $("#portal-cell-" + cellId);
-					let cell2 = $("#portal-cell-" + data.swappedWithId);
+					var cell1 = $("#portal-cell-" + cellId);
+					var cell2 = $("#portal-cell-" + data.swappedWithId);
 					if (direction === 'left'){
 						cell2.before(cell1);
 					}else{
@@ -200,8 +201,8 @@ AspenDiscovery.WebBuilder = (function () {
 		},
 
 		showEditCellForm: function(cellId) {
-			let url = Globals.path + '/WebBuilder/AJAX';
-			let params = {
+			var url = Globals.path + '/WebBuilder/AJAX';
+			var params = {
 				method: 'getEditCellForm',
 				cellId: cellId
 			};
@@ -217,7 +218,7 @@ AspenDiscovery.WebBuilder = (function () {
 
 		showImageInPopup: function(title, imageId){
 			// buttonsElementId is optional
-			let modalDialog = $("#modalDialog");
+			var modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){
 				AspenDiscovery.closeLightbox(function(){AspenDiscovery.showElementInPopup(title, elementId)});
 			}else{
@@ -232,6 +233,6 @@ AspenDiscovery.WebBuilder = (function () {
 				modalDialog.modal('show');
 				return false;
 			}
-		},
+		}
 	};
 }(AspenDiscovery.WebBuilder || {}));
