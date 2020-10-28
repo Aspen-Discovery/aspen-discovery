@@ -122,7 +122,7 @@ function getGenealogyUpdates(){
 			'title' => 'Genealogy Lot Length',
 			'description' => 'Increase the length of the lot field within person table',
 			'sql' => [
-				"ALTER TABLE person CHANGE COLUMN lot lot VARCHAR(30) NULL DEFAULT ''"
+				"ALTER TABLE person CHANGE COLUMN lot lot VARCHAR(50) NULL DEFAULT ''"
 			]
 		]
 	];
