@@ -30,7 +30,11 @@ class WebBuilder_SubmitForm extends Action
 			$submission = new CustomFormSubmission();
 			$submission->formId = $this->form->id;
 			$submission->libraryId = $library->libraryId;
-			$submission->userId = UserAccount::getActiveUserId();
+			if (UserAccount::isLoggedIn()) {
+				$submission->userId = UserAccount::getActiveUserId();
+			}else{
+				$submission->userId = 0;
+			}
 			$submission->submission = $htmlData;
 			$submission->dateSubmitted = time();
 			$submission->insert();
