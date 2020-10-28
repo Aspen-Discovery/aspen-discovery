@@ -7,7 +7,7 @@ AspenDiscovery.Account = (function(){
 		showCovers: null,
 
 		addAccountLink: function(){
-			const url = Globals.path + "/MyAccount/AJAX?method=getAddAccountLinkForm";
+			var url = Globals.path + "/MyAccount/AJAX?method=getAddAccountLinkForm";
 			AspenDiscovery.Account.ajaxLightbox(url, true);
 		},
 
