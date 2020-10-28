@@ -527,6 +527,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'staffSettingsAllowNegativeUserId' => [
+					'title' => 'Staff Settings Allow Negative User ids',
+					'description' => 'Allow negative user ids for staff settings',
+					'sql' => [
+						'ALTER TABLE user_staff_settings change column userId userId INT NOT NULL'
+					]
+				],
+
 				'materialsRequestLibraryId' => array(
 					'title' => 'Add LibraryId to Material Requests Table',
 					'description' => 'Add LibraryId column to Materials Request table and populate column for existing requests.',
