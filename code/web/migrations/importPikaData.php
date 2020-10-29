@@ -63,7 +63,6 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 	//Flipping the user ids helps to deal with cases where the unique id within Aspen is different than the unique ID in Pika.
 	//This only happens after the initial conversion when users log in to Aspen and Pika in different orders.
 	flipUserIds();
-
 	echo("Flipped User Ids\n");
 	ob_flush();
 
@@ -178,10 +177,11 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 	echo (count($missingUsers) . " users were part of the export, but no longer exist in the ILS\n");
 	ob_flush();
 
-	//TODO: Delete any users that still have an id of -1 (other than aspen_admin)
+	//TODO: Delete any users that still have an id of -1 (other than aspen_admin)?
 
 	//Import roles
 	//Import material requests
+	//Import linked users
 
 }
 
@@ -290,6 +290,8 @@ function importReadingHistory($startTime, $exportPath, &$existingUsers, &$missin
 					$user->update();
 				}
 			}
+			$user->__destruct();
+			$user = null;
 		}
 
 		//Get the grouped work
@@ -341,6 +343,8 @@ function importReadingHistory($startTime, $exportPath, &$existingUsers, &$missin
 				}
 			}
 		}
+		$readingHistoryEntry->__destruct();
+		$readingHistoryEntry = null;
 
 		if ($numImports % 2500 == 0){
 			$elapsedTime = time() - $batchStartTime;
@@ -446,19 +450,28 @@ function importRatingsAndReviews($startTime, $exportPath, &$existingUsers, &$mis
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 		$userWorkReview = new UserWorkReview();
-		$userWorkReview->groupedRecordPermanentId = getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks);
-		$userWorkReview->userId = $userId;
-		$reviewExists = false;
-		if ($userWorkReview->find(true)){
-			$reviewExists = true;
-		}
-		$userWorkReview->rating = $rating;
-		$userWorkReview->review = $review;
-		$userWorkReview->dateRated = $dateRated;
-		if ($reviewExists){
-			$userWorkReview->update();
-		}else{
-			$userWorkReview->insert();
+		try {
+			$userWorkReview->groupedRecordPermanentId = getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks);
+			$userWorkReview->userId = $userId;
+			$reviewExists = false;
+			if ($userWorkReview->find(true)) {
+				$reviewExists = true;
+			}
+			$userWorkReview->rating = $rating;
+			$userWorkReview->review = $review;
+			$userWorkReview->dateRated = $dateRated;
+			if ($reviewExists) {
+				$userWorkReview->update();
+			} else {
+				$userWorkReview->insert();
+			}
+		}catch (PDOException $exception){
+			//Continue processing
+			echo "Error adding review " . print_r($userWorkReview, true). "\n";
+			if (strpos($exception->getMessage(), "for column 'review'") === false) {
+				echo $exception->getMessage() . "\n";
+				echo $exception->getTraceAsString() . "\n";
+			}
 		}
 		if ($numImports % 2500 == 0){
 			$elapsedTime = time() - $batchStartTime;
@@ -575,19 +588,28 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
-		$listEntry->listId = $listId;
-		$listEntry->source = 'GroupedWork';
-		$listEntry->sourceId = getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks);
-		$entryExists = false;
-		if ($listEntry->find(true)){
-			$entryExists = true;
-		}
-		$listEntry->dateAdded = $dateAdded;
-		$listEntry->notes = $notes;
-		if ($entryExists){
-			$listEntry->update(false);
-		}else{
-			$listEntry->insert(false);
+		try {
+			$listEntry->listId = $listId;
+			$listEntry->source = 'GroupedWork';
+			$listEntry->sourceId = getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks);
+			$entryExists = false;
+			if ($listEntry->find(true)) {
+				$entryExists = true;
+			}
+			$listEntry->dateAdded = $dateAdded;
+			$listEntry->notes = $notes;
+			if ($entryExists) {
+				$listEntry->update(false);
+			} else {
+				$listEntry->insert(false);
+			}
+		}catch (PDOException $exception){
+			//Continue processing
+			echo "Error adding list entry " . print_r($listEntry, true). "\n";
+			if (strpos($exception->getMessage(), "for column 'notes'") === false) {
+				echo $exception->getMessage() . "\n";
+				echo $exception->getTraceAsString() . "\n";
+			}
 		}
 		$listEntry->__destruct();
 		$listEntry = null;
