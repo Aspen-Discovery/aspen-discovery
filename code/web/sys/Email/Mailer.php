@@ -31,12 +31,17 @@ class Mailer {
 
 			$apiBody = new stdClass();
 			$apiBody->personalizations = [];
-			$personalization = new stdClass();
-			$personalization->to = [];
-			$toAddress = new stdClass();
-			$toAddress->email = $to;
-			$personalization->to[] = $toAddress;
-			$apiBody->personalizations[] =$personalization;
+			$toAddresses = explode(';', $to);
+			foreach ($toAddresses as $tmpToAddress){
+				$personalization = new stdClass();
+				$personalization->to = [];
+
+				$toAddress = new stdClass();
+				$toAddress->email = trim($tmpToAddress);
+				$personalization->to[] = $toAddress;
+
+				$apiBody->personalizations[] =$personalization;
+			}
 			$apiBody->from = new stdClass();
 			$apiBody->from->email = $sendGridSettings->fromAddress;
 			$apiBody->reply_to = new stdClass();
