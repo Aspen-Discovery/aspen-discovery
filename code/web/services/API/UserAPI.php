@@ -985,6 +985,17 @@ class UserAPI extends Action
 				} else {
 					$pickupBranch = $patron->_homeLocationCode;
 				}
+				//Make sure that there are not volumes available
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($bibId);
+				if ($recordDriver->isValid()) {
+					require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+					$volumeDataDB = new IlsVolumeInfo();
+					$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+					if ($volumeDataDB->find(true)){
+						return array('success' => false, 'message' => translate(['text' => 'You must place a volume hold on this title.']));
+					}
+				}
 				return $patron->placeHold($bibId, $pickupBranch);
 			}else{
 				return array('success' => false, 'message' => 'Sorry, holds are not currently allowed.');
@@ -1012,6 +1023,18 @@ class UserAPI extends Action
 					}
 				} else {
 					$pickupBranch = $patron->_homeLocationCode;
+				}
+				//Make sure that there are not volumes available
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($bibId);
+				if ($recordDriver->isValid()) {
+					require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+					$volumeDataDB = new IlsVolumeInfo();
+					$volumeDataDB = new IlsVolumeInfo();
+					$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+					if ($volumeDataDB->find(true)){
+						return array('success' => false, 'message' => translate(['text' => 'You must place a volume hold on this title.']));
+					}
 				}
 				return $patron->placeItemHold($bibId, $itemId, $pickupBranch);
 			} else {
