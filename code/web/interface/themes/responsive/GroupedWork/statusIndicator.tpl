@@ -14,7 +14,7 @@
 	{if $statusInformation->isAvailableOnline()}
 		<div class="related-manifestation-shelf-status label label-success">{translate text="Available Online"}</div>
 	{elseif $statusInformation->isAllLibraryUseOnly()}
-		<div class="related-manifestation-shelf-status label label-success">{translate text='On Shelf (library use only)'}</div>
+		<div class="related-manifestation-shelf-status label label-success">{translate text='Library Use Only'}</div>
 	{else}
 		<div class="related-manifestation-shelf-status label label-success">{translate text='On Shelf'}</div>
 	{/if}
@@ -22,13 +22,13 @@
 	<div class="related-manifestation-shelf-status label label-success">{translate text="Available Online"}</div>
 {elseif $statusInformation->isAllLibraryUseOnly()}
 	{if $isGlobalScope}
-		<div class="related-manifestation-shelf-status label label-success">{translate text='On Shelf'} (library use only)</div>
+		<div class="related-manifestation-shelf-status label label-success">{translate text='On Shelf'} ({translate text="library use only"})</div>
 	{else}
 		{if !$statusInformation->isAvailable() && $statusInformation->hasLocalItem()}
 			<div class="related-manifestation-shelf-status label label-warning">{translate text='Checked Out/Available Elsewhere'} ({translate text="library use only"})</div>
 		{elseif $statusInformation->isAvailable()}
 			{if $statusInformation->hasLocalItem()}
-				<div class="related-manifestation-shelf-status label label-success">{translate text='On Shelf'} ({translate text="library use only"})</div>
+				<div class="related-manifestation-shelf-status label label-success">{translate text="Library Use Only"}</div>
 			{else}
 				<div class="related-manifestation-shelf-status label label-warning">{translate text='Available from another library'} ({translate text="library use only"})</div>
 			{/if}

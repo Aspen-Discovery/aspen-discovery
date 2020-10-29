@@ -167,12 +167,6 @@ public class GroupedWorkIndexer {
 						case "Marmot":
 							ilsRecordProcessors.put(curType, new MarmotRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
-						case "Nashville":
-							ilsRecordProcessors.put(curType, new NashvilleRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "NashvilleSchools":
-							ilsRecordProcessors.put(curType, new NashvilleSchoolsRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
 						case "WCPL":
 							ilsRecordProcessors.put(curType, new WCPLRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
