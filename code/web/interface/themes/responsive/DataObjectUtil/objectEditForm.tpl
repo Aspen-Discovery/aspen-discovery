@@ -9,44 +9,6 @@
 
 {* Create the base form *}
 <form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();" aria-label="{$formLabel}">
-	{literal}
-
-	<script type="text/javascript">
-	var savingForm = false;
-	function setFormSubmitting(){
-		savingForm = true;
-	}
-	$(document).ready(function(){
-		var objectEditorObject = $('#objectEditor');
-
-		objectEditorObject.validate();
-		objectEditorObject.data('serialize',objectEditorObject.serialize()); // On load save form current state
-        {/literal}
-		{if !empty($initializationJs)}
-			{$initializationJs}
-		{/if}
-		{literal}
-
-		$(window).bind('beforeunload', function(e){
-			if (!savingForm) {
-				// if form state change show warning box, else don't show it.
-				var objectEditorObject = $('#objectEditor');
-				if (objectEditorObject.serialize() !== objectEditorObject.data('serialize')) {
-					return 'You have made changes to the configuration, would you like to save them before continuing?';
-				} else {
-					e = null;
-				}
-			}else{
-				e = null;
-			}
-		}).bind('onsubmit', function(e){
-			savingForm = true;
-		});
-	});
-
-	</script>
-	{/literal}
-	
 	<div class='editor'>
 		<input type='hidden' name='objectAction' value='save' />
 		{if !empty($id)}
@@ -82,4 +44,52 @@
 			</div>
 		{/if}
 	</div>
+
+	{literal}
+	<script type="text/javascript">
+		var savingForm = false;
+		function setFormSubmitting(){
+			savingForm = true;
+		}
+		$.validator.addMethod(
+			"regex",
+			function(value, element, regexp) {
+				var re = new RegExp(regexp);
+				return this.optional(element) || re.test(value);
+			},
+			"Please check your input."
+		);
+		$(document).ready(function(){
+			var objectEditorObject = $('#objectEditor');
+
+			objectEditorObject.validate();
+
+			{/literal}
+			{foreach from=$structure item=property}
+				{include file="DataObjectUtil/validationRule.tpl"}
+			{/foreach}
+			objectEditorObject.data('serialize',objectEditorObject.serialize()); // On load save form current state
+			{if !empty($initializationJs)}
+				{$initializationJs}
+			{/if}
+			{literal}
+
+			$(window).bind('beforeunload', function(e){
+				if (!savingForm) {
+					// if form state change show warning box, else don't show it.
+					var objectEditorObject = $('#objectEditor');
+					if (objectEditorObject.serialize() !== objectEditorObject.data('serialize')) {
+						return 'You have made changes to the configuration, would you like to save them before continuing?';
+					} else {
+						e = null;
+					}
+				}else{
+					e = null;
+				}
+			}).bind('onsubmit', function(e){
+				savingForm = true;
+			});
+		});
+	</script>
+	{/literal}
 </form>

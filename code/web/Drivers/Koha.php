@@ -1875,6 +1875,7 @@ class Koha extends AbstractIlsDriver
 			$validStates = array_combine($validStates, $validStates);
 			$borrowerStateField = array('property' => 'borrower_state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
 		}
+
 		//Main Address
 		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'borrower_address' => array('property' => 'borrower_address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 128, 'required' => true),
@@ -1884,6 +1885,9 @@ class Koha extends AbstractIlsDriver
 			'borrower_zipcode' => array('property' => 'borrower_zipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => true),
 			'borrower_country' => array('property' => 'borrower_country', 'type' => 'text', 'label' => 'Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
 		]);
+		if (!empty($library->validSelfRegistrationZipCodes)){
+			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationPattern'] = $library->validSelfRegistrationZipCodes;
+		}
 		//Contact information
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'borrower_phone' => array('property' => 'borrower_phone', 'type' => 'text', 'label' => 'Primary Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false),

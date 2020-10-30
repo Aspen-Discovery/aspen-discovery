@@ -2203,6 +2203,14 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+		'selfRegistrationZipCodeValidation' => [
+			'title' => 'Self Registration Zip Code Validation',
+			'description' => 'Allow customization of how Zip Codes are validated',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN validSelfRegistrationZipCodes VARCHAR(255) DEFAULT ''",
+			]
+		],
+
 		'libraryAlternateCardSetup' => [
 			'title' => 'Library Alternate Card Setup',
 			'description' => 'Add fields to allow definition of alternate library cards',

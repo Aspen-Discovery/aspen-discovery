@@ -329,66 +329,79 @@ function getOverDriveUpdates()
 	);
 }
 
-function buildDefaultOverDriveScopes()
+function buildDefaultOverDriveScopes($update)
 {
 	global $aspen_db;
 
-	//Process libraries
-	$uniqueOverDriveSettingsSQL = "SELECT libraryId as id, displayName, enableOverdriveCollection, includeOverDriveAdult, includeOverDriveTeen, includeOverDriveKids, overDriveAuthenticationILSName, overdriveRequirePin, overdriveAdvantageName, overdriveAdvantageProductsKey From library";
+	try {
 
-	$uniqueSettingsRS = $aspen_db->query($uniqueOverDriveSettingsSQL, PDO::FETCH_ASSOC);
-	$uniqueRow = $uniqueSettingsRS->fetch();
-	while ($uniqueRow != null){
-		$library = new Library();
-		$library->libraryId = $uniqueRow['id'];
-		if ($library->find(true)) {
-			if ($uniqueRow['enableOverDriveCollection'] = 0 || ($uniqueRow['includeOverDriveAdult'] == 0 && $uniqueRow['includeOverDriveTeen'] == 0 && $uniqueRow['includeOverDriveKids'] == 0)) {
-				$library->overDriveScopeId = -1;
-			}else{
-				//Get the correct id
-				$overdriveScope = getOverDriveScopeSettings($uniqueRow);
-				if ($overdriveScope->find(true)){
-					$library->overDriveScopeId = $overdriveScope->id;
-				}else{
-					$overdriveScope->name = 'Library: ' . $uniqueRow['displayName'];
-					$overdriveScope->insert();
-					$library->overDriveScopeId = $overdriveScope->id;
-				}
-			}
-			$library->update();
-		}
+		//Process libraries
+		$uniqueOverDriveSettingsSQL = "SELECT libraryId as id, displayName, enableOverdriveCollection, includeOverDriveAdult, includeOverDriveTeen, includeOverDriveKids, overDriveAuthenticationILSName, overdriveRequirePin, overdriveAdvantageName, overdriveAdvantageProductsKey From library";
+
+		$uniqueSettingsRS = $aspen_db->query($uniqueOverDriveSettingsSQL, PDO::FETCH_ASSOC);
 		$uniqueRow = $uniqueSettingsRS->fetch();
-	}
+		while ($uniqueRow != null) {
+			$library = new Library();
+			$library->libraryId = $uniqueRow['id'];
+			if ($library->find(true)) {
+				if ($uniqueRow['enableOverDriveCollection'] = 0 || ($uniqueRow['includeOverDriveAdult'] == 0 && $uniqueRow['includeOverDriveTeen'] == 0 && $uniqueRow['includeOverDriveKids'] == 0)) {
+					$library->overDriveScopeId = -1;
+				} else {
+					//Get the correct id
+					$overdriveScope = getOverDriveScopeSettings($uniqueRow);
+					if ($overdriveScope->find(true)) {
+						$library->overDriveScopeId = $overdriveScope->id;
+					} else {
+						$overdriveScope->name = 'Library: ' . $uniqueRow['displayName'];
+						$overdriveScope->insert();
+						$library->overDriveScopeId = $overdriveScope->id;
+					}
+				}
+				$library->update();
+			}
+			$uniqueRow = $uniqueSettingsRS->fetch();
+		}
 
-	//Process locations
-	$uniqueOverDriveSettingsSQL = "SELECT locationId as id, locationId, location.libraryId, location.displayName, location.enableOverdriveCollection, location.includeOverDriveAdult, location.includeOverDriveTeen, location.includeOverDriveKids, overDriveAuthenticationILSName, overdriveRequirePin, overdriveAdvantageName, overdriveAdvantageProductsKey, library.overDriveScopeId as libraryOverDriveScopeId From location inner join library on location.libraryId = library.libraryId";
+		//Process locations
+		$uniqueOverDriveSettingsSQL = "SELECT locationId as id, locationId, location.libraryId, location.displayName, location.enableOverdriveCollection, location.includeOverDriveAdult, location.includeOverDriveTeen, location.includeOverDriveKids, overDriveAuthenticationILSName, overdriveRequirePin, overdriveAdvantageName, overdriveAdvantageProductsKey, library.overDriveScopeId as libraryOverDriveScopeId From location inner join library on location.libraryId = library.libraryId";
 
-	$uniqueSettingsRS = $aspen_db->query($uniqueOverDriveSettingsSQL, PDO::FETCH_ASSOC);
-	$uniqueRow = $uniqueSettingsRS->fetch();
-	while ($uniqueRow != null){
-		$location = new Location();
-		$location->locationId = $uniqueRow['locationId'];
-		if ($location->find(true)) {
-			if ($uniqueRow['enableOverDriveCollection'] = 0 || ($uniqueRow['includeOverDriveAdult'] == 0 && $uniqueRow['includeOverDriveTeen'] == 0 && $uniqueRow['includeOverDriveKids'] == 0)) {
-				$location->overDriveScopeId = -2;
-			}else{
-				//Get the correct id
-				$overdriveScope = getOverDriveScopeSettings($uniqueRow);
-				if ($overdriveScope->find(true)) {
-					if ($overdriveScope->id == $uniqueRow['libraryOverDriveScopeId']){
-						$location->overDriveScopeId = -1;
-					}else{
+		$uniqueSettingsRS = $aspen_db->query($uniqueOverDriveSettingsSQL, PDO::FETCH_ASSOC);
+		$uniqueRow = $uniqueSettingsRS->fetch();
+		while ($uniqueRow != null) {
+			$location = new Location();
+			$location->locationId = $uniqueRow['locationId'];
+			if ($location->find(true)) {
+				if ($uniqueRow['enableOverDriveCollection'] = 0 || ($uniqueRow['includeOverDriveAdult'] == 0 && $uniqueRow['includeOverDriveTeen'] == 0 && $uniqueRow['includeOverDriveKids'] == 0)) {
+					$location->overDriveScopeId = -2;
+				} else {
+					//Get the correct id
+					$overdriveScope = getOverDriveScopeSettings($uniqueRow);
+					if ($overdriveScope->find(true)) {
+						if ($overdriveScope->id == $uniqueRow['libraryOverDriveScopeId']) {
+							$location->overDriveScopeId = -1;
+						} else {
+							$location->overDriveScopeId = $overdriveScope->id;
+						}
+					} else {
+						$overdriveScope->name = 'Location: ' . $uniqueRow['displayName'];
+						$overdriveScope->insert();
 						$location->overDriveScopeId = $overdriveScope->id;
 					}
-				}else{
-					$overdriveScope->name = 'Location: ' . $uniqueRow['displayName'];
-					$overdriveScope->insert();
-					$location->overDriveScopeId = $overdriveScope->id;
 				}
+				$location->update();
 			}
-			$location->update();
+			$uniqueRow = $uniqueSettingsRS->fetch();
 		}
-		$uniqueRow = $uniqueSettingsRS->fetch();
+		$update['status'] = 'Update succeeded';
+	}catch (Exception $e){
+		if (isset($update['continueOnError']) && $update['continueOnError']) {
+			if (!isset($update['status'])) {
+				$update['status'] = '';
+			}
+			$update['status'] .= 'Warning: ' . $e;
+		} else {
+			$update['status'] = 'Update failed ' . $e;
+		}
 	}
 }
 
