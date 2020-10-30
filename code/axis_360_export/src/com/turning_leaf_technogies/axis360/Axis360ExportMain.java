@@ -415,7 +415,7 @@ public class Axis360ExportMain {
 				boolean active = itemDetails.getBoolean("active");
 				if (!active){
 					//TODO: See if this needs to be deleted from the index
-					logEntry.incErrors("Found an inactive record, need to make sure it has been deleted");
+					logEntry.addNote("Found an inactive record " + axis360Id + ", need to make sure it has been deleted");
 				}else {
 					//Check to see if the title metadata has changed
 					Axis360Title existingTitle = existingRecords.get(axis360Id);
