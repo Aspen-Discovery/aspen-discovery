@@ -53,7 +53,7 @@
 										{if $searchKey == $searchSource} selected="selected"{/if}
 										{if $searchKey == $defaultSearchIndex} id="default_search_type"{/if}
 										>
-									{translate text="in"} {$searchOption.name}{if !empty($searchOption.external)} *{/if}
+									{translate text="in"} {translate text=$searchOption.name}{if !empty($searchOption.external)} *{/if}
 								</option>
 							{/foreach}
 						</select>
