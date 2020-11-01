@@ -805,6 +805,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'currencyCode' => [
+					'title' => 'Currency code system variable',
+					'description' => 'Add currency code to system variables',
+					'sql' => [
+						"ALTER TABLE system_variables ADD COLUMN currencyCode CHAR(3) DEFAULT 'USD'"
+					]
+				],
+
 				'utf8_update' => array(
 					'title' => 'Update to UTF-8',
 					'description' => 'Update database to use UTF-8 encoding',

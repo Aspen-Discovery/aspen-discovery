@@ -563,6 +563,23 @@ var AspenDiscovery = (function(){
 			}
 
 			return false;
+		},
+		formatCurrency: function(currencyValue, elementToUpdate){
+			var url = Globals.path + "/AJAX/JSON";
+			var params =  {
+				method : 'formatCurrency',
+				currencyValue : currencyValue
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.result.success) {
+						$(elementToUpdate).text(data.result.formattedValue);
+					} else {
+						$(elementToUpdate).text('Unable to format currency');
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
 		}
 	}
 

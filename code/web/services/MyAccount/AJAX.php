@@ -2303,6 +2303,12 @@ class MyAccount_AJAX extends JSON_Action
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$totalFines = 0;
 
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
 			//List how fines have been paid by type
 			//0 = no payments applied
 			//1 = partial payment applied
@@ -2348,7 +2354,7 @@ class MyAccount_AJAX extends JSON_Action
 						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 120, true),
 						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 120, true),
 						'unit_amount' => [
-							'currency_code' => 'USD',
+							'currency_code' => $currencyCode,
 							'value' => round($fineAmount, 2),
 						],
 						'quantity' => 1
@@ -2414,11 +2420,11 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			$purchaseUnits['amount'] = [
-				'currency_code' => 'USD',
+				'currency_code' => $currencyCode,
 				'value' => round($totalFines, 2),
 				'breakdown' => [
 					'item_total' => [
-						'currency_code' => 'USD',
+						'currency_code' => $currencyCode,
 						'value' => round($totalFines, 2),
 					],
 				]

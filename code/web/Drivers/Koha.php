@@ -1404,6 +1404,16 @@ class Koha extends AbstractIlsDriver
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
+		global $activeLanguage;
+
+		$currencyCode = 'USD';
+		$variables = new SystemVariables();
+		if ($variables->find(true)){
+			$currencyCode = $variables->currencyCode;
+		}
+
+		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+
 		$this->initDatabaseConnection();
 
 		//Get a list of outstanding fees
@@ -1434,8 +1444,8 @@ class Koha extends AbstractIlsDriver
 					'message' => $allFeesRow['description'],
 					'amountVal' => $allFeesRow['amount'],
 					'amountOutstandingVal' => $allFeesRow['amountoutstanding'],
-					'amount' => StringUtils::formatMoney('%.2n', $allFeesRow['amount']),
-					'amountOutstanding' => StringUtils::formatMoney('%.2n', $allFeesRow['amountoutstanding']),
+					'amount' => $currencyFormatter->formatCurrency($allFeesRow['amount'], $currencyCode),
+					'amountOutstanding' => $currencyFormatter->formatCurrency($allFeesRow['amountoutstanding'], $currencyCode),
 				];
 				$fines[] = $curFine;
 			}

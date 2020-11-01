@@ -1062,8 +1062,8 @@ AspenDiscovery.Account = (function(){
 					}
 				}
 			);
-			$('#formattedTotal' + userId).text("$" + totalFineAmt.toFixed(2));
-			$('#formattedOutstandingTotal' + userId).text("$" + totalOutstandingAmt.toFixed(2));
+			AspenDiscovery.formatCurrency(totalFineAmt, $('#formattedTotal' + userId));
+			AspenDiscovery.formatCurrency(totalOutstandingAmt, $('#formattedOutstandingTotal' + userId));
 		},
 		dismissPlacard:function(patronId, placardId) {
 			var url = Globals.path + "/MyAccount/AJAX";

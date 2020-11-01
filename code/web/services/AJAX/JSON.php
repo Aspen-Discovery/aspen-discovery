@@ -369,6 +369,27 @@ class AJAX_JSON extends Action {
 		);
 	}
 
+	function formatCurrency(){
+		$currencyValue = isset($_REQUEST['currencyValue']) ? $_REQUEST['currencyValue'] : 0;
+
+		global $activeLanguage;
+
+		$currencyCode = 'USD';
+		$variables = new SystemVariables();
+		if ($variables->find(true)){
+			$currencyCode = $variables->currencyCode;
+		}
+
+		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+
+		$formattedCurrency = $currencyFormatter->formatCurrency($currencyValue, $currencyCode);
+
+		return [
+			'success' => true,
+			'formattedValue' => $formattedCurrency
+		];
+	}
+
 	function getBreadcrumbs()
 	{
 		return [];

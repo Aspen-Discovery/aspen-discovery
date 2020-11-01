@@ -82,7 +82,7 @@ class Library extends DataObject
 	public $defaultPType;
 	public $facetLabel;
 	public $showAvailableAtAnyLocation;
-	public $finePaymentType;
+	public $finePaymentType; //0 = None, 1 = ILS, 2 = PayPal
 	public $finesToPay;
 	public $finePaymentOrder;
 	public $payFinesLink;
