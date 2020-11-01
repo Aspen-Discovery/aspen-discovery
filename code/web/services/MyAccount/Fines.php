@@ -20,6 +20,13 @@ class MyAccount_Fines extends MyAccount
 		if (UserAccount::isLoggedIn()) {
 			global $offlineMode;
 			if (!$offlineMode) {
+				$currencyCode = 'USD';
+				$variables = new SystemVariables();
+				if ($variables->find(true)){
+					$currencyCode = $variables->currencyCode;
+				}
+				$interface->assign('currencyCode', $currencyCode);
+				
 				// Get My Fines
 				$user = UserAccount::getLoggedInUser();
 				$interface->assign('profile', $user);
