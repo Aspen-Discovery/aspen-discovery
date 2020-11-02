@@ -24,7 +24,7 @@ SELECT * from list_widgets INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_e
 
 SELECT * from list_widget_lists INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_export/list_widget_lists.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
 
-SELECT source_grouped_work.full_title, source_grouped_work.author, sourceGroupedWorkId, GROUP_CONCAT(CONCAT(source_grouped_work_primary_identifiers.type, ':', source_grouped_work_primary_identifiers.identifier)) from merged_grouped_works INNER JOIN grouped_work as source_grouped_work on permanent_id = sourceGroupedWorkId inner join grouped_work_primary_identifiers as source_grouped_work_primary_identifiers on grouped_work_id = grouped_work.id group by cat_username, user_not_interested.dateMarked, grouped_work.full_title, grouped_work.author, permanent_id INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_export/patronNotInterested.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
+SELECT source_grouped_work.full_title, source_grouped_work.author, sourceGroupedWorkId, GROUP_CONCAT(CONCAT(source_grouped_work_primary_identifiers.type, ':', source_grouped_work_primary_identifiers.identifier)) from merged_grouped_works INNER JOIN grouped_work as source_grouped_work on permanent_id = sourceGroupedWorkId inner join grouped_work_primary_identifiers as source_grouped_work_primary_identifiers on grouped_work_id = grouped_work.id group by cat_username, user_not_interested.dateMarked, grouped_work.full_title, grouped_work.author, permanent_id INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_export/mergedWorks.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
 
 SELECT source_grouped_work.full_title as sourceTitle,
        source_grouped_work.author as sourceAuthor,
