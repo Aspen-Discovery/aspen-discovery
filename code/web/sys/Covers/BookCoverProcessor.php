@@ -998,7 +998,7 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	function omdb(OMDBSetting $omdbSettings, $title = null, $year = ''){
+	function omdb(OMDBSetting $omdbSettings, $title = null, $shortTitle = null, $year = ''){
 		//Only load from google if we are looking at a grouped work to be sure uploaded covers have a chance to load
 		if ($this->type != 'grouped_work'){
 			return false;
@@ -1007,7 +1007,6 @@ class BookCoverProcessor{
 		$source = 'omdb_title_year';
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		$title = StringUtils::removeTrailingPunctuation($title);
-		$title = str_replace('&', 'and', $title);
 		$title = str_replace('.', '', $title);
 		$encodedTitle = urlencode($title);
 		if (!is_array($year)){
@@ -1020,24 +1019,40 @@ class BookCoverProcessor{
 			}
 		}
 
-		require_once ROOT_DIR . '/sys/CurlWrapper.php';
-		foreach ($year as $curYear){
-			$url = "http://www.omdbapi.com/?t=$encodedTitle&y=$curYear&apikey={$omdbSettings->apiKey}";
-			$client = new CurlWrapper();
-			$result = $client->curlGetPage($url);
-			if ($result !== false) {
-				if ($json = json_decode($result, true)) {
-					if (array_key_exists('Poster', $json)){
-						if ($this->processImageURL($source, $json['Poster'], true)){
-							return true;
-						}
+		$foundTitle = $this->searchOmdbForCover($year, $encodedTitle, $omdbSettings, $source);
+		if ($foundTitle) return true;
+
+		//Also try the short title
+		$shortTitle = StringUtils::removeTrailingPunctuation($shortTitle);
+		$shortTitle = str_replace('.', '', $shortTitle);
+		$encodedShortTitle = urlencode($shortTitle);
+		$foundTitle = $this->searchOmdbForCover($year, $encodedShortTitle, $omdbSettings, $source);
+		if ($foundTitle) return true;
+
+		//Next try the title up to anything with an = character
+		if (strpos($title, ' = ') !== false){
+			$trimmedTitle = substr($title, 0, strpos($title, ' = '));
+			$encodedTrimmedTitle = urlencode($trimmedTitle);
+			$foundTitle = $this->searchOmdbForCover($year, $encodedTrimmedTitle, $omdbSettings, $source);
+			if ($foundTitle) return true;
+		}
+
+		//Try one last time without a year
+		$url = "http://www.omdbapi.com/?t=$encodedTitle&apikey={$omdbSettings->apiKey}";
+		$client = new CurlWrapper();
+		$result = $client->curlGetPage($url);
+		if ($result !== false) {
+			if ($json = json_decode($result, true)) {
+				if (array_key_exists('Poster', $json)){
+					if ($this->processImageURL($source, $json['Poster'], true)){
+						return true;
 					}
 				}
 			}
 		}
 
-		//Try one last time without a year
-		$url = "http://www.omdbapi.com/?t=$encodedTitle&apikey={$omdbSettings->apiKey}";
+		//Try short title one last time without a year
+		$url = "http://www.omdbapi.com/?t=$encodedShortTitle&apikey={$omdbSettings->apiKey}";
 		$client = new CurlWrapper();
 		$result = $client->curlGetPage($url);
 		if ($result !== false) {
@@ -1226,11 +1241,12 @@ class BookCoverProcessor{
 						if ($hasGoogleSettings && $this->google($googleApiSettings, $groupedWorkDriver->getTitle(), $groupedWorkDriver->getPrimaryAuthor())) {
 							return true;
 						}
-					}elseif ($groupedWork->grouping_category == 'movie') {
+					}
+					if ($groupedWorkDriver->getFormatCategory() == 'Movies') {
 						require_once ROOT_DIR . '/sys/Enrichment/OMDBSetting.php';
 						$omdbSettings = new OMDBSetting();
 						if ($omdbSettings->find(true)) {
-							if ($this->omdb($omdbSettings, $groupedWorkDriver->getTitle(), $groupedWorkDriver->getPublicationDates())) {
+							if ($this->omdb($omdbSettings, $groupedWorkDriver->getTitle(), $groupedWorkDriver->getShortTitle(), $groupedWorkDriver->getPublicationDates())) {
 								return true;
 							}
 						}
@@ -1423,5 +1439,34 @@ class BookCoverProcessor{
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * @param $year
+	 * @param string $encodedShortTitle
+	 * @param OMDBSetting $omdbSettings
+	 * @param string $source
+	 * @return bool
+	 */
+	protected function searchOmdbForCover($year, string $encodedShortTitle, OMDBSetting $omdbSettings, string $source): bool
+	{
+		$foundTitle = false;
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		foreach ($year as $curYear) {
+			$url = "http://www.omdbapi.com/?t=$encodedShortTitle&y=$curYear&apikey={$omdbSettings->apiKey}";
+			$client = new CurlWrapper();
+			$result = $client->curlGetPage($url);
+			if ($result !== false) {
+				if ($json = json_decode($result, true)) {
+					if (array_key_exists('Poster', $json)) {
+						if ($this->processImageURL($source, $json['Poster'], true)) {
+							$foundTitle = true;
+						}
+					}
+				}
+			}
+			if ($foundTitle) break;
+		}
+		return $foundTitle;
 	}
 }
