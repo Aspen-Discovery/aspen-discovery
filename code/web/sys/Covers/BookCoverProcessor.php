@@ -164,7 +164,7 @@ class BookCoverProcessor{
 
 			require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
 			$driver = new SideLoadedRecord($sourceAndId);
-			if ($driver) {
+			if ($driver && $driver->isValid()) {
 				/** @var File_MARC_Data_Field[] $linkFields */
 				$linkFields = $driver->getMarcRecord()->getFields('856');
 				foreach ($linkFields as $linkField) {
