@@ -26,7 +26,7 @@ class MyAccount_Fines extends MyAccount
 					$currencyCode = $variables->currencyCode;
 				}
 				$interface->assign('currencyCode', $currencyCode);
-				
+
 				// Get My Fines
 				$user = UserAccount::getLoggedInUser();
 				$interface->assign('profile', $user);

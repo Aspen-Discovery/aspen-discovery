@@ -2281,6 +2281,15 @@ function getLibraryLocationUpdates(){
 				"UPDATE library set allowPatronPhoneNumberUpdates = allowPatronAddressUpdates"
 			),
 		),
+
+		'location_tty_description' => [
+			'title' => 'Location TTY & Description Fields',
+			'description' => 'Add TTY and Description fields to location table',
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN tty VARCHAR(25)',
+				'ALTER TABLE location ADD COLUMN description MEDIUMTEXT'
+			]
+		]
 	);
 }
 

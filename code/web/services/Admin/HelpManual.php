@@ -1,6 +1,6 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/Parsedown/Parsedown.php';
+require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 
 class Admin_HelpManual extends Action
 {
@@ -26,7 +26,7 @@ class Admin_HelpManual extends Action
 			$sidebar = '';
 		}
 		if (file_exists($helpManualPath . '/'. $page . '.MD')){
-			$parsedown = Parsedown::instance();
+			$parsedown = AspenParsedown::instance();
 			$formattedPage = $parsedown->parse(file_get_contents($helpManualPath . '/'. $page . '.MD'));
 			$interface->assign('formattedPage', $formattedPage);
 			$this->display('manual.tpl', 'Help Manual', $sidebar);
