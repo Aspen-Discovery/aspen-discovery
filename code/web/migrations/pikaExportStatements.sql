@@ -39,4 +39,4 @@ from merged_grouped_works
          INNER JOIN grouped_work as destination_grouped_work on destination_grouped_work.permanent_id = destinationGroupedWorkId
          inner join grouped_work_primary_identifiers as destination_grouped_work_primary_identifiers on destination_grouped_work_primary_identifiers.grouped_work_id = destination_grouped_work.id
 GROUP BY sourceTitle, sourceAuthor, sourceGroupedWorkId, destinationTitle, destinationAuthor, destinationGroupedWorkId, notes
-INTO OUTFILE '/data/aspen-discovery/nashville/pika_export/mergedGroupedWorks.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
+INTO OUTFILE '/data/aspen-discovery/nashville/{sitename}/mergedGroupedWorks.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
