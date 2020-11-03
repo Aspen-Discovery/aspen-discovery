@@ -47,11 +47,11 @@
 
 							{if $enableSelfRegistration == 1 && !$isStandalonePage}
 								<p class="help-block">
-									Don't have a library card?  <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
+									{translate text="Don't have a library card?"}  <a href="/MyAccount/SelfReg">{translate text="Register for a new Library Card"}</a>.
 								</p>
 							{elseif $enableSelfRegistration == 2 && !$isStandalonePage}
 								<p class="help-block">
-									Don't have a library card? <a href="{$selfRegistrationUrl}">Register for a new Library Card</a>.
+									{translate text="Don't have a library card?"} <a href="{$selfRegistrationUrl}">{translate text="Register for a new Library Card"}</a>.
 								</p>
 							{/if}
 						</div>

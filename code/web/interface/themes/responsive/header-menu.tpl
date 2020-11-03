@@ -45,7 +45,7 @@
 					{* Put the links within a collapsible section *}
 					<a onclick="return AspenDiscovery.toggleMenuSection('{$categoryName|escapeCSS}');" {if $firstCategory->showInTopMenu == 1 || $firstCategory->alwaysShowIconInTopMenu == 1}class="hidden-lg"{/if}>
 						<div class="header-menu-section" id="{$categoryName|escapeCSS}MenuSection">
-							<i class="fas {if !array_key_exists($categoryName, $expandedLinkCategories)}fa-caret-right{else}fa-caret-down{/if}"></i>{$categoryName}
+							<i class="fas {if !array_key_exists($categoryName, $expandedLinkCategories)}fa-caret-right{else}fa-caret-down{/if}"></i>{translate tex=$categoryName}
 						</div>
 					</a>
 					<div id="{$categoryName|escapeCSS}MenuSectionBody" class="menuSectionBody {if $firstCategory->showInTopMenu == 1 || $firstCategory->alwaysShowIconInTopMenu == 1}hidden-lg{/if}" {if !array_key_exists($categoryName, $expandedLinkCategories)}style="display: none" {/if}>
@@ -58,7 +58,7 @@
 										{if !empty($link->iconName)}
 											<i class="fas fa-{$link->iconName} fa-lg"></i>
 										{/if}
-										{$linkName}
+										{translate text=$linkName}
 									</a>
 								</div>
 							{/if}
@@ -75,7 +75,7 @@
 									{if !empty($link->iconName)}
 										<i class="fas fa-{$link->iconName} fa-lg"></i>
 									{/if}
-									{$linkName}
+									{translate text=$linkName}
 								</div>
 							</a>
 						{/if}

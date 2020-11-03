@@ -43,11 +43,11 @@
 						{/if}
 						{if $enableSelfRegistration == 1}
 							<p class="help-block">
-								Don't have a library card? <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
+								{translate text="Don't have a library card?"} <a href="/MyAccount/SelfReg">{translate text="Register for a new Library Card"}</a>.
 							</p>
 						{elseif $enableSelfRegistration == 2}
 							<p class="help-block">
-								Don't have a library card? <a href="{$selfRegistrationUrl}">Register for a new Library Card</a>.
+								{translate text="Don't have a library card?"} <a href="{$selfRegistrationUrl}">{translate text="Register for a new Library Card"}</a>.
 							</p>
 						{/if}
 					</div>
@@ -73,7 +73,7 @@
 	<div class="modal-footer">
 		<button class="btn" data-dismiss="modal" id="modalClose">{translate text=Close}</button>
 		<span class="modal-buttons">
-		<input type="submit" name="submit" value="{if !empty($multiStep)}Continue{else}Sign In{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
+		<input type="submit" name="submit" value="{if !empty($multiStep)}{translate text="Continue"}{else}{translate text="Sign In"}{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
 	</span>
 	</div>
 {/strip}
