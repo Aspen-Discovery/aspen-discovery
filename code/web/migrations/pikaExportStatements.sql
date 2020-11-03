@@ -1,3 +1,5 @@
+set group_concat_max_len = 1048576;
+
 SELECT * FROM user INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_export/users.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
 
 SELECT cat_username, roles.name FROM user_roles inner join user on user_roles.userId = user.id inner join roles on user_roles.roleId = roles.roleId INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_export/userRoles.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
