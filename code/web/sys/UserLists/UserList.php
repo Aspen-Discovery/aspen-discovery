@@ -676,12 +676,14 @@ class UserList extends DataObject
 			if ($userList->find(true)){
 				$okToShow = false;
 				$key = '';
-				if (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $userList->user_id){
-					$okToShow = true;
-					$key = 0 . strtolower($userList->title);
-				}else if ($userList->searchable){
-					$okToShow = true;
-					$key = 1 . strtolower($userList->title);
+				if (!$userList->deleted) {
+					if (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $userList->user_id) {
+						$okToShow = true;
+						$key = 0 . strtolower($userList->title);
+					} else if ($userList->searchable) {
+						$okToShow = true;
+						$key = 1 . strtolower($userList->title);
+					}
 				}
 				if ($okToShow) {
 					$userLists[$key] = [
