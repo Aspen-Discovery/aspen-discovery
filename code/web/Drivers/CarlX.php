@@ -592,7 +592,7 @@ class CarlX extends AbstractIlsDriver{
 		return array($fullName, $lastName, $firstName);
 	}
 
-	public function getCheckouts($user) {
+	public function getCheckouts(User $user) {
 		$checkedOutTitles = array();
 
 		//Search for the patron in the database

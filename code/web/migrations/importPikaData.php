@@ -51,7 +51,8 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 	global $aspen_db;
 
 	echo ("Starting to import users\n");
-	set_time_limit(600);
+	ob_flush();
+	set_time_limit(1800);
 
 	$preValidatedIds = []; //Key is barcode, value is the unique id
 	//Optionally we can have a list of all patron ids in the ILS currently.
@@ -72,6 +73,7 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 	echo("Flipped User Ids\n");
 	ob_flush();
 
+	set_time_limit(600);
 	//Load users, make sure to validate that each still exists in the ILS as we load them
 	$numImports = 0;
 	$userHnd = fopen($exportPath . "users.csv", 'r');
@@ -79,8 +81,8 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 	while ($userRow = fgetcsv($userHnd)) {
 		$numImports++;
 		$userFromCSV = loadUserInfoFromCSV($userRow);
-		echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->cat_username}\tUsername {$userFromCSV->username}\n");
-		ob_flush();
+		//echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->cat_username}\tUsername {$userFromCSV->username}\n");
+		//ob_flush();
 		if (count($preValidatedIds) > 0){
 			if (array_key_exists($userFromCSV->cat_username, $preValidatedIds)){
 				$username = $preValidatedIds[$userFromCSV->cat_username];
@@ -120,8 +122,8 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 			$existingUser = UserAccount::validateAccount($userFromCSV->cat_username, $userFromCSV->cat_password);
 		}
 		if ($existingUser != false && !($existingUser instanceof AspenError)){
-			echo("Found an existing user with id {$existingUser->id}\n");
-			ob_flush();
+			//echo("Found an existing user with id {$existingUser->id}\n");
+			//ob_flush();
 			$existingUserId = $existingUser->id;
 			if ($existingUserId != $userFromCSV->id){
 				//Have to delete the old user before inserting the new to avoid errors with primary keys
