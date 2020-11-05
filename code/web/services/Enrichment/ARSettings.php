@@ -18,7 +18,7 @@ class Enrichment_ARSettings extends ObjectEditor
 
 	function getModule()
 	{
-		return 'RenaissanceLearning';
+		return 'Enrichment';
 	}
 
 	function getPageTitle()
