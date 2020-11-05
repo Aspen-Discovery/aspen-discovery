@@ -19,7 +19,7 @@ if (!file_exists($exportPath)){
 	validateFileExists($exportPath, "users.csv");
 	validateFileExists($exportPath, "userRoles.csv");
 	validateFileExists($exportPath, "staffSettings.csv");
-	validateFileExists($exportPath, "savedSearches.csv");
+	validateFileExists($exportPath, "saved_searches.csv");
 	validateFileExists($exportPath, "materials_request.csv");
 	validateFileExists($exportPath, "patronLists.csv");
 	validateFileExists($exportPath, "patronListEntries.csv");
@@ -35,10 +35,14 @@ if (!file_exists($exportPath)){
 
 	$startTime = time();
 	importUsers($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
+	importSavedSearches($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
+	importMergedWorks($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importLists($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importListWidgets($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
 	importNotInterested($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importRatingsAndReviews($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importReadingHistory($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+
 }
 
 function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $serverName){
@@ -173,6 +177,8 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 		}
 	}
 	fclose($userHnd);
+	$elapsedTime = time() - $batchStartTime;
+	$totalElapsedTime = ceil((time() - $startTime) / 60);
 	echo("Processed $numImports Users in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 	echo (count($missingUsers) . " users were part of the export, but no longer exist in the ILS\n");
 	ob_flush();
@@ -356,6 +362,8 @@ function importReadingHistory($startTime, $exportPath, &$existingUsers, &$missin
 			set_time_limit(600);
 		}
 	}
+	$elapsedTime = time() - $batchStartTime;
+	$totalElapsedTime = ceil((time() - $startTime) / 60);
 	echo("Processed $numImports Reading History Entries in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 	echo("Skipped $numSkipped reading history entries because the title is no longer in the catalog\n");
 	fclose($readingHistoryHnd);
@@ -411,6 +419,8 @@ function importNotInterested($startTime, $exportPath, &$existingUsers, &$missing
 			ob_flush();
 		}
 	}
+	$elapsedTime = time() - $batchStartTime;
+	$totalElapsedTime = ceil((time() - $startTime) / 60);
 	echo("Processed $numImports Not Interested in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 	echo("Skipped $numSkipped not interested because the title is no longer in the catalog");
 
@@ -630,6 +640,309 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 	ob_flush();
 }
 
+function importSavedSearches($startTime, $exportPath, &$existingUsers, &$missingUsers, $serverName){
+	if (file_exists($exportPath . 'saved_searches.csv')){
+		echo ("Starting to import saved searches\n");
+		$savedSearchesHnd = fopen($exportPath . 'saved_searches.csv', 'r');
+		$removedSearches = [];
+		$numImports = 0;
+		$batchStartTime = time();
+		//TODO: Do we need to flip the ids of the searches to preserve the id?
+		while ($savedSearchRow = fgetcsv($savedSearchesHnd)){
+			$numImports++;
+			$userBarcode = $savedSearchRow[0];
+			$searchId = $savedSearchRow[1];
+			$sessionId = $savedSearchRow[2];
+			//$folderId = $savedSearchRow[3]; Folder ID does not get used anymore in Aspen
+			$created = $savedSearchRow[4];
+			//$title = cleancsv($savedSearchRow[5]); Title does not get used anymore in Aspen
+			$saved = $savedSearchRow[6];
+			$searchObject = cleancsv($savedSearchRow[7]);
+			$searchSource = cleancsv($savedSearchRow[8]);
+			$userId = getUserIdForBarcode($userBarcode, $existingUsers, $missingUsers);
+			if ($userId == -1){
+				$removedSearches[$searchId] = $searchId;
+				continue;
+			}
+
+			require_once ROOT_DIR . '/sys/SearchEntry.php';
+			$savedSearch = new SearchEntry();
+			$savedSearch->id = $searchId;
+			$searchExists = false;
+			if ($savedSearch->find(true)){
+				$searchExists = true;
+			}
+			$savedSearch->user_id = $userId;
+			$savedSearch->session_id = $sessionId;
+			$savedSearch->created = $created;
+			$savedSearch->searchSource = $searchSource;
+			$savedSearch->search_object = $searchObject;
+			$savedSearch->saved = $saved;
+			if ($searchExists){
+				$savedSearch->update();
+			}else{
+				$savedSearch->insert();
+			}
+			$savedSearch->__destruct();
+			$savedSearch = null;
+
+			if ($numImports % 2500 == 0){
+				gc_collect_cycles();
+				ob_flush();
+				usleep(10);
+				$elapsedTime = time() - $batchStartTime;
+				$batchStartTime = time();
+				$totalElapsedTime = ceil((time() - $startTime) / 60);
+				echo("Processed $numImports Saved Searches in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+			}
+		}
+		fclose($savedSearchesHnd);
+		echo("Processed $numImports Saved Searches in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+		echo("Removed " . count($removedSearches) . " saved searches because the user is not valid\n");
+	}else{
+		echo ("No saved searches provided, skipping\n");
+	}
+	ob_flush();
+}
+
+function importMergedWorks($startTime, $exportPath, &$existingUsers, &$missingUsers, $serverName, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks){
+	if (file_exists($exportPath . 'mergedGroupedWorks.csv')){
+		$aspenAdminUser = new User();
+		$aspenAdminUser->cat_username = 'aspen_admin';
+		$aspenAdminUser->find(true);
+		$mergedWorksHnd = fopen($exportPath . 'mergedGroupedWorks.csv', 'r');
+		$numImports = 0;
+		$numSkipped = 0;
+		$batchStartTime = time();
+		$numRecordsMergedCorrectlyAlready = 0;
+		$numRecordsWithAlternateTitlesAdded = 0;
+		while ($mergedWorksRow = fgetcsv($mergedWorksHnd)){
+			$numImports++;
+
+			$destinationTitle = cleancsv($mergedWorksRow[0]);
+			$destinationAuthor = cleancsv($mergedWorksRow[1]);
+			$destinationGroupedWorkID = $mergedWorksRow[2];
+			$destinationRecords = $mergedWorksRow[3];
+
+			//Find the work for the given title & author
+			if (!validateGroupedWork($destinationGroupedWorkID, $destinationTitle, $destinationAuthor, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $destinationRecords)){
+				$numSkipped++;
+				continue;
+			}
+
+			$aspenGroupedWorkId = getGroupedWorkId($destinationGroupedWorkID, $validGroupedWorks, $movedGroupedWorks);
+			$resourcesList = explode(",", $destinationRecords);
+			$allResourcesAttachedToSameRecord = true;
+			$alternateTitleAuthors = [];
+			foreach ($resourcesList as $resourceId){
+				if (strpos($resourceId, ':') === false){
+					continue;
+				}
+				list($source, $id) = explode(':', $resourceId);
+				$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
+				$groupedWorkPrimaryIdentifier->type = $source;
+				$groupedWorkPrimaryIdentifier->identifier = $id;
+				if ($groupedWorkPrimaryIdentifier->find(true)){
+					$groupedWork = new GroupedWork();
+					$groupedWork->id = $groupedWorkPrimaryIdentifier->grouped_work_id;
+					if ($groupedWork->find(true)){
+						if ($groupedWork->permanent_id != $aspenGroupedWorkId){
+							$allResourcesAttachedToSameRecord = false;
+							$alternateTitleAuthors[$groupedWork->full_title . ':' . $groupedWork->author] = [
+								'title' => $groupedWork->full_title,
+								'author' => $groupedWork->author
+							];
+						}
+					}
+					$groupedWork->__destruct();
+					$groupedWork = null;
+				}
+				$groupedWorkPrimaryIdentifier->__destruct();
+				$groupedWorkPrimaryIdentifier = null;
+			}
+			if (!$allResourcesAttachedToSameRecord){
+				foreach ($alternateTitleAuthors as $titleAuthor){
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
+					$alternateTitle = new GroupedWorkAlternateTitle();
+					$alternateTitle->permanent_id = $aspenGroupedWorkId;
+					$alternateTitle->alternateTitle = $titleAuthor['title'];
+					$alternateTitle->alternateAuthor = $titleAuthor['author'];
+					if (!$alternateTitle->find(true)){
+						$alternateTitle->addedBy = $aspenAdminUser->id;
+						$alternateTitle->dateAdded = time();
+						$alternateTitle->insert();
+					}
+				}
+				$numRecordsWithAlternateTitlesAdded++;
+			}else{
+				$numRecordsMergedCorrectlyAlready++;
+			}
+			//- if found, check all records attached in Aspen (same normalization in Pika and Aspen)
+			//  - if a record is not attached to the correct work - create an Alternate Title with the title/author in Aspen
+			//- if not found (different title/author normalization in Pika and Aspen)
+            //  - figure out which work has the most ils records attached to it and then follow setup Alternate titles for everything else.
+            //  - If nothing has more than anything else, pick the first ils record, or the first record if no ils titles.
+
+			if ($numImports % 2500 == 0){
+				gc_collect_cycles();
+				ob_flush();
+				usleep(10);
+				$elapsedTime = time() - $batchStartTime;
+				$batchStartTime = time();
+				$totalElapsedTime = ceil((time() - $startTime) / 60);
+				echo("Processed $numImports Merged Works in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+			}
+		}
+		fclose($mergedWorksHnd);
+		echo("Processed $numImports Merged Works in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+		echo("$numRecordsMergedCorrectlyAlready works were already merged correctly.\n");
+		echo("$numRecordsWithAlternateTitlesAdded works had alternate titles added to them.\n");
+		echo("Skipped $numSkipped merged works because the title is no longer in the catalog");
+	}else{
+		echo ("No merged grouped works provided, skipping\n");
+	}
+	ob_flush();
+}
+
+function importListWidgets($startTime, $exportPath, $existingUsers, $missingUsers, $serverName){
+	if (file_exists($exportPath . 'list_widgets.csv') && file_exists($exportPath . 'list_widget_lists.csv')){
+		$listWidgetHnd = fopen($exportPath . 'list_widgets.csv', 'r');
+		$listWidgetListsHnd = fopen($exportPath . 'list_widget_lists.csv', 'r');
+		$numListWidgetImports = 0;
+		$numListWidgetListImports = 0;
+		$batchStartTime = time();
+
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+
+		//Import Collection spotlights
+		while ($listWidgetRow = fgetcsv($listWidgetHnd)){
+			$numListWidgetImports++;
+			$curCol = 0;
+			$widgetId = $listWidgetRow[$curCol++];
+			$widgetName = $listWidgetRow[$curCol++];
+			$collectionSpotlight = new CollectionSpotlight();
+			$collectionSpotlight->id = $widgetId;
+			$spotlightExists = false;
+			if ($collectionSpotlight->find(true)){
+				$spotlightExists = true;
+				if ($widgetName != $collectionSpotlight->name){
+					echo("Widget ID $widgetId changed names was $widgetName, now it's {$collectionSpotlight->name} using name from Pika\n");
+					$collectionSpotlight->name = $widgetName;
+				}
+			}else{
+				$collectionSpotlight->name = $widgetName;
+			}
+
+			$collectionSpotlight->description = $listWidgetRow[$curCol++];
+			$collectionSpotlight->showTitleDescriptions = $listWidgetRow[$curCol++];
+			$collectionSpotlight->onSelectCallback = $listWidgetRow[$curCol++];
+			$collectionSpotlight->customCss = $listWidgetRow[$curCol++];
+			$collectionSpotlight->listDisplayType = $listWidgetRow[$curCol++];
+			$collectionSpotlight->autoRotate = $listWidgetRow[$curCol++];
+			$collectionSpotlight->showMultipleTitles = $listWidgetRow[$curCol++];
+			$collectionSpotlight->libraryId = $listWidgetRow[$curCol++];
+			$collectionSpotlight->style = $listWidgetRow[$curCol++];
+			$collectionSpotlight->coverSize = $listWidgetRow[$curCol++];
+			$collectionSpotlight->showRatings = $listWidgetRow[$curCol++];
+			$collectionSpotlight->showTitle = $listWidgetRow[$curCol++];
+			$collectionSpotlight->showAuthor = $listWidgetRow[$curCol++];
+			$collectionSpotlight->showViewMoreLink = $listWidgetRow[$curCol++];
+			$collectionSpotlight->viewMoreLinkMode = $listWidgetRow[$curCol++];
+			$collectionSpotlight->showListWidgetTitle = $listWidgetRow[$curCol++];
+			$collectionSpotlight->numTitlesToShow = $listWidgetRow[$curCol];
+
+			if ($spotlightExists) {
+				$collectionSpotlight->update();
+
+				//Delete all lists from all collection spotlights and rebuild them later
+				$allSpotlightLists = new CollectionSpotlightList();
+				$allSpotlightLists->collectionSpotlightId = $collectionSpotlight->id;
+				$allSpotlightLists->delete(true);
+			}else{
+				$collectionSpotlight->id = $widgetId;
+				$collectionSpotlight->insert();
+			}
+			$collectionSpotlight->__destruct();
+			$collectionSpotlight = null;
+		}
+		while ($listWidgetListRow = fgetcsv($listWidgetListsHnd)){
+			$numListWidgetListImports++;
+			$curCol = 0;
+			$listWidgetListWidgetListId = $listWidgetListRow[$curCol++];
+			$listWidgetId = $listWidgetListRow[$curCol++];
+			$collectionSpotlightList = new CollectionSpotlightList();
+			$collectionSpotlightList->id = $listWidgetListWidgetListId;
+			$widgetListExists = false;
+			if ($collectionSpotlightList->find(true)){
+				$widgetListExists = true;
+			}
+			$collectionSpotlightList->collectionSpotlightId = $listWidgetId;
+			$collectionSpotlightList->weight = $listWidgetListRow[$curCol++];
+			$collectionSpotlightList->displayFor = $listWidgetListRow[$curCol++];
+			$collectionSpotlightList->name = $listWidgetListRow[$curCol++];
+			$source = $listWidgetListRow[$curCol];
+			list($type, $identifier) = explode(':', $source);
+			if ($type == 'list'){
+				$collectionSpotlightList->source = 'List';
+				$collectionSpotlightList->sourceListId = $identifier;
+				//Validate that the list exists
+				$list = new UserList();
+				$list->id = $identifier;
+				if (!$list->find(true)){
+					echo("Could not find list $identifier for widget list $listWidgetListWidgetListId in $listWidgetId\n");
+					continue;
+				}
+			}elseif ($type == 'search'){
+				/** @var SearchObject_GroupedWorkSearcher $searcher */
+				$searcher = SearchObjectFactory::initSearchObject('GroupedWork');
+				$savedSearch = $searcher->restoreSavedSearch($identifier, false, true);
+				if ($savedSearch !== false) {
+					$collectionSpotlightList->updateFromSearch($savedSearch);
+				}else{
+					echo("Could not load saved search $identifier for collection spotlight list $listWidgetListWidgetListId in $listWidgetId\n");
+					continue;
+				}
+			}
+
+			if (empty($collectionSpotlightList->defaultSort)){
+				$collectionSpotlightList->defaultSort = 'relevance';
+			}
+
+			if ($widgetListExists){
+				$collectionSpotlightList->update();
+			}else{
+				$collectionSpotlightList->insert();
+			}
+		}
+
+		//Delete any spotlights that have no lists
+		$collectionSpotlight = new CollectionSpotlight();
+		$collectionSpotlight->find();
+		while ($collectionSpotlight->fetch()){
+			if ($collectionSpotlight->getNumLists() == 0){
+				$spotlightToDelete = new CollectionSpotlight();
+				$spotlightToDelete->id = $collectionSpotlight->id;
+				$spotlightToDelete->delete();
+				echo("Deleted collection spotlight {$collectionSpotlight->id} because it had no lists\n");
+			}elseif (preg_match('/delete me|please delete/i', $collectionSpotlight->name)){
+				$spotlightToDelete = new CollectionSpotlight();
+				$spotlightToDelete->id = $collectionSpotlight->id;
+				$spotlightToDelete->delete();
+				echo("Deleted collection spotlight {$collectionSpotlight->id} because it had was named delete me or please delete\n");
+			}
+		}
+		fclose($listWidgetHnd);
+		fclose($listWidgetListsHnd);
+		$elapsedTime = time() - $batchStartTime;
+		$totalElapsedTime = ceil((time() - $startTime) / 60);
+		echo("Processed $numListWidgetImports List Widgets and $numListWidgetListImports List Widget Lists in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	}else{
+		echo ("No list widgets provided, skipping\n");
+	}
+	ob_flush();
+}
+
 function cleancsv($field){
 	if ($field == '\N'){
 		return null;
@@ -690,77 +1003,6 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 			$groupedWorkValid = false;
 			$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
 		}
-
-		/*
-		//If that didn't work, go based on the permanent id
-		if (!$groupedWorkValid) {
-			$groupedWork = new GroupedWork();
-			$groupedWork->permanent_id = $groupedWorkId;
-			$groupedWorkValid = true;
-			if (!$groupedWork->find(true)) {
-				if ($title != null || $author != null) {
-					require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
-					//Search for the record by title and author
-					$searchObject = SearchObjectFactory::initSearchObject();
-					$searchObject->init();
-					$searchTerm = '';
-					if ($title != null) {
-						$title = preg_replace('~\ss\s~', 's ', $title);
-						$searchTerm = $title;
-					}
-					if ($author != null) {
-						$searchTerm .= ' ' . $author;
-					}
-					$searchTerm = trim($searchTerm);
-					$searchObject->setBasicQuery($searchTerm);
-					$result = $searchObject->processSearch(true, false);
-					if ($result instanceof AspenError) {
-						echo("Unable to query solr for grouped work {$result->getMessage()}\r\n");
-						$groupedWorkValid = false;
-						$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
-					} else {
-						$recordSet = $searchObject->getResultRecordSet();
-						if ($searchObject->getResultTotal() == 1) {
-							//We found it by searching
-							$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
-							$groupedWorkId = $recordSet[0]['id'];
-							$groupedWorkValid = true;
-						} elseif ($searchObject->getResultTotal() > 1) {
-							//We probably found it by searching
-							echo("WARNING: More than one work found when searching for $title by $author\r\n");
-							$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
-							$groupedWorkId = $recordSet[0]['id'];
-							$groupedWorkValid = true;
-						} else {
-							echo("Grouped Work $groupedWorkId - $title by $author could not be found by searching\r\n");
-							$groupedWorkValid = false;
-							$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
-						}
-					}
-					$searchObject->__destruct();
-					$searchObject = null;
-				} else {
-					//There was no title or author provided, it looks like this was deleted in Pika
-					//echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");
-					$groupedWorkValid = false;
-					$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
-				}
-				$groupedWorkValid = false;
-				$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
-			} elseif ($groupedWork->full_title != $title || $groupedWork->author != $author) {
-				echo("WARNING grouped Work $groupedWorkId - $title by $author may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
-			}
-			if ($groupedWorkValid && $title == null && $author == null) {
-				echo "Grouped work with no title and author was valid\r\n";
-				$groupedWorkValid = false;
-				$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
-			}
-			if ($groupedWorkValid) {
-				$validGroupedWorks[$groupedWorkId] = $groupedWorkId;
-			}
-			$groupedWork->__destruct();
-			$groupedWork = null;
-		}*/
 	}
 	return $groupedWorkValid;
 }
