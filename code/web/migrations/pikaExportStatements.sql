@@ -14,7 +14,9 @@ SELECT cat_username, listId, notes, dateAdded, full_title, author, permanent_id,
 
 SELECT cat_username, user_not_interested.dateMarked, grouped_work.full_title, grouped_work.author, permanent_id, GROUP_CONCAT(CONCAT(type, ':', identifier)) from user inner join user_not_interested on user.id = userId INNER JOIN grouped_work on permanent_id = groupedRecordPermanentId inner join grouped_work_primary_identifiers on grouped_work_id = grouped_work.id group by cat_username, user_not_interested.dateMarked, grouped_work.full_title, grouped_work.author, permanent_id INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_export/patronNotInterested.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
 
-SELECT primaryUser.cat_username, linkedUser.cat_username, user_link.linkingDisabled FROM user_link inner join user as primaryUser on primaryAccountId = primaryUser.id inner join user as linkedUser on linkedAccountId = linkedUser.id INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_export/patronLinkedUsers.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
+SELECT cat_username, user_staff_settings.materialsRequestEmailSignature, user_staff_settings.materialsRequestReplyToAddress  from user inner join user_staff_settings on user.id = userId INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_export/staffSettings.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
+
+SELECT primaryUser.cat_username, linkedUser.cat_username FROM user_link inner join user as primaryUser on primaryAccountId = primaryUser.id inner join user as linkedUser on linkedAccountId = linkedUser.id INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_export/patronLinkedUsers.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
 
 SELECT primaryUser.cat_username, blockedUser.cat_username, user_link_blocks.blockLinking FROM user_link_blocks inner join user as primaryUser on primaryAccountId = primaryUser.id inner join user as blockedUser on blockedLinkAccountId = blockedUser.id INTO OUTFILE '/data/aspen-discovery/{sitename}/pika_export/patronLinkBlocking.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"';
 

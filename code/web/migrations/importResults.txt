@@ -1,0 +1,1 @@
+Could not find staffSettings.csv in export path /data/aspen-discovery/nashville.aspenlocal/pika_export/

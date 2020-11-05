@@ -57,9 +57,11 @@ abstract class AbstractDriver
 	 *
 	 * @param $patron     User
 	 * @param $recordId   string
+	 * @param $itemId     string
+	 * @param $itemIndex  string
 	 * @return mixed
 	 */
-	public abstract function renewCheckout($patron, $recordId);
+	abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
 
 	public function hasHolds()
 	{
@@ -81,25 +83,25 @@ abstract class AbstractDriver
 	/**
 	 * Place Hold
 	 *
-	 * This is responsible for both placing holds as well as placing recalls.
+	 * This is responsible for placing holds
 	 *
 	 * @param User $patron The User to place a hold for
 	 * @param string $recordId The id of the bib record
-	 * @return  array                 An array with the following keys
-	 *                                result - true/false
-	 *                                message - the message to display (if item holds are required, this is a form to select the item).
-	 *                                needsItemLevelHold - An indicator that item level holds are required
-	 *                                title - the title of the record the user is placing a hold on
+	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param string $cancelDate When the hold should be automatically cancelled
+	 * @return  mixed                 True if successful, false if unsuccessful
+	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	public abstract function placeHold($patron, $recordId);
+	abstract function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null);
 
 	/**
 	 * Cancels a hold for a patron
 	 *
 	 * @param User $patron The User to cancel the hold for
 	 * @param string $recordId The id of the bib record
+	 * @param string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	abstract function cancelHold($patron, $recordId);
+	abstract function cancelHold($patron, $recordId, $cancelId = null);
 }
