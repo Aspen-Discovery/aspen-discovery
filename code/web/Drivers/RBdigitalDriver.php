@@ -364,7 +364,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 	 * @param $recordId   string
 	 * @return array
 	 */
-	public function renewCheckout($patron, $recordId)
+	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
@@ -618,7 +618,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 	 * @param string $recordId The id of the bib record
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId)
+	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$rbdigitalId = $this->getRBdigitalId($patron);

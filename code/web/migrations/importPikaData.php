@@ -167,6 +167,7 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 			//User no longer exists in the ILS
 			$missingUsers[$userFromCSV->cat_username] = $userFromCSV->cat_username;
 		}
+		$existingUser->__destruct();
 		$existingUser = null;
 		$userFromCSV = null;
 

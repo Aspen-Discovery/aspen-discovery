@@ -502,7 +502,7 @@ class HooplaDriver extends AbstractEContentDriver{
      *                                title - the title of the record the user is placing a hold on
      * @access  public
      */
-    public function placeHold($patron, $recordId)
+	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
     {
         return [
             'result' => false,
@@ -517,7 +517,7 @@ class HooplaDriver extends AbstractEContentDriver{
      * @param string $recordId The id of the bib record
      * @return false|array
      */
-    function cancelHold($patron, $recordId)
+	function cancelHold($patron, $recordId, $cancelId = null)
     {
         return false;
     }

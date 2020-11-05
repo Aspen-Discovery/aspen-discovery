@@ -653,15 +653,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $summary;
 	}
 
-	/**
-	 * Places a hold on an item within OverDrive
-	 *
-	 * @param string $overDriveId
-	 * @param User $user
-	 *
-	 * @return array (result, message)
-	 */
-	public function placeHold($user, $overDriveId){
+	function placeHold($patron, $overDriveId, $pickupBranch = null, $cancelDate = null)
+	{
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
@@ -782,7 +775,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param string $overDriveId
 	 * @return array
 	 */
-	public function cancelHold($user, $overDriveId){
+	function cancelHold($patron, $overDriveId, $cancelId = null){
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
@@ -996,7 +989,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param $recordId   string
 	 * @return mixed
 	 */
-	public function renewCheckout($patron, $recordId)
+	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
 		return $this->checkOutTitle($patron, $recordId);
 	}
