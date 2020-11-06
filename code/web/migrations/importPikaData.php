@@ -11,6 +11,14 @@ ini_set('memory_limit','4G');
 $dataPath = '/data/aspen-discovery/' . $serverName;
 $exportPath = $dataPath . '/pika_export/';
 
+$flipIds = readline("Flip User Ids? (y/N)> ");
+
+if (count($_SERVER['argv']) > 2) {
+	$flipIds = $_SERVER['argv'][2];
+}else{
+	$flipIds = 'N';
+}
+
 if (!file_exists($exportPath)){
 	echo("Could not find export path " . $exportPath . "\n");
 }else{
@@ -34,7 +42,7 @@ if (!file_exists($exportPath)){
 	$movedGroupedWorks = [];
 
 	$startTime = time();
-	importUsers($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
+	importUsers($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $flipIds);
 	importSavedSearches($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
 	importMergedWorks($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importLists($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
@@ -47,7 +55,7 @@ if (!file_exists($exportPath)){
 	//Linked Users
 }
 
-function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $serverName){
+function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $serverName, $flipIds){
 	global $aspen_db;
 
 	echo ("Starting to import users\n");
@@ -65,11 +73,13 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 			$preValidatedIds[$patronIdRow[1]] = $patronIdRow[0];
 		}
 		fclose($patronIdsHnd);
+	}else{
+		echo("No patron_ids.csv file found.  This import process is much faster if patron ids are prevalidated.");
+		ob_flush();
 	}
 
 	//Flipping the user ids helps to deal with cases where the unique id within Aspen is different than the unique ID in Pika.
 	//This only happens after the initial conversion when users log in to Aspen and Pika in different orders.
-	$flipIds = readline("Flip User Ids? (y/N)> ");
 	if ($flipIds == 'Y' || $flipIds == 'y') {
 		flipUserIds();
 		echo("Flipped User Ids\n");
