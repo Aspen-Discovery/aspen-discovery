@@ -24,7 +24,14 @@ class StaffMember extends DataObject
 			'email' => array('property' => 'email', 'type' => 'email', 'label' => 'Email', 'description' => 'The email for the staffer', 'size' => '100', 'maxLength'=>255),
 			'phone' => array('property' => 'phone', 'type' => 'text', 'label' => 'Phone', 'description' => 'The phone number for the staffer', 'size' => '13', 'maxLength'=>13),
 			'photo' => array('property' => 'photo', 'type' => 'image', 'label' => 'Photo (500px x 500px max)', 'description' => 'The photo for use in the header', 'required' => false, 'maxWidth' => 500, 'maxHeight' => 500, 'thumbWidth' => 150, 'mediumWidth' => 250, 'hideInLists' => true),
-			'description' => array('property' => 'description', 'type' => 'html', 'label' => 'Description', 'description' => 'A description for the staff member', 'hideInLists' => true),
+			'description' => array('property' => 'description', 'type' => 'markdown', 'label' => 'Description', 'description' => 'A description for the staff member', 'hideInLists' => true),
 		];
+	}
+
+	function getFormattedDescription(){
+		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+		$parsedown = AspenParsedown::instance();
+		$parsedown->setBreaksEnabled(true);
+		return $parsedown->parse($this->description);
 	}
 }

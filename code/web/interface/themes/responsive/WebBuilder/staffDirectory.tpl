@@ -25,7 +25,7 @@
 				<div class="row">
 					<div class="col-xs-3 result-label"></div>
 					<div class="col-xs-9 result-value">
-						{$staffMember->description}
+						{$staffMember->getFormattedDescription()}
 					</div>
 				</div>
 			{/if}
