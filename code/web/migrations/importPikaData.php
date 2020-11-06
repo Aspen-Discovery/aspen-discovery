@@ -11,12 +11,12 @@ ini_set('memory_limit','4G');
 $dataPath = '/data/aspen-discovery/' . $serverName;
 $exportPath = $dataPath . '/pika_export/';
 
-$flipIds = readline("Flip User Ids? (y/N)> ");
+$flipIds = readline("Flip User Ids? (Y/n)> ");
 
 if (count($_SERVER['argv']) > 2) {
 	$flipIds = $_SERVER['argv'][2];
 }else{
-	$flipIds = 'N';
+	$flipIds = 'Y';
 }
 
 if (!file_exists($exportPath)){
