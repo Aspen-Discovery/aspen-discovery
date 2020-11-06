@@ -47,6 +47,7 @@ try {
 		$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
 		$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
 		$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
+		$interface->assign('googleAnalyticsVersion', empty($googleSettings->googleAnalyticsVersion) ? 'v3' : $googleSettings->googleAnalyticsVersion);
 		$linkedProperties = '';
 		if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
 			$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);

@@ -2111,6 +2111,23 @@ class Admin_DBMaintenance extends Admin_Admin
 					],
 				],
 
+				'google_analytics_version'  => [
+					'title' => 'Google API - Analytics Version',
+					'description' => 'Add the ability to determine which version of Google Analytics should be embedded.',
+					'sql' => [
+						"ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsVersion VARCHAR(5) DEFAULT 'v3'"
+					]
+				],
+
+				'google_remove_google_translate' => [
+					'title' => 'Google API - Remove Google Translate',
+					'description' => 'Remove Google Translate Settings',
+					'sql' => [
+						'ALTER TABLE google_api_settings DROP COLUMN googleTranslateKey',
+						'ALTER TABLE google_api_settings DROP COLUMN googleTranslateLanguages',
+					]
+				],
+
 				'coce_settings' => [
 					'title' => 'Coce server settings',
 					'description' => 'Add the ability to connect to a Coce server to load covers',
