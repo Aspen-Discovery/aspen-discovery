@@ -880,7 +880,7 @@ class CatalogConnection
 	 * @param string $newPin
 	 * @return string[] a message to the user letting them know what happened
 	 */
-	function updatePin($user, $oldPin, $newPin)
+	function updatePin(User $user, string $oldPin, string $newPin)
 	{
 		$result = $this->driver->updatePin($user, $oldPin, $newPin);
 		if ($result['success']) {

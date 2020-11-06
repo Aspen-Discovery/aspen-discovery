@@ -658,7 +658,7 @@ class CarlX extends AbstractIlsDriver{
 		return $checkedOutTitles;
 	}
 
-	function updatePin($user, $oldPin, $newPin) {
+	function updatePin(User $user, string $oldPin, string $newPin) {
 		$request = $this->getSearchbyPatronIdRequest($user);
 		$request->Patron = new stdClass();
 		$request->Patron->PatronPIN = $newPin;

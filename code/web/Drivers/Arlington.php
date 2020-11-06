@@ -26,7 +26,7 @@ class Arlington extends Sierra{
      * @param string $newPin
      * @return string[] The message to the user updating them on status
      */
-	function updatePin($user, $oldPin, $newPin){
+	function updatePin(User $user, string $oldPin, string $newPin){
 		$scope = $this->getDefaultScope();
 
 		//First we have to login to classic
