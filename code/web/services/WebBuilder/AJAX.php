@@ -141,6 +141,14 @@ class WebBuilder_AJAX extends JSON_Action
 						$image->generateSmallSize = true;
 						$destFileName = $file['name'];
 						$destFolder = $structure['fullSizePath']['path'];
+						if (!is_dir($destFolder)){
+							if (!mkdir($destFolder, 0755, true)){
+								$result['message'] = 'Could not create directory to upload files';
+								if (IPAddress::showDebuggingInformation()){
+									$result['message'] .= " " . $destFolder;
+								}
+							}
+						}
 						$destFullPath = $destFolder . '/' . $destFileName;
 						if (file_exists($destFullPath)){
 							$image->find(true);
