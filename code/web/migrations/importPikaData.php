@@ -69,9 +69,12 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 
 	//Flipping the user ids helps to deal with cases where the unique id within Aspen is different than the unique ID in Pika.
 	//This only happens after the initial conversion when users log in to Aspen and Pika in different orders.
-	flipUserIds();
-	echo("Flipped User Ids\n");
-	ob_flush();
+	$flipIds = readline("Flip User Ids? (y/N)> ");
+	if ($flipIds == 'Y' || $flipIds == 'y') {
+		flipUserIds();
+		echo("Flipped User Ids\n");
+		ob_flush();
+	}
 
 	set_time_limit(600);
 	//Load users, make sure to validate that each still exists in the ILS as we load them
