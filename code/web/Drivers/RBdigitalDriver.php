@@ -541,19 +541,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 		return $holds;
 	}
 
-	/**
-	 * Place Hold
-	 *
-	 * This is responsible for both placing holds as well as placing recalls.
-	 *
-	 * @param User $patron The User to place a hold for
-	 * @param string $recordId The id of the bib record
-	 * @return  array                 An array with the following keys
-	 *                                success - true/false
-	 *                                message - the message to display (if item holds are required, this is a form to select the item).
-	 * @access  public
-	 */
-	public function placeHold($patron, $recordId)
+	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$rbdigitalId = $this->getRBdigitalId($patron);

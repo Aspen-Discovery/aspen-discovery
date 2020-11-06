@@ -1521,7 +1521,7 @@ class SirsiDynixROA extends HorizonAPI
 	 * @param $newPin
 	 * @return array
 	 */
-	function updatePin(User $user, string $oldPin, string $newPin)
+	function updatePin(User $patron, string $oldPin, string $newPin)
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {

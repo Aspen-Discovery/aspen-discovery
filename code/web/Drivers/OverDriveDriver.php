@@ -653,7 +653,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $summary;
 	}
 
-	function placeHold($patron, $overDriveId, $pickupBranch = null, $cancelDate = null)
+	function placeHold($user, $overDriveId, $pickupBranch = null, $cancelDate = null)
 	{
 		global $memCache;
 
@@ -775,7 +775,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param string $overDriveId
 	 * @return array
 	 */
-	function cancelHold($patron, $overDriveId, $cancelId = null){
+	function cancelHold($user, $overDriveId, $cancelId = null){
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
