@@ -1541,6 +1541,12 @@ class User extends DataObject
 		return $result;
 	}
 
+	public function updateHomeLibrary($newHomeLocationCode){
+		$result = $this->getCatalogDriver()->updateHomeLibrary($this, $newHomeLocationCode);
+		$this->clearCache();
+		return $result;
+	}
+
 	/**
 	 * Update the PIN or password for the user
 	 *

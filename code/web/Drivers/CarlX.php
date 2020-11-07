@@ -679,6 +679,42 @@ class CarlX extends AbstractIlsDriver{
 		}
 	}
 
+	public function updateHomeLibrary(User $patron, string $homeLibraryCode) {
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
+
+		$request = $this->getSearchbyPatronIdRequest($patron);
+		if (!isset($request->Patron)){
+			$request->Patron = new stdClass();
+		}
+
+		$request->Patron->DefaultBranch = strtoupper($homeLibraryCode);
+
+		$soapResult = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+
+		if ($soapResult) {
+			$success = stripos($soapResult->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+			if (!$success) {
+				$errorMessage = $soapResult->ResponseStatuses->ResponseStatus->LongMessage;
+				$result['messages'][] = 'Failed to update your pickup location '. ($errorMessage ? ' : ' .$errorMessage : '');
+			}else{
+				$result['success'] = true;
+				$result['messages'][] = 'Your pickup location was updated successfully.';
+			}
+
+		} else {
+			$result['messages'][] = 'Unable to update your pickup location.';
+			global $logger;
+			$logger->log('Unable to read XML from CarlX response when attempting to update pickup location.', Logger::LOG_ERROR);
+		}
+		if ($result['success'] == false && empty($result['messages'])){
+			$result['messages'][] = 'Unknown error updating your pickup location';
+		}
+		return $result;
+	}
+
 	public function updatePatronInfo($user, $canUpdateContactInfo) {
 		$result = [
 			'success' => false,

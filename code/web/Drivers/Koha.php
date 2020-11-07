@@ -28,6 +28,75 @@ class Koha extends AbstractIlsDriver
 		'W' => 'Writeoff'
 	];
 
+	function updateHomeLibrary(User $patron, string $homeLibraryCode)
+	{
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
+		//Load required fields from Koha here to make sure we don't wipe them out
+		/** @noinspection SqlResolve */
+		$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$address = '';
+		$city = '';
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()) {
+				$address = $curRow['address'];
+				$city = $curRow['city'];
+			}
+		}
+
+		$postVariables = [
+			'surname' => $patron->lastname,
+			'address' => $address,
+			'city' => $city,
+			'library_id' => $homeLibraryCode,
+			'category_id' => $patron->patronType,
+		];
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+		} else {
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
+			$postParams = json_encode($postVariables);
+
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+			$this->apiCurlWrapper->setupDebugging();
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+			if ($this->apiCurlWrapper->getResponseCode() != 200) {
+				if (strlen($response) > 0) {
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse) {
+						if (!empty($jsonResponse->error)) {
+							$result['messages'][] = $jsonResponse->error;
+						}else{
+							foreach ($jsonResponse->errors as $error) {
+								$result['messages'][] = $error->message;
+							}
+						}
+					} else {
+						$result['messages'][] = $response;
+					}
+				} else {
+					$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+				}
+			} else {
+				$result['success'] = true;
+				$result['messages'][] = 'Your pickup location was updated successfully.';
+			}
+		}
+
+		return $result;
+	}
+
 	/**
 	 * @param User $patron The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo Permission check that updating is allowed
@@ -1897,6 +1966,7 @@ class Koha extends AbstractIlsDriver
 		]);
 		if (!empty($library->validSelfRegistrationZipCodes)){
 			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationPattern'] = $library->validSelfRegistrationZipCodes;
+			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationMessage'] = translate('Please enter a valid zip code');
 		}
 		//Contact information
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [

@@ -54,6 +54,13 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
 	abstract function updatePatronInfo($patron, $canUpdateContactInfo);
 
+	function updateHomeLibrary(User $patron, string $homeLibraryCode){
+		return [
+			'success' => false,
+			'messages' => ['Cannot update home library with this ILS.']
+		];
+	}
+
 	public abstract function getFines($patron, $includeMessages = false);
 
 	/**

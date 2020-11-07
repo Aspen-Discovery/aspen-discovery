@@ -597,6 +597,22 @@ class CatalogConnection
 		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
 	}
 
+	function updateHomeLibrary($user, $homeLibraryCode)
+	{
+		$result = $this->driver->updateHomeLibrary($user, $homeLibraryCode);
+		if ($result['success']){
+			$location = new Location();
+			$location->code = $homeLibraryCode;
+			if ($location->find(true)){
+				$user->homeLocationId = $location->locationId;
+				$user->_homeLocationCode = $homeLibraryCode;
+				$user->_homeLocation = $location;
+				$user->update();
+			}
+		}
+		return $result;
+	}
+
 	function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null)
 	{
 		return $this->driver->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
