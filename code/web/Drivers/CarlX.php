@@ -29,7 +29,7 @@ class CarlX extends AbstractIlsDriver{
 		if (!isset($this->dbConnection)) {
 			$port = empty($this->accountProfile->databasePort) ? '1521' : $this->accountProfile->databasePort;
 			$ociConnection = $this->accountProfile->databaseHost . ':' . $port . '/' . $this->accountProfile->databaseName;
-			$this->dbConnection = oci_connect($this->accountProfile->databaseUser, $this->accountProfile->databasePassword, $ociConnection);
+			$this->dbConnection = oci_connect($this->accountProfile->databaseUser, $this->accountProfile->databasePassword, $ociConnection, 'AL32UTF8');
 			if (!$this->dbConnection || oci_error($this->dbConnection) != 0) {
 				global $logger;
 				$logger->log("Error connecting to CARL.X database " . oci_error($this->dbConnection), Logger::LOG_ERROR);
