@@ -554,7 +554,11 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		$userList->title = $listName;
 		$userList->description = $listDescription;
 		$userList->public = $public;
-		$userList->defaultSort = $sort;
+		if (empty($sort)) {
+			$userList->defaultSort = 'title';
+		}else{
+			$userList->defaultSort = $sort;
+		}
 		if ($listExists){
 			//MDN 3/4 Do not delete all the titles on the list since we should be synchronized
 			/*if (count($userList->getListTitles()) > 0){
