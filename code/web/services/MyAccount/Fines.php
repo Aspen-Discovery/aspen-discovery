@@ -4,8 +4,6 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class MyAccount_Fines extends MyAccount
 {
-	private $currency_symbol = '$';
-
 	function launch()
 	{
 		global $interface;
@@ -16,6 +14,8 @@ class MyAccount_Fines extends MyAccount
 		$interface->assign('showReason', true);
 
 		$interface->setFinesRelatedTemplateVariables();
+
+		$showSystem = false;
 
 		if (UserAccount::isLoggedIn()) {
 			global $offlineMode;
@@ -58,6 +58,9 @@ class MyAccount_Fines extends MyAccount
 							$outstanding = $fine['amountOutstandingVal'];
 							if (is_numeric($outstanding)) $totalOutstanding += $outstanding;
 						}
+						if (!empty($fine['system'])){
+							$showSystem = true;
+						}
 					}
 
 					$fineTotalsVal[$userId] = $total;
@@ -74,6 +77,7 @@ class MyAccount_Fines extends MyAccount
 				}
 			}
 		}
+		$interface->assign('showSystem', $showSystem);
 		$this->display('fines.tpl', 'My Fines');
 	}
 

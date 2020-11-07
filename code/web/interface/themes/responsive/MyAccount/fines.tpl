@@ -35,6 +35,9 @@
 									<th>{translate text="Reason"}</th>
 								{/if}
 								<th>{translate text="Title"}</th>
+								{if $showSystem}
+									<th>{translate text="fine_system" defaultText="System"}</th>
+								{/if}
 								<th>{translate text="Fine/Fee Amount"}</th>
 								{if $showOutstanding}
 									<th>{translate text="Amount Outstanding"}</th>
@@ -71,6 +74,11 @@
 												{/foreach}
 											{/if}
 										</td>
+										{if $showSystem}
+											<td>
+												{$fine.system}
+											</td>
+										{/if}
 										<td>{$fine.amountVal|formatCurrency}</td>
 										{if $showOutstanding}
 											<td>{$fine.amountOutstanding}</td>

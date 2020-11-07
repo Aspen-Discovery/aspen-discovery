@@ -11,7 +11,7 @@ class CarlX extends AbstractIlsDriver{
 	private $dbConnection;
 
 	public function __construct($accountProfile) {
-	    parent::__construct($accountProfile);
+		parent::__construct($accountProfile);
 		$this->patronWsdl = $this->accountProfile->patronApiUrl . '/CarlXAPI/PatronAPI.wsdl';
 		$this->catalogWsdl = $this->accountProfile->patronApiUrl . '/CarlXAPI/CatalogAPI.wsdl';
 	}
@@ -1170,11 +1170,7 @@ class CarlX extends AbstractIlsDriver{
 				if ($fine->Branch == 0) {
 					$fine->Branch = $fine->TransactionBranch;
 				}
-				if ($fine->Branch >= 30 && $fine->Branch <= 178 && $fine->Branch != 42 && $fine->Branch != 171) {
-					$fine->System = "MNPS";
-				} else {
-					$fine->System = "NPL";
-				}
+				$fine->System = $this->getFineSystem($fine->Branch);
 
 				if ($fine->FineAmountPaid > 0) {
 					$fine->FineAmount -= $fine->FineAmountPaid;
@@ -1206,11 +1202,7 @@ class CarlX extends AbstractIlsDriver{
 				if ($fine->Branch == 0) {
 					$fine->Branch = $fine->TransactionBranch;
 				}
-				if ($fine->Branch >= 30 && $fine->Branch <= 178 && $fine->Branch != 42 && $fine->Branch != 171) {
-					$fine->System = "MNPS";
-				} else {
-					$fine->System = "NPL";
-				}
+				$fine->System = $this->getFineSystem($fine->Branch);
 
 				$myFines[] = array(
 					'reason'  => $fine->FeeNotes,
@@ -1224,6 +1216,10 @@ class CarlX extends AbstractIlsDriver{
 		}
 
 		return $myFines;
+	}
+
+	public function getFineSystem($branchId){
+		return '';
 	}
 
 	/**
