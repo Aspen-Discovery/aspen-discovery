@@ -584,12 +584,13 @@ class UserList extends DataObject
 		foreach ($allEntries as $key => $entry){
 			$recordDriver = $entry->getRecordDriver();
 			if ($recordDriver == null){
-				$results[$key] = [
+				//Don't show this result because it no lonnger exists in teh catalog.
+				/*$results[$key] = [
 					'title' => 'Unhandled Source ' . $entry->source,
 					'author' => '',
 					'formattedTextOnlyTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
 					'formattedTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
-				];
+				];*/
 			}else{
 				if ($recordDriver->isValid()){
 					$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
