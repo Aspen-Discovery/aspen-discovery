@@ -170,6 +170,8 @@ class UserList extends DataObject
 						$groupedWork->permanent_id = $tmpListEntry['sourceId'];
 						if ($groupedWork->find(true)){
 							$tmpListEntry['title'] = $groupedWork->full_title;
+						}else{
+							$tmpListEntry['title'] = 'Unknown title';
 						}
 					}else {
 						$tmpListEntry['title'] = 'Unknown title';
@@ -699,5 +701,5 @@ class UserList extends DataObject
 }
 
 function compareListEntryTitles($listEntry1, $listEntry2){
-	return strcmp($listEntry1['title'], $listEntry2['title']);
+	return strcasecmp($listEntry1['title'], $listEntry2['title']);
 }
