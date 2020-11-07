@@ -34,10 +34,6 @@
 							<div class="col-xs-8">{$profile->_fullname|escape}</div>
 						</div>
 						{if !$offline}
-							<div class="form-group">
-								<div class="col-xs-4"><strong>{translate text='Fines'}</strong></div>
-								<div class="col-xs-8">{$profile->_fines|escape}</div>
-							</div>
 							{if $barcodePin}
 							{* Only Display Barcode when the barcode is used as a username and not a password *}
 							<div class="form-group">
