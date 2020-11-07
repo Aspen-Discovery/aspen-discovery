@@ -71,7 +71,7 @@
 												{/foreach}
 											{/if}
 										</td>
-										<td>{$fine.amount}</td>
+										<td>{$fine.amountVal|formatCurrency}</td>
 										{if $showOutstanding}
 											<td>{$fine.amountOutstanding}</td>
 										{/if}

@@ -1505,8 +1505,10 @@ class SirsiDynixROA extends HorizonAPI
 					$fines[] = array(
 						'reason' => $fine->block->key,
 						'amount' => $fine->amount->amount,
+						'amountVal' => $fine->amount->amount,
 						'message' => $title,
 						'amountOutstanding' => $fine->owed->amount,
+						'amountOutstandingVal' => $fine->owed->amount,
 						'date' => $fine->billDate
 					);
 				}

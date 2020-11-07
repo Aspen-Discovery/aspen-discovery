@@ -1146,6 +1146,7 @@ class CarlX extends AbstractIlsDriver{
 				$myFines[] = array(
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FineAmount,
+					'amountVal' => $fine->FineAmount,
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->FineAssessedDate)),
 					'system'  => $fine->System,
@@ -1177,8 +1178,8 @@ class CarlX extends AbstractIlsDriver{
 
 				$myFines[] = array(
 					'reason'  => $fine->FeeNotes,
-//					'amount'  => $fine->FineAmount, // TODO: There is no corresponding amount
 					'amount'  => $fine->FeeAmount,
+					'amountVal'  => $fine->FeeAmount,
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->TransactionDate)),
 					'system'  => $fine->System,
@@ -1188,35 +1189,6 @@ class CarlX extends AbstractIlsDriver{
 
 		return $myFines;
 	}
-
-//	public function getFines($user) {
-//		$myFines = array();
-//
-//		$request = $this->getSearchbyPatronIdRequest($user);
-////		$request->CirculationFilter = false; //TODO: not sure what this filters, might be needed in actual system
-//		$request->CirculationFilter = true;
-//		$result = $this->doSoapRequest('getPatronFiscalHistory', $request);
-//		if ($result && !empty($result->FiscalHistoryItem)) {
-//			foreach($result->FiscalHistoryItem as $fine) {
-//				if ($fine->FiscalType == 'Credit') {
-//					$amount = $fine->Amount > 0 ? '-$' . sprintf('%0.2f', $fine->Amount / 100) : ''; // amounts are in cents
-//				} else {
-//					$amount = $fine->Amount > 0 ? '$' . sprintf('%0.2f', $fine->Amount / 100) : ''; // amounts are in cents
-//				}
-//				$myFines[] = array(
-//					'reason'  => $fine->Notes,
-//					'amount'  => $amount,
-//					'message' => $fine->Title,
-////					'date'    => $this->extractDateFromCarlXDateField($fine->TransDate), //TODO: set as datetime?
-//					'date'    => date('M j, Y', strtotime($fine->TransDate)), //TODO: set as datetime?
-//				);
-//			}
-//
-//			//TODO: Look At Page Result if additional Calls need to be made.
-//		}
-//
-//		return $myFines;
-//	}
 
 	/**
 	 * Get Patron Transactions
