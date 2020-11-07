@@ -50,10 +50,6 @@
 								<div class="col-xs-8">{$profile->_expires|escape}</div>
 							</div>
 						{/if}
-						<div class="form-group">
-							<div class="col-xs-4"><strong>{translate text='Home Library'}</strong></div>
-							<div class="col-xs-8">{$profile->_homeLocation|escape}</div>
-						</div>
 						{if !$offline}
 							{* Don't show inputs for the Horizon ILS as updating those account settings has not been implemented in the Horizon Driver. *}
 							<div class="form-group">
@@ -145,7 +141,7 @@
 									{/if}
 								</div>
 							</div>
-						{/if}
+						 {/if}
 
 						{if $showNoticeTypeInProfile}
 							<p class="alert alert-info">
