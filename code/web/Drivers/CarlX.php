@@ -818,19 +818,19 @@ class CarlX extends AbstractIlsDriver{
 		global $library;
 		$fields = array();
 		$fields[] = array('property'=>'firstName', 'type'=>'text', 'label'=>translate(['text'=>'first_name', 'defaultText'=>'First Name']), 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property'=>'middleName',  'type'=>'text', 'label'=>translate(['text'=>'middle_name', 'defaultText'=>'Middle Name']), 'maxLength' => 40, 'required' => false);
-		$fields[] = array('property'=>'lastName',   'type'=>'text', 'label'=>translate(['text'=>'last_name', 'defaultText'=>'Last Name']), 'maxLength' => 40, 'required' => true);
+		$fields[] = array('property'=>'middleName', 'type'=>'text', 'label'=>translate(['text'=>'middle_name', 'defaultText'=>'Middle Name']), 'maxLength' => 40, 'required' => false);
+		$fields[] = array('property'=>'lastName', 'type'=>'text', 'label'=>translate(['text'=>'last_name', 'defaultText'=>'Last Name']), 'maxLength' => 40, 'required' => true);
 		if ($library && $library->promptForBirthDateInSelfReg){
 			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
 			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
 			$fields[] = array('property'=>'birthDate', 'type'=>'date', 'label'=>translate(['text'=>'date_of_birth', 'defaultText'=>'Date of Birth (MM-DD-YYYY)']), 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
 		}
-		$fields[] = array('property'=>'address',     'type'=>'text', 'label'=>translate(['text'=>'mailing_address', 'defaultText'=>'Mailing Address']), 'maxLength' => 128, 'required' => true);
-		$fields[] = array('property'=>'city',        'type'=>'text', 'label'=>translate(['text'=>'city', 'defaultText'=>'City']), 'maxLength' => 48, 'required' => true);
-		$fields[] = array('default'=>'TN','property'=>'state',       'type'=>'text', 'label'=>translate(['text'=>'state', 'defaultText'=>'State']), 'maxLength' => 2, 'required' => true);
-		$fields[] = array('property'=>'zip',         'type'=>'text', 'label'=>translate(['text'=>'zip_code', 'defaultText'=>'Zip Code']), 'maxLength' => 32, 'required' => true);
-		$fields[] = array('property'=>'phone',       'type'=>'text',  'label'=>translate(['text'=>'phone', 'defaultText'=>'Primary Phone']), 'maxLength'=>15, 'required'=>true);
-		$fields[] = array('property'=>'email',       'type'=>'email', 'label'=>translate(['text'=>'email', 'defaultText'=>'Email']), 'maxLength' => 128, 'required' => true);
+		$fields[] = array('property'=>'address', 'type'=>'text', 'label'=>translate(['text'=>'mailing_address', 'defaultText'=>'Mailing Address']), 'maxLength' => 128, 'required' => true);
+		$fields[] = array('property'=>'city', 'type'=>'text', 'label'=>translate(['text'=>'city', 'defaultText'=>'City']), 'maxLength' => 48, 'required' => true);
+		$fields[] = array('default'=>'TN','property'=>'state', 'type'=>'text', 'label'=>translate(['text'=>'state', 'defaultText'=>'State']), 'maxLength' => 2, 'required' => true);
+		$fields[] = array('property'=>'zip', 'type'=>'text', 'label'=>translate(['text'=>'zip_code', 'defaultText'=>'Zip Code']), 'maxLength' => 32, 'required' => true);
+		$fields[] = array('property'=>'phone', 'type'=>'text',  'label'=>translate(['text'=>'phone', 'defaultText'=>'Primary Phone']), 'maxLength'=>15, 'required'=>true);
+		$fields[] = array('property'=>'email',  'type'=>'email', 'label'=>translate(['text'=>'email', 'defaultText'=>'Email']), 'maxLength' => 128, 'required' => true);
 		return $fields;
 	}
 
@@ -862,17 +862,17 @@ class CarlX extends AbstractIlsDriver{
 			// DENY REGISTRATION IF DUPLICATE EMAIL IS FOUND IN CARL.X
 			// searchPatron on Email appears to be case-insensitive and
 			// appears to eliminate spurious whitespace
-			$request				= new stdClass();
-			$request->Modifiers			= '';
-			$request->AllSearchTermMatch		= 'true';
-			$request->SearchTerms			= new stdClass();
+			$request								= new stdClass();
+			$request->Modifiers						= '';
+			$request->AllSearchTermMatch			= 'true';
+			$request->SearchTerms					= new stdClass();
 			$request->SearchTerms->ApplicationType	= 'exact match';
-			$request->SearchTerms->Attribute	= 'Email';
-			$request->SearchTerms->Value		= $email;
-			$request->PagingParameters		= new stdClass();
+			$request->SearchTerms->Attribute		= 'Email';
+			$request->SearchTerms->Value			= $email;
+			$request->PagingParameters				= new stdClass();
 			$request->PagingParameters->StartPos	= 0;
 			$request->PagingParameters->NoOfRecords	= 1;
-			$request->Modifiers			= new stdClass();
+			$request->Modifiers						= new stdClass();
 			$request->Modifiers->InstitutionCode	= 'NASH';
 			$result = $this->doSoapRequest('searchPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 			if ($result) {
@@ -894,42 +894,42 @@ class CarlX extends AbstractIlsDriver{
 			$request->PatronFlags->PatronFlag[0]                = 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
 			$request->PatronFlags->PatronFlag[1]                = 'VALIDATE_ZIPCODE'; // Validate ZIP against Carl.X Admin legal ZIPs
 			$request->Patron				= new stdClass();
-			$request->Patron->PatronID                       = $tempPatronID;
-			$request->Patron->Email                          = $email;
-			$request->Patron->FirstName                      = $firstName;
-			$request->Patron->MiddleName                     = $middleName;
-			$request->Patron->LastName                       = $lastName;
-			$request->Patron->Addresses			= new stdClass();
-			$request->Patron->Addresses->Address		= new stdClass();
-			$request->Patron->Addresses->Address->Type       = 'Primary';
-			$request->Patron->Addresses->Address->Street     = $address;
-			$request->Patron->Addresses->Address->City       = $city;
-			$request->Patron->Addresses->Address->State      = $state;
-			$request->Patron->Addresses->Address->PostalCode = $zip;
-			$request->Patron->PreferredAddress		= 'Primary';
-			//$request->Patron->PatronPIN			= $pin;
-			$request->Patron->Phone1			= $phone;
-			$request->Patron->RegistrationDate		= date('c'); // Registration Date, format ISO 8601
-			$request->Patron->LastActionDate		= date('c'); // Registration Date, format ISO 8601
-			$request->Patron->LastEditDate			= date('c'); // Registration Date, format ISO 8601
+			$request->Patron->PatronID                       	= $tempPatronID;
+			$request->Patron->Email                          	= $email;
+			$request->Patron->FirstName                      	= $firstName;
+			$request->Patron->MiddleName                     	= $middleName;
+			$request->Patron->LastName                       	= $lastName;
+			$request->Patron->Addresses							= new stdClass();
+			$request->Patron->Addresses->Address				= new stdClass();
+			$request->Patron->Addresses->Address->Type       	= 'Primary';
+			$request->Patron->Addresses->Address->Street     	= $address;
+			$request->Patron->Addresses->Address->City       	= $city;
+			$request->Patron->Addresses->Address->State      	= $state;
+			$request->Patron->Addresses->Address->PostalCode 	= $zip;
+			$request->Patron->PreferredAddress					= 'Primary';
+			//$request->Patron->PatronPIN						= $pin;
+			$request->Patron->Phone1							= $phone;
+			$request->Patron->RegistrationDate					= date('c'); // Registration Date, format ISO 8601
+			$request->Patron->LastActionDate					= date('c'); // Registration Date, format ISO 8601
+			$request->Patron->LastEditDate						= date('c'); // Registration Date, format ISO 8601
 
-			$request->Patron->EmailNotices			= $configArray['Catalog']['selfRegEmailNotices'];
-			$request->Patron->DefaultBranch			= $configArray['Catalog']['selfRegDefaultBranch'];
-			$request->Patron->PatronExpirationDate		= $configArray['Catalog']['selfRegPatronExpirationDate'];
-			$request->Patron->PatronStatusCode		= $configArray['Catalog']['selfRegPatronStatusCode'];
-			$request->Patron->PatronType			= $configArray['Catalog']['selfRegPatronType'];
-			$request->Patron->RegBranch			= $configArray['Catalog']['selfRegRegBranch'];
-			$request->Patron->RegisteredBy			= $configArray['Catalog']['selfRegRegisteredBy'];
+			$request->Patron->EmailNotices						= $configArray['Catalog']['selfRegEmailNotices'];
+			$request->Patron->DefaultBranch						= $configArray['Catalog']['selfRegDefaultBranch'];
+			$request->Patron->PatronExpirationDate				= $configArray['Catalog']['selfRegPatronExpirationDate'];
+			$request->Patron->PatronStatusCode					= $configArray['Catalog']['selfRegPatronStatusCode'];
+			$request->Patron->PatronType						= $configArray['Catalog']['selfRegPatronType'];
+			$request->Patron->RegBranch							= $configArray['Catalog']['selfRegRegBranch'];
+			$request->Patron->RegisteredBy						= $configArray['Catalog']['selfRegRegisteredBy'];
 
 			// VALIDATE BIRTH DATE.
-			// DENY REGISTRATION IF REGISTRANT IS NOT 14 - 113 YEARS OLD
+			// DENY REGISTRATION IF REGISTRANT IS NOT 13 - 113 YEARS OLD
 			if ($library && $library->promptForBirthDateInSelfReg) {
-				$birthDate			= trim($_REQUEST['birthDate']);
-				$date				= strtotime(str_replace('-','/',$birthDate));
-				$birthDateMin			= strtotime('-113 years');
-				$birthDateMax			= strtotime('-13 years');
+				$birthDate										= trim($_REQUEST['birthDate']);
+				$date											= strtotime(str_replace('-','/',$birthDate));
+				$birthDateMin									= strtotime('-113 years');
+				$birthDateMax									= strtotime('-13 years');
 				if ($date >= $birthDateMin && $date <= $birthDateMax) {
-					$request->Patron->BirthDate = date('Y-m-d', $date);
+					$request->Patron->BirthDate 				= date('Y-m-d', $date);
 				} else {
 					global $logger;
 					$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), Logger::LOG_WARNING);
@@ -944,13 +944,7 @@ class CarlX extends AbstractIlsDriver{
 				$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
 				if (!$success) {
 					$errorMessage = array();
-					if (is_array($result->ResponseStatuses->ResponseStatus)) { // TODO : doSoapRequest should be able to return $result->ResponseStatuses->ResponseStatus as array. BETTER: move all this success crap up into doSoapRequest. James Staub 2020 10 19
-						foreach($result->ResponseStatuses->ResponseStatus as $errorResponse) {
-							$errorMessage[] = $errorResponse->LongMessage;
-						}
-					} else {
-						$errorMessage[] = $result->ResponseStatuses->ResponseStatus->LongMessage;;
-					}
+					$errorMessage[] = $result->ResponseStatuses->ResponseStatus->LongMessage;
 					if (in_array('A patron with that id already exists', $errorMessage)) {
 						global $logger;
 						$logger->log('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter', Logger::LOG_ERROR);
@@ -967,17 +961,17 @@ class CarlX extends AbstractIlsDriver{
 						$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', Logger::LOG_ERROR);
 					}
 					// Get Patron
-					$request = new stdClass();
-					$request->SearchType = 'Patron ID';
-					$request->SearchID   = $tempPatronID;
-					$request->Modifiers  = '';
+					$request 				= new stdClass();
+					$request->SearchType 	= 'Patron ID';
+					$request->SearchID   	= $tempPatronID;
+					$request->Modifiers  	= '';
 
 					$result = $this->doSoapRequest('getPatronInformation', $request);
 
 					// FOLLOWING SUCCESSFUL SELF REGISTRATION, INPUT PATRON IP ADDRESS INTO PATRON RECORD NOTE
-					$request 			= new stdClass();
-					$request->Modifiers		= '';
-					$request->Note			= new stdClass();
+					$request 					= new stdClass();
+					$request->Modifiers			= '';
+					$request->Note				= new stdClass();
 					$request->Note->PatronID	= $tempPatronID;
 					$request->Note->NoteType	= 2;
 					$request->Note->NoteText	= "Online registration from IP " . $active_ip;
