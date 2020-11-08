@@ -821,8 +821,8 @@ class CarlX extends AbstractIlsDriver{
 		$fields[] = array('property'=>'middleName',  'type'=>'text', 'label'=>translate(['text'=>'middle_name', 'defaultText'=>'Middle Name']), 'maxLength' => 40, 'required' => false);
 		$fields[] = array('property'=>'lastName',   'type'=>'text', 'label'=>translate(['text'=>'last_name', 'defaultText'=>'Last Name']), 'maxLength' => 40, 'required' => true);
 		if ($library && $library->promptForBirthDateInSelfReg){
-			$birthDateMin = date('Y-m-d', strtotime('-114 years'));
-			$birthDateMax = date('Y-m-d', strtotime('-14 years'));
+			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
+			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
 			$fields[] = array('property'=>'birthDate', 'type'=>'date', 'label'=>translate(['text'=>'date_of_birth', 'defaultText'=>'Date of Birth (MM-DD-YYYY)']), 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
 		}
 		$fields[] = array('property'=>'address',     'type'=>'text', 'label'=>translate(['text'=>'mailing_address', 'defaultText'=>'Mailing Address']), 'maxLength' => 128, 'required' => true);
@@ -927,7 +927,7 @@ class CarlX extends AbstractIlsDriver{
 				$birthDate			= trim($_REQUEST['birthDate']);
 				$date				= strtotime(str_replace('-','/',$birthDate));
 				$birthDateMin			= strtotime('-113 years');
-				$birthDateMax			= strtotime('-14 years');
+				$birthDateMax			= strtotime('-13 years');
 				if ($date >= $birthDateMin && $date <= $birthDateMax) {
 					$request->Patron->BirthDate = date('Y-m-d', $date);
 				} else {
@@ -935,7 +935,7 @@ class CarlX extends AbstractIlsDriver{
 					$logger->log('Online Registrant is too young : birth date : ' . date('Y-m-d', $date), Logger::LOG_WARNING);
 					return array(
 						'success' => false,
-						'message' => 'You must be 14 years old to register.'
+						'message' => 'You must be 13 years old to register.'
 					);
 				}
 			}
