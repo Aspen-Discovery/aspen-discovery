@@ -55,6 +55,14 @@ class MyAccount_Login extends Action
 		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 
+		if (!empty($library->loginNotes)){
+			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+			$parsedown = AspenParsedown::instance();
+			$parsedown->setBreaksEnabled(true);
+			$loginNotes = $parsedown->parse($library->loginNotes);
+			$interface->assign('loginNotes', $loginNotes);
+		}
+
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
 		if (!$library->enableForgotPasswordLink) {

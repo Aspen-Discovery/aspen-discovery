@@ -178,6 +178,7 @@ class Library extends DataObject
 	public $showExpirationWarnings;
 	public /** @noinspection PhpUnused */ $loginFormUsernameLabel;
 	public $loginFormPasswordLabel;
+	public $loginNotes;
 	public $showDetailedHoldNoticeInformation;
 	public $treatPrintNoticesAsPhoneNotices;
 	public /** @noinspection PhpUnused */ $includeDplaResults;
@@ -553,6 +554,7 @@ class Library extends DataObject
 					'preventExpiredCardLogin' => array('property'=>'preventExpiredCardLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Expired Cards', 'description'=>'Users with expired cards will not be allowed to login. They will receive an expired card notice instead.', 'hideInLists' => true, 'default' => 0),
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
 					'loginFormPasswordLabel'  => array('property'=>'loginFormPasswordLabel', 'type'=>'text', 'label'=>'Login Form Password Label', 'description'=>'The label to show for the password when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Library Card Number'),
+					'loginNotes' => array('property' => 'loginNotes', 'type' => 'markdown', 'label' => 'Login Notes', 'description' => 'Additional notes to display under the login fields', 'hideInLists' => true),
 				)),
 				'selfRegistrationSection' => array('property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true, 'helpLink' => '', 'properties' => array(
 					'enableSelfRegistration' => array('property'=>'enableSelfRegistration', 'type'=>'enum', 'values' => [0 => 'No Self Registration', 1 => 'ILS Based Self Registration', 2 => 'Redirect to Self Registration URL'], 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),

@@ -2289,6 +2289,14 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE location ADD COLUMN tty VARCHAR(25)',
 				'ALTER TABLE location ADD COLUMN description MEDIUMTEXT'
 			]
+		],
+
+		'library_login_notes' => [
+			'title' => 'Library Login Notes',
+			'description' => 'Add Notes to show on library login forms',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN loginNotes MEDIUMTEXT'
+			]
 		]
 	);
 }
