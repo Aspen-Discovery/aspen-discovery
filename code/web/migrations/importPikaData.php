@@ -560,10 +560,10 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 			$userList->defaultSort = $sort;
 		}
 		if ($listExists){
-			//MDN 3/4 Do not delete all the titles on the list since we should be synchronized
-			/*if (count($userList->getListTitles()) > 0){
+			//MDN - do delete list entries that already exist within Aspen
+			if (count($userList->getListTitles()) > 0){
 				$userList->removeAllListEntries(false);
-			}*/
+			}
 			$userList->update();
 		}else{
 			$userList->insert();
