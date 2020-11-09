@@ -10379,17 +10379,15 @@ AspenDiscovery.Searches = (function(){
 			var searchTypeElement = $("#searchSource");
 			var catalogType = "catalog";
 			var hasAdvancedSearch = false;
+			var advancedSearchLabel = "Advanced Search";
+			var advancedSearchUrl = "/Search/Advanced";
 			if (searchTypeElement){
 				var selectedSearchType = $(searchTypeElement.find(":selected"));
 				if (selectedSearchType){
 					catalogType = selectedSearchType.data("catalog_type");
 					hasAdvancedSearch = selectedSearchType.data("advanced_search");
+					advancedSearchLabel = selectedSearchType.data("advanced_search_label");
 				}
-			}
-			if (hasAdvancedSearch){
-				$('#advancedSearchLink').show();
-			}else{
-				$('#advancedSearchLink').hide();
 			}
 			var url = "/Search/AJAX";
 			$.getJSON(url,
@@ -10413,6 +10411,9 @@ AspenDiscovery.Searches = (function(){
 									defaultSearch = " id='default_search_type'";
 								}
 								searchIndexElement.append("<option value='" + searchIndex + "'" + selected + defaultSearch + ">" + data.searchIndexes[searchIndex] + "</option>")
+							}
+							if (hasAdvancedSearch){
+								searchIndexElement.append("<option value='advanced'>" + advancedSearchLabel + "</option>");
 							}
 						}
 					}

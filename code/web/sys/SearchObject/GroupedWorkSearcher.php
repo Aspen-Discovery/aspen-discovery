@@ -289,7 +289,11 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		if ($this->searchType == $this->basicSearchType || $this->searchType == 'author') {
 			return parent::getSearchIndex();
 		} else {
-			return null;
+			if ($this->isAdvanced()) {
+				return 'advanced';
+			}else{
+				return null;
+			}
 		}
 	}
 
