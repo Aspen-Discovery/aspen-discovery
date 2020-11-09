@@ -4,11 +4,9 @@
 	{if (isset($selfRegResult) && $selfRegResult.success)}
 		<div id="selfRegSuccess" class="alert alert-success">
 			{if $selfRegistrationSuccessMessage}
-				{$selfRegistrationSuccessMessage}
+				{translate text=$selfRegistrationSuccessMessage}
 			{else}
-				Congratulations, you have successfully registered for a new library card.
-				&nbsp;You will have limited privileges initially.<br>
-				Please bring a valid ID to the library to receive a physical library card with full privileges.
+				{translate text='selfreg_success' defaultText='Congratulations, you have successfully registered for a new library card. You will have limited privileges initially.<br>	Please bring a valid ID to the library to receive a physical library card with full privileges.'}
 			{/if}
 		</div>
 		<div class="alert alert-info">
@@ -33,18 +31,18 @@
 
 		<div id="selfRegDescription" class="alert alert-info">
 			{if $selfRegistrationFormMessage}
-				{$selfRegistrationFormMessage}
+				{translate text=$selfRegistrationFormMessage}
 			{else}
-				This page allows you to register as a patron of our library online. You will have limited privileges initially.
+				{translate text='selfreg_info' defaultText='This page allows you to register as a patron of our library online. You will have limited privileges initially.'}
 			{/if}
 		</div>
 		{if (isset($selfRegResult))}
 			<div id="selfRegFail" class="alert alert-warning">
 				{if !empty($selfRegResult.message)}
-					{$selfRegResult.message}
+					{translate text=$selfRegResult.message}
 				{else}
-					Sorry, we were unable to create a library card for you.  You may already have an account or there may be an error with the information you entered.
-					Please try again or visit the library in person (with a valid ID) so we can create a card for you.
+					{translate text='selfreg_fail_1' defaultText='Sorry, we were unable to create a library card for you.  You may already have an account or there may be an error with the information you entered.'}
+					{translate text='selfreg_fail_2' defaultText='Please try again or visit the library in person (with a valid ID) so we can create a card for you.'}
 				{/if}
 			</div>
 		{/if}
