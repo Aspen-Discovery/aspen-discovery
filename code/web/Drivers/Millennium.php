@@ -743,7 +743,6 @@ class Millennium extends AbstractIlsDriver
 			$this->pTypes = array();
 			/** @var $user User */
 			$user = UserAccount::getLoggedInUser();
-			/** @var $locationSingleton Location */
 			global $locationSingleton;
 			$searchLocation = $locationSingleton->getSearchLocation();
 			$searchLibrary = Library::getSearchLibrary();

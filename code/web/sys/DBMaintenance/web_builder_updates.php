@@ -9,6 +9,14 @@ function getWebBuilderUpdates(){
 			]
 		],
 
+		'web_builder_module_monitoring_and_indexing' => [
+			'title' => 'Web Builder Module - Monitoring, indexing',
+			'description' => 'Update Web Builder module to monitor logs and start indexer',
+			'sql' => [
+				"UPDATE modules set backgroundProcess='web_indexer', logClassPath='/sys/WebsiteIndexing/WebsiteIndexLogEntry.php', logClassName='WebsiteIndexLogEntry' WHERE name = 'Web Builder'"
+			]
+		],
+
 		'web_builder_basic_pages' => [
 			'title' => 'Web Builder Basic Pages',
 			'description' => 'Setup Basic Pages within Web Builder',

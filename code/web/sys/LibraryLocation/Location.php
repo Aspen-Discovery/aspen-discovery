@@ -786,6 +786,9 @@ class Location extends DataObject
 	 */
 	private $_ipLocation = 'unset';
 
+	/**
+	 * @return Location|bool|null
+	 */
 	function getIPLocation()
 	{
 		if ($this->_ipLocation != 'unset') {

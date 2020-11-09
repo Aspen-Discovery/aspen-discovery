@@ -9,6 +9,14 @@ function getEventsIntegrationUpdates(){
 			]
 		],
 
+		'events_module_log_checks' => [
+			'title' => 'Events Module Log Checks',
+			'description' => 'Automatically monitor logs for the Events module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/Events/EventsIndexingLogEntry.php', logClassName='EventsIndexingLogEntry' WHERE name = 'Events'"
+			]
+		],
+
 		'lm_library_calendar_settings' => [
 			'title' => 'Define events settings for Library Market - Library Calendar integration',
 			'description' => 'Initial setup of the library market integration',
