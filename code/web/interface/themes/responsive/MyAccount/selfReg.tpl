@@ -41,8 +41,7 @@
 				{if !empty($selfRegResult.message)}
 					{translate text=$selfRegResult.message}
 				{else}
-					{translate text='selfreg_fail_1' defaultText='Sorry, we were unable to create a library card for you.  You may already have an account or there may be an error with the information you entered.'}
-					{translate text='selfreg_fail_2' defaultText='Please try again or visit the library in person (with a valid ID) so we can create a card for you.'}
+					{translate text='selfreg_fail' defaultText='Sorry, we were unable to create a library card for you.<br>You may already have an account or there may be an error with the information you entered.<br>Please try again or visit the library in person (with a valid ID) so we can create a card for you.'}
 				{/if}
 			</div>
 		{/if}

@@ -843,15 +843,19 @@ class CarlX extends AbstractIlsDriver{
 
 		$lastPatronID = new Variable();
 		$lastPatronID->get('name', 'last_selfreg_patron_id');
-
+var_dump($lastPatronID);
 		if (!empty($lastPatronID->value)) {
 			$currentPatronIDNumber = rand(1,13) + $lastPatronID->value;
-
+// TODO: move selfRegIDPrefix to database
 			$tempPatronID = $configArray['Catalog']['selfRegIDPrefix'] . str_pad($currentPatronIDNumber, $configArray['Catalog']['selfRegIDNumberLength'], '0', STR_PAD_LEFT);
 
 			$firstName  = trim(strtoupper($_REQUEST['firstName']));
 			$middleName = trim(strtoupper($_REQUEST['middleName']));
 			$lastName   = trim(strtoupper($_REQUEST['lastName']));
+			if ($library && $library->promptForBirthDateInSelfReg) {
+				$birthDate			= trim($_REQUEST['birthDate']);
+				$date				= strtotime(str_replace('-','/',$birthDate));
+			};
 			$address    = trim(strtoupper($_REQUEST['address']));
 			$city       = trim(strtoupper($_REQUEST['city']));
 			$state      = trim(strtoupper($_REQUEST['state']));
@@ -878,22 +882,90 @@ class CarlX extends AbstractIlsDriver{
 			if ($result) {
 				$noEmailMatch = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'No matching records found');
 				if ($noEmailMatch === false) {
+					if ($result->PagingResult->NoOfRecords > 1) {
+						$patronIdsMatching = array_column($result->Patrons->PatronID);
+						$patronIdsMatching = implode(", ", $patronIdsMatching);
+					} elseif ($result->PagingResult->NoOfRecords == 1) {
+						$patronIdsMatching =  $result->Patrons->PatronID;
+					}
 					global $logger;
-					$logger->log('Online Registration Email already exists in Carl. Email: ' . $email . ' IP: ' . $active_ip, Logger::LOG_ERROR);
+					$logger->log('Online Registration Email already exists in Carl. Email: ' . $email . ' IP: ' . $active_ip . ' PatronIDs: ' . $patronIdsMatching, Logger::LOG_NOTICE);
+
+					// SEND EMAIL TO DUPLICATE EMAIL ADDRESS
+					try {
+						$body = $interface->fetch('Emails/self-registration-denied-duplicate-email.tpl');
+						require_once ROOT_DIR . '/sys/Mailer.php';
+						$mail = new Mailer();
+						$subject = 'Nashville Public Library: you have an account!';
+						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');
+					} catch (Exception $e) {
+						// SendGrid Failed
+					}
 					return array(
 						'success' => false,
+						'message' => 'You tried to register for a Digital Access Card, but you might already have a card with Nashville Public Library. Please check your email for further instructions.',
+						'barcode' => $tempPatronID,
+					);
+				}
+			}
+
+			// DENY REGISTRATION IF DUPLICATE EXACT FIRST NAME + LAST NAME + BIRTHDATE
+			$request									= new stdClass();
+			$request->Modifiers							= '';
+			$request->AllSearchTermMatch				= 'true';
+			$request->SearchTerms						= array();
+			$request->SearchTerms[0]['ApplicationType']	= 'exact match';
+			$request->SearchTerms[0]['Attribute']		= 'First Name';
+			$request->SearchTerms[0]['Value']			= $firstName;
+			$request->SearchTerms[1]['ApplicationType']	= 'exact match';
+			$request->SearchTerms[1]['Attribute']		= 'Last Name';
+			$request->SearchTerms[1]['Value']			= $lastName;
+			$request->SearchTerms[2]['ApplicationType']	= 'exact match';
+			$request->SearchTerms[2]['Attribute']		= 'Birthdate';
+			$request->SearchTerms[2]['Value']			= date('Ymd', $date);
+			$request->PagingParameters					= new stdClass();
+			$request->PagingParameters->StartPos		= 0;
+			$request->PagingParameters->NoOfRecords		= 20;
+			$request->Modifiers							= new stdClass();
+			$request->Modifiers->InstitutionCode		= 'NASH';
+			$result = $this->doSoapRequest('searchPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+			if ($result) {
+				$noNameBirthdateMatch = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'No matching records found');
+				if ($noNameBirthdateMatch === false) {
+					if ($result->PagingResult->NoOfRecords > 1) {
+						$patronIdsMatching = array_column($result->Patrons->PatronID);
+						$patronIdsMatching = implode(", ", $patronIdsMatching);
+					} elseif ($result->PagingResult->NoOfRecords == 1) {
+						$patronIdsMatching =  $result->Patrons->PatronID;
+					}
+					global $logger;
+					$logger->log('Online Registration Name+Birthdate already exists in Carl. Name: ' . $firstName . ' ' . $lastName . ' IP: ' . $active_ip . ' PatronIDs: ' . $patronIdsMatching, Logger::LOG_NOTICE);
+
+					// SEND EMAIL TO DUPLICATE NAME+BIRTHDATE REGISTRANT EMAIL ADDRESS
+					try {
+						$body = $interface->fetch('Emails/self-registration-denied-duplicate-name+birthdate.tpl');
+						require_once ROOT_DIR . '/sys/Mailer.php';
+						$mail = new Mailer();
+						$subject = 'Nashville Public Library: you might already have an account!';
+						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');
+					} catch (Exception $e) {
+						//SendGrid failed
+					}
+					return array(
+						'success' => false,
+						'message' => 'You tried to register for a Digital Access Card, but you might already have a card with Nashville Public Library. Please check your email for further instructions.',
 						'barcode' => $tempPatronID,
 					);
 				}
 			}
 
 			// CREATE PATRON REQUEST
-			$request                                         = new stdClass();
-			$request->Modifiers                              = '';
-			//$request->PatronFlags->PatronFlag                = 'DUPCHECK_ALTID'; // Duplicate check for alt id
-			$request->PatronFlags->PatronFlag[0]                = 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
+			$request											= new stdClass();
+			$request->Modifiers									= '';
+			//$request->PatronFlags->PatronFlag					= 'DUPCHECK_ALTID'; // Duplicate check for alt id
+			$request->PatronFlags->PatronFlag[0]				= 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
 			$request->PatronFlags->PatronFlag[1]                = 'VALIDATE_ZIPCODE'; // Validate ZIP against Carl.X Admin legal ZIPs
-			$request->Patron				= new stdClass();
+			$request->Patron									= new stdClass();
 			$request->Patron->PatronID                       	= $tempPatronID;
 			$request->Patron->Email                          	= $email;
 			$request->Patron->FirstName                      	= $firstName;
@@ -991,23 +1063,15 @@ class CarlX extends AbstractIlsDriver{
 					}
 
 					// FOLLOWING SUCCESSFUL SELF REGISTRATION, EMAIL PATRON THE LIBRARY CARD NUMBER
-					$body = $interface->fetch('Emails/self-registration.tpl');
-					$body = $firstName . " " . $lastName . "\n\nThank you for registering for an Online Library Card. Your library card number is:\n\n" . $tempPatronID . "\n\n" . $body;
-					require_once ROOT_DIR . '/sys/Email/Mailer.php';
-					$mail = new Mailer();
-					$subject = 'Welcome to the Nashville Public Library';
-					$emailResult = $mail->send($email, $subject, $body);
-					if ($emailResult === true){
-						$result = array(
-							'result' => true,
-							'message' => 'Your email was sent successfully.'
-						);
-					} elseif (($emailResult instanceof AspenError)){
-						$interface->assign('error', "Your request could not be sent: {$emailResult->getMessage()}.");
-					} else {
-						$interface->assign('error', "Your request could not be sent due to an unknown error.");
-						global $logger;
-						$logger->log("Mail List Failure (unknown reason), parameters: $email, $subject, $body", Logger::LOG_ERROR);
+					try {
+						$body = $interface->fetch('Emails/self-registration.tpl');
+						$body = $firstName . " " . $lastName . "\n\nThank you for registering for an Online Library Card. Your library card number is:\n\n" . $tempPatronID . "\n\n" . $body;
+						require_once ROOT_DIR . '/sys/Mailer.php';
+						$mail = new Mailer();
+						$subject = 'Welcome to the Nashville Public Library';
+						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');
+					} catch (Exception $e) {
+						// SendGrid Failed
 					}
 					return array(
 						'success' => $success,
