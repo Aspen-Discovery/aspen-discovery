@@ -221,7 +221,7 @@ public class GroupedWorkIndexer {
 							return;
 						}
 					}else{
-						logEntry.incErrors("Could not find indexing profile or side load settings for type " + curType);
+						logEntry.addNote("Could not find indexing profile or side load settings for type " + curType);
 					}
 				}
 			}
@@ -837,6 +837,7 @@ public class GroupedWorkIndexer {
 				}else if (sideLoadProcessors.containsKey(type)){
 					sideLoadProcessors.get(type).processRecord(groupedWork, identifier);
 				}else{
+					//This happens if a side load processor is deleted and all the related record don't get cleaned up.
 					logger.debug("Could not find a record processor for type " + type);
 				}
 				break;
