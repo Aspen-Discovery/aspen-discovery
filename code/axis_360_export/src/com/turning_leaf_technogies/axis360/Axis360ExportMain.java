@@ -55,6 +55,7 @@ public class Axis360ExportMain {
 	private static Connection aspenConn;
 
 	private static String accessToken;
+	private static long accessTokenSettingId;
 	private static long accessTokenExpiration;
 
 	public static void main(String[] args) {
@@ -304,7 +305,8 @@ public class Axis360ExportMain {
 
 	private static String getAxis360AccessToken(Axis360Setting setting) {
 		long curTime = new Date().getTime();
-		if (accessToken == null || accessTokenExpiration <= curTime){
+		if (accessToken == null || accessTokenExpiration <= curTime || accessTokenSettingId != setting.getId()){
+			accessTokenSettingId = setting.getId();
 			String authentication = setting.getVendorUsername() + ":" + setting.getVendorPassword() + ":" + setting.getLibraryPrefix();
 
 			String authorizationUrl = setting.getBaseUrl() + "/Services/VendorAPI/accesstoken";
