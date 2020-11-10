@@ -503,6 +503,12 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					} else if (urlSubfield.contains("freading.com")) {
 						sourceType = "Freading";
 						break;
+					} else if (urlSubfield.contains("galegroup.com")){
+						sourceType = "Gale Group";
+						break;
+					} else if (urlSubfield.contains("gpo.gov")){
+						sourceType = "Government Document";
+						break;
 					} else {
 						logger.debug("URL is not overdrive");
 					}
