@@ -7,4 +7,4 @@ fi
 echo "Updating $1"
 cp -r solr7 /data/aspen-discovery/$1
 
-exec /usr/local/aspen-discovery/sites/$1/$1.sh restart
+sudo -u solr exec /usr/local/aspen-discovery/sites/$1/$1.sh restart
