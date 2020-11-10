@@ -841,12 +841,12 @@ class CarlX extends AbstractIlsDriver{
 		       $interface;
 		$success = false;
 
+// TODO: move last_selfreg_patron_id out of table variables. 20201108
 		$lastPatronID = new Variable();
 		$lastPatronID->get('name', 'last_selfreg_patron_id');
-var_dump($lastPatronID);
 		if (!empty($lastPatronID->value)) {
 			$currentPatronIDNumber = rand(1,13) + $lastPatronID->value;
-// TODO: move selfRegIDPrefix to database
+// TODO: move selfRegIDPrefix to database. 20201108
 			$tempPatronID = $configArray['Catalog']['selfRegIDPrefix'] . str_pad($currentPatronIDNumber, $configArray['Catalog']['selfRegIDNumberLength'], '0', STR_PAD_LEFT);
 
 			$firstName  = trim(strtoupper($_REQUEST['firstName']));
@@ -894,7 +894,7 @@ var_dump($lastPatronID);
 					// SEND EMAIL TO DUPLICATE EMAIL ADDRESS
 					try {
 						$body = $interface->fetch('Emails/self-registration-denied-duplicate-email.tpl');
-						require_once ROOT_DIR . '/sys/Mailer.php';
+						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Nashville Public Library: you have an account!';
 						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');
@@ -944,7 +944,7 @@ var_dump($lastPatronID);
 					// SEND EMAIL TO DUPLICATE NAME+BIRTHDATE REGISTRANT EMAIL ADDRESS
 					try {
 						$body = $interface->fetch('Emails/self-registration-denied-duplicate-name+birthdate.tpl');
-						require_once ROOT_DIR . '/sys/Mailer.php';
+						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Nashville Public Library: you might already have an account!';
 						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');
@@ -1066,7 +1066,7 @@ var_dump($lastPatronID);
 					try {
 						$body = $interface->fetch('Emails/self-registration.tpl');
 						$body = $firstName . " " . $lastName . "\n\nThank you for registering for an Online Library Card. Your library card number is:\n\n" . $tempPatronID . "\n\n" . $body;
-						require_once ROOT_DIR . '/sys/Mailer.php';
+						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Welcome to the Nashville Public Library';
 						$mail->send($email, $subject, $body, 'no-reply@nashville.gov');
