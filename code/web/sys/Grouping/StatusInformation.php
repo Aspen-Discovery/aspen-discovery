@@ -17,6 +17,7 @@ class Grouping_StatusInformation
 	private $_availableCopies = 0;
 	private $_localCopies = 0;
 	private $_localAvailableCopies = 0;
+	private $_isEcontent = false;
 
 	/**
 	 * @return bool
@@ -333,6 +334,15 @@ class Grouping_StatusInformation
 			2 => $this->getNumHolds(),
 			3 => $this->getOnOrderCopies()
 		]);
+	}
+
+	public function setIsEContent(bool $flag)
+	{
+		$this->_isEcontent = $flag;
+	}
+
+	public function isEContent(){
+		return $this->_isEcontent;
 	}
 
 }

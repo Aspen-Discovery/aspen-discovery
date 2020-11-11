@@ -89,6 +89,7 @@ class Grouping_Record
 		if ($item->isEContent) {
 			$this->setEContentSource($item->eContentSource);
 			$this->setIsEContent(true);
+			$this->_statusInformation->setIsEContent(true);
 		}
 		if ($item->available) {
 			if ($item->isEContent) {
