@@ -893,7 +893,7 @@ class CarlX extends AbstractIlsDriver{
 
 					// SEND EMAIL TO DUPLICATE EMAIL ADDRESS
 					try {
-						$body = $interface->fetch('Emails/self-registration-denied-duplicate-email.tpl');
+						$body = $interface->fetch($this->getSelfRegTemplate('duplicate_email'));
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Nashville Public Library: you have an account!';
@@ -943,7 +943,7 @@ class CarlX extends AbstractIlsDriver{
 
 					// SEND EMAIL TO DUPLICATE NAME+BIRTHDATE REGISTRANT EMAIL ADDRESS
 					try {
-						$body = $interface->fetch('Emails/self-registration-denied-duplicate-name+birthdate.tpl');
+						$body = $interface->fetch($this->getSelfRegTemplate('duplicate-name+birthdate');
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Nashville Public Library: you might already have an account!';
@@ -1064,7 +1064,7 @@ class CarlX extends AbstractIlsDriver{
 
 					// FOLLOWING SUCCESSFUL SELF REGISTRATION, EMAIL PATRON THE LIBRARY CARD NUMBER
 					try {
-						$body = $interface->fetch('Emails/self-registration.tpl');
+						$body = $interface->fetch($this->getSelfRegTemplate('success');
 						$body = $firstName . " " . $lastName . "\n\nThank you for registering for an Online Library Card. Your library card number is:\n\n" . $tempPatronID . "\n\n" . $body;
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
@@ -1091,6 +1091,19 @@ class CarlX extends AbstractIlsDriver{
 			'success' => $success
 		);
 
+	}
+
+	// TODO: make this generic, move Nashville-specific to Nashville.php. 20201111
+	function getSelfRegTemplate($reason){
+		if ($reason == 'duplicate_email'){
+			return 'Emails/nashville-self-registration-denied-duplicate_email.tpl';
+		}elseif ($reason == 'duplicate_name+birthdate') {
+			return 'Emails/nashville-self-registration-denied-duplicate_name+birthdate.tpl';
+		}elseif ($reason == 'success') {
+			return 'Emails/nashville-self-registration.tpl';
+		}else{
+			return
+		}
 	}
 
 	public function getReadingHistory($user, $page = 1, $recordsPerPage = -1, $sortOption = 'checkedOut') {
