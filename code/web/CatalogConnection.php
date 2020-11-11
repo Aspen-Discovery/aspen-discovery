@@ -311,6 +311,7 @@ class CatalogConnection
 	function getReadingHistory($patron, $page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false)
 	{
 		global $timer;
+		global $offlineMode;
 		$timer->logTime("Starting to load reading history");
 
 		//Get reading history from the database unless we specifically want to load from the driver.
@@ -318,41 +319,43 @@ class CatalogConnection
 		if (!$patron->trackReadingHistory) {
 			return $result;
 		}
-		if (!$patron->initialReadingHistoryLoaded) {
-			if ($this->driver->hasNativeReadingHistory()) {
-				//Load existing reading history from the ILS
-				$result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
-				if ($result['numTitles'] > 0) {
-					foreach ($result['titles'] as $title) {
-						if ($title['permanentId'] != null) {
-							$userReadingHistoryEntry = new ReadingHistoryEntry();
-							$userReadingHistoryEntry->userId = $patron->id;
-							$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
-							$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
-							$userReadingHistoryEntry->sourceId = $title['recordId'];
-							$userReadingHistoryEntry->title = substr($title['title'], 0, 150);
-							$userReadingHistoryEntry->author = substr($title['author'], 0, 75);
-							$userReadingHistoryEntry->format = $title['format'];
-							$userReadingHistoryEntry->checkOutDate = $title['checkout'];
-							if (!empty($title['checkin'])) {
-								$userReadingHistoryEntry->checkInDate = $title['checkin'];
-							}else{
-								$userReadingHistoryEntry->checkInDate = null;
+		if (!$offlineMode) {
+			if (!$patron->initialReadingHistoryLoaded) {
+				if ($this->driver->hasNativeReadingHistory()) {
+					//Load existing reading history from the ILS
+					$result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
+					if ($result['numTitles'] > 0) {
+						foreach ($result['titles'] as $title) {
+							if ($title['permanentId'] != null) {
+								$userReadingHistoryEntry = new ReadingHistoryEntry();
+								$userReadingHistoryEntry->userId = $patron->id;
+								$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
+								$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
+								$userReadingHistoryEntry->sourceId = $title['recordId'];
+								$userReadingHistoryEntry->title = substr($title['title'], 0, 150);
+								$userReadingHistoryEntry->author = substr($title['author'], 0, 75);
+								$userReadingHistoryEntry->format = $title['format'];
+								$userReadingHistoryEntry->checkOutDate = $title['checkout'];
+								if (!empty($title['checkin'])) {
+									$userReadingHistoryEntry->checkInDate = $title['checkin'];
+								} else {
+									$userReadingHistoryEntry->checkInDate = null;
+								}
+								$userReadingHistoryEntry->deleted = 0;
+								$userReadingHistoryEntry->insert();
 							}
-							$userReadingHistoryEntry->deleted = 0;
-							$userReadingHistoryEntry->insert();
 						}
 					}
+					$timer->logTime("Finished loading native reading history");
 				}
-				$timer->logTime("Finished loading native reading history");
+				$patron->initialReadingHistoryLoaded = true;
+				$patron->update();
 			}
-			$patron->initialReadingHistoryLoaded = true;
-			$patron->update();
-		}
-		//Do the
-		if ($page == 1 && empty($filter)) {
-			$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
-			$timer->logTime("Finished updating reading history based on current checkouts");
+			//Do the
+			if ($page == 1 && empty($filter)) {
+				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
+				$timer->logTime("Finished updating reading history based on current checkouts");
+			}
 		}
 
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';

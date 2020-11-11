@@ -1974,77 +1974,73 @@ class MyAccount_AJAX extends JSON_Action
 			'message' => 'Unknown error',
 		];
 
-		global $offlineMode;
-		if (!$offlineMode) {
-			$user = UserAccount::getActiveUserObj();
-			if ($user) {
-				$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
-				$interface->assign('selectedUser', $patronId);
 
-				$patron = $user->getUserReferredTo($patronId);
-				if (!$patron) {
-					AspenError::raiseError(new AspenError("The patron provided is invalid"));
-				}
+		$user = UserAccount::getActiveUserObj();
+		if ($user) {
+			$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
+			$interface->assign('selectedUser', $patronId);
 
-				// Define sorting options
-				$sortOptions = array('title' => 'Title',
-					'author' => 'Author',
-					'checkedOut' => 'Last Used',
-					'format' => 'Format',
-				);
-				$selectedSortOption = $this->setSort('sort', 'readingHistory');
-				if ($selectedSortOption == null || !array_key_exists($selectedSortOption, $sortOptions)) {
-					$selectedSortOption = 'checkedOut';
-				}
-
-				$interface->assign('sortOptions', $sortOptions);
-				$interface->assign('defaultSortOption', $selectedSortOption);
-				$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-				$interface->assign('page', $page);
-
-				$recordsPerPage = 20;
-				$interface->assign('curPage', $page);
-
-				$filter = isset($_REQUEST['readingHistoryFilter']) ? $_REQUEST['readingHistoryFilter'] : '';
-				$interface->assign('readingHistoryFilter', $filter);
-
-				$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, false);
-
-				$link = $_SERVER['REQUEST_URI'];
-				if (preg_match('/[&?]page=/', $link)) {
-					$link = preg_replace("/page=\\d+/", "page=%d", $link);
-				} else if (strpos($link, "?") > 0) {
-					$link .= "&page=%d";
-				} else {
-					$link .= "?page=%d";
-				}
-				if ($recordsPerPage != '-1') {
-					$options = array('totalItems' => $result['numTitles'],
-						'fileName' => $link,
-						'perPage' => $recordsPerPage,
-						'append' => false,
-						'linkRenderingObject' => $this,
-						'linkRenderingFunction' => 'renderReadingHistoryPaginationLink',
-						'patronId' => $patronId,
-						'sort' => $selectedSortOption,
-						'showCovers' => $showCovers,
-						'filter' => urlencode($filter)
-					);
-					$pager = new Pager($options);
-
-					$interface->assign('pageLinks', $pager->getLinks());
-				}
-				if (!($result instanceof AspenError)) {
-					$interface->assign('historyActive', $result['historyActive']);
-					$interface->assign('transList', $result['titles']);
-				}
+			$patron = $user->getUserReferredTo($patronId);
+			if (!$patron) {
+				AspenError::raiseError(new AspenError("The patron provided is invalid"));
 			}
-			$result['success'] = true;
-			$result['message'] = "";
-			$result['readingHistory'] = $interface->fetch('MyAccount/readingHistoryList.tpl');
-		} else {
-			$result['message'] = translate('The catalog is offline');
+
+			// Define sorting options
+			$sortOptions = array('title' => 'Title',
+				'author' => 'Author',
+				'checkedOut' => 'Last Used',
+				'format' => 'Format',
+			);
+			$selectedSortOption = $this->setSort('sort', 'readingHistory');
+			if ($selectedSortOption == null || !array_key_exists($selectedSortOption, $sortOptions)) {
+				$selectedSortOption = 'checkedOut';
+			}
+
+			$interface->assign('sortOptions', $sortOptions);
+			$interface->assign('defaultSortOption', $selectedSortOption);
+			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$interface->assign('page', $page);
+
+			$recordsPerPage = 20;
+			$interface->assign('curPage', $page);
+
+			$filter = isset($_REQUEST['readingHistoryFilter']) ? $_REQUEST['readingHistoryFilter'] : '';
+			$interface->assign('readingHistoryFilter', $filter);
+
+			$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, false);
+
+			$link = $_SERVER['REQUEST_URI'];
+			if (preg_match('/[&?]page=/', $link)) {
+				$link = preg_replace("/page=\\d+/", "page=%d", $link);
+			} else if (strpos($link, "?") > 0) {
+				$link .= "&page=%d";
+			} else {
+				$link .= "?page=%d";
+			}
+			if ($recordsPerPage != '-1') {
+				$options = array('totalItems' => $result['numTitles'],
+					'fileName' => $link,
+					'perPage' => $recordsPerPage,
+					'append' => false,
+					'linkRenderingObject' => $this,
+					'linkRenderingFunction' => 'renderReadingHistoryPaginationLink',
+					'patronId' => $patronId,
+					'sort' => $selectedSortOption,
+					'showCovers' => $showCovers,
+					'filter' => urlencode($filter)
+				);
+				$pager = new Pager($options);
+
+				$interface->assign('pageLinks', $pager->getLinks());
+			}
+			if (!($result instanceof AspenError)) {
+				$interface->assign('historyActive', $result['historyActive']);
+				$interface->assign('transList', $result['titles']);
+			}
 		}
+		$result['success'] = true;
+		$result['message'] = "";
+		$result['readingHistory'] = $interface->fetch('MyAccount/readingHistoryList.tpl');
 
 		return $result;
 	}
