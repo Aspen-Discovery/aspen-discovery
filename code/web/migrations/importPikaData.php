@@ -996,6 +996,9 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 			list($source, $id) = explode(':', $identifier);
 			$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
 			$groupedWorkPrimaryIdentifier->type = $source;
+			if ($source == 'hoopla'){
+				$id = str_replace('MWT', '', $id);
+			}
 			$groupedWorkPrimaryIdentifier->identifier = $id;
 			if ($groupedWorkPrimaryIdentifier->find(true)){
 				$groupedWork = new GroupedWork();
