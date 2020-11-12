@@ -41,6 +41,9 @@ class Grouping_StatusInformation
 		if ($statusInformation->isAvailableOnline()) {
 			$this->_availableOnline = true;
 		}
+		if ($statusInformation->isEContent()){
+			$this->_isEcontent = true;
+		}
 		if (!$this->_available && $statusInformation->isAvailable()) {
 			$this->_available = true;
 		}
