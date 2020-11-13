@@ -37,3 +37,8 @@
   - This is also where you will choose which details to show in the main/top details section of the record
   - To get a full list of options of what can be included in the record display click 'Reset More Details To Default' under Full Record Options. You can choose exactly what lives in the full record and whether that information should be collapsed by default or already opened when the patron clicks into a record. 
 - Once you have defined a Grouped Work Display Settings profile that works for your library make sure to check the box next to your library or location to enable these settings for your searches and records.
+
+
+[![Grouped Work and Display Settings](/manual/images/grouped work (tn).png)](https://youtu.be/waQ_OZ4Pt4g)
+
+[Watch on Youtube](https://youtu.be/waQ_OZ4Pt4g)
