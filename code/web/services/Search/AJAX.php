@@ -230,7 +230,8 @@ class AJAX extends Action {
 					$result['listTitle'] = $sourceList->title;
 					$result['listDescription'] = $sourceList->description;
 					$result['titles'] = $sourceList->getSpotlightTitles( $collectionSpotlight);
-					$result['currentIndex'] = 0;
+					$currentIndex = count($result['titles']) > 5 ? floor(count($result['titles']) / 2) : 0;
+					$result['currentIndex'] = $currentIndex;
 				}
 				$result['searchUrl'] = '/MyAccount/MyList/' . $collectionSpotlightList->sourceListId;
 			}else{
@@ -241,7 +242,8 @@ class AJAX extends Action {
 				$result['listTitle'] = $collectionSpotlightList->name;
 				$result['listDescription'] = '';
 				$result['titles'] = $searchObject->getSpotlightResults($collectionSpotlight);
-				$result['currentIndex'] = 0;
+				$currentIndex = count($result['titles']) > 5 ? floor(count($result['titles']) / 2) : 0;
+				$result['currentIndex'] = $currentIndex;
 			}
 			return $result;
 		}else{
