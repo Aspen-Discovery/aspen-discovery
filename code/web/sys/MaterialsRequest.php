@@ -192,5 +192,54 @@ class MaterialsRequest extends DataObject
 		return MaterialsRequestFormats::getAuthorLabelsAndSpecialFields($libraryId);
 	}
 
+	function sendStatusChangeEmail(){
+		$materialsRequestStatus = new MaterialsRequestStatus();
+		$materialsRequestStatus->id = $this->status;
+		if ($materialsRequestStatus->find(true)){
+			if ($materialsRequestStatus->sendEmailToPatron == 1 && $this->email){
+				require_once ROOT_DIR . '/sys/Email/Mailer.php';
+				$mail = new Mailer();
 
+				$replyToAddress = $emailSignature = '';
+				if (!empty($this->assignedTo)) {
+					require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
+					$staffSettings = new UserStaffSettings();
+					$staffSettings->get('userId', $this->assignedTo);
+					if (!empty($staffSettings->materialsRequestReplyToAddress)) {
+						$replyToAddress = $staffSettings->materialsRequestReplyToAddress;
+					}
+					if (!empty($staffSettings->materialsRequestEmailSignature)) {
+						$emailSignature = $staffSettings->materialsRequestEmailSignature;
+					}
+				}
+
+				$body = '*****This is an auto-generated email response. Please do not reply.*****';
+				$body .= "\r\n\r\n" . $materialsRequestStatus->emailTemplate;
+
+				if (!empty($emailSignature)) {
+					$body .= "\r\n\r\n" .$emailSignature;
+				}
+
+				//Replace tags with appropriate values
+				$materialsRequestUser = new User();
+				$materialsRequestUser->id = $this->createdBy;
+				$materialsRequestUser->find(true);
+				foreach ($materialsRequestUser as $fieldName => $fieldValue){
+					if (!is_array($fieldValue)){
+						$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
+					}
+				}
+				foreach ($this as $fieldName => $fieldValue){
+					if (!is_array($fieldValue)){
+						$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
+					}
+				}
+				$error = $mail->send($this->email, "Your Materials Request Update", $body, $replyToAddress);
+				if (($error instanceof AspenError)) {
+					global $interface;
+					$interface->assign('error', $error->getMessage());
+				}
+			}
+		}
+	}
 }
