@@ -41,7 +41,7 @@
     - reCAPTCHA
     - Syndetics
     - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
-  - Cataloging 
+  - [Cataloging](/Admin/HelpManual?page=Cataloging)
   - ILS Integration
     - Indexing Profiles
       - Format Information
