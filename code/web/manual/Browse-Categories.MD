@@ -6,6 +6,6 @@
 
 [![Browse Categories](/manual/images/browse.png)](https://www.youtube.com/watch?v=9v0ei0HyKPU&list=PLV_OXyJ1D3Bjr49J9FQ3M0uNhiNv4E04f&index=12)
 
-![Watch on YouTube](https://www.youtube.com/watch?v=9v0ei0HyKPU&list=PLV_OXyJ1D3Bjr49J9FQ3M0uNhiNv4E04f&index=12)
+[Watch on YouTube](https://www.youtube.com/watch?v=9v0ei0HyKPU&list=PLV_OXyJ1D3Bjr49J9FQ3M0uNhiNv4E04f&index=12)
 
 See Also: [Browse Category Groups](/Admin/HelpManual?page=Browse-Category-Groups)

@@ -14,3 +14,4 @@
 [![Accelerated Reader](/manual/images/Accelerated-Reader.png)](https://youtu.be/FSPzWPiyd_4)
 
 [Watch on Youtube](https://youtu.be/FSPzWPiyd_4)
+
