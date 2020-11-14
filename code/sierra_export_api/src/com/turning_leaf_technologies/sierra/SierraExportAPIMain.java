@@ -131,10 +131,6 @@ public class SierraExportAPIMain {
 				}
 
 				//Connect to the Sierra database
-				String url = configIni.get("Catalog", "sierra_db");
-				if (url.startsWith("\"")){
-					url = url.substring(1, url.length() - 1);
-				}
 				Connection sierraConn = null;
 				SierraInstanceInformation sierraInstanceInformation = initializeSierraConnection(dbConn);
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, sierraInstanceInformation.indexingProfileName, logger);
@@ -143,7 +139,7 @@ public class SierraExportAPIMain {
 					logEntry.incErrors("Could not connect to the Sierra database");
 				}else{
 					//Open the connection to the database
-					sierraConn = DriverManager.getConnection(url);
+					sierraConn = sierraInstanceInformation.sierraConnection;
 					if (!extractSingleRecord) {
 						orderStatusesToExport = ConfigUtil.cleanIniValue(configIni.get("Reindex", "orderStatusesToExport"));
 						if (orderStatusesToExport == null) {
@@ -241,7 +237,8 @@ public class SierraExportAPIMain {
 				Date currentTime = new Date();
 				logger.info(currentTime.toString() + ": Finished Sierra Extract");
 			}catch (Exception e){
-				System.out.println("Error connecting to aspen database " + e.toString());
+				System.out.println("Error extracting data from Sierra " + e.toString());
+				e.printStackTrace();
 				System.exit(1);
 			}
 
@@ -1753,6 +1750,9 @@ public class SierraExportAPIMain {
 					Thread.sleep(15000);
 				} catch (InterruptedException ex) {
 					logger.debug("Thread was interrupted");
+				}
+				if (tries == 3){
+					logEntry.incErrors("Could not connect to the sierra database",e);
 				}
 			}
 
