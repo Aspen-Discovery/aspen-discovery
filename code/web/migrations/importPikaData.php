@@ -969,7 +969,7 @@ function cleancsv($field){
 	if ($field == '\N'){
 		return null;
 	}
-	$field = str_replace('\"', "", $field);
+	$field = str_replace('\"', '"', $field);
 	$field = str_replace("\r\\\n", '<br/>', $field);
 	$field = str_replace("\\\n", '<br/>', $field);
 	return $field;
