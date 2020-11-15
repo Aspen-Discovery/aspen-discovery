@@ -28,11 +28,6 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 	private $student_school_name;
 	private $student_username;
 
-	function __construct($isStandalonePage = false)
-	{
-		parent::__construct(true);
-	}
-
 	function launch()
 	{
 		global $interface;
