@@ -11,7 +11,7 @@
 
 ![Accelerated Reader Searches](/manual/images/Accelerated-Reader-Facets.png)
 
-[![Accelerated Reader](/manual/images/Accelerated-Reader.png)](https://youtu.be/FSPzWPiyd_4)
+[![Accelerated Reader](/manual/images/Accelerated-Reader.jpg)](https://youtu.be/FSPzWPiyd_4)
 
 [Watch on Youtube](https://youtu.be/FSPzWPiyd_4)
 
