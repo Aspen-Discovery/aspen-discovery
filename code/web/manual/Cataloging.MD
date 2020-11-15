@@ -2,6 +2,6 @@
 
 With the cataloging permission you are able to group and ungroup works, force a reindex, set display information, upload new covers, view items in the staff client from a link in the staff view, download MARC information, upload PDFs, and supplemental material. The video below details more about cataloging functions available in Aspen.
 
-[![Cataloging](/manual/images/Cataloging.png)](https://youtu.be/bSdU6cpuuCg)
+[![Cataloging](/manual/images/Cataloging.jpg)](https://youtu.be/rnrLGIlNf8g)
 
-[Watch on Youtube](https://youtu.be/bSdU6cpuuCg)
+[Watch on Youtube](https://youtu.be/rnrLGIlNf8g)
