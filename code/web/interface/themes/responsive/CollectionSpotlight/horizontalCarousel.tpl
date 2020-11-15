@@ -9,7 +9,7 @@
 		</div>
 	{/if}
 <div class="jcarousel-wrapper horizontalCarouselSpotlightWrapper">
-	<div class="jcarousel horizontalCarouselSpotlight" id="collectionSpotlightCarousel{$list->id}">
+	<div class="jcarousel horizontalCarouselSpotlight {if $collectionSpotlight->coverSize == 'medium'}mediumScroller{/if}" id="collectionSpotlightCarousel{$list->id}">
 		<div class="loading">Loading carousel items...</div>
 	</div>
 
