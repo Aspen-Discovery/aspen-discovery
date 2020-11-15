@@ -289,7 +289,8 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'isEligible' => true,
 			'message' => '',
 			'fineLimitReached' => false,
-			'maxPhysicalCheckoutsReached' => false
+			'maxPhysicalCheckoutsReached' => false,
+			'expiredPatronWhoCannotPlaceHolds' => false
 		];
 	}
 

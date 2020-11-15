@@ -3127,8 +3127,8 @@ class Koha extends AbstractIlsDriver
 
 		$maxOutstanding = $this->getKohaSystemPreference('MaxOutstanding');
 
+		$accountSummary = $this->getAccountSummary($patron, true);
 		if ($maxOutstanding > 0){
-			$accountSummary = $this->getAccountSummary($patron, true);
 			$totalFines = $accountSummary['totalFines'];
 			if ($totalFines > $maxOutstanding){
 				$result['isEligible'] = false;
@@ -3140,7 +3140,6 @@ class Koha extends AbstractIlsDriver
 		//Check maximum holds
 		$maxHolds = $this->getKohaSystemPreference('maxreserves');
 		//Get total holds
-		$accountSummary = $this->getAccountSummary($patron);
 		$currentHoldsForUser = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
 		if ($currentHoldsForUser >= $maxHolds) {
 			$result['isEligible'] = false;
@@ -3150,6 +3149,17 @@ class Koha extends AbstractIlsDriver
 			}
 			$result['message'] .= translate(['text' => 'outstanding_holds_limit', 'defaultText' => 'Sorry, you have reached the maximum number of holds for your account.']);
 		}
+
+		//Check if the patron is expired
+		if ($accountSummary['expired'] == 1) {
+			$blockExpiredPatronOpacActions = $this->getKohaSystemPreference('BlockExpiredPatronOpacActions');
+			if ($blockExpiredPatronOpacActions == 1){
+				$result['isEligible'] = false;
+				$result['expiredPatronWhoCannotPlaceHolds'] = true;
+				$result['message'] = translate(['text' => 'expired_patron_cannot_place_holds', 'defaultText' => 'Sorry, your account has expired. Please renew your account to place holds.']);
+			}
+		}
+
 		return $result;
 	}
 
