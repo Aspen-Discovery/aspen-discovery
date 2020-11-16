@@ -352,6 +352,23 @@ class UserAPI extends Action
 				}
 			}
 
+			$catalogConnection = $this->getCatalogConnection();
+			$accountSummary = $catalogConnection->getAccountSummary($user);
+			$userData->numCheckedOutIls = $accountSummary['numCheckedOut'];
+			$userData->numHoldsIls = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
+			$userData->numHoldsAvailableIls =$accountSummary['numAvailableHolds'];
+			$userData->numHoldsRequestedIls = $accountSummary['numUnavailableHolds'];
+			$userData->finesVal = $accountSummary['totalFines'];
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+			$userData->fines = $currencyFormatter->formatCurrency($userData->finesVal, $currencyCode);
+
 			//Add overdrive data
 			if ($user->isValidForEContentSource('overdrive')) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
