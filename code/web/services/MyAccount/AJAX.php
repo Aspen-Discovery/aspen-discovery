@@ -1088,9 +1088,11 @@ class MyAccount_AJAX extends JSON_Action
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
-						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-						$rbdigitalSummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
-						$rbdigitalSummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+						if ($linkedUser->isValidForEContentSource('rbdigital')){
+							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+							$rbdigitalSummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
+							$rbdigitalSummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+						}
 					}
 				}
 				$timer->logTime("Loaded RBdigital Summary for User and linked users");
