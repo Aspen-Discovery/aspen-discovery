@@ -1627,6 +1627,16 @@ class Admin_DBMaintenance extends Admin_Admin
 					)
 				),
 
+				'account_profiles_api_version' => array(
+					'title' => 'Account Profiles - API Version',
+					'description' => 'Add api version for sierra',
+					'continueOnError' => false,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `apiVersion` varchar(10) DEFAULT ''",
+						"UPDATE account_profiles set apiVersion = '5' where ils = 'sierra'",
+					)
+				),
+
 				'archive_private_collections' => array(
 					'title' => 'Archive Private Collections',
 					'description' => 'Create a table to store information about collections that should be private to the owning library',
