@@ -414,27 +414,22 @@ class RBdigitalDriver extends AbstractEContentDriver
 		if ($rbdigitalId == false) {
 			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
 		} else {
-			require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazine.php';
-			$product = new RBdigitalMagazine();
-			$product->magazineId = $magazineId;
-			if ($product->find(true)) {
-				$actionUrl = $this->getConnectionSettings($patron)->webServiceURL . '/v1/libraries/' . $this->getConnectionSettings($patron)->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/' . $issueId;
+			//RBdigital can return titles that are no longer available or that aren't actually part of the library collection.
+			//We can return even if we can't load the record in Aspen.
+			$actionUrl = $this->getConnectionSettings($patron)->webServiceURL . '/v1/libraries/' . $this->getConnectionSettings($patron)->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/' . $issueId;
 
-				$rawResponse = $this->getConnectionSettings($patron)->curlWrapper->curlSendPage($actionUrl, 'DELETE');
-				$response = json_decode($rawResponse);
-				if ($response == false) {
-					$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
-					global $logger;
-					$logger->log("Invalid information from rbdigital api " . $rawResponse, Logger::LOG_ERROR);
-				} else {
-					$result['success'] = true;
-					$result['message'] = "The magazine was returned successfully.";
-
-					global $memCache;
-					$memCache->delete('rbdigital_summary_' . $patron->id);
-				}
+			$rawResponse = $this->getConnectionSettings($patron)->curlWrapper->curlSendPage($actionUrl, 'DELETE');
+			$response = json_decode($rawResponse);
+			if ($response == false) {
+				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+				global $logger;
+				$logger->log("Invalid information from rbdigital api " . $rawResponse, Logger::LOG_ERROR);
 			} else {
-				$result['message'] = "Could not find the magazine to return";
+				$result['success'] = true;
+				$result['message'] = "The magazine was returned successfully.";
+
+				global $memCache;
+				$memCache->delete('rbdigital_summary_' . $patron->id);
 			}
 		}
 		return $result;
