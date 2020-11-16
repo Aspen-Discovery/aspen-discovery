@@ -12,41 +12,11 @@ class RBdigitalDriver extends AbstractEContentDriver
 	private $allowPatronLookupByEmail;
 
 	/** @var CurlWrapper */
-	private $curlWrapper;
+	private $curlWrapper = [];
 
 	public function __construct()
 	{
-		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
-		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
-		try {
-			global $library;
-			$rbdigitalScope = new RBdigitalScope();
-			$rbdigitalScope->id = $library->rbdigitalScopeId;
-			if ($rbdigitalScope->find(true)){
-				$rbdigitalSettings = new RBdigitalSetting();
-				$rbdigitalSettings->id = $rbdigitalScope->settingId;
-				if ($rbdigitalSettings->find(true)) {
-					$this->valid = true;
 
-					$this->webServiceURL = $rbdigitalSettings->apiUrl;
-					$this->userInterfaceURL = $rbdigitalSettings->userInterfaceUrl;
-					$this->apiToken = $rbdigitalSettings->apiToken;
-					$this->libraryId = $rbdigitalSettings->libraryId;
-					$this->allowPatronLookupByEmail = $rbdigitalSettings->allowPatronLookupByEmail;
-
-					$this->curlWrapper = new CurlWrapper();
-					$headers = [
-						'Accept: application/json',
-						'Authorization: basic ' . strtolower($this->apiToken),
-						'Content-Type: application/json'
-					];
-					$this->curlWrapper->addCustomHeaders($headers, true);
-				}
-			}
-		} catch (Exception $e) {
-			global $logger;
-			$logger->log("Could not load RBdigital settings", Logger::LOG_ALERT);
-		}
 	}
 
 	public function getUserInterfaceURL()
@@ -86,7 +56,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 		if ($rbdigitalId != false) {
 			$patronCheckoutUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts';
 
-			$patronCheckoutsRaw = $this->curlWrapper->curlGetPage($patronCheckoutUrl);
+			$patronCheckoutsRaw = $this->getCurlWrapper($patron)->curlGetPage($patronCheckoutUrl);
 			$patronCheckouts = json_decode($patronCheckoutsRaw);
 			if (isset($patronCheckouts->message)) {
 				//Error in RBdigital APIS
@@ -148,7 +118,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 
 			//Look for magazines
 			$patronMagazinesUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/history?pageIndex=0&pageSize=100';
-			$patronMagazinesRaw = $this->curlWrapper->curlGetPage($patronMagazinesUrl);
+			$patronMagazinesRaw = $this->getCurlWrapper($patron)->curlGetPage($patronMagazinesUrl);
 			$patronMagazines = json_decode($patronMagazinesRaw);
 			if (!isset($patronMagazines->resultSet)) {
 				global $logger;
@@ -219,14 +189,14 @@ class RBdigitalDriver extends AbstractEContentDriver
 			require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
 			$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
 
-			$rawResponse = $this->curlWrapper->curlPostPage($actionUrl, '');
+			$rawResponse = $this->getCurlWrapper($patron)->curlPostPage($actionUrl, '');
 			$response = json_decode($rawResponse);
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your checkout after a few minutes.";
 				global $logger;
 				$logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", Logger::LOG_ERROR);
-				$logger->log(print_r($this->curlWrapper->getHeaders(), true), Logger::LOG_ERROR);
-				$curl_info = curl_getinfo($this->curlWrapper->curl_connection);
+				$logger->log(print_r($this->getCurlWrapper($patron)->getHeaders(), true), Logger::LOG_ERROR);
+				$curl_info = curl_getinfo($this->getCurlWrapper($patron)->curl_connection);
 				$logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
 			} else {
 				if (!empty($response->output) && $response->output == 'SUCCESS') {
@@ -272,7 +242,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 				// /v{version}/libraries/{libraryId}/patrons/{patronId}/patron-magazines/{issueId}
 
 				//RBdigital does not return a status so we assume that it checked out ok
-				$this->curlWrapper->curlPostPage($actionUrl, '');
+				$this->getCurlWrapper($patron)->curlPostPage($actionUrl, '');
 
 				$this->trackUserUsageOfRBdigital($patron);
 				$this->trackMagazineCheckout($magazineId, $issueId);
@@ -310,7 +280,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 
 		$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/';
 
-		$rawResponse = $this->curlWrapper->curlPostPage($actionUrl, json_encode($registrationData));
+		$rawResponse = $this->getCurlWrapper($user)->curlPostPage($actionUrl, json_encode($registrationData));
 		$response = json_decode($rawResponse);
 		if ($response == false) {
 			$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
@@ -374,7 +344,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 		} else {
 			$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
 
-			$rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'PUT');
+			$rawResponse = $this->getCurlWrapper($patron)->curlSendPage($actionUrl, 'PUT');
 			$response = json_decode($rawResponse);
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
@@ -409,7 +379,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 		} else {
 			$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/checkouts/' . $recordId;
 
-			$rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'DELETE');
+			$rawResponse = $this->getCurlWrapper($patron)->curlSendPage($actionUrl, 'DELETE');
 			$response = json_decode($rawResponse);
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
@@ -452,7 +422,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 			if ($product->find(true)) {
 				$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/' . $issueId;
 
-				$rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'DELETE');
+				$rawResponse = $this->getCurlWrapper($patron)->curlSendPage($actionUrl, 'DELETE');
 				$response = json_decode($rawResponse);
 				if ($response == false) {
 					$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
@@ -495,7 +465,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 
 		$patronHoldsUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/holds';
 
-		$patronHoldsRaw = $this->curlWrapper->curlGetPage($patronHoldsUrl);
+		$patronHoldsRaw = $this->getCurlWrapper($patron)->curlGetPage($patronHoldsUrl);
 		$patronHolds = json_decode($patronHoldsRaw);
 
 		$holds = array(
@@ -550,14 +520,14 @@ class RBdigitalDriver extends AbstractEContentDriver
 		} else {
 			$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/holds/' . $recordId;
 
-			$rawResponse = $this->curlWrapper->curlPostPage($actionUrl, "");
+			$rawResponse = $this->getCurlWrapper($patron)->curlPostPage($actionUrl, "");
 			$response = json_decode($rawResponse);
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
 				global $logger;
 				$logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", Logger::LOG_ERROR);
-				$logger->log(print_r($this->curlWrapper->getHeaders(), true), Logger::LOG_ERROR);
-				$curl_info = curl_getinfo($this->curlWrapper->curl_connection);
+				$logger->log(print_r($this->getCurlWrapper($patron)->getHeaders(), true), Logger::LOG_ERROR);
+				$curl_info = curl_getinfo($this->getCurlWrapper($patron)->curl_connection);
 				$logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
 			} else {
 				if (is_numeric($response)) {
@@ -615,7 +585,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 		} else {
 			$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/holds/' . $recordId;
 
-			$rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'DELETE');
+			$rawResponse = $this->getCurlWrapper($patron)->curlSendPage($actionUrl, 'DELETE');
 			$response = json_decode($rawResponse);
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
@@ -663,7 +633,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 			//Get account information from api
 			$patronSummaryUrl = $this->webServiceURL . '/v1/tenants/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-config';
 
-			$responseRaw = $this->curlWrapper->curlGetPage($patronSummaryUrl);
+			$responseRaw = $this->getCurlWrapper($patron)->curlGetPage($patronSummaryUrl);
 			$response = json_decode($responseRaw);
 
 			$summary = array();
@@ -697,7 +667,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 			if (isset($_REQUEST['reload']) || $user->rbdigitalLastAccountCheck < time() - 15 * 60) {
 				$lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->getBarcode());
 
-				$rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
+				$rawResponse = $this->getCurlWrapper($user)->curlGetPage($lookupPatronUrl);
 				$response = json_decode($rawResponse);
 				if (is_null($response) || (isset($response->message) && ($response->message == 'Patron not found.'))) {
 					//Do lookup by email address if settings allow.
@@ -705,7 +675,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 					if (!empty($user->email) && $this->allowPatronLookupByEmail) {
 						$lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->email);
 
-						$rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
+						$rawResponse = $this->getCurlWrapper($user)->curlGetPage($lookupPatronUrl);
 						$response = json_decode($rawResponse);
 						if (is_null($response) || !empty($response->message) && $response->message == 'Patron not found.') {
 							$rbdigitalId = -1;
@@ -740,7 +710,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 		}
 	}
 
-	public function redirectToRBdigitalMagazine(/** @noinspection PhpUnusedParameterInspection */ User $patron, RBdigitalMagazineDriver $recordDriver)
+	public function redirectToRBdigitalMagazine(User $patron, RBdigitalMagazineDriver $recordDriver)
 	{
 		$token = $this->addBearerTokenHeader($patron);
 		$redirectUrl = $recordDriver->getRBdigitalLinkUrl();
@@ -829,9 +799,6 @@ class RBdigitalDriver extends AbstractEContentDriver
 		}
 	}
 
-	/**
-	 * @param int $rbdigitalId
-	 */
 	function trackMagazineCheckout($magazineId, $issueId): void
 	{
 		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazineUsage.php';
@@ -892,15 +859,15 @@ class RBdigitalDriver extends AbstractEContentDriver
 				'UserName' => $patron->rbdigitalUsername,
 				'Password' => $patron->rbdigitalPassword,
 			];
-			$rawResponse = $this->curlWrapper->curlPostPage($tokenUrl, $userData);
+			$rawResponse = $this->getCurlWrapper($patron)->curlPostPage($tokenUrl, $userData);
 			$response = json_decode($rawResponse);
 
 			if ($response == false) {
 				$result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
 				global $logger;
 				$logger->log("Invalid information from rbdigital api\r\n$tokenUrl\r\n$rawResponse", Logger::LOG_ERROR);
-				$logger->log(print_r($this->curlWrapper->getHeaders(), true), Logger::LOG_ERROR);
-				$curl_info = curl_getinfo($this->curlWrapper->curl_connection);
+				$logger->log(print_r($this->getCurlWrapper($patron)->getHeaders(), true), Logger::LOG_ERROR);
+				$curl_info = curl_getinfo($this->getCurlWrapper($patron)->curl_connection);
 				$logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
 			} else {
 				//We should get back a bearer token
@@ -911,16 +878,16 @@ class RBdigitalDriver extends AbstractEContentDriver
 				}
 			}
 		}elseif (!empty($patron->email)){
-			$this->curlWrapper->timeout = 10;
+			$this->getCurlWrapper($patron)->timeout = 10;
 			$patronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($patron->email);
-			$rawResponse = $this->curlWrapper->curlGetPage($patronUrl);
+			$rawResponse = $this->getCurlWrapper($patron)->curlGetPage($patronUrl);
 			$response = json_decode($rawResponse);
 			if ($response != false) {
 				$tokenUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/tokens';
 				$userData = [
 					'userId' => $response->userId,
 				];
-				$rawTokenResponse = $this->curlWrapper->curlPostBodyData($tokenUrl, $userData);
+				$rawTokenResponse = $this->getCurlWrapper($patron)->curlPostBodyData($tokenUrl, $userData);
 				$tokenResponse = json_decode($rawTokenResponse);
 				if ($tokenResponse != false) {
 					if (!empty($tokenResponse->message)){
@@ -941,5 +908,45 @@ class RBdigitalDriver extends AbstractEContentDriver
 //...which will return a bearer token.
 //	Assuming you know the ISBN for the title of interest, you can use the bearer token as per...
 //https://[subdomain].rbdigital.com/book/[ISBN]?bearer=[bearer token]
+	}
+
+	private function getCurlWrapper(User $patron)
+	{
+		$homeLibrary = $patron->getHomeLibrary();
+		if (array_key_exists($homeLibrary->libraryId, $this->curlWrapper)){
+			return $this->curlWrapper[$homeLibrary->libraryId];
+		}
+		$this->curlWrapper[$homeLibrary->libraryId] = null;
+		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
+		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
+		try {
+			$rbdigitalScope = new RBdigitalScope();
+			$rbdigitalScope->id = $homeLibrary->rbdigitalScopeId;
+			if ($rbdigitalScope->find(true)){
+				$rbdigitalSettings = new RBdigitalSetting();
+				$rbdigitalSettings->id = $rbdigitalScope->settingId;
+				if ($rbdigitalSettings->find(true)) {
+					$this->valid = true;
+
+					$this->webServiceURL = $rbdigitalSettings->apiUrl;
+					$this->userInterfaceURL = $rbdigitalSettings->userInterfaceUrl;
+					$this->apiToken = $rbdigitalSettings->apiToken;
+					$this->libraryId = $rbdigitalSettings->libraryId;
+					$this->allowPatronLookupByEmail = $rbdigitalSettings->allowPatronLookupByEmail;
+
+					$this->curlWrapper[$homeLibrary->libraryId] = new CurlWrapper();
+					$headers = [
+						'Accept: application/json',
+						'Authorization: basic ' . strtolower($this->apiToken),
+						'Content-Type: application/json'
+					];
+					$this->curlWrapper[$homeLibrary->libraryId]->addCustomHeaders($headers, true);
+				}
+			}
+		} catch (Exception $e) {
+			global $logger;
+			$logger->log("Could not load RBdigital settings", Logger::LOG_ALERT);
+		}
+		return $this->curlWrapper[$homeLibrary->libraryId];
 	}
 }
