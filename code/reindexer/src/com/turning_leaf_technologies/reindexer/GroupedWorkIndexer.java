@@ -205,8 +205,7 @@ public class GroupedWorkIndexer {
 							break;
 						default:
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
-							okToIndex = false;
-							return;
+							break;
 					}
 				}else if (!curType.equals("cloud_library") && !curType.equals("rbdigital") && !curType.equals("rbdigital_magazine") && !curType.equals("hoopla") && !curType.equals("overdrive") && !curType.equals("axis360")) {
 					getSideLoadSettings.setString(1, curType);
