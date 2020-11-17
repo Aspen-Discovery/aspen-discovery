@@ -4,8 +4,8 @@ This number is active for 45 days. To maintain access indefinitely, visit any NP
 TO USE YOUR TEMPORARY CARD:
 1. Visit https://www.library.nashville.org and click My Account in the upper right corner of the screen.
 2. Enter your library card number, listed above
-4. Enter your PIN, initially set to the last 4 digits of your phone number
-4. Click Login
+3. Enter your PIN, initially set to the last 4 digits of your phone number
+4. Click Sign In
 
 WHAT CAN YOU DO WITH YOUR CARD?
 With this library card number, you may download free e-books, audiobooks and music. You have access to a variety of electronic resources including language courses, practice tests, business information, genealogy databases and more! You may also request library books, music and movies for delivery to your local branch library.
@@ -15,15 +15,11 @@ In order to borrow physical library materials, bring your photo ID and proof of 
 
 Accepted forms of ID:
 
-Driver's License
-Learner's Permit
-ID Only
-Felony ID
+Driver's License or Learner's Permit
 School ID (if under 18)
-Nursing Home ID
-Special Institution ID
 Military ID
 Passport
+ID Only with Date of Birth
 
 Accepted proof of address:
 

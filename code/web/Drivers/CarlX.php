@@ -875,18 +875,16 @@ class CarlX extends AbstractIlsDriver{
 			$request->SearchTerms->Value			= $email;
 			$request->PagingParameters				= new stdClass();
 			$request->PagingParameters->StartPos	= 0;
-			$request->PagingParameters->NoOfRecords	= 1;
+			$request->PagingParameters->NoOfRecords	= 20;
 			$request->Modifiers						= new stdClass();
 			$request->Modifiers->InstitutionCode	= 'NASH';
 			$result = $this->doSoapRequest('searchPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 			if ($result) {
-				$noEmailMatch = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'No matching records found');
+				$noEmailMatch = stripos($result->ResponseStatuses->ResponseStatus{0}->ShortMessage, 'No matching records found');
 				if ($noEmailMatch === false) {
-					if ($result->PagingResult->NoOfRecords > 1) {
-						$patronIdsMatching = array_column($result->Patrons->PatronID);
+					if ($result->PagingResult->NoOfRecords > 0) {
+						$patronIdsMatching = array_column($result->Patrons, 'PatronID');
 						$patronIdsMatching = implode(", ", $patronIdsMatching);
-					} elseif ($result->PagingResult->NoOfRecords == 1) {
-						$patronIdsMatching =  $result->Patrons->PatronID;
 					}
 					global $logger;
 					$logger->log('Online Registration Email already exists in Carl. Email: ' . $email . ' IP: ' . $active_ip . ' PatronIDs: ' . $patronIdsMatching, Logger::LOG_NOTICE);
@@ -930,7 +928,7 @@ class CarlX extends AbstractIlsDriver{
 			$request->Modifiers->InstitutionCode		= 'NASH';
 			$result = $this->doSoapRequest('searchPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 			if ($result) {
-				$noNameBirthdateMatch = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'No matching records found');
+				$noNameBirthdateMatch = stripos($result->ResponseStatuses->ResponseStatus{0}->ShortMessage, 'No matching records found');
 				if ($noNameBirthdateMatch === false) {
 					if ($result->PagingResult->NoOfRecords > 1) {
 						$patronIdsMatching = array_column($result->Patrons->PatronID);
@@ -943,7 +941,7 @@ class CarlX extends AbstractIlsDriver{
 
 					// SEND EMAIL TO DUPLICATE NAME+BIRTHDATE REGISTRANT EMAIL ADDRESS
 					try {
-						$body = $interface->fetch($this->getSelfRegTemplate('duplicate-name+birthdate');
+						$body = $interface->fetch($this->getSelfRegTemplate('duplicate-name+birthdate'));
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Nashville Public Library: you might already have an account!';
@@ -961,7 +959,9 @@ class CarlX extends AbstractIlsDriver{
 
 			// CREATE PATRON REQUEST
 			$request											= new stdClass();
-			$request->Modifiers									= '';
+			$request->Modifiers									= new stdClass();
+			$request->Modifiers->ReportMode						= true;
+			$request->PatronFlags								= new stdClass();
 			//$request->PatronFlags->PatronFlag					= 'DUPCHECK_ALTID'; // Duplicate check for alt id
 			$request->PatronFlags->PatronFlag[0]				= 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
 			$request->PatronFlags->PatronFlag[1]                = 'VALIDATE_ZIPCODE'; // Validate ZIP against Carl.X Admin legal ZIPs
@@ -1050,7 +1050,7 @@ class CarlX extends AbstractIlsDriver{
 					$result = $this->doSoapRequest('addPatronNote', $request, $this->patronWsdl,  $this->genericResponseSOAPCallOptions);
 
 					if ($result) {
-						$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+						$success = stripos($result->ResponseStatuses->ResponseStatus{0}->ShortMessage, 'Success') !== false;
 						if (!$success) {
 							global $logger;
 							$logger->log('Unable to write IP address in Patron Note.', Logger::LOG_ERROR);
@@ -1064,8 +1064,11 @@ class CarlX extends AbstractIlsDriver{
 
 					// FOLLOWING SUCCESSFUL SELF REGISTRATION, EMAIL PATRON THE LIBRARY CARD NUMBER
 					try {
-						$body = $interface->fetch($this->getSelfRegTemplate('success');
-						$body = $firstName . " " . $lastName . "\n\nThank you for registering for an Online Library Card. Your library card number is:\n\n" . $tempPatronID . "\n\n" . $body;
+						$body = $firstName . " " . $lastName . "\n\n";
+						$body .= translate(['text' => 'selfreg_email_1', 'defaultText' =>'Thank you for registering for a Digital Access Card at the Nashville Public Library. Your library card number is:']);
+						$body .= "\n\n" . $tempPatronID . "\n\n";
+						$body_template = $interface->fetch($this->getSelfRegTemplate('success'));
+						$body .= $body_template;
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Welcome to the Nashville Public Library';
@@ -1102,7 +1105,7 @@ class CarlX extends AbstractIlsDriver{
 		}elseif ($reason == 'success') {
 			return 'Emails/nashville-self-registration.tpl';
 		}else{
-			return
+			return;
 		}
 	}
 
