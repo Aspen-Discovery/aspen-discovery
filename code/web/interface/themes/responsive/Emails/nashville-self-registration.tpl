@@ -16,10 +16,10 @@ In order to borrow physical library materials, bring your photo ID and proof of 
 Accepted forms of ID:
 
 Driver's License or Learner's Permit
-School ID (if under 18)
-Military ID
+ID card issued by ANY federal, state or local government
 Passport
-ID Only with Date of Birth
+School ID
+Military ID
 
 Accepted proof of address:
 
