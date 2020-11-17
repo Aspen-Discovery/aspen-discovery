@@ -1,7 +1,7 @@
 ##Table of Contents
 - Administration
   - [System Administration](/Admin/HelpManual?page=System-Administration)
-    -[Permissions](/Admin/HelpManual?page=Permissions)
+    - [Permissions](/Admin/HelpManual?page=Permissions)
   - [System Reports](/Admin/HelpManual?page=System-Reports)
     - Cron Log
     - Dashboards
@@ -10,7 +10,7 @@
   - Configuration Templates
     - [Themes](/Admin/HelpManual?page=Themes)
     - [Layout Settings](/Admin/HelpManual?page=Layout-Settings)
-    -[Menu Links](/Admin/HelpManual?page=Menu-Links)
+    - [Menu Links](/Admin/HelpManual?page=Menu-Links)
     - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
       - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
       - Creating Grouped Works
@@ -57,23 +57,23 @@
     - Symphony
   - [OverDrive](/Admin/HelpManual?page=Overdrive)
     - Settings
-     - Scopes
+    - Scopes
     - Indexing Log
     - Dashboard
     - API Information
   - RB Digital
     - Settings 
-     - Scopes 
+    - Scopes 
     - Indexing Log 
     - Dashboard
   - [Cloud Library](/Admin/HelpManual?page=Cloud-Library)
     - Settings 
-     - Scopes 
+    - Scopes 
     - Indexing Log 
     - Dashboard
   - [Side Loaded eContent](/Admin/HelpManual?page=Side-Loaded-eContent)
     - Side Loaded Configurations
-     - Scopes
+    - Scopes
     - Indexing Log
     - Dashboard
   - Indexing Information
@@ -105,7 +105,7 @@
   - [Hoopla](/Admin/HelpManual?page=Hoopla)
   - [OverDrive](/Admin/HelpManual?page=Overdrive)
   - RBdigital
-  -[EBSCO EDS](/Admin/HelpManual?page=EBSCO-EDS)
+  - [EBSCO EDS](/Admin/HelpManual?page=EBSCO-EDS)
 - Email
 - Events
   - Library Calendar
