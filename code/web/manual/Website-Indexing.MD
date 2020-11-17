@@ -6,6 +6,6 @@ Website indexing can be set up in the Website Indexing module of the administrat
 
 You are also able to see the indexing log and website indexing dashboard through the Website Indexing module.
 
-[![Website Indexing](/manual/images/Website-Indexing.jpg)](https://youtu.be/OXY63xDcN9k)
+[![Website Indexing](/manual/images/Web-Indexing.jpg)](https://youtu.be/OXY63xDcN9k)
 
 [Watch on Youtube](https://youtu.be/OXY63xDcN9k)
