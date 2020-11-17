@@ -9,7 +9,7 @@
   
   - PayPal will have a link out to three buttons for the user to select from. Once the modal window opens the user will be promted to login and enter their credentials. Once they choose their format for payment and Pay Now, they will be presented with a window in Aspen that tells them "Thank you, your payment was processed successfully, thank you.  
   
-  - [![PayPal Integration Video](/manual/images/PayPal.png)](https://www.youtube.com/watch?v=QpPO85A1Alk&list=PLV_OXyJ1D3Bjr49J9FQ3M0uNhiNv4E04f&index=4)
+[![PayPal Integration Video](/manual/images/PayPal.png)](https://www.youtube.com/watch?v=QpPO85A1Alk&list=PLV_OXyJ1D3Bjr49J9FQ3M0uNhiNv4E04f&index=4)
   
   
   [Watch on YouTube](https://www.youtube.com/watch?v=QpPO85A1Alk&list=PLV_OXyJ1D3Bjr49J9FQ3M0uNhiNv4E04f&index=4)
