@@ -960,7 +960,7 @@ class CarlX extends AbstractIlsDriver{
 			// CREATE PATRON REQUEST
 			$request											= new stdClass();
 			$request->Modifiers									= new stdClass();
-			$request->Modifiers->ReportMode						= true;
+			$request->Modifiers->ReportMode						= false;
 			$request->PatronFlags								= new stdClass();
 			//$request->PatronFlags->PatronFlag					= 'DUPCHECK_ALTID'; // Duplicate check for alt id
 			$request->PatronFlags->PatronFlag[0]				= 'DUPCHECK_NAME_DOB'; // Duplicate check for name/date of birth
