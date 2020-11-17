@@ -10,3 +10,8 @@
 - Once AR is integrated, you will have the ability to narrow searches by AR data
 
 ![Accelerated Reader Searches](/manual/images/Accelerated-Reader-Facets.png)
+
+[![Accelerated Reader](/manual/images/Accelerated-Reader.jpg)](https://youtu.be/FSPzWPiyd_4)
+
+[Watch on Youtube](https://youtu.be/FSPzWPiyd_4)
+

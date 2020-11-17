@@ -28,11 +28,11 @@ var AspenDiscovery = (function(){
 			}else if (history.state && history.state.page === "Book") {
 				AspenDiscovery.Archive.handleBookClick(history.state.bookPid, history.state.pagePid, history.state.viewer);
 			}else if (history.state && history.state.page === "Checkouts") {
-				let selector = '#checkoutsTab a[href="#' + history.state.source + '"]';
-				$(selector).tab('show');
+				var selector1 = '#checkoutsTab a[href="#' + history.state.source + '"]';
+				$(selecto1r).tab('show');
 			}else if (history.state && history.state.page === "Holds") {
-				let selector = '#holdsTab a[href="#' + history.state.source + '"]';
-				$(selector).tab('show');
+				var selector2 = '#holdsTab a[href="#' + history.state.source + '"]';
+				$(selector2).tab('show');
 			}else if (history.state && history.state.page === "ReadingHistory") {
 				AspenDiscovery.Account.loadReadingHistory(history.state.selectedUser, history.state.sort, history.state.pageNumber, history.state.showCovers, history.state.filter);
 			}else if (history.state && history.state.page === "Browse") {
@@ -47,12 +47,12 @@ var AspenDiscovery = (function(){
 
 	return {
 		buildUrl: function(base, key, value) {
-			let sep = (base.indexOf('?') > -1) ? '&' : '?';
+			var sep = (base.indexOf('?') > -1) ? '&' : '?';
 			return base + sep + key + '=' + value;
 		},
 
 		changePageSize: function(){
-			let url = window.location.href;
+			var url = window.location.href;
 			if (url.match(/[&?]pageSize=\d+/)) {
 				url = url.replace(/pageSize=\d+/, "pageSize=" + $("#pageSize").val());
 			} else {
@@ -66,7 +66,7 @@ var AspenDiscovery = (function(){
 		},
 
 		closeLightbox: function(callback){
-			let modalDialog = $("#modalDialog");
+			var modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
 				if (callback !== undefined){
@@ -85,21 +85,21 @@ var AspenDiscovery = (function(){
 		initCarousels: function(carouselClass){
 			carouselClass = carouselClass || '.jcarousel';
 			var jcarousel = $(carouselClass);
-			let wrapper   = jcarousel.parents('.jcarousel-wrapper');
+			var wrapper   = jcarousel.parents('.jcarousel-wrapper');
 			// console.log('init Carousels called for ', jcarousel);
 
 			jcarousel.on('jcarousel:reload jcarousel:create', function() {
 
-				let Carousel	   = $(this);
-				let width		  = Carousel.innerWidth();
-				let liTags		 = Carousel.find('li');
+				var Carousel	   = $(this);
+				var width		  = Carousel.innerWidth();
+				var liTags		 = Carousel.find('li');
 				if (liTags == null ||liTags.length === 0){
 					return;
 				}
-				let leftMargin	 = +liTags.css('margin-left').replace('px', '');
-				let rightMargin	= +liTags.css('margin-right').replace('px', '');
-				let numCategories  = Carousel.jcarousel('items').length || 1;
-				let numItemsToShow = 1;
+				var leftMargin	 = +liTags.css('margin-left').replace('px', '');
+				var rightMargin	= +liTags.css('margin-right').replace('px', '');
+				var numCategories  = Carousel.jcarousel('items').length || 1;
+				var numItemsToShow = 1;
 
 				// Adjust Browse Category Carousels
 				if (jcarousel.is('#browse-category-carousel')){
@@ -137,6 +137,9 @@ var AspenDiscovery = (function(){
 				if (numItemsToShow >= numCategories){
 					$(this).offsetParent().children('.jcarousel-control-prev').hide();
 					$(this).offsetParent().children('.jcarousel-control-next').hide();
+				}else{
+					$(this).offsetParent().children('.jcarousel-control-prev').show();
+					$(this).offsetParent().children('.jcarousel-control-next').show();
 				}
 
 			})
@@ -184,9 +187,9 @@ var AspenDiscovery = (function(){
 		initializeModalDialogs: function() {
 			$(".modalDialogTrigger").each(function(){
 				$(this).click(function(){
-					let trigger = $(this);
-					let dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
-					let dialogDestination = trigger.attr("href");
+					var trigger = $(this);
+					var dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
+					var dialogDestination = trigger.attr("href");
 					$("#myModalLabel").text(dialogTitle);
 					$(".modal-body").html('Loading.').load(dialogDestination);
 					$(".extraModalButton").hide();
@@ -197,8 +200,8 @@ var AspenDiscovery = (function(){
 		},
 
 		getQuerystringParameters: function(){
-			let vars = [];
-			let q = location.search.substr(1);
+			var vars = [];
+			var q = location.search.substr(1);
 			if(q !== undefined){
 				q = q.split('&');
 				for(var i = 0; i < q.length; i++){
@@ -216,19 +219,19 @@ var AspenDiscovery = (function(){
 
 		replaceQueryParam : function (param, newValue, search) {
 			if (typeof search == 'undefined') search = location.search;
-			let regex = new RegExp("([?;&])" + param + "[^&;]*[;&]?");
-			let query = search.replace(regex, "$1").replace(/&$/, '');
+			var regex = new RegExp("([?;&])" + param + "[^&;]*[;&]?");
+			var query = search.replace(regex, "$1").replace(/&$/, '');
 			return newValue ? (query.length > 2 ? query + "&" : "?") + param + "=" + newValue : query;
 		},
 
 		getSelectedTitles: function(){
-			let selectedTitles = $("input.titleSelect:checked ").map(function() {
+			var selectedTitles = $("input.titleSelect:checked ").map(function() {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
 			if (selectedTitles.length === 0){
-				let ret = confirm('You have not selected any items, process all items?');
+				var ret = confirm('You have not selected any items, process all items?');
 				if (ret === true){
-					let titleSelect = $("input.titleSelect");
+					var titleSelect = $("input.titleSelect");
 					titleSelect.attr('checked', 'checked');
 					selectedTitles = titleSelect.map(function() {
 						return $(this).attr('name') + "=" + $(this).val();
@@ -239,8 +242,8 @@ var AspenDiscovery = (function(){
 		},
 
 		pwdToText: function(fieldId){
-			let elem = document.getElementById(fieldId);
-			let input = document.createElement('input');
+			var elem = document.getElementById(fieldId);
+			var input = document.createElement('input');
 			input.id = elem.id;
 			input.name = elem.name;
 			input.value = elem.value;
@@ -271,10 +274,10 @@ var AspenDiscovery = (function(){
 			});
 
 			$('fieldset.fieldset-collapsible').each(function() {
-				let collapsible = $(this);
-				let legend = collapsible.find('legend:first');
+				var collapsible = $(this);
+				var legend = collapsible.find('legend:first');
 				legend.addClass('fieldset-collapsible-label').bind('click', {collapsible: collapsible}, function(event) {
-					let collapsible = event.data.collapsible;
+					var collapsible = event.data.collapsible;
 					if (collapsible.hasClass('fieldset-collapsed')) {
 						collapsible.removeClass('fieldset-collapsed');
 					} else {
@@ -300,6 +303,7 @@ var AspenDiscovery = (function(){
 			$(".modal-body").html(body);
 			$('.modal-buttons').html('');
 			var modalDialog = $("#modalDialog");
+			modalDialog.removeClass('image-popup')
 			modalDialog.modal('show');
 			if (autoClose) {
 				setTimeout(function(){
@@ -332,31 +336,32 @@ var AspenDiscovery = (function(){
 
 		showElementInPopup: function(title, elementId, buttonsElementId){
 			// buttonsElementId is optional
-			let modalDialog = $("#modalDialog");
+			var modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){
 				AspenDiscovery.closeLightbox(function(){AspenDiscovery.showElementInPopup(title, elementId)});
 			}else{
 				$(".modal-title").html(title);
-				let elementText = $(elementId).html();
-				let elementButtons = buttonsElementId ? $(buttonsElementId).html() : '';
+				var elementText = $(elementId).html();
+				var elementButtons = buttonsElementId ? $(buttonsElementId).html() : '';
 				$(".modal-body").html(elementText);
 				$('.modal-buttons').html(elementButtons);
 
+				modalDialog.removeClass('image-popup')
 				modalDialog.modal('show');
 				return false;
 			}
 		},
 
 		showLocationHoursAndMap: function(){
-			let selectedId = $("#selectLibrary").find(":selected").val();
+			var selectedId = $("#selectLibrary").find(":selected").val();
 			$(".locationInfo").hide();
 			$("#locationAddress" + selectedId).show();
 			return false;
 		},
 
 		toggleCheckboxes: function (checkboxSelector, toggleSelector){
-			let toggle = $(toggleSelector);
-			let value = toggle.prop('checked');
+			var toggle = $(toggleSelector);
+			var value = toggle.prop('checked');
 			$(checkboxSelector).prop('checked', value);
 		},
 
@@ -387,9 +392,9 @@ var AspenDiscovery = (function(){
 		},
 
 		saveLanguagePreferences:function(){
-			let preference = $("#searchPreferenceLanguage option:selected").val();
-			let url = Globals.path + "/AJAX/JSON";
-			let params =  {
+			var preference = $("#searchPreferenceLanguage option:selected").val();
+			var url = Globals.path + "/AJAX/JSON";
+			var params =  {
 				method : 'saveLanguagePreference',
 				searchPreferenceLanguage : preference
 			};
@@ -417,10 +422,10 @@ var AspenDiscovery = (function(){
 			if (selectedLanguage === undefined) {
 				selectedLanguage = $("#selected-language option:selected").val();
 			}
-			let curLocation = window.location.href;
-			let newParam = 'myLang=' + selectedLanguage;
+			var curLocation = window.location.href;
+			var newParam = 'myLang=' + selectedLanguage;
 			if (curLocation.indexOf(newParam) === -1){
-				let newLocation = curLocation.replace(new RegExp('([?&])myLang=(.*?)(?:&|$)'), '$1' + newParam);
+				var newLocation = curLocation.replace(new RegExp('([?&])myLang=(.*?)(?:&|$)'), '$1' + newParam);
 				if (newLocation === curLocation){
 					newLocation = AspenDiscovery.buildUrl(curLocation, 'myLang', selectedLanguage);
 				}
@@ -431,7 +436,7 @@ var AspenDiscovery = (function(){
 		},
 
 		showTranslateForm: function(termId) {
-			let url = Globals.path + "/AJAX/JSON?method=getTranslationForm&termId=" + termId;
+			var url = Globals.path + "/AJAX/JSON?method=getTranslationForm&termId=" + termId;
 			$.getJSON(url, function(data){
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 			}).fail(AspenDiscovery.ajaxFail);
@@ -439,11 +444,11 @@ var AspenDiscovery = (function(){
 		},
 
 		saveTranslation: function(){
-			let termId = $("#termId").val();
-			let translationId = $("#translationId").val();
-			let translation = $("#translation").val();
-			let url = Globals.path + "/AJAX/JSON";
-			let params =  {
+			var termId = $("#termId").val();
+			var translationId = $("#translationId").val();
+			var translation = $("#translation").val();
+			var url = Globals.path + "/AJAX/JSON";
+			var params =  {
 				method : 'saveTranslation',
 				translationId : translationId,
 				translation : translation
@@ -461,8 +466,8 @@ var AspenDiscovery = (function(){
 			).fail(AspenDiscovery.ajaxFail);
 		},
 		deleteTranslationTerm: function(termId) {
-			let url = Globals.path + "/AJAX/JSON";
-			let params =  {
+			var url = Globals.path + "/AJAX/JSON";
+			var params =  {
 				method : 'deleteTranslationTerm',
 				termId : termId
 			};
@@ -479,15 +484,15 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 		toggleMenu: function() {
-			let headerMenu = $('#header-menu');
-			let menuButton = $('#menuToggleButton');
-			let menuButtonIcon = $('#menuToggleButton > i');
+			var headerMenu = $('#header-menu');
+			var menuButton = $('#menuToggleButton');
+			var menuButtonIcon = $('#menuToggleButton > i');
 			if (headerMenu.is(':visible')){
 				this.closeMenu();
 			}else{
 				this.closeAccountMenu();
 				$('.dropdownMenu').slideUp('slow');
-				let menuButtonPosition = menuButton.position();
+				var menuButtonPosition = menuButton.position();
 				headerMenu.css('left', menuButtonPosition.left + menuButton.outerWidth() - headerMenu.outerWidth() + 5);
 				headerMenu.css('top', menuButtonPosition.top + menuButton.outerHeight());
 				menuButton.addClass('selected');
@@ -498,17 +503,17 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 		closeMenu: function(){
-			let headerMenu = $('#header-menu');
-			let menuButton = $('#menuToggleButton');
-			let menuButtonIcon = $('#menuToggleButton > i');
+			var headerMenu = $('#header-menu');
+			var menuButton = $('#menuToggleButton');
+			var menuButtonIcon = $('#menuToggleButton > i');
 			headerMenu.slideUp('slow');
 			menuButtonIcon.addClass('fa-bars');
 			menuButtonIcon.removeClass('fa-times');
 			menuButton.removeClass('selected');
 		},
 		toggleMenuSection: function(categoryName) {
-			let menuSectionHeaderIcon = $('#' + categoryName + "MenuSection > i");
-			let menuSectionBody = $('#' + categoryName + "MenuSectionBody");
+			var menuSectionHeaderIcon = $('#' + categoryName + "MenuSection > i");
+			var menuSectionBody = $('#' + categoryName + "MenuSectionBody");
 			if (menuSectionBody.is(':visible')){
 				menuSectionBody.slideUp();
 				menuSectionHeaderIcon.addClass('fa-caret-right');
@@ -521,14 +526,14 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 		toggleAccountMenu: function() {
-			let accountMenu = $('#account-menu');
-			let accountMenuButton = $('#accountMenuToggleButton');
+			var accountMenu = $('#account-menu');
+			var accountMenuButton = $('#accountMenuToggleButton');
 			if (accountMenu.is(':visible')){
 				this.closeAccountMenu();
 			}else{
 				this.closeMenu();
 				$('.dropdownMenu').slideUp('slow');
-				let accountMenuButtonPosition = accountMenuButton.position();
+				var accountMenuButtonPosition = accountMenuButton.position();
 				accountMenu.css('left', accountMenuButtonPosition.left + accountMenuButton.outerWidth() - accountMenu.outerWidth() + 4);
 				accountMenu.css('top', accountMenuButtonPosition.top + accountMenuButton.outerHeight());
 				accountMenuButton.addClass('selected');
@@ -537,26 +542,43 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 		closeAccountMenu: function(){
-			let accountMenu = $('#account-menu');
-			let accountMenuButton = $('#accountMenuToggleButton');
+			var accountMenu = $('#account-menu');
+			var accountMenuButton = $('#accountMenuToggleButton');
 			accountMenu.slideUp('slow');
 			accountMenuButton.removeClass('selected');
 		},
 		showCustomMenu: function (menuName) {
 			this.closeMenu();
 			this.closeAccountMenu();
-			let customMenu = $('#' + menuName + '-menu');
+			var customMenu = $('#' + menuName + '-menu');
 			if (customMenu.is(':visible')){
 				customMenu.slideUp('slow');
 			}else{
 				$('.dropdownMenu').slideUp('slow');
-				let customMenuTrigger = $('#' + menuName + '-menu-trigger')
-				let customMenuTriggerPosition = customMenuTrigger.position();
+				var customMenuTrigger = $('#' + menuName + '-menu-trigger')
+				var customMenuTriggerPosition = customMenuTrigger.position();
 				customMenu.css('left', customMenuTriggerPosition.left);
 				customMenu.css('top', customMenuTriggerPosition.top + customMenuTrigger.outerHeight());
 				customMenu.slideDown('slow');
 			}
 
+			return false;
+		},
+		formatCurrency: function(currencyValue, elementToUpdate){
+			var url = Globals.path + "/AJAX/JSON";
+			var params =  {
+				method : 'formatCurrency',
+				currencyValue : currencyValue
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.result.success) {
+						$(elementToUpdate).text(data.result.formattedValue);
+					} else {
+						$(elementToUpdate).text('Unable to format currency');
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		}
 	}
@@ -567,9 +589,9 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 	if (this.optional(element)) {
 		return true;
 	}
-	let emails = value.split(/[,;]/);
-	let valid = true;
-	for (let i = 0, limit = emails.length; i < limit; i++) {
+	var emails = value.split(/[,;]/);
+	var valid = true;
+	for (var i = 0, limit = emails.length; i < limit; i++) {
 		value = emails[i];
 		valid = valid && jQuery.validator.methods.email.call(this, value, element);
 	}
@@ -600,14 +622,14 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 jQuery.validator.addMethod(
 	"dateAspen",
 	function(value, element) {
-		let check = false;
-		let re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
+		var check = false;
+		var re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
 		if( re.test(value)){
-			let adata = value.split('-');
-			let mm = parseInt(adata[0],10);
-			let dd = parseInt(adata[1],10);
-			let aaaa = parseInt(adata[2],10);
-			let xdata = new Date(aaaa,mm-1,dd);
+			var adata = value.split('-');
+			var mm = parseInt(adata[0],10);
+			var dd = parseInt(adata[1],10);
+			var aaaa = parseInt(adata[2],10);
+			var xdata = new Date(aaaa,mm-1,dd);
 			if ( ( xdata.getFullYear() == aaaa ) && ( xdata.getMonth () == mm - 1 ) && ( xdata.getDate() == dd ) )
 				check = true;
 			else
@@ -621,8 +643,17 @@ jQuery.validator.addMethod(
 
 $.validator.addMethod('repeat', function(value, element){
 	if(element.id.lastIndexOf('Repeat') === element.id.length - 6) {
-		let idOriginal = element.id.slice(0,-6);
-		let valueOriginal = $('#' + idOriginal).val();
+		var idOriginal = element.id.slice(0,-6);
+		var valueOriginal = $('#' + idOriginal).val();
 		return value === valueOriginal;
 	}
 }, "Repeat fields do not match");
+
+if (!String.prototype.startsWith) {
+	Object.defineProperty(String.prototype, 'startsWith', {
+		value: function(search, rawPos) {
+			var pos = rawPos > 0 ? rawPos|0 : 0;
+			return this.substring(pos, pos + search.length) === search;
+		}
+	});
+}

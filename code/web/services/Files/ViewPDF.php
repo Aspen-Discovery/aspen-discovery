@@ -60,7 +60,7 @@ class ViewPDF extends Action
 			$interface->assign('fileSize', StringUtils::formatBytes($fileSize));
 			global $configArray;
 			$interface->assign('pdfPath', $configArray['Site']['url'] . '/Files/' . $fileId . '/Contents');
-			$this->display('pdfViewer.tpl', $this->title);
+			$this->display('pdfViewer.tpl', $this->title, '');
 		}else{
 			$this->display('invalidRecord.tpl', 'Invalid Record', '');
 		}

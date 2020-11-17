@@ -42,7 +42,7 @@ class Translation_Translations extends Admin_Admin
 
 		if (!empty($_REQUEST['filterTerm'])){
 			$filterTerm = $_REQUEST['filterTerm'];
-			$translation->whereAdd("term.term LIKE " . $translation->escape('%' . $filterTerm . '%'));
+			$translation->whereAdd("LOWER(term.term) LIKE LOWER(" . $translation->escape('%' . $filterTerm . '%') . ')');
 			$interface->assign('filterTerm', $filterTerm);
 		}else{
 			$interface->assign('filterTerm', '');
@@ -50,7 +50,7 @@ class Translation_Translations extends Admin_Admin
 
 		if (!empty($_REQUEST['filterTranslation'])){
 			$filterTranslation = $_REQUEST['filterTranslation'];
-			$translation->whereAdd("translation LIKE " . $translation->escape('%' . $filterTranslation . '%'));
+			$translation->whereAdd("LOWER(translation) LIKE LOWER(" . $translation->escape('%' . $filterTranslation . '%') . ')');
 			$interface->assign('filterTranslation', $filterTranslation);
 		}else{
 			$interface->assign('filterTranslation', '');

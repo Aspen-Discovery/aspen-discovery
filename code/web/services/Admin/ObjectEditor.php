@@ -462,4 +462,8 @@ abstract class ObjectEditor extends Admin_Admin
 			exit();
 		}
 	}
+
+	public function hasHistory(){
+		return true;
+	}
 }

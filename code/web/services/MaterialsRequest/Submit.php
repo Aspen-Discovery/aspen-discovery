@@ -161,6 +161,7 @@ class MaterialsRequest_Submit extends Action
 									// Update Request Counts on success
 									$interface->assign('requestsThisYear', ++$requestsThisYear);
 									$interface->assign('openRequests', ++$openRequests);
+									$materialsRequest->sendStatusChangeEmail();
 								} else {
 									$interface->assign('success', false);
 									$interface->assign('error', translate('There was an error submitting your materials request.'));

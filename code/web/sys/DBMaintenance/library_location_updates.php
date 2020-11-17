@@ -37,14 +37,6 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'library_5' => array(
-			'title' => 'Library 5',
-			'description' => 'Set up a link to boopsie in mobile',
-			'sql' => array(
-				"ALTER TABLE `library` ADD `boopsieLink` VARCHAR(150) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;",
-			),
-		),
-
 		'library_6' => array(
 			'title' => 'Library 6',
 			'description' => 'Add fields originally defined for Marmot',
@@ -2185,6 +2177,15 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+
+		'library_enable_web_builder' => [
+			'title' => 'Library enable web builder',
+			'description' => 'Add a flag for whether or not web builder is active',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN enableWebBuilder TINYINT(1) DEFAULT 0',
+			]
+		],
+
 		'selfRegistrationCustomizations' => [
 			'title' => 'Self Registration Customizations',
 			'description' => 'Allow customization of whether or not self registration is all caps or not and which states should be allowed',
@@ -2199,6 +2200,14 @@ function getLibraryLocationUpdates(){
 			'description' => 'Allow customization of additional instructions for creating a PIN or Password',
 			'sql' => [
 				"ALTER TABLE library ADD COLUMN selfRegistrationPasswordNotes VARCHAR(255) DEFAULT ''",
+			]
+		],
+
+		'selfRegistrationZipCodeValidation' => [
+			'title' => 'Self Registration Zip Code Validation',
+			'description' => 'Allow customization of how Zip Codes are validated',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN validSelfRegistrationZipCodes VARCHAR(255) DEFAULT ''",
 			]
 		],
 
@@ -2272,6 +2281,23 @@ function getLibraryLocationUpdates(){
 				"UPDATE library set allowPatronPhoneNumberUpdates = allowPatronAddressUpdates"
 			),
 		),
+
+		'location_tty_description' => [
+			'title' => 'Location TTY & Description Fields',
+			'description' => 'Add TTY and Description fields to location table',
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN tty VARCHAR(25)',
+				'ALTER TABLE location ADD COLUMN description MEDIUMTEXT'
+			]
+		],
+
+		'library_login_notes' => [
+			'title' => 'Library Login Notes',
+			'description' => 'Add Notes to show on library login forms',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN loginNotes MEDIUMTEXT'
+			]
+		]
 	);
 }
 

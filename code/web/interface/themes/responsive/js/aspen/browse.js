@@ -27,11 +27,11 @@ AspenDiscovery.Browse = (function(){
 
 			// wrapper for setting events and connecting w/ AspenDiscovery.initCarousels() in base.js
 
-			let browseCategoryCarousel = $("#browse-category-carousel");
+			var browseCategoryCarousel = $("#browse-category-carousel");
 
 			// connect the browse catalog functions to the jcarousel controls
 			browseCategoryCarousel.on('jcarousel:targetin', 'li', function(){
-				let categoryId = $(this).data('category-id');
+				var categoryId = $(this).data('category-id');
 				AspenDiscovery.Browse.changeBrowseCategory(categoryId);
 			});
 
@@ -46,14 +46,14 @@ AspenDiscovery.Browse = (function(){
 				});
 
 				// Incorporate swiping gestures into the browse category selector. pascal 11-26-2014
-				let scrollFactor = 15; // swipe size per item to scroll.
+				var scrollFactor = 15; // swipe size per item to scroll.
 				browseCategoryCarousel.touchwipe({
 					wipeLeft: function (dx) {
-						let scrollInterval = Math.round(dx / scrollFactor); // vary scroll interval based on wipe length
+						var scrollInterval = Math.round(dx / scrollFactor); // vary scroll interval based on wipe length
 						$("#browse-category-carousel").jcarousel('scroll', '+=' + scrollInterval);
 					},
 					wipeRight: function (dx) {
-						let scrollInterval = Math.round(dx / scrollFactor); // vary scroll interval based on wipe length
+						var scrollInterval = Math.round(dx / scrollFactor); // vary scroll interval based on wipe length
 						$("#browse-category-carousel").jcarousel('scroll', '-=' + scrollInterval);
 					}
 				});
@@ -69,9 +69,9 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		toggleBrowseMode : function(selectedMode){
-			let mode = this.browseModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.browseMode; // check that selected mode is a valid option
-			let categoryTextId = this.curCategory || $('#browse-category-carousel .selected').data('category-id');
-			let subCategoryTextId = this.curSubCategory || $('#browse-sub-category-menu .selected').data('sub-category-id');
+			var mode = this.browseModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.browseMode; // check that selected mode is a valid option
+			var categoryTextId = this.curCategory || $('#browse-category-carousel .selected').data('category-id');
+			var subCategoryTextId = this.curSubCategory || $('#browse-sub-category-menu .selected').data('sub-category-id');
 			this.browseMode = mode; // set the mode officially
 			if (!Globals.opac && AspenDiscovery.hasLocalStorage() ) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('browseMode', this.browseMode);
@@ -85,12 +85,12 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		resetBrowseResults : function(){
-			// let classes = (function(){ // return list of all associated css classes (class list can be expanded without changing this code.)
-			// 	let str = '', object = AspenDiscovery.Browse.browseModeClasses;
+			// var classes = (function(){ // return list of all associated css classes (class list can be expanded without changing this code.)
+			// 	var str = '', object = AspenDiscovery.Browse.browseModeClasses;
 			// 	for (property in object) { str += object[property]+' ' }
 			// 	return str;
 			// })();
-			// let selectedClass = this.browseModeClasses[this.browseMode];
+			// var selectedClass = this.browseModeClasses[this.browseMode];
 
 			// hide current results while fetching new results
 			AspenDiscovery.Browse.colcade.destroy();
@@ -110,8 +110,8 @@ AspenDiscovery.Browse = (function(){
 				return;
 			}
 			AspenDiscovery.Browse.changingDisplay = true;
-			let url = Globals.path + '/Browse/AJAX';
-			let params = {
+			var url = Globals.path + '/Browse/AJAX';
+			var params = {
 				method: 'getBrowseCategoryInfo'
 				, textId: categoryTextId || AspenDiscovery.Browse.curCategory
 				, browseMode: this.browseMode
@@ -119,8 +119,8 @@ AspenDiscovery.Browse = (function(){
 			// Set selected Carousel
 			$('.browse-category').removeClass('selected');
 			// the carousel clones these divs sometimes, so grab only the text from the first one.
-			let loadingID = 'initial';
-			let newLabel = "";
+			var loadingID = 'initial';
+			var newLabel = "";
 			if (categoryTextId !== undefined){
 				newLabel = $('#browse-category-' + categoryTextId + ' div').first().text(); // get label from corresponding li div
 				loadingID = categoryTextId;
@@ -154,14 +154,14 @@ AspenDiscovery.Browse = (function(){
 							AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 						}
 					} else {
-						let newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'browseCategory', categoryTextId);
+						var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'browseCategory', categoryTextId);
 						categoryTextId = data.textId;
-						let stateObj = {
+						var stateObj = {
 							page: 'Browse',
 							selectedBrowseCategory: categoryTextId
 						};
 						if (document.location.href && addToHistory){
-							let label = 'Browse Catalog - ' + data.label;
+							var label = 'Browse Catalog - ' + data.label;
 							history.pushState(stateObj, label, newUrl);
 						}
 
@@ -172,7 +172,7 @@ AspenDiscovery.Browse = (function(){
 						AspenDiscovery.Browse.curCategory = data.textId;
 						AspenDiscovery.Browse.curSubCategory = data.subCategoryTextId || '';
 						// should be the first div only
-						let resultsPanel = $('#home-page-browse-results');
+						var resultsPanel = $('#home-page-browse-results');
 						resultsPanel.fadeOut('fast', function () {
 							$('.grid-item').remove();
 							AspenDiscovery.Browse.colcade.append($(data.records));
@@ -216,11 +216,11 @@ AspenDiscovery.Browse = (function(){
 				addToHistory = true;
 			}
 			AspenDiscovery.Browse.changingDisplay = true;
-			let url = Globals.path + '/Browse/AJAX';
+			var url = Globals.path + '/Browse/AJAX';
 			if (categoryId === undefined){
 				categoryId = AspenDiscovery.Browse.curCategory;
 			}
-			let params = {
+			var params = {
 				method : 'getBrowseSubCategoryInfo'
 				,textId : categoryId
 				,subCategoryTextId : subCategoryTextId
@@ -233,7 +233,7 @@ AspenDiscovery.Browse = (function(){
 			if (categoryId !== undefined && categoryId !== AspenDiscovery.Browse.curCategory){
 				$('.browse-category').removeClass('selected');
 
-				let newLabel = $('#browse-category-' + categoryId + ' div').first().text(); // get label from corresponding li div
+				var newLabel = $('#browse-category-' + categoryId + ' div').first().text(); // get label from corresponding li div
 				$('#browse-category-' + categoryId).addClass('selected');
 
 				$('#selected-browse-search-link').attr('href', '#'); // clear the search results link so that
@@ -258,14 +258,14 @@ AspenDiscovery.Browse = (function(){
 				if (data.success === false){
 					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 				}else{
-					let newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'browseCategory', AspenDiscovery.Browse.curCategory);
+					var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'browseCategory', AspenDiscovery.Browse.curCategory);
 					newUrl += "&subCategory=" + subCategoryTextId;
-					let stateObj = {
+					var stateObj = {
 						page: 'Browse',
 						selectedBrowseCategory: data.textId,
 						subBrowseCategory: subCategoryTextId
 					};
-					let label = 'Browse Catalog - ';
+					var label = 'Browse Catalog - ';
 					if (data.label) {
 						label += data.label;
 						$('.selected-browse-label-search-text').html(data.label);
@@ -285,7 +285,7 @@ AspenDiscovery.Browse = (function(){
 						$('#browse-sub-category-menu').html(data.subcategories).fadeIn();
 					}
 
-					let newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
+					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
 					// Set the new browse category label (below the carousel)
 
 
@@ -316,17 +316,17 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		createBrowseCategory: function(){
-			let url = Globals.path + "/Browse/AJAX";
-			let	params = {
+			var url = Globals.path + "/Browse/AJAX";
+			var	params = {
 				method:'createBrowseCategory'
 				,categoryName:$('#categoryName').val()
 				,addAsSubCategoryOf:$('#addAsSubCategoryOfSelect').val()
 			};
-			let searchId = $("#searchId");
+			var searchId = $("#searchId");
 			if (searchId){
 				params['searchId'] = searchId.val()
 			}
-			let listId = $("#listId");
+			var listId = $("#listId");
 			if (listId){
 				params['listId'] = listId.val()
 			}

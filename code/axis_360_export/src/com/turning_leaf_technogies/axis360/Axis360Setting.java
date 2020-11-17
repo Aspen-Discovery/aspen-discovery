@@ -10,6 +10,7 @@ class Axis360Setting {
 	private String libraryPrefix;
 	private boolean doFullReload;
 	private long lastUpdateOfChangedRecords;
+	private long lastUpdateOfAllRecords;
 	private long id;
 
 	Axis360Setting(ResultSet settingsRS) throws SQLException {
@@ -19,6 +20,7 @@ class Axis360Setting {
 		libraryPrefix = settingsRS.getString("libraryPrefix");
 		doFullReload = settingsRS.getBoolean("runFullUpdate");
 		lastUpdateOfChangedRecords = settingsRS.getLong("lastUpdateOfChangedRecords");
+		lastUpdateOfAllRecords = settingsRS.getLong("lastUpdateOfAllRecords");
 		id = settingsRS.getLong("id");
 	}
 
@@ -47,6 +49,6 @@ class Axis360Setting {
 	}
 
 	public long getLastUpdateOfChangedRecords() {
-		return lastUpdateOfChangedRecords;
+		return Math.max(lastUpdateOfChangedRecords, lastUpdateOfAllRecords);
 	}
 }

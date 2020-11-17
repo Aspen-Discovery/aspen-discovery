@@ -58,6 +58,10 @@ class Axis360Processor {
 				if ("eBook".equals(formatType)) {
 					formatCategory = "eBook";
 					primaryFormat = "eBook";
+				} else if ("eAudiobook".equals(formatType)) {
+					formatCategory = "Audio Books";
+					axis360Record.addFormatCategory("eBook");
+					primaryFormat = "eAudiobook";
 				} else {
 					logEntry.addNote("Unhandled Axis 360 mediaType " + formatType);
 					formatCategory = formatType;

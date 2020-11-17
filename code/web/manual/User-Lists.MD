@@ -4,10 +4,10 @@
   - Title: the name of the list.
   - Description: a brief description of the list.
   - Access: choosing if the list is public or private. Public lists can be shared with other people by copying the URL of the list or using the Email List button when viewing the list.
-- ![create-user-lists](/manual/images/create-user-lists.png)
+  ![Create User List](/manual/images/create-user-list.png)
 - Once the list is created, a link to the list will appear in their "My Account" section under "My Lists".
 - Now the user can perform the following functions:
-- ![create-user-lists](/manual/images/create-user-lists2.png)
+  ![User List Actions](/manual/images/create-user-lists-2.png)
   - Edit List: make changes to the title and description. 
   - Add Multiple Titles: users can enter one or more titles or ISBNs. Each title or ISBN should be on its own line. Aspen Discovery will search the catalog for each title and add the first matching title for each line to the users list.
   - List Visbility: will either say "Make Private" or "Make Public".
@@ -20,4 +20,4 @@
   - Sort by: users can sort by Title, Date Added, Recently Added, or User Defined. 
     - This allows the user to drag-and-drop the list items into the order the user likes.
   - Delete List: the user can delete the list. They will be prompted with a modal window asking "Are you sure you want to delete this list?" before deleting. 
-  - ![user-lists3](/manual/images/user-lists3.png)
+    ![user-lists3](/manual/images/user-lists-3.png)

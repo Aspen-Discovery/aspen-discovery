@@ -331,7 +331,6 @@ class WebsiteIndexer {
 								logEntry.incUpdated();
 							}
 
-
 							//Add to the solr index
 							SolrInputDocument solrDocument = new SolrInputDocument();
 							solrDocument.addField("id", page.getId());

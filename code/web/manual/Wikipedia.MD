@@ -17,3 +17,7 @@
     - Click 'Save Changes... .'
 
 See Also: [Author Pages](/Admin/HelpManual?page=Author-Pages)
+
+[![Wikipedia](/manual/images/Wikipedia.jpg)](https://youtu.be/dLp8kZ3vAHM)
+
+[Watch on Youtube](https://youtu.be/dLp8kZ3vAHM)

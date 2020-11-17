@@ -29,6 +29,14 @@ function getTranslationUpdates()
 			],
 		],
 
+		'language_locales' => [
+			'title' => 'Language locales',
+			'description' => 'Add locales to languages for use when formatting numbers',
+			'sql' => [
+				"ALTER TABLE languages ADD COLUMN locale VARCHAR(10) DEFAULT 'en-US'"
+			]
+		],
+
 		'translation_terms' => [
 			'title' => 'Translation Term',
 			'description' => 'Initial setup of translation term table',

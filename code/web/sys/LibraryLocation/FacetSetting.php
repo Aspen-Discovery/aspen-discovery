@@ -26,7 +26,7 @@ abstract class FacetSetting extends DataObject {
 	/** @return string[] */
 	public abstract static function getAvailableFacets();
 
-	static function getObjectStructure(array $availableFacets){
+	static function getObjectStructure(array $availableFacets = null){
 		if (empty($availableFacets)) {
 			AspenError::raiseError("The list of available facets must be provided");
 		}

@@ -28,8 +28,8 @@
 			}
 		});
 		$(document).on('change', ':file', function() {
-			let input = $(this);
-			let label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+			var input = $(this);
+			var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
 			$("#selected-pdf-label").val(label);
 		});
 		{/literal}

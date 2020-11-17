@@ -53,42 +53,6 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 	}
 
 	@Override
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Arlington we can load the target audience based off of the location code:
-		// ?a??? = Adult
-		// ?j??? = Kids
-		// ?y??? = Teen
-		HashSet<String> targetAudiences = new HashSet<>();
-		for (ItemInfo printItem : printItems){
-			String locationCode = printItem.getShelfLocationCode();
-			if (addTargetAudienceBasedOnLocationCode(targetAudiences, locationCode)) break;
-		}
-		if (targetAudiences.size() == 0){
-			targetAudiences.add("Other");
-		}
-		groupedWork.addTargetAudiences(targetAudiences);
-		groupedWork.addTargetAudiencesFull(targetAudiences);
-	}
-
-	private boolean addTargetAudienceBasedOnLocationCode(HashSet<String> targetAudiences, String locationCode) {
-		if (locationCode != null) {
-			if (locationCode.length() >= 1) {
-				if (locationCode.charAt(0) == 'A') {
-					targetAudiences.add("Adult");
-					return true;
-				} else if (locationCode.charAt(0) == 'J') {
-					targetAudiences.add("Juvenile");
-					return true;
-				} else if (locationCode.charAt(0) == 'Y') {
-					targetAudiences.add("Young Adult");
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	@Override
 	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 		//For arlington, eContent will always have no items on the bib record.

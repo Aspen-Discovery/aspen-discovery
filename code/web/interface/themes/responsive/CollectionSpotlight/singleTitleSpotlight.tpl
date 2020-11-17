@@ -1,5 +1,5 @@
 {strip}
-<div id="list-{$wrapperId}" {if $display == 'false'}style="display:none"{/if} class="titleScroller singleTitleSpotlight {if $spotlight->coverSize == 'medium'}mediumScroller{/if} {if $collectionSpotlight->showRatings}scrollerWithRatings{/if}">
+<div id="list-{$wrapperId}" {if $display == 'false'}style="display:none"{/if} class="titleScroller singleTitleSpotlight {if $collectionSpotlight->coverSize == 'medium'}mediumScroller{/if} {if $collectionSpotlight->showRatings}scrollerWithRatings{/if}">
 	<div id="{$wrapperId}" class="titleScrollerWrapper singleTitleSpotlightWrapper">
 		{if $showCollectionSpotlightTitle || $showViewMoreLink}
 			<div id="list-{$wrapperId}Header" class="titleScrollerHeader">

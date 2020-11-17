@@ -34,8 +34,8 @@
 	<script type="application/javascript">
 		{literal}
 		$(document).on('change', ':file', function() {
-			let input = $(this);
-			let label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+			var input = $(this);
+			var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
 			$("#selected-marc-label").val(label);
 		});
 		{/literal}

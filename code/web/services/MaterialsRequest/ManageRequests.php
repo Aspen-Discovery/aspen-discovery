@@ -56,8 +56,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			//Look for which titles should be modified
 			$selectedRequests = $_REQUEST['select'];
 			$statusToSet = $_REQUEST['newStatus'];
-			require_once ROOT_DIR . '/sys/Email/Mailer.php';
-			$mail = new Mailer();
 			foreach ($selectedRequests as $requestId => $selected){
 				$materialRequest = new MaterialsRequest();
 				$materialRequest->id = $requestId;
@@ -66,46 +64,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					$materialRequest->dateUpdated = time();
 					$materialRequest->update();
 
-					if ($allStatuses[$statusToSet]->sendEmailToPatron == 1 && $materialRequest->email){
-						$replyToAddress = $emailSignature = '';
-						if (!empty($materialRequest->assignedTo)) {
-							require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-							$staffSettings = new UserStaffSettings();
-							$staffSettings->get('userId', $materialRequest->assignedTo);
-							if (!empty($staffSettings->materialsRequestReplyToAddress)) {
-								$replyToAddress = $staffSettings->materialsRequestReplyToAddress;
-							}
-							if (!empty($staffSettings->materialsRequestEmailSignature)) {
-								$emailSignature = $staffSettings->materialsRequestEmailSignature;
-							}
-						}
-
-						$body = '*****This is an auto-generated email response. Please do not reply.*****';
-						$body .= "\r\n\r\n" . $allStatuses[$statusToSet]->emailTemplate;
-
-						if (!empty($emailSignature)) {
-							$body .= "\r\n\r\n" .$emailSignature;
-						}
-
-						//Replace tags with appropriate values
-						$materialsRequestUser = new User();
-						$materialsRequestUser->id = $materialRequest->createdBy;
-						$materialsRequestUser->find(true);
-						foreach ($materialsRequestUser as $fieldName => $fieldValue){
-							if (!is_array($fieldValue)){
-								$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
-							}
-						}
-						foreach ($materialRequest as $fieldName => $fieldValue){
-							if (!is_array($fieldValue)){
-								$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
-							}
-						}
-						$error = $mail->send($materialRequest->email, "Your Materials Request Update", $body, $replyToAddress);
-						if (($error instanceof AspenError)) {
-							$interface->assign('error', $error->getMessage());
-						}
-					}
+					$materialRequest->sendStatusChangeEmail();
 				}
 			}
 		}
@@ -157,7 +116,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$materialsRequests->joinAdd(new User(), 'INNER', 'user', 'createdBy', 'id');
 			$materialsRequests->joinAdd(new User(), 'LEFT', 'assignee', 'assignedTo', 'id');
 			$materialsRequests->selectAdd();
-			$materialsRequests->selectAdd('materials_request.*, description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $configArray['Catalog']['barcodeProperty'] . ' as barcode, assignee.displayName as assignedTo');
+			$materialsRequests->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $configArray['Catalog']['barcodeProperty'] . ' as barcode, assignee.displayName as assignedTo');
 
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary = Library::getPatronHomeLibrary();
@@ -468,10 +427,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');
 		exit;
-	}
-
-	function getAllowableRoles(){
-		return array('library_material_requests');
 	}
 
 	function getBreadcrumbs()

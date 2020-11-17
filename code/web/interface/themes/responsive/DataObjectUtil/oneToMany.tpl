@@ -110,7 +110,7 @@
 			{literal}$('#{/literal}{$propName}{literal} tbody').sortable({
 				update: function (event, ui) {
 					$.each($(this).sortable('toArray'), function (index, value) {
-						let inputId = '#{/literal}{$propName}Weight_' + value.substr({$propName|@strlen}); {literal}
+						var inputId = '#{/literal}{$propName}Weight_' + value.substr({$propName|@strlen}); {literal}
 						$(inputId).val(index + 1);
 					});
 				}
@@ -119,11 +119,11 @@
 			{/if}
 			{literal}$('.datepicker').datepicker({format: "yyyy-mm-dd"});{/literal}
 		{literal}});{/literal}
-		let numAdditional{$propName} = 0;
+		var numAdditional{$propName} = 0;
 
 		function addNew{$propName}{literal}() {
 			numAdditional{/literal}{$propName}{literal} = numAdditional{/literal}{$propName}{literal} - 1;
-			let newRow = "<tr>";
+			var newRow = "<tr>";
 			{/literal}
 			newRow += "<input type='hidden' id='{$propName}Id_" + numAdditional{$propName} + "' name='{$propName}Id[" + numAdditional{$propName} + "]' value='" + numAdditional{$propName} + "'>";
 			{if $property.sortable}

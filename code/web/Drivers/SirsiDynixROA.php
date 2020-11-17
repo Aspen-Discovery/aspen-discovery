@@ -1505,8 +1505,10 @@ class SirsiDynixROA extends HorizonAPI
 					$fines[] = array(
 						'reason' => $fine->block->key,
 						'amount' => $fine->amount->amount,
+						'amountVal' => $fine->amount->amount,
 						'message' => $title,
 						'amountOutstanding' => $fine->owed->amount,
+						'amountOutstandingVal' => $fine->owed->amount,
 						'date' => $fine->billDate
 					);
 				}
@@ -1521,7 +1523,7 @@ class SirsiDynixROA extends HorizonAPI
 	 * @param $newPin
 	 * @return array
 	 */
-	function updatePin($patron, $oldPin, $newPin)
+	function updatePin(User $patron, string $oldPin, string $newPin)
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {

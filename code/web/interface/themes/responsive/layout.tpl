@@ -65,6 +65,10 @@
 			<div id="horizontal-search-container" class="col-tn-12" role="search">
 				{include file="Search/horizontal-searchbox.tpl"}
 			</div>
+
+{*			{if !empty($webMenu)}*}
+{*				{include file="webmenu.tpl"}*}
+{*			{/if}*}
 		</div>
 
 		<div id="content-container">

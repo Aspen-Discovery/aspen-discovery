@@ -35,6 +35,9 @@
 									<th>{translate text="Reason"}</th>
 								{/if}
 								<th>{translate text="Title"}</th>
+								{if $showSystem}
+									<th>{translate text="fine_system" defaultText="System"}</th>
+								{/if}
 								<th>{translate text="Fine/Fee Amount"}</th>
 								{if $showOutstanding}
 									<th>{translate text="Amount Outstanding"}</th>
@@ -71,7 +74,12 @@
 												{/foreach}
 											{/if}
 										</td>
-										<td>{$fine.amount}</td>
+										{if $showSystem}
+											<td>
+												{$fine.system}
+											</td>
+										{/if}
+										<td>{$fine.amountVal|formatCurrency}</td>
 										{if $showOutstanding}
 											<td>{$fine.amountOutstanding}</td>
 										{/if}
@@ -97,9 +105,9 @@
 									{if $showReason}
 										<td></td>
 									{/if}
-									<th id="formattedTotal{$userId}">{$fineTotalsFormatted.$userId}</th>
+									<th id="formattedTotal{$userId}">{$fineTotalsVal.$userId|formatCurrency}</th>
 									{if $showOutstanding}
-										<th id="formattedOutstandingTotal{$userId}">{$outstandingTotal.$userId}</th>
+										<th id="formattedOutstandingTotal{$userId}">{$outstandingTotalVal.$userId|formatCurrency}</th>
 									{/if}
 								</tr>
 							</tfoot>
@@ -111,9 +119,13 @@
 									<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online"}{/if}</div>
 								</a>
 							{/if}
-						{elseif $finePaymentType == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
-							{* We are doing an actual payment of fines online *}
-							{include file="MyAccount/paypalPayments.tpl"}
+						{elseif $finePaymentType == 2}
+							{if $fineTotalsVal.$userId > $minimumFineAmount}
+								{* We are doing an actual payment of fines online *}
+								{include file="MyAccount/paypalPayments.tpl"}
+							{else}
+								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency}</p>
+							{/if}
 						{/if}
 					{else}
 						<p class="alert alert-success">{translate text="no_fines_for_account_message" defaultText="This account does not have any fines within the system."}</p>

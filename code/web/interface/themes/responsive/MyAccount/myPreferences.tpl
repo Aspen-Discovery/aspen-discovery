@@ -96,15 +96,37 @@
 						</div>
 					{/if}
 
-					<div class="form-group">
-						<div class="col-xs-4"><strong>{translate text='Home Library'}</strong></div>
-						<div class="col-xs-8">{$profile->getHomeLocationName()|escape}</div>
-					</div>
+					{if $showPickupLocationInProfile}
+						{* Allow editing pickup location *}
+						<div class="form-group">
+							<div class="col-xs-4"><label for="pickupLocation" class="">{translate text='Pickup Location'}</label></div>
+							<div class="col-xs-8">
+								{if $edit == true && $canUpdateContactInfo == true}
+									<select name="pickupLocation" id="pickupLocation" class="form-control">
+										{if count($pickupLocations) > 0}
+											{foreach from=$pickupLocations item=location}
+												<option value="{$location->code}" {if $location->displayName|escape == $profile->_homeLocation|escape}selected="selected"{/if}>{$location->displayName}</option>
+											{/foreach}
+										{else}
+											<option>placeholder</option>
+										{/if}
+									</select>
+								{else}
+									{$profile->_homeLocation|escape}
+								{/if}
+							</div>
+						</div>
+					{else}
+						<div class="form-group">
+							<div class="col-xs-4"><strong>{translate text='Main Pickup Location'}</strong></div>
+							<div class="col-xs-8">{$profile->getHomeLocationName()|escape}</div>
+						</div>
+					{/if}
 
 					{if $showAlternateLibraryOptions}
 						{if count($locationList) > 2} {* First option is none *}
 							<div class="form-group">
-								<div class="col-xs-4"><label for="myLocation1" class="control-label">{translate text='My First Alternate Library'}</label></div>
+								<div class="col-xs-4"><label for="myLocation1" class="control-label">{translate text='Alternate Pickup Location 1'}</label></div>
 								<div class="col-xs-8">
 									{if $edit == true}
 										{html_options name="myLocation1" id="myLocation1" class="form-control" options=$locationList selected=$profile->myLocation1Id}
@@ -116,7 +138,7 @@
 						{/if}
 						{if count($locationList) > 3} {* First option is none *}
 							<div class="form-group">
-								<div class="col-xs-4"><label for="myLocation2" class="control-label">{translate text='My Second Alternate Library'}</label></div>
+								<div class="col-xs-4"><label for="myLocation2" class="control-label">{translate text='Alternate Pickup Location 2'}</label></div>
 								<div class="col-xs-8">{if $edit == true}{html_options name="myLocation2" id="myLocation2" class="form-control" options=$locationList selected=$profile->myLocation2Id}{else}{$profile->_myLocation2|escape}{/if}</div>
 							</div>
 						{/if}

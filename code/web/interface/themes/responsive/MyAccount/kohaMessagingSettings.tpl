@@ -165,8 +165,8 @@
 $(document).ready(function(){
 	$(".none").click(function(){
 		if($(this).prop("checked")){
-			let rowId = $(this).attr("id");
-			let newId = Number(rowId.replace("none",""));
+			var rowId = $(this).attr("id");
+			var newId = Number(rowId.replace("none",""));
 			$("#sms"+newId).removeAttr("checked");
 			$("#email"+newId).removeAttr("checked");
 			$("#digest"+newId).removeAttr("checked");

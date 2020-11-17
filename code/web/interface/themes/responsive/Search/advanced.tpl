@@ -68,8 +68,8 @@
 				&nbsp;<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu" aria-labelledby="SearchTips">
-				<li><a href="/Help/Home?topic=advsearch" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Advanced Search"}">{translate text="Help with Advanced Search"}</a></li>
-				<li><a href="/Help/Home?topic=search" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Search Operators"}">{translate text="Help with Search Operators"}</a></li>
+				<li><a href="/Help/Home?topic=advsearch" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Advanced Search" inAttribute=true}">{translate text="Help with Advanced Search"}</a></li>
+				<li><a href="/Help/Home?topic=search" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Search Operators" inAttribute=true}">{translate text="Help with Search Operators"}</a></li>
 			</ul>
 		</div>
 
@@ -101,7 +101,7 @@
 					<button class="btn btn-default" onclick="addGroup();return false;"><span class="glyphicon glyphicon-plus"></span>&nbsp;{translate text="add_search_group"}</button>
 					<button class="btn btn-default" onclick="resetSearch();return false;"><span class="glyphicon glyphicon-remove-sign"></span>&nbsp;{translate text="Clear Search"}</button>
 					{* addGroup() returns the variable nextGroupNumber so the return false is necessary *}
-					<input type="submit" name="submit" value="{translate text="Find"}" class="btn btn-primary pull-right">
+					<input type="submit" name="submit" value="{translate text="Find" inAttribute=true}" class="btn btn-primary pull-right">
 					<br><br>
 					{if $facetList || $showPublicationDate}
 						<div class="accordion">
@@ -203,7 +203,7 @@
 																</div>
 															</div>
                                                         {else}
-															<select name="filter[]" class="form-control" aria-label="{translate text=$label}">
+															<select name="filter[]" class="form-control" aria-label="{translate text=$label inAttribute=true}">
 																{foreach from=$facetInfo.values item="value" key="display"}
 																	{if strlen($display) > 0}
 																		<option value="{$value.filter|escape}"{if $value.selected} selected="selected"{/if}>{$value.display|escape|truncate:80}</option>
@@ -215,7 +215,7 @@
 												</div>
 											{/foreach}
 										{/if}
-										<input type="submit" name="submit" value="{translate text="Find"}" class="btn btn-primary pull-right">
+										<input type="submit" name="submit" value="{translate text="Find" inAttribute=true}" class="btn btn-primary pull-right">
 									</div>
 								</div>
 							</div>
@@ -235,36 +235,36 @@
 {/if}
 <script type="text/javascript">
 	{* Define our search arrays so they are usuable in the javascript *}
-	let searchFields = {ldelim}
+	var searchFields = {ldelim}
 	{foreach from=$advSearchTypes item=searchDesc key=searchVal}
-	"{$searchVal}" : "{translate text=$searchDesc}",
+	"{$searchVal}" : "{translate text=$searchDesc inAttribute=true}",
 	{/foreach}
 	{rdelim};
-	let searchJoins = {ldelim}
-		AND: '{translate text="search_AND"}'
-		,OR: '{translate text="search_OR"}'
-		,NOT:'{translate text="search_NOT"}'
+	var searchJoins = {ldelim}
+		AND: '{translate text="search_AND" inAttribute=true}'
+		,OR: '{translate text="search_OR" inAttribute=true}'
+		,NOT:'{translate text="search_NOT" inAttribute=true}'
 		{rdelim};
-	let addSearchString = "{translate text="add_search"}";
-	let searchLabel     = "{translate text="adv_search_label"}";
-	let searchFieldLabel = "{translate text="in"}";
-	let deleteSearchGroupString = "{translate text="del_search"}";
-	let searchMatch     = "{translate text="search_match"}";
-	let searchFormId    = 'advSearchForm';
+	var addSearchString = "{translate text="add_search" inAttribute=true}";
+	var searchLabel     = "{translate text="adv_search_label" inAttribute=true}";
+	var searchFieldLabel = "{translate text="in" inAttribute=true}";
+	var deleteSearchGroupString = "{translate text="del_search" inAttribute=true}";
+	var searchMatch     = "{translate text="search_match" inAttribute=true}";
+	var searchFormId    = 'advSearchForm';
 	{*  Build the form *}
 	$(function(){ldelim}
 		{if $searchDetails}
 			{foreach from=$searchDetails item=searchGroup}
 				{foreach from=$searchGroup.group item=search name=groupLoop}
 					{if $smarty.foreach.groupLoop.iteration == 1}
-					let new_group = addGroup('{$search.lookfor|escape:"javascript"}', '{$search.field|escape:"javascript"}', '{$search.bool}');
+					var new_group = addGroup('{$search.lookfor|escape:"javascript"}', '{$search.field|escape:"javascript"}', '{$search.bool}');
 					{else}
 					addSearch(new_group, '{$search.lookfor|escape:"javascript"}', '{$search.field|escape:"javascript"}');
 					{/if}
 				{/foreach}
 			{/foreach}
 		{else}
-		let new_group = addGroup();
+			var new_group = addGroup();
 			addSearch(new_group);
 			addSearch(new_group);
 		{/if}

@@ -69,29 +69,33 @@ if (!$nightlyReindexRunning && $solrRunning) {
 	$aspenModule->enabled = true;
 	$aspenModule->find();
 
+	$backgroundProcessesToRun = [];
 	while ($aspenModule->fetch()) {
 		if (!empty($aspenModule->backgroundProcess)) {
-			if (isset($runningProcesses[$aspenModule->backgroundProcess])) {
-				unset($runningProcesses[$aspenModule->backgroundProcess]);
-			} else {
-				//Don't message starting background processes since this can happen nightly. Only show an error if the restart fails.
-				//$results .= "No process found for '{$aspenModule->name}' expected '{$aspenModule->backgroundProcess}'\r\n";
-				//Attempt to restart the service
-				$local = $configArray['Site']['local'];
-				//The local path include web, get rid of that
-				$local = substr($local, 0, strrpos($local, '/'));
-				$processPath = $local . '/' . $aspenModule->backgroundProcess;
-				if (file_exists($processPath)) {
-					if (file_exists($processPath . "/{$aspenModule->backgroundProcess}.jar")) {
-						execInBackground("cd $processPath; java -jar {$aspenModule->backgroundProcess}.jar $serverName");
-						//Don't send an error message when successfully starting a process.
-						//$results .= "Restarted '{$aspenModule->name}'\r\n";
-					} else {
-						$results .= "Could not automatically restart {$aspenModule->name}, the jar $processPath/{$aspenModule->backgroundProcess}.jar did not exist\r\n";
-					}
+			$backgroundProcessesToRun[$aspenModule->backgroundProcess] = $aspenModule->backgroundProcess;
+		}
+	}
+	foreach ($backgroundProcessesToRun as $backgroundProcess){
+		if (isset($runningProcesses[$backgroundProcess])) {
+			unset($runningProcesses[$backgroundProcess]);
+		} else {
+			//Don't message starting background processes since this can happen nightly. Only show an error if the restart fails.
+			//$results .= "No process found for '{$aspenModule->name}' expected '{$aspenModule->backgroundProcess}'\r\n";
+			//Attempt to restart the service
+			$local = $configArray['Site']['local'];
+			//The local path include web, get rid of that
+			$local = substr($local, 0, strrpos($local, '/'));
+			$processPath = $local . '/' . $backgroundProcess;
+			if (file_exists($processPath)) {
+				if (file_exists($processPath . "/{$backgroundProcess}.jar")) {
+					execInBackground("cd $processPath; java -jar {$backgroundProcess}.jar $serverName");
+					//Don't send an error message when successfully starting a process.
+					//$results .= "Restarted '{$aspenModule->name}'\r\n";
 				} else {
-					$results .= "Could not automatically restart {$aspenModule->name}, the directory $processPath did not exist\r\n";
+					$results .= "Could not automatically restart {$backgroundProcess}, the jar $processPath/{$backgroundProcess}.jar did not exist\r\n";
 				}
+			} else {
+				$results .= "Could not automatically restart {$backgroundProcess}, the directory $processPath did not exist\r\n";
 			}
 		}
 	}

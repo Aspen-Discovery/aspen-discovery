@@ -491,13 +491,8 @@ class User extends DataObject
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
 				} elseif ($source == 'rbdigital') {
 					if (array_key_exists('RBdigital', $enabledModules)){
-						require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
-						try {
-							$rbdigitalSettings = new RBdigitalSetting();
-							$rbdigitalSettings->find();
-							return $rbdigitalSettings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
+						if ($userHomeLibrary->rbdigitalScopeId > 0){
+							return true;
 						}
 					}
 					return false;
@@ -525,6 +520,22 @@ class User extends DataObject
 						}
 					}
 					return false;
+				}
+			}
+		}
+		return false;
+	}
+
+	public function showRBdigitalHolds(){
+		global $enabledModules;
+		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())) {
+			$userHomeLibrary = Library::getPatronHomeLibrary($this);
+			if ($userHomeLibrary->rbdigitalScopeId > 0){
+				require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
+				$scope = new RBdigitalScope();
+				$scope->id = $userHomeLibrary->rbdigitalScopeId;
+				if ($scope->find(true)){
+					return $scope->includeEAudiobook || $scope->includeEBooks;
 				}
 			}
 		}
@@ -701,6 +712,16 @@ class User extends DataObject
 				$this->getCatalogDriver()->updateUserWithAdditionalRuntimeInformation($this);
 			}
 			$this->_runtimeInfoUpdated = true;
+		}
+	}
+
+	private $_contactInformationLoaded = false;
+	function loadContactInformation(){
+		if (!$this->_contactInformationLoaded) {
+			if ($this->getCatalogDriver()) {
+				$this->getCatalogDriver()->loadContactInformation($this);
+			}
+			$this->_contactInformationLoaded = true;
 		}
 	}
 
@@ -1060,7 +1081,7 @@ class User extends DataObject
 
 		if ($source == 'all' || $source == 'rbdigital') {
 			//Get holds from RBdigital
-			if ($this->isValidForEContentSource('rbdigital')) {
+			if ($this->isValidForEContentSource('rbdigital') && $this->showRBdigitalHolds()) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
 				$rbdigitalHolds = $driver->getHolds($this);
@@ -1520,6 +1541,12 @@ class User extends DataObject
 		return $result;
 	}
 
+	public function updateHomeLibrary($newHomeLocationCode){
+		$result = $this->getCatalogDriver()->updateHomeLibrary($this, $newHomeLocationCode);
+		$this->clearCache();
+		return $result;
+	}
+
 	/**
 	 * Update the PIN or password for the user
 	 *
@@ -1946,12 +1973,15 @@ class User extends DataObject
 		$librarySettingsAction = new AdminAction('Library Systems', 'Configure library settings.', '/Admin/Libraries');
 		$locationSettingsAction = new AdminAction('Locations', 'Configure location settings.', '/Admin/Locations');
 		$ipAddressesAction = new AdminAction('IP Addresses', 'Configure IP addresses for each location and configure rules to block access to Aspen Discovery.', '/Admin/IPAddresses');
+		$administerHostAction = new AdminAction('Host Information', 'Allows configuration of domain names to point to different sections of Aspen Discovery', '/Admin/Hosting');
 		if ($sections['primary_configuration']->addAction($librarySettingsAction, ['Administer All Libraries', 'Administer Home Library'])){
 			$librarySettingsAction->addSubAction($locationSettingsAction, ['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
 			$librarySettingsAction->addSubAction($ipAddressesAction, 'Administer IP Addresses');
+			$librarySettingsAction->addSubAction($administerHostAction, 'Administer Host Information');
 		}else{
 			$sections['primary_configuration']->addAction($locationSettingsAction, ['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
 			$sections['primary_configuration']->addAction($ipAddressesAction, 'Administer IP Addresses');
+			$sections['primary_configuration']->addAction($administerHostAction, 'Administer Host Information');
 		}
 		$sections['primary_configuration']->addAction(new AdminAction('Block Patron Account Linking', 'Prevent accounts from linking to other accounts.', '/Admin/BlockPatronAccountLinks'), 'Block Patron Account Linking');
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
@@ -1966,6 +1996,21 @@ class User extends DataObject
 				$sections['materials_request']->addAction(new AdminAction('Report By User', 'A Report of all requests that have been submitted by users who submitted them.', '/MaterialsRequest/UserReport'), 'View Materials Requests Reports');
 				$sections['materials_request']->addAction(new AdminAction('Manage Statuses', 'Define the statuses of Materials Requests for the library.', '/MaterialsRequest/ManageStatuses'), 'Administer Materials Requests');
 			}
+		}
+
+		if (array_key_exists('Web Builder', $enabledModules)) {
+			$sections['web_builder'] = new AdminSection('Web Builder');
+			//$sections['web_builder']->addAction(new AdminAction('Menu', 'Define additional options that appear in the menu.', '/WebBuilder/Menus'), ['Administer All Menus', 'Administer Library Menus']);
+			$sections['web_builder']->addAction(new AdminAction('Basic Pages', 'Create basic pages with a simple layout.', '/WebBuilder/BasicPages'), ['Administer All Basic Pages', 'Administer Library Basic Pages']);
+			$sections['web_builder']->addAction(new AdminAction('Custom Pages', 'Create custom pages with a more complex cell based layout.', '/WebBuilder/PortalPages'), ['Administer All Custom Pages', 'Administer Library Custom Pages']);
+			$sections['web_builder']->addAction(new AdminAction('Custom Forms', 'Create custom forms within Aspen Discovery for patrons to fill out.', '/WebBuilder/CustomForms'), ['Administer All Custom Forms', 'Administer Library Custom Forms']);
+			$sections['web_builder']->addAction(new AdminAction('Web Resources', 'Add resources within Aspen Discovery that the library provides.', '/WebBuilder/WebResources'), ['Administer All Web Resources', 'Administer Library Web Resources']);
+			$sections['web_builder']->addAction(new AdminAction('Staff Members', 'Add staff members to create a staff directory.', '/WebBuilder/StaffMembers'), ['Administer All Staff Members', 'Administer Library Staff Members']);
+			$sections['web_builder']->addAction(new AdminAction('Images', 'Add images to Aspen Discovery.', '/WebBuilder/Images'), ['Administer All Web Content']);
+			$sections['web_builder']->addAction(new AdminAction('PDFs', 'Add PDFs to Aspen Discovery.', '/WebBuilder/PDFs'), ['Administer All Web Content']);
+			//$sections['web_builder']->addAction(new AdminAction('Videos', 'Add Videos to Aspen Discovery.', '/WebBuilder/Videos'), ['Administer All Web Content']);
+			$sections['web_builder']->addAction(new AdminAction('Audiences', 'Define Audiences to categorize content within Aspen Discovery.', '/WebBuilder/Audiences'), ['Administer All Web Categories']);
+			$sections['web_builder']->addAction(new AdminAction('Categories', 'Define Categories to categorize content within Aspen Discovery.', '/WebBuilder/Categories'), ['Administer All Web Categories']);
 		}
 
 		$sections['translations'] = new AdminSection('Languages and Translations');

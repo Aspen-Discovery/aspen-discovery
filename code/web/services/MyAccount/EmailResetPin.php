@@ -17,9 +17,9 @@ class MyAccount_EmailResetPin extends Action{
 			$emailResult = $catalog->processEmailResetPinForm();
 
 			$interface->assign('result', $emailResult);
-			$this->display($catalog->getEmailResetPinResultsTemplate(), 'Email to Reset Pin');
+			$this->display($catalog->getEmailResetPinResultsTemplate(), 'Email to Reset Pin', '');
 		}else{
-			$this->display($catalog->getEmailResetPinTemplate(), 'Reset ' . $interface->getVariable('passwordLabel'));
+			$this->display($catalog->getEmailResetPinTemplate(), 'Reset ' . $interface->getVariable('passwordLabel'), '');
 		}
 	}
 

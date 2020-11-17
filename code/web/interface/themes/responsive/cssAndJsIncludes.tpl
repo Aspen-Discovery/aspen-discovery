@@ -40,6 +40,7 @@
 		<script src="/interface/themes/responsive/js/lib/bootstrap-switch.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.touchwipe.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/jquery.rwdImageMaps.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/simplemde.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/lib/colcade.js?v={$gitBranch|urlencode}"></script>
 
 		{* Load application specific Javascript *}
@@ -72,6 +73,7 @@
 		<script src="/interface/themes/responsive/js/aspen/searches.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/sideloads.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/title-scroller.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/aspen/web-builder.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/websites.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/wikipedia.js?v={$gitBranch|urlencode}"></script>
 	{else}

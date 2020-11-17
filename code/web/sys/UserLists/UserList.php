@@ -170,6 +170,8 @@ class UserList extends DataObject
 						$groupedWork->permanent_id = $tmpListEntry['sourceId'];
 						if ($groupedWork->find(true)){
 							$tmpListEntry['title'] = $groupedWork->full_title;
+						}else{
+							$tmpListEntry['title'] = 'Unknown title';
 						}
 					}else {
 						$tmpListEntry['title'] = 'Unknown title';
@@ -582,12 +584,13 @@ class UserList extends DataObject
 		foreach ($allEntries as $key => $entry){
 			$recordDriver = $entry->getRecordDriver();
 			if ($recordDriver == null){
-				$results[$key] = [
+				//Don't show this result because it no lonnger exists in teh catalog.
+				/*$results[$key] = [
 					'title' => 'Unhandled Source ' . $entry->source,
 					'author' => '',
 					'formattedTextOnlyTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
 					'formattedTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
-				];
+				];*/
 			}else{
 				if ($recordDriver->isValid()){
 					$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
@@ -676,12 +679,14 @@ class UserList extends DataObject
 			if ($userList->find(true)){
 				$okToShow = false;
 				$key = '';
-				if (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $userList->user_id){
-					$okToShow = true;
-					$key = 0 . strtolower($userList->title);
-				}else if ($userList->searchable){
-					$okToShow = true;
-					$key = 1 . strtolower($userList->title);
+				if (!$userList->deleted) {
+					if (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $userList->user_id) {
+						$okToShow = true;
+						$key = 0 . strtolower($userList->title);
+					} else if ($userList->public == 1 && $userList->searchable == 1) {
+						$okToShow = true;
+						$key = 1 . strtolower($userList->title);
+					}
 				}
 				if ($okToShow) {
 					$userLists[$key] = [
@@ -697,5 +702,5 @@ class UserList extends DataObject
 }
 
 function compareListEntryTitles($listEntry1, $listEntry2){
-	return strcmp($listEntry1['title'], $listEntry2['title']);
+	return strcasecmp($listEntry1['title'], $listEntry2['title']);
 }

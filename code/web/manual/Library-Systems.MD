@@ -50,3 +50,6 @@
 - Records to Include tells Aspen what records should be included in your searches.
 
 
+[![Library System and Locations](/manual/images/Library-System-and-Locations.jpg)](https://youtu.be/H51Q4jdd9MM)
+
+[Watch on Youtube](https://youtu.be/H51Q4jdd9MM)

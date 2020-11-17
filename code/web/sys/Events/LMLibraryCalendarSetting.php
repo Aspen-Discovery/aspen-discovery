@@ -10,8 +10,8 @@ class LMLibraryCalendarSetting extends DataObject
 	public $id;
 	public $name;
 	public $baseUrl;
-	public $clientId;
-	public $clientSecret;
+	public /** @noinspection PhpUnused */ $clientId;
+	public /** @noinspection PhpUnused */ $clientSecret;
 	public $username;
 	public $password;
 
@@ -21,7 +21,7 @@ class LMLibraryCalendarSetting extends DataObject
 	{
 		$libraryList = Library::getLibraryList();
 
-		$structure = array(
+		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings'),
 			'baseUrl' => array('property' => 'baseUrl', 'type' => 'url', 'label' => 'url', 'description' => 'The URL for the site'),
@@ -40,7 +40,6 @@ class LMLibraryCalendarSetting extends DataObject
 				'hideInLists' => true
 			),
 		);
-		return $structure;
 	}
 
 	/**

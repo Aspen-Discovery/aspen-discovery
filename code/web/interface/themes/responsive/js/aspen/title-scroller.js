@@ -24,8 +24,8 @@ function TitleScroller(scrollerId, scrollerShortName, container,
 
 TitleScroller.prototype.loadTitlesFrom = function(jsonUrl) {
 	jsonUrl = decodeURIComponent(jsonUrl);
-	var scroller = this,
-			scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
+	var scroller = this;
+	var scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	scrollerBody.hide();
 	$("#titleScrollerSelectedTitle" + this.scrollerShortName+",#titleScrollerSelectedAuthor" + this.scrollerShortName).html("");
 	$(".scrollerLoadingContainer").show();
@@ -38,8 +38,8 @@ TitleScroller.prototype.loadTitlesFrom = function(jsonUrl) {
 };
 
 TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
-	var scroller = this,
-			scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
+	var scroller = this;
+	var scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	try {
 		if (data.error) throw {description:data.error}; // throw exceptions for server error messages.
 		if (data.titles.length === 0){
@@ -81,10 +81,10 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 TitleScroller.prototype.updateScroller = function() {
 	var scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	try {
-		var scrollerBodyContents = "",
-				curScroller = this;
+		var scrollerBodyContents = "";
+		var curScroller = this;
 		if (this.style === 'horizontal'){
-			for ( let i in this.scrollerTitles) {
+			for ( var i in this.scrollerTitles) {
 				scrollerBodyContents += this.scrollerTitles[i]['formattedTitle'];
 			}
 			scrollerBody.html(scrollerBodyContents)
@@ -93,7 +93,7 @@ TitleScroller.prototype.updateScroller = function() {
 						TitleScroller.prototype.finishLoadingScroller.call(curScroller);
 					});
 		}else if (this.style === 'vertical'){
-			for ( let j in this.scrollerTitles) {
+			for ( var j in this.scrollerTitles) {
 				scrollerBodyContents += this.scrollerTitles[j]['formattedTitle'];
 			}
 			scrollerBody.html(scrollerBodyContents)
@@ -103,8 +103,8 @@ TitleScroller.prototype.updateScroller = function() {
 						TitleScroller.prototype.finishLoadingScroller.call(curScroller);
 					});
 		}else if (this.style === 'text-list'){
-			for ( var i in this.scrollerTitles) {
-				scrollerBodyContents += this.scrollerTitles[i]['formattedTextOnlyTitle'];
+			for ( var k in this.scrollerTitles) {
+				scrollerBodyContents += this.scrollerTitles[k]['formattedTextOnlyTitle'];
 			}
 			scrollerBody.html(scrollerBodyContents)
 					.height(this.scrollerTitles.length * 40); //TODO re-calibrate
@@ -144,7 +144,7 @@ TitleScroller.prototype.finishLoadingScroller = function() {
 	// Set initial state.
 	curScroller.hovered = false;
 
-	if (this.autoScroll && this.scrollInterval == 0){
+	if (this.autoScroll && this.scrollInterval === 0){
 		this.scrollInterval = setInterval(function() {
 			// Only proceed if not hovering.
 			if (!curScroller.hovered) {
@@ -168,6 +168,7 @@ TitleScroller.prototype.scrollToLeft = function() {
 	TitleScroller.prototype.activateCurrentTitle.call(this);
 };
 
+// noinspection JSUnusedGlobalSymbols
 TitleScroller.prototype.swipeToRight = function(customSwipeInterval) {
 	customSwipeInterval  = (typeof customSwipeInterval === 'undefined') ? this.swipeInterval : customSwipeInterval;
 	this.currentScrollerIndex -= customSwipeInterval; // swipes progress the opposite of scroll buttons
@@ -176,6 +177,7 @@ TitleScroller.prototype.swipeToRight = function(customSwipeInterval) {
 	TitleScroller.prototype.activateCurrentTitle.call(this);
 };
 
+// noinspection JSUnusedGlobalSymbols
 TitleScroller.prototype.swipeToLeft = function(customSwipeInterval) {
 	customSwipeInterval  = (typeof customSwipeInterval === 'undefined') ? this.swipeInterval : customSwipeInterval;
 	this.currentScrollerIndex += customSwipeInterval; // swipes progress the opposite of scroll buttons
@@ -184,6 +186,7 @@ TitleScroller.prototype.swipeToLeft = function(customSwipeInterval) {
 	TitleScroller.prototype.activateCurrentTitle.call(this);
 };
 
+// noinspection JSUnusedGlobalSymbols
 TitleScroller.prototype.swipeUp = function(customSwipeInterval) {
 	customSwipeInterval  = (typeof customSwipeInterval === 'undefined') ? this.swipeInterval : customSwipeInterval;
 	this.currentScrollerIndex -= customSwipeInterval;
@@ -192,6 +195,7 @@ TitleScroller.prototype.swipeUp = function(customSwipeInterval) {
 	TitleScroller.prototype.activateCurrentTitle.call(this);
 };
 
+// noinspection JSUnusedGlobalSymbols
 TitleScroller.prototype.swipeDown = function(customSwipeInterval) {
 	customSwipeInterval  = (typeof customSwipeInterval === 'undefined') ? this.swipeInterval : customSwipeInterval;
 	this.currentScrollerIndex += customSwipeInterval;
@@ -201,7 +205,7 @@ TitleScroller.prototype.swipeDown = function(customSwipeInterval) {
 };
 
 TitleScroller.prototype.activateCurrentTitle = function() {
-	if (this.numScrollerTitles == 0) {
+	if (this.numScrollerTitles === 0) {
 		return;
 	}
 	var scrollerTitles = this.scrollerTitles,
@@ -213,11 +217,11 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 	$("#tooltip").hide();  //Make sure to clear the current tooltip if any
 
 	// Update the actual display
-	if (this.style == 'horizontal'){
+	if (this.style === 'horizontal'){
 		$("#titleScrollerSelectedTitle" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['title']);
 		$("#titleScrollerSelectedAuthor" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['author']);
 
-		if ($(scrollerTitleId).length != 0) {
+		if ($(scrollerTitleId).length !== 0) {
 				var widthItemsLeft = $(scrollerTitleId).position().left,
 						widthCurrent = $(scrollerTitleId).width(),
 						containerWidth = $('#' + this.scrollerId + " .scrollerBodyContainer").width(),
@@ -233,12 +237,12 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 					$(scrollerTitleId).addClass('selected');
 				});
 		}
-	}else if (this.style == 'vertical'){
+	}else if (this.style === 'vertical'){
 		$("#titleScrollerSelectedTitle" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['title']);
 		$("#titleScrollerSelectedAuthor" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['author']);
 
 		// Scroll Upwards/Downwards
-		if ($(scrollerTitleId).length != 0) {
+		if ($(scrollerTitleId).length !== 0) {
 			//Move top of the current title to the top of the scroller.
 			var relativeTopOfElement = $(scrollerTitleId).position().top,
 					// center the book in the container
@@ -253,7 +257,7 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 				$(scrollerTitleId).addClass('selected');
 			});
 		}
-	}else if (this.style == 'text-list'){
+	}else if (this.style === 'text-list'){
 		// No Action Needed
 	}else{
 		$("#titleScrollerSelectedTitle" + scrollerShortName).html(scrollerTitles[currentScrollerIndex]['title']);
@@ -294,7 +298,7 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 				allImgsLength = allImgs.length,
 				allImgsLoaded = 0;
 
-		if (allImgsLength == 0) {
+		if (allImgsLength === 0) {
 			finishedCallback.call(this);
 		}else{
 			//Don't wait more than 10 seconds for all images to load.
@@ -305,7 +309,7 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 			var obj = $(this),
 					imgs = obj.find('img');
 
-			if (imgs.length == 0) {
+			if (imgs.length === 0) {
 				return;
 			}
 
@@ -316,7 +320,7 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 				image.onload = function() {
 					allImgsLoaded++;
 					eachCallback.call(imgElement, allImgsLoaded, allImgsLength);
-					if (allImgsLoaded == allImgsLength) {
+					if (allImgsLoaded === allImgsLength) {
 						finishedCallback.call(obj[0]);
 					}
 					return false;
@@ -326,7 +330,7 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 				image.onabort = function() {
 					allImgsLoaded++;
 					eachCallback.call(imgElement, allImgsLoaded, allImgsLength);
-					if (allImgsLoaded == allImgsLength) {
+					if (allImgsLoaded === allImgsLength) {
 						finishedCallback.call(obj[0]);
 					}
 					return false;
@@ -335,7 +339,7 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 				image.onerror = function() {
 					allImgsLoaded++;
 					eachCallback.call(imgElement, allImgsLoaded, allImgsLength);
-					if (allImgsLoaded == allImgsLength) {
+					if (allImgsLoaded === allImgsLength) {
 						finishedCallback.call(obj[0]);
 					}
 					return false;

@@ -31,31 +31,6 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public abstract function patronLogin($username, $password, $validatedViaSSO);
 
 	/**
-	 * Place Hold
-	 *
-	 * This is responsible for both placing holds as well as placing recalls.
-	 *
-	 * @param User $patron The User to place a hold for
-	 * @param string $recordId The id of the bib record
-	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
-	 * @param string $cancelDate When the hold should be automatically cancelled
-	 * @return  mixed                 True if successful, false if unsuccessful
-	 *                                If an error occurs, return a AspenError
-	 * @access  public
-	 */
-	abstract function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null);
-
-	/**
-	 * Cancels a hold for a patron
-	 *
-	 * @param User $patron The User to cancel the hold for
-	 * @param string $recordId The id of the bib record
-	 * @param string $cancelId Information about the hold to be cancelled
-	 * @return  array
-	 */
-	abstract function cancelHold($patron, $recordId, $cancelId = null);
-
-	/**
 	 * Place Item Hold
 	 *
 	 * This is responsible for both placing item level holds.
@@ -78,6 +53,13 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	abstract function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
 
 	abstract function updatePatronInfo($patron, $canUpdateContactInfo);
+
+	function updateHomeLibrary(User $patron, string $homeLibraryCode){
+		return [
+			'success' => false,
+			'messages' => ['Cannot update home library with this ILS.']
+		];
+	}
 
 	public abstract function getFines($patron, $includeMessages = false);
 
@@ -125,17 +107,6 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		}
 		return $host;
 	}
-
-	/**
-	 * Renew a single title currently checked out to the user
-	 *
-	 * @param $patron     User
-	 * @param $recordId   string
-	 * @param $itemId     string
-	 * @param $itemIndex  string
-	 * @return mixed
-	 */
-	abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
 
 	function showOutstandingFines()
 	{
@@ -318,7 +289,8 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'isEligible' => true,
 			'message' => '',
 			'fineLimitReached' => false,
-			'maxPhysicalCheckoutsReached' => false
+			'maxPhysicalCheckoutsReached' => false,
+			'expiredPatronWhoCannotPlaceHolds' => false
 		];
 	}
 
@@ -388,5 +360,15 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
 	public function getStudentReportData($location,$showOverdueOnly,$date) {
 		return null;
+	}
+
+	/**
+	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
+	 *
+	 * @param User $user
+	 */
+	public function loadContactInformation(User $user)
+	{
+		return;
 	}
 }

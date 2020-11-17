@@ -9,6 +9,7 @@ class LibraryCard extends MyAccount
 		global $interface;
 		global $library;
 		$user = UserAccount::getLoggedInUser();
+		$user->loadContactInformation();
 
 		$interface->assign('libraryCardBarcodeStyle', $library->libraryCardBarcodeStyle);
 		$interface->assign('showAlternateLibraryCard', $library->showAlternateLibraryCard);
@@ -16,6 +17,18 @@ class LibraryCard extends MyAccount
 		$interface->assign('alternateLibraryCardLabel', $library->alternateLibraryCardLabel);
 		$interface->assign('alternateLibraryCardPasswordLabel', $library->alternateLibraryCardPasswordLabel);
 		$interface->assign('alternateLibraryCardStyle', $library->alternateLibraryCardStyle);
+
+		$linkedUsers = $user->getLinkedUsers();
+		$linkedCards = [];
+		foreach ($linkedUsers as $tmpUser){
+			$tmpUser->loadContactInformation();
+			$linkedCards[] = [
+				'id' => $tmpUser->id,
+				'fullName' => $tmpUser->displayName,
+				'barcode' => $tmpUser->getBarcode()
+			];
+		}
+		$interface->assign('linkedCards', $linkedCards);
 
 		if (isset($_REQUEST['submit'])) {
 			if (isset($_REQUEST['alternateLibraryCard'])) {
