@@ -45,13 +45,13 @@
 # Regular extracts that don't need to run continuously #
 ########################################################
 0 2 * * *      root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar nashville.production
-0 2 * * *      root    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar nashville.production nightly
+0 22 * * *      root    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar nashville.production nightly
 
 ######################
 # MySQL Nightly Dump #
 ######################
 # backup important bits at 12:10am daily
-10 0 * * *     root    cd /usr/local/aspen-discovery/code/cron/; bash nightly_mysql_dump.sh nashville.production aspen
+50 21 * * *     root    cd /usr/local/aspen-discovery/code/cron/; bash nightly_mysql_dump.sh nashville.production aspen
 
 #############################################
 # New York Times Best seller Lists Updating #
@@ -67,7 +67,7 @@
 26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 22 * * *   root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar nashville.production
+00 20 * * *   root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar nashville.production
 
 ###################################
 # Data Extract from other systems #
