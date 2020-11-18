@@ -39,6 +39,6 @@
 - Once you have defined a Grouped Work Display Settings profile that works for your library make sure to check the box next to your library or location to enable these settings for your searches and records.
 
 
-[![Grouped Work and Display Settings](/manual/images/grouped work (tn).png)](https://youtu.be/waQ_OZ4Pt4g)
+[![Grouped Work and Display Settings](/manual/images/Grouped-Work-and-Display.jpg)](https://youtu.be/waQ_OZ4Pt4g)
 
 [Watch on Youtube](https://youtu.be/waQ_OZ4Pt4g)

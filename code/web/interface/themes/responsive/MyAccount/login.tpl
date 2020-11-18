@@ -47,16 +47,22 @@
 
 							{if $enableSelfRegistration == 1 && !$isStandalonePage}
 								<p class="help-block">
-									Don't have a library card?  <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
+									{translate text="Don't have a library card?"}  <a href="/MyAccount/SelfReg">{translate text="Register for a new Library Card"}</a>.
 								</p>
 							{elseif $enableSelfRegistration == 2 && !$isStandalonePage}
 								<p class="help-block">
-									Don't have a library card? <a href="{$selfRegistrationUrl}">Register for a new Library Card</a>.
+									{translate text="Don't have a library card?"} <a href="{$selfRegistrationUrl}">{translate text="Register for a new Library Card"}</a>.
 								</p>
 							{/if}
 						</div>
-
 					</div>
+					{if !(empty($loginNotes))}
+						<div id="loginNotes" class="form-group">
+							<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+								{$loginNotes}
+							</div>
+						</div>
+					{/if}
 					<div id="loginPasswordRow2" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 							<label for="showPwd" class="checkbox">
@@ -95,13 +101,13 @@
 	$('#username').focus().select();
 	$(function(){
 		AspenDiscovery.Account.validateCookies();
-		let hasLocalStorage = AspenDiscovery.hasLocalStorage() || false;
+		var hasLocalStorage = AspenDiscovery.hasLocalStorage() || false;
 		if (hasLocalStorage) {
-			let rememberMe = (window.localStorage.getItem('rememberMe') == 'true'); // localStorage saves everything as strings
-			let showCovers = window.localStorage.getItem('showCovers') || false;
+			var rememberMe = (window.localStorage.getItem('rememberMe') == 'true'); // localStorage saves everything as strings
+			var showCovers = window.localStorage.getItem('showCovers') || false;
 			if (rememberMe) {
-				let lastUserName = window.localStorage.getItem('lastUserName');
-				let lastPwd = window.localStorage.getItem('lastPwd');
+				var lastUserName = window.localStorage.getItem('lastUserName');
+				var lastPwd = window.localStorage.getItem('lastPwd');
 				{/literal}{*// showPwd = (window.localStorage.getItem('showPwd') == 'true'); // localStorage saves everything as strings *}{literal}
 				$("#username").val(lastUserName);
 				$("#password").val(lastPwd);

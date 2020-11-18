@@ -110,63 +110,7 @@ class UserAccount
 	{
 		if (UserAccount::$userRoles == null) {
 			if (UserAccount::isLoggedIn()) {
-				UserAccount::$userRoles = array();
-
-				//Roles for the user
-				require_once ROOT_DIR . '/sys/Administration/Role.php';
-				$role = new Role();
-				$canUseTestRoles = false;
-				$role->query("SELECT * FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getActiveUserId() . " ORDER BY name");
-				while ($role->fetch()) {
-					UserAccount::$userRoles[$role->roleId] = $role->name;
-					if ($role->name == 'userAdmin') {
-						$canUseTestRoles = true;
-					}
-				}
-
-				if (UserAccount::isUserMasquerading()){
-					//Remove any roles that the guiding user does not have
-					$masqueradeRoles = [];
-					$role->query("SELECT * FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getGuidingUserId() . " ORDER BY name");
-					while ($role->fetch()) {
-						$masqueradeRoles[$role->roleId] = $role->name;
-					}
-					//Now remove any roles that the masquerade user doesn't have
-					foreach (UserAccount::$userRoles as $roleKey => $roleName){
-						if (!array_key_exists($roleKey, $masqueradeRoles)){
-							unset(UserAccount::$userRoles[$roleKey]);
-						}
-					}
-				}
-
-				//Test roles if we are doing overrides
-				$testRole = '';
-				if (isset($_REQUEST['test_role'])) {
-					$testRole = $_REQUEST['test_role'];
-				} elseif (isset($_COOKIE['test_role'])) {
-					$testRole = $_COOKIE['test_role'];
-				}
-				if ($canUseTestRoles && $testRole != '') {
-					if (is_array($testRole)) {
-						$testRoles = $testRole;
-					} else {
-						$testRoles = array($testRole);
-					}
-					//Ignore the standard roles for the user
-					UserAccount::$userRoles = array();
-					foreach ($testRoles as $tmpRole) {
-						$role = new Role();
-						if (is_numeric($tmpRole)) {
-							$role->roleId = $tmpRole;
-						} else {
-							$role->name = $tmpRole;
-						}
-						$found = $role->find(true);
-						if ($found == true) {
-							UserAccount::$userRoles[$role->roleId] = $role->name;
-						}
-					}
-				}
+				UserAccount::$userRoles = UserAccount::getActiveUserObj()->getRoles();
 			} else {
 				UserAccount::$userRoles = array();
 			}

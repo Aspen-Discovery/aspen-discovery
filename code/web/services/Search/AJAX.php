@@ -220,6 +220,7 @@ class AJAX extends Action {
 			$collectionSpotlight->id = $collectionSpotlightList->collectionSpotlightId;
 			$collectionSpotlight->find(true);
 
+			$interface->assign('collectionSpotlight', $collectionSpotlight);
 			$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
 			if ($collectionSpotlightList->sourceListId != null && $collectionSpotlightList->sourceListId > 0){
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -229,7 +230,8 @@ class AJAX extends Action {
 					$result['listTitle'] = $sourceList->title;
 					$result['listDescription'] = $sourceList->description;
 					$result['titles'] = $sourceList->getSpotlightTitles( $collectionSpotlight);
-					$result['currentIndex'] = 0;
+					$currentIndex = 0;
+					$result['currentIndex'] = $currentIndex;
 				}
 				$result['searchUrl'] = '/MyAccount/MyList/' . $collectionSpotlightList->sourceListId;
 			}else{
@@ -240,7 +242,8 @@ class AJAX extends Action {
 				$result['listTitle'] = $collectionSpotlightList->name;
 				$result['listDescription'] = '';
 				$result['titles'] = $searchObject->getSpotlightResults($collectionSpotlight);
-				$result['currentIndex'] = 0;
+				$currentIndex = 0;
+				$result['currentIndex'] = $currentIndex;
 			}
 			return $result;
 		}else{

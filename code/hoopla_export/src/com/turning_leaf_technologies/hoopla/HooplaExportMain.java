@@ -165,7 +165,8 @@ public class HooplaExportMain {
 			int numRecordsToReloadProcessed = 0;
 			while (getRecordsToReloadRS.next()){
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
-				long hooplaId = getRecordsToReloadRS.getLong("identifier");
+				String recordId = getRecordsToReloadRS.getString("identifier");
+				long hooplaId = Long.parseLong(recordId.replace("MWT", ""));
 				//Regroup the record
 				getItemDetailsForRecordStmt.setLong(1, hooplaId);
 				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();

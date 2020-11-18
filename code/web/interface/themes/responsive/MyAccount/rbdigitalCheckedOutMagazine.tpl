@@ -90,7 +90,9 @@
 				{* Actions for Title *}
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
-						<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action">{translate text='Open in RBdigital'}</a>
+						{if !empty($record.accessOnlineUrl)}
+							<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action">{translate text='Open in RBdigital'}</a>
+						{/if}
 						<a href="#" onclick="return AspenDiscovery.RBdigital.returnMagazine('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-warning">{translate text='Return&nbsp;Now'}</a>
 					</div>
 					{if $showWhileYouWait}

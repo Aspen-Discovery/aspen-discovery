@@ -1,5 +1,5 @@
 {strip}
-<h3>{translate text='Register Parent and Student for Rosen LevelUP'}</h3>
+<h1>{translate text='Register Parent and Student for Rosen LevelUP'}</h1>
 <div class="page">
 	{if (isset($registerRosenLevelUPResult) && $registerRosenLevelUPResult.success)}
 		<div id="regSuccess" class="alert alert-success">
@@ -10,11 +10,11 @@
 		{/if}
 		</div>
 	{else}
-		<div id="regDescription" class="alert alert-info">
+		<div id="regDescription">
 			{if $registerRosenLevelUPFormMessage}
 				{$registerRosenLevelUPFormMessage}
 			{else}
-				{translate text='This page allows Limitless Libraries students to register with their parents for Rosen LevelUP'}
+				{translate text='This page allows students to register with their parents for Rosen LevelUP'}
 			{/if}
 		</div>
 		{if (isset($registerRosenLevelUPResult))}

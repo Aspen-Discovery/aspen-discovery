@@ -62,7 +62,7 @@
 
 					<div class="row">
 						<div class="result-label col-tn-4 col-lg-3">{translate text='Format'}</div>
-						<div class="result-value col-tn-8 col-lg-9">{$record.format|translate} - Cloud Library</div>
+						<div class="result-value col-tn-8 col-lg-9">{$record.format|translate} - Axis 360</div>
 					</div>
 
 					{if $showRatings && $record.groupedWorkId && $record.ratingData}

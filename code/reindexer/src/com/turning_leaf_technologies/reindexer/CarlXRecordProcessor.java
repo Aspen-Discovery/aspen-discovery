@@ -28,7 +28,8 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		return itemInfo.getStatusCode().equals("S") || itemInfo.getStatusCode().equals("SI");
+		String groupedStatus = getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
+		return groupedStatus.equals("On Shelf") || groupedStatus.equals("Library Use Only");
 	}
 
 	@Override
@@ -97,7 +98,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 			boolean hasLocationBasedFormat = false;
 			if (shelfLocationField != null){
 				String shelfLocation = shelfLocationField.getData().toLowerCase();
-				if (!shelfLocation.equalsIgnoreCase("XORD")) {
+				if (!shelfLocation.equals("xord")) {
 					allItemsAreOrderRecords = false;
 				}
 				String printFormatLower = null;
@@ -204,5 +205,19 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		HashSet<String> translatedAudiences = translateCollection("target_audience", targetAudiences, identifier);
 		groupedWork.addTargetAudiences(translatedAudiences);
 		groupedWork.addTargetAudiencesFull(translatedAudiences);
+	}
+
+	ItemInfo createPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
+		ItemInfo item = super.createPrintIlsItem(groupedWork, recordInfo, record, itemField);
+		if (item != null){
+			Subfield shelfLocationField = itemField.getSubfield(shelvingLocationSubfield);
+			if (shelfLocationField != null) {
+				String shelfLocation = shelfLocationField.getData().toLowerCase();
+				if (shelfLocation.equals("xord")) {
+					item.setIsOrderItem();
+				}
+			}
+		}
+		return item;
 	}
 }

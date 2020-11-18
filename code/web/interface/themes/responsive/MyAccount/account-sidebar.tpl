@@ -103,7 +103,7 @@
 											</a>
 										</li>
 									{/if}
-									{if $user->isValidForEContentSource('rbdigital')}
+									{if $user->isValidForEContentSource('rbdigital') && $user->showRBdigitalHolds()}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=rbdigital" id="holdsRBdigital" title="View holds from RBdigital">

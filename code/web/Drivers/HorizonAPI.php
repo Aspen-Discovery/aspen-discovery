@@ -821,7 +821,7 @@ abstract class HorizonAPI extends Horizon{
      * @param string $newPin
      * @return array
      */
-    function updatePin($user, $oldPin, $newPin){
+    function updatePinUser(User $user, string $oldPin, string $newPin){
 		global $configArray;
 		$userId = $user->id;
 

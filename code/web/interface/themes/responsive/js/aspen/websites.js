@@ -1,7 +1,7 @@
 AspenDiscovery.Websites = (function () {
 	return {
 		trackUsage: function (id) {
-			let ajaxUrl = Globals.path + "/Websites/JSON?method=trackUsage&id=" + id;
+			var ajaxUrl = Globals.path + "/Websites/JSON?method=trackUsage&id=" + id;
 			$.getJSON(ajaxUrl);
 		}
 	};

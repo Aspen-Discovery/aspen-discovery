@@ -93,6 +93,8 @@
 									{/if}
 								{elseif $property.type == 'checkbox'}
 									{if ($propValue == 1)}Yes{else}No{/if}
+								{elseif $property.type == 'image'}
+									<img src="{$property.displayUrl}{$dataItem->id}" class="img-responsive" alt="{$propName}">
 								{else}
 									Unknown type to display {$property.type}
 								{/if}

@@ -19,3 +19,7 @@
   - You can choose what Overdrive, Hoopla, RBDigital, and Cloud Library accounts to use
 
 - Locations is a lot like Library System but when you have multiple branches within a system you need to define at a branch level as well.
+
+[![Library System and Locations](/manual/images/Library-System-and-Locations.jpg)](https://youtu.be/H51Q4jdd9MM)
+
+[Watch on Youtube](https://youtu.be/H51Q4jdd9MM)

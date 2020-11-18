@@ -3,6 +3,7 @@
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
 
 class Report_HoldsReport extends Admin_Admin {
+
 	function launch(){
 		global $interface;
 		global $configArray;
@@ -84,6 +85,6 @@ class Report_HoldsReport extends Admin_Admin {
 
 	function canView()
 	{
-		return UserAccount::userHasPermission('View All Holds Reports', 'View Location Holds Reports');
+		return UserAccount::userHasPermission(['View All Holds Reports', 'View Location Holds Reports']);
 	}
 }

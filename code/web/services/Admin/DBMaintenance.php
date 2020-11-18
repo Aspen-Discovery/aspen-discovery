@@ -100,6 +100,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		$cloudLibraryUpdates = getCloudLibraryUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/website_indexing_updates.php';
 		$websiteIndexingUpdates = getWebsiteIndexingUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/web_builder_updates.php';
+		$webBuilderUpdates = getWebBuilderUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/events_integration_updates.php';
 		$eventsIntegrationUpdates = getEventsIntegrationUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/file_upload_updates.php';
@@ -152,6 +154,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$redwood_updates,
 			$cloudLibraryUpdates,
 			$websiteIndexingUpdates,
+			$webBuilderUpdates,
 			$eventsIntegrationUpdates,
 			$fileUploadUpdates,
 			array(
@@ -524,6 +527,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'staffSettingsAllowNegativeUserId' => [
+					'title' => 'Staff Settings Allow Negative User ids',
+					'description' => 'Allow negative user ids for staff settings',
+					'sql' => [
+						'ALTER TABLE user_staff_settings change column userId userId INT NOT NULL'
+					]
+				],
+
 				'materialsRequestLibraryId' => array(
 					'title' => 'Add LibraryId to Material Requests Table',
 					'description' => 'Add LibraryId column to Materials Request table and populate column for existing requests.',
@@ -791,6 +802,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					'description' => 'Whether or not a new full index should be run in the middle of the night',
 					'sql' => [
 						'ALTER TABLE system_variables ADD COLUMN runNightlyFullIndex TINYINT(1) DEFAULT 0'
+					]
+				],
+
+				'currencyCode' => [
+					'title' => 'Currency code system variable',
+					'description' => 'Add currency code to system variables',
+					'sql' => [
+						"ALTER TABLE system_variables ADD COLUMN currencyCode CHAR(3) DEFAULT 'USD'"
 					]
 				],
 
@@ -1608,6 +1627,16 @@ class Admin_DBMaintenance extends Admin_Admin
 					)
 				),
 
+				'account_profiles_api_version' => array(
+					'title' => 'Account Profiles - API Version',
+					'description' => 'Add api version for sierra',
+					'continueOnError' => false,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `apiVersion` varchar(10) DEFAULT ''",
+						"UPDATE account_profiles set apiVersion = '5' where ils = 'sierra'",
+					)
+				),
+
 				'archive_private_collections' => array(
 					'title' => 'Archive Private Collections',
 					'description' => 'Create a table to store information about collections that should be private to the owning library',
@@ -2092,6 +2121,23 @@ class Admin_DBMaintenance extends Admin_Admin
 					],
 				],
 
+				'google_analytics_version'  => [
+					'title' => 'Google API - Analytics Version',
+					'description' => 'Add the ability to determine which version of Google Analytics should be embedded.',
+					'sql' => [
+						"ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsVersion VARCHAR(5) DEFAULT 'v3'"
+					]
+				],
+
+				'google_remove_google_translate' => [
+					'title' => 'Google API - Remove Google Translate',
+					'description' => 'Remove Google Translate Settings',
+					'sql' => [
+						'ALTER TABLE google_api_settings DROP COLUMN googleTranslateKey',
+						'ALTER TABLE google_api_settings DROP COLUMN googleTranslateLanguages',
+					]
+				],
+
 				'coce_settings' => [
 					'title' => 'Coce server settings',
 					'description' => 'Add the ability to connect to a Coce server to load covers',
@@ -2190,7 +2236,7 @@ class Admin_DBMaintenance extends Admin_Admin
 							lu_district_name VARCHAR(50) NOT NULL,
 							lu_eligible_ptypes VARCHAR(50) NOT NULL,
 							lu_multi_district_name VARCHAR(50) NOT NULL,
-							lu_school_name VARCHAR(50) NOT NULL,						
+							lu_school_name VARCHAR(50) NOT NULL,
 							lu_ptypes_1 VARCHAR(50),
 							lu_ptypes_2 VARCHAR(50),
 							lu_ptypes_k VARCHAR(50)
@@ -2223,7 +2269,51 @@ class Admin_DBMaintenance extends Admin_Admin
 							UNIQUE ip(year, month, instance, ipAddress)
 						) ENGINE = INNODB;'
 					]
-				]
+				],
+
+				'host_information' => [
+					'title' => 'Host Information',
+					'description' => 'Add a table to allow customization of where a patron goes by default based on host name',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS host_information(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							host VARCHAR(100),
+							libraryId INT(11), 
+							locationId INT(11) DEFAULT -1,
+							defaultPath VARCHAR(50)
+						) ENGINE = INNODB'
+					]
+				],
+
+				'javascript_snippets' => [
+					'title' => 'JavaScript Snippet setup',
+					'description' => 'Add the ability to add JavaScript Snippets to the site',
+					'continueOnError' => true,
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS javascript_snippets(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							name VARCHAR(50) NOT NULL,
+							snippet TEXT
+						) ENGINE = INNODB;',
+						'ALTER TABLE javascript_snippets ADD UNIQUE name (name)',
+						'CREATE TABLE javascript_snippet_library (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							javascriptSnippetId INT,
+							libraryId INT,
+							UNIQUE INDEX javascriptSnippetLibrary(javascriptSnippetId, libraryId)
+						) ENGINE = INNODB;',
+						'CREATE TABLE javascript_snippet_location (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							javascriptSnippetId INT,
+							locationId INT,
+							UNIQUE INDEX javascriptSnippetLocation(javascriptSnippetId, locationId)
+						) ENGINE = INNODB;',
+						"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+							('Local Enrichment', 'Administer All JavaScript Snippets', '', 70, 'Allows the user to define JavaScript Snippets to be added to the site. This permission has security implications.'),
+							('Local Enrichment', 'Administer Library JavaScript Snippets', '', 71, 'Allows the user to define JavaScript Snippets to be added to the site for their library. This permission has security implications.')",
+						"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All JavaScript Snippets'))",
+					]
+				],
 			)
 		);
 	}

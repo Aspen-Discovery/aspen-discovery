@@ -12,7 +12,7 @@
 
 				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary"/>
 				&nbsp;
-				<input type="button" name="printSlips" value="Print Slips" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.holdsReportContainer'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
+				<input type="button" name="printSlips" value="Print Slips" class="btn btn-sm btn-primary" onclick="{literal} JsBarcode('.barcode').init(); var x = document.querySelectorAll('.holdsReportSlipContainer'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
 				&nbsp;
 				<input type="submit" name="download" value="Download CSV" class="btn btn-sm btn-info"/>
 				&nbsp;
@@ -99,11 +99,13 @@
         }
         div.HOME_ROOM {
         }
+/*
         div.P_BARCODE_SCANNABLE {
             font-family: "3 of 9 Barcode";
             font-size: 20pt !important;
             font-weight: normal !important;
         }
+*/
         div.PATRON_NAME {
         }
         div.holdsReportSlip div.placeHolder {
@@ -175,15 +177,15 @@
 						<div class="holdsReportSlip">
 							<div class="patron">
 								<div class="PATRON_NAME">{$dataRow.PATRON_NAME|upper}</div>
-								<div class="P_BARCODE_SCANNABLE">*{$dataRow.P_BARCODE}*</div>
+								<div class="P_BARCODE_SCANNABLE"><svg class="barcode" jsbarcode-format="CODE39" jsbarcode-value="{$dataRow.P_BARCODE}" jsbarcode-fontsize="1" jsbarcode-height="20" jsbarcode-text=" " jsbarcode-width="1"></svg></div>
 								<div class="GRD_LVL">{$dataRow.GRD_LVL|replace:' student':''}</div>
 								<div class="HOME_ROOM">{$dataRow.HOME_ROOM|lower|capitalize:true}</div>
 							</div>
 							<div class="placeHolder">
                                 <p>Thank you for checking out from your school library.</p>
-                                <p>Books are due in 2 weeks.</p>
-                                <p>DVDs are due in 1 week.</p>
-                                <p>Check your account online at https://school.library.nashville.org</p>
+                                <p>Books are due in 3 weeks.</p>
+                                <p>DVDs are due in 3 weeks.</p>
+                                <p>Check your account online at https://limitlesslibraries.org</p>
 							</div>
 							<div class="item">
 								<div class="SHELF_LOCATION">{$dataRow.SHELF_LOCATION|replace:'kids ':''|replace:'teen ':''|replace:'adult ':''|capitalize}</div>
@@ -208,6 +210,7 @@
 				});
 			{/literal}
 		</script>
+		<script src="/js/jsBarcode/JsBarcode.all.min.js"></script>
 
 {/if}
 	</div>

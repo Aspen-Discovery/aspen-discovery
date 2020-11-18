@@ -1,14 +1,16 @@
 ##Table of Contents
 - Administration
-  - System Administration
-  - System Reports
+  - [System Administration](/Admin/HelpManual?page=System-Administration)
+    - [Permissions](/Admin/HelpManual?page=Permissions)
+  - [System Reports](/Admin/HelpManual?page=System-Reports)
     - Cron Log
     - Dashboards
     - Indexing Logs
     - Performance Report
   - Configuration Templates
-    - Themes
-    - Layout Settings
+    - [Themes](/Admin/HelpManual?page=Themes)
+    - [Layout Settings](/Admin/HelpManual?page=Layout-Settings)
+    - [Menu Links](/Admin/HelpManual?page=Menu-Links)
     - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
       - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
       - Creating Grouped Works
@@ -19,7 +21,7 @@
       - [Browse Categories](/Admin/HelpManual?page=Browse-Categories)
   - Primary Configuration
     - Languages
-      - Translations
+      - [Translations](/Admin/HelpManual?page=Translations)
     - [Library Systems](/Admin/HelpManual?page=Library-Systems)
       - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
       - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
@@ -39,10 +41,10 @@
     - [Novelist](/Admin/HelpManual?page=Novelist)
     - Pinterest
     - reCAPTCHA
-    - Syndetics
+    - [Syndetics](/Admin/HelpManual?page=Syndetics)
     - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
-  - Cataloging 
-  - ILS Integration
+  - [Cataloging](/Admin/HelpManual?page=Cataloging)
+  - [ILS Integration](/Admin/HelpManual?page=ILS-Integration)
     - Indexing Profiles
       - Format Information
         - [Bib Level Format](/Admin/HelpManual?page=Bib-Level-Format)
@@ -53,34 +55,34 @@
     - Polaris
     - Sierra
     - Symphony
-  - OverDrive
+  - [OverDrive](/Admin/HelpManual?page=Overdrive)
     - Settings
-     - Scopes
+    - Scopes
     - Indexing Log
     - Dashboard
     - API Information
   - RB Digital
     - Settings 
-     - Scopes 
+    - Scopes 
     - Indexing Log 
     - Dashboard
-  - Cloud Library
+  - [Cloud Library](/Admin/HelpManual?page=Cloud-Library)
     - Settings 
-     - Scopes 
+    - Scopes 
     - Indexing Log 
     - Dashboard
   - [Side Loaded eContent](/Admin/HelpManual?page=Side-Loaded-eContent)
     - Side Loaded Configurations
-     - Scopes
+    - Scopes
     - Indexing Log
     - Dashboard
   - Indexing Information
     - Group Work Index Log
-  - Open Archives
+  - [Open Archives](/Admin/HelpManual?page=Open-Archives)
     - Collections
     - Indexing Log
     - Dashboard
-  - Website Indexing
+  - [Website Indexing](/Admin/HelpManual?page=Website-Indexing)
     - Settings
     - Indexing Log
     - Dashboard
@@ -95,30 +97,31 @@
 - [Author pages](/Admin/HelpManual?page=Author-Pages)
 - Browsing
 - Citations
-- Collection Spotlights
-- Covers
+- [Collection Spotlights](/Admin/HelpManual?page=Collection-Spotlights)
+- [Covers](/Admin/HelpManual?page=Cover-Images)
 - [eCommerce](/Admin/HelpManual?page=eCommerce)
 - [eContent Integrations](/Admin/HelpManual?page=eContent-Integrations)
-  - CloudLibrary
-  - Hoopla
-  - OverDrive
+  - [CloudLibrary](/Admin/HelpManual?page=Cloud-Library)
+  - [Hoopla](/Admin/HelpManual?page=Hoopla)
+  - [OverDrive](/Admin/HelpManual?page=Overdrive)
   - RBdigital
+  - [EBSCO EDS](/Admin/HelpManual?page=EBSCO-EDS)
 - Email
 - Events
   - Library Calendar
 - Explore More
 - Full Record Pages
-- Genealogy & Obituaries
+- [Genealogy](/Admin/HelpManual?page=Genealogy) & Obituaries
 - Interlibrary Loans
 - [Materials Requests & Purchase Suggestions](/Admin/HelpManual?page=Materials-Requests-Purchase-Suggestions)
-- Open Archives
+- [Open Archives](/Admin/HelpManual?page=Open-Archives)
 - [Placards](/Admin/HelpManual?page=Placards)
 - [Reading History](/Admin/HelpManual?page=Reading-History)
 - [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
 - [Recommendations](/Admin/HelpManual?page=Recommendations)
 - Searching
   - Search Types
-  - Facets
+  - [Facets](/Admin/HelpManual?page=Facets)
     - [Literary Forms](/Admin/HelpManual?page=Literary-Forms)
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - [User Lists](/Admin/HelpManual?page=User-Lists)

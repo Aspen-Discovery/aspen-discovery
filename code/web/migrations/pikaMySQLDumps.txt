@@ -1,0 +1,2 @@
+mysqldump -u<pika_user> -p <pika_password> <pika_database> materials_request materials_request_fields_to_display materials_request_formats materials_request_form_fields materials_request_status > materials_request_dump.sql
+mysqldump -u<pika_user> -p <pika_password> <pika_database> user_link > user_links.sql

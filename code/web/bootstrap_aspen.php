@@ -128,7 +128,6 @@ function loadSearchInformation(){
 
 	//Load indexing profiles
 	require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
-	/** @var $indexingProfiles IndexingProfile[] */
 	global $indexingProfiles;
 	$indexingProfiles = array();
 	$indexingProfile = new IndexingProfile();

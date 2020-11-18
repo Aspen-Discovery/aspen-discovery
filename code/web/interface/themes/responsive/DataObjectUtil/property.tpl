@@ -191,7 +191,7 @@
 		{elseif $property.type == 'partialDate'}
 			{include file="DataObjectUtil/partialDate.tpl"}
 
-		{elseif $property.type == 'textarea' || $property.type == 'html' || $property.type == 'crSeparated'}
+		{elseif $property.type == 'textarea' || $property.type == 'html' || $property.type == 'markdown' || $property.type == 'javascript' || $property.type == 'crSeparated'}
 			{include file="DataObjectUtil/textarea.tpl"}
 
 		{elseif $property.type == 'password' || $property.type == 'storedPassword'}
@@ -207,9 +207,6 @@
 		{elseif $property.type == 'label'}
 			<div id='{$propName}'>{$propValue}</div>
 
-		{*{elseif $property.type == 'html'}*}
-			{*{include file="DataObjectUtil/htmlField.tpl"}*}
-
 		{elseif $property.type == 'enum'}
 			{include file="DataObjectUtil/enum.tpl"}
 
@@ -223,7 +220,12 @@
 						<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
 						{$propValue} &nbsp;
 					{else}
-						<img src='/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+
+						{if $property.displayUrl}
+							<img src='{$property.displayUrl}{$object->id}' style="display: block" alt="Selected Image for {$property.label}">
+						{else}
+							<img src='/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+						{/if}
 						{$propValue} &nbsp;
 					{/if}
 					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">Remove image</label>
@@ -245,6 +247,8 @@
 
 		{elseif $property.type == 'oneToMany'}
 			{include file="DataObjectUtil/oneToMany.tpl"}
+		{elseif $property.type == 'portalRow'}
+			{include file="DataObjectUtil/portalRows.tpl"}
 		{/if}
 
 	</div>

@@ -2,8 +2,8 @@ AspenDiscovery.EBSCO = (function () {
 	return {
 		dismissResearchStarter: function(id){
 			if (Globals.loggedIn){
-				let ajaxUrl = Globals.path + "/EBSCO/JSON";
-				let params = {
+				var ajaxUrl = Globals.path + "/EBSCO/JSON";
+				var params = {
 					'method':'dismissResearchStarter',
 					id: id
 				};
@@ -20,8 +20,8 @@ AspenDiscovery.EBSCO = (function () {
 		},
 
 		getResearchStarters: function(searchTerm){
-			let ajaxUrl = Globals.path + "/EBSCO/JSON";
-			let params = {
+			var ajaxUrl = Globals.path + "/EBSCO/JSON";
+			var params = {
 				'method':'getResearchStarters',
 				lookfor: searchTerm
 			};
@@ -32,7 +32,7 @@ AspenDiscovery.EBSCO = (function () {
 		},
 
 		trackEdsUsage: function (id) {
-			let ajaxUrl = Globals.path + "/EBSCO/JSON?method=trackEdsUsage&id=" + id;
+			var ajaxUrl = Globals.path + "/EBSCO/JSON?method=trackEdsUsage&id=" + id;
 			$.getJSON(ajaxUrl);
 		}
 	};

@@ -97,13 +97,28 @@ class Union_Search extends ResultsAction {
 			$this->searchResultsAction = new Union_CombinedResults();
 			$this->searchResultsAction->launch();
 		}else{
-			require_once (ROOT_DIR . '/services/Search/Results.php');
-			$module = 'Search';
-			$interface->assign('module', $module);
-			$action = 'Results';
-			$interface->assign('action', $action);
-			$this->searchResultsAction = new Search_Results();
-			$this->searchResultsAction->launch();
+			if (isset($_REQUEST['searchIndex'])) {
+				$searchIndex = $_REQUEST['searchIndex'];
+			}else{
+				$searchIndex = 'Keyword';
+			}
+			if ($searchIndex == 'advanced' || $searchIndex == 'editAdvanced'){
+				require_once (ROOT_DIR . '/services/Search/Advanced.php');
+				$module = 'Search';
+				$interface->assign('module', $module);
+				$action = 'Advanced';
+				$interface->assign('action', $action);
+				$this->searchResultsAction = new Search_Advanced();
+				$this->searchResultsAction->launch();
+			}else{
+				require_once (ROOT_DIR . '/services/Search/Results.php');
+				$module = 'Search';
+				$interface->assign('module', $module);
+				$action = 'Results';
+				$interface->assign('action', $action);
+				$this->searchResultsAction = new Search_Results();
+				$this->searchResultsAction->launch();
+			}
 		}
 	}
 

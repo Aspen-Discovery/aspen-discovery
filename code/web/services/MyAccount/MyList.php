@@ -69,7 +69,7 @@ class MyAccount_MyList extends MyAccount {
 				}elseif ($actionToPerform == 'deleteList'){
 					$list->delete();
 
-					header("Location: /MyAccount/Home");
+					header("Location: /MyAccount/Lists");
 					die();
 				}elseif ($actionToPerform == 'bulkAddTitles'){
 					$notes = $this->bulkAddTitles($list);

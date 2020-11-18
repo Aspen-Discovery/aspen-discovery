@@ -16,30 +16,46 @@
 		<div class="locationInfo" id="locationAddress{$curLocation.id}"
 			 {if !$smarty.foreach.locationLoop.first}style="display:none"{/if}>
 			<div class="row">
-				<h3>{$curLocation.name}</h3>
-			</div>
-			<div class="row">
-				<div class="col-xs-12 col-sm-3">
-					<dl>
-						{if $curLocation.address}
-							<dt>{translate text="Address"}</dt>
-							<dd>
-								<address>{$curLocation.address}
-									{if !empty($curLocation.map_link)}
-										<br/>
-									<a href="{$curLocation.map_link}">{translate text="Directions"}</a>{/if}
-								</address>
-							</dd>
-						{/if}
-						{if $curLocation.phone}
-							<dt>{translate text="Phone"}</dt>
-							<dd><a href="tel:{$curLocation.phone}">{$curLocation.phone}</a></dd>
-						{/if}
-					</dl>
+				<div class="col-xs-12">
+					<h2>{$curLocation.name}</h2>
 				</div>
 			</div>
+			{if !empty($curLocation.address)}
+				<div class="row">
+					<div class="col-tn-12 col-xs-3 result-label">
+						{translate text="Address"}
+					</div>
+					<div class="col-tn-12 col-xs-9">
+						<address>{$curLocation.address}
+							{if !empty($curLocation.map_link)}
+								<br/>
+							<a href="{$curLocation.map_link}">{translate text="Directions"}</a>{/if}
+						</address>
+					</div>
+				</div>
+			{/if}
+			{if !empty($curLocation.phone)}
+				<div class="row">
+					<div class="col-tn-12 col-xs-3 result-label">
+						{translate text="Phone"}
+					</div>
+					<div class="col-tn-12 col-xs-9">
+						<a href="tel:{$curLocation.phone}">{$curLocation.phone}</a>
+					</div>
+				</div>
+			{/if}
+			{if !empty($curLocation.tty)}
+				<div class="row">
+					<div class="col-tn-12 col-xs-3 result-label">
+						{translate text="TTY"}
+					</div>
+					<div class="col-tn-12 col-xs-9">
+						<a href="tel:{$curLocation.tty}">{$curLocation.tty}</a>
+					</div>
+				</div>
+			{/if}
 			{if $curLocation.hasValidHours}
-				<h4>{translate text="Hours"}</h4>
+				<h3>{translate text="Hours"}</h3>
 				{assign var='lastDay' value="-1"}
 				{foreach from=$curLocation.hours item=curHours}
 					<div class="row">
@@ -75,6 +91,14 @@
 						</div>
 					</div>
 				{/foreach}
+			{/if}
+			{if !empty($curLocation.description)}
+				<h3>{translate text="Additional information"}</h3>
+				<div class="row">
+					<div class="col-xs-12">
+						{$curLocation.description}
+					</div>
+				</div>
 			{/if}
 		</div>
 	{/foreach}

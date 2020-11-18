@@ -26,6 +26,7 @@
       <w>asmx</w>
       <w>aspx</w>
       <w>audiobook</w>
+      <w>audiobooks</w>
       <w>authornotes</w>
       <w>autologout</w>
       <w>autorenew</w>
@@ -291,6 +292,7 @@
       <w>soundex</w>
       <w>spammy</w>
       <w>spreadsheetml</w>
+      <w>staffadmin</w>
       <w>stre</w>
       <w>streamingauthurl</w>
       <w>streamingvideoauth</w>
@@ -314,6 +316,7 @@
       <w>tokenizing</w>
       <w>tphone</w>
       <w>trackback</w>
+      <w>tweens</w>
       <w>tzip</w>
       <w>unimarc</w>
       <w>unserialize</w>

@@ -151,13 +151,17 @@ class DataObjectUtil
 
 		}else if (in_array($property['type'], array('text', 'enum', 'hidden', 'url', 'email', 'multiemail'))){
 			if (isset($_REQUEST[$propertyName])){
-				$object->setProperty($propertyName, strip_tags(trim($_REQUEST[$propertyName])), $property);
+				if ($object instanceof UnsavedDataObject && $property['type'] == 'enum'){
+					$object->setProperty($propertyName, $property['values'][$_REQUEST[$propertyName]], $property);
+				}else{
+					$object->setProperty($propertyName, strip_tags(trim($_REQUEST[$propertyName])), $property);
+				}
 			} else {
 				$object->setProperty($propertyName, "", $property);
 			}
 
-		}else if (in_array( $property['type'], array('textarea', 'html', 'folder', 'crSeparated'))){
-			if (strlen(trim($_REQUEST[$propertyName])) == 0){
+		}else if (in_array( $property['type'], array('textarea', 'html', 'markdown', 'javascript', 'folder', 'crSeparated'))){
+			if (empty($_REQUEST[$propertyName]) || strlen(trim($_REQUEST[$propertyName])) == 0){
 				$object->setProperty($propertyName, "", $property);
 			}else{
 				$object->setProperty($propertyName, trim($_REQUEST[$propertyName]), $property);
@@ -165,7 +169,7 @@ class DataObjectUtil
 			//Strip tags from the input to avoid problems
 			if ($property['type'] == 'textarea' || $property['type'] == 'crSeparated'){
 				$object->setProperty($propertyName, strip_tags($object->$propertyName), $property);
-			}else{
+			}elseif ($property['type'] != 'javascript'){
 				$allowableTags = isset($property['allowableTags']) ? $property['allowableTags'] : '<p><a><b><em><ul><ol><em><li><strong><i><br>';
 				$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
 			}
@@ -205,7 +209,7 @@ class DataObjectUtil
 			}
 
 		}else if ($property['type'] == 'date'){
-			if (strlen($_REQUEST[$propertyName]) == 0 || $_REQUEST[$propertyName] == '0000-00-00'){
+			if (empty(strlen($_REQUEST[$propertyName])) || strlen($_REQUEST[$propertyName]) == 0 || $_REQUEST[$propertyName] == '0000-00-00'){
 				$object->setProperty($propertyName, null, $property);
 			}else{
 				$dateParts = date_parse($_REQUEST[$propertyName]);
@@ -243,13 +247,24 @@ class DataObjectUtil
 						$destFolder = $property['storagePath'];
 						$destFullPath = $destFolder . '/' . $destFileName;
 						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
-						$logger->log("Copied file to $destFullPath", Logger::LOG_DEBUG);
+						$logger->log("Copied file to $destFullPath result: $copyResult", Logger::LOG_DEBUG);
 					}else{
 						$logger->log("Creating thumbnails for $propertyName", Logger::LOG_DEBUG);
-						$destFileName = $propertyName . $_FILES[$propertyName]["name"];
-						$destFolder = $configArray['Site']['local'] . '/files/original';
-						$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
-						$pathToMedium = $configArray['Site']['local'] . '/files/medium';
+						if (isset($property['path'])){
+							$destFolder = $property['path'];
+							$destFileName = $_FILES[$propertyName]["name"];
+							if (!file_exists($destFolder)){
+								mkdir($destFolder, 0755, true);
+							}
+							$pathToThumbs = $destFolder . '/thumbnail';
+							$pathToMedium = $destFolder . '/medium';
+						}else{
+							$destFileName = $propertyName . $_FILES[$propertyName]["name"];
+							$destFolder = $configArray['Site']['local'] . '/files/original';
+							$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
+							$pathToMedium = $configArray['Site']['local'] . '/files/medium';
+						}
+
 						$destFullPath = $destFolder . '/' . $destFileName;
 						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 
@@ -351,11 +366,27 @@ class DataObjectUtil
 			}else if (isset($_FILES[$propertyName])){
 				if ($_FILES[$propertyName]["error"] > 0){
 					//return an error to the browser
+					$logger->log("Error uploading file " . $_FILES[$propertyName]["error"], Logger::LOG_ERROR);
 				}else if (true){ //TODO: validate the file type
+					if (array_key_exists('validTypes', $property)){
+						$fileType = $_FILES[$propertyName]["type"];
+						if (!in_array($fileType, $property['validTypes'])){
+							AspenError::raiseError('Incorrect file type uploaded ' . $fileType);
+						}
+					}
 					//Copy the full image to the correct location
 					//Filename is the name of the object + the original filename
 					$destFileName = $_FILES[$propertyName]["name"];
 					$destFolder = $property['path'];
+					if (!file_exists($destFolder)){
+						if (!mkdir($destFolder, 0755, true)) {
+							$logger->log("Could not create $destFolder", Logger::LOG_NOTICE);
+						}
+					}
+					if (substr($destFolder, -1) == '/'){
+						$destFolder = substr($destFolder, 0, -1);
+					}
+
 					$destFullPath = $destFolder . '/' . $destFileName;
 					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 					if ($copyResult){
@@ -370,7 +401,7 @@ class DataObjectUtil
 						}
 					}
 					//store the actual filename
-					$object->setProperty($propertyName, $destFileName, $property);
+					$object->setProperty($propertyName, $destFullPath, $property);
 				}
 			}
 		}else if ($property['type'] == 'uploaded_font'){
@@ -382,6 +413,7 @@ class DataObjectUtil
 			}else if (isset($_FILES[$propertyName])){
 				if ($_FILES[$propertyName]["error"] > 0){
 					//return an error to the browser
+					$logger->log("Error uploading file " . $_FILES[$propertyName]["error"], Logger::LOG_ERROR);
 				}else if (true){ //TODO: validate the file type
 					//Copy the full image to the correct location
 					//Filename is the name of the object + the original filename
@@ -450,7 +482,7 @@ class DataObjectUtil
 						foreach ($subStructure as $subProperty){
 							$requestKey = $propertyName . '_' . $subProperty['property'];
 							$subPropertyName = $subProperty['property'];
-							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html', 'multiSelect') )){
+							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html', 'markdown','javascript', 'multiSelect') )){
 								$subObject->setProperty($subPropertyName, $_REQUEST[$requestKey][$id], $subProperty);
 							}elseif (in_array($subProperty['type'], array('checkbox') )){
 								$subObject->setProperty($subPropertyName, isset($_REQUEST[$requestKey][$id]) ? 1 : 0, $subProperty);
@@ -464,6 +496,7 @@ class DataObjectUtil
 								}
 							}elseif (!in_array($subProperty['type'], array('label', 'foreignKey', 'oneToMany') )){
 								//echo("Invalid Property Type " . $subProperty['type']);
+								$logger->log("Invalid Property Type " . $subProperty['type'], Logger::LOG_DEBUG);
 							}
 						}
 					}

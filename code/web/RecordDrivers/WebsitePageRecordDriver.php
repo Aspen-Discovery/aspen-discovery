@@ -5,6 +5,7 @@ require_once 'IndexRecordDriver.php';
 class WebsitePageRecordDriver extends IndexRecordDriver
 {
 	private $valid;
+	private $recordtype;
 
 	public function __construct($recordData)
 	{
@@ -18,7 +19,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 			parent::__construct($recordData);
 			$this->valid = true;
 		}
-		//$this->snippet = true;
+		$this->recordtype = $this->fields['recordtype'];
 	}
 
 	public function isValid()
@@ -75,6 +76,14 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 			$bookCoverUrl = $configArray['Site']['url'];
 		} else {
 			$bookCoverUrl = '';
+		}
+		if ($this->recordtype == 'WebResource') {
+			require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+			$webResource = new WebResource();
+			$webResource->id = $this->getUniqueID();
+			if ($webResource->find(true)) {
+				return '/files/thumbnail/' . $webResource->logo;
+			}
 		}
 		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=webpage";
 

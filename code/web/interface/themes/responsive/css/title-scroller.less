@@ -113,7 +113,42 @@
   width: 100%;
   text-align: right;
 }
+.horizontalCarouselSpotlightWrapper{
+  .jcarousel-control-prev, .jcarousel-control-next {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: @browseCarouselControlColor;
+    height: 100%;
+    font-size: 50px;
+    box-shadow: none;
+    &:focus {
+      text-decoration: none;
+      outline: none;
+    }
+    &:hover {
+      text-decoration: none;
+    }
+  }
 
+  .jcarousel-pagination a {
+    &, &:hover, &:active, &:visited {
+      outline: none;
+    }
+  }
+}
+.jcarousel li.carouselTitleWrapper{
+  border-width: 0;
+
+}
+.carouselScrollerTitle{
+  display: inline-block;
+  text-align: center;
+  .carouselScrollerTitleImage{
+    display: inline-block;
+  }
+}
 // Horizontal Scrollers
 .scrollerTitle{
   display: inline-block;

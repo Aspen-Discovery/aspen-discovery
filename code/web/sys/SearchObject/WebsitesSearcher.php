@@ -158,6 +158,37 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
+	public function getFacetConfig()
+	{
+		if ($this->facetConfig == null) {
+			$facetConfig = [];
+			$audienceFacet = new LibraryFacetSetting();
+			$audienceFacet->id = count($facetConfig) +1;
+			$audienceFacet->multiSelect = true;
+			$audienceFacet->facetName = "audience_facet";
+			$audienceFacet->displayName = "Audience";
+			$audienceFacet->numEntriesToShowByDefault = 5;
+			$audienceFacet->translate = true;
+			$audienceFacet->collapseByDefault = true;
+			$audienceFacet->useMoreFacetPopup = true;
+			$facetConfig["audience_facet"] = $audienceFacet;
+
+			$categoryFacet = new LibraryFacetSetting();
+			$categoryFacet->id = count($facetConfig) +1;
+			$categoryFacet->multiSelect = true;
+			$categoryFacet->facetName = "category_facet";
+			$categoryFacet->displayName = "Category";
+			$categoryFacet->numEntriesToShowByDefault = 5;
+			$categoryFacet->translate = true;
+			$categoryFacet->collapseByDefault = true;
+			$categoryFacet->useMoreFacetPopup = true;
+			$facetConfig["category_facet"] = $categoryFacet;
+
+			$this->facetConfig = $facetConfig;
+		}
+		return $this->facetConfig;
+	}
+
 	public function getEngineName(){
 		return 'Websites';
 	}

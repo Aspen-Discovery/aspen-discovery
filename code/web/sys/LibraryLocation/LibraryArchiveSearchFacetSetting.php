@@ -18,7 +18,7 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 		//'ancestors_ms' => "Included In"
 	);
 
-	static function getObjectStructure($availableFacets = NULL){
+	static function getObjectStructure(array $availableFacets = null){
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Libraries')){

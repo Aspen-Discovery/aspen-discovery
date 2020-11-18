@@ -155,13 +155,13 @@
 								$(ui.item).find('.related-manifestations').fadeIn()
 							},
 							update: function (e, ui){
-								let updates = [];
-								let firstItemOnPage = {/literal}{$recordStart}{literal};
+								var updates = [];
+								var firstItemOnPage = {/literal}{$recordStart}{literal};
 								$('#UserList .listEntry').each(function(currentOrder){
-									let id = $(this).data('list_entry_id');
-									let originalOrder = $(this).data('order');
-									let change = currentOrder+firstItemOnPage-originalOrder;
-									let newOrder = originalOrder+change;
+									var id = $(this).data('list_entry_id');
+									var originalOrder = $(this).data('order');
+									var change = currentOrder+firstItemOnPage-originalOrder;
+									var newOrder = originalOrder+change;
 									if (change !== 0) updates.push({'id':id, 'newOrder':newOrder});
 								});
 								$.getJSON('/MyAccount/AJAX',
@@ -173,7 +173,7 @@
 									, function(response){
 										if (response.success) {
 											updates.forEach(function(e){
-												let listEntry = $('#listEntry'+ e.id);
+												var listEntry = $('#listEntry'+ e.id);
 												if (listEntry.length > 0) {
 													listEntry
 														.data('order', e.newOrder)

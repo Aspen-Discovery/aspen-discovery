@@ -113,8 +113,14 @@
 						<a href="{$record.hooplaUrl}" target="_blank" {*onclick="alert('Dummy button');return false"*} class="btn btn-sm btn-action">Access&nbsp;Online</a>
 						{/if}
 						<a href="#" onclick="return AspenDiscovery.Hoopla.returnCheckout('{$record.userId}', '{$record.hooplaId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
-
 					</div>
+					{if $showWhileYouWait}
+						<div class="btn-group btn-group-vertical btn-block">
+							{if !empty($record.groupedWorkId)}
+								<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.groupedWorkId}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like"}</button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>

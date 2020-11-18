@@ -12,6 +12,7 @@ yum-config-manager --enable remi-php73
 yum -y install php php-mcrypt php-gd php-curl php-mysql php-zip php-fileinfo
 yum -y install php-xml
 yum -y install bind-utils
+yum -y install php-intl
 service httpd start
 chkconfig httpd on
 # New PHP ini file
