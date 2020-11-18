@@ -1,4 +1,4 @@
-##System Administration
+## System Administration
 
 The System Administration section of Aspen Discovery includes Modules, Administrators, Permissions, DB Maintainance, Send Grid Settings, Variables, and System Variables.
 
@@ -30,6 +30,8 @@ The System Administration section of Aspen Discovery includes Modules, Administr
 
   - Ability to run a full index and choose email addresses for tickets and errors.
 
+
+### Video Tutorial
 
 [![System Administration](/manual/images/System-Admin-System-Reports.jpg)](https://youtu.be/yfmmSB7J_s4)
 
