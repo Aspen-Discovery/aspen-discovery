@@ -930,18 +930,16 @@ class CarlX extends AbstractIlsDriver{
 			if ($result) {
 				$noNameBirthdateMatch = stripos($result->ResponseStatuses->ResponseStatus{0}->ShortMessage, 'No matching records found');
 				if ($noNameBirthdateMatch === false) {
-					if ($result->PagingResult->NoOfRecords > 1) {
-						$patronIdsMatching = array_column($result->Patrons->PatronID);
+					if ($result->PagingResult->NoOfRecords > 0) {
+						$patronIdsMatching = array_column($result->Patrons, 'PatronID');
 						$patronIdsMatching = implode(", ", $patronIdsMatching);
-					} elseif ($result->PagingResult->NoOfRecords == 1) {
-						$patronIdsMatching =  $result->Patrons->PatronID;
 					}
 					global $logger;
 					$logger->log('Online Registration Name+Birthdate already exists in Carl. Name: ' . $firstName . ' ' . $lastName . ' IP: ' . $active_ip . ' PatronIDs: ' . $patronIdsMatching, Logger::LOG_NOTICE);
 
 					// SEND EMAIL TO DUPLICATE NAME+BIRTHDATE REGISTRANT EMAIL ADDRESS
 					try {
-						$body = $interface->fetch($this->getSelfRegTemplate('duplicate-name+birthdate'));
+						$body = $interface->fetch($this->getSelfRegTemplate('duplicate_name+birthdate'));
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = 'Nashville Public Library: you might already have an account!';
@@ -1096,14 +1094,13 @@ class CarlX extends AbstractIlsDriver{
 
 	}
 
-	// TODO: make this generic, move Nashville-specific to Nashville.php. 20201111
 	function getSelfRegTemplate($reason){
 		if ($reason == 'duplicate_email'){
-			return 'Emails/nashville-self-registration-denied-duplicate_email.tpl';
+			return 'Emails/self-registration-denied-duplicate_email.tpl';
 		}elseif ($reason == 'duplicate_name+birthdate') {
-			return 'Emails/nashville-self-registration-denied-duplicate_name+birthdate.tpl';
+			return 'Emails/self-registration-denied-duplicate_name+birthdate.tpl';
 		}elseif ($reason == 'success') {
-			return 'Emails/nashville-self-registration.tpl';
+			return 'Emails/self-registration.tpl';
 		}else{
 			return;
 		}
