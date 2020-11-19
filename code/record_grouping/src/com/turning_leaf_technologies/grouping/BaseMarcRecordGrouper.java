@@ -25,7 +25,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	private final Connection dbConn;
 
 	//Existing records
-	private static HashMap<String, IlsTitle> existingRecords = new HashMap<>();
+	private HashMap<String, IlsTitle> existingRecords = new HashMap<>();
 	private static PreparedStatement insertMarcRecordChecksum;
 
 	private boolean isValid = true;
