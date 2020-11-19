@@ -1372,6 +1372,7 @@ class ExtractOverDriveInfo {
 	}
 
 	void close(){
+		logger.info("Closing the overdrive extractor");
 		if (recordGroupingProcessorSingleton != null) {
 			recordGroupingProcessorSingleton.close();
 			recordGroupingProcessorSingleton = null;

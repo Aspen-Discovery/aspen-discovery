@@ -13,10 +13,7 @@ import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
-import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
-import com.turning_leaf_technologies.indexing.IndexingProfile;
-import com.turning_leaf_technologies.indexing.IndexingUtils;
-import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
@@ -407,7 +404,18 @@ public class CarlXExportMain {
 			}
 		}
 
-		//TODO: Loop through remaining records and delete them
+		//Loop through remaining records and delete them
+		for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()){
+			RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
+			if (result.reindexWork) {
+				getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
+			} else if (result.deleteWork) {
+				//Delete the work from solr and the database
+				getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+			}
+
+			logEntry.incDeleted();
+		}
 
 
 		try {
