@@ -1559,7 +1559,7 @@ class CarlX extends AbstractIlsDriver{
 				'title'   => $title,
 				'bib'     => $recordId,
 				'success' => $success,
-				'message' => $message
+				'message' => translate($message)
 		);
 	}
 
