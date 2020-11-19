@@ -18,7 +18,12 @@ class WebBuilder_Form extends Action{
 			die();
 		}
 
-		$interface->assign('introText', $this->form->introText);
+		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+		$parsedown = AspenParsedown::instance();
+		$parsedown->setBreaksEnabled(true);
+		$introText = $parsedown->parse($this->form->introText);
+
+		$interface->assign('introText', $introText);
 		$interface->assign('contents', $this->form->getFormattedFields());
 		$interface->assign('title', $this->form->title);
 
