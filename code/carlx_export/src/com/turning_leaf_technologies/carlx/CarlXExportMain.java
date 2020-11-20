@@ -79,6 +79,8 @@ public class CarlXExportMain {
 		}
 		if (extractSingleWork) {
 			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
+			singleWorkId = singleWorkId.replace("CARL", "");
+			singleWorkId = Integer.toString(Integer.parseInt(singleWorkId));
 		}
 
 		String profileToLoad = "carlx";
@@ -405,18 +407,23 @@ public class CarlXExportMain {
 		}
 
 		//Loop through remaining records and delete them
+		logEntry.addNote("Starting to delete records that no longer exist");
 		for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()){
 			RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
-			if (result.reindexWork) {
-				getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
-			} else if (result.deleteWork) {
-				//Delete the work from solr and the database
-				getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+			if (result.permanentId != null) {
+				if (result.reindexWork) {
+					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
+				} else if (result.deleteWork) {
+					//Delete the work from solr and the database
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+				}
+				logEntry.incDeleted();
+				if (logEntry.getNumDeleted() % 250 == 0) {
+					logEntry.saveResults();
+				}
 			}
-
-			logEntry.incDeleted();
 		}
-
+		logEntry.addNote("Finished deleting records that no longer exist");
 
 		try {
 			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateFromMarcExport = ? where id = ?");
@@ -538,7 +545,9 @@ public class CarlXExportMain {
 			logEntry.setNumProducts(updatedBibs.size() + createdBibs.size() + deletedBibs.size());
 
 			// Update Changed Bibs
-			totalChanges = updateBibRecords(updatedBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, false, singleWorkId != null);
+			ArrayList<String> bibsNotFound = new ArrayList<>();
+			totalChanges = updateBibRecords(updatedBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, bibsNotFound, false, singleWorkId != null);
+			totalChanges += deleteBibs(dbConn, totalChanges, bibsNotFound);
 			logger.debug("Done updating Bib Records");
 			logEntry.saveResults();
 
@@ -553,27 +562,16 @@ public class CarlXExportMain {
 				}
 
 				//Process Deleted Bibs
-				if (deletedBibs.size() > 0) {
-					logger.debug("There are " + deletedBibs.size() + " that still need to be processed.");
-					for (String deletedBibID : deletedBibs) {
-						RemoveRecordFromWorkResult result = recordGroupingProcessorSingleton.removeRecordFromGroupedWork(indexingProfile.getName(), deletedBibID);
-						if (result.reindexWork) {
-							getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
-						} else if (result.deleteWork) {
-							//Delete the work from solr and the database
-							getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
-						}
-						logEntry.incDeleted();
-						totalChanges++;
-					}
-				}
+				totalChanges += deleteBibs(dbConn, totalChanges, deletedBibs);
 			}
 			logEntry.saveResults();
 
 			//Process New Bibs
 			if (createdBibs.size() > 0) {
 				logger.debug("There are " + createdBibs.size() + " that need to be processed");
-				totalChanges += updateBibRecords(createdBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, true, false);
+				bibsNotFound = new ArrayList<>();
+				totalChanges += updateBibRecords(createdBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, bibsNotFound, true, false);
+				totalChanges += deleteBibs(dbConn, totalChanges, bibsNotFound);
 			}
 			logEntry.saveResults();
 
@@ -596,6 +594,24 @@ public class CarlXExportMain {
 			logEntry.incErrors("Error loading changed records from CARL.X", e);
 		}
 
+		return totalChanges;
+	}
+
+	private static int deleteBibs(Connection dbConn, int totalChanges, ArrayList<String> deletedBibs) {
+		if (deletedBibs.size() > 0) {
+			logger.debug("There are " + deletedBibs.size() + " that still need to be processed.");
+			for (String deletedBibID : deletedBibs) {
+				RemoveRecordFromWorkResult result = getRecordGroupingProcessor(dbConn).removeRecordFromGroupedWork(indexingProfile.getName(), deletedBibID);
+				if (result.reindexWork) {
+					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
+				} else if (result.deleteWork) {
+					//Delete the work from solr and the database
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+				}
+				logEntry.incDeleted();
+				totalChanges++;
+			}
+		}
 		return totalChanges;
 	}
 
@@ -637,7 +653,7 @@ public class CarlXExportMain {
 		return carlXInstanceInformation;
 	}
 
-	private static int updateBibRecords(ArrayList<String> updatedBibs, ArrayList<String> updatedItemIDs, ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs, ArrayList<ItemChangeInfo> itemUpdates, ArrayList<ItemChangeInfo> createdItems, boolean isNew, boolean extractSingleWork) {
+	private static int updateBibRecords(ArrayList<String> updatedBibs, ArrayList<String> updatedItemIDs, ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs, ArrayList<ItemChangeInfo> itemUpdates, ArrayList<ItemChangeInfo> createdItems, ArrayList<String> bibsNotFound, boolean isNew, boolean extractSingleWork) {
 		// Fetch new Marc Data
 		// Note: There is an Include949ItemData flag, but it hasn't been implemented by TLC yet. plb 9-15-2016
 		// Build Marc Fetching Soap Request
@@ -671,6 +687,7 @@ public class CarlXExportMain {
 						numAdded++;
 					}
 					updatedBibs.remove(updatedBibID);
+					bibsNotFound.add(updatedBibID);
 					if (numAdded >= 100){
 						break;
 					}
@@ -695,6 +712,7 @@ public class CarlXExportMain {
 						for (int i = 1; i < l; i++) { // (skip first node because it is the response status)
 							try {
 								String currentBibID = updatedBibCopy.get(i - 1);
+								bibsNotFound.remove(currentBibID);
 								String currentFullBibID = getFileIdForRecordNumber(currentBibID);
 								//logger.debug("Updating " + currentFullBibID);
 								//logger.debug("Response from CARL.X\r\n" + marcRecordSOAPResponse.getMessage());
@@ -795,7 +813,10 @@ public class CarlXExportMain {
 						}
 					} else {
 						String shortErrorMessage = marcRecordsResponseStatus.getChildNodes().item(2).getTextContent();
-						logEntry.incErrors("Error Response for API call for getting Marc Records : " + shortErrorMessage);
+						//This is what happens when a record is deleted
+						if (!shortErrorMessage.equalsIgnoreCase("No matching records found")) {
+							logEntry.incErrors("Error Response for API call for getting Marc Records : " + shortErrorMessage);
+						}
 					}
 				}else{
 					if (marcRecordSOAPResponse.getResponseCode() != 500){
