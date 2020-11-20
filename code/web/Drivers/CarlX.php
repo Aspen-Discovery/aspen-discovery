@@ -817,20 +817,20 @@ class CarlX extends AbstractIlsDriver{
 	public function getSelfRegistrationFields() {
 		global $library;
 		$fields = array();
-		$fields[] = array('property'=>'firstName', 'type'=>'text', 'label'=>translate(['text'=>'first_name', 'defaultText'=>'First Name']), 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property'=>'middleName', 'type'=>'text', 'label'=>translate(['text'=>'middle_name', 'defaultText'=>'Middle Name']), 'maxLength' => 40, 'required' => false);
-		$fields[] = array('property'=>'lastName', 'type'=>'text', 'label'=>translate(['text'=>'last_name', 'defaultText'=>'Last Name']), 'maxLength' => 40, 'required' => true);
+		$fields[] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 40, 'required' => true);
+		$fields[] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 40, 'required' => false);
+		$fields[] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 40, 'required' => true);
 		if ($library && $library->promptForBirthDateInSelfReg){
 			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
 			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
-			$fields[] = array('property'=>'birthDate', 'type'=>'date', 'label'=>translate(['text'=>'date_of_birth', 'defaultText'=>'Date of Birth (MM-DD-YYYY)']), 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+			$fields[] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
 		}
-		$fields[] = array('property'=>'address', 'type'=>'text', 'label'=>translate(['text'=>'mailing_address', 'defaultText'=>'Mailing Address']), 'maxLength' => 128, 'required' => true);
-		$fields[] = array('property'=>'city', 'type'=>'text', 'label'=>translate(['text'=>'city', 'defaultText'=>'City']), 'maxLength' => 48, 'required' => true);
-		$fields[] = array('default'=>'TN','property'=>'state', 'type'=>'text', 'label'=>translate(['text'=>'state', 'defaultText'=>'State']), 'maxLength' => 2, 'required' => true);
-		$fields[] = array('property'=>'zip', 'type'=>'text', 'label'=>translate(['text'=>'zip_code', 'defaultText'=>'Zip Code']), 'maxLength' => 32, 'required' => true);
-		$fields[] = array('property'=>'phone', 'type'=>'text',  'label'=>translate(['text'=>'phone', 'defaultText'=>'Primary Phone']), 'maxLength'=>15, 'required'=>true);
-		$fields[] = array('property'=>'email',  'type'=>'email', 'label'=>translate(['text'=>'email', 'defaultText'=>'Email']), 'maxLength' => 128, 'required' => true);
+		$fields[] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 128, 'required' => true);
+		$fields[] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 48, 'required' => true);
+		$fields[] = array('default'=>'TN','property'=>'state', 'type'=>'text', 'label'=>'State', 'maxLength' => 2, 'required' => true);
+		$fields[] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 32, 'required' => true);
+		$fields[] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>true);
+		$fields[] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true);
 		return $fields;
 	}
 
