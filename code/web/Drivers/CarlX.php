@@ -298,7 +298,8 @@ class CarlX extends AbstractIlsDriver{
 					$shortMessages = $lastResponse->xpath('//ns2:ShortMessage');
 					$result->ResponseStatuses->ResponseStatus->ShortMessage = implode('; ', $shortMessages);
 					$longMessages = $lastResponse->xpath('//ns2:LongMessage');
-					$result->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', $longMessages) ;
+					// TODO make empty
+					$result->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', array_filter($longMessages));
 				}
 			} catch (SoapFault $e) {
 				if ($numTries == 2) {
@@ -1013,9 +1014,11 @@ class CarlX extends AbstractIlsDriver{
 			if ($result) {
 				$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
 				if (!$success) {
-					$errorMessage = array();
-					$errorMessage[] = $result->ResponseStatuses->ResponseStatus->LongMessage;
-					if (in_array('A patron with that id already exists', $errorMessage)) {
+					$errorMessage = $result->ResponseStatuses->ResponseStatus->ShortMessage;
+					if (!empty($result->ResponseStatuses->ResponseStatus->LongMessage)) {
+						$errorMessage .= "... " . $result->ResponseStatuses->ResponseStatus->LongMessage;
+					}
+					if (strpos($errorMessage, 'A patron with that id already exists') !== false) {
 						global $logger;
 						$logger->log('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter', Logger::LOG_ERROR);
 						// Increment the temp patron id number.
@@ -1024,6 +1027,10 @@ class CarlX extends AbstractIlsDriver{
 							$logger->log('Failed to update Variables table with new value ' . $currentPatronIDNumber . ' for "last_selfreg_patron_id" in CarlX Driver', Logger::LOG_ERROR);
 						}
 					}
+					return array(
+						'success' => false,
+						'message' => $errorMessage
+					);
 				} else {
 					$lastPatronID->value = $currentPatronIDNumber;
 					if (!$lastPatronID->update()) {
