@@ -1931,9 +1931,17 @@ class Koha extends AbstractIlsDriver
 		}
 
 		//Library
-		$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'borrower_branchcode' => array('property' => 'borrower_branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true)
-		]);
+		if (count($pickupLocations) == 1){
+			$selectedPickupLocation = '';
+			foreach ($pickupLocations as $code => $name){
+				$selectedPickupLocation = $code;
+			}
+			$fields['borrower_branchcode'] = array('property' => 'borrower_branchcode', 'type' => 'hidden', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'default' => $selectedPickupLocation, 'required' => true);
+		}else{
+			$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+				'borrower_branchcode' => array('property' => 'borrower_branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true)
+			]);
+		}
 
 		//Identity
 		$fields['identitySection'] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
@@ -2022,27 +2030,29 @@ class Koha extends AbstractIlsDriver
 			$requiredFields['password2'] = true;
 		}
 		foreach ($fields as $sectionKey => &$section) {
-			$allFieldsHidden = true;
-			foreach ($section['properties'] as $fieldKey => &$field) {
-				$fieldName = str_replace('borrower_', '', $fieldKey);
-				if (array_key_exists($fieldName, $unwantedFields)) {
-					//There is a case here where a field is marked as both unwanted and required.  If that is the case, do not unset it, just change the type to hidden.
-					if (array_key_exists($fieldName, $requiredFields)){
-						$section['properties'][$fieldKey]['type'] = 'hidden';
-					}else {
-						unset($section['properties'][$fieldKey]);
+			if ($section['type'] == 'section') {
+				$allFieldsHidden = true;
+				foreach ($section['properties'] as $fieldKey => &$field) {
+					$fieldName = str_replace('borrower_', '', $fieldKey);
+					if (array_key_exists($fieldName, $unwantedFields)) {
+						//There is a case here where a field is marked as both unwanted and required.  If that is the case, do not unset it, just change the type to hidden.
+						if (array_key_exists($fieldName, $requiredFields)) {
+							$section['properties'][$fieldKey]['type'] = 'hidden';
+						} else {
+							unset($section['properties'][$fieldKey]);
+						}
+					} else {
+						$field['required'] = array_key_exists($fieldName, $requiredFields);
 					}
-				} else {
-					$field['required'] = array_key_exists($fieldName, $requiredFields);
+					if (array_key_exists($fieldKey, $section['properties']) && $section['properties'][$fieldKey]['type'] != 'hidden') {
+						$allFieldsHidden = false;
+					}
 				}
-				if (array_key_exists($fieldKey, $section['properties']) && $section['properties'][$fieldKey]['type'] != 'hidden'){
-					$allFieldsHidden = false;
+				if (empty($section['properties'])) {
+					unset ($fields[$sectionKey]);
+				} elseif ($allFieldsHidden) {
+					$section['label'] = '';
 				}
-			}
-			if (empty($section['properties'])) {
-				unset ($fields[$sectionKey]);
-			}elseif ($allFieldsHidden){
-				$section['label'] = '';
 			}
 		}
 
