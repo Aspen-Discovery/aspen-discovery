@@ -10333,7 +10333,12 @@ AspenDiscovery.Searches = (function(){
 							collision:"none"
 						},
 						minLength:4,
-						delay:600
+						delay:600,
+						select: function(event, ui){
+							searchTermInput.val(ui.item.value);
+							$("#searchForm").submit();
+							return false;
+						}
 					}).data('ui-autocomplete')._renderItem = function( ul, item ) {
 						return $( "<li></li>" )
 							.data( "ui-autocomplete-item", item.value )
