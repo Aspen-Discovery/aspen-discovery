@@ -20,7 +20,11 @@
 						{if !empty($topCategory->iconName)}
 							<i class="fas fa-{$topCategory->iconName} fa-lg"></i>
 						{/if}
-						<span class="menu-bar-label visible-inline-block-lg">{$topCategory->category}</span>
+						<span class="menu-bar-label visible-inline-block-lg">
+							{if $topCategory->published == 0}<em>{/if}
+							{$topCategory->category|translate}
+							{if $topCategory->published == 0}</em>{/if}
+						</span>
 					</a>
 					<div id="{$topCategory->getEscapedCategory()}-menu" class="dropdownMenu" style="display: none">
 						{foreach from=$menuCategory item=link key=linkName}
@@ -28,7 +32,9 @@
 							{if empty($link->htmlContents)}
 								<div class="header-menu-option childMenuItem">
 									<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
-										{$linkName}
+										{if $link->published == 0}<em>{/if}
+										{$linkName|translate}
+										{if $link->published == 0}</em>{/if}
 									</a>
 								</div>
 							{/if}
@@ -39,7 +45,11 @@
 						{if !empty($topCategory->iconName)}
 							<i class="fas fa-{$topCategory->iconName} fa-lg"></i>
 						{/if}
-						<span class="menu-bar-label visible-inline-block-lg">{$topCategory->category}</span>
+						<span class="menu-bar-label visible-inline-block-lg">
+							{if $topCategory->published == 0}<em>{/if}
+							{$topCategory->category|translate}
+							{if $topCategory->published == 0}</em>{/if}
+						</span>
 					</a>
 				{/if}
 			{/if}
