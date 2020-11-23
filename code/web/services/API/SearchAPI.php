@@ -220,7 +220,7 @@ class SearchAPI extends Action
 				if ($logErrors > 0){
 					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
 				}else{
-					if ($numUnfinishedEntries > 0){
+					if ($numUnfinishedEntries > 1){
 						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
 					}else{
 						$this->addCheck($checks, $aspenModule->name);
