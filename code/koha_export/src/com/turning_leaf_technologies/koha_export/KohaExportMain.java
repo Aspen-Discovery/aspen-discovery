@@ -559,8 +559,9 @@ public class KohaExportMain {
 		ResultSet kohaValuesRS = kohaValuesStmt.executeQuery();
 		while (kohaValuesRS.next()) {
 			String value = kohaValuesRS.getString(valueColumn).trim();
-			String translation = kohaValuesRS.getString(translationColumn).trim();
+			String translation = kohaValuesRS.getString(translationColumn);
 			if (existingValues.containsKey(value.toLowerCase())) {
+				translation = translation.trim();
 				if (!existingValues.get(value.toLowerCase()).equals(translation)) {
 					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
 				}
@@ -950,6 +951,23 @@ public class KohaExportMain {
 						}
 					}
 					logEntry.addNote(numRecordsWithChangedMetadata + " records had changes to the metadata, but not the bib.");
+				}
+
+				//Finally check the zebraqueue because some actions don't trigger either a biblio timestamp change or metadata timestamp change
+				// specifically we know that moving one item bib to another does not update the original bib
+				if (!indexingProfile.isRunFullUpdate()){
+					PreparedStatement getZebraQueueBibsToReindexStmt = kohaConn.prepareStatement("select biblio_auth_number from zebraqueue where time >= ? AND server = 'biblioserver'");
+					logEntry.addNote("Getting records to reindex from zebra queue since " + lastExtractTimestamp.toString() + " UTC");
+
+					getZebraQueueBibsToReindexStmt.setTimestamp(1, lastExtractTimestamp);
+					ResultSet getZebraQueueBibsToReindexRS = getZebraQueueBibsToReindexStmt.executeQuery();
+					int numRecordsToForceReindex = 0;
+					while (getZebraQueueBibsToReindexRS.next()) {
+						if (changedBibIds.add(getZebraQueueBibsToReindexRS.getString("biblio_auth_number"))){
+							numRecordsToForceReindex++;
+						}
+					}
+					logEntry.addNote(numRecordsToForceReindex + " records were marked for reindex in the Zebra queue, but not the bib.");
 				}
 			}
 
