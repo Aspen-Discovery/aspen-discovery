@@ -24,7 +24,7 @@
 		{/foreach}
 		<input type="submit" value="Go" class="goButton btn btn-sm btn-primary" />
 
-		{if $title == 'publishDate'}
+		{if $title == 'publishDate' || $title == 'publishDateSort'}
 			<div id='yearDefaultLinks'>
 				{assign var=thisyear value=$smarty.now|date_format:"%Y"}
 				{translate text="Published in the last"}<br/>

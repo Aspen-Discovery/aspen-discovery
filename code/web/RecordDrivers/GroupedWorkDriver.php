@@ -1366,6 +1366,11 @@ class GroupedWorkDriver extends IndexRecordDriver
 		return isset($this->fields['publishDate']) ? $this->fields['publishDate'] : array();
 	}
 
+	function getEarliestPublicationDate()
+	{
+		return isset($this->fields['publishDateSort']) ? $this->fields['publishDateSort'] : '';
+	}
+
 	/**
 	 * Get the publishers of the record.
 	 *

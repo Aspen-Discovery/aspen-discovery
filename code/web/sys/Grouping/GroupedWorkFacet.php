@@ -22,6 +22,7 @@ class GroupedWorkFacet extends FacetSetting {
 			"collection" => "Collection",
 			"rating_facet" => "Rating",
 			"publishDate" => "Publication Year",
+			"publishDateSort" => "Earliest Publication Year",
 			"format" => "Format",
 			"format_category" => "Format Category",
 			"econtent_source" => "E-Content Collection",

@@ -17,8 +17,8 @@
 					<author>{$doc.author_display|escape}</author>
 				{/if}
 				<guid isPermaLink="true">{$doc.recordUrl|escape}</guid>
-				{if $doc.publishDate}
-					<pubDate>01 Jan {$doc.publishDate.0} 00:00:00 GMT</pubDate>
+				{if $doc.publishDateSort}
+					<pubDate>01 Jan {$doc.publishDateSort} 00:00:00 GMT</pubDate>
 				{/if}
 				<description>{$doc.rss_description|escape}</description>
 			</item>
