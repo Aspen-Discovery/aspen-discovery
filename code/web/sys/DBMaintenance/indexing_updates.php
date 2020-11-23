@@ -789,7 +789,15 @@ function getIndexingUpdates()
 			]
 		],
 
-		'scheduled_work_index' => [
+		'fix_sierra_module_background_process' => [
+			'title' => 'Fix Sierra module background process',
+			'description' => 'Fix Sierra module background process',
+			'sql' => [
+				"UPDATE modules set backgroundProcess = 'sierra_export_api' WHERE name = 'Sierra'"
+			]
+		],
+
+		"scheduled_work_index' => [
 			'title' => 'Scheduled Work Indexing',
 			'description' => 'Create tables to store scheduled indexing for works',
 			'sql' => [
