@@ -796,8 +796,8 @@ function getIndexingUpdates()
 				"UPDATE modules set backgroundProcess = 'sierra_export_api' WHERE name = 'Sierra'"
 			]
 		],
-
-		"scheduled_work_index' => [
+		
+		'scheduled_work_index' => [
 			'title' => 'Scheduled Work Indexing',
 			'description' => 'Create tables to store scheduled indexing for works',
 			'sql' => [
