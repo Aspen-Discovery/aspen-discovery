@@ -124,7 +124,8 @@
 - Searching
   - Search Types
   - [Facets](/Admin/HelpManual?page=Facets)
-    - [Literary Forms](/Admin/HelpManual?page=Literary-Forms)
+    - [Nonfiction/Fiction Facets](/Admin/HelpManual?page=Literary-Forms)
+    - [Subject Facets](/Admin/HelpManual?page=Subject-Facets)
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - [User Lists](/Admin/HelpManual?page=User-Lists)
 - Patron Account
