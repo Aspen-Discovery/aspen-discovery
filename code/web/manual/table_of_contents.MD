@@ -106,6 +106,7 @@
   - [OverDrive](/Admin/HelpManual?page=Overdrive)
   - RBdigital
   - [EBSCO EDS](/Admin/HelpManual?page=EBSCO-EDS)
+  - [Axis 360](/Admin/HelpManual?page=Axis-360)
 - Email
 - Events
   - Library Calendar
