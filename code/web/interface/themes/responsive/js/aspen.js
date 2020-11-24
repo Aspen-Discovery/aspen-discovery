@@ -9929,7 +9929,7 @@ AspenDiscovery.Record = (function(){
 			if (holdType.length > 0){
 				params['holdType'] = holdType.val();
 			}else{
-				if ($('#holdTypeBib').attr('checked')){
+				if ($('#holdTypeBib').is(':checked')){
 					params['holdType'] = 'bib';
 				}else{
 					params['holdType'] = 'item';
