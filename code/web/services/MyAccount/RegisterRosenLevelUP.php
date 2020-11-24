@@ -148,8 +148,23 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 							if ($this->levelUPResult->UploadResponse->status == '200') {
 								global $logger;
 								$this->levelUPResult->interfaceArray['success'] = 'success';
-								$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "Congratulations! You have successfully registered STUDENT Username %1% with PARENT Username %2%. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or <a href=\"/MyAccount/RegisterRosenLevelUP\">register another student</a>.", 1 => $this->student_username, 2 => $this->parent_username]);
+								$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "<p>Congratulations!!! You have successfully registered </p><p>STUDENT Username %1% with </p><p>PARENT Username %2%. </p><p>You will receive an email shortly with these details. </p><p>Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or <a href=\"/MyAccount/RegisterRosenLevelUP\">register another student</a>.</p>", 1 => $this->student_username, 2 => $this->parent_username]);
 								$logger->log('LevelUP. User ID : ' . $user->id . ' successfully registered STUDENT ' . $this->student_username . ' with PARENT ' . $this->parent_username, Logger::LOG_NOTICE);
+
+								// following successful registration, email the parent with registration information
+								try {
+									$body = $firstName . " " . $lastName . "\n\n";
+									$body .= translate(['text' => 'rosen_email_1', 'defaultText' =>'Welcome to LevelUP! Your PARENT username: %2%. Your STUDENT\'S username: %1%.', 1 => $this->student_username, 2 => $this->parent_username]);
+									$body_template = $interface->fetch('Emails/rosen-levelup.tpl');
+									$body .= $body_template;
+									require_once ROOT_DIR . '/sys/Email/Mailer.php';
+									$mail = new Mailer();
+									$subject = 'Welcome to LevelUP, brought to you by the Nashville Public Library';
+									$mail->send($this->parent_email, $subject, $body, 'no-reply@nashville.gov');
+								} catch (Exception $e) {
+									// SendGrid Failed
+								}
+
 								$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 								UserAccount::softLogout();
 							} else {
