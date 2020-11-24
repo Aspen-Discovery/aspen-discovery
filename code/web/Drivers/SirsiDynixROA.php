@@ -9,7 +9,8 @@ class SirsiDynixROA extends HorizonAPI
 	private static $sessionIdsForUsers = array();
 	private static $logAllAPICalls = true;
 
-	private function staffOrPatronSessionTokenSwitch(){
+	private function staffOrPatronSessionTokenSwitch()
+	{
 		$useStaffAccountForWebServices = true;
 		global $configArray;
 		if (isset($configArray['Catalog']['useStaffSessionTokens'])) {
@@ -18,16 +19,17 @@ class SirsiDynixROA extends HorizonAPI
 		return $useStaffAccountForWebServices;
 
 	}
+
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
 	public function getWebServiceResponse($url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null)
 	{
 		global $logger;
 		global $library;
-		$logger->log('WebServiceURL :' .$url, Logger::LOG_NOTICE);
+		$logger->log('WebServiceURL :' . $url, Logger::LOG_NOTICE);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		$clientId = $this->accountProfile->oAuthClientId;
-		$headers  = array(
+		$headers = array(
 			'Accept: application/json',
 			'Content-Type: application/json',
 			'SD-Originating-App-Id: Aspen Discovery',
@@ -44,8 +46,7 @@ class SirsiDynixROA extends HorizonAPI
 			curl_setopt($ch, CURLOPT_HTTPGET, true);
 		} elseif ($customRequest == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
-		}
-		else {
+		} else {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
 		}
 
@@ -60,7 +61,7 @@ class SirsiDynixROA extends HorizonAPI
 			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
 		}
 		$json = curl_exec($ch);
-		if (SirsiDynixROA::$logAllAPICalls){
+		if (SirsiDynixROA::$logAllAPICalls) {
 			$logger->log($url, Logger::LOG_ERROR);
 			$logger->log(print_r($headers, true), Logger::LOG_ERROR);
 			$logger->log(print_r($json, true), Logger::LOG_ERROR);
@@ -77,18 +78,19 @@ class SirsiDynixROA extends HorizonAPI
 
 	private static $userPreferredAddresses = array();
 
-	function findNewUser($barcode) {
+	function findNewUser($barcode)
+	{
 		// Creates a new user like patronLogin but looks up user by barcode.
 		// Note: The user pin is not supplied in the Account Info Lookup call.
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
 			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' .$barcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' . $barcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1) {
 				$userID = $lookupMyAccountInfoResponse->result[0]->key;
 				$lookupMyAccountInfoResponse = $lookupMyAccountInfoResponse->result[0];
-				$lastName  = $lookupMyAccountInfoResponse->fields->lastName;
+				$lastName = $lookupMyAccountInfoResponse->fields->lastName;
 				$firstName = $lookupMyAccountInfoResponse->fields->firstName;
 
 				$fullName = $lastName . ', ' . $firstName;
@@ -102,26 +104,26 @@ class SirsiDynixROA extends HorizonAPI
 				}
 
 				$forceDisplayNameUpdate = false;
-				$firstName              = isset($firstName) ? $firstName : '';
+				$firstName = isset($firstName) ? $firstName : '';
 				if ($user->firstname != $firstName) {
-					$user->firstname        = $firstName;
+					$user->firstname = $firstName;
 					$forceDisplayNameUpdate = true;
 				}
 				$lastName = isset($lastName) ? $lastName : '';
 				if ($user->lastname != $lastName) {
-					$user->lastname         = isset($lastName) ? $lastName : '';
+					$user->lastname = isset($lastName) ? $lastName : '';
 					$forceDisplayNameUpdate = true;
 				}
 				if ($forceDisplayNameUpdate) {
 					$user->displayName = '';
 				}
-				$user->_fullname     = isset($fullName) ? $fullName : '';
+				$user->_fullname = isset($fullName) ? $fullName : '';
 				$user->cat_username = $barcode;
 
-				$Address1    = "";
-				$City        = "";
-				$State       = "";
-				$Zip         = "";
+				$Address1 = "";
+				$City = "";
+				$State = "";
+				$Zip = "";
 
 				if (isset($lookupMyAccountInfoResponse->fields->preferredAddress)) {
 					$preferredAddress = $lookupMyAccountInfoResponse->fields->preferredAddress;
@@ -149,7 +151,7 @@ class SirsiDynixROA extends HorizonAPI
 									//Splitting multiple word cities
 									$last_space = strrpos($cityState, ' ');
 									$City = substr($cityState, 0, $last_space);
-									$State = substr($cityState, $last_space+1);
+									$State = substr($cityState, $last_space + 1);
 
 								} else {
 									list($City, $State) = explode(' ', $cityState);
@@ -175,7 +177,7 @@ class SirsiDynixROA extends HorizonAPI
 				if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
 					$homeBranchCode = strtolower(trim($lookupMyAccountInfoResponse->fields->library->key));
 					//Translate home branch to plain text
-					$location       = new Location();
+					$location = new Location();
 					$location->code = $homeBranchCode;
 					if (!$location->find(true)) {
 						unset($location);
@@ -193,7 +195,7 @@ class SirsiDynixROA extends HorizonAPI
 						// or the first location for the library
 						global $library;
 
-						$location            = new Location();
+						$location = new Location();
 						$location->libraryId = $library->libraryId;
 						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
 						if (!$location->find(true)) {
@@ -206,19 +208,19 @@ class SirsiDynixROA extends HorizonAPI
 					if (isset($location)) {
 						$user->homeLocationId = $location->locationId;
 						if (empty($user->myLocation1Id)) {
-							$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+							$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
 							//Get display name for preferred location 1
-							$myLocation1             = new Location();
+							$myLocation1 = new Location();
 							$myLocation1->locationId = $user->myLocation1Id;
 							if ($myLocation1->find(true)) {
 								$user->_myLocation1 = $myLocation1->displayName;
 							}
 						}
 
-						if (empty($user->myLocation2Id)){
-							$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+						if (empty($user->myLocation2Id)) {
+							$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
 							//Get display name for preferred location 2
-							$myLocation2             = new Location();
+							$myLocation2 = new Location();
 							$myLocation2->locationId = $user->myLocation2Id;
 							if ($myLocation2->find(true)) {
 								$user->_myLocation2 = $myLocation2->displayName;
@@ -230,14 +232,14 @@ class SirsiDynixROA extends HorizonAPI
 				if (isset($location)) {
 					//Get display names that aren't stored
 					$user->_homeLocationCode = $location->code;
-					$user->_homeLocation     = $location->displayName;
+					$user->_homeLocation = $location->displayName;
 				}
 
 				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
 					$user->_expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
 					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->_expires);
-					$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					$timeNow      = time();
+					$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+					$timeNow = time();
 					$timeToExpire = $timeExpire - $timeNow;
 					if ($timeToExpire <= 30 * 24 * 60 * 60) {
 						//TODO: the ils also has an expire soon flag in the patronStatusInfo
@@ -255,7 +257,7 @@ class SirsiDynixROA extends HorizonAPI
 					foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
 						// $block is a simplexml object with attribute info about currency, type casting as below seems to work for adding up. plb 3-27-2015
 						$fineAmount = (float)$block->fields->owed->amount;
-						$finesVal   += $fineAmount;
+						$finesVal += $fineAmount;
 					}
 				}
 
@@ -271,22 +273,22 @@ class SirsiDynixROA extends HorizonAPI
 					}
 				}
 
-				$user->_address1              = $Address1;
-				$user->_address2              = $City . ', ' . $State;
-				$user->_city                  = $City;
-				$user->_state                 = $State;
-				$user->_zip                   = $Zip;
+				$user->_address1 = $Address1;
+				$user->_address2 = $City . ', ' . $State;
+				$user->_city = $City;
+				$user->_state = $State;
+				$user->_zip = $Zip;
 //				$user->phone                 = isset($phone) ? $phone : '';
-				$user->_fines                 = sprintf('$%01.2f', $finesVal);
-				$user->_finesVal              = $finesVal;
-				$user->_numCheckedOutIls      = isset($lookupMyAccountInfoResponse->fields->circRecordList) ? count($lookupMyAccountInfoResponse->fields->circRecordList) : 0;
-				$user->_numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
-				$user->_numHoldsAvailableIls  = $numHoldsAvailable;
-				$user->_numHoldsRequestedIls  = $numHoldsRequested;
-				$user->patronType            = $lookupMyAccountInfoResponse->fields->profile->key;
-				$user->_notices               = '-';
+				$user->_fines = sprintf('$%01.2f', $finesVal);
+				$user->_finesVal = $finesVal;
+				$user->_numCheckedOutIls = isset($lookupMyAccountInfoResponse->fields->circRecordList) ? count($lookupMyAccountInfoResponse->fields->circRecordList) : 0;
+				$user->_numHoldsIls = $numHoldsAvailable + $numHoldsRequested;
+				$user->_numHoldsAvailableIls = $numHoldsAvailable;
+				$user->_numHoldsRequestedIls = $numHoldsRequested;
+				$user->patronType = $lookupMyAccountInfoResponse->fields->profile->key;
+				$user->_notices = '-';
 				$user->_noticePreferenceLabel = 'Email';
-				$user->_web_note              = '';
+				$user->_web_note = '';
 
 				if ($userExistsInDB) {
 					$user->update();
@@ -336,7 +338,7 @@ class SirsiDynixROA extends HorizonAPI
 			// phoneList is for texting notification preferences
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $staffSessionToken);
 			if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
-				$lastName  = $lookupMyAccountInfoResponse->fields->lastName;
+				$lastName = $lookupMyAccountInfoResponse->fields->lastName;
 				$firstName = $lookupMyAccountInfoResponse->fields->firstName;
 
 
@@ -351,27 +353,27 @@ class SirsiDynixROA extends HorizonAPI
 				}
 
 				$forceDisplayNameUpdate = false;
-				$firstName              = isset($firstName) ? $firstName : '';
+				$firstName = isset($firstName) ? $firstName : '';
 				if ($user->firstname != $firstName) {
-					$user->firstname        = $firstName;
+					$user->firstname = $firstName;
 					$forceDisplayNameUpdate = true;
 				}
 				$lastName = isset($lastName) ? $lastName : '';
 				if ($user->lastname != $lastName) {
-					$user->lastname         = isset($lastName) ? $lastName : '';
+					$user->lastname = isset($lastName) ? $lastName : '';
 					$forceDisplayNameUpdate = true;
 				}
 				if ($forceDisplayNameUpdate) {
 					$user->displayName = '';
 				}
-				$user->_fullname     = isset($fullName) ? $fullName : '';
+				$user->_fullname = isset($fullName) ? $fullName : '';
 				$user->cat_username = $username;
 				$user->cat_password = $password;
 
-				$Address1    = "";
-				$City        = "";
-				$State       = "";
-				$Zip         = "";
+				$Address1 = "";
+				$City = "";
+				$State = "";
+				$Zip = "";
 
 				if (isset($lookupMyAccountInfoResponse->fields->preferredAddress)) {
 					$preferredAddress = $lookupMyAccountInfoResponse->fields->preferredAddress;
@@ -399,7 +401,7 @@ class SirsiDynixROA extends HorizonAPI
 									//Splitting multiple word cities
 									$last_space = strrpos($cityState, ' ');
 									$City = substr($cityState, 0, $last_space);
-									$State = substr($cityState, $last_space+1);
+									$State = substr($cityState, $last_space + 1);
 
 								} else {
 									list($City, $State) = explode(' ', $cityState);
@@ -424,7 +426,7 @@ class SirsiDynixROA extends HorizonAPI
 				if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
 					$homeBranchCode = strtolower(trim($lookupMyAccountInfoResponse->fields->library->key));
 					//Translate home branch to plain text
-					$location       = new Location();
+					$location = new Location();
 					$location->code = $homeBranchCode;
 					if (!$location->find(true)) {
 						unset($location);
@@ -442,7 +444,7 @@ class SirsiDynixROA extends HorizonAPI
 						// or the first location for the library
 						global $library;
 
-						$location            = new Location();
+						$location = new Location();
 						$location->libraryId = $library->libraryId;
 						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
 						if (!$location->find(true)) {
@@ -455,19 +457,19 @@ class SirsiDynixROA extends HorizonAPI
 					if (isset($location)) {
 						$user->homeLocationId = $location->locationId;
 						if (empty($user->myLocation1Id)) {
-							$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+							$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
 							//Get display name for preferred location 1
-							$myLocation1             = new Location();
+							$myLocation1 = new Location();
 							$myLocation1->locationId = $user->myLocation1Id;
 							if ($myLocation1->find(true)) {
 								$user->_myLocation1 = $myLocation1->displayName;
 							}
 						}
 
-						if (empty($user->myLocation2Id)){
-							$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+						if (empty($user->myLocation2Id)) {
+							$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
 							//Get display name for preferred location 2
-							$myLocation2             = new Location();
+							$myLocation2 = new Location();
 							$myLocation2->locationId = $user->myLocation2Id;
 							if ($myLocation2->find(true)) {
 								$user->_myLocation2 = $myLocation2->displayName;
@@ -479,14 +481,14 @@ class SirsiDynixROA extends HorizonAPI
 				if (isset($location)) {
 					//Get display names that aren't stored
 					$user->_homeLocationCode = $location->code;
-					$user->_homeLocation     = $location->displayName;
+					$user->_homeLocation = $location->displayName;
 				}
 
 				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
 					$user->_expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
 					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->_expires);
-					$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					$timeNow      = time();
+					$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+					$timeNow = time();
 					$timeToExpire = $timeExpire - $timeNow;
 					if ($timeToExpire <= 30 * 24 * 60 * 60) {
 						if ($timeToExpire <= 0) {
@@ -500,21 +502,21 @@ class SirsiDynixROA extends HorizonAPI
 				if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
 					foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
 						$fineAmount = (float)$block->fields->owed->amount;
-						$finesVal   += $fineAmount;
+						$finesVal += $fineAmount;
 					}
 				}
 
-				$user->_address1              = $Address1;
-				$user->_address2              = $City . ', ' . $State;
-				$user->_city                  = $City;
-				$user->_state                 = $State;
-				$user->_zip                   = $Zip;
-				$user->_fines                 = sprintf('$%01.2f', $finesVal);
-				$user->_finesVal              = $finesVal;
-				$user->patronType             = $lookupMyAccountInfoResponse->fields->profile->key;
-				$user->_notices               = '-';
+				$user->_address1 = $Address1;
+				$user->_address2 = $City . ', ' . $State;
+				$user->_city = $City;
+				$user->_state = $State;
+				$user->_zip = $Zip;
+				$user->_fines = sprintf('$%01.2f', $finesVal);
+				$user->_finesVal = $finesVal;
+				$user->patronType = $lookupMyAccountInfoResponse->fields->profile->key;
+				$user->_notices = '-';
 				$user->_noticePreferenceLabel = 'Email';
-				$user->_web_note              = '';
+				$user->_web_note = '';
 
 				if ($userExistsInDB) {
 					$user->update();
@@ -535,7 +537,8 @@ class SirsiDynixROA extends HorizonAPI
 		return null;
 	}
 
-	public function getAccountSummary($user, $forceRefresh = false) {
+	public function getAccountSummary($user, $forceRefresh = false)
+	{
 		$summary = [
 			'numCheckedOut' => 0,
 			'numOverdue' => 0,
@@ -556,7 +559,7 @@ class SirsiDynixROA extends HorizonAPI
 		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 			$summary['numCheckedOut'] = count($lookupMyAccountInfoResponse->fields->circRecordList);
 			foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkout) {
-				if ($checkout->fields->overdue){
+				if ($checkout->fields->overdue) {
 					$summary['numOverdue']++;
 				}
 			}
@@ -576,16 +579,16 @@ class SirsiDynixROA extends HorizonAPI
 			if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
 				foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
 					$fineAmount = (float)$block->fields->owed->amount;
-					$finesVal   += $fineAmount;
+					$finesVal += $fineAmount;
 				}
 			}
 			$summary['totalFines'] = $finesVal;
 
 			$summary['expires'] = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-			if ($summary['expires'] != null){
+			if ($summary['expires'] != null) {
 				list ($yearExp, $monthExp, $dayExp) = explode("-", $summary['expires']);
-				$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-				$timeNow      = time();
+				$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+				$timeNow = time();
 				$timeToExpire = $timeExpire - $timeNow;
 				if ($timeToExpire <= 30 * 24 * 60 * 60) {
 					if ($timeToExpire <= 0) {
@@ -599,16 +602,17 @@ class SirsiDynixROA extends HorizonAPI
 		return $summary;
 	}
 
-	private function getStaffSessionToken() {
+	private function getStaffSessionToken()
+	{
 		global $configArray;
 		$staffSessionToken = false;
-		if (!empty($configArray['Catalog']['selfRegStaffUser']) && !empty( $configArray['Catalog']['selfRegStaffPassword'])) {
-			$selfRegStaffUser     = $configArray['Catalog']['selfRegStaffUser'];
+		if (!empty($configArray['Catalog']['selfRegStaffUser']) && !empty($configArray['Catalog']['selfRegStaffPassword'])) {
+			$selfRegStaffUser = $configArray['Catalog']['selfRegStaffUser'];
 			$selfRegStaffPassword = $configArray['Catalog']['selfRegStaffPassword'];
 			list(, $staffSessionToken) = $this->staffLoginViaWebService($selfRegStaffUser, $selfRegStaffPassword);
 		}
 		return $staffSessionToken;
-		}
+	}
 
 	function selfRegister()
 	{
@@ -618,14 +622,14 @@ class SirsiDynixROA extends HorizonAPI
 
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
-			$webServiceURL            = $this->getWebServiceURL();
+			$webServiceURL = $this->getWebServiceURL();
 
 			// $patronDescribeResponse   = $this->getWebServiceResponse($webServiceURL . '/user/patron/describe');
 			// $address1DescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/address1/describe');
 			// $addressDescribeResponse  = $this->getWebServiceResponse($webServiceURL . '/user/patron/address/describe');
 			// $userProfileDescribeResponse  = $this->getWebServiceResponse($webServiceURL . '/policy/userProfile/describe');
 
-			$createPatronInfoParameters  = array(
+			$createPatronInfoParameters = array(
 				'fields' => array(),
 				'resource' => '/user/patron',
 			);
@@ -698,7 +702,7 @@ class SirsiDynixROA extends HorizonAPI
 			if (!empty($_REQUEST['pickupLocation'])) {
 				$homeLibraryLocation = new Location();
 				if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])) {
-					$homeBranchCode                                  = strtoupper($homeLibraryLocation->code);
+					$homeBranchCode = strtoupper($homeLibraryLocation->code);
 					$createPatronInfoParameters['fields']['library'] = array(
 						'key' => $homeBranchCode,
 						'resource' => '/policy/library'
@@ -707,12 +711,12 @@ class SirsiDynixROA extends HorizonAPI
 			}
 
 			$barcode = new Variable();
-			if ($barcode->get('name', 'self_registration_card_number')){
+			if ($barcode->get('name', 'self_registration_card_number')) {
 				$createPatronInfoParameters['fields']['barcode'] = $barcode->value;
 
 				global $configArray;
 				$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
-				$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/'.$overrideCode);
+				$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/' . $overrideCode);
 
 
 				$createNewPatronResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST', $overrideHeaders);
@@ -772,7 +776,7 @@ class SirsiDynixROA extends HorizonAPI
 			$webServiceURL = $this->getWebServiceURL();
 			//$loginDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/login/describe');
 			$loginUserUrl = $webServiceURL . '/user/patron/login';
-			$params  = [
+			$params = [
 				'login' => $username,
 				'password' => $password,
 			];
@@ -788,8 +792,8 @@ class SirsiDynixROA extends HorizonAPI
 			} elseif (isset($loginUserResponse->messageList)) {
 				global $logger;
 				$errorMessage = 'Sirsi ROA Webservice Login Error: ';
-				foreach ($loginUserResponse->messageList as $error){
-					$errorMessage .= $error->message.'; ';
+				foreach ($loginUserResponse->messageList as $error) {
+					$errorMessage .= $error->message . '; ';
 				}
 				$logger->log($errorMessage, Logger::LOG_ERROR);
 				$logger->log(print_r($loginUserResponse, true), Logger::LOG_ERROR);
@@ -811,8 +815,8 @@ class SirsiDynixROA extends HorizonAPI
 			$session = array(false, false, false);
 			$webServiceURL = $this->getWebServiceURL();
 			// $loginDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/login/describe');
-			$loginUserUrl      = $webServiceURL . '/user/staff/login';
-			$params            = array(
+			$loginUserUrl = $webServiceURL . '/user/staff/login';
+			$params = array(
 				'login' => $username,
 				'password' => $password,
 			);
@@ -820,9 +824,9 @@ class SirsiDynixROA extends HorizonAPI
 			if ($loginUserResponse && isset($loginUserResponse->sessionToken)) {
 				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
 
-				$sirsiRoaUserID                                     = $loginUserResponse->staffKey;
+				$sirsiRoaUserID = $loginUserResponse->staffKey;
 				//this is the same value as patron Key, if user is logged in with that call.
-				$sessionToken                                       = $loginUserResponse->sessionToken;
+				$sessionToken = $loginUserResponse->sessionToken;
 				SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
 				$session = array(true, $sessionToken, $sirsiRoaUserID);
 				global $configArray;
@@ -830,8 +834,8 @@ class SirsiDynixROA extends HorizonAPI
 			} elseif (isset($loginUserResponse->messageList)) {
 				global $logger;
 				$errorMessage = 'Sirsi ROA Staff Webservice Login Error: ';
-				foreach ($loginUserResponse->messageList as $error){
-					$errorMessage .= $error->message.'; ';
+				foreach ($loginUserResponse->messageList as $error) {
+					$errorMessage .= $error->message . '; ';
 				}
 				$logger->log($errorMessage, Logger::LOG_ERROR);
 			}
@@ -873,35 +877,35 @@ class SirsiDynixROA extends HorizonAPI
 
 					list($bibId) = explode(':', $checkout->key);
 					$curTitle['recordId'] = $bibId;
-					$curTitle['shortId']  = $bibId;
-					$curTitle['id']       = $bibId;
+					$curTitle['shortId'] = $bibId;
+					$curTitle['id'] = $bibId;
 					$curTitle['itemId'] = $checkout->fields->item->key;
 
-					$curTitle['dueDate']      = strtotime($checkout->fields->dueDate);
+					$curTitle['dueDate'] = strtotime($checkout->fields->dueDate);
 					$curTitle['checkoutDate'] = strtotime($checkout->fields->checkOutDate);
 					// Note: there is an overdue flag
-					$curTitle['renewCount']     = $checkout->fields->renewalCount;
-					$curTitle['canRenew']       = $checkout->fields->seenRenewalsRemaining > 0;
+					$curTitle['renewCount'] = $checkout->fields->renewalCount;
+					$curTitle['canRenew'] = $checkout->fields->seenRenewalsRemaining > 0;
 					$curTitle['renewIndicator'] = $checkout->fields->item->key;
 
 					$curTitle['format'] = 'Unknown';
 					$recordDriver = new MarcRecordDriver('a' . $bibId);
 					if ($recordDriver->isValid()) {
-						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium', true);
+						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-						$curTitle['format']        = $recordDriver->getPrimaryFormat();
-						$curTitle['title']         = $recordDriver->getTitle();
-						$curTitle['title_sort']    = $recordDriver->getSortableTitle();
-						$curTitle['author']        = $recordDriver->getPrimaryAuthor();
-						$curTitle['link']          = $recordDriver->getLinkUrl();
-						$curTitle['ratingData']    = $recordDriver->getRatingData();
+						$curTitle['format'] = $recordDriver->getPrimaryFormat();
+						$curTitle['title'] = $recordDriver->getTitle();
+						$curTitle['title_sort'] = $recordDriver->getSortableTitle();
+						$curTitle['author'] = $recordDriver->getPrimaryAuthor();
+						$curTitle['link'] = $recordDriver->getLinkUrl();
+						$curTitle['ratingData'] = $recordDriver->getRatingData();
 					} else {
 						// Presumably ILL Items
-						$bibInfo                = $checkout->fields->item->fields->bib;
-						$curTitle['title']      = $bibInfo->fields->title;
-						$simpleSortTitle       = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
+						$bibInfo = $checkout->fields->item->fields->bib;
+						$curTitle['title'] = $bibInfo->fields->title;
+						$simpleSortTitle = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
 						$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
-						$curTitle['author']     = $bibInfo->fields->author;
+						$curTitle['author'] = $bibInfo->fields->author;
 					}
 					if ($curTitle['format'] == 'Magazine' && !empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
 						$curTitle['title2'] = $checkout->fields->item->fields->call->fields->dispCallNumber;
@@ -909,7 +913,7 @@ class SirsiDynixROA extends HorizonAPI
 
 					$sCount++;
 					$sortTitle = isset($curTitle['title_sort']) ? $curTitle['title_sort'] : $curTitle['title'];
-					$sortKey   = $sortTitle;
+					$sortKey = $sortTitle;
 					if ($sortOption == 'title') {
 						$sortKey = $sortTitle;
 					} elseif ($sortOption == 'author') {
@@ -936,6 +940,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 		return $checkedOutTitles;
 	}
+
 	/**
 	 * Get Patron Holds
 	 *
@@ -948,9 +953,9 @@ class SirsiDynixROA extends HorizonAPI
 	 */
 	public function getHolds($patron)
 	{
-		$availableHolds   = array();
+		$availableHolds = array();
 		$unavailableHolds = array();
-		$holds            = array(
+		$holds = array(
 			'available' => $availableHolds,
 			'unavailable' => $unavailableHolds
 		);
@@ -978,37 +983,37 @@ class SirsiDynixROA extends HorizonAPI
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach ($patronHolds->fields->holdRecordList as $hold) {
 				//Get detailed info about the hold
-				$curHold               = array();
-				$bibId                 = $hold->fields->bib->key;
-				$expireDate            = $hold->fields->expirationDate;
-				$reactivateDate        = $hold->fields->suspendEndDate;
-				$createDate            = $hold->fields->placedDate;
-				$fillByDate            = $hold->fields->fillByDate;
-				$curHold['id']         = $bibId;
+				$curHold = array();
+				$bibId = $hold->fields->bib->key;
+				$expireDate = $hold->fields->expirationDate;
+				$reactivateDate = $hold->fields->suspendEndDate;
+				$createDate = $hold->fields->placedDate;
+				$fillByDate = $hold->fields->fillByDate;
+				$curHold['id'] = $bibId;
 				$curHold['holdSource'] = 'ILS';
-				$curHold['itemId']     = empty($hold->fields->item->key) ? '' : $hold->fields->item->key;
-				$curHold['cancelId']   = $hold->key;
-				$curHold['position']   = $hold->fields->queuePosition;
-				$curHold['recordId']   = $bibId;
-				$curHold['shortId']    = $bibId;
-				$curPickupBranch       = new Location();
+				$curHold['itemId'] = empty($hold->fields->item->key) ? '' : $hold->fields->item->key;
+				$curHold['cancelId'] = $hold->key;
+				$curHold['position'] = $hold->fields->queuePosition;
+				$curHold['recordId'] = $bibId;
+				$curHold['shortId'] = $bibId;
+				$curPickupBranch = new Location();
 				$curPickupBranch->code = $hold->fields->pickupLibrary->key;
 				if ($curPickupBranch->find(true)) {
 					$curPickupBranch->fetch();
-					$curHold['currentPickupId']   = $curPickupBranch->locationId;
+					$curHold['currentPickupId'] = $curPickupBranch->locationId;
 					$curHold['currentPickupName'] = $curPickupBranch->displayName;
-					$curHold['location']          = $curPickupBranch->displayName;
+					$curHold['location'] = $curPickupBranch->displayName;
 				}
-				$curHold['currentPickupName']  = $curHold['location'];
-				$curHold['status']             = ucfirst(strtolower($hold->fields->status));
-				$curHold['create']             = strtotime($createDate);
-				$curHold['expire']             = strtotime($expireDate);
+				$curHold['currentPickupName'] = $curHold['location'];
+				$curHold['status'] = ucfirst(strtolower($hold->fields->status));
+				$curHold['create'] = strtotime($createDate);
+				$curHold['expire'] = strtotime($expireDate);
 				$curHold['automaticCancellation'] = strtotime($fillByDate);
-				$curHold['reactivate']         = $reactivateDate;
-				$curHold['reactivateTime']     = strtotime($reactivateDate);
-				$curHold['cancelable']         = strcasecmp($curHold['status'], 'Suspended') != 0 && strcasecmp($curHold['status'], 'Expired') != 0;
-				$curHold['frozen']             = strcasecmp($curHold['status'], 'Suspended') == 0;
-				$curHold['canFreeze']         = true;
+				$curHold['reactivate'] = $reactivateDate;
+				$curHold['reactivateTime'] = strtotime($reactivateDate);
+				$curHold['cancelable'] = strcasecmp($curHold['status'], 'Suspended') != 0 && strcasecmp($curHold['status'], 'Expired') != 0;
+				$curHold['frozen'] = strcasecmp($curHold['status'], 'Suspended') == 0;
+				$curHold['canFreeze'] = true;
 				if (strcasecmp($curHold['status'], 'Transit') == 0 || strcasecmp($curHold['status'], 'Expired') == 0) {
 					$curHold['canFreeze'] = false;
 				}
@@ -1016,33 +1021,36 @@ class SirsiDynixROA extends HorizonAPI
 				if (strcasecmp($curHold['status'], 'Transit') == 0 || strcasecmp($curHold['status'], 'Expired') == 0) {
 					$curHold['locationUpdateable'] = false;
 				}
+				if (isset($hold->fields->selectedItem->fields->call->fields->volumetric)) {
+					$curHold['volume'] = $hold->fields->selectedItem->fields->call->fields->volumetric;
+				}
 
 				$recordDriver = new MarcRecordDriver('a' . $bibId);
 				if ($recordDriver->isValid()) {
-					$curHold['title']           = $recordDriver->getTitle();
-					$curHold['author']          = $recordDriver->getPrimaryAuthor();
-					$curHold['sortTitle']       = $recordDriver->getSortableTitle();
-					$curHold['format']          = $recordDriver->getFormat();
-					$curHold['isbn']            = $recordDriver->getCleanISBN();
-					$curHold['upc']             = $recordDriver->getCleanUPC();
+					$curHold['title'] = $recordDriver->getTitle();
+					$curHold['author'] = $recordDriver->getPrimaryAuthor();
+					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
+					$curHold['format'] = $recordDriver->getFormat();
+					$curHold['isbn'] = $recordDriver->getCleanISBN();
+					$curHold['upc'] = $recordDriver->getCleanUPC();
 					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
-					$curHold['link']            = $recordDriver->getLinkUrl();
+					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+					$curHold['link'] = $recordDriver->getLinkUrl();
 
 					//Load rating information
 					$curHold['ratingData'] = $recordDriver->getRatingData();
 
-					if ($hold->fields->holdType == 'COPY'){
-						$curHold['title2'] = $hold->fields->selectedItem->fields->itemType->fields->description . ' - ' . $hold->fields->selectedItem->fields->call->fields->callNumber;
+					if ($hold->fields->holdType == 'COPY') {
+						$curHold['title2'] = $hold->fields->selectedItem->fields->itemType->fields->description . ' - ' . $hold->fields->selectedItem->fields->call->fields->dispCallNumber;
 					}
 
 				} else {
 					// If we don't have good marc record, ask the ILS for title info
-					$bibInfo                = $hold->fields->bib;
-					$curHold['title']      = $bibInfo->fields->title;
-					$simpleSortTitle       = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
+					$bibInfo = $hold->fields->bib;
+					$curHold['title'] = $bibInfo->fields->title;
+					$simpleSortTitle = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
 					$curHold['sortTitle'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
-					$curHold['author']     = $bibInfo->fields->author;
+					$curHold['author'] = $bibInfo->fields->author;
 				}
 
 				if (!isset($curHold['status']) || strcasecmp($curHold['status'], "being_held") != 0) {
@@ -1060,15 +1068,16 @@ class SirsiDynixROA extends HorizonAPI
 	 *
 	 * This is responsible for both placing holds as well as placing recalls.
 	 *
-	 * @param   User    $patron       The User to place a hold for
-	 * @param   string  $recordId     The id of the bib record
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-     * @param   null|string $cancelDate  The date the hold should be automatically cancelled
-     * @return  mixed                 True if successful, false if unsuccessful
+	 * @param User $patron The User to place a hold for
+	 * @param string $recordId The id of the bib record
+	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param null|string $cancelDate The date the hold should be automatically cancelled
+	 * @return  mixed                 True if successful, false if unsuccessful
 	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
+	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
+	{
 		return $this->placeItemHold($patron, $recordId, null, $pickupBranch, 'request', $cancelDate);
 	}
 
@@ -1087,9 +1096,27 @@ class SirsiDynixROA extends HorizonAPI
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch = null, $type = 'request', $cancelIfNotFilledByDate = null)
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch = null, $type = 'request', $cancelIfNotFilledByDate = null){
+		return $this->placeSirsiHold($patron, $recordId, $itemId, false, $pickupBranch, $type, $cancelIfNotFilledByDate);
+	}
+	/**
+	 * Place Item Hold
+	 *
+	 * This is responsible for both placing item level holds.
+	 *
+	 * @param User $patron The User to place a hold for
+	 * @param string $recordId The id of the bib record
+	 * @param string $itemId The id of the item to hold
+	 * @param string $volume The volume identifier of the item to hold
+	 * @param string $pickupBranch The Pickup Location
+	 * @param string $type Whether to place a hold or recall
+	 * @param null|string $cancelIfNotFilledByDate When to cancel the hold automatically if it is not filled
+	 * @return  mixed               True if successful, false if unsuccessful
+	 *                              If an error occurs, return a AspenError
+	 * @access  public
+	 */
+	function placeSirsiHold($patron, $recordId, $itemId, $volumeHold = false, $pickupBranch = null, $type = 'request', $cancelIfNotFilledByDate = null)
 	{
-
 		//Get the session token for the user
 		$staffSessionToken = $this->getStaffSessionToken();
 		$sessionToken = $this->getSessionToken($patron);
@@ -1160,7 +1187,15 @@ class SirsiDynixROA extends HorizonAPI
 					),
 				);
 
-				if ($itemId) {
+				if (!empty($volume)){
+					$shortRecordId        = str_replace('a', '', $shortId);
+					$holdData['bib']      = array(
+						'resource' => '/catalog/bib',
+						'key' => $shortRecordId
+					);
+					$holdData['itemBarcode'] = $itemId;
+					$holdData['holdType']    = 'TITLE';
+				}elseif (!empty($itemId)) {
 					$holdData['itemBarcode'] = $itemId;
 					$holdData['holdType']    = 'COPY';
 				} else {
@@ -1212,19 +1247,37 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
+	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	{
+		//To place a volume hold in Symphony, we just need to place a hold on one of the items for the volume.
+		require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+		$volumeInfo = new IlsVolumeInfo();
+		$volumeInfo->volumeId = $volumeId;
+		$volumeInfo->recordId = $this->getIndexingProfile()->name . ':' . $recordId;
+		if ($volumeInfo->find(true)){
+			$relatedItems = explode('|', $volumeInfo->relatedItems);
+			$itemToHold = $relatedItems[0];
+			return $this->placeSirsiHold($patron, $recordId, $itemToHold, true, $pickupBranch);
+		}else{
+			return array(
+				'success' => false,
+				'message' => 'Sorry, we could not find the specified volume, it may have been deleted.');
+		}
+	}
 
- private function getSessionToken($patron)
- {
-	 $sirsiRoaUserId = $patron->username;
 
-	 //Get the session token for the user
-	 if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])) {
-		 return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
-	 } else {
-		 list(, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
-		 return $sessionToken;
+	 private function getSessionToken($patron)
+	 {
+		 $sirsiRoaUserId = $patron->username;
+
+		 //Get the session token for the user
+		 if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])) {
+			 return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
+		 } else {
+			 list(, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			 return $sessionToken;
+		 }
 	 }
- }
 
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
