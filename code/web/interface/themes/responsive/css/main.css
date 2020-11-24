@@ -9573,9 +9573,11 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu {
   margin-top: 10px;
+  padding-left: 10px;
 }
 #browse-sub-category-menu button {
   margin-right: 5px;
+  margin-bottom: 5px;
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
