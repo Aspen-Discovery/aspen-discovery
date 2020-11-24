@@ -92,6 +92,7 @@
     - Installation
     - Background tasks
   - Uploaded PDFS
+- Website Builder
 - [Advanced Search](/Admin/HelpManual?page=Advanced%20Search)
 - Aspen API
 - [Author pages](/Admin/HelpManual?page=Author-Pages)
