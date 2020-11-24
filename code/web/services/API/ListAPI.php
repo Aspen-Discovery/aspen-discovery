@@ -787,6 +787,7 @@ class ListAPI extends Action
 			$nytList->title = $selectedListTitle;
 			$nytList->description = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
 			$nytList->public = 1;
+			$nytList->searchable = 1;
 			$nytList->defaultSort = 'custom';
 			$nytList->user_id = $nytListUser->id;
 			$success = $nytList->insert();
@@ -820,6 +821,7 @@ class ListAPI extends Action
 				'success' => true,
 				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"
 			);
+			$nytList->searchable = 1;
 			//We already have a list, clear the contents so we don't have titles from last time
 			$nytList->removeAllListEntries();
 		}

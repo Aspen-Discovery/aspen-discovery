@@ -124,6 +124,13 @@ class BookCoverProcessor{
 
 			if ($this->type == 'grouped_work' && $this->getUploadedGroupedWorkCover($this->id)){
 				return true;
+			}elseif ($this->type != 'grouped_work'){
+				//Check to see if we have have an uploaded cover for the work
+				if ($this->loadGroupedWork()){
+					if ($this->getUploadedGroupedWorkCover($this->groupedWork->getPermanentId())){
+						return true;
+					}
+				}
 			}
 
 			if ($this->type != 'grouped_work' && $this->getCoverFromMarc()) {
