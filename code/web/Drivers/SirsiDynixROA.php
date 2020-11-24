@@ -1337,11 +1337,11 @@ class SirsiDynixROA extends HorizonAPI
 			],
 		];
 
-		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/changePickupLocation", $params, $this->getSessionToken($patron), 'POST');
-		if (isset($updateHoldResponse->key) && isset($updateHoldResponse->fields->pickupLibrary->key) && ($updateHoldResponse->fields->pickupLibrary->key == strtoupper($newPickupLocation))) {
+		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/changePickupLibrary", $params, $this->getSessionToken($patron), 'POST');
+		if (isset($updateHoldResponse->holdRecord->key)) {
 			return array(
 				'success' => true,
-			  'message' => 'The pickup location has been updated.'
+				'message' => 'The pickup location has been updated.'
 			);
 		} else {
 			$messages = array();
