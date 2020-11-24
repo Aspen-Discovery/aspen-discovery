@@ -137,7 +137,7 @@ public class GroupedWorkIndexer {
 		try {
 			scopes = IndexingUtils.loadScopes(dbConn, logger);
 			if (scopes == null){
-				logEntry.incErrors("Error loading scopes");
+				logEntry.incErrors("Error loading scopes, scopes were null");
 				this.okToIndex = false;
 				return;
 			}else{

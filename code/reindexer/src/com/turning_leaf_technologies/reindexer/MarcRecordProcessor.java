@@ -232,9 +232,11 @@ abstract class MarcRecordProcessor {
 									curSubjectField.getSubfield('2').getData().equals("bisacmt") ||
 									curSubjectField.getSubfield('2').getData().equals("bisacrt")) {
 								isLCSubject = false;
+								isBisacSubject = true;
 							}
 						}
 					} else {
+						isLCSubject = false;
 						if (curSubjectField.getSubfield('2') != null) {
 							if (curSubjectField.getSubfield('2').getData().equals("bisacsh") ||
 									curSubjectField.getSubfield('2').getData().equals("bisacmt") ||
