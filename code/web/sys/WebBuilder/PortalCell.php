@@ -180,4 +180,23 @@ class PortalCell extends DataObject
 		}
 		return false;
 	}
+
+	public function delete($useWhere = false)
+	{
+		$ret = parent::delete($useWhere);
+		if ($ret){
+			//Reorder the rows on the page to remove the gap
+			$portalRow = new PortalRow();
+			$portalRow->id = $this->portalRowId;
+			if ($portalRow->find(true)){
+				$cells = $portalRow->getCells();
+				$cellIndex = 0;
+				foreach ($cells as $cell){
+					$cell->weight = $cellIndex++;
+					$cell->update();
+				}
+			}
+		}
+		return $ret;
+	}
 }
