@@ -93,15 +93,13 @@
 		{elseif $property.type == 'timestamp'}
 			<div class="row">
 				<div class="col-sm-4">
-					<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+					<input name='{$propName}' id='{$propName}' value='{if !empty($propValue)}{$propValue|date_format:"%Y-%m-%d %H:%M"}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 				</div>
-				<div class="col-sm-8">
-					{if $propValue == 0}
-						{translate text="Never"}
-					{else}
-						{$propValue|date_format:"%D %T"}
-					{/if}
-				</div>
+				<script type="text/javascript">
+					$(document).ready(function(){ldelim}
+						rome({$propName});
+					{rdelim});
+				</script>
 			</div>
 		{elseif $property.type == 'url'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control url {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>

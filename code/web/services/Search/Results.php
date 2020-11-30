@@ -493,7 +493,7 @@ class Search_Results extends ResultsAction {
 					$placardToDisplay = new Placard();
 					$placardToDisplay->id = $trigger->placardId;
 					if ($placardToDisplay->find(true)){
-						if ($placardToDisplay->isDismissed() || !$placardToDisplay->isValidForScope()){
+						if (!$placardToDisplay->isValidForDisplay()){
 							$placardToDisplay = null;
 						}
 					}else{
@@ -513,7 +513,7 @@ class Search_Results extends ResultsAction {
 						$placardToDisplay = new Placard();
 						$placardToDisplay->id = $trigger->placardId;
 						$placardToDisplay->find(true);
-						if ($placardToDisplay->isDismissed() || !$placardToDisplay->isValidForScope()) {
+						if (!$placardToDisplay->isValidForDisplay()){
 							$placardToDisplay = null;
 						}
 						if ($placardToDisplay != null) {

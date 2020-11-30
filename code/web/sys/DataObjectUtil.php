@@ -173,7 +173,19 @@ class DataObjectUtil
 				$allowableTags = isset($property['allowableTags']) ? $property['allowableTags'] : '<p><a><b><em><ul><ol><em><li><strong><i><br>';
 				$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
 			}
-		}else if ($property['type'] == 'integer' || $property['type'] == 'timestamp'){
+		}else if ($property['type'] == 'timestamp'){
+			if (empty($_REQUEST[$propertyName])){
+				$object->setProperty($propertyName, 0, $property);
+			}else{
+				try {
+					$timeValue = new DateTime($_REQUEST[$propertyName]);
+					$object->setProperty($propertyName, $timeValue->getTimestamp(), $property);
+				}catch (Exception $e){
+					//Could not load the timestamp
+					$object->setProperty($propertyName, 0, $property);
+				}
+			}
+		}else if ($property['type'] == 'integer'){
 			if (preg_match('/\\d+/', $_REQUEST[$propertyName])){
 				$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 			}else{

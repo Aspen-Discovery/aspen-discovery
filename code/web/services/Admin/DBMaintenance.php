@@ -2045,6 +2045,15 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'placard_timing' => [
+					'title' => 'Placard Timing',
+					'description' => 'Add the ability to set start and end times for when placards are shown',
+					'sql' => [
+						'ALTER TABLE placards ADD COLUMN startDate INT(11) DEFAULT 0',
+						'ALTER TABLE placards ADD COLUMN endDate INT(11) DEFAULT 0'
+					]
+				],
+
 				'novelist_settings' => [
 					'title' => 'Novelist settings',
 					'description' => 'Add the ability to store Novelist settings in the DB rather than config file',

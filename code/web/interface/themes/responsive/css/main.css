@@ -1,4 +1,5 @@
 @import "lib/fontawesome-all.min.css";
+@import "lib/rome.min.css";
 @import "simplemde.min.css";
 article,
 aside,
@@ -8807,6 +8808,9 @@ a.placard-link {
   top: 0;
   background-color: white;
   z-index: 2;
+}
+.rd-container {
+  z-index: 5;
 }
 #webMenuNavBar {
   background-color: #00a4e3;
