@@ -970,6 +970,17 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
+		dismissSystemMessage: function(messageId) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "dismissSystemMessage",
+				messageId: messageId
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
 		enableAccountLinking: function(){
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {

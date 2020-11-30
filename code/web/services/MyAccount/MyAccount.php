@@ -7,14 +7,9 @@ require_once ROOT_DIR . '/CatalogFactory.php';
 
 abstract class MyAccount extends Action
 {
-	/** @var  GroupedWorksSolrConnector */
-	protected $db;
-	/** @var  CatalogConnection $catalog */
-	protected $catalog;
 	protected $requireLogin = true;
 
 	function __construct($isStandalonePage = false) {
-		global $configArray;
 		parent::__construct($isStandalonePage);
 
 		if ($this->requireLogin && !UserAccount::isLoggedIn()) {
@@ -24,9 +19,34 @@ abstract class MyAccount extends Action
 			exit();
 		}
 
-		// Setup Search Engine Connection
-		$this->db = new GroupedWorksSolrConnector($configArray['Index']['url']);
+		//Load system messages
+		if (UserAccount::isLoggedIn()) {
+			$accountMessages = [];
+			$customAccountMessages = new SystemMessage();
+			$now = time();
+			global $action;
+			if ($action == 'CheckedOut'){
+				$customAccountMessages->whereAdd("showOn = 1 OR showOn = 2");
+			}elseif ($action == 'Holds'){
+				$customAccountMessages->whereAdd("showOn = 1 OR showOn = 3");
+			}elseif ($action == 'Fines'){
+				$customAccountMessages->whereAdd("showOn = 1 OR showOn = 4");
+			}else{
+				$customAccountMessages->showOn = 1;
+			}
 
+			$customAccountMessages->whereAdd("startDate = 0 OR startDate <= $now");
+			$customAccountMessages->whereAdd("endDate = 0 OR endDate > $now");
+			$customAccountMessages->find();
+			while ($customAccountMessages->fetch()) {
+				if ($customAccountMessages->isValidForDisplay()) {
+					$accountMessages[] = clone $customAccountMessages;
+				}
+			}
+
+			global $interface;
+			$interface->assign('accountMessages', $accountMessages);
+		}
 		// Hide Covers when the user has set that setting on an Account Page
 		$this->setShowCovers();
 	}

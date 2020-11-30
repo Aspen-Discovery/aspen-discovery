@@ -127,6 +127,7 @@
     - [Nonfiction/Fiction Facets](/Admin/HelpManual?page=Literary-Forms)
     - [Subject Facets](/Admin/HelpManual?page=Subject-Facets)
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
+- System Messages
 - [User Lists](/Admin/HelpManual?page=User-Lists)
 - Patron Account
   - [Rosen LevelUP](/Admin/HelpManual?page=Rosen-LevelUP)

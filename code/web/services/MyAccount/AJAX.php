@@ -2202,6 +2202,34 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function dismissSystemMessage()
+	{
+		require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
+		if (!isset($_REQUEST['messageId'])) {
+			return ['success' => false, 'message' => 'Message Id not provided'];
+		} else if (UserAccount::getActiveUserId() == false) {
+			return ['success' => false, 'message' => 'User is not logged in'];
+		} else {
+			$message = new SystemMessage();
+			$message->id = $_REQUEST['messageId'];
+			if ($message->find(true)) {
+				require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
+				$systemMessageDismissal = new SystemMessageDismissal();
+				$systemMessageDismissal->userId = UserAccount::getActiveUserId();
+				$systemMessageDismissal->systemMessageId = $message->id;
+				if ($systemMessageDismissal->find(true)) {
+					return ['success' => true, 'message' => 'Message was already dismissed'];
+				} else {
+					$systemMessageDismissal->insert();
+					return ['success' => true, 'message' => 'Message was dismissed'];
+				}
+			} else {
+				return ['success' => false, 'message' => 'Could not find the message to dismiss'];
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
 	function enableAccountLinking()
 	{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';

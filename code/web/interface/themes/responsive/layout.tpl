@@ -35,8 +35,10 @@
 <body class="module_{$module} action_{$action}{if $masqueradeMode} masqueradeMode{/if}{if $loggedIn} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}">
 {strip}
 	<div class="container">
-		{if !empty($systemMessage)}
-			<div id="system-message-header" class="row">{$systemMessage}</div>
+		{if !empty($systemMessages)}
+			<div id="system-message-header" class="row">
+				{include file="systemMessages.tpl" messages=$systemMessages}
+			</div>
 		{/if}
 
 		{foreach from=$messages item="message"}

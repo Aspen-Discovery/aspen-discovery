@@ -4,6 +4,9 @@
 			{if !empty($profile->_web_note)}
 				<div id="web_note" class="text-info text-center alert alert-warning"><strong>{$profile->_web_note}</strong></div>
 			{/if}
+			{if !empty($accountMessages)}
+				{include file='systemMessages.tpl' messages=$accountMessages}
+			{/if}
 
 			<h1>{translate text='My Account'}</h1>
 			{if $userHasCatalogConnection}
