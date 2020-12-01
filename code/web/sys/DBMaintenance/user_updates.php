@@ -594,6 +594,32 @@ function getUserUpdates()
 			]
 		],
 
+//		'barcode_printing_permissions' => [
+//			'title' => 'Print barcodes permissions',
+//			'description' => 'Create permissions to print barcodes',
+//			'continueOnError' => true,
+//			'sql' => [
+//				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES
+//					('Cataloging & eContent', 'Print Barcodes', '', 95, 'Allows the user to print barcodes within Aspen Discovery.')
+//				",
+//				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Print Barcodes'))",
+//			]
+//		],
+
+		'system_messages_permissions' => [
+			'title' => 'System Messages permissions',
+			'description' => 'Create permissions to administer system messages',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Local Enrichment', 'Administer All System Messages', '', 70, 'Allows the user to define system messages for all libraries within Aspen Discovery.'),
+					('Local Enrichment', 'Administer Library System Messages', '', 80, 'Allows the user to define system messages for their library within Aspen Discovery.')
+				",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All System Messages'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='libraryAdmin'), (SELECT id from permissions where name='Administer Library System Messages'))",
+			]
+		],
+
 		'new_york_times_user_updates' => [
 			'title' => 'New York Times permission updates',
 			'description' => 'Update permissions for New York Times user and make the id non zero, make sure that all their lists are searchable too',
