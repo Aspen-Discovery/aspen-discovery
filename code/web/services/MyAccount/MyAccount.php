@@ -22,26 +22,30 @@ abstract class MyAccount extends Action
 		//Load system messages
 		if (UserAccount::isLoggedIn()) {
 			$accountMessages = [];
-			$customAccountMessages = new SystemMessage();
-			$now = time();
-			global $action;
-			if ($action == 'CheckedOut'){
-				$customAccountMessages->whereAdd("showOn = 1 OR showOn = 2");
-			}elseif ($action == 'Holds'){
-				$customAccountMessages->whereAdd("showOn = 1 OR showOn = 3");
-			}elseif ($action == 'Fines'){
-				$customAccountMessages->whereAdd("showOn = 1 OR showOn = 4");
-			}else{
-				$customAccountMessages->showOn = 1;
-			}
-
-			$customAccountMessages->whereAdd("startDate = 0 OR startDate <= $now");
-			$customAccountMessages->whereAdd("endDate = 0 OR endDate > $now");
-			$customAccountMessages->find();
-			while ($customAccountMessages->fetch()) {
-				if ($customAccountMessages->isValidForDisplay()) {
-					$accountMessages[] = clone $customAccountMessages;
+			try {
+				$customAccountMessages = new SystemMessage();
+				$now = time();
+				global $action;
+				if ($action == 'CheckedOut') {
+					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 2");
+				} elseif ($action == 'Holds') {
+					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 3");
+				} elseif ($action == 'Fines') {
+					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 4");
+				} else {
+					$customAccountMessages->showOn = 1;
 				}
+
+				$customAccountMessages->whereAdd("startDate = 0 OR startDate <= $now");
+				$customAccountMessages->whereAdd("endDate = 0 OR endDate > $now");
+				$customAccountMessages->find();
+				while ($customAccountMessages->fetch()) {
+					if ($customAccountMessages->isValidForDisplay()) {
+						$accountMessages[] = clone $customAccountMessages;
+					}
+				}
+			}catch (Exception $e){
+				//This happens before the table is created, ignore it.
 			}
 
 			global $interface;
