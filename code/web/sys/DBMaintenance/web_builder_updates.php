@@ -350,6 +350,34 @@ function getWebBuilderUpdates(){
 			]
 		],
 
+		'web_builder_custom_page_categories' => [
+			'title' => 'Web Builder - Custom Page categories',
+			'description' => 'Add audience and categories to custom pages',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE web_builder_portal_page ADD COLUMN lastUpdate INT(11) DEFAULT 0',
+				'CREATE TABLE IF NOT EXISTS web_builder_portal_page_audience (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					portalPageId INT(11) NOT NULL, 
+					audienceId INT(11) NOT NULL,
+					UNIQUE INDEX (portalPageId, audienceId)
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS web_builder_portal_page_category (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					portalPageId INT(11) NOT NULL, 
+					categoryId INT(11) NOT NULL,
+					UNIQUE INDEX (portalPageId, categoryId)
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS library_web_builder_portal_page (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT(11) NOT NULL,
+					portalPageId  INT(11) NOT NULL,
+					INDEX libraryId(libraryId),
+					INDEX portalPageId(portalPageId)
+				) ENGINE INNODB',
+			]
+		],
+
 		'web_builder_roles' => [
 			'title' => 'Web Builder Roles and Permissions',
 			'description' => 'Setup roles and permissions for the Web Builder',

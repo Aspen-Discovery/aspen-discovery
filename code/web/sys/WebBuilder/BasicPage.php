@@ -48,7 +48,7 @@ class BasicPage extends DataObject
 				'values' => $categoriesList,
 				'hideInLists' => false
 			),
-			'lastUpdate' => array('property' => 'lastUpdate', 'type' => 'timestamp', 'label' => 'Last Update', 'description' => 'When the resource was changed last', 'default' => 0),
+			'lastUpdate' => array('property' => 'lastUpdate', 'type' => 'timestamp', 'label' => 'Last Update', 'description' => 'When the page was changed last', 'default' => 0),
 			'libraries' => array(
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -133,7 +133,7 @@ class BasicPage extends DataObject
 			$libraryLink->basicPageId = $this->id;
 			$libraryLink->find();
 			while($libraryLink->fetch()){
-				$this->_libraries[] = $libraryLink->libraryId;
+				$this->_libraries[$libraryLink->libraryId] = $libraryLink->libraryId;
 			}
 		}
 		return $this->_libraries;
@@ -146,7 +146,7 @@ class BasicPage extends DataObject
 			$audienceLink->basicPageId = $this->id;
 			$audienceLink->find();
 			while($audienceLink->fetch()){
-				$this->_audiences[] = $audienceLink->audienceId;
+				$this->_audiences[$audienceLink->audienceId] = $audienceLink->audienceId;
 			}
 		}
 		return $this->_audiences;
@@ -159,7 +159,7 @@ class BasicPage extends DataObject
 			$categoryLink->basicPageId = $this->id;
 			$categoryLink->find();
 			while($categoryLink->fetch()){
-				$this->_categories[] = $categoryLink->categoryId;
+				$this->_categories[$categoryLink->categoryId] = $categoryLink->categoryId;
 			}
 		}
 		return $this->_categories;
