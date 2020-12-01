@@ -1188,19 +1188,19 @@ class SirsiDynixROA extends HorizonAPI
 				);
 
 				if (!empty($volume)){
-					$shortRecordId        = str_replace('a', '', $shortId);
-					$holdData['bib']      = array(
-						'resource' => '/catalog/bib',
-						'key' => $shortRecordId
-					);
+//					$shortRecordId = str_replace('a', '', $shortId);
+//					$holdData['bib'] = array(
+//						'resource' => '/catalog/bib',
+//						'key' => $shortRecordId
+//					);
 					$holdData['itemBarcode'] = $itemId;
-					$holdData['holdType']    = 'TITLE';
-				}elseif (!empty($itemId)) {
+					$holdData['holdType'] = 'TITLE';
+				} elseif (!empty($itemId)) {
 					$holdData['itemBarcode'] = $itemId;
-					$holdData['holdType']    = 'COPY';
+					$holdData['holdType'] = 'COPY';
 				} else {
-					$shortRecordId        = str_replace('a', '', $shortId);
-					$holdData['bib']      = array(
+					$shortRecordId = str_replace('a', '', $shortId);
+					$holdData['bib'] = array(
 						'resource' => '/catalog/bib',
 						'key' => $shortRecordId
 					);
