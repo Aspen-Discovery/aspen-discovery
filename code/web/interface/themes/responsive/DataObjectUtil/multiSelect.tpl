@@ -18,14 +18,15 @@
 			<div class="form-group checkbox">
 				<label for="selectAll{$propName}">
 					<input type="checkbox" name="selectAll{$propName}" id="selectAll{$propName}" onchange="AspenDiscovery.toggleCheckboxes('.{$propName}', '#selectAll{$propName}');">
-					<strong>Select All</strong>
+					<strong>{translate text="Select All"}</strong>
 				</label>
 			</div>
 			<div class="checkbox">
 				{* Modified Behavior: $propertyValue is used only as a display name to the user *}
-
 				{foreach from=$property.values item=propertyName key=propertyValue}
-					<input class="{$propName}" name='{$propName}[]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && array_key_exists($propertyValue, $propValue)}checked='checked'{/if}> {$propertyName}<br>
+					<label for="{$propName}_{$propertyValue|escape:css}">
+						<input class="{$propName}" id="{$propName}_{$propertyValue|escape:css}" name='{$propName}[]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && array_key_exists($propertyValue, $propValue)}checked='checked'{/if}> {$propertyName}<br>
+					</label>
 				{/foreach}
 			</div>
 		{elseif $property.listStyle == 'checkboxList'}

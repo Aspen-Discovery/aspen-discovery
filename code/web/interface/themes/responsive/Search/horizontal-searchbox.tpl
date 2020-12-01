@@ -40,17 +40,17 @@
 				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if $hiddenSearchSource} col-sm-10 col-sm-offset-2 col-xs-12 col-xs-offset-0 {else} col-sm-5 col-sm-offset-2 col-xs-5 col-xs-offset-0{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
 						{foreach from=$searchIndexes item=searchDesc key=searchVal}
-							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
+							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"  inAttribute=true} {translate text=$searchDesc  inAttribute=true}</option>
 						{/foreach}
 
 						{* Add Advanced Search *}
 						{if !empty($searchIndex) && $searchIndex == 'advanced'}*}
 							<option id="advancedSearchLink" value="editAdvanced" selected="selected">
-								{translate text='Edit Advanced Search'}
+								{translate text='Edit Advanced Search' inAttribute=true}
 							</option>
 						{elseif $showAdvancedSearchbox}
 							<option id="advancedSearchLink" value="advanced">
-								{translate text='Advanced Search'}
+								{translate text='Advanced Search' inAttribute=true}
 							</option>
 						{/if}
 					</select>
@@ -60,11 +60,11 @@
 					<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
 						<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="AspenDiscovery.Searches.loadSearchTypes();" class="searchSourceHorizontal form-control" aria-label="Collection to Search">
 							{foreach from=$searchSources item=searchOption key=searchKey}
-								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description}" data-advanced_search="{$searchOption.hasAdvancedSearch}" data-advanced_search_label="{translate text="Advanced Search"}"
+								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description}" data-advanced_search="{$searchOption.hasAdvancedSearch}" data-advanced_search_label="{translate text="Advanced Search" inAttribute=true}"
 										{if $searchKey == $searchSource} selected="selected"{/if}
 										{if $searchKey == $defaultSearchIndex} id="default_search_type"{/if}
 										>
-									{translate text="in"} {translate text=$searchOption.name}{if !empty($searchOption.external)} *{/if}
+									{translate text="in"  inAttribute=true} {translate text=$searchOption.name inAttribute=true}{if !empty($searchOption.external)} *{/if}
 								</option>
 							{/foreach}
 						</select>

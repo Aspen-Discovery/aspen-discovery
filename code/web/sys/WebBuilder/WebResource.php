@@ -144,7 +144,7 @@ class WebResource extends DataObject
 			$libraryLink->webResourceId = $this->id;
 			$libraryLink->find();
 			while($libraryLink->fetch()){
-				$this->_libraries[] = $libraryLink->libraryId;
+				$this->_libraries[$libraryLink->libraryId] = $libraryLink->libraryId;
 			}
 		}
 		return $this->_libraries;

@@ -86,6 +86,8 @@ class AJAX extends Action {
 			foreach ($commonSearches as $searchTerm){
 				if (is_array($searchTerm)){
 					$plainText = preg_replace('~</?b>~i', '', $searchTerm['phrase']);
+					$plainText = str_replace(':', '', $plainText);
+					$plainText = preg_replace('~\s{2,}~', ' ', $plainText);
 					$commonSearchTerms[] = [
 						'label' => $searchTerm['phrase'],
 						'value' => $plainText

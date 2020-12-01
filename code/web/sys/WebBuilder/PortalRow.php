@@ -95,7 +95,21 @@ class PortalRow extends DataObject
 				$cell->delete();
 			}
 		}
-		return parent::delete($useWhere);
+		$ret = parent::delete($useWhere);
+		if ($ret){
+			//Reorder the rows on the page to remove the gap
+			$portalPage = new PortalPage();
+			$portalPage->id = $this->portalPageId;
+			if ($portalPage->find(true)){
+				$rows = $portalPage->getRows();
+				$rowIndex = 0;
+				foreach ($rows as $row){
+					$row->weight = $rowIndex++;
+					$row->update();
+				}
+			}
+		}
+		return $ret;
 	}
 
 	public function saveCells(){

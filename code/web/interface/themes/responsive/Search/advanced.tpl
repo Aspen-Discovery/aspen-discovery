@@ -149,24 +149,24 @@
 														<strong>{translate text=$label}</strong>
 													</div>
 													<div class="col-sm-9">
-														{if $facetInfo.facetName == "publishDate"}
+														{if $facetInfo.facetName == "publishDate" || $facetInfo.facetName == "publishDateSort"}
 															<div class="row">
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="publishDateyearfrom" class="yearboxlabel">From </label>
-																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="publishDateyearfrom" id="publishDateyearfrom" value="" aria-label="Publication Date From">
+																	<label for="{$facetInfo.facetName}yearfrom" class="yearboxlabel">{translate text="From"} </label>
+																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="{$facetInfo.facetName}yearfrom" id="{$facetInfo.facetName}yearfrom" value="" aria-label="Publication Date From">
 																</div>
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="publishDateyearto" class="yearboxlabel">To </label>
-																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="publishDateyearto" id="publishDateyearto" value="" aria-label="Publication Date To">
+																	<label for="{$facetInfo.facetName}yearto" class="yearboxlabel">{translate text="To"} </label>
+																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="{$facetInfo.facetName}yearto" id="{$facetInfo.facetName}yearto" value="" aria-label="Publication Date To">
 																</div>
 															</div>
 															<div id="yearDefaultLinks row">
 																<div class="col-xs-12">
 																	{assign var=thisyear value=$smarty.now|date_format:"%Y"}
-																	Published in the last<br/>
-																	<a onclick="$('#publishDateyearfrom').val('{$thisyear-1}');$('#publishDateyearto').val('');" href='javascript:void(0);'>year</a>
-																	&bullet; <a onclick="$('#publishDateyearfrom').val('{$thisyear-5}');$('#publishDateyearto').val('');" href='javascript:void(0);'>5&nbsp;years</a>
-																	&bullet; <a onclick="$('#publishDateyearfrom').val('{$thisyear-10}');$('#publishDateyearto').val('');" href='javascript:void(0);'>10&nbsp;years</a>
+																	{translate text="Published in the last"}<br/>
+																	<a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-1}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>year</a>
+																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-5}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>5&nbsp;years</a>
+																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-10}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>10&nbsp;years</a>
 																</div>`
 															</div>
 														{elseif $facetInfo.facetName == "lexile_score"}

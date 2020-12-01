@@ -1,4 +1,5 @@
 @import "lib/fontawesome-all.min.css";
+@import "lib/rome.min.css";
 @import "simplemde.min.css";
 article,
 aside,
@@ -8485,6 +8486,15 @@ hr.menu {
   text-align: center;
   padding: 3px;
 }
+.system-message {
+  padding: 5px;
+}
+.system-message-text {
+  display: inline-block;
+}
+.dismissable-system-message-text {
+  width: calc(100% - 30px);
+}
 #header-container {
   padding-top: 0;
   height: 120px;
@@ -8807,6 +8817,9 @@ a.placard-link {
   top: 0;
   background-color: white;
   z-index: 2;
+}
+.rd-container {
+  z-index: 5;
 }
 #webMenuNavBar {
   background-color: #00a4e3;
@@ -9573,9 +9586,11 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu {
   margin-top: 10px;
+  padding-left: 10px;
 }
 #browse-sub-category-menu button {
   margin-right: 5px;
+  margin-bottom: 5px;
 }
 #browse-sub-category-menu button.selected {
   color: #fff;

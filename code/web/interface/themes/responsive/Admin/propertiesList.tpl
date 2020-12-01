@@ -58,7 +58,11 @@
 									{$propValue|date_format}
 								{elseif $property.type == 'timestamp'}
 									{if $propValue == 0}
-										{translate text="Never"}
+										{if empty($property.unsetLabel)}
+											{translate text="Never"}
+										{else}
+											{translate text=$property.unsetLabel}
+										{/if}
 									{else}
 										{$propValue|date_format:"%D %T"}
 									{/if}

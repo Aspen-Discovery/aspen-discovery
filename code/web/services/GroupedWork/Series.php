@@ -83,7 +83,7 @@ class GroupedWork_Series extends Action
 		$this->setShowCovers();
 
 		// Display Page
-		$this->display('view-series.tpl', $this->seriesTitle,'Search/home-sidebar.tpl', false);
+		$this->display('view-series.tpl', $this->seriesTitle,'', false);
 	}
 
 	function getBreadcrumbs()

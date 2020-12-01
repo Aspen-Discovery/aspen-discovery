@@ -13,6 +13,8 @@ class Placard extends DataObject
 	public $link;
 	public $css;
 	public /** @noinspection PhpUnused */ $dismissable;
+	public $startDate;
+	public $endDate;
 
 	private $_libraries;
 	private $_locations;
@@ -28,6 +30,8 @@ class Placard extends DataObject
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'title' => array('property'=>'title', 'type'=>'text', 'label'=>'Title', 'description'=>'The title of the placard'),
+			'startDate' => array('property'=>'startDate', 'type'=>'timestamp','label'=>'Start Date to Show', 'description'=> 'The first date the placard should be shown, leave blank to always show', 'unsetLabel'=>'No start date'),
+			'endDate' => array('property'=>'endDate', 'type'=>'timestamp','label'=>'End Date to Show', 'description'=> 'The end date the placard should be shown, leave blank to always show', 'unsetLabel'=>'No end date'),
 			'dismissable' => array('property' => 'dismissable', 'type' => 'checkbox', 'label' => 'Dismissable', 'description' => 'Whether or not a user can dismiss the placard'),
 			'body' => array('property'=>'body', 'type'=>'html', 'label'=>'Body', 'description'=>'The body of the placard', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
 			'css' => array('property'=>'css', 'type'=>'textarea', 'label'=>'CSS', 'description'=>'Additional styling to apply to the placard', 'hideInLists' => true),
@@ -268,5 +272,22 @@ class Placard extends DataObject
 		$placardLibrary->placardId = $this->id;
 		$placardLibrary->libraryId = $library->libraryId;
 		return $placardLibrary->find(true);
+	}
+
+	public function isValidForDisplay(){
+		$curTime = time();
+		if ($this->startDate != 0 && $this->startDate > $curTime){
+			return false;
+		}
+		if ($this->endDate != 0 && $this->endDate < $curTime){
+			return false;
+		}
+		if ($this->isDismissed()){
+			return false;
+		}
+		if (!$this->isValidForScope()){
+			return false;
+		}
+		return true;
 	}
 }

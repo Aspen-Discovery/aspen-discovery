@@ -92,6 +92,7 @@
     - Installation
     - Background tasks
   - Uploaded PDFS
+- Website Builder
 - [Advanced Search](/Admin/HelpManual?page=Advanced%20Search)
 - Aspen API
 - [Author pages](/Admin/HelpManual?page=Author-Pages)
@@ -106,6 +107,7 @@
   - [OverDrive](/Admin/HelpManual?page=Overdrive)
   - RBdigital
   - [EBSCO EDS](/Admin/HelpManual?page=EBSCO-EDS)
+  - [Axis 360](/Admin/HelpManual?page=Axis-360)
 - Email
 - Events
   - Library Calendar
@@ -122,8 +124,10 @@
 - Searching
   - Search Types
   - [Facets](/Admin/HelpManual?page=Facets)
-    - [Literary Forms](/Admin/HelpManual?page=Literary-Forms)
+    - [Nonfiction/Fiction Facets](/Admin/HelpManual?page=Literary-Forms)
+    - [Subject Facets](/Admin/HelpManual?page=Subject-Facets)
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
+- System Messages
 - [User Lists](/Admin/HelpManual?page=User-Lists)
 - Patron Account
   - [Rosen LevelUP](/Admin/HelpManual?page=Rosen-LevelUP)

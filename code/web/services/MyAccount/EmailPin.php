@@ -11,9 +11,9 @@ class EmailPin extends Action{
 		global $interface;
 
 		if (isset($_REQUEST['submit'])){
-			$this->catalog = CatalogFactory::getCatalogConnectionInstance();
-			$driver = $this->catalog->driver;
-			if ($this->catalog->checkFunction('emailPin')){
+			$catalog = CatalogFactory::getCatalogConnectionInstance();
+			$driver = $catalog->driver;
+			if ($catalog->checkFunction('emailPin')){
 				$barcode = strip_tags($_REQUEST['barcode']);
 				$emailResult = $driver->emailPin($barcode);
 			}else{

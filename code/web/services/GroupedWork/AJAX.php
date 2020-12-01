@@ -760,7 +760,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 					$result = array(
 						'result' => true,
-						'message' => "You won't be shown this title in the future.",
+						'message' => "You won't be shown this title in the future. It may take a few minutes before the title is removed from your recommendations.",
 					);
 				}
 			}else{

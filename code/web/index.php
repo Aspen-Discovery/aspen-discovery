@@ -203,6 +203,7 @@ if ($translator == null){
 	$translator = new Translator('lang', $language);
 }
 $timer->logTime('Translator setup');
+$interface->assign('translationModeActive', $translator->translationModeActive());
 
 $interface->setLanguage($activeLanguage);
 
@@ -218,18 +219,6 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 	}catch (Exception $e) {
 		//This happens before the table is setup
 	}
-}
-
-$systemMessage = '';
-if ($offlineMode){
-	$systemMessage = "<p class='alert alert-warning'>" . translate(['text'=>'offline_notice', 'defaultText'=>"<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."]) . "</p>";
-	$interface->assign('systemMessage', $systemMessage);
-}
-//Set System Message after translator has been setup
-if ($configArray['System']['systemMessage']){
-	$interface->assign('systemMessage', $systemMessage . translate($configArray['System']['systemMessage']));
-}else if (strlen($library->systemMessage) > 0){
-	$interface->assign('systemMessage', $systemMessage . translate($library->systemMessage));
 }
 
 $deviceName = get_device_name();
@@ -516,7 +505,43 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 		}
 		$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
 	}
+}
 
+//Load page level system messages
+if (!$isAJAX){
+	try {
+		require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
+		$systemMessages = [];
+		if ($offlineMode) {
+			$systemMessage = new SystemMessage();
+			$systemMessage->id = -1;
+			$systemMessage->dismissable = 0;
+			$systemMessage->setPreFormattedMessage("<p class='alert alert-warning'><strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time.</p>");
+			$interface->assign('systemMessage', $systemMessage);
+		}
+		//Set System Message after translator has been setup
+		if (strlen($library->systemMessage) > 0) {
+			$librarySystemMessage = new SystemMessage();
+			$librarySystemMessage->id = -2;
+			$librarySystemMessage->dismissable = 0;
+			$librarySystemMessage->setPreFormattedMessage($library->systemMessage);
+			$systemMessages[] = $librarySystemMessage;
+		}
+		$customSystemMessage = new SystemMessage();
+		$now = time();
+		$customSystemMessage->showOn = 0;
+		$customSystemMessage->whereAdd("startDate = 0 OR startDate <= $now");
+		$customSystemMessage->whereAdd("endDate = 0 OR endDate > $now");
+		$customSystemMessage->find();
+		while ($customSystemMessage->fetch()) {
+			if ($customSystemMessage->isValidForDisplay()) {
+				$systemMessages[] = clone $customSystemMessage;
+			}
+		}
+		$interface->assign('systemMessages', $systemMessages);
+	}catch (Exception $e){
+		//This happens when system message table hasn't been added. Ignore
+	}
 }
 
 //Determine if we should include autoLogout Code

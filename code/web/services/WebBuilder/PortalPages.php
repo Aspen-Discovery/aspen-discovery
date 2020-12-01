@@ -21,7 +21,7 @@ class WebBuilder_PortalPages extends ObjectEditor
 
 	function getPageTitle()
 	{
-		return 'WebBuilder Portal Pages';
+		return 'WebBuilder Custom Pages';
 	}
 
 	function getAllObjects()

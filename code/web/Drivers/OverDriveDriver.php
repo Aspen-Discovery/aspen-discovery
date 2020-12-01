@@ -468,6 +468,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 					try {
 						$expirationDate = new DateTime($curTitle->expires);
 						$checkout['dueDate'] = $expirationDate->getTimestamp();
+						//If the title expires in less than 3 days we should be able to renew it
+						if ($expirationDate->getTimestamp() < time() + 3 * 24 * 60 * 60){
+							$checkout['canRenew'] = true;
+						}else{
+							$checkout['canRenew'] = false;
+						}
 					} catch (Exception $e) {
 						$logger->log("Could not parse date for overdrive expiration " . $curTitle->expires, Logger::LOG_NOTICE);
 					}
@@ -660,7 +666,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
 		$params = array(
 			'reserveId' => $overDriveId,
-			'emailAddress' => trim($user->overdriveEmail)
+			'emailAddress' => trim((empty($user->overdriveEmail) ? $user->email : $user->overdriveEmail))
 		);
 		$response = $this->_callPatronUrl($user, $url, $params);
 
@@ -983,7 +989,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	/**
 	 * Renew a single title currently checked out to the user
-	 * This is not currently implemented
 	 *
 	 * @param $patron     User
 	 * @param $recordId   string
@@ -991,7 +996,34 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 */
 	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
-		return $this->checkOutTitle($patron, $recordId);
+		global $memCache;
+
+		//To renew, we actually just place another hold on the title.
+		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $recordId;
+		$params = array(
+			'reserveId' => $recordId,
+			'emailAddress' => trim((empty($patron->overdriveEmail) ? $patron->email : $patron->overdriveEmail))
+		);
+		$response = $this->_callPatronUrl($patron, $url, $params);
+
+		$holdResult = array();
+		$holdResult['success'] = false;
+		$holdResult['message'] = '';
+
+		if (isset($response->holdListPosition)){
+			$this->trackUserUsageOfOverDrive($patron);
+			$this->trackRecordHold($recordId);
+
+			$holdResult['success'] = true;
+			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=>'overdrive_renew_success', 'defaultText' => 'Your title has been requested again, you are number %1% on the list.', 1=>$response->holdListPosition]) . "</p>";
+		}else{
+			$holdResult['message'] = translate('Sorry, but we could not renew this title for you.');
+			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
+		}
+		$patron->clearCache();
+		$memCache->delete('overdrive_summary_' . $patron->id);
+
+		return $holdResult;
 	}
 
 	/**

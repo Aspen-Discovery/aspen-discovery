@@ -343,17 +343,25 @@ public class IndexingUtils {
 					librarySideLoadScopesStmt.setLong(1, libraryId);
 					ResultSet librarySideLoadScopesRS = librarySideLoadScopesStmt.executeQuery();
 					while (librarySideLoadScopesRS.next()) {
-						locationScopeInfo.addSideLoadScope(sideLoadScopes.get(librarySideLoadScopesRS.getLong("sideLoadScopeId")));
+						long sideLoadScopeId = librarySideLoadScopesRS.getLong("sideLoadScopeId");
+						if (sideLoadScopes.containsKey(sideLoadScopeId)) {
+							locationScopeInfo.addSideLoadScope(sideLoadScopes.get(sideLoadScopeId));
+						}
 					}
 				} else {
-					locationScopeInfo.addSideLoadScope(sideLoadScopes.get(scopeId));
+					if (sideLoadScopes.containsKey(scopeId)) {
+						locationScopeInfo.addSideLoadScope(sideLoadScopes.get(scopeId));
+					}
 				}
 			}
 			if (includeLibraryRecordsToInclude){
 				librarySideLoadScopesStmt.setLong(1, libraryId);
 				ResultSet librarySideLoadScopesRS = librarySideLoadScopesStmt.executeQuery();
 				while (librarySideLoadScopesRS.next()) {
-					locationScopeInfo.addSideLoadScope(sideLoadScopes.get(librarySideLoadScopesRS.getLong("sideLoadScopeId")));
+					long sideLoadScopeId = librarySideLoadScopesRS.getLong("sideLoadScopeId");
+					if (sideLoadScopes.containsKey(sideLoadScopeId)) {
+						locationScopeInfo.addSideLoadScope(sideLoadScopes.get(sideLoadScopeId));
+					}
 				}
 			}
 
@@ -502,7 +510,10 @@ public class IndexingUtils {
 			librarySideLoadScopesStmt.setLong(1, libraryId);
 			ResultSet librarySideLoadScopesRS = librarySideLoadScopesStmt.executeQuery();
 			while (librarySideLoadScopesRS.next()) {
-				newScope.addSideLoadScope(sideLoadScopes.get(librarySideLoadScopesRS.getLong("sideLoadScopeId")));
+				long sideLoadScopeId = librarySideLoadScopesRS.getLong("sideLoadScopeId");
+				if (sideLoadScopes.containsKey(sideLoadScopeId)) {
+					newScope.addSideLoadScope(sideLoadScopes.get(sideLoadScopeId));
+				}
 			}
 
 			newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));

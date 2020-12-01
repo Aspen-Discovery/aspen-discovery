@@ -2045,6 +2045,51 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'placard_timing' => [
+					'title' => 'Placard Timing',
+					'description' => 'Add the ability to set start and end times for when placards are shown',
+					'sql' => [
+						'ALTER TABLE placards ADD COLUMN startDate INT(11) DEFAULT 0',
+						'ALTER TABLE placards ADD COLUMN endDate INT(11) DEFAULT 0'
+					]
+				],
+
+				'system_messages' => [
+					'title' => 'System Message Setup',
+					'description' => 'Initial setup of system messages',
+					'continueOnError' => true,
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS system_messages(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							title VARCHAR(255) NOT NULL,
+							message TEXT,
+							dismissable TINYINT(1) DEFAULT 0,
+							showOn INT DEFAULT 0,
+							startDate INT(11) DEFAULT 0,
+							endDate INT(11) DEFAULT 0
+						) ENGINE = INNODB;',
+						'ALTER TABLE system_messages ADD INDEX title (title)',
+						'CREATE TABLE system_message_dismissal (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							systemMessageId INT,
+							userId INT,
+							UNIQUE INDEX userPlacard(userId, systemMessageId)
+						) ENGINE = INNODB;',
+						'CREATE TABLE system_message_library (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							systemMessageId INT,
+							libraryId INT,
+							UNIQUE INDEX systemMessageLibrary(systemMessageId, libraryId)
+						) ENGINE = INNODB;',
+						'CREATE TABLE system_message_location (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							systemMessageId INT,
+							locationId INT,
+							UNIQUE INDEX systemMessageLocation(systemMessageId, locationId)
+						) ENGINE = INNODB;',
+					]
+				],
+
 				'novelist_settings' => [
 					'title' => 'Novelist settings',
 					'description' => 'Add the ability to store Novelist settings in the DB rather than config file',

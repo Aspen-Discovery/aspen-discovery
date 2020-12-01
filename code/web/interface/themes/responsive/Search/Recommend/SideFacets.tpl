@@ -33,7 +33,7 @@
 							</div>
 							<div id="facetDetails_{$title}" class="facetDetails" {if $cluster.collapseByDefault && !$cluster.hasApplied}style="display:none"{/if}>
 
-								{if $title == 'publishDate' || $title == 'birthYear' || $title == 'deathYear'}
+								{if $title == 'publishDate' || $title == 'birthYear' || $title == 'deathYear' || $title == 'publishDateSort'}
 									{include file="Search/Recommend/yearFacetFilter.tpl" cluster=$cluster title=$title}
 								{elseif $title == 'rating_facet'}
 									{include file="Search/Recommend/ratingFacet.tpl" cluster=$cluster title=$title}

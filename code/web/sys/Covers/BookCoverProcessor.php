@@ -124,6 +124,13 @@ class BookCoverProcessor{
 
 			if ($this->type == 'grouped_work' && $this->getUploadedGroupedWorkCover($this->id)){
 				return true;
+			}elseif ($this->type != 'grouped_work'){
+				//Check to see if we have have an uploaded cover for the work
+				if ($this->loadGroupedWork()){
+					if ($this->getUploadedGroupedWorkCover($this->groupedWork->getPermanentId())){
+						return true;
+					}
+				}
 			}
 
 			if ($this->type != 'grouped_work' && $this->getCoverFromMarc()) {
@@ -399,13 +406,10 @@ class BookCoverProcessor{
 		if (strpos($this->id, ':') > 0 && $this->type != 'ebsco_eds'){
 			list($this->type, $this->id) = explode(':', $this->id);
 		}
-		$this->bookCoverInfo = new BookCoverInfo();
-		$this->bookCoverInfo->recordId = $this->id;
-		$this->bookCoverInfo->recordType = $this->type;
-		$this->bookCoverInfo->find(true);
 
+		$this->bookCoverInfo = new BookCoverInfo();
 		//First check to see if this has a custom cover due to being an e-book
-		if (!is_null($this->id)){
+		if (!empty($this->id)){
 			if ($this->isEContent){
 				$this->cacheName = 'econtent' . $this->id;
 			}else{
@@ -415,12 +419,22 @@ class BookCoverProcessor{
 					$this->cacheName = $this->type . '_' . $this->id;
 				}
 			}
+			$this->bookCoverInfo->recordId = $this->id;
+			$this->bookCoverInfo->recordType = $this->type;
+			$this->bookCoverInfo->find(true);
 		}else if (!is_null($this->isn)){
 			$this->cacheName = $this->isn;
+			$this->bookCoverInfo->recordId = $this->isn;
+			$this->bookCoverInfo->recordType = 'unknown_isbn';
+			$this->bookCoverInfo->find(true);
 		}else if (!is_null($this->upc)){
 			$this->cacheName = $this->upc;
+			$this->bookCoverInfo->recordId = $this->upc;
+			$this->bookCoverInfo->recordType = 'unknown_upc';
 		}else if (!is_null($this->issn)){
 			$this->cacheName = $this->issn;
+			$this->bookCoverInfo->recordId = $this->issn;
+			$this->bookCoverInfo->recordType = 'unknown_issn';
 		}else{
 			$this->error = "ISN, UPC, or id must be provided.";
 			return false;

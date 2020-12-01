@@ -97,7 +97,13 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 			}
 			return true;
 		} catch (SQLException e) {
-			logger.error("Error creating updating log", e);
+			if (logEntryId == null) {
+				logger.error("Error creating overdrive log entry", e);
+				logger.info(this.toString());
+			}else{
+				logger.error("Error updating overdrive log entry", e);
+				logger.info(this.toString());
+			}
 			return false;
 		}
 	}

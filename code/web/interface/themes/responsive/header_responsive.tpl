@@ -37,6 +37,15 @@
 				{/if}
 				</div>
 			{/foreach}
+			{if $loggedIn && in_array('Translate Aspen', $userPermissions)}
+				<div id="translationMode">
+					{if $translationModeActive}
+						<a onclick="return AspenDiscovery.changeTranslationMode(false)">{translate text="Exit Translation Mode"}</a>
+					{else}
+						<a onclick="return AspenDiscovery.changeTranslationMode(true)">{translate text="Start Translation Mode"}</a>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	{/if}
 {/strip}
