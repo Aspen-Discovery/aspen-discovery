@@ -203,6 +203,7 @@ if ($translator == null){
 	$translator = new Translator('lang', $language);
 }
 $timer->logTime('Translator setup');
+$interface->assign('translationModeActive', $translator->translationModeActive());
 
 $interface->setLanguage($activeLanguage);
 

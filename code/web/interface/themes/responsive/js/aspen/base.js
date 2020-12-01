@@ -371,6 +371,17 @@ var AspenDiscovery = (function(){
 			}
 		},
 
+		changeTranslationMode: function(start){
+			var url = window.location.href;
+			url = url.replace(/[&?](start|stop)TranslationMode=true/, '');
+			if (start) {
+				url = this.buildUrl(url,'startTranslationMode', 'true');
+			}else{
+				url = this.buildUrl(url,'stopTranslationMode', 'true');
+			}
+			window.location.href = url;
+		},
+
 		hasLocalStorage: function () {
 			// arguments.callee.haslocalStorage is the function's "static" variable for whether or not we have tested the
 			// that the localStorage system is available to us.
