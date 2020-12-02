@@ -2,8 +2,6 @@
 
 The System Reports section of Aspen Discovery includes Site Status, Usage Dashboard, Usage by IP Address, Nightly Index Log, Cron Log, Performance Report, Error Log, and PHP Information.
 
-Sections in System Reports include:
-
 - Site Status
   - Shows the status of each aspect of Aspen.
 - Usage Dashboard
