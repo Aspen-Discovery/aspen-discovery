@@ -124,7 +124,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * @param $recordId   string
 	 * @return mixed
 	 */
-	public function renewCheckout($patron, $recordId)
+	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
 		return $this->checkOutTitle($patron, $recordId, true);
 	}
@@ -225,10 +225,10 @@ class Axis360Driver extends AbstractEContentDriver
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId)
+	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
-		if ($this->getAxis360AccessToken()){
+		if ($this->getAxis360AccessToken()) {
 			$settings = $this->getSettings();
 			$holdUrl = $settings->apiUrl . "/Services/VendorAPI/addToHold/v2/$recordId/" . urlencode($patron->email) . "/{$patron->getBarcode()}";
 			$headers = [
@@ -242,7 +242,10 @@ class Axis360Driver extends AbstractEContentDriver
 			$xmlResults = simplexml_load_string($response);
 			$addToHoldResult = $xmlResults->addtoholdResult;
 			$status = $addToHoldResult->status;
-			if ($status->code != '0000'){
+			if ($status->code == '3111') {
+				//The title is available, try to check it out.
+				return $this->checkOutTitle($patron, $recordId, false);
+			}else if ($status->code != '0000'){
 				$result['message'] = "Could not place hold, " . (string)$status->statusMessage;
 				$this->incrementStat('numApiErrors');
 			}else{
@@ -266,7 +269,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * @param string $recordId The id of the bib record
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId)
+	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		if ($this->getAxis360AccessToken()){

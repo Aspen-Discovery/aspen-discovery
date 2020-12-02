@@ -264,10 +264,6 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$interface->assign('chartPath', $chartHref);
 	}
 
-	function getAllowableRoles(){
-		return array('library_material_requests');
-	}
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

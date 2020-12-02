@@ -269,6 +269,9 @@ class AJAX_JSON extends Action {
 		}else{
 			$mapsKey = null;
 		}
+		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+		$parsedown = AspenParsedown::instance();
+		$parsedown->setBreaksEnabled(true);
 		foreach ($locationsToProcess as $locationToProcess){
 			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $locationToProcess->address));
 			$hours = $locationToProcess->getHours();
@@ -316,9 +319,11 @@ class AJAX_JSON extends Action {
 				'name' => $locationToProcess->displayName,
 				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $locationToProcess->address),
 				'phone' => $locationToProcess->phone,
+				'tty' => $locationToProcess->tty,
 				//'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
 				'hours' => $hours,
-				'hasValidHours' => $locationToProcess->hasValidHours()
+				'hasValidHours' => $locationToProcess->hasValidHours(),
+				'description' => $parsedown->parse($locationToProcess->description)
 			];
 
 			if (!empty($mapsKey)){
@@ -367,6 +372,27 @@ class AJAX_JSON extends Action {
 				'modalBody'    => $interface->fetch('AJAX/refreshFinesAccountInfo.tpl'),
 				'modalButtons' => '<a class="btn btn-primary" href="/MyAccount/Fines?reload">Refresh My Fines Information</a>'
 		);
+	}
+
+	function formatCurrency(){
+		$currencyValue = isset($_REQUEST['currencyValue']) ? $_REQUEST['currencyValue'] : 0;
+
+		global $activeLanguage;
+
+		$currencyCode = 'USD';
+		$variables = new SystemVariables();
+		if ($variables->find(true)){
+			$currencyCode = $variables->currencyCode;
+		}
+
+		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+
+		$formattedCurrency = $currencyFormatter->formatCurrency($currencyValue, $currencyCode);
+
+		return [
+			'success' => true,
+			'formattedValue' => $formattedCurrency
+		];
 	}
 
 	function getBreadcrumbs()

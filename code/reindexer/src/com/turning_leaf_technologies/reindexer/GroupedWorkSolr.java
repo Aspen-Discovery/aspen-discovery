@@ -5,6 +5,7 @@ import com.turning_leaf_technologies.dates.DateUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
@@ -29,7 +30,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String> author2Role = new HashSet<>();
 	private HashSet<String> awards = new HashSet<>();
 	private HashSet<String> barcodes = new HashSet<>();
-	private HashSet<String> bisacSubjects = new HashSet<>();
+	private final HashSet<String> bisacSubjects = new HashSet<>();
 	private String callNumberA;
 	private String callNumberFirst;
 	private String callNumberSubject;
@@ -90,9 +91,12 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String> subjects = new HashSet<>();
 	private HashMap<String, Long> upcs = new HashMap<>();
 
-	private Logger logger;
-	private GroupedWorkIndexer groupedWorkIndexer;
+	private final Logger logger;
+	private final GroupedWorkIndexer groupedWorkIndexer;
 	private HashSet<String> systemLists = new HashSet<>();
+	private final HashSet<Long> userReadingHistoryLink = new HashSet<>();
+	private final HashSet<Long> userRatingLink = new HashSet<>();
+	private final HashSet<Long> userNotInterestedLink = new HashSet<>();
 
 	public GroupedWorkSolr(GroupedWorkIndexer groupedWorkIndexer, Logger logger) {
 		this.logger = logger;
@@ -393,6 +397,11 @@ public class GroupedWorkSolr implements Cloneable {
 		//aspen-discovery enrichment
 		doc.addField("rating", rating == -1f ? 2.5 : rating);
 		doc.addField("rating_facet", getRatingFacet(rating));
+
+		//Links to users
+		doc.addField("user_rating_link", userRatingLink);
+		doc.addField("user_not_interested_link", userNotInterestedLink);
+		doc.addField("user_reading_history_link", userReadingHistoryLink);
 
 		doc.addField("description", Util.getCRSeparatedString(description));
 		doc.addField("display_description", displayDescription);
@@ -1837,4 +1846,17 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		return autoReindexTimes;
 	}
+
+	public void addReadingHistoryLink(long userId) {
+		this.userReadingHistoryLink.add(userId);
+	}
+
+	public void addRatingLink(long userId){
+		this.userRatingLink.add(userId);
+	}
+
+	public void addNotInterestedLink(long userId){
+		this.userNotInterestedLink.add(userId);
+	}
+
 }

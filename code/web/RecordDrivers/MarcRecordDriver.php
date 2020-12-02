@@ -213,7 +213,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		$interface->assign('uploadedSupplementalFiles', $this->getUploadedSupplementalFiles());
 
-
 		return 'RecordDrivers/Marc/staff.tpl';
 	}
 

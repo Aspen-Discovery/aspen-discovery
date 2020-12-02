@@ -6,6 +6,9 @@
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 				</div>
 			{/if}
+			{if !empty($accountMessages)}
+				{include file='systemMessages.tpl' messages=$accountMessages}
+			{/if}
 
 			<span class='availableHoldsNoticePlaceHolder'></span>
 
@@ -34,10 +37,6 @@
 							<div class="col-xs-8">{$profile->_fullname|escape}</div>
 						</div>
 						{if !$offline}
-							<div class="form-group">
-								<div class="col-xs-4"><strong>{translate text='Fines'}</strong></div>
-								<div class="col-xs-8">{$profile->_fines|escape}</div>
-							</div>
 							{if $barcodePin}
 							{* Only Display Barcode when the barcode is used as a username and not a password *}
 							<div class="form-group">
@@ -50,10 +49,6 @@
 								<div class="col-xs-8">{$profile->_expires|escape}</div>
 							</div>
 						{/if}
-						<div class="form-group">
-							<div class="col-xs-4"><strong>{translate text='Home Library'}</strong></div>
-							<div class="col-xs-8">{$profile->_homeLocation|escape}</div>
-						</div>
 						{if !$offline}
 							{* Don't show inputs for the Horizon ILS as updating those account settings has not been implemented in the Horizon Driver. *}
 							<div class="form-group">
@@ -145,7 +140,7 @@
 									{/if}
 								</div>
 							</div>
-						{/if}
+						 {/if}
 
 						{if $showNoticeTypeInProfile}
 							<p class="alert alert-info">
@@ -154,7 +149,7 @@
 
 						{if $ils != 'CarlX'}
 							<div class="form-group">
-								<div class="col-xs-4"><strong>{translate text='Receive notices by'}:</strong></div>
+								<div class="col-xs-4"><strong>{translate text='Receive notices by'}</strong></div>
 								<div class="col-xs-8">
 									{if $edit == true && $canUpdateContactInfo == true}
 										<div class="btn-group btn-group-sm" data-toggle="buttons">
@@ -192,7 +187,7 @@
 							</div>
 
 							<div class="form-group">
-								<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
+								<div class="col-xs-4"><label for="emailReceiptFlag" class="">{translate text='Email receipts for checkouts and renewals'}</label></div>
 								<div class="col-xs-8">
 									{if $edit == true}
 										<input type="checkbox" name="emailReceiptFlag" id="emailReceiptFlag" {if $profile->_emailReceiptFlag==1}checked='checked'{/if} data-switch="">

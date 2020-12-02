@@ -10,6 +10,11 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 	function getObjectType(){
 		return 'MaterialsRequestStatus';
 	}
+	function getModule()
+	{
+		return 'MaterialsRequest';
+	}
+
 	function getToolName(){
 		return 'ManageStatuses';
 	}
@@ -68,7 +73,7 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 			$materialRequestStatus->libraryId = $homeLibrary->libraryId;
 			$materialRequestStatus->insert();
 		}
-		header("Location: /Admin/ManageStatuses");
+		header("Location: /MaterialsRequest/ManageStatuses");
 	}
 
 	function getBreadcrumbs()

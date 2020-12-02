@@ -5,6 +5,9 @@
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 			</div>
 		{/if}
+		{if !empty($accountMessages)}
+			{include file='systemMessages.tpl' messages=$accountMessages}
+		{/if}
 
 		<span class='availableHoldsNoticePlaceHolder'></span>
 		<h1>{translate text='Titles On Hold'}</h1>
@@ -21,7 +24,7 @@
 				{if $user->isValidForEContentSource('overdrive')}
 					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{translate text="OverDrive"} <span class="badge"><span class="overdrive-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
-				{if $user->isValidForEContentSource('rbdigital')}
+				{if $user->isValidForEContentSource('rbdigital') && $user->showRBdigitalHolds()}
 					<li role="presentation"{if $tab=='rbdigital'} class="active"{/if}><a href="#rbdigital" aria-controls="rbdigital" role="tab" data-toggle="tab">{translate text="RBdigital"} <span class="badge"><span class="rbdigital-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}

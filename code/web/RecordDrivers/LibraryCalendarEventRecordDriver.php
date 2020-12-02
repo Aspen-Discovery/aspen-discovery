@@ -168,4 +168,16 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 			return null;
 		}
 	}
+
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+		$result = parent::getSpotlightResult($collectionSpotlight, $index);
+		if ($collectionSpotlight->style == 'text-list'){
+			global $interface;
+			$interface->assign('start_date', $this->fields['start_date']);
+			$interface->assign('end_date', $this->fields['end_date']);
+			$result['formattedTextOnlyTitle'] = $interface->fetch('RecordDrivers/Events/formattedTextOnlyTitle.tpl');
+		}
+
+		return $result;
+	}
 }

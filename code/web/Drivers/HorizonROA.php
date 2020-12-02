@@ -1130,7 +1130,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 		}
 		return $blockPolicy;
 	}
-	public function updatePin($patron, $oldPin, $newPin){
+	public function updatePin(User $patron, string $oldPin, string $newPin){
 		$updatePinResponse = $this->changeMyPin($patron, $newPin, $oldPin);
 		if (isset($updatePinResponse->messageList)) {
 			$errors = '';

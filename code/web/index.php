@@ -47,6 +47,7 @@ try {
 		$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
 		$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
 		$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
+		$interface->assign('googleAnalyticsVersion', empty($googleSettings->googleAnalyticsVersion) ? 'v3' : $googleSettings->googleAnalyticsVersion);
 		$linkedProperties = '';
 		if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
 			$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
@@ -65,7 +66,7 @@ try {
 		}
 	}
 }catch (Exception $e){
-	//Google Analytics not installed yet
+	//This happens when Google analytics settings aren't setup yet
 }
 
 global $library;
@@ -202,6 +203,7 @@ if ($translator == null){
 	$translator = new Translator('lang', $language);
 }
 $timer->logTime('Translator setup');
+$interface->assign('translationModeActive', $translator->translationModeActive());
 
 $interface->setLanguage($activeLanguage);
 
@@ -217,18 +219,6 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 	}catch (Exception $e) {
 		//This happens before the table is setup
 	}
-}
-
-$systemMessage = '';
-if ($offlineMode){
-	$systemMessage = "<p class='alert alert-warning'>" . translate(['text'=>'offline_notice', 'defaultText'=>"<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."]) . "</p>";
-	$interface->assign('systemMessage', $systemMessage);
-}
-//Set System Message after translator has been setup
-if ($configArray['System']['systemMessage']){
-	$interface->assign('systemMessage', $systemMessage . translate($configArray['System']['systemMessage']));
-}else if (strlen($library->systemMessage) > 0){
-	$interface->assign('systemMessage', $systemMessage . translate($library->systemMessage));
 }
 
 $deviceName = get_device_name();
@@ -508,14 +498,50 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	}else{
 		$interface->assign('showTopSearchBox', 1);
 		$interface->assign('showBreadcrumbs', 1);
-		if ($library->getLayoutSettings()->useHomeLinkInBreadcrumbs){
+		if ($library->getLayoutSettings()->useHomeLinkInBreadcrumbs && !empty($library->homeLink)){
 			$interface->assign('homeBreadcrumbLink', $library->homeLink);
 		}else{
 			$interface->assign('homeBreadcrumbLink', '/');
 		}
 		$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
 	}
+}
 
+//Load page level system messages
+if (!$isAJAX){
+	try {
+		require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
+		$systemMessages = [];
+		if ($offlineMode) {
+			$systemMessage = new SystemMessage();
+			$systemMessage->id = -1;
+			$systemMessage->dismissable = 0;
+			$systemMessage->setPreFormattedMessage("<p class='alert alert-warning'><strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time.</p>");
+			$interface->assign('systemMessage', $systemMessage);
+		}
+		//Set System Message after translator has been setup
+		if (strlen($library->systemMessage) > 0) {
+			$librarySystemMessage = new SystemMessage();
+			$librarySystemMessage->id = -2;
+			$librarySystemMessage->dismissable = 0;
+			$librarySystemMessage->setPreFormattedMessage($library->systemMessage);
+			$systemMessages[] = $librarySystemMessage;
+		}
+		$customSystemMessage = new SystemMessage();
+		$now = time();
+		$customSystemMessage->showOn = 0;
+		$customSystemMessage->whereAdd("startDate = 0 OR startDate <= $now");
+		$customSystemMessage->whereAdd("endDate = 0 OR endDate > $now");
+		$customSystemMessage->find();
+		while ($customSystemMessage->fetch()) {
+			if ($customSystemMessage->isValidForDisplay()) {
+				$systemMessages[] = clone $customSystemMessage;
+			}
+		}
+		$interface->assign('systemMessages', $systemMessages);
+	}catch (Exception $e){
+		//This happens when system message table hasn't been added. Ignore
+	}
 }
 
 //Determine if we should include autoLogout Code
@@ -821,6 +847,20 @@ function loadModuleActionId(){
 	//This ensures that we don't have to change the http.conf file when new types are added.
 	//Deal with old path based urls by removing the leading path.
 	$requestURI = $_SERVER['REQUEST_URI'];
+	if (empty($requestURI) || $requestURI == '/'){
+		//Check to see if we have a default path for the server name
+		try {
+			$host = $_SERVER['HTTP_HOST'];
+			require_once ROOT_DIR . '/sys/LibraryLocation/HostInformation.php';
+			$hostInfo = new HostInformation();
+			$hostInfo->host = $host;
+			if ($hostInfo->find(true)){
+				$requestURI = $hostInfo->defaultPath;
+			}
+		}catch (Exception $e){
+			//This happens before the table is added, just ignore it.
+		}
+	}
 	/** IndexingProfile[] $indexingProfiles */
 	global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */
@@ -832,6 +872,7 @@ function loadModuleActionId(){
 	foreach ($sideLoadSettings as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
+	$checkWebBuilderAliases = false;
 	if (preg_match("~(MyAccount)/([^/?]+)/([^/?]+)(\?.+)?~", $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 		$_GET['id'] = $matches[3];
@@ -895,6 +936,52 @@ function loadModuleActionId(){
 		$_GET['action'] = $matches[2];
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = $matches[2];
+		$checkWebBuilderAliases = true;
+	}else{
+		$checkWebBuilderAliases = true;
+	}
+
+	global $enabledModules;
+	try {
+		if ($checkWebBuilderAliases && array_key_exists('Web Builder', $enabledModules)) {
+			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+			$basicPage = new BasicPage();
+			$basicPage->urlAlias = $requestURI;
+			if ($basicPage->find(true)) {
+				$_GET['module'] = 'WebBuilder';
+				$_GET['action'] = 'BasicPage';
+				$_GET['id'] = $basicPage->id;
+				$_REQUEST['module'] = 'WebBuilder';
+				$_REQUEST['action'] = 'BasicPage';
+				$_REQUEST['id'] = $basicPage->id;
+			} else {
+				require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+				$portalPage = new PortalPage();
+				$portalPage->urlAlias = $requestURI;
+				if ($portalPage->find(true)) {
+					$_GET['module'] = 'WebBuilder';
+					$_GET['action'] = 'PortalPage';
+					$_GET['id'] = $portalPage->id;
+					$_REQUEST['module'] = 'WebBuilder';
+					$_REQUEST['action'] = 'PortalPage';
+					$_REQUEST['id'] = $portalPage->id;
+				} else {
+					require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+					$form = new CustomForm();
+					$form->urlAlias = $requestURI;
+					if ($form->find(true)) {
+						$_GET['module'] = 'WebBuilder';
+						$_GET['action'] = 'Form';
+						$_GET['id'] = $form->id;
+						$_REQUEST['module'] = 'WebBuilder';
+						$_REQUEST['action'] = 'Form';
+						$_REQUEST['id'] = $form->id;
+					}
+				}
+			}
+		}
+	}catch (Exception $e) {
+		//This happens if web builder is not fully installed, ignore the error.
 	}
 	//Correct some old actions
 	if (isset($_GET['action'])) {

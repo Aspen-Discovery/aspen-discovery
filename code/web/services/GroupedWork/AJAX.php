@@ -252,7 +252,7 @@ class GroupedWork_AJAX extends JSON_Action
 			$searchObject->disableScoping();
 			$user = UserAccount::getActiveUserObj();
 			/** @noinspection PhpPossiblePolymorphicInvocationInspection */
-			$similar = $searchObject->getMoreLikeThis($id, $user->getNotInterestedTitles(), false, false, 3);
+			$similar = $searchObject->getMoreLikeThis($id, false, false, 3);
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 			// Send the similar items to the template; if there is only one, we need
 			// to force it to be an array or things will not display correctly.
@@ -715,24 +715,24 @@ class GroupedWork_AJAX extends JSON_Action
 
 			if ($emailResult === true){
 				$result = array(
-						'result' => true,
-						'message' => 'Your email was sent successfully.'
+					'result' => true,
+					'message' => 'Your email was sent successfully.'
 				);
 			}elseif (($emailResult instanceof AspenError)){
 				$result = array(
-						'result' => false,
-						'message' => "Your email message could not be sent: {$emailResult}."
+					'result' => false,
+					'message' => "Your email message could not be sent: {$emailResult->getMessage()}."
 				);
 			}else{
 				$result = array(
-						'result' => false,
-						'message' => 'Your email message could not be sent due to an unknown error.'
+					'result' => false,
+					'message' => 'Your email message could not be sent due to an unknown error.'
 				);
 			}
 		}else{
 			$result = array(
-					'result' => false,
-					'message' => 'Sorry, we can&apos;t send emails with html or other data in it.'
+				'result' => false,
+				'message' => 'Sorry, we can&apos;t send emails with html or other data in it.'
 			);
 		}
 		return $result;
@@ -760,7 +760,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 					$result = array(
 						'result' => true,
-						'message' => "You won't be shown this title in the future.",
+						'message' => "You won't be shown this title in the future. It may take a few minutes before the title is removed from your recommendations.",
 					);
 				}
 			}else{

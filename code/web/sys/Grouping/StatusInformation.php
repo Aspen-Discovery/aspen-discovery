@@ -17,6 +17,7 @@ class Grouping_StatusInformation
 	private $_availableCopies = 0;
 	private $_localCopies = 0;
 	private $_localAvailableCopies = 0;
+	private $_isEcontent = false;
 
 	/**
 	 * @return bool
@@ -39,6 +40,9 @@ class Grouping_StatusInformation
 		}
 		if ($statusInformation->isAvailableOnline()) {
 			$this->_availableOnline = true;
+		}
+		if ($statusInformation->isEContent()){
+			$this->_isEcontent = true;
 		}
 		if (!$this->_available && $statusInformation->isAvailable()) {
 			$this->_available = true;
@@ -283,6 +287,65 @@ class Grouping_StatusInformation
 	function addOnOrderCopies(int $numCopies): void
 	{
 		$this->_onOrderCopies += $numCopies;
+	}
+
+	function getNumberOfCopiesMessage(){
+		//Build the string to be translated
+		$numberOfCopiesMessage = '';
+		global $library;
+		//If we don't have holds or on order copies, we don't need to show anything.
+		if ($this->getNumHolds() == 0 && $this->getOnOrderCopies() == 0){
+			$numberOfCopiesMessage = '';
+		}else{
+			if ($this->getCopies() == 1){
+				$numberOfCopiesMessage .= '1 copy';
+			}elseif ($this->getCopies() > 1){
+				$numberOfCopiesMessage .= '%1% copies';
+			}
+			if ($this->getNumHolds() > 0){
+				if (!empty($numberOfCopiesMessage)){
+					$numberOfCopiesMessage .= ', ';
+				}
+				if ($this->getNumHolds() == 1){
+					$numberOfCopiesMessage .= '1 person is on the wait list';
+				}else{
+					$numberOfCopiesMessage .= '%2% people are on the wait list';
+				}
+			}
+			if (!empty($numberOfCopiesMessage)){
+				$numberOfCopiesMessage .= '. ';
+			}
+			if ($this->getOnOrderCopies() > 0){
+				if ($library->showOnOrderCounts){
+					if ($this->getOnOrderCopies() == 1){
+						$numberOfCopiesMessage .= '1 copy on order.';
+					}else{
+						$numberOfCopiesMessage .= '%3% copies on order.';
+					}
+				}else{
+					//Only show that additional copies are on order if there are existing copies
+					if ($this->getCopies() > 0){
+						$numberOfCopiesMessage .= 'Additional copies on order.';
+					}
+				}
+			}
+		}
+
+		return translate([
+			'text' => $numberOfCopiesMessage,
+			1 => $this->getCopies(),
+			2 => $this->getNumHolds(),
+			3 => $this->getOnOrderCopies()
+		]);
+	}
+
+	public function setIsEContent(bool $flag)
+	{
+		$this->_isEcontent = $flag;
+	}
+
+	public function isEContent(){
+		return $this->_isEcontent;
 	}
 
 }

@@ -4,6 +4,9 @@
 			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 		</div>
 	{/if}
+	{if !empty($accountMessages)}
+		{include file='systemMessages.tpl' messages=$accountMessages}
+	{/if}
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
@@ -165,8 +168,8 @@
 $(document).ready(function(){
 	$(".none").click(function(){
 		if($(this).prop("checked")){
-			let rowId = $(this).attr("id");
-			let newId = Number(rowId.replace("none",""));
+			var rowId = $(this).attr("id");
+			var newId = Number(rowId.replace("none",""));
 			$("#sms"+newId).removeAttr("checked");
 			$("#email"+newId).removeAttr("checked");
 			$("#digest"+newId).removeAttr("checked");

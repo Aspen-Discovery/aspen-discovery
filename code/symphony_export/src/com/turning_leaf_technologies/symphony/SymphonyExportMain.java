@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.symphony;
 
+import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
@@ -16,12 +17,14 @@ import org.marc4j.marc.*;
 
 import java.io.*;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
 public class SymphonyExportMain {
 	private static Logger logger;
 	private static IndexingProfile indexingProfile;
+	private static final SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
 	private static Ini configIni;
 	private static Connection dbConn;
@@ -97,6 +100,7 @@ public class SymphonyExportMain {
 			indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
 
 			//Check for new marc out
+			exportVolumes(dbConn, indexingProfile, profileToLoad);
 			numChanges = updateRecords(dbConn);
 
 			if (recordGroupingProcessorSingleton != null) {
@@ -155,6 +159,100 @@ public class SymphonyExportMain {
 					logger.info("Thread was interrupted");
 				}
 			}
+		}
+	}
+
+	private static void exportVolumes(Connection dbConn, IndexingProfile indexingProfile, String profileToLoad) {
+		File volumeExportFile = new File(indexingProfile.getMarcPath() + "/volumes.txt");
+		if (volumeExportFile.exists()){
+			try {
+				//Get the existing volumes from the database
+				PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT volumeId from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				HashSet<String> existingVolumes = new HashSet<>();
+				ResultSet existingVolumesRS = getExistingVolumes.executeQuery();
+				while (existingVolumesRS.next()){
+					existingVolumes.add(existingVolumesRS.getString("volumeId"));
+				}
+				existingVolumesRS.close();
+
+				//Load all volumes in the export
+				CSVReader csvReader = new CSVReader(new FileReader(volumeExportFile),'|');;
+				String[] volumeInfoFields = csvReader.readNext();
+				HashMap<String, VolumeInfo> allVolumesInExport = new HashMap<>();
+				while (volumeInfoFields != null) {
+					if (volumeInfoFields.length == 6) {
+						String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
+						String fullCallNumber = volumeInfoFields[1].trim();
+						try {
+							int startOfVolumeInfo = Integer.parseInt(volumeInfoFields[2].trim());
+							//String dateUpdated = volumeInfoFields[3];
+							String relatedItemNumber = volumeInfoFields[4].trim();
+
+							//startOfVolumeInfo = 0 indicates this item is not part of a volume. Will need separate handling.
+							if (startOfVolumeInfo > 0 && startOfVolumeInfo < fullCallNumber.length()) {
+								String volume = fullCallNumber.substring(startOfVolumeInfo);
+								String key = bibNumber + ":" + volume;
+								VolumeInfo curVolume;
+								if (allVolumesInExport.containsKey(key)) {
+									curVolume = allVolumesInExport.get(key);
+								} else {
+									curVolume = new VolumeInfo();
+									curVolume.bibNumber = bibNumber;
+									curVolume.volume = volume;
+									allVolumesInExport.put(key, curVolume);
+								}
+								curVolume.relatedItems.add(relatedItemNumber);
+							}
+						} catch (NumberFormatException nfe) {
+							logEntry.addNote("Mal formatted volume information " + volumeInfoFields);
+						}
+					}else{
+						logEntry.addNote("Mal formatted volume information " + volumeInfoFields);
+					}
+
+					//Read the next line
+					volumeInfoFields = csvReader.readNext();
+				}
+
+				//Update the database
+				PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems) VALUES (?,?,?,?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems)");
+				PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
+				int numVolumesUpdated = 0;
+				for (String curVolumeKey : allVolumesInExport.keySet()){
+					VolumeInfo curVolume = allVolumesInExport.get(curVolumeKey);
+					existingVolumes.remove(curVolumeKey);
+					try{
+						addVolumeStmt.setString(1, curVolume.bibNumber);
+						addVolumeStmt.setString(2, curVolume.volume);
+						addVolumeStmt.setString(3, curVolume.volume);
+						addVolumeStmt.setString(4, curVolume.getRelatedItemsAsString());
+						int numUpdates = addVolumeStmt.executeUpdate();
+						if (numUpdates > 0) {
+							numVolumesUpdated++;
+						}
+					}catch (SQLException sqlException){
+						logEntry.incErrors("Error adding volume - volume length = " + curVolume.volume.length() + " related Items length = " + curVolume.getRelatedItemsAsString().length(), sqlException);
+					}
+				}
+
+				long numVolumesDeleted = 0;
+				for (String existingVolume : existingVolumes){
+					logEntry.addNote("Deleted volume " + existingVolume);
+					deleteVolumeStmt.setString(1, existingVolume);
+					deleteVolumeStmt.executeUpdate();
+					numVolumesDeleted++;
+				}
+				logEntry.addNote("Updated " + numVolumesUpdated + " volumes and deleted " + numVolumesDeleted + " volumes");
+			} catch (FileNotFoundException e) {
+				logEntry.incErrors("Error loading volumes", e);
+			} catch (IOException e) {
+				logEntry.incErrors("Error reading volume information", e);
+			} catch (SQLException e) {
+				logEntry.incErrors("Error reading and writing from database while loading volumes", e);
+			}
+			logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
+		}else{
+			logEntry.addNote("Volume export file (volumes.txt) did not exist in " + SymphonyExportMain.indexingProfile.getMarcPath());
 		}
 	}
 

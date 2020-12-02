@@ -16,7 +16,7 @@ class CollectionSpotlight extends DataObject
 	public $customCss;
 	public $listDisplayType;
 	public $showMultipleTitles;
-	public $style; //'vertical', 'horizontal', 'single', 'single-with-next'
+	public $style; //'vertical', 'horizontal', 'single', 'single-with-next', 'text-list', 'horizontal-carousel'
 	public $autoRotate;
 	public $libraryId;
 	public /** @noinspection PhpUnused */ $showRatings;
@@ -27,7 +27,7 @@ class CollectionSpotlight extends DataObject
 	public /** @noinspection PhpUnused */ $numTitlesToShow;
 
 	// Spotlight Styles and their labels
-	private static $_styles = array('horizontal' => 'Horizontal', 'vertical' => 'Vertical', 'single' => 'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
+	private static $_styles = array('horizontal' => 'Horizontal', 'horizontal-carousel' => 'Horizontal Carousel', 'vertical' => 'Vertical', 'single' => 'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
 
 	// Spotlight Display Types and their labels
 	private static $_displayTypes = array(

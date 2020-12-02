@@ -116,7 +116,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param $recordId   string
 	 * @return mixed
 	 */
-	public function renewCheckout($patron, $recordId)
+	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
 		return $this->checkOutTitle($patron, $recordId, true);
 	}
@@ -227,7 +227,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId)
+	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings();
@@ -303,7 +303,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param string $recordId The id of the bib record
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId)
+	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings();

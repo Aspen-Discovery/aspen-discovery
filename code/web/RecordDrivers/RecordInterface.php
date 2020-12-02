@@ -335,6 +335,8 @@ abstract class RecordInterface
 		];
 		if ($collectionSpotlight->style == 'text-list'){
 			$result['formattedTextOnlyTitle'] = $interface->fetch('CollectionSpotlight/formattedTextOnlyTitle.tpl');
+		}elseif ($collectionSpotlight->style == 'horizontal-carousel'){
+			$result['formattedTitle'] = $interface->fetch('CollectionSpotlight/formattedHorizontalCarouselTitle.tpl');
 		}else{
 			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
 		}

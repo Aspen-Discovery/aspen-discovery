@@ -28,6 +28,75 @@ class Koha extends AbstractIlsDriver
 		'W' => 'Writeoff'
 	];
 
+	function updateHomeLibrary(User $patron, string $homeLibraryCode)
+	{
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
+		//Load required fields from Koha here to make sure we don't wipe them out
+		/** @noinspection SqlResolve */
+		$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$address = '';
+		$city = '';
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()) {
+				$address = $curRow['address'];
+				$city = $curRow['city'];
+			}
+		}
+
+		$postVariables = [
+			'surname' => $patron->lastname,
+			'address' => $address,
+			'city' => $city,
+			'library_id' => $homeLibraryCode,
+			'category_id' => $patron->patronType,
+		];
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+		} else {
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
+			$postParams = json_encode($postVariables);
+
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+			$this->apiCurlWrapper->setupDebugging();
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+			if ($this->apiCurlWrapper->getResponseCode() != 200) {
+				if (strlen($response) > 0) {
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse) {
+						if (!empty($jsonResponse->error)) {
+							$result['messages'][] = $jsonResponse->error;
+						}else{
+							foreach ($jsonResponse->errors as $error) {
+								$result['messages'][] = $error->message;
+							}
+						}
+					} else {
+						$result['messages'][] = $response;
+					}
+				} else {
+					$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+				}
+			} else {
+				$result['success'] = true;
+				$result['messages'][] = 'Your pickup location was updated successfully.';
+			}
+		}
+
+		return $result;
+	}
+
 	/**
 	 * @param User $patron The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo Permission check that updating is allowed
@@ -120,7 +189,6 @@ class Koha extends AbstractIlsDriver
 					$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 				} else {
 					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
-					//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
 					$postParams = json_encode($postVariables);
 
 					$this->apiCurlWrapper->addCustomHeaders([
@@ -1405,6 +1473,16 @@ class Koha extends AbstractIlsDriver
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
+		global $activeLanguage;
+
+		$currencyCode = 'USD';
+		$variables = new SystemVariables();
+		if ($variables->find(true)){
+			$currencyCode = $variables->currencyCode;
+		}
+
+		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+
 		$this->initDatabaseConnection();
 
 		//Get a list of outstanding fees
@@ -1435,8 +1513,8 @@ class Koha extends AbstractIlsDriver
 					'message' => $allFeesRow['description'],
 					'amountVal' => $allFeesRow['amount'],
 					'amountOutstandingVal' => $allFeesRow['amountoutstanding'],
-					'amount' => StringUtils::formatMoney('%.2n', $allFeesRow['amount']),
-					'amountOutstanding' => StringUtils::formatMoney('%.2n', $allFeesRow['amountoutstanding']),
+					'amount' => $currencyFormatter->formatCurrency($allFeesRow['amount'], $currencyCode),
+					'amountOutstanding' => $currencyFormatter->formatCurrency($allFeesRow['amountoutstanding'], $currencyCode),
 				];
 				$fines[] = $curFine;
 			}
@@ -1853,9 +1931,17 @@ class Koha extends AbstractIlsDriver
 		}
 
 		//Library
-		$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'borrower_branchcode' => array('property' => 'borrower_branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true)
-		]);
+		if (count($pickupLocations) == 1){
+			$selectedPickupLocation = '';
+			foreach ($pickupLocations as $code => $name){
+				$selectedPickupLocation = $code;
+			}
+			$fields['borrower_branchcode'] = array('property' => 'borrower_branchcode', 'type' => 'hidden', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'default' => $selectedPickupLocation, 'required' => true);
+		}else{
+			$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+				'borrower_branchcode' => array('property' => 'borrower_branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true)
+			]);
+		}
 
 		//Identity
 		$fields['identitySection'] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
@@ -1876,6 +1962,7 @@ class Koha extends AbstractIlsDriver
 			$validStates = array_combine($validStates, $validStates);
 			$borrowerStateField = array('property' => 'borrower_state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
 		}
+
 		//Main Address
 		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'borrower_address' => array('property' => 'borrower_address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 128, 'required' => true),
@@ -1885,6 +1972,10 @@ class Koha extends AbstractIlsDriver
 			'borrower_zipcode' => array('property' => 'borrower_zipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => true),
 			'borrower_country' => array('property' => 'borrower_country', 'type' => 'text', 'label' => 'Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
 		]);
+		if (!empty($library->validSelfRegistrationZipCodes)){
+			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationPattern'] = $library->validSelfRegistrationZipCodes;
+			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationMessage'] = translate('Please enter a valid zip code');
+		}
 		//Contact information
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'borrower_phone' => array('property' => 'borrower_phone', 'type' => 'text', 'label' => 'Primary Phone' . $phoneFormat, 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
@@ -1939,27 +2030,29 @@ class Koha extends AbstractIlsDriver
 			$requiredFields['password2'] = true;
 		}
 		foreach ($fields as $sectionKey => &$section) {
-			$allFieldsHidden = true;
-			foreach ($section['properties'] as $fieldKey => &$field) {
-				$fieldName = str_replace('borrower_', '', $fieldKey);
-				if (array_key_exists($fieldName, $unwantedFields)) {
-					//There is a case here where a field is marked as both unwanted and required.  If that is the case, do not unset it, just change the type to hidden.
-					if (array_key_exists($fieldName, $requiredFields)){
-						$section['properties'][$fieldKey]['type'] = 'hidden';
-					}else {
-						unset($section['properties'][$fieldKey]);
+			if ($section['type'] == 'section') {
+				$allFieldsHidden = true;
+				foreach ($section['properties'] as $fieldKey => &$field) {
+					$fieldName = str_replace('borrower_', '', $fieldKey);
+					if (array_key_exists($fieldName, $unwantedFields)) {
+						//There is a case here where a field is marked as both unwanted and required.  If that is the case, do not unset it, just change the type to hidden.
+						if (array_key_exists($fieldName, $requiredFields)) {
+							$section['properties'][$fieldKey]['type'] = 'hidden';
+						} else {
+							unset($section['properties'][$fieldKey]);
+						}
+					} else {
+						$field['required'] = array_key_exists($fieldName, $requiredFields);
 					}
-				} else {
-					$field['required'] = array_key_exists($fieldName, $requiredFields);
+					if (array_key_exists($fieldKey, $section['properties']) && $section['properties'][$fieldKey]['type'] != 'hidden') {
+						$allFieldsHidden = false;
+					}
 				}
-				if (array_key_exists($fieldKey, $section['properties']) && $section['properties'][$fieldKey]['type'] != 'hidden'){
-					$allFieldsHidden = false;
+				if (empty($section['properties'])) {
+					unset ($fields[$sectionKey]);
+				} elseif ($allFieldsHidden) {
+					$section['label'] = '';
 				}
-			}
-			if (empty($section['properties'])) {
-				unset ($fields[$sectionKey]);
-			}elseif ($allFieldsHidden){
-				$section['label'] = '';
 			}
 		}
 
@@ -3044,8 +3137,8 @@ class Koha extends AbstractIlsDriver
 
 		$maxOutstanding = $this->getKohaSystemPreference('MaxOutstanding');
 
+		$accountSummary = $this->getAccountSummary($patron, true);
 		if ($maxOutstanding > 0){
-			$accountSummary = $this->getAccountSummary($patron, true);
 			$totalFines = $accountSummary['totalFines'];
 			if ($totalFines > $maxOutstanding){
 				$result['isEligible'] = false;
@@ -3057,7 +3150,6 @@ class Koha extends AbstractIlsDriver
 		//Check maximum holds
 		$maxHolds = $this->getKohaSystemPreference('maxreserves');
 		//Get total holds
-		$accountSummary = $this->getAccountSummary($patron);
 		$currentHoldsForUser = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
 		if ($currentHoldsForUser >= $maxHolds) {
 			$result['isEligible'] = false;
@@ -3067,6 +3159,17 @@ class Koha extends AbstractIlsDriver
 			}
 			$result['message'] .= translate(['text' => 'outstanding_holds_limit', 'defaultText' => 'Sorry, you have reached the maximum number of holds for your account.']);
 		}
+
+		//Check if the patron is expired
+		if ($accountSummary['expired'] == 1) {
+			$blockExpiredPatronOpacActions = $this->getKohaSystemPreference('BlockExpiredPatronOpacActions');
+			if ($blockExpiredPatronOpacActions == 1){
+				$result['isEligible'] = false;
+				$result['expiredPatronWhoCannotPlaceHolds'] = true;
+				$result['message'] = translate(['text' => 'expired_patron_cannot_place_holds', 'defaultText' => 'Sorry, your account has expired. Please renew your account to place holds.']);
+			}
+		}
+
 		return $result;
 	}
 
@@ -3136,7 +3239,6 @@ class Koha extends AbstractIlsDriver
 			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
-			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
 			$postParams = json_encode($postVariables);
 
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -3270,7 +3372,6 @@ class Koha extends AbstractIlsDriver
 	protected function resetPinInKoha($borrowerNumber, string $newPin, string $oauthToken): array
 	{
 		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/password";
-		//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
 		$postParams = [];
 		$postParams['password'] = $newPin;
 		$postParams['password_2'] = $newPin;
@@ -3395,7 +3496,6 @@ class Koha extends AbstractIlsDriver
 			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
-			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
 			$postParams = json_encode($postVariables);
 
 			$this->apiCurlWrapper->addCustomHeaders([

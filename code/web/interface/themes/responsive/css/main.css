@@ -1,4 +1,6 @@
 @import "lib/fontawesome-all.min.css";
+@import "lib/rome.min.css";
+@import "simplemde.min.css";
 article,
 aside,
 details,
@@ -8484,6 +8486,15 @@ hr.menu {
   text-align: center;
   padding: 3px;
 }
+.system-message {
+  padding: 5px;
+}
+.system-message-text {
+  display: inline-block;
+}
+.dismissable-system-message-text {
+  width: calc(100% - 30px);
+}
 #header-container {
   padding-top: 0;
   height: 120px;
@@ -8807,6 +8818,26 @@ a.placard-link {
   background-color: white;
   z-index: 2;
 }
+.rd-container {
+  z-index: 5;
+}
+#webMenuNavBar {
+  background-color: #00a4e3;
+  color: #ffffff;
+  border: 0;
+  border-top: solid #ffffff 2px;
+  border-radius: 0;
+  min-height: auto;
+}
+#webMenuNavBar .nav > li > a,
+#webMenuNavBar .nav > li > a:visited {
+  color: #ffffff;
+  padding: 7px 10px;
+}
+#webMenuNavBar .navbar-nav > li.open > a,
+#webMenuNavBar .navbar-nav > li.open > a:visited {
+  color: #555555;
+}
 .help-link {
   margin-top: 20px;
   line-height: 50px;
@@ -8814,6 +8845,12 @@ a.placard-link {
 }
 .propertyDescription {
   margin-bottom: 6px;
+}
+.image-popup .modal-dialog {
+  width: auto;
+}
+.image-popup .modal-dialog .img-responsive {
+  margin: auto;
 }
 .badge {
   background-color: #666666;
@@ -9549,9 +9586,11 @@ a.browse-thumbnail-sorted.active {
 }
 #browse-sub-category-menu {
   margin-top: 10px;
+  padding-left: 10px;
 }
 #browse-sub-category-menu button {
   margin-right: 5px;
+  margin-bottom: 5px;
 }
 #browse-sub-category-menu button.selected {
   color: #fff;
@@ -9751,6 +9790,42 @@ a.browse-thumbnail-sorted.active {
 .collectionSpotlightSelector {
   width: 100%;
   text-align: right;
+}
+.horizontalCarouselSpotlightWrapper .jcarousel-control-prev,
+.horizontalCarouselSpotlightWrapper .jcarousel-control-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: #d4d4d4;
+  height: 100%;
+  font-size: 50px;
+  box-shadow: none;
+}
+.horizontalCarouselSpotlightWrapper .jcarousel-control-prev:focus,
+.horizontalCarouselSpotlightWrapper .jcarousel-control-next:focus {
+  text-decoration: none;
+  outline: none;
+}
+.horizontalCarouselSpotlightWrapper .jcarousel-control-prev:hover,
+.horizontalCarouselSpotlightWrapper .jcarousel-control-next:hover {
+  text-decoration: none;
+}
+.horizontalCarouselSpotlightWrapper .jcarousel-pagination a,
+.horizontalCarouselSpotlightWrapper .jcarousel-pagination a:hover,
+.horizontalCarouselSpotlightWrapper .jcarousel-pagination a:active,
+.horizontalCarouselSpotlightWrapper .jcarousel-pagination a:visited {
+  outline: none;
+}
+.jcarousel li.carouselTitleWrapper {
+  border-width: 0;
+}
+.carouselScrollerTitle {
+  display: inline-block;
+  text-align: center;
+}
+.carouselScrollerTitle .carouselScrollerTitleImage {
+  display: inline-block;
 }
 .scrollerTitle {
   display: inline-block;
@@ -11006,30 +11081,6 @@ a.browse-thumbnail-sorted.active {
     font-size: 18px;
   }
 }
-.researchStarter {
-  border: solid 1px #00a4e3;
-  margin: 10px 5px 15px;
-}
-.researchStarter .label-top {
-  color: #FFF;
-  width: 100%;
-  padding: 5px;
-  background-color: #00a4e3;
-  display: inline-block;
-  vertical-align: center;
-  font-weight: bold;
-  padding-top: 10px;
-  height: 40px;
-}
-.researchStarterBody {
-  padding: 10px;
-}
-.researchStarter-dismiss {
-  position: absolute;
-  right: 0;
-  top: 0;
-  font-weight: bold;
-}
 .editor .panel-group .panel-body > .form-group > .controls {
   overflow-x: auto;
 }
@@ -11112,5 +11163,57 @@ a.browse-thumbnail-sorted.active {
 .permissionDescription {
   font-style: italic;
   font-size: 10px;
+}
+.staff-member {
+  padding: 5px 10px;
+  border: 1px solid #bbb;
+  margin: 10px 0;
+}
+.staff-name {
+  font-size: 20px;
+  font-weight: bold;
+}
+.portal-row-edit {
+  border-color: dimgrey;
+  border-style: dashed;
+  border-width: 1px;
+  min-height: 100px;
+  padding: 5px;
+}
+.portal-cell-edit {
+  border-color: dimgrey;
+  border-style: dotted;
+  border-width: 1px;
+  min-height: 90px;
+}
+.portal-cell-title-edit {
+  padding: 5px;
+  background-color: dimgrey;
+  color: white;
+  height: 50px;
+}
+.researchStarter {
+  border: solid 1px #00a4e3;
+  margin: 10px 5px 15px;
+}
+.researchStarter .label-top {
+  color: #FFF;
+  width: 100%;
+  padding: 5px;
+  background-color: #00a4e3;
+  display: inline-block;
+  vertical-align: center;
+  font-weight: bold;
+  padding-top: 10px;
+  height: 40px;
+}
+.researchStarterBody {
+  padding: 10px;
+}
+.researchStarter-dismiss {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-weight: bold;
 }
 /*# sourceMappingURL=main.css.map */

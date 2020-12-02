@@ -581,6 +581,52 @@ function getUserUpdates()
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Unpublished Content'))",
 			]
 		],
+
+		'administer_host_permissions' => [
+			'title' => 'Administer host permissions',
+			'description' => 'Create permissions to administer host information',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('System Administration', 'Administer Host Information', '', 50, 'Allows the user to change information about the hosts used for Aspen Discovery.')
+				",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Host Information'))",
+			]
+		],
+
+//		'barcode_printing_permissions' => [
+//			'title' => 'Print barcodes permissions',
+//			'description' => 'Create permissions to print barcodes',
+//			'continueOnError' => true,
+//			'sql' => [
+//				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES
+//					('Cataloging & eContent', 'Print Barcodes', '', 95, 'Allows the user to print barcodes within Aspen Discovery.')
+//				",
+//				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Print Barcodes'))",
+//			]
+//		],
+
+		'system_messages_permissions' => [
+			'title' => 'System Messages permissions',
+			'description' => 'Create permissions to administer system messages',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Local Enrichment', 'Administer All System Messages', '', 70, 'Allows the user to define system messages for all libraries within Aspen Discovery.'),
+					('Local Enrichment', 'Administer Library System Messages', '', 80, 'Allows the user to define system messages for their library within Aspen Discovery.')
+				",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All System Messages'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='libraryAdmin'), (SELECT id from permissions where name='Administer Library System Messages'))",
+			]
+		],
+
+		'new_york_times_user_updates' => [
+			'title' => 'New York Times permission updates',
+			'description' => 'Update permissions for New York Times user and make the id non zero, make sure that all their lists are searchable too',
+			'sql' => [
+				'fixNytUserPermissions'
+			],
+		],
 	);
 }
 
@@ -626,6 +672,45 @@ function makeNytUserListPublisher()
 			$userRole->userId = $user->id;
 			$userRole->roleId = $role->roleId;
 			$userRole->insert();
+		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function fixNytUserPermissions()
+{
+	//Get the New York Times User
+	$user = new User();
+	$user->username = 'nyt_user';
+	if ($user->find(true)) {
+		if ($user->id == 0){
+			$idToMoveTo = -2;
+			$foundIdToMoveTo = false;
+			while (!$foundIdToMoveTo){
+				//We will move the user to a negative id.
+				$tmpUser = new User();
+				$tmpUser->id = $idToMoveTo;
+				if ($tmpUser->find(true)){
+					$idToMoveTo--;
+				}else{
+					$foundIdToMoveTo = true;
+				}
+			}
+			global $aspen_db;
+			$aspen_db->query("UPDATE user SET id = $idToMoveTo WHERE id = 0");
+			$aspen_db->query("UPDATE user_roles SET userId = $idToMoveTo WHERE userId = 0");
+			$aspen_db->query("UPDATE user_list SET user_id = $idToMoveTo WHERE user_id = 0");
+			$user->id = $idToMoveTo;
+		}
+	}
+	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+	$nytLists = new UserList();
+	$nytLists->user_id = $user->id;
+	$nytLists->find();
+	while ($nytLists->fetch()){
+		if ($nytLists->searchable == 0){
+			$nytLists->searchable = 1;
+			$nytLists->update();
 		}
 	}
 }

@@ -215,7 +215,7 @@ class UInterface extends Smarty
 			$user = UserAccount::getActiveUserObj();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$finePaymentType     = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
+			$finePaymentType = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
 
 			$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
 			$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
@@ -403,6 +403,7 @@ class UInterface extends Smarty
 			$logger->log("Theme interface not found", Logger::LOG_ALERT);
 		}
 
+		/** @var Location $location */
 		$location = $locationSingleton->getActiveLocation();
 		$this->assign('logoLink', '');
 		$this->assign('logoAlt', 'Return to Catalog Home');
@@ -421,6 +422,49 @@ class UInterface extends Smarty
 		}elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
 			$this->assign('homeLink', $library->homeLink);
 		}
+
+		//Load JavaScript Snippets
+		$customJavascript = '';
+		if (!isset($_REQUEST['noCustomJavaScript']) && !isset($_REQUEST['noCustomJavascript'])) {
+			try {
+				if (isset($location)) {
+					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLocation.php';
+					$javascriptSnippetLocation = new JavaScriptSnippetLocation();
+					$javascriptSnippetLocation->locationId = $location->locationId;
+					$javascriptSnippetLocation->find();
+					while ($javascriptSnippetLocation->fetch()) {
+						require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
+						$javascriptSnippet = new JavaScriptSnippet();
+						$javascriptSnippet->id = $javascriptSnippetLocation->javascriptSnippetId;
+						if ($javascriptSnippet->find(true)) {
+							if (strlen($customJavascript) > 0) {
+								$customJavascript .= "\n";
+							}
+							$customJavascript .= trim($javascriptSnippet->snippet);
+						}
+					}
+				} else {
+					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLibrary.php';
+					$javascriptSnippetLibrary = new JavaScriptSnippetLibrary();
+					$javascriptSnippetLibrary->libraryId = $library->libraryId;
+					$javascriptSnippetLibrary->find();
+					while ($javascriptSnippetLibrary->fetch()) {
+						require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
+						$javascriptSnippet = new JavaScriptSnippet();
+						$javascriptSnippet->id = $javascriptSnippetLibrary->javascriptSnippetId;
+						if ($javascriptSnippet->find(true)) {
+							if (strlen($customJavascript) > 0) {
+								$customJavascript .= "\n";
+							}
+							$customJavascript .= trim($javascriptSnippet->snippet);
+						}
+					}
+				}
+			} catch (PDOException $e) {
+				//This happens before the database update runs
+			}
+		}
+		$this->assign('customJavascript', $customJavascript);
 
 		$this->assign('facebookLink', $library->facebookLink);
 		$this->assign('twitterLink', $library->twitterLink);

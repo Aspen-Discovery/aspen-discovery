@@ -35,8 +35,10 @@
 <body class="module_{$module} action_{$action}{if $masqueradeMode} masqueradeMode{/if}{if $loggedIn} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}">
 {strip}
 	<div class="container">
-		{if !empty($systemMessage)}
-			<div id="system-message-header" class="row">{$systemMessage}</div>
+		{if !empty($systemMessages)}
+			<div id="system-message-header" class="row">
+				{include file="systemMessages.tpl" messages=$systemMessages}
+			</div>
 		{/if}
 
 		{foreach from=$messages item="message"}
@@ -65,6 +67,10 @@
 			<div id="horizontal-search-container" class="col-tn-12" role="search">
 				{include file="Search/horizontal-searchbox.tpl"}
 			</div>
+
+{*			{if !empty($webMenu)}*}
+{*				{include file="webmenu.tpl"}*}
+{*			{/if}*}
 		</div>
 
 		<div id="content-container">
@@ -119,7 +125,10 @@
 	{if !empty($semanticData)}
 		{include file="jsonld.tpl"}
 	{/if}
-{/strip}
 
+	{if !empty($customJavascript)}
+		{$customJavascript}
+	{/if}
+{/strip}
 </body>
 </html>

@@ -5,8 +5,8 @@ AspenDiscovery.Hoopla = (function(){
 				if (typeof patronId === 'undefined') {
 					patronId = $('#patronId', '#pickupLocationOptions').val(); // Lookup selected user from the options form
 				}
-				let url = Globals.path + '/Hoopla/'+ hooplaId + '/AJAX';
-				let	params = {
+				var url = Globals.path + '/Hoopla/'+ hooplaId + '/AJAX';
+				var params = {
 					'method' : 'checkOutHooplaTitle',
 					patronId : patronId
 				};

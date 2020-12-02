@@ -4,8 +4,7 @@ AspenDiscovery.SideLoads = (function(){
 			if (!confirm('Are you sure you want to delete this ' + fileName + '?')){
 				return false;
 			}
-			let url = Globals.path + "/SideLoads/AJAX?method=deleteMarc&id=" + sideLoadId + "&file=" + fileName;
-			let params = {
+			var params = {
 				method : 'deleteMarc',
 				id: sideLoadId,
 				file: fileName

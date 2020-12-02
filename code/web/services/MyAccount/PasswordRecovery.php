@@ -15,9 +15,9 @@ class PasswordRecovery extends Action
 		//Get the unique key
 		$error = null;
 		if (isset($_REQUEST['submit'])){
-			$this->display($catalog->processPasswordRecovery(), 'Recover ' . $interface->getVariable('passwordLabel'));
+			$this->display($catalog->processPasswordRecovery(), 'Recover ' . $interface->getVariable('passwordLabel'), '');
 		}else {
-			$this->display($catalog->getPasswordRecoveryTemplate(), 'Recover ' . $interface->getVariable('passwordLabel'));
+			$this->display($catalog->getPasswordRecoveryTemplate(), 'Recover ' . $interface->getVariable('passwordLabel'), '');
 		}
 	}
 

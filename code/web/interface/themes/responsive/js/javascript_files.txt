@@ -15,6 +15,9 @@ lib/jquery.rwdImageMaps.min.js
 lib/additional-methods.min.js
 lib/rater.min.js
 lib/recaptcha_ajax.min.js
+lib/simplemde.min.js
+lib/moment.min.js
+lib/rome.standalone.min.js
 aspen/globals.js
 aspen/base.js
 aspen/account.js
@@ -44,5 +47,6 @@ aspen/results-list.js
 aspen/searches.js
 aspen/sideloads.js
 aspen/title-scroller.js
+aspen/web-builder.js
 aspen/websites.js
 aspen/wikipedia.js

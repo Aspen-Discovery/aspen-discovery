@@ -34,9 +34,7 @@ class Admin_Marriages extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'marriageId';
 	}
-	function getAllowableRoles(){
-		return array('genealogyContributor');
-	}
+
 	function getRedirectLocation($objectAction, $curObject){
 		if ($curObject instanceof Marriage) {
 			return '/Person/' . $curObject->personId;

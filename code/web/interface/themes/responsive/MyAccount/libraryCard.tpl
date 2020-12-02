@@ -5,6 +5,9 @@
 			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 		</div>
 	{/if}
+	{if !empty($accountMessages)}
+		{include file='systemMessages.tpl' messages=$accountMessages}
+	{/if}
 
 	<h1>{translate text="Library Card"}</h1>
 	<div class="row">
@@ -16,6 +19,9 @@
 			<div>
 				{$profile->getBarcode()}
 			</div>
+			{if count($linkedCards) > 0}
+				<div>{$profile->displayName}</div>
+			{/if}
 		</div>
 	</div>
 
@@ -51,6 +57,25 @@
 			</div>
 		</form>
 	{/if}
+
+	{if count($linkedCards) > 0}
+		<h1>{translate text='Linked cards'}</h1>
+		{foreach from=$linkedCards item=linkedCard}
+			<div class="row">
+				<div class="col-xs-12" id="library-barcode">
+					{if $libraryCardBarcodeStyle != 'none'}
+						<svg class="barcode" id="linked-barcode-svg-{$linkedCard.id}">
+						</svg>
+					{/if}
+					<div>
+						{$linkedCard.barcode}
+					</div>
+					<div>{$linkedCard.fullName}</div>
+				</div>
+			</div>
+		{/foreach}
+	{/if}
+
 	{/strip}
 	<script src="/js/jsBarcode/JsBarcode.all.min.js"></script>
 	<script type="text/javascript">
@@ -60,12 +85,15 @@
 				{if $showAlternateLibraryCard}
 				updateAlternateLibraryCardBarcode();
 				{/if}
+				{foreach from=$linkedCards item=linkedCard}
+				$("#linked-barcode-svg-{$linkedCard.id}").JsBarcode('{$linkedCard.barcode}', {ldelim}format:'{$libraryCardBarcodeStyle}',displayValue:false{rdelim});
+				{/foreach}
 			{rdelim}
 		);
         {if $showAlternateLibraryCard}
 		function updateAlternateLibraryCardBarcode(){ldelim}
-			let alternateLibraryCardVal = $("#alternateLibraryCard").val();
-			let alternateLibraryCardSvg = $("#library-alternateLibraryCard-svg");
+			var alternateLibraryCardVal = $("#alternateLibraryCard").val();
+			var alternateLibraryCardSvg = $("#library-alternateLibraryCard-svg");
 			if (alternateLibraryCardVal.length > 0){ldelim}
 				alternateLibraryCardSvg.JsBarcode(alternateLibraryCardVal, {ldelim}format:'{$alternateLibraryCardStyle}',displayValue:false{rdelim});
 				$("#library-alternateLibraryCard").show();

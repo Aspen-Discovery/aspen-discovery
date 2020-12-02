@@ -27,12 +27,18 @@ class MyAccount_MyPreferences extends MyAccount
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
 			if ($patronHomeLibrary == null){
+				$canUpdateContactInfo = false;
 				$showAlternateLibraryOptionsInProfile = true;
+				$showPickupLocationInProfile = true;
 			}else{
+				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
+				$showPickupLocationInProfile = ($patronHomeLibrary->showPickupLocationInProfile == 1);
 			}
 
+			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
+			$interface->assign('showPickupLocationInProfile', $showPickupLocationInProfile);
 
 			// Determine Pickup Locations
 			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
@@ -57,6 +63,15 @@ class MyAccount_MyPreferences extends MyAccount
 				$result = $patron->updateUserPreferences();
 				$user->updateMessage = implode('<br/>', $result['messages']);
 				$user->updateMessageIsError = !$result['success'];
+
+				if ($canUpdateContactInfo && $showPickupLocationInProfile){
+					$result2 = $user->updateHomeLibrary($_REQUEST['pickupLocation']);
+					if (!empty($user->updateMessage)){
+						$user->updateMessage .= '<br/>';
+					}
+					$user->updateMessage .= implode('<br/>', $result2['messages']);
+					$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
+				}
 				$user->update();
 
 				session_write_close();

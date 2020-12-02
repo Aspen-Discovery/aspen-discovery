@@ -8,7 +8,7 @@ AspenDiscovery.Searches = (function(){
 		// This allows a preset showCovers setting to be sent back with the first search without requiring login or
 		// a page reload on the search results page.
 		if (!Globals.opac && !Globals.loggedIn && AspenDiscovery.hasLocalStorage() && $('input[name="showCovers"]').length === 0){
-			let showCovers = window.localStorage.getItem('showCovers') || false;
+			var showCovers = window.localStorage.getItem('showCovers') || false;
 			if (showCovers.length > 0) {
 				$("<input>").attr({
 					type: 'hidden',
@@ -28,8 +28,8 @@ AspenDiscovery.Searches = (function(){
 		},
 
 		getCombinedResults: function(fullId, shortId, source, searchTerm, searchType, numberOfResults){
-			let url = Globals.path + '/Union/AJAX';
-			let params = '?method=getCombinedResults&source=' + source + '&numberOfResults=' + numberOfResults + "&id=" + fullId + "&searchTerm=" + searchTerm + "&searchType=" + searchType;
+			var url = Globals.path + '/Union/AJAX';
+			var params = '?method=getCombinedResults&source=' + source + '&numberOfResults=' + numberOfResults + "&id=" + fullId + "&searchTerm=" + searchTerm + "&searchType=" + searchType;
 			if ($('#hideCovers').is(':checked')){
 				params += "&showCovers=off";
 			}else{
@@ -73,7 +73,7 @@ AspenDiscovery.Searches = (function(){
 		},
 
 		toggleDisplayMode : function(selectedMode){
-			let mode = this.displayModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.displayMode, // check that selected mode is a valid option
+			var mode = this.displayModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.displayMode, // check that selected mode is a valid option
 					searchBoxView = $('input[name="view"]','#searchForm'), // display mode variable associated with the search box
 					paramString = AspenDiscovery.replaceQueryParam('page', '', AspenDiscovery.replaceQueryParam('view',mode)); // set view in url and unset page variable
 			this.displayMode = mode; // set the mode officially
@@ -87,19 +87,19 @@ AspenDiscovery.Searches = (function(){
 		},
 
 		getMoreResults: function(){
-			let url = Globals.path + '/Search/AJAX',
+			var url = Globals.path + '/Search/AJAX',
 					params = AspenDiscovery.replaceQueryParam('page', this.curPage+1)+'&method=getMoreSearchResults',
 					divClass = this.displayModeClasses[this.displayMode];
 			params = AspenDiscovery.replaceQueryParam('view', this.displayMode, params); // set the view url parameter just in case.
 			if (params.search(/[?;&]replacementTerm=/) !== -1) {
-				let searchTerm = location.search.split('replacementTerm=')[1].split('&')[0];
+				var searchTerm = location.search.split('replacementTerm=')[1].split('&')[0];
 				params = AspenDiscovery.replaceQueryParam('lookfor', searchTerm, params);
 			}
 			$.getJSON(url+params, function(data){
 				if (data.success === 'false'){
 					AspenDiscovery.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
 				}else{
-					let newDiv = $(data.records).hide();
+					var newDiv = $(data.records).hide();
 					$('.'+divClass).filter(':last').after(newDiv);
 					newDiv.fadeIn('slow');
 					if (data.lastPage) $('#more-browse-results').hide(); // hide the load more results
@@ -111,11 +111,11 @@ AspenDiscovery.Searches = (function(){
 
 		initAutoComplete: function(){
 			try{
-				let searchTermInput = $("#lookfor");
+				var searchTermInput = $("#lookfor");
 				if (searchTermInput.length){
 					searchTermInput.autocomplete({
 						source:function(request,response){
-							let url=Globals.path+"/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $("#lookfor").val() + "&searchIndex=" + $("#searchIndex").val() + "&searchSource=" + $("#searchSource").val();
+							var url=Globals.path+"/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $("#lookfor").val() + "&searchIndex=" + $("#searchIndex").val() + "&searchSource=" + $("#searchSource").val();
 							$.ajax({
 								url:url,
 								dataType:"json",
@@ -131,7 +131,12 @@ AspenDiscovery.Searches = (function(){
 							collision:"none"
 						},
 						minLength:4,
-						delay:600
+						delay:600,
+						select: function(event, ui){
+							searchTermInput.val(ui.item.value);
+							$("#searchForm").submit();
+							return false;
+						}
 					}).data('ui-autocomplete')._renderItem = function( ul, item ) {
 						return $( "<li></li>" )
 							.data( "ui-autocomplete-item", item.value )
@@ -147,12 +152,12 @@ AspenDiscovery.Searches = (function(){
 
 		sendEmail: function(){
 			if (Globals.loggedIn){
-				let from = $('#from').val();
-				let to = $('#to').val();
-				let message = $('#message').val();
-				let sourceUrl = window.location.href;
+				var from = $('#from').val();
+				var to = $('#to').val();
+				var message = $('#message').val();
+				var sourceUrl = window.location.href;
 
-				let url = Globals.path + "/Search/AJAX";
+				var url = Globals.path + "/Search/AJAX";
 				$.getJSON(url,
 						{ // pass parameters as data
 							method     : 'sendEmail'
@@ -174,22 +179,20 @@ AspenDiscovery.Searches = (function(){
 		},
 
 		loadSearchTypes: function(){
-			let searchTypeElement = $("#searchSource");
-			let catalogType = "catalog";
-			let hasAdvancedSearch = false;
+			var searchTypeElement = $("#searchSource");
+			var catalogType = "catalog";
+			var hasAdvancedSearch = false;
+			var advancedSearchLabel = "Advanced Search";
+			var advancedSearchUrl = "/Search/Advanced";
 			if (searchTypeElement){
-				let selectedSearchType = $(searchTypeElement.find(":selected"));
+				var selectedSearchType = $(searchTypeElement.find(":selected"));
 				if (selectedSearchType){
 					catalogType = selectedSearchType.data("catalog_type");
 					hasAdvancedSearch = selectedSearchType.data("advanced_search");
+					advancedSearchLabel = selectedSearchType.data("advanced_search_label");
 				}
 			}
-			if (hasAdvancedSearch){
-				$('#advancedSearchLink').show();
-			}else{
-				$('#advancedSearchLink').hide();
-			}
-			let url = "/Search/AJAX";
+			var url = "/Search/AJAX";
 			$.getJSON(url,
 				{ // pass parameters as data
 					method : 'getSearchIndexes',
@@ -197,20 +200,23 @@ AspenDiscovery.Searches = (function(){
 				},
 				function(data) {
 					if (data.success) {
-						let searchIndexElement = $("#searchIndex");
+						var searchIndexElement = $("#searchIndex");
 						if (searchIndexElement) {
 							//Clear the existing options and load with the new ones
 							searchIndexElement.empty();
-							for(let searchIndex in data.searchIndexes) {
-								let selected = "";
+							for(var searchIndex in data.searchIndexes) {
+								var selected = "";
 								if (searchIndex === data.selectedIndex){
 									selected = " selected"
 								}
-								let defaultSearch = "";
+								var defaultSearch = "";
 								if (searchIndex === data.defaultSearchIndex){
 									defaultSearch = " id='default_search_type'";
 								}
 								searchIndexElement.append("<option value='" + searchIndex + "'" + selected + defaultSearch + ">" + data.searchIndexes[searchIndex] + "</option>")
+							}
+							if (hasAdvancedSearch){
+								searchIndexElement.append("<option value='advanced'>" + advancedSearchLabel + "</option>");
 							}
 						}
 					}
@@ -219,10 +225,10 @@ AspenDiscovery.Searches = (function(){
 		},
 
 		loadExploreMoreBar: function(section, searchTerm){
-			let url = Globals.path + "/Search/AJAX";
-			let params = "method=loadExploreMoreBar&section=" + encodeURIComponent(section);
+			var url = Globals.path + "/Search/AJAX";
+			var params = "method=loadExploreMoreBar&section=" + encodeURIComponent(section);
 			params += "&searchTerm=" + encodeURIComponent(searchTerm);
-			let fullUrl = url + "?" + params;
+			var fullUrl = url + "?" + params;
 			$.getJSON(fullUrl,
 				function(data) {
 					if (data.success === true){
@@ -235,9 +241,9 @@ AspenDiscovery.Searches = (function(){
 
 		lockFacet: function (clusterName) {
 			event.stopPropagation();
-			let url = Globals.path + "/Search/AJAX";
-			let params = "method=lockFacet&facet=" + encodeURIComponent(clusterName);
-			let fullUrl = url + "?" + params;
+			var url = Globals.path + "/Search/AJAX";
+			var params = "method=lockFacet&facet=" + encodeURIComponent(clusterName);
+			var fullUrl = url + "?" + params;
 			$.getJSON(fullUrl,
 				function(data) {
 					if (data.success === true){
@@ -253,9 +259,9 @@ AspenDiscovery.Searches = (function(){
 
 		unlockFacet: function (clusterName) {
 			event.stopPropagation();
-			let url = Globals.path + "/Search/AJAX";
-			let params = "method=unlockFacet&facet=" + encodeURIComponent(clusterName);
-			let fullUrl = url + "?" + params;
+			var url = Globals.path + "/Search/AJAX";
+			var params = "method=unlockFacet&facet=" + encodeURIComponent(clusterName);
+			var fullUrl = url + "?" + params;
 			$.getJSON(fullUrl,
 				function(data) {
 					if (data.success === true){
@@ -267,6 +273,6 @@ AspenDiscovery.Searches = (function(){
 				}
 			);
 			return false;
-		},
+		}
 	}
 }(AspenDiscovery.Searches || {}));

@@ -1,5 +1,5 @@
 {strip}
-<script src="/JsBarcode.code39.min.js"></script>
+<script src="/js/jsBarcode/JsBarcode.all.min.js"></script>
 <script>
 function makeBarcodes() {ldelim}
 var patron = [];
@@ -118,15 +118,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 				<div class="error">{$error}</div>
 			{/foreach}
 			<form class="form form-inline">
-				<select name="selectedReport" id="selectedReport" class="form-control input-sm">
-					{foreach from=$availableReports item=curReport key=reportLocation}
-						<option value="{$reportLocation}" {if $curReport==$selectedReport}selected="selected"{/if}>{$curReport|regex_replace:"/^..(.+?)_school_barcodes.csv/":"\\1"} created {$reportDateTime}</option>
-					{/foreach}
-				</select>
-				&nbsp;
-
-				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary"/>
-				&nbsp;
+				{html_options name=location options=$locationLookupList selected=$selectedLocation class="form-control input-sm" onchange="this.form.submit()"}
+				{html_options name=homeroom options=$homeroomLookupList selected=$selectedHomeroom class="form-control input-sm" onchange="this.form.submit()"}
 				<input type="button" name="printSlips" value="Print Labels" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.avery5160'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
 				&nbsp;
 			</form>

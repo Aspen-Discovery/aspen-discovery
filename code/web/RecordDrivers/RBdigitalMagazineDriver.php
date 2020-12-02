@@ -407,10 +407,10 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		return $statusSummary;
 	}
 
-	function getRBdigitalLinkUrl()
+	function getRBdigitalLinkUrl(User $patron)
 	{
 		require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 		$rbdigitalDriver = new RBdigitalDriver();
-		return $rbdigitalDriver->getUserInterfaceURL() . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalIssue->issueId;
+		return $rbdigitalDriver->getUserInterfaceURL($patron) . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalIssue->issueId;
 	}
 }

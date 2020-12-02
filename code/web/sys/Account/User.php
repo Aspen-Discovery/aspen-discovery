@@ -491,13 +491,8 @@ class User extends DataObject
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
 				} elseif ($source == 'rbdigital') {
 					if (array_key_exists('RBdigital', $enabledModules)){
-						require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
-						try {
-							$rbdigitalSettings = new RBdigitalSetting();
-							$rbdigitalSettings->find();
-							return $rbdigitalSettings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
+						if ($userHomeLibrary->rbdigitalScopeId > 0){
+							return true;
 						}
 					}
 					return false;
@@ -525,6 +520,22 @@ class User extends DataObject
 						}
 					}
 					return false;
+				}
+			}
+		}
+		return false;
+	}
+
+	public function showRBdigitalHolds(){
+		global $enabledModules;
+		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())) {
+			$userHomeLibrary = Library::getPatronHomeLibrary($this);
+			if ($userHomeLibrary->rbdigitalScopeId > 0){
+				require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
+				$scope = new RBdigitalScope();
+				$scope->id = $userHomeLibrary->rbdigitalScopeId;
+				if ($scope->find(true)){
+					return $scope->includeEAudiobook || $scope->includeEBooks;
 				}
 			}
 		}
@@ -701,6 +712,16 @@ class User extends DataObject
 				$this->getCatalogDriver()->updateUserWithAdditionalRuntimeInformation($this);
 			}
 			$this->_runtimeInfoUpdated = true;
+		}
+	}
+
+	private $_contactInformationLoaded = false;
+	function loadContactInformation(){
+		if (!$this->_contactInformationLoaded) {
+			if ($this->getCatalogDriver()) {
+				$this->getCatalogDriver()->loadContactInformation($this);
+			}
+			$this->_contactInformationLoaded = true;
 		}
 	}
 
@@ -1060,7 +1081,7 @@ class User extends DataObject
 
 		if ($source == 'all' || $source == 'rbdigital') {
 			//Get holds from RBdigital
-			if ($this->isValidForEContentSource('rbdigital')) {
+			if ($this->isValidForEContentSource('rbdigital') && $this->showRBdigitalHolds()) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
 				$rbdigitalHolds = $driver->getHolds($this);
@@ -1520,6 +1541,12 @@ class User extends DataObject
 		return $result;
 	}
 
+	public function updateHomeLibrary($newHomeLocationCode){
+		$result = $this->getCatalogDriver()->updateHomeLibrary($this, $newHomeLocationCode);
+		$this->clearCache();
+		return $result;
+	}
+
 	/**
 	 * Update the PIN or password for the user
 	 *
@@ -1921,7 +1948,7 @@ class User extends DataObject
 		}
 		$sections['system_admin'] = new AdminSection('System Administration');
 		$sections['system_admin']->addAction(new AdminAction('Modules', 'Enable and disable sections of Aspen Discovery.', '/Admin/Modules'), 'Administer Modules');
-		$sections['system_admin']->addAction(new AdminAction('Administrators', 'Define who should have administration privileges.', '/Admin/Administrators'), 'Administer Users');
+		$sections['system_admin']->addAction(new AdminAction('Administration Users', 'Define who should have administration privileges.', '/Admin/Administrators'), 'Administer Users');
 		$sections['system_admin']->addAction(new AdminAction('Permissions', 'Define who what each role in the system can do.', '/Admin/Permissions'), 'Administer Permissions');
 		$sections['system_admin']->addAction(new AdminAction('DB Maintenance', 'Update the database when new versions of Aspen Discovery are released.', '/Admin/DBMaintenance'), 'Run Database Maintenance');
 		$sections['system_admin']->addAction(new AdminAction('Send Grid Settings', 'Settings to allow Aspen Discovery to send emails via SendGrid.', '/Admin/SendGridSettings'), 'Administer SendGrid');
@@ -1946,12 +1973,15 @@ class User extends DataObject
 		$librarySettingsAction = new AdminAction('Library Systems', 'Configure library settings.', '/Admin/Libraries');
 		$locationSettingsAction = new AdminAction('Locations', 'Configure location settings.', '/Admin/Locations');
 		$ipAddressesAction = new AdminAction('IP Addresses', 'Configure IP addresses for each location and configure rules to block access to Aspen Discovery.', '/Admin/IPAddresses');
+		$administerHostAction = new AdminAction('Host Information', 'Allows configuration of domain names to point to different sections of Aspen Discovery', '/Admin/Hosting');
 		if ($sections['primary_configuration']->addAction($librarySettingsAction, ['Administer All Libraries', 'Administer Home Library'])){
 			$librarySettingsAction->addSubAction($locationSettingsAction, ['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
 			$librarySettingsAction->addSubAction($ipAddressesAction, 'Administer IP Addresses');
+			$librarySettingsAction->addSubAction($administerHostAction, 'Administer Host Information');
 		}else{
 			$sections['primary_configuration']->addAction($locationSettingsAction, ['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
 			$sections['primary_configuration']->addAction($ipAddressesAction, 'Administer IP Addresses');
+			$sections['primary_configuration']->addAction($administerHostAction, 'Administer Host Information');
 		}
 		$sections['primary_configuration']->addAction(new AdminAction('Block Patron Account Linking', 'Prevent accounts from linking to other accounts.', '/Admin/BlockPatronAccountLinks'), 'Block Patron Account Linking');
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
@@ -1968,6 +1998,21 @@ class User extends DataObject
 			}
 		}
 
+		if (array_key_exists('Web Builder', $enabledModules)) {
+			$sections['web_builder'] = new AdminSection('Web Builder');
+			//$sections['web_builder']->addAction(new AdminAction('Menu', 'Define additional options that appear in the menu.', '/WebBuilder/Menus'), ['Administer All Menus', 'Administer Library Menus']);
+			$sections['web_builder']->addAction(new AdminAction('Basic Pages', 'Create basic pages with a simple layout.', '/WebBuilder/BasicPages'), ['Administer All Basic Pages', 'Administer Library Basic Pages']);
+			$sections['web_builder']->addAction(new AdminAction('Custom Pages', 'Create custom pages with a more complex cell based layout.', '/WebBuilder/PortalPages'), ['Administer All Custom Pages', 'Administer Library Custom Pages']);
+			$sections['web_builder']->addAction(new AdminAction('Custom Forms', 'Create custom forms within Aspen Discovery for patrons to fill out.', '/WebBuilder/CustomForms'), ['Administer All Custom Forms', 'Administer Library Custom Forms']);
+			$sections['web_builder']->addAction(new AdminAction('Web Resources', 'Add resources within Aspen Discovery that the library provides.', '/WebBuilder/WebResources'), ['Administer All Web Resources', 'Administer Library Web Resources']);
+			$sections['web_builder']->addAction(new AdminAction('Staff Members', 'Add staff members to create a staff directory.', '/WebBuilder/StaffMembers'), ['Administer All Staff Members', 'Administer Library Staff Members']);
+			$sections['web_builder']->addAction(new AdminAction('Images', 'Add images to Aspen Discovery.', '/WebBuilder/Images'), ['Administer All Web Content']);
+			$sections['web_builder']->addAction(new AdminAction('PDFs', 'Add PDFs to Aspen Discovery.', '/WebBuilder/PDFs'), ['Administer All Web Content']);
+			//$sections['web_builder']->addAction(new AdminAction('Videos', 'Add Videos to Aspen Discovery.', '/WebBuilder/Videos'), ['Administer All Web Content']);
+			$sections['web_builder']->addAction(new AdminAction('Audiences', 'Define Audiences to categorize content within Aspen Discovery.', '/WebBuilder/Audiences'), ['Administer All Web Categories']);
+			$sections['web_builder']->addAction(new AdminAction('Categories', 'Define Categories to categorize content within Aspen Discovery.', '/WebBuilder/Categories'), ['Administer All Web Categories']);
+		}
+
 		$sections['translations'] = new AdminSection('Languages and Translations');
 		$sections['translations']->addAction(new AdminAction('Languages', 'Define which languages are available within Aspen Discovery.', '/Translation/Languages'), 'Administer Languages');
 		$sections['translations']->addAction(new AdminAction('Translations', 'Translate the user interface of Aspen Discovery.', '/Translation/Translations'), 'Translate Aspen');
@@ -1978,13 +2023,16 @@ class User extends DataObject
 		$sections['cataloging']->addAction($groupedWorkAction, ['Administer All Grouped Work Display Settings', 'Administer Library Grouped Work Display Settings']);
 		$sections['cataloging']->addAction(new AdminAction('Title / Author Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
+		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 
 		$sections['local_enrichment'] = new AdminSection('Local Catalog Enrichment');
 		$browseCategoryGroupsAction = new AdminAction('Browse Category Groups', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/BrowseCategoryGroups');
 		$browseCategoryGroupsAction->addSubAction(new AdminAction('Browse Categories', 'Define browse categories shown on the library home page.', '/Admin/BrowseCategories'), ['Administer All Browse Categories', 'Administer Library Browse Categories']);
 		$sections['local_enrichment']->addAction($browseCategoryGroupsAction, ['Administer All Browse Categories', 'Administer Library Browse Categories']);
 		$sections['local_enrichment']->addAction(new AdminAction('Collection Spotlights', 'Define basic information about how pages are displayed in Aspen Discovery.', '/Admin/CollectionSpotlights'), ['Administer All Collection Spotlights', 'Administer Library Collection Spotlights']);
+		$sections['local_enrichment']->addAction(new AdminAction('JavaScript Snippets', 'JavaScript Snippets to be added to the site when pages are rendered.', '/Admin/JavaScriptSnippets'), ['Administer All JavaScript Snippets', 'Administer Library JavaScript Snippets']);
 		$sections['local_enrichment']->addAction(new AdminAction('Placards', 'Placards allow you to promote services that do not have MARC records or APIs for inclusion in the catalog.', '/Admin/Placards'), ['Administer All Placards', 'Administer Library Placards']);
+		$sections['local_enrichment']->addAction(new AdminAction('System Messages', 'System Messages allow you to display messages to your patrons in specific locations.', '/Admin/SystemMessages'), ['Administer All System Messages', 'Administer Library System Messages']);
 
 		$sections['third_party_enrichment'] = new AdminSection('Third Party Enrichment');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Accelerated Reader Settings', 'Define settings to load Accelerated Reader information directly from Renaissance Learning.', '/Enrichment/ARSettings'), 'Administer Third Party Enrichment API Keys');

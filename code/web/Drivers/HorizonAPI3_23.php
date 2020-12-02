@@ -25,7 +25,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
      * @param string $newPin
      * @return string[] a message to the user letting them know what happened
      */
-	function updatePin($user, $oldPin, $newPin){
+	function updatePin(User $user, string $oldPin, string $newPin){
 		//Log the user in
 		list($userValid, $sessionToken) = $this->loginViaWebService($user->cat_username, $user->cat_password);
 		if (!$userValid){

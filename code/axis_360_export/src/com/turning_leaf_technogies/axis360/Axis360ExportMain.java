@@ -55,6 +55,7 @@ public class Axis360ExportMain {
 	private static Connection aspenConn;
 
 	private static String accessToken;
+	private static long accessTokenSettingId;
 	private static long accessTokenExpiration;
 
 	public static void main(String[] args) {
@@ -304,7 +305,8 @@ public class Axis360ExportMain {
 
 	private static String getAxis360AccessToken(Axis360Setting setting) {
 		long curTime = new Date().getTime();
-		if (accessToken == null || accessTokenExpiration <= curTime){
+		if (accessToken == null || accessTokenExpiration <= curTime || accessTokenSettingId != setting.getId()){
+			accessTokenSettingId = setting.getId();
 			String authentication = setting.getVendorUsername() + ":" + setting.getVendorPassword() + ":" + setting.getLibraryPrefix();
 
 			String authorizationUrl = setting.getBaseUrl() + "/Services/VendorAPI/accesstoken";
@@ -415,7 +417,7 @@ public class Axis360ExportMain {
 				boolean active = itemDetails.getBoolean("active");
 				if (!active){
 					//TODO: See if this needs to be deleted from the index
-					logEntry.incErrors("Found an inactive record, need to make sure it has been deleted");
+					logEntry.addNote("Found an inactive record " + axis360Id + ", need to make sure it has been deleted");
 				}else {
 					//Check to see if the title metadata has changed
 					Axis360Title existingTitle = existingRecords.get(axis360Id);

@@ -208,16 +208,25 @@ class SearchAPI extends Action
 				$logEntry->limit(0, 3);
 				$logErrors = 0;
 				$logEntry->find();
+				$numUnfinishedEntries = 0;
 				while ($logEntry->fetch()){
 					if ($logEntry->numErrors > 0){
 						$logErrors++;
+					}
+					if (empty($logEntry->endTime)){
+						$numUnfinishedEntries++;
 					}
 				}
 				if ($logErrors > 0){
 					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
 				}else{
-					$this->addCheck($checks, $aspenModule->name);
+					if ($numUnfinishedEntries > 1){
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
+					}else{
+						$this->addCheck($checks, $aspenModule->name);
+					}
 				}
+
 			}
 		}
 

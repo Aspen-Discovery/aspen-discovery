@@ -16,8 +16,8 @@
 						</ul>
 					</div>
 
-					<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Category"}"></a>
-					<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Category"}"></a>
+					<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Category" inAttribute=true}"></a>
+					<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Category" inAttribute=true}"></a>
 
 					<p class="jcarousel-pagination"></p>
 				</div>
@@ -67,9 +67,9 @@
 				</div>
 			</div>
 
-			<a onclick="return AspenDiscovery.Browse.getMoreResults()" role="button" title="{translate text='Get More Results'}">
+			<a onclick="return AspenDiscovery.Browse.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true}">
 				<div class="row" id="more-browse-results">
-					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results'}"></span>
+					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true}"></span>
 				</div>
 			</a>
 		</div>
@@ -83,7 +83,7 @@
 		{/if}
 		{if !$onInternalIP}
 		if (!Globals.opac && AspenDiscovery.hasLocalStorage()){ldelim}
-			let temp = window.localStorage.getItem('browseMode');
+			var temp = window.localStorage.getItem('browseMode');
 			if (AspenDiscovery.Browse.browseModeClasses.hasOwnProperty(temp)) AspenDiscovery.Browse.browseMode = temp; {* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
 			else AspenDiscovery.Browse.browseMode = '{$browseMode}';
 		{rdelim}

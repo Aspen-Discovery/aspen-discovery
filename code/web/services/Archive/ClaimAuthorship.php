@@ -134,8 +134,8 @@ class Archive_ClaimAuthorship extends Action{
 					$errorDescription = 'Unknown error';
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
-				$_SESSION['lastError'] = "An error occurred inserting Authorship Request <br/>{$errorDescription}";
-				$logger->log($newObject->getLastError(), Logger::LOG_DEBUG);
+				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
+
 				return false;
 			}
 		} else {

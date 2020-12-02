@@ -12,7 +12,11 @@
 						</a>
 						<div class="formatIcons" style="padding-top: 5px">
 							{foreach from=$whileYouWaitTitle.formatCategories item=formatCategory}
-								<span class="{if $formatCategory.available}available{/if}" style="padding: 2px;"><img src="{img filename=$formatCategory.image}" alt="{$formatCategory.formatCategory}"/></span>
+								{if $formatCategory.formatCategory != 'Other'}
+									<span class="{if $formatCategory.available}available{/if}" style="padding: 2px;"><img src="{img filename=$formatCategory.image}" alt="{$formatCategory.formatCategory}"/></span>
+								{else}
+									<span class="{if $formatCategory.available}statusValue available{/if}" style="padding: 2px;"><i class="fas fa-box" aria-label="{$formatCategory.formatCategory}"></i></span>
+                                {/if}
 							{/foreach}
 						</div>
 					</div>

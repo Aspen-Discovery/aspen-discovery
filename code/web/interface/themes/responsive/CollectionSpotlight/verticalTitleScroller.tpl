@@ -31,11 +31,11 @@
 		$('#titleScroller{$scrollerName} .scrollerBodyContainer')
 			.touchwipe({ldelim}
 				wipeUp : function(dy){ldelim}
-					let scrollInterval = Math.round(dy / scrollFactor);
+					var scrollInterval = Math.round(dy / scrollFactor);
 					{$scrollerVariable}.swipeUp(scrollInterval);
 					{rdelim},
 				wipeDown: function(dy) {ldelim}
-					let scrollInterval = Math.round(dy / scrollFactor);
+					var scrollInterval = Math.round(dy / scrollFactor);
 					{$scrollerVariable}.swipeDown(scrollInterval);
 					{rdelim}
 			{rdelim});

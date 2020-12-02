@@ -270,7 +270,7 @@
 			</form>
 		{else}
 			<div class="alert alert-info">There are no materials requests that meet your criteria.</div>
-			{if in_array('Import Materials Requests', $userRoles)}
+			{if in_array('Import Materials Requests', $userPermissions)}
 				{* We don't really want to do this much / ever so it gets a special permission *}
 				<div class="row">
 					<div class="col-xs-12">

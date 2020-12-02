@@ -37,6 +37,8 @@ class Location extends DataObject
 	public $headerText;
 	public $address;
 	public $phone;
+	public $tty;
+	public $description;
 	public $isMainBranch; // tinyint(1)
 	public $showInLocationsAndHoursList;
 	public $validHoldPickupBranch;    //'1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'
@@ -248,7 +250,9 @@ class Location extends DataObject
 				'default' => false),
 			'showInLocationsAndHoursList' => array('property' => 'showInLocationsAndHoursList', 'type' => 'checkbox', 'label' => 'Show In Locations And Hours List', 'description' => 'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default' => true),
 			'address' => array('property' => 'address', 'type' => 'textarea', 'label' => 'Address', 'description' => 'The address of the branch.', 'hideInLists' => true),
-			'phone' => array('property' => 'phone', 'type' => 'text', 'label' => 'Phone Number', 'description' => 'The main phone number for the site .', 'size' => '40', 'hideInLists' => true),
+			'phone' => array('property' => 'phone', 'type' => 'text', 'label' => 'Phone Number', 'description' => 'The main phone number for the site .', 'maxLength' => '25', 'hideInLists' => true),
+			'tty' => array('property' => 'tty', 'type' => 'text', 'label' => 'TTY Number', 'description' => 'The tty number for the site .', 'maxLength' => '25', 'hideInLists' => true),
+			'description' => array('property' => 'description', 'type' => 'markdown', 'label' => 'Description', 'description' => 'Allows the display of a description in the Location and Hours dialog', 'hideInLists' => true),
 			'nearbyLocation1' => array('property' => 'nearbyLocation1', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Nearby Location 1', 'description' => 'A secondary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true),
 			'nearbyLocation2' => array('property' => 'nearbyLocation2', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Nearby Location 2', 'description' => 'A tertiary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true),
 			'automaticTimeoutLength' => array('property' => 'automaticTimeoutLength', 'type' => 'integer', 'label' => 'Automatic Timeout Length (logged in)', 'description' => 'The length of time before the user is automatically logged out in seconds.', 'size' => '8', 'hideInLists' => true, 'default' => self::DEFAULT_AUTOLOGOUT_TIME),
@@ -331,7 +335,7 @@ class Location extends DataObject
 				),
 			)),
 
-			'browseCategoryId' => array('property' => 'browseCategoryId', 'type' => 'enum', 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true),
+			'browseCategoryGroupId' => array('property' => 'browseCategoryGroupId', 'type' => 'enum', 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true),
 
 			'axis360Section' => array('property' => 'axis360Section', 'type' => 'section', 'label' => 'Axis 360', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
 				'axis360ScopeId' => array('property' => 'axis360ScopeId', 'type' => 'enum', 'values' => $axis360Scopes, 'label' => 'Axis 360 Scope', 'description' => 'The Axis 360 scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
@@ -782,6 +786,9 @@ class Location extends DataObject
 	 */
 	private $_ipLocation = 'unset';
 
+	/**
+	 * @return Location|bool|null
+	 */
 	function getIPLocation()
 	{
 		if ($this->_ipLocation != 'unset') {

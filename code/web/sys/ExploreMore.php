@@ -769,7 +769,7 @@ class ExploreMore {
 	public function loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		global $library;
 		global $enabledModules;
-		if (array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {
+		if (!empty($searchTerm) && array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {
 			//Load EDS options
 			/** @var SearchObject_EbscoEdsSearcher $edsSearcher */
 			$edsSearcher = SearchObjectFactory::initSearchObject("EbscoEds");

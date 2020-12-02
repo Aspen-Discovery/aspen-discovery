@@ -21,8 +21,28 @@ class Search_Advanced extends Search_AdvancedBase {
 		// Shutdown the search object
 		$searchObject->close();
 
-		// Load a saved search, if any:
-		$savedSearch = $this->loadSavedSearch();
+		$searchIndex = 'advanced';
+		if (isset($_REQUEST['searchIndex'])){
+			$searchIndex = $_REQUEST['searchIndex'];
+		}
+
+		if ($searchIndex == 'editAdvanced'){
+			// Load a saved search, if any:
+			$savedSearch = $this->loadSavedSearch();
+		}else{
+			if (isset($_REQUEST['lookfor'])){
+				$savedSearch = new SearchObject_GroupedWorkSearcher();
+				$interface->assign('lookfor', $_REQUEST['lookfor']);
+				$savedSearch->setSearchTerms([
+					'index' => 'Keyword',
+					'lookfor' => $_REQUEST['lookfor']
+				]);
+				$savedSearch->convertBasicToAdvancedSearch();
+			}else{
+				$savedSearch = false;
+			}
+		}
+
 
 		// Process the facets for appropriate display on the Advanced Search screen:
 		$facets = $this->processFacets($facetList, $savedSearch);

@@ -40,6 +40,10 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getNovelistStmt;
 	private PreparedStatement getDisplayInfoStmt;
 
+	private PreparedStatement getUserReadingHistoryLinkStmt;
+	private PreparedStatement getUserRatingLinkStmt;
+	private PreparedStatement getUserNotInterestedLinkStmt;
+
 	private final Connection dbConn;
 
 	static int availableAtBoostValue = 50;
@@ -133,7 +137,7 @@ public class GroupedWorkIndexer {
 		try {
 			scopes = IndexingUtils.loadScopes(dbConn, logger);
 			if (scopes == null){
-				logEntry.incErrors("Error loading scopes");
+				logEntry.incErrors("Error loading scopes, scopes were null");
 				this.okToIndex = false;
 				return;
 			}else{
@@ -162,12 +166,6 @@ public class GroupedWorkIndexer {
 					switch (ilsIndexingClassString) {
 						case "Marmot":
 							ilsRecordProcessors.put(curType, new MarmotRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Nashville":
-							ilsRecordProcessors.put(curType, new NashvilleRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "NashvilleSchools":
-							ilsRecordProcessors.put(curType, new NashvilleSchoolsRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "WCPL":
 							ilsRecordProcessors.put(curType, new WCPLRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
@@ -207,8 +205,7 @@ public class GroupedWorkIndexer {
 							break;
 						default:
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
-							okToIndex = false;
-							return;
+							break;
 					}
 				}else if (!curType.equals("cloud_library") && !curType.equals("rbdigital") && !curType.equals("rbdigital_magazine") && !curType.equals("hoopla") && !curType.equals("overdrive") && !curType.equals("axis360")) {
 					getSideLoadSettings.setString(1, curType);
@@ -223,7 +220,7 @@ public class GroupedWorkIndexer {
 							return;
 						}
 					}else{
-						logEntry.incErrors("Could not find indexing profile or side load settings for type " + curType);
+						logEntry.addNote("Could not find indexing profile or side load settings for type " + curType);
 					}
 				}
 			}
@@ -254,6 +251,9 @@ public class GroupedWorkIndexer {
 			getRatingStmt = dbConn.prepareStatement("SELECT AVG(rating) as averageRating, groupedRecordPermanentId from user_work_review where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getNovelistStmt = dbConn.prepareStatement("SELECT * from novelist_data where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getDisplayInfoStmt = dbConn.prepareStatement("SELECT * from grouped_work_display_info where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getUserReadingHistoryLinkStmt = dbConn.prepareStatement("SELECT DISTINCT userId from user_reading_history_work where groupedWorkPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getUserRatingLinkStmt = dbConn.prepareStatement("SELECT DISTINCT userId from user_work_review where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getUserNotInterestedLinkStmt = dbConn.prepareStatement("SELECT DISTINCT userId from user_not_interested where groupedRecordPermanentId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logEntry.incErrors("Could not prepare statements to load local enrichment", e);
 		}
@@ -613,6 +613,8 @@ public class GroupedWorkIndexer {
 
 			//Load local enrichment for the work
 			loadLocalEnrichment(groupedWork);
+			//Load links for how users have interacted with the work
+			loadUserLinkages(groupedWork);
 			//Load lexile data for the work
 			loadLexileDataForWork(groupedWork);
 			//Load accelerated reader data for the work
@@ -724,6 +726,36 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	private void loadUserLinkages(GroupedWorkSolr groupedWork) {
+		try {
+			//Add users with the work in their reading history
+			getUserReadingHistoryLinkStmt.setString(1, groupedWork.getId());
+			ResultSet userReadingHistoryRS = getUserReadingHistoryLinkStmt.executeQuery();
+			while (userReadingHistoryRS.next()){
+				groupedWork.addReadingHistoryLink(userReadingHistoryRS.getLong("userId"));
+			}
+			userReadingHistoryRS.close();
+			//Add users who rated the title
+			getUserRatingLinkStmt.setString(1, groupedWork.getId());
+			ResultSet userRatingRS = getUserRatingLinkStmt.executeQuery();
+			while (userRatingRS.next()){
+				groupedWork.addRatingLink(userRatingRS.getLong("userId"));
+			}
+			userRatingRS.close();
+			//Add users who are not interested in the title
+			getUserNotInterestedLinkStmt.setString(1, groupedWork.getId());
+			ResultSet userNotInterestedRS = getUserNotInterestedLinkStmt.executeQuery();
+			while (userNotInterestedRS.next()) {
+				groupedWork.addNotInterestedLink(userNotInterestedRS.getLong("userId"));
+			}
+			userNotInterestedRS.close();
+			//Add users who have a hold on the title
+			//Add users who have the title checked out
+		}catch (Exception e){
+			logEntry.incErrors("Unable to load user linkages", e);
+		}
+	}
+
 	private void loadNovelistInfo(GroupedWorkSolr groupedWork){
 		try{
 			getNovelistStmt.setString(1, groupedWork.getId());
@@ -804,6 +836,7 @@ public class GroupedWorkIndexer {
 				}else if (sideLoadProcessors.containsKey(type)){
 					sideLoadProcessors.get(type).processRecord(groupedWork, identifier);
 				}else{
+					//This happens if a side load processor is deleted and all the related record don't get cleaned up.
 					logger.debug("Could not find a record processor for type " + type);
 				}
 				break;

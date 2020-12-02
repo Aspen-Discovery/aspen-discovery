@@ -4,7 +4,7 @@ AspenDiscovery.Record = (function(){
 		showPlaceHold: function(module, source, id, volume){
 			if (Globals.loggedIn){
 				document.body.style.cursor = "wait";
-				let url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldForm&recordSource=" + source;
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldForm&recordSource=" + source;
 				if (volume !== undefined){
 					url += "&volume=" + volume;
 				}
@@ -30,7 +30,7 @@ AspenDiscovery.Record = (function(){
 
 		showPlaceHoldEditions: function (module, source, id, volume) {
 			if (Globals.loggedIn){
-				let url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
 				if (volume !== undefined){
 					url += "&volume=" + volume;
 				}
@@ -51,7 +51,7 @@ AspenDiscovery.Record = (function(){
 				AspenDiscovery.loadingMessage();
 				//var source; // source not used for booking at this time
 				if (id.indexOf(":") > 0){
-					let idParts = id.split(":", 2);
+					var idParts = id.split(":", 2);
 					//source = idParts[0];
 					id = idParts[1];
 				//}else{
@@ -69,8 +69,8 @@ AspenDiscovery.Record = (function(){
 		},
 
 		submitBookMaterialForm: function(){
-			let params = $('#bookMaterialForm').serialize();
-			let module = $('#module').val();
+			var params = $('#bookMaterialForm').serialize();
+			var module = $('#module').val();
 			AspenDiscovery.showMessage('Scheduling', 'Processing, please wait.');
 			$.getJSON(Globals.path + "/" + module +"/AJAX", params+'&method=bookMaterial', function(data){
 				if (data.modalBody) AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -81,12 +81,12 @@ AspenDiscovery.Record = (function(){
 		},
 
 		submitHoldForm: function(){
-			let id = $('#id').val();
-			let autoLogOut = $('#autologout').prop('checked');
-			let selectedItem = $('#selectedItem');
-			let module = $('#module').val();
-			let volume = $('#volume');
-			let params = {
+			var id = $('#id').val();
+			var autoLogOut = $('#autologout').prop('checked');
+			var selectedItem = $('#selectedItem');
+			var module = $('#module').val();
+			var volume = $('#volume');
+			var params = {
 				'method': 'placeHold',
 				pickupBranch: $('#pickupBranch').val(),
 				selectedUser: $('#user').val(),
@@ -108,11 +108,11 @@ AspenDiscovery.Record = (function(){
 				alert("Please select a location to pick up your hold when it is ready.");
 				return false;
 			}
-			let holdType = $('#holdType');
+			var holdType = $('#holdType');
 			if (holdType.length > 0){
 				params['holdType'] = holdType.val();
 			}else{
-				if ($('#holdTypeBib').attr('checked')){
+				if ($('#holdTypeBib').is(':checked')){
 					params['holdType'] = 'bib';
 				}else{
 					params['holdType'] = 'item';
@@ -143,8 +143,8 @@ AspenDiscovery.Record = (function(){
 		},
 
 		uploadPDF: function (id){
-			let url = Globals.path + '/Record/' + id + '/AJAX?method=uploadPDF';
-			let uploadPDFData = new FormData($("#uploadPDFForm")[0]);
+			var url = Globals.path + '/Record/' + id + '/AJAX?method=uploadPDF';
+			var uploadPDFData = new FormData($("#uploadPDFForm")[0]);
 			$.ajax({
 				url: url,
 				type: 'POST',
@@ -161,8 +161,8 @@ AspenDiscovery.Record = (function(){
 		},
 
 		uploadSupplementalFile: function (id){
-			let url = Globals.path + '/Record/' + id + '/AJAX?method=uploadSupplementalFile';
-			let uploadSupplementalFileData = new FormData($("#uploadSupplementalFileForm")[0]);
+			var url = Globals.path + '/Record/' + id + '/AJAX?method=uploadSupplementalFile';
+			var uploadSupplementalFileData = new FormData($("#uploadSupplementalFileForm")[0]);
 			$.ajax({
 				url: url,
 				type: 'POST',
@@ -180,7 +180,7 @@ AspenDiscovery.Record = (function(){
 
 		deleteUploadedFile: function(id, fileId) {
 			if (confirm("Are you sure you want to delete this file?")){
-				let url = Globals.path + '/Record/' + id + '/AJAX?method=deleteUploadedFile&fileId=' +fileId;
+				var url = Globals.path + '/Record/' + id + '/AJAX?method=deleteUploadedFile&fileId=' +fileId;
 				$.getJSON(url, function (data){
 					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
 				});
@@ -189,7 +189,7 @@ AspenDiscovery.Record = (function(){
 		},
 
 		getUploadPDFForm: function (id){
-			let url = Globals.path + '/Record/' + id + '/AJAX?method=getUploadPDFForm';
+			var url = Globals.path + '/Record/' + id + '/AJAX?method=getUploadPDFForm';
 			$.getJSON(url, function (data){
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 			});
@@ -197,7 +197,7 @@ AspenDiscovery.Record = (function(){
 		},
 
 		getUploadSupplementalFileForm: function (id) {
-			let url = Globals.path + '/Record/' + id + '/AJAX?method=getUploadSupplementalFileForm';
+			var url = Globals.path + '/Record/' + id + '/AJAX?method=getUploadSupplementalFileForm';
 			$.getJSON(url, function (data){
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 			});
@@ -205,10 +205,10 @@ AspenDiscovery.Record = (function(){
 		},
 
 		selectFileDownload: function( recordId, type) {
-			let url = Globals.path + '/Record/' + recordId + '/AJAX';
-			let params = {
+			var url = Globals.path + '/Record/' + recordId + '/AJAX';
+			var params = {
 				method: 'showSelectDownloadForm',
-				type: type,
+				type: type
 			};
 			$.getJSON(url, params, function (data){
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -217,10 +217,10 @@ AspenDiscovery.Record = (function(){
 		},
 
 		selectFileToView: function( recordId, type) {
-			let url = Globals.path + '/Record/' + recordId + '/AJAX';
-			let params = {
+			var url = Globals.path + '/Record/' + recordId + '/AJAX';
+			var params = {
 				method: 'showSelectFileToViewForm',
-				type: type,
+				type: type
 			};
 			$.getJSON(url, params, function (data){
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -229,9 +229,9 @@ AspenDiscovery.Record = (function(){
 		},
 
 		downloadSelectedFile: function () {
-			let id = $('#id').val();
-			let fileType = $('#fileType').val();
-			let selectedFile = $('#selectedFile').val();
+			var id = $('#id').val();
+			var fileType = $('#fileType').val();
+			var selectedFile = $('#selectedFile').val();
 			if (fileType === 'RecordPDF'){
 				window.location = Globals.path + '/Record/' + id + '/DownloadPDF?fileId=' + selectedFile;
 			}else{
@@ -241,14 +241,13 @@ AspenDiscovery.Record = (function(){
 		},
 
 		viewSelectedFile: function () {
-			let id = $('#id').val();
-			let selectedFile = $('#selectedFile').val();
+			var selectedFile = $('#selectedFile').val();
 			window.location = Globals.path + '/Files/' + selectedFile + '/ViewPDF';
 			return false;
 		},
 
 		getStaffView: function (module, id) {
-			let url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getStaffView";
+			var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data){
 				if (!data.success){
 					AspenDiscovery.showMessage('Error', data.message);

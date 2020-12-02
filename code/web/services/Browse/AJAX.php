@@ -68,14 +68,25 @@ class Browse_AJAX extends Action {
 				'message' => 'Please enter a category name'
 			);
 		}
-		if ($searchLocation){
-			$textId = $searchLocation->code . '_' . $textId;
-		}elseif ($library){
-			$textId = $library->subdomain . '_' . $textId;
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		$textIdPrefixed = false;
+		if (!empty($addAsSubCategoryOf)){
+			$browseCategoryParent = new BrowseCategory();
+			$browseCategoryParent->id = $addAsSubCategoryOf;
+			if ($browseCategoryParent->find(true)) {
+				$textId = $browseCategoryParent->textId . '_' . $textId;
+				$textIdPrefixed = true;
+			}
+		}
+		if (!$textIdPrefixed){
+			if ($searchLocation) {
+				$textId = $searchLocation->code . '_' . $textId;
+			} elseif ($library) {
+				$textId = $library->subdomain . '_' . $textId;
+			}
 		}
 
 		//Check to see if we have an existing browse category
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 		$browseCategory = new BrowseCategory();
 		$browseCategory->textId = $textId;
 		if ($browseCategory->find(true)){

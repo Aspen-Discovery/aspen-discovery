@@ -5,7 +5,7 @@ class LibraryFacetSetting extends FacetSetting {
 	public $__table = 'library_facet_setting';    // table name
 	public $libraryId;
 
-	static function getObjectStructure($availableFacets = null){
+	static function getObjectStructure(array $availableFacets = null){
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Libraries')){

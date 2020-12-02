@@ -58,7 +58,11 @@
 									{$propValue|date_format}
 								{elseif $property.type == 'timestamp'}
 									{if $propValue == 0}
-										{translate text="Never"}
+										{if empty($property.unsetLabel)}
+											{translate text="Never"}
+										{else}
+											{translate text=$property.unsetLabel}
+										{/if}
 									{else}
 										{$propValue|date_format:"%D %T"}
 									{/if}
@@ -93,6 +97,8 @@
 									{/if}
 								{elseif $property.type == 'checkbox'}
 									{if ($propValue == 1)}Yes{else}No{/if}
+								{elseif $property.type == 'image'}
+									<img src="{$property.displayUrl}{$dataItem->id}" class="img-responsive" alt="{$propName}">
 								{else}
 									Unknown type to display {$property.type}
 								{/if}

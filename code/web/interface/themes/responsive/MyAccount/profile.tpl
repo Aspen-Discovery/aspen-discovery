@@ -6,6 +6,9 @@
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 				</div>
 			{/if}
+			{if !empty($accountMessages)}
+				{include file='systemMessages.tpl' messages=$accountMessages}
+			{/if}
 
 			<span class='availableHoldsNoticePlaceHolder'></span>
 
@@ -210,7 +213,7 @@
 
 
 											<div class="form-group">
-												<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
+												<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}</label></div>
 												<div class="col-xs-8">
 													{if $edit == true}
 														<input type="checkbox" name="emailReceiptFlag" id="emailReceiptFlag" {if $profile->_emailReceiptFlag==1}checked='checked'{/if} data-switch="">

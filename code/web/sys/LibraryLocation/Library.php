@@ -82,7 +82,7 @@ class Library extends DataObject
 	public $defaultPType;
 	public $facetLabel;
 	public $showAvailableAtAnyLocation;
-	public $finePaymentType;
+	public $finePaymentType; //0 = None, 1 = ILS, 2 = PayPal
 	public $finesToPay;
 	public $finePaymentOrder;
 	public $payFinesLink;
@@ -178,6 +178,7 @@ class Library extends DataObject
 	public $showExpirationWarnings;
 	public /** @noinspection PhpUnused */ $loginFormUsernameLabel;
 	public $loginFormPasswordLabel;
+	public $loginNotes;
 	public $showDetailedHoldNoticeInformation;
 	public $treatPrintNoticesAsPhoneNotices;
 	public /** @noinspection PhpUnused */ $includeDplaResults;
@@ -185,6 +186,7 @@ class Library extends DataObject
 
 	public $useAllCapsWhenSubmittingSelfRegistration;
 	public $validSelfRegistrationStates;
+	public $validSelfRegistrationZipCodes;
 	public /** @noinspection PhpUnused */ $selfRegistrationFormMessage;
 	public /** @noinspection PhpUnused */ $selfRegistrationSuccessMessage;
 	public /** @noinspection PhpUnused */ $selfRegistrationTemplate;
@@ -249,6 +251,9 @@ class Library extends DataObject
 
 	//OAI
 	public $enableOpenArchives;
+
+	//Web Builder
+	public $enableWebBuilder;
 
 	static $archiveRequestFormFieldOptions = array('Hidden', 'Optional', 'Required');
 
@@ -549,18 +554,20 @@ class Library extends DataObject
 					'preventExpiredCardLogin' => array('property'=>'preventExpiredCardLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Expired Cards', 'description'=>'Users with expired cards will not be allowed to login. They will receive an expired card notice instead.', 'hideInLists' => true, 'default' => 0),
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
 					'loginFormPasswordLabel'  => array('property'=>'loginFormPasswordLabel', 'type'=>'text', 'label'=>'Login Form Password Label', 'description'=>'The label to show for the password when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Library Card Number'),
+					'loginNotes' => array('property' => 'loginNotes', 'type' => 'markdown', 'label' => 'Login Notes', 'description' => 'Additional notes to display under the login fields', 'hideInLists' => true),
 				)),
 				'selfRegistrationSection' => array('property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true, 'helpLink' => '', 'properties' => array(
-					'enableSelfRegistration'         => array('property'=>'enableSelfRegistration', 'type'=>'enum', 'values' => [0 => 'No Self Registration', 1 => 'ILS Based Self Registration', 2 => 'Redirect to Self Registration URL'], 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
+					'enableSelfRegistration' => array('property'=>'enableSelfRegistration', 'type'=>'enum', 'values' => [0 => 'No Self Registration', 1 => 'ILS Based Self Registration', 2 => 'Redirect to Self Registration URL'], 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
 					'selfRegistrationLocationRestrictions' => ['property' => 'selfRegistrationLocationRestrictions', 'type' => 'enum', 'values' => [0 => 'No Restrictions', 1 => 'All Library Locations', 2 => 'All Hold Pickup Locations', 3 => 'Pickup Locations for the library'], 'label' => 'Valid Registration Locations', 'description' => 'Indicates which locations are valid pickup locations', 'hideInLists' => true],
 					'selfRegistrationPasswordNotes' => array('property'=>'selfRegistrationPasswordNotes', 'type'=>'text', 'label'=>'Self Registration Password Notes', 'description'=>'Notes to be displayed when setting the password for self registration', 'hideInLists' => true, 'default' => ''),
-					'promptForBirthDateInSelfReg'    => array('property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description'=>'Whether or not to prompt for birth date when self registering'),
+					'promptForBirthDateInSelfReg' => array('property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description'=>'Whether or not to prompt for birth date when self registering'),
 					'useAllCapsWhenSubmittingSelfRegistration' => array('property' => 'useAllCapsWhenSubmittingSelfRegistration', 'type' => 'checkbox', 'label' => 'Use All Caps When Submitting Self Registration', 'description'=>'Whether or not self registration will be submitted using all caps'),
-					'validSelfRegistrationStates' => array('property'=>'validSelfRegistrationStates', 'type'=>'text', 'label'=>'Valid States for Self Registration', 'description'=>'The states that can be used in self registration', 'hideInLists' => true, 'default' => ''),
-					'selfRegistrationUrl'            => array('property'=>'selfRegistrationUrl', 'type'=>'url', 'label'=>'Self Registration URL', 'description'=>'An external URL where users can self register', 'hideInLists' => true),
-					'selfRegistrationFormMessage'    => array('property'=>'selfRegistrationFormMessage', 'type'=>'html', 'label'=>'Self Registration Form Message', 'description'=>'Message shown to users with the form to submit the self registration.  Leave blank to give users the default message.', 'hideInLists' => true),
+					'validSelfRegistrationStates' => array('property'=>'validSelfRegistrationStates', 'type'=>'text', 'label'=>'Valid States for Self Registration', 'description'=>'The states that can be used in self registration (separate multiple states with pipes |)', 'hideInLists' => true, 'default' => ''),
+					'validSelfRegistrationZipCodes' => array('property'=>'validSelfRegistrationZipCodes', 'type'=>'regularExpression', 'label'=>'Valid Zip/Postal Codes for Self Registration (regular expression)', 'description'=>'The zip codes/postal codes that can be used in self registration', 'hideInLists' => true, 'default' => ''),
+					'selfRegistrationUrl' => array('property'=>'selfRegistrationUrl', 'type'=>'url', 'label'=>'Self Registration URL', 'description'=>'An external URL where users can self register', 'hideInLists' => true),
+					'selfRegistrationFormMessage' => array('property'=>'selfRegistrationFormMessage', 'type'=>'html', 'label'=>'Self Registration Form Message', 'description'=>'Message shown to users with the form to submit the self registration.  Leave blank to give users the default message.', 'hideInLists' => true),
 					'selfRegistrationSuccessMessage' => array('property'=>'selfRegistrationSuccessMessage', 'type'=>'html', 'label'=>'Self Registration Success Message', 'description'=>'Message shown to users when the self registration has been completed successfully.  Leave blank to give users the default message.', 'hideInLists' => true),
-					'selfRegistrationTemplate'       => array('property'=>'selfRegistrationTemplate', 'type'=>'text', 'label'=>'Self Registration Template', 'description'=>'The ILS template to use during self registration (Sierra and Millennium).', 'hideInLists' => true, 'default' => 'default'),
+					'selfRegistrationTemplate' => array('property'=>'selfRegistrationTemplate', 'type'=>'text', 'label'=>'Self Registration Template', 'description'=>'The ILS template to use during self registration (Sierra and Millennium).', 'hideInLists' => true, 'default' => 'default'),
 
 				)),
 				'masqueradeModeSection' => array('property' => 'masqueradeModeSection', 'type' => 'section', 'label' => 'Masquerade Mode', 'hideInLists' => true, 'properties' => array(
@@ -873,6 +880,10 @@ class Library extends DataObject
 
 			'oaiSection' => array('property' => 'oaiSection', 'type' => 'section', 'label' => 'Open Archives Results', 'hideInLists' => true, 'helpLink' => '', 'renderAsHeading' => true, 'properties' => array(
 				'enableOpenArchives' => array('property' => 'enableOpenArchives', 'type' => 'checkbox', 'label' => 'Allow Searching Open Archives', 'description' => 'Whether or not information from indexed Open Archives is shown.', 'hideInLists' => true, 'default' => 0),
+			)),
+
+			'webBuilderSection' => array('property' => 'webBuilderSection', 'type' => 'section', 'label' => 'Web Builder Results', 'hideInLists' => true, 'helpLink' => '', 'renderAsHeading' => true, 'properties' => array(
+				'enableWebBuilder' => array('property' => 'enableWebBuilder', 'type' => 'checkbox', 'label' => 'Allow searching locally created web content', 'description' => 'Whether or not information from indexed local web content is shown.', 'hideInLists' => true, 'default' => 0),
 			)),
 
 			'edsSection' => array('property' => 'edsSection', 'type' => 'section', 'label' => 'EBSCO EDS', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(

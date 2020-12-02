@@ -225,6 +225,14 @@ class SearchSources{
 					'hasAdvancedSearch' => false
 				);
 			}
+			//Local search, activate if we have at least one page
+			if ($library->enableWebBuilder) {
+				$searchOptions['websites'] = array(
+					'name' => 'Library Website',
+					'description' => 'Library Website',
+					'catalogType' => 'websites'
+				);
+			}
 		}
 
 		if ($searchArchive){

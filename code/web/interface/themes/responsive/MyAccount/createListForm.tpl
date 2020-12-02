@@ -40,7 +40,7 @@
 {/strip}
 <script type="text/javascript">{literal}
 	$(document).ready(function(){
-		let publicSwitch = $('#public').bootstrapSwitch();
-		let searchableSwitch = $('#searchable').bootstrapSwitch();
+		var publicSwitch = $('#public').bootstrapSwitch();
+		var searchableSwitch = $('#searchable').bootstrapSwitch();
 	});
 {/literal}</script>

@@ -98,7 +98,7 @@ class MaterialsRequest_AJAX extends Action{
 
 						$materialsRequest->selectAdd();
 						$materialsRequest->selectAdd(
-							'materials_request.*, description as statusLabel, location.displayName as location'
+							'materials_request.*, status.description as statusLabel, location.displayName as location'
 						);
 						if (!$usingDefaultFormats) {
 							$materialsRequest->joinAdd($formats, 'LEFT', 'materials_request_formats', 'formatId', 'id');
@@ -273,7 +273,7 @@ class MaterialsRequest_AJAX extends Action{
 
 					$materialsRequest->selectAdd();
 					$materialsRequest->selectAdd(
-						'materials_request.*, description as statusLabel, location.displayName as location'
+						'materials_request.*, status.description as statusLabel, location.displayName as location'
 					);
 					if (!$usingDefaultFormats) {
 						$materialsRequest->joinAdd($formats, 'LEFT', 'materials_request_formats', 'formatId', 'id');

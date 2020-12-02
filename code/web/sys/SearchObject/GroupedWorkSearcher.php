@@ -7,7 +7,7 @@ require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 {
 	// Field List
-	public static $fields_to_return = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
+	public static $fields_to_return = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,publishDateSort,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
 
 	// Optional, used on author screen for example
 	private $searchSubType = '';
@@ -289,7 +289,11 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		if ($this->searchType == $this->basicSearchType || $this->searchType == 'author') {
 			return parent::getSearchIndex();
 		} else {
-			return null;
+			if ($this->isAdvanced()) {
+				return 'advanced';
+			}else{
+				return null;
+			}
 		}
 	}
 
@@ -1250,7 +1254,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['title_display']) ? $curDoc['title_display'] : '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['author']) ? $curDoc['author'] : '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode(', ', $curDoc['publisherStr']) : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publishDate']) ? implode(', ', $curDoc['publishDate']) : '');
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publishDateSort']) ? implode(', ', $curDoc['publishDateSort']) : '');
 				$callNumber = '';
 				if (isset($curDoc['local_callnumber_' . $solrScope])) {
 					$callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
@@ -1423,14 +1427,13 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @access    public
 	 *
 	 * @param array[] $ids
-	 * @param string[] $notInterestedIds
 	 * @param int $page
 	 * @param int $limit
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $notInterestedIds, $page = 1, $limit = 25)
+	function getMoreLikeThese($ids, $page = 1, $limit = 25)
 	{
-		return $this->indexEngine->getMoreLikeThese($ids, $notInterestedIds, $this->getFieldsToReturn(), $page, $limit);
+		return $this->indexEngine->getMoreLikeThese($ids, $this->getFieldsToReturn(), $page, $limit);
 	}
 
 	/**
@@ -1469,9 +1472,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
-	function getMoreLikeThis($id, $notInterestedIds = null, $availableOnly = false, $limitFormat = true, $limit = null)
+	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null)
 	{
-		return $this->indexEngine->getMoreLikeThis($id, $notInterestedIds, $availableOnly, $limitFormat, $limit, $this->getFieldsToReturn());
+		return $this->indexEngine->getMoreLikeThis($id, $availableOnly, $limitFormat, $limit, $this->getFieldsToReturn());
 	}
 
 	public function getEngineName(){

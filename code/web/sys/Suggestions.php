@@ -63,12 +63,12 @@ class Suggestions{
 					}else{
 						$titleLimit = 3;
 					}
-					$suggestions = self::getMoreLikeTheseSuggestions(1, $titleLimit, $searchObject, [$allLikedRatedTitles[$i]], $notInterestedTitles, $allRatedTitles, $suggestions);
+					$suggestions = self::getMoreLikeTheseSuggestions(1, $titleLimit, $searchObject, [$allLikedRatedTitles[$i]], $allRatedTitles, $suggestions);
 				}
 			}
 
 			//$db->debug = true;
-			$suggestions = self::getMoreLikeTheseSuggestions($page, $limit - count($suggestions), $searchObject, $allLikedRatedTitles, $notInterestedTitles, $allRatedTitles, $suggestions);
+			$suggestions = self::getMoreLikeTheseSuggestions($page, $limit - count($suggestions), $searchObject, $allLikedRatedTitles, $allRatedTitles, $suggestions);
 			$timer->logTime("Loaded recommendations based on metadata");
 		}
 
@@ -81,22 +81,19 @@ class Suggestions{
 	 * @param $limit
 	 * @param SearchObject_GroupedWorkSearcher $searchObject
 	 * @param array $titlesToBaseRecommendationsOn
-	 * @param array $notInterestedTitles
 	 * @param array $allRatedTitles
 	 * @param array $suggestions
 	 * @return array
 	 */
-	private static function getMoreLikeTheseSuggestions($page, $limit, SearchObject_GroupedWorkSearcher $searchObject, array $titlesToBaseRecommendationsOn, array $notInterestedTitles, array $allRatedTitles, array $suggestions): array
+	private static function getMoreLikeTheseSuggestions($page, $limit, SearchObject_GroupedWorkSearcher $searchObject, array $titlesToBaseRecommendationsOn, array $allRatedTitles, array $suggestions): array
 	{
-		$moreLikeTheseSuggestions = $searchObject->getMoreLikeThese($titlesToBaseRecommendationsOn, $notInterestedTitles, $page, $limit);
+		$moreLikeTheseSuggestions = $searchObject->getMoreLikeThese($titlesToBaseRecommendationsOn, $page, $limit);
 		if (isset($moreLikeTheseSuggestions['response']['docs'])) {
 			foreach ($moreLikeTheseSuggestions['response']['docs'] as $suggestion) {
-				if (!array_key_exists($suggestion['id'], $allRatedTitles) && !array_key_exists($suggestion['id'], $notInterestedTitles)) {
-					$suggestions[$suggestion['id']] = array(
-						'titleInfo' => $suggestion,
-						'basedOn' => 'MetaData for all titles rated',
-					);
-				}
+				$suggestions[$suggestion['id']] = array(
+					'titleInfo' => $suggestion,
+					'basedOn' => 'MetaData for all titles rated',
+				);
 			}
 		} else {
 			if (isset($moreLikeTheseSuggestions['error'])) {

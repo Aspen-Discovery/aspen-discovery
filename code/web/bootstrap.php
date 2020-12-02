@@ -108,7 +108,6 @@ $timer->logTime('Bootstrap done');
 
 function initMemcache(){
 	//Connect to memcache
-	/** @var Memcache $memCache */
 	global $memCache;
 
     require_once ROOT_DIR . '/sys/MemoryCache/Memcache.php';

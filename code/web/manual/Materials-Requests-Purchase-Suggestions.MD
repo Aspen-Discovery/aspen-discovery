@@ -3,3 +3,7 @@
 - The user will be presented with a button prompting them to "Submit a New Materials Request"
 - Only fields marked in red are required. The more information the user enters the easier it will be for the staff members to find the title they are requesting. The "Notes" field at the bottom is a free text field, and can be used to provide any additional information.
 - Once the user hits "Submit your suggestion", they will receive an email when the library processes their suggestion.
+
+[![Materials Request](/manual/images/Materials-Request.jpg)](https://youtu.be/b7kEoeN6jKo)
+
+[Watch on Youtube](https://youtu.be/b7kEoeN6jKo)

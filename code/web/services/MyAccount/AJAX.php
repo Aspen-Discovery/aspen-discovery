@@ -538,6 +538,13 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
 		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
+		if (!empty($library->loginNotes)){
+			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+			$parsedown = AspenParsedown::instance();
+			$parsedown->setBreaksEnabled(true);
+			$loginNotes = $parsedown->parse($library->loginNotes);
+			$interface->assign('loginNotes', $loginNotes);
+		}
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
@@ -1081,9 +1088,11 @@ class MyAccount_AJAX extends JSON_Action
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
-						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-						$rbdigitalSummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
-						$rbdigitalSummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+						if ($linkedUser->isValidForEContentSource('rbdigital')){
+							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+							$rbdigitalSummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
+							$rbdigitalSummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+						}
 					}
 				}
 				$timer->logTime("Loaded RBdigital Summary for User and linked users");
@@ -1967,77 +1976,73 @@ class MyAccount_AJAX extends JSON_Action
 			'message' => 'Unknown error',
 		];
 
-		global $offlineMode;
-		if (!$offlineMode) {
-			$user = UserAccount::getActiveUserObj();
-			if ($user) {
-				$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
-				$interface->assign('selectedUser', $patronId);
 
-				$patron = $user->getUserReferredTo($patronId);
-				if (!$patron) {
-					AspenError::raiseError(new AspenError("The patron provided is invalid"));
-				}
+		$user = UserAccount::getActiveUserObj();
+		if ($user) {
+			$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
+			$interface->assign('selectedUser', $patronId);
 
-				// Define sorting options
-				$sortOptions = array('title' => 'Title',
-					'author' => 'Author',
-					'checkedOut' => 'Last Used',
-					'format' => 'Format',
-				);
-				$selectedSortOption = $this->setSort('sort', 'readingHistory');
-				if ($selectedSortOption == null || !array_key_exists($selectedSortOption, $sortOptions)) {
-					$selectedSortOption = 'checkedOut';
-				}
-
-				$interface->assign('sortOptions', $sortOptions);
-				$interface->assign('defaultSortOption', $selectedSortOption);
-				$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-				$interface->assign('page', $page);
-
-				$recordsPerPage = 20;
-				$interface->assign('curPage', $page);
-
-				$filter = isset($_REQUEST['readingHistoryFilter']) ? $_REQUEST['readingHistoryFilter'] : '';
-				$interface->assign('readingHistoryFilter', $filter);
-
-				$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, false);
-
-				$link = $_SERVER['REQUEST_URI'];
-				if (preg_match('/[&?]page=/', $link)) {
-					$link = preg_replace("/page=\\d+/", "page=%d", $link);
-				} else if (strpos($link, "?") > 0) {
-					$link .= "&page=%d";
-				} else {
-					$link .= "?page=%d";
-				}
-				if ($recordsPerPage != '-1') {
-					$options = array('totalItems' => $result['numTitles'],
-						'fileName' => $link,
-						'perPage' => $recordsPerPage,
-						'append' => false,
-						'linkRenderingObject' => $this,
-						'linkRenderingFunction' => 'renderReadingHistoryPaginationLink',
-						'patronId' => $patronId,
-						'sort' => $selectedSortOption,
-						'showCovers' => $showCovers,
-						'filter' => urlencode($filter)
-					);
-					$pager = new Pager($options);
-
-					$interface->assign('pageLinks', $pager->getLinks());
-				}
-				if (!($result instanceof AspenError)) {
-					$interface->assign('historyActive', $result['historyActive']);
-					$interface->assign('transList', $result['titles']);
-				}
+			$patron = $user->getUserReferredTo($patronId);
+			if (!$patron) {
+				AspenError::raiseError(new AspenError("The patron provided is invalid"));
 			}
-			$result['success'] = true;
-			$result['message'] = "";
-			$result['readingHistory'] = $interface->fetch('MyAccount/readingHistoryList.tpl');
-		} else {
-			$result['message'] = translate('The catalog is offline');
+
+			// Define sorting options
+			$sortOptions = array('title' => 'Title',
+				'author' => 'Author',
+				'checkedOut' => 'Last Used',
+				'format' => 'Format',
+			);
+			$selectedSortOption = $this->setSort('sort', 'readingHistory');
+			if ($selectedSortOption == null || !array_key_exists($selectedSortOption, $sortOptions)) {
+				$selectedSortOption = 'checkedOut';
+			}
+
+			$interface->assign('sortOptions', $sortOptions);
+			$interface->assign('defaultSortOption', $selectedSortOption);
+			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$interface->assign('page', $page);
+
+			$recordsPerPage = 20;
+			$interface->assign('curPage', $page);
+
+			$filter = isset($_REQUEST['readingHistoryFilter']) ? $_REQUEST['readingHistoryFilter'] : '';
+			$interface->assign('readingHistoryFilter', $filter);
+
+			$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, false);
+
+			$link = $_SERVER['REQUEST_URI'];
+			if (preg_match('/[&?]page=/', $link)) {
+				$link = preg_replace("/page=\\d+/", "page=%d", $link);
+			} else if (strpos($link, "?") > 0) {
+				$link .= "&page=%d";
+			} else {
+				$link .= "?page=%d";
+			}
+			if ($recordsPerPage != '-1') {
+				$options = array('totalItems' => $result['numTitles'],
+					'fileName' => $link,
+					'perPage' => $recordsPerPage,
+					'append' => false,
+					'linkRenderingObject' => $this,
+					'linkRenderingFunction' => 'renderReadingHistoryPaginationLink',
+					'patronId' => $patronId,
+					'sort' => $selectedSortOption,
+					'showCovers' => $showCovers,
+					'filter' => urlencode($filter)
+				);
+				$pager = new Pager($options);
+
+				$interface->assign('pageLinks', $pager->getLinks());
+			}
+			if (!($result instanceof AspenError)) {
+				$interface->assign('historyActive', $result['historyActive']);
+				$interface->assign('transList', $result['titles']);
+			}
 		}
+		$result['success'] = true;
+		$result['message'] = "";
+		$result['readingHistory'] = $interface->fetch('MyAccount/readingHistoryList.tpl');
 
 		return $result;
 	}
@@ -2197,6 +2202,34 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function dismissSystemMessage()
+	{
+		require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
+		if (!isset($_REQUEST['messageId'])) {
+			return ['success' => false, 'message' => 'Message Id not provided'];
+		} else if (UserAccount::getActiveUserId() == false) {
+			return ['success' => false, 'message' => 'User is not logged in'];
+		} else {
+			$message = new SystemMessage();
+			$message->id = $_REQUEST['messageId'];
+			if ($message->find(true)) {
+				require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
+				$systemMessageDismissal = new SystemMessageDismissal();
+				$systemMessageDismissal->userId = UserAccount::getActiveUserId();
+				$systemMessageDismissal->systemMessageId = $message->id;
+				if ($systemMessageDismissal->find(true)) {
+					return ['success' => true, 'message' => 'Message was already dismissed'];
+				} else {
+					$systemMessageDismissal->insert();
+					return ['success' => true, 'message' => 'Message was dismissed'];
+				}
+			} else {
+				return ['success' => false, 'message' => 'Could not find the message to dismiss'];
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
 	function enableAccountLinking()
 	{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
@@ -2303,6 +2336,12 @@ class MyAccount_AJAX extends JSON_Action
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$totalFines = 0;
 
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
 			//List how fines have been paid by type
 			//0 = no payments applied
 			//1 = partial payment applied
@@ -2348,7 +2387,7 @@ class MyAccount_AJAX extends JSON_Action
 						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 120, true),
 						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 120, true),
 						'unit_amount' => [
-							'currency_code' => 'USD',
+							'currency_code' => $currencyCode,
 							'value' => round($fineAmount, 2),
 						],
 						'quantity' => 1
@@ -2414,11 +2453,11 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			$purchaseUnits['amount'] = [
-				'currency_code' => 'USD',
+				'currency_code' => $currencyCode,
 				'value' => round($totalFines, 2),
 				'breakdown' => [
 					'item_total' => [
-						'currency_code' => 'USD',
+						'currency_code' => $currencyCode,
 						'value' => round($totalFines, 2),
 					],
 				]
