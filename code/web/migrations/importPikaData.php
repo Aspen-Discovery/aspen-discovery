@@ -759,7 +759,7 @@ function importMergedWorks($startTime, $exportPath, &$existingUsers, &$missingUs
 			}
 
 			$aspenGroupedWorkId = getGroupedWorkId($destinationGroupedWorkID, $validGroupedWorks, $movedGroupedWorks);
-			$resourcesList = explode(",", $destinationRecords);
+			$resourcesList = preg_split('/[,;]/', $destinationRecords);
 			$allResourcesAttachedToSameRecord = true;
 			$alternateTitleAuthors = [];
 			foreach ($resourcesList as $resourceId){
@@ -996,7 +996,7 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 		//We can use two approaches, look at the resources tied to it or look at it by permanent id and title/author
 		//First try looking by resource.  Do this first because the grouping has been tweaked and because this better
 		//Handles works that have merged or unmerged
-		$groupedWorkResourceArray = explode(",", $groupedWorkResources);
+		$groupedWorkResourceArray = preg_split('/[,;]/', $groupedWorkResources);
 		$groupedWorkValid = false;
 		foreach ($groupedWorkResourceArray as $identifier){
 			list($source, $id) = explode(':', $identifier);
