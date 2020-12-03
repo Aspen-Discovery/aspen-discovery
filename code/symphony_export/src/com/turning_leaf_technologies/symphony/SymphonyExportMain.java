@@ -167,7 +167,7 @@ public class SymphonyExportMain {
 		if (volumeExportFile.exists()){
 			try {
 				//Get the existing volumes from the database
-				PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT volumeId from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT recordId, displayLabel from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				HashSet<String> existingVolumes = new HashSet<>();
 				ResultSet existingVolumesRS = getExistingVolumes.executeQuery();
 				while (existingVolumesRS.next()){
@@ -182,6 +182,13 @@ public class SymphonyExportMain {
 				int curRow = 0;
 				int numMalformattedRows = 0;
 				while (volumeInfoFields != null) {
+					if (volumeInfoFields.length == 9) {
+						String[] repairedVolumeInfo = new String[8];
+						repairedVolumeInfo[0] = volumeInfoFields[0];
+						repairedVolumeInfo[1] = volumeInfoFields[1] + "|" + volumeInfoFields[2];
+						System.arraycopy(volumeInfoFields, 3, repairedVolumeInfo, 2, 6);
+						volumeInfoFields = repairedVolumeInfo;
+					}
 					if (volumeInfoFields.length == 8) {
 						String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
 						String fullCallNumber = volumeInfoFields[1].trim();
@@ -191,15 +198,14 @@ public class SymphonyExportMain {
 							String relatedItemNumber = volumeInfoFields[4].trim();
 							String shortBibNumber = volumeInfoFields[5].trim();
 							String volumeNumber = volumeInfoFields[6].trim();
-							String volumeIdentifier = shortBibNumber + ":" + volumeNumber;
+							String volumeIdentifier = indexingProfile.getName() + ":a" + shortBibNumber + ":" + volumeNumber;
 
 							//startOfVolumeInfo = 0 indicates this item is not part of a volume. Will need separate handling.
 							if (startOfVolumeInfo > 0 && startOfVolumeInfo < fullCallNumber.length()) {
 								String volume = fullCallNumber.substring(startOfVolumeInfo);
 								VolumeInfo curVolume;
-								String volumeKey = bibNumber + ":" + volume;
-								if (allVolumesInExport.containsKey(volumeKey)) {
-									curVolume = allVolumesInExport.get(volumeKey);
+								if (allVolumesInExport.containsKey(volumeIdentifier)) {
+									curVolume = allVolumesInExport.get(volumeIdentifier);
 								} else {
 									curVolume = new VolumeInfo();
 									curVolume.bibNumber = bibNumber;
@@ -208,7 +214,7 @@ public class SymphonyExportMain {
 									//of the first call number we find which works just fine when placing the hold
 									curVolume.volumeIdentifier = volumeIdentifier;
 									curVolume.displayOrder = -curRow;
-									allVolumesInExport.put(volumeKey, curVolume);
+									allVolumesInExport.put(volumeIdentifier, curVolume);
 								}
 								curVolume.relatedItems.add(relatedItemNumber);
 							}
@@ -253,6 +259,7 @@ public class SymphonyExportMain {
 							}
 						}else if (sqlException.toString().contains("Data too long for column 'displayLabel'")){
 							if (curVolume.volume.length() > maxDisplayLabelLength){
+								logger.debug("Long volume name (" + curVolume.volume.length() + ") " + curVolume.volume);
 								maxDisplayLabelLength = curVolume.volume.length();
 							}
 						}else{
@@ -262,6 +269,9 @@ public class SymphonyExportMain {
 				}
 				if (maxRelatedItemsLength > 0){
 					logEntry.incErrors("Related items were too long for the field, max length should be at least " + maxRelatedItemsLength);
+				}
+				if (maxDisplayLabelLength > 0){
+					logEntry.incErrors("Volume Name was too long for the field, max length should be at least " + maxDisplayLabelLength);
 				}
 
 				long numVolumesDeleted = 0;

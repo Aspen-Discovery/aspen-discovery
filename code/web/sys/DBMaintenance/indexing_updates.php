@@ -318,6 +318,15 @@ function getIndexingUpdates()
 			]
 		],
 
+		'volume_increase_field_lengths' => [
+			'title' => 'Volume info - increase length of volume and related items fields',
+			'description' => 'Make the field longer to store big things (and negative numbers)',
+			'sql' => [
+				'ALTER TABLE ils_volume_info CHANGE COLUMN relatedItems relatedItems TEXT',
+				'ALTER TABLE ils_volume_info CHANGE COLUMN displayLabel displayLabel VARCHAR(512) NOT NULL'
+			]
+		],
+
 		'last_check_in_status_adjustments' => array(
 			'title' => 'Last Check In Time Status Adjustments',
 			'description' => 'Add additional fields to adjust status based on last check-in time.',
