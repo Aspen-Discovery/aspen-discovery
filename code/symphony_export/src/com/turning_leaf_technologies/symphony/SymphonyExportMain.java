@@ -179,27 +179,32 @@ public class SymphonyExportMain {
 				CSVReader csvReader = new CSVReader(new FileReader(volumeExportFile),'|');;
 				String[] volumeInfoFields = csvReader.readNext();
 				HashMap<String, VolumeInfo> allVolumesInExport = new HashMap<>();
+				int curRow = 0;
 				while (volumeInfoFields != null) {
-					if (volumeInfoFields.length == 6) {
+					if (volumeInfoFields.length == 8) {
 						String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
 						String fullCallNumber = volumeInfoFields[1].trim();
 						try {
 							int startOfVolumeInfo = Integer.parseInt(volumeInfoFields[2].trim());
 							//String dateUpdated = volumeInfoFields[3];
 							String relatedItemNumber = volumeInfoFields[4].trim();
+							String shortBibNumber = volumeInfoFields[5].trim();
+							String volumeNumber = volumeInfoFields[6].trim();
+							String volumeIdentifier = shortBibNumber + ":" + volumeNumber;
 
 							//startOfVolumeInfo = 0 indicates this item is not part of a volume. Will need separate handling.
 							if (startOfVolumeInfo > 0 && startOfVolumeInfo < fullCallNumber.length()) {
 								String volume = fullCallNumber.substring(startOfVolumeInfo);
-								String key = bibNumber + ":" + volume;
 								VolumeInfo curVolume;
-								if (allVolumesInExport.containsKey(key)) {
-									curVolume = allVolumesInExport.get(key);
+								if (allVolumesInExport.containsKey(volumeIdentifier)) {
+									curVolume = allVolumesInExport.get(volumeIdentifier);
 								} else {
 									curVolume = new VolumeInfo();
 									curVolume.bibNumber = bibNumber;
 									curVolume.volume = volume;
-									allVolumesInExport.put(key, curVolume);
+									curVolume.volumeIdentifier = volumeIdentifier;
+									curVolume.displayOrder = -curRow;
+									allVolumesInExport.put(volumeIdentifier, curVolume);
 								}
 								curVolume.relatedItems.add(relatedItemNumber);
 							}
@@ -211,11 +216,12 @@ public class SymphonyExportMain {
 					}
 
 					//Read the next line
+					curRow++;
 					volumeInfoFields = csvReader.readNext();
 				}
 
 				//Update the database
-				PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems) VALUES (?,?,?,?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems)");
+				PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems)");
 				PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
 				int numVolumesUpdated = 0;
 				for (String curVolumeKey : allVolumesInExport.keySet()){
@@ -223,9 +229,10 @@ public class SymphonyExportMain {
 					existingVolumes.remove(curVolumeKey);
 					try{
 						addVolumeStmt.setString(1, curVolume.bibNumber);
-						addVolumeStmt.setString(2, curVolume.volume);
+						addVolumeStmt.setString(2, curVolume.volumeIdentifier);
 						addVolumeStmt.setString(3, curVolume.volume);
 						addVolumeStmt.setString(4, curVolume.getRelatedItemsAsString());
+						addVolumeStmt.setLong(5, curVolume.displayOrder);
 						int numUpdates = addVolumeStmt.executeUpdate();
 						if (numUpdates > 0) {
 							numVolumesUpdated++;
