@@ -7,11 +7,11 @@
 				<div class="{*col-xs-10 *}text-center">
 					{if $record.coverUrl}
 						{if $record.transactionId && $record.linkUrl}
-							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.transactionId|escape:"url"}">
+							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.transactionId|escape:"url"}" aria-hidden="true">
 								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 						{/if}
 					{/if}
 				</div>
@@ -83,7 +83,7 @@
 					{if $showWhileYouWait}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record.groupedWorkId)}
-								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
+								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait"}</button>
 							{/if}
 						</div>
 					{/if}

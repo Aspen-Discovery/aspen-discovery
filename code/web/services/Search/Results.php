@@ -1,16 +1,15 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+require_once ROOT_DIR . '/ResultsAction.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Search_Results extends Action {
+class Search_Results extends ResultsAction {
 
 	function launch() {
 		global $interface;
-		global $configArray;
 		global $timer;
 		global $memoryWatcher;
 		global $library;
@@ -54,8 +53,8 @@ class Search_Results extends Action {
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
 		global $library;
-		foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailoption) {
-			$interface->assign($detailoption, true);
+		foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
+			$interface->assign($detailOption, true);
 		}
 
 
@@ -65,7 +64,7 @@ class Search_Results extends Action {
 		$memoryWatcher->logMemory('Include search engine');
 
 		//Check to see if the year has been set and if so, convert to a filter and resend.
-		$dateFilters = array('publishDate');
+		$dateFilters = array('publishDate', 'publishDateSort');
 		foreach ($dateFilters as $dateFilter){
 			if ((isset($_REQUEST[$dateFilter . 'yearfrom']) && !empty($_REQUEST[$dateFilter . 'yearfrom'])) || (isset($_REQUEST[$dateFilter . 'yearto']) && !empty($_REQUEST[$dateFilter . 'yearto']))){
 				$queryParams = $_GET;
@@ -199,8 +198,6 @@ class Search_Results extends Action {
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
 		if ($result instanceof AspenError || !empty($result['error'])) {
-			$this->getKeywordSearchResults($searchObject, $interface);
-
 			//Don't record an error, but send it to issues just to be sure everything looks good
 			global $serverName;
 			$logSearchError = true;
@@ -236,7 +233,7 @@ class Search_Results extends Action {
 					if ($systemVariables->find(true) && !empty($systemVariables->searchErrorEmail)) {
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mailer = new Mailer();
-						$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['message'];
+						$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['msg'];
 						$mailer->send($systemVariables->searchErrorEmail, "$serverName Error processing catalog search", $emailErrorDetails);
 					}
 				}catch (Exception $e){
@@ -245,7 +242,8 @@ class Search_Results extends Action {
 			}
 
 			$interface->assign('searchError', $result);
-			$this->display('searchError.tpl', 'Error in Search');
+			$this->getKeywordSearchResults($searchObject, $interface);
+			$this->display('searchError.tpl', 'Error in Search', '');
 			return;
 		}
 		$timer->logTime('Process Search');
@@ -275,7 +273,6 @@ class Search_Results extends Action {
 		//Enable and disable functionality based on library settings
 		//This must be done before we process each result
 		$interface->assign('showNotInterested', false);
-		$interface->assign('page_body_style', 'sidebar_left');
 
 		$enableProspectorIntegration = ($library->enableProspectorIntegration == 1);
 		if ($enableProspectorIntegration){
@@ -306,7 +303,7 @@ class Search_Results extends Action {
 			}
 		}
 		if (!$hasAppliedFacets && $searchObject->getResultTotal() <= 5) {
-			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
+			require_once ROOT_DIR . '/sys/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
 			$allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex(), 'grouped_works');
 			$interface->assign('searchSuggestions', $allSuggestions);
@@ -450,7 +447,8 @@ class Search_Results extends Action {
 
 		$interface->assign('sectionLabel', 'Library Catalog');
 		// Done, display the page
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'Search/results-sidebar.tpl', false);
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, $sidebar, false);
 	} // End launch()
 
 	/**
@@ -488,34 +486,39 @@ class Search_Results extends Action {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardTrigger.php';
 
 			$trigger = new PlacardTrigger();
-			$trigger->triggerWord = $_REQUEST['lookfor'];
+			$trigger->whereAdd($trigger->escape($_REQUEST['lookfor'] ) . " like concat('%', triggerWord, '%')");
 			$trigger->find();
 			while ($trigger->fetch()) {
-				$placardToDisplay = new Placard();
-				$placardToDisplay->id = $trigger->placardId;
-				if ($placardToDisplay->find(true)){
-					if ($placardToDisplay->isDismissed() || !$placardToDisplay->isValidForScope()){
-						$placardToDisplay = null;
-					}
-				}else{
-					$placardToDisplay = null;
-				}
-				if ($placardToDisplay != null) {
-					break;
-				}
-			}
-			if ($placardToDisplay == null && !empty($_REQUEST['replacementTerm'])) {
-				$trigger->triggerWord = $_REQUEST['replacementTerm'];
-				$trigger->find();
-				while ($trigger->fetch()) {
+				if ($trigger->exactMatch == 0 || (strcasecmp($trigger->triggerWord, $_REQUEST['lookfor']) === 0)){
 					$placardToDisplay = new Placard();
 					$placardToDisplay->id = $trigger->placardId;
-					$placardToDisplay->find(true);
-					if ($placardToDisplay->isDismissed() || !$placardToDisplay->isValidForScope()){
+					if ($placardToDisplay->find(true)){
+						if (!$placardToDisplay->isValidForDisplay()){
+							$placardToDisplay = null;
+						}
+					}else{
 						$placardToDisplay = null;
 					}
 					if ($placardToDisplay != null) {
 						break;
+					}
+				}
+			}
+			if ($placardToDisplay == null && !empty($_REQUEST['replacementTerm'])) {
+				$trigger->whereAdd($trigger->escape($_REQUEST['replacementTerm'] . ' like triggerWord' ));
+				//$trigger->triggerWord = $_REQUEST['replacementTerm'];
+				$trigger->find();
+				while ($trigger->fetch()) {
+					if ($trigger->exactMatch == 0 || (strcasecmp($trigger->triggerWord, $_REQUEST['replacementTerm']) === 0)) {
+						$placardToDisplay = new Placard();
+						$placardToDisplay->id = $trigger->placardId;
+						$placardToDisplay->find(true);
+						if (!$placardToDisplay->isValidForDisplay()){
+							$placardToDisplay = null;
+						}
+						if ($placardToDisplay != null) {
+							break;
+						}
 					}
 				}
 			}
@@ -528,6 +531,11 @@ class Search_Results extends Action {
 		}catch (Exception $e){
 			//Placards are not defined yet
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		return parent::getResultsBreadcrumbs('Catalog Search');
 	}
 
 }

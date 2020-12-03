@@ -7,11 +7,11 @@
 				<div class="{*col-xs-10 *}text-center">
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
-							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}" aria-hidden="true">
 								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 						{/if}
 					{/if}
 
@@ -146,7 +146,7 @@
 								{if $record.frozen}
 									<span class="frozenHold">
 								{/if}
-								{$record.status}
+								{$record.status|translate}
 								{if $record.frozen && $showDateWhenSuspending && !empty($record.reactivate)} until {$record.reactivate|date_format:"%b %d, %Y"}</span>{/if}
 							</div>
 						</div>
@@ -160,7 +160,7 @@
 							</div>
 						{/if}
 
-						{if $record.automaticCancellation && $showHoldCancelDate}
+						{if !empty($record.automaticCancellation) && $showHoldCancelDate}
 							<div class="row">
 								<div class="result-label col-tn-4">{translate text='Cancels on'}</div>
 								<div class="col-tn-8 result-value">
@@ -199,7 +199,7 @@
 					{if $showWhileYouWait}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record.groupedWorkId)}
-								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
+								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait"}</button>
 							{/if}
 						</div>
 					{/if}

@@ -13,13 +13,12 @@ import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
-import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
-import com.turning_leaf_technologies.indexing.IndexingProfile;
-import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.marc4j.*;
@@ -58,11 +57,31 @@ public class CarlXExportMain {
 	private static long startTimeForLogging;
 
 	public static void main(String[] args) {
+		boolean extractSingleWork = false;
+		String singleWorkId = null;
 		if (args.length == 0) {
-			System.out.println("You must provide the server name as the first argument.");
-			System.exit(1);
+			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			if (serverName.length() == 0) {
+				System.out.println("You must provide the server name as the first argument.");
+				System.exit(1);
+			}
+			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
+				extractSingleWork = true;
+			}
+		} else {
+			serverName = args[0];
+			if (args.length > 1){
+				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")){
+					extractSingleWork = true;
+				}
+			}
 		}
-		serverName = args[0];
+		if (extractSingleWork) {
+			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
+			singleWorkId = singleWorkId.replace("CARL", "");
+			singleWorkId = Integer.toString(Integer.parseInt(singleWorkId));
+		}
 
 		String profileToLoad = "carlx";
 		if (args.length > 1){
@@ -129,38 +148,42 @@ public class CarlXExportMain {
 					updateSettingsStmt.executeUpdate();
 				}
 
-				numChanges = updateRecords(dbConn, carlXInstanceInformation);
+				numChanges = updateRecords(dbConn, carlXInstanceInformation, singleWorkId);
 
-				logger.info("Finished export of bibs and items, starting export of holds");
+				if (!extractSingleWork) {
+					logger.info("Finished export of bibs and items, starting export of holds");
 
-				//TODO: Are we keeping the CARL.X database connection open too long?
-				if (carlXInstanceInformation.carlXConn != null){
-					try{
-						exportHolds(carlXInstanceInformation.carlXConn, dbConn);
-					}catch(Exception e){
-						logger.error("Error exporting holds", e);
-						System.out.println("Error: " + e.toString());
-						e.printStackTrace();
+					//TODO: Are we keeping the CARL.X database connection open too long?
+					if (carlXInstanceInformation.carlXConn != null) {
+						try {
+							exportHolds(carlXInstanceInformation.carlXConn, dbConn);
+						} catch (Exception e) {
+							logger.error("Error exporting holds", e);
+							System.out.println("Error: " + e.toString());
+							e.printStackTrace();
+						}
+					} else {
+						logEntry.incErrors("Did not export holds because connection to the CARL.X database was not established");
 					}
-				}else{
-					logEntry.incErrors("Did not export holds because connection to the CARL.X database was not established");
-				}
 
-				processRecordsToReload(indexingProfile, logEntry);
+					processRecordsToReload(indexingProfile, logEntry);
+				}
 
 				logEntry.setFinished();
 
 				try{
-					//Close the connection
-					dbConn.close();
-
 					if (carlXInstanceInformation.carlXConn != null){
 						carlXInstanceInformation.carlXConn.close();
 					}
 
+					if (recordGroupingProcessorSingleton != null) {
+						recordGroupingProcessorSingleton.close();
+						recordGroupingProcessorSingleton = null;
+					}
+
 					if (groupedWorkIndexer != null) {
 						groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-						recordGroupingProcessorSingleton = null;
+						groupedWorkIndexer.close();
 						groupedWorkIndexer = null;
 					}
 				}catch(Exception e){
@@ -173,26 +196,56 @@ public class CarlXExportMain {
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase(dbConn);
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase(dbConn);
 				break;
 			}
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase(dbConn);
+				break;
+			}
+			if (extractSingleWork) {
+				disconnectDatabase(dbConn);
 				break;
 			}
 
-			//Pause before running the next export (longer if we didn't get any actual changes)
-			try {
-				if (numChanges == 0 || logEntry.hasErrors()) {
-					Thread.sleep(1000 * 60 * 5);
-				}else {
-					Thread.sleep(1000 * 60);
+			disconnectDatabase(dbConn);
+
+			//Check to see if nightly indexing is running and if so, wait until it is done.
+			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+				//Quit and we will restart after if finishes
+				System.exit(0);
+			}else {
+				//Pause before running the next export (longer if we didn't get any actual changes)
+				try {
+					if (numChanges == 0 || logEntry.hasErrors()) {
+						Thread.sleep(1000 * 60 * 5);
+					} else {
+						Thread.sleep(1000 * 60);
+					}
+				} catch (InterruptedException e) {
+					logger.info("Thread was interrupted");
 				}
-			} catch (InterruptedException e) {
-				logger.info("Thread was interrupted");
 			}
 		} //Infinite loop
+	}
+
+	private static void disconnectDatabase(Connection dbConn) {
+		try {
+			//Close the connection
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		} catch (Exception e) {
+			System.out.println("Error closing aspen connection: " + e.toString());
+			e.printStackTrace();
+		}
 	}
 
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
@@ -234,7 +287,7 @@ public class CarlXExportMain {
 		}
 	}
 
-	private static int updateRecords(Connection dbConn, CarlXInstanceInformation carlXInstanceInformation){
+	private static int updateRecords(Connection dbConn, CarlXInstanceInformation carlXInstanceInformation, String singleWorkId){
 		//Check to see if we need to update from the MARC export
 		File marcExportPath = new File(indexingProfile.getMarcPath());
 		File[] exportedMarcFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
@@ -247,7 +300,7 @@ public class CarlXExportMain {
 			}
 		}
 
-		if (exportedMarcFiles != null && exportedMarcFiles.length > 0 && (indexingProfile.getLastUpdateFromMarcExport() == 0 || (latestMarcFile / 1000) > indexingProfile.getLastUpdateFromMarcExport())){
+		if (singleWorkId == null && (exportedMarcFiles != null && exportedMarcFiles.length > 0 && (indexingProfile.getLastUpdateFromMarcExport() == 0 || (latestMarcFile / 1000) > indexingProfile.getLastUpdateFromMarcExport()))){
 			//Do not load the MARC file if it was updated in the last 5 minutes to be sure it is fully written
 			if (startTimeForLogging - (latestMarcFile / 1000) < 300){
 				return 0;
@@ -258,7 +311,7 @@ public class CarlXExportMain {
 		}else{
 			//Get updates from the API
 			logEntry.addNote("Updating based on API");
-			return updateRecordsUsingAPI(dbConn, carlXInstanceInformation);
+			return updateRecordsUsingAPI(dbConn, carlXInstanceInformation, singleWorkId);
 		}
 	}
 
@@ -353,8 +406,24 @@ public class CarlXExportMain {
 			}
 		}
 
-		//TODO: Loop through remaining records and delete them
-
+		//Loop through remaining records and delete them
+		logEntry.addNote("Starting to delete records that no longer exist");
+		for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()){
+			RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
+			if (result.permanentId != null) {
+				if (result.reindexWork) {
+					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
+				} else if (result.deleteWork) {
+					//Delete the work from solr and the database
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+				}
+				logEntry.incDeleted();
+				if (logEntry.getNumDeleted() % 250 == 0) {
+					logEntry.saveResults();
+				}
+			}
+		}
+		logEntry.addNote("Finished deleting records that no longer exist");
 
 		try {
 			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateFromMarcExport = ? where id = ?");
@@ -368,7 +437,7 @@ public class CarlXExportMain {
 		return totalChanges;
 	}
 
-	private static int updateRecordsUsingAPI(Connection dbConn, CarlXInstanceInformation carlXInstanceInformation){
+	private static int updateRecordsUsingAPI(Connection dbConn, CarlXInstanceInformation carlXInstanceInformation, String singleWorkId){
 		int totalChanges = 0;
 		// Get MarcOut WSDL url for SOAP calls
 		marcOutURL = carlXInstanceInformation.baseAPIUrl + "/CarlXAPI/MarcoutAPI.wsdl";
@@ -402,67 +471,71 @@ public class CarlXExportMain {
 			ArrayList<String> updatedItemIDs = new ArrayList<>();
 			ArrayList<String> createdItemIDs = new ArrayList<>();
 			ArrayList<String> deletedItemIDs = new ArrayList<>();
-			ArrayList<ItemChangeInfo> itemUpdates;
+			ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
 			ArrayList<ItemChangeInfo> createdItems = new ArrayList<>();
 			ArrayList<ItemChangeInfo> deletedItems;
 
-			if (!getChangedBibsFromCarlXApi(beginTimeString, updatedBibs, createdBibs, deletedBibs)) {
-				//Halt execution
-				logEntry.incErrors("Failed to getChangedBibsFromCarlXApi, exiting");
-				return totalChanges;
-			}
-			logger.info("Loaded updated bibs");
-
-			//Load updated items, we don't need to do this if we are running a full update
-			logger.debug("Calling GetChangedItemsRequest with BeginTime of " + beginTimeString);
-			if (!getChangedItemsFromCarlXApi(beginTimeString, updatedItemIDs, createdItemIDs, deletedItemIDs)) {
-				//Halt execution
-				logEntry.incErrors("Failed to getChangedItemsFromCarlXApi, exiting");
-				return totalChanges;
-			} else {
-				logger.info("Loaded updated items");
-			}
-
-			// Fetch Item Information for each ID.  What we really want is a full list of BIDs
-			// so we can fetch MARC records for them.
-			itemUpdates = fetchItemInformation(updatedItemIDs);
-			if (hadErrors) {
-				logEntry.incErrors("Failed to Fetch Item Information for updated items");
-				return totalChanges;
-			} else {
-				logger.info("Fetched Item information for updated items");
-				for (ItemChangeInfo itemUpdate : itemUpdates){
-					if (!createdBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())){
-						updatedBibs.add(itemUpdate.getBID());
-					}
+			if (singleWorkId != null){
+				updatedBibs.add(singleWorkId);
+			}else {
+				if (!getChangedBibsFromCarlXApi(beginTimeString, updatedBibs, createdBibs, deletedBibs)) {
+					//Halt execution
+					logEntry.incErrors("Failed to getChangedBibsFromCarlXApi, exiting");
+					return totalChanges;
 				}
-			}
+				logger.info("Loaded updated bibs");
 
-			if (createdItemIDs.size() > 0) {
-				createdItems = fetchItemInformation(createdItemIDs);
-				if (hadErrors) {
-					logEntry.incErrors("Failed to Fetch Item Information for created items");
+				//Load updated items, we don't need to do this if we are running a full update
+				logger.debug("Calling GetChangedItemsRequest with BeginTime of " + beginTimeString);
+				if (!getChangedItemsFromCarlXApi(beginTimeString, updatedItemIDs, createdItemIDs, deletedItemIDs)) {
+					//Halt execution
+					logEntry.incErrors("Failed to getChangedItemsFromCarlXApi, exiting");
 					return totalChanges;
 				} else {
-					logger.info("Fetched Item information for created items");
-					for (ItemChangeInfo itemUpdate : createdItems) {
-						if (!createdBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())) {
+					logger.info("Loaded updated items");
+				}
+
+				// Fetch Item Information for each ID.  What we really want is a full list of BIDs
+				// so we can fetch MARC records for them.
+				itemUpdates = fetchItemInformation(updatedItemIDs);
+				if (hadErrors) {
+					logEntry.incErrors("Failed to Fetch Item Information for updated items");
+					return totalChanges;
+				} else {
+					logger.info("Fetched Item information for updated items");
+					for (ItemChangeInfo itemUpdate : itemUpdates){
+						if (!createdBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())){
 							updatedBibs.add(itemUpdate.getBID());
 						}
 					}
 				}
-			}
 
-			if (deletedItemIDs.size() > 0) {
-				deletedItems = fetchItemInformation(deletedItemIDs);
-				if (hadErrors) {
-					logEntry.addNote("Failed to Fetch Item Information for deleted items");
-					//return totalChanges;
-				} else {
-					logger.info("Fetched Item information for deleted items");
-					for (ItemChangeInfo itemUpdate : deletedItems) {
-						if (!deletedBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())) {
-							updatedBibs.add(itemUpdate.getBID());
+				if (createdItemIDs.size() > 0) {
+					createdItems = fetchItemInformation(createdItemIDs);
+					if (hadErrors) {
+						logEntry.incErrors("Failed to Fetch Item Information for created items");
+						return totalChanges;
+					} else {
+						logger.info("Fetched Item information for created items");
+						for (ItemChangeInfo itemUpdate : createdItems) {
+							if (!createdBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())) {
+								updatedBibs.add(itemUpdate.getBID());
+							}
+						}
+					}
+				}
+
+				if (deletedItemIDs.size() > 0) {
+					deletedItems = fetchItemInformation(deletedItemIDs);
+					if (hadErrors) {
+						logEntry.addNote("Failed to Fetch Item Information for deleted items");
+						//return totalChanges;
+					} else {
+						logger.info("Fetched Item information for deleted items");
+						for (ItemChangeInfo itemUpdate : deletedItems) {
+							if (!deletedBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())) {
+								updatedBibs.add(itemUpdate.getBID());
+							}
 						}
 					}
 				}
@@ -472,40 +545,33 @@ public class CarlXExportMain {
 			logEntry.setNumProducts(updatedBibs.size() + createdBibs.size() + deletedBibs.size());
 
 			// Update Changed Bibs
-			totalChanges = updateBibRecords(updatedBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, false);
+			ArrayList<String> bibsNotFound = new ArrayList<>();
+			totalChanges = updateBibRecords(updatedBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, bibsNotFound, false, singleWorkId != null);
+			totalChanges += deleteBibs(dbConn, totalChanges, bibsNotFound);
 			logger.debug("Done updating Bib Records");
 			logEntry.saveResults();
 
-			// Now remove Any left-over deleted items.  The APIs give us the item id, but not the bib id.  We may need to
-			// look them up within Solr as long as the item id is exported as part of the MARC record
-			if (deletedItemIDs.size() > 0) {
-				for (String deletedItemID : deletedItemIDs) {
-					logger.debug("Item " + deletedItemID + " should be deleted, but we didn't get a bib for it.");
-					//TODO: Now you *really* have to get the BID, dude.
-				}
-			}
-
-			//Process Deleted Bibs
-			if (deletedBibs.size() > 0) {
-				logger.debug("There are " + deletedBibs.size() + " that still need to be processed.");
-				for (String deletedBibID : deletedBibs) {
-					RemoveRecordFromWorkResult result = recordGroupingProcessorSingleton.removeRecordFromGroupedWork(indexingProfile.getName(), deletedBibID);
-					if (result.reindexWork){
-						getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
-					}else if (result.deleteWork){
-						//Delete the work from solr and the database
-						getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+			if (singleWorkId != null) {
+				// Now remove Any left-over deleted items.  The APIs give us the item id, but not the bib id.  We may need to
+				// look them up within Solr as long as the item id is exported as part of the MARC record
+				if (deletedItemIDs.size() > 0) {
+					for (String deletedItemID : deletedItemIDs) {
+						logger.debug("Item " + deletedItemID + " should be deleted, but we didn't get a bib for it.");
+						//TODO: Now you *really* have to get the BID, dude.
 					}
-					logEntry.incDeleted();
-					totalChanges++;
 				}
+
+				//Process Deleted Bibs
+				totalChanges += deleteBibs(dbConn, totalChanges, deletedBibs);
 			}
 			logEntry.saveResults();
 
 			//Process New Bibs
 			if (createdBibs.size() > 0) {
 				logger.debug("There are " + createdBibs.size() + " that need to be processed");
-				totalChanges += updateBibRecords(createdBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, true);
+				bibsNotFound = new ArrayList<>();
+				totalChanges += updateBibRecords(createdBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, bibsNotFound, true, false);
+				totalChanges += deleteBibs(dbConn, totalChanges, bibsNotFound);
 			}
 			logEntry.saveResults();
 
@@ -528,6 +594,24 @@ public class CarlXExportMain {
 			logEntry.incErrors("Error loading changed records from CARL.X", e);
 		}
 
+		return totalChanges;
+	}
+
+	private static int deleteBibs(Connection dbConn, int totalChanges, ArrayList<String> deletedBibs) {
+		if (deletedBibs.size() > 0) {
+			logger.debug("There are " + deletedBibs.size() + " that still need to be processed.");
+			for (String deletedBibID : deletedBibs) {
+				RemoveRecordFromWorkResult result = getRecordGroupingProcessor(dbConn).removeRecordFromGroupedWork(indexingProfile.getName(), deletedBibID);
+				if (result.reindexWork) {
+					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
+				} else if (result.deleteWork) {
+					//Delete the work from solr and the database
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+				}
+				logEntry.incDeleted();
+				totalChanges++;
+			}
+		}
 		return totalChanges;
 	}
 
@@ -569,7 +653,7 @@ public class CarlXExportMain {
 		return carlXInstanceInformation;
 	}
 
-	private static int updateBibRecords(ArrayList<String> updatedBibs, ArrayList<String> updatedItemIDs, ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs, ArrayList<ItemChangeInfo> itemUpdates, ArrayList<ItemChangeInfo> createdItems, boolean isNew) {
+	private static int updateBibRecords(ArrayList<String> updatedBibs, ArrayList<String> updatedItemIDs, ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs, ArrayList<ItemChangeInfo> itemUpdates, ArrayList<ItemChangeInfo> createdItems, ArrayList<String> bibsNotFound, boolean isNew, boolean extractSingleWork) {
 		// Fetch new Marc Data
 		// Note: There is an Include949ItemData flag, but it hasn't been implemented by TLC yet. plb 9-15-2016
 		// Build Marc Fetching Soap Request
@@ -603,6 +687,7 @@ public class CarlXExportMain {
 						numAdded++;
 					}
 					updatedBibs.remove(updatedBibID);
+					bibsNotFound.add(updatedBibID);
 					if (numAdded >= 100){
 						break;
 					}
@@ -627,6 +712,7 @@ public class CarlXExportMain {
 						for (int i = 1; i < l; i++) { // (skip first node because it is the response status)
 							try {
 								String currentBibID = updatedBibCopy.get(i - 1);
+								bibsNotFound.remove(currentBibID);
 								String currentFullBibID = getFileIdForRecordNumber(currentBibID);
 								//logger.debug("Updating " + currentFullBibID);
 								//logger.debug("Response from CARL.X\r\n" + marcRecordSOAPResponse.getMessage());
@@ -636,6 +722,12 @@ public class CarlXExportMain {
 								Record updatedMarcRecordFromAPICall = buildMarcRecordFromAPIResponse(marcRecordNode, currentBibID);
 
 								Record currentMarcRecord = loadMarc(currentBibID);
+
+								//Check to see if we need to load items
+								if (extractSingleWork){
+									createdItems = fetchItemsForBib(currentBibID);
+								}
+
 								if (currentMarcRecord != null) {
 									//TODO: Make a call to GetItemInformationRequest to get a list of the items on the Bib
 									//Can also try GetHoldingsInformationRequest on CatalogAPI
@@ -721,7 +813,10 @@ public class CarlXExportMain {
 						}
 					} else {
 						String shortErrorMessage = marcRecordsResponseStatus.getChildNodes().item(2).getTextContent();
-						logEntry.incErrors("Error Response for API call for getting Marc Records : " + shortErrorMessage);
+						//This is what happens when a record is deleted
+						if (!shortErrorMessage.equalsIgnoreCase("No matching records found")) {
+							logEntry.incErrors("Error Response for API call for getting Marc Records : " + shortErrorMessage);
+						}
 					}
 				}else{
 					if (marcRecordSOAPResponse.getResponseCode() != 500){
@@ -944,9 +1039,34 @@ public class CarlXExportMain {
 		return updatedMarcRecordFromAPICall;
 	}
 
-	private static ArrayList<ItemChangeInfo> fetchItemInformation(ArrayList<String> itemIDs) {
-		hadErrors = false;
+	private static ArrayList<ItemChangeInfo> fetchItemsForBib(String bibId) {
 		ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
+		//Set an upper limit on number of IDs for one request, and process in batches
+		String getItemInformationSoapRequest = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:mar=\"http://tlcdelivers.com/cx/schemas/marcoutAPI\" xmlns:req=\"http://tlcdelivers.com/cx/schemas/request\">\n" +
+				"<soapenv:Header/>\n" +
+				"<soapenv:Body>\n" +
+				"<mar:GetItemInformationRequest>\n" +
+				"<mar:ItemSearchType>BID</mar:ItemSearchType>\n" +
+				"<mar:ItemSearchTerm>" + bibId + "</mar:ItemSearchTerm>\n" +
+				"<mar:IncludeSuppressItems>true</mar:IncludeSuppressItems>\n" + // TODO: Do we want this on??
+				"<mar:Modifiers>\n" +
+				"</mar:Modifiers>\n" +
+				"</mar:GetItemInformationRequest>\n" +
+				"</soapenv:Body>\n" +
+				"</soapenv:Envelope>";
+		try {
+			processItemInformationRequest(itemUpdates, getItemInformationSoapRequest);
+		} catch (Exception e) {
+			logger.error("Error Retrieving SOAP updated items", e);
+			logEntry.addNote("Error Retrieving SOAP updated items " + e.toString());
+			hadErrors = true;
+		}
+		return itemUpdates;
+	}
+
+	private static ArrayList<ItemChangeInfo> fetchItemInformation(ArrayList<String> itemIDs) {
+		ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
+		hadErrors = false;
 		logger.debug("Getting item information for " + itemIDs.size() + " Item IDs");
 		if (itemIDs.size() > 100){
 			logger.warn("There are more than 100 items that need updates " + itemIDs.size());
@@ -982,163 +1102,7 @@ public class CarlXExportMain {
 				}
 				getItemInformationSoapRequest.append(getItemInformationSoapRequestEnd);
 
-				WebServiceResponse ItemInformationSOAPResponse = NetworkUtils.postToURL(marcOutURL, getItemInformationSoapRequest.toString(), "text/xml", null, logger);
-				if (ItemInformationSOAPResponse.isSuccess()) {
-
-					// Parse Response
-					Document doc = createXMLDocumentForSoapResponse(ItemInformationSOAPResponse);
-					Node soapEnvelopeNode = doc.getFirstChild();
-					Node soapBodyNode = soapEnvelopeNode.getLastChild();
-					Node getItemInformationResponseNode = soapBodyNode.getFirstChild();
-					Node responseStatus = getItemInformationResponseNode.getFirstChild().getFirstChild();
-					// There is a Response Statuses Node, which then contains the Response Status Node
-					String responseStatusCode = responseStatus.getFirstChild().getTextContent();
-					logger.debug("Item information response " + doc.toString());
-					if (responseStatusCode.equals("0")) { // Successful response
-
-						NodeList ItemStatuses = getItemInformationResponseNode.getChildNodes();
-
-						int l = ItemStatuses.getLength();
-						for (int i = 1; i < l; i++) {
-							// start with i = 1 to skip first node, because that is the response status node and not an item status
-
-							Node itemStatus = ItemStatuses.item(i);
-							if (itemStatus.getNodeName().contains("ItemStatus")) { // avoid other occasional nodes like "Message"
-
-								NodeList itemDetails = itemStatus.getChildNodes();
-								ItemChangeInfo currentItem = new ItemChangeInfo();
-
-								int dl = itemDetails.getLength();
-								for (int j = 0; j < dl; j++) {
-									Node detail = itemDetails.item(j);
-									String detailName = detail.getNodeName();
-									String detailValue = detail.getTextContent();
-
-									detailName = detailName.replaceFirst("ns4:", ""); // strip out namespace prefix
-
-									// Handle each detail
-									switch (detailName) {
-										case "BID":
-											currentItem.setBID(detailValue);
-											break;
-										case "ItemID":
-											currentItem.setItemId(detailValue);
-											break;
-										case "LocationCode":
-											currentItem.setShelvingLocation(detailValue);
-											break;
-										case "StatusCode":
-											/*// Set itemIdentifier for logging with info that we know at this point.
-											String itemIdentifier;
-											// Use code below if we every turn on switch fullReindex (logs missing translation values)
-											if (currentItem.getBID().isEmpty()) {
-												itemIdentifier = currentItem.getItemId().isEmpty() ? "a Carl-X Item" : " for item ID " + currentItem.getItemId();
-											} else {
-												itemIdentifier = currentItem.getItemId().isEmpty() ? currentItem.getBID() + " for an unknown Carl-X Item" : currentItem.getBID() + " for item ID " + currentItem.getItemId();
-											}
-											String statusCode = translateValue("status_codes", detailValue, itemIdentifier);
-											if (statusCode.equals("U")) {
-												logger.warn("Unknown status " + detailValue);
-											}*/
-											currentItem.setStatus(detailValue);
-											break;
-										case "DueDate":
-											String dueDateMarc = formatDateFieldForMarc(indexingProfile.getDueDateFormat(), detailValue);
-											logger.debug("New due date is " + dueDateMarc + " based on info from CARL.X " + detailValue);
-											currentItem.setDueDate(dueDateMarc);
-											break;
-										case "LastCheckinDate":
-											// There is no LastCheckinDate field in ItemInformation Call
-											String lastCheckInDateMarc = formatDateFieldForMarc(indexingProfile.getLastCheckinFormat(), detailValue);
-											currentItem.setLastCheckinDate(lastCheckInDateMarc);
-											logger.debug("New last check in date is " + lastCheckInDateMarc + " based on info from CARL.X " + detailValue);
-											break;
-										case "CreationDate":
-											String dateCreatedMarc = formatDateFieldForMarc(indexingProfile.getDateCreatedFormat(), detailValue);
-											currentItem.setDateCreated(dateCreatedMarc);
-											logger.debug("New date created is " + dateCreatedMarc + " based on info from CARL.X " + detailValue);
-											break;
-										case "CallNumber":
-										case "CallNumberFull":
-											currentItem.setCallNumber(detailValue);
-											break;
-										case "CircHistory": // total since counter reset: translating to total checkout per year
-											currentItem.setYearToDateCheckouts(detailValue);
-											break;
-										case "CumulativeHistory":
-											currentItem.setTotalCheckouts(detailValue);
-											break;
-										case "BranchCode":
-											currentItem.setLocation(detailValue);
-											break;
-										case "MediaCode":
-											currentItem.setiType(detailValue);
-											break;
-										// Fields we don't currently do anything with
-										case "Suppress":
-											//logger.debug("Suppression for item is " + detailValue);
-											currentItem.setSuppress(detailValue);
-										case "HoldsHistory": // Number of times item has gone to Hold Shelf status since counter set
-										case "InHouseCirc":
-										case "Price":
-										case "ReserveBranchCode":
-										case "ReserveType":
-										case "ReserveBranchLocation":
-										case "ReserveCallNumber":
-										case "BranchName":
-										case "BranchNumber":
-										case "StatusDate": //TODO: can we use this one?
-										case "ThereAtLeastOneNote":
-										case "Notes":
-										case "EditDate":
-										case "CNLabels":
-										case "Caption":
-										case "Number":
-										case "Part":
-										case "Volume":
-										case "Suffix":
-											//									CNLabels: Labels for the 4 call number buckets
-											//									Number: Third call number bucket
-											//									Part: Second call number bucket
-											//									Volume: First call number bucket
-											//									Suffix: Fourth call number bucket
-										case "ISID":
-										case "Chronology":
-										case "Enumeration":
-										case "OwningBranchCode":
-										case "OwningBranchName":
-										case "OwningBranchNumber":
-										case "Type":
-										case "Status":
-										case "AlternateStatus":
-										case "MediaNumber":
-										case "CreatedBy":
-										case "LastUpdatedBy":
-										case "LocationName":
-										case "LocationNumber":
-										case "OwningLocationCode":
-										case "OwningLocationName":
-										case "OwningLocationNumber":
-											// Do Nothing
-											break;
-										default:
-											logger.warn("Unknown Item Detail : " + detailName + " = " + detailValue);
-											break;
-									}
-								}
-								itemUpdates.add(currentItem);
-							}
-						}
-					} else {
-						logger.error("Did not get a successful SOAP response " + responseStatusCode + " loading item information");
-						logEntry.addNote("Did not get a successful SOAP response " + responseStatusCode + " loading item information");
-						hadErrors = true;
-					}
-				}else{
-					logger.error("Did not get a successful SOAP response " + ItemInformationSOAPResponse.getResponseCode() + "\r\n" + ItemInformationSOAPResponse.getMessage());
-					logEntry.addNote("Did not get a successful SOAP response " + ItemInformationSOAPResponse.getResponseCode() + "<br/>" + ItemInformationSOAPResponse.getMessage());
-					hadErrors = true;
-				}
+				processItemInformationRequest(itemUpdates, getItemInformationSoapRequest.toString());
 			} catch (Exception e) {
 				logger.error("Error Retrieving SOAP updated items", e);
 				logEntry.addNote("Error Retrieving SOAP updated items " + e.toString());
@@ -1146,6 +1110,166 @@ public class CarlXExportMain {
 			}
 		}
 		return itemUpdates;
+	}
+
+	private static void processItemInformationRequest(ArrayList<ItemChangeInfo> itemUpdates, String getItemInformationSoapRequest) throws ParserConfigurationException, IOException, SAXException {
+		WebServiceResponse ItemInformationSOAPResponse = NetworkUtils.postToURL(marcOutURL, getItemInformationSoapRequest, "text/xml", null, logger);
+		if (ItemInformationSOAPResponse.isSuccess()) {
+
+			// Parse Response
+			Document doc = createXMLDocumentForSoapResponse(ItemInformationSOAPResponse);
+			Node soapEnvelopeNode = doc.getFirstChild();
+			Node soapBodyNode = soapEnvelopeNode.getLastChild();
+			Node getItemInformationResponseNode = soapBodyNode.getFirstChild();
+			Node responseStatus = getItemInformationResponseNode.getFirstChild().getFirstChild();
+			// There is a Response Statuses Node, which then contains the Response Status Node
+			String responseStatusCode = responseStatus.getFirstChild().getTextContent();
+			logger.debug("Item information response " + doc.toString());
+			if (responseStatusCode.equals("0")) { // Successful response
+
+				NodeList ItemStatuses = getItemInformationResponseNode.getChildNodes();
+
+				int l = ItemStatuses.getLength();
+				for (int i = 1; i < l; i++) {
+					// start with i = 1 to skip first node, because that is the response status node and not an item status
+
+					Node itemStatus = ItemStatuses.item(i);
+					if (itemStatus.getNodeName().contains("ItemStatus")) { // avoid other occasional nodes like "Message"
+
+						NodeList itemDetails = itemStatus.getChildNodes();
+						ItemChangeInfo currentItem = new ItemChangeInfo();
+
+						int dl = itemDetails.getLength();
+						for (int j = 0; j < dl; j++) {
+							Node detail = itemDetails.item(j);
+							String detailName = detail.getNodeName();
+							String detailValue = detail.getTextContent();
+
+							detailName = detailName.replaceFirst("ns4:", ""); // strip out namespace prefix
+
+							// Handle each detail
+							switch (detailName) {
+								case "BID":
+									currentItem.setBID(detailValue);
+									break;
+								case "ItemID":
+									currentItem.setItemId(detailValue);
+									break;
+								case "LocationCode":
+									currentItem.setShelvingLocation(detailValue);
+									break;
+								case "StatusCode":
+									/*// Set itemIdentifier for logging with info that we know at this point.
+									String itemIdentifier;
+									// Use code below if we every turn on switch fullReindex (logs missing translation values)
+									if (currentItem.getBID().isEmpty()) {
+										itemIdentifier = currentItem.getItemId().isEmpty() ? "a Carl-X Item" : " for item ID " + currentItem.getItemId();
+									} else {
+										itemIdentifier = currentItem.getItemId().isEmpty() ? currentItem.getBID() + " for an unknown Carl-X Item" : currentItem.getBID() + " for item ID " + currentItem.getItemId();
+									}
+									String statusCode = translateValue("status_codes", detailValue, itemIdentifier);
+									if (statusCode.equals("U")) {
+										logger.warn("Unknown status " + detailValue);
+									}*/
+									currentItem.setStatus(detailValue);
+									break;
+								case "DueDate":
+									String dueDateMarc = formatDateFieldForMarc(indexingProfile.getDueDateFormat(), detailValue);
+									logger.debug("New due date is " + dueDateMarc + " based on info from CARL.X " + detailValue);
+									currentItem.setDueDate(dueDateMarc);
+									break;
+								case "LastCheckinDate":
+									// There is no LastCheckinDate field in ItemInformation Call
+									String lastCheckInDateMarc = formatDateFieldForMarc(indexingProfile.getLastCheckinFormat(), detailValue);
+									currentItem.setLastCheckinDate(lastCheckInDateMarc);
+									logger.debug("New last check in date is " + lastCheckInDateMarc + " based on info from CARL.X " + detailValue);
+									break;
+								case "CreationDate":
+									String dateCreatedMarc = formatDateFieldForMarc(indexingProfile.getDateCreatedFormat(), detailValue);
+									currentItem.setDateCreated(dateCreatedMarc);
+									logger.debug("New date created is " + dateCreatedMarc + " based on info from CARL.X " + detailValue);
+									break;
+								case "CallNumber":
+								case "CallNumberFull":
+									currentItem.setCallNumber(detailValue);
+									break;
+								case "CircHistory": // total since counter reset: translating to total checkout per year
+									currentItem.setYearToDateCheckouts(detailValue);
+									break;
+								case "CumulativeHistory":
+									currentItem.setTotalCheckouts(detailValue);
+									break;
+								case "BranchCode":
+									currentItem.setLocation(detailValue);
+									break;
+								case "MediaCode":
+									currentItem.setiType(detailValue);
+									break;
+								// Fields we don't currently do anything with
+								case "Suppress":
+									//logger.debug("Suppression for item is " + detailValue);
+									currentItem.setSuppress(detailValue);
+								case "HoldsHistory": // Number of times item has gone to Hold Shelf status since counter set
+								case "InHouseCirc":
+								case "Price":
+								case "ReserveBranchCode":
+								case "ReserveType":
+								case "ReserveBranchLocation":
+								case "ReserveCallNumber":
+								case "BranchName":
+								case "BranchNumber":
+								case "StatusDate": //TODO: can we use this one?
+								case "ThereAtLeastOneNote":
+								case "Notes":
+								case "EditDate":
+								case "CNLabels":
+								case "Caption":
+								case "Number":
+								case "Part":
+								case "Volume":
+								case "Suffix":
+									//									CNLabels: Labels for the 4 call number buckets
+									//									Number: Third call number bucket
+									//									Part: Second call number bucket
+									//									Volume: First call number bucket
+									//									Suffix: Fourth call number bucket
+								case "ISID":
+								case "Chronology":
+								case "Enumeration":
+								case "OwningBranchCode":
+								case "OwningBranchName":
+								case "OwningBranchNumber":
+								case "Type":
+								case "Status":
+								case "AlternateStatus":
+								case "MediaNumber":
+								case "CreatedBy":
+								case "LastUpdatedBy":
+								case "LocationName":
+								case "LocationNumber":
+								case "OwningLocationCode":
+								case "OwningLocationName":
+								case "OwningLocationNumber":
+									// Do Nothing
+									break;
+								default:
+									logger.warn("Unknown Item Detail : " + detailName + " = " + detailValue);
+									break;
+							}
+						}
+						itemUpdates.add(currentItem);
+					}
+				}
+			} else {
+				logger.error("Did not get a successful SOAP response " + responseStatusCode + " loading item information");
+				logEntry.addNote("Did not get a successful SOAP response " + responseStatusCode + " loading item information");
+				hadErrors = true;
+			}
+		}else{
+			logger.error("Did not get a successful SOAP response " + ItemInformationSOAPResponse.getResponseCode() + "\r\n" + ItemInformationSOAPResponse.getMessage());
+			logEntry.addNote("Did not get a successful SOAP response " + ItemInformationSOAPResponse.getResponseCode() + "<br/>" + ItemInformationSOAPResponse.getMessage());
+			hadErrors = true;
+		}
 	}
 
 	private static void getIDsFromNodeList(ArrayList<String> arrayOfIds, NodeList walkThroughMe) {
@@ -1281,6 +1405,11 @@ public class CarlXExportMain {
 
 		MarcWriter writer;
 		try {
+			if (!marcFile.getParentFile().exists()){
+				if (!marcFile.getParentFile().mkdir()){
+					logEntry.incErrors("Could not create marc directory " + marcFile.getParentFile().getAbsolutePath());
+				}
+			}
 			writer = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8", true);
 			writer.write(marcObject);
 			writer.close();
@@ -1354,7 +1483,7 @@ public class CarlXExportMain {
 			startOfHolds = dbConn.setSavepoint();
 			dbConn.setAutoCommit(false);
 			//Delete existing holds closer to the time that holds are re-added.  This shouldn't matter since auto commit is off though
-			dbConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeQuery();
+			dbConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeUpdate();
 			logger.debug("Found " + numHoldsByBib.size() + " bibs that have title or item level holds");
 
 			for (String bibId : numHoldsByBib.keySet()){
@@ -1391,14 +1520,14 @@ public class CarlXExportMain {
 
 	private static MarcRecordGrouper getRecordGroupingProcessor(Connection dbConn){
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logger, false);
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}
 
 	private static GroupedWorkIndexer getGroupedWorkIndexer(Connection dbConn) {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}

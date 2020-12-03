@@ -558,7 +558,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			foreach ($placeHoldResponse->placeHoldInfos as $holdResponse){
 				if ($holdResponse->success){
 					$result['success'] = true;
-					$result['message'] = 'Your hold was placed successfully.';
+					$result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 				}else{
 					$result['message'] = 'Sorry, your hold could not be placed.  ' . htmlentities(translate($holdResponse->message));
 				}
@@ -650,9 +650,9 @@ class LibrarySolution extends AbstractIlsDriver {
 			foreach ($response->suspendHoldInfos as $itemResponse){
 				if ($itemResponse->success){
 					$result['success'] = true;
-					$result['message'] = 'Your hold was frozen successfully.';
+					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
 				}else{
-					$result['message'] = 'Sorry, your hold could not be suspended.';
+					$result['message'] = translate(['text'=>'ils_freeze_hold_failure', 'defaultText' => 'Sorry, your hold could not be frozen.']);
 				}
 			}
 		}else{
@@ -716,8 +716,13 @@ class LibrarySolution extends AbstractIlsDriver {
 		return $fines;
 	}
 
-    function updatePatronInfo($patron, $canUpdateContactInfo)
-    {
-        // TODO: Implement updatePatronInfo() method.
-    }
+	function updatePatronInfo($patron, $canUpdateContactInfo)
+	{
+		return [
+			'success' => false,
+			'messages' => [
+				'Cannot update patron information in Library.Solution'
+			]
+		];
+	}
 }

@@ -4,11 +4,6 @@ require_once ROOT_DIR . '/Action.php';
 
 class AJAX_JSON extends Action {
 
-	// define some status constants
- 	const STATUS_OK        = 'OK';           // good
-	const STATUS_ERROR     = 'ERROR';        // bad
-	const STATUS_NEED_AUTH = 'NEED_AUTH';    // must login first
-
 	function launch()
 	{
 		//header('Content-type: application/json');
@@ -34,6 +29,7 @@ class AJAX_JSON extends Action {
 		echo $output;
 	}
 
+	/** @noinspection PhpUnused */
 	function deleteTranslationTerm(){
 		$termId = $_REQUEST['termId'];
 		$translation = new Translation();
@@ -57,6 +53,7 @@ class AJAX_JSON extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function saveLanguagePreference(){
 		if (UserAccount::isLoggedIn()){
 			$userObj = UserAccount::getActiveUserObj();
@@ -75,13 +72,13 @@ class AJAX_JSON extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getTranslationForm(){
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator')){
+		if (UserAccount::userHasPermission('Translate Aspen')){
 			$translationTerm = new TranslationTerm();
 			$translationTerm->id = $_REQUEST['termId'];
 			if ($translationTerm->find(true)){
 				global $interface;
-				/** @var Language $activeLanguage */
 				global $activeLanguage;
 				$interface->assign('translationTerm', $translationTerm);
 				$translation = new Translation();
@@ -122,6 +119,7 @@ class AJAX_JSON extends Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function saveTranslation(){
 		$translationId = strip_tags($_REQUEST['translationId']);
 		$newTranslation = $_REQUEST['translation'];
@@ -131,7 +129,7 @@ class AJAX_JSON extends Action {
 			'success' => false,
 			'message' => 'Unknown Error'
 		];
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator')){
+		if (UserAccount::userHasPermission('Translate Aspen')){
 			if ($translation->find(true)){
 				$translation->setTranslation($newTranslation);
 				$result = [
@@ -152,6 +150,7 @@ class AJAX_JSON extends Action {
 		return UserAccount::isLoggedIn();
 	}
 
+	/** @noinspection PhpUnused */
 	function getUserLists(){
 		$user = UserAccount::getLoggedInUser();
 		$lists = $user->getLists();
@@ -162,6 +161,7 @@ class AJAX_JSON extends Action {
 		return $userLists;
 	}
 
+	/** @noinspection PhpUnused */
 	function loginUser(){
 		//Login the user.  Must be called via Post parameters.
 		global $interface;
@@ -211,12 +211,12 @@ class AJAX_JSON extends Action {
 		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
 
 		return array(
-			'success'=>true,
-			'name'=>ucwords($user->firstname . ' ' . $user->lastname),
-			'phone'=>$user->phone,
-			'email'=>$user->email,
-			'homeLocation'=> isset($patronHomeBranch) ? $patronHomeBranch->code : '',
-			'homeLocationId'=> isset($patronHomeBranch) ? $patronHomeBranch->locationId : '',
+			'success' => true,
+			'name' => $user->displayName,
+			'phone' => $user->phone,
+			'email' => $user->email,
+			'homeLocation' => isset($patronHomeBranch) ? $patronHomeBranch->code : '',
+			'homeLocationId' => isset($patronHomeBranch) ? $patronHomeBranch->locationId : '',
 			'enableMaterialsRequest' => MaterialsRequest::enableAspenMaterialsRequest(true),
 		);
 	}
@@ -239,6 +239,7 @@ class AJAX_JSON extends Action {
 		exit;
 	}
 
+	/** @noinspection PhpUnused */
 	function getHoursAndLocations(){
 		//Get a list of locations for the current library
 		global $library;
@@ -256,6 +257,11 @@ class AJAX_JSON extends Action {
 			$tmpLocation->find();
 		}
 
+		$locationsToProcess = [];
+		while ($tmpLocation->fetch()){
+			$locationsToProcess[] = clone $tmpLocation;
+		}
+
 		require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 		$googleSettings = new GoogleApiSetting();
 		if ($googleSettings->find(true)){
@@ -263,53 +269,67 @@ class AJAX_JSON extends Action {
 		}else{
 			$mapsKey = null;
 		}
-		while ($tmpLocation->fetch()){
-			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $tmpLocation->address));
-			$clonedLocation = clone $tmpLocation;
-			$hours = $clonedLocation->getHours();
+		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+		$parsedown = AspenParsedown::instance();
+		$parsedown->setBreaksEnabled(true);
+		foreach ($locationsToProcess as $locationToProcess){
+			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $locationToProcess->address));
+			$hours = $locationToProcess->getHours();
 			foreach ($hours as $key => $hourObj){
 				if (!$hourObj->closed){
 					$hourString = $hourObj->open;
 					list($hour, $minutes) = explode(':', $hourString);
 					if ($hour < 12){
+						if ($hour == 0) {
+							$hour += 12;
+						}
 						$hourObj->open = +$hour.":$minutes AM"; // remove leading zeros in the hour
-					}elseif ($hour == 12){
+					}elseif ($hour == 12 && $minutes == '00'){
 						$hourObj->open = 'Noon';
-					}elseif ($hour == 24){
+					}elseif ($hour == 24 && $minutes == '00'){
 						$hourObj->open = 'Midnight';
 					}else{
-						$hour -= 12;
+						if ($hour != 12) {
+							$hour -= 12;
+						}
 						$hourObj->open = "$hour:$minutes PM";
 					}
 					$hourString = $hourObj->close;
 					list($hour, $minutes) = explode(':', $hourString);
 					if ($hour < 12){
-						$hourObj->close .= ' AM';
-					}elseif ($hour == 12){
+						if ($hour == 0) {
+							$hour += 12;
+						}
+						$hourObj->close = "$hour:$minutes AM";
+					}elseif ($hour == 12 && $minutes == '00'){
 						$hourObj->close = 'Noon';
-					}elseif ($hour == 24){
+					}elseif ($hour == 24 && $minutes == '00'){
 						$hourObj->close = 'Midnight';
 					}else{
-						$hour -= 12;
+						if ($hour != 12) {
+							$hour -= 12;
+						}
 						$hourObj->close = "$hour:$minutes PM";
 					}
 				}
 				$hours[$key] = $hourObj;
 			}
-			$libraryLocation = array(
-				'id' => $tmpLocation->locationId,
-				'name' => $tmpLocation->displayName,
-				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $tmpLocation->address),
-				'phone' => $tmpLocation->phone,
+			$libraryLocation = [
+				'id' => $locationToProcess->locationId,
+				'name' => $locationToProcess->displayName,
+				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $locationToProcess->address),
+				'phone' => $locationToProcess->phone,
+				'tty' => $locationToProcess->tty,
 				//'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
 				'hours' => $hours,
-				'hasValidHours' => $tmpLocation->hasValidHours()
-			);
+				'hasValidHours' => $locationToProcess->hasValidHours(),
+				'description' => $parsedown->parse($locationToProcess->description)
+			];
 
 			if (!empty($mapsKey)){
 				$libraryLocation['map_link'] = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m&key=$mapsKey";
 			}
-			$libraryLocations[] = $libraryLocation;
+			$libraryLocations[$locationToProcess->locationId] = $libraryLocation;
 		}
 
 		global $interface;
@@ -317,39 +337,66 @@ class AJAX_JSON extends Action {
 		return $interface->fetch('AJAX/libraryHoursAndLocations.tpl');
 	}
 
+	/** @noinspection PhpUnused */
 	function getAutoLogoutPrompt(){
 		global $interface;
 		$masqueradeMode = UserAccount::isUserMasquerading();
-		$result = array(
+		return array(
 			'title'        => 'Still There?',
 			'modalBody'    => $interface->fetch('AJAX/autoLogoutPrompt.tpl'),
 			'modalButtons' => "<div id='continueSession' class='btn btn-primary' onclick='continueSession();'>Continue</div>" .
 				( $masqueradeMode ?
-												"<div id='endSession' class='btn btn-masquerade' onclick='AspenDiscovery.Account.endMasquerade()'>End Masquerade</div>" .
-												"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>"
+						"<div id='endSession' class='btn btn-primary' onclick='AspenDiscovery.Account.endMasquerade()'>End Masquerade</div>" .
+						"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>"
 					:
-												"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>" )
+						"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>"
+				)
 		);
-		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getReturnToHomePrompt(){
 		global $interface;
-		$result = array(
+		return array(
 				'title'        => 'Still There?',
 				'modalBody'    => $interface->fetch('AJAX/autoReturnToHomePrompt.tpl'),
 				'modalButtons' => "<a id='continueSession' class='btn btn-primary' onclick='continueSession();'>Continue</a>"
 		);
-		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getPayFinesAfterAction(){
 		global $interface;
-		$result = array(
+		return array(
 				'title'        => 'Pay Fines',
 				'modalBody'    => $interface->fetch('AJAX/refreshFinesAccountInfo.tpl'),
 				'modalButtons' => '<a class="btn btn-primary" href="/MyAccount/Fines?reload">Refresh My Fines Information</a>'
 		);
-		return $result;
+	}
+
+	function formatCurrency(){
+		$currencyValue = isset($_REQUEST['currencyValue']) ? $_REQUEST['currencyValue'] : 0;
+
+		global $activeLanguage;
+
+		$currencyCode = 'USD';
+		$variables = new SystemVariables();
+		if ($variables->find(true)){
+			$currencyCode = $variables->currencyCode;
+		}
+
+		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+
+		$formattedCurrency = $currencyFormatter->formatCurrency($currencyValue, $currencyCode);
+
+		return [
+			'success' => true,
+			'formattedValue' => $formattedCurrency
+		];
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

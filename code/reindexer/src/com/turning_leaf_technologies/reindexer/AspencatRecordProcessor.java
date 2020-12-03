@@ -350,7 +350,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 		return suppressed || super.isItemSuppressed(curItem);
 	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		/*String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode);*/
 		String location = "";

@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.indexing;
 
+import com.sun.istack.internal.NotNull;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.marc4j.marc.Record;
 
@@ -9,24 +10,26 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 class InclusionRule {
-	private String recordType;
-	private boolean matchAllLocations;
-	private Pattern locationCodePattern;
-	private Pattern subLocationCodePattern;
-	private Pattern iTypePattern;
+	private final String recordType;
+	private final boolean matchAllLocations;
+	private final Pattern locationCodePattern;
+	private Pattern locationsToExcludePattern = null;
+	private final Pattern subLocationCodePattern;
+	private Pattern subLocationsToExcludePattern = null;
+	private final Pattern iTypePattern;
 	private boolean matchAllAudiences = false;
-	private Pattern audiencePattern;
-	private Pattern formatPattern;
-	private boolean includeHoldableOnly;
-	private boolean includeItemsOnOrder;
-	private boolean includeEContent;
-	private String marcTagToMatch;
-	private Pattern marcValueToMatchPattern;
-	private boolean includeExcludeMatches;
-	private String urlToMatch;
-	private String urlReplacement;
+	private final Pattern audiencePattern;
+	private final Pattern formatPattern;
+	private final boolean includeHoldableOnly;
+	private final boolean includeItemsOnOrder;
+	private final boolean includeEContent;
+	private final String marcTagToMatch;
+	private final Pattern marcValueToMatchPattern;
+	private final boolean includeExcludeMatches;
+	private final String urlToMatch;
+	private final String urlReplacement;
 
-	InclusionRule(String recordType, String locationCode, String subLocationCode, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
+	InclusionRule(String recordType, String locationCode, String subLocationCode, @NotNull String locationsToExclude, @NotNull String subLocationsToExclude, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
 		this.recordType = recordType;
 		this.includeHoldableOnly = includeHoldableOnly;
 		this.includeItemsOnOrder = includeItemsOnOrder;
@@ -43,6 +46,13 @@ class InclusionRule {
 		}
 		this.subLocationCodePattern = Pattern.compile(subLocationCode, Pattern.CASE_INSENSITIVE);
 
+		if (locationsToExclude.length() > 0){
+			this.locationsToExcludePattern = Pattern.compile(locationsToExclude, Pattern.CASE_INSENSITIVE);
+		}
+		if (subLocationsToExclude.length() > 0){
+			this.subLocationsToExcludePattern = Pattern.compile(subLocationsToExclude, Pattern.CASE_INSENSITIVE);
+		}
+
 		if (iType == null || iType.length() == 0){
 			iType = ".*";
 		}
@@ -58,7 +68,6 @@ class InclusionRule {
 			format = ".*";
 		}
 		this.formatPattern = Pattern.compile(format, Pattern.CASE_INSENSITIVE);
-
 
 		if (marcTagToMatch == null){
 			this.marcTagToMatch = "";
@@ -77,7 +86,7 @@ class InclusionRule {
 		this.urlReplacement = urlReplacement;
 	}
 
-	private HashMap<String, HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>>> locationCodeCache = new HashMap<>();
+	private final HashMap<String, HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>>> locationCodeCache = new HashMap<>();
 	boolean isItemIncluded(String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
 		//Do the quick checks first
 		if (!isEContent && (includeHoldableOnly && !isHoldable)){
@@ -133,7 +142,7 @@ class InclusionRule {
 		boolean isIncluded;
 
 		if (!hasCachedValue){
-			if ((locationCode == null || locationCodePattern.matcher(locationCode).lookingAt()) &&
+			if (locationCodePattern.matcher(locationCode).lookingAt() &&
 					(subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt()) &&
 					(format == null || formatPattern.matcher(format).lookingAt())
 					){
@@ -174,6 +183,13 @@ class InclusionRule {
 				}
 			}
 			isIncluded = hasMatch && includeExcludeMatches;
+		}
+		//Make sure that we are not excluding the result
+		if (isIncluded && locationCode.length() > 0 && locationsToExcludePattern != null) {
+			isIncluded = !locationsToExcludePattern.matcher(locationCode).lookingAt();
+		}
+		if (isIncluded && subLocationCode != null && subLocationsToExcludePattern != null) {
+			isIncluded = !subLocationsToExcludePattern.matcher(subLocationCode).lookingAt();
 		}
 		return isIncluded;
 	}

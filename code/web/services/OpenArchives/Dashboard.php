@@ -32,8 +32,6 @@ class OpenArchives_Dashboard extends Admin_Admin
 			$collectionsToGetStatsFor[$collection->id] = $collection->name;
 		}
 
-		$interface->assign('collections', $collectionsToGetStatsFor);
-
 		$activeUsersThisMonth = $this->getUserStats($thisMonth, $thisYear, $collectionsToGetStatsFor);
 		$interface->assign('activeUsersThisMonth', $activeUsersThisMonth);
 		$activeUsersLastMonth = $this->getUserStats($lastMonth, $lastMonthYear, $collectionsToGetStatsFor);
@@ -56,12 +54,12 @@ class OpenArchives_Dashboard extends Admin_Admin
 		$activeRecordsAllTime = $this->getRecordStats(null, null, $collectionsToGetStatsFor);
 		$interface->assign('activeRecordsAllTime', $activeRecordsAllTime);
 
-		$this->display('dashboard.tpl', 'OpenArchives Dashboard');
-	}
+		if (count($collectionsToGetStatsFor) > 1) {
+			$collectionsToGetStatsFor = ['-1' => 'All Collections'] + $collectionsToGetStatsFor;
+		}
+		$interface->assign('collections', $collectionsToGetStatsFor);
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin');
+		$this->display('dashboard.tpl', 'OpenArchives Dashboard');
 	}
 
 	/**
@@ -85,12 +83,15 @@ class OpenArchives_Dashboard extends Admin_Admin
 		$userUsage->selectAdd('COUNT(id) as numUsers');
 		$userUsage->find();
 		$usageStats = [];
+		$usageStats[-1] = 0;
 		foreach ($collectionsToGetStatsFor as $collectionId => $collectionName) {
 			$usageStats[$collectionId] = 0;
 		}
 		while ($userUsage->fetch()) {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$usageStats[$userUsage->openArchivesCollectionId] = $userUsage->numUsers;
+			/** @noinspection PhpUndefinedFieldInspection */
+			$usageStats[-1] += $userUsage->numUsers;
 		}
 		return $usageStats;
 	}
@@ -117,24 +118,62 @@ class OpenArchives_Dashboard extends Admin_Admin
 		$usage->selectAdd('record.sourceCollection');
 
 		$usage->selectAdd('SUM(IF(timesViewedInSearch>0,1,0)) as numRecordViewed');
+		$usage->selectAdd('SUM(timesViewedInSearch) as numViews');
 		$usage->selectAdd('SUM(IF(timesUsed>0,1,0)) as numRecordsUsed');
+		$usage->selectAdd('SUM(timesUsed) as numClicks');
 		$usage->find();
 
 		$usageStats = [];
+		$usageStats[-1] = [
+			'numRecordViewed' => 0,
+			'numViews' => 0,
+			'numRecordsUsed' => 0,
+			'numClicks' => 0
+		];
 		foreach ($collectionsToGetStatsFor as $collectionId => $collectionName) {
 			$usageStats[$collectionId] = [
 				'numRecordViewed' => 0,
-				'numRecordsUsed' => 0
+				'numViews' => 0,
+				'numRecordsUsed' => 0,
+				'numClicks' => 0
 			];
 		}
 		while ($usage->fetch()) {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$usageStats[$usage->sourceCollection] = [
 				'numRecordViewed' => $usage->numRecordViewed,
-				'numRecordsUsed' => $usage->numRecordsUsed
+				'numViews' => $usage->numViews,
+				'numRecordsUsed' => $usage->numRecordsUsed,
+				'numClicks' => $usage->numClicks
 			];
+			/** @noinspection PhpUndefinedFieldInspection */
+			$usageStats[-1]['numRecordViewed'] += $usage->numRecordViewed;
+			/** @noinspection PhpUndefinedFieldInspection */
+			$usageStats[-1]['numViews'] += $usage->numViews;
+			/** @noinspection PhpUndefinedFieldInspection */
+			$usageStats[-1]['numRecordsUsed'] += $usage->numRecordsUsed;
+			/** @noinspection PhpUndefinedFieldInspection */
+			$usageStats[-1]['numClicks'] += $usage->numClicks;
 		}
 		return $usageStats;
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#open_archives', 'Open Archives');
+		$breadcrumbs[] = new Breadcrumb('/OpenArchives/Dashboard', 'Usage Dashboard');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'open_archives';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	}
 }

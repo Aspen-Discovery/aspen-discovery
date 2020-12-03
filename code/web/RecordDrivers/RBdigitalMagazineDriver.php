@@ -90,12 +90,7 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 	public function getStaffView()
 	{
 		global $interface;
-		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
-
-		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
@@ -198,15 +193,9 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return [];
-	}
-
 	public function getISBNs()
 	{
-		$isbns = [];
-		return $isbns;
+		return [];
 	}
 
 	public function getISSNs()
@@ -214,7 +203,7 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		return array();
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
 		$actions = array();
 		if ($isAvailable) {
@@ -222,12 +211,14 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 				'title' => 'Check Out RBdigital',
 				'onclick' => "return AspenDiscovery.RBdigital.checkOutMagazine('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'overdrive_magazine_checkout'
 			);
 		} else {
 			$actions[] = array(
 				'title' => 'Place Hold RBdigital',
 				'onclick' => "return AspenDiscovery.RBdigital.placeHoldMagazine('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'overdrive_magazine_hold'
 			);
 		}
 		return $actions;
@@ -416,10 +407,10 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		return $statusSummary;
 	}
 
-	function getRBdigitalLinkUrl()
+	function getRBdigitalLinkUrl(User $patron)
 	{
 		require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 		$rbdigitalDriver = new RBdigitalDriver();
-		return $rbdigitalDriver->getUserInterfaceURL() . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalIssue->issueId;
+		return $rbdigitalDriver->getUserInterfaceURL($patron) . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalIssue->issueId;
 	}
 }

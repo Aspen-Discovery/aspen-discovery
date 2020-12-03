@@ -18,10 +18,10 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 		//'ancestors_ms' => "Included In"
 	);
 
-	static function getObjectStructure($availableFacets = NULL){
+	static function getObjectStructure(array $availableFacets = null){
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager')){
+		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
@@ -43,9 +43,7 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 
 	public static function getAvailableFacets(){
 		$config            = getExtraConfigArray('islandoraFacets');
-		$availableFacets = isset($config['Results']) ? $config['Results'] : self::$defaultFacetList;
-		return $availableFacets;
-
+		return isset($config['Results']) ? $config['Results'] : self::$defaultFacetList;
 	}
 }
 

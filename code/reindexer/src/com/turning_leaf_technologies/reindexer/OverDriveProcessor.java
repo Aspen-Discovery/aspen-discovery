@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -18,16 +19,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class OverDriveProcessor {
-	private GroupedWorkIndexer indexer;
-	private Logger logger;
+	private final GroupedWorkIndexer indexer;
+	private final Logger logger;
 	private PreparedStatement getProductInfoStmt;
 	private PreparedStatement getNumCopiesStmt;
 	private PreparedStatement getProductMetadataStmt;
 	private PreparedStatement getProductAvailabilityStmt;
 	private PreparedStatement getProductFormatsStmt;
-	private SimpleDateFormat publishDateFormatter = new SimpleDateFormat("MM/dd/yyyy");
-	private SimpleDateFormat publishDateFormatter2 = new SimpleDateFormat("MM/yyyy");
-	private Pattern publishDatePattern = Pattern.compile("([a-zA-Z]{3})\\s([\\s\\d]\\d)\\s(\\d{4}).*");
+	private final SimpleDateFormat publishDateFormatter = new SimpleDateFormat("MM/dd/yyyy");
+	private final SimpleDateFormat publishDateFormatter2 = new SimpleDateFormat("MM/yyyy");
+	private final Pattern publishDatePattern = Pattern.compile("([a-zA-Z]{3})\\s([\\s\\d]\\d)\\s(\\d{4}).*");
 
 	OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
 		this.indexer = groupedWorkIndexer;
@@ -43,7 +44,7 @@ class OverDriveProcessor {
 		}
 	}
 
-	void processRecord(GroupedWorkSolr groupedWork, String identifier) {
+	void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -99,87 +100,89 @@ class OverDriveProcessor {
 						try {
 							rawMetadataDecoded = new JSONObject(metadata.get("rawMetadata"));
 						} catch (JSONException e) {
-							logger.error("Error loading raw data for OverDrive MetaData");
+							logEntry.incErrors("Error loading raw data for OverDrive MetaData", e);
 						}
 
 						boolean isOnOrder = false;
 						Date publishDate = null;
-						if (rawMetadataDecoded.has("onSaleDate")) {
-							String onSaleDate = rawMetadataDecoded.getString("onSaleDate");
-						} else if (rawMetadataDecoded.has("publishDateText")) {
-							String publishDateText = rawMetadataDecoded.getString("publishDateText");
-							if (publishDateText.length() == 4) {
-								GregorianCalendar publishCal = new GregorianCalendar();
-								publishCal.set(Integer.parseInt(publishDateText), 1, 1);
-								publishDate = publishCal.getTime();
-								if (publishDate.after(new Date())) {
-									isOnOrder = true;
-								}
-							} else {
-								try {
-									publishDate = publishDateFormatter.parse(publishDateText);
+						if (rawMetadataDecoded != null) {
+							if (rawMetadataDecoded.has("onSaleDate")) {
+								String onSaleDate = rawMetadataDecoded.getString("onSaleDate");
+							} else if (rawMetadataDecoded.has("publishDateText")) {
+								String publishDateText = rawMetadataDecoded.getString("publishDateText");
+								if (publishDateText.length() == 4) {
+									GregorianCalendar publishCal = new GregorianCalendar();
+									publishCal.set(Integer.parseInt(publishDateText), Calendar.JANUARY, 1);
+									publishDate = publishCal.getTime();
 									if (publishDate.after(new Date())) {
 										isOnOrder = true;
 									}
-								} catch (ParseException e) {
+								} else {
 									try {
-										publishDate = publishDateFormatter2.parse(publishDateText);
+										publishDate = publishDateFormatter.parse(publishDateText);
 										if (publishDate.after(new Date())) {
 											isOnOrder = true;
 										}
-									} catch (ParseException e2) {
-										Matcher publishDateMatcher = publishDatePattern.matcher(publishDateText);
-										if (publishDateMatcher.matches()) {
-											String month = publishDateMatcher.group(1).toLowerCase();
-											String day = publishDateMatcher.group(2).trim();
-											String year = publishDateMatcher.group(3);
-											GregorianCalendar publishCal = new GregorianCalendar();
-											int monthInt = 1;
-											switch (month) {
-												case "jan":
-													monthInt = Calendar.JANUARY;
-													break;
-												case "feb":
-													monthInt = Calendar.FEBRUARY;
-													break;
-												case "mar":
-													monthInt = Calendar.MARCH;
-													break;
-												case "apr":
-													monthInt = Calendar.APRIL;
-													break;
-												case "may":
-													monthInt = Calendar.MAY;
-													break;
-												case "jun":
-													monthInt = Calendar.JUNE;
-													break;
-												case "jul":
-													monthInt = Calendar.JULY;
-													break;
-												case "aug":
-													monthInt = Calendar.AUGUST;
-													break;
-												case "sep":
-													monthInt = Calendar.SEPTEMBER;
-													break;
-												case "oct":
-													monthInt = Calendar.OCTOBER;
-													break;
-												case "nov":
-													monthInt = Calendar.NOVEMBER;
-													break;
-												case "dec":
-													monthInt = Calendar.DECEMBER;
-													break;
-											}
-											publishCal.set(Integer.parseInt(year), monthInt, (Integer.parseInt(day)));
-											publishDate = publishCal.getTime();
+									} catch (ParseException e) {
+										try {
+											publishDate = publishDateFormatter2.parse(publishDateText);
 											if (publishDate.after(new Date())) {
 												isOnOrder = true;
 											}
-										} else {
-											logger.error("Error parsing publication date " + publishDateText);
+										} catch (ParseException e2) {
+											Matcher publishDateMatcher = publishDatePattern.matcher(publishDateText);
+											if (publishDateMatcher.matches()) {
+												String month = publishDateMatcher.group(1).toLowerCase();
+												String day = publishDateMatcher.group(2).trim();
+												String year = publishDateMatcher.group(3);
+												GregorianCalendar publishCal = new GregorianCalendar();
+												int monthInt = 1;
+												switch (month) {
+													case "jan":
+														monthInt = Calendar.JANUARY;
+														break;
+													case "feb":
+														monthInt = Calendar.FEBRUARY;
+														break;
+													case "mar":
+														monthInt = Calendar.MARCH;
+														break;
+													case "apr":
+														monthInt = Calendar.APRIL;
+														break;
+													case "may":
+														monthInt = Calendar.MAY;
+														break;
+													case "jun":
+														monthInt = Calendar.JUNE;
+														break;
+													case "jul":
+														monthInt = Calendar.JULY;
+														break;
+													case "aug":
+														monthInt = Calendar.AUGUST;
+														break;
+													case "sep":
+														monthInt = Calendar.SEPTEMBER;
+														break;
+													case "oct":
+														monthInt = Calendar.OCTOBER;
+														break;
+													case "nov":
+														monthInt = Calendar.NOVEMBER;
+														break;
+													case "dec":
+														monthInt = Calendar.DECEMBER;
+														break;
+												}
+												publishCal.set(Integer.parseInt(year), monthInt, (Integer.parseInt(day)));
+												publishDate = publishCal.getTime();
+												if (publishDate.after(new Date())) {
+													isOnOrder = true;
+												}
+											} else {
+												logEntry.addNote("Error parsing publication date " + publishDateText);
+											}
 										}
 									}
 								}
@@ -225,7 +228,7 @@ class OverDriveProcessor {
 							try {
 								formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_overdrive", curFormat.replace(' ', '_'), identifier));
 							} catch (Exception e) {
-								logger.warn("Could not translate format boost for " + primaryFormat);
+								logEntry.addNote("Could not translate format boost for " + primaryFormat);
 							}
 							if (formatBoost > maxFormatBoost) {
 								maxFormatBoost = formatBoost;
@@ -251,6 +254,7 @@ class OverDriveProcessor {
 							itemInfo.seteContentSource("OverDrive");
 							itemInfo.setIsEContent(true);
 							itemInfo.setShelfLocation("Online OverDrive Collection");
+							itemInfo.setDetailedLocation("Online OverDrive Collection");
 							itemInfo.setCallNumber("Online OverDrive");
 							itemInfo.setSortableCallNumber("Online OverDrive");
 							if (isOnOrder) {
@@ -259,8 +263,6 @@ class OverDriveProcessor {
 							} else {
 								itemInfo.setDateAdded(dateAdded);
 							}
-
-							overDriveRecord.addItem(itemInfo);
 
 							long libraryId = availabilityRS.getLong("libraryId");
 							boolean available = availabilityRS.getBoolean("available");
@@ -283,6 +285,13 @@ class OverDriveProcessor {
 							} else {
 								itemInfo.setDetailedStatus("Checked Out");
 							}
+
+							if (copiesOwned == 0 && libraryId != -1){
+								//Don't add advantage info if the library does not own additional copies (or have additional copies shared with it)
+								continue;
+							}
+
+							overDriveRecord.addItem(itemInfo);
 
 							boolean isAdult = targetAudience.equals("Adult");
 							boolean isTeen = targetAudience.equals("Young Adult");
@@ -322,7 +331,8 @@ class OverDriveProcessor {
 							} else {
 								for (Scope curScope : indexer.getScopes()) {
 									if (curScope.isLibraryScope() && curScope.getLibraryId().equals(libraryId)) {
-										itemInfo.setShelfLocation(curScope.getFacetLabel() + " - OverDrive Advantage");
+										itemInfo.setShelfLocation("Online OverDrive Collection");
+										itemInfo.setDetailedLocation(curScope.getFacetLabel() + " - OverDrive Advantage");
 									}
 									if (curScope.isIncludeOverDriveCollection() && curScope.getLibraryId().equals(libraryId)) {
 										boolean okToInclude = false;
@@ -370,32 +380,36 @@ class OverDriveProcessor {
 			}
 			productRS.close();
 		} catch (JSONException e) {
-			logger.error("Error loading information from JSON for overdrive title", e);
+			logEntry.incErrors("Error loading information from JSON for overdrive title", e);
 		} catch (SQLException e) {
-			logger.error("Error loading information from Database for overdrive title", e);
+			logEntry.incErrors("Error loading information from Database for overdrive title", e);
 		}
 
 	}
 
 	private void loadOverDriveIdentifiers(GroupedWorkSolr groupedWork, JSONObject productMetadata, String primaryFormat) throws JSONException {
-		JSONArray formats = productMetadata.getJSONArray("formats");
-		for (int i = 0; i < formats.length(); i++) {
-			JSONObject curFormat = formats.getJSONObject(i);
-			//Things like videos do not have identifiers so we need to check for the lack here
-			if (curFormat.has("identifiers")) {
-				JSONArray identifiers = curFormat.getJSONArray("identifiers");
-				for (int j = 0; j < identifiers.length(); j++) {
-					JSONObject curIdentifier = identifiers.getJSONObject(j);
-					String type = curIdentifier.getString("type");
-					String value = curIdentifier.getString("value");
-					//For now, ignore anything that isn't an ISBN
-					if (type.equals("ISBN")) {
-						groupedWork.addIsbn(value, primaryFormat);
-					} else if (type.equals("UPC")) {
-						groupedWork.addUpc(value);
+		if (productMetadata.has("formats")) {
+			JSONArray formats = productMetadata.getJSONArray("formats");
+			for (int i = 0; i < formats.length(); i++) {
+				JSONObject curFormat = formats.getJSONObject(i);
+				//Things like videos do not have identifiers so we need to check for the lack here
+				if (curFormat.has("identifiers")) {
+					JSONArray identifiers = curFormat.getJSONArray("identifiers");
+					for (int j = 0; j < identifiers.length(); j++) {
+						JSONObject curIdentifier = identifiers.getJSONObject(j);
+						String type = curIdentifier.getString("type");
+						String value = curIdentifier.getString("value");
+						//For now, ignore anything that isn't an ISBN
+						if (type.equals("ISBN")) {
+							groupedWork.addIsbn(value, primaryFormat);
+						} else if (type.equals("UPC")) {
+							groupedWork.addUpc(value);
+						}
 					}
 				}
 			}
+		}else{
+			logger.warn("OverDrive product did not have formats");
 		}
 	}
 
@@ -522,13 +536,13 @@ class OverDriveProcessor {
 		getProductFormatsStmt.setLong(1, productId);
 		ResultSet formatsRS = getProductFormatsStmt.executeQuery();
 		HashSet<String> formats = new HashSet<>();
-		Long formatBoost = 1L;
+		long formatBoost = 1L;
 		while (formatsRS.next()) {
 			String format = formatsRS.getString("name");
 			formats.add(format);
 			String formatBoostStr = indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier);
 			try {
-				Long curFormatBoost = Long.parseLong(formatBoostStr);
+				long curFormatBoost = Long.parseLong(formatBoostStr);
 				if (curFormatBoost > formatBoost) {
 					formatBoost = curFormatBoost;
 				}

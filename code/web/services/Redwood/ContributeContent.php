@@ -52,6 +52,7 @@ class Redwood_ContributeContent extends Action{
 			$interface->assign('captcha', $captchaCode);
 		}
 
+		$interface->assign('formLabel', 'Contribute Content');
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);
 
@@ -61,7 +62,6 @@ class Redwood_ContributeContent extends Action{
 	function insertObject($structure){
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-		/** @var DB_DataObject $newObject */
 		$newObject = new UserContribution();
 		//Check to see if we are getting default values from the
 		DataObjectUtil::updateFromUI($newObject, $structure);
@@ -70,14 +70,13 @@ class Redwood_ContributeContent extends Action{
 			$ret = $newObject->insert();
 			if (!$ret) {
 				global $logger;
-				if ($newObject->_lastError) {
-					$errorDescription = $newObject->_lastError->getUserInfo();
+				if ($newObject->getLastError()) {
+					$errorDescription = $newObject->getLastError()->getUserInfo();
 				} else {
 					$errorDescription = 'Unknown error';
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
 				$_SESSION['lastError'] = "An error occurred inserting the contribution <br/>{$errorDescription}";
-				$logger->log(mysql_error(), Logger::LOG_DEBUG);
 				return false;
 			}
 		} else {
@@ -88,5 +87,10 @@ class Redwood_ContributeContent extends Action{
 			return false;
 		}
 		return $newObject;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

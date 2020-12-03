@@ -226,7 +226,7 @@ if (!$runningOnWindows){
 //Make log directories
 $logDir = '/var/log/aspen-discovery/' . $sitename;
 if (!file_exists($logDir)){
-	mkdir($logDir, 0770, true);
+	mkdir($logDir, 0775, true);
 	if (!$runningOnWindows){
 		exec('chown -R apache:apache ' . $logDir);
 	}

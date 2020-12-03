@@ -5,7 +5,8 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 
-class ILS_IndexingProfiles extends ObjectEditor {
+class ILS_IndexingProfiles extends ObjectEditor
+{
 	function launch()
 	{
 		global $interface;
@@ -35,61 +36,74 @@ class ILS_IndexingProfiles extends ObjectEditor {
 		}
 	}
 
-
-	function getObjectType(){
+	function getObjectType()
+	{
 		return 'IndexingProfile';
 	}
-	function getModule()
-    {
-        return "ILS";
-    }
 
-    function getToolName(){
+	function getModule()
+	{
+		return "ILS";
+	}
+
+	function getToolName()
+	{
 		return 'IndexingProfiles';
 	}
-	function getPageTitle(){
+
+	function getPageTitle()
+	{
 		return 'ILS Indexing Information';
 	}
-	function getAllObjects(){
+
+	function getAllObjects()
+	{
 		$list = array();
 
 		$object = new IndexingProfile();
 		$object->orderBy('name');
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 
 		return $list;
 	}
-	function getObjectStructure(){
+
+	function getObjectStructure()
+	{
 		return IndexingProfile::getObjectStructure();
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
-	function getPrimaryKeyColumn(){
+
+	function getPrimaryKeyColumn()
+	{
 		return 'id';
-	}
-	function getIdKeyColumn(){
-		return 'id';
-	}
-	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
 	}
 
-	function getInstructions(){
+	function getIdKeyColumn()
+	{
+		return 'id';
+	}
+
+	function canAddNew()
+	{
+		return true;
+	}
+
+	function canDelete()
+	{
+		return true;
+	}
+
+	function getInstructions()
+	{
 		return '';
 	}
 
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject)
+	{
 		$actions = array();
-		if ($existingObject && $existingObject->id != ''){
+		if ($existingObject && $existingObject->id != '') {
 			$actions[] = array(
 				'text' => 'View MARC files',
 				'url' => '/ILS/IndexingProfiles?objectAction=viewMarcFiles&id=' . $existingObject->id,
@@ -99,4 +113,27 @@ class ILS_IndexingProfiles extends ObjectEditor {
 		return $actions;
 	}
 
+	function getInitializationJs()
+	{
+		return 'return AspenDiscovery.Admin.updateIndexingProfileFields();';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('/ILS/IndexingProfiles', 'Indexing Profiles');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Indexing Profiles');
+	}
 }

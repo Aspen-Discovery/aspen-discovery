@@ -20,7 +20,7 @@ class Admin_PHPInfo extends Admin_Admin {
 		$info .= '<style type="text/css">
 #maincontent {background-color: #ffffff; color: #000000;}
 #maincontent, td, th, h1, h2 {font-family: sans-serif;}
-pre {margin: 0px; font-family: monospace;}
+pre {margin: 0; font-family: monospace;}
 #maincontent a:link {color: #000099; text-decoration: none; background-color: #ffffff;}
 #maincontent a:hover {text-decoration: underline;}
 #maincontent table {border-collapse: collapse;}
@@ -35,8 +35,8 @@ h2 {font-size: 125%;}
 .h {background-color: #9999cc; font-weight: bold; color: #000000;}
 .v {background-color: #cccccc; color: #000000;}
 .vr {background-color: #cccccc; text-align: right; color: #000000;}
-#maincontent img {float: right; border: 0px;}
-#maincontent hr {width: 600px; background-color: #cccccc; border: 0px; height: 1px; color: #000000;}
+#maincontent img {float: right; border: 0;}
+#maincontent hr {width: 600px; background-color: #cccccc; border: 0; height: 1px; color: #000000;}
 </style>';
 
 		$interface->assign("info", $info);
@@ -45,7 +45,22 @@ h2 {font-size: 125%;}
 		$this->display('adminInfo.tpl', 'PHP Information');
 	}
 
-	function getAllowableRoles() {
-		return array('opacAdmin');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'PHP Information');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View System Reports');
 	}
 }

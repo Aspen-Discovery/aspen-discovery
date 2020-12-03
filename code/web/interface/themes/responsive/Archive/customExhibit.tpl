@@ -38,7 +38,7 @@
 		{/foreach}
 	</div>
 
-	{if $repositoryLink && $loggedIn && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+	{if $repositoryLink && $loggedIn && in_array('Administer Islandora Archive', $userPermissions)}
 		<div class="row">
 			<div id="more-details-accordion" class="panel-group">
 				<div class="panel {*active*}{*toggle on for open*}" id="staffViewPanel">

@@ -16,4 +16,9 @@ class RBdigitalMagazine_AJAX extends Action
 			echo json_encode(array('error' => 'invalid_method'));
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

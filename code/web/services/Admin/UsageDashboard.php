@@ -8,14 +8,6 @@ class Admin_UsageDashboard extends Admin_Admin
 	{
 		global $interface;
 
-		/** @var IndexingProfile[] $indexingProfiles*/
-		global $indexingProfiles;
-		$profilesToGetStatsFor = [];
-		foreach ($indexingProfiles as $indexingProfile){
-			$profilesToGetStatsFor[$indexingProfile->id] = $indexingProfile->name;
-		}
-		$interface->assign('profiles', $profilesToGetStatsFor);
-
 		$thisMonth = date('n');
 		$thisYear = date('Y');
 		$lastMonth = $thisMonth - 1;
@@ -35,10 +27,6 @@ class Admin_UsageDashboard extends Admin_Admin
 		$interface->assign('usageAllTime', $usageAllTime);
 
 		$this->display('usage_dashboard.tpl', 'Aspen Usage Dashboard');
-	}
-
-	function getAllowableRoles(){
-		return array('opacAdmin');
 	}
 
 	/**
@@ -67,11 +55,14 @@ class Admin_UsageDashboard extends Admin_Admin
 		$usage->selectAdd('SUM(userListSearches) as totalUserListSearches');
 		$usage->selectAdd('SUM(websiteSearches) as totalWebsiteSearches');
 		$usage->selectAdd('SUM(eventsSearches) as totalEventsSearches');
+		$usage->selectAdd('SUM(ebscoEdsSearches) as totalEbscoEdsSearches');
+		$usage->selectAdd('SUM(blockedRequests) as totalBlockedRequests');
+		$usage->selectAdd('SUM(blockedApiRequests) as totalBlockedApiRequests');
 
 		$usage->find(true);
 
 		/** @noinspection PhpUndefinedFieldInspection */
-		$stats = [
+		return [
 			'totalViews' => $usage->totalViews,
 			'totalCovers' => $usage->totalCovers,
 			'totalErrors' => $usage->totalErrors,
@@ -83,8 +74,28 @@ class Admin_UsageDashboard extends Admin_Admin
 			'totalUserListSearches' => $usage->totalUserListSearches,
 			'totalWebsiteSearches' => $usage->totalWebsiteSearches,
 			'totalEventsSearches' => $usage->totalEventsSearches,
+			'totalEbscoEdsSearches' => $usage->totalEbscoEdsSearches,
+			'totalBlockedRequests' => $usage->totalBlockedRequests,
+			'totalBlockedApiRequests' => $usage->totalBlockedApiRequests,
 		];
+	}
 
-		return $stats;
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Dashboard');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View System Reports');
 	}
 }

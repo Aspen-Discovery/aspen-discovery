@@ -15,7 +15,7 @@ class MyAccount_AJAX extends JSON_Action
 				break;
 		}
 		if (method_exists($this, $method)) {
-			if (in_array($method, array('getLoginForm', 'getPinUpdateForm'))) {
+			if (in_array($method, array('getLoginForm'))) {
 				header('Content-type: text/html');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -45,12 +45,11 @@ class MyAccount_AJAX extends JSON_Action
 
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
-		$results = array(
+		return array(
 			'title' => 'Add as Browse Category to Home Page',
 			'modalBody' => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -140,12 +139,11 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name'));
 		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
 		// Display Page
-		$formDefinition = array(
+		return array(
 			'title' => 'Account to Manage',
 			'modalBody' => $interface->fetch('MyAccount/addAccountLink.tpl'),
 			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>Add Account</span>"
 		);
-		return $formDefinition;
 	}
 
 	/** @noinspection PhpUnused */
@@ -155,12 +153,11 @@ class MyAccount_AJAX extends JSON_Action
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
 		$interface->assign('popupTitle', 'Add titles to list');
-		$formDefinition = array(
+		return array(
 			'title' => 'Add titles to list',
 			'modalBody' => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
 			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Lists.processBulkAddForm(); return false;'>Add To List</span>"
 		);
-		return $formDefinition;
 	}
 
 	/** @noinspection PhpUnused */
@@ -188,11 +185,10 @@ class MyAccount_AJAX extends JSON_Action
 		} else {
 			$message = "Sorry, it looks like that search has expired.";
 		}
-		$result = array(
+		return array(
 			'result' => $saveOk,
 			'message' => $message,
 		);
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -247,12 +243,11 @@ class MyAccount_AJAX extends JSON_Action
 
 		$interface->assign('cancelResults', $result);
 
-		$cancelResult = array(
+		return array(
 			'title' => 'Cancel Hold',
 			'body' => $interface->fetch('MyAccount/cancelHold.tpl'),
 			'success' => $result['success']
 		);
-		return $cancelResult;
 	}
 
 	/** @noinspection PhpUnused */
@@ -291,7 +286,6 @@ class MyAccount_AJAX extends JSON_Action
 				}
 			}
 		} catch (PDOException $e) {
-			/** @var Logger $logger */
 			global $logger;
 			$logger->log('Booking : ' . $e->getMessage(), Logger::LOG_ERROR);
 
@@ -307,13 +301,12 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('numCancelled', $numCancelled);
 		$interface->assign('totalCancelled', $totalCancelled);
 
-		$cancelResult = array(
+		return array(
 			'title' => 'Cancel Booking',
 			'modalBody' => $interface->fetch('MyAccount/cancelBooking.tpl'),
 			'success' => $result['success'],
 			'failed' => $failed
 		);
-		return $cancelResult;
 	}
 
 	function freezeHold()
@@ -393,6 +386,10 @@ class MyAccount_AJAX extends JSON_Action
 					$recordId = $_REQUEST['recordId'];
 					$holdId = $_REQUEST['holdId'];
 					$result = $patronOwningHold->thawHold($recordId, $holdId);
+					if ($result['success']) {
+						$message = '<div class="alert alert-success">' . $result['message'] . '</div>';
+						$result['message'] = $message;
+					}
 				}
 			}
 		} else {
@@ -411,16 +408,16 @@ class MyAccount_AJAX extends JSON_Action
 		$return = array();
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getLoggedInUser();
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$title = (isset($_REQUEST['title']) && !is_array($_REQUEST['title'])) ? urldecode($_REQUEST['title']) : '';
 			if (strlen(trim($title)) == 0) {
 				$return['success'] = "false";
 				$return['message'] = "You must provide a title for the list";
 			} else {
 				//If the record is not valid, skip the whole thing since the title could be bad too
-				if (!empty($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])) {
-					$recordToAdd = urldecode($_REQUEST['recordId']);
-					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $recordToAdd)) {
+				if (!empty($_REQUEST['sourceId']) && !is_array($_REQUEST['sourceId'])) {
+					$recordToAdd = urldecode($_REQUEST['sourceId']);
+					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+|\d+$/i", $recordToAdd)) {
 						$return['success'] = false;
 						$return['message'] = 'The recordId provided is not valid';
 						return $return;
@@ -447,19 +444,22 @@ class MyAccount_AJAX extends JSON_Action
 
 				$list->description = strip_tags(urldecode($desc));
 				$list->public = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
+				$list->searchable = isset($_REQUEST['searchable']) && $_REQUEST['searchable'] == 'true';
 				if ($existingList) {
 					$list->update();
 				} else {
 					$list->insert();
 				}
 
-				if (!empty($_REQUEST['recordId']) && !is_array($_REQUEST['recordId'])) {
-					$recordToAdd = urldecode($_REQUEST['recordId']);
-					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+				if (!empty($_REQUEST['sourceId']) && !is_array($_REQUEST['sourceId'])) {
+					$sourceId = urldecode($_REQUEST['sourceId']);
+					$source = urldecode($_REQUEST['source']);
+					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 					//Check to see if the user has already added the title to the list.
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
-					$userListEntry->groupedWorkPermanentId = $recordToAdd;
+					$userListEntry->source = $source;
+					$userListEntry->sourceId = $sourceId;
 					if (!$userListEntry->find(true)) {
 						$userListEntry->dateAdded = time();
 						$userListEntry->insert();
@@ -468,6 +468,12 @@ class MyAccount_AJAX extends JSON_Action
 
 				$return['success'] = 'true';
 				$return['newId'] = $list->id;
+
+				$userObject = UserAccount::getActiveUserObj();
+				if ($userObject->lastListUsed != $list->id) {
+					$userObject->lastListUsed = $list->id;
+					$userObject->update();
+				}
 				if ($existingList) {
 					$return['message'] = "Updated list {$title} successfully";
 				} else {
@@ -487,16 +493,16 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		global $interface;
 
-		if (isset($_REQUEST['recordId'])) {
-			$id = $_REQUEST['recordId'];
-			$interface->assign('recordId', $id);
-		} else {
-			$id = '';
+		if (isset($_REQUEST['sourceId'])) {
+			$sourceId = $_REQUEST['sourceId'];
+			$source = $_REQUEST['source'];
+			$interface->assign('sourceId', $sourceId);
+			$interface->assign('source', $source);
 		}
 
 		//Check to see if we will index the list if it is public
 		$location = Location::getSearchLocation();
-		$ownerHasListPublisherRole = UserAccount::userHasRole('listPublisher');
+		$ownerHasListPublisherRole = UserAccount::userHasPermission('Include Lists In Search Results');
 		if ($location != null){
 			$publicListWillBeIndexed = ($location->publicListsToInclude == 3) || //All public lists
 				($location->publicListsToInclude == 1) || //All lists for the current library
@@ -515,12 +521,11 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		$interface->assign('publicListWillBeIndexed', $publicListWillBeIndexed);
 
-		$results = array(
+		return array(
 			'title' => 'Create new List',
 			'modalBody' => $interface->fetch("MyAccount/createListForm.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(\"{$id}\"); return false;'>Create List</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(); return false;'>Create List</span>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -533,6 +538,13 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
 		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
+		if (!empty($library->loginNotes)){
+			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+			$parsedown = AspenParsedown::instance();
+			$parsedown->setBreaksEnabled(true);
+			$loginNotes = $parsedown->parse($library->loginNotes);
+			$interface->assign('loginNotes', $loginNotes);
+		}
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
@@ -569,16 +581,6 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
 		return MyAccount_Masquerade::endMasquerade();
-	}
-
-	/** @noinspection PhpUnused */
-	function getPinUpdateForm()
-	{
-		global $interface;
-		$interface->assign('popupTitle', 'Modify PIN number');
-		$pageContent = $interface->fetch('MyAccount/modifyPinPopup.tpl');
-		$interface->assign('popupContent', $pageContent);
-		return $interface->fetch('popup-wrapper.tpl');
 	}
 
 	/** @noinspection PhpUnused */
@@ -645,19 +647,16 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
 		$title = translate('Freeze Hold'); // language customization
-		$results = array(
+		return array(
 			'title' => $title,
 			'modalBody' => $interface->fetch("MyAccount/reactivationDate.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
 	function changeHoldLocation()
 	{
-		global $configArray;
-
 		try {
 			$holdId = $_REQUEST['holdId'];
 			$newPickupLocation = $_REQUEST['newLocation'];
@@ -666,9 +665,21 @@ class MyAccount_AJAX extends JSON_Action
 				$user = UserAccount::getLoggedInUser();
 				$patronId = $_REQUEST['patronId'];
 				$patronOwningHold = $user->getUserReferredTo($patronId);
-
-				$result = $patronOwningHold->changeHoldPickUpLocation($holdId, $newPickupLocation);
-				return $result;
+				if ($patronOwningHold != false) {
+					if ($patronOwningHold->validatePickupBranch($newPickupLocation)){
+						return $patronOwningHold->changeHoldPickUpLocation($holdId, $newPickupLocation);
+					}else{
+						return array(
+							'result' => false,
+							'message' => 'The selected pickup location is not valid.'
+						);
+					}
+				}else{
+					return array(
+						'result' => false,
+						'message' => 'The logged in user does not have permission to change hold location for the specified user, please login as that user.'
+					);
+				}
 			} else {
 				return $results = array(
 					'title' => 'Please login',
@@ -679,7 +690,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		} catch (PDOException $e) {
 			// What should we do with this error?
-			if ($configArray['System']['debug']) {
+			if (IPAddress::showDebuggingInformation()) {
 				echo '<pre>';
 				echo 'DEBUG: ' . $e->getMessage();
 				echo '</pre>';
@@ -694,14 +705,10 @@ class MyAccount_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function requestPinReset()
 	{
-		/** @var CatalogConnection $catalog */
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 
-		$barcode = $_REQUEST['barcode'];
-
 		//Get the list of pickup branch locations for display in the user interface.
-		$result = $catalog->requestPinReset($barcode);
-		return $result;
+		return $catalog->processEmailResetPinForm();
 	}
 
 	/** @noinspection PhpUnused */
@@ -733,7 +740,7 @@ class MyAccount_AJAX extends JSON_Action
 			$message = $_REQUEST['message'];
 
 			//Load the list
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$list = new UserList();
 			$list->id = $listId;
 			if ($list->find(true)) {
@@ -744,9 +751,7 @@ class MyAccount_AJAX extends JSON_Action
 				// Load the User object for the owner of the list (if necessary):
 				if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)) {
 					//The user can access the list
-					require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
-					$favoriteHandler = new FavoriteHandler($list, UserAccount::getActiveUserObj(), false);
-					$titleDetails = $favoriteHandler->getTitles(count($listEntries));
+					$titleDetails = $list->getListRecords(0, -1, false, 'recordDrivers');
 					// get all titles for email list, not just a page's worth
 					$interface->assign('titles', $titleDetails);
 					$interface->assign('list', $list);
@@ -816,12 +821,11 @@ class MyAccount_AJAX extends JSON_Action
 			$listId = $_REQUEST['listId'];
 
 			$interface->assign('listId', $listId);
-			$formDefinition = array(
+			return array(
 				'title' => 'Email a list',
 				'modalBody' => $interface->fetch('MyAccount/emailListPopup.tpl'),
 				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send Email</span>'
 			);
-			return $formDefinition;
 		} else {
 			return [
 				'success' => false,
@@ -868,12 +872,11 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		global $interface;
 		$interface->assign('renewResults', $renewResults);
-		$result = array(
+		return array(
 			'title' => translate('Renew') . ' Item',
 			'modalBody' => $interface->fetch('MyAccount/renew-item-results.tpl'),
 			'success' => $renewResults['success']
 		);
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -941,13 +944,12 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
 
-		$result = array(
+		return array(
 			'title' => translate('Renew') . ' Selected Items',
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
 			'renewed' => isset($renewResults['Renewed']) ? $renewResults['Renewed'] : []
 		);
-		return $result;
 	}
 
 	function renewAll()
@@ -965,13 +967,12 @@ class MyAccount_AJAX extends JSON_Action
 
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
-		$result = array(
+		return array(
 			'title' => translate('Renew') . ' All',
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
 			'renewed' => $renewResults['Renewed']
 		);
-		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -982,29 +983,24 @@ class MyAccount_AJAX extends JSON_Action
 		$updates = $_REQUEST['updates'];
 		if (ctype_digit($listId) && !empty($updates)) {
 			$user = UserAccount::getLoggedInUser();
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$list = new UserList();
 			$list->id = $listId;
 			if ($list->find(true) && $user->canEditList($list)) { // list exists & user can edit
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+				require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 				$success = true; // assume success now
 				foreach ($updates as $update) {
-					$update['id'] = str_replace('_', ':', $update['id']); // Rebuilt Islandora PIDs
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $listId;
-					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $update['id'])) {
-						$success = false;
-					} else {
-						$userListEntry->groupedWorkPermanentId = $update['id'];
-						if ($userListEntry->find(true) && ctype_digit($update['newOrder'])) {
-							// check entry exists already and the new weight is a number
-							$userListEntry->weight = $update['newOrder'];
-							if (!$userListEntry->update()) {
-								$success = false;
-							}
-						} else {
+					$userListEntry->id = $update['id'];
+					if ($userListEntry->find(true) && ctype_digit($update['newOrder'])) {
+						// check entry exists already and the new weight is a number
+						$userListEntry->weight = $update['newOrder'];
+						if (!$userListEntry->update()) {
 							$success = false;
 						}
+					} else {
+						$success = false;
 					}
 				}
 			}
@@ -1092,9 +1088,11 @@ class MyAccount_AJAX extends JSON_Action
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
-						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-						$rbdigitalSummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
-						$rbdigitalSummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+						if ($linkedUser->isValidForEContentSource('rbdigital')){
+							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+							$rbdigitalSummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
+							$rbdigitalSummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+						}
 					}
 				}
 				$timer->logTime("Loaded RBdigital Summary for User and linked users");
@@ -1139,6 +1137,44 @@ class MyAccount_AJAX extends JSON_Action
 				$result = [
 					'success' => true,
 					'summary' => $cloudLibrarySummary
+				];
+			} else {
+				$result['message'] = 'Unknown error';
+			}
+		} else {
+			$result['message'] = 'You must be logged in to get menu data';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getMenuDataAxis360()
+	{
+		global $timer;
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error'
+		];
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			if ($user->isValidForEContentSource('axis360')) {
+				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+				$driver = new Axis360Driver();
+				$axis360Summary = $driver->getAccountSummary($user);
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+						$axis360Summary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
+						$axis360Summary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+						$axis360Summary['numAvailableHolds'] += $linkedUserSummary['numAvailableHolds'];
+						$axis360Summary['numHolds'] += $linkedUserSummary['numHolds'];
+					}
+				}
+				$timer->logTime("Loaded Axis 360 Summary for User and linked users");
+				$result = [
+					'success' => true,
+					'summary' => $axis360Summary
 				];
 			} else {
 				$result['message'] = 'Unknown error';
@@ -1259,18 +1295,14 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		global $interface;
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		$result = array();
 		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getLoggedInUser();
-			$interface->assign('user', $user);
-
 			//Load a list of lists
 			$userListData = $memCache->get('user_list_data_' . UserAccount::getActiveUserId());
 			if ($userListData == null || isset($_REQUEST['reload'])) {
 				$lists = array();
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 				$tmpList = new UserList();
 				$tmpList->user_id = UserAccount::getActiveUserId();
 				$tmpList->whereAdd('deleted = 0');
@@ -1683,7 +1715,6 @@ class MyAccount_AJAX extends JSON_Action
 					->setCellValue('A3', 'Title')
 					->setCellValue('B3', 'Author')
 					->setCellValue('C3', 'Format')
-					->setCellValue('D3', 'Times Used')
 					->setCellValue('E3', 'Last Used');
 
 				$a = 4;
@@ -1705,7 +1736,6 @@ class MyAccount_AJAX extends JSON_Action
 						->setCellValue('A' . $a, $row['title'])
 						->setCellValue('B' . $a, $row['author'])
 						->setCellValue('C' . $a, $format)
-						->setCellValue('D' . $a, $row['timesUsed'])
 						->setCellValue('E' . $a, $lastCheckout);
 
 					$a++;
@@ -1946,77 +1976,73 @@ class MyAccount_AJAX extends JSON_Action
 			'message' => 'Unknown error',
 		];
 
-		global $offlineMode;
-		if (!$offlineMode) {
-			$user = UserAccount::getActiveUserObj();
-			if ($user) {
-				$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
-				$interface->assign('selectedUser', $patronId);
 
-				$patron = $user->getUserReferredTo($patronId);
-				if (!$patron) {
-					AspenError::raiseError(new AspenError("The patron provided is invalid"));
-				}
+		$user = UserAccount::getActiveUserObj();
+		if ($user) {
+			$patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
+			$interface->assign('selectedUser', $patronId);
 
-				// Define sorting options
-				$sortOptions = array('title' => 'Title',
-					'author' => 'Author',
-					'checkedOut' => 'Last Used',
-					'format' => 'Format',
-				);
-				$selectedSortOption = $this->setSort('sort', 'readingHistory');
-				if ($selectedSortOption == null || !array_key_exists($selectedSortOption, $sortOptions)) {
-					$selectedSortOption = 'checkedOut';
-				}
-
-				$interface->assign('sortOptions', $sortOptions);
-				$interface->assign('defaultSortOption', $selectedSortOption);
-				$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-				$interface->assign('page', $page);
-
-				$recordsPerPage = 20;
-				$interface->assign('curPage', $page);
-
-				$filter = isset($_REQUEST['readingHistoryFilter']) ? $_REQUEST['readingHistoryFilter'] : '';
-				$interface->assign('readingHistoryFilter', $filter);
-
-				$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, false);
-
-				$link = $_SERVER['REQUEST_URI'];
-				if (preg_match('/[&?]page=/', $link)) {
-					$link = preg_replace("/page=\\d+/", "page=%d", $link);
-				} else if (strpos($link, "?") > 0) {
-					$link .= "&page=%d";
-				} else {
-					$link .= "?page=%d";
-				}
-				if ($recordsPerPage != '-1') {
-					$options = array('totalItems' => $result['numTitles'],
-						'fileName' => $link,
-						'perPage' => $recordsPerPage,
-						'append' => false,
-						'linkRenderingObject' => $this,
-						'linkRenderingFunction' => 'renderReadingHistoryPaginationLink',
-						'patronId' => $patronId,
-						'sort' => $selectedSortOption,
-						'showCovers' => $showCovers,
-						'filter' => urlencode($filter)
-					);
-					$pager = new Pager($options);
-
-					$interface->assign('pageLinks', $pager->getLinks());
-				}
-				if (!($result instanceof AspenError)) {
-					$interface->assign('historyActive', $result['historyActive']);
-					$interface->assign('transList', $result['titles']);
-				}
+			$patron = $user->getUserReferredTo($patronId);
+			if (!$patron) {
+				AspenError::raiseError(new AspenError("The patron provided is invalid"));
 			}
-			$result['success'] = true;
-			$result['message'] = "";
-			$result['readingHistory'] = $interface->fetch('MyAccount/readingHistoryList.tpl');
-		} else {
-			$result['message'] = translate('The catalog is offline');
+
+			// Define sorting options
+			$sortOptions = array('title' => 'Title',
+				'author' => 'Author',
+				'checkedOut' => 'Last Used',
+				'format' => 'Format',
+			);
+			$selectedSortOption = $this->setSort('sort', 'readingHistory');
+			if ($selectedSortOption == null || !array_key_exists($selectedSortOption, $sortOptions)) {
+				$selectedSortOption = 'checkedOut';
+			}
+
+			$interface->assign('sortOptions', $sortOptions);
+			$interface->assign('defaultSortOption', $selectedSortOption);
+			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$interface->assign('page', $page);
+
+			$recordsPerPage = 20;
+			$interface->assign('curPage', $page);
+
+			$filter = isset($_REQUEST['readingHistoryFilter']) ? $_REQUEST['readingHistoryFilter'] : '';
+			$interface->assign('readingHistoryFilter', $filter);
+
+			$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, false);
+
+			$link = $_SERVER['REQUEST_URI'];
+			if (preg_match('/[&?]page=/', $link)) {
+				$link = preg_replace("/page=\\d+/", "page=%d", $link);
+			} else if (strpos($link, "?") > 0) {
+				$link .= "&page=%d";
+			} else {
+				$link .= "?page=%d";
+			}
+			if ($recordsPerPage != '-1') {
+				$options = array('totalItems' => $result['numTitles'],
+					'fileName' => $link,
+					'perPage' => $recordsPerPage,
+					'append' => false,
+					'linkRenderingObject' => $this,
+					'linkRenderingFunction' => 'renderReadingHistoryPaginationLink',
+					'patronId' => $patronId,
+					'sort' => $selectedSortOption,
+					'showCovers' => $showCovers,
+					'filter' => urlencode($filter)
+				);
+				$pager = new Pager($options);
+
+				$interface->assign('pageLinks', $pager->getLinks());
+			}
+			if (!($result instanceof AspenError)) {
+				$interface->assign('historyActive', $result['historyActive']);
+				$interface->assign('transList', $result['titles']);
+			}
 		}
+		$result['success'] = true;
+		$result['message'] = "";
+		$result['readingHistory'] = $interface->fetch('MyAccount/readingHistoryList.tpl');
 
 		return $result;
 	}
@@ -2024,7 +2050,7 @@ class MyAccount_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function renderReadingHistoryPaginationLink($page, $options)
 	{
-		return "<a class='page-link' onclick='AspenDiscovery.Account.loadReadingHistory(\"{$options['patronId']}\", \"{$options['sort']}\", \"{$page}\", undefined, \"{$options['filter']}\");AspenDiscovery.goToAnchor(\"topOfList\")'>";
+		return "<a class='page-link btn btn-default btn-sm' onclick='AspenDiscovery.Account.loadReadingHistory(\"{$options['patronId']}\", \"{$options['sort']}\", \"{$page}\", undefined, \"{$options['filter']}\");AspenDiscovery.goToAnchor(\"topOfList\")'>";
 	}
 
 	private function isValidTimeStamp($timestamp)
@@ -2176,6 +2202,34 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function dismissSystemMessage()
+	{
+		require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
+		if (!isset($_REQUEST['messageId'])) {
+			return ['success' => false, 'message' => 'Message Id not provided'];
+		} else if (UserAccount::getActiveUserId() == false) {
+			return ['success' => false, 'message' => 'User is not logged in'];
+		} else {
+			$message = new SystemMessage();
+			$message->id = $_REQUEST['messageId'];
+			if ($message->find(true)) {
+				require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
+				$systemMessageDismissal = new SystemMessageDismissal();
+				$systemMessageDismissal->userId = UserAccount::getActiveUserId();
+				$systemMessageDismissal->systemMessageId = $message->id;
+				if ($systemMessageDismissal->find(true)) {
+					return ['success' => true, 'message' => 'Message was already dismissed'];
+				} else {
+					$systemMessageDismissal->insert();
+					return ['success' => true, 'message' => 'Message was dismissed'];
+				}
+			} else {
+				return ['success' => false, 'message' => 'Could not find the message to dismiss'];
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
 	function enableAccountLinking()
 	{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
@@ -2282,6 +2336,12 @@ class MyAccount_AJAX extends JSON_Action
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$totalFines = 0;
 
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
 			//List how fines have been paid by type
 			//0 = no payments applied
 			//1 = partial payment applied
@@ -2324,10 +2384,10 @@ class MyAccount_AJAX extends JSON_Action
 
 					$purchaseUnits['items'][] = [
 						'custom_id' => $fineId,
-						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 127, true),
-						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 127, true),
+						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 120, true),
+						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 120, true),
 						'unit_amount' => [
-							'currency_code' => 'USD',
+							'currency_code' => $currencyCode,
 							'value' => round($fineAmount, 2),
 						],
 						'quantity' => 1
@@ -2393,12 +2453,12 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			$purchaseUnits['amount'] = [
-				'currency_code' => 'USD',
-				'value' => $totalFines,
+				'currency_code' => $currencyCode,
+				'value' => round($totalFines, 2),
 				'breakdown' => [
 					'item_total' => [
-						'currency_code' => 'USD',
-						'value' => $totalFines,
+						'currency_code' => $currencyCode,
+						'value' => round($totalFines, 2),
 					],
 				]
 			];
@@ -2547,6 +2607,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function updateAutoRenewal(){
 		$patronId = $_REQUEST['patronId'];
 		$allowAutoRenewal = ($_REQUEST['allowAutoRenewal'] == 'on' || $_REQUEST['allowAutoRenewal'] == 'true');
@@ -2567,6 +2628,104 @@ class MyAccount_AJAX extends JSON_Action
 				);
 			}
 		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getSaveToListForm(){
+		global $interface;
+
+		$sourceId = $_REQUEST['sourceId'];
+		$source = $_REQUEST['source'];
+		$interface->assign('sourceId', $sourceId);
+		$interface->assign('source', $source);
+
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		UserList::getUserListsForSaveForm($source, $sourceId);
+
+		return array(
+			'title' => 'Add To List',
+			'modalBody' => $interface->fetch("MyAccount/saveToList.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.saveToList(); return false;'>" . translate("Save To List") . "</button>"
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function saveToList(){
+		$result = array();
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['success'] = false;
+			$result['message'] = 'Please login before adding a title to list.';
+		}else{
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+			$result['success'] = true;
+			$sourceId = $_REQUEST['sourceId'];
+			$source = $_REQUEST['source'];
+			$listId = $_REQUEST['listId'];
+			$notes = $_REQUEST['notes'];
+
+			//Check to see if we need to create a list
+			$userList = new UserList();
+			$listOk = true;
+			if (empty($listId)){
+				$userList->title = "My Favorites";
+				$userList->user_id = UserAccount::getActiveUserId();
+				$userList->public = 0;
+				$userList->description = '';
+				$userList->insert();
+			}else{
+				$userList->id = $listId;
+				if (!$userList->find(true)){
+					$result['success'] = false;
+					$result['message'] = 'Sorry, we could not find that list in the system.';
+					$listOk = false;
+				}
+			}
+
+			if ($listOk){
+				$userListEntry = new UserListEntry();
+				$userListEntry->listId = $userList->id;
+
+				//TODO: Validate the entry
+				$isValid = true;
+				if (!$isValid) {
+					$result['success'] = false;
+					$result['message'] = 'Sorry, that is not a valid entry for the list.';
+				}else {
+					if (empty($sourceId) || empty($source)){
+						$result['success'] = false;
+						$result['message'] = 'Unable to add that to a list, not correctly specified.';
+					}else {
+						$userListEntry->source = $source;
+						$userListEntry->sourceId = $sourceId;
+
+						$existingEntry = false;
+						if ($userListEntry->find(true)) {
+							$existingEntry = true;
+						}
+						$userListEntry->notes = strip_tags($notes);
+						$userListEntry->dateAdded = time();
+						if ($existingEntry) {
+							$userListEntry->update();
+						} else {
+							$userListEntry->insert();
+						}
+
+						$userObject = UserAccount::getActiveUserObj();
+						if ($userObject->lastListUsed != $userList->id) {
+							$userObject->lastListUsed = $userList->id;
+							$userObject->update();
+						}
+						$result['success'] = true;
+						$result['message'] = 'This title was saved to your list successfully.';
+					}
+				}
+			}
+
+		}
+
 		return $result;
 	}
 }

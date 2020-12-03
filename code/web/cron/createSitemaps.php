@@ -6,13 +6,13 @@ global $serverName;
 global $interface;
 
 require_once ROOT_DIR . '/sys/Module.php';
-$module = new Module();
-$module->enabled = true;
-$module->find();
+$aspenModule = new Module();
+$aspenModule->enabled = true;
+$aspenModule->find();
 $addGroupedWorks = false;
-while ($module->fetch()) {
+while ($aspenModule->fetch()) {
 	//See if we need to create a sitemap for it
-	if ($module->indexName == 'grouped_works') {
+	if ($aspenModule->indexName == 'grouped_works') {
 		$addGroupedWorks = true;
 	}
 }

@@ -1,6 +1,6 @@
 {strip}
 <div id="page-content" class="col-xs-12">
-	<h1>{translate text='Login to your account'}</h1>
+	<h1>{translate text='Sign in to your account'}</h1>
 	<div id="loginFormWrapper">
 		{if $message}{* Errors for Full Login Page *}
 			<p class="alert alert-danger" id="loginError" >{$message|translate}</p>
@@ -25,15 +25,15 @@
 				<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 				<div id="loginFormFields">
 					<div id="loginUsernameRow" class="form-group">
-						<label for="username" class="control-label col-xs-12 col-sm-4">{$usernameLabel}: </label>
+						<label for="username" class="control-label col-xs-12 col-sm-4">{$usernameLabel} </label>
 						<div class="col-xs-12 col-sm-8">
-							<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control">
+							<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control" maxlength="60">
 						</div>
 					</div>
 					<div id="loginPasswordRow" class="form-group">
-						<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel}: </label>
+						<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel} </label>
 						<div class="col-xs-12 col-sm-8">
-							<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control">
+							<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control" maxlength="60">
 							{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 								<p class="text-muted help-block">
 									<strong>{translate text="forgot_pin" defaultText="Forgot %1%?" 1=$passwordLabel}</strong>&nbsp;&nbsp;
@@ -45,18 +45,24 @@
 								</p>
 							{/if}
 
-							{if $enableSelfRegistration == 1}
+							{if $enableSelfRegistration == 1 && !$isStandalonePage}
 								<p class="help-block">
-									Don't have a library card?  <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
+									{translate text="Don't have a library card?"}  <a href="/MyAccount/SelfReg">{translate text="Register for a new Library Card"}</a>.
 								</p>
-							{elseif $enableSelfRegistration == 2}
+							{elseif $enableSelfRegistration == 2 && !$isStandalonePage}
 								<p class="help-block">
-									Don't have a library card? <a href="{$selfRegistrationUrl}">Register for a new Library Card</a>.
+									{translate text="Don't have a library card?"} <a href="{$selfRegistrationUrl}">{translate text="Register for a new Library Card"}</a>.
 								</p>
 							{/if}
 						</div>
-
 					</div>
+					{if !(empty($loginNotes))}
+						<div id="loginNotes" class="form-group">
+							<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+								{$loginNotes}
+							</div>
+						</div>
+					{/if}
 					<div id="loginPasswordRow2" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 							<label for="showPwd" class="checkbox">
@@ -64,7 +70,7 @@
 								{translate text="Reveal Password"}
 							</label>
 
-							{if !$inLibrary && !$isOpac}
+							{if !$inLibrary && !$isOpac && !$isStandalonePage}
 								<label for="rememberMe" class="checkbox">
 									<input type="checkbox" id="rememberMe" name="rememberMe">
 									{translate text="Remember Me"}
@@ -73,16 +79,14 @@
 						</div>
 					</div>
 
-					<div id="loginPasswordRow2" class="form-group">
+					<div id="loginActions" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 							<input type="submit" name="submit" value="Login" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
-							{if $followup}<input type="hidden" name="followup" value="{$followup}">{/if}
 							{if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
 							{if $followupAction}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
 							{if $recordId}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
 							{if $comment}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
 							{if $cardNumber}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
-							{if $returnUrl}<input type="hidden" name="returnUrl" value="{$returnUrl}">{/if}
 						</div>
 					</div>
 
@@ -97,13 +101,13 @@
 	$('#username').focus().select();
 	$(function(){
 		AspenDiscovery.Account.validateCookies();
-		var haslocalStorage = AspenDiscovery.hasLocalStorage() || false;
-		if (haslocalStorage) {
-			var rememberMe = (window.localStorage.getItem('rememberMe') == 'true'), // localStorage saves everything as strings
-							showCovers = window.localStorage.getItem('showCovers') || false;
+		var hasLocalStorage = AspenDiscovery.hasLocalStorage() || false;
+		if (hasLocalStorage) {
+			var rememberMe = (window.localStorage.getItem('rememberMe') == 'true'); // localStorage saves everything as strings
+			var showCovers = window.localStorage.getItem('showCovers') || false;
 			if (rememberMe) {
-				var lastUserName = window.localStorage.getItem('lastUserName'),
-								lastPwd = window.localStorage.getItem('lastPwd');
+				var lastUserName = window.localStorage.getItem('lastUserName');
+				var lastPwd = window.localStorage.getItem('lastPwd');
 				{/literal}{*// showPwd = (window.localStorage.getItem('showPwd') == 'true'); // localStorage saves everything as strings *}{literal}
 				$("#username").val(lastUserName);
 				$("#password").val(lastPwd);

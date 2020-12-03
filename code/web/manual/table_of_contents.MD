@@ -1,75 +1,134 @@
 ##Table of Contents
 - Administration
-  - Administrators
-  - Library Administration
-  - Location Administration
+  - [System Administration](/Admin/HelpManual?page=System-Administration)
+    - [Permissions](/Admin/HelpManual?page=Permissions)
+  - [System Reports](/Admin/HelpManual?page=System-Reports)
+    - Cron Log
+    - Dashboards
+    - Indexing Logs
+    - Performance Report
+  - Configuration Templates
+    - [Themes](/Admin/HelpManual?page=Themes)
+    - [Layout Settings](/Admin/HelpManual?page=Layout-Settings)
+    - [Menu Links](/Admin/HelpManual?page=Menu-Links)
+    - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
+      - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
+      - Creating Grouped Works
+      - Grouped Work Pages
+      - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
+      - Ungrouping records
+    - [Browse Category Groups](/Admin/HelpManual?page=Browse-Category-Groups)
+      - [Browse Categories](/Admin/HelpManual?page=Browse-Categories)
+  - Primary Configuration
+    - Languages
+      - [Translations](/Admin/HelpManual?page=Translations)
+    - [Library Systems](/Admin/HelpManual?page=Library-Systems)
+      - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
+      - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
+    - Block Patron Account Linking
+    - Patron Types
+    - Account Profiles
+  - Enrichment
+    - [Accelerated Reader](/Admin/HelpManual?page=Accelerated-Reader)
+    - [Content Cafe](/Admin/HelpManual?page=Content-Cafe)
+    - [DP.LA](/Admin/HelpManual?page=DPLA)
+    - Facebook
+    - GoodReads
+    - Google
+    - [OMDB](/Admin/HelpManual?page=OMDB)
+    - [New York Times](/Admin/HelpManual?page=New-York-Times)
+      - NY Times Lists
+    - [Novelist](/Admin/HelpManual?page=Novelist)
+    - Pinterest
+    - reCAPTCHA
+    - [Syndetics](/Admin/HelpManual?page=Syndetics)
+    - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
+  - [Cataloging](/Admin/HelpManual?page=Cataloging)
+  - [ILS Integration](/Admin/HelpManual?page=ILS-Integration)
+    - Indexing Profiles
+      - Format Information
+        - [Bib Level Format](/Admin/HelpManual?page=Bib-Level-Format)
+    - Carl.X
+    - Horizon
+    - Koha
+    - Millennium
+    - Polaris
+    - Sierra
+    - Symphony
+  - [OverDrive](/Admin/HelpManual?page=Overdrive)
+    - Settings
+    - Scopes
+    - Indexing Log
+    - Dashboard
+    - API Information
+  - RB Digital
+    - Settings 
+    - Scopes 
+    - Indexing Log 
+    - Dashboard
+  - [Cloud Library](/Admin/HelpManual?page=Cloud-Library)
+    - Settings 
+    - Scopes 
+    - Indexing Log 
+    - Dashboard
+  - [Side Loaded eContent](/Admin/HelpManual?page=Side-Loaded-eContent)
+    - Side Loaded Configurations
+    - Scopes
+    - Indexing Log
+    - Dashboard
+  - Indexing Information
+    - Group Work Index Log
+  - [Open Archives](/Admin/HelpManual?page=Open-Archives)
+    - Collections
+    - Indexing Log
+    - Dashboard
+  - [Website Indexing](/Admin/HelpManual?page=Website-Indexing)
+    - Settings
+    - Indexing Log
+    - Dashboard
+  - Circulation
+    - Offline Holds Report
+  - Server Setup
+    - Installation
+    - Background tasks
+  - Uploaded PDFS
+- Website Builder
 - [Advanced Search](/Admin/HelpManual?page=Advanced%20Search)
 - Aspen API
 - [Author pages](/Admin/HelpManual?page=Author-Pages)
 - Browsing
 - Citations
-- Collection Spotlights
-- Covers
-- eCommerce
-- eContent Integrations
-  - CloudLibrary
-  - Hoopla
-  - OverDrive
+- [Collection Spotlights](/Admin/HelpManual?page=Collection-Spotlights)
+- [Covers](/Admin/HelpManual?page=Cover-Images)
+- [eCommerce](/Admin/HelpManual?page=eCommerce)
+- [eContent Integrations](/Admin/HelpManual?page=eContent-Integrations)
+  - [CloudLibrary](/Admin/HelpManual?page=Cloud-Library)
+  - [Hoopla](/Admin/HelpManual?page=Hoopla)
+  - [OverDrive](/Admin/HelpManual?page=Overdrive)
   - RBdigital
+  - [EBSCO EDS](/Admin/HelpManual?page=EBSCO-EDS)
+  - [Axis 360](/Admin/HelpManual?page=Axis-360)
 - Email
 - Events
   - Library Calendar
 - Explore More
 - Full Record Pages
-- Genealogy & Obituaries
-- Grouped Works
-  - Creating Grouped Works
-  - Grouped Work Pages
-  - Manually grouping records
-  - Ungrouping records
-- ILS Integration
-  - Account Profiles
-  - Carl.X
-  - Horizon
-  - Koha
-  - Millennium
-  - Polaris
-  - Sierra
-  - Symphony
+- [Genealogy](/Admin/HelpManual?page=Genealogy) & Obituaries
 - Interlibrary Loans
-- Languages and Translations
-- Materials Requests & Purchase Suggestions
-- Open Archives
-- Placards
-- Reading History
-- Ratings and Reviews
-- Recommendations
-- Reports
-  - Cron Log
-  - Dashboards
-  - Indexing Logs
-  - Performance Report
+- [Materials Requests & Purchase Suggestions](/Admin/HelpManual?page=Materials-Requests-Purchase-Suggestions)
+- [Open Archives](/Admin/HelpManual?page=Open-Archives)
+- [Placards](/Admin/HelpManual?page=Placards)
+- [Reading History](/Admin/HelpManual?page=Reading-History)
+- [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
+- [Recommendations](/Admin/HelpManual?page=Recommendations)
 - Searching
   - Search Types
-  - Facets
-- Server Setup
-  - Installation
-  - Background tasks
-- Third Party Enrichment
-  - Accelerated Reader
-  - Content Cafe
-  - DP.LA
-  - Facebook
-  - GoodReads
-  - Google
-  - OMDB
-  - New York Times
-  - Novelist
-  - Pinterest
-  - reCAPTCHA
-  - Syndetics
-  - Wikipedia
-- Theming
-- Uploaded PDFS
-- User Lists
-- Website Indexing
+  - [Facets](/Admin/HelpManual?page=Facets)
+    - [Nonfiction/Fiction Facets](/Admin/HelpManual?page=Literary-Forms)
+    - [Subject Facets](/Admin/HelpManual?page=Subject-Facets)
+  - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
+- System Messages
+- [User Lists](/Admin/HelpManual?page=User-Lists)
+- Patron Account
+  - [Rosen LevelUP](/Admin/HelpManual?page=Rosen-LevelUP)
+  - [While You Wait](/Admin/HelpManual?page=While-You-Wait)

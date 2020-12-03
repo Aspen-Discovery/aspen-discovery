@@ -26,11 +26,14 @@ abstract class FacetSetting extends DataObject {
 	/** @return string[] */
 	public abstract static function getAvailableFacets();
 
-	static function getObjectStructure($availableFacets = null){
-		$structure = array(
+	static function getObjectStructure(array $availableFacets = null){
+		if (empty($availableFacets)) {
+			AspenError::raiseError("The list of available facets must be provided");
+		}
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
-			'facetName' => array('property'=>'facetName', 'type'=>'enum', 'label'=>'Facet', 'values' => empty($availableFacets) ? self::getAvailableFacets() : $availableFacets, 'description'=>'The facet to include'),
+			'facetName' => array('property'=>'facetName', 'type'=>'enum', 'label'=>'Facet', 'values' => $availableFacets, 'description'=>'The facet to include'),
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'The full name of the facet for display to the user'),
 			'numEntriesToShowByDefault' => array('property'=>'numEntriesToShowByDefault', 'type'=>'integer', 'label'=>'Num Entries', 'description'=>'The number of values to show by default.', 'default' => '5'),
 			'showAsDropDown' => array('property' => 'showAsDropDown', 'type' => 'checkbox', 'label' => 'Drop Down?', 'description'=>'Whether or not the facets should be shown in a drop down list', 'default'=>'0'),
@@ -44,7 +47,6 @@ abstract class FacetSetting extends DataObject {
 			'collapseByDefault' => array('property' => 'collapseByDefault', 'type' => 'checkbox', 'label' => 'Collapse by Default', 'description'=>'Whether or not the facet should be an collapsed by default.', 'default'=>1),
 			'useMoreFacetPopup' => array('property' => 'useMoreFacetPopup', 'type' => 'checkbox', 'label' => 'Use More Facet Popup', 'description'=>'Whether or not more facet options are shown in a popup box.', 'default'=>1),
 		);
-		return $structure;
 	}
 
 	function setupTopFacet($facetName, $displayName){

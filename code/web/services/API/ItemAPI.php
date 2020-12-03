@@ -16,7 +16,6 @@ class ItemAPI extends Action {
 	 * marc record in File_Marc object
 	 */
 	protected $recordDriver;
-	public $marcRecord;
 
 	public $record;
 
@@ -24,18 +23,21 @@ class ItemAPI extends Action {
 	public $issn;
 	public $upc;
 
-	public $cacheId;
-
 	/** @var  Solr $db */
 	public $db;
 
 	function launch()
 	{
+		//Make sure the user can access the API based on the IP address
+		if (!IPAddress::allowAPIAccessForClientIP()){
+			$this->forbidAPIAccess();
+		}
+
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
+		if ($method != 'loadSolrRecord' && method_exists($this, $method)) {
 			// Connect to Catalog
 			if ($method != 'getBookcoverById' && $method != 'getBookCover'){
-				$this->catalog = CatalogFactory::getCatalogConnectionInstance();;
+				$this->catalog = CatalogFactory::getCatalogConnectionInstance();
 				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -53,6 +55,7 @@ class ItemAPI extends Action {
 		echo $output;
 	}
 
+	/** @noinspection PhpUnused */
 	function getDescriptionByTitleAndAuthor(){
 		global $configArray;
 
@@ -73,11 +76,10 @@ class ItemAPI extends Action {
 		}elseif ($author){
 			$searchResults = $this->db->search("author:$author");
 		}else{
-			$results = array(
+			return array(
 				'result' => false,
 				'message' => 'Please enter a title and/or author'
 			);
-			return $results;
 		}
 
 		if ($searchResults['response']['numFound'] == 0){
@@ -100,6 +102,7 @@ class ItemAPI extends Action {
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getDescriptionByRecordId(){
 		global $configArray;
 
@@ -118,11 +121,10 @@ class ItemAPI extends Action {
 			}
 			$searchResults = $this->db->search("$recordId", 'Id');
 		}else{
-			$results = array(
+			return array(
 				'result' => false,
 				'message' => 'Please enter the record Id to look for'
 			);
-			return $results;
 		}
 
 		if ($searchResults['response']['numFound'] == 0){
@@ -147,6 +149,7 @@ class ItemAPI extends Action {
 
 	/**
 	 * Load a marc record for a particular id from the server
+	 * @noinspection PhpUnused
 	 */
 	function getMarcRecord(){
 		$id = $_REQUEST['id'];
@@ -197,6 +200,7 @@ class ItemAPI extends Action {
 
 	/**
 	 * Get information about a particular item and return it as JSON
+	 * @noinspection PhpUnused
 	 */
 	function getItem(){
 		global $timer;
@@ -260,6 +264,7 @@ class ItemAPI extends Action {
 		return $itemData;
 	}
 
+	/** @noinspection PhpUnused */
 	function getBasicItemInfo(){
 		global $timer;
 		global $configArray;
@@ -279,55 +284,17 @@ class ItemAPI extends Action {
 			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 		$this->record = $record;
+		/** @var GroupedWorkDriver recordDriver */
 		$this->recordDriver = RecordDriverFactory::initRecordDriver($record);
 		$timer->logTime('Initialized the Record Driver');
 
-		// Process MARC Data
-		require_once ROOT_DIR . '/sys/MarcLoader.php';
-		$marcRecord = MarcLoader::loadMarcRecordFromRecord($record);
-		if ($marcRecord) {
-			$this->marcRecord = $marcRecord;
-		} else {
-			$itemData['error'] = 'Cannot Process MARC Record';
-		}
-		$timer->logTime('Processed the marc record');
-
 		// Get ISBN for cover and review use
-		if ($isbnFields = $this->marcRecord->getFields('020')) {
-			//Use the first good ISBN we find.
-			/** @var File_MARC_Data_Field $isbnField */
-			foreach ($isbnFields as $isbnField){
-				if ($isbnSubfield = $isbnField->getSubfield('a')) {
-					$this->isbn = trim($isbnSubfield->getData());
-					if ($pos = strpos($this->isbn, ' ')) {
-						$this->isbn = substr($this->isbn, 0, $pos);
-					}
-					if (strlen($this->isbn) < 10){
-						$this->isbn = str_pad($this->isbn, 10, "0", STR_PAD_LEFT);
-					}
-					$itemData['isbn'] = $this->isbn;
-					break;
-				}
-			}
-		}
-		/** @var File_MARC_Data_Field $upcField */
-		if ($upcField = $this->marcRecord->getField('024')) {
-			if ($upcSubField = $upcField->getSubfield('a')) {
-				$this->upc = trim($upcSubField->getData());
-				$itemData['upc'] = $this->upc;
-			}
-		}
-		/** @var File_MARC_Data_Field $issnField */
-		if ($issnField = $this->marcRecord->getField('022')) {
-			if ($issnSubfield = $issnField->getSubfield('a')) {
-				$this->issn = trim($issnSubfield->getData());
-				if ($pos = strpos($this->issn, ' ')) {
-					$this->issn = substr($this->issn, 0, $pos);
-				}
-				$itemData['issn'] = $this->issn;
-			}
-		}
-		$timer->logTime('Got UPC, ISBN, and ISSN');
+		$itemData['isbn'] = $this->recordDriver->getCleanISBN();
+		if (empty($itemData['isbn'])) unset($itemData['isbn']);
+		$itemData['upc'] = $this->recordDriver->getCleanUPC();
+		if (empty($itemData['upc'])) unset($itemData['upc']);
+		$itemData['issn'] = $this->recordDriver->getISSNs();
+		if (empty($itemData['issn'])) unset($itemData['issn']);
 
 		//Generate basic information from the marc file to make display easier.
 		$itemData['title'] = $record['title'];
@@ -340,17 +307,9 @@ class ItemAPI extends Action {
 		$itemData['format'] = isset($record['format']) ? $record['format'][0] : '';
 		$itemData['formatCategory'] = $record['format_category'][0];
 		$itemData['language'] = $record['language'];
-		$itemData['cover'] = "/bookcover.php?id={$itemData['id']}&issn={$itemData['issn']}&isbn={$itemData['isbn']}&upc={$itemData['upc']}&category={$itemData['formatCategory']}&format={$itemData['format'][0]}";
+		$itemData['cover'] = $this->recordDriver->getBookcoverUrl('medium', true);
 
-		//Retrieve description from MARC file
-		$description = '';
-		/** @var File_MARC_Data_Field $descriptionField */
-		if ($descriptionField = $this->marcRecord->getField('520')) {
-			if ($descriptionSubfield = $descriptionField->getSubfield('a')) {
-				$description = trim($descriptionSubfield->getData());
-			}
-		}
-		$itemData['description'] = $description;
+		$itemData['description'] = $this->recordDriver->getDescriptionFast();
 
 		//setup 5 star ratings
 		$itemData['ratingData'] = $this->recordDriver->getRatingData();
@@ -359,6 +318,7 @@ class ItemAPI extends Action {
 		return $itemData;
 	}
 
+	/** @noinspection PhpUnused */
 	function getItemAvailability(){
 		$itemData = array();
 		global $library;
@@ -404,6 +364,7 @@ class ItemAPI extends Action {
 		return $itemData;
 	}
 
+	/** @noinspection PhpUnused */
 	function getBookcoverById(){
 		$record = $this->loadSolrRecord($_GET['id']);
 		$isbn = isset($record['isbn']) ? ISBN::normalizeISBN($record['isbn'][0]) : null;
@@ -430,6 +391,7 @@ class ItemAPI extends Action {
 		include_once(ROOT_DIR . '/bookcover.php');
 	}
 
+	/** @noinspection PhpUnused */
 	function clearBookCoverCacheById(){
 		$id = strip_tags($_REQUEST['id']);
 		$sizes = array('small', 'medium', 'large');
@@ -467,6 +429,7 @@ class ItemAPI extends Action {
 		return array('deletedFiles' => $deletedFiles);
 	}
 
+	/** @noinspection PhpUnused */
 	public function getCopyAndHoldCounts(){
 		if (!isset($_REQUEST['recordId']) || strlen($_REQUEST['recordId']) == 0){
 			return array('error' => 'Please provide a record to load data for');
@@ -545,5 +508,10 @@ class ItemAPI extends Action {
 			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 		return $record;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

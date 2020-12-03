@@ -27,6 +27,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char locationSubfield;
 	private char itemStatusSubfield;
 	private char iTypeSubfield;
+	private char collectionSubfield;
 	private char shelvingLocationSubfield;
 	private char yearToDateCheckoutsSubfield;
 	private char totalCheckoutsSubfield;
@@ -40,6 +41,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private boolean groupUnchangedFiles;
 	private long lastUpdateFromMarcExport;
 	private boolean checkRecordForLargePrint;
+	private char subLocationSubfield;
+	private int determineAudienceBy;
+	private char audienceSubfield;
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
 		this.filenamesToInclude = filenamesToInclude;
@@ -118,6 +122,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 				indexingProfile.setShelvingLocationSubfield(getCharFromRecordSet(indexingProfileRS,"shelvingLocation"));
 				indexingProfile.setITypeSubfield(getCharFromRecordSet(indexingProfileRS,"iType"));
+				indexingProfile.setCollectionSubfield(getCharFromRecordSet(indexingProfileRS,"collection"));
+				indexingProfile.setSubLocationSubfield(getCharFromRecordSet(indexingProfileRS,"subLocation"));
 
 				indexingProfile.setGroupingClass(indexingProfileRS.getString("groupingClass"));
 				indexingProfile.setFormatSource(indexingProfileRS.getString("formatSource"));
@@ -132,6 +138,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 				indexingProfile.setLastYearCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS, "lastYearCheckouts"));
 				indexingProfile.setBarcodeSubfield(getCharFromRecordSet(indexingProfileRS, "barcode"));
+				if (indexingProfile.getItemRecordNumberSubfield() == ' '){
+					indexingProfile.setItemRecordNumberSubfield(indexingProfile.getBarcodeSubfield());
+				}
 				indexingProfile.setTotalRenewalsSubfield(getCharFromRecordSet(indexingProfileRS, "totalRenewals"));
 				indexingProfile.setICode2Subfield(getCharFromRecordSet(indexingProfileRS, "iCode2"));
 
@@ -139,6 +148,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setCallNumberPoststampSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberPoststamp"));
 				indexingProfile.setVolume(getCharFromRecordSet(indexingProfileRS, "volume"));
 				indexingProfile.setItemUrl(getCharFromRecordSet(indexingProfileRS, "itemUrl"));
+
+				indexingProfile.setDetermineAudienceBy(indexingProfileRS.getInt("determineAudienceBy"));
+				indexingProfile.setAudienceSubfield(getCharFromRecordSet(indexingProfileRS, "audienceSubfield"));
 
 				indexingProfile.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
 				indexingProfile.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
@@ -153,6 +165,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 			logger.error("Error reading index profile for CarlX", e);
 		}
 		return indexingProfile;
+	}
+
+	private void setAudienceSubfield(char audienceSubfield) {
+		this.audienceSubfield = audienceSubfield;
+	}
+
+	public char getAudienceSubfield(){
+		return this.audienceSubfield;
 	}
 
 	public String getItemTag() {
@@ -440,5 +460,29 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public boolean getCheckRecordForLargePrint() {
 		return checkRecordForLargePrint;
+	}
+
+	private void setCollectionSubfield(char collectionSubfield) {
+		this.collectionSubfield = collectionSubfield;
+	}
+
+	public char getCollectionSubfield() {
+		return collectionSubfield;
+	}
+
+	private void setSubLocationSubfield(char sublocationSubfield) {
+		this.subLocationSubfield = sublocationSubfield;
+	}
+
+	public char getSubLocationSubfield() {
+		return subLocationSubfield;
+	}
+
+	public int getDetermineAudienceBy() {
+		return determineAudienceBy;
+	}
+
+	private void setDetermineAudienceBy(int determineAudienceBy) {
+		this.determineAudienceBy = determineAudienceBy;
 	}
 }

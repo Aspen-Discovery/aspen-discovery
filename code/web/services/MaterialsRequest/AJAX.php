@@ -80,11 +80,11 @@ class MaterialsRequest_AJAX extends Action{
 					if (!empty($staffLibrary)) {
 
 						// Material Request
-						$materialsRequest     = new MaterialsRequest();
+						$materialsRequest = new MaterialsRequest();
 						$materialsRequest->id = $id;
 
 						// Statuses
-						$statusQuery           = new MaterialsRequestStatus();
+						$statusQuery = new MaterialsRequestStatus();
 						$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 
 						// Pick-up Locations
@@ -98,7 +98,7 @@ class MaterialsRequest_AJAX extends Action{
 
 						$materialsRequest->selectAdd();
 						$materialsRequest->selectAdd(
-							'materials_request.*, description as statusLabel, location.displayName as location'
+							'materials_request.*, status.description as statusLabel, location.displayName as location'
 						);
 						if (!$usingDefaultFormats) {
 							$materialsRequest->joinAdd($formats, 'LEFT', 'materials_request_formats', 'formatId', 'id');
@@ -121,8 +121,8 @@ class MaterialsRequest_AJAX extends Action{
 
 								if ($user->id == $materialsRequest->createdBy) {
 									$canUpdate = true;
-									$isAdminUser = UserAccount::userHasRole('library_material_requests');
-								} elseif (UserAccount::userHasRole('library_material_requests')) {
+									$isAdminUser = UserAccount::userHasPermission('Manage Library Materials Requests');
+								} elseif (UserAccount::userHasPermission('Manage Library Materials Requests')) {
 									//User can update if the home library of the requester is their library
 
 									$requestUserLibrary = $requestUser->getHomeLibrary();
@@ -143,8 +143,11 @@ class MaterialsRequest_AJAX extends Action{
 										foreach ($defaultFormats as $format) {
 											// Get the default values for this request
 											if ($materialsRequest->format == $format->format ){
+												/** @noinspection PhpUndefinedFieldInspection */
 												$materialsRequest->formatLabel = $format->formatLabel;
+												/** @noinspection PhpUndefinedFieldInspection */
 												$materialsRequest->authorLabel = $format->authorLabel;
+												/** @noinspection PhpUndefinedFieldInspection */
 												$materialsRequest->specialFields = $format->specialFields;
 												break;
 											}
@@ -194,7 +197,11 @@ class MaterialsRequest_AJAX extends Action{
 									$materialsRequestStatus = new MaterialsRequestStatus();
 									$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
 									$materialsRequestStatus->libraryId = $staffLibrary->libraryId;
-									$availableStatuses = $materialsRequestStatus->fetchAll('id', 'description');
+									$materialsRequestStatus->find();
+									$availableStatuses = [];
+									while ($materialsRequestStatus->fetch()){
+										$availableStatuses[$materialsRequestStatus->id] = $materialsRequestStatus->description;
+									}
 									$interface->assign('availableStatuses', $availableStatuses);
 
 									// Get Barcode Column
@@ -223,14 +230,14 @@ class MaterialsRequest_AJAX extends Action{
 				$interface->assign('error', 'Sorry, invalid id for a '. translate('materials request') .'.');
 			}
 		}
-		$return = array(
+		return array(
 			'title' => 'Update Materials Request',
 			'modalBody' => $interface->fetch('MaterialsRequest/ajax-update-request.tpl'),
 			'modalButtons' => $interface->get_template_vars('error') == null ?  "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>Update Request</button>" : ''
 		);
-		return $return;
 	}
 
+	/** @noinspection PhpUnused */
 	function MaterialsRequestDetails(){
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
@@ -266,7 +273,7 @@ class MaterialsRequest_AJAX extends Action{
 
 					$materialsRequest->selectAdd();
 					$materialsRequest->selectAdd(
-						'materials_request.*, description as statusLabel, location.displayName as location'
+						'materials_request.*, status.description as statusLabel, location.displayName as location'
 					);
 					if (!$usingDefaultFormats) {
 						$materialsRequest->joinAdd($formats, 'LEFT', 'materials_request_formats', 'formatId', 'id');
@@ -279,8 +286,11 @@ class MaterialsRequest_AJAX extends Action{
 							/** @var MaterialsRequestFormats $format */
 							foreach ($defaultFormats as $format) {
 								if ($materialsRequest->format == $format->format ){
+									/** @noinspection PhpUndefinedFieldInspection */
 									$materialsRequest->formatLabel = $format->formatLabel;
+									/** @noinspection PhpUndefinedFieldInspection */
 									$materialsRequest->authorLabel = $format->authorLabel;
+									/** @noinspection PhpUndefinedFieldInspection */
 									$materialsRequest->specialFields = $format->specialFields;
 									break;
 								}
@@ -289,7 +299,7 @@ class MaterialsRequest_AJAX extends Action{
 
 						$interface->assign('materialsRequest', $materialsRequest);
 
-						if ($user && UserAccount::userHasRole('library_material_requests')) {
+						if ($user && UserAccount::userHasPermission('Manage Library Materials Requests')) {
 							$interface->assign('showUserInformation', true);
 							//Load user information
 							$requestUser     = new User();
@@ -318,14 +328,14 @@ class MaterialsRequest_AJAX extends Action{
 				$interface->assign('error', 'Invalid Request ID.');
 			}
 		}
-		$return = array(
+		return array(
 				'title'        => translate('Materials Request Details'),
 				'modalBody'    => $interface->fetch('MaterialsRequest/ajax-request-details.tpl'),
 				'modalButtons' => '' //TODO idea: add Update Request button (for staff only?)
 		);
-		return $return;
 	}
 
+	/** @noinspection PhpUnused */
 	function GetWorldCatIdentifiers(){
 		$worldCatTitles = $this->GetWorldCatTitles();
 		if ($worldCatTitles['success'] == false){
@@ -385,11 +395,13 @@ class MaterialsRequest_AJAX extends Action{
 			$worldCatUrl .= "&wskey=" . $configArray['WorldCat']['apiKey'];
 			$worldCatUrl .= "&format=rss&cformat=mla";
 			//echo($worldCatUrl);
+			/** @var stdClass $worldCatData */
 			$worldCatData = simplexml_load_file($worldCatUrl);
 			//print_r($worldCatData);
 			$worldCatResults = array();
 			foreach($worldCatData->channel->item as $item){
 				/** @var SimpleXMLElement $item */
+				/** @noinspection PhpUndefinedFieldInspection */
 				$curTitle= array(
 					'title' => (string)$item->title,
 					'author' => (string)$item->author->name,
@@ -446,12 +458,11 @@ class MaterialsRequest_AJAX extends Action{
 	function getImportRequestForm(){
 		global $interface;
 
-		$results = array(
+		return array(
 			'title' => 'Import Materials Requests',
 			'modalBody' => $interface->fetch("MaterialsRequest/import-requests.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#importRequestsForm\").submit()'>Import Requests</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -461,7 +472,7 @@ class MaterialsRequest_AJAX extends Action{
 			'title' => 'Importing Requests',
 			'message' => 'Sorry your requests could not be imported'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('library_material_requests'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Import Materials Requests'))){
 			if (isset($_FILES['exportFile'])) {
 				$uploadedFile = $_FILES['exportFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
@@ -594,5 +605,10 @@ class MaterialsRequest_AJAX extends Action{
 			}
 		}
 		return json_encode($result);
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

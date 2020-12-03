@@ -7,15 +7,15 @@ class Mailer {
 	 * Send an email message.
 	 *
 	 * @access  public
-	 * @param   string  $to         Recipient email address
-	 * @param   string  $from       Sender email address
-	 * @param   string  $subject    Subject line for message
-	 * @param   string  $body       Message body
-	 * @param   string  $replyTo    Someone to reply to
+	 * @param string $to Recipient email address
+	 * @param string $subject Subject line for message
+	 * @param string $body Message body
+	 * @param string $replyTo Someone to reply to
+	 * @param bool $htmlMessage True to send the email as html
 	 *
-	 * @return  mixed               PEAR error on error, boolean true otherwise
+	 * @return  boolean
 	 */
-	public function send($to, $subject, $body, $replyTo = null) {
+	public function send($to, $subject, $body, $replyTo = null, $htmlMessage = false) {
 		require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$sendGridSettings = new SendGridSetting();
@@ -31,12 +31,17 @@ class Mailer {
 
 			$apiBody = new stdClass();
 			$apiBody->personalizations = [];
-			$personalization = new stdClass();
-			$personalization->to = [];
-			$toAddress = new stdClass();
-			$toAddress->email = $to;
-			$personalization->to[] = $toAddress;
-			$apiBody->personalizations[] =$personalization;
+			$toAddresses = explode(';', $to);
+			foreach ($toAddresses as $tmpToAddress){
+				$personalization = new stdClass();
+				$personalization->to = [];
+
+				$toAddress = new stdClass();
+				$toAddress->email = trim($tmpToAddress);
+				$personalization->to[] = $toAddress;
+
+				$apiBody->personalizations[] =$personalization;
+			}
 			$apiBody->from = new stdClass();
 			$apiBody->from->email = $sendGridSettings->fromAddress;
 			$apiBody->reply_to = new stdClass();
@@ -44,12 +49,22 @@ class Mailer {
 			$apiBody->subject = $subject;
 			$apiBody->content = [];
 			$content = new stdClass();
-			$content->type = 'text/plain';
+			if ($htmlMessage){
+				$content->type = 'text/html';
+			}else{
+				$content->type = 'text/plain';
+			}
 			$content->value = $body;
 			$apiBody->content[] = $content;
 
 			$response = $curlWrapper->curlPostPage('https://api.sendgrid.com/v3/mail/send', json_encode($apiBody));
-			return $response == '';
+			if ($response != ''){
+				global $logger;
+				$logger->log('Error sending email via SendGrid ' . $curlWrapper->getResponseCode() . ' ' . $response, Logger::LOG_ERROR);
+				return false;
+			}else{
+				return true;
+			}
 		}else{
 			return false;
 		}

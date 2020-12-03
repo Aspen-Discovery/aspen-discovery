@@ -40,4 +40,12 @@ class MaterialsRequest_IlsRequests extends MyAccount
 			exit;
 		}
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/IlsRequests', 'My Materials Requests');
+		return $breadcrumbs;
+	}
 }

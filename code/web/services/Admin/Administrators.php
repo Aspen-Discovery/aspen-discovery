@@ -59,9 +59,6 @@ class Admin_Administrators extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('userAdmin');
-	}
 	function canAddNew(){
 		return false;
 	}
@@ -97,17 +94,18 @@ class Admin_Administrators extends ObjectEditor
 
 		$newAdmin->$barcodeProperty = $login;
 		$newAdmin->find();
-		if ($newAdmin->getNumResults() == 0){
+		$numResults = $newAdmin->getNumResults();
+		if ($numResults == 0){
 			//See if we can fetch the user from the ils
 			$newAdmin = UserAccount::findNewUser($login);
 			if ($newAdmin == false){
 				$interface->assign('error', 'Could not find a user with that barcode.');
 			}
-		}elseif ($newAdmin->getNumResults() == 1){
+		}elseif ($numResults == 1){
 			$newAdmin->fetch();
-		}elseif ($newAdmin->getNumResults() > 1){
+		}elseif ($numResults > 1){
 			$newAdmin = false;
-			$interface->assign('error', "Found multiple ({$newAdmin->getNumResults()}) users with that barcode. (The database needs to be cleaned up.)");
+			$interface->assign('error', "Found multiple ({$numResults}) users with that barcode. (The database needs to be cleaned up.)");
 		}
 
 		if ($newAdmin != false) {
@@ -128,7 +126,23 @@ class Admin_Administrators extends ObjectEditor
 	function getInstructions(){
 		return '';
 	}
-	function getListInstructions(){
-		return $this->getInstructions();
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
+		$breadcrumbs[] = new Breadcrumb('', 'Administrators');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Users');
 	}
 }

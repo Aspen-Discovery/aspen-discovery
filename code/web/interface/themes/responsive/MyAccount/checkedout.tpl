@@ -5,9 +5,10 @@
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 			</div>
 		{/if}
+		{if !empty($accountMessages)}
+			{include file='systemMessages.tpl' messages=$accountMessages}
+		{/if}
 
-		{* Alternate Mobile MyAccount Menu *}
-		{include file="MyAccount/mobilePageHeader.tpl"}
 		<span class='availableHoldsNoticePlaceHolder'></span>
 		<h1>{translate text='Checked Out Titles'}</h1>
 		{if $libraryHoursMessage}
@@ -17,15 +18,6 @@
 		{if $offline}
 			<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 		{else}
-			{if $showAutoRenewSwitch}
-				<div class="row">
-					<div class="col-tn-12">
-						<input type="checkbox" name="allowAutoRenewal" id="allowAutoRenewal" {if $autoRenewalEnabled==1}checked='checked'{/if} onchange="AspenDiscovery.Account.updateAutoRenewal('{$profile->id}')">&nbsp;
-						<label for="allowAutoRenewal" class="control-label" style="text-align:left">{translate text='allow_autorenew' defaultText='Allow Auto Renewal'}</label>
-					</div>
-				</div>
-			{/if}
-
 			<ul class="nav nav-tabs" role="tablist" id="checkoutsTab">
 				<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All"} <span class="badge"><span class="checkouts-placeholder">&nbsp;</span></span></a></li>
 				<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials"} <span class="badge"><span class="ils-checkouts-placeholder">&nbsp;</span></span></a></li>
@@ -38,57 +30,66 @@
 				{if $user->isValidForEContentSource('rbdigital')}
 					<li role="presentation"{if $tab=='rbdigital'} class="active"{/if}><a href="#rbdigital" aria-controls="rbdigital" role="tab" data-toggle="tab">{translate text="RBdigital"} <span class="badge"><span class="rbdigital-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
-                {if $user->isValidForEContentSource('cloud_library')}
+				{if $user->isValidForEContentSource('cloud_library')}
 					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="Cloud Library"} <span class="badge"><span class="cloud_library-checkouts-placeholder">&nbsp;</span></span></a></li>
-                {/if}
+				{/if}
+				{if $user->isValidForEContentSource('axis360')}
+					<li role="presentation"{if $tab=='axis360'} class="active"{/if}><a href="#axis360" aria-controls="axis360" role="tab" data-toggle="tab">{translate text="Axis 360"} <span class="badge"><span class="axis360-checkouts-placeholder">&nbsp;</span></span></a></li>
+				{/if}
 			</ul>
 
 			<!-- Tab panes -->
 			<div class="tab-content" id="checkouts">
-				<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all"><div id="allCheckoutsPlaceholder">{translate text="Loading checkouts from all sources"}</div></div>
-				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils"><div id="ilsCheckoutsPlaceholder">{translate text="Loading checkouts of physical materials"}</div></div>
+				<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all" aria-label="All Checkouts List"><div id="allCheckoutsPlaceholder">{translate text="Loading checkouts from all sources"}</div></div>
+				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils" aria-label="Physical Checkouts List"><div id="ilsCheckoutsPlaceholder">{translate text="Loading checkouts of physical materials"}</div></div>
 				{if $user->isValidForEContentSource('overdrive')}
-					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from OverDrive"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="OverDrive Checkouts List"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from OverDrive"}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('hoopla')}
-					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla" aria-label="Hoopla Checkouts List"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla"}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('rbdigital')}
-					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital"><div id="rbdigitalCheckoutsPlaceholder">{translate text="Loading checkouts from RBdigital"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital" aria-label="RBdigital Checkouts List"><div id="rbdigitalCheckoutsPlaceholder">{translate text="Loading checkouts from RBdigital"}</div></div>
 				{/if}
-                {if $user->isValidForEContentSource('cloud_library')}
-					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from Cloud Library"}</div></div>
+				{if $user->isValidForEContentSource('cloud_library')}
+					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="Cloud Library Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from Cloud Library"}</div></div>
+				{/if}
+                {if $user->isValidForEContentSource('axis360')}
+					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="Axis 360 Checkouts List"><div id="axis360CheckoutsPlaceholder">{translate text="Loading checkouts from Axis 360"}</div></div>
                 {/if}
 			</div>
 			<script type="text/javascript">
 				{literal}
 				$(document).ready(function() {
-                    $("a[href='#all']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('all');
-                    });
-                    $("a[href='#ils']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('ils');
-                    });
-                    $("a[href='#overdrive']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('overdrive');
-                    });
-                    $("a[href='#hoopla']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('hoopla');
-                    });
-                    $("a[href='#rbdigital']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('rbdigital');
-                    });
-                    $("a[href='#cloud_library']").on('show.bs.tab', function () {
-                        AspenDiscovery.Account.loadCheckouts('cloud_library');
-                    });
-                    {/literal}
-                    AspenDiscovery.Account.loadCheckouts('{$tab}');
+					$("a[href='#all']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('all');
+					});
+					$("a[href='#ils']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('ils');
+					});
+					$("a[href='#overdrive']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('overdrive');
+					});
+					$("a[href='#hoopla']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('hoopla');
+					});
+					$("a[href='#rbdigital']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('rbdigital');
+					});
+					$("a[href='#cloud_library']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('cloud_library');
+					});
+					$("a[href='#axis360']").on('show.bs.tab', function () {
+						AspenDiscovery.Account.loadCheckouts('axis360');
+					});
+					{/literal}
+					AspenDiscovery.Account.loadCheckouts('{$tab}');
 					{literal}
-                });
-                {/literal}
+				});
+				{/literal}
 			</script>
 		{/if}
 	{else}
-		{translate text="login_to_view_account_notice" defaultText="You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login."}
+		{translate text="login_to_view_account_notice" defaultText="You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in."}
 	{/if}
 {/strip}

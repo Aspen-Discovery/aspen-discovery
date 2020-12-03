@@ -6,9 +6,9 @@
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 				</div>
 			{/if}
-
-			{* Alternate Mobile MyAccount Menu *}
-			{include file="MyAccount/mobilePageHeader.tpl"}
+			{if !empty($accountMessages)}
+				{include file='systemMessages.tpl' messages=$accountMessages}
+			{/if}
 
 			<span class='availableHoldsNoticePlaceHolder'></span>
 
@@ -33,19 +33,19 @@
 					<div class="form-group">
 						<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old %1%' 1=$passwordLabel}</label></div>
 						<div class="col-xs-8">
-							<input type="password" name="pin" id="pin" value="" size="4" maxlength="30" class="form-control required">
+							<input type="password" name="pin" id="pin" value="" size="{$pinValidationRules.minLength}" maxlength="60" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 						</div>
 					</div>
 					<div class="form-group">
 						<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel}</label></div>
 						<div class="col-xs-8">
-							<input type="password" name="pin1" id="pin1" value="" size="4" maxlength="30" class="form-control required digits">
+							<input type="password" name="pin1" id="pin1" value="" size="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 						</div>
 					</div>
 					<div class="form-group">
 						<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New %1%' 1=$passwordLabel}</label></div>
 						<div class="col-xs-8">
-								<input type="password" name="pin2" id="pin2" value="" size="4" maxlength="30" class="form-control required digits">
+								<input type="password" name="pin2" id="pin2" value="" size="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 						</div>
 					</div>
 					<div class="form-group">
@@ -76,7 +76,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
+				You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
 			</div>
 		{/if}
 	</div>

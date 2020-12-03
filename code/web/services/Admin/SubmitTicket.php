@@ -35,30 +35,51 @@ class SubmitTicket extends Admin_Admin
 			$description .= 'Criticality: ' . $criticality . "\n";
 			$description .= 'Component: ' . $component . "\n";
 
+			$message = '';
 			try {
 				require_once ROOT_DIR . '/sys/SystemVariables.php';
 				$systemVariables = new SystemVariables();
 				if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
 					$result = $mailer->send($systemVariables->ticketEmail, "Aspen Discovery: $subject", $description, $email);
+					if (!$result){
+						$message = 'Could not submit ticket via Aspen mailer';
+					}
 				} else {
 					$result = false;
+					$message = 'Could not find ticket email to submit to';
 				}
 			}catch (Exception $e) {
 				//This happens when the table has not been created
 				$result = false;
+				$message = 'System Variables has not been created, could not find ticket email to submit to';
 			}
 			if ($result == true){
 				$this->display('submitTicketSuccess.tpl', 'Submit Ticket');
 				die();
 			}else{
-				$interface->assign('error', 'There was an error submitting your ticket. ' . $result->message);
+				$interface->assign('error', 'There was an error submitting your ticket. ' . $message);
 			}
 		}
 
 		$this->display('submitTicket.tpl', 'Submit Ticket');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_help', 'Aspen Discovery Help');
+		$breadcrumbs[] = new Breadcrumb('', 'Submit Support Ticket');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'aspen_help';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Submit Ticket');
 	}
 }

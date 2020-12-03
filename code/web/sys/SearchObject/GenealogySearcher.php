@@ -37,7 +37,6 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('genealogySearches');
-		$this->defaultIndex = 'GenealogyKeyword';
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -87,6 +86,9 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	{
 		// Call the standard initialization routine in the parent:
 		parent::init('genealogy');
+
+		$this->searchType = 'genealogy';
+		$this->basicSearchType = 'genealogy';
 
 		//********************
 		// Check if we have a saved search to restore -- if restored successfully,
@@ -147,7 +149,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		//********************
 		// Basic Search logic
 		$this->searchTerms[] = array(
-			'index' => $this->defaultIndex,
+			'index' => $this->getDefaultIndex(),
 			'lookfor' => ""
 		);
 
@@ -168,31 +170,6 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		} else {
 			return null;
 		}
-	}
-
-	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results suitable for use on a user's "favorites" page.
-	 *
-	 * @access  public
-	 * @param object $user User object owning tag/note metadata.
-	 * @param int $listId ID of list containing desired tags/notes (or
-	 *                              null to show tags/notes from all user's lists).
-	 * @param bool $allowEdit Should we display edit controls?
-	 * @return  array   Array of HTML chunks for individual records.
-	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true)
-	{
-		global $interface;
-
-		$html = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = &$this->indexResult['response']['docs'][$x];
-			/** @var PersonRecord $record */
-			$record = RecordDriverFactory::initRecordDriver($current);
-			$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
-		}
-		return $html;
 	}
 
 	/**
@@ -508,7 +485,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * @param string $id The document to retrieve from Solr
 	 * @access  public
 	 * @return  array               The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecord($id)
 	{
@@ -526,8 +503,12 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	{
 		$params = parent::getSearchParams();
 
-		$params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
-		$params[] = 'searchSource=' . $_REQUEST['searchSource'];
+		if (isset($_REQUEST['searchIndex'])) {
+			$params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
+		}
+		if (isset($_REQUEST['searchSource'])) {
+			$params[] = 'searchSource=' . $_REQUEST['searchSource'];
+		}
 
 		return $params;
 	}
@@ -546,6 +527,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		];
 	}
 
+	/** @return PersonRecord */
 	public function getRecordDriverForResult($current)
 	{
 		require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
@@ -654,5 +636,14 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			$this->facetConfig = $facetConfig;
 		}
 		return $this->facetConfig;
+	}
+
+	public function getEngineName(){
+		return 'Genealogy';
+	}
+
+	public function getDefaultIndex()
+	{
+		return 'GenealogyKeyword';
 	}
 }

@@ -15,14 +15,15 @@ import java.sql.ResultSet;
 import java.util.*;
 
 class KohaRecordProcessor extends IlsRecordProcessor {
-	private HashSet<String> inTransitItems = new HashSet<>();
-	private HashSet<String> onHoldShelfItems = new HashSet<>();
-	private HashMap<String, String> lostStatuses = new HashMap<>();
-	private HashMap<String, String> damagedStatuses = new HashMap<>();
-	private HashMap<String, String> notForLoanStatuses = new HashMap<>();
+	private final HashSet<String> inTransitItems = new HashSet<>();
+	private final HashSet<String> onHoldShelfItems = new HashSet<>();
+	private final HashMap<String, String> lostStatuses = new HashMap<>();
+	private final HashMap<String, String> damagedStatuses = new HashMap<>();
+	private final HashMap<String, String> notForLoanStatuses = new HashMap<>();
 
 	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		this (indexer, dbConn, indexingProfileRS, logger, fullReindex, null);
+		suppressRecordsWithNoCollection = false;
 	}
 
 	private Connection connectToKohaDB(Connection dbConn, Logger logger) {
@@ -157,9 +158,29 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String mostPopularIType = ""; //Get a list of all the formats based on the items
 		for(ItemInfo item : recordInfo.getRelatedItems()){
 			if (item.isEContent()) {continue;}
+			boolean foundFormatFromShelfLocation = false;
+			String shelfLocationCode = item.getShelfLocationCode();
+			if (shelfLocationCode != null){
+				String shelfLocation = shelfLocationCode.toLowerCase().trim();
+				if (hasTranslation("format", shelfLocation)){
+					String translatedLocation = translateValue("format", shelfLocation, recordInfo.getRecordIdentifier());
+					if (itemCountsByItype.containsKey(shelfLocation)) {
+						itemCountsByItype.put(shelfLocation, itemCountsByItype.get(shelfLocation) + 1);
+					} else {
+						itemCountsByItype.put(shelfLocation, 1);
+					}
+					foundFormatFromShelfLocation = true;
+					itemTypeToFormat.put(shelfLocation, translatedLocation);
+					if (itemCountsByItype.get(shelfLocation) > mostUsedCount){
+						mostPopularIType = shelfLocation;
+						mostUsedCount = itemCountsByItype.get(shelfLocation);
+					}
+				}
+			}
+
 			boolean foundFormatFromSublocation = false;
 			String subLocationCode = item.getSubLocationCode();
-			if (subLocationCode != null){
+			if (!foundFormatFromShelfLocation && subLocationCode != null){
 				String subLocation = subLocationCode.toLowerCase().trim();
 				if (hasTranslation("format", subLocation)){
 					String translatedLocation = translateValue("format", subLocation, recordInfo.getRecordIdentifier());
@@ -177,7 +198,27 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				}
 			}
 
-			if (!foundFormatFromSublocation) {
+			boolean foundFormatFromCollection = false;
+			String collectionCode = item.getCollection();
+			if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && collectionCode != null){
+				collectionCode = collectionCode.toLowerCase().trim();
+				if (hasTranslation("format", collectionCode)){
+					String translatedLocation = translateValue("format", collectionCode, recordInfo.getRecordIdentifier());
+					if (itemCountsByItype.containsKey(collectionCode)) {
+						itemCountsByItype.put(collectionCode, itemCountsByItype.get(collectionCode) + 1);
+					} else {
+						itemCountsByItype.put(collectionCode, 1);
+					}
+					foundFormatFromCollection = true;
+					itemTypeToFormat.put(collectionCode, translatedLocation);
+					if (itemCountsByItype.get(collectionCode) > mostUsedCount){
+						mostPopularIType = collectionCode;
+						mostUsedCount = itemCountsByItype.get(collectionCode);
+					}
+				}
+			}
+
+			if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection) {
 				String iTypeCode = item.getITypeCode();
 				if (iTypeCode != null) {
 					String iType = iTypeCode.toLowerCase().trim();
@@ -207,6 +248,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
 				if (printFormats.size() == 1 && printFormats.iterator().next().equalsIgnoreCase("LargePrint")) {
 					String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
+					//noinspection Java8MapApi
 					for (String itemType : itemTypeToFormat.keySet()) {
 						itemTypeToFormat.put(itemType, translatedFormat);
 					}
@@ -243,7 +285,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		}
 	}
 
-	private HashSet<String> additionalStatuses = new HashSet<>();
+	private final HashSet<String> additionalStatuses = new HashSet<>();
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
 		String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
 		if (inTransitItems.contains(itemIdentifier)){
@@ -360,7 +402,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isEContent = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
 					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
-					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook")){
+					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
 						isEContent = true;
 					}
 				}
@@ -385,7 +427,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isOneClickDigital = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
 					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
-					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook")){
+					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
 						isEContent = true;
 						String sourceType = getSourceType(record, itemField);
 						if (sourceType != null){
@@ -461,6 +503,12 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					} else if (urlSubfield.contains("freading.com")) {
 						sourceType = "Freading";
 						break;
+					} else if (urlSubfield.contains("galegroup.com")){
+						sourceType = "Gale Group";
+						break;
+					} else if (urlSubfield.contains("gpo.gov")){
+						sourceType = "Government Document";
+						break;
 					} else {
 						logger.debug("URL is not overdrive");
 					}
@@ -515,22 +563,29 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 		if (suppressed){
-			return suppressed;
+			return true;
 		}else{
 			return super.isItemSuppressed(curItem);
 		}
 	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String location;
 		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		location = translateValue("location", locationCode, identifier);
+		if (includeLocationNameInDetailedLocation) {
+			location = translateValue("location", locationCode, identifier);
+		}else{
+			location = "";
+		}
 		if (subLocationCode != null && subLocationCode.length() > 0){
-			if (location.length() > 0){
-				location += " - ";
+			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier);
+			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
+				if (location.length() > 0) {
+					location += " - ";
+				}
+				location += translateValue("sub_location", subLocationCode, identifier);
 			}
-			location += translateValue("sub_location", subLocationCode, identifier);
 		}
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelvingLocation != null && shelvingLocation.length() > 0){
@@ -553,5 +608,17 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		}
 
 		return isSuppressed;
+	}
+
+	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
+		//Koha uses subfield 7 to determine if a record is holdable or not.
+		Subfield subfield7 = itemInfo.getMarcField().getSubfield('7');
+		if (subfield7 != null) {
+			int notForLoan = Integer.parseInt(subfield7.getData());
+			if (notForLoan >= 1) {
+				return new HoldabilityInformation(false, new HashSet<>());
+			}
+		}
+		return super.isItemHoldableUnscoped(itemInfo);
 	}
 }

@@ -54,7 +54,11 @@ class Events_Calendar extends Action
 		$searchObject->init();
 		$searchObject->setPrimarySearch(false);
 		$searchObject->setLimit(1000);
+		//We have a default hidden filter to only show events after today, needs to be cleared for calendars.
+		$searchObject->clearHiddenFilters();
+		//Instead we limit to just this month.
 		$searchObject->addHiddenFilter("event_month", '"' . $monthFilter . '"');
+		$searchObject->setSort('start_date_sort');
 
 		$timer->logTime('Setup Search');
 
@@ -78,6 +82,8 @@ class Events_Calendar extends Action
 		$searchObject->close();
 
 		$searchResults = $searchObject->getResultRecordSet();
+
+		$defaultTimezone = new DateTimeZone(date_default_timezone_get());
 
 		//Setup the calendar display
 		//Get a list of weeks for the month
@@ -114,8 +120,10 @@ class Events_Calendar extends Action
 				foreach ($searchResults as $result) {
 					if (in_array($eventDay, $result['event_day'])){
 						$startDate = new DateTime($result['start_date']);
+						$startDate->setTimezone($defaultTimezone);
 						$formattedTime = date_format($startDate, "h:iA");
 						$endDate = new DateTime($result['end_date']);
+						$endDate->setTimezone($defaultTimezone);
 						$formattedTime .= ' - ' . date_format($endDate, "h:iA");
 						if (($endDate->getTimestamp() - $startDate-> getTimestamp()) > 24 * 60 * 60){
 							$formattedTime = 'All day';
@@ -147,6 +155,15 @@ class Events_Calendar extends Action
 		}
 		$interface->assign('weeks', $weeks);
 
-		$this->display('calendar.tpl', 'Events Calendar ' . $formattedMonthYear, 'Search/results-sidebar.tpl');
+		$this->display('calendar.tpl', 'Events Calendar ' . $formattedMonthYear, '');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#events', 'Events');
+		$breadcrumbs[] = new Breadcrumb('/Events/Calendar', 'Events Calendar');
+		return $breadcrumbs;
 	}
 }

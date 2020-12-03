@@ -70,10 +70,10 @@ class Pager {
         if ($this->_totalPages > 1) {
             //$links['all'] = 'Pagination goes here.  On page ' . $this->getCurrentPage() . ' of ' . $this->getTotalPages();
             $linksText = '<nav aria-label="Page navigation">';
-            $linksText .= '<ul class="pagination justify-content-end">';
+            $linksText .= '<div class="pagination btn-group btn-group-sm justify-content-end">';
             if ($this->getCurrentPage() != 1) {
-                $linksText .=  '<li class="page-item">' . $this->renderLink(1) . '[1]</a></li>';
-                $linksText .=  '<li class="page-item">' . $this->renderLink(1) . '&laquo; ' . translate('Prev') . '</a></li>';
+                $linksText .=  $this->renderLink(1) . '[1]</a>';
+                $linksText .=  $this->renderLink(1) . '&laquo; ' . translate('Prev') . '</a>';
             }
 
             //Print links to pages before and after the current
@@ -95,13 +95,13 @@ class Pager {
             }
             for ($i = $firstPageToPrint; $i <= $lastPageToPrint; $i++) {
                 $active = ($this->_currentPage == $i) ? ' active' : '';
-                $linksText .=  '<li class="page-item' . $active . '">' . $this->renderLink($i) . "$i</a></li>";
+                $linksText .=  $this->renderLink($i, $active) . "$i</a>";
             }
             if ($this->_currentPage != $this->_totalPages) {
-                $linksText .=  '<li class="page-item">' .  $this->renderLink($this->_currentPage + 1) . translate('Next') . ' &raquo;</a></li>';
-                $linksText .=  '<li class="page-item">' . $this->renderLink($this->getTotalPages()) . '['.$this->getTotalPages().']</a></li>';
+                $linksText .=  $this->renderLink($this->_currentPage + 1) . translate('Next') . ' &raquo;</a>';
+                $linksText .=  $this->renderLink($this->getTotalPages()) . '['.$this->getTotalPages().']</a>';
             }
-            $linksText .= '</ul>';
+            $linksText .= '</div>';
             $linksText .= '</nav>';
             $links['all'] = $linksText;  
         } else {
@@ -110,9 +110,9 @@ class Pager {
         return $links;
 	}
 
-	public function renderLink($pageNumber){
+	public function renderLink($pageNumber, $active = false){
 		if (empty($this->options['linkRenderingFunction'])){
-			return '<a class="page-link" href="' .  $this->getPageUrl($pageNumber) . '">';
+			return '<a class="page-link btn btn-default btn-sm' . ($active ? ' active' : '') . '" href="' .  $this->getPageUrl($pageNumber) . '" alt="Page ' . $pageNumber . '">';
 		}else{
 			$object = $this->options['linkRenderingObject'];
 			$function = $this->options['linkRenderingFunction'];

@@ -16,43 +16,32 @@ class MyAccount_ContactInformation extends MyAccount
 		$interface->assign('showSMSNoticesInProfile', $ils == 'Sierra' && $smsEnabled == true);
 
 		if ($user) {
-			// Determine which user we are showing/updating settings for
-			$linkedUsers = $user->getLinkedUsers();
-
-			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
-			/** @var User $patron */
-			$patron      = $user->getUserReferredTo($patronId);
-
-			// Linked Accounts Selection Form set-up
-			if (count($linkedUsers) > 0) {
-				array_unshift($linkedUsers, $user); // Adds primary account to list for display in account selector
-				$interface->assign('linkedUsers', $linkedUsers);
-				$interface->assign('selectedUser', $patronId);
-			}
-
-			$patronUpdateForm = $patron->getPatronUpdateForm();
+			$patronUpdateForm = $user->getPatronUpdateForm();
 			if ($patronUpdateForm != null){
 				$interface->assign('patronUpdateForm', $patronUpdateForm);
+			}else{
+				$user->loadContactInformation();
 			}
 
-			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
-			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
+			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);
 			if ($patronHomeLibrary == null){
-				$canUpdateContactInfo = true;
-				$canUpdateAddress = true;
+				$canUpdateContactInfo = false;
+				$canUpdateAddress = false;
+				$canUpdatePhoneNumber = false;
 				$showWorkPhoneInProfile = false;
-				$showNoticeTypeInProfile = true;
+				$showNoticeTypeInProfile = false;
 				$showPickupLocationInProfile = false;
 				$treatPrintNoticesAsPhoneNotices = false;
 				$allowPinReset = false;
-				$showAlternateLibraryOptionsInProfile = true;
+				$showAlternateLibraryOptionsInProfile = false;
 				$allowAccountLinking = true;
 				$passwordLabel = 'Library Card Number';
 			}else{
 				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$canUpdateAddress = ($patronHomeLibrary->allowPatronAddressUpdates == 1);
+				$canUpdatePhoneNumber = ($patronHomeLibrary->allowPatronPhoneNumberUpdates == 1);
 				$showWorkPhoneInProfile = ($patronHomeLibrary->showWorkPhoneInProfile == 1);
 				$showNoticeTypeInProfile = ($patronHomeLibrary->showNoticeTypeInProfile == 1);
 				$treatPrintNoticesAsPhoneNotices = ($patronHomeLibrary->treatPrintNoticesAsPhoneNotices == 1);
@@ -67,10 +56,9 @@ class MyAccount_ContactInformation extends MyAccount
 				$passwordLabel = str_replace('Your', '', $patronHomeLibrary->loginFormPasswordLabel ? $patronHomeLibrary->loginFormPasswordLabel : 'Library Card Number');
 			}
 
-			$interface->assign('showUsernameField', $patron->getShowUsernameField());
-			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('canUpdateAddress', $canUpdateAddress);
+			$interface->assign('canUpdatePhoneNumber', $canUpdatePhoneNumber);
 			$interface->assign('showWorkPhoneInProfile', $showWorkPhoneInProfile);
 			$interface->assign('showPickupLocationInProfile', $showPickupLocationInProfile);
 			$interface->assign('showNoticeTypeInProfile', $showNoticeTypeInProfile);
@@ -81,20 +69,21 @@ class MyAccount_ContactInformation extends MyAccount
 			$interface->assign('passwordLabel', $passwordLabel);
 
 			// Determine Pickup Locations
-			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+			$pickupLocations = $user->getValidPickupBranches($user->getAccountProfile()->recordSource);
 			$interface->assign('pickupLocations', $pickupLocations);
 
 			// Save/Update Actions
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$updateScope = $_REQUEST['updateScope'];
 				if ($updateScope == 'contact') {
-					$errors = $patron->updatePatronInfo($canUpdateContactInfo);
-					session_start(); // any writes to the session storage also closes session. Happens in updatePatronInfo (for Horizon). plb 4-21-2015
-					$_SESSION['profileUpdateErrors'] = $errors;
+					$result = $user->updatePatronInfo($canUpdateContactInfo);
+					$user->updateMessage = implode('<br/>', $result['messages']);
+					$user->updateMessageIsError = !$result['success'];
+					$user->update();
 				}
 
 				session_write_close();
-				$actionUrl = '/MyAccount/ContactInformation' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
+				$actionUrl = '/MyAccount/ContactInformation'; // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {
@@ -103,18 +92,17 @@ class MyAccount_ContactInformation extends MyAccount
 				$interface->assign('edit', false);
 			}
 
-			if (!empty($_SESSION['profileUpdateErrors'])) {
-				$interface->assign('profileUpdateErrors', $_SESSION['profileUpdateErrors']);
-				@session_start();
-				unset($_SESSION['profileUpdateErrors']);
-			}
-			if (!empty($_SESSION['profileUpdateMessage'])) {
-				$interface->assign('profileUpdateMessage', $_SESSION['profileUpdateMessage']);
-				@session_start();
-				unset($_SESSION['profileUpdateMessage']);
+			if (!empty($user->updateMessage)) {
+				if ($user->updateMessageIsError){
+					$interface->assign('profileUpdateErrors', $user->updateMessage);
+				}else{
+					$interface->assign('profileUpdateMessage', $user->updateMessage);
+				}
+				$user->updateMessage = '';
+				$user->update();
 			}
 
-			$interface->assign('profile', $patron);
+			$interface->assign('profile', $user);
 		}else{
 			$canUpdateContactInfo = false;
 			$canUpdateAddress = false;
@@ -130,7 +118,7 @@ class MyAccount_ContactInformation extends MyAccount
 			// Get Phone Types
 			$phoneTypes = array();
 			/** @var CarlX $driver */
-			$driver        = CatalogFactory::getCatalogConnectionInstance();
+			$driver = CatalogFactory::getCatalogConnectionInstance();
 			$rawPhoneTypes = $driver->getPhoneTypeList();
 			foreach ($rawPhoneTypes as $rawPhoneTypeSubArray){
 				foreach ($rawPhoneTypeSubArray as $phoneType => $phoneTypeLabel) {
@@ -143,4 +131,11 @@ class MyAccount_ContactInformation extends MyAccount
 		$this->display('contactInformation.tpl', 'Contact Information');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Contact Information');
+		return $breadcrumbs;
+	}
 }

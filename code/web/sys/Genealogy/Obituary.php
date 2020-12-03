@@ -15,10 +15,6 @@ class Obituary extends DataObject {
 	public $contents;
 	public $picture;
 
-	function keys() {
-		return array('obituaryId');
-	}
-
 	function id() {
 		return $this->obituaryId;
 	}
@@ -27,8 +23,17 @@ class Obituary extends DataObject {
 		return $this->source . ' ' . $this->sourcePage . ' ' . $this->date;
 	}
 
-    static function getObjectStructure() {
-		$structure = array(
+	function getNumericColumnNames()
+	{
+		return [
+			'dateDay',
+			'dateMonth',
+			'dateYear',
+		];
+	}
+
+	static function getObjectStructure() {
+		return array(
 			array('property' => 'obituaryId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the obituary in the database', 'storeDb' => true),
 			array('property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this obituary is for', 'storeDb' => true),
 			//array('property'=>'person', 'type'=>'method', 'label'=>'Person', 'description'=>'The person this obituary is for', 'storeDb' => false),
@@ -38,7 +43,6 @@ class Obituary extends DataObject {
 			array('property' => 'contents', 'type' => 'textarea', 'rows' => 10, 'cols' => 80, 'label' => 'Full Text of the Obituary', 'description' => 'The full text of the obituary.', 'storeDb' => true, 'hideInLists' => true),
 			array('property' => 'picture', 'type' => 'image', 'thumbWidth' => 65, 'mediumWidth' => 250, 'label' => 'Picture', 'description' => 'A scanned image of the obituary.', 'storeDb' => true, 'storeSolr' => false, 'hideInLists' => true),
 		);
-		return $structure;
 	}
 
 	function insert() {

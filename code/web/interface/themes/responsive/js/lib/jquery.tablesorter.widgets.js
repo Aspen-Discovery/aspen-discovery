@@ -790,7 +790,7 @@
 			var col, column, $header, buildSelect, disabled, name, ffxn,
 			// c.columns defined in computeThIndexes()
 					columns = c.columns,
-					buildFilter = '<tr role="row" class="' + ts.css.filterRow + '">';
+					buildFilter = '<tr class="' + ts.css.filterRow + '">';
 			for (column = 0; column < columns; column++) {
 				buildFilter += '<td></td>';
 			}
@@ -824,7 +824,7 @@
 							c.$filters.eq(column).append(buildFilter);
 						}
 					} else {
-						buildFilter = $('<input type="search">').appendTo( c.$filters.eq(column) );
+						buildFilter = $('<input type="search" aria-label="Filter column ' + column + '">').appendTo( c.$filters.eq(column) );
 					}
 					if (buildFilter) {
 						buildFilter.attr('placeholder', $header.data('placeholder') || $header.attr('data-placeholder') || wo.filter_placeholder.search || '');

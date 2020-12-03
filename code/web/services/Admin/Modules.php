@@ -29,14 +29,14 @@ class Admin_Modules extends ObjectEditor {
 	function getObjectStructure(){
 		return Module::getObjectStructure();
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
 	function getIdKeyColumn(){
 		return 'id';
+	}
+	function canView(){
+		return UserAccount::userHasPermission('Administer Modules');
 	}
 	function canAddNew(){
 		return false;
@@ -47,5 +47,19 @@ class Admin_Modules extends ObjectEditor {
 	function canCompare()
 	{
 		return false;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
+		$breadcrumbs[] = new Breadcrumb('', 'Modules');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
 	}
 }

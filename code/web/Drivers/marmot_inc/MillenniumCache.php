@@ -10,8 +10,4 @@ class MillenniumCache extends DataObject
     public $framesetInfo;             //mediumText
     public $cacheDate;         //timestamp
 
-    function keys() {
-        return array('recordId');
-    }
-
 }

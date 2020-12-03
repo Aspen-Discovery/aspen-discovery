@@ -8,29 +8,39 @@
 
 	<div class="row">
 		<div class="col-xs-12">
-			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped Work</a>
-			<button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Cover</button>
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('contentEditor', $userRoles))}
-				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Upload Cover</button>
+			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">{translate text="Go To Grouped Work"}</a>
+			<button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Reload Cover"}</button>
+			{if $loggedIn && in_array('Upload Covers', $userPermissions)}
+				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover"}</button>
 			{/if}
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-				<button onclick="return AspenDiscovery.Record.getUploadPDFForm('{$recordDriver->getId()}')" class="btn btn-sm btn-default">Upload PDF Version</button>
+			{if $loggedIn && in_array('Upload PDFs', $userPermissions)}
+				<button onclick="return AspenDiscovery.Record.getUploadPDFForm('{$recordDriver->getId()}')" class="btn btn-sm btn-default">{translate text="Upload PDF Version"}</button>
 			{/if}
-			<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >Reload Enrichment</button>
+			{if $loggedIn && in_array('Upload Supplemental Files', $userPermissions)}
+				<button onclick="return AspenDiscovery.Record.getUploadSupplementalFileForm('{$recordDriver->getId()}')" class="btn btn-sm btn-default">{translate text="Upload Supplemental File"}</button>
+			{/if}
+			<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >{translate text="Reload Enrichment"}</button>
 			{if $staffClientUrl}
-				<a href="{$staffClientUrl}" class="btn btn-sm btn-info">View in Staff Client</a>
+				<a href="{$staffClientUrl}" class="btn btn-sm btn-info">{translate text="View in Staff Client"}</a>
 			{/if}
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-				{if $classicUrl}
-					<a href="{$classicUrl}" class="btn btn-sm btn-info">View in Native OPAC</a>
-				{/if}
-				<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
-				<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Group With Work</button>
-				<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">Ungroup</button>
-				<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
+			{if $classicUrl && $loggedIn && in_array('View ILS records in native OPAC', $userPermissions)}
+				<a href="{$classicUrl}" class="btn btn-sm btn-info">{translate text="View in Native OPAC"}</a>
 			{/if}
-			{if $loggedIn && $enableArchive && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
-				<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
+			{if $loggedIn && in_array('Force Reindexing of Records', $userPermissions)}
+				<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex"}</button>
+			{/if}
+			{if $loggedIn && in_array('Set Grouped Work Display Information', $userPermissions)}
+				<button onclick="return AspenDiscovery.GroupedWork.getDisplayInfoForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Set Display Info"}</button>
+			{/if}
+			{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}
+				<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Group With Work"}</button>
+				<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">{translate text="Ungroup"}</button>
+			{/if}
+			{if $loggedIn && in_array('Download MARC Records', $userPermissions)}
+				<a href="/{$recordDriver->getModule()}/{$recordDriver->getId()|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
+			{/if}
+			{if $loggedIn && $enableArchive && in_array('Administer Islandora Archive', $userPermissions)}
+				<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Clear Islandora Cache"}</button>
 			{/if}
 		</div>
 	</div>
@@ -45,7 +55,7 @@
 			<tr>
 				<th>{translate text='Title'}</th>
 				<th>{translate text='Path'}</th>
-				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if $loggedIn && in_array('Upload PDFs', $userPermissions)}
 					<th>{translate text='Actions'}</th>
 				{/if}
 			</tr>
@@ -55,8 +65,34 @@
 			<tr>
 				<td>{$uploadedPDF->title}</td>
 				<td>{$uploadedPDF->getFileName()}</td>
-				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-					<td><button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Record.deletePDF('{$recordDriver->getId()}', '{$uploadedPDF->id}')">{translate text="Delete"}</button></td>
+				{if $loggedIn && in_array('Upload PDFs', $userPermissions)}
+					<td><button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Record.deleteUploadedFile('{$recordDriver->getId()}', '{$uploadedPDF->id}')">{translate text="Delete"}</button></td>
+				{/if}
+			</tr>
+		{/foreach}
+		</tbody>
+	</table>
+{/if}
+
+{if !empty($uploadedSupplementalFiles)}
+	<h4>{translate text="Uploaded Supplemental Files"}</h4>
+	<table class="table-striped table table-condensed notranslate">
+		<thead>
+		<tr>
+			<th>{translate text='Title'}</th>
+			<th>{translate text='Path'}</th>
+			{if $loggedIn && in_array('Upload Supplemental Files', $userPermissions)}
+				<th>{translate text='Actions'}</th>
+			{/if}
+		</tr>
+		</thead>
+		<tbody>
+		{foreach from=$uploadedSupplementalFiles item=uploadedFile}
+			<tr>
+				<td>{$uploadedFile->title}</td>
+				<td>{$uploadedFile->getFileName()}</td>
+				{if $loggedIn && in_array('Upload Supplemental Files', $userPermissions)}
+					<td><button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Record.deleteUploadedFile('{$recordDriver->getId()}', '{$uploadedFile->id}')">{translate text="Delete"}</button></td>
 				{/if}
 			</tr>
 		{/foreach}
@@ -69,18 +105,14 @@
 	<table class="table-striped table table-condensed notranslate">
 		{if !empty($lastMarcModificationTime)}
 			<tr>
-				<th>Last File Modification Time</th>
+				<th>{translate text="Last File Modification Time"}</th>
 				<td>{$lastMarcModificationTime|date_format:"%b %d, %Y %r"}</td>
 			</tr>
 		{/if}
-		<tr>
-			<th>Last Grouped Work Modification Time</th>
-			<td>{$lastGroupedWorkModificationTime|date_format:"%b %d, %Y %r"}</td>
-		</tr>
 	</table>
 
 	<div id="formattedMarcRecord">
-		<h3>MARC Record</h3>
+		<h3>{translate text="MARC Record"}</h3>
 		<table class="citation" border="0">
 			<tbody>
 				{*Output leader*}

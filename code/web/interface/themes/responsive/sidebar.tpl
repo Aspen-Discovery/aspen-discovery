@@ -1,8 +1,9 @@
 {strip}
 	<div class="row" id="vertical-menu-bar-container">
-		{include file="vertical-sidebar-menu.tpl"}
+		<h2 class="hiddenTitle" id="sidebarNav">{translate text="Main Navigation"}</h2>
+{*		{include file="vertical-sidebar-menu.tpl"}*}
 
-		<div class="col-xs-12{if $displaySidebarMenu} col-sm-10 col-md-10 col-lg-10{/if}" id="sidebar-content">
+		<div class="col-xs-12" id="sidebar-content">
 			{* Full Column width *}
 			{include file="$sidebar"}
 		</div>

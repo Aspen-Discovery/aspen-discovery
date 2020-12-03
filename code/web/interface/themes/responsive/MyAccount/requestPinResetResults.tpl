@@ -1,16 +1,16 @@
 <div id="page-content" class="content">
 	<div id="main-content">
-		<div class="resulthead"><h3>{translate text='Forgot Your PIN?'}</h3></div>
+		<div class="resultHead"><h1>{translate text='Forgot Your PIN?'}</h1></div>
 		<div class="page">
-			<p>{$requestPinResetResult.message}</p>
+			<p>{$result.message}</p>
 
-			{if $requestPinResetResult.error}
+			{if $result.error}
 				<div>
 					<a href="/MyAccount/RequestPinReset">Try Again</a>
 				</div>
 			{else}
 				<div>
-					<a href="/MyAccount/Login">Login here</a>
+					<a href="/MyAccount/Login">Sign in here</a>
 				</div>
 			{/if}
 		</div>

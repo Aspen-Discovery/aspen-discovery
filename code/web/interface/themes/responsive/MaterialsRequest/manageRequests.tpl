@@ -215,7 +215,7 @@
 						{/foreach}
 					</tbody>
 				</table>
-				{if array_key_exists('library_material_requests', $userRoles)}
+				{if in_array('Manage Library Materials Requests', $userPermissions)}
 					<div id="materialsRequestActions">
 						<div class="row form-group">
 							<div class="col-sm-4">
@@ -259,8 +259,8 @@
 						<div class="row">
 							<div class="col-xs-12">
 								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="Export Selected To Excel" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
-								{if array_key_exists('opacAdmin', $userRoles)}
-									{* We don't really want to do this much / ever so make sure that someone needs both opac admin and materials request to do it*}
+								{if in_array('Import Materials Requests', $userPermissions)}
+									{* We don't really want to do this much / ever so it gets a special permission *}
 									<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="Import Requests" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
 								{/if}
 							</div>
@@ -270,8 +270,8 @@
 			</form>
 		{else}
 			<div class="alert alert-info">There are no materials requests that meet your criteria.</div>
-			{if array_key_exists('opacAdmin', $userRoles)}
-				{* We don't really want to do this much / ever so make sure that someone needs both opac admin and materials request to do it*}
+			{if in_array('Import Materials Requests', $userPermissions)}
+				{* We don't really want to do this much / ever so it gets a special permission *}
 				<div class="row">
 					<div class="col-xs-12">
 						<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="Import Requests" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">

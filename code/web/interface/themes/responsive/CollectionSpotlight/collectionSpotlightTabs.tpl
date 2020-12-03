@@ -1,5 +1,5 @@
 {strip}
-<div id="collectionSpotlight{$collectionSpotlight->id}" class="ui-tabs collectionSpotlight {$collectionSpotlight->style}">
+<div id="collectionSpotlight{$collectionSpotlight->id}" class="{if count($collectionSpotlight->lists) > 1}ui-tabs {/if}collectionSpotlight {$collectionSpotlight->style}">
 	{if count($collectionSpotlight->lists) > 1}
 		{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
 			{* Display Tabs *}
@@ -15,7 +15,7 @@
 			</ul>
 		{else}
 			<div class="collectionSpotlightSelector">
-				<select class="availableLists" id="availableLists{$collectionSpotlight->id}" onchange="changeSelectedList();return false;">
+				<select class="availableLists" id="availableLists{$collectionSpotlight->id}" onchange="changeSelectedList();return false;" aria-label="Select a list to display">
 					{foreach from=$collectionSpotlight->lists item=list}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 					<option value="list-{$list->name|regex_replace:'/\W/':''|escape:url}">{$list->name}</option>
@@ -25,50 +25,57 @@
 			</div>
 		{/if}
 	{/if}
-	<div class="tab-content">
-	{assign var="listIndex" value="0"}
-	{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
-		{assign var="active" value=$smarty.foreach.spotlightList.first}
-		{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn && $user->disableRecommendations == 0) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-			{assign var="showViewMoreLink" value=$collectionSpotlight->showViewMoreLink}
-			{assign var="showCollectionSpotlightTitle" value=$collectionSpotlight->showSpotlightTitle}
-			{assign var="listIndex" value=$listIndex+1}
-			{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
-			{assign var="scrollerName" value="$listName"}
-			{assign var="wrapperId" value="$listName"}
-			{assign var="scrollerVariable" value="listScroller$listName"}
-			{if $list->links}
-				{assign var="Links" value=$list->links}
-			{else}
-				{assign var="fullListLink" value=$list->fullListLink()}
-			{/if}
+	{if count($collectionSpotlight->lists) > 1}
+		<div class="tab-content">
+	{/if}
+		{assign var="listIndex" value="0"}
+		{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
+			{assign var="active" value=$smarty.foreach.spotlightList.first}
+			{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn && $user->disableRecommendations == 0) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
+				{assign var="showViewMoreLink" value=$collectionSpotlight->showViewMoreLink}
+				{assign var="showCollectionSpotlightTitle" value=$collectionSpotlight->showSpotlightTitle}
+				{assign var="listIndex" value=$listIndex+1}
+				{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
+				{assign var="scrollerName" value="$listName"}
+				{assign var="wrapperId" value="$listName"}
+				{assign var="scrollerVariable" value="listScroller$listName"}
+				{if $list->links}
+					{assign var="Links" value=$list->links}
+				{else}
+					{assign var="fullListLink" value=$list->fullListLink()}
+				{/if}
 
-			{if count($collectionSpotlight->lists) == 1}
-				{assign var="scrollerTitle" value=$list->name}
-			{/if}
-			{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
-				{assign var="display" value="true"}
-			{else}
-				{if $listIndex == 1}
+				{if count($collectionSpotlight->lists) == 1}
+					{assign var="scrollerTitle" value=$list->name}
+				{/if}
+				{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
 					{assign var="display" value="true"}
 				{else}
-					{assign var="display" value="false"}
+					{if $listIndex == 1}
+						{assign var="display" value="true"}
+					{else}
+						{assign var="display" value="false"}
+					{/if}
+				{/if}
+				{if $collectionSpotlight->style == 'horizontal'}
+					{include file='CollectionSpotlight/titleScroller.tpl'}
+				{elseif $collectionSpotlight->style == 'horizontal-carousel'}
+					{include file='CollectionSpotlight/horizontalCarousel.tpl'}
+				{elseif $collectionSpotlight->style == 'vertical'}
+					{include file='CollectionSpotlight/verticalTitleScroller.tpl'}
+				{elseif $collectionSpotlight->style == 'single-with-next'}
+					{include file='CollectionSpotlight/singleWithNextTitleSpotlight.tpl'}
+				{elseif $collectionSpotlight->style == 'text-list'}
+					{include file='CollectionSpotlight/textCollectionSpotlight.tpl'}
+				{else}
+					{include file='CollectionSpotlight/singleTitleSpotlight.tpl'}
 				{/if}
 			{/if}
-			{if $collectionSpotlight->style == 'horizontal'}
-				{include file='CollectionSpotlight/titleScroller.tpl'}
-			{elseif $collectionSpotlight->style == 'vertical'}
-				{include file='CollectionSpotlight/verticalTitleScroller.tpl'}
-			{elseif $collectionSpotlight->style == 'single-with-next'}
-				{include file='CollectionSpotlight/singleWithNextTitleSpotlight.tpl'}
-			{elseif $collectionSpotlight->style == 'text-list'}
-				{include file='CollectionSpotlight/textCollectionSpotlight.tpl'}
-			{else}
-				{include file='CollectionSpotlight/singleTitleSpotlight.tpl'}
-			{/if}
-		{/if}
-	{/foreach}
-	</div>
+		{/foreach}
+	{if count($collectionSpotlight->lists) > 1}
+		</div>
+	{/if}
+	{if $collectionSpotlight->style != 'horizontal-carousel'}
 	<script type="text/javascript">
 		{* Load title scrollers *}
 
@@ -82,12 +89,10 @@
 		$(document).ready(function(){ldelim}
 			{if count($collectionSpotlight->lists) > 1 && (!isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs')}
 			$('#collectionSpotlight{$collectionSpotlight->id} a[data-toggle="tab"]').on('shown.bs.tab', function (e) {ldelim}
-{*				alert(e.target); // activated tab
-				//alert(e.relatedTarget); // previous tab *}
 				showList($(e.target).data('index'));
 			{rdelim});
-
 			{/if}
+
 			{assign var=index value=0}
 			{foreach from=$collectionSpotlight->lists item=list name=listLoop}
 		 		{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
@@ -99,8 +104,7 @@
 					{assign var=index value=$index+1}
 				{/if}
 			{/foreach}
-
-			{rdelim});
+		{rdelim});
 
 		$(window).bind('beforeunload', function(e) {ldelim}
 			{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
@@ -132,11 +136,11 @@
 				{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
 				{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 					{if $index == 0}
-						if (listIndex == {$index}){ldelim}
+						if (listIndex === {$index}){ldelim}
 							listScroller{$listName}.activateCurrentTitle();
 						{rdelim}
 					{else}
-						else if (listIndex == {$index}){ldelim}
+						else if (listIndex === {$index}){ldelim}
 							if (listScroller{$listName} == null){ldelim}
 								listScroller{$listName} = new TitleScroller('titleScroller{$listName}', '{$listName}', 'list{$listName}', {if $collectionSpotlight->autoRotate==1}true{else}false{/if}, '{$collectionSpotlight->style}');
 								listScroller{$listName}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listName}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if $reload}%26reload=true{/if}', false);
@@ -150,5 +154,6 @@
 			{/foreach}
 		{rdelim}
 	</script>
+	{/if}
 </div>
 {/strip}

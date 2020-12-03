@@ -5,6 +5,7 @@ require_once 'IndexRecordDriver.php';
 class WebsitePageRecordDriver extends IndexRecordDriver
 {
 	private $valid;
+	private $recordtype;
 
 	public function __construct($recordData)
 	{
@@ -18,6 +19,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 			parent::__construct($recordData);
 			$this->valid = true;
 		}
+		$this->recordtype = $this->fields['recordtype'];
 	}
 
 	public function isValid()
@@ -25,7 +27,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 		return $this->valid;
 	}
 
-	public function getListEntry($user, $listId = null, $allowEdit = true)
+	public function getListEntry($listId = null, $allowEdit = true)
 	{
 		return $this->getSearchResult('list');
 	}
@@ -40,11 +42,14 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 		$interface->assign('website_name', $this->fields['website_name']);
 		$interface->assign('title', $this->getTitle());
 		if (isset($this->fields['description'])) {
-			$interface->assign('description', $this->getDescription());
+			$interface->assign('description', strip_tags($this->getDescription()));
 		} else {
 			$interface->assign('description', '');
 		}
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
+		// Obtain and assign snippet (highlighting) information:
+		$snippets = $this->getHighlightedSnippets();
+		$interface->assign('summSnippets', $snippets);
 
 		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 		$webPageUsage = new WebPageUsage();
@@ -72,6 +77,14 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 		} else {
 			$bookCoverUrl = '';
 		}
+		if ($this->recordtype == 'WebResource') {
+			require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+			$webResource = new WebResource();
+			$webResource->id = $this->getUniqueID();
+			if ($webResource->find(true)) {
+				return '/files/thumbnail/' . $webResource->logo;
+			}
+		}
 		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=webpage";
 
 		return $bookCoverUrl;
@@ -89,17 +102,11 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 
 	public function getDescription()
 	{
-		return $this->fields['description'];
-	}
-
-	public function getItemActions($itemInfo)
-	{
-		return array();
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-	{
-		return array();
+		if (isset($this->fields['description'])) {
+			return $this->fields['description'];
+		}else{
+			return '';
+		}
 	}
 
 	/**

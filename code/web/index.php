@@ -5,6 +5,7 @@ if (file_exists('bootstrap_aspen.php')) {
 }
 
 global $aspenUsage;
+global $usageByIPAddress;
 
 global $timer;
 global $memoryWatcher;
@@ -30,7 +31,6 @@ $interface = new UInterface();
 $timer->logTime('Create interface');
 
 //Set footer information
-/** @var Location $locationSingleton */
 global $locationSingleton;
 getGitBranch();
 
@@ -47,6 +47,7 @@ try {
 		$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
 		$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
 		$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
+		$interface->assign('googleAnalyticsVersion', empty($googleSettings->googleAnalyticsVersion) ? 'v3' : $googleSettings->googleAnalyticsVersion);
 		$linkedProperties = '';
 		if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
 			$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
@@ -65,10 +66,9 @@ try {
 		}
 	}
 }catch (Exception $e){
-	//Google Analytics not installed yet
+	//This happens when Google analytics settings aren't setup yet
 }
 
-/** @var Library $library */
 global $library;
 global $offlineMode;
 
@@ -116,29 +116,14 @@ $interface->assign('scopeType', $scopeType);
 $interface->assign('solrScope', "$solrScope - $scopeType");
 $interface->assign('isGlobalScope', $isGlobalScope);
 
-//Set that the interface is a single column by default
-$interface->assign('page_body_style', 'one_column');
-
 $interface->assign('showFines', $configArray['Catalog']['showFines']);
 
-$interface->assign('activeIp', Location::getActiveIp());
+$interface->assign('activeIp', IPAddress::getActiveIp());
 
 // Check system availability
 $mode = checkAvailabilityMode();
 if ($mode['online'] === false) {
-	// Why are we offline?
-	switch ($mode['level']) {
-		// Forced Downtime
-		case "unavailable":
-			$interface->display($mode['template']);
-			break;
-
-			// Should never execute. checkAvailabilityMode() would
-			//    need to know we are offline, but not why.
-		default:
-			$interface->display($mode['template']);
-			break;
-	}
+	$interface->display($mode['template']);
 	exit();
 }
 $timer->logTime('Checked availability mode');
@@ -191,7 +176,7 @@ try{
 	$validLanguage = new Language();
 	$validLanguage->orderBy("weight");
 	$validLanguage->find();
-	$userIsTranslator = UserAccount::userHasRole('translator') || UserAccount::userHasRole('opacAdmin');
+	$userIsTranslator = UserAccount::userHasPermission('Translate Aspen');
 	while ($validLanguage->fetch()){
 		if (!$validLanguage->displayToTranslatorsOnly || $userIsTranslator){
 			$validLanguages[$validLanguage->code] = clone $validLanguage;
@@ -210,7 +195,6 @@ try{
 if (!array_key_exists($language, $validLanguages)) {
 	$language = 'en';
 }
-/** @var Language $activeLanguage */
 global $activeLanguage;
 global $translator;
 $activeLanguage = $validLanguages[$language];
@@ -219,12 +203,13 @@ if ($translator == null){
 	$translator = new Translator('lang', $language);
 }
 $timer->logTime('Translator setup');
+$interface->assign('translationModeActive', $translator->translationModeActive());
 
 $interface->setLanguage($activeLanguage);
 
 //Check to see if we should show the submit ticket option
 $interface->assign('showSubmitTicket', false);
-if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin'))) {
+if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')) {
 	try {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = new SystemVariables();
@@ -233,17 +218,6 @@ if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserA
 		}
 	}catch (Exception $e) {
 		//This happens before the table is setup
-	}
-}
-
-//Set System Message after translator has been setup
-if ($configArray['System']['systemMessage']){
-	$interface->assign('systemMessage', translate($configArray['System']['systemMessage']));
-}else if ($offlineMode){
-	$interface->assign('systemMessage', "<p class='alert alert-warning'>" . translate(['text'=>'offline_notice', 'defaultText'=>"<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."]) . "</p>");
-}else{
-	if ($library && strlen($library->systemMessage) > 0){
-		$interface->assign('systemMessage', translate($library->systemMessage));
 	}
 }
 
@@ -327,11 +301,6 @@ if ($isLoggedIn) {
 	}
 
 	//Check to see if there is a followup module and if so, use that module and action for the next page load
-	if (isset($_REQUEST['returnUrl'])) {
-		$followupUrl = $_REQUEST['returnUrl'];
-		header("Location: " . $followupUrl);
-		exit();
-	}
 	if ($user){
 		if (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction'])) {
 
@@ -343,22 +312,31 @@ if ($isLoggedIn) {
 				$masquerade = new MyAccount_Masquerade();
 				$masquerade->launch();
 				die;
+			}elseif ($_REQUEST['followupAction'] == 'MyList' && $_REQUEST['followupModule'] == 'MyAccount'){
+				echo("Redirecting to followup location");
+				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
+				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
+				if (!empty($_REQUEST['recordId'])) {
+					$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
+				}
+				header("Location: " . $followupUrl);
+				exit();
+			}else{
+				echo("Redirecting to followup location");
+				$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
+				if (!empty($_REQUEST['recordId'])) {
+					$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
+				}
+				$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
+				if(isset($_REQUEST['comment'])) $followupUrl .= "?comment=" . urlencode($_REQUEST['comment']);
+				header("Location: " . $followupUrl);
+				exit();
 			}
-
-			echo("Redirecting to followup location");
-			$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
-			if (!empty($_REQUEST['recordId'])) {
-				$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
-			}
-			$followupUrl .= "/" .  strip_tags($_REQUEST['followupAction']);
-			if(isset($_REQUEST['comment'])) $followupUrl .= "?comment=" . urlencode($_REQUEST['comment']);
-			header("Location: " . $followupUrl);
-			exit();
 		}
 	}
-	if (isset($_REQUEST['followup']) || isset($_REQUEST['followupModule'])){
+	if (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction'])){
 		$module = isset($_REQUEST['followupModule']) ? $_REQUEST['followupModule'] : $configArray['Site']['defaultModule'];
-		$action = isset($_REQUEST['followup']) ? $_REQUEST['followup'] : (isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : 'Home');
+		$action = isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : 'Home';
 		if (isset($_REQUEST['id'])){
 			$id = $_REQUEST['id'];
 		}elseif (isset($_REQUEST['recordId'])){
@@ -377,8 +355,8 @@ $timer->logTime('User authentication');
 if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logout')){
 	$userDisplayName = UserAccount::getUserDisplayName();
 	$interface->assign('userDisplayName', $userDisplayName);
-	$userRoles = UserAccount::getActiveRoles();
-	$interface->assign('userRoles', $userRoles);
+	$userPermissions = UserAccount::getActivePermissions();
+	$interface->assign('userPermissions', $userPermissions);
 	$disableCoverArt = UserAccount::getDisableCoverArt();
 	$interface->assign('disableCoverArt', $disableCoverArt);
 	$hasLinkedUsers = UserAccount::hasLinkedUsers();
@@ -392,7 +370,6 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 		$interface->assign('guidingUser', $guidingUser);
 	}
 	$interface->assign('userHasCatalogConnection', UserAccount::getUserHasCatalogConnection());
-
 
 	$homeLibrary = Library::getLibraryForLocation(UserAccount::getUserHomeLocationId());
 	if (isset($homeLibrary)){
@@ -412,19 +389,6 @@ if ($module == null && $action == null){
 	$action = 'Home';
 }elseif ($action == null){
 	$action = 'Home';
-}
-//Override MyAccount Home as needed
-if ($module == 'MyAccount' && $action == 'Home' && UserAccount::isLoggedIn()){
-	//TODO: Update the redirect now that we aren't loading checkouts and holds inline
-	$user = UserAccount::getLoggedInUser();
-	if ($user->getNumCheckedOutTotal() > 0){
-		$action ='CheckedOut';
-		header('Location:/MyAccount/CheckedOut');
-		exit();
-	}elseif ($user->getNumHoldsTotal() > 0){
-		header('Location:/MyAccount/Holds');
-		exit();
-	}
 }
 
 $interface->assign('module', $module);
@@ -482,61 +446,42 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	}
 
 	//Load basic search types for use in the interface.
-	/** @var SearchObject_GroupedWorkSearcher $searchObject */
-	$searchObject = SearchObjectFactory::initSearchObject();
-	$timer->logTime('Create Search Object');
-	$searchObject->init();
-	$timer->logTime('Init Search Object');
-	$catalogSearchIndexes = is_object($searchObject) ? $searchObject->getSearchIndexes() : array();
-	$interface->assign('catalogSearchIndexes', $catalogSearchIndexes);
+	$activeSearchSource = 'catalog';
+	if (isset($_REQUEST['searchSource'])) {
+		$activeSearchSource = $_REQUEST['searchSource'];
+	}
+	if (!array_key_exists($activeSearchSource, $validSearchSources)){
+		$activeSearchSource = array_key_first($validSearchSources);
+	}
+	$activeSearchObject = SearchSources::getSearcherForSource($activeSearchSource);
+	$searchIndexes = SearchSources::getSearchIndexesForSource($activeSearchObject, $activeSearchSource);
+	$interface->assign('searchIndexes', $searchIndexes);
+	$interface->assign('defaultSearchIndex', $activeSearchObject->getDefaultIndex());
 
 	// Set search results display mode in search-box //
-	if ($searchObject->getView()) $interface->assign('displayMode', $searchObject->getView());
-
-	/** @var SearchObject_ListsSearcher $listSearchIndexes */
-	$listSearchIndexes = SearchObjectFactory::initSearchObject('Lists');
-	$interface->assign('listSearchIndexes', is_object($listSearchIndexes) ? $listSearchIndexes->getSearchIndexes() : array());
-
-	/** @var SearchObject_EventsSearcher $eventsSearchIndexes */
-	$eventsSearchIndexes = SearchObjectFactory::initSearchObject('Events');
-	$interface->assign('eventsSearchIndexes', is_object($eventsSearchIndexes) ? $eventsSearchIndexes->getSearchIndexes() : array());
-
-	/** @var SearchObject_WebsitesSearcher $websiteSearchIndexes */
-	$websiteSearchIndexes = SearchObjectFactory::initSearchObject('Websites');
-	$interface->assign('websiteSearchIndexes', is_object($websiteSearchIndexes) ? $websiteSearchIndexes->getSearchIndexes() : array());
+	if ($activeSearchObject->getView()) $interface->assign('displayMode', $activeSearchObject->getView());
 
 	if ($library->enableGenealogy){
-		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
-		$interface->assign('genealogySearchIndexes', is_object($genealogySearchObject) ? $genealogySearchObject->getSearchIndexes() : array());
         $interface->assign('enableOpenGenealogy', true);
 	}
 
 	if ($library->enableArchive){
-		$islandoraSearchObject = SearchObjectFactory::initSearchObject('Islandora');
-		$interface->assign('islandoraSearchIndexes', is_object($islandoraSearchObject) ? $islandoraSearchObject->getSearchIndexes() : array());
 		$interface->assign('enableArchive', true);
 	}
 
 	if ($library->enableOpenArchives) {
-		$openArchivesSearchObject = SearchObjectFactory::initSearchObject('OpenArchives');
-		$interface->assign('openArchivesSearchIndexes', is_object($openArchivesSearchObject) ? $openArchivesSearchObject->getSearchIndexes() : array());
 		$interface->assign('enableOpenArchives', true);
 	}
 
-	//TODO: Re-enable once we do full EDS integration
-	/*if ($library->edsApiProfile){
-		require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
-		$ebscoSearchObject = new EDS_API();
-		$interface->assign('ebscoSearchTypes', $ebscoSearchObject->getSearchTypes());
-	}*/
-
 	if (!($module == 'Search' && $action == 'Home')){
 		/** @var SearchObject_BaseSearcher $activeSearch */
-		$activeSearch = $searchObject->loadLastSearch();
+		$activeSearch = $activeSearchObject->loadLastSearch();
 		//Load information about the search so we can display it in the search box
 		if (!is_null($activeSearch)){
 			$interface->assign('lookfor', $activeSearch->displayQuery());
 			$interface->assign('searchType', $activeSearch->getSearchType());
+			$interface->assign('searchIndexes', $activeSearch->getSearchIndexes());
+			$interface->assign('defaultSearchIndex', $activeSearch->getDefaultIndex());
 			$interface->assign('searchIndex', $activeSearch->getSearchIndex());
 			$interface->assign('filterList', $activeSearch->getFilterList());
 			$interface->assign('savedSearch', $activeSearch->isSavedSearch());
@@ -553,14 +498,50 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	}else{
 		$interface->assign('showTopSearchBox', 1);
 		$interface->assign('showBreadcrumbs', 1);
-		if ($library->getLayoutSettings()->useHomeLinkInBreadcrumbs){
+		if ($library->getLayoutSettings()->useHomeLinkInBreadcrumbs && !empty($library->homeLink)){
 			$interface->assign('homeBreadcrumbLink', $library->homeLink);
 		}else{
 			$interface->assign('homeBreadcrumbLink', '/');
 		}
 		$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
 	}
+}
 
+//Load page level system messages
+if (!$isAJAX){
+	try {
+		require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
+		$systemMessages = [];
+		if ($offlineMode) {
+			$systemMessage = new SystemMessage();
+			$systemMessage->id = -1;
+			$systemMessage->dismissable = 0;
+			$systemMessage->setPreFormattedMessage("<p class='alert alert-warning'><strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time.</p>");
+			$interface->assign('systemMessage', $systemMessage);
+		}
+		//Set System Message after translator has been setup
+		if (strlen($library->systemMessage) > 0) {
+			$librarySystemMessage = new SystemMessage();
+			$librarySystemMessage->id = -2;
+			$librarySystemMessage->dismissable = 0;
+			$librarySystemMessage->setPreFormattedMessage($library->systemMessage);
+			$systemMessages[] = $librarySystemMessage;
+		}
+		$customSystemMessage = new SystemMessage();
+		$now = time();
+		$customSystemMessage->showOn = 0;
+		$customSystemMessage->whereAdd("startDate = 0 OR startDate <= $now");
+		$customSystemMessage->whereAdd("endDate = 0 OR endDate > $now");
+		$customSystemMessage->find();
+		while ($customSystemMessage->fetch()) {
+			if ($customSystemMessage->isValidForDisplay()) {
+				$systemMessages[] = clone $customSystemMessage;
+			}
+		}
+		$interface->assign('systemMessages', $systemMessages);
+	}catch (Exception $e){
+		//This happens when system message table hasn't been added. Ignore
+	}
 }
 
 //Determine if we should include autoLogout Code
@@ -578,6 +559,7 @@ $onInternalIP = false;
 $includeAutoLogoutCode = false;
 $automaticTimeoutLength = 0;
 $automaticTimeoutLengthLoggedOut = 0;
+$onInternalIP = false;
 if (($isOpac || $masqueradeMode || (!empty($ipLocation) && $ipLocation->getOpacStatus()) ) && !$offlineMode) {
 	// Make sure we don't have timeouts if we are offline (because it's super annoying when doing offline checkouts and holds)
 
@@ -591,7 +573,7 @@ if (($isOpac || $masqueradeMode || (!empty($ipLocation) && $ipLocation->getOpacS
 
 	if ($masqueradeMode) {
 		// Masquerade Time Out Lengths
-			$automaticTimeoutLength = empty($library->masqueradeAutomaticTimeoutLength) ? 90 : $library->masqueradeAutomaticTimeoutLength;
+		$automaticTimeoutLength = empty($library->masqueradeAutomaticTimeoutLength) ? 90 : $library->masqueradeAutomaticTimeoutLength;
 	} else {
 		// Determine Regular Time Out Lengths
 		if (UserAccount::isLoggedIn()) {
@@ -639,24 +621,15 @@ $interface->assign('includeAutoLogoutCode', $includeAutoLogoutCode);
 
 $timer->logTime('Check whether or not to include auto logout code');
 
-// Process Login Followup
-//TODO:  this code may need to move up with there other followUp processing above
-if (isset($_REQUEST['followup'])) {
-	processFollowup();
-	$timer->logTime('Process followup');
-}
-
-//If there is a hold_message, make sure it gets displayed.
-/* //TODO deprecated, but there are still references in scripts that likely need removed
-if (isset($_SESSION['hold_message'])) {
-	$interface->assign('hold_message', formatHoldMessage($_SESSION['hold_message']));
-	unset($_SESSION['hold_message']);
-}*/
-
 // Call Action
 // Note: ObjectEditor classes typically have the class name of DB_Object with an 's' added to the end.
 //       This distinction prevents the DB_Object from being mistakenly called as the Action class.
-if (!is_dir(ROOT_DIR . "/services/$module")){
+$isInvalidUrl = false;
+$requestUrl = $_SERVER['REQUEST_URI'];
+if (preg_match('/.*(DBMS_PIPE\.RECEIVE_MESSAGE|PG_SLEEP|WAITFOR|UNION%20ALL|SLEEP%28\d+%29|%7CCHR|CONVERT%28INT|SELECT%20COUNT).*/', $requestUrl)){
+	$isInvalidUrl = true;
+}
+if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")){
 	$module = 'Error';
 	$action = 'Handle404';
 	$interface->assign('module','Error');
@@ -666,8 +639,8 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 	$actionClass->launch();
 }else if (is_readable("services/$module/$action.php")) {
 	$actionFile = ROOT_DIR . "/services/$module/$action.php";
-    /** @noinspection PhpIncludeInspection */
-    require_once $actionFile;
+	/** @noinspection PhpIncludeInspection */
+	require_once $actionFile;
 	$moduleActionClass = "{$module}_{$action}";
 	if (class_exists($moduleActionClass, false)) {
 		/** @var Action $service */
@@ -698,15 +671,6 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 	}
 } else {
 	//We have a bad URL, just serve a 404 page
-	/*$interface->assign('showBreadcrumbs', false);
-	$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-	$requestURI = $_SERVER['REQUEST_URI'];
-	$cleanedUrl = strip_tags(urldecode($_SERVER['REQUEST_URI']));
-	if ($cleanedUrl != $requestURI){
-		AspenError::raiseError(new AspenError("Cannot Load Action and Module the URL provided is invalid"));
-	}else{
-		AspenError::raiseError(new AspenError("Cannot Load Action '$action' for Module '$module' request '$requestURI'"));
-	}*/
 	$module = 'Error';
 	$action = 'Handle404';
 	$interface->assign('module','Error');
@@ -762,19 +726,16 @@ try{
 	}else{
 		$aspenUsage->insert();
 	}
+
+	if ($usageByIPAddress->id){
+		$usageByIPAddress->update();
+	}else{
+		$usageByIPAddress->insert();
+	}
 }catch(Exception $e){
 	//Table not created yet, ignore
 	global $logger;
-	$logger->log("Exception updating aspen usage/slow pages: " . $e, Logger::LOG_DEBUG);
-}
-
-function processFollowup(){
-	switch($_REQUEST['followup']) {
-		case 'SaveSearch':
-			header("Location: /".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);
-			die();
-			break;
-	}
+	$logger->log("Exception updating aspen usage/slow pages/usage by IP: " . $e, Logger::LOG_DEBUG);
 }
 
 // Check for the various stages of functionality
@@ -835,7 +796,7 @@ function getGitBranch(){
 			if (!empty($stringFromFile)) {
 				$stringFromFile = $stringFromFile[0]; //get the string from the array
 				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
-					if ($configArray['System']['debug']) {
+					if (IPAddress::showDebuggingInformation()) {
 						$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
 					} else {
 						$branchName = $matches[2]; //get the branch name
@@ -886,17 +847,32 @@ function loadModuleActionId(){
 	//This ensures that we don't have to change the http.conf file when new types are added.
 	//Deal with old path based urls by removing the leading path.
 	$requestURI = $_SERVER['REQUEST_URI'];
+	if (empty($requestURI) || $requestURI == '/'){
+		//Check to see if we have a default path for the server name
+		try {
+			$host = $_SERVER['HTTP_HOST'];
+			require_once ROOT_DIR . '/sys/LibraryLocation/HostInformation.php';
+			$hostInfo = new HostInformation();
+			$hostInfo->host = $host;
+			if ($hostInfo->find(true)){
+				$requestURI = $hostInfo->defaultPath;
+			}
+		}catch (Exception $e){
+			//This happens before the table is added, just ignore it.
+		}
+	}
 	/** IndexingProfile[] $indexingProfiles */
 	global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */
 	global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
 	foreach ($sideLoadSettings as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
+	$checkWebBuilderAliases = false;
 	if (preg_match("~(MyAccount)/([^/?]+)/([^/?]+)(\?.+)?~", $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 		$_GET['id'] = $matches[3];
@@ -960,6 +936,52 @@ function loadModuleActionId(){
 		$_GET['action'] = $matches[2];
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = $matches[2];
+		$checkWebBuilderAliases = true;
+	}else{
+		$checkWebBuilderAliases = true;
+	}
+
+	global $enabledModules;
+	try {
+		if ($checkWebBuilderAliases && array_key_exists('Web Builder', $enabledModules)) {
+			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+			$basicPage = new BasicPage();
+			$basicPage->urlAlias = $requestURI;
+			if ($basicPage->find(true)) {
+				$_GET['module'] = 'WebBuilder';
+				$_GET['action'] = 'BasicPage';
+				$_GET['id'] = $basicPage->id;
+				$_REQUEST['module'] = 'WebBuilder';
+				$_REQUEST['action'] = 'BasicPage';
+				$_REQUEST['id'] = $basicPage->id;
+			} else {
+				require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+				$portalPage = new PortalPage();
+				$portalPage->urlAlias = $requestURI;
+				if ($portalPage->find(true)) {
+					$_GET['module'] = 'WebBuilder';
+					$_GET['action'] = 'PortalPage';
+					$_GET['id'] = $portalPage->id;
+					$_REQUEST['module'] = 'WebBuilder';
+					$_REQUEST['action'] = 'PortalPage';
+					$_REQUEST['id'] = $portalPage->id;
+				} else {
+					require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+					$form = new CustomForm();
+					$form->urlAlias = $requestURI;
+					if ($form->find(true)) {
+						$_GET['module'] = 'WebBuilder';
+						$_GET['action'] = 'Form';
+						$_GET['id'] = $form->id;
+						$_REQUEST['module'] = 'WebBuilder';
+						$_REQUEST['action'] = 'Form';
+						$_REQUEST['id'] = $form->id;
+					}
+				}
+			}
+		}
+	}catch (Exception $e) {
+		//This happens if web builder is not fully installed, ignore the error.
 	}
 	//Correct some old actions
 	if (isset($_GET['action'])) {

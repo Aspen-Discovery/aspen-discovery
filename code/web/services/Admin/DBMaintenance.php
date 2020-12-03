@@ -66,6 +66,10 @@ class Admin_DBMaintenance extends Admin_Admin
 		$grouped_work_updates = getGroupedWorkUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/user_updates.php';
 		$user_updates = getUserUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/genealogy_updates.php';
+		$genealogy_updates = getGenealogyUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/browse_updates.php';
+		$browse_updates = getBrowseUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/collection_spotlight_updates.php';
 		$collection_spotlight_updates = getCollectionSpotlightUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/indexing_updates.php';
@@ -80,6 +84,10 @@ class Admin_DBMaintenance extends Admin_Admin
 		$sierra_api_updates = getSierraAPIUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/overdrive_updates.php';
 		$overdrive_updates = getOverDriveUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/ebsco_updates.php';
+		$ebscoUpdates = getEbscoUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/axis360_updates.php';
+		$axis360Updates = getAxis360Updates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
 		$theming_updates = getThemingUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/translation_updates.php';
@@ -92,6 +100,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		$cloudLibraryUpdates = getCloudLibraryUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/website_indexing_updates.php';
 		$websiteIndexingUpdates = getWebsiteIndexingUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/web_builder_updates.php';
+		$webBuilderUpdates = getWebBuilderUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/events_integration_updates.php';
 		$eventsIntegrationUpdates = getEventsIntegrationUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/file_upload_updates.php';
@@ -106,11 +116,11 @@ class Admin_DBMaintenance extends Admin_Admin
 					'description' => 'Create modules table to store information about modules',
 					'sql' => [
 						'CREATE TABLE modules (
-    						id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    						name VARCHAR(50) NOT NULL UNIQUE, 
-    						enabled TINYINT(1) DEFAULT 0,
-    						indexName VARCHAR(50) DEFAULT "",
-    						backgroundProcess VARCHAR(50) DEFAULT ""
+							id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							name VARCHAR(50) NOT NULL UNIQUE, 
+							enabled TINYINT(1) DEFAULT 0,
+							indexName VARCHAR(50) DEFAULT "",
+							backgroundProcess VARCHAR(50) DEFAULT ""
 						) ENGINE=InnoDB DEFAULT CHARSET=utf8',
 						'ALTER TABLE modules add INDEX (enabled)',
 					]
@@ -127,10 +137,14 @@ class Admin_DBMaintenance extends Admin_Admin
 			$library_location_updates,
 			$user_updates,
 			$grouped_work_updates,
+			$genealogy_updates,
+			$browse_updates,
 			$collection_spotlight_updates,
 			$indexing_updates,
 			$islandora_updates,
 			$overdrive_updates,
+			$ebscoUpdates,
+			$axis360Updates,
 			$hoopla_updates,
 			$rbdigital_updates,
 			$sierra_api_updates,
@@ -140,6 +154,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$redwood_updates,
 			$cloudLibraryUpdates,
 			$websiteIndexingUpdates,
+			$webBuilderUpdates,
 			$eventsIntegrationUpdates,
 			$fileUploadUpdates,
 			array(
@@ -178,104 +193,6 @@ class Admin_DBMaintenance extends Admin_Admin
 						"INSERT INTO search_stats_new (phrase, lastSearch, numSearches) SELECT TRIM(REPLACE(phrase, char(9), '')) as phrase, MAX(lastSearch), sum(numSearches) FROM search_stats WHERE numResults > 0 GROUP BY TRIM(REPLACE(phrase,char(9), ''))",
 						"DELETE FROM search_stats_new WHERE phrase LIKE '%(%'",
 						"DELETE FROM search_stats_new WHERE phrase LIKE '%)%'",
-					),
-				),
-
-
-				'genealogy' => array(
-					'title' => 'Genealogy Setup',
-					'description' => 'Initial setup of genealogy information',
-					'continueOnError' => true,
-					'sql' => array(
-						//-- setup tables related to the genealogy section
-						//-- person table
-						"CREATE TABLE `person` (
-						`personId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-						`firstName` VARCHAR( 100 ) NULL ,
-						`middleName` VARCHAR( 100 ) NULL ,
-						`lastName` VARCHAR( 100 ) NULL ,
-						`maidenName` VARCHAR( 100 ) NULL ,
-						`otherName` VARCHAR( 100 ) NULL ,
-						`nickName` VARCHAR( 100 ) NULL ,
-						`birthDate` DATE NULL ,
-						`birthDateDay` INT NULL COMMENT 'The day of the month the person was born empty or null if not known',
-						`birthDateMonth` INT NULL COMMENT 'The month the person was born, null or blank if not known',
-						`birthDateYear` INT NULL COMMENT 'The year the person was born, null or blank if not known',
-						`deathDate` DATE NULL ,
-						`deathDateDay` INT NULL COMMENT 'The day of the month the person died empty or null if not known',
-						`deathDateMonth` INT NULL COMMENT 'The month the person died, null or blank if not known',
-						`deathDateYear` INT NULL COMMENT 'The year the person died, null or blank if not known',
-						`ageAtDeath` TEXT NULL ,
-						`cemeteryName` VARCHAR( 255 ) NULL ,
-						`cemeteryLocation` VARCHAR( 255 ) NULL ,
-						`mortuaryName` VARCHAR( 255 ) NULL ,
-						`comments` MEDIUMTEXT NULL,
-						`picture` VARCHAR( 255 ) NULL
-						) ENGINE = InnoDB COMMENT = 'Stores information about a particular person for use in genealogy';",
-
-						//-- marriage table
-						"CREATE TABLE `marriage` (
-						`marriageId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-						`personId` INT NOT NULL COMMENT 'A link to one person in the marriage',
-						`spouseName` VARCHAR( 200 ) NULL COMMENT 'The name of the other person in the marriage if they are not in the database',
-						`spouseId` INT NULL COMMENT 'A link to the second person in the marriage if the person is in the database',
-						`marriageDate` DATE NULL COMMENT 'The date of the marriage if known.',
-						`marriageDateDay` INT NULL COMMENT 'The day of the month the marriage occurred empty or null if not known',
-						`marriageDateMonth` INT NULL COMMENT 'The month the marriage occurred, null or blank if not known',
-						`marriageDateYear` INT NULL COMMENT 'The year the marriage occurred, null or blank if not known',
-						`comments` MEDIUMTEXT NULL
-						) ENGINE = InnoDB COMMENT = 'Information about a marriage between two people';",
-
-
-						//-- obituary table
-						"CREATE TABLE `obituary` (
-						`obituaryId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-						`personId` INT NOT NULL COMMENT 'The person this obituary is for',
-						`source` VARCHAR( 255 ) NULL ,
-						`date` DATE NULL ,
-						`dateDay` INT NULL COMMENT 'The day of the month the obituary came out empty or null if not known',
-						`dateMonth` INT NULL COMMENT 'The month the obituary came out, null or blank if not known',
-						`dateYear` INT NULL COMMENT 'The year the obituary came out, null or blank if not known',
-						`sourcePage` VARCHAR( 25 ) NULL ,
-						`contents` MEDIUMTEXT NULL ,
-						`picture` VARCHAR( 255 ) NULL
-						) ENGINE = InnoDB	COMMENT = 'Information about an obituary for a person';",
-					),
-				),
-
-				'genealogy_1' => array(
-					'title' => 'Genealogy Update 1',
-					'description' => 'Update Genealogy 1 for Steamboat Springs to add cemetery information.',
-					'sql' => array(
-						"ALTER TABLE person ADD COLUMN veteranOf VARCHAR(100) NULL DEFAULT ''",
-						"ALTER TABLE person ADD COLUMN addition VARCHAR(100) NULL DEFAULT ''",
-						"ALTER TABLE person ADD COLUMN block VARCHAR(100) NULL DEFAULT ''",
-						"ALTER TABLE person ADD COLUMN lot INT(11) NULL",
-						"ALTER TABLE person ADD COLUMN grave INT(11) NULL",
-						"ALTER TABLE person ADD COLUMN tombstoneInscription TEXT",
-						"ALTER TABLE person ADD COLUMN addedBy INT(11) NOT NULL DEFAULT -1",
-						"ALTER TABLE person ADD COLUMN dateAdded INT(11) NULL",
-						"ALTER TABLE person ADD COLUMN modifiedBy INT(11) NOT NULL DEFAULT -1",
-						"ALTER TABLE person ADD COLUMN lastModified INT(11) NULL",
-						"ALTER TABLE person ADD COLUMN privateComments TEXT",
-						"ALTER TABLE person ADD COLUMN importedFrom VARCHAR(50) NULL",
-					),
-				),
-
-				'genealogy_nashville_1' => array(
-					'title' => 'Genealogy Update : Nashville 1',
-					'description' => 'Update Genealogy : for Nashville to add Nashville City Cemetery information.',
-					'continueOnError' => true,
-					'sql' => array(
-						"ALTER TABLE person ADD COLUMN ledgerVolume VARCHAR(20) NULL DEFAULT ''",
-						"ALTER TABLE person ADD COLUMN ledgerYear VARCHAR(20) NULL DEFAULT ''",
-						"ALTER TABLE person ADD COLUMN ledgerEntry VARCHAR(20) NULL DEFAULT ''",
-						"ALTER TABLE person ADD COLUMN sex VARCHAR(20) NULL DEFAULT ''",
-						"ALTER TABLE person ADD COLUMN race VARCHAR(20) NULL DEFAULT ''",
-						"ALTER TABLE person ADD COLUMN residence VARCHAR(255) NULL DEFAULT ''",
-						"ALTER TABLE person ADD COLUMN causeOfDeath VARCHAR(255) NULL DEFAULT ''",
-						"ALTER TABLE person ADD COLUMN cemeteryAvenue VARCHAR(255) NULL DEFAULT ''",
-						"ALTER TABLE person CHANGE lot lot VARCHAR(20) NULL DEFAULT ''",
 					),
 				),
 
@@ -610,6 +527,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'staffSettingsAllowNegativeUserId' => [
+					'title' => 'Staff Settings Allow Negative User ids',
+					'description' => 'Allow negative user ids for staff settings',
+					'sql' => [
+						'ALTER TABLE user_staff_settings change column userId userId INT NOT NULL'
+					]
+				],
+
 				'materialsRequestLibraryId' => array(
 					'title' => 'Add LibraryId to Material Requests Table',
 					'description' => 'Add LibraryId column to Materials Request table and populate column for existing requests.',
@@ -655,6 +580,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					'description' => 'Create cataloging role to handle materials requests, econtent loading, etc.',
 					'sql' => array(
 						"INSERT INTO `roles` (`name`, `description`) VALUES ('cataloging', 'Allows user to perform cataloging activities.')",
+					),
+				),
+
+				'superCatalogerRole' => array(
+					'title' => 'Create superCataloger role',
+					'description' => 'Create cataloging role to handle additional actions typically reserved for consortial offices, etc.',
+					'sql' => array(
+						"INSERT INTO `roles` (`name`, `description`) VALUES ('superCataloger', 'Allows user to perform cataloging activities that require advanced knowledge.')",
 					),
 				),
 
@@ -738,9 +671,27 @@ class Admin_DBMaintenance extends Admin_Admin
 					'continueOnError' => true,
 					'sql' => array(
 						"ALTER TABLE `ip_lookup` ADD COLUMN `isOpac` TINYINT UNSIGNED NOT NULL DEFAULT 1",
-
 					),
 				),
+
+				'ip_lookup_blocking' => [
+					'title' => 'IP Lookup Blocking',
+					'description' => 'Optionally block access to all of Aspen and APIs by IP address',
+					'sql' => [
+						"ALTER TABLE ip_lookup ADD COLUMN blockAccess TINYINT NOT NULL DEFAULT 0",
+						"ALTER TABLE ip_lookup ADD COLUMN allowAPIAccess TINYINT NOT NULL DEFAULT 0",
+						"INSERT INTO ip_lookup (location, ip, locationid, startIpVal, endIpVal, blockAccess, allowAPIAccess, isOpac) VALUES ('Internal', '127.0.0.1', -1, 2130706433, 2130706433, 0, 1, 0)",
+					]
+				],
+
+				'ip_debugging' =>[
+					'title' => 'IP Lookup Debugging',
+					'description' => 'Allow debugging based on IP address of the user',
+					'sql' => [
+						'ALTER TABLE ip_lookup ADD COLUMN showDebuggingInformation TINYINT NOT NULL DEFAULT 0',
+						"UPDATE ip_lookup set showDebuggingInformation = 1 where ip ='127.0.0.1'"
+					]
+				],
 
 				'remove_merged_records' => [
 					'title' => 'Remove unused Merged Records Table',
@@ -846,6 +797,22 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'runNightlyFullIndex' => [
+					'title' => 'Run Nightly Full Index',
+					'description' => 'Whether or not a new full index should be run in the middle of the night',
+					'sql' => [
+						'ALTER TABLE system_variables ADD COLUMN runNightlyFullIndex TINYINT(1) DEFAULT 0'
+					]
+				],
+
+				'currencyCode' => [
+					'title' => 'Currency code system variable',
+					'description' => 'Add currency code to system variables',
+					'sql' => [
+						"ALTER TABLE system_variables ADD COLUMN currencyCode CHAR(3) DEFAULT 'USD'"
+					]
+				],
+
 				'utf8_update' => array(
 					'title' => 'Update to UTF-8',
 					'description' => 'Update database to use UTF-8 encoding',
@@ -939,6 +906,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'reindexLog_nightly_updates' => [
+					'title' => 'Reindex Log Update for Nightly Index',
+					'description' => 'Update reindex logging for nightly index',
+					'sql' => [
+						'ALTER TABLE reindex_log DROP COLUMN numListsProcessed',
+						'ALTER TABLE reindex_log ADD COLUMN numErrors INT(11) DEFAULT 0',
+					]
+				],
 
 				'cronLog' => array(
 					'title' => 'Cron Log table',
@@ -1470,114 +1445,55 @@ class Admin_DBMaintenance extends Admin_Admin
 					)
 				),
 
-				'browse_categories' => array(
-					'title' => 'Browse Categories',
-					'description' => 'Setup Browse Category Table',
-					'sql' => array(
-						"CREATE TABLE browse_category (
-							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							textId VARCHAR(60) NOT NULL DEFAULT -1,
-							userId INT(11),
-							sharing ENUM('private', 'location', 'library', 'everyone') DEFAULT 'everyone',
-							label VARCHAR(50) NOT NULL,
-							description MEDIUMTEXT,
-							defaultFilter TEXT,
-							defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating'),
-							UNIQUE (textId)
-						) ENGINE = InnoDB",
-					),
-				),
-
-				'browse_categories_search_term_and_stats' => array(
-					'title' => 'Browse Categories Search Term and Stats',
-					'description' => 'Add a search term and statistics to browse categories',
-					'sql' => array(
-						"ALTER TABLE browse_category ADD searchTerm VARCHAR(100) NOT NULL DEFAULT ''",
-						"ALTER TABLE browse_category ADD numTimesShown MEDIUMINT NOT NULL DEFAULT 0",
-						"ALTER TABLE browse_category ADD numTitlesClickedOn MEDIUMINT NOT NULL DEFAULT 0",
-					),
-				),
-
-				'browse_categories_search_term_length' => array(
-					'title' => 'Browse Category Search Term Length',
-					'description' => 'Increase the length of the search term field',
-					'sql' => array(
-						"ALTER TABLE browse_category CHANGE searchTerm searchTerm VARCHAR(500) NOT NULL DEFAULT ''",
-					),
-				),
-
-				'browse_categories_lists' => array(
-					'title' => 'Browse Categories from Lists',
-					'description' => 'Add a the ability to define a browse category from a list',
-					'sql' => array(
-						"ALTER TABLE browse_category ADD sourceListId MEDIUMINT NULL DEFAULT NULL",
-					),
-				),
-
-				'sub-browse_categories' => array(
-					'title' => 'Enable Browse Sub-Categories',
-					'description' => 'Add a the ability to define a browse category from a list',
-					'sql' => array(
-						"CREATE TABLE `browse_category_subcategories` (
-							  `id` int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							  `browseCategoryId` int(11) NOT NULL,
-							  `subCategoryId` int(11) NOT NULL,
-							  `weight` SMALLINT(2) UNSIGNED NOT NULL DEFAULT '0',
-							  UNIQUE (`subCategoryId`,`browseCategoryId`)
-							) ENGINE=InnoDB DEFAULT CHARSET=utf8"
-					),
-				),
-
-				'localized_browse_categories' => array(
-					'title' => 'Localized Browse Categories',
-					'description' => 'Setup Localized Browse Category Tables',
-					'sql' => array(
-						"CREATE TABLE browse_category_library (
-							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							libraryId INT(11) NOT NULL,
-							browseCategoryTextId VARCHAR(60) NOT NULL DEFAULT -1,
-							weight INT NOT NULL DEFAULT '0',
-							UNIQUE (libraryId, browseCategoryTextId)
-						) ENGINE = InnoDB",
-						"CREATE TABLE browse_category_location (
-							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							locationId INT(11) NOT NULL,
-							browseCategoryTextId VARCHAR(60) NOT NULL DEFAULT -1,
-							weight INT NOT NULL DEFAULT '0',
-							UNIQUE (locationId, browseCategoryTextId)
-						) ENGINE = InnoDB",
-					),
-				),
-
-				'browse_category_groups' => [
-					'title' => 'Browse Category Groups',
-					'description' => 'Extract Browse Categories into groups to make them easier to reuse',
+				'user_list_searching' => [
+					'title' => 'User List Searching',
+					'description' => 'Add searchable setting to user lists to give additional control over what is found in search results',
+					'continueOnError' => true,
 					'sql' => [
-						"CREATE TABLE browse_category_group (
+						'ALTER TABLE user_list ADD searchable TINYINT(1) DEFAULT 0',
+						'updateSearchableLists'
+					]
+				],
+
+				'user_list_indexing_settings' => [
+					'title' => 'User List Indexing Settings',
+					'description' => 'Create a table to store List Indexing Settings',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS list_indexing_settings(
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							name VARCHAR(50) NOT NULL,
-							defaultBrowseMode TINYINT(1) DEFAULT 0, 
-							browseCategoryRatingsMode TINYINT(1) DEFAULT 1,
-							UNIQUE (name)
-						) ENGINE = InnoDB",
-						"CREATE TABLE browse_category_group_entry (
-							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							browseCategoryGroupId INT(11) NOT NULL,
-							browseCategoryId INT(11) NOT NULL,
-							weight INT NOT NULL DEFAULT '0',
-							UNIQUE (browseCategoryGroupId, browseCategoryId)
-						) ENGINE InnoDB",
-						"ALTER TABLE library ADD COLUMN browseCategoryGroupId INT(11) NOT NULL",
-						"ALTER TABLE location ADD COLUMN browseCategoryGroupId INT(11) NOT NULL DEFAULT -1",
-						//Convert from the old way to the new way
-						'populateBrowseCategoryGroups',
-						//Cleanup the old values
-						"DROP TABLE browse_category_library",
-						"DROP TABLE browse_category_location",
-						"ALTER TABLE library DROP COLUMN defaultBrowseMode",
-						"ALTER TABLE library DROP COLUMN browseCategoryRatingsMode",
-						"ALTER TABLE location DROP COLUMN defaultBrowseMode",
-						"ALTER TABLE location DROP COLUMN browseCategoryRatingsMode",
+							runFullUpdate TINYINT(1) DEFAULT 1,
+							lastUpdateOfChangedLists INT(11) DEFAULT 0,
+							lastUpdateOfAllLists INT(11) DEFAULT 0
+						) ENGINE = InnoDB;'
+					]
+				],
+
+				'default_list_indexing' => [
+					'title' => 'User List Indexing Settings - setup defaults',
+					'description' => 'Setup default indexing settings by converting from variables',
+					'sql' => [
+						'createDefaultListIndexingSettings'
+					]
+				],
+
+				'user_list_indexing_log' => [
+					'title' => 'User List Indexing Log',
+					'description' => 'Create a table to store List Indexing Log',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS list_indexing_log(
+						    id INT NOT NULL AUTO_INCREMENT,
+						    startTime INT(11) NOT NULL,
+						    endTime INT(11) NULL, 
+						    lastUpdate INT(11) NULL, 
+						    notes TEXT,
+						    numLists INT(11) DEFAULT 0,
+						    numAdded INT(11) DEFAULT 0,
+						    numDeleted INT(11) DEFAULT 0,
+						    numUpdated INT(11) DEFAULT 0,
+						    numSkipped INT(11) DEFAULT 0,
+						    numErrors INT(11) DEFAULT 0, 
+						    PRIMARY KEY ( `id` )
+						) ENGINE = InnoDB;'
 					]
 				],
 
@@ -1708,6 +1624,16 @@ class Admin_DBMaintenance extends Admin_Admin
 					'sql' => array(
 						"ALTER TABLE `account_profiles` ADD `ils` varchar(20) DEFAULT 'koha'",
 						"UPDATE account_profiles set ils = lcase(driver)",
+					)
+				),
+
+				'account_profiles_api_version' => array(
+					'title' => 'Account Profiles - API Version',
+					'description' => 'Add api version for sierra',
+					'continueOnError' => false,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `apiVersion` varchar(10) DEFAULT ''",
+						"UPDATE account_profiles set apiVersion = '5' where ils = 'sierra'",
 					)
 				),
 
@@ -1896,10 +1822,10 @@ class Admin_DBMaintenance extends Admin_Admin
 					'continueOnError' => false,
 					'sql' => array(
 						'CREATE TABLE IF NOT EXISTS sendgrid_settings(
-						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-						    fromAddress VARCHAR(255),
-						    replyToAddress VARCHAR(255),
-						    apiKey VARCHAR(255)
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							fromAddress VARCHAR(255),
+							replyToAddress VARCHAR(255),
+							apiKey VARCHAR(255)
 						) ENGINE = InnoDB;'
 					)
 				),
@@ -1910,22 +1836,22 @@ class Admin_DBMaintenance extends Admin_Admin
 					'continueOnError' => false,
 					'sql' => array(
 						'CREATE TABLE IF NOT EXISTS aspen_usage(
-						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-						    year INT(4) NOT NULL,
-						    month INT(2) NOT NULL,
-						    pageViews INT(11) DEFAULT 0,
-						    pageViewsByBots INT(11) DEFAULT 0,
-						    pageViewsByAuthenticatedUsers INT(11) DEFAULT 0,
-						    pagesWithErrors INT(11) DEFAULT 0,
-						    slowPages INT(11) DEFAULT 0,
-						    ajaxRequests INT(11) DEFAULT 0,
-						    slowAjaxRequests INT(11) DEFAULT 0,
-						    coverViews INT(11) DEFAULT 0,
-						    genealogySearches INT(11) DEFAULT 0,
-						    groupedWorkSearches INT(11) DEFAULT 0,
-						    islandoraSearches INT(11) DEFAULT 0,
-						    openArchivesSearches INT(11) DEFAULT 0,
-						    userListSearches INT(11) DEFAULT 0
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL,
+							pageViews INT(11) DEFAULT 0,
+							pageViewsByBots INT(11) DEFAULT 0,
+							pageViewsByAuthenticatedUsers INT(11) DEFAULT 0,
+							pagesWithErrors INT(11) DEFAULT 0,
+							slowPages INT(11) DEFAULT 0,
+							ajaxRequests INT(11) DEFAULT 0,
+							slowAjaxRequests INT(11) DEFAULT 0,
+							coverViews INT(11) DEFAULT 0,
+							genealogySearches INT(11) DEFAULT 0,
+							groupedWorkSearches INT(11) DEFAULT 0,
+							islandoraSearches INT(11) DEFAULT 0,
+							openArchivesSearches INT(11) DEFAULT 0,
+							userListSearches INT(11) DEFAULT 0
 						) ENGINE = InnoDB;',
 						"ALTER TABLE aspen_usage ADD INDEX (year, month)",
 					)
@@ -1940,28 +1866,38 @@ class Admin_DBMaintenance extends Admin_Admin
 					)
 				],
 
+				'aspen_usage_blocked_requests' => [
+					'title' => 'Aspen Usage for Requests that have been blocked',
+					'description' => 'Add a column to which requests have been blocked (both regular requests and API)',
+					'continueOnError' => false,
+					'sql' => array(
+						'ALTER TABLE aspen_usage ADD COLUMN blockedRequests INT(11) DEFAULT 0',
+						'ALTER TABLE aspen_usage ADD COLUMN blockedApiRequests INT(11) DEFAULT 0',
+					)
+				],
+
 				'slow_pages' => [
 					'title' => 'Slow Page Tracking',
 					'description' => 'Add tables to track which pages are slow',
 					'continueOnError' => false,
 					'sql' => array(
 						'CREATE TABLE IF NOT EXISTS slow_page(
-						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		                    year INT(4) NOT NULL,
-		                    month INT(2) NOT NULL,
-		                    module VARCHAR(50) NOT NULL,
-		                    action VARCHAR(50) NOT NULL,
-		                    timesSlow INT(11) DEFAULT 0
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL,
+							module VARCHAR(50) NOT NULL,
+							action VARCHAR(50) NOT NULL,
+							timesSlow INT(11) DEFAULT 0
 						) ENGINE = InnoDB;',
 						"ALTER TABLE slow_page ADD INDEX (year, month, module, action)",
 						'CREATE TABLE IF NOT EXISTS slow_ajax_request(
-						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		                    year INT(4) NOT NULL,
-		                    month INT(2) NOT NULL,
-		                    module VARCHAR(50) NOT NULL,
-		                    action VARCHAR(50) NOT NULL,
-		                    method VARCHAR(75) NOT NULL,
-		                    timesSlow INT(11) DEFAULT 0
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL,
+							module VARCHAR(50) NOT NULL,
+							action VARCHAR(50) NOT NULL,
+							method VARCHAR(75) NOT NULL,
+							timesSlow INT(11) DEFAULT 0
 						) ENGINE = InnoDB;',
 						"ALTER TABLE slow_ajax_request ADD INDEX (year, month, module, action, method)",
 					)
@@ -1987,10 +1923,10 @@ class Admin_DBMaintenance extends Admin_Admin
 					'description' => 'Memory table for cross platform caching',
 					'sql' => [
 						'CREATE TABLE IF NOT EXISTS cached_values(
-    						cacheKey VARCHAR(200) NOT NULL, 
-    						value VARCHAR(1024),
-    						expirationTime INT(11)
-    						) ENGINE = MEMORY;',
+							cacheKey VARCHAR(200) NOT NULL, 
+							value VARCHAR(1024),
+							expirationTime INT(11)
+							) ENGINE = MEMORY;',
 					],
 				],
 
@@ -2031,7 +1967,7 @@ class Admin_DBMaintenance extends Admin_Admin
 							message TEXT,
 							backtrace TEXT,
 							timestamp INT(11)
-    						) ENGINE = INNODB;',
+							) ENGINE = INNODB;',
 					],
 				],
 
@@ -2098,6 +2034,59 @@ class Admin_DBMaintenance extends Admin_Admin
 							UNIQUE INDEX placardLocation(placardId, locationId)
 						) ENGINE = INNODB;',
 						'INSERT INTO placard_location (locationId, placardId) SELECT locationId, placards.id from location, placards;'
+					]
+				],
+
+				'placard_trigger_exact_match' => [
+					'title' => 'Placard Trigger Exact Match',
+					'description' => 'Add ability to force triggers to use fuzzy matching',
+					'sql' => [
+						'ALTER TABLE placard_trigger ADD COLUMN exactMatch TINYINT(1) DEFAULT 0'
+					]
+				],
+
+				'placard_timing' => [
+					'title' => 'Placard Timing',
+					'description' => 'Add the ability to set start and end times for when placards are shown',
+					'sql' => [
+						'ALTER TABLE placards ADD COLUMN startDate INT(11) DEFAULT 0',
+						'ALTER TABLE placards ADD COLUMN endDate INT(11) DEFAULT 0'
+					]
+				],
+
+				'system_messages' => [
+					'title' => 'System Message Setup',
+					'description' => 'Initial setup of system messages',
+					'continueOnError' => true,
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS system_messages(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							title VARCHAR(255) NOT NULL,
+							message TEXT,
+							dismissable TINYINT(1) DEFAULT 0,
+							showOn INT DEFAULT 0,
+							startDate INT(11) DEFAULT 0,
+							endDate INT(11) DEFAULT 0
+						) ENGINE = INNODB;',
+						'ALTER TABLE system_messages ADD INDEX title (title)',
+						'CREATE TABLE system_message_dismissal (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							systemMessageId INT,
+							userId INT,
+							UNIQUE INDEX userPlacard(userId, systemMessageId)
+						) ENGINE = INNODB;',
+						'CREATE TABLE system_message_library (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							systemMessageId INT,
+							libraryId INT,
+							UNIQUE INDEX systemMessageLibrary(systemMessageId, libraryId)
+						) ENGINE = INNODB;',
+						'CREATE TABLE system_message_location (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							systemMessageId INT,
+							locationId INT,
+							UNIQUE INDEX systemMessageLocation(systemMessageId, locationId)
+						) ENGINE = INNODB;',
 					]
 				],
 
@@ -2177,6 +2166,34 @@ class Admin_DBMaintenance extends Admin_Admin
 					],
 				],
 
+				'google_analytics_version'  => [
+					'title' => 'Google API - Analytics Version',
+					'description' => 'Add the ability to determine which version of Google Analytics should be embedded.',
+					'sql' => [
+						"ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsVersion VARCHAR(5) DEFAULT 'v3'"
+					]
+				],
+
+				'google_remove_google_translate' => [
+					'title' => 'Google API - Remove Google Translate',
+					'description' => 'Remove Google Translate Settings',
+					'sql' => [
+						'ALTER TABLE google_api_settings DROP COLUMN googleTranslateKey',
+						'ALTER TABLE google_api_settings DROP COLUMN googleTranslateLanguages',
+					]
+				],
+
+				'coce_settings' => [
+					'title' => 'Coce server settings',
+					'description' => 'Add the ability to connect to a Coce server to load covers',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS coce_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							coceServerUrl VARCHAR(100) NOT NULL
+						) ENGINE = INNODB;',
+					],
+				],
+
 				'nyt_api_settings' => [
 					'title' => 'New York Times API settings',
 					'description' => 'Add the ability to store New York Times api settings in the DB rather than config file',
@@ -2223,16 +2240,135 @@ class Admin_DBMaintenance extends Admin_Admin
 						'populateRecaptchaSettings'
 					],
 				],
+
+				'object_history' => [
+					'title' => 'Data Object History',
+					'description' => 'Add a table to store when properties are changed',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS object_history(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							objectType VARCHAR(75) NOT NULL,
+							objectId INT(11) NOT NULL,
+							propertyName VARCHAR(75) NOT NULL,
+							oldValue VARCHAR(512),
+							newValue VARCHAR(512),
+							changedBy INT(11) NOT NULL,
+							changeDate INT(11) NOT NULL,
+							INDEX (objectType, objectId),
+							INDEX (changedBy)
+						) ENGINE = INNODB;',
+					]
+				],
+
+				'object_history_field_lengths' => [
+					'title' => 'Data Object History Value Lengths',
+					'description' => 'Increase the maximum length of values',
+					'sql' => [
+						'ALTER TABLE object_history CHANGE COLUMN oldValue oldValue TEXT',
+						'ALTER TABLE object_history CHANGE COLUMN newValue newValue TEXT',
+					]
+				],
+
+				'rosen_levelup_settings' => [
+					'title' => 'Rosen LevelUP API Settings',
+					'description' => 'Add the ability to store Rosen LevelUP API settings in the DB rather than the config file',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS rosen_levelup_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							lu_api_host VARCHAR(50) NOT NULL,
+							lu_api_pw VARCHAR(50) NOT NULL,
+							lu_api_un VARCHAR(50) NOT NULL,
+							lu_district_name VARCHAR(50) NOT NULL,
+							lu_eligible_ptypes VARCHAR(50) NOT NULL,
+							lu_multi_district_name VARCHAR(50) NOT NULL,
+							lu_school_name VARCHAR(50) NOT NULL,
+							lu_ptypes_1 VARCHAR(50),
+							lu_ptypes_2 VARCHAR(50),
+							lu_ptypes_k VARCHAR(50)
+						) ENGINE = INNODB;'
+					]
+				],
+
+				'rosen_levelup_settings_school_prefix' => [
+					'title' => 'Rosen LevelUP API Settings - School Code Prefix',
+					'description' => 'Add the ability to generate a prefix for location code to accommodate Rosen requirement that school codes be not just numbers. E.g., change Amqui Elementary location code 105 to "Nashville 105"',
+					'sql' => [
+						'ALTER TABLE rosen_levelup_settings ADD lu_location_code_prefix VARCHAR(50)'
+					]
+				],
+
+				'ip_address_logs' => [
+					'title' => 'Logging by IP Address',
+					'description' => 'Add a table to track usage of Aspen by IP Address',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS usage_by_ip_address(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							instance VARCHAR(100),
+							ipAddress VARCHAR(25),
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL, 
+							numRequests INT default 0,
+							numBlockedRequests INT default 0,
+							numBlockedApiRequests INT default 0,
+							lastRequest INT default 0,
+							UNIQUE ip(year, month, instance, ipAddress)
+						) ENGINE = INNODB;'
+					]
+				],
+
+				'host_information' => [
+					'title' => 'Host Information',
+					'description' => 'Add a table to allow customization of where a patron goes by default based on host name',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS host_information(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							host VARCHAR(100),
+							libraryId INT(11), 
+							locationId INT(11) DEFAULT -1,
+							defaultPath VARCHAR(50)
+						) ENGINE = INNODB'
+					]
+				],
+
+				'javascript_snippets' => [
+					'title' => 'JavaScript Snippet setup',
+					'description' => 'Add the ability to add JavaScript Snippets to the site',
+					'continueOnError' => true,
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS javascript_snippets(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							name VARCHAR(50) NOT NULL,
+							snippet TEXT
+						) ENGINE = INNODB;',
+						'ALTER TABLE javascript_snippets ADD UNIQUE name (name)',
+						'CREATE TABLE javascript_snippet_library (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							javascriptSnippetId INT,
+							libraryId INT,
+							UNIQUE INDEX javascriptSnippetLibrary(javascriptSnippetId, libraryId)
+						) ENGINE = INNODB;',
+						'CREATE TABLE javascript_snippet_location (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							javascriptSnippetId INT,
+							locationId INT,
+							UNIQUE INDEX javascriptSnippetLocation(javascriptSnippetId, locationId)
+						) ENGINE = INNODB;',
+						"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+							('Local Enrichment', 'Administer All JavaScript Snippets', '', 70, 'Allows the user to define JavaScript Snippets to be added to the site. This permission has security implications.'),
+							('Local Enrichment', 'Administer Library JavaScript Snippets', '', 71, 'Allows the user to define JavaScript Snippets to be added to the site for their library. This permission has security implications.')",
+						"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All JavaScript Snippets'))",
+					]
+				],
 			)
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	public function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */ &$update)
 	{
 		global $configArray;
 		$sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$configArray['Database']['database_aspen_dbname']}' AND ENGINE = 'MyISAM'";
 
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		$results = $aspen_db->query($sql, PDO::FETCH_ASSOC);
 		$row = $results->fetchObject();
@@ -2247,7 +2383,6 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	private function checkWhichUpdatesHaveRun($availableUpdates)
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		foreach ($availableUpdates as $key => $update) {
 			$update['alreadyRun'] = false;
@@ -2262,7 +2397,6 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	private function markUpdateAsRun($update_key)
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		$result = $aspen_db->query("SELECT * from db_update where update_key = " . $aspen_db->quote($update_key));
 		if ($result->rowCount() != false) {
@@ -2273,14 +2407,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	function getAllowableRoles()
-	{
-		return array('userAdmin', 'opacAdmin');
-	}
-
 	private function createUpdatesTable()
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		//Check to see if the updates table exists
 		$result = $aspen_db->query("SHOW TABLES");
@@ -2304,7 +2432,6 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	function runSQLStatement(&$update, $sql)
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		set_time_limit(500);
 		$updateOk = true;
@@ -2328,10 +2455,10 @@ class Admin_DBMaintenance extends Admin_Admin
 		return $updateOk;
 	}
 
+	/** @noinspection PhpUnused */
 	function createDefaultIpRanges()
 	{
 		require_once ROOT_DIR . 'sys/IP/IPAddress.php';
-		require_once ROOT_DIR . 'sys/IP/ipcalc.php';
 		$subnet = new IPAddress();
 		$subnet->find();
 		while ($subnet->fetch()) {
@@ -2339,20 +2466,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	/**
-	 * @param $resource
-	 * @return null|string
-	 */
-	public function getGroupedWorkForResource($resource)
-	{
-		//Get the identifier for the resource
-		if ($resource->source == 'VuFind') {
-			$primaryIdentifier = $resource->record_id;
-			return $primaryIdentifier;
-		}
-		return null;
-	}
-
+	/** @noinspection PhpUnused */
 	function updateDueDateFormat()
 	{
 		global $configArray;
@@ -2373,6 +2487,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function updateShowSeriesInMainDetails()
 	{
 		$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
@@ -2385,9 +2500,11 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	function populateNovelistSettings(){
+	/** @noinspection PhpUnused */
+	function populateNovelistSettings()
+	{
 		global $configArray;
-		if (!empty($configArray['Novelist']['profile'])){
+		if (!empty($configArray['Novelist']['profile'])) {
 			require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
 			$novelistSetting = new NovelistSetting();
 			$novelistSetting->profile = $configArray['Novelist']['profile'];
@@ -2396,9 +2513,11 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	function populateContentCafeSettings(){
+	/** @noinspection PhpUnused */
+	function populateContentCafeSettings()
+	{
 		global $configArray;
-		if (!empty($configArray['ContentCafe']['id'])){
+		if (!empty($configArray['ContentCafe']['id'])) {
 			require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
 			$setting = new ContentCafeSetting();
 			$setting->contentCafeId = $configArray['ContentCafe']['id'];
@@ -2411,9 +2530,11 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	function populateSyndeticsSettings(){
+	/** @noinspection PhpUnused */
+	function populateSyndeticsSettings()
+	{
 		global $configArray;
-		if (!empty($configArray['Syndetics']['key'])){
+		if (!empty($configArray['Syndetics']['key'])) {
 			require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
 			$setting = new SyndeticsSetting();
 			$setting->syndeticsKey = $configArray['Syndetics']['key'];
@@ -2429,9 +2550,11 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	function populateRecaptchaSettings(){
+	/** @noinspection PhpUnused */
+	function populateRecaptchaSettings()
+	{
 		global $configArray;
-		if (!empty($configArray['ReCaptcha']['publicKey'])){
+		if (!empty($configArray['ReCaptcha']['publicKey'])) {
 			require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 			$recaptchaSetting = new RecaptchaSetting();
 			$recaptchaSetting->publicKey = $configArray['ReCaptcha']['publicKey'];
@@ -2440,207 +2563,104 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	function populateBrowseCategoryGroups(){
-		//Convert library browse categories to browse category groups
-		/** @var PDO $aspen_db */
-		global $aspen_db;
+	/** @noinspection PhpUnused */
+	function updateSearchableLists(){
+		//Get a list of users who have permission to create searchable lists
+		require_once ROOT_DIR . '/sys/Administration/Permission.php';
+		require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
+		require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$permission = new Permission();
+		$permission->name = 'Include Lists In Search Results';
+		$permission->find(true);
 
-		//Create a browse category for recommended for you
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$browseCategory = new BrowseCategory();
-		$browseCategory->textId = 'system_recommended_for_you';
-		$browseCategory->label = 'Recommended For You';
-		$browseCategory->insert();
-
-		$librarySQL = "SELECT libraryId, displayName, defaultBrowseMode, browseCategoryRatingsMode FROM library";
-		$librariesRS = $aspen_db->query($librarySQL, PDO::FETCH_ASSOC);
-		$libraryRow = $librariesRS->fetch();
-
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
-		while ($libraryRow != null){
-			$defaultBrowseMode = $libraryRow['defaultBrowseMode'];
-			if ($defaultBrowseMode == 'covers'){
-				$defaultBrowseMode = 0;
-			}else{
-				$defaultBrowseMode = 1;
+		$permissionRoles = new RolePermissions();
+		$permissionRoles->permissionId = $permission->id;
+		$permissionRoles->find();
+		while ($permissionRoles->fetch()){
+			$userRole = new UserRoles();
+			$userRole->roleId = $permissionRoles->roleId;
+			$userRole->find();
+			while($userRole->fetch()){
+				$this->makeListsSearchableForUser($userRole->userId);
 			}
-			$browseCategoryRatingsMode = $libraryRow['browseCategoryRatingsMode'];
-			if ($browseCategoryRatingsMode == 'popup'){
-				$browseCategoryRatingsMode = 1;
-			}elseif ($browseCategoryRatingsMode == 'stars'){
-				$browseCategoryRatingsMode = 2;
-			}else{
-				$browseCategoryRatingsMode = 0;
-			}
-
-			$libraryBrowseCategories = [];
-			$libraryBrowseCategorySQL = "SELECT browse_category.id as browse_category_id from browse_category_library inner join browse_category on browseCategoryTextId = textId WHERE libraryId = {$libraryRow['libraryId']} order by weight";
-			$libraryBrowseCategoryRS = $aspen_db->query($libraryBrowseCategorySQL, PDO::FETCH_ASSOC);
-			$libraryBrowseCategoryRow = $libraryBrowseCategoryRS->fetch();
-			while ($libraryBrowseCategoryRow != null){
-				$libraryBrowseCategories[] = $libraryBrowseCategoryRow['browse_category_id'];
-				$libraryBrowseCategoryRow = $libraryBrowseCategoryRS->fetch();
-			}
-
-			$createNewGroup = true;
-			$browseCategoryGroup = new BrowseCategoryGroup();
-			$browseCategoryGroup->defaultBrowseMode = $defaultBrowseMode;
-			$browseCategoryGroup->browseCategoryRatingsMode = $browseCategoryRatingsMode;
-			$browseCategoryGroup->find();
-			while ($browseCategoryGroup->fetch()){
-				//Verify that the browse categories are correct
-				$browseCategories = $browseCategoryGroup->getBrowseCategories();
-				if (count($libraryBrowseCategories) == count($browseCategories)){
-					$index = 0;
-					$allMatch = true;
-					foreach ($browseCategories as $id => $browseCategory){
-						if ($libraryBrowseCategories[$index] != $id){
-							$allMatch = false;
-							break;
-						}
-						$index++;
-					}
-					if ($allMatch){
-						$createNewGroup = false;
-						$library = new Library();
-						$library->libraryId = $libraryRow['libraryId'];
-						$library->find(true);
-						$library->browseCategoryGroupId = $browseCategoryGroup->id;
-						$library->update();
-						break;
-					}
-				}
-			}
-
-			if ($createNewGroup){
-				//Create the group
-				$browseCategoryGroup = new BrowseCategoryGroup();
-				$browseCategoryGroup->name = $libraryRow['displayName'];
-				$browseCategoryGroup->defaultBrowseMode = $defaultBrowseMode;
-				$browseCategoryGroup->browseCategoryRatingsMode = $browseCategoryRatingsMode;
-				$browseCategoryGroup->insert();
-
-				//Add the browse categories
-				foreach ($libraryBrowseCategories as $index => $id){
-					$browseCategoryGroupEntry = new BrowseCategoryGroupEntry();
-					$browseCategoryGroupEntry->browseCategoryGroupId = $browseCategoryGroup->id;
-					$browseCategoryGroupEntry->browseCategoryId = $id;
-					$browseCategoryGroupEntry->weight = $index;
-					$browseCategoryGroupEntry->insert();
-				}
-
-				//Link the group to the library
-				$library = new Library();
-				$library->libraryId = $libraryRow['libraryId'];
-				$library->find(true);
-				$library->browseCategoryGroupId = $browseCategoryGroup->id;
-				$library->update();
-			}
-			$libraryRow = $librariesRS->fetch();
 		}
 
-		$locationSQL = "SELECT locationId, displayName, defaultBrowseMode, browseCategoryRatingsMode FROM location";
-		$locationsRS = $aspen_db->query($locationSQL, PDO::FETCH_ASSOC);
-		$locationRow = $locationsRS->fetch();
-
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
-		while ($locationRow != null){
-			$defaultBrowseMode = $locationRow['defaultBrowseMode'];
-			if ($defaultBrowseMode == 'covers' || empty($defaultBrowseMode)){
-				$defaultBrowseMode = 0;
-			}else{
-				$defaultBrowseMode = 1;
+		//Also update based on ptype
+		$pType = new PType();
+		$pType->whereAdd('assignedRoleId > -1');
+		$pType->find();
+		while ($pType->fetch()){
+			$user = new User();
+			$user->patronType = $pType;
+			$user->find();
+			while ($user->fetch()){
+				$this->makeListsSearchableForUser($user->id);
 			}
-			$browseCategoryRatingsMode = $locationRow['browseCategoryRatingsMode'];
-			if ($browseCategoryRatingsMode == 'popup'){
-				$browseCategoryRatingsMode = 1;
-			}elseif ($browseCategoryRatingsMode == 'stars'){
-				$browseCategoryRatingsMode = 2;
-			}else{
-				$browseCategoryRatingsMode = 0;
-			}
-
-			$locationBrowseCategories = [];
-			$locationBrowseCategorySQL = "SELECT browse_category.id as browse_category_id from browse_category_location inner join browse_category on browseCategoryTextId = textId WHERE locationId = {$locationRow['locationId']} order by weight";
-			$locationBrowseCategoryRS = $aspen_db->query($locationBrowseCategorySQL, PDO::FETCH_ASSOC);
-			$locationBrowseCategoryRow = $locationBrowseCategoryRS->fetch();
-			while ($locationBrowseCategoryRow != null){
-				$locationBrowseCategories[] = $locationBrowseCategoryRow['browse_category_id'];
-				$locationBrowseCategoryRow = $locationBrowseCategoryRS->fetch();
-			}
-
-			if (count($locationBrowseCategories) == 0){
-				$location = new location();
-				$location->locationId = $locationRow['locationId'];
-				$location->find(true);
-				if ($location->getParentLibrary()->browseCategoryGroupId == $browseCategoryGroup->id){
-					$location->browseCategoryGroupId = -1;
-				}else {
-					$location->browseCategoryGroupId = $browseCategoryGroup->id;
-				}
-				$location->update();
-			}else{
-				$createNewGroup = true;
-				$browseCategoryGroup = new BrowseCategoryGroup();
-				$browseCategoryGroup->defaultBrowseMode = $defaultBrowseMode;
-				$browseCategoryGroup->browseCategoryRatingsMode = $browseCategoryRatingsMode;
-				$browseCategoryGroup->find();
-				while ($browseCategoryGroup->fetch()){
-					//Verify that the browse categories are correct
-					$browseCategories = $browseCategoryGroup->getBrowseCategories();
-					if (count($locationBrowseCategories) == count($browseCategories)){
-						$index = 0;
-						$allMatch = true;
-						foreach ($browseCategories as $id => $browseCategory){
-							if ($locationBrowseCategories[$index] != $id){
-								$allMatch = false;
-								break;
-							}
-							$index++;
-						}
-						if ($allMatch){
-							$createNewGroup = false;
-							$location = new location();
-							$location->locationId = $locationRow['locationId'];
-							$location->find(true);
-							if ($location->getParentLibrary()->browseCategoryGroupId == $browseCategoryGroup->id){
-								$location->browseCategoryGroupId = -1;
-							}else {
-								$location->browseCategoryGroupId = $browseCategoryGroup->id;
-							}
-							$location->update();
-							break;
-						}
-					}
-				}
-
-				if ($createNewGroup){
-					//Create the group
-					$browseCategoryGroup = new BrowseCategoryGroup();
-					$browseCategoryGroup->name = $locationRow['displayName'];
-					$browseCategoryGroup->defaultBrowseMode = $defaultBrowseMode;
-					$browseCategoryGroup->browseCategoryRatingsMode = $browseCategoryRatingsMode;
-					$browseCategoryGroup->insert();
-
-					//Add the browse categories
-					foreach ($locationBrowseCategories as $index => $id){
-						$browseCategoryGroupEntry = new BrowseCategoryGroupEntry();
-						$browseCategoryGroupEntry->browseCategoryGroupId = $browseCategoryGroup->id;
-						$browseCategoryGroupEntry->browseCategoryId = $id;
-						$browseCategoryGroupEntry->weight = $index;
-						$browseCategoryGroupEntry->insert();
-					}
-
-					//Link the group to the location
-					$location = new location();
-					$location->locationId = $locationRow['locationId'];
-					$location->find(true);
-					$location->browseCategoryGroupId = $browseCategoryGroup->id;
-					$location->update();
-				}
-			}
-
-			$locationRow = $locationsRS->fetch();
 		}
+
+		//finally update nyt user
+		$user = new User();
+		$user->cat_username = 'nyt_user';
+		if ($user->find(true)){
+			$this->makeListsSearchableForUser($user->id);
+		}
+	}
+
+	/**
+	 * @param int $userId
+	 */
+	protected function makeListsSearchableForUser($userId)
+	{
+		$userList = new UserList();
+		$userList->user_id = $userId;
+		$userList->find();
+		$allLists = [];
+		while ($userList->fetch()) {
+			$allLists[] = clone $userList;
+		}
+		foreach ($allLists as $list){
+			if ($list->searchable == 0) {
+				$list->searchable = 1;
+				$list->update();
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function createDefaultListIndexingSettings(){
+		require_once ROOT_DIR . '/sys/UserLists/ListIndexingSettings.php';
+		$listIndexingSettings = new ListIndexingSettings();
+		$listIndexingSettings->find();
+		if (!$listIndexingSettings->fetch()){
+			$listIndexingSettings = new ListIndexingSettings();
+			$variable = new Variable();
+			$variable->name = 'last_user_list_index_time';
+			if ($variable->find(true)){
+				$listIndexingSettings->lastUpdateOfChangedLists = $variable->value;
+				$variable->delete();
+			}
+			$listIndexingSettings->insert();
+		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
+		$breadcrumbs[] = new Breadcrumb('', 'Database Maintenance');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Run Database Maintenance');
 	}
 }

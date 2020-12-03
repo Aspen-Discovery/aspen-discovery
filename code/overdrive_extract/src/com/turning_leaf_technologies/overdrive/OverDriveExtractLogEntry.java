@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -34,9 +35,13 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
+		saveResults();
 	}
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	@Override
 	public void addNote(String note) {
-		this.notes.add(note);
+		Date date = new Date();
+		this.notes.add(dateFormat.format(date) + " - " + note);
 	}
 	
 	private String getNotesHtml() {
@@ -92,7 +97,13 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 			}
 			return true;
 		} catch (SQLException e) {
-			logger.error("Error creating updating log", e);
+			if (logEntryId == null) {
+				logger.error("Error creating overdrive log entry", e);
+				logger.info(this.toString());
+			}else{
+				logger.error("Error updating overdrive log entry", e);
+				logger.info(this.toString());
+			}
 			return false;
 		}
 	}

@@ -15,11 +15,11 @@
 						{if $disableCoverArt != 1}{*TODO: should become part of $showCovers *}
 							{if $record.coverUrl}
 								{if $record.recordId && !empty($record.linkUrl)}
-									<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+									<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}" aria-hidden="true">
 										<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 									</a>
 								{else} {* Cover Image but no Record-View link *}
-									<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+									<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 								{/if}
 							{/if}
 						{/if}
@@ -117,38 +117,46 @@
 					{/if}
 
 					{if $showRatings && $record.groupedWorkId && $record.ratingData}
-							<div class="row">
-								<div class="result-label col-tn-4 col-lg-3">{translate text='Rating'}</div>
-								<div class="result-value col-tn-8 col-lg-9">
-									{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.groupedWorkId ratingData=$record.ratingData showNotInterested=false}
-								</div>
+						<div class="row">
+							<div class="result-label col-tn-4 col-lg-3">{translate text='Rating'}</div>
+							<div class="result-value col-tn-8 col-lg-9">
+								{include file="GroupedWork/title-rating.tpl" id=$record.groupedWorkId ratingData=$record.ratingData showNotInterested=false}
 							</div>
+						</div>
 					{/if}
 
 					{if $hasLinkedUsers}
-					<div class="row">
-						<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out To'}</div>
-						<div class="result-value col-tn-8 col-lg-9">
-							{$record.user}
+						<div class="row">
+							<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out To'}</div>
+							<div class="result-value col-tn-8 col-lg-9">
+								{$record.user}
+							</div>
 						</div>
-					</div>
 					{/if}
 
-					<div class="row">
-						<div class="result-label col-tn-4 col-lg-3">{translate text='Due'}</div>
-						<div class="result-value col-tn-8 col-lg-9">
-							{$record.dueDate|date_format}
-							{if $record.overdue}
-								<span class="overdueLabel"> {translate text="OVERDUE"}</span>
-							{elseif $record.daysUntilDue == 0}
-								<span class="dueSoonLabel"> ({translate text="Due today"})</span>
-							{elseif $record.daysUntilDue == 1}
-								<span class="dueSoonLabel"> ({translate text="Due tomorrow"})</span>
-							{elseif $record.daysUntilDue <= 7}
-								<span class="dueSoonLabel"> ({translate text="Due in %1% days" 1=$record.daysUntilDue})</span>
-							{/if}
+					{if !empty($record.return_claim)}
+						<div class="row">
+							<div class="result-value col-tn-8 col-lg-9 col-tn-offset-4 col-lg-offset-3 return_claim">
+								{$record.return_claim}
+							</div>
 						</div>
-					</div>
+					{else}
+						<div class="row">
+							<div class="result-label col-tn-4 col-lg-3">{translate text='Due'}</div>
+							<div class="result-value col-tn-8 col-lg-9">
+								{$record.dueDate|date_format}
+								{if $record.overdue}
+									&nbsp;<span class="label label-danger">{translate text="OVERDUE"}</span>
+								{elseif $record.daysUntilDue == 0}
+									&nbsp;<span class="label label-warning">({translate text="Due today"})</span>
+								{elseif $record.daysUntilDue == 1}
+									&nbsp;<span class="label label-warning"> {translate text="Due tomorrow"})</span>
+								{elseif $record.daysUntilDue <= 7}
+									&nbsp;<span class="label label-warning">({translate text="Due in %1% days" 1=$record.daysUntilDue})</span>
+								{/if}
+							</div>
+						</div>
+					{/if}
 
 					{if !empty($record.fine)}
 						<div class="row">
@@ -161,7 +169,7 @@
 						</div>
 					{/if}
 
-					{if $showRenewed && $record.renewCount || $defaultSortOption == 'renewed'}{* Show times renewed when sorting by that value (even if 0)*}
+					{if empty($record.return_claim) && ($showRenewed && $record.renewCount || $defaultSortOption == 'renewed')}{* Show times renewed when sorting by that value (even if 0)*}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Renewed'}</div>
 							<div class="result-value col-tn-8 col-lg-9">
@@ -189,22 +197,24 @@
 				{*<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-4 col-lg-3{else}col-xs-11{/if}">*}
 				<div class="col-xs-12 col-md-3">
 					<div class="btn-group btn-group-vertical btn-block">
-						{if !isset($record.canRenew) || $record.canRenew == true}
-							<a href="#" onclick="return AspenDiscovery.Account.renewTitle('{$record.userId}', '{$record.recordId}', '{$record.renewIndicator}');" class="btn btn-sm btn-primary">{translate text='Renew'}</a>
-						{elseif isset($record.autoRenew) && $record.autoRenew == true}
-							{if !empty($record.autoRenewError)}
-								{$record.autoRenewError}
+						{if empty($record.return_claim)}
+							{if !isset($record.canRenew) || $record.canRenew == true}
+								<a href="#" onclick="return AspenDiscovery.Account.renewTitle('{$record.userId}', '{$record.recordId}', '{$record.renewIndicator}');" class="btn btn-sm btn-primary">{translate text='Renew'}</a>
+							{elseif isset($record.autoRenew) && $record.autoRenew == true}
+								{if !empty($record.autoRenewError)}
+									{$record.autoRenewError}
+								{else}
+									{translate text='koha_auto_renew_auto' defaultText='If eligible, this item will renew on<br/>%1%' 1=$record.renewalDate}
+								{/if}
 							{else}
-								{translate text='koha_auto_renew_auto' defaultText='If eligible, this item will renew on<br/>%1%' 1=$record.renewalDate}
+								{translate text="Sorry, this title cannot be renewed"}
 							{/if}
-						{else}
-							{translate text="Sorry, this title cannot be renewed"}
 						{/if}
 					</div>
 					{if $showWhileYouWait}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record.groupedWorkId)}
-								<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.groupedWorkId}');" class="btn btn-sm btn-default">{translate text="You Might Also Like"}</button>
+								<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.groupedWorkId}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like"}</button>
 							{/if}
 						</div>
 					{/if}

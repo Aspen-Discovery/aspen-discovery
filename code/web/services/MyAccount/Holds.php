@@ -23,4 +23,12 @@ class MyAccount_Holds extends MyAccount{
 		$interface->assign('profile', $user);
 		$this->display('holds.tpl', 'My Holds');
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'My Holds');
+		return $breadcrumbs;
+	}
 }

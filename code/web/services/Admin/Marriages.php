@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Genealogy/Marriage.php';
 
-class Marriages extends ObjectEditor
+class Admin_Marriages extends ObjectEditor
 {
 	function getObjectType(){
 		return 'Marriage';
@@ -34,13 +34,45 @@ class Marriages extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'marriageId';
 	}
-	function getAllowableRoles(){
-		return array('genealogyContributor');
-	}
+
 	function getRedirectLocation($objectAction, $curObject){
-		return '/Person/' . $curObject->personId;
+		if ($curObject instanceof Marriage) {
+			return '/Person/' . $curObject->personId;
+		}else{
+			return '/Union/Search?searchSource=genealogy&lookfor=&searchIndex=GenealogyName&submit=Find';
+		}
 	}
 	function showReturnToList(){
 		return false;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->activeObject) && $this->activeObject instanceof Marriage){
+			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+			$person = new Person();
+			$person->personId = $this->activeObject->personId;
+			if ($person->find(true)){
+				$breadcrumbs[] = new Breadcrumb('/Person/' . $person->personId, $person->displayName());
+			}
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Marriage');
+		return $breadcrumbs;
+	}
+
+	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true)
+	{
+		parent::display($mainContentTemplate, $pageTitle, '', false);
+	}
+
+	function getActiveAdminSection()
+	{
+		return '';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer Genealogy']);
 	}
 }

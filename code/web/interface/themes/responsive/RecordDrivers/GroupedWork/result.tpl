@@ -9,13 +9,13 @@
 			{if $showCovers}
 				<div class="coversColumn col-xs-3 col-sm-3{if !empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center">
 					{if $disableCoverArt != 1}
-						<a href="{$summUrl}">
+						<a href="{$summUrl}" aria-hidden="true">
 							<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
 						</a>
 					{/if}
 
 					{if $showRatings}
-						{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating}
+						{include file="GroupedWork/title-rating.tpl" id=$summId ratingData=$summRating}
 					{/if}
 				</div>
 			{/if}
@@ -29,9 +29,6 @@
 							{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 							{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 						</a>
-						{if !empty($summTitleStatement)}
-							&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
-						{/if}
 						{if isset($summScore)}
 							&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
 						{/if}
@@ -200,6 +197,7 @@
 					{/foreach}
 				{/if}
 
+				{include file="GroupedWork/relatedLists.tpl"}
 
 				{* Short Mobile Entry for Formats when there aren't hidden formats *}
 				<div class="row visible-xs">
@@ -240,17 +238,16 @@
 				{if empty($viewingCombinedResults)}
 					{* Description Section *}
 					{if $summDescription}
+						{* Standard Description *}
 						<div class="row visible-xs">
 							<div class="result-label col-tn-3">Description</div>
 							<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
 						</div>
-					{/if}
 
-					{* Description Section *}
-					{if $summDescription}
-						<div class="row">
+						{* Mobile Description *}
+						<div class="row hidden-xs">
 							{* Hide in mobile view *}
-							<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$summId|escape}">
+							<div class="result-value col-sm-12" id="descriptionValue{$summId|escape}">
 								{$summDescription|highlight|truncate_html:450:"..."}
 							</div>
 						</div>
@@ -259,8 +256,6 @@
 					<div class="row">
 						<div class="col-xs-12">
 							{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$summRating recordUrl=$summUrl showMoreInfo=true}
-							{* TODO: id & shortId shouldn't be needed to be specified here, otherwise need to note when used.
-								summTitle only used by cart div, which is disabled as of now. 12-28-2015 plb *}
 						</div>
 					</div>
 				{/if}

@@ -34,13 +34,44 @@ class Obituaries extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'obituaryId';
 	}
-	function getAllowableRoles(){
-		return array('genealogyContributor');
-	}
 	function getRedirectLocation($objectAction, $curObject){
-		return '/Person/' . $curObject->personId;
+		if ($curObject instanceof Obituary) {
+			return '/Person/' . $curObject->personId;
+		}else{
+			return '/Union/Search?searchSource=genealogy&lookfor=&searchIndex=GenealogyName&submit=Find';
+		}
 	}
 	function showReturnToList(){
 		return false;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->activeObject) && $this->activeObject instanceof Obituary){
+			require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+			$person = new Person();
+			$person->personId = $this->activeObject->personId;
+			if ($person->find(true)){
+				$breadcrumbs[] = new Breadcrumb('/Person/' . $person->personId, $person->displayName());
+			}
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Obituary');
+		return $breadcrumbs;
+	}
+
+	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Admin/admin-sidebar.tpl', $translateTitle = true)
+	{
+		parent::display($mainContentTemplate, $pageTitle, '', false);
+	}
+
+	function getActiveAdminSection()
+	{
+		return '';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer Genealogy']);
 	}
 }

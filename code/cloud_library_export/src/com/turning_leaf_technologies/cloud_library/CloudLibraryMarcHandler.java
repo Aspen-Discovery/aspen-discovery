@@ -24,8 +24,6 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 class CloudLibraryMarcHandler extends DefaultHandler {
@@ -49,7 +47,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 	private DataField dataField;
 	private char subfieldCode;
 
-	private static CRC32 checksumCalculator = new CRC32();
+	private static final CRC32 checksumCalculator = new CRC32();
 
 	CloudLibraryMarcHandler(HashMap<String, CloudLibraryTitle> existingRecords, boolean doFullReload, long startTimeForLogging, Connection dbConn, RecordGroupingProcessor recordGroupingProcessor, GroupedWorkIndexer indexer, CloudLibraryExtractLogEntry logEntry, Logger logger) {
 		this.recordGroupingProcessor = recordGroupingProcessor;
@@ -118,7 +116,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 	}
 
 	public void characters(char[] ch, int start, int length) {
-		nodeContents = new String(ch, start, length).trim();
+		nodeContents += new String(ch, start, length);
 	}
 
 	public void endElement(String uri, String localName, String qName) {
@@ -127,16 +125,16 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 				processMarcRecord();
 				break;
 			case "marc:leader":
-				marcRecord.setLeader(marcFactory.newLeader(nodeContents));
+				marcRecord.setLeader(marcFactory.newLeader(nodeContents.trim()));
 				break;
 			case "marc:controlfield":
-				marcRecord.addVariableField(marcFactory.newControlField(tag, nodeContents));
+				marcRecord.addVariableField(marcFactory.newControlField(tag, nodeContents.trim()));
 				break;
 			case "marc:datafield":
 				marcRecord.addVariableField(dataField);
 				break;
 			case "marc:subfield":
-				dataField.addSubfield(marcFactory.newSubfield(subfieldCode, nodeContents));
+				dataField.addSubfield(marcFactory.newSubfield(subfieldCode, nodeContents.trim()));
 				break;
 		}
 		nodeContents = "";
@@ -298,43 +296,5 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 
 	public void startDocument() {
 		numDocuments = 0;
-	}
-
-	public void unparsedEntityDecl (String name, String publicId,
-	                                String systemId, String notationName)
-			throws SAXException
-	{
-		logger.debug("Un-parsed entity " + name);
-	}
-
-	public void ignorableWhitespace (char ch[], int start, int length)
-			throws SAXException
-	{
-		logger.debug("Ignoring whitespace");
-	}
-
-	public void skippedEntity (String name)
-			throws SAXException
-	{
-		logger.debug("Skipping entity " + name);
-	}
-
-	public void warning (SAXParseException e)
-			throws SAXException
-	{
-		logger.warn(e.toString());
-	}
-
-	public void error (SAXParseException e)
-			throws SAXException
-	{
-		logger.error(e.toString());
-	}
-
-	public void fatalError (SAXParseException e)
-			throws SAXException
-	{
-		logger.error(e.toString());
-		throw e;
 	}
 }

@@ -15,11 +15,11 @@ function addSearch(group, term, field)
 			+ '</div>';
 
 	// Terms
-	newSearch += "<div class='input-group col-sm-10'><input type='text' class='form-control' name='lookfor" + group + "[]'  value='" + jsEntityEncode(term) + "'>";
+	newSearch += "<div class='input-group col-sm-10'><input type='text' class='form-control' name='lookfor" + group + "[]'  value='" + jsEntityEncode(term) + "' aria-label='Search Term for Group " + group + "'>";
 
 	// Field
 	newSearch += "<span class='input-group-addon'>" + searchFieldLabel + " </span>";
-	newSearch += "<select class='form-control' name='type" + group + "[]'>";
+	newSearch += "<select class='form-control' name='type" + group + "[]' aria-label='Search Type for group " + group + "'>";
 	for (key in searchFields) {
 			newSearch += "<option value='" + key + "'";
 			if (key == field) {
@@ -36,7 +36,7 @@ function addSearch(group, term, field)
 			.find('[name^=lookfor]') // looks for group search inputs
 			.filter(":last")  // take only the last one (the one we just added)
 			.keypress(function(e){ // add event to prevent button clicking for pressing enter
-		if ( e.which == 13 ) {
+		if ( e.which === 13 ) {
 			e.preventDefault()
 		}
 	});
@@ -48,9 +48,9 @@ function addSearch(group, term, field)
 
 function addGroup(firstTerm, firstField, join)
 {
-	if (firstTerm  == undefined) {firstTerm  = '';}
-	if (firstField == undefined) {firstField = '';}
-	if (join       == undefined) {join       = '';}
+	if (firstTerm  === undefined) {firstTerm  = '';}
+	if (firstField === undefined) {firstField = '';}
+	if (join       === undefined) {join       = '';}
 
 	var newGroup = "";
 	newGroup += "<div id='group" + nextGroupNumber + "' class='group group" + (nextGroupNumber % 2) + " well well-sm'>";
@@ -60,11 +60,11 @@ function addGroup(firstTerm, firstField, join)
 	newGroup += "<a href='javascript:void(0);' class='delete btn btn-sm btn-warning' id='delete_link_" + nextGroupNumber + "' onclick='deleteGroupJS(this);'>" + deleteSearchGroupString + "</a>";
 
 	// Boolean operator drop-down
-	newGroup += "<div class='join'>" + searchMatch + " : ";
-	newGroup += "<select name='bool" + nextGroupNumber + "[]'>";
+	newGroup += "<div class='join'><label for='bool" + nextGroupNumber + "[]'>" + searchMatch + "</label>";
+	newGroup += "<select name='bool" + nextGroupNumber + "[]' id='bool" + nextGroupNumber + "[]' aria-label='Match Type For Group " + nextGroupNumber + "'>";
 	for (key in searchJoins) {
 		newGroup += "<option value='" + key + "'";
-		if (key == join) {
+		if (key === join) {
 			newGroup += " selected='selected'";
 		}
 		newGroup += ">" + searchJoins[key] + "</option>";
@@ -140,22 +140,22 @@ function reSortGroups()
 	}
 
 	// Hide Delete when only one search group is present
-	$('#delete_link_0').css('display', (nextGroupNumber == 1 ? 'none' : 'inline') );
+	$('#delete_link_0').css('display', (nextGroupNumber === 1 ? 'none' : 'inline') );
 
 	// If the last group was removed, add an empty group
-	if (nextGroupNumber == 0) {
-			addGroup();
+	if (nextGroupNumber === 0) {
+		addGroup();
 	}
 }
 
 function reNumGroup(oldGroup, newNum)
 {
 	// Keep the old details for use
-	var oldId  = oldGroup.id,
-			oldNum = oldId.substring(5, oldId.length);
+	var oldId  = oldGroup.id;
+	var oldNum = oldId.substring(5, oldId.length);
 
 	// Make sure the function was called correctly
-	if (oldNum != newNum) {
+	if (oldNum !== newNum) {
 		// Set the new details
 		$(oldGroup).attr('id', "group" + newNum)
 				.removeClass('group0 group1').addClass('group'+ newNum % 2);

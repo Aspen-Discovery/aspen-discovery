@@ -95,7 +95,7 @@ class WCPLRecordProcessor extends IlsRecordProcessor {
 		}
 	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode, identifier);
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
@@ -107,20 +107,5 @@ class WCPLRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 		return location;
-	}
-
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Wake County, load audiences based on collection code rather than based on the 008 and 006 fields
-		HashSet<String> targetAudiences = new HashSet<>();
-		for (ItemInfo printItem : printItems){
-			String collection = printItem.getShelfLocationCode();
-			if (collection != null) {
-				targetAudiences.add(collection.toLowerCase());
-			}
-		}
-
-		HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier);
-		groupedWork.addTargetAudiences(translatedAudiences);
-		groupedWork.addTargetAudiencesFull(translatedAudiences);
 	}
 }

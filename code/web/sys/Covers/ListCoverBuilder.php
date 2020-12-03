@@ -83,9 +83,9 @@ class ListCoverBuilder
 		$validListEntries = [];
 		/** @var UserListEntry $curListEntry */
 		foreach ($listTitles as $curListEntry) {
-			$groupedWorkRecordDriver = new GroupedWorkDriver($curListEntry->groupedWorkPermanentId);
-			if ($groupedWorkRecordDriver->isValid()) {
-				$validListEntries[] = $groupedWorkRecordDriver;
+			$recordDriver = $curListEntry->getRecordDriver();
+			if ($recordDriver != null) {
+				$validListEntries[] = $recordDriver;
 			}
 
 			if (count($validListEntries) >= 4){
@@ -93,8 +93,8 @@ class ListCoverBuilder
 			}
 		}
 		for ($i = min(count($validListEntries) - 1, 3); $i >= 0 ; $i--){
-			$groupedWorkRecordDriver = $validListEntries[$i];
-			$bookcoverUrl = $groupedWorkRecordDriver->getBookcoverUrl('medium', true);
+			$recordDriver = $validListEntries[$i];
+			$bookcoverUrl = $recordDriver->getBookcoverUrl('medium', true);
 			//Load the cover
 			if ($listEntryCoverImage = @file_get_contents($bookcoverUrl, false)) {
 				$listEntryImageResource = @imagecreatefromstring($listEntryCoverImage);

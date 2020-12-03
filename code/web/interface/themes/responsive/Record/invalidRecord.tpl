@@ -1,6 +1,12 @@
 <h1>{translate text='Invalid Record'}</h1>
+<p class="alert alert-warning">
+	{if empty($invalidWork)}
+		{translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog.	Please try your search again.' 1=$id}
+	{else}
+        {translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog, the record was not grouped properly. Please try your search again.' 1=$id}
+	{/if}
+</p>
 
-<p class="alert alert-warning">Sorry, we could not find a record with an id of <b>{$id}</b> in our catalog.	Please try your search again.</p>
 {if $materialRequestType == 1 }
 	<p class="alert alert-info">
 		Can't find what you are looking for? Try our <a href="/MaterialsRequest/NewRequest" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{'Materials Request'|translate} Service</a>.

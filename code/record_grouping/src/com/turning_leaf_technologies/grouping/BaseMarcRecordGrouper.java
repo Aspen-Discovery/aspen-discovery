@@ -17,21 +17,21 @@ import java.util.Iterator;
 import java.util.List;
 
 public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
-	private String recordNumberTag;
-	private char recordNumberSubfield;
-	private String recordNumberPrefix;
-	private BaseIndexingSettings baseSettings;
+	private final String recordNumberTag;
+	private final char recordNumberSubfield;
+	private final String recordNumberPrefix;
+	private final BaseIndexingSettings baseSettings;
 
-	private Connection dbConn;
+	private final Connection dbConn;
 
 	//Existing records
-	private static HashMap<String, IlsTitle> existingRecords = new HashMap<>();
+	private HashMap<String, IlsTitle> existingRecords = new HashMap<>();
 	private static PreparedStatement insertMarcRecordChecksum;
 
 	private boolean isValid = true;
 
-	BaseMarcRecordGrouper(String serverName, BaseIndexingSettings settings, Connection dbConn, boolean fullRegrouping, Logger logger) {
-		super(dbConn, serverName, logger);
+	BaseMarcRecordGrouper(String serverName, BaseIndexingSettings settings, Connection dbConn, BaseLogEntry logEntry, Logger logger) {
+		super(dbConn, serverName, logEntry, logger);
 		this.dbConn = dbConn;
 		recordNumberTag = settings.getRecordNumberTag();
 		recordNumberSubfield = settings.getRecordNumberSubfield();
@@ -42,7 +42,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		try {
 			insertMarcRecordChecksum = dbConn.prepareStatement("INSERT INTO ils_marc_checksums (ilsId, source, checksum, dateFirstDetected) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), dateFirstDetected=VALUES(dateFirstDetected)");
 		} catch (Exception e) {
-			logger.error("Error setting up database statement");
+			logEntry.incErrors("Error setting up database statement");
 			isValid = false;
 		}
 	}
@@ -58,7 +58,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 				DataField curRecordNumberField = (DataField) recordNumberField;
 				Subfield subfieldA = curRecordNumberField.getSubfield(recordNumberSubfield);
 				if (subfieldA != null && (recordNumberPrefix.length() == 0 || subfieldA.getData().length() > recordNumberPrefix.length())) {
-					if (subfieldA.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
+					if (subfieldA.getData().startsWith(recordNumberPrefix)) {
 						String recordNumber = subfieldA.getData().trim();
 						if (recordNumber.indexOf(' ') > 0){
 							recordNumber = recordNumber.substring(0, recordNumber.indexOf(' '));
@@ -419,7 +419,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 				}
 				break;
 			default:
-				logger.error("Unknown setting to load format from");
+				logEntry.incErrors("Unknown setting to load format from");
 				groupingFormat = "Other";
 		}
 		workForTitle.setGroupingCategory(groupingFormat);
@@ -510,6 +510,10 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		existingRecords.remove(identifier);
 	}
 
+	public HashMap<String, IlsTitle> getExistingRecords() {
+		return existingRecords;
+	}
+
 	public enum MarcStatus {
 		UNCHANGED, CHANGED, NEW
 	}
@@ -543,7 +547,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 					updateMarcRecordChecksum(recordNumber, indexingSettings.getName(), checksum, dateAdded);
 					//logger.debug("checksum changed for " + recordNumber + " was " + existingChecksum + " now its " + checksum);
 				} catch (IOException e) {
-					logger.error("Error writing marc", e);
+					logEntry.incErrors("Error writing marc", e);
 				}
 			} else {
 				//Update date first detected if needed
@@ -554,7 +558,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 				}
 			}
 		} else {
-			logger.error("Error did not find record number for MARC record");
+			logEntry.incErrors("Error did not find record number for MARC record");
 		}
 		return marcRecordStatus;
 	}
@@ -567,6 +571,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return null;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean loadExistingTitles(BaseLogEntry logEntry) {
 		try {
 			if (existingRecords == null) existingRecords = new HashMap<>();
@@ -585,7 +590,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			getAllExistingRecordsStmt.close();
 			return true;
 		} catch (SQLException e) {
-			logger.error("Error loading existing titles", e);
+			logEntry.incErrors("Error loading existing titles", e);
 			logEntry.addNote("Error loading existing titles" + e.toString());
 			return false;
 		}
@@ -599,10 +604,11 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			insertMarcRecordChecksum.setLong(4, dateFirstDetected);
 			insertMarcRecordChecksum.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("Unable to update checksum for ils marc record", e);
+			logEntry.incErrors("Unable to update checksum for ils marc record", e);
 		}
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isValid() {
 		return isValid;
 	}

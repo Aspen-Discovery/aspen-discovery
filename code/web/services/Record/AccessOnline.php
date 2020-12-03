@@ -1,16 +1,28 @@
 <?php
-require_once 'Record.php';
 
-class Record_AccessOnline extends Record_Record
+class Record_AccessOnline extends Action
 {
+	/** @var SideLoadedRecord $recordDriver */
+	private $recordDriver;
+	private $id;
 	function launch(){
 		global $interface;
 
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
-		$recordDriver = $this->recordDriver;
 
-		$relatedRecord = $recordDriver->getRelatedRecord();
+		if (strpos($id, ':')){
+			list($source, $id) = explode(":", $id);
+			$this->id = $id;
+			$interface->assign('id', $this->id);
+		}else{
+			$source = 'ils';
+		}
+
+		//Check to see if the record exists within the resources table
+		$this->recordDriver = RecordDriverFactory::initRecordDriverById($source . ':' . $this->id);
+
+		$relatedRecord = $this->recordDriver->getRelatedRecord();
 		$recordActions = $relatedRecord->getActions();
 
 		$actionIndex = $_REQUEST['index'];
@@ -21,12 +33,12 @@ class Record_AccessOnline extends Record_Record
 		global $sideLoadSettings;
 		$sideLoadId = -1;
 		foreach ($sideLoadSettings as $sideLoad){
-			if ($sideLoad->name == $recordDriver->getRecordType()){
+			if ($sideLoad->name == $this->recordDriver->getRecordType()){
 				$sideLoadId = $sideLoad->id;
 			}
 		}
 
-		$this->trackRecordUsage($sideLoadId, $recordDriver->getId());
+		$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
 		$this->trackUserUsageOfSideLoad($sideLoadId);
 
 		header('Location: ' . $redirectUrl);
@@ -71,5 +83,10 @@ class Record_AccessOnline extends Record_Record
 			$userUsage->usageCount = 1;
 			$userUsage->insert();
 		}
+	}
+
+	public function getBreadcrumbs()
+	{
+		return [];
 	}
 }

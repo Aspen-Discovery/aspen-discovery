@@ -5,16 +5,17 @@
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 			</div>
 		{/if}
+		{if !empty($accountMessages)}
+			{include file='systemMessages.tpl' messages=$accountMessages}
+		{/if}
 
-		{* Alternate Mobile MyAccount Menu *}
-		{include file="MyAccount/mobilePageHeader.tpl"}
 		<span class='availableHoldsNoticePlaceHolder'></span>
 		<div class="bookingSectionBody">
 			{if $libraryHoursMessage}
 				<div class='libraryHours alert alert-success'>{$libraryHoursMessage}</div>
 			{/if}
 
-			<h3>My Scheduled Items</h3>
+			<h1>My Scheduled Items</h1>
 
 			{if $offline}
 				<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your scheduled items at this time.</div>
@@ -47,8 +48,6 @@
 			{/if}
 		</div>
 	{else} {* Check to see if user is logged in *}
-		You must login to view this information. Click
-		<a href="/MyAccount/Login">here</a>
-		to login.
+		You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
 	{/if}
 {/strip}

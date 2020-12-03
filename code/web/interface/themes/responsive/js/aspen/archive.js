@@ -63,7 +63,7 @@ AspenDiscovery.Archive = (function(){
 
 		openSeadragonViewerSettings: function(){
 			return {
-				"id": "pika-openseadragon",
+				"id": "custom-openseadragon",
 				"prefixUrl": Globals.encodedRepositoryUrl + "\/sites\/all\/libraries\/openseadragon\/images\/",
 				"debugMode": false,
 				"djatokaServerBaseURL": Globals.encodedRepositoryUrl + "\/AJAX\/DjatokaResolver",
@@ -299,13 +299,13 @@ AspenDiscovery.Archive = (function(){
 			AspenDiscovery.Archive.changeActiveBookViewer(bookViewer, pagePid);
 
 			// store in browser history
-			let stateObj = {
+			var stateObj = {
 				bookPid: bookPid,
 				pagePid: pagePid,
 				viewer: bookViewer,
 				page: 'Book'
 			};
-			let newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'bookPid', bookPid);
+			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'bookPid', bookPid);
 			newUrl = AspenDiscovery.buildUrl(newUrl, 'pagePid', pagePid);
 			newUrl = AspenDiscovery.buildUrl(newUrl, 'viewer', bookViewer);
 			//Push the new url, but only if we aren't going back where we just were.
@@ -374,15 +374,6 @@ AspenDiscovery.Archive = (function(){
 					$("#exhibit-results-loading").hide();
 				}
 			});
-		},
-
-		loadExploreMore: function(pid){
-			$.getJSON(Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getExploreMoreContent", function(data){
-				if (data.success){
-					$("#explore-more-body").html(data.exploreMore);
-					AspenDiscovery.initCarousels("#explore-more-body .panel-collapse.in .jcarousel"); // Only initialize browse categories in open accordions
-				}
-			}).fail(AspenDiscovery.ajaxFail);
 		},
 
 		loadMetadata: function(pid, secondaryId){
@@ -482,8 +473,8 @@ AspenDiscovery.Archive = (function(){
 						this.pageDetails[pid]['jp2'],
 						AspenDiscovery.Archive.openSeadragonViewerSettings()
 				);
-				if (!$('#pika-openseadragon').hasClass('processed')) {
-					$('#pika-openseadragon').addClass('processed');
+				if (!$('#custom-openseadragon').hasClass('processed')) {
+					$('#custom-openseadragon').addClass('processed');
 					settings = AspenDiscovery.Archive.openSeadragonViewerSettings();
 					settings.tileSources = [];
 					settings.tileSources.push(tile);
@@ -622,45 +613,6 @@ AspenDiscovery.Archive = (function(){
 			$.getJSON(url, function(data){
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 			}).fail(AspenDiscovery.ajaxFail);
-			return false;
-		},
-
-		showSaveToListForm: function (trigger, id){
-			if (Globals.loggedIn){
-				AspenDiscovery.loadingMessage();
-				var url = Globals.path + "/Archive/" + id + "/AJAX?method=getSaveToListForm";
-				$.getJSON(url, function(data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(AspenDiscovery.ajaxFail);
-			}else{
-				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
-					AspenDiscovery.Archive.showSaveToListForm(trigger, id);
-				});
-			}
-			return false;
-		},
-
-		saveToList: function(id){
-			if (Globals.loggedIn){
-				var listId = $('#addToList-list').val(),
-						notes  = $('#addToList-notes').val(),
-						url    = Globals.path + "/Archive/" + encodeURIComponent(id) + "/AJAX",
-						params = {
-							'method':'saveToList'
-							,notes:notes
-							,listId:listId
-						};
-				$.getJSON(url, params,
-						function(data) {
-							if (data.success) {
-								AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
-								AspenDiscovery.Account.loadListData();
-							} else {
-								AspenDiscovery.showMessage("Error", data.message);
-							}
-						}
-				).fail(AspenDiscovery.ajaxFail);
-			}
 			return false;
 		},
 

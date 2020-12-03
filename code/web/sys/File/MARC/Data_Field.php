@@ -160,7 +160,7 @@ class File_MARC_Data_Field extends File_MARC_Field
             $indicator = ' ';
         } elseif (strlen($indicator) > 1) {
             $errorMessage = File_MARC_Exception::formatError(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_INDICATOR], array("tag" => $this->getTag(), "indicator" => $indicator));
-            throw new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_INDICATOR);
+            return new File_MARC_Exception($errorMessage);
         }
         return $indicator;
     }
@@ -295,8 +295,7 @@ class File_MARC_Data_Field extends File_MARC_Field
      * @param int $ind number of the indicator (1 or 2)
      * @param string $value value of the indicator
      *
-     * @return string       returns indicator value if it exists, otherwise false
-     * @throws PEAR_Exception
+     * @return string|File_MARC_Exception       returns indicator value if it exists, otherwise false
      */
     function setIndicator($ind, $value)
     {
@@ -312,8 +311,7 @@ class File_MARC_Data_Field extends File_MARC_Field
 
         default:
             $errorMessage = File_MARC_Exception::formatError(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_INDICATOR_REQUEST], array("indicator" => $ind));
-            throw new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_INDICATOR_REQUEST);
-            return false;
+            return new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_INDICATOR_REQUEST);
         }
 
         return $this->getIndicator($ind);
@@ -359,7 +357,7 @@ class File_MARC_Data_Field extends File_MARC_Field
      * {@link File_MARC_Subfield} is retrieved
      * @param bool   $pcre if true, then match as a regular expression
      *
-     * @return File_MARC_List|array returns a linked list of all subfields
+     * @return File_MARC_List|File_MARC_Subfield[] returns a linked list of all subfields
      * if $code is null, an array of {@link File_MARC_Subfield} objects if
      * one or more subfields match, or an empty array if no codes match $code
      */

@@ -1,10 +1,10 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+require_once ROOT_DIR . '/ResultsAction.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Genealogy_Results extends Action {
+class Genealogy_Results extends ResultsAction {
 
 	function launch()
 	{
@@ -14,7 +14,7 @@ class Genealogy_Results extends Action {
 		$aspenUsage->genealogySearches++;
 
 		//Check to see if a user is logged in with admin permissions
-		if (UserAccount::isLoggedIn() && UserAccount::userHasRole('genealogyContributor')){
+		if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Administer Genealogy')){
 			$interface->assign('userIsAdmin', true);
 		}else{
 			$interface->assign('userIsAdmin', false);
@@ -70,6 +70,9 @@ class Genealogy_Results extends Action {
 				exit;
 			}
 		}
+
+		// Hide Covers when the user has set that setting on the Search Results Page
+		$this->setShowCovers();
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/GenealogySolrConnector.php';
@@ -246,6 +249,12 @@ class Genealogy_Results extends Action {
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Genealogy Database');
 		$interface->assign('sidebar', 'Search/results-sidebar.tpl');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $displayQuery, 'Search/results-sidebar.tpl', false);
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $displayQuery, $sidebar, false);
+	}
+
+	function getBreadcrumbs()
+	{
+		return parent::getResultsBreadcrumbs('Genealogy Search');
 	}
 }

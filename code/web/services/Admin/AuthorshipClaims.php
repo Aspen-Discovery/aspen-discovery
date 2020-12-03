@@ -19,7 +19,7 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 
 		$object = new ClaimAuthorshipRequest();
 		$user = UserAccount::getLoggedInUser();
-		if (!UserAccount::userHasRole('opacAdmin')){
+		if (!UserAccount::userHasPermission('View Archive Authorship Claims')){
 			$homeLibrary = $user->getHomeLibrary();
 			$archiveNamespace = $homeLibrary->archiveNamespace;
 			$object->whereAdd("pid LIKE '{$archiveNamespace}:%'");
@@ -35,9 +35,6 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 	function getObjectStructure(){
 		return ClaimAuthorshipRequest::getObjectStructure();
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'archives');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
@@ -48,7 +45,25 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 		return false;
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
+		return UserAccount::userHasPermission('View Archive Authorship Claims');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#islandora_archive', 'Islandora Archives');
+		$breadcrumbs[] = new Breadcrumb('/Admin/AuthorshipClaims', 'Authorship Claims');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'islandora_archive';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View Archive Authorship Claims', 'View Library Archive Authorship Claims']);
+	}
 }

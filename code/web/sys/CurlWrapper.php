@@ -84,7 +84,7 @@ class CurlWrapper
 			);
 
 			global $configArray;
-			if ($configArray['System']['debug'] && $configArray['System']['debugCurl']){
+			if (IPAddress::showDebuggingInformation() && $configArray['System']['debugCurl']){
 				$default_curl_options[CURLOPT_VERBOSE] = true;
 			}
 
@@ -247,6 +247,9 @@ class CurlWrapper
 			$this->headers = $customHeaders;
 		} else {
 			$this->headers = array_merge($this->headers, $customHeaders);
+		}
+		if (!empty($this->curl_connection)){
+			curl_setopt($this->curl_connection, CURLOPT_HEADER, $this->headers);
 		}
 	}
 

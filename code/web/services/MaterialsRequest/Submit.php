@@ -148,7 +148,7 @@ class MaterialsRequest_Submit extends Action
 							$defaultStatus->libraryId = $homeLibrary->libraryId;
 							if (!$defaultStatus->find(true)) {
 								$interface->assign('success', false);
-								$interface->assign('error', 'There was an error submitting your '. translate('materials request') .', could not determine the default status.');
+								$interface->assign('error', translate('There was an error submitting your materials request, could not determine the default status.'));
 							} else {
 								$materialsRequest->status      = $defaultStatus->id;
 								$materialsRequest->dateCreated = time();
@@ -161,9 +161,10 @@ class MaterialsRequest_Submit extends Action
 									// Update Request Counts on success
 									$interface->assign('requestsThisYear', ++$requestsThisYear);
 									$interface->assign('openRequests', ++$openRequests);
+									$materialsRequest->sendStatusChangeEmail();
 								} else {
 									$interface->assign('success', false);
-									$interface->assign('error', 'There was an error submitting your '. translate('materials request') .'.');
+									$interface->assign('error', translate('There was an error submitting your materials request.'));
 								}
 							}
 						}
@@ -173,5 +174,13 @@ class MaterialsRequest_Submit extends Action
 		}
 
 		$this->display('submission-result.tpl', 'Submission Result');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/MyRequests', 'My Materials Requests');
+		return $breadcrumbs;
 	}
 }

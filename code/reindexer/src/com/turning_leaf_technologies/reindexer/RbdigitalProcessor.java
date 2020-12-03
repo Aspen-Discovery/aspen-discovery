@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.RbdigitalScope;
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -17,8 +18,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 class RbdigitalProcessor {
-	private GroupedWorkIndexer indexer;
-	private Logger logger;
+	private final GroupedWorkIndexer indexer;
+	private final Logger logger;
 
 	private PreparedStatement getProductInfoStmt;
 	private PreparedStatement getAvailabilityStmt;
@@ -35,7 +36,7 @@ class RbdigitalProcessor {
 		}
 	}
 
-	void processRecord(GroupedWorkSolr groupedWork, String identifier) {
+	void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -68,7 +69,7 @@ class RbdigitalProcessor {
 						primaryFormat = "eMagazine";
 						break;
 					default:
-						logger.warn("Unhandled rbdigital mediaType " + mediaType);
+						logEntry.addNote("Unhandled rbdigital mediaType " + mediaType);
 						formatCategory = mediaType;
 						primaryFormat = mediaType;
 						break;
@@ -121,7 +122,7 @@ class RbdigitalProcessor {
 				try {
 					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_rbdigital", primaryFormat, identifier));
 				} catch (Exception e) {
-					logger.warn("Could not translate format boost for " + primaryFormat + " create translation map format_boost_rbdigital");
+					logEntry.addNote("Could not translate format boost for " + primaryFormat + " create translation map format_boost_rbdigital");
 				}
 				rbdigitalRecord.setFormatBoost(formatBoost);
 				if (rawResponse.has("narrators")) {
@@ -196,6 +197,7 @@ class RbdigitalProcessor {
 				itemInfo.seteContentSource("RBdigital");
 				itemInfo.setIsEContent(true);
 				itemInfo.setShelfLocation("Online RBdigital Collection");
+				itemInfo.setDetailedLocation("Online RBdigital Collection");
 				itemInfo.setCallNumber("Online RBdigital");
 				itemInfo.setSortableCallNumber("Online RBdigital");
 				itemInfo.setFormat(primaryFormat);
@@ -253,11 +255,11 @@ class RbdigitalProcessor {
 			}
 			productRS.close();
 		} catch (NullPointerException e) {
-			logger.error("Null pointer exception processing rbdigital record ", e);
+			logEntry.incErrors("Null pointer exception processing rbdigital record ", e);
 		} catch (JSONException e) {
-			logger.error("Error parsing raw data for rbdigital", e);
+			logEntry.incErrors("Error parsing raw data for rbdigital", e);
 		} catch (SQLException e) {
-			logger.error("Error loading information from Database for rbdigital title", e);
+			logEntry.incErrors("Error loading information from Database for rbdigital title", e);
 		}
 	}
 

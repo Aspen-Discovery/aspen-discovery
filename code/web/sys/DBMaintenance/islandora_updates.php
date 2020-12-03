@@ -41,7 +41,7 @@ function getIslandoraUpdates() {
 
 			'islandora_samePika_cache' => array(
 					'title' => 'Islandora Same Pika Cache ',
-					'description' => 'Caching for Islandora same pika link to limit the times we need to load data',
+					'description' => 'Caching for Islandora same catalog record link to limit the times we need to load data',
 					'sql' => array(
 							"CREATE TABLE islandora_samepika_cache (
 									id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,

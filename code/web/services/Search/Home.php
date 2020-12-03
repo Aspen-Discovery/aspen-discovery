@@ -24,7 +24,6 @@ class Search_Home extends Action {
 		$activeLocation = $locationSingleton->getActiveLocation();
 		/** @var BrowseCategory[] $browseCategories */
 		if ($activeLocation != null){
-			/** @noinspection PhpUndefinedFieldInspection */
 			$browseCategories = $this->getBrowseCategories($activeLocation->getBrowseCategoryGroup()->getBrowseCategories());
 		}else{
 			$browseCategories = $this->getBrowseCategories($library->getBrowseCategoryGroup()->getBrowseCategories());
@@ -47,7 +46,8 @@ class Search_Home extends Action {
 			$interface->assign('browseMode', 'covers'); // fail safe: if no browseMode is set at all, go with covers
 		}
 
-		$this->display('home.tpl', 'Catalog Home');
+		$interface->assign('activeMenuOption', 'home');
+		$this->display('home.tpl', 'Catalog Home', '');
 	}
 
 
@@ -124,7 +124,6 @@ class Search_Home extends Action {
 			/** @var SubBrowseCategories $subCategory */
 			foreach ($selectedBrowseCategory->subBrowseCategories as $subCategory) {
 				// Get Needed Info about sub-category
-				/** @var BrowseCategory $temp */
 				$temp = new BrowseCategory();
 				$temp->get($subCategory->subCategoryId);
 				if ($temp) {
@@ -139,4 +138,8 @@ class Search_Home extends Action {
 		}
 	}
 
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

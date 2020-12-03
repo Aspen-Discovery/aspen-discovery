@@ -25,11 +25,11 @@ abstract class HorizonAPI3_23 extends HorizonAPI
      * @param string $newPin
      * @return string[] a message to the user letting them know what happened
      */
-	function updatePin($user, $oldPin, $newPin){
+	function updatePin(User $user, string $oldPin, string $newPin){
 		//Log the user in
 		list($userValid, $sessionToken) = $this->loginViaWebService($user->cat_username, $user->cat_password);
 		if (!$userValid){
-			return ['success' => false, 'errors' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
+			return ['success' => false, 'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
 		}
 
 		$updatePinUrl = $this->getBaseWebServiceUrl() . '/hzws/user/patron/changeMyPin';
@@ -45,14 +45,14 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			}
 			global $logger;
 			$logger->log('WCPL Driver error updating user\'s Pin :'.$errors, Logger::LOG_ERROR);
-			return ['success' => false, 'errors' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'];
+			return ['success' => false, 'message' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'];
 		} elseif (!empty($updatePinResponse['sessionToken'])){
 			// Success response isn't particularly clear, but returning the session Token seems to indicate the pin updated. plb 8-15-2016
 			$user->cat_password = $newPin;
 			$user->update();
 			return ['success' => true, 'message' => "Your pin number was updated successfully."];
 		}else{
-			return ['success' => false, 'errors' => "Sorry, we could not update your pin number. Please try again later."];
+			return ['success' => false, 'message' => "Sorry, we could not update your pin number. Please try again later."];
 		}
 	}
 
@@ -88,7 +88,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
 		} elseif (!empty($changeMyPinResponse['sessionToken'])){
-			if ($user->username == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Pika user
+			if ($user->username == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Aspen Discovery user
 				$user->cat_password = $newPin;
 				$user->update();
 			}
@@ -103,7 +103,10 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		}
 	}
 
-
+	function getEmailResetPinResultsTemplate()
+	{
+		return 'emailResetPinResults.tpl';
+	}
 
 	// Newer Horizon API version
 	function processEmailResetPinForm()
@@ -120,7 +123,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			if (!empty($patron->cat_password)) {
 				list($userValid, $sessionToken) = $this->loginViaWebService($barcode, $patron->cat_password);
 				if ($userValid) {
-					// Yay! We were able to login with the pin Pika has!
+					// Yay! We were able to login with the pin Aspen Discovery has!
 
 					//Now check for an email address
 					$lookupMyAccountInfoResponse = $this->getWebServiceResponse( $configArray['Catalog']['webServiceUrl']  . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true');
@@ -191,7 +194,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		$requestHeaders = array(
 			'Accept: application/json',
 			'Content-Type: application/json',
-			'SD-Originating-App-Id: Pika',
+			'SD-Originating-App-Id: Aspen Discovery',
 			'x-sirs-clientId: ' . $configArray['Catalog']['clientId'],
 		);
 
@@ -242,6 +245,6 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 
 	function getEmailResetPinTemplate()
 	{
-		return 'sirsiROAEmailResetPinLinkgotPasswordLink.tpl';
+		return 'sirsiROAEmailResetPinLink.tpl';
 	}
 }

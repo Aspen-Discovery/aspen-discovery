@@ -10,7 +10,7 @@
 		{if $canView}
 			<div class="large-image-wrapper">
 				<div class="large-image-content" oncontextmenu="return false;">
-					<div id="pika-openseadragon" class="openseadragon"></div>
+					<div id="custom-openseadragon" class="openseadragon"></div>
 				</div>
 			</div>
 
@@ -28,12 +28,12 @@
 				{if $anonymousLcDownload || ($loggedIn && $verifiedLcDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadLC">Download Large Image</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Login to Download Large Image</a>
+					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Sign in to Download Large Image</a>
 				{/if}
-				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
+				{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original Image</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Login to Download Original Image</a>
+					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Sign in to Download Original Image</a>
 				{/if}
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
@@ -43,7 +43,7 @@
 				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
+				<a onclick="return Account.Archive.showSaveToListForm(this, 'Islandora', '{$pid|escape}');" class="btn btn-default ">{translate text='Add to list'}</a>
 			{/if}
 		</div>
 
@@ -54,13 +54,13 @@
 	{if $canView}
 	<script type="text/javascript">
 		$(document).ready(function(){ldelim}
-			if (!$('#pika-openseadragon').hasClass('processed')) {ldelim}
+			if (!$('#custom-openseadragon').hasClass('processed')) {ldelim}
 				var openSeadragonSettings = {ldelim}
 					"pid":"{$pid}",
 					"resourceUri":{$front_image|@json_encode nofilter},
 					"tileSize":256,
 					"tileOverlap":0,
-					"id":"pika-openseadragon",
+					"id":"custom-openseadragon",
 					"settings": AspenDiscovery.Archive.openSeadragonViewerSettings()
 				{rdelim};
 				openSeadragonSettings.settings.tileSources = new Array();
@@ -78,7 +78,7 @@
 				openSeadragonSettings.settings.tileSources.push(backTile);
 
 				AspenDiscovery.Archive.openSeaDragonViewer = new OpenSeadragon(openSeadragonSettings.settings);
-				$('#pika-openseadragon').addClass('processed');
+				$('#custom-openseadragon').addClass('processed');
 			{rdelim}
 		{rdelim});
 	</script>

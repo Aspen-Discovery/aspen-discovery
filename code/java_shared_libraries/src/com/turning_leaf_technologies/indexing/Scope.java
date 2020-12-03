@@ -12,23 +12,22 @@ public class Scope implements Comparable<Scope>{
 	private String scopeName;
 	private String facetLabel;
 
-	private HashSet<Long> relatedNumericPTypes = new HashSet<>();
-	private boolean includeOverDriveCollection;
+	private final HashSet<Long> relatedNumericPTypes = new HashSet<>();
 	private Long libraryId;
 
 	//Determine if this is a library scope or location scope and store related information
 	private boolean isLibraryScope;
 	//If this is a library scope, we want to store pointers to the individual location scopes
-	private HashSet<Scope> locationScopes = new HashSet<>();
+	private final HashSet<Scope> locationScopes = new HashSet<>();
 
 	private boolean isLocationScope;
 	private Scope libraryScope;
 
 	private boolean restrictOwningLibraryAndLocationFacets;
 	//Ownership rules indicate direct ownership of a record
-	private HashSet<OwnershipRule> ownershipRules = new HashSet<>();
+	private final HashSet<OwnershipRule> ownershipRules = new HashSet<>();
 	//Inclusion rules indicate records owned by someone else that should be shown within the scope
-	private HashSet<InclusionRule> inclusionRules = new HashSet<>();
+	private final HashSet<InclusionRule> inclusionRules = new HashSet<>();
 	private String ilsCode;
 
 	private int publicListsToInclude;
@@ -41,8 +40,9 @@ public class Scope implements Comparable<Scope>{
 	private HooplaScope hooplaScope;
 	private RbdigitalScope rbdigitalScope;
 	private CloudLibraryScope cloudLibraryScope;
+	private Axis360Scope axis360Scope;
 
-	private HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<>();
+	private final HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<>();
 
 	public String getScopeName() {
 		return scopeName;
@@ -296,7 +296,15 @@ public class Scope implements Comparable<Scope>{
 		this.groupedWorkDisplaySettings = groupedWorkDisplaySettings;
 	}
 
-	public class InclusionResult{
+	public Axis360Scope getAxis360Scope() {
+		return axis360Scope;
+	}
+
+	public void setAxis360Scope(Axis360Scope axis360Scope) {
+		this.axis360Scope = axis360Scope;
+	}
+
+	public static class InclusionResult{
 		public boolean isIncluded;
 		public String localUrl;
 

@@ -6,13 +6,15 @@ require_once ROOT_DIR . '/sys/Interface.php';
 require_once ROOT_DIR . '/sys/AspenError.php';
 require_once ROOT_DIR . '/sys/Module.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
+require_once ROOT_DIR . '/sys/SystemLogging/UsageByIPAddress.php';
+require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 global $aspenUsage;
 $aspenUsage = new AspenUsage();
 $aspenUsage->year = date('Y');
 $aspenUsage->month = date('n');
 
 global $errorHandlingEnabled;
-$errorHandlingEnabled = true;
+$errorHandlingEnabled = 0;
 
 $startTime = microtime(true);
 require_once ROOT_DIR . '/sys/Logger.php';
@@ -20,6 +22,16 @@ require_once ROOT_DIR . '/sys/Logger.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 global $configArray;
 $configArray = readConfig();
+
+//This has to be done after reading configuration so we can get the servername
+global $usageByIPAddress;
+global $instanceName;
+$usageByIPAddress = new UsageByIPAddress();
+$usageByIPAddress->year = date('Y');
+$usageByIPAddress->month = date('n');
+$usageByIPAddress->ipAddress = IPAddress::getClientIP();
+$usageByIPAddress->instance = $instanceName;
+
 require_once ROOT_DIR . '/sys/Timer.php';
 global $timer;
 $timer = new Timer($startTime);
@@ -30,11 +42,6 @@ $memoryWatcher = new MemoryWatcher();
 global $logger;
 $logger = new Logger();
 $timer->logTime("Read Config");
-
-if ($configArray['System']['debug']) {
-	ini_set('display_errors', true);
-	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
-}
 
 //Use output buffering to allow session cookies to have different values
 // this can't be determined before session_start is called
@@ -49,18 +56,46 @@ try{
 	//Table has not been created yet, ignore it
 }
 
+try{
+	$usageByIPAddress->find(true);
+}catch (Exception $e){
+	//Table has not been created yet, ignore it
+}
+$usageByIPAddress->lastRequest = time();
+$usageByIPAddress->numRequests++;
+
 $timer->logTime("Initialized Database");
 requireSystemLibraries();
 initLocale();
 
+//Check to see if we should be blocking based on the IP address
+if (IPAddress::isClientIpBlocked()){
+	$aspenUsage->blockedRequests++;
+	$aspenUsage->update();
+	try {
+		$usageByIPAddress->numBlockedRequests++;
+		$usageByIPAddress->update();
+	}catch (Exception $e){
+		//Ignore this, the class has not been created yet
+	}
+
+	http_response_code(403);
+	echo("<h1>Forbidden</h1><p><strong>We are unable to handle your request.</strong></p>");
+	die();
+}
+if (IPAddress::showDebuggingInformation()) {
+	ini_set('display_errors', true);
+	error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+}
+
 global $enabledModules;
 $enabledModules = [];
 try {
-	$module = new Module();
-	$module->enabled = true;
-	$module->find();
-	while ($module->fetch()) {
-		$enabledModules[$module->name] = clone $module;
+	$aspenModule = new Module();
+	$aspenModule->enabled = true;
+	$aspenModule->find();
+	while ($aspenModule->fetch()) {
+		$enabledModules[$aspenModule->name] = clone $aspenModule;
 	}
 }catch (Exception $e){
 	//Modules are not installed yet
@@ -73,7 +108,6 @@ $timer->logTime('Bootstrap done');
 
 function initMemcache(){
 	//Connect to memcache
-	/** @var Memcache $memCache */
 	global $memCache;
 
     require_once ROOT_DIR . '/sys/MemoryCache/Memcache.php';
@@ -109,6 +143,7 @@ function requireSystemLibraries(){
 	require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 	require_once ROOT_DIR . '/sys/Translation/Translator.php';
 	require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
+	require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 }
 
 function initLocale(){
@@ -133,7 +168,7 @@ function loadLibraryAndLocation(){
 	$timer->logTime('Created Location');
 
 	global $active_ip;
-	$active_ip = $locationSingleton->getActiveIp();
+	$active_ip = IPAddress::getActiveIp();
 	if (!isset($_COOKIE['test_ip']) || $active_ip != $_COOKIE['test_ip']){
 		if ($active_ip == ''){
 			setcookie('test_ip', $active_ip, time() - 1000, '/');
@@ -170,11 +205,11 @@ function loadLibraryAndLocation(){
 
 function disableErrorHandler(){
 	global $errorHandlingEnabled;
-	$errorHandlingEnabled = false;
+	$errorHandlingEnabled--;
 }
 function enableErrorHandler(){
 	global $errorHandlingEnabled;
-	$errorHandlingEnabled = true;
+	$errorHandlingEnabled++;
 }
 
 function array_remove_by_value($array, $value){

@@ -1,7 +1,7 @@
 AspenDiscovery.CloudLibrary = (function () {
 	return {
 		cancelHold: function (patronId, id) {
-			let url = Globals.path + "/CloudLibrary/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
+			var url = Globals.path + "/CloudLibrary/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -26,7 +26,7 @@ AspenDiscovery.CloudLibrary = (function () {
 		checkOutTitle: function (id) {
 			if (Globals.loggedIn) {
 				//Get any prompts needed for checking out a title
-				let promptInfo = AspenDiscovery.CloudLibrary.getCheckOutPrompts(id);
+				var promptInfo = AspenDiscovery.CloudLibrary.getCheckOutPrompts(id);
 				// noinspection JSUnresolvedVariable
 				if (!promptInfo.promptNeeded) {
 					AspenDiscovery.CloudLibrary.doCheckOut(promptInfo.patronId, id);
@@ -41,7 +41,7 @@ AspenDiscovery.CloudLibrary = (function () {
 
 		doCheckOut: function (patronId, id) {
 			if (Globals.loggedIn) {
-				let ajaxUrl = Globals.path + "/CloudLibrary/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
+				var ajaxUrl = Globals.path + "/CloudLibrary/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
 				$.ajax({
 					url: ajaxUrl,
 					cache: false,
@@ -53,7 +53,7 @@ AspenDiscovery.CloudLibrary = (function () {
 							// noinspection JSUnresolvedVariable
 							if (data.noCopies === true) {
 								AspenDiscovery.closeLightbox();
-								let ret = confirm(data.message);
+								var ret = confirm(data.message);
 								if (ret === true) {
 									AspenDiscovery.CloudLibrary.doHold(patronId, id);
 								}
@@ -79,7 +79,7 @@ AspenDiscovery.CloudLibrary = (function () {
 		},
 
 		doHold: function (patronId, id) {
-			let url = Globals.path + "/CloudLibrary/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
+			var url = Globals.path + "/CloudLibrary/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -101,8 +101,8 @@ AspenDiscovery.CloudLibrary = (function () {
 		},
 
 		getCheckOutPrompts: function (id) {
-			let url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getCheckOutPrompts";
-			let result = true;
+			var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getCheckOutPrompts";
+			var result = true;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -125,8 +125,8 @@ AspenDiscovery.CloudLibrary = (function () {
 		},
 
 		getHoldPrompts: function (id) {
-			let url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getHoldPrompts";
-			let result = true;
+			var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getHoldPrompts";
+			var result = true;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -151,7 +151,7 @@ AspenDiscovery.CloudLibrary = (function () {
 		placeHold: function (id) {
 			if (Globals.loggedIn) {
 				//Get any prompts needed for placing holds (email and format depending on the interface.
-				let promptInfo = AspenDiscovery.CloudLibrary.getHoldPrompts(id, 'hold');
+				var promptInfo = AspenDiscovery.CloudLibrary.getHoldPrompts(id, 'hold');
 				// noinspection JSUnresolvedVariable
 				if (!promptInfo.promptNeeded) {
 					AspenDiscovery.CloudLibrary.doHold(promptInfo.patronId, id);
@@ -165,21 +165,21 @@ AspenDiscovery.CloudLibrary = (function () {
 		},
 
 		processCheckoutPrompts: function () {
-			let id = $("#id").val();
-			let patronId = $("#patronId option:selected").val();
+			var id = $("#id").val();
+			var patronId = $("#patronId option:selected").val();
 			AspenDiscovery.closeLightbox();
 			return AspenDiscovery.CloudLibrary.doCheckOut(patronId, id);
 		},
 
 		processHoldPrompts: function () {
-			let id = $("#id").val();
-			let patronId = $("#patronId option:selected").val();
+			var id = $("#id").val();
+			var patronId = $("#patronId option:selected").val();
 			AspenDiscovery.closeLightbox();
 			return AspenDiscovery.CloudLibrary.doHold(patronId, id);
 		},
 
 		renewCheckout: function (patronId, recordId) {
-			let url = Globals.path + "/CloudLibrary/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			var url = Globals.path + "/CloudLibrary/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -200,7 +200,7 @@ AspenDiscovery.CloudLibrary = (function () {
 		},
 
 		returnCheckout: function (patronId, recordId) {
-			let url = Globals.path + "/CloudLibrary/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
+			var url = Globals.path + "/CloudLibrary/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
 			$.ajax({
 				url: url,
 				cache: false,
@@ -222,7 +222,7 @@ AspenDiscovery.CloudLibrary = (function () {
 		},
 
 		getStaffView: function (id) {
-			let url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getStaffView";
+			var url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getStaffView";
 			$.getJSON(url, function (data){
 				if (!data.success){
 					AspenDiscovery.showMessage('Error', data.message);

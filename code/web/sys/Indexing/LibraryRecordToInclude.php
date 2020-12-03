@@ -8,8 +8,7 @@ class LibraryRecordToInclude extends RecordToInclude{
 	static function getObjectStructure(){
 		$library = new Library();
 		$library->orderBy('displayName');
-		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('libraryAdmin')){
+		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}

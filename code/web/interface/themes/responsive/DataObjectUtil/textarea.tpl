@@ -20,4 +20,18 @@
 	});
 	{/literal}
 	</script>
+{elseif $property.type == 'markdown'}
+	<script type="text/javascript">
+		$(document).ready(function(){ldelim}
+			var simplemde{$propName} = new SimpleMDE({ldelim}
+				element: $("#{$propName}")[0],
+				toolbar: ["heading-1", "heading-2", "heading-3", "heading-smaller", "heading-bigger", "|",
+					"bold", "italic", "strikethrough", "|",
+					"quote", "unordered-list", "ordered-list", "|",
+					"link", "image", {ldelim}name:"uploadImage", action:function (){ldelim} return AspenDiscovery.WebBuilder.getUploadImageForm('{$propName}'){rdelim},className: "fa fa-upload",title: "Upload Image"{rdelim}, "|",
+					"preview", "guide"],
+			{rdelim});
+			AspenDiscovery.WebBuilder.editors['{$propName}'] = simplemde{$propName};
+		{rdelim});
+	</script>
 {/if}

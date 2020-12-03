@@ -53,7 +53,6 @@ class Hoopla_AJAX extends Action
 							'buttons' => '<button class="btn btn-primary" type= "button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\');">Check Out</button>'
 						);
 				} elseif (count($hooplaUsers) == 1) {
-					/** @var User $hooplaUser */
 					$hooplaUser = reset($hooplaUsers);
 					if ($hooplaUser->id != $user->id) {
 						$interface->assign('hooplaUser', $hooplaUser); // Display the account name when not using the main user
@@ -174,8 +173,7 @@ class Hoopla_AJAX extends Action
 				$id = $_REQUEST['id'];
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 				$driver = new HooplaDriver();
-				$result = $driver->returnCheckout($patron, $id);
-				return $result;
+				return $driver->returnCheckout($patron, $id);
 			}else{
 				return array('success'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to return titles for that user.');
 			}
@@ -184,4 +182,8 @@ class Hoopla_AJAX extends Action
 		}
 	}
 
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

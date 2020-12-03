@@ -17,7 +17,7 @@ class OverDriveSetting extends DataObject
 
 	public static function getObjectStructure()
 	{
-		$structure = array(
+		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'url' => array('property' => 'url', 'type' => 'url', 'label' => 'url', 'description' => 'The publicly accessible URL'),
 			'patronApiUrl' => array('property' => 'patronApiUrl', 'type' => 'url', 'label' => 'Patron API URL', 'description' => 'The URL where the Patron API is located'),
@@ -30,6 +30,5 @@ class OverDriveSetting extends DataObject
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 		);
-		return $structure;
 	}
 }

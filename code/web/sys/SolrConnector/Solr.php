@@ -77,7 +77,7 @@ abstract class Solr
 	/**
 	 * Should we collect highlighting data?
 	 */
-	private $_highlight = false;
+	protected $_highlight = false;
 
 	/**
 	 * How should we cache the search specs?
@@ -172,7 +172,6 @@ abstract class Solr
 
 	public function pingServer($failOnError = true)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $timer;
 		global $configArray;
@@ -203,6 +202,8 @@ abstract class Solr
 			// Test to see solr is online
 			$test_url = $this->host . "/admin/ping";
 			$test_client = new CurlWrapper();
+			$test_client->setTimeout(1);
+			$test_client->setConnectTimeout(1);
 			$result = $test_client->curlGetPage($test_url);
 			if ($result !== false) {
 				// Even if we get a response, make sure it's a 'good' one.
@@ -343,7 +344,7 @@ abstract class Solr
 	 * @param string $fieldsToReturn An optional list of fields to return separated by commas
 	 * @access    public
 	 * @return    array                            The requested resource
-	 * @throws    object                            PEAR Error
+	 * @throws    AspenError
 	 */
 	function getRecord($id, $fieldsToReturn = null)
 	{
@@ -380,7 +381,7 @@ abstract class Solr
 	 * @param string $fieldsToReturn An optional list of fields to return separated by commas
 	 * @access    public
 	 * @return    array                            The requested resources
-	 * @throws    object                            PEAR Error
+	 * @throws    AspenError
 	 */
 	function getRecords($ids, $fieldsToReturn = null)
 	{
@@ -529,8 +530,8 @@ abstract class Solr
 	 * @param array $structure the SearchSpecs-derived structure or substructure defining the search, derived from the yaml file
 	 * @param array $values the various values in an array with keys 'onephrase', 'and', 'or' (and perhaps others)
 	 * @param string $joiner
-	 * @return    string                            A search string suitable for adding to a query URL
-	 * @throws    object                            PEAR Error
+	 * @return    string A search string suitable for adding to a query URL
+	 * @throws    AspenError
 	 * @static
 	 */
 	private function _applySearchSpecs($structure, $values, $joiner = "OR")
@@ -859,7 +860,7 @@ abstract class Solr
 	 * @access	public
 	 * @param	 array	 $search		  An array of search parameters
 	 * @param	 boolean $forDisplay  Whether or not the query is being built for display purposes
-	 * @throws	object							PEAR Error
+	 * @throws	AspenError
 	 * @static
 	 * @return	string							The query
 	 */
@@ -1031,7 +1032,7 @@ abstract class Solr
 	 *                                                                            an error key set (true)?
 	 * @access    public
 	 * @return    array                             An array of query results
-	 * @throws    object                            PEAR Error
+	 * @throws    AspenError
 	 */
 	function search($query, $handler = null, $filter = null, $start = 0,
 	                $limit = 20, $facet = null, $spell = '', $dictionary = null,
@@ -1363,19 +1364,7 @@ abstract class Solr
 
 		// Enable highlighting
 		if ($this->_highlight) {
-			global $solrScope;
-			$highlightFields = $fields . ",table_of_contents";
-			$highlightFields = str_replace(",related_record_ids_$solrScope", '', $highlightFields);
-			$highlightFields = str_replace(",related_items_$solrScope", '', $highlightFields);
-			$highlightFields = str_replace(",format_$solrScope", '', $highlightFields);
-			$highlightFields = str_replace(",format_category_$solrScope", '', $highlightFields);
-			$options['hl'] = 'true';
-			$options['hl.fl'] = $highlightFields;
-			$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
-			$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
-			$options['f.display_description.hl.fragsize'] = 50000;
-			$options['f.title_display.hl.fragsize'] = 1000;
-			$options['f.title_full.hl.fragsize'] = 1000;
+			$this->getHighlightOptions($fields, $options);
 		}
 
 		$solrSearchDebug = print_r($options, true) . "\n";
@@ -1617,7 +1606,7 @@ abstract class Solr
 	 *                                                                                    should we fail outright (false) or
 	 *                                                                                    treat it as an empty result set with
 	 *                                                                                    an error key set (true)?
-	 * @return    array|AspenError                                                     The Solr response (or a PEAR error)
+	 * @return    array|AspenError                                                     The Solr response (or an AspenError)
 	 * @access    protected
 	 */
 	protected function _select($method = 'GET', $params = array(), $returnSolrError = false, $queryHandler = 'select')
@@ -2108,6 +2097,14 @@ abstract class Solr
 	function getIndex()
 	{
 		return $this->index;
+	}
+
+	protected function getHighlightOptions($fields, &$options){
+		$highlightFields = $fields;
+		$options['hl'] = 'true';
+		$options['hl.fl'] = $highlightFields;
+		$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
+		$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
 	}
 }
 

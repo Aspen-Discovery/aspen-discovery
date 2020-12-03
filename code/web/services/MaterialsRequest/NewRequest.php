@@ -11,11 +11,10 @@ class MaterialsRequest_NewRequest extends Action
 
 	function launch()
 	{
-		global /** @var Location $locationSingleton */
-		$configArray,
-		$interface,
-		$library,
-		$locationSingleton;
+		global $configArray;
+		global $interface;
+		global $library;
+		global $locationSingleton;
 
 		if (!UserAccount::isLoggedIn()) {
 			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequest');
@@ -77,9 +76,9 @@ class MaterialsRequest_NewRequest extends Action
 			$interface->assign('requestFormFields', $requestFormFields);
 
 			// Add bookmobile Stop to the pickup locations if that form field is being used.
-			foreach ($requestFormFields as $catagory) {
+			foreach ($requestFormFields as $category) {
 				/** @var MaterialsRequestFormFields $formField */
-				foreach ($catagory as $formField) {
+				foreach ($category as $formField) {
 					if ($formField->fieldType == 'bookmobileStop') {
 						$pickupLocations[] = array(
 							'id' => 'bookmobile',
@@ -108,5 +107,13 @@ class MaterialsRequest_NewRequest extends Action
 
 			$this->display('new.tpl', 'Materials Request');
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'New Materials Request');
+		return $breadcrumbs;
 	}
 }

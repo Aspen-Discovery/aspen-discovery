@@ -29,6 +29,14 @@ function getTranslationUpdates()
 			],
 		],
 
+		'language_locales' => [
+			'title' => 'Language locales',
+			'description' => 'Add locales to languages for use when formatting numbers',
+			'sql' => [
+				"ALTER TABLE languages ADD COLUMN locale VARCHAR(10) DEFAULT 'en-US'"
+			]
+		],
+
 		'translation_terms' => [
 			'title' => 'Translation Term',
 			'description' => 'Initial setup of translation term table',
@@ -92,6 +100,15 @@ function getTranslationUpdates()
 			'description' => 'Make sure that translations are case sensitive so Book and BOOK can be translated differently',
 			'sql' => [
 				"ALTER TABLE translation_terms CHANGE term term VARCHAR(50) COLLATE utf8_bin",
+				"TRUNCATE TABLE cached_values"
+			],
+		],
+
+		'translation_term_increase_length' => [
+			'title' => 'Translation term increase length of term',
+			'description' => 'Make sure that translations are case sensitive so Book and BOOK can be translated differently',
+			'sql' => [
+				"ALTER TABLE translation_terms CHANGE term term VARCHAR(1000) COLLATE utf8_bin",
 				"TRUNCATE TABLE cached_values"
 			],
 		],

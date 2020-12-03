@@ -8,4 +8,9 @@ class Error_Handle404 extends Action {
 		http_response_code(404);
 		$this->display('404.tpl', 'Page Not Found');
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

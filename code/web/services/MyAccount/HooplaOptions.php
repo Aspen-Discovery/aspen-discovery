@@ -24,11 +24,6 @@ class MyAccount_HooplaOptions extends MyAccount
 				$interface->assign('selectedUser', $patronId);
 			}
 
-			$patronUpdateForm = $patron->getPatronUpdateForm();
-			if ($patronUpdateForm != null){
-				$interface->assign('patronUpdateForm', $patronUpdateForm);
-			}
-
 			// Save/Update Actions
 			global $offlineMode;
 			if (isset($_POST['updateScope']) && !$offlineMode) {
@@ -44,5 +39,13 @@ class MyAccount_HooplaOptions extends MyAccount
 		}
 
 		$this->display('hooplaOptions.tpl', 'Account Settings');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Hoopla Options');
+		return $breadcrumbs;
 	}
 }

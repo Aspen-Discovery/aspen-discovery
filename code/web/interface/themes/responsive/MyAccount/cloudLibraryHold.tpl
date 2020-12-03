@@ -7,11 +7,11 @@
 				<div class="{*col-xs-10 *}text-center">
 					{if $record.coverUrl}
 						{if $record.transactionId && $record.linkUrl}
-							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.transactionId|escape:"url"}">
+							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.transactionId|escape:"url"}" aria-hidden="true">
 								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 						{/if}
 					{/if}
 				</div>
@@ -88,14 +88,14 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
-							<button onclick="return AspenDiscovery.CloudLibrary.checkOutTitle('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">{translate text="Checkout"}</button>
+							<button onclick="return AspenDiscovery.CloudLibrary.checkOutTitle('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-action">{translate text="Checkout"}</button>
 						{/if}
 						<button onclick="return AspenDiscovery.CloudLibrary.cancelHold('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">Cancel Hold</button>
 					</div>
 					{if $showWhileYouWait}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record.groupedWorkId)}
-								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">{translate text="While You Wait"}</button>
+								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait"}</button>
 							{/if}
 						</div>
 					{/if}

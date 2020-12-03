@@ -5,6 +5,7 @@ import com.turning_leaf_technologies.dates.DateUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
@@ -29,7 +30,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String> author2Role = new HashSet<>();
 	private HashSet<String> awards = new HashSet<>();
 	private HashSet<String> barcodes = new HashSet<>();
-	private HashSet<String> bisacSubjects = new HashSet<>();
+	private final HashSet<String> bisacSubjects = new HashSet<>();
 	private String callNumberA;
 	private String callNumberFirst;
 	private String callNumberSubject;
@@ -90,9 +91,12 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String> subjects = new HashSet<>();
 	private HashMap<String, Long> upcs = new HashMap<>();
 
-	private Logger logger;
-	private GroupedWorkIndexer groupedWorkIndexer;
+	private final Logger logger;
+	private final GroupedWorkIndexer groupedWorkIndexer;
 	private HashSet<String> systemLists = new HashSet<>();
+	private final HashSet<Long> userReadingHistoryLink = new HashSet<>();
+	private final HashSet<Long> userRatingLink = new HashSet<>();
+	private final HashSet<Long> userNotInterestedLink = new HashSet<>();
 
 	public GroupedWorkSolr(GroupedWorkIndexer groupedWorkIndexer, Logger logger) {
 		this.logger = logger;
@@ -394,6 +398,11 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("rating", rating == -1f ? 2.5 : rating);
 		doc.addField("rating_facet", getRatingFacet(rating));
 
+		//Links to users
+		doc.addField("user_rating_link", userRatingLink);
+		doc.addField("user_not_interested_link", userNotInterestedLink);
+		doc.addField("user_reading_history_link", userReadingHistoryLink);
+
 		doc.addField("description", Util.getCRSeparatedString(description));
 		doc.addField("display_description", displayDescription);
 
@@ -502,7 +511,8 @@ public class GroupedWorkSolr implements Cloneable {
 					Scope curScopeDetails = curScope.getScope();
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
 						addUniqueFieldValue(doc, "collection_" + curScopeName, curItem.getCollection());
-						addUniqueFieldValue(doc, "detailed_location_" + curScopeName, curItem.getShelfLocation());
+						addUniqueFieldValue(doc, "detailed_location_" + curScopeName, curItem.getDetailedLocation());
+						addUniqueFieldValue(doc, "shelf_location_" + curScopeName, curItem.getShelfLocation());
 					}
 					if (curItem.isEContent() || curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
 						Long daysSinceAdded;
@@ -791,7 +801,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private void addUniqueFieldValue(SolrInputDocument doc, String fieldName, String value) {
-		if (value == null) return;
+		if (value == null || value.length() == 0) return;
 		Collection<Object> fieldValues = doc.getFieldValues(fieldName);
 		if (fieldValues == null) {
 			doc.addField(fieldName, value);
@@ -976,6 +986,10 @@ public class GroupedWorkSolr implements Cloneable {
 	private static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 
 	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
+		this.setTitle(shortTitle, displayTitle, sortableTitle, recordFormat, false);
+	}
+
+	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat, boolean forceUpdate) {
 		if (shortTitle != null) {
 			shortTitle = StringUtils.trimTrailingPunctuation(shortTitle);
 
@@ -1012,7 +1026,7 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 			}
 
-			if (updateTitle) {
+			if (updateTitle || forceUpdate) {
 				//Strip out anything in brackets unless that would cause us to show nothing
 				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
 				if (shortTitle.length() > 0) {
@@ -1080,6 +1094,10 @@ public class GroupedWorkSolr implements Cloneable {
 			this.subTitle = subTitle;
 			keywords.add(subTitle);
 		}
+	}
+
+	void clearSubTitle(){
+		this.subTitle = "";
 	}
 
 	void addFullTitles(Set<String> fullTitles) {
@@ -1265,6 +1283,12 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void addSeries(String series) {
 		addSeriesInfoToField(series, this.series);
+	}
+
+	void clearSeries(){
+		this.seriesWithVolume.clear();
+		this.series2.putAll(this.series);
+		this.series.clear();
 	}
 
 	void addSeriesWithVolume(String seriesName, String volume) {
@@ -1822,4 +1846,17 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		return autoReindexTimes;
 	}
+
+	public void addReadingHistoryLink(long userId) {
+		this.userReadingHistoryLink.add(userId);
+	}
+
+	public void addRatingLink(long userId){
+		this.userRatingLink.add(userId);
+	}
+
+	public void addNotInterestedLink(long userId){
+		this.userNotInterestedLink.add(userId);
+	}
+
 }

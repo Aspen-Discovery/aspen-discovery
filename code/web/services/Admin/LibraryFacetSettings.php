@@ -39,17 +39,6 @@ class LibraryFacetSettings extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
-	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
-	}
 	function getAdditionalObjectActions($existingObject){
 		$objectActions = array();
 		if (isset($existingObject) && $existingObject != null){
@@ -59,5 +48,27 @@ class LibraryFacetSettings extends ObjectEditor
 			);
 		}
 		return $objectActions;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		if (!empty($this->activeObject) && $this->activeObject instanceof LibraryFacetSetting){
+			$breadcrumbs[] = new Breadcrumb('/Admin/Libraries?objectAction=edit&id=' . $this->activeObject->libraryId, 'Library');
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Archive Facet Settings');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}
 }

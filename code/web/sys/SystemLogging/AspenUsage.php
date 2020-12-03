@@ -22,6 +22,9 @@ class AspenUsage extends DataObject
 	public $userListSearches;
 	public $websiteSearches;
 	public $eventsSearches;
+	public $ebscoEdsSearches;
+	public $blockedRequests;
+	public $blockedApiRequests;
 
 	public function getNumericColumnNames()
 	{

@@ -4,11 +4,11 @@
 		<div class="col-xs-3 col-sm-4 col-md-2 text-center">
 			{if $record.coverUrl}
 				{if $record.recordId && $record.linkUrl}
-					<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+					<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}" aria-hidden="true">
 						<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 					</a>
 				{else} {* Cover Image but no Record-View link *}
-					<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+					<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 				{/if}
 			{/if}
 		</div>
@@ -88,7 +88,7 @@
 						<div class="row">
 							<div class="result-label col-tn-3">Rating&nbsp;</div>
 							<div class="result-value col-tn-9">
-								{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
+								{include file="GroupedWork/title-rating.tpl" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
 							</div>
 						</div>
 					{/if}

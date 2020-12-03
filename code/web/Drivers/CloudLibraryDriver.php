@@ -116,7 +116,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param $recordId   string
 	 * @return mixed
 	 */
-	public function renewCheckout($patron, $recordId)
+	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
 		return $this->checkOutTitle($patron, $recordId, true);
 	}
@@ -152,7 +152,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}else if ($responseCode == '400'){
 			$result['message'] = translate("Bad Request returning checkout.");
 			global $configArray;
-			if ($configArray['System']['debug']){
+			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 		}else if ($responseCode == '403'){
@@ -227,13 +227,14 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId)
+	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings();
 		$patronId = $patron->getBarcode();
 		$password = $patron->getPasswordOrPin();
-		if (!$patron->eligibleForHolds()){
+		$patronEligibleForHolds = $patron->eligibleForHolds();
+		if ($patronEligibleForHolds['fineLimitReached']){
 			$result['message'] = translate(['text' => 'cl_outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to use Cloud Library.']);
 			return $result;
 		}
@@ -251,7 +252,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$this->trackRecordHold($recordId);
 
 			$result['success'] = true;
-			$result['message'] = "<p class='alert alert-success'>Your hold was placed successfully.</p>";
+			$result['message'] = "<p class='alert alert-success'>" . translate(['text'=>"cloud_library_hold_success", 'defaultText'=>"Your hold was placed successfully."]) . "</p>";
 			$result['hasWhileYouWait'] = false;
 
 			//Get the grouped work for the record
@@ -282,7 +283,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}else if ($responseCode == '405'){
 			$result['message'] = translate("Bad Request placing hold.");
 			global $configArray;
-			if ($configArray['System']['debug']){
+			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 		}else if ($responseCode == '403'){
@@ -302,7 +303,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param string $recordId The id of the bib record
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId)
+	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings();
@@ -326,7 +327,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}else if ($responseCode == '400'){
 			$result['message'] = translate("Bad Request cancelling hold.");
 			global $configArray;
-			if ($configArray['System']['debug']){
+			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 		}else if ($responseCode == '403'){
@@ -339,7 +340,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 	public function getAccountSummary($patron)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
 		global $timer;

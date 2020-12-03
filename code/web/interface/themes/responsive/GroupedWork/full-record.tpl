@@ -19,7 +19,7 @@
 					</div>
 				{/if}
 				{if $showRatings}
-					{include file="GroupedWork/title-rating-full.tpl" ratingClass="" showFavorites=0 ratingData=$recordDriver->getRatingData() showNotInterested=false hideReviewButton=true}
+					{include file="GroupedWork/title-rating-full.tpl" showFavorites=0 ratingData=$recordDriver->getRatingData() showNotInterested=false hideReviewButton=true}
 				{/if}
 			</div>
 			<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
@@ -118,6 +118,8 @@
 						</div>
 					</div>
 				{/if}
+
+				{include file="GroupedWork/relatedLists.tpl"}
 
 				{include file="GroupedWork/relatedManifestations.tpl" relatedManifestations=$recordDriver->getRelatedManifestations() workId=$recordDriver->getPermanentId()}
 

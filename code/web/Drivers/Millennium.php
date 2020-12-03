@@ -613,7 +613,10 @@ class Millennium extends AbstractIlsDriver
 	 * @return array                         Array of error messages for errors that occurred
 	 */
 	public function updatePatronInfo($user, $canUpdateContactInfo){
-		$updateErrors = array();
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
 
 		if ($canUpdateContactInfo){
 			//Setup the call to Millennium
@@ -682,14 +685,14 @@ class Millennium extends AbstractIlsDriver
 			//Validate we have required info for notices
 			if (isset($extraPostInfo['notices'])){
 				if ($extraPostInfo['notices'] == 'z' && strlen($extraPostInfo['email']) == 0){
-					$updateErrors[] = 'To receive notices by email you must set an email address.';
+					$result['messages'][] = 'To receive notices by email you must set an email address.';
 				}elseif ($extraPostInfo['notices'] == 'p' && strlen($extraPostInfo['tele1']) == 0){
-					$updateErrors[] = 'To receive notices by phone you must provide a telephone number.';
+					$result['messages'][] = 'To receive notices by phone you must provide a telephone number.';
 				}elseif (strlen($extraPostInfo['addr1a']) == 0 || strlen($extraPostInfo['addr1b']) == 0){
-					$updateErrors[] = 'To receive notices by mail you must provide a complete mailing address.';
+					$result['messages'][] = 'To receive notices by mail you must provide a complete mailing address.';
 				}
-				if (count($updateErrors) > 0){
-					return $updateErrors;
+				if (count($result['messages']) > 0){
+					return $result;
 				}
 			}
 
@@ -705,11 +708,11 @@ class Millennium extends AbstractIlsDriver
 			if (isset($sresult) && strpos($sresult, 'Patron information updated') !== false){
 				$user->phone = $_REQUEST['phone'];
 				$user->email = $_REQUEST['email'];
-				$user->_alt_username = $_REQUEST['username'];
 				$user->update();
-				/* @var Memcache $memCache */
 				global $memCache;
 				$memCache->delete("patron_dump_$barcode"); // because the update will affect the patron dump information also clear that cache as well
+				$result['success'] = true;
+				$result['messages'][] = 'Your account was updated successfully.';
 			}else{
 				// Doesn't look like the millennium (actually sierra) server ever provides error messages. plb 4-29-2015
 				if (preg_match('/<h2 class="errormessage">(.*?)<\/h2>/i', $sresult, $errorMatches)){
@@ -718,12 +721,12 @@ class Millennium extends AbstractIlsDriver
 					$errorMsg = 'There were errors updating your information.'; // generic error message
 				}
 
-				$updateErrors[] = $errorMsg;
+				$result['messages'][] = $errorMsg;
 			}
 		} else {
-			$updateErrors[] = 'You can not update your information.';
+			$result['messages'][] = 'You can not update your information.';
 		}
-		return $updateErrors;
+		return $result;
 	}
 
 	/** @var  int[] */
@@ -740,7 +743,6 @@ class Millennium extends AbstractIlsDriver
 			$this->pTypes = array();
 			/** @var $user User */
 			$user = UserAccount::getLoggedInUser();
-			/** @var $locationSingleton Location */
 			global $locationSingleton;
 			$searchLocation = $locationSingleton->getSearchLocation();
 			$searchLibrary = Library::getSearchLibrary();
@@ -1370,7 +1372,17 @@ class Millennium extends AbstractIlsDriver
 		return $messages;
 	}
 
-	public function requestPinReset($barcode){
+	public function getEmailResetPinTemplate(){
+		return 'requestPinReset.tpl';
+	}
+
+	public function getEmailResetPinResultsTemplate(){
+		return 'requestPinResetResults.tpl';
+	}
+
+	public function processEmailResetPinForm(){
+		$barcode = strip_tags($_REQUEST['barcode']);
+
 		//Go to the pinreset page
 		$pinResetUrl = $this->getVendorOpacUrl() . '/pinreset';
 		$cookieJar = tempnam ("/tmp", "CURLCOOKIE");
@@ -1421,7 +1433,7 @@ class Millennium extends AbstractIlsDriver
 	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
 	 */
 	function importListsFromIls($patron){
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$user = UserAccount::getLoggedInUser();
 		$results = array(
 			'totalTitles' => 0,
@@ -1482,7 +1494,8 @@ class Millennium extends AbstractIlsDriver
 
 							if (!$resourceOnList){
 								$listEntry = new UserListEntry();
-								$listEntry->groupedWorkPermanentId = $primaryIdentifier->permanent_id;
+								$listEntry->source = 'GroupedWork';
+								$listEntry->sourceId = $primaryIdentifier->permanent_id;
 								$listEntry->listId = $newList->id;
 								$listEntry->notes = '';
 								$listEntry->dateAdded = time();
@@ -1859,10 +1872,6 @@ class Millennium extends AbstractIlsDriver
 
 		$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
 		$user->_fines = $patronDump['MONEY_OWED'];
-
-		if (isset($patronDump['USERNAME'])) {
-			$user->_alt_username = $patronDump['USERNAME'];
-		}
 
 		$numHoldsAvailable = 0;
 		$numHoldsRequested = 0;

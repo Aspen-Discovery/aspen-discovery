@@ -1,7 +1,7 @@
 {strip}
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal">×</button>
-		<h4 class="modal-title" id="myModalLabel">Login</h4>
+		<h4 class="modal-title" id="myModalLabel">{translate text="Sign In"}</h4>
 	</div>
 	<div class="modal-body">
 		<p class="alert alert-danger" id="loginError" style="display: none"></p>
@@ -22,15 +22,15 @@
 			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return AspenDiscovery.Account.processAjaxLogin()">
 				<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 				<div id="loginUsernameRow" class="form-group">
-					<label for="username" class="control-label col-xs-12 col-sm-4">{$usernameLabel}:</label>
+					<label for="username" class="control-label col-xs-12 col-sm-4">{translate text=$usernameLabel}</label>
 					<div class="col-xs-12 col-sm-8">
-						<input type="text" name="username" id="username" value="{if !empty($username)}{$username|escape}{/if}" size="28" class="form-control">
+						<input type="text" name="username" id="username" value="{if !empty($username)}{$username|escape}{/if}" size="28" class="form-control" maxlength="60">
 					</div>
 				</div>
 				<div id="loginPasswordRow" class="form-group">
-					<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel}: </label>
+					<label for="password" class="control-label col-xs-12 col-sm-4">{translate text=$passwordLabel} </label>
 					<div class="col-xs-12 col-sm-8">
-						<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control">
+						<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control" maxlength="60">
 						{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 							<p class="text-muted help-block">
 								<strong>{translate text="forgot_pin" defaultText="Forgot %1%?" 1=$passwordLabel}</strong>&nbsp;
@@ -43,15 +43,22 @@
 						{/if}
 						{if $enableSelfRegistration == 1}
 							<p class="help-block">
-								Don't have a library card? <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
+								{translate text="Don't have a library card?"} <a href="/MyAccount/SelfReg">{translate text="Register for a new Library Card"}</a>.
 							</p>
 						{elseif $enableSelfRegistration == 2}
 							<p class="help-block">
-								Don't have a library card? <a href="{$selfRegistrationUrl}">Register for a new Library Card</a>.
+								{translate text="Don't have a library card?"} <a href="{$selfRegistrationUrl}">{translate text="Register for a new Library Card"}</a>.
 							</p>
 						{/if}
 					</div>
 				</div>
+				{if !(empty($loginNotes))}
+					<div id="loginNotes" class="form-group">
+						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+							{$loginNotes}
+						</div>
+					</div>
+				{/if}
 				<div id="loginPasswordRow2" class="form-group">
 					<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 						<label for="showPwd" class="checkbox">
@@ -73,36 +80,33 @@
 	<div class="modal-footer">
 		<button class="btn" data-dismiss="modal" id="modalClose">{translate text=Close}</button>
 		<span class="modal-buttons">
-		<input type="submit" name="submit" value="{if !empty($multiStep)}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
+		<input type="submit" name="submit" value="{if !empty($multiStep)}{translate text="Continue"}{else}{translate text="Sign In"}{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
 	</span>
 	</div>
 {/strip}
 {literal}
 <script type="text/javascript">
-    $('#username').focus().select();
-    $(function () {
-        AspenDiscovery.Account.validateCookies();
-        var haslocalStorage = AspenDiscovery.hasLocalStorage() || false;
-        if (haslocalStorage) {
-            var rememberMe = (window.localStorage.getItem('rememberMe') == 'true'); // localStorage saves everything as strings
-            if (rememberMe) {
-                var lastUserName = window.localStorage.getItem('lastUserName'),
-                    lastPwd = window.localStorage.getItem('lastPwd');
-				{/literal}{*// showPwd = (window.localStorage.getItem('showPwd') == 'true'); // localStorage saves everything as strings *}{literal}
-                $("#username").val(lastUserName);
-                $("#password").val(lastPwd);
-				{/literal}{*// $("#showPwd").prop("checked", showPwd  ? "checked" : '');
-//					if (showPwd) AspenDiscovery.pwdToText('password');*}{literal}
-            }
-            $("#rememberMe").prop("checked", rememberMe ? "checked" : '');
-        } else {
+	$('#username').focus().select();
+	$(function () {
+		AspenDiscovery.Account.validateCookies();
+		var hasLocalStorage = AspenDiscovery.hasLocalStorage() || false;
+		if (hasLocalStorage) {
+			var rememberMe = (window.localStorage.getItem('rememberMe') === 'true'); // localStorage saves everything as strings
+			if (rememberMe) {
+				var lastUserName = window.localStorage.getItem('lastUserName');
+				var lastPwd = window.localStorage.getItem('lastPwd');
+				$("#username").val(lastUserName);
+				$("#password").val(lastPwd);
+			}
+			$("#rememberMe").prop("checked", rememberMe ? "checked" : '');
+		} else {
 			{/literal}{* // disable, uncheck & hide RememberMe checkbox if localStorage isn't available.*}{literal}
-            $("#rememberMe").prop({checked: '', disabled: true}).parent().hide();
-        }
+			$("#rememberMe").prop({checked: '', disabled: true}).parent().hide();
+		}
 		{/literal}{* // Once Box is shown, focus on username input and Select the text;*}{literal}
-        $("#modalDialog").on('shown.bs.modal', function () {
-            $('#username').focus().select();
-        })
-    });
+		$("#modalDialog").on('shown.bs.modal', function () {
+			$('#username').focus().select();
+		})
+	});
 </script>
 {/literal}

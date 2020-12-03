@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.rbdigital;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
@@ -113,9 +114,14 @@ public class RbdigitalExportMain {
 
 				processRecordsToReload(logEntry);
 
+				if (recordGroupingProcessorSingleton != null) {
+					recordGroupingProcessorSingleton.close();
+					recordGroupingProcessorSingleton = null;
+				}
+
 				if (groupedWorkIndexer != null) {
 					groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-					recordGroupingProcessorSingleton = null;
+					groupedWorkIndexer.close();
 					groupedWorkIndexer = null;
 					existingRecords = null;
 					existingMagazines = null;
@@ -133,29 +139,42 @@ public class RbdigitalExportMain {
 				logEntry.setFinished();
 			}
 
-			//Disconnect from the database
-			disconnectDatabase(aspenConn);
-
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
 				break;
 			}
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
 				break;
 			}
-			//Pause before running the next export (longer if we didn't get any actual changes)
-			try {
-				System.gc();
-				if (numChanges == 0) {
-					Thread.sleep(1000 * 60 * 5);
-				} else {
-					Thread.sleep(1000 * 60);
+
+			//Disconnect from the database
+			disconnectDatabase(aspenConn);
+
+			//Check to see if nightly indexing is running and if so, wait until it is done.
+			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+				//Quit and we will restart after if finishes
+				System.exit(0);
+			}else {
+				//Pause before running the next export (longer if we didn't get any actual changes)
+				try {
+					System.gc();
+					if (numChanges == 0) {
+						Thread.sleep(1000 * 60 * 5);
+					} else {
+						Thread.sleep(1000 * 60);
+					}
+				} catch (InterruptedException e) {
+					logger.info("Thread was interrupted");
 				}
-			} catch (InterruptedException e) {
-				logger.info("Thread was interrupted");
 			}
 		}
 	}
@@ -739,7 +758,7 @@ public class RbdigitalExportMain {
 
 	private static GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}
@@ -771,7 +790,7 @@ public class RbdigitalExportMain {
 
 	private static RecordGroupingProcessor getRecordGroupingProcessor() {
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger);
+			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}

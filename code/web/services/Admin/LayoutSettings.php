@@ -17,11 +17,15 @@ class Admin_LayoutSettings extends ObjectEditor
 		return 'Layout Settings';
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
+		return UserAccount::userHasPermission('Administer All Layout Settings');
 	}
 	function getAllObjects(){
 		$object = new LayoutSetting();
 		$object->orderBy('name');
+		if (!UserAccount::userHasPermission('Administer All Layout Settings')){
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$object->id = $library->layoutSettingId;
+		}
 		$object->find();
 		$list = array();
 		while ($object->fetch()){
@@ -38,16 +42,23 @@ class Admin_LayoutSettings extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#theme_and_layout', 'Configuration Templates');
+		$breadcrumbs[] = new Breadcrumb('/Admin/LayoutSettings', 'Layout Settings');
+		return $breadcrumbs;
 	}
 
-	function getInstructions(){
-		//return 'For more information on themes see TBD';
-		return '';
+	function getActiveAdminSection()
+	{
+		return 'theme_and_layout';
 	}
 
-	function getListInstructions(){
-		return $this->getInstructions();
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Layout Settings','Administer Library Layout Settings']);
 	}
 }

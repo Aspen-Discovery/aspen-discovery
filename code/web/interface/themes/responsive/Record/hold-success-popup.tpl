@@ -3,35 +3,17 @@
 	<div class="content">
 		{if $success}
 			<p class="alert alert-success">{$message}</p>
-			{if $showDetailedHoldNoticeInformation}
-				<div class="alert">
-					{translate text='Once the title arrives at your library'} you will
-					{if $profile->_noticePreferenceLabel eq 'Mail' && !$treatPrintNoticesAsPhoneNotices} be mailed a notification to :
-						<blockquote class="alert-warning">
-							{if $canUpdate}<a href="/MyAccount/ContactInformation?patronId={$profile->id}"><span class="glyphicon glyphicon-pencil"></span> {/if}
-								{$profile->_address1} {$profile->_address2}
-							{if $canUpdate}</a>{/if}
-						</blockquote>
-					{elseif $profile->_noticePreferenceLabel eq 'Telephone' || ($profile->_noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices)} be called at :
-						<blockquote class="alert-warning">
-							{if $canUpdate}<a href="/MyAccount/ContactInformation?patronId={$profile->id}"><span class="glyphicon glyphicon-pencil"></span> {/if}
-							{$profile->phone}
-							{if $canUpdate}</a>{/if}
-						</blockquote>
-					{elseif $profile->_noticePreferenceLabel eq 'Email'} be emailed a notification at :
-						<blockquote class="alert-warning">
-							{if $canUpdate}<a href="/MyAccount/ContactInformation?patronId={$profile->id}"><span class="glyphicon glyphicon-pencil"></span> {/if}
-							{$profile->email}
-							{if $canUpdate}</a>{/if}
-						</blockquote>
-					{else} receive a notification informing you that the title is ready for you to pick up.
-						{if $canChangeNoticePreference}
-							<br><br>
-							<a href="/MyAccount/ContactInformation?patronId={$profile->id}"><span class="glyphicon glyphicon-pencil"></span>Click if you would like to set your notification preferences.</a>
-						{/if}
-					{/if}
-				</div>
-			{/if}
+			<div class="alert">
+				{if $showDetailedHoldNoticeInformation && $profile->_noticePreferenceLabel == 'Mail' && !$treatPrintNoticesAsPhoneNotices}
+					{translate text="hold_notice_mail" defaultText="Once the title arrives at your library you will be mailed a notification informing you that the title is ready for you."}&nbsp;
+				{elseif $showDetailedHoldNoticeInformation && ($profile->_noticePreferenceLabel == 'Telephone' || ($profile->_noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices))}
+					{translate text="hold_notice_phone" defaultText="Once the title arrives at your library you will receive a phone call informing you that the title is ready for you."}&nbsp;
+				{elseif $showDetailedHoldNoticeInformation && $profile->_noticePreferenceLabel == 'Email'}
+					{translate text="hold_notice_email" defaultText="Once the title arrives at your library you will be emailed a notification informing you that the title is ready for you."}&nbsp;
+				{else}
+					{translate text="hold_notice_generic" defaultText="Once the title arrives at your library you will receive a notification informing you that the title is ready for you."}&nbsp;
+				{/if}
+			</div>
 
 			{if count($whileYouWaitTitles) > 0}
 				<h3>{translate text="While You Wait"}</h3>

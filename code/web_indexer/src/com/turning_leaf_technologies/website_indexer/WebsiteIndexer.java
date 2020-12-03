@@ -1,7 +1,6 @@
 package com.turning_leaf_technologies.website_indexer;
 
 import com.turning_leaf_technologies.strings.StringUtils;
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -23,47 +22,73 @@ import java.util.regex.PatternSyntaxException;
 import java.util.zip.CRC32;
 
 class WebsiteIndexer {
-	private Long websiteId;
-	private String websiteName;
-	private String searchCategory;
+	private final Long websiteId;
+	private final String websiteName;
+	private final String searchCategory;
+	private String initialUrl;
 	private String siteUrl;
-	private String siteUrlShort;
-	private boolean fullReload;
-	private WebsiteIndexLogEntry logEntry;
-	private Connection aspenConn;
-	private HashMap<String, WebPage> existingPages = new HashMap<>();
-	private HashMap<String, Boolean> allLinks = new HashMap<>();
-	private Pattern titlePattern = Pattern.compile("<title>(.*?)</title>", Pattern.DOTALL);
-	private Pattern linkPattern = Pattern.compile("<a\\s.*?href=['\"](.*?)['\"].*?>(.*?)</a>", Pattern.DOTALL);
-	private ArrayList<Pattern> pathsToExcludePatterns = new ArrayList<>();
-	private static CRC32 checksumCalculator = new CRC32();
+	private final String siteUrlShort;
+	private final boolean fullReload;
+	private final WebsiteIndexLogEntry logEntry;
+	private final Connection aspenConn;
+	private final HashMap<String, WebPage> existingPages = new HashMap<>();
+	private final HashMap<String, Boolean> allLinks = new HashMap<>();
+	private Pattern pageTitleExpression = null;
+	private Pattern descriptionExpression = null;
+	private final Pattern titlePattern = Pattern.compile("<title>(.*?)</title>", Pattern.DOTALL);
+	private final Pattern bodyPattern = Pattern.compile("<body.*?>(.*?)</body>", Pattern.DOTALL);
+	private final Pattern linkPattern = Pattern.compile("<a\\s.*?href=['\"](.*?)['\"].*?>(.*?)</a>", Pattern.DOTALL);
+	private final ArrayList<Pattern> pathsToExcludePatterns = new ArrayList<>();
+	private static final CRC32 checksumCalculator = new CRC32();
 	private PreparedStatement addPageToStmt;
 	private PreparedStatement deletePageStmt;
 
-	private ConcurrentUpdateSolrClient solrUpdateServer;
+	private final ConcurrentUpdateSolrClient solrUpdateServer;
 
-	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String siteUrl, String pathsToExclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
+	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
 		this.websiteId = websiteId;
 		this.websiteName = websiteName;
-		this.siteUrl = siteUrl;
+		this.searchCategory = searchCategory;
+		this.initialUrl = initialUrl;
+		this.siteUrl = initialUrl;
+		if (this.siteUrl.indexOf("/", 8) != -1){
+			this.siteUrl = this.siteUrl.substring(0, this.siteUrl.indexOf("/", 8));
+		}
 		this.siteUrlShort = siteUrl.replaceAll("http[s]?://", "");
+
+
 		this.logEntry = logEntry;
 		this.aspenConn = aspenConn;
 		this.fullReload = fullReload;
 		this.solrUpdateServer = solrUpdateServer;
 
+		if (pageTitleExpression.length() > 0){
+			try{
+				this.pageTitleExpression = Pattern.compile(pageTitleExpression, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			}catch (Exception e){
+				logEntry.incErrors("Page Title Expression was not a valid regular expression");
+			}
+		}
+		if (descriptionExpression.length() > 0){
+			try{
+				this.descriptionExpression = Pattern.compile(descriptionExpression, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			}catch (Exception e){
+				logEntry.incErrors("Description Expression was not a valid regular expression");
+			}
+		}
+
 		if (pathsToExclude != null && pathsToExclude.length() > 0){
 			String[] paths = pathsToExclude.split("\r\n|\r|\n");
 			for (String path : paths){
-				if (path.contains(siteUrl)){
+				if (path.contains(initialUrl)){
 					pathsToExcludePatterns.add(Pattern.compile(path));
 				}else if (path.startsWith("/")){
-					pathsToExcludePatterns.add(Pattern.compile(siteUrl + path));
+					pathsToExcludePatterns.add(Pattern.compile(initialUrl + path));
 				}else{
 					if (path.contains("*") || path.contains("?")) {
 						pathsToExcludePatterns.add(Pattern.compile(path));
 					}else{
-						pathsToExcludePatterns.add(Pattern.compile(siteUrl + "/" + path));
+						pathsToExcludePatterns.add(Pattern.compile(initialUrl + "/" + path));
 					}
 				}
 			}
@@ -105,10 +130,10 @@ class WebsiteIndexer {
 				logEntry.incErrors("Error deleting from index ", e);
 			}
 		}
-		if (siteUrl.endsWith("/")) {
-			siteUrl = siteUrl.substring(0, siteUrl.length() - 1);
+		if (initialUrl.endsWith("/")) {
+			initialUrl = initialUrl.substring(0, initialUrl.length() - 1);
 		}
-		allLinks.put(siteUrl, false);
+		allLinks.put(initialUrl, false);
 		logEntry.incNumPages();
 		boolean moreToProcess = true;
 		while (moreToProcess) {
@@ -149,7 +174,6 @@ class WebsiteIndexer {
 
 	private void processPage(String pageToProcess) {
 		try {
-			//TODO: Add appropriate headers
 			CloseableHttpClient httpclient = HttpClients.createDefault();
 			pageToProcess = pageToProcess.replaceAll("\\s", "%20");
 			HttpGet httpGet = new HttpGet(pageToProcess);
@@ -174,16 +198,29 @@ class WebsiteIndexer {
 						// do something useful with the response body
 						// and ensure it is fully consumed
 						String response = EntityUtils.toString(entity1);
+						//Strip out javascript
+						response = response.replaceAll("(?is)<script(.*?)>(.*?)</script>", "");
+						//Strip out styles
+						response = response.replaceAll("(?is)<style(.*?)>(.*?)</style>", "");
 						page.setPageContents(response);
 
 						//Extract the title
-						String ResultString = null;
 						try {
-							Matcher titleMatcher = titlePattern.matcher(response);
-							if (titleMatcher.find()) {
-								page.setTitle(titleMatcher.group(1));
-							} else {
-								page.setTitle("Title not provided");
+							boolean titleFound = false;
+							if (pageTitleExpression != null){
+								Matcher titleMatcher = pageTitleExpression.matcher(response);
+								if (titleMatcher.find()) {
+									page.setTitle(titleMatcher.group(1));
+									titleFound = true;
+								}
+							}
+							if (!titleFound) {
+								Matcher titleMatcher = titlePattern.matcher(response);
+								if (titleMatcher.find()) {
+									page.setTitle(titleMatcher.group(1));
+								} else {
+									page.setTitle("Title not provided");
+								}
 							}
 						} catch (PatternSyntaxException ex) {
 							logEntry.incErrors("Error in pattern ", ex);
@@ -195,9 +232,6 @@ class WebsiteIndexer {
 							while (regexMatcher.find()) {
 								for (int i = 1; i <= regexMatcher.groupCount(); i++) {
 									String linkUrl = regexMatcher.group(1).trim();
-									if (linkUrl.endsWith("/")) {
-										linkUrl = linkUrl.substring(0, linkUrl.length() - 1);
-									}
 									if (linkUrl.contains("#")) {
 										linkUrl = linkUrl.substring(0, linkUrl.lastIndexOf("#"));
 									}
@@ -205,18 +239,24 @@ class WebsiteIndexer {
 									if (linkUrl.contains("?")) {
 										linkUrl = linkUrl.substring(0, linkUrl.lastIndexOf("?"));
 									}
-									if (linkUrl.length() == 0) {
+									if (linkUrl.endsWith("/")) {
+										linkUrl = linkUrl.substring(0, linkUrl.length() - 1);
+									}
+									if (linkUrl.length() == 0 || linkUrl.startsWith(".")) {
 										continue;
 									}
 									if (linkUrl.startsWith("http://")) {
-										if (!linkUrl.startsWith(siteUrl)) {
+										if (!linkUrl.startsWith(initialUrl)) {
 											continue;
 										}
 									} else if (linkUrl.startsWith("https://")) {
-										if (!linkUrl.startsWith(siteUrl)) {
+										if (!linkUrl.startsWith(initialUrl)) {
 											continue;
 										}
 									} else if (linkUrl.startsWith("mailto:") || linkUrl.startsWith("tel:") || linkUrl.startsWith("javascript:")) {
+										continue;
+									} else if (linkUrl.contains("/..") || linkUrl.contains("../")) {
+										//Ignore relative paths for now
 										continue;
 									} else if (linkUrl.startsWith(siteUrlShort)) {
 										linkUrl = "https://" + linkUrl;
@@ -225,6 +265,9 @@ class WebsiteIndexer {
 											linkUrl = "/" + linkUrl;
 										}
 										linkUrl = siteUrl + linkUrl;
+									}
+									if (!linkUrl.startsWith(initialUrl)) {
+										continue;
 									}
 									//Make sure that we shouldn't be ignoring the path.
 									boolean includePath = true;
@@ -240,6 +283,29 @@ class WebsiteIndexer {
 									}
 								}
 							}
+						} catch (PatternSyntaxException ex) {
+							logEntry.incErrors("Error in pattern ", ex);
+						}
+
+						//Get the description
+						String description = response;
+						try{
+							boolean descriptionFound = false;
+							if (descriptionExpression != null){
+								Matcher descriptionMatcher = descriptionExpression.matcher(response);
+								if (descriptionMatcher.find()) {
+									description = descriptionMatcher.group(1);
+									descriptionFound = true;
+								}
+							}
+							if (!descriptionFound){
+								Matcher bodyMatcher = bodyPattern.matcher(response);
+								if (bodyMatcher.find()) {
+									description = bodyMatcher.group(1);
+								}
+							}
+							//Strip comments from the description
+							description = description.replaceAll("(?is)<!--(.*?)-->", "");
 						} catch (PatternSyntaxException ex) {
 							logEntry.incErrors("Error in pattern ", ex);
 						}
@@ -265,7 +331,6 @@ class WebsiteIndexer {
 								logEntry.incUpdated();
 							}
 
-
 							//Add to the solr index
 							SolrInputDocument solrDocument = new SolrInputDocument();
 							solrDocument.addField("id", page.getId());
@@ -279,6 +344,7 @@ class WebsiteIndexer {
 							//TODO: Make table of contents from header tags
 							//Strip tags from body to get the text of the page, this is done using Solr to remove tags.
 							solrDocument.addField("keywords", response);
+							solrDocument.addField("description", description.trim());
 							//TODO: Add popularity
 							solrUpdateServer.add(solrDocument);
 						}

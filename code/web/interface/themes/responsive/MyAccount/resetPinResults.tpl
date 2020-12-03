@@ -1,7 +1,7 @@
 {strip}
 	<div id="page-content" class="content">
 		<div id="main-content">
-			<div class="resulthead"><h3>{translate text='PIN Reset'}</h3></div>
+			<div class="resultHead"><h1>{translate text='PIN Reset'}</h1></div>
 			<div class="page">
 				{if $resetPinResult.error}
 					<p class="alert alert-danger">{$resetPinResult.error}</p>
@@ -13,7 +13,7 @@
 				{else}
 					<p class="alert alert-success">Your PIN number has been reset.</p>
 					<p>
-						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Sign in'}</a>
 					</p>
 				{/if}
 			</div>

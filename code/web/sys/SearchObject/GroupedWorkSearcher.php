@@ -7,7 +7,7 @@ require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 {
 	// Field List
-	public static $fields_to_return = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
+	public static $fields_to_return = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,publishDateSort,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
 
 	// Optional, used on author screen for example
 	private $searchSubType = '';
@@ -43,9 +43,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('groupedWorksSearches');
-		if (isset($searchSettings['General']['default_handler'])) {
-			$this->defaultIndex = $searchSettings['General']['default_handler'];
-		}
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -219,11 +216,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
 	}
 
-	public function setSearchTerm($searchTerm)
-	{
-		$this->initBasicSearch($searchTerm);
-	}
-
 	/**
 	 * Initialise the object for retrieving advanced
 	 *   search screen facet data from inside solr.
@@ -246,36 +238,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
 		}
 
-		global $solrScope;
 		foreach ($facets as &$facet) {
 			//Adjust facet name for local scoping
-			if ($solrScope) {
-				if ($facet->facetName == 'availability_toggle') {
-					$facet->facetName = 'availability_toggle_' . $solrScope;
-				} elseif ($facet->facetName == 'format') {
-					$facet->facetName = 'format_' . $solrScope;
-				} elseif ($facet->facetName == 'format_category') {
-					$facet->facetName = 'format_category_' . $solrScope;
-				} elseif ($facet->facetName == 'econtent_source') {
-					$facet->facetName = 'econtent_source_' . $solrScope;
-				} elseif ($facet->facetName == 'econtent_protection_type') {
-					$facet->facetName = 'econtent_protection_type_' . $solrScope;
-				} elseif ($facet->facetName == 'detailed_location') {
-					$facet->facetName = 'detailed_location_' . $solrScope;
-				} elseif ($facet->facetName == 'owning_location') {
-					$facet->facetName = 'owning_location_' . $solrScope;
-				} elseif ($facet->facetName == 'owning_library') {
-					$facet->facetName = 'owning_library_' . $solrScope;
-				} elseif ($facet->facetName == 'available_at') {
-					$facet->facetName = 'available_at_' . $solrScope;
-				} elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group') {
-					$facet->facetName = 'collection_' . $solrScope;
-				} elseif ($facet->facetName == 'time_since_added') {
-					$facet->facetName = 'local_time_since_added_' . $solrScope;
-				} elseif ($facet->facetName == 'itype') {
-					$facet->facetName = 'itype_' . $solrScope;
-				}
-			}
+			$facet->facetName = $this->getScopedFieldName($facet->facetName);
 		}
 
 		//********************
@@ -291,7 +256,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		//********************
 		// Basic Search logic
 		$this->searchTerms[] = array(
-			'index' => $this->defaultIndex,
+			'index' => $this->getDefaultIndex(),
 			'lookfor' => ""
 		);
 
@@ -324,116 +289,13 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		if ($this->searchType == $this->basicSearchType || $this->searchType == 'author') {
 			return parent::getSearchIndex();
 		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results suitable for use while displaying lists
-	 *
-	 * @access  public
-	 * @param object $user User object owning tag/note metadata.
-	 * @param int $listId ID of list containing desired tags/notes (or
-	 *                              null to show tags/notes from all user's lists).
-	 * @param bool $allowEdit Should we display edit controls?
-	 * @param array $IDList optional list of IDs to re-order the records by (ie User List sorts)
-	 * @param bool $isMixedUserList Used to correctly number items in a list of mixed content (eg catalog & archive content)
-	 * @return array Array of HTML chunks for individual records.
-	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false)
-	{
-		global $interface;
-		$html = array();
-		if ($IDList) {
-			//Reorder the documents based on the list of id's
-			$x = 0;
-			$nullHolder = null;
-			foreach ($IDList as $listPosition => $currentId) {
-				// use $IDList as the order guide for the html
-				$current = &$nullHolder; // empty out in case we don't find the matching record
-				reset($this->indexResult['response']['docs']);
-				foreach ($this->indexResult['response']['docs'] as $docIndex => $doc) {
-					if ($doc['id'] == $currentId) {
-						$current = &$this->indexResult['response']['docs'][$docIndex];
-						break;
-					}
-				}
-				if (empty($current)) {
-					continue; // In the case the record wasn't found, move on to the next record
-				} else {
-					if ($isMixedUserList) {
-						$interface->assign('recordIndex', $listPosition + 1);
-						$interface->assign('resultIndex', $listPosition + 1 + (($this->page - 1) * $this->limit));
-					} else {
-						$interface->assign('recordIndex', $x + 1);
-						$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-					}
-					if (!$this->debug) {
-						unset($current['explain']);
-						unset($current['score']);
-					}
-					/** @var GroupedWorkDriver $record */
-					$record = RecordDriverFactory::initRecordDriver($current);
-					if ($isMixedUserList) {
-						$html[$listPosition] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
-					} else {
-						$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
-						$x++;
-					}
-				}
-			}
-		} else {
-			//The order we get from solr is just fine
-			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-				$current = &$this->indexResult['response']['docs'][$x];
-				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-				if (!$this->debug) {
-					unset($current['explain']);
-					unset($current['score']);
-				}
-				/** @var GroupedWorkDriver $record */
-				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-				$record = RecordDriverFactory::initRecordDriver($current);
-				$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+			if ($this->isAdvanced()) {
+				return 'advanced';
+			}else{
+				return null;
 			}
 		}
-		return $html;
 	}
-
-
-	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results suitable for use on a user's "favorites" page.
-	 *
-	 * @access  public
-	 * @return  array   Array of HTML chunks for individual records.
-	 */
-	public function getBrowseRecordHTML()
-	{
-		global $interface;
-		$html = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = &$this->indexResult['response']['docs'][$x];
-			$interface->assign('recordIndex', $x + 1);
-			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!($record instanceof AspenError)) {
-				if (method_exists($record, 'getBrowseResult')) {
-					$html[] = $interface->fetch($record->getBrowseResult());
-				} else {
-					$html[] = 'Browse Result not available';
-				}
-
-			} else {
-				$html[] = "Unable to find record";
-			}
-		}
-		return $html;
-	}
-
 
 	/**
 	 * @param array $orderedListOfIDs Use the index of the matched ID as the index of the resulting array of summary data (for later merging)
@@ -460,28 +322,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			}
 		}
 		return $titleSummaries;
-	}
-
-	public function getSpotlightResults(CollectionSpotlight $spotlight){
-		$spotlightResults = [];
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = &$this->indexResult['response']['docs'][$x];
-			/** @var GroupedWorkDriver $record */
-			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!($record instanceof AspenError)) {
-				if (!empty($orderedListOfIDs)) {
-					$position = array_search($current['id'], $orderedListOfIDs);
-					if ($position !== false) {
-						$spotlightResults[$position] = $record->getSpotlightResult($spotlight, $position);
-					}
-				} else {
-					$spotlightResults[] = $record->getSpotlightResult($spotlight, $x);
-				}
-			} else {
-				$spotlightResults[] = "Unable to find record";
-			}
-		}
-		return $spotlightResults;
 	}
 
 	/*
@@ -561,46 +401,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				unset($record);
 				$memoryWatcher->logMemory("Finished loading record information for index $x");
 				$timer->logTime('Loaded search result for ' . $current['id']);
-			}
-		}
-		return $html;
-	}
-
-	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results.
-	 *
-	 * @access  public
-	 * @return  array   Array of HTML chunks for individual records.
-	 */
-	public function getCombinedResultsHTML()
-	{
-		global $interface;
-		global $memoryWatcher;
-		$html = array();
-		if (isset($this->indexResult['response'])) {
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-				$memoryWatcher->logMemory("Started loading record information for index $x");
-				$current = &$this->indexResult['response']['docs'][$x];
-				if (!$this->debug) {
-					unset($current['explain']);
-					unset($current['score']);
-				}
-				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-				/** @var GroupedWorkDriver $record */
-				$record = RecordDriverFactory::initRecordDriver($current);
-				if (!($record instanceof AspenError)) {
-					$interface->assign('recordDriver', $record);
-					$html[] = $interface->fetch($record->getCombinedResult($this->view));
-				} else {
-					$html[] = "Unable to find record";
-				}
-				//Free some memory
-				$record = 0;
-				unset($record);
-				$memoryWatcher->logMemory("Finished loading record information for index $x");
 			}
 		}
 		return $html;
@@ -1454,7 +1254,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['title_display']) ? $curDoc['title_display'] : '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['author']) ? $curDoc['author'] : '');
 				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode(', ', $curDoc['publisherStr']) : '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publishDate']) ? implode(', ', $curDoc['publishDate']) : '');
+				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publishDateSort']) ? implode(', ', $curDoc['publishDateSort']) : '');
 				$callNumber = '';
 				if (isset($curDoc['local_callnumber_' . $solrScope])) {
 					$callNumber = is_array($curDoc['local_callnumber_' . $solrScope]) ? $curDoc['local_callnumber_' . $solrScope][0] : $curDoc['local_callnumber_' . $solrScope];
@@ -1500,20 +1300,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 *
 	 * @param string[] $ids An array of documents to retrieve from Solr
 	 * @access  public
-	 * @return  array              The requested resources
-	 * @throws  object              PEAR Error
-	 */
-	function getRecords($ids)
-	{
-		return $this->indexEngine->getRecords($ids, $this->getFieldsToReturn());
-	}
-
-	/**
-	 * Retrieves a document specified by the ID.
-	 *
-	 * @param string[] $ids An array of documents to retrieve from Solr
-	 * @access  public
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function searchForRecordIds($ids)
 	{
@@ -1527,7 +1314,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @param string $barcode A barcode of an item in the document to retrieve from Solr
 	 * @access  public
 	 * @return  string              The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecordByBarcode($barcode)
 	{
@@ -1540,7 +1327,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @param string[] $isbn An array of isbns to check
 	 * @access  public
 	 * @return  string              The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecordByIsbn($isbn)
 	{
@@ -1617,8 +1404,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 	public function getSearchIndexes()
 	{
-		$catalogSearchIndexes = $this->searchIndexes;
-		return $catalogSearchIndexes;
+		return $this->searchIndexes;
 	}
 
 	public function getRecordDriverForResult($record)
@@ -1641,14 +1427,13 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @access    public
 	 *
 	 * @param array[] $ids
-	 * @param string[] $notInterestedIds
 	 * @param int $page
 	 * @param int $limit
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $notInterestedIds, $page = 1, $limit = 25)
+	function getMoreLikeThese($ids, $page = 1, $limit = 25)
 	{
-		return $this->indexEngine->getMoreLikeThese($ids, $notInterestedIds, $this->getFieldsToReturn(), $page, $limit);
+		return $this->indexEngine->getMoreLikeThese($ids, $this->getFieldsToReturn(), $page, $limit);
 	}
 
 	/**
@@ -1669,33 +1454,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			global $solrScope;
 			foreach ($facets as &$facet) {
 				//Adjust facet name for local scoping
-				if ($solrScope) {
-					if ($facet->facetName == 'availability_toggle') {
-						$facet->facetName = 'availability_toggle_' . $solrScope;
-					} elseif ($facet->facetName == 'format') {
-						$facet->facetName = 'format_' . $solrScope;
-					} elseif ($facet->facetName == 'format_category') {
-						$facet->facetName = 'format_category_' . $solrScope;
-					} elseif ($facet->facetName == 'econtent_source') {
-						$facet->facetName = 'econtent_source_' . $solrScope;
-					} elseif ($facet->facetName == 'econtent_protection_type') {
-						$facet->facetName = 'econtent_protection_type_' . $solrScope;
-					} elseif ($facet->facetName == 'detailed_location') {
-						$facet->facetName = 'detailed_location_' . $solrScope;
-					} elseif ($facet->facetName == 'owning_location') {
-						$facet->facetName = 'owning_location_' . $solrScope;
-					} elseif ($facet->facetName == 'owning_library') {
-						$facet->facetName = 'owning_library_' . $solrScope;
-					} elseif ($facet->facetName == 'available_at') {
-						$facet->facetName = 'available_at_' . $solrScope;
-					} elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group') {
-						$facet->facetName = 'collection_' . $solrScope;
-					} elseif ($facet->facetName == 'time_since_added') {
-						$facet->facetName = 'local_time_since_added_' . $solrScope;
-					} elseif ($facet->facetName == 'itype') {
-						$facet->facetName = 'itype_' . $solrScope;
-					}
-				}
+				$facet->facetName = $this->getScopedFieldName($facet->facetName);
 
 				if ($this->isAdvanced()) {
 					if ($facet->showInAdvancedSearch == 1) {
@@ -1713,8 +1472,96 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return $this->facetConfig;
 	}
 
-	function getMoreLikeThis($id, $notInterestedIds = null, $availableOnly = false, $limitFormat = true, $limit = null)
+	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null)
 	{
-		return $this->indexEngine->getMoreLikeThis($id, $notInterestedIds, $availableOnly, $limitFormat, $limit, $this->getFieldsToReturn());
+		return $this->indexEngine->getMoreLikeThis($id, $availableOnly, $limitFormat, $limit, $this->getFieldsToReturn());
+	}
+
+	public function getEngineName(){
+		return 'GroupedWork';
+	}
+
+	public function getDefaultIndex()
+	{
+		return 'Keyword';
+	}
+
+	/**
+	 * @param string $scopedFieldName
+	 * @return string
+	 */
+	protected function getUnscopedFieldName(string $scopedFieldName): string
+	{
+		if (strpos($scopedFieldName, 'availability_toggle_') === 0) {
+			$scopedFieldName = 'availability_toggle';
+		} elseif (strpos($scopedFieldName, 'format') === 0) {
+			$scopedFieldName = 'format';
+		} elseif (strpos($scopedFieldName, 'format_category') === 0) {
+			$scopedFieldName = 'format_category';
+		} elseif (strpos($scopedFieldName, 'econtent_source') === 0) {
+			$scopedFieldName = 'econtent_source';
+		} elseif (strpos($scopedFieldName, 'econtent_protection_type') === 0) {
+			$scopedFieldName = 'econtent_protection_type';
+		} elseif (strpos($scopedFieldName, 'shelf_location') === 0) {
+			$scopedFieldName = 'shelf_location';
+		} elseif (strpos($scopedFieldName, 'detailed_location') === 0) {
+			$scopedFieldName = 'detailed_location';
+		} elseif (strpos($scopedFieldName, 'owning_location') === 0) {
+			$scopedFieldName = 'owning_location';
+		} elseif (strpos($scopedFieldName, 'owning_library') === 0) {
+			$scopedFieldName = 'owning_library';
+		} elseif (strpos($scopedFieldName, 'available_at') === 0) {
+			$scopedFieldName = 'available_at';
+		} elseif (strpos($scopedFieldName, 'collection') === 0 || strpos($scopedFieldName, 'collection_group') === 0) {
+			$scopedFieldName = 'collection';
+		} elseif (strpos($scopedFieldName, 'local_time_since_added') === 0) {
+			$scopedFieldName = 'local_time_since_added';
+		} elseif (strpos($scopedFieldName, 'itype') === 0) {
+			$scopedFieldName = 'itype';
+		}
+		return $scopedFieldName;
+	}
+
+	/**
+	 * @param $field
+	 * @return string
+	 */
+	protected function getScopedFieldName($field): string
+	{
+		global $solrScope;
+		if ($solrScope) {
+			if ($field === 'availability_toggle') {
+				$field = 'availability_toggle_' . $solrScope;
+			} elseif ($field === 'format') {
+				$field = 'format_' . $solrScope;
+			} elseif ($field === 'format_category') {
+				$field = 'format_category_' . $solrScope;
+			} elseif ($field === 'econtent_source') {
+				$field = 'econtent_source_' . $solrScope;
+			} elseif ($field === 'econtent_protection_type') {
+				$field = 'econtent_protection_type_' . $solrScope;
+			} elseif (($field === 'collection') || ($field === 'collection_group')) {
+				$field = 'collection_' . $solrScope;
+			} elseif ($field === 'shelf_location') {
+				$field = 'shelf_location_' . $solrScope;
+			} elseif ($field === 'detailed_location') {
+				$field = 'detailed_location_' . $solrScope;
+			} elseif ($field === 'owning_location') {
+				$field = 'owning_location_' . $solrScope;
+			} elseif ($field === 'owning_library') {
+				$field = 'owning_library_' . $solrScope;
+			} elseif ($field === 'available_at') {
+				$field = 'available_at_' . $solrScope;
+			} elseif ($field === 'time_since_added') {
+				$field = 'local_time_since_added_' . $solrScope;
+			} elseif ($field === 'itype') {
+				$field = 'itype_' . $solrScope;
+			} elseif ($field === 'shelf_location') {
+				$field = 'shelf_location_' . $solrScope;
+			} elseif ($field === 'detailed_location') {
+				$field = 'detailed_location_' . $solrScope;
+			}
+		}
+		return $field;
 	}
 }

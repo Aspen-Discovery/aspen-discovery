@@ -1,8 +1,6 @@
 package com.turning_leaf_technologies.net;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.Logger;
-
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
@@ -10,7 +8,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 
 
@@ -23,6 +23,9 @@ public class NetworkUtils {
 		return NetworkUtils.getURL(url, logger, headers, 300000);
 	}
 	public static WebServiceResponse getURL(String url, Logger logger, HashMap<String, String> headers, int readTimeout) {
+		return NetworkUtils.getURL(url, logger, headers, readTimeout, true);
+	}
+	public static WebServiceResponse getURL(String url, Logger logger, HashMap<String, String> headers, int readTimeout, boolean logFailures) {
 		WebServiceResponse retVal;
 		try {
 			URL urlToCall = new URL(url);
@@ -56,7 +59,9 @@ public class NetworkUtils {
 				rd.close();
 				retVal = new WebServiceResponse(true, 200, response.toString());
 			} else {
-				logger.error("Received error " + conn.getResponseCode() + " getting " + url);
+				if (logFailures) {
+					logger.error("Received error " + conn.getResponseCode() + " getting " + url);
+				}
 				// Get any errors
 				InputStream errorStream = conn.getErrorStream();
 				if (errorStream != null) {
@@ -85,14 +90,18 @@ public class NetworkUtils {
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, null);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, null,  10000, 300000, StandardCharsets.UTF_8);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, 10000, 300000);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, 10000, 300000, StandardCharsets.UTF_8);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout) {
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, StandardCharsets.UTF_8);
+	}
+
+	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout, Charset authenticationCharSet) {
 		WebServiceResponse retVal;
 		HttpURLConnection conn = null;
 		try {
@@ -101,7 +110,7 @@ public class NetworkUtils {
 			conn.setConnectTimeout(connectTimeout);
 			conn.setReadTimeout(readTimeout);
 			if (authentication != null) {
-				conn.setRequestProperty("Authorization", "Basic " + Base64.encodeBase64String(authentication.getBytes()));
+				conn.setRequestProperty("Authorization", "Basic " + Base64.getEncoder().encodeToString(authentication.getBytes(authenticationCharSet)));
 			}
 			//logger.debug("Posting To URL " + url + (postData != null && postData.length() > 0 ? "?" + postData : ""));
 
@@ -118,10 +127,18 @@ public class NetworkUtils {
 			}
 			conn.setRequestMethod("POST");
 			if (postData != null && postData.length() > 0) {
-				conn.setRequestProperty("Content-Type", contentType + "; charset=utf-8");
+				conn.setRequestProperty("Content-Type", contentType + "; charset=" + authenticationCharSet.toString());
 				conn.setRequestProperty("Content-Language", "en-US");
 				conn.setRequestProperty("Connection", "keep-alive");
 
+				conn.setDoOutput(true);
+				OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8);
+				wr.write(postData);
+				wr.flush();
+				wr.close();
+			}else if (postData != null){
+				conn.setRequestProperty("Content-Language", "en-US");
+				conn.setRequestProperty("Content-Length", "0");
 				conn.setDoOutput(true);
 				OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8);
 				wr.write(postData);

@@ -35,6 +35,7 @@ class SideLoadLogEntry implements BaseLogEntry {
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
+		saveResults();
 	}
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

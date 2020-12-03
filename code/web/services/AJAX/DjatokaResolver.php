@@ -35,4 +35,9 @@ class DjatokaResolver extends Action{
 
 		echo($response);
 	}
+
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

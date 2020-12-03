@@ -109,10 +109,10 @@ body {
 }
 .active {
   .panel-title {
-    color: white;
+    color: #333333;
 
     > a {
-      color: white;
+      color: #333333;
     }
   }
 }
@@ -137,10 +137,13 @@ body {
   margin-left: 3px;
   margin-right: 3px;
 }
+
+.modal-header{
+  font-weight: bold;
+  font-size: 18px;
+}
  // top-right close button
 .modal-header .close {
-  margin-top: -10px;
-  font-size: 40px;
   opacity: .4;
 }
 
@@ -153,6 +156,32 @@ body {
 .btn-group{
   @media print{
     display: none;
+  }
+}
+
+.btn-editions{
+  display:inline;
+  color: #212529;
+  background-color: #f8f9fa;
+  border-color: #999999;
+  &:hover, &:focus, &:active{
+    color: #212529;
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+  }
+}
+
+.btn-tools{
+  color: #ffffff;
+  background-color: #747474;
+  border-color: #636363;
+  &:hover, &:focus, &:active{
+    color: #ffffff;
+    background-color: #636363;
+    border-color: #636363;
+  }
+  &:visited{
+    color: #ffffff;
   }
 }
 
@@ -223,7 +252,7 @@ div.striped {
 
 // Used on Checked Out Page
 .bg-overdue {
-  background-color: @state-danger-bg !important; // important is needed to override .striped on checked out page
+  background-color: #fcf2f2 !important; // important is needed to override .striped on checked out page
   a&:hover,
   a&:focus {
     background-color: darken(@state-danger-bg, 10%);
@@ -235,23 +264,6 @@ div.striped {
 //  overflow-x: scroll;
 //}
 
-//Table sorters
-.unsortedHeader{
-  background-image: url(/images/unsorted_icon.gif);
-  cursor: pointer;
-  font-weight: bold;
-  background-repeat: no-repeat;
-  background-position: center right;
-  padding-right: 20px;
-}
-thead .sortDescHeader{
-  background-image: url(/images/sort_desc_icon.gif);
-  background-color: #3399FF;
-}
-thead .sortAscHeader{
-  background-image: url(/images/sort_asc_icon.gif);
-  background-color: #3399FF;
-}
 .tablesorter-filter{
   width: 98%;
 }
@@ -269,8 +281,11 @@ thead .sortAscHeader{
 @import "ratings.less";
 @import "datepicker.less";
 @import "jcarousel.responsive.less";
+@import "lib/fontawesome-all.min.css";
 @import "lib/bootstrap-switch.less";
 @import "lib/tablesorter/tablesorter.less";
+@import "lib/rome.min.css";
+@import "simplemde.min.css";
 
 // Imports of functionality related to Aspen
 @import "layout.less";
@@ -288,3 +303,5 @@ thead .sortAscHeader{
 @import "genealogy.less";
 @import "repository.less";
 @import "admin.less";
+@import "web-builder.less";
+@import "ebsco.less";

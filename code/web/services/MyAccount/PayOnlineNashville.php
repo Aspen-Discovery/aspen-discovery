@@ -326,4 +326,12 @@ echo "\r\n\r\nResponse Headers\r\n";
 		}
 		if(!empty($patron)) return $patron;
 	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Pay Fines');
+		return $breadcrumbs;
+	}
 }

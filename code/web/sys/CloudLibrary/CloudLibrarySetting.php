@@ -15,9 +15,9 @@ class CloudLibrarySetting extends DataObject
 
 	public static function getObjectStructure()
 	{
-		$structure = array(
+		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'apiUrl' => array('property' => 'apiUrl', 'type' => 'url', 'label' => 'url', 'description' => 'The URL to the API'),
+			'apiUrl' => array('property' => 'apiUrl', 'type' => 'url', 'label' => 'API URL', 'description' => 'The URL to the API'),
 			'userInterfaceUrl' => array('property' => 'userInterfaceUrl', 'type' => 'url', 'label' => 'User Interface URL', 'description' => 'The URL where the Patron can access the catalog'),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'text', 'label' => 'Library Id', 'description' => 'The library id provided by Cloud Library'),
 			'accountId' => array('property' => 'accountId', 'type' => 'text', 'label' => 'Account Id', 'description' => 'The Account Id provided by Cloud Library when registering'),
@@ -26,6 +26,5 @@ class CloudLibrarySetting extends DataObject
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 		);
-		return $structure;
 	}
 }

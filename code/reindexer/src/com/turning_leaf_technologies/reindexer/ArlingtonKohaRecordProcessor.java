@@ -25,7 +25,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 		// ??x?? = Other
 		String literaryForm = null;
 		for (ItemInfo printItem : printItems){
-			String locationCode = printItem.getSubLocationCode();
+			String locationCode = printItem.getShelfLocationCode();
 			if (locationCode != null) {
 				literaryForm = getLiteraryFormForLocation(locationCode);
 				if (literaryForm != null){
@@ -50,42 +50,6 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 			}
 		}
 		return literaryForm;
-	}
-
-	@Override
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Arlington we can load the target audience based off of the location code:
-		// ?a??? = Adult
-		// ?j??? = Kids
-		// ?y??? = Teen
-		HashSet<String> targetAudiences = new HashSet<>();
-		for (ItemInfo printItem : printItems){
-			String locationCode = printItem.getSubLocationCode();
-			if (addTargetAudienceBasedOnLocationCode(targetAudiences, locationCode)) break;
-		}
-		if (targetAudiences.size() == 0){
-			targetAudiences.add("Other");
-		}
-		groupedWork.addTargetAudiences(targetAudiences);
-		groupedWork.addTargetAudiencesFull(targetAudiences);
-	}
-
-	private boolean addTargetAudienceBasedOnLocationCode(HashSet<String> targetAudiences, String locationCode) {
-		if (locationCode != null) {
-			if (locationCode.length() >= 2) {
-				if (locationCode.charAt(0) == 'A') {
-					targetAudiences.add("Adult");
-					return true;
-				} else if (locationCode.charAt(0) == 'J') {
-					targetAudiences.add("Juvenile");
-					return true;
-				} else if (locationCode.charAt(0) == 'Y') {
-					targetAudiences.add("Young Adult");
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	@Override
@@ -133,7 +97,8 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 				itemInfo.setLocationCode("Online");
 				itemInfo.setCallNumber("Online");
 				itemInfo.seteContentSource(econtentSource);
-				itemInfo.setShelfLocation(econtentSource);
+				itemInfo.setShelfLocation("Online");
+				itemInfo.setDetailedLocation(econtentSource);
 				itemInfo.setIType("eCollection");
 				RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
 				relatedRecord.setSubSource(profileType);
@@ -141,7 +106,12 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 				itemInfo.seteContentUrl(url);
 
 				//Set the format based on the material type
-				itemInfo.setFormat("Online Content");
+				String formatFrom856 = MarcUtil.getFirstFieldVal(record, "856z");
+				if (formatFrom856 != null) {
+					itemInfo.setFormat(formatFrom856);
+				}else {
+					itemInfo.setFormat("Online Content");
+				}
 				itemInfo.setFormatCategory("eBook");
 				relatedRecord.setFormatBoost(10);
 
@@ -187,7 +157,7 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 			if (okToInclude){
 				StringBuilder subjectValue = new StringBuilder();
 				for (Subfield curSubfield : curSubject.getSubfields()){
-					if (curSubfield.getCode() != '2' && curSubfield.getCode() != '0'){
+					if (curSubfield.getCode() != '2' && curSubfield.getCode() != '0' && curSubfield.getCode() != '9'){
 						if (subjectValue.length() > 0){
 							subjectValue.append(" -- ");
 						}

@@ -3,6 +3,8 @@ require_once ROOT_DIR . '/Action.php';
 
 class RBdigital_AccessOnline extends Action
 {
+	/** @var RBdigitalRecordDriver $recordDriver */
+	private $recordDriver;
 	function launch()
 	{
 		global $interface;
@@ -10,7 +12,7 @@ class RBdigital_AccessOnline extends Action
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
 		require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-		$recordDriver = new RBdigitalRecordDriver($id);
+		$this->recordDriver = new RBdigitalRecordDriver($id);
 
 		$user = UserAccount::getLoggedInUser();
 
@@ -18,15 +20,15 @@ class RBdigital_AccessOnline extends Action
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				if (!$recordDriver->isValid()) {
-					$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+				if (!$this->recordDriver->isValid()) {
+					$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 					die();
 				}
 
 				//Do the redirection
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$rbdigitalDriver = new RBdigitalDriver();
-				$rbdigitalDriver->redirectToRBdigital($patron, $recordDriver);
+				$rbdigitalDriver->redirectToRBdigital($patron, $this->recordDriver);
 				//We don't actually get to here since the redirect happens above
 				die();
 			} else {
@@ -35,5 +37,14 @@ class RBdigital_AccessOnline extends Action
 		} else {
 			AspenError::raiseError('You must be logged in to access this title.');
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle());
+		$breadcrumbs[] = new Breadcrumb('', 'Access Online');
+		return $breadcrumbs;
 	}
 }

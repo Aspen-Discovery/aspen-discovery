@@ -1,5 +1,5 @@
 {strip}
-	<div class="resulthead">
+	<div class="resultHead">
 		<h1>
 			{$pageTitleShort}
 		</h1>

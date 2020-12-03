@@ -4,14 +4,14 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class ReindexLog extends Admin_Admin
+class Admin_ReindexLog extends Admin_Admin
 {
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 
 		$logEntries = array();
+		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
 		$logEntry = new ReindexLogEntry();
 		if (!empty($_REQUEST['worksLimit']) && ctype_digit($_REQUEST['worksLimit'])) {
 			// limits total count correctly
@@ -41,10 +41,25 @@ class ReindexLog extends Admin_Admin
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
-		$this->display('reindexLog.tpl', 'Reindex Log');
+		$this->display('reindexLog.tpl', 'Nightly Index Log');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'Nightly Index Log');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports','View Indexing Logs']);
 	}
 }

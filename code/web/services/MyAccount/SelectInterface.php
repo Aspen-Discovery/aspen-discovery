@@ -13,7 +13,7 @@ class MyAccount_SelectInterface extends Action{
 			$libraries[$library->libraryId] = array(
 				'id' => $library->libraryId,
 				'displayName' => $library->displayName,
-				'subdomain' => $library->subdomain,
+				'library' => clone $library,
 			);
 		}
 		$interface->assign('libraries', $libraries);
@@ -31,30 +31,42 @@ class MyAccount_SelectInterface extends Action{
 		}
 
 		$redirectLibrary = null;
-		$user = UserAccount::getLoggedInUser();
-		if (isset($_REQUEST['library'])){
-			$redirectLibrary = $_REQUEST['library'];
-		}elseif (!is_null($physicalLocation)){
-			$redirectLibrary = $physicalLocation->libraryId;
-		}elseif ($user && isset($user->preferredLibraryInterface) && is_numeric($user->preferredLibraryInterface)){
-			$redirectLibrary = $user->preferredLibraryInterface;
-		}elseif (isset($_COOKIE['PreferredLibrarySystem'])){
-			$redirectLibrary = $_COOKIE['PreferredLibrarySystem'];
+		if (!array_key_exists('noRememberThis', $_REQUEST) || ($_REQUEST['noRememberThis'] === false)){
+			$user = UserAccount::getLoggedInUser();
+			if (isset($_REQUEST['library'])){
+				$redirectLibrary = $_REQUEST['library'];
+			}elseif (!is_null($physicalLocation)){
+				$redirectLibrary = $physicalLocation->libraryId;
+			}elseif ($user && isset($user->preferredLibraryInterface) && is_numeric($user->preferredLibraryInterface)){
+				$redirectLibrary = $user->preferredLibraryInterface;
+			}elseif (isset($_COOKIE['PreferredLibrarySystem'])){
+				$redirectLibrary = $_COOKIE['PreferredLibrarySystem'];
+			}
+			$interface->assign('noRememberThis', false);
+		}else{
+			$interface->assign('noRememberThis', true);
 		}
+
 		if ($redirectLibrary != null){
 			$logger->log("Selected library $redirectLibrary", Logger::LOG_DEBUG);
-			$selectedLibrary = $libraries[$redirectLibrary];
-			global $configArray;
-			$baseUrl = $configArray['Site']['url'];
-			$urlPortions = explode('://', $baseUrl);
-			//Get rid of extra portions of the url
-			$subdomain = $selectedLibrary['subdomain'];
-			if (strpos($urlPortions[1], 'opac2') !== false){
-				$urlPortions[1] = str_replace('opac2.', '', $urlPortions[1]);
-				$subdomain .= '2';
+			/** @var Library $selectedLibrary */
+			$selectedLibrary = $libraries[$redirectLibrary]['library'];
+			if (!empty($selectedLibrary->baseUrl)){
+				$baseUrl = $selectedLibrary->baseUrl;
+			}else{
+				global $configArray;
+				$baseUrl = $configArray['Site']['url'];
+				$urlPortions = explode('://', $baseUrl);
+				//Get rid of extra portions of the url
+				$subdomain = $selectedLibrary['subdomain'];
+				if (strpos($urlPortions[1], 'opac2') !== false){
+					$urlPortions[1] = str_replace('opac2.', '', $urlPortions[1]);
+					$subdomain .= '2';
+				}
+				$urlPortions[1] = str_replace('opac.', '', $urlPortions[1]);
+				$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
 			}
-			$urlPortions[1] = str_replace('opac.', '', $urlPortions[1]);
-			$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
+
 			if ($gotoModule){
 				$baseUrl .= '/' . $gotoModule;
 			}
@@ -78,5 +90,10 @@ class MyAccount_SelectInterface extends Action{
 
 		// Display Page
 		$this->display('selectInterface.tpl', 'Select Library Catalog', '');
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

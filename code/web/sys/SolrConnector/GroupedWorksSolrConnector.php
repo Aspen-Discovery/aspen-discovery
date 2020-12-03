@@ -81,7 +81,6 @@ class GroupedWorksSolrConnector extends Solr
 	 *
 	 * @access    public
 	 * @param $id
-	 * @param null $notInterestedIds
 	 * @param bool $availableOnly
 	 * @param bool $limitFormat
 	 * @param null $limit
@@ -89,7 +88,7 @@ class GroupedWorksSolrConnector extends Solr
 	 * @return    array                            An array of query results
 	 *
 	 */
-	function getMoreLikeThis($id, $notInterestedIds = null, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null)
+	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null)
 	{
 		$originalResult = $this->getRecord($id, 'target_audience_full,mpaa_rating,literary_form,language,isbn,upc,series');
 		// Query String Parameters
@@ -177,9 +176,10 @@ class GroupedWorksSolrConnector extends Solr
 			$options['fq'][] = $filter;
 		}
 
-		if ($notInterestedIds != null && count($notInterestedIds) > 0) {
-			$notInterestedString = implode(' OR ', $notInterestedIds);
-			$options['fq'][] = "-id:($notInterestedString)";
+		if (UserAccount::isLoggedIn()){
+			$options['fq'][] = '-user_rating_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
 
 		$boostFactors = $this->getBoostFactors($searchLibrary);
@@ -207,13 +207,12 @@ class GroupedWorksSolrConnector extends Solr
 	 * @access    public
 	 *
 	 * @param array[] $ids
-	 * @param string[] $notInterestedIds
 	 * @param string $fieldsToReturn
 	 * @param int $page
 	 * @param int $limit
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $notInterestedIds, $fieldsToReturn, $page = 1, $limit = 25)
+	function getMoreLikeThese($ids, $fieldsToReturn, $page = 1, $limit = 25)
 	{
 		// Query String Parameters
 		$idString = '';
@@ -231,10 +230,15 @@ class GroupedWorksSolrConnector extends Solr
 		$searchLocation = Location::getSearchLocation();
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
-		if (count($notInterestedIds) > 0) {
-			$notInterestedString = implode(' OR ', $notInterestedIds);
-			$options['fq'][] = "-id:($notInterestedString)";
+		if (UserAccount::isLoggedIn()){
+			$options['fq'][] = '-user_rating_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
+//		if (count($notInterestedIds) > 0) {
+//			$notInterestedString = implode(' OR ', $notInterestedIds);
+//			$options['fq'][] = "-id:($notInterestedString)";
+//		}
 		$options['fq'][] = "-id:($idString)";
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
@@ -393,5 +397,21 @@ class GroupedWorksSolrConnector extends Solr
 		}
 
 		return $filter;
+	}
+
+	protected function getHighlightOptions($fields, &$options){
+		global $solrScope;
+		$highlightFields = $fields . ",table_of_contents";
+		$highlightFields = str_replace(",related_record_ids_$solrScope", '', $highlightFields);
+		$highlightFields = str_replace(",related_items_$solrScope", '', $highlightFields);
+		$highlightFields = str_replace(",format_$solrScope", '', $highlightFields);
+		$highlightFields = str_replace(",format_category_$solrScope", '', $highlightFields);
+		$options['hl'] = 'true';
+		$options['hl.fl'] = $highlightFields;
+		$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
+		$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
+		$options['f.display_description.hl.fragsize'] = 50000;
+		$options['f.title_display.hl.fragsize'] = 1000;
+		$options['f.title_full.hl.fragsize'] = 1000;
 	}
 }

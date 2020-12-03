@@ -4,12 +4,6 @@ require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/CatalogConnection.php';
 
 class ResetPin extends Action{
-	protected $catalog;
-
-	function __construct()
-	{
-	}
-
 	function launch($msg = null)
 	{
 		global $interface;
@@ -21,10 +15,10 @@ class ResetPin extends Action{
 			$interface->assign('userID', $_REQUEST['uid']);
 		}
 
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if (isset($_REQUEST['submit'])){
-			$this->catalog = CatalogFactory::getCatalogConnectionInstance();
-			$driver = $this->catalog->driver;
-			if ($this->catalog->checkFunction('resetPin')) {
+			$driver = $catalog->driver;
+			if ($catalog->checkFunction('resetPin')) {
 				$newPin        = trim($_REQUEST['pin1']);
 				$confirmNewPin = trim($_REQUEST['pin2']);
 				$resetToken    = $_REQUEST['resetToken'];
@@ -36,7 +30,7 @@ class ResetPin extends Action{
 
 					if (empty($patron->id)) {
 						// Did not find a matching user to the uid
-						// This check could be optional if the resetPin method verifies that the ILS user matches the Pika user.
+						// This check could be optional if the resetPin method verifies that the ILS user matches the Aspen Discovery user.
 						$resetPinResult = array(
 							'error' => 'Invalid parameter. Your Pin can not be reset'
 						);
@@ -69,7 +63,17 @@ class ResetPin extends Action{
 			$interface->assign('resetPinResult', $resetPinResult);
 			$this->display('resetPinResults.tpl', 'Reset My Pin');
 		}else{
+			$pinValidationRules = $catalog->getPasswordPinValidationRules();
+			$interface->assign('pinValidationRules', $pinValidationRules);
 			$this->display('resetPin.tpl', 'Reset My Pin');
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Reset PIN');
+		return $breadcrumbs;
 	}
 }

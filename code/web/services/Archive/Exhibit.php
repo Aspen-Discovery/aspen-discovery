@@ -14,9 +14,9 @@ class Archive_Exhibit extends Archive_Object{
 		$timer->logTime('Loaded Explore More Content');
 
 		if (isset($_REQUEST['style'])){
-			$pikaCollectionDisplay = $_REQUEST['style'];
+			$collectionDisplay = $_REQUEST['style'];
 		}else{
-			$pikaCollectionDisplay = $this->recordDriver->getModsValue('pikaCollectionDisplay', 'marmot');
+			$collectionDisplay = $this->recordDriver->getModsValue('pikaCollectionDisplay', 'marmot');
 		}
 
 		$repositoryLink = $configArray['Islandora']['repositoryUrl'] . '/islandora/object/' . $this->recordDriver->getUniqueID();
@@ -30,7 +30,7 @@ class Archive_Exhibit extends Archive_Object{
 		}
 
 		$displayType = 'basic';
-		if ($pikaCollectionDisplay == 'map'){
+		if ($collectionDisplay == 'map'){
 			$displayType = 'map';
 			$mapZoom = $this->recordDriver->getModsValue('mapZoomLevel', 'marmot');
 			if ($mapZoom == null){
@@ -38,17 +38,17 @@ class Archive_Exhibit extends Archive_Object{
 			}
 			$interface->assign('mapZoom', $mapZoom);
 			$interface->assign('showTimeline', 'true');
-		}elseif ($pikaCollectionDisplay == 'mapNoTimeline'){
+		}elseif ($collectionDisplay == 'mapNoTimeline'){
 			$displayType = 'mapNoTimeline';
 			$mapZoom = $this->recordDriver->getModsValue('mapZoomLevel', 'marmot');
 			$interface->assign('mapZoom', $mapZoom);
 			$interface->assign('showTimeline', 'false');
-		}elseif ($pikaCollectionDisplay == 'custom'){
+		}elseif ($collectionDisplay == 'custom'){
 			$displayType = 'custom';
 			//Load the options to show
 			$collectionOptionsRaw = $this->recordDriver->getModsValue('collectionOptions', 'marmot');
 			$collectionOptions = explode("\r\n", html_entity_decode($collectionOptionsRaw));
-		}elseif ($pikaCollectionDisplay == 'timeline'){
+		}elseif ($collectionDisplay == 'timeline'){
 			$displayType = 'timeline';
 		}
 		$additionalCollections = array();
@@ -293,7 +293,7 @@ class Archive_Exhibit extends Archive_Object{
 		//Don't show pages of books or parts of an album
 		$searchObject->addHiddenFilter('!RELS_EXT_isConstituentOf_uri_ms', "*");
 		$searchObject->clearFilters();
-		if (isset($additionalCollections) && count($additionalCollections > 0)){
+		if (isset($additionalCollections) && count($additionalCollections) > 0){
 			$filter = "RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/{$this->pid}\"";
 			foreach ($additionalCollections as $collection){
 				$filter .= " OR RELS_EXT_isMemberOfCollection_uri_ms:\"info:fedora/" . trim($collection) . "\"";

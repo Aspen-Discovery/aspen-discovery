@@ -35,10 +35,9 @@ class MaterialsRequest_Update extends Action {
 		}elseif (!UserAccount::isLoggedIn()){
 			$interface->assign('error', 'Sorry, you must be logged in to update a materials request.');
 			$processForm = false;
-		}elseif (UserAccount::userHasRole('cataloging')){
-			//Ok to process the form even if it wasn't created by the current user
-		}elseif (UserAccount::userHasRole('library_material_requests') && $requestUser && $requestUser->getHomeLibrary()->libraryId == $user->getHomeLibrary()->libraryId){
+		}elseif (UserAccount::userHasPermission('Manage Library Materials Requests') && $requestUser && $requestUser->getHomeLibrary()->libraryId == $user->getHomeLibrary()->libraryId){
 			//Ok to process because they are an admin for the user's home library
+			$processForm = true;
 		}elseif ($user->id != $materialsRequest->createdBy){
 			$interface->assign('error', 'Sorry, you do not have permission to update this materials request.');
 			$processForm = false;
@@ -74,6 +73,13 @@ class MaterialsRequest_Update extends Action {
 				$materialsRequest->holdPickupLocation  = empty($_REQUEST['holdPickupLocation']) ? '' : $_REQUEST['holdPickupLocation'];
 				$materialsRequest->bookmobileStop      = empty($_REQUEST['bookmobileStop']) ? '' : $_REQUEST['bookmobileStop'];
 				$materialsRequest->illItem             = empty($_REQUEST['illItem']) ? 0 : $_REQUEST['illItem'];
+				$statusChanged = false;
+				if (!empty($_REQUEST['status'])){
+					if ($materialsRequest->status != $_REQUEST['status']){
+						$materialsRequest->status = $_REQUEST['status'];
+						$statusChanged = true;
+					}
+				}
 
 				$materialsRequest->libraryId = $requestUser->getHomeLibrary()->libraryId;
 
@@ -104,6 +110,10 @@ class MaterialsRequest_Update extends Action {
 				if ($materialsRequest->update()){
 					$interface->assign('success', true);
 					$interface->assign('materialsRequest', $materialsRequest);
+					if ($statusChanged){
+						//Send an email as needed
+						$materialsRequest->sendStatusChangeEmail();
+					}
 				}else{
 					$interface->assign('success', false);
 					$interface->assign('error', 'There was an error updating the materials request.');
@@ -121,5 +131,13 @@ class MaterialsRequest_Update extends Action {
 //		$interface->assign('showEaudioFormatField', $configArray['MaterialsRequest']['showEaudioFormatField']);
 
 		$this->display('update-result.tpl', 'Update Result');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
+		$breadcrumbs[] = new Breadcrumb('', 'Update Materials Request');
+		return $breadcrumbs;
 	}
 }

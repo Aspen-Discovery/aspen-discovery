@@ -40,12 +40,27 @@ class Admin_ErrorReport extends ObjectEditor
 		return true;
 	}
 
-	function getAllowableRoles() {
-		return array('opacAdmin');
-	}
-
 	function getPrimaryKeyColumn()
 	{
 		return 'id';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('/Admin/ErrorReport', 'Error Log');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View System Reports');
 	}
 }

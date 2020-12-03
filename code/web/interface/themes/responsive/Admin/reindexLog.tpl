@@ -1,15 +1,15 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h3>Reindex Log</h3>
+		<h1>{translate text='Reindex Log'}</h1>
 		<hr>
 
-		<h4>Filter by</h4>
+		<legend>{translate text="Filter by"}</legend>
 
 		<form class="navbar form-inline row">
 			<div class="form-group col-xs-7">
-				<label for="worksLimit" class="control-label">Min Works Processed: </label>
+				<label for="worksLimit" class="control-label">{translate text="Min Works Processed"}</label>
 				<input style="width: 125px;" id="worksLimit" name="worksLimit" type="number" min="0" class="form-control" {if !empty($smarty.request.worksLimit)} value="{$smarty.request.worksLimit}"{/if}>
-				<button class="btn btn-primary" type="submit">Go</button>
+				<button class="btn btn-primary" type="submit">{translate text="Go"}</button>
 			</div>
 			<div class="form-group col-xs-5">
 				<span class="pull-right">
@@ -24,9 +24,9 @@
 			</div>
 		</form>
 		<div id="econtentAttachLogContainer">
-			<table class="logEntryDetails table table-condensed table-hover">
+			<table class="logEntryDetails table table-condensed table-hover" aria-label="Index Log">
 				<thead>
-					<tr><th>Id</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Works Processed</th><th>Lists Processed</th><th>Notes</th></tr>
+					<tr><th>Id</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Works Processed</th><th>Num Errors</th><th>Notes</th></tr>
 				</thead>
 				<tbody>
 					{foreach from=$logEntries item=logEntry}
@@ -37,7 +37,7 @@
 							<td>{$logEntry->endTime|date_format:"%D %T"}</td>
 							<td>{$logEntry->getElapsedTime()}</td>
 							<td>{$logEntry->numWorksProcessed}</td>
-							<td>{$logEntry->numListsProcessed}</td>
+							<td>{$logEntry->numErrors}</td>
 							<td><a href="#" onclick="return AspenDiscovery.Admin.showReindexNotes('{$logEntry->id}');">Show Notes</a></td>
 						</tr>
 					{/foreach}

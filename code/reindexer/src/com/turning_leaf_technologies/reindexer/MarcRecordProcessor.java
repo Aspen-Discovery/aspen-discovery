@@ -17,11 +17,11 @@ import java.util.regex.PatternSyntaxException;
 abstract class MarcRecordProcessor {
 	protected Logger logger;
 	protected GroupedWorkIndexer indexer;
-	private static Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)Rated\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
-	private static Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
-	private static Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
-	private static Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
-	private HashSet<String> unknownSubjectForms = new HashSet<>();
+	private static final Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)Rated\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
+	private final HashSet<String> unknownSubjectForms = new HashSet<>();
 	int numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
 	String individualMarcPath;
@@ -232,9 +232,11 @@ abstract class MarcRecordProcessor {
 									curSubjectField.getSubfield('2').getData().equals("bisacmt") ||
 									curSubjectField.getSubfield('2').getData().equals("bisacrt")) {
 								isLCSubject = false;
+								isBisacSubject = true;
 							}
 						}
 					} else {
+						isLCSubject = false;
 						if (curSubjectField.getSubfield('2') != null) {
 							if (curSubjectField.getSubfield('2').getData().equals("bisacsh") ||
 									curSubjectField.getSubfield('2').getData().equals("bisacmt") ||
@@ -542,16 +544,13 @@ abstract class MarcRecordProcessor {
 					) {
 				char targetAudienceChar;
 				if (ohOhSixField != null && ohOhSixField.getData().length() > 5) {
-					targetAudienceChar = Character.toUpperCase(ohOhSixField.getData()
-							.charAt(5));
+					targetAudienceChar = Character.toUpperCase(ohOhSixField.getData().charAt(5));
 					if (targetAudienceChar != ' ') {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
 				}
-				if (targetAudiences.size() == 0 && ohOhEightField != null
-						&& ohOhEightField.getData().length() > 22) {
-					targetAudienceChar = Character.toUpperCase(ohOhEightField.getData()
-							.charAt(22));
+				if (targetAudiences.size() == 0 && ohOhEightField != null && ohOhEightField.getData().length() > 22) {
+					targetAudienceChar = Character.toUpperCase(ohOhEightField.getData().charAt(22));
 					if (targetAudienceChar != ' ') {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
@@ -632,6 +631,7 @@ abstract class MarcRecordProcessor {
 					|| subjectForm.equalsIgnoreCase("Junior fiction" )
 					|| subjectForm.equalsIgnoreCase("Comic books, strips, etc")
 					|| subjectForm.equalsIgnoreCase("Comic books,strips, etc")
+					|| subjectForm.equalsIgnoreCase("Science fiction comics")
 					|| subjectForm.equalsIgnoreCase("Children's fiction" )
 					|| subjectForm.equalsIgnoreCase("Fictional Works" )
 					|| subjectForm.equalsIgnoreCase("Cartoons and comics" )
@@ -888,10 +888,16 @@ abstract class MarcRecordProcessor {
 		List<DataField> contributorFields = MarcUtil.getDataFields(record, new String[]{"700","710"});
 		HashSet<String> contributors = new HashSet<>();
 		for (DataField contributorField : contributorFields){
-			StringBuilder contributor = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "abcdetmnr", "");
-			if (contributorField.getTag().equals("700") && contributorField.getSubfield('4') != null){
-				String role = indexer.translateSystemValue("contributor_role", StringUtils.trimTrailingPunctuation(contributorField.getSubfield('4').getData()), identifier);
-				contributor.append("|").append(role);
+			StringBuilder contributor = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "abcd", "");
+			if (contributor.length() == 0){
+				continue;
+			}
+			if (contributor.substring(contributor.length() - 1, contributor.length()).equals(",")){
+				contributor = new StringBuilder(contributor.substring(0, contributor.length() - 1));
+			}
+			StringBuilder roles = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "e4", ",");
+			if (roles.length() > 0){
+				contributor.append("|").append(roles.toString().replaceAll(",,", ","));
 			}
 			contributors.add(contributor.toString());
 		}
@@ -1007,7 +1013,7 @@ abstract class MarcRecordProcessor {
 		char ind2char = df.getIndicator2();
 		int result = 0;
 		if (Character.isDigit(ind2char))
-			result = Integer.valueOf(String.valueOf(ind2char));
+			result = Integer.parseInt(String.valueOf(ind2char));
 		return result;
 	}
 
@@ -1068,7 +1074,7 @@ abstract class MarcRecordProcessor {
 		}
 		return printFormats;
 	}
-	private HashSet<String> formatsToFilter = new HashSet<>();
+	private final HashSet<String> formatsToFilter = new HashSet<>();
 
 	private void getFormatFromDigitalFileCharacteristics(Record record, LinkedHashSet<String> printFormats) {
 		Set<String> fields = MarcUtil.getFieldList(record, "347b");
@@ -1479,7 +1485,7 @@ abstract class MarcRecordProcessor {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
 								String subfieldVData = field.getSubfield('v').getData().toLowerCase();
-								if (!subfieldVData.contains("Television adaptation")){
+								if (!subfieldVData.contains("television adaptation")){
 									okToAdd = true;
 									//}else{
 									//System.out.println("Not including graphic novel format");

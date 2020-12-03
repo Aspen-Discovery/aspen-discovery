@@ -17,12 +17,24 @@ class Admin_Placards extends ObjectEditor
 		return 'Placards';
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager', 'contentEditor');
+		return UserAccount::userHasPermission('Administer All Placards');
 	}
 	function getAllObjects(){
 		$placard = new Placard();
 		$placard->orderBy('title');
+		if (!UserAccount::userHasPermission('Administer All Placards')){
+			$libraryPlacard = new PlacardLibrary();
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			if ($library != null){
+				$libraryPlacard->libraryId = $library->libraryId;
+				$placardsForLibrary = [];
+				$libraryPlacard->find();
+				while ($libraryPlacard->fetch()){
+					$placardsForLibrary[] = $libraryPlacard->placardId;
+				}
+				$placard->whereAddIn('id', $placardsForLibrary, false);
+			}
+		}
 		$placard->find();
 		$list = array();
 		while ($placard->fetch()){
@@ -39,8 +51,26 @@ class Admin_Placards extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager', 'contentEditor');
+	function getInstructions()
+	{
+		return '/Admin/HelpManual?page=Placards';
+	}
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Placards', 'Placards');
+		return $breadcrumbs;
 	}
 
+	function getActiveAdminSection()
+	{
+		return 'local_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Placards','Administer Library Placards']);
+	}
 }

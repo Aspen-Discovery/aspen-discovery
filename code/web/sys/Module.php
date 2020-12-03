@@ -12,7 +12,7 @@ class Module extends DataObject
 	public $logClassPath;
 	public $logClassName;
 
-	function getObjectStructure(){
+	static function getObjectStructure(){
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The name of the module'),

@@ -39,19 +39,21 @@ class MyAccount_Profile extends MyAccount
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
 			if ($patronHomeLibrary == null){
-				$canUpdateContactInfo = true;
-				$canUpdateAddress = true;
+				$canUpdateContactInfo = false;
+				$canUpdateAddress = false;
+				$canUpdatePhoneNumber = false;
 				$showWorkPhoneInProfile = false;
-				$showNoticeTypeInProfile = true;
+				$showNoticeTypeInProfile = false;
 				$showPickupLocationInProfile = false;
 				$treatPrintNoticesAsPhoneNotices = false;
 				$allowPinReset = false;
-				$showAlternateLibraryOptionsInProfile = true;
+				$showAlternateLibraryOptionsInProfile = false;
 				$allowAccountLinking = true;
 				$passwordLabel = 'Library Card Number';
 			}else{
 				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$canUpdateAddress = ($patronHomeLibrary->allowPatronAddressUpdates == 1);
+				$canUpdatePhoneNumber = ($patronHomeLibrary->allowPatronPhoneNumberUpdates == 1);
 				$showWorkPhoneInProfile = ($patronHomeLibrary->showWorkPhoneInProfile == 1);
 				$showNoticeTypeInProfile = ($patronHomeLibrary->showNoticeTypeInProfile == 1);
 				$treatPrintNoticesAsPhoneNotices = ($patronHomeLibrary->treatPrintNoticesAsPhoneNotices == 1);
@@ -66,10 +68,9 @@ class MyAccount_Profile extends MyAccount
 				$passwordLabel = str_replace('Your', '', $patronHomeLibrary->loginFormPasswordLabel ? $patronHomeLibrary->loginFormPasswordLabel : 'Library Card Number');
 			}
 
-			$interface->assign('showUsernameField', $patron->getShowUsernameField());
-			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('canUpdateAddress', $canUpdateAddress);
+			$interface->assign('canUpdatePhoneNumber', $canUpdatePhoneNumber);
 			$interface->assign('showWorkPhoneInProfile', $showWorkPhoneInProfile);
 			$interface->assign('showPickupLocationInProfile', $showPickupLocationInProfile);
 			$interface->assign('showNoticeTypeInProfile', $showNoticeTypeInProfile);
@@ -88,9 +89,10 @@ class MyAccount_Profile extends MyAccount
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$updateScope = $_REQUEST['updateScope'];
 				if ($updateScope == 'contact') {
-					$errors = $patron->updatePatronInfo($canUpdateContactInfo);
-					session_start(); // any writes to the session storage also closes session. Happens in updatePatronInfo (for Horizon). plb 4-21-2015
-					$_SESSION['profileUpdateErrors'] = $errors;
+					$result = $patron->updatePatronInfo($canUpdateContactInfo);
+					$user->updateMessage = implode('<br/>', $result['messages']);
+					$user->updateMessageIsError = !$result['success'];
+					$user->update();
 
 				}  elseif ($updateScope == 'userPreference') {
 					$patron->updateUserPreferences();
@@ -101,15 +103,10 @@ class MyAccount_Profile extends MyAccount
 				} elseif ($updateScope == 'hoopla') {
 					$patron->updateHooplaOptions();
 				} elseif ($updateScope == 'pin') {
-					$updateResult = $patron->updatePin();
-					if (!$updateResult['success']){
-						session_start(); // any writes to the session storage also closes session. possibly happens in updatePin. plb 4-21-2015
-						$_SESSION['profileUpdateErrors'] = $updateResult['errors'];
-						// Template checks for update Pin success message and presents as success even though stored in this errors variable
-					}else{
-						session_start();
-						$_SESSION['profileUpdateMessage'] = $updateResult['message'];
-					}
+					$result = $patron->updatePin();
+					$user->updateMessage = $result['message'];
+					$user->updateMessageIsError = !$result['success'];
+					$user->update();
 
 				}
 
@@ -123,27 +120,24 @@ class MyAccount_Profile extends MyAccount
 				$interface->assign('edit', false);
 			}
 
-			/** @var Translator $translator */
 			global $translator;
 			$notice         = $translator->translate('overdrive_account_preferences_notice');
-            require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-            $overDriveSettings = new OverDriveSetting();
-            $overDriveSettings->find((true));
-            $overDriveUrl = $overDriveSettings->url;
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+			$overDriveSettings = new OverDriveSetting();
+			$overDriveSettings->find((true));
+			$overDriveUrl = $overDriveSettings->url;
 			$replacementUrl = empty($overDriveUrl) ? '#' : $overDriveUrl;
 			$notice         = str_replace('{OVERDRIVEURL}', $replacementUrl, $notice); // Insert the Overdrive URL into the notice
 			$interface->assign('overdrivePreferencesNotice', $notice);
 
-
-			if (!empty($_SESSION['profileUpdateErrors'])) {
-				$interface->assign('profileUpdateErrors', $_SESSION['profileUpdateErrors']);
-				@session_start();
-				unset($_SESSION['profileUpdateErrors']);
-			}
-			if (!empty($_SESSION['profileUpdateMessage'])) {
-				$interface->assign('profileUpdateMessage', $_SESSION['profileUpdateMessage']);
-				@session_start();
-				unset($_SESSION['profileUpdateMessage']);
+			if (!empty($user->updateMessage)) {
+				if ($user->updateMessageIsError){
+					$interface->assign('profileUpdateErrors', $user->updateMessage);
+				}else{
+					$interface->assign('profileUpdateMessage', $user->updateMessage);
+				}
+				$user->updateMessage = '';
+				$user->update();
 			}
 
 			if ($showAlternateLibraryOptionsInProfile) {
@@ -169,13 +163,16 @@ class MyAccount_Profile extends MyAccount
 		$millenniumNoAddress = $canUpdateContactInfo && !$canUpdateAddress && in_array($ils, array('Millennium', 'Sierra'));
 		$interface->assign('millenniumNoAddress', $millenniumNoAddress);
 
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$pinValidationRules = $catalog->getPasswordPinValidationRules();
+		$interface->assign('pinValidationRules', $pinValidationRules);
 
 		// CarlX Specific Options
 		if ($ils == 'CarlX' && !$offlineMode) {
 			// Get Phone Types
 			$phoneTypes = array();
 			/** @var CarlX $driver */
-			$driver        = CatalogFactory::getCatalogConnectionInstance();
+			$driver        = $catalog->driver;
 			$rawPhoneTypes = $driver->getPhoneTypeList();
 			foreach ($rawPhoneTypes as $rawPhoneTypeSubArray){
 				foreach ($rawPhoneTypeSubArray as $phoneType => $phoneTypeLabel) {
@@ -186,6 +183,14 @@ class MyAccount_Profile extends MyAccount
 		}
 
 		$this->display('profile.tpl', 'Account Settings');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Account Settings');
+		return $breadcrumbs;
 	}
 
 }

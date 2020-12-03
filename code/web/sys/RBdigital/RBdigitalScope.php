@@ -27,14 +27,14 @@ class RBdigitalScope extends DataObject
 		$libraryList = Library::getLibraryList();
 		$locationList = Location::getLocationList();
 
-		$structure = array(
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'settingId' => ['property' => 'settingId', 'type' => 'enum', 'values' => $rbDigitalSettings, 'label' => 'Setting Id'],
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
-			'includeEAudiobook' => array('property'=>'includeEAudiobook', 'type'=>'checkbox', 'label'=>'Include eAudio books', 'description'=>'Whether or not EAudiobook are included', 'default'=>1),
-			'includeEBooks' => array('property'=>'includeEBooks', 'type'=>'checkbox', 'label'=>'Include eBooks', 'description'=>'Whether or not EBooks are included', 'default'=>1),
-			'includeEMagazines' => array('property'=>'includeEMagazines', 'type'=>'checkbox', 'label'=>'Include eMagazines', 'description'=>'Whether or not EMagazines are included', 'default'=>1),
-			'restrictToChildrensMaterial' => array('property'=>'restrictToChildrensMaterial', 'type'=>'checkbox', 'label'=>'Include Children\'s Materials Only', 'description'=>'If checked only includes titles identified as children by RBdigital', 'default'=>0),
+			'includeEAudiobook' => array('property'=>'includeEAudiobook', 'type'=>'checkbox', 'label'=>'Include eAudio books', 'description'=>'Whether or not EAudiobook are included', 'default'=>1, 'forcesReindex' => true),
+			'includeEBooks' => array('property'=>'includeEBooks', 'type'=>'checkbox', 'label'=>'Include eBooks', 'description'=>'Whether or not EBooks are included', 'default'=>1, 'forcesReindex' => true),
+			'includeEMagazines' => array('property'=>'includeEMagazines', 'type'=>'checkbox', 'label'=>'Include eMagazines', 'description'=>'Whether or not EMagazines are included', 'default'=>1, 'forcesReindex' => true),
+			'restrictToChildrensMaterial' => array('property'=>'restrictToChildrensMaterial', 'type'=>'checkbox', 'label'=>'Include Children\'s Materials Only', 'description'=>'If checked only includes titles identified as children by RBdigital', 'default'=>0, 'forcesReindex' => true),
 			'libraries' => array(
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -43,6 +43,7 @@ class RBdigitalScope extends DataObject
 				'description' => 'Define libraries that use this scope',
 				'values' => $libraryList,
 				'hideInLists' => true,
+				'forcesReindex' => true
 			),
 
 			'locations' => array(
@@ -53,9 +54,9 @@ class RBdigitalScope extends DataObject
 				'description' => 'Define locations that use this scope',
 				'values' => $locationList,
 				'hideInLists' => true,
+				'forcesReindex' => true
 			),
 		);
-		return $structure;
 	}
 
 	/** @noinspection PhpUnused */
@@ -93,10 +94,8 @@ class RBdigitalScope extends DataObject
 
 	public function __set($name, $value){
 		if ($name == "libraries") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_libraries = $value;
 		}elseif ($name == "locations") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_locations = $value;
 		}else {
 			$this->_data[$name] = $value;
@@ -187,26 +186,22 @@ class RBdigitalScope extends DataObject
 	/** @return Library[] */
 	public function getLibraries()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_libraries;
 	}
 
 	/** @return Location[] */
 	public function getLocations()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_locations;
 	}
 
 	public function setLibraries($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
 	public function setLocations($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 

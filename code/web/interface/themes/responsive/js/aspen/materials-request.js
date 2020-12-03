@@ -51,7 +51,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 		},
 
 		exportSelectedRequests: function(){
-			let selectedRequests = this.getSelectedRequests(true);
+			var selectedRequests = this.getSelectedRequests(true);
 			if (selectedRequests.length == 0){
 				return false;
 			}
@@ -60,7 +60,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 		},
 
 		showImportRequestForm: function(){
-			let url = Globals.path + '/MaterialsRequest/AJAX?method=getImportRequestForm';
+			var url = Globals.path + '/MaterialsRequest/AJAX?method=getImportRequestForm';
 			$.getJSON(url, function (data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
@@ -69,8 +69,8 @@ AspenDiscovery.MaterialsRequest = (function(){
 		},
 
 		importRequests: function(){
-			let url = Globals.path + '/MaterialsRequest/AJAX?method=importRequests';
-			let importRequestsData = new FormData($("#importRequestsForm")[0]);
+			var url = Globals.path + '/MaterialsRequest/AJAX?method=importRequests';
+			var importRequestsData = new FormData($("#importRequestsForm")[0]);
 			$.ajax({
 				url: url,
 				type: 'POST',

@@ -22,32 +22,13 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		$this->accountProfile = $accountProfile;
 	}
 
+	/**
+	 * @param $username
+	 * @param $password
+	 * @param $validatedViaSSO
+	 * @return User|AspenError
+	 */
 	public abstract function patronLogin($username, $password, $validatedViaSSO);
-
-	/**
-	 * Place Hold
-	 *
-	 * This is responsible for both placing holds as well as placing recalls.
-	 *
-	 * @param User $patron The User to place a hold for
-	 * @param string $recordId The id of the bib record
-	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
-	 * @param string $cancelDate When the hold should be automatically cancelled
-	 * @return  mixed                 True if successful, false if unsuccessful
-	 *                                If an error occurs, return a AspenError
-	 * @access  public
-	 */
-	abstract function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null);
-
-	/**
-	 * Cancels a hold for a patron
-	 *
-	 * @param User $patron The User to cancel the hold for
-	 * @param string $recordId The id of the bib record
-	 * @param string $cancelId Information about the hold to be cancelled
-	 * @return  array
-	 */
-	abstract function cancelHold($patron, $recordId, $cancelId = null);
 
 	/**
 	 * Place Item Hold
@@ -72,6 +53,13 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	abstract function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
 
 	abstract function updatePatronInfo($patron, $canUpdateContactInfo);
+
+	function updateHomeLibrary(User $patron, string $homeLibraryCode){
+		return [
+			'success' => false,
+			'messages' => ['Cannot update home library with this ILS.']
+		];
+	}
 
 	public abstract function getFines($patron, $includeMessages = false);
 
@@ -119,17 +107,6 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		}
 		return $host;
 	}
-
-	/**
-	 * Renew a single title currently checked out to the user
-	 *
-	 * @param $patron     User
-	 * @param $recordId   string
-	 * @param $itemId     string
-	 * @param $itemIndex  string
-	 * @return mixed
-	 */
-	abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
 
 	function showOutstandingFines()
 	{
@@ -180,7 +157,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
 	function updatePin(/** @noinspection PhpUnusedParameterInspection */ User $user, string $oldPin, string $newPin)
 	{
-		return ['success' => false, 'errors' => 'Can not update PINs, this ILS does not support updating PINs'];
+		return ['success' => false, 'message' => 'Can not update PINs, this ILS does not support updating PINs'];
 	}
 
 	function hasMaterialsRequestSupport()
@@ -298,14 +275,6 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'message' => 'Volume level holds have not been implemented for this ILS.');
 	}
 
-	public function requestPinReset($patronBarcode)
-	{
-		return array(
-			'success' => false,
-			'error' => 'This functionality is not available in the ILS.',
-		);
-	}
-
 	public function completeFinePayment(User $patron, UserPayment $payment)
 	{
 		return [
@@ -316,7 +285,13 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
 	public function patronEligibleForHolds(User $patron)
 	{
-		return true;
+		return [
+			'isEligible' => true,
+			'message' => '',
+			'fineLimitReached' => false,
+			'maxPhysicalCheckoutsReached' => false,
+			'expiredPatronWhoCannotPlaceHolds' => false
+		];
 	}
 
 	public function getShowAutoRenewSwitch(User $patron)
@@ -335,5 +310,65 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS'
 		];
+	}
+
+	function getPasswordRecoveryTemplate(){
+		return null;
+	}
+
+	function processPasswordRecovery(){
+		return null;
+	}
+
+	function getEmailResetPinResultsTemplate(){
+		return null;
+	}
+
+	function getPasswordPinValidationRules(){
+		return [
+			'minLength' => 4,
+			'maxLength' => 4,
+			'onlyDigitsAllowed' => true,
+		];
+	}
+
+	public function hasEditableUsername()
+	{
+		return false;
+	}
+
+	public function getEditableUsername(User $user)
+	{
+		return null;
+	}
+
+	public function updateEditableUsername(User $patron, $username)
+	{
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function logout(User $user){
+		//Nothing by default
+	}
+
+	public function getHoldsReportData($location) {
+		return null;
+	}
+
+	public function getStudentReportData($location,$showOverdueOnly,$date) {
+		return null;
+	}
+
+	/**
+	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
+	 *
+	 * @param User $user
+	 */
+	public function loadContactInformation(User $user)
+	{
+		return;
 	}
 }

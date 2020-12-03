@@ -45,6 +45,7 @@
   padding: 0 0 0 30px;
   color: #888888;
   font-size: small;
+  font-weight: bold;
   a {
     color: #888888;
   }
@@ -96,10 +97,10 @@
 
 .formatCategoryLabel {
   vertical-align: central; // center not valid, set to central. plb 5-11-2015
-  color: #8d929a;
+  color: #555555;
   margin-top: 3px;
   a {
-    color: #8d929a;
+    color: #555555;
   }
 }
 .top-facet{
@@ -114,7 +115,7 @@
 }
 .result-head{
   font-size: smaller;
-  color: #0d8ec6;
+  color: #3174AF;
   #selected-browse-label{
     .gray-line-mixin;
   }
@@ -141,10 +142,6 @@
 .result-tools-horizontal{
   margin-top: 6px;
   //margin-left: 30px; // disabled for search results. If needed elsewhere create a more specific rule. plb 1-28-2016
-}
-.result-tools-horizontal .btn{
-  background-color: #909090;
-  color: #fff;
 }
 
 .gray-line-mixin() {
@@ -190,34 +187,28 @@
   }
 }
 .related-manifestation-shelf-status{
-   font-size: 13px;
-   font-weight: bold;
- }
-.related-manifestation-shelf-status.available{
-  color: green;
+  font-size: 13px;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 3px;
 }
-.related-manifestation-shelf-status.checked_out{
-  color: red;
-}
-.related-manifestation-shelf-status.availableOther{
-  color: #BB0099;
-}
+
 .related_record_status{
   font-size: 13px;
   font-weight: bold;
 }
 .related_record_status.available{
-  color: green;
+  color: #2e7d32;
   font-size: 14px;
 }
 .related_record_status.checked_out{
-  color: red;
+  color: #c62828;
 }
 .related_record_status.availableOther{
-  color: red;
+  color: #c62828;
 }
 .itemSummaryTable tr.available{
-  color: green;
+  color: #2e7d32;
   font-weight: bold;
 }
 .itemSummary{
@@ -245,6 +236,10 @@
     -webkit-column-count: 2;
     -moz-column-count:    2;
     column-count:         2;
+  }
+  .checkboxFacet{
+    text-indent: -17px;
+    padding-left: 30px;
   }
 }
 .highlight{

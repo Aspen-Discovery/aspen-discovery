@@ -11,6 +11,7 @@ class UserAccount
 	/** @var User|false $guidingUserObjectFromDB */
 	private static $guidingUserObjectFromDB = null;
 	private static $userRoles = null;
+	private static $userPermissions = null;
 
 	/**
 	 *
@@ -19,7 +20,7 @@ class UserAccount
 	 * When logged in we store information the id of the active user within the session.
 	 * The actual user is stored within memcache
 	 *
-	 * @return bool|User
+	 * @return bool
 	 */
 	public static function isLoggedIn()
 	{
@@ -86,66 +87,89 @@ class UserAccount
 		}
 	}
 
-	public static function userHasRole($roleName)
+	/**
+	 * @param string[]|string $permission
+	 * @return bool
+	 */
+	public static function userHasPermission($permission)
 	{
-		$userRoles = UserAccount::getActiveRoles();
-		return array_key_exists($roleName, $userRoles);
+		$userPermissions = UserAccount::getActivePermissions();
+		if (is_array($permission)){
+			foreach ($permission as $tmpPermission){
+				if (in_array($tmpPermission, $userPermissions)){
+					return true;
+				}
+			}
+			return false;
+		}else{
+			return in_array($permission, $userPermissions);
+		}
 	}
 
 	public static function getActiveRoles()
 	{
 		if (UserAccount::$userRoles == null) {
 			if (UserAccount::isLoggedIn()) {
-				UserAccount::$userRoles = array();
-
-				//Roles for the user
-				require_once ROOT_DIR . '/sys/Administration/Role.php';
-				$role = new Role();
-				$canUseTestRoles = false;
-				$role->query("SELECT * FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getActiveUserId() . " ORDER BY name");
-				while ($role->fetch()) {
-					UserAccount::$userRoles[$role->name] = $role->name;
-					if ($role->name == 'userAdmin') {
-						$canUseTestRoles = true;
-					}
-				}
-
-				//Test roles if we are doing overrides
-				$testRole = '';
-				if (isset($_REQUEST['test_role'])) {
-					$testRole = $_REQUEST['test_role'];
-				} elseif (isset($_COOKIE['test_role'])) {
-					$testRole = $_COOKIE['test_role'];
-				}
-				if ($canUseTestRoles && $testRole != '') {
-					if (is_array($testRole)) {
-						$testRoles = $testRole;
-					} else {
-						$testRoles = array($testRole);
-					}
-					//Ignore the standard roles for the user
-					UserAccount::$userRoles = array();
-					foreach ($testRoles as $tmpRole) {
-						$role = new Role();
-						if (is_numeric($tmpRole)) {
-							$role->roleId = $tmpRole;
-						} else {
-							$role->name = $tmpRole;
-						}
-						$found = $role->find(true);
-						if ($found == true) {
-							UserAccount::$userRoles[$role->name] = $role->name;
-						}
-					}
-				}
-
-				//TODO: Figure out roles for masquerade mode see User.php line 251
-
+				UserAccount::$userRoles = UserAccount::getActiveUserObj()->getRoles();
 			} else {
 				UserAccount::$userRoles = array();
 			}
 		}
 		return UserAccount::$userRoles;
+	}
+
+	public static function getActivePermissions()
+	{
+		if (UserAccount::$userPermissions == null) {
+			if (UserAccount::isLoggedIn()) {
+				UserAccount::$userPermissions = array();
+
+				$roles = UserAccount::getActiveRoles();
+				$loadDefaultPermissions = false;
+				try{
+					$permissionIds = [];
+					require_once ROOT_DIR . '/sys/Administration/Permission.php';
+					require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
+					foreach ($roles as $roleId => $roleName){
+						$rolePermissions = new RolePermissions();
+						$rolePermissions->roleId = $roleId;
+						$rolePermissions->find();
+						while ($rolePermissions->fetch()){
+							$permissionIds[$rolePermissions->permissionId] = $rolePermissions->permissionId;
+						}
+					}
+					foreach ($permissionIds as $permissionId){
+						$permission = new Permission();
+						$permission->id = $permissionId;
+						if ($permission->find(true)){
+							if (!in_array($permission->name, UserAccount::$userPermissions)){
+								UserAccount::$userPermissions[] = $permission->name;
+							}
+						}
+					}
+				}catch (Exception $e){
+					$loadDefaultPermissions = true;
+				}
+				if ($loadDefaultPermissions || count(UserAccount::$userPermissions) == 0){
+					//Permission system has not been setup, load default permissions
+					foreach ($roles as $roleId => $roleName){
+						$role = new Role();
+						$role->roleId = $roleId;
+						if ($role->find(true)){
+							$defaultPermissions = $role->getDefaultPermissions();
+							foreach ($defaultPermissions as $permissionName){
+								if (!in_array($permissionName, UserAccount::$userPermissions)){
+									UserAccount::$userPermissions[] = $permissionName;
+								}
+							}
+						}
+					}
+				}
+			} else {
+				UserAccount::$userPermissions = array();
+			}
+		}
+		return UserAccount::$userPermissions;
 	}
 
 	private static function loadUserObjectFromDatabase()
@@ -248,7 +272,15 @@ class UserAccount
 		return !empty($_SESSION['guidingUserId']);
 	}
 
-	public static function getGuidingUserObject()
+	public static function getGuidingUserId(){
+		if (empty($_SESSION['guidingUserId'])){
+			return false;
+		}else{
+			return $_SESSION['guidingUserId'];
+		}
+	}
+
+	public static function getGuidingUserObject(): ?User
 	{
 		if (UserAccount::$guidingUserObjectFromDB == null) {
 			if (UserAccount::isUserMasquerading()) {
@@ -306,13 +338,26 @@ class UserAccount
 				$userData->id = $activeUserId;
 				if ($userData->find(true)) {
 					$logger->log("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache", Logger::LOG_DEBUG);
-					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
+					if (UserAccount::isUserMasquerading()){
+						return $userData;
+					}else {
+						$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
 
-					if ($userData == false) {
-						AspenError::raiseError("We could not validate your account, please logout and login again. If this error persists, please contact the library. Error ($activeUserId)");
-						UserAccount::softLogout();
+						if ($userData == false) {
+							//This happens when the PIN has been reset in the ILS, redirect to the login page
+							global $isAJAX;
+							if (!$isAJAX) {
+								UserAccount::softLogout();
+
+								require_once ROOT_DIR . '/services/MyAccount/Login.php';
+								$launchAction = new MyAccount_Login();
+								$launchAction->launch();
+								exit();
+							}
+							AspenError::raiseError("We could not validate your account, please logout and login again. If this error persists, please contact the library. Error ($activeUserId)");
+						}
+						self::updateSession($userData);
 					}
-					self::updateSession($userData);
 				}else{
 					AspenError::raiseError("Error validating saved session for user $activeUserId, the user was not found in the database.");
 				}
@@ -400,12 +445,12 @@ class UserAccount
 			$_SESSION['showCovers'] = $showCovers;
 		}
 
-		session_commit();
+		session_write_close();
 	}
 
 	/**
 	 * Try to log in the user using current query parameters
-	 * return User object on success, PEAR error on failure.
+	 * return User object on success, AspenError on failure.
 	 *
 	 * @return AspenError|User
 	 * @throws UnknownAuthenticationMethodException
@@ -465,7 +510,6 @@ class UserAccount
 					return $cardExpired;
 				}
 
-				/** @var Memcache $memCache */
 				global $memCache;
 				global $serverName;
 				global $configArray;
@@ -488,7 +532,7 @@ class UserAccount
 			}
 		}
 
-		// Send back the user object (which may be a PEAR error):
+		// Send back the user object (which may be an AspenError):
 		if ($primaryUser) {
 			UserAccount::$isLoggedIn = true;
 			UserAccount::$primaryUserData = $primaryUser;
@@ -559,7 +603,6 @@ class UserAccount
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
-					/** @var Memcache $memCache */
 					global $memCache;
 					global $serverName;
 					global $configArray;
@@ -575,6 +618,30 @@ class UserAccount
 		}
 
 		UserAccount::$validatedAccounts[$username . $password] = false;
+		return false;
+	}
+
+	public static function getUserByBarcode($username){
+		require_once ROOT_DIR . '/CatalogFactory.php';
+		// Perform authentication:
+		//Test all valid authentication methods and see which (if any) result in a valid login.
+		$driversToTest = self::getAccountProfiles();
+		foreach ($driversToTest as $driverName => $additionalInfo) {
+			$accountProfile = $additionalInfo['accountProfile'];
+			if ($accountProfile->loginConfiguration == 'barcode_pin') {
+				$user = new User();
+				$user->cat_username = $username;
+				if ($user->find(true)) {
+					return $user;
+				}
+			} else {
+				$user = new User();
+				$user->cat_password = $username;
+				if ($user->find(true)) {
+					return $user;
+				}
+			}
+		}
 		return false;
 	}
 
@@ -604,6 +671,10 @@ class UserAccount
 	public static function softLogout()
 	{
 		if (isset($_SESSION['activeUserId'])) {
+			$user = UserAccount::getActiveUserObj();
+			if ($user != false){
+				$user->logout();
+			}
 			//global $logger;
 			//$logger->log("Logging user {$_SESSION['activeUserId']} out", Logger::LOG_DEBUG);
 			if (isset($_SESSION['guidingUserId'])) {
@@ -623,6 +694,9 @@ class UserAccount
 			UserAccount::$primaryUserData = null;
 			UserAccount::$primaryUserObjectFromDB = null;
 			UserAccount::$guidingUserObjectFromDB = null;
+
+			global $interface;
+			$interface->assign('loggedIn', false);
 		}
 	}
 
@@ -676,6 +750,20 @@ class UserAccount
 			if ($catalogConnectionInstance != null && !is_null($catalogConnectionInstance->driver) && method_exists($catalogConnectionInstance->driver, 'findNewUser')) {
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);
 				if (!empty($tmpUser) && !($tmpUser instanceof AspenError)) {
+					if ($tmpUser->displayName == '') {
+						if ($tmpUser->firstname == '') {
+							$tmpUser->displayName = $tmpUser->lastname;
+						} else {
+							$homeLibrary = $tmpUser->getHomeLibrary();
+							if ($homeLibrary == null || ($homeLibrary->__get('patronNameDisplayStyle') == 'firstinitial_lastname')) {
+								// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
+								$tmpUser->displayName = substr($tmpUser->firstname, 0, 1) . '. ' . $tmpUser->lastname;
+							} elseif ($homeLibrary->__get('patronNameDisplayStyle') == 'lastinitial_firstname') {
+								$tmpUser->displayName = $tmpUser->firstname . ' ' . substr($tmpUser->lastname, 0, 1) . '.';
+							}
+						}
+						$tmpUser->update();
+					}
 					return $tmpUser;
 				}
 			}

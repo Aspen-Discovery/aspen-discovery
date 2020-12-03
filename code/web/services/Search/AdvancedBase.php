@@ -29,6 +29,7 @@ abstract class Search_AdvancedBase extends Action{
 					if ($savedSearch->getSearchType() == 'basic') {
 						$savedSearch->convertBasicToAdvancedSearch();
 					}
+
 					// Activate facets so we get appropriate descriptions
 					// in the filter list:
 					$savedSearch->activateAllFacets('Advanced');

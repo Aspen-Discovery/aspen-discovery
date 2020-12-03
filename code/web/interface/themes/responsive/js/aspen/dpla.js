@@ -1,14 +1,14 @@
 AspenDiscovery.DPLA = (function(){
 	return {
 		getDPLAResults: function(searchTerm){
-			let url = Globals.path + "/Search/AJAX";
-			let params = "method=getDplaResults&searchTerm=" + encodeURIComponent(searchTerm);
-			let fullUrl = url + "?" + params;
+			var url = Globals.path + "/Search/AJAX";
+			var params = "method=getDplaResults&searchTerm=" + encodeURIComponent(searchTerm);
+			var fullUrl = url + "?" + params;
 			$.ajax({
 				url: fullUrl,
 				dataType:"json",
 				success: function(data) {
-					let searchResults = data.formattedResults;
+					var searchResults = data.formattedResults;
 					if (searchResults) {
 						if (searchResults.length > 0){
 							$("#dplaSearchResultsPlaceholder").html(searchResults);

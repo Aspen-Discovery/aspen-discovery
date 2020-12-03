@@ -1,5 +1,5 @@
 {strip}
-	<h3>Request Archive Copies of Materials</h3>
+	<h1>Request Archive Copies of Materials</h1>
 	<div class="page">
 		{if $requestSubmitted}
 			{if !empty($error)}

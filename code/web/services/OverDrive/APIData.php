@@ -60,7 +60,7 @@ class OverDrive_APIData extends Admin_Admin
 
 			if ($advantageAccounts) {
 				foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
-					$contents .= ("<h3>Availability - {$accountInfo->name}</h3>");
+					$contents .= ("<h3>Availability - {$accountInfo->name} ({$accountInfo->id})</h3>");
 					$availability = $driver->getProductAvailability($overDriveId, $accountInfo->collectionToken);
 					if ($availability && !isset($availability->errorCode)) {
 						$contents .= ("Copies Owned (Shared Plus advantage): {$availability->copiesOwned }<br/>");
@@ -91,8 +91,22 @@ class OverDrive_APIData extends Admin_Admin
 		return $contents;
 	}
 
-	function getAllowableRoles()
+	function getBreadcrumbs()
 	{
-		return array('opacAdmin', 'cataloging');
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
+		$breadcrumbs[] = new Breadcrumb('/OverDrive/APIData', 'API Information');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'overdrive';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View OverDrive Test Interface');
 	}
 }

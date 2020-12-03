@@ -1,16 +1,15 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+require_once ROOT_DIR . '/ResultsAction.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Lists_Results extends Action
+class Lists_Results extends ResultsAction
 {
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 		global $timer;
 		global $aspenUsage;
 		$aspenUsage->userListSearches++;
@@ -33,7 +32,7 @@ class Lists_Results extends Action
 			exit();
 		} else if ($searchObject->getView() == 'excel') {
 			// Throw the Excel spreadsheet to screen for download
-			echo $searchObject->buildExcel();
+			$searchObject->buildExcel();
 			// And we're done
 			exit();
 		}
@@ -192,7 +191,8 @@ class Lists_Results extends Action
 
 		// Done, display the page
 		$interface->assign('sectionLabel', 'List Results');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'List Search Results', 'Search/results-sidebar.tpl');
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'List Search Results', $sidebar);
 	} // End launch()
 
 	/**
@@ -215,5 +215,10 @@ class Lists_Results extends Action
 				$interface->assign('keywordResultsCount', $keywordSearchObject->getResultTotal());
 			}
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		return parent::getResultsBreadcrumbs('User Lists Search');
 	}
 }

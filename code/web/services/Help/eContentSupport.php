@@ -74,9 +74,9 @@ class eContentSupport extends Action
 					$interface->assign('email', $user->email);
 				}
 				$result = array(
-						'title' => 'eContent Support',
-						'modalBody' => $interface->fetch('Help/eContentSupport.tpl'),
-						'modalButtons' => "<button class='btn btn-sm btn-primary' onclick='return AspenDiscovery.EContent.submitHelpForm();'>Submit</button>",
+					'title' => 'eContent Support',
+					'modalBody' => $interface->fetch('Help/eContentSupport.tpl'),
+					'modalButtons' => "<button class='btn btn-sm btn-primary' onclick='return AspenDiscovery.EContent.submitHelpForm();'>Submit</button>",
 				);
 				echo json_encode($result);
 			}else{
@@ -84,6 +84,13 @@ class eContentSupport extends Action
 				$this->display('eContentSupport.tpl', 'eContent Support');
 			}
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('', 'eContent Support');
+		return $breadcrumbs;
 	}
 }
 

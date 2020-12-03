@@ -96,53 +96,58 @@ class CatalogConnection
 	 */
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false)
 	{
-		global $timer;
-		global $logger;
 		global $offlineMode;
 
-		//Get the barcode property
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
-			$barcode = $username;
-		} else {
-			$barcode = $password;
+		$barcodesToTest = array();
+		$barcodesToTest[$username] = $username;
+		$barcodesToTest[preg_replace('/[^a-zA-Z\d]/', '', trim($username))] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
+		//Special processing to allow users to login with short barcodes
+		global $library;
+		if ($library) {
+			if ($library->barcodePrefix) {
+				if (strpos($username, $library->barcodePrefix) !== 0) {
+					//Add the barcode prefix to the barcode
+					$barcodesToTest[$library->barcodePrefix . $username] = $library->barcodePrefix . $username;
+				}
+			}
 		}
 
-		//Strip any non digit characters from the password
-		//Can't do this any longer since some libraries do have characters in their barcode:
-		//$password = preg_replace('/[a-or-zA-OR-Z\W]/', '', $password);
-		//Remove any spaces from the barcode
-		$barcode = preg_replace('/[^a-zA-Z\d\s]/', '', trim($barcode));
-		if ($offlineMode) {
-			//The catalog is offline, check the database to see if the user is valid
-			$user = new User();
-			if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
-				$user->cat_username = $barcode;
-			} else {
-				$user->cat_password = $barcode;
+		//Get the existing user from the database.  This validates that the username and password on record are correct
+		$user = null;
+		foreach ($barcodesToTest as $barcode) {
+			$user = $this->getUserFromDatabase($barcode, $password, $username);
+			if ($user != null){
+				break;
 			}
-			if ($user->find(true)) {
-				if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
-					//We load the account based on the barcode make sure the pin matches
-					$userValid = $user->cat_password == $password;
-				} else {
-					//We still load based on barcode, make sure the username is similar
-					$userValid = $this->areNamesSimilar($username, $user->cat_username);
-				}
-				if ($userValid) {
-					//We have a good user account for additional processing
-				} else {
-					$timer->logTime("offline patron login failed due to invalid name");
-					$logger->log("offline patron login failed due to invalid name", Logger::LOG_NOTICE);
-					return null;
-				}
-			} else {
-				$timer->logTime("offline patron login failed because we haven't seen this user before");
-				$logger->log("offline patron login failed because we haven't seen this user before", Logger::LOG_NOTICE);
+		}
+
+		if ($offlineMode) {
+			if ($user == null){
 				return null;
 			}
 		} else {
-			//Catalog is online, do the login
-			$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
+			if ($user != null) {
+				//If we have a valid patron, only revalidate every 15 minutes
+				if ($user->lastLoginValidation < (time() - 15 * 60)) {
+					$doPatronLogin = true;
+				}else{
+					$doPatronLogin = false;
+				}
+			}else{
+				$doPatronLogin = true;
+			}
+			if ($doPatronLogin || isset($_REQUEST['reload'])) {
+				//Catalog is online, do the login
+				$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
+				if ($user && !($user instanceof AspenError)) {
+					try {
+						$user->lastLoginValidation = time();
+						$user->update();
+					}catch (Exception $e){
+						//This happens before database update
+					}
+				}
+			}
 		}
 
 		if ($user && !($user instanceof AspenError)) {
@@ -306,6 +311,7 @@ class CatalogConnection
 	function getReadingHistory($patron, $page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false)
 	{
 		global $timer;
+		global $offlineMode;
 		$timer->logTime("Starting to load reading history");
 
 		//Get reading history from the database unless we specifically want to load from the driver.
@@ -313,37 +319,43 @@ class CatalogConnection
 		if (!$patron->trackReadingHistory) {
 			return $result;
 		}
-		if (!$patron->initialReadingHistoryLoaded) {
-			if ($this->driver->hasNativeReadingHistory()) {
-				//Load existing reading history from the ILS
-				$result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
-				if ($result['numTitles'] > 0) {
-					foreach ($result['titles'] as $title) {
-						if ($title['permanentId'] != null) {
-							$userReadingHistoryEntry = new ReadingHistoryEntry();
-							$userReadingHistoryEntry->userId = $patron->id;
-							$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
-							$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
-							$userReadingHistoryEntry->sourceId = $title['recordId'];
-							$userReadingHistoryEntry->title = substr($title['title'], 0, 150);
-							$userReadingHistoryEntry->author = substr($title['author'], 0, 75);
-							$userReadingHistoryEntry->format = $title['format'];
-							$userReadingHistoryEntry->checkOutDate = $title['checkout'];
-							$userReadingHistoryEntry->checkInDate = null;
-							$userReadingHistoryEntry->deleted = 0;
-							$userReadingHistoryEntry->insert();
+		if (!$offlineMode) {
+			if (!$patron->initialReadingHistoryLoaded) {
+				if ($this->driver->hasNativeReadingHistory()) {
+					//Load existing reading history from the ILS
+					$result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
+					if ($result['numTitles'] > 0) {
+						foreach ($result['titles'] as $title) {
+							if ($title['permanentId'] != null) {
+								$userReadingHistoryEntry = new ReadingHistoryEntry();
+								$userReadingHistoryEntry->userId = $patron->id;
+								$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
+								$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
+								$userReadingHistoryEntry->sourceId = $title['recordId'];
+								$userReadingHistoryEntry->title = substr($title['title'], 0, 150);
+								$userReadingHistoryEntry->author = substr($title['author'], 0, 75);
+								$userReadingHistoryEntry->format = $title['format'];
+								$userReadingHistoryEntry->checkOutDate = $title['checkout'];
+								if (!empty($title['checkin'])) {
+									$userReadingHistoryEntry->checkInDate = $title['checkin'];
+								} else {
+									$userReadingHistoryEntry->checkInDate = null;
+								}
+								$userReadingHistoryEntry->deleted = 0;
+								$userReadingHistoryEntry->insert();
+							}
 						}
 					}
+					$timer->logTime("Finished loading native reading history");
 				}
-				$timer->logTime("Finished loading native reading history");
+				$patron->initialReadingHistoryLoaded = true;
+				$patron->update();
 			}
-			$patron->initialReadingHistoryLoaded = true;
-			$patron->update();
-		}
-		//Do the
-		if ($page == 1 && empty($filter)) {
-			$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
-			$timer->logTime("Finished updating reading history based on current checkouts");
+			//Do the
+			if ($page == 1 && empty($filter)) {
+				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
+				$timer->logTime("Finished updating reading history based on current checkouts");
+			}
 		}
 
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
@@ -407,7 +419,7 @@ class CatalogConnection
 	 * @param User $patron The user to do the reading history action on
 	 * @param string $action The action to perform
 	 * @param array $selectedTitles The titles to do the action on if applicable
-	 * @return array
+	 * @return array success and message are the array keys
 	 */
 	function doReadingHistoryAction($patron, $action, $selectedTitles)
 	{
@@ -461,6 +473,7 @@ class CatalogConnection
 
 			//Opt out within Aspen since the ILS does not seem to implement this functionality
 			$patron->trackReadingHistory = false;
+			$patron->initialReadingHistoryLoaded = false;
 			$patron->update();
 			$result['success'] = true;
 			$result['message'] = translate('You have been opted out of tracking Reading History');
@@ -584,7 +597,23 @@ class CatalogConnection
 
 	function updatePatronInfo($user, $canUpdateContactInfo)
 	{
-		return $errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
+		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
+	}
+
+	function updateHomeLibrary($user, $homeLibraryCode)
+	{
+		$result = $this->driver->updateHomeLibrary($user, $homeLibraryCode);
+		if ($result['success']){
+			$location = new Location();
+			$location->code = $homeLibraryCode;
+			if ($location->find(true)){
+				$user->homeLocationId = $location->locationId;
+				$user->_homeLocationCode = $homeLibraryCode;
+				$user->_homeLocation = $location;
+				$user->update();
+			}
+		}
+		return $result;
 	}
 
 	function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null)
@@ -863,15 +892,6 @@ class CatalogConnection
 		return $this->driver->importListsFromIls($patron);
 	}
 
-	public function getShowUsernameField()
-	{
-		if ($this->checkFunction('hasUsernameField')) {
-			return $this->driver->hasUsernameField();
-		} else {
-			return false;
-		}
-	}
-
 	/**
 	 * Resets the PIN/Password.  At this point, the confirmation matches the new pin so no need to reconfirm
 	 * @param User $user
@@ -879,18 +899,13 @@ class CatalogConnection
 	 * @param string $newPin
 	 * @return string[] a message to the user letting them know what happened
 	 */
-	function updatePin($user, $oldPin, $newPin)
+	function updatePin(User $user, string $oldPin, string $newPin)
 	{
 		$result = $this->driver->updatePin($user, $oldPin, $newPin);
 		if ($result['success']) {
 			$user->disableLinkingDueToPasswordChange();
 		}
 		return $result;
-	}
-
-	function requestPinReset($patronBarcode)
-	{
-		return $this->driver->requestPinReset($patronBarcode);
 	}
 
 	function showOutstandingFines()
@@ -915,6 +930,25 @@ class CatalogConnection
 
 	public function getEmailResetPinTemplate()
 	{
+		global $interface;
+		global $library;
+
+		$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Name'));
+		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
+
+		if (isset($_REQUEST['email'])){
+			$interface->assign('email', $_REQUEST['email']);
+		}
+		if (isset($_REQUEST['barcode'])){
+			$interface->assign('barcode', $_REQUEST['barcode']);
+		}
+		if (isset($_REQUEST['username'])){
+			$interface->assign('username', $_REQUEST['username']);
+		}
+		if (isset($_REQUEST['resendEmail'])){
+			$interface->assign('resendEmail', $_REQUEST['resendEmail']);
+		}
+
 		return $this->driver->getEmailResetPinTemplate();
 	}
 
@@ -994,21 +1028,125 @@ class CatalogConnection
 
 	public function patronEligibleForHolds(User $patron)
 	{
+		if (empty($this->driver)){
+			return false;
+		}
 		return $this->driver->patronEligibleForHolds($patron);
 	}
 
 	public function getShowAutoRenewSwitch(User $patron)
 	{
+		if (empty($this->driver)){
+			return false;
+		}
 		return $this->driver->getShowAutoRenewSwitch($patron);
 	}
 
 	public function isAutoRenewalEnabledForUser(User $patron)
 	{
+		if (empty($this->driver)){
+			return false;
+		}
 		return $this->driver->isAutoRenewalEnabledForUser($patron);
 	}
 
 	public function updateAutoRenewal(User $patron, bool $allowAutoRenewal)
 	{
 		return $this->driver->updateAutoRenewal($patron, $allowAutoRenewal);
+	}
+
+	public function getPasswordRecoveryTemplate()
+	{
+		return $this->driver->getPasswordRecoveryTemplate();
+	}
+
+	public function processPasswordRecovery()
+	{
+		return $this->driver->processPasswordRecovery();
+	}
+
+	public function getEmailResetPinResultsTemplate()
+	{
+		return $this->driver->getEmailResetPinResultsTemplate();
+	}
+
+	function getPasswordPinValidationRules(){
+		return $this->driver->getPasswordPinValidationRules();
+	}
+
+	/**
+	 * @param $barcode
+	 * @param string|null $password
+	 * @param string|null $username
+	 * @return User|null
+	 */
+	protected function getUserFromDatabase($barcode, $password, $username)
+	{
+		global $timer;
+		global $logger;
+		$user = new User();
+		if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
+			$user->cat_username = $barcode;
+		} else {
+			$user->cat_password = $barcode;
+		}
+		if ($user->find(true)) {
+			if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
+				//We load the account based on the barcode make sure the pin matches
+				$userValid = $password != null && $user->cat_password == $password;
+			} else {
+				//We still load based on barcode, make sure the username is similar
+				$userValid = $this->areNamesSimilar($username, $user->cat_username);
+			}
+			if (!$userValid) {
+				$timer->logTime("offline patron login failed due to invalid name");
+				$logger->log("offline patron login failed due to invalid name", Logger::LOG_NOTICE);
+				$user = null;
+			}
+		} else {
+			$timer->logTime("offline patron login failed because we haven't seen this user before");
+			$logger->log("offline patron login failed because we haven't seen this user before", Logger::LOG_NOTICE);
+			$user = null;
+		}
+		return $user;
+	}
+
+	public function hasEditableUsername()
+	{
+		return $this->driver->hasEditableUsername();
+	}
+
+	public function getEditableUsername(User $user)
+	{
+		return $this->driver->getEditableUsername($user);
+	}
+
+	public function updateEditableUsername(User $user, $username)
+	{
+		return $this->driver->updateEditableUsername($user, $username);
+	}
+
+	public function logout(User $user)
+	{
+		$this->driver->logout($user);
+	}
+
+	public function getHoldsReportData($location) {
+		return $this->driver->getHoldsReportData($location);
+	}
+
+	public function getStudentReportData($location,$showOverdueOnly,$date) {
+		return $this->driver->getStudentReportData($location,$showOverdueOnly,$date);
+	}
+
+	/**
+	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
+	 *
+	 * @param User $user
+	 * @return mixed
+	 */
+	public function loadContactInformation(User $user)
+	{
+		return $this->driver->loadContactInformation($user);
 	}
 }

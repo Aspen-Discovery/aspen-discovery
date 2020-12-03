@@ -6,7 +6,16 @@
 		{/if}
 
 		<div class="row">
-			<div class="col-xs-12">{* May turn out to be more than one situation to consider here *}
+			{if $showCovers}
+				<div class="coversColumn col-xs-3 text-center">
+					{if $disableCoverArt != 1}
+						<a href="{$summUrl}" aria-hidden="true">
+							<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
+						</a>
+					{/if}
+				</div>
+			{/if}
+			<div class="{if $showCovers}col-xs-9{else}col-xs-12{/if}">{* May turn out to be more than one situation to consider here *}
 				{* Title Row *}
 				<div class="row">
 					<div class="col-xs-12">
@@ -15,9 +24,6 @@
 							{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 							{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 						</a>
-						{if !empty($summTitleStatement)}
-							&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
-						{/if}
 						{if isset($summScore)}
 							&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
 						{/if}

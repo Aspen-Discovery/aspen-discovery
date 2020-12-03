@@ -1,10 +1,16 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/ResultsAction.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class Author_Search extends Action
+/**
+ * Class Author_Search
+ *
+ * This is currently only used as a link from Similar Author searches within the AuthorFacets class
+ * which is currently not used
+ */
+class Author_Search extends ResultsAction
 {
 	function launch()
 	{
@@ -66,5 +72,10 @@ class Author_Search extends Action
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('list.tpl', 'Author Browse');
+	}
+
+	function getBreadcrumbs()
+	{
+		return parent::getResultsBreadcrumbs('Author Search');
 	}
 }

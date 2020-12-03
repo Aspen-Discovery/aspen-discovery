@@ -6,8 +6,4 @@ class IlsHoldSummary extends DataObject{
 	public $id;
 	public $ilsId;
 	public $numHolds;
-
-	function keys() {
-		return array('id');
-	}
 } 

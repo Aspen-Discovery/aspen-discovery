@@ -40,7 +40,7 @@ class MillenniumHolds{
 				//Hold was successful
 				$hold_result['success'] = true;
 				if (!isset($reason) || strlen($reason) == 0){
-					$hold_result['message'] = 'Your hold was placed successfully.  It may take up to 45 seconds for the hold to appear on your account.';
+					$hold_result['message'] = translate(['text'=>"millennium_hold_success", 'defaultText'=>"Your hold was placed successfully.  It may take up to 45 seconds for the hold to appear on your account."]);
 				}else{
 					$hold_result['message'] = $reason;
 				}
@@ -394,10 +394,6 @@ class MillenniumHolds{
 						$bibid = '';
 						$shortId = '';
 						$title = trim($sCols[$i]);
-						/*global $configArray;
-						if ($configArray['System']['debug']){
-							echo("Unexpected format in title column.  Got " . htmlentities($sCols[$i]) . "<br/>");
-						}*/
 					}
 					if (preg_match('/.*<span class="patFuncVol">(.*?)<\/span>.*/si', $sCols[$i], $matches)) {
 						$curHold['volume'] = $matches[1];

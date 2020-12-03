@@ -7,6 +7,7 @@ import java.util.Date;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -34,10 +35,13 @@ public class ExtractOverDriveInfoMain {
 			if (args.length > 1){
 				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")){
 					extractSingleWork = true;
+					if (args.length > 2) {
+						singleWorkId = args[2];
+					}
 				}
 			}
 		}
-		if (extractSingleWork) {
+		if (extractSingleWork && singleWorkId == null) {
 			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 		}
 		String processName = "overdrive_extract";
@@ -86,7 +90,7 @@ public class ExtractOverDriveInfoMain {
 			}
 
 			ExtractOverDriveInfo extractor = new ExtractOverDriveInfo();
-			int numChanges = 0;
+			int numChanges;
 			if (extractSingleWork) {
 				numChanges = extractor.processSingleWork(singleWorkId, configIni, serverName, dbConn, logEntry);
 			}else {
@@ -99,32 +103,46 @@ public class ExtractOverDriveInfoMain {
 			long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
 			logger.info("Elapsed time " + String.format("%f2", ((float)elapsedTime / 60f)) + " minutes");
 
-			//Clean up resources
-			extractor.close();
-
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				extractor.close();
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				extractor.close();
 				break;
 			}
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				extractor.close();
 				break;
 			}
 			if (extractSingleWork) {
+				extractor.close();
 				break;
 			}
-			//Based on number of changes, pause for a little while and then continue on so we are running continuously
-			try {
-				System.gc();
-				if (numChanges == 0) {
-					Thread.sleep(1000 * 60 * 5);
-				}else {
-					Thread.sleep(1000 * 60);
+
+			//Clean up resources
+			extractor.close();
+
+			//Check to see if nightly indexing is running and if so, wait until it is done.
+			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+				//Quit and we will restart after if finishes
+				System.exit(0);
+			}else {
+				//Based on number of changes, pause for a little while and then continue on so we are running continuously
+				try {
+					System.gc();
+					if (numChanges == 0) {
+						Thread.sleep(1000 * 60 * 5);
+					} else {
+						Thread.sleep(1000 * 60);
+					}
+				} catch (InterruptedException e) {
+					logger.info("Thread was interrupted");
 				}
-			} catch (InterruptedException e) {
-				logger.info("Thread was interrupted");
 			}
 		}
 	}

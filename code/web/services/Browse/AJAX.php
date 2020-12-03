@@ -6,21 +6,18 @@ class Browse_AJAX extends Action {
 
 	const ITEMS_PER_PAGE = 24;
 
-	/** @var SearchObject_SolrSearcher $searchObject*/
-	private $searchObject;
-
 	function launch()
 	{
 		header ('Content-type: application/json');
 		$method = $_REQUEST['method'];
 		$allowed_methods = array(
-				'getAddBrowseCategoryForm',
-				'createBrowseCategory',
-				'getMoreBrowseResults',
-				'getBrowseCategoryInfo',
-				'getBrowseSubCategoryInfo',
-				'getActiveBrowseCategories',
-				'getSubCategories'
+			'getAddBrowseCategoryForm',
+			'createBrowseCategory',
+			'getMoreBrowseResults',
+			'getBrowseCategoryInfo',
+			'getBrowseSubCategoryInfo',
+			'getActiveBrowseCategories',
+			'getSubCategories'
 		);
 		if (in_array($method, $allowed_methods)) {
 			$response = $this->$method();
@@ -46,12 +43,11 @@ class Browse_AJAX extends Action {
 
 		// Display Page
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
-		$results = array(
+		return array(
 			'title' => 'Add as Browse Category to Home Page',
 			'modalBody' => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -60,9 +56,8 @@ class Browse_AJAX extends Action {
 		global $locationSingleton;
 		$searchLocation = $locationSingleton->getSearchLocation();
 		$categoryName = isset($_REQUEST['categoryName']) ? $_REQUEST['categoryName'] : '';
+		// value of zero means nothing was selected.
 		$addAsSubCategoryOf = isset($_REQUEST['addAsSubCategoryOf']) && !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;
-			// value of zero means nothing was selected.
-
 
 		//Get the text id for the category
 		$textId = str_replace(' ', '_', strtolower(trim($categoryName)));
@@ -73,14 +68,25 @@ class Browse_AJAX extends Action {
 				'message' => 'Please enter a category name'
 			);
 		}
-		if ($searchLocation){
-			$textId = $searchLocation->code . '_' . $textId;
-		}elseif ($library){
-			$textId = $library->subdomain . '_' . $textId;
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		$textIdPrefixed = false;
+		if (!empty($addAsSubCategoryOf)){
+			$browseCategoryParent = new BrowseCategory();
+			$browseCategoryParent->id = $addAsSubCategoryOf;
+			if ($browseCategoryParent->find(true)) {
+				$textId = $browseCategoryParent->textId . '_' . $textId;
+				$textIdPrefixed = true;
+			}
+		}
+		if (!$textIdPrefixed){
+			if ($searchLocation) {
+				$textId = $searchLocation->code . '_' . $textId;
+			} elseif ($library) {
+				$textId = $library->subdomain . '_' . $textId;
+			}
 		}
 
 		//Check to see if we have an existing browse category
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 		$browseCategory = new BrowseCategory();
 		$browseCategory->textId = $textId;
 		if ($browseCategory->find(true)){
@@ -106,6 +112,7 @@ class Browse_AJAX extends Action {
 			}else{
 				$listId = $_REQUEST['listId'];
 				$browseCategory->sourceListId = $listId;
+				$browseCategory->source = 'List';
 			}
 
 			$browseCategory->label = $categoryName;
@@ -173,11 +180,17 @@ class Browse_AJAX extends Action {
 	}
 
 	private function getSuggestionsBrowseCategoryResults($pageToLoad = 1){
+		if (!UserAccount::isLoggedIn()){
+			return [
+				'success' => false,
+				'message' => 'Your session has timed out, please login again to view suggestions'
+			];
+		}
 		// Only Fetches one page of results
 		$browseMode = $this->setBrowseMode();
 		if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {
-			/** @var Memcache $memCache */
-			global $memCache, $solrScope;
+			global $memCache;
+			global $solrScope;
 			$activeUserId = UserAccount::getActiveUserId();
 			$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
 			$browseCategoryInfo = $memCache->get($key);
@@ -193,7 +206,7 @@ class Browse_AJAX extends Action {
 		$result['label'] = translate('Recommended for you');
 		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
 
-		require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
+		require_once ROOT_DIR . '/sys/Suggestions.php';
 		$suggestions = Suggestions::getSuggestions(-1, $pageToLoad,self::ITEMS_PER_PAGE);
 		$records = array();
 		foreach ($suggestions as $suggestedItemId => $suggestionData) {
@@ -235,16 +248,16 @@ class Browse_AJAX extends Action {
 			$browseMode = $this->setBrowseMode();
 			if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {
 				// only first page is cached
-				/** @var Memcache $memCache */
-				global $memCache, $solrScope;
-				$key                = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
+				global $memCache;
+				global $solrScope;
+				$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
 				$browseCategoryInfo = $memCache->get($key);
 				if ($browseCategoryInfo != false) {
 					return $browseCategoryInfo;
 				}
 			}
 
-			$result         = array('success' => false);
+			$result = array('success' => false);
 			$browseCategory = $this->getBrowseCategory();
 			if ($browseCategory) {
 				global $interface;
@@ -252,11 +265,10 @@ class Browse_AJAX extends Action {
 				$result['success'] = true;
 				$result['textId']  = $browseCategory->textId;
 				$result['label']   = $browseCategory->label;
-				//$result['description'] = $browseCategory->description; // the description is not used anywhere on front end. plb 1-2-2015
 
 				// User List Browse Category //
-				if ($browseCategory->sourceListId != null && $browseCategory->sourceListId > 0) {
-					require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+				if ($browseCategory->source == 'List') {
+					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 					$sourceList     = new UserList();
 					$sourceList->id = $browseCategory->sourceListId;
 					if ($sourceList->find(true)) {
@@ -268,27 +280,27 @@ class Browse_AJAX extends Action {
 
 					// Search Browse Category //
 				} else {
-					$this->searchObject = SearchObjectFactory::initSearchObject();
+					$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
 					$defaultFilterInfo  = $browseCategory->defaultFilter;
 					$defaultFilters     = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
 					foreach ($defaultFilters as $filter) {
-						$this->searchObject->addFilter(trim($filter));
+						$searchObject->addFilter(trim($filter));
 					}
 					//Set Sorting, this is actually slightly mangled from the category to Solr
-					$this->searchObject->setSort($browseCategory->getSolrSort());
+					$searchObject->setSort($browseCategory->getSolrSort());
 					if ($browseCategory->searchTerm != '') {
-						$this->searchObject->setSearchTerm($browseCategory->searchTerm);
+						$searchObject->setSearchTerm($browseCategory->searchTerm);
 					}
 
 					//Get titles for the list
-					$this->searchObject->clearFacets();
-					$this->searchObject->disableSpelling();
-					$this->searchObject->disableLogging();
-					$this->searchObject->setLimit(self::ITEMS_PER_PAGE);
-					$this->searchObject->setPage($pageToLoad);
-					$this->searchObject->processSearch();
+					$searchObject->clearFacets();
+					$searchObject->disableSpelling();
+					$searchObject->disableLogging();
+					$searchObject->setLimit(self::ITEMS_PER_PAGE);
+					$searchObject->setPage($pageToLoad);
+					$searchObject->processSearch();
 
-					$records = $this->searchObject->getBrowseRecordHTML();
+					$records = $searchObject->getBrowseRecordHTML();
 
 					// Do we need to initialize the ajax ratings?
 					if ($this->browseMode == 0) {
@@ -307,12 +319,12 @@ class Browse_AJAX extends Action {
 						if ($browseCategoryRatingsMode == 2) $records[] = '<script type="text/javascript">AspenDiscovery.Ratings.initializeRaters()</script>';
 					}
 
-					$result['searchUrl'] = $this->searchObject->renderSearchUrl();
+					$result['searchUrl'] = $searchObject->renderSearchUrl();
 
 					//TODO: Check if last page
 
 					// Shutdown the search object
-					$this->searchObject->close();
+					$searchObject->close();
 				}
 				if (count($records) == 0) {
 					$records[] = $interface->fetch('Browse/noResults.tpl');
@@ -449,6 +461,7 @@ class Browse_AJAX extends Action {
 		if ($this->browseCategory) {
 			$result['textId'] = $this->browseCategory->textId;
 			$result['label']  = $this->browseCategory->label;
+			$result['subcategories'] = $this->getSubCategories();
 		}
 
 		// Reload with sub-category
@@ -484,8 +497,7 @@ class Browse_AJAX extends Action {
 			$pageToLoad = (int) $_REQUEST['pageToLoad'];
 			if (!is_int($pageToLoad)) return array('success' => false);
 		}
-		$result = $this->getBrowseCategoryResults($pageToLoad);
-		return $result;
+		return $this->getBrowseCategoryResults($pageToLoad);
 	}
 
 	/** @var  BrowseCategory $subCategories[]   Browse category info for each sub-category */
@@ -503,7 +515,6 @@ class Browse_AJAX extends Action {
 			foreach ($this->browseCategory->getSubCategories() as $subCategory) {
 
 				// Get Needed Info about sub-category
-				/** @var BrowseCategory $temp */
 				$temp = new BrowseCategory();
 				$temp->id = $subCategory->subCategoryId;
 				if ($temp->find(true)) {
@@ -517,8 +528,7 @@ class Browse_AJAX extends Action {
 			if ($subCategories) {
 				global $interface;
 				$interface->assign('subCategories', $subCategories);
-				$result = $interface->fetch('Search/browse-sub-category-menu.tpl');
-				return $result;
+				return $interface->fetch('Search/browse-sub-category-menu.tpl');
 			}
 		}
 		return null;
@@ -535,7 +545,6 @@ class Browse_AJAX extends Action {
 	private function getActiveBrowseCategories(){
 		//Figure out which library or location we are looking at
 		global $library;
-		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		global $configArray;
 		//Check to see if we have an active location, will be null if we don't have a specific location
@@ -549,7 +558,6 @@ class Browse_AJAX extends Action {
 			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
 		}else{
 			//We have a location get data for that
-			/** @noinspection PhpUndefinedFieldInspection */
 			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
 		}
 
@@ -572,5 +580,10 @@ class Browse_AJAX extends Action {
 			}
 		}
 		return $formattedCategories;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

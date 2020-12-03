@@ -11,31 +11,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="ComposerSettings">
-    <execution>
-      <executable />
-    </execution>
-  </component>
-  <component name="DatabaseView">
-    <option name="SHOW_INTERMEDIATE" value="true" />
-    <option name="GROUP_DATA_SOURCES" value="true" />
-    <option name="GROUP_SCHEMA" value="true" />
-    <option name="GROUP_CONTENTS" value="false" />
-    <option name="SORT_POSITIONED" value="false" />
-    <option name="SHOW_EMPTY_GROUPS" value="false" />
-    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
-    <option name="HIDDEN_KINDS">
-      <set />
-    </option>
-    <expand>
-      <path>
-        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
-        <item name="MariaDB - aspen@localhost" type="feb32156:DbDataSourceImpl" />
-      </path>
-    </expand>
-    <select />
-  </component>
-  <component name="FavoritesManager">
-    <favorites_list name="web" />
+    <execution />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -93,27 +69,35 @@
       <server host="wasatch.basinlibraries.localhost" id="914e1869-abd0-42ed-b365-d8c234bb5e4e" name="wasatch.basinlibraries.localhost" />
       <server host="nederland.aspencat.localhost" id="f9c9d3e1-29cc-4bc6-86ef-a7a330a42b6e" name="nederland.aspencat.localhost" />
       <server host="arlington.koha.local" id="88213282-7667-4f99-9209-81efc10079fa" name="arlington.koha.local" />
+      <server host="swan.localhost" id="2c1357ff-4245-40e6-9077-d348d472ed00" name="swan.localhost" />
+      <server host="arcadiaca.localhost" id="5e41d943-af05-4728-836b-43ca3a7a76ad" name="arcadiaca.localhost" />
+      <server host="www.basinlibraries.localhost" id="07e1ca77-e5db-4db6-8093-231e23c5a462" name="www.basinlibraries.localhost" />
+      <server host="105.nashville.aspenlocal" id="88620d36-2851-47a4-be5a-3c2a47706c98" name="105.nashville.aspenlocal" />
+      <server host="ajax.localhost" id="f6e5196f-702b-44f1-b7d8-1ddea7ce67fa" name="ajax.localhost" />
+      <server host="salina.localhost" id="c8200ab3-ad1f-4f1c-bcd7-204915caab2e" name="salina.localhost" />
+      <server host="berthoud.aspencat.localhost" id="6557adac-82ef-4c29-ac3f-50613f5fb8fb" name="berthoud.aspencat.localhost" />
+      <server host="santafe.localhost" id="4d4e1192-0aac-4ebe-942d-4c8c6235b78d" name="santafe.localhost" />
     </servers>
   </component>
-  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.1">
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.3">
     <include_path>
-      <path value="C:/Bitnami/wampstack-7.3.3-1/php" />
+      <path value="$PROJECT_DIR$/../../../../Bitnami/wampstack-7.3.3-1/php" />
     </include_path>
   </component>
   <component name="ProjectId" id="1OW1o0nR89VagBknOyBYfpbOOIz" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showExcludedFiles" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
     <property name="DatabaseDriversLRU" value="mysql" />
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="NewWatcherDialog.advanced.open" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/sys/ILS" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/interface/themes/responsive/Axis360" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.jscs" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
@@ -127,48 +111,84 @@
     <property name="node.js.selected.package.standard" value="" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="watcher.settings" />
+    <property name="php.override.implement.member.chooser.php.doc" value="NONE" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.General" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Axis360" />
+      <recent name="C:\web\aspen-discovery\code\web\migrations" />
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\MyAccount" />
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\RecordDrivers\Events" />
+      <recent name="C:\web\aspen-discovery\code\web\services\Admin" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\RecordDrivers\Index" />
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\MyAccount" />
+      <recent name="C:\web\aspen-discovery\code\web\sys\Indexing" />
       <recent name="C:\web\aspen-discovery\code\web\sys\ILS" />
       <recent name="C:\web\aspen-discovery\code\web\services\ILS" />
-      <recent name="C:\web\aspen-discovery\code\web\sys\Grouping" />
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Search" />
-      <recent name="C:\web\aspen-discovery\sites\basinlibraries.production" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\web\aspen-discovery\code\web\services\CloudLibrary" />
-      <recent name="C:\web\aspen-discovery\code\web\release_notes" />
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Events" />
-      <recent name="C:\web\aspen-discovery\code\web\sys\Covers" />
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Admin" />
     </key>
   </component>
-  <component name="RunManager" selected="PHP Script.mergeJavascript">
+  <component name="RunManager" selected="PHP Script.updateWidgetsWithSavedSearches">
     <configuration default="true" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../cron/updateNYTLists.sh" scriptParameters="basinlibraries.localhost">
       <method v="2" />
     </configuration>
     <configuration name="checkBackgroundProcesses" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/checkBackgroundProcesses.php" scriptParameters="pueblo.localhost">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
+      <method v="2" />
+    </configuration>
+    <configuration name="cleanupPikaReadingHistory" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/migrations/cleanupPikaReadingHistory.php" scriptParameters="nashville.aspenlocal">
       <method v="2" />
     </configuration>
     <configuration name="createSite" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../../install/createSite.php">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
       <method v="2" />
     </configuration>
     <configuration name="createSitemaps" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/createSitemaps.php" scriptParameters="aspencat.localhost">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
       <method v="2" />
     </configuration>
-    <configuration name="importPikaData" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/migrations/importPikaData.php" scriptParameters="arlington.localhost">
+    <configuration name="importPikaData" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/migrations/importPikaData.php" scriptParameters="nashville.aspenlocal N">
       <method v="2" />
     </configuration>
     <configuration name="mergeJavascript" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/interface/themes/responsive/js/merge_javascript.php">
-      <CommandLine workingDirectory="$PROJECT_DIR$/interface/themes/responsive/js/" />
+      <CommandLine workingDirectory="$PROJECT_DIR$/interface/themes/responsive/js/">
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
       <method v="2" />
     </configuration>
-    <configuration name="updateNYTLists" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/updateNYTLists.php" scriptParameters="pueblo.localhost">
+    <configuration name="updateNYTLists" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/updateNYTLists.php" scriptParameters="basinlibraries.localhost">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
       <method v="2" />
     </configuration>
     <configuration name="updateSuggesters" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/updateSuggesters.php" scriptParameters="pueblo.localhost">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
+      <method v="2" />
+    </configuration>
+    <configuration name="updateWidgetsWithSavedSearches" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/migrations/updateWidgetsWithSavedSearches.php" scriptParameters="nashville.aspenlocal">
       <method v="2" />
     </configuration>
     <list>
@@ -176,6 +196,8 @@
       <item itemvalue="PHP Script.createSite" />
       <item itemvalue="PHP Script.createSitemaps" />
       <item itemvalue="PHP Script.importPikaData" />
+      <item itemvalue="PHP Script.cleanupPikaReadingHistory" />
+      <item itemvalue="PHP Script.updateWidgetsWithSavedSearches" />
       <item itemvalue="PHP Script.mergeJavascript" />
       <item itemvalue="PHP Script.updateNYTLists" />
       <item itemvalue="PHP Script.updateSuggesters" />
@@ -196,126 +218,133 @@
       <updated>1547769580133</updated>
       <workItem from="1585151082702" duration="25886000" />
       <workItem from="1587042805091" duration="10044000" />
-      <workItem from="1587579409796" duration="26000" />
-      <workItem from="1587646792751" duration="26792000" />
-      <workItem from="1587740971421" duration="10240000" />
+      <workItem from="1603803803948" duration="1546000" />
+      <workItem from="1603806037190" duration="56617000" />
+      <workItem from="1604081413650" duration="73336000" />
+      <workItem from="1604526508878" duration="7942000" />
+      <workItem from="1604540439705" duration="35720000" />
+      <workItem from="1604763989865" duration="60258000" />
+      <workItem from="1605100817394" duration="68162000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="1" />
+    <option name="version" value="2" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="COLUMN_ORDER" />
-            </State>
+            <State />
           </value>
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="361" y="74" key="#File_Watchers" timestamp="1587579090846">
+    <state x="82" y="95" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1605380373808">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="361" y="74" key="#File_Watchers/0.0.1536.824@0.0.1536.824" timestamp="1587579090846" />
-    <state x="223" y="70" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1587579205024">
+    <state x="82" y="95" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.824@0.0.1536.824" timestamp="1605380373808" />
+    <state x="498" y="192" key="#com.intellij.ide.scriptingContext.ui.PerFileMappingsDialogWrapper" timestamp="1603894290397">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="223" y="70" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.824@0.0.1536.824" timestamp="1587579205024" />
-    <state x="367" y="124" width="741" height="599" key="EditFileWatcherDialog" timestamp="1587579220094">
+    <state x="498" y="192" key="#com.intellij.ide.scriptingContext.ui.PerFileMappingsDialogWrapper/0.0.1536.824@0.0.1536.824" timestamp="1603894290397" />
+    <state x="556" y="81" key="#com.jetbrains.php.refactoring.extractMethod.PhpExtractMethodDialog#method1" timestamp="1604346897556">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="367" y="124" width="741" height="599" key="EditFileWatcherDialog/0.0.1536.824@0.0.1536.824" timestamp="1587579220094" />
-    <state x="548" y="169" key="FileChooserDialogImpl" timestamp="1587735111196">
+    <state x="556" y="81" key="#com.jetbrains.php.refactoring.extractMethod.PhpExtractMethodDialog#method1/0.0.1536.824@0.0.1536.824" timestamp="1604346897556" />
+    <state x="524" y="115" key="#xdebugger.evaluate" timestamp="1605490987925">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="548" y="169" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1587735111196" />
-    <state width="1493" height="149" key="GridCell.Tab.0.bottom" timestamp="1587902792135">
+    <state x="524" y="115" key="#xdebugger.evaluate/0.0.1536.824@0.0.1536.824" timestamp="1605490987925" />
+    <state width="1493" height="164" key="GridCell.Tab.0.bottom" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1587902792135" />
-    <state width="1493" height="149" key="GridCell.Tab.0.center" timestamp="1587902792134">
+    <state width="1493" height="164" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.0.center" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1587902792134" />
-    <state width="1493" height="149" key="GridCell.Tab.0.left" timestamp="1587902792134">
+    <state width="1493" height="164" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.0.left" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1587902792134" />
-    <state width="1493" height="149" key="GridCell.Tab.0.right" timestamp="1587902792134">
+    <state width="1493" height="164" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.0.right" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1587902792134" />
-    <state width="1493" height="149" key="GridCell.Tab.1.bottom" timestamp="1587902792135">
+    <state width="1493" height="164" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.1.bottom" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1587902792135" />
-    <state width="1493" height="149" key="GridCell.Tab.1.center" timestamp="1587902792135">
+    <state width="1493" height="164" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.1.center" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1587902792135" />
-    <state width="1493" height="149" key="GridCell.Tab.1.left" timestamp="1587902792135">
+    <state width="1493" height="164" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.1.left" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1587902792135" />
-    <state width="1493" height="149" key="GridCell.Tab.1.right" timestamp="1587902792135">
+    <state width="1493" height="164" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.1.right" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1587902792135" />
-    <state width="1493" height="149" key="GridCell.Tab.2.bottom" timestamp="1587902792136">
+    <state width="1493" height="164" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.2.bottom" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.2.bottom/0.0.1536.824@0.0.1536.824" timestamp="1587902792136" />
-    <state width="1493" height="149" key="GridCell.Tab.2.center" timestamp="1587902792135">
+    <state width="1493" height="164" key="GridCell.Tab.2.bottom/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.2.center" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.2.center/0.0.1536.824@0.0.1536.824" timestamp="1587902792135" />
-    <state width="1493" height="149" key="GridCell.Tab.2.left" timestamp="1587902792135">
+    <state width="1493" height="164" key="GridCell.Tab.2.center/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.2.left" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.2.left/0.0.1536.824@0.0.1536.824" timestamp="1587902792135" />
-    <state width="1493" height="149" key="GridCell.Tab.2.right" timestamp="1587902792136">
+    <state width="1493" height="164" key="GridCell.Tab.2.left/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.2.right" timestamp="1605542494087">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="149" key="GridCell.Tab.2.right/0.0.1536.824@0.0.1536.824" timestamp="1587902792136" />
-    <state x="561" y="247" key="NewPhpClassDialog" timestamp="1587130131825">
+    <state width="1493" height="164" key="GridCell.Tab.2.right/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state x="604" y="335" key="NewPhpFileDialog" timestamp="1605305976495">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="561" y="247" key="NewPhpClassDialog/0.0.1536.824@0.0.1536.824" timestamp="1587130131825" />
-    <state x="279" y="58" key="SettingsEditor" timestamp="1587579226890">
+    <state x="604" y="335" key="NewPhpFileDialog/0.0.1536.824@0.0.1536.824" timestamp="1605305976495" />
+    <state x="277" y="57" key="SettingsEditor" timestamp="1604423101070">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="279" y="58" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1587579226890" />
-    <state width="1028" height="432" key="XDebugger.FullValuePopup" timestamp="1587677402895">
+    <state x="277" y="57" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1604423101070" />
+    <state width="1028" height="432" key="XDebugger.FullValuePopup" timestamp="1605313984163">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1028" height="432" key="XDebugger.FullValuePopup/0.0.1536.824@0.0.1536.824" timestamp="1587677402895" />
-    <state x="332" y="151" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1587902788016">
+    <state width="1028" height="432" key="XDebugger.FullValuePopup/0.0.1536.824@0.0.1536.824" timestamp="1605313984163" />
+    <state x="445" y="26" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1605073887416">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="332" y="151" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1536.824@0.0.1536.824" timestamp="1587902788016" />
-    <state x="474" y="168" width="970" height="584" key="find.popup" timestamp="1587741883056">
+    <state x="445" y="26" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.1536.824@0.0.1536.824" timestamp="1605073887416" />
+    <state x="285" y="141" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1605542489797">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="474" y="168" width="970" height="584" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1587741883056" />
-    <state x="360" y="73" key="scopes" timestamp="1587476327922">
+    <state x="285" y="141" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1536.824@0.0.1536.824" timestamp="1605542489797" />
+    <state x="90" y="140" width="986" height="624" key="find.popup" timestamp="1605541696156">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="360" y="73" key="scopes/0.0.1536.824@0.0.1536.824" timestamp="1587476327922" />
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1587901416896">
+    <state x="90" y="140" width="986" height="624" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1605541696156" />
+    <state x="425" y="187" key="run.anything.popup" timestamp="1603806839943">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1587901416896" />
+    <state x="425" y="187" key="run.anything.popup/0.0.1536.824@0.0.1536.824" timestamp="1603806839943" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1605540830140">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1605540830140" />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>
       <configuration name="index.php">
-        <watch expression="$formatMap[45]" />
+        <watch expression="$savedSearch-&gt;displayQuery()" />
       </configuration>
     </watches-manager>
   </component>

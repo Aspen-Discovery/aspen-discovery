@@ -28,7 +28,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		return $this->valid;
 	}
 
-	public function getListEntry($user, $listId = null, $allowEdit = true)
+	public function getListEntry($listId = null, $allowEdit = true)
 	{
 		return $this->getSearchResult('list');
 	}
@@ -42,7 +42,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		$interface->assign('eventUrl', $this->getLinkUrl());
 		$interface->assign('title', $this->getTitle());
 		if (isset($this->fields['description'])) {
-			$interface->assign('description', $this->getDescription());
+			$interface->assign('description', $this->fields['description']);
 		} else {
 			$interface->assign('description', '');
 		}
@@ -100,17 +100,11 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 
 	public function getDescription()
 	{
-		return $this->fields['description'];
-	}
-
-	public function getItemActions($itemInfo)
-	{
-		return array();
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-	{
-		return array();
+		if (isset($this->fields['description'])) {
+			return $this->fields['description'];
+		} else {
+			return '';
+		}
 	}
 
 	/**
@@ -173,5 +167,17 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		} catch (Exception $e) {
 			return null;
 		}
+	}
+
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+		$result = parent::getSpotlightResult($collectionSpotlight, $index);
+		if ($collectionSpotlight->style == 'text-list'){
+			global $interface;
+			$interface->assign('start_date', $this->fields['start_date']);
+			$interface->assign('end_date', $this->fields['end_date']);
+			$result['formattedTextOnlyTitle'] = $interface->fetch('RecordDrivers/Events/formattedTextOnlyTitle.tpl');
+		}
+
+		return $result;
 	}
 }

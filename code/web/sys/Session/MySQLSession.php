@@ -89,7 +89,7 @@ class MySQLSession extends SessionInterface
 			$result = $s->insert();
 		}
 		$logger->log(" Result = $result", Logger::LOG_DEBUG);
-		return $result == 1;
+		return true;
 	}
 
 	public function destroy($sess_id)

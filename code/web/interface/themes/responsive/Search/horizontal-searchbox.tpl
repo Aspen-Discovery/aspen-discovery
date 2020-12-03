@@ -16,10 +16,10 @@
 			<input type="hidden" name="searchSource" value="{$searchSource}">
 		{/if}
 
-		<div class="col-sm-9 col-xs-12">
+		<div class="col-xs-12 col-sm-10 col-md-11">
 			<div class="row">
-				<div class="col-lg-1 col-md-1 col-sm-2 col-xs-12">
-					<label id="horizontal-search-label" for="lookfor" class="">{translate text="Search for"} </label>
+				<div class="col-lg-1 col-md-1 col-sm-2 col-xs-12 hidden-xs">
+					<label id="horizontal-search-label" for="lookfor" class="">{translate text="Search"} </label>
 				</div>
 				<div class="{if $hiddenSearchSource}col-lg-9 col-md-9{else}col-lg-6 col-md-6{/if} col-sm-10 col-xs-12">
 					{* Main Search Term Box *}
@@ -27,11 +27,10 @@
 						id="lookfor"
 						name="lookfor"
 						title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
-						onkeyup="return AspenDiscovery.Searches.resetSearchType()"
 						onfocus="$(this).select()"
 						autocomplete="off"
 						rows="1"
-						aria-label="Search Terms"
+						aria-labelledby="horizontal-search-label"
 						{strip}>
 						{if !empty($lookfor)}{$lookfor|escape:"html"}{/if}
 					</textarea>
@@ -40,42 +39,32 @@
 				{* Search Type *}
 				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if $hiddenSearchSource} col-sm-10 col-sm-offset-2 col-xs-12 col-xs-offset-0 {else} col-sm-5 col-sm-offset-2 col-xs-5 col-xs-offset-0{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
-						{foreach from=$catalogSearchIndexes item=searchDesc key=searchVal}
-							<option data-search_source="catalog" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
+						{foreach from=$searchIndexes item=searchDesc key=searchVal}
+							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"  inAttribute=true} {translate text=$searchDesc  inAttribute=true}</option>
 						{/foreach}
-						{if !empty($enableOpenGenealogy)}
-							{foreach from=$genealogySearchIndexes item=searchDesc key=searchVal}
-								<option data-search_source="genealogy" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-							{/foreach}
-						{/if}
-						{if !empty($enableOpenArchives)}
-							{foreach from=$openArchivesSearchIndexes item=searchDesc key=searchVal}
-								<option data-search_source="open_archives" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-							{/foreach}
-						{/if}
-						{foreach from=$listSearchIndexes item=searchDesc key=searchVal}
-							<option data-search_source="lists" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-						{/foreach}
-						{foreach from=$websiteSearchIndexes item=searchDesc key=searchVal}
-							<option data-search_source="websites" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-						{/foreach}
-						{if !empty($enableEvents)}
-							{foreach from=$eventsSearchIndexes item=searchDesc key=searchVal}
-								<option data-search_source="events" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-							{/foreach}
+
+						{* Add Advanced Search *}
+						{if !empty($searchIndex) && $searchIndex == 'advanced'}*}
+							<option id="advancedSearchLink" value="editAdvanced" selected="selected">
+								{translate text='Edit Advanced Search' inAttribute=true}
+							</option>
+						{elseif $showAdvancedSearchbox}
+							<option id="advancedSearchLink" value="advanced">
+								{translate text='Advanced Search' inAttribute=true}
+							</option>
 						{/if}
 					</select>
 				</div>
 
 				{if !$hiddenSearchSource}
 					<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
-						<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="AspenDiscovery.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control" aria-label="Collection to Search">
+						<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="AspenDiscovery.Searches.loadSearchTypes();" class="searchSourceHorizontal form-control" aria-label="Collection to Search">
 							{foreach from=$searchSources item=searchOption key=searchKey}
-								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
+								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description}" data-advanced_search="{$searchOption.hasAdvancedSearch}" data-advanced_search_label="{translate text="Advanced Search" inAttribute=true}"
 										{if $searchKey == $searchSource} selected="selected"{/if}
-										{if $searchKey == $searchSource} id="default_search_type"{/if}
-											title="{$searchOption.description}">
-									{translate text="in"} {$searchOption.name}{if !empty($searchOption.external)} *{/if}
+										{if $searchKey == $defaultSearchIndex} id="default_search_type"{/if}
+										>
+									{translate text="in"  inAttribute=true} {translate text=$searchOption.name inAttribute=true}{if !empty($searchOption.external)} *{/if}
 								</option>
 							{/foreach}
 						</select>
@@ -85,34 +74,34 @@
 		</div>
 
 		{* GO Button & Search Links*}
-		<div id="horizontal-search-button-container" class="col-sm-3 col-xs-12">
+		<div id="horizontal-search-button-container" class="col-xs-12 col-sm-2 col-md-1">
 			<div class="row">
-				<div class="col-tn-3 col-xs-3 col-sm-4 col-md-4">
+				<div class="col-tn-6 col-xs-6 col-sm-12 col-md-12">
 					<button class="btn btn-default" type="submit">
-						<span class="glyphicon glyphicon-search"></span>
+						<i class="fas fa-search fas-lg"></i>
 						<span id="horizontal-search-box-submit-text">&nbsp;{translate text='GO'}</span>
 					</button>
 				</div>
 
-				<div id="horizontal-search-additional" class="col-tn-5 col-xs-5 col-sm-12 col-md-8">
-					{* Return to Advanced Search Link *}
-					{if !empty($searchType) && $searchType == 'advanced'}
-						<div>
-							&nbsp;<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
-						</div>
+{*				<div id="horizontal-search-additional" class="col-tn-5 col-xs-5 col-sm-12 col-md-8">*}
+{*					*}{* Return to Advanced Search Link *}
+{*					{if !empty($searchType) && $searchType == 'advanced'}*}
+{*						<a id="advancedSearchLink" href="/Search/Advanced" class="btn btn-default" {if !$searchSources.$searchSource.hasAdvancedSearch}style="display: none"{/if}>*}
+{*							{translate text='Edit Advanced Search'}*}
+{*						</a>*}
 
-					{* Show Advanced Search Link *}
-					{elseif $showAdvancedSearchbox}
-						<div>
-							&nbsp;<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Advanced Search'}</a>
-						</div>
-					{/if}
-				</div>
+{*					*}{* Show Advanced Search Link *}
+{*					{elseif $showAdvancedSearchbox}*}
+{*						<a id="advancedSearchLink" href="/Search/Advanced"  class="btn btn-default" {if !$searchSources.$searchSource.hasAdvancedSearch}style="display: none"{/if}>*}
+{*							{translate text='Advanced Search'}*}
+{*						</a>*}
+{*					{/if}*}
+{*				</div>*}
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if !empty($recordCount) || !empty($sideRecommendations)}
-					<div class="col-tn-3 col-xs-3 visible-xs text-right">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="AspenDiscovery.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+					<div class="col-tn-6 col-xs-6 visible-xs text-right">
+						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="$('#side-bar').slideToggle('slow');return false;"><i class="fas fa-filter"></i> {translate text='Filters'}</a>
 					</div>
 				{/if}
 			</div>

@@ -10,20 +10,24 @@
 		<div class="col-xs-12">
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped Work</a>
 			<button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Cover</button>
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('contentEditor', $userRoles))}
+			{if $loggedIn && in_array('Upload Covers', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Upload Cover</button>
 			{/if}
 			<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >Reload Enrichment</button>
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-				{if $classicUrl}
-					<a href="{$classicUrl}" class="btn btn-sm btn-info">View in Native OPAC</a>
-				{/if}
+			{if $loggedIn && in_array('Force Reindexing of Records', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
+			{/if}
+			{if $loggedIn && in_array('Set Grouped Work Display Information', $userPermissions)}
+				<button onclick="return AspenDiscovery.GroupedWork.getDisplayInfoForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Set Display Info"}</button>
+			{/if}
+			{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Group With Work</button>
 				<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">Ungroup</button>
+			{/if}
+			{if $loggedIn && in_array('Download MARC Records', $userPermissions)}
 				<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
 			{/if}
-			{if $loggedIn && $enableArchive && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
+            {if $loggedIn && $enableArchive && in_array('Administer Islandora Archive', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
 			{/if}
 		</div>
@@ -32,21 +36,19 @@
 
 {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
-{if $marcRecord}
-	<h4>{translate text="Marc Record"}</h4>
-	<table class="table-striped table table-condensed notranslate">
-		{if !empty($lastMarcModificationTime)}
-			<tr>
-				<th>Last File Modification Time</th>
-				<td>{$lastMarcModificationTime|date_format:"%b %d, %Y %r"}</td>
-			</tr>
-		{/if}
-		<tr>
-			<th>Last Grouped Work Modification Time</th>
-			<td>{$lastGroupedWorkModificationTime|date_format:"%b %d, %Y %r"}</td>
-		</tr>
-	</table>
+<h4>{translate text="Cloud Library Information"}</h4>
+<table class="table-striped table table-condensed notranslate">
+	<tr>
+		<th>First Detected</th>
+		<td>{$cloudLibraryProduct->dateFirstDetected|date_format:"%b %d, %Y %r"}</td>
+	</tr>
+	<tr>
+		<th>Last Change</th>
+		<td>{$cloudLibraryProduct->lastChange|date_format:"%b %d, %Y %r"}</td>
+	</tr>
+</table>
 
+{if $marcRecord}
 	<div id="formattedMarcRecord">
 		<h3>MARC Record</h3>
 		<table class="citation" border="0">

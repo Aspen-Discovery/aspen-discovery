@@ -6,9 +6,9 @@
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 				</div>
 			{/if}
-
-			{* Alternate Mobile MyAccount Menu *}
-			{include file="MyAccount/mobilePageHeader.tpl"}
+			{if !empty($accountMessages)}
+				{include file='systemMessages.tpl' messages=$accountMessages}
+			{/if}
 
 			<span class='availableHoldsNoticePlaceHolder'></span>
 
@@ -53,18 +53,6 @@
 											<div class="col-xs-4"><strong>{translate text='Full Name'}</strong></div>
 											<div class="col-xs-8">{$profile->_fullname|escape}</div>
 										</div>
-										{if $showUsernameField}
-											<div class="form-group">
-												<div class="col-xs-4"><label for="username">{translate text="alternat_username_label" defaultText="Username"}</label></div>
-												<div class="col-xs-8">
-													<input type="text" name="username" id="username" value="{if !is_numeric(trim($profile->_alt_username))}{$profile->_alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
-													<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
-													<div id="usernameHelp" style="display:none">
-														A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “Account Settings” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters).
-													</div>
-												</div>
-											</div>
-										{/if}
 										{if !$offline}
 											<div class="form-group">
 												<div class="col-xs-4"><strong>{translate text='Fines'}</strong></div>
@@ -137,8 +125,8 @@
 											<div class="form-group">
 												<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number'}</label></div>
 												<div class="col-xs-8">
-													{if $edit && $canUpdateContactInfo && ($ils != 'Horizon')}
-														<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control{*{if $primaryTheme =='arlington'} //Keep for debugging*}{if $libraryName =='Arlington Public Library'} digits{/if}">
+													{if $edit && $canUpdateContactInfo && $canUpdatePhoneNumber && ($ils != 'Horizon')}
+														<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
 													{else}
 														{$profile->phone|escape}
 													{/if}
@@ -147,7 +135,7 @@
 											{if $showWorkPhoneInProfile}
 												<div class="form-group">
 													<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number'}</label></div>
-													<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
+													<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $canUpdatePhoneNumber && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
 												</div>
 											{/if}
 										{/if}
@@ -225,7 +213,7 @@
 
 
 											<div class="form-group">
-												<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
+												<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}</label></div>
 												<div class="col-xs-8">
 													{if $edit == true}
 														<input type="checkbox" name="emailReceiptFlag" id="emailReceiptFlag" {if $profile->_emailReceiptFlag==1}checked='checked'{/if} data-switch="">
@@ -360,19 +348,19 @@
 										<div class="form-group">
 											<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old %1%' 1=$passwordLabel}</label></div>
 											<div class="col-xs-8">
-												<input type="password" name="pin" id="pin" value="" size="4" maxlength="30" class="form-control required digits">
+												<input type="password" name="pin" id="pin" value="" minlength="{$pinValidationRules.minLength}" maxlength="30" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 											</div>
 										</div>
 										<div class="form-group">
 											<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel}</label></div>
 											<div class="col-xs-8">
-												<input type="password" name="pin1" id="pin1" value="" size="4" maxlength="30" class="form-control required digits">
+												<input type="password" name="pin1" id="pin1" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 											</div>
 										</div>
 										<div class="form-group">
 											<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New %1%' 1=$passwordLabel}</label></div>
 											<div class="col-xs-8">
-													<input type="password" name="pin2" id="pin2" value="" size="4" maxlength="30" class="form-control required digits">
+													<input type="password" name="pin2" id="pin2" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 											</div>
 										</div>
 										<div class="form-group">
@@ -671,7 +659,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
+				You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
 			</div>
 		{/if}
 	</div>

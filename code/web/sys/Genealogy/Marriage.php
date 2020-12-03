@@ -15,22 +15,18 @@ class Marriage extends DataObject
     public $marriageDateYear;
 	public $comments;
 
-	function keys() {
-		return array('marriageId');
-	}
-
 	function id(){
 		return $this->marriageId;
 	}
 
-    function getNumericColumnNames()
-    {
-        return [
-            'marriageDateDay',
-            'marriageDateMonth',
-            'marriageDateYear',
-        ];
-    }
+	function getNumericColumnNames()
+	{
+		return [
+			'marriageDateDay',
+			'marriageDateMonth',
+			'marriageDateYear',
+		];
+	}
 
 	function label(){
 		return $this->spouseName . (isset($this->marriageDate) ? (' - ' . $this->marriageDate) : '');

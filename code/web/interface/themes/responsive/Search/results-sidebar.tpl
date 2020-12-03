@@ -1,7 +1,4 @@
 {strip}
-
-	{include file="login-sidebar.tpl"}
-
 	{if $sideRecommendations}
 		<div id="refineSearch">
 			{* Narrow Results *}
@@ -14,11 +11,4 @@
 			{/if}
 		</div>
 	{/if}
-
-	{if $loggedIn}
-		{* Account Menu *}
-		{include file="MyAccount/menu.tpl"}
-	{/if}
-
-	{include file="library-sidebar.tpl"}
 {/strip}

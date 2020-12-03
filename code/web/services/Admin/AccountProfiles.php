@@ -29,22 +29,29 @@ class Admin_AccountProfiles extends ObjectEditor {
 	function getObjectStructure(){
 		return AccountProfile::getObjectStructure();
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		$breadcrumbs[] = new Breadcrumb('', 'Account Profiles');
+		return $breadcrumbs;
 	}
 
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Account Profiles');
+	}
 }

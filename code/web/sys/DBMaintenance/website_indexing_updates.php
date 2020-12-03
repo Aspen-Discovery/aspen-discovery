@@ -102,5 +102,21 @@ function getWebsiteIndexingUpdates()
 				"UPDATE modules set logClassPath='/sys/WebsiteIndexing/WebsiteIndexLogEntry.php', logClassName='WebsiteIndexLogEntry' WHERE name='Web Indexer'",
 			]
 		],
+
+		'web_indexer_add_title_expression' =>[
+			'title' => 'Web Indexer add title expression',
+			'description' => 'Add a regular expression to extract titles from',
+			'sql' => [
+				"ALTER TABLE website_indexing_settings ADD COLUMN pageTitleExpression VARCHAR(255) DEFAULT ''",
+			]
+		],
+
+		'web_indexer_add_description_expression' =>[
+			'title' => 'Web Indexer add description expression',
+			'description' => 'Add a regular expression to extract description from',
+			'sql' => [
+				"ALTER TABLE website_indexing_settings ADD COLUMN descriptionExpression VARCHAR(255) DEFAULT ''",
+			]
+		]
 	);
 }

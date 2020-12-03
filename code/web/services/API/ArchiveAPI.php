@@ -1,14 +1,13 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
-/**
- * APIs related to Digital Archive functionality
- * User: mnoble
- * Date: 6/29/2017
- * Time: 11:00 AM
- */
 
 class API_ArchiveAPI extends Action {
 	function launch(){
+		//Make sure the user can access the API based on the IP address
+		if (!IPAddress::allowAPIAccessForClientIP()){
+			$this->forbidAPIAccess();
+		}
+
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		header('Content-type: application/json');
@@ -28,6 +27,7 @@ class API_ArchiveAPI extends Action {
 	 * a full number of results due to filtering at the collection level.
 	 *
 	 * Future libraries may require different information.
+	 * @noinspection PhpUnused
 	 */
 	function getDPLAFeed(){
 		$curPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
@@ -42,7 +42,6 @@ class API_ArchiveAPI extends Action {
 			/** @var IslandoraRecordDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($doc);
 			$contributingLibrary = $record->getContributingLibrary();
-			//$exportToDPLA = isset($doc['mods_extension_marmotLocal_pikaOptions_dpla_s']) ? $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] : 'collection';
 
 			//Get the owning library
 			$dplaDoc = array();
@@ -138,15 +137,13 @@ class API_ArchiveAPI extends Action {
 		}
 
 		$summary = $searchObject->getResultSummary();
-		$results = array(
+		return array(
 				'numResults' => $summary['resultTotal'],
 				'numPages' => ceil($summary['resultTotal'] / $pageSize),
 				'recordsByLibrary' => $recordsByLibrary,
 				'includedCollections' => $collectionsToInclude,
 				'docs' => $dplaDocs,
 		);
-
-		return $results;
 	}
 
 	private $formatMap = array(
@@ -164,6 +161,7 @@ class API_ArchiveAPI extends Action {
 			"Video" => "Moving Image",
 			"Voice Recording" => "Sound",
 	);
+
 	private function mapFormat($format){
 		if (array_key_exists($format, $this->formatMap)){
 			return $this->formatMap[$format];
@@ -181,7 +179,7 @@ class API_ArchiveAPI extends Action {
 	 */
 	private function getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize)
 	{
-//Query for collections that should not be exported to DPLA
+		//Query for collections that should not be exported to DPLA
 		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
@@ -203,7 +201,6 @@ class API_ArchiveAPI extends Action {
 			}
 			$ancestors .= 'ancestors_ms:"' . $doc['PID'] . '"';
 		}
-
 
 		//Query Solr for the records to export
 		// Initialise from the current search globals
@@ -254,7 +251,7 @@ class API_ArchiveAPI extends Action {
 		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 100;
 		$changesSince = isset($_REQUEST['changesSince']) ? $_REQUEST['changesSince'] : null;
 		$namespace = isset($_REQUEST['namespace']) ? $_REQUEST['namespace'] : null;
-		list($searchObject, $collectionsToInclude, $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
+		list(, , $searchResult) = $this->getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize);
 
 		$recordsByLibrary = array();
 		if (isset($searchResult['facet_counts'])){
@@ -265,5 +262,10 @@ class API_ArchiveAPI extends Action {
 		}
 
 		return $recordsByLibrary;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

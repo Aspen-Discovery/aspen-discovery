@@ -3,15 +3,14 @@
 <div class="exploreMoreBar row">
 	{*<div class="label-left">*}
 	<div class="label-top">
-		<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt="{translate text='Explore More' inAttribute=true}">
-		<div class="exploreMoreBarLabel">{translate text='Explore More'}</div>
+		<div class="exploreMoreBarLabel"><i class="fas fa-share-square fa-x2"></i> {translate text='Explore More'}</div>
 	</div>
 
 	<div class="exploreMoreContainer">
 		<div class="jcarousel-wrapper">
 			{* Scrolling Buttons *}
-			<a href="#" class="jcarousel-control-prev"{* data-target="-=1"*}><i class="glyphicon glyphicon-chevron-left"></i></a>
-			<a href="#" class="jcarousel-control-next"{* data-target="+=1"*}><i class="glyphicon glyphicon-chevron-right"></i></a>
+			<a href="#" class="jcarousel-control-prev"{* data-target="-=1"*} aria-label="Previous"><i class="glyphicon glyphicon-chevron-left"></i></a>
+			<a href="#" class="jcarousel-control-next"{* data-target="+=1"*} aria-label="Next"><i class="glyphicon glyphicon-chevron-right"></i></a>
 
 			<div class="exploreMoreItemsContainer jcarousel">
 				<ul>
@@ -26,7 +25,7 @@
 							<li class="explore-more-option">
 								<figure class="thumbnail" title="{$exploreMoreCategory.label|escape}">
 									<div class="explore-more-image">
-										<a href='{$exploreMoreCategory.link}' {if $exploreMoreCategory.onclick}onclick="{$exploreMoreCategory.onclick}"{/if}>
+										<a href='{$exploreMoreCategory.link}' {if $exploreMoreCategory.onclick}onclick="{$exploreMoreCategory.onclick}"{/if} {if $exploreMoreCategory.openInNewWindow}target="_blank" {/if}>
 											<img src="{$exploreMoreCategory.image}" alt="{$exploreMoreCategory.label|escape}">
 											<figcaption class="explore-more-category-title">
 												<strong>{$exploreMoreCategory.label|truncate:30}</strong>

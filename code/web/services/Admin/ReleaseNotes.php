@@ -1,8 +1,8 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/Parsedown/Parsedown.php';
+require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 
-class Admin_ReleaseNotes extends Admin_Admin
+class Admin_ReleaseNotes extends Action
 {
 	function launch()
 	{
@@ -21,15 +21,41 @@ class Admin_ReleaseNotes extends Admin_Admin
 
 		arsort($releaseNotes);
 
-		$parsedown = Parsedown::instance();
+		$parsedown = AspenParsedown::instance();
 		$releaseNotesFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. reset($releaseNotes) . '.MD'));
 		$interface->assign('releaseNotesFormatted', $releaseNotesFormatted);
 
 		$interface->assign('releaseNotes', $releaseNotes);
-		$this->display('releaseNotes.tpl', 'Release Notes');
+		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
+			$adminActions = UserAccount::getActiveUserObj()->getAdminActions();
+			$interface->assign('adminActions', $adminActions);
+			$interface->assign('activeAdminSection', $this->getActiveAdminSection());
+			$interface->assign('activeMenuOption', 'admin');
+			$sidebar = 'Admin/admin-sidebar.tpl';
+		}else{
+			$sidebar = '';
+		}
+		$this->display('releaseNotes.tpl', 'Release Notes', $sidebar);
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
+			$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+			$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_help', 'Aspen Discovery Help');
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Release Notes');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'aspen_help';
+	}
+
+	function canView()
+	{
+		return true;
 	}
 }

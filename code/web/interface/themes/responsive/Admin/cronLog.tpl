@@ -1,9 +1,9 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h3>Cron Log</h3>
+		<h1>{translate text='Cron Log'}</h1>
 		
 		<div id="econtentAttachLogContainer">
-			<table class="logEntryDetails table table-hover table-condensed">
+			<table class="logEntryDetails table table-hover table-condensed" aria-label="Cron Log">
 				<thead>
 					<tr><th>Id</th><th>Started</th><th>Finished</th><th>Elapsed</th><th>Processes Run</th><th>Num Errors</th><th>Had Errors?</th><th>Notes</th></tr>
 				</thead>

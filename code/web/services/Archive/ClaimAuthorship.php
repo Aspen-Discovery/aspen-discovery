@@ -3,6 +3,8 @@
 require_once ROOT_DIR . '/sys/Archive/ClaimAuthorshipRequest.php';
 require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 class Archive_ClaimAuthorship extends Action{
+	/** @var IslandoraRecordDriver $requestedObject */
+	private $requestedObject;
 	function launch(){
 		global $configArray;
 		global $interface;
@@ -18,8 +20,9 @@ class Archive_ClaimAuthorship extends Action{
 
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$archiveObject = FedoraUtils::getInstance()->getObject($pid);
-		$requestedObject = RecordDriverFactory::initRecordDriver($archiveObject);
-		$interface->assign('requestedObject', $requestedObject);
+
+		$this->requestedObject = RecordDriverFactory::initRecordDriver($archiveObject);
+		$interface->assign('requestedObject', $this->requestedObject);
 
 		//Find the owning library
 		$owningLibrary = new Library();
@@ -63,7 +66,7 @@ class Archive_ClaimAuthorship extends Action{
 					if ($owningLibrary->find(true) && $owningLibrary->getNumResults() == 1){
 						//Send a copy of the request to the proper administrator
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
-							$body .= $configArray['Site']['url'] . $requestedObject->getRecordUrl();
+							$body .= $configArray['Site']['url'] . $this->requestedObject->getRecordUrl();
 							require_once ROOT_DIR . '/sys/Email/Mailer.php';
 							$mail = new Mailer();
 							$subject = 'New Authorship Claim for Archive Content';
@@ -102,6 +105,7 @@ class Archive_ClaimAuthorship extends Action{
 		$interface->assign('structure', $archiveRequestFields);
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('claimAuthorshipHeader', $owningLibrary->claimAuthorshipHeader);
+		$interface->assign('formLabel', 'Claim Authorship');
 
 		// Set up captcha to limit spam self registrations
 		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
@@ -110,13 +114,12 @@ class Archive_ClaimAuthorship extends Action{
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);
 
-		$this->display('claimAuthorship.tpl', 'Archival Material Copy Request');
+		$this->display('claimAuthorship.tpl', 'Claim Authorship');
 	}
 
 	function insertObject($structure){
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-		/** @var DataObject $newObject */
 		$newObject = new ClaimAuthorshipRequest();
 		//Check to see if we are getting default values from the
 		DataObjectUtil::updateFromUI($newObject, $structure);
@@ -132,7 +135,7 @@ class Archive_ClaimAuthorship extends Action{
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
-				$logger->log(mysql_error(), Logger::LOG_DEBUG);
+
 				return false;
 			}
 		} else {
@@ -143,5 +146,15 @@ class Archive_ClaimAuthorship extends Action{
 			return false;
 		}
 		return $newObject;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->requestedObject)){
+			$breadcrumbs[] = new Breadcrumb($this->requestedObject->getRecordUrl(), $this->requestedObject->getTitle());
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Claim Authorship');
+		return $breadcrumbs;
 	}
 }

@@ -31,7 +31,7 @@ class OverDrive_AJAX extends JSON_Action
 	function placeHold()
 	{
 		global $logger;
-		$logger->log("Starting OverDrive/placeHold session: " . session_id(), Logger::LOG_ERROR);
+		$logger->log("Starting OverDrive/placeHold session: " . session_id(), Logger::LOG_DEBUG);
 		$user = UserAccount::getLoggedInUser();
 
 		$overDriveId = $_REQUEST['overDriveId'];
@@ -57,19 +57,18 @@ class OverDrive_AJAX extends JSON_Action
 
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$holdMessage = $driver->placeHold($patron, $overDriveId);
-				return $holdMessage;
+				return $driver->placeHold($patron, $overDriveId);
 			} else {
-				$logger->log("Logged in user {$user->id} not valid for patron {$patronId}", Logger::LOG_ERROR);
+				$logger->log("Logged in user {$user->id} not valid for patron {$patronId}", Logger::LOG_DEBUG);
 				return array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.']));
 			}
 		} else {
-			$logger->log("User is not logged in", Logger::LOG_ERROR);
+			$logger->log("User is not logged in", Logger::LOG_DEBUG);
 			return array('result' => false, 'message' => 'You must be logged in to place a hold.');
 		}
 	}
 
-	function renewTitle()
+	function renewCheckout()
 	{
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
@@ -79,8 +78,7 @@ class OverDrive_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$result = $driver->renewCheckout($patron, $overDriveId);
-				return $result;
+				return $driver->renewCheckout($patron, $overDriveId);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
@@ -113,6 +111,7 @@ class OverDrive_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function returnCheckout()
 	{
 		$user = UserAccount::getLoggedInUser();
@@ -123,9 +122,7 @@ class OverDrive_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$result = $driver->returnCheckout($patron, $overDriveId);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				return $result;
+				return $driver->returnCheckout($patron, $overDriveId);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.');
 			}
@@ -134,6 +131,7 @@ class OverDrive_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function selectOverDriveDownloadFormat()
 	{
 		$user = UserAccount::getLoggedInUser();
@@ -145,9 +143,7 @@ class OverDrive_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$result = $driver->selectOverDriveDownloadFormat($overDriveId, $formatId, $patron);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				return $result;
+				return $driver->selectOverDriveDownloadFormat($overDriveId, $formatId, $patron);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.');
 			}
@@ -156,6 +152,7 @@ class OverDrive_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getDownloadLink()
 	{
 		$user = UserAccount::getLoggedInUser();
@@ -167,9 +164,7 @@ class OverDrive_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$result = $driver->getDownloadLink($overDriveId, $formatId, $patron);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				return $result;
+				return $driver->getDownloadLink($overDriveId, $formatId, $patron);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.');
 			}
@@ -178,6 +173,7 @@ class OverDrive_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getHoldPrompts()
 	{
 		if (!UserAccount::isLoggedIn()) {
@@ -231,6 +227,7 @@ class OverDrive_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getCheckOutPrompts()
 	{
 		$user = UserAccount::getLoggedInUser();
@@ -278,8 +275,7 @@ class OverDrive_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$result = $driver->cancelHold($patron, $overDriveId);
-				return $result;
+				return $driver->cancelHold($patron, $overDriveId);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.');
 			}
@@ -339,7 +335,7 @@ class OverDrive_AJAX extends JSON_Action
 		return $result;
 	}
 
-	// called by js function Account.freezeHold
+	/** @noinspection PhpUnused */
 	function getReactivationDateForm()
 	{
 		global $interface;
@@ -348,12 +344,11 @@ class OverDrive_AJAX extends JSON_Action
 		$interface->assign('overDriveId', $_REQUEST['overDriveId']);
 
 		$title = translate('Freeze Hold'); // language customization
-		$results = array(
+		return array(
 			'title' => $title,
 			'modalBody' => $interface->fetch("OverDrive/reactivationDate.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
 		);
-		return $results;
 	}
 
 	function thawHold()

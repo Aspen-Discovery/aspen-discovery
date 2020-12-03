@@ -71,6 +71,7 @@
       <w>disccartridge</w>
       <w>dowju</w>
       <w>duedate</w>
+      <w>dynix</w>
       <w>eaudio</w>
       <w>eaudiobook</w>
       <w>ebook</w>
@@ -99,6 +100,7 @@
       <w>homebranch</w>
       <w>icode</w>
       <w>ilsdi</w>
+      <w>imagename</w>
       <w>initialspassword</w>
       <w>interactivebook</w>
       <w>isbns</w>
@@ -140,6 +142,7 @@
       <w>netlibrary</w>
       <w>newbery</w>
       <w>nextaction</w>
+      <w>nfkc</w>
       <w>nomap</w>
       <w>nongrouped</w>
       <w>notforloan</w>
@@ -148,6 +151,7 @@
       <w>oclcs</w>
       <w>ocode</w>
       <w>offsite</w>
+      <w>ohohseven</w>
       <w>oneclick</w>
       <w>oneclickdigital</w>
       <w>onloan</w>
@@ -179,7 +183,9 @@
       <w>servername</w>
       <w>sideload</w>
       <w>sideloads</w>
+      <w>sirsi</w>
       <w>sitemap</w>
+      <w>sitename</w>
       <w>soapenv</w>
       <w>solrconfig</w>
       <w>solrmarc</w>
@@ -193,6 +199,7 @@
       <w>startdate</w>
       <w>stocknumber</w>
       <w>subdomain</w>
+      <w>subdomains</w>
       <w>subfield</w>
       <w>subfields</w>
       <w>sublocation</w>
@@ -201,6 +208,7 @@
       <w>tapecassette</w>
       <w>taperecording</w>
       <w>tapereel</w>
+      <w>tasklist</w>
       <w>transbid</w>
       <w>transcode</w>
       <w>transitem</w>
@@ -208,6 +216,7 @@
       <w>upcs</w>
       <w>validationstatus</w>
       <w>verticalfile</w>
+      <w>viaf</w>
       <w>videocartridge</w>
       <w>videoreel</w>
       <w>videosisc</w>
