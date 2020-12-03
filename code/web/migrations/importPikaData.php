@@ -22,11 +22,11 @@ if (!file_exists($exportPath)){
 }else{
 
 	//Make sure we have all the right files
-	validateFileExists($exportPath, "users.csv");
-	validateFileExists($exportPath, "userRoles.csv");
-	validateFileExists($exportPath, "staffSettings.csv");
-	validateFileExists($exportPath, "saved_searches.csv");
-	validateFileExists($exportPath, "materials_request.csv");
+	//validateFileExists($exportPath, "users.csv");
+	//validateFileExists($exportPath, "userRoles.csv");
+	//validateFileExists($exportPath, "staffSettings.csv");
+	//validateFileExists($exportPath, "saved_searches.csv");
+	//validateFileExists($exportPath, "materials_request.csv");
 	validateFileExists($exportPath, "patronLists.csv");
 	validateFileExists($exportPath, "patronListEntries.csv");
 	validateFileExists($exportPath, "patronRatingsAndReviews.csv");
@@ -40,9 +40,15 @@ if (!file_exists($exportPath)){
 	$movedGroupedWorks = [];
 
 	$startTime = time();
-	importUsers($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $flipIds);
-	importSavedSearches($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
-	importMergedWorks($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	if (file_exists($exportPath . "users.csv")) {
+		importUsers($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $flipIds);
+	}
+	if (file_exists($exportPath . "saved_searches.csv")) {
+		importSavedSearches($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
+	}
+	if (file_exists($exportPath . 'mergedGroupedWorks.csv')) {
+		importMergedWorks($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	}
 	importLists($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importListWidgets($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
 	importNotInterested($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
