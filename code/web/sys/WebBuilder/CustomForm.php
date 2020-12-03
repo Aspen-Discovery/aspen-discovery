@@ -42,7 +42,7 @@ class CustomForm extends DataObject
 				'allowEdit' => false,
 				'canEdit' => false,
 			),
-			'emailResultsTo' => array('property' => 'emailResultsTo', 'type' => 'text', 'label' => 'Email Results To', 'description' => 'An email address to send submission results to', 'size' => '40', 'maxLength' => 100),
+			'emailResultsTo' => array('property' => 'emailResultsTo', 'type' => 'text', 'label' => 'Email Results To (separate multiple addresses with semi-colons)', 'description' => 'An email address to send submission results to', 'size' => '40', 'maxLength' => 100),
 			'submissionResultText' => array('property' => 'submissionResultText', 'type' => 'markdown', 'label' => 'Submission Result Text', 'description' => 'Text to be displayed to the user when submission is complete', 'hideInLists' => true),
 			'libraries' => array(
 				'property' => 'libraries',
