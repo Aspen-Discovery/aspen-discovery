@@ -182,7 +182,7 @@ public class SymphonyExportMain {
 				int curRow = 0;
 				int numMalformattedRows = 0;
 				while (volumeInfoFields != null) {
-					if (volumeInfoFields.length == 9) {
+					if (volumeInfoFields.length > 8) {
 						String[] repairedVolumeInfo = new String[8];
 						repairedVolumeInfo[0] = volumeInfoFields[0];
 						repairedVolumeInfo[1] = volumeInfoFields[1] + "|" + volumeInfoFields[2];
@@ -198,14 +198,15 @@ public class SymphonyExportMain {
 							String relatedItemNumber = volumeInfoFields[4].trim();
 							String shortBibNumber = volumeInfoFields[5].trim();
 							String volumeNumber = volumeInfoFields[6].trim();
-							String volumeIdentifier = indexingProfile.getName() + ":a" + shortBibNumber + ":" + volumeNumber;
-
+							String volumeIdentifier = shortBibNumber + ":" + volumeNumber;
 							//startOfVolumeInfo = 0 indicates this item is not part of a volume. Will need separate handling.
 							if (startOfVolumeInfo > 0 && startOfVolumeInfo < fullCallNumber.length()) {
 								String volume = fullCallNumber.substring(startOfVolumeInfo);
 								VolumeInfo curVolume;
-								if (allVolumesInExport.containsKey(volumeIdentifier)) {
-									curVolume = allVolumesInExport.get(volumeIdentifier);
+								String volumeKey = bibNumber + ":" + volume;
+
+								if (allVolumesInExport.containsKey(volumeKey)) {
+									curVolume = allVolumesInExport.get(volumeKey);
 								} else {
 									curVolume = new VolumeInfo();
 									curVolume.bibNumber = bibNumber;
@@ -214,7 +215,7 @@ public class SymphonyExportMain {
 									//of the first call number we find which works just fine when placing the hold
 									curVolume.volumeIdentifier = volumeIdentifier;
 									curVolume.displayOrder = -curRow;
-									allVolumesInExport.put(volumeIdentifier, curVolume);
+									allVolumesInExport.put(volumeKey, curVolume);
 								}
 								curVolume.relatedItems.add(relatedItemNumber);
 							}
