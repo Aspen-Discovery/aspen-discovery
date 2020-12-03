@@ -1115,7 +1115,7 @@ class SirsiDynixROA extends HorizonAPI
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeSirsiHold($patron, $recordId, $itemId, $volumeHold = false, $pickupBranch = null, $type = 'request', $cancelIfNotFilledByDate = null)
+	function placeSirsiHold($patron, $recordId, $itemId, $volume = null, $pickupBranch = null, $type = 'request', $cancelIfNotFilledByDate = null)
 	{
 		//Get the session token for the user
 		$staffSessionToken = $this->getStaffSessionToken();
@@ -1188,12 +1188,10 @@ class SirsiDynixROA extends HorizonAPI
 				);
 
 				if (!empty($volume)){
-//					$shortRecordId = str_replace('a', '', $shortId);
-//					$holdData['bib'] = array(
-//						'resource' => '/catalog/bib',
-//						'key' => $shortRecordId
-//					);
-					$holdData['itemBarcode'] = $itemId;
+					$holdData['call'] = array(
+						'resource' => '/catalog/call',
+						'key' => $volume
+					);
 					$holdData['holdType'] = 'TITLE';
 				} elseif (!empty($itemId)) {
 					$holdData['itemBarcode'] = $itemId;
@@ -1257,7 +1255,7 @@ class SirsiDynixROA extends HorizonAPI
 		if ($volumeInfo->find(true)){
 			$relatedItems = explode('|', $volumeInfo->relatedItems);
 			$itemToHold = $relatedItems[0];
-			return $this->placeSirsiHold($patron, $recordId, $itemToHold, true, $pickupBranch);
+			return $this->placeSirsiHold($patron, $recordId, $itemToHold, $volumeId, $pickupBranch);
 		}else{
 			return array(
 				'success' => false,
