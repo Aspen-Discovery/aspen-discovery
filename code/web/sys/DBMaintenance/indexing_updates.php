@@ -310,6 +310,14 @@ function getIndexingUpdates()
 			],
 		],
 
+		'volume_increase_display_order' => [
+			'title' => 'Volume info - increase display order length',
+			'description' => 'Make the field longer to store big things (and negative numbers)',
+			'sql' => [
+				'ALTER TABLE ils_volume_info CHANGE COLUMN displayOrder displayOrder INT(11) default 0'
+			]
+		],
+
 		'last_check_in_status_adjustments' => array(
 			'title' => 'Last Check In Time Status Adjustments',
 			'description' => 'Add additional fields to adjust status based on last check-in time.',
