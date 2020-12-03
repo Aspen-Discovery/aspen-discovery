@@ -999,6 +999,10 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 		$groupedWorkResourceArray = preg_split('/[,;]/', $groupedWorkResources);
 		$groupedWorkValid = false;
 		foreach ($groupedWorkResourceArray as $identifier){
+			if (strpos($identifier, ':') === false){
+				echo("Identifier $identifier did not have a source list of resources = $groupedWorkResources");
+				continue;
+			}
 			list($source, $id) = explode(':', $identifier);
 			$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
 			$groupedWorkPrimaryIdentifier->type = $source;
