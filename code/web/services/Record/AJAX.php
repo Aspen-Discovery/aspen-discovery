@@ -57,185 +57,116 @@ class Record_AJAX extends Action
 	function getPlaceHoldForm()
 	{
 		global $interface;
-		$user = UserAccount::getLoggedInUser();
+		global $library;
 		if (UserAccount::isLoggedIn()) {
-			if (!UserAccount::getUserHasCatalogConnection()){
-				$results = array(
+			$user = UserAccount::getLoggedInUser();
+			$id = $_REQUEST['id'];
+			$recordSource = $_REQUEST['recordSource'];
+			$interface->assign('recordSource', $recordSource);
+			if (isset($_REQUEST['volume'])) {
+				$interface->assign('volume', $_REQUEST['volume']);
+			}
+
+			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $locations)){
+				return array(
 					'holdFormBypassed' => false,
-					'title' => 'No catalog connection',
-					'modalBody' => "This user does not have access to place holds within the catalog.",
+					'title' => 'Unable to place hold',
+					'modalBody' => '<p>This account is not associated with a library, please contact your library.</p>',
 					'modalButtons' => ""
 				);
-			}else {
-				$id = $_REQUEST['id'];
-				$recordSource = $_REQUEST['recordSource'];
-				$interface->assign('recordSource', $recordSource);
-				if (isset($_REQUEST['volume'])) {
-					$interface->assign('volume', $_REQUEST['volume']);
-				}
+			}
 
-				//Get information to show a warning if the user does not have sufficient holds
-				require_once ROOT_DIR . '/sys/Account/PType.php';
-				$maxHolds = -1;
-				//Determine if we should show a warning
-				$ptype = new PType();
-				$ptype->pType = UserAccount::getUserPType();
-				if ($ptype->find(true)) {
-					$maxHolds = $ptype->maxHolds;
-				}
-				$interface->assign('maxHolds', $maxHolds);
-				$ilsSummary = $user->getCatalogDriver()->getAccountSummary($user);
-				$currentHolds = $ilsSummary['numAvailableHolds'] + $ilsSummary['numUnavailableHolds'];
-				$interface->assign('currentHolds', $currentHolds);
-				//TODO: this check will need to account for linked accounts now
-				if ($maxHolds != -1 && ($currentHolds + 1 > $maxHolds)) {
-					$interface->assign('showOverHoldLimit', true);
-				}
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$marcRecord = new MarcRecordDriver($id);
+			$title = rtrim($marcRecord->getTitle(), ' /');
+			$interface->assign('id', $marcRecord->getId());
 
-				//Check to see if the user has linked users that we can place holds for as well
-				//If there are linked users, we will add pickup locations for them as well
-				$locations = $user->getValidPickupBranches($recordSource);
-				$multipleAccountPickupLocations = false;
-				$linkedUsers = $user->getLinkedUsers();
-				if (count($linkedUsers)) {
-					foreach ($locations as $location) {
-						if (count($location->pickupUsers) > 1) {
-							$multipleAccountPickupLocations = true;
-							break;
-						}
+			//Figure out what types of holds to allow
+			$items = $marcRecord->getCopies();
+			$format = $marcRecord->getPrimaryFormat();
+
+			global $indexingProfiles;
+			$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
+			$formatMap = $indexingProfile->formatMap;
+			/** @var FormatMapValue $formatMapValue */
+			$holdType = 'bib';
+			foreach ($formatMap as $formatMapValue) {
+				if (strcasecmp($formatMapValue->format, $format) === 0) {
+					$holdType = $formatMapValue->holdType;
+					break;
+				}
+			}
+
+			$interface->assign('items', $items);
+			$interface->assign('holdType', $holdType);
+
+			//See if we can bypass the holds form.  We can do this if the user wants to automatically use their home location
+			//And it's a valid pickup location
+			$bypassHolds = false;
+			if ($rememberHoldPickupLocation) {
+				$homeLocation = $user->getHomeLocation();
+				if ($homeLocation != null && $homeLocation->validHoldPickupBranch != 2) {
+					if ($holdType == 'bib') {
+						$bypassHolds = true;
+					} elseif ($holdType != 'none' && count($items) == 1) {
+						$bypassHolds = true;
 					}
-				}
-
-				if (!$multipleAccountPickupLocations) {
-					$rememberHoldPickupLocation = $user->rememberHoldPickupLocation;
-					$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
 				} else {
 					$rememberHoldPickupLocation = false;
+					$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
 				}
+			}
 
-				$interface->assign('pickupLocations', $locations);
-				$interface->assign('multipleUsers', $multipleAccountPickupLocations); // switch for displaying the account drop-down (used for linked accounts)
-
-				global $library;
-				$interface->assign('showHoldCancelDate', $library->showHoldCancelDate);
-				$interface->assign('defaultNotNeededAfterDays', $library->defaultNotNeededAfterDays);
-				$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
-				$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
-
-				$holdDisclaimers = array();
-				$patronLibrary = $user->getHomeLibrary();
-				if ($patronLibrary == null) {
-					return array(
-						'holdFormBypassed' => false,
-						'title' => 'Unable to place hold',
-						'modalBody' => '<p>This account is not associated with a library, please contact your library.</p>',
-						'modalButtons' => ""
-					);
-				}
-				if (strlen($patronLibrary->holdDisclaimer) > 0) {
-					$holdDisclaimers[$patronLibrary->displayName] = $patronLibrary->holdDisclaimer;
-				}
-				foreach ($linkedUsers as $linkedUser) {
-					$linkedLibrary = $linkedUser->getHomeLibrary();
-					if (strlen($linkedLibrary->holdDisclaimer) > 0) {
-						$holdDisclaimers[$linkedLibrary->displayName] = $linkedLibrary->holdDisclaimer;
-					}
-				}
-
-				$interface->assign('holdDisclaimers', $holdDisclaimers);
-
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$marcRecord = new MarcRecordDriver($id);
-				$title = rtrim($marcRecord->getTitle(), ' /');
-				$interface->assign('id', $marcRecord->getId());
-
-				//Figure out what types of holds to allow
-				$items = $marcRecord->getCopies();
-				$format = $marcRecord->getPrimaryFormat();
-
-				global $indexingProfiles;
-				$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
-				$formatMap = $indexingProfile->formatMap;
-				/** @var FormatMapValue $formatMapValue */
-				$holdType = 'bib';
-				foreach ($formatMap as $formatMapValue) {
-					if (strcasecmp($formatMapValue->format, $format) === 0) {
-						$holdType = $formatMapValue->holdType;
-						break;
-					}
-				}
-
-				$interface->assign('items', $items);
-				$interface->assign('holdType', $holdType);
-
-				//See if we can bypass the holds form.  We can do this if the user wants to automatically use their home location
-				//And it's a valid pickup location
-				$bypassHolds = false;
-				if ($rememberHoldPickupLocation) {
-					$homeLocation = $user->getHomeLocation();
-					if ($homeLocation != null && $homeLocation->validHoldPickupBranch != 2) {
-						if ($holdType == 'bib') {
-							$bypassHolds = true;
-						} elseif ($holdType != 'none' && count($items) == 1) {
-							$bypassHolds = true;
-						}
-					} else {
-						$rememberHoldPickupLocation = false;
-						$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
-					}
-				}
-
-				if ($bypassHolds) {
-					if (strpos($id, ':') !== false) {
-						list(, $shortId) = explode(':', $id);
-					} else {
-						$shortId = $id;
-					}
-					if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
-						$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->_homeLocationCode, null);
-					} else {
-						if (isset($_REQUEST['volume'])) {
-							$results = $user->placeVolumeHold($shortId, $_REQUEST['volume'], $user->_homeLocationCode);
-						} else {
-							$results = $user->placeHold($id, $user->_homeLocationCode, null);
-						}
-					}
-					$results['holdFormBypassed'] = true;
-
-					if ($results['success'] && $library->showWhileYouWait) {
-						$recordDriver = RecordDriverFactory::initRecordDriverById($id);
-						if ($recordDriver->isValid()) {
-							$groupedWorkId = $recordDriver->getPermanentId();
-							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-							$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
-							$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
-
-							$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
-
-							if (count($whileYouWaitTitles) > 0) {
-								$results['message'] .= "<h3>" . translate("While You Wait") . "</h3>";
-								$results['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
-							}
-						}
-					} else {
-						$interface->assign('whileYouWaitTitles', []);
-					}
-				} else if (count($locations) == 0) {
-					$results = array(
-						'holdFormBypassed' => false,
-						'title' => 'Unable to place hold',
-						'modalBody' => '<p>Sorry, no copies of this title are available to your account.</p>',
-						'modalButtons' => ""
-					);
+			if ($bypassHolds) {
+				if (strpos($id, ':') !== false) {
+					list(, $shortId) = explode(':', $id);
 				} else {
-					$results = array(
-						'holdFormBypassed' => false,
-						'title' => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
-						'modalBody' => $interface->fetch("Record/hold-popup.tpl"),
-					);
-					if ($holdType != 'none') {
-						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>";
+					$shortId = $id;
+				}
+				if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
+					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->_homeLocationCode, null);
+				} else {
+					if (isset($_REQUEST['volume'])) {
+						$results = $user->placeVolumeHold($shortId, $_REQUEST['volume'], $user->_homeLocationCode);
+					} else {
+						$results = $user->placeHold($id, $user->_homeLocationCode, null);
 					}
+				}
+				$results['holdFormBypassed'] = true;
+
+				if ($results['success'] && $library->showWhileYouWait) {
+					$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+					if ($recordDriver->isValid()) {
+						$groupedWorkId = $recordDriver->getPermanentId();
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+						$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
+
+						$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+
+						if (count($whileYouWaitTitles) > 0) {
+							$results['message'] .= "<h3>" . translate("While You Wait") . "</h3>";
+							$results['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
+						}
+					}
+				} else {
+					$interface->assign('whileYouWaitTitles', []);
+				}
+			} else if (count($locations) == 0) {
+				$results = array(
+					'holdFormBypassed' => false,
+					'title' => 'Unable to place hold',
+					'modalBody' => '<p>Sorry, no copies of this title are available to your account.</p>',
+					'modalButtons' => ""
+				);
+			} else {
+				$results = array(
+					'holdFormBypassed' => false,
+					'title' => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
+					'modalBody' => $interface->fetch("Record/hold-popup.tpl"),
+				);
+				if ($holdType != 'none') {
+					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>";
 				}
 			}
 		} else {
@@ -273,6 +204,58 @@ class Record_AJAX extends Action
 				'title' => 'Place Hold on Alternate Edition?',
 				'modalBody' => $interface->fetch('Record/hold-select-edition-popup.tpl'),
 				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.showPlaceHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">No, place a hold on this edition</a>'
+			);
+		} else {
+			$results = array(
+				'title' => 'Please login',
+				'modalBody' => "You must be logged in.  Please close this dialog and login before placing your hold.",
+				'modalButtons' => ''
+			);
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getPlaceHoldVolumesForm()
+	{
+		global $interface;
+		if (UserAccount::isLoggedIn()) {
+			$id = $_REQUEST['id'];
+			$recordSource = $_REQUEST['recordSource'];
+			$interface->assign('recordSource', $recordSource);
+
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$marcRecord = new MarcRecordDriver($id);
+			$interface->assign('id', $marcRecord->getId());
+
+			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $locations)){
+				return array(
+					'holdFormBypassed' => false,
+					'title' => 'Unable to place hold',
+					'modalBody' => '<p>This account is not associated with a library, please contact your library.</p>',
+					'modalButtons' => ""
+				);
+			}
+
+			//Get a list of volumes for the record
+			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+			$volumeData = array();
+			$volumeDataDB = new IlsVolumeInfo();
+			$volumeDataDB->recordId = $marcRecord->getIdWithSource();
+			$volumeDataDB->orderBy('displayOrder ASC, displayLabel ASC');
+			if ($volumeDataDB->find()) {
+				while ($volumeDataDB->fetch()) {
+					$volumeData[] = clone($volumeDataDB);
+				}
+			}
+			$volumeDataDB = null;
+			unset($volumeDataDB);
+			$interface->assign('volumes', $volumeData);
+
+			$results = array(
+				'title' => 'Select a volume to place a hold on',
+				'modalBody' => $interface->fetch('Record/hold-select-volume-popup.tpl'),
+				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.placeVolumeHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">' . translate('Place Hold') . '</a>'
 			);
 		} else {
 			$results = array(
@@ -915,6 +898,76 @@ class Record_AJAX extends Action
 		return $result;
 	}
 
+	function setupHoldForm($recordSource, &$rememberHoldPickupLocation, &$locations){
+		global $interface;
+		$user = UserAccount::getLoggedInUser();
+		//Get information to show a warning if the user does not have sufficient holds
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$maxHolds = -1;
+		//Determine if we should show a warning
+		$ptype = new PType();
+		$ptype->pType = UserAccount::getUserPType();
+		if ($ptype->find(true)) {
+			$maxHolds = $ptype->maxHolds;
+		}
+		$interface->assign('maxHolds', $maxHolds);
+		$ilsSummary = $user->getCatalogDriver()->getAccountSummary($user);
+		$currentHolds = $ilsSummary['numAvailableHolds'] + $ilsSummary['numUnavailableHolds'];
+		$interface->assign('currentHolds', $currentHolds);
+		//TODO: this check will need to account for linked accounts now
+		if ($maxHolds != -1 && ($currentHolds + 1 > $maxHolds)) {
+			$interface->assign('showOverHoldLimit', true);
+		}
+
+		//Check to see if the user has linked users that we can place holds for as well
+		//If there are linked users, we will add pickup locations for them as well
+		$locations = $user->getValidPickupBranches($recordSource);
+		$multipleAccountPickupLocations = false;
+		$linkedUsers = $user->getLinkedUsers();
+		if (count($linkedUsers)) {
+			foreach ($locations as $location) {
+				if (count($location->pickupUsers) > 1) {
+					$multipleAccountPickupLocations = true;
+					break;
+				}
+			}
+		}
+
+		if (!$multipleAccountPickupLocations) {
+			$rememberHoldPickupLocation = $user->rememberHoldPickupLocation;
+			$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
+		} else {
+			$rememberHoldPickupLocation = false;
+		}
+
+		$interface->assign('pickupLocations', $locations);
+		$interface->assign('multipleUsers', $multipleAccountPickupLocations); // switch for displaying the account drop-down (used for linked accounts)
+
+		global $library;
+		$interface->assign('showHoldCancelDate', $library->showHoldCancelDate);
+		$interface->assign('defaultNotNeededAfterDays', $library->defaultNotNeededAfterDays);
+		$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
+		$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
+
+		$holdDisclaimers = array();
+		$patronLibrary = $user->getHomeLibrary();
+		if ($patronLibrary == null) {
+			return false;
+		}
+		if (strlen($patronLibrary->holdDisclaimer) > 0) {
+			$holdDisclaimers[$patronLibrary->displayName] = $patronLibrary->holdDisclaimer;
+		}
+		foreach ($linkedUsers as $linkedUser) {
+			$linkedLibrary = $linkedUser->getHomeLibrary();
+			if (strlen($linkedLibrary->holdDisclaimer) > 0) {
+				$holdDisclaimers[$linkedLibrary->displayName] = $linkedLibrary->holdDisclaimer;
+			}
+		}
+
+		$interface->assign('holdDisclaimers', $holdDisclaimers);
+
+		return true;
+	}
 	function getBreadcrumbs()
 	{
 		return [];
