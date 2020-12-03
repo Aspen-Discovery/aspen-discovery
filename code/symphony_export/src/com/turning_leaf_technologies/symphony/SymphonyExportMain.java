@@ -214,7 +214,7 @@ public class SymphonyExportMain {
 									//So technically there isn't a volume identifier, this is really the identifier
 									//of the first call number we find which works just fine when placing the hold
 									curVolume.volumeIdentifier = volumeIdentifier;
-									curVolume.displayOrder = -curRow;
+									curVolume.displayOrder = curRow;
 									allVolumesInExport.put(volumeKey, curVolume);
 								}
 								curVolume.relatedItems.add(relatedItemNumber);
