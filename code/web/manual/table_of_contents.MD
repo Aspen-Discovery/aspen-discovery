@@ -1,6 +1,7 @@
 ## Table of Contents
 ### Administration
   - [System Administration](/Admin/HelpManual?page=System-Administration)
+    - [Permissions](/Admin/HelpManual?page=Permissions)
   - [System Reports](/Admin/HelpManual?page=System-Reports)
   - Theme & Layout
     - [Themes](/Admin/HelpManual?page=Themes)
@@ -14,11 +15,12 @@
     - Block Patron Account Linking
     - Patron Types
     - Account Profiles
-  - Web Builder
-    - Basic Pages
-    - Custom Pages
-    - Web Resources
-    - Staff Members
+  - [Web Builder](/Admin/HelpManual?page=Web-Builder)
+    - [Basic Pages](/Admin/HelpManual?page=Web-Builder_Basic-Pages)
+    - [Custom Pages](/Admin/HelpManual?page=Web-Builder_Custom-Pages)
+    - [Custom Forms](/Admin/HelpManual?page=Web-Builder_Custom-Forms)
+    - [Web Resources](/Admin/HelpManual?page=Web-Builder_Web-Resources)
+    - [Staff Members](/Admin/HelpManual?page=Web-Builder_Staff-Members)
     - Images
     - PDFs
     - Audiences
@@ -35,7 +37,7 @@
     - Records To Not Group
   - Local Catalog Enrichment
     - [Browse Category Groups](/Admin/HelpManual?page=Browse-Category-Groups)
-    - Browse Categories
+    - [Browse Categories](/Admin/HelpManual?page=Browse-Categories)
     - Collection Spotlights
     - JavaScript Snippets
     - Placards
