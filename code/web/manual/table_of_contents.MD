@@ -26,7 +26,7 @@
     - Audiences
     - Categories
   - Languages and Translations
-    - Languages
+    - [Languages](/Admin/HelpManual?page=Languages)
     - [Translations](/Admin/HelpManual?page=Translations)
   - Catalog / Grouped Works
     - [Cataloging](/Admin/HelpManual?page=Cataloging)
