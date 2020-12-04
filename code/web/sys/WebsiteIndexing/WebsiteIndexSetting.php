@@ -13,6 +13,12 @@ class WebsiteIndexSetting extends DataObject
 	public /** @noinspection PhpUnused */$pathsToExclude;
 	public /** @noinspection PhpUnused */$indexFrequency;
 	public /** @noinspection PhpUnused */$lastIndexed;
+	public $deleted;
+
+	public function getNumericColumnNames()
+	{
+		return ['lastIndexed', 'deleted'];
+	}
 
 	public static function getObjectStructure()
 	{
@@ -43,5 +49,11 @@ class WebsiteIndexSetting extends DataObject
 			$this->siteUrl = substr($this->siteUrl, 0, -1);
 		}
 		return parent::insert();
+	}
+
+	public function delete($useWhere = false)
+	{
+		$this->deleted = 1;
+		return $this->update();
 	}
 }

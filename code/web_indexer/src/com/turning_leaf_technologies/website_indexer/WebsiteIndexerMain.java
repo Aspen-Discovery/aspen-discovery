@@ -7,6 +7,7 @@ import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.ini4j.Ini;
 
 import java.sql.*;
@@ -47,7 +48,7 @@ public class WebsiteIndexerMain {
 				String solrPort = configIni.get("Reindex", "solrPort");
 				ConcurrentUpdateSolrClient solrUpdateServer = setupSolrClient(solrPort);
 
-				PreparedStatement getSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings");
+				PreparedStatement getSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings where deleted = 0");
 				ResultSet sitesToIndexRS = getSitesToIndexStmt.executeQuery();
 				while (sitesToIndexRS.next()) {
 					Long websiteId = sitesToIndexRS.getLong("id");
@@ -88,11 +89,55 @@ public class WebsiteIndexerMain {
 						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pageTitleExpression, descriptionExpression, pathsToExclude, fullReload, logEntry, aspenConn, solrUpdateServer);
 						indexer.spiderWebsite();
 
-						//TODO: Update the lastIndex time
-
 						logEntry.setFinished();
 					}
 				}
+
+				//Check for settings that have been deleted
+				PreparedStatement deletedSitesStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings where deleted = 1");
+				ResultSet deletedSitesRS = deletedSitesStmt.executeQuery();
+				while (deletedSitesRS.next()) {
+					WebsiteIndexLogEntry logEntry = null;
+					long websiteId = deletedSitesRS.getLong("id");
+					//Get a list of any pages that exist for the site.
+					String websiteName = deletedSitesRS.getString("name");
+					try {
+						PreparedStatement websitePagesStmt = aspenConn.prepareStatement("SELECT * from website_pages WHERE websiteId = ? and deleted = 0");
+						PreparedStatement deletePageStmt = aspenConn.prepareStatement("UPDATE website_pages SET deleted = 1 where id = ?");
+						websitePagesStmt.setLong(1, websiteId);
+						ResultSet websitePagesRS = websitePagesStmt.executeQuery();
+						while (websitePagesRS.next()) {
+							if (logEntry == null){
+								logEntry = createDbLogEntry(websiteName, startTime, aspenConn);
+							}
+							try {
+								WebPage page = new WebPage(websitePagesRS);
+								//noinspection unused
+								UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("id:" + Long.toString(page.getId()) + " AND website_name:\"" + websiteName + "\"");
+								deletePageStmt.setLong(1, page.getId());
+								deletePageStmt.executeUpdate();
+								logEntry.incDeleted();
+							}catch (Exception e){
+								logEntry.incErrors("Error deleting page for website " + websiteName, e );
+							}
+						}
+						if (logEntry != null) {
+							try {
+								solrUpdateServer.commit(true, true, false);
+							}catch (Exception e){
+								logEntry.incErrors("Error updating solr after deleting pages for " + websiteName, e );
+							}
+							logEntry.setFinished();
+						}
+					} catch (SQLException e) {
+						if (logEntry == null){
+							logEntry = createDbLogEntry(websiteName, startTime, aspenConn);
+						}
+						logEntry.incErrors("Error loading pages to delete for website " + websiteName, e);
+						logEntry.setFinished();
+					}
+				}
+				deletedSitesRS.close();
 
 				//Index all content entered within Aspen (pages, resources, etc)
 				PreparedStatement getBasicPagesStmt = aspenConn.prepareStatement("SELECT count(*) as numBasicPages from web_builder_basic_page");
@@ -116,6 +161,7 @@ public class WebsiteIndexerMain {
 					WebsiteIndexLogEntry logEntry = createDbLogEntry("Web Builder Content", startTime, aspenConn);
 					WebBuilderIndexer indexer = new WebBuilderIndexer(fullReload, logEntry, aspenConn, solrUpdateServer);
 					indexer.indexContent();
+					logEntry.setFinished();
 				}
 
 			} catch (SQLException e) {

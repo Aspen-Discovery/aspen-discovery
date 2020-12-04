@@ -158,7 +158,7 @@ class WebsiteIndexer {
 					deletePageStmt.setLong(1, curPage.getId());
 					deletePageStmt.executeUpdate();
 					logEntry.incDeleted();
-					solrUpdateServer.deleteById(Long.toString(curPage.getId()));
+					solrUpdateServer.deleteByQuery("id:" + Long.toString(curPage.getId()) + "AND website_name:\"" + websiteName + "\"");
 				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error deleting page");

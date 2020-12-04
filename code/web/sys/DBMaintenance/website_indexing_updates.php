@@ -117,6 +117,14 @@ function getWebsiteIndexingUpdates()
 			'sql' => [
 				"ALTER TABLE website_indexing_settings ADD COLUMN descriptionExpression VARCHAR(255) DEFAULT ''",
 			]
+		],
+
+		'web_indexer_deleted_settings' => [
+			'title' => 'Web Indexer add the ability to delete settings',
+			'description' => 'Add deleted field for website indexing settings',
+			'sql' => [
+				'ALTER TABLE website_indexing_settings ADD COLUMN deleted TINYINT(1) DEFAULT 0'
+			]
 		]
 	);
 }

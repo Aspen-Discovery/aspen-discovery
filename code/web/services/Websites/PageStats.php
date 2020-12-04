@@ -112,4 +112,9 @@ class Websites_PageStats extends Admin_Admin
 	{
 		return 'web_indexer';
 	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
+	}
 }

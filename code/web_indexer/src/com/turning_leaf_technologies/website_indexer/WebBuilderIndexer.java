@@ -146,8 +146,10 @@ class WebBuilderIndexer {
 					solrDocument.addField("scope_has_related_records", librarySubdomains.get(getLibrariesForResourceRS.getLong("libraryId")));
 				}
 
+				logEntry.incNumPages();
 				try {
 					solrUpdateServer.add(solrDocument);
+					logEntry.incUpdated();
 				} catch (SolrServerException | IOException e) {
 					logEntry.incErrors("Error adding page to index", e);
 				}
@@ -211,8 +213,10 @@ class WebBuilderIndexer {
 					solrDocument.addField("scope_has_related_records", librarySubdomains.get(getLibrariesForBasicPageRS.getLong("libraryId")));
 				}
 
+				logEntry.incNumPages();
 				try {
 					solrUpdateServer.add(solrDocument);
+					logEntry.incUpdated();
 				} catch (SolrServerException | IOException e) {
 					logEntry.incErrors("Error adding page to index", e);
 				}
