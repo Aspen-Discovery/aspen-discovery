@@ -6,7 +6,7 @@ The System Administration section of Aspen Discovery includes Modules, Administr
   - Setting up connection to vendors or a particuplar ILS.
 - Administrators
   - Assigning permissions to individuals.
-- Permissions
+- [Permissions](/Admin/HelpManual?page=Permissions)
   - Customizing roles to allow patron types or administrators various permissions.
 - DB Maintainance
   - Database maintainance
