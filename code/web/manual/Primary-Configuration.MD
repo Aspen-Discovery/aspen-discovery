@@ -2,6 +2,8 @@
 
 The Primary Configuration section of the help manual includes Library Systems, Locations, IP Addresses, Host Information, Block Patron Account Linking, Patron Types, and Account Profiles.
 
+### Primary Configuration Functions
+
 #### [Library Systems](/Admin/HelpManual?page=Library-Systems)
 Configure library settings.
 #### [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
