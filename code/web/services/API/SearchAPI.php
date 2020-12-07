@@ -209,24 +209,32 @@ class SearchAPI extends Action
 				$logErrors = 0;
 				$logEntry->find();
 				$numUnfinishedEntries = 0;
+				$lastFinishTime = 0;
 				while ($logEntry->fetch()){
 					if ($logEntry->numErrors > 0){
 						$logErrors++;
 					}
 					if (empty($logEntry->endTime)){
 						$numUnfinishedEntries++;
-					}
-				}
-				if ($logErrors > 0){
-					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
-				}else{
-					if ($numUnfinishedEntries > 1){
-						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
 					}else{
-						$this->addCheck($checks, $aspenModule->name);
+						if ($logEntry->endTime > $lastFinishTime){
+							$lastFinishTime = $logEntry->endTime;
+						}
 					}
 				}
-
+				if ($lastFinishTime < time() - 24 * 60 * 60){
+					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
+				}else{
+					if ($logErrors > 0){
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
+					}else{
+						if ($numUnfinishedEntries > 1){
+							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
+						}else{
+							$this->addCheck($checks, $aspenModule->name);
+						}
+					}
+				}
 			}
 		}
 
