@@ -12,6 +12,7 @@ import org.ini4j.Ini;
 
 import java.sql.*;
 import java.util.Date;
+import java.util.HashSet;
 
 public class WebsiteIndexerMain {
 	private static Logger logger;
@@ -49,9 +50,12 @@ public class WebsiteIndexerMain {
 				ConcurrentUpdateSolrClient solrUpdateServer = setupSolrClient(solrPort);
 
 				PreparedStatement getSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings where deleted = 0");
+				PreparedStatement getLibrariesForSettingsStmt = aspenConn.prepareStatement("SELECT library.subdomain From library_website_indexing inner join library on library.libraryId = library_website_indexing.libraryId where settingId = ?");
+				PreparedStatement getLocationsForSettingsStmt = aspenConn.prepareStatement("SELECT code, subLocation from location_website_indexing inner join location on location.locationId = location_website_indexing.locationId where settingId = ?");
+				PreparedStatement updateLastIndexedStmt = aspenConn.prepareStatement("UPDATE website_indexing_settings set lastIndexed = ? WHERE id = ?");
 				ResultSet sitesToIndexRS = getSitesToIndexStmt.executeQuery();
 				while (sitesToIndexRS.next()) {
-					Long websiteId = sitesToIndexRS.getLong("id");
+					long websiteId = sitesToIndexRS.getLong("id");
 					String websiteName = sitesToIndexRS.getString("name");
 					String siteUrl = sitesToIndexRS.getString("siteUrl");
 					String pageTitleExpression = sitesToIndexRS.getString("pageTitleExpression");
@@ -85,9 +89,36 @@ public class WebsiteIndexerMain {
 						}
 					}
 					if (needsIndexing) {
+						HashSet<String> scopesToInclude = new HashSet<>();
+
+						//Get a list of libraries and locations that the setting applies to
+						getLibrariesForSettingsStmt.setLong(1, websiteId);
+						ResultSet librariesForSettingsRS = getLibrariesForSettingsStmt.executeQuery();
+						while (librariesForSettingsRS.next()){
+							String subdomain = librariesForSettingsRS.getString("subdomain");
+							subdomain = subdomain.replaceAll("[^a-zA-Z0-9_]", "");
+							scopesToInclude.add(subdomain);
+						}
+
+						getLocationsForSettingsStmt.setLong(1, websiteId);
+						ResultSet locationsForSettingsRS = getLocationsForSettingsStmt.executeQuery();
+						while (locationsForSettingsRS.next()){
+							String subLocation = locationsForSettingsRS.getString("subLocation");
+							if (!locationsForSettingsRS.wasNull() && subLocation.length() > 0){
+								scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", ""));
+							}else {
+								String code = locationsForSettingsRS.getString("code");
+								scopesToInclude.add(code.replaceAll("[^a-zA-Z0-9_]", ""));
+							}
+						}
+
 						WebsiteIndexLogEntry logEntry = createDbLogEntry(websiteName, startTime, aspenConn);
-						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pageTitleExpression, descriptionExpression, pathsToExclude, fullReload, logEntry, aspenConn, solrUpdateServer);
+						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pageTitleExpression, descriptionExpression, pathsToExclude, scopesToInclude, fullReload, logEntry, aspenConn, solrUpdateServer);
 						indexer.spiderWebsite();
+
+						updateLastIndexedStmt.setLong(1, currentTime);
+						updateLastIndexedStmt.setLong(2, websiteId);
+						updateLastIndexedStmt.executeUpdate();
 
 						logEntry.setFinished();
 					}
@@ -113,7 +144,7 @@ public class WebsiteIndexerMain {
 							try {
 								WebPage page = new WebPage(websitePagesRS);
 								//noinspection unused
-								UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("id:" + Long.toString(page.getId()) + " AND website_name:\"" + websiteName + "\"");
+								UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("id:" + page.getId() + " AND website_name:\"" + websiteName + "\"");
 								deletePageStmt.setLong(1, page.getId());
 								deletePageStmt.executeUpdate();
 								logEntry.incDeleted();

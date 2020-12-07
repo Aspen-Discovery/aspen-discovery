@@ -760,7 +760,7 @@ class Location extends DataObject
 			$scopingSetting = $searchSource;
 			if ($searchSource == null) {
 				Location::$searchLocation[$searchSource] = null;
-			} else if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location') {
+			} else if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location' || $scopingSetting == 'websites' || $scopingSetting == 'lists') {
 				global $locationSingleton;
 				Location::$searchLocation[$searchSource] = $locationSingleton->getActiveLocation();
 			} else if ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped') {

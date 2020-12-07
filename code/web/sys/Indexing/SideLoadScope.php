@@ -138,10 +138,8 @@ class SideLoadScope extends DataObject
 
 	public function __set($name, $value){
 		if ($name == "libraries") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_libraries = $value;
 		}elseif ($name == "locations") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_locations = $value;
 		}else {
 			$this->_data[$name] = $value;

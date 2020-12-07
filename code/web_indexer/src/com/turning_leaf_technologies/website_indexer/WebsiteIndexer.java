@@ -16,6 +16,7 @@ import org.apache.solr.common.SolrInputDocument;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -42,10 +43,11 @@ class WebsiteIndexer {
 	private static final CRC32 checksumCalculator = new CRC32();
 	private PreparedStatement addPageToStmt;
 	private PreparedStatement deletePageStmt;
+	private final HashSet<String> scopesToInclude;
 
 	private final ConcurrentUpdateSolrClient solrUpdateServer;
 
-	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
+	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
 		this.websiteId = websiteId;
 		this.websiteName = websiteName;
 		this.searchCategory = searchCategory;
@@ -55,7 +57,7 @@ class WebsiteIndexer {
 			this.siteUrl = this.siteUrl.substring(0, this.siteUrl.indexOf("/", 8));
 		}
 		this.siteUrlShort = siteUrl.replaceAll("http[s]?://", "");
-
+		this.scopesToInclude = scopesToInclude;
 
 		this.logEntry = logEntry;
 		this.aspenConn = aspenConn;
@@ -121,7 +123,7 @@ class WebsiteIndexer {
 	void spiderWebsite() {
 		if (fullReload) {
 			try {
-				solrUpdateServer.deleteByQuery("website_name:" + websiteName);
+				solrUpdateServer.deleteByQuery("website_name:\"" + websiteName + "\"");
 				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 			} catch (HttpSolrClient.RemoteSolrException rse) {
 				logEntry.addNote("Solr is not running properly, try restarting " + rse.toString());
@@ -158,7 +160,7 @@ class WebsiteIndexer {
 					deletePageStmt.setLong(1, curPage.getId());
 					deletePageStmt.executeUpdate();
 					logEntry.incDeleted();
-					solrUpdateServer.deleteByQuery("id:" + Long.toString(curPage.getId()) + "AND website_name:\"" + websiteName + "\"");
+					solrUpdateServer.deleteByQuery("id:" + curPage.getId() + "AND website_name:\"" + websiteName + "\"");
 				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error deleting page");
@@ -345,6 +347,8 @@ class WebsiteIndexer {
 							//Strip tags from body to get the text of the page, this is done using Solr to remove tags.
 							solrDocument.addField("keywords", response);
 							solrDocument.addField("description", description.trim());
+							solrDocument.addField("scope_has_related_records", scopesToInclude);
+
 							//TODO: Add popularity
 							solrUpdateServer.add(solrDocument);
 						}

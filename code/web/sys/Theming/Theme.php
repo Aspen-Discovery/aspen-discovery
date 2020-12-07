@@ -545,7 +545,7 @@ class Theme extends DataObject
 					'type' => 'multiSelect',
 					'listStyle' => 'checkboxSimple',
 					'label' => 'Libraries',
-					'description' => 'Define libraries that use this browse category group',
+					'description' => 'Define libraries that use this theme',
 					'values' => $libraryList,
 				],
 
@@ -554,7 +554,7 @@ class Theme extends DataObject
 					'type' => 'multiSelect',
 					'listStyle' => 'checkboxSimple',
 					'label' => 'Locations',
-					'description' => 'Define locations that use this browse category group',
+					'description' => 'Define locations that use this theme',
 					'values' => $locationList,
 				],
 			]]
