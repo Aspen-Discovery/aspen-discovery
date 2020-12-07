@@ -6,64 +6,43 @@
   - Theme & Layout
     - [Themes](/Admin/HelpManual?page=Themes)
     - [Layout Settings](/Admin/HelpManual?page=Layout-Settings)
-  - Primary Configuration
+  - [Primary Configuration](/Admin/HelpManual?page=Primary-Configuration)
     - [Library Systems](/Admin/HelpManual?page=Library-Systems)
       - [Menu Links](/Admin/HelpManual?page=Menu-Links)
     - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
     - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
-    - Host Information
-    - Block Patron Account Linking
-    - Patron Types
-    - Account Profiles
   - [Web Builder](/Admin/HelpManual?page=Web-Builder)
     - [Basic Pages](/Admin/HelpManual?page=Web-Builder_Basic-Pages)
     - [Custom Pages](/Admin/HelpManual?page=Web-Builder_Custom-Pages)
     - [Custom Forms](/Admin/HelpManual?page=Web-Builder_Custom-Forms)
     - [Web Resources](/Admin/HelpManual?page=Web-Builder_Web-Resources)
     - [Staff Members](/Admin/HelpManual?page=Web-Builder_Staff-Members)
-    - Images
-    - PDFs
-    - Audiences
-    - Categories
   - Languages and Translations
     - [Languages](/Admin/HelpManual?page=Languages)
     - [Translations](/Admin/HelpManual?page=Translations)
-  - Catalog / Grouped Works
+  - [Catalog / Grouped Works](/Admin/HelpManual?page=Catalog-Grouped-Works)
     - [Cataloging](/Admin/HelpManual?page=Cataloging)
     - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
     - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
       - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
-    - Title / Author Authorities
-    - Records To Not Group
-  - Local Catalog Enrichment
+  - [Local Catalog Enrichment](/Admin/HelpManual?page=Local-Catalog-Enrichment)
     - [Browse Category Groups](/Admin/HelpManual?page=Browse-Category-Groups)
     - [Browse Categories](/Admin/HelpManual?page=Browse-Categories)
-    - Collection Spotlights
-    - JavaScript Snippets
-    - Placards
-    - System Messages
+    - [Collection Spotlights](/Admin/HelpManual?page=Collection-Spotlights)
+    - [Placards](/Admin/HelpManual?page=Placards)
   - Third Party Enrichment
     - [Accelerated Reader](/Admin/HelpManual?page=Accelerated-Reader)
     - [Content Cafe](/Admin/HelpManual?page=Content-Cafe)
     - [DP.LA](/Admin/HelpManual?page=DPLA)
-    - Facebook
-    - GoodReads
-    - Google
     - [OMDB](/Admin/HelpManual?page=OMDB)
     - [New York Times](/Admin/HelpManual?page=New-York-Times)
     - [Novelist](/Admin/HelpManual?page=Novelist)
-    - Pinterest
-    - reCAPTCHA
     - [Syndetics](/Admin/HelpManual?page=Syndetics)
     - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
   - [ILS Integration](/Admin/HelpManual?page=ILS-Integration)
     - Indexing Profiles
       - Format Information
         - [Bib Level Format](/Admin/HelpManual?page=Bib-Level-Format)
-    - Translation Maps
-    - Indexing Log
-    - Offline Holds Report
-    - Dashboard
     - Carl.X
     - Horizon
     - Koha
@@ -80,12 +59,15 @@
     - [Side Loaded eContent](/Admin/HelpManual?page=Side-Loaded-eContent)
   - [Open Archives](/Admin/HelpManual?page=Open-Archives)
   - [Website Indexing](/Admin/HelpManual?page=Website-Indexing)
+  - [User Lists](/Admin/HelpManual?page=User-Lists)
+  - Events
   - Circulation
     - Offline Holds Report
   - Server Setup
     - Installation
     - Background tasks
   - Uploaded PDFs
+  - [Aspen Discovery Help](/Admin/HelpManual?page=Aspen-Discovery-Help)
   
 ### User Experience
 - [Advanced Search](/Admin/HelpManual?page=Advanced%20Search)
