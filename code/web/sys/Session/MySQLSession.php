@@ -60,7 +60,8 @@ class MySQLSession extends SessionInterface
 					&& !isset($_REQUEST['showCovers'])
 					&& !isset($_REQUEST['sort'])
 					&& !isset($_REQUEST['availableHoldSort'])
-					&& !isset($_REQUEST['unavailableHoldSort'])) {
+					&& !isset($_REQUEST['unavailableHoldSort'])
+					&& !isset($_REQUEST['autologout'])) {
 					$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_DEBUG);
 					return true;
 				}

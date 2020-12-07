@@ -237,6 +237,17 @@ class Record_AJAX extends Action
 				);
 			}
 
+			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getId());
+			$hasItemsWithoutVolumes = false;
+			foreach ($relatedRecord->getItems() as $item){
+				if (empty($item->volume)){
+					$hasItemsWithoutVolumes = true;
+					break;
+				}
+			}
+
+			$interface->assign('hasItemsWithoutVolumes', $hasItemsWithoutVolumes);
+
 			//Get a list of volumes for the record
 			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 			$volumeData = array();
@@ -250,6 +261,7 @@ class Record_AJAX extends Action
 			}
 			$volumeDataDB = null;
 			unset($volumeDataDB);
+
 			$interface->assign('volumes', $volumeData);
 
 			$results = array(
@@ -351,6 +363,7 @@ class Record_AJAX extends Action
 		$user = UserAccount::getLoggedInUser();
 		if ($user) {
 			//The user is already logged in
+			$alreadyLoggedOut = false;
 
 			if (!empty($_REQUEST['pickupBranch'])) {
 				//Check to see what account we should be placing a hold for
@@ -482,7 +495,7 @@ class Record_AJAX extends Action
 
 						//Get the grouped work for the record
 						global $library;
-						if ($library->showWhileYouWait) {
+						if ($library->showWhileYouWait && !isset($_REQUEST['autologout'])) {
 							$recordDriver = RecordDriverFactory::initRecordDriverById($recordId);
 							if ($recordDriver->isValid()) {
 								$groupedWorkId = $recordDriver->getPermanentId();
@@ -510,7 +523,7 @@ class Record_AJAX extends Action
 								UserAccount::softLogout();
 							}
 							$results['autologout'] = true;
-							unset($_REQUEST['autologout']); // Prevent entering the second auto log out code-block below.
+							$alreadyLoggedOut = true;
 						}
 					}
 				}
@@ -521,7 +534,7 @@ class Record_AJAX extends Action
 				);
 			}
 
-			if (isset($_REQUEST['autologout']) && !(isset($results['needsItemLevelHold']) && $results['needsItemLevelHold'])) {
+			if (isset($_REQUEST['autologout']) && !$alreadyLoggedOut && !(isset($results['needsItemLevelHold']) && $results['needsItemLevelHold'])) {
 				// Only go through the auto-logout when the holds process is completed. Item level holds require another round of interaction with the user.
 				$masqueradeMode = UserAccount::isUserMasquerading();
 				if ($masqueradeMode) {
