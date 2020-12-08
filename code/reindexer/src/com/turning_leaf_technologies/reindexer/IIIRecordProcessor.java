@@ -148,44 +148,49 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private HashMap<String, HoldabilityInformation> holdabilityCache = new HashMap<>();
 	@Override
 	protected HoldabilityInformation isItemHoldable(ItemInfo itemInfo, Scope curScope, HoldabilityInformation isHoldableUnscoped) {
-		//Check to make sure this isn't an unscoped record
-		if (curScope.isUnscoped()){
-			//This is an unscoped scope (everything should be holdable unless the location/itype/status is not holdable
+		//If no loan rules are provided, just use the default method.
+		if (loanRuleDeterminers.size() == 0 || loanRules.size() == 0){
 			return isHoldableUnscoped;
-		}else{
-			//First check to see if the overall record is not holdable based on suppression rules
-			if (isHoldableUnscoped.isHoldable()) {
-				String locationCode;
-				if (loanRulesAreBasedOnCheckoutLocation()) {
-					//Loan rule determiner by lending location
-					locationCode = curScope.getIlsCode();
-				}else{
-					//Loan rule determiner by owning location
-					locationCode = itemInfo.getLocationCode();
-				}
-
-				String itemIType = itemInfo.getITypeCode();
-
-				String key = curScope.getScopeName() + locationCode + itemIType;
-				HoldabilityInformation cachedInfo = holdabilityCache.get(key);
-				if (cachedInfo == null){
-					HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes());
-					HashSet<Long> holdablePTypes = new HashSet<>();
-
-					//Set back to false and then prove true
-					boolean holdable = false;
-					for (RelevantLoanRule loanRule : relevantLoanRules.keySet()) {
-						if (loanRule.getLoanRule().getHoldable()) {
-							holdablePTypes.addAll(loanRule.getPatronTypes());
-							holdable = true;
-						}
-					}
-					cachedInfo = new HoldabilityInformation(holdable, holdablePTypes);
-					holdabilityCache.put(key, cachedInfo);
-				}
-				return cachedInfo;
-			}else{
+		}else {
+			//Check to make sure this isn't an unscoped record
+			if (curScope.isUnscoped()) {
+				//This is an unscoped scope (everything should be holdable unless the location/itype/status is not holdable
 				return isHoldableUnscoped;
+			} else {
+				//First check to see if the overall record is not holdable based on suppression rules
+				if (isHoldableUnscoped.isHoldable()) {
+					String locationCode;
+					if (loanRulesAreBasedOnCheckoutLocation()) {
+						//Loan rule determiner by lending location
+						locationCode = curScope.getIlsCode();
+					} else {
+						//Loan rule determiner by owning location
+						locationCode = itemInfo.getLocationCode();
+					}
+
+					String itemIType = itemInfo.getITypeCode();
+
+					String key = curScope.getScopeName() + locationCode + itemIType;
+					HoldabilityInformation cachedInfo = holdabilityCache.get(key);
+					if (cachedInfo == null) {
+						HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes());
+						HashSet<Long> holdablePTypes = new HashSet<>();
+
+						//Set back to false and then prove true
+						boolean holdable = false;
+						for (RelevantLoanRule loanRule : relevantLoanRules.keySet()) {
+							if (loanRule.getLoanRule().getHoldable()) {
+								holdablePTypes.addAll(loanRule.getPatronTypes());
+								holdable = true;
+							}
+						}
+						cachedInfo = new HoldabilityInformation(holdable, holdablePTypes);
+						holdabilityCache.put(key, cachedInfo);
+					}
+					return cachedInfo;
+				} else {
+					return isHoldableUnscoped;
+				}
 			}
 		}
 	}
