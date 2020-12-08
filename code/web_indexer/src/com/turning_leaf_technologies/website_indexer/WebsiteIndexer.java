@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.website_indexer;
 
 import com.turning_leaf_technologies.strings.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -234,6 +235,9 @@ class WebsiteIndexer {
 							while (regexMatcher.find()) {
 								for (int i = 1; i <= regexMatcher.groupCount(); i++) {
 									String linkUrl = regexMatcher.group(1).trim();
+									if (linkUrl.contains("&#x")){
+										linkUrl = StringEscapeUtils.unescapeHtml4(linkUrl);
+									}
 									if (linkUrl.contains("#")) {
 										linkUrl = linkUrl.substring(0, linkUrl.lastIndexOf("#"));
 									}
