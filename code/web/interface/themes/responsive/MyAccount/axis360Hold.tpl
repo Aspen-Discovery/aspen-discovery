@@ -99,7 +99,7 @@
 							{if $record.frozen}
 								<div class="result-label col-tn-4">{translate text='Status'}</div>
 								<div class="col-tn-8 result-value">
-									<span class="frozenHold">{$record.status|translate}</span>
+									<span class="frozenHold label label-warning">{$record.status|translate}</span>
 								</div>
 							{else}
 								<div class="result-label col-tn-4">{translate text='Position'}</div>

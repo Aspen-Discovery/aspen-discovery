@@ -144,7 +144,7 @@
 							<div class="result-label col-tn-4">{translate text='Status'}</div>
 							<div class="col-tn-8 result-value">
 								{if $record.frozen}
-									<span class="frozenHold">
+									<span class="frozenHold label label-warning">
 								{/if}
 								{$record.status|translate}
 								{if $record.frozen && $showDateWhenSuspending && !empty($record.reactivate)} until {$record.reactivate|date_format:"%b %d, %Y"}</span>{/if}
