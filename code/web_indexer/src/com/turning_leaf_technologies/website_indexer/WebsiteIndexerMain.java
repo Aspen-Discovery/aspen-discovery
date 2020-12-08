@@ -73,7 +73,9 @@ public class WebsiteIndexerMain {
 					} else {
 						//'daily', 'weekly', 'monthly', 'yearly', 'once'
 						switch (fetchFrequency) {
-							case "hourly": //Legacy, no longer in the interface
+							case "hourly":
+								needsIndexing = lastFetched < (currentTime - 60 * 60);
+								break;
 							case "daily":
 								needsIndexing = lastFetched < (currentTime - 24 * 60 * 60);
 								break;
