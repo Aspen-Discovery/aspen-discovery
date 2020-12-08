@@ -244,7 +244,7 @@ class CloudLibrary_AJAX extends JSON_Action
 		} else {
 			$result = [
 				'result' => true,
-				'message' => translate(['text' => 'invalid_status_cloud_library', 'defaultText' => 'Cloud Library returned an invalid item status.'])
+				'message' => translate(['text' => 'invalid_status_cloud_library', 'defaultText' => "Cloud Library returned an invalid item status ($itemStatus)." ])
 			];
 		}
 		return $result;
