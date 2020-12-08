@@ -28,6 +28,7 @@ class OAISolrRecord {
 	private String id;
 	private String collection_name;
 	private long collection_id;
+	private HashSet<String> scopesToInclude;
 
 	void setIdentifier(String identifier) {
 		this.identifier = identifier;
@@ -59,6 +60,10 @@ class OAISolrRecord {
 
 	void setContributor(String contributor) {
 		this.contributor = contributor;
+	}
+
+	void setScopesToInclude(HashSet<String> scopesToInclude) {
+		this.scopesToInclude = scopesToInclude;
 	}
 
 	Pattern datePattern = Pattern.compile("\\d{2,4}(-\\d{2,4}){0,2}");
@@ -94,6 +99,7 @@ class OAISolrRecord {
 		doc.addField("relation", relation);
 		doc.addField("rights", rights);
 		doc.addField("date", date);
+		doc.addField("scope_has_related_records", scopesToInclude);
 		return doc;
 	}
 

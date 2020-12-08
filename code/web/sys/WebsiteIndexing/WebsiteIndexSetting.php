@@ -113,6 +113,7 @@ class WebsiteIndexSetting extends DataObject
 	{
 		$this->deleted = 1;
 		$this->clearLibraries();
+		$this->clearLocations();
 		return $this->update();
 	}
 
