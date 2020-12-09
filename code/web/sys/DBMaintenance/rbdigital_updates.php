@@ -274,6 +274,7 @@ function getRBdigitalUpdates() {
 	);
 }
 
+/** @noinspection PhpUnused */
 function updateRbDigitalScopes(){
 	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
 	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
@@ -288,6 +289,7 @@ function updateRbDigitalScopes(){
 	}
 }
 
+/** @noinspection PhpUnused */
 function updateRbDigitalAvailability(&$update){
 	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
 	$rbDigitalSettings = new RBdigitalSetting();
