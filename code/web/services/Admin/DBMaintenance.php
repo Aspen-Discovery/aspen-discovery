@@ -2090,6 +2090,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'system_message_style' => [
+					'title' => 'System Message Style',
+					'description' => 'The default styling to apply to the message',
+					'sql' => [
+						"ALTER TABLE system_messages ADD COLUMN messageStyle VARCHAR(10) default ''"
+					]
+				],
+
 				'novelist_settings' => [
 					'title' => 'Novelist settings',
 					'description' => 'Add the ability to store Novelist settings in the DB rather than config file',
