@@ -622,12 +622,15 @@ class MaterialsRequest_AJAX extends Action{
 							$result['message'] = "Imported file, $numImported entries were imported successfully.";
 							if ($numSkippedFailedInsert > 0) {
 								$result['message'] .= "<br/>$numSkippedFailedInsert could not be inserted in the database.";
+								$result['success'] = false;
 							}
 							if ($numSkippedCouldNotFindStatus > 0) {
 								$result['message'] .= "<br/>$numSkippedCouldNotFindStatus did not have a proper status.";
+								$result['success'] = false;
 							}
 							if ($numSkippedCouldNotFindUser > 0) {
 								$result['message'] .= "<br/>$numSkippedCouldNotFindUser could not find a user.";
+								$result['success'] = false;
 							}
 						}else{
 							$result['message'] =  "This does not look like a valid export of Material Request data";
@@ -641,7 +644,7 @@ class MaterialsRequest_AJAX extends Action{
 				$result['message'] = 'No file was selected, please try again.';
 			}
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	function getBreadcrumbs()
