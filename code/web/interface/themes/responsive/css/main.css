@@ -8495,12 +8495,10 @@ hr.menu {
 .dismissable-system-message-text {
   width: calc(100% - 30px);
 }
-#header-container {
+#header-wrapper {
   padding-top: 0;
-  height: 120px;
   background-color: #f2f2f2;
   margin-bottom: 0;
-  display: flex;
 }
 @media (max-width: 479px) {
   #header-logo-container {
