@@ -585,7 +585,7 @@ class MaterialsRequest_AJAX extends Action{
 									$requestUser->fetch();
 								}
 								$materialRequest->createdBy = $requestUser->id;
-								$materialRequest->email = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->email = $email;
 								if ($showPlaceHoldField){
 									$placeHold = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 									if ($placeHold == 'No'){
