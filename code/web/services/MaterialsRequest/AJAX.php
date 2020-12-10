@@ -512,6 +512,10 @@ class MaterialsRequest_AJAX extends Action{
 							$showAgeField = in_array('Age Level', $headers);
 							$showPlaceHoldField = in_array('Hold', $headers);
 							$showIllField = in_array('ILL', $headers);
+							$numImported = 0;
+							$numSkippedCouldNotFindUser = 0;
+							$numSkippedCouldNotFindStatus = 0;
+							$numSkippedFailedInsert = 0;
 							for ($rowNum = 4; $rowNum <= $highestRow; $rowNum++){
 								$materialRequest = new MaterialsRequest();
 								$curCol = 1;
@@ -545,6 +549,7 @@ class MaterialsRequest_AJAX extends Action{
 								/** @noinspection PhpUnusedLocalVariableInspection */
 								$username = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 								$barcode = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
+								$email = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
 								if (is_numeric($barcode)){
 									$barcode = (int)$barcode;
 								}
@@ -554,11 +559,27 @@ class MaterialsRequest_AJAX extends Action{
 								$requestUser->$barcodeProperty = $barcode;
 								$requestUser->find();
 								if ($requestUser->getNumResults() == 0){
-									//See if we can fetch the user from the ils
-									$requestUser = UserAccount::findNewUser($barcode);
-									if ($requestUser == false){
-										//We didn't get a user, skip this one.
-										continue;
+									//Try looking by last name, first
+									$requestUser = new User();
+									$requestUser->cat_username = $username;
+									$requestUser->find();
+									if ($requestUser->getNumResults() == 0) {
+										$requestUser = new User();
+										$requestUser->email = $email;
+										$requestUser->find();
+										if (empty($email) || $requestUser->getNumResults() == 0) {
+											//See if we can fetch the user from the ils
+											$requestUser = UserAccount::findNewUser($barcode);
+											if ($requestUser == false) {
+												//We didn't get a user, skip this one.
+												$numSkippedCouldNotFindUser++;
+												continue;
+											}
+										}else{
+											$requestUser->fetch();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+										}
+									}else{
+										$requestUser->fetch();
 									}
 								}else{
 									$requestUser->fetch();
@@ -581,6 +602,7 @@ class MaterialsRequest_AJAX extends Action{
 									$materialRequest->status = (int)$materialRequest->status;
 								}
 								if (!array_key_exists($materialRequest->status, $allStatuses)){
+									$numSkippedCouldNotFindStatus++;
 									continue;
 								}
 								$dateCreated = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
@@ -590,7 +612,22 @@ class MaterialsRequest_AJAX extends Action{
 								/** @noinspection PhpUnusedLocalVariableInspection */
 								$assignedTo = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 
-								$materialRequest->insert();
+								if ($materialRequest->insert() == 1){
+									$numImported++;
+								}else{
+									$numSkippedFailedInsert++;
+								}
+							}
+							$result['success'] = true;
+							$result['message'] = "Imported file, $numImported entries were imported successfully.";
+							if ($numSkippedFailedInsert > 0) {
+								$result['message'] .= "<br/>$numSkippedFailedInsert could not be inserted in the database.";
+							}
+							if ($numSkippedCouldNotFindStatus > 0) {
+								$result['message'] .= "<br/>$numSkippedCouldNotFindStatus did not have a proper status.";
+							}
+							if ($numSkippedCouldNotFindUser > 0) {
+								$result['message'] .= "<br/>$numSkippedCouldNotFindUser could not find a user.";
 							}
 						}else{
 							$result['message'] =  "This does not look like a valid export of Material Request data";
