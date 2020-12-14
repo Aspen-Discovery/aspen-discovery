@@ -153,6 +153,9 @@ class WebsiteIndexer {
 			} else {
 				moreToProcess = false;
 			}
+			if (allLinks.size() > 2500){
+				logEntry.incErrors("Error processing website, found more than 2500 links in the site");
+			}
 		}
 
 		for (WebPage curPage : existingPages.values()) {
@@ -285,6 +288,10 @@ class WebsiteIndexer {
 									if (includePath && !allLinks.containsKey(linkUrl)) {
 										page.getLinks().add(linkUrl);
 										allLinks.put(linkUrl, false);
+										//There are too many pages to process, quit
+										if (allLinks.size() > 2500){
+											return;
+										}
 										logEntry.incNumPages();
 									}
 								}
