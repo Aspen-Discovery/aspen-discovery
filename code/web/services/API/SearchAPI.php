@@ -222,7 +222,11 @@ class SearchAPI extends Action
 						}
 					}
 				}
-				if ($lastFinishTime < time() - 24 * 60 * 60){
+				$checkEntriesInLast24Hours = true;
+				if ($aspenModule->name == 'Open Archives'){
+					$checkEntriesInLast24Hours = false;
+				}
+				if ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)){
 					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
 				}else{
 					if ($logErrors > 0){
