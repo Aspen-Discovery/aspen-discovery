@@ -5,17 +5,16 @@
 	<h1>{translate text="Permissions"}</h1>
 	{/if}
 
-	<form class="form-inline row">
+	<form class="form-inline row" id="selectRoleForm">
 		<div class="form-group col-tn-12">
 			<label for="roleId" class="control-label">{translate text="Role to edit"}</label>&nbsp;
-			<select id="roleId" name="roleId" class="form-control input-sm">
+			<select id="roleId" name="roleId" class="form-control input-sm" onchange="$('#selectRoleForm').submit()">
 				{foreach from=$roles key=roleId item=role}
 					<option value="{$roleId}" {if $roleId == $selectedRole->roleId}selected{/if}>{$role->name}</option>
 				{/foreach}
 			</select>
-			<button class="btn btn-primary btn-sm" type="submit">{translate text="Select"}</button>
-			&nbsp; <a class="btn btn-danger btn-sm" onclick="return AspenDiscovery.Admin.deleteRole({$selectedRole->roleId})">{translate text="Delete"}</a>
-			&nbsp; <a class="btn btn-default btn-sm" onclick="return AspenDiscovery.Admin.showCreateRoleForm()">{translate text="Create New Role"}</a>
+			<a class="btn btn-danger btn-sm" onclick="return AspenDiscovery.Admin.deleteRole({$selectedRole->roleId})">{translate text="Delete"}</a>
+			<a class="btn btn-default btn-sm" onclick="return AspenDiscovery.Admin.showCreateRoleForm()">{translate text="Create New Role"}</a>
 		</div>
 	</form>
 
