@@ -45,13 +45,13 @@ public class CronProcessLogEntry implements BaseLogEntry {
 
 	public synchronized void incErrors(String note){
 		this.numErrors++;
-		this.addNote(note);
+		this.addNote("ERROR: " + note);
 		cronLogEntry.incErrors();
 		this.saveResults();
 		logger.error(note);
 	}
 	public synchronized void incErrors(String note, Exception e){
-		this.addNote(note + " " + e.toString());
+		this.addNote("ERROR: " + note + " " + e.toString());
 		this.numErrors++;
 		cronLogEntry.incErrors();
 		this.saveResults();
