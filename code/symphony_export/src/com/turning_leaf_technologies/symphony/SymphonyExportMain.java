@@ -272,7 +272,7 @@ public class SymphonyExportMain {
 					logEntry.incErrors("Related items were too long for the field, max length should be at least " + maxRelatedItemsLength);
 				}
 				if (maxDisplayLabelLength > 0){
-					logEntry.incErrors("Volume Name was too long for the field, max length should be at least " + maxDisplayLabelLength);
+					logEntry.addNote("Volume Name was too long for the field, max length should be at least " + maxDisplayLabelLength);
 				}
 
 				long numVolumesDeleted = 0;
