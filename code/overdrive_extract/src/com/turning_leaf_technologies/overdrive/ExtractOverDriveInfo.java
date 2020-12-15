@@ -38,9 +38,7 @@ class ExtractOverDriveInfo {
 	private String lastUpdateTimeParam = "";
 
 	//Overdrive API information
-	private String clientSecret;
-	private String clientKey;
-	private String accountId; //This is not the website id which is used for circulation.
+	private final OverDriveSetting settings;
 	private String overDriveAPIToken;
 	private String overDriveAPITokenType;
 	private long overDriveAPIExpiration;
@@ -53,6 +51,7 @@ class ExtractOverDriveInfo {
 	private PreparedStatement addProductStmt;
 	private PreparedStatement updateProductStmt;
 	private PreparedStatement updateProductChangeTimeStmt;
+	private PreparedStatement isProductAvailableInOtherSettingsStmt;
 	private PreparedStatement deleteProductStmt;
 	private PreparedStatement updateProductMetadataStmt;
 	private PreparedStatement updateMetaDataStmt;
@@ -73,6 +72,10 @@ class ExtractOverDriveInfo {
 	private GroupedWorkIndexer groupedWorkIndexer;
 	private Ini configIni;
 
+	public ExtractOverDriveInfo(OverDriveSetting settings) {
+		this.settings = settings;
+	}
+
 	int extractOverDriveInfo(Ini configIni, String serverName, Connection dbConn, OverDriveExtractLogEntry logEntry) {
 		int numChanges = 0;
 		this.configIni = configIni;
@@ -83,10 +86,10 @@ class ExtractOverDriveInfo {
 		long extractStartTime = new Date().getTime();
 
 		try {
-			boolean runFullUpdate = initOverDriveExtract(dbConn, logEntry);
+			initOverDriveExtract(dbConn, logEntry);
 
 			try {
-				if (clientSecret == null || clientKey == null || accountId == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountId.length() == 0) {
+				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
 					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
 				} else {
 					//Load products from database this lets us know what is new, what has been deleted, and what has been updated
@@ -149,21 +152,21 @@ class ExtractOverDriveInfo {
 					//Update, regroup, and reindex records
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
 						//Extract data from overdrive and update the database
-						if (runFullUpdate || curRecord.isNew || curRecord.hasMetadataChanges){
+						if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasMetadataChanges){
 							//Load Metadata for the record
 							updateOverDriveMetaData(curRecord);
 						}
-						if (runFullUpdate || curRecord.hasAvailabilityChanges) {
+						if (settings.isRunFullUpdate() || curRecord.hasAvailabilityChanges) {
 							//Load availability for the record
 							updateOverDriveAvailability(curRecord, curRecord.getDatabaseId(), false);
 						}
 
 						String groupedWorkId = null;
-						if (runFullUpdate || curRecord.isNew || curRecord.hasMetadataChanges){
+						if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasMetadataChanges){
 							//Regroup the record
 							groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(curRecord.getId());
 						}
-						if (runFullUpdate || curRecord.isNew || curRecord.hasMetadataChanges || curRecord.hasAvailabilityChanges){
+						if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasMetadataChanges || curRecord.hasAvailabilityChanges){
 							//Metadata didn't change so we need to load from the database
 							if (groupedWorkId == null) {
 								groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("overdrive", curRecord.getId());
@@ -213,7 +216,7 @@ class ExtractOverDriveInfo {
 			} else {
 				PreparedStatement updateExtractTime;
 				String columnToUpdate = "lastUpdateOfChangedRecords";
-				if (runFullUpdate){
+				if (settings.isRunFullUpdate()){
 					columnToUpdate = "lastUpdateOfAllRecords";
 				}
 				updateExtractTime = dbConn.prepareStatement("UPDATE overdrive_settings set " + columnToUpdate + " = ?");
@@ -281,7 +284,7 @@ class ExtractOverDriveInfo {
 			initOverDriveExtract(dbConn, logEntry);
 
 			try {
-				if (clientSecret == null || clientKey == null || accountId == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountId.length() == 0) {
+				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
 					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
 				} else {
 					//Load products from database this lets us know what is new, what has been deleted, and what has been updated
@@ -383,11 +386,12 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private boolean initOverDriveExtract(Connection dbConn, OverDriveExtractLogEntry logEntry) throws SQLException {
+	private void initOverDriveExtract(Connection dbConn, OverDriveExtractLogEntry logEntry) throws SQLException {
 		addProductStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_products set overdriveid = ?, crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, dateAdded = ?, dateUpdated = ?, lastMetadataCheck = 0, lastMetadataChange = 0, lastAvailabilityCheck = 0, lastAvailabilityChange = 0", PreparedStatement.RETURN_GENERATED_KEYS);
 		updateProductStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, deleted = 0 where id = ?");
 		updateProductChangeTimeStmt = dbConn.prepareStatement("UPDATE overdrive_api_products set dateUpdated = ? WHERE overdriveId = ?");
 		deleteProductStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET deleted = 1, dateDeleted = ? where id = ?");
+		isProductAvailableInOtherSettingsStmt = dbConn.prepareStatement("SELECT count(*) as availabilityCount from overdrive_api_product_availability where productId = ? and settingId <> ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		updateProductMetadataStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET lastMetadataCheck = ?, lastMetadataChange = ? where id = ?");
 		updateMetaDataStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_metadata set productId = ?, checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity =?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=? " +
 				"ON DUPLICATE KEY UPDATE " +
@@ -398,64 +402,59 @@ class ExtractOverDriveInfo {
 		addIdentifierStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_identifiers set productId = ?, type = ?, value = ?");
 		getExistingAvailabilityForProductStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ?");
 		updateAvailabilityStmt = dbConn.prepareStatement("UPDATE overdrive_api_product_availability set available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?, shared =? WHERE id = ?");
-		addAvailabilityStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_availability set productId = ?, libraryId = ?, available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?, shared = ?");
+		addAvailabilityStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_availability set productId = ?, settingId = ?, libraryId = ?, available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?, shared = ?");
 		deleteAvailabilityStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability where id = ?");
-		deleteAllAvailabilityStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability where productId = ? and libraryId = ?");
+		deleteAllAvailabilityStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability where productId = ? and libraryId = ? and settingId = ?");
 		updateProductAvailabilityStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET lastAvailabilityCheck = ?, lastAvailabilityChange = ? where id = ?");
 
-		//Load settings
-		PreparedStatement overDriveSettingsStmt = dbConn.prepareStatement("SELECT * from overdrive_settings");
-		ResultSet overDriveSettingsRS = overDriveSettingsStmt.executeQuery();
+		if (settings.getProductsKey() == null){
+			logEntry.incErrors("No products key was provided for settings " + settings.getId());
+		}
+		libToOverDriveAPIKeyMap.put(-1L, settings.getProductsKey());
 
-		boolean runFullUpdate = false;
-		if (overDriveSettingsRS.next()){
-			clientSecret = overDriveSettingsRS.getString("clientSecret");
-			clientKey = overDriveSettingsRS.getString("clientKey");
-			accountId = overDriveSettingsRS.getString("accountId");
-
-			String overDriveProductsKey = overDriveSettingsRS.getString("productsKey");
-			if (overDriveProductsKey == null){
-				logger.error("No products key provided for OverDrive");
-				System.exit(1);
-			}
-			libToOverDriveAPIKeyMap.put(-1L, overDriveProductsKey);
-			runFullUpdate = overDriveSettingsRS.getBoolean("runFullUpdate");
-
-			//Load last extract time regardless of if we are doing full index or partial index
-			long lastExtractTime = overDriveSettingsRS.getLong("lastUpdateOfChangedRecords");
-			if (!runFullUpdate) {
-				Date lastExtractDate = new Date(lastExtractTime * 1000);
-				SimpleDateFormat lastUpdateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-				logger.info("Loading all records that have changed since " + lastUpdateFormat.format(lastExtractDate));
-				logEntry.addNote("Loading all records that have changed since " + lastUpdateFormat.format(lastExtractDate));
-				lastUpdateTimeParam = lastUpdateFormat.format(lastExtractDate);
-				//Simple Date Format doesn't give us quite the right timezone format so adjust
-				lastUpdateTimeParam = lastUpdateTimeParam.substring(0, lastUpdateTimeParam.length() - 2) + ":" + lastUpdateTimeParam.substring(lastUpdateTimeParam.length() - 2);
-			}else{
-				//Update the settings to mark the full update as not needed
-				dbConn.prepareStatement("UPDATE overdrive_settings set runFullUpdate = 0").executeUpdate();
-			}
+		//Load last extract time regardless of if we are doing full index or partial index
+		if (!settings.isRunFullUpdate()) {
+			Date lastExtractDate = new Date(settings.getLastUpdateOfChangedRecords() * 1000);
+			SimpleDateFormat lastUpdateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+			logger.info("Loading all records that have changed since " + lastUpdateFormat.format(lastExtractDate));
+			logEntry.addNote("Loading all records that have changed since " + lastUpdateFormat.format(lastExtractDate));
+			lastUpdateTimeParam = lastUpdateFormat.format(lastExtractDate);
+			//Simple Date Format doesn't give us quite the right timezone format so adjust
+			lastUpdateTimeParam = lastUpdateTimeParam.substring(0, lastUpdateTimeParam.length() - 2) + ":" + lastUpdateTimeParam.substring(lastUpdateTimeParam.length() - 2);
 		}else{
-			logger.error("No configuration found in the database for OverDrive");
-			System.exit(1);
+			//Update the settings to mark the full update as not needed
+			dbConn.prepareStatement("UPDATE overdrive_settings set runFullUpdate = 0 where settingId = " + settings.getId()).executeUpdate();
 		}
 
-		PreparedStatement advantageCollectionMapStmt = dbConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey FROM library INNER JOIN overdrive_scopes on library.overDriveScopeId = overdrive_scopes.id where overdriveAdvantageName != ''");
+		PreparedStatement advantageCollectionMapStmt = dbConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey FROM library INNER JOIN overdrive_scopes on library.overDriveScopeId = overdrive_scopes.id where overdriveAdvantageName != '' and settingId = ?");
+		advantageCollectionMapStmt.setLong(1, settings.getId());
 		ResultSet advantageCollectionMapRS = advantageCollectionMapStmt.executeQuery();
 		while (advantageCollectionMapRS.next()){
 			libToOverDriveAPIKeyMap.put(advantageCollectionMapRS.getLong(1), advantageCollectionMapRS.getString(3));
 		}
-
-		return runFullUpdate;
 	}
 
 	private void deleteProductInDB(OverDriveDBInfo overDriveDBInfo) {
 		try {
-			long curTime = new Date().getTime() / 1000;
-			deleteProductStmt.setLong(1, curTime);
-			deleteProductStmt.setLong(2, overDriveDBInfo.getDbId());
-			deleteProductStmt.executeUpdate();
-			logEntry.incDeleted();
+			//Check to be sure the product isn't active from other settings
+			isProductAvailableInOtherSettingsStmt.setLong(1, overDriveDBInfo.getDbId());
+			isProductAvailableInOtherSettingsStmt.setLong(2, settings.getId());
+			boolean isAvailableElsewhere = false;
+			ResultSet isProductAvailableInOtherSettingsRS = isProductAvailableInOtherSettingsStmt.executeQuery();
+			if (isProductAvailableInOtherSettingsRS.next()){
+				int availabilityCount = isProductAvailableInOtherSettingsRS.getInt("availabilityCount");
+				if (availabilityCount > 0){
+					isAvailableElsewhere = true;
+				}
+			}
+
+			if (!isAvailableElsewhere) {
+				long curTime = new Date().getTime() / 1000;
+				deleteProductStmt.setLong(1, curTime);
+				deleteProductStmt.setLong(2, overDriveDBInfo.getDbId());
+				deleteProductStmt.executeUpdate();
+				logEntry.incDeleted();
+			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error deleting overdrive product " + overDriveDBInfo.getDbId(), e);
 		}
@@ -561,7 +560,7 @@ class ExtractOverDriveInfo {
 	 * @throws SocketTimeoutException Error if we timeout getting data
 	 */
 	private boolean loadProductsFromAPI(int loadType) throws SocketTimeoutException {
-		WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + accountId);
+		WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + settings.getAccountId());
 		if (libraryInfoResponse.getResponseCode() == 200 && libraryInfoResponse.getMessage() != null){
 			JSONObject libraryInfo = libraryInfoResponse.getJSONResponse();
 			try {
@@ -680,7 +679,7 @@ class ExtractOverDriveInfo {
 				return false;
 			}
 		}else{
-			logEntry.incErrors("Unable to load library information for library " + accountId);
+			logEntry.incErrors("Unable to load library information for library " + settings.getAccountId());
 			if (libraryInfoResponse.getMessage() != null){
 				logEntry.addNote(libraryInfoResponse.getMessage());
 			}
@@ -697,7 +696,7 @@ class ExtractOverDriveInfo {
 	 * @throws SocketTimeoutException Error if we timeout getting data
 	 */
 	private boolean loadAccountInformationFromAPI() throws SocketTimeoutException {
-		WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + accountId);
+		WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + settings.getAccountId());
 		if (libraryInfoResponse.getResponseCode() == 200 && libraryInfoResponse.getMessage() != null){
 			JSONObject libraryInfo = libraryInfoResponse.getJSONResponse();
 			try {
@@ -750,7 +749,7 @@ class ExtractOverDriveInfo {
 				return false;
 			}
 		}else{
-			logEntry.incErrors("Unable to load library information for library " + accountId);
+			logEntry.incErrors("Unable to load library information for library " + settings.getAccountId());
 			if (libraryInfoResponse.getMessage() != null){
 				logEntry.addNote(libraryInfoResponse.getMessage());
 			}
@@ -984,7 +983,7 @@ class ExtractOverDriveInfo {
 						addFormatStmt.setLong(1, overDriveInfo.getDatabaseId());
 						String textFormat = format.getString("id");
 						addFormatStmt.setString(2, textFormat);
-						//Numeric ids are no longer important in our integraiton with OverDrive
+						//Numeric ids are no longer important in our integration with OverDrive
 						addFormatStmt.setLong(3, 0L);
 						addFormatStmt.setString(4, format.getString("name"));
 						addFormatStmt.setString(5, format.has("filename") ? format.getString("fileName") : "");
@@ -1059,6 +1058,7 @@ class ExtractOverDriveInfo {
 			while (existingAvailabilityRS.next()){
 				OverDriveAvailabilityInfo existingAvailability = new OverDriveAvailabilityInfo();
 				existingAvailability.setId(existingAvailabilityRS.getLong("id"));
+				existingAvailability.setSettingId(existingAvailabilityRS.getLong("settingId"));
 				existingAvailability.setLibraryId(existingAvailabilityRS.getLong("libraryId"));
 				existingAvailability.setAvailable(existingAvailabilityRS.getBoolean("available"));
 				existingAvailability.setCopiesOwned(existingAvailabilityRS.getInt("copiesOwned"));
@@ -1101,6 +1101,7 @@ class ExtractOverDriveInfo {
 					try {
 						deleteAllAvailabilityStmt.setLong(1, overDriveInfo.getDatabaseId());
 						deleteAllAvailabilityStmt.setLong(2, collectionInfo.getAspenLibraryId());
+						deleteAllAvailabilityStmt.setLong(3, settings.getId());
 						deleteAllAvailabilityStmt.executeUpdate();
 						changesMade = true;
 						existingAvailabilities.remove(collectionInfo.getAspenLibraryId());
@@ -1205,13 +1206,14 @@ class ExtractOverDriveInfo {
 									logEntry.addNote("Adding availability to the database");
 								}
 								addAvailabilityStmt.setLong(1, databaseId);
-								addAvailabilityStmt.setLong(2, collectionInfo.getAspenLibraryId());
-								addAvailabilityStmt.setBoolean(3, available);
-								addAvailabilityStmt.setInt(4, totalCopiesOwned);
-								addAvailabilityStmt.setInt(5, totalAvailableCopies);
-								addAvailabilityStmt.setInt(6, numberOfHolds);
-								addAvailabilityStmt.setString(7, availabilityType);
-								addAvailabilityStmt.setBoolean(8, false);
+								addAvailabilityStmt.setLong(2, settings.getId());
+								addAvailabilityStmt.setLong(3, collectionInfo.getAspenLibraryId());
+								addAvailabilityStmt.setBoolean(4, available);
+								addAvailabilityStmt.setInt(5, totalCopiesOwned);
+								addAvailabilityStmt.setInt(6, totalAvailableCopies);
+								addAvailabilityStmt.setInt(7, numberOfHolds);
+								addAvailabilityStmt.setString(8, availabilityType);
+								addAvailabilityStmt.setBoolean(9, false);
 								addAvailabilityStmt.executeUpdate();
 								changesMade = true;
 							}
@@ -1309,7 +1311,7 @@ class ExtractOverDriveInfo {
 			conn.setRequestMethod("POST");
 			conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 			//logger.debug("Client Key is " + clientSecret);
-			String encoded = Base64.encodeBase64String((clientKey + ":" + clientSecret).getBytes());
+			String encoded = Base64.encodeBase64String((settings.getClientKey() + ":" + settings.getClientSecret()).getBytes());
 			conn.setRequestProperty("Authorization", "Basic " + encoded);
 			conn.setReadTimeout(30000);
 			conn.setConnectTimeout(30000);

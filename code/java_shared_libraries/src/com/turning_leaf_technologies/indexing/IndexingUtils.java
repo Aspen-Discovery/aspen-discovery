@@ -153,6 +153,7 @@ public class IndexingUtils {
 			while (overDriveScopesRS.next()) {
 				OverDriveScope overDriveScope = new OverDriveScope();
 				overDriveScope.setId(overDriveScopesRS.getLong("id"));
+				overDriveScope.setSettingId(overDriveScopesRS.getLong("settingId"));
 				overDriveScope.setName(overDriveScopesRS.getString("name"));
 				overDriveScope.setIncludeAdult(overDriveScopesRS.getBoolean("includeAdult"));
 				overDriveScope.setIncludeTeen(overDriveScopesRS.getBoolean("includeTeen"));
