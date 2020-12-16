@@ -1,5 +1,6 @@
 package com.turning_leaf_technogies.axis360;
 
+import com.mysql.cj.protocol.Resultset;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
@@ -461,6 +462,11 @@ public class Axis360ExportMain {
 								availabilityChanged = true;
 							}
 						} else {
+							//This happens when we find a new title.  The id is inserted below , the following should never trigger, but it's a safety check
+							if (!metadataChanged){
+								metadataChanged = true;
+								logEntry.incErrors("Did not find aspen id for axis360 id " + axis360Id + " but we thought it should exist");
+							}
 							availabilityChanged = true;
 						}
 					} else {
@@ -470,7 +476,6 @@ public class Axis360ExportMain {
 					}
 
 					String primaryAuthor = getFieldValue(itemDetails, "author");
-
 
 					if (metadataChanged || setting.doFullReload()) {
 						logEntry.incMetadataChanges();
@@ -501,7 +506,7 @@ public class Axis360ExportMain {
 						JSONObject availabilityInfo = itemAvailability.getJSONObject("Availability");
 						logEntry.incAvailabilityChanges();
 						if (aspenId == -1){
-							logEntry.incErrors("Did not get an id for the title prior to updating availability");
+							logEntry.incErrors("Did not get an id for the title " + axis360Id + " prior to updating availability, this implies a new title that failed to insert");
 						}else {
 							updateAxis360AvailabilityStmt.setLong(1, aspenId);
 							updateAxis360AvailabilityStmt.setLong(2, setting.getId());

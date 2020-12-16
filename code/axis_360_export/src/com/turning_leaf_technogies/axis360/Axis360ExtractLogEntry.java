@@ -109,12 +109,12 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 	}
 	public void incErrors(String note){
 		numErrors++;
-		this.addNote(note);
+		this.addNote("ERROR: " + note);
 		this.saveResults();
 		logger.error(note);
 	}
 	public void incErrors(String note, Exception e){
-		this.addNote(note + " " + e.toString());
+		this.addNote("ERROR: " + note + " " + e.toString());
 		numErrors++;
 		this.saveResults();
 		logger.error(note, e);
