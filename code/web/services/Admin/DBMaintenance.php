@@ -1876,6 +1876,16 @@ class Admin_DBMaintenance extends Admin_Admin
 					)
 				],
 
+				'aspen_usage_instance' => [
+					'title' => 'Aspen Usage - Instance Information',
+					'description' => 'Add Instance Information to Aspen Usage',
+					'sql' => [
+						'ALTER TABLE aspen_usage ADD COLUMN instance VARCHAR(100)',
+						'ALTER TABLE aspen_usage DROP INDEX year',
+						'ALTER TABLE aspen_usage ADD INDEX (instance, year, month)'
+					]
+				],
+
 				'slow_pages' => [
 					'title' => 'Slow Page Tracking',
 					'description' => 'Add tables to track which pages are slow',

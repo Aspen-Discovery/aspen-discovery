@@ -5,6 +5,7 @@ class AspenUsage extends DataObject
 {
 	public $__table = 'aspen_usage';
 	public $id;
+	public $instance;
 	public $year;
 	public $month;
 	public $pageViews;

@@ -462,7 +462,7 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	if ($activeSearchObject->getView()) $interface->assign('displayMode', $activeSearchObject->getView());
 
 	if ($library->enableGenealogy){
-        $interface->assign('enableOpenGenealogy', true);
+		$interface->assign('enableGenealogy', true);
 	}
 
 	if ($library->enableArchive){

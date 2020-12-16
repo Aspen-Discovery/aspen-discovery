@@ -1,42 +1,40 @@
 <?php
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 
-class Admin_UsageDashboard extends Admin_Admin
+class Admin_UsageDashboard extends Admin_Dashboard
 {
 	function launch()
 	{
 		global $interface;
 
-		$thisMonth = date('n');
-		$thisYear = date('Y');
-		$lastMonth = $thisMonth - 1;
-		$lastMonthYear = $thisYear;
-		if ($lastMonth == 0){
-			$lastMonth = 12;
-			$lastMonthYear--;
-		}
+		$instanceName = $this->loadInstanceInformation('AspenUsage');
+		$this->loadDates();
 
-		$usageThisMonth = $this->getStats($thisMonth, $thisYear);
+		$usageThisMonth = $this->getStats($instanceName, $this->thisMonth, $this->thisYear);
 		$interface->assign('usageThisMonth', $usageThisMonth);
-		$usageLastMonth = $this->getStats($lastMonth, $lastMonthYear);
+		$usageLastMonth = $this->getStats($instanceName, $this->lastMonth, $this->lastMonthYear);
 		$interface->assign('usageLastMonth', $usageLastMonth);
-		$usageThisYear = $this->getStats(null, $thisYear);
+		$usageThisYear = $this->getStats($instanceName, null, $this->thisYear);
 		$interface->assign('usageThisYear', $usageThisYear);
-		$usageAllTime = $this->getStats(null, null);
+		$usageAllTime = $this->getStats($instanceName, null, null);
 		$interface->assign('usageAllTime', $usageAllTime);
 
 		$this->display('usage_dashboard.tpl', 'Aspen Usage Dashboard');
 	}
 
 	/**
+	 * @param string|null $instanceName
 	 * @param string|null $month
 	 * @param string|null $year
 	 * @return int[]
 	 */
-	function getStats($month, $year): array
+	function getStats($instanceName, $month, $year): array
 	{
 		$usage = new AspenUsage();
+		if (!empty($instanceName)){
+			$usage->instance = $instanceName;
+		}
 		if ($month != null){
 			$usage->month = $month;
 		}
