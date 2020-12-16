@@ -43,6 +43,8 @@ class Admin_UsageDashboard extends Admin_Dashboard
 		}
 		$usage->selectAdd();
 		$usage->selectAdd('SUM(pageViews) as totalViews');
+		$usage->selectAdd('SUM(pageViewsByBots) as totalPageViewsByBots');
+		$usage->selectAdd('SUM(pageViewsByAuthenticatedUsers) as totalPageViewsByAuthenticatedUsers');
 		$usage->selectAdd('SUM(coverViews) as totalCovers');
 		$usage->selectAdd('SUM(pagesWithErrors) as totalErrors');
 		$usage->selectAdd('SUM(ajaxRequests) as totalAsyncRequests');
@@ -62,6 +64,8 @@ class Admin_UsageDashboard extends Admin_Dashboard
 		/** @noinspection PhpUndefinedFieldInspection */
 		return [
 			'totalViews' => $usage->totalViews,
+			'totalPageViewsByBots' => $usage->totalPageViewsByBots,
+			'totalPageViewsByAuthenticatedUsers' => $usage->totalPageViewsByAuthenticatedUsers,
 			'totalCovers' => $usage->totalCovers,
 			'totalErrors' => $usage->totalErrors,
 			'totalAsyncRequests' => $usage->totalAsyncRequests,

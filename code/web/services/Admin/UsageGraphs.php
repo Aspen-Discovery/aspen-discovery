@@ -37,6 +37,12 @@ class Admin_UsageGraphs extends Admin_Admin
 			case 'pageViews':
 				$title .= ' - Pages Viewed';
 				break;
+			case 'authenticatedPageViews':
+				$title .= ' - Authenticated Page Views';
+				break;
+			case 'pageViewsByBots':
+				$title .= ' - Pages Viewed By Bots';
+				break;
 			case 'asyncRequests':
 				$title .= ' - Asynchronous Requests';
 				break;
@@ -74,6 +80,22 @@ class Admin_UsageGraphs extends Admin_Admin
 				'data' => []
 			];
 			$userUsage->selectAdd('SUM(pageViews) as sumPageViews');
+		}
+		if ($stat == 'authenticatedPageViews' || $stat == 'generalUsage') {
+			$dataSeries['Authenticated Page Views'] = [
+				'borderColor' => 'rgba(255, 159, 64, 1)',
+				'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
+				'data' => []
+			];
+			$userUsage->selectAdd('SUM(pageViewsByAuthenticatedUsers) as sumPageViewsByAuthenticatedUsers');
+		}
+		if ($stat == 'pageViewsByBots' || $stat == 'generalUsage') {
+			$dataSeries['Page Views By Bots'] = [
+				'borderColor' => 'rgba(154, 75, 244, 1)',
+				'backgroundColor' => 'rgba(154, 75, 244, 0.2)',
+				'data' => []
+			];
+			$userUsage->selectAdd('SUM(pageViewsByBots) as sumPageViewsByBots');
 		}
 		if ($stat == 'asyncRequests' || $stat == 'generalUsage') {
 			$dataSeries['Asynchronous Requests'] = [
@@ -159,6 +181,14 @@ class Admin_UsageGraphs extends Admin_Admin
 			if ($stat == 'pageViews' || $stat == 'generalUsage') {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['Page Views']['data'][$curPeriod] = $userUsage->sumPageViews;
+			}
+			if ($stat == 'authenticatedPageViews' || $stat == 'generalUsage') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Authenticated Page Views']['data'][$curPeriod] = $userUsage->sumPageViewsByAuthenticatedUsers;
+			}
+			if ($stat == 'pageViewsByBots' || $stat == 'generalUsage') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Page Views By Bots']['data'][$curPeriod] = $userUsage->sumPageViewsByBots;
 			}
 			if ($stat == 'asyncRequests' || $stat == 'generalUsage') {
 				/** @noinspection PhpUndefinedFieldInspection */
