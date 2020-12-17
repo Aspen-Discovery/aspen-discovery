@@ -184,6 +184,33 @@ class Admin_UsageGraphs extends Admin_Admin
 			$userUsage->selectAdd('SUM(genealogySearches) as sumGenealogySearches');
 		}
 
+		//Exceptions
+		if ($stat == 'blockedPages' || $stat == 'exceptionsReport') {
+			$dataSeries['Blocked Pages'] = [
+				'borderColor' => 'rgba(255, 99, 132, 1)',
+				'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+				'data' => []
+			];
+			$userUsage->selectAdd('SUM(blockedRequests) as sumBlockedRequests');
+		}
+		if ($stat == 'blockedApiRequests' || $stat == 'exceptionsReport') {
+			$dataSeries['Blocked API Requests'] = [
+				'borderColor' => 'rgba(255, 159, 64, 1)',
+				'backgroundColor' => 'rgba(255, 159, 64, 0.2)',
+				'data' => []
+			];
+			$userUsage->selectAdd('SUM(blockedApiRequests) as sumBlockedApiRequests');
+		}
+		if ($stat == 'errors' || $stat == 'exceptionsReport') {
+			$dataSeries['Errors'] = [
+				'borderColor' => 'rgba(154, 75, 244, 1)',
+				'backgroundColor' => 'rgba(154, 75, 244, 0.2)',
+				'data' => []
+			];
+			$userUsage->selectAdd('SUM(pagesWithErrors) as sumPagesWithErrors');
+		}
+
+
 		//Collect results
 		$userUsage->find();
 
@@ -237,6 +264,18 @@ class Admin_UsageGraphs extends Admin_Admin
 			if ($library->enableGenealogy && ($stat == 'genealogySearches' || $stat == 'searches')) {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['Genealogy Searches']['data'][$curPeriod] = $userUsage->sumGenealogySearches;
+			}
+			if ($stat == 'blockedPages' || $stat == 'exceptionsReport') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Blocked Pages']['data'][$curPeriod] = $userUsage->sumBlockedRequests;
+			}
+			if ($stat == 'blockedPages' || $stat == 'exceptionsReport') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Blocked API Requests']['data'][$curPeriod] = $userUsage->sumBlockedApiRequests;
+			}
+			if ($stat == 'errors' || $stat == 'exceptionsReport') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Errors']['data'][$curPeriod] = $userUsage->sumPagesWithErrors;
 			}
 		}
 
