@@ -88,10 +88,13 @@ class MySQLSession extends SessionInterface
 			$s->last_used = time();
 			$s->remember_me = 0;
 			$result = $s->insert();
-			global $aspenUsage;
-			$aspenUsage->sessionsStarted++;
-			if (!empty($aspenUsage->id)){
-				$aspenUsage->update();
+			//Don't bother to count sessions that are from bots.
+			if (!BotChecker::isRequestFromBot()) {
+				global $aspenUsage;
+				$aspenUsage->sessionsStarted++;
+				if (!empty($aspenUsage->id)) {
+					$aspenUsage->update();
+				}
 			}
 		}
 		$logger->log(" Result = $result", Logger::LOG_DEBUG);
