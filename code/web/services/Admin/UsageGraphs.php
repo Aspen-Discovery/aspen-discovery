@@ -70,6 +70,18 @@ class Admin_UsageGraphs extends Admin_Admin
 			case 'genealogySearches':
 				$title .= ' - Genealogy Searches';
 				break;
+			case 'exceptionsReport':
+				$title .= ' - Exceptions';
+				break;
+			case 'blockedPages':
+				$title .= ' - Blocked Pages';
+				break;
+			case 'blockedApiRequests':
+				$title .= ' - Blocked API Requests';
+				break;
+			case 'errors':
+				$title .= ' - Errors';
+				break;
 		}
 
 		//General Usage Stats

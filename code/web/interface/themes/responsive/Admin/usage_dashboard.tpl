@@ -331,11 +331,11 @@
 			{/if}
 		</div>
 
-		<h2>{translate text="Exceptions"}</h2>
+		<h2>{translate text="Exceptions"} <a href="/Admin/UsageGraphs?stat=exceptionsReport&instance={$selectedInstance}" title="{translate text="Exceptions Report Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
 		<div class="dashboardCategory col-sm-6">
 			<div class="row">
 				<div class="col-sm-10 col-sm-offset-1">
-					<h3 class="dashboardCategoryLabel">{translate text="Blocked Pages"}</h3>
+					<h3 class="dashboardCategoryLabel">{translate text="Blocked Pages"} <a href="/Admin/UsageGraphs?stat=blockedPages&instance={$selectedInstance}" title="{translate text="Blocked Pages Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h3>
 				</div>
 			</div>
 			<div class="row">
@@ -361,7 +361,7 @@
 		<div class="dashboardCategory col-sm-6">
 			<div class="row">
 				<div class="col-sm-10 col-sm-offset-1">
-					<h3 class="dashboardCategoryLabel">{translate text="Blocked API Requests"}</h3>
+					<h3 class="dashboardCategoryLabel">{translate text="Blocked API Requests"} <a href="/Admin/UsageGraphs?stat=blockedApiRequests&instance={$selectedInstance}" title="{translate text="Blocked API Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h3>
 				</div>
 			</div>
 			<div class="row">
@@ -387,7 +387,7 @@
 		<div class="dashboardCategory col-sm-6">
 			<div class="row">
 				<div class="col-sm-10 col-sm-offset-1">
-					<h3 class="dashboardCategoryLabel">{translate text="Errors"}</h3>
+					<h3 class="dashboardCategoryLabel">{translate text="Errors"} <a href="/Admin/UsageGraphs?stat=errors&instance={$selectedInstance}" title="{translate text="Errors Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h3>
 				</div>
 			</div>
 			<div class="row">
