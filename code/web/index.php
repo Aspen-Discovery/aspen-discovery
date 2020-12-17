@@ -688,7 +688,6 @@ try{
 
 	if (!BotChecker::isRequestFromBot()) {
 		if ($isAJAX) {
-			$aspenUsage->slowAjaxRequests++;
 			require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
 			$slowRequest = new SlowAjaxRequest();
 			$slowRequest->year = date('Y');
@@ -704,7 +703,6 @@ try{
 				$slowRequest->insert();
 			}
 		} else {
-			$aspenUsage->slowPages++;
 			require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
 			$slowPage = new SlowPage();
 			$slowPage->year = date('Y');

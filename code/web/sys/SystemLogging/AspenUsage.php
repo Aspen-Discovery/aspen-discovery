@@ -12,9 +12,8 @@ class AspenUsage extends DataObject
 	public $pageViewsByBots;
 	public $pageViewsByAuthenticatedUsers;
 	public $pagesWithErrors;
-	public $slowPages;
+	public $sessionsStarted;
 	public $ajaxRequests;
-	public $slowAjaxRequests;
 	public $coverViews;
 	public $genealogySearches;
 	public $groupedWorkSearches;

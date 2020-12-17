@@ -1886,6 +1886,23 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'aspen_usage_remove_slow_pages' => [
+					'title' => 'Aspen Usage - Remove slow pages',
+					'description' => 'Remove slow pages since it was not accurate',
+					'sql' => [
+						'ALTER TABLE aspen_usage DROP COLUMN slowPages',
+						'ALTER TABLE aspen_usage DROP COLUMN slowAjaxRequests',
+					]
+				],
+
+				'aspen_usage_add_sessions' => [
+					'title' => 'Aspen Usage - Add Sessions',
+					'description' => 'Add a count of the number of sessions started',
+					'sql' => [
+						'ALTER TABLE aspen_usage ADD COLUMN sessionsStarted INT(11) DEFAULT 0',
+					]
+				],
+
 				'slow_pages' => [
 					'title' => 'Slow Page Tracking',
 					'description' => 'Add tables to track which pages are slow',

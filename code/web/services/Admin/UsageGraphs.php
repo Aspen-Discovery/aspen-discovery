@@ -40,6 +40,9 @@ class Admin_UsageGraphs extends Admin_Admin
 			case 'authenticatedPageViews':
 				$title .= ' - Authenticated Page Views';
 				break;
+			case 'sessionsStarted':
+				$title = ' - Sessions Started';
+				break;
 			case 'pageViewsByBots':
 				$title .= ' - Pages Viewed By Bots';
 				break;
@@ -100,6 +103,14 @@ class Admin_UsageGraphs extends Admin_Admin
 				'data' => []
 			];
 			$userUsage->selectAdd('SUM(pageViewsByAuthenticatedUsers) as sumPageViewsByAuthenticatedUsers');
+		}
+		if ($stat == 'sessionsStarted' || $stat == 'generalUsage') {
+			$dataSeries['Sessions Started'] = [
+				'borderColor' => 'rgba(0, 255, 55, 1)',
+				'backgroundColor' => 'rgba(0, 255, 55, 0.2)',
+				'data' => []
+			];
+			$userUsage->selectAdd('SUM(sessionsStarted) as sumSessionsStarted');
 		}
 		if ($stat == 'pageViewsByBots' || $stat == 'generalUsage') {
 			$dataSeries['Page Views By Bots'] = [
@@ -228,6 +239,10 @@ class Admin_UsageGraphs extends Admin_Admin
 			if ($stat == 'pageViewsByBots' || $stat == 'generalUsage') {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['Page Views By Bots']['data'][$curPeriod] = $userUsage->sumPageViewsByBots;
+			}
+			if ($stat == 'sessionsStarted' || $stat == 'generalUsage') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Sessions Started']['data'][$curPeriod] = $userUsage->sumSessionsStarted;
 			}
 			if ($stat == 'asyncRequests' || $stat == 'generalUsage') {
 				/** @noinspection PhpUndefinedFieldInspection */
