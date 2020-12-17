@@ -312,7 +312,7 @@ public class IndexingUtils {
 				if (rbdigitalScopeLibrary != -1) {
 					locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
 				}
-			} else if (rbdigitalScopeLocation == -2) {
+			} else if (rbdigitalScopeLocation != -2) {
 				locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLocation));
 			}
 
@@ -322,7 +322,7 @@ public class IndexingUtils {
 				if (cloudLibraryScopeLibrary != -1) {
 					locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLibrary));
 				}
-			} else if (rbdigitalScopeLocation == -2) {
+			} else if (cloudLibraryScopeLocation != -2) {
 				locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLocation));
 			}
 
@@ -332,7 +332,7 @@ public class IndexingUtils {
 				if (axis360ScopeLibrary != -1) {
 					locationScopeInfo.setAxis360Scope(axis360Scopes.get(axis360ScopeLibrary));
 				}
-			} else if (rbdigitalScopeLocation == -2) {
+			} else if (axis360ScopeLocation != -2) {
 				locationScopeInfo.setAxis360Scope(axis360Scopes.get(axis360ScopeLocation));
 			}
 
