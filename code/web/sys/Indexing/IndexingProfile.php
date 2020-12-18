@@ -86,6 +86,7 @@ class IndexingProfile extends DataObject
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
 	public /** @noinspection PhpUnused */ $lastUpdateFromMarcExport;
+	public /** @noinspection PhpUnused */$lastVolumeExportTimestamp;
 	
 	private $_translationMaps;
 	private $_timeToReshelve;
@@ -231,6 +232,7 @@ class IndexingProfile extends DataObject
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when all records were loaded from the API', 'default' => 0),
 			'lastUpdateFromMarcExport' => array('property' => 'lastUpdateFromMarcExport', 'type' => 'timestamp', 'label' => 'Last Update from MARC Export', 'description' => 'The timestamp when all records were loaded from a MARC export', 'default' => 0),
+			'lastVolumeExportTimestamp' => array('property' => 'lastVolumeExportTimestamp', 'type' => 'timestamp', 'label' => 'Last Volume Export Timestamp (Symphony Only)', 'description' => 'The timestamp of the last volume export file used', 'default' => 0),
 
 			'translationMaps' => array(
 				'property' => 'translationMaps',

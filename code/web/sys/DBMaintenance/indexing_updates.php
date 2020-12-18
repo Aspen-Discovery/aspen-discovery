@@ -496,6 +496,14 @@ function getIndexingUpdates()
 			]
 		],
 
+		'indexing_profile_last_volume_export_timestamp' => [
+			'title' => 'Indexing Profile Add Last Volume Export time',
+			'description' => 'Add fields to track when the last volume export file was saved',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN lastVolumeExportTimestamp INT(11) DEFAULT 0',
+			]
+		],
+
 		'authorities' => [
 			'title' => 'Authority Tables',
 			'description' => 'Setup authorities in the database to reduce memory usage during indexing',

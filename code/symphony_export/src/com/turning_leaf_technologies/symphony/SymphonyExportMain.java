@@ -165,134 +165,189 @@ public class SymphonyExportMain {
 	private static void exportVolumes(Connection dbConn, IndexingProfile indexingProfile, String profileToLoad) {
 		File volumeExportFile = new File(indexingProfile.getMarcPath() + "/volumes.txt");
 		if (volumeExportFile.exists()){
-			try {
-				//Get the existing volumes from the database
-				PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT recordId, displayLabel from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				HashSet<String> existingVolumes = new HashSet<>();
-				ResultSet existingVolumesRS = getExistingVolumes.executeQuery();
-				while (existingVolumesRS.next()){
-					existingVolumes.add(existingVolumesRS.getString("recordId") + ":" + existingVolumesRS.getString("displayLabel"));
-				}
-				existingVolumesRS.close();
-
-				//Load all volumes in the export
-				CSVReader csvReader = new CSVReader(new FileReader(volumeExportFile),'|');;
-				String[] volumeInfoFields = csvReader.readNext();
-				HashMap<String, VolumeInfo> allVolumesInExport = new HashMap<>();
-				int curRow = 0;
-				int numMalformattedRows = 0;
-				while (volumeInfoFields != null) {
-					if (volumeInfoFields.length > 8) {
-						String[] repairedVolumeInfo = new String[8];
-						repairedVolumeInfo[0] = volumeInfoFields[0];
-						repairedVolumeInfo[1] = volumeInfoFields[1] + "|" + volumeInfoFields[2];
-						System.arraycopy(volumeInfoFields, 3, repairedVolumeInfo, 2, 6);
-						volumeInfoFields = repairedVolumeInfo;
+			long lastVolumeTimeStamp = indexingProfile.getLastVolumeExportTimestamp();
+			long fileTimeStamp = volumeExportFile.lastModified();
+			if (fileTimeStamp / 1000 > lastVolumeTimeStamp){
+				logEntry.addNote("Checking to see if the volume file is still changing");
+				logEntry.saveResults();
+				boolean fileChanging = true;
+				while (fileChanging){
+					fileChanging = false;
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						logger.debug("Thread interrupted while checking if volume file is changing");
 					}
-					if (volumeInfoFields.length == 8) {
-						String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
-						String fullCallNumber = volumeInfoFields[1].trim();
-						try {
-							int startOfVolumeInfo = Integer.parseInt(volumeInfoFields[2].trim());
-							//String dateUpdated = volumeInfoFields[3];
-							String relatedItemNumber = volumeInfoFields[4].trim();
-							String shortBibNumber = volumeInfoFields[5].trim();
-							String volumeNumber = volumeInfoFields[6].trim();
-							String volumeIdentifier = shortBibNumber + ":" + volumeNumber;
-							//startOfVolumeInfo = 0 indicates this item is not part of a volume. Will need separate handling.
-							if (startOfVolumeInfo > 0 && startOfVolumeInfo < fullCallNumber.length()) {
-								String volume = fullCallNumber.substring(startOfVolumeInfo);
-								VolumeInfo curVolume;
-								String volumeKey = bibNumber + ":" + volume;
+					if (fileTimeStamp != volumeExportFile.lastModified()){
+						fileTimeStamp = volumeExportFile.lastModified();
+						fileChanging = true;
+					}
+				}
 
-								if (allVolumesInExport.containsKey(volumeKey)) {
-									curVolume = allVolumesInExport.get(volumeKey);
-								} else {
-									curVolume = new VolumeInfo();
-									curVolume.bibNumber = bibNumber;
-									curVolume.volume = volume;
-									//So technically there isn't a volume identifier, this is really the identifier
-									//of the first call number we find which works just fine when placing the hold
-									curVolume.volumeIdentifier = volumeIdentifier;
-									curVolume.displayOrder = curRow;
-									allVolumesInExport.put(volumeKey, curVolume);
+				//Now update the volumes
+				try {
+					VolumeUpdateInfo volumeUpdateInfo = new VolumeUpdateInfo();
+					logEntry.addNote("Updating Volumes, loading existing volumes from database");
+					PreparedStatement allRecordsWithVolumesStmt = dbConn.prepareStatement("SELECT DISTINCT(recordId) from ils_volume_info where recordId like '" + profileToLoad + ":%'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+					PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
+					PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where recordId = ?");
+
+					//Get the existing records with volumes from the database, we will use this to figure out which records no longer have volumes
+					HashSet<String> allRecordsWithVolumes = new HashSet<>();
+					ResultSet allRecordsWithVolumesRS = allRecordsWithVolumesStmt.executeQuery();
+					while (allRecordsWithVolumesRS.next()){
+						allRecordsWithVolumes.add(allRecordsWithVolumesRS.getString("recordId") );
+					}
+					allRecordsWithVolumesRS.close();
+					allRecordsWithVolumesStmt.close();
+
+					//Load all volumes in the export
+					logEntry.addNote("Updating Volumes, loading volumes from the export");
+					logEntry.saveResults();
+					BufferedReader csvReader = new BufferedReader(new FileReader(volumeExportFile));
+					String volumeInfoLine = csvReader.readLine();
+					HashMap<String, VolumeInfo> volumesForRecord = new HashMap<>();
+					String curIlsId = null;
+					int curRow = 0;
+					int numMalformattedRows = 0;
+					while (volumeInfoLine != null) {
+						String[] volumeInfoFields = volumeInfoLine.split("\\|");
+						if (volumeInfoFields.length > 7) {
+							String[] repairedVolumeInfo = new String[8];
+							repairedVolumeInfo[0] = volumeInfoFields[0];
+							repairedVolumeInfo[1] = volumeInfoFields[1] + "|" + volumeInfoFields[2];
+							System.arraycopy(volumeInfoFields, 3, repairedVolumeInfo, 2, 6);
+							volumeInfoFields = repairedVolumeInfo;
+						}
+						if (volumeInfoFields.length == 7) {
+							String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
+							if (!bibNumber.equals(curIlsId)){
+								if (curIlsId != null) {
+									//Save the current volume information
+									saveVolumes(volumesForRecord, addVolumeStmt, volumeUpdateInfo);
 								}
-								curVolume.relatedItems.add(relatedItemNumber);
+								volumesForRecord = new HashMap<>();
+								curIlsId = bibNumber;
+								allRecordsWithVolumes.remove(curIlsId);
 							}
-						} catch (NumberFormatException nfe) {
-							logger.debug("Mal formatted volume information " + String.join("|", volumeInfoFields));
-							numMalformattedRows++;
-						}
-					}else{
-						logger.debug("Mal formatted volume information " + String.join("|", volumeInfoFields));
-						numMalformattedRows++;
-					}
+							String fullCallNumber = volumeInfoFields[1].trim();
+							try {
+								int startOfVolumeInfo = Integer.parseInt(volumeInfoFields[2].trim());
+								//String dateUpdated = volumeInfoFields[3];
+								String relatedItemNumber = volumeInfoFields[4].trim();
+								String shortBibNumber = volumeInfoFields[5].trim();
+								String volumeNumber = volumeInfoFields[6].trim();
+								String volumeIdentifier = shortBibNumber + ":" + volumeNumber;
+								//startOfVolumeInfo = 0 indicates this item is not part of a volume. Will need separate handling.
+								if (startOfVolumeInfo > 0 && startOfVolumeInfo < fullCallNumber.length()) {
+									String volume = fullCallNumber.substring(startOfVolumeInfo);
+									VolumeInfo curVolume;
 
-					//Read the next line
-					curRow++;
-					volumeInfoFields = csvReader.readNext();
-				}
-
-				logEntry.addNote(numMalformattedRows + " rows were mal formatted in the volume export");
-				//Update the database
-				PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
-				PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
-				int numVolumesUpdated = 0;
-				int maxRelatedItemsLength = 0;
-				int maxDisplayLabelLength = 0;
-				for (String curVolumeKey : allVolumesInExport.keySet()){
-					VolumeInfo curVolume = allVolumesInExport.get(curVolumeKey);
-					existingVolumes.remove(curVolumeKey);
-					try{
-						addVolumeStmt.setString(1, curVolume.bibNumber);
-						addVolumeStmt.setString(2, curVolume.volumeIdentifier);
-						addVolumeStmt.setString(3, curVolume.volume);
-						addVolumeStmt.setString(4, curVolume.getRelatedItemsAsString());
-						addVolumeStmt.setLong(5, curVolume.displayOrder);
-						int numUpdates = addVolumeStmt.executeUpdate();
-						if (numUpdates > 0) {
-							numVolumesUpdated++;
-						}
-					}catch (SQLException sqlException){
-						if (sqlException.toString().contains("Data too long for column 'relatedItems'")){
-							if (curVolume.getRelatedItemsAsString().length() > maxRelatedItemsLength){
-								maxRelatedItemsLength = curVolume.getRelatedItemsAsString().length();
-							}
-						}else if (sqlException.toString().contains("Data too long for column 'displayLabel'")){
-							if (curVolume.volume.length() > maxDisplayLabelLength){
-								logger.debug("Long volume name (" + curVolume.volume.length() + ") " + curVolume.volume);
-								maxDisplayLabelLength = curVolume.volume.length();
+									if (volumesForRecord.containsKey(volume)) {
+										curVolume = volumesForRecord.get(volume);
+									} else {
+										curVolume = new VolumeInfo();
+										curVolume.bibNumber = bibNumber;
+										curVolume.volume = volume;
+										//So technically there isn't a volume identifier, this is really the identifier
+										//of the first call number we find which works just fine when placing the hold
+										curVolume.volumeIdentifier = volumeIdentifier;
+										curVolume.displayOrder = curRow;
+										volumesForRecord.put(volume, curVolume);
+									}
+									curVolume.relatedItems.add(relatedItemNumber);
+								}
+							} catch (NumberFormatException nfe) {
+								logger.debug("Mal formatted volume information " + volumeInfoLine);
+								numMalformattedRows++;
 							}
 						}else{
-							logEntry.incErrors("Error adding volume - volume length = " + curVolume.volume.length() + " related Items length = " + curVolume.getRelatedItemsAsString().length(), sqlException);
+							logger.debug("Mal formatted volume information " + volumeInfoLine);
+							numMalformattedRows++;
 						}
-					}
-				}
-				if (maxRelatedItemsLength > 0){
-					logEntry.incErrors("Related items were too long for the field, max length should be at least " + maxRelatedItemsLength);
-				}
-				if (maxDisplayLabelLength > 0){
-					logEntry.addNote("Volume Name was too long for the field, max length should be at least " + maxDisplayLabelLength);
-				}
 
-				long numVolumesDeleted = 0;
-				for (String existingVolume : existingVolumes){
-					logEntry.addNote("Deleted volume " + existingVolume);
-					deleteVolumeStmt.setString(1, existingVolume);
-					deleteVolumeStmt.executeUpdate();
-					numVolumesDeleted++;
+						//Read the next line
+						curRow++;
+						if (curRow % 50000 == 0){
+							logEntry.addNote("Read " + curRow + "rows in the volume table");
+							logEntry.saveResults();
+						}
+						volumeInfoLine = csvReader.readLine();
+					}
+					if (curIlsId != null) {
+						//Save the last volume information
+						saveVolumes(volumesForRecord, addVolumeStmt, volumeUpdateInfo);
+					}
+
+					logEntry.addNote(numMalformattedRows + " rows were mal formatted in the volume export");
+					logEntry.saveResults();
+
+					if (volumeUpdateInfo.maxRelatedItemsLength > 0){
+						logEntry.incErrors("Related items were too long for the field, max length should be at least " + volumeUpdateInfo.maxRelatedItemsLength);
+					}
+					if (volumeUpdateInfo.maxDisplayLabelLength > 0){
+						logEntry.addNote("Volume Name was too long for the field, max length should be at least " + volumeUpdateInfo.maxDisplayLabelLength);
+					}
+
+					long numVolumesDeleted = 0;
+					for (String existingVolume : allRecordsWithVolumes){
+						logEntry.addNote("Deleted volume " + existingVolume);
+						deleteVolumeStmt.setString(1, existingVolume);
+						deleteVolumeStmt.executeUpdate();
+						numVolumesDeleted++;
+					}
+					logEntry.addNote("Updated " + volumeUpdateInfo.numVolumesUpdated + " volumes and deleted " + numVolumesDeleted + " volumes");
+					logEntry.saveResults();
+
+					//Update the indexing profile to store the last volume time change
+					PreparedStatement updateLastVolumeExportTimeStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastVolumeExportTimestamp = ? where id = ?");
+					updateLastVolumeExportTimeStmt.setLong(1, fileTimeStamp / 1000);
+					updateLastVolumeExportTimeStmt.setLong(2, indexingProfile.getId());
+					updateLastVolumeExportTimeStmt.executeUpdate();
+				} catch (FileNotFoundException e) {
+					logEntry.incErrors("Error loading volumes", e);
+				} catch (IOException e) {
+					logEntry.incErrors("Error reading volume information", e);
+				} catch (SQLException e) {
+					logEntry.incErrors("Error reading and writing from database while loading volumes", e);
 				}
-				logEntry.addNote("Updated " + numVolumesUpdated + " volumes and deleted " + numVolumesDeleted + " volumes");
-			} catch (FileNotFoundException e) {
-				logEntry.incErrors("Error loading volumes", e);
-			} catch (IOException e) {
-				logEntry.incErrors("Error reading volume information", e);
-			} catch (SQLException e) {
-				logEntry.incErrors("Error reading and writing from database while loading volumes", e);
+				logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
+			}else{
+				logEntry.addNote("Volumes File has not changed");
 			}
-			logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
 		}else{
 			logEntry.addNote("Volume export file (volumes.txt) did not exist in " + SymphonyExportMain.indexingProfile.getMarcPath());
+		}
+	}
+
+	private static void saveVolumes(HashMap<String, VolumeInfo> volumesForRecord, PreparedStatement addVolumeStmt, VolumeUpdateInfo volumeUpdateInfo) {
+		//Update the database
+		for (String curVolumeKey : volumesForRecord.keySet()){
+			VolumeInfo curVolume = volumesForRecord.get(curVolumeKey);
+			try{
+				addVolumeStmt.setString(1, curVolume.bibNumber);
+				addVolumeStmt.setString(2, curVolume.volumeIdentifier);
+				addVolumeStmt.setString(3, curVolume.volume);
+				addVolumeStmt.setString(4, curVolume.getRelatedItemsAsString());
+				addVolumeStmt.setLong(5, curVolume.displayOrder);
+				int numUpdates = addVolumeStmt.executeUpdate();
+				if (numUpdates > 0) {
+					volumeUpdateInfo.numVolumesUpdated++;
+				}
+			}catch (SQLException sqlException){
+				if (sqlException.toString().contains("Data too long for column 'relatedItems'")){
+					if (curVolume.getRelatedItemsAsString().length() > volumeUpdateInfo.maxRelatedItemsLength){
+						volumeUpdateInfo.maxRelatedItemsLength = curVolume.getRelatedItemsAsString().length();
+					}
+				}else if (sqlException.toString().contains("Data too long for column 'displayLabel'")){
+					if (curVolume.volume.length() > volumeUpdateInfo.maxDisplayLabelLength){
+						logger.debug("Long volume name (" + curVolume.volume.length() + ") " + curVolume.volume);
+						volumeUpdateInfo.maxDisplayLabelLength = curVolume.volume.length();
+					}
+				}else{
+					logEntry.incErrors("Error adding volume - volume length = " + curVolume.volume.length() + " related Items length = " + curVolume.getRelatedItemsAsString().length(), sqlException);
+				}
+			}
 		}
 	}
 

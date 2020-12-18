@@ -1146,7 +1146,7 @@ public class SierraExportAPIMain {
 				if (marcData != null) {
 					logger.debug("Got marc record file");
 					//REad the MARC records from the Sierra API, should be UTF8, but not 100% sure
-					MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true, "BESTGUESS");
+					MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true, "UTF8");
 					while (marcReader.hasNext()) {
 						try {
 							Record marcRecord = marcReader.next();
@@ -1176,6 +1176,8 @@ public class SierraExportAPIMain {
 							logger.debug("Processed " + identifier.getIdentifier());
 						} catch (MarcException mre) {
 							logger.info("Error loading marc record from file, will load manually");
+						} catch (Exception e) {
+							logEntry.incErrors("Error reading marc record from file", e);
 						}
 					}
 					for (String id : idArray){

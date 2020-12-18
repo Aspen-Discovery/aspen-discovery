@@ -40,6 +40,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char format;
 	private boolean groupUnchangedFiles;
 	private long lastUpdateFromMarcExport;
+	private long lastVolumeExportTimestamp;
 	private boolean checkRecordForLargePrint;
 	private char subLocationSubfield;
 	private int determineAudienceBy;
@@ -155,6 +156,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
 				indexingProfile.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
 				indexingProfile.setLastUpdateFromMarcExport(indexingProfileRS.getLong("lastUpdateFromMarcExport"));
+				indexingProfile.setLastVolumeExportTimestamp(indexingProfileRS.getLong("lastVolumeExportTimestamp"));
 
 				indexingProfile.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
 			} else {
@@ -162,7 +164,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 			}
 
 		}catch (Exception e){
-			logger.error("Error reading index profile for CarlX", e);
+			logger.error("Error reading index profile " + profileToLoad, e);
 		}
 		return indexingProfile;
 	}
@@ -484,5 +486,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private void setDetermineAudienceBy(int determineAudienceBy) {
 		this.determineAudienceBy = determineAudienceBy;
+	}
+
+	public long getLastVolumeExportTimestamp() {
+		return lastVolumeExportTimestamp;
+	}
+
+	public void setLastVolumeExportTimestamp(long lastVolumeExportTimestamp) {
+		this.lastVolumeExportTimestamp = lastVolumeExportTimestamp;
 	}
 }
