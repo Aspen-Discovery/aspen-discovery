@@ -124,16 +124,16 @@ class SearchAPI extends Action
 			while ($line = fgets($fh)) {
 				$pieces = array();
 				if (preg_match('/^MemTotal:\s+(\d+)\skB$/', $line, $pieces)) {
-					$totalMem = $pieces[1];
+					$totalMem = $pieces[1] * 1024;
 				}else if (preg_match('/^MemAvailable:\s+(\d+)\skB$/', $line, $pieces)) {
-					$freeMem = $pieces[1];
+					$freeMem = $pieces[1] * 1024;
 				}
 			}
 			$this->addServerStat($serverStats, 'Total Memory', StringUtils::formatBytes($totalMem));
 			$this->addServerStat($serverStats, 'Available Memory', StringUtils::formatBytes($freeMem));
 			$percentMemoryUsage = round((1 - ($freeMem / $totalMem)) * 100, 1);
 			$this->addServerStat($serverStats, 'Percent Memory In Use', $percentMemoryUsage);
-			if ($freeMem < 1000000){
+			if ($freeMem < 1000000000){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "Less than 1GB ($freeMem) of available memory exists, increase available resources");
 			}elseif ($percentMemoryUsage > 95){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "{$percentMemoryUsage}% of total memory is in use, increase available resources");
