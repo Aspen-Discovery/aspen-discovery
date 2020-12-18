@@ -25,5 +25,3 @@ View the usage dashboard for ILS integration.
 [![ILS Integration](/manual/images/ILS-Integration.jpg)](https://youtu.be/NtHB8pVsnAo)
 
 [Watch on Youtube](https://youtu.be/NtHB8pVsnAo)
-
-#### [Bib Level Format](/Admin/HelpManual?page=Bib-Level-Format)
