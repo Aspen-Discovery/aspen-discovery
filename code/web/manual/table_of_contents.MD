@@ -22,6 +22,7 @@
     - [Translations](/Admin/HelpManual?page=Translations)
   - [Catalog / Grouped Works](/Admin/HelpManual?page=Catalog-Grouped-Works)
     - [Cataloging](/Admin/HelpManual?page=Cataloging)
+      - [Bib Level Format](/Admin/HelpManual?page=Bib-Level-Format)
     - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
     - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
       - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
@@ -63,9 +64,11 @@
   - Events
   - Circulation
     - Offline Holds Report
+  - Javascript Snippets
   - Server Setup
     - Installation
     - Background tasks
+  - System Messages
   - Uploaded PDFs
   - [Aspen Discovery Help](/Admin/HelpManual?page=Aspen-Discovery-Help)
   
@@ -85,9 +88,11 @@
 - Full Record Pages
 - [Genealogy](/Admin/HelpManual?page=Genealogy)
 - Interlibrary Loans
+- [Masquerade](/Admin/HelpManual?page=Masquerade)
 - [Materials Requests & Purchase Suggestions](/Admin/HelpManual?page=Materials-Requests-Purchase-Suggestions)
 - [Open Archives](/Admin/HelpManual?page=Open-Archives)
 - [Placards](/Admin/HelpManual?page=Placards)
+- [Rosen LevelUP](/Admin/HelpManual?page=Rosen-LevelUP)
 - Searching
   - Search Types
   - [Facets](/Admin/HelpManual?page=Facets)
@@ -95,12 +100,18 @@
     - [Subject Facets](/Admin/HelpManual?page=Subject-Facets)
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - System Messages
+- [While You Wait](/Admin/HelpManual?page=While-You-Wait)
+
 #### Patron Account
-  - [Materials Requests & Purchase Suggestions](/Admin/HelpManual?page=Materials-Requests-Purchase-Suggestions)
-  - [Paying Fines/Fees](/Admin/HelpManual?page=eCommerce)
-  - [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
+  - Checked Out Titles
+  - Titles On Hold
   - [Reading History](/Admin/HelpManual?page=Reading-History)
+  - [Paying Fines/Fees](/Admin/HelpManual?page=eCommerce)
+  - [Materials Requests & Purchase Suggestions](/Admin/HelpManual?page=Materials-Requests-Purchase-Suggestions)
+  - [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
   - [Recommendations](/Admin/HelpManual?page=Recommendations)
-  - [Rosen LevelUP](/Admin/HelpManual?page=Rosen-LevelUP)
+  - Account Settings
+    - Preferences and Language Settings
+    - Linked Accounts
+  - Search History
   - [User Lists](/Admin/HelpManual?page=User-Lists)
-  - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
