@@ -2,11 +2,11 @@
 
 ### Aspen Discovery Help Functions
 
-#### [Help Manual](https://youtu.be/mBE3rdUxthw)
+#### [Help Manual](/Admin/HelpManual)
 View Help Manual for Aspen Discovery.
-#### [Release Notes](https://aspen.bywatersolutions.com/project/aspen-release-notes)
+#### [Release Notes](/Admin/ReleaseNotes)
 View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.
-#### Submit Ticket
+#### [Submit Ticket](/Admin/SubmitTicket)
 Submit a support ticket for assistance with Aspen Discovery.
 
 ## Video Tutorials
