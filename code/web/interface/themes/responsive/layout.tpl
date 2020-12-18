@@ -54,10 +54,8 @@
 			</div>
 		{/foreach}
 
-		<div id="header-wrapper" class="row">
-			<div id="header-container" role="banner">
-				{include file='header_responsive.tpl'}
-			</div>
+		<div id="header-wrapper" class="row" role="banner">
+			{include file='header_responsive.tpl'}
 		</div>
 
 		<div id="horizontal-menu-bar-wrapper" class="row">

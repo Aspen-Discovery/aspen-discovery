@@ -20,6 +20,7 @@ class Websites_Settings extends ObjectEditor
 	}
 	function getAllObjects(){
 		$object = new WebsiteIndexSetting();
+		$object->deleted = 0;
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

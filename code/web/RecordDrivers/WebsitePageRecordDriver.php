@@ -103,7 +103,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 	public function getDescription()
 	{
 		if (isset($this->fields['description'])) {
-			return $this->fields['description'];
+			return strip_tags($this->fields['description']);
 		}else{
 			return '';
 		}

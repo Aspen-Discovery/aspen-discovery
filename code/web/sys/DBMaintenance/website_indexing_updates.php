@@ -117,6 +117,33 @@ function getWebsiteIndexingUpdates()
 			'sql' => [
 				"ALTER TABLE website_indexing_settings ADD COLUMN descriptionExpression VARCHAR(255) DEFAULT ''",
 			]
+		],
+
+		'web_indexer_deleted_settings' => [
+			'title' => 'Web Indexer add the ability to delete settings',
+			'description' => 'Add deleted field for website indexing settings',
+			'sql' => [
+				'ALTER TABLE website_indexing_settings ADD COLUMN deleted TINYINT(1) DEFAULT 0'
+			]
+		],
+
+		'web_indexer_scoping' => [
+			'title' => 'Web Indexer scoping',
+			'description' => 'Add scoping for the web indexer',
+			'sql' => [
+				'CREATE TABLE library_website_indexing (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					settingId INT(11) NOT NULL,
+					libraryId INT(11) NOT NULL,
+					UNIQUE (settingId, libraryId)
+				) ENGINE = InnoDB',
+				'CREATE TABLE location_website_indexing (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					settingId INT(11) NOT NULL,
+					locationId INT(11) NOT NULL,
+					UNIQUE (settingId, locationId)
+				) ENGINE = InnoDB'
+			]
 		]
 	);
 }

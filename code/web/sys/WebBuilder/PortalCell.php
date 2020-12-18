@@ -44,7 +44,6 @@ class PortalCell extends DataObject
 			'collection_spotlight' => 'Collection Spotlight',
 			'custom_form' => 'Form',
 			'image' => 'Image',
-			'video' => 'Video',
 			'vimeo_video' => 'Vimeo Video',
 			'youtube_video' => 'YouTube Video',
 		];
@@ -107,16 +106,6 @@ class PortalCell extends DataObject
 			$customForm->id = $this->sourceId;
 			if ($customForm->find(true)){
 				$contents .= $customForm->getFormattedFields();
-			}
-		}elseif ($this->sourceType == 'video'){
-			require_once ROOT_DIR . '/sys/File/FileUpload.php';
-			$fileUpload = new FileUpload();
-			$fileUpload->id = $this->sourceId;
-			if ($fileUpload->find(true)){
-				$fileSize = filesize($fileUpload->fullPath);
-				$interface->assign('fileSize', StringUtils::formatBytes($fileSize));
-				$interface->assign('videoPath', $configArray['Site']['url'] . '/Files/' . $this->sourceId . '/Contents');
-				$contents .= $interface->fetch('Files/embeddedVideo.tpl');
 			}
 		}elseif ($this->sourceType == 'vimeo_video'){
 			$sourceInfo = $this->sourceInfo;

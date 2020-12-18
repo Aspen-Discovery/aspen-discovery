@@ -23,14 +23,16 @@ require_once ROOT_DIR . '/sys/ConfigArray.php';
 global $configArray;
 $configArray = readConfig();
 
+$aspenUsage->instance = $_SERVER['SERVER_NAME'];
+
 //This has to be done after reading configuration so we can get the servername
 global $usageByIPAddress;
-global $instanceName;
+global $fullServerName;
 $usageByIPAddress = new UsageByIPAddress();
 $usageByIPAddress->year = date('Y');
 $usageByIPAddress->month = date('n');
 $usageByIPAddress->ipAddress = IPAddress::getClientIP();
-$usageByIPAddress->instance = $instanceName;
+$usageByIPAddress->instance = $_SERVER['SERVER_NAME'];
 
 require_once ROOT_DIR . '/sys/Timer.php';
 global $timer;

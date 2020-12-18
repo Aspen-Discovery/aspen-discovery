@@ -1,6 +1,7 @@
 @import "lib/fontawesome-all.min.css";
 @import "lib/rome.min.css";
 @import "simplemde.min.css";
+@import "lib/Chart.min.css";
 article,
 aside,
 details,
@@ -8495,12 +8496,10 @@ hr.menu {
 .dismissable-system-message-text {
   width: calc(100% - 30px);
 }
-#header-container {
+#header-wrapper {
   padding-top: 0;
-  height: 120px;
   background-color: #f2f2f2;
   margin-bottom: 0;
-  min-height: 110px;
 }
 @media (max-width: 479px) {
   #header-logo-container {

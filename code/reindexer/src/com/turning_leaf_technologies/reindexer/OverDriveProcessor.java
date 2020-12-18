@@ -87,6 +87,10 @@ class OverDriveProcessor {
 								formatCategory = "Movies";
 								primaryFormat = "eVideo";
 								break;
+							case "Magazine":
+								formatCategory = "eBook";
+								primaryFormat = "eMagazine";
+								break;
 							default:
 								formatCategory = mediaType;
 								primaryFormat = mediaType;
@@ -236,7 +240,11 @@ class OverDriveProcessor {
 						}
 						overDriveRecord.setFormatBoost(maxFormatBoost);
 
-						overDriveRecord.setEdition("");
+						if (rawMetadataDecoded.has("edition")){
+							overDriveRecord.setEdition(rawMetadataDecoded.getString("edition"));
+						}else {
+							overDriveRecord.setEdition("");
+						}
 						overDriveRecord.setPrimaryLanguage(primaryLanguage);
 						overDriveRecord.setPublisher(StringUtils.trimTrailingPunctuation(metadata.get("publisher")));
 						overDriveRecord.setPublicationDate(metadata.get("publicationDate"));

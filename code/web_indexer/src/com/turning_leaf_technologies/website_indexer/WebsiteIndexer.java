@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.website_indexer;
 
 import com.turning_leaf_technologies.strings.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -16,6 +17,7 @@ import org.apache.solr.common.SolrInputDocument;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -42,10 +44,11 @@ class WebsiteIndexer {
 	private static final CRC32 checksumCalculator = new CRC32();
 	private PreparedStatement addPageToStmt;
 	private PreparedStatement deletePageStmt;
+	private final HashSet<String> scopesToInclude;
 
 	private final ConcurrentUpdateSolrClient solrUpdateServer;
 
-	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
+	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
 		this.websiteId = websiteId;
 		this.websiteName = websiteName;
 		this.searchCategory = searchCategory;
@@ -55,7 +58,7 @@ class WebsiteIndexer {
 			this.siteUrl = this.siteUrl.substring(0, this.siteUrl.indexOf("/", 8));
 		}
 		this.siteUrlShort = siteUrl.replaceAll("http[s]?://", "");
-
+		this.scopesToInclude = scopesToInclude;
 
 		this.logEntry = logEntry;
 		this.aspenConn = aspenConn;
@@ -121,7 +124,7 @@ class WebsiteIndexer {
 	void spiderWebsite() {
 		if (fullReload) {
 			try {
-				solrUpdateServer.deleteByQuery("website_name:" + websiteName);
+				solrUpdateServer.deleteByQuery("website_name:\"" + websiteName + "\"");
 				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 			} catch (HttpSolrClient.RemoteSolrException rse) {
 				logEntry.addNote("Solr is not running properly, try restarting " + rse.toString());
@@ -150,6 +153,9 @@ class WebsiteIndexer {
 			} else {
 				moreToProcess = false;
 			}
+			if (allLinks.size() > 2500){
+				logEntry.incErrors("Error processing website, found more than 2500 links in the site");
+			}
 		}
 
 		for (WebPage curPage : existingPages.values()) {
@@ -158,7 +164,7 @@ class WebsiteIndexer {
 					deletePageStmt.setLong(1, curPage.getId());
 					deletePageStmt.executeUpdate();
 					logEntry.incDeleted();
-					solrUpdateServer.deleteById(Long.toString(curPage.getId()));
+					solrUpdateServer.deleteByQuery("id:" + curPage.getId() + "AND website_name:\"" + websiteName + "\"");
 				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error deleting page");
@@ -232,6 +238,9 @@ class WebsiteIndexer {
 							while (regexMatcher.find()) {
 								for (int i = 1; i <= regexMatcher.groupCount(); i++) {
 									String linkUrl = regexMatcher.group(1).trim();
+									if (linkUrl.contains("&#x")){
+										linkUrl = StringEscapeUtils.unescapeHtml4(linkUrl);
+									}
 									if (linkUrl.contains("#")) {
 										linkUrl = linkUrl.substring(0, linkUrl.lastIndexOf("#"));
 									}
@@ -279,6 +288,10 @@ class WebsiteIndexer {
 									if (includePath && !allLinks.containsKey(linkUrl)) {
 										page.getLinks().add(linkUrl);
 										allLinks.put(linkUrl, false);
+										//There are too many pages to process, quit
+										if (allLinks.size() > 2500){
+											return;
+										}
 										logEntry.incNumPages();
 									}
 								}
@@ -345,6 +358,8 @@ class WebsiteIndexer {
 							//Strip tags from body to get the text of the page, this is done using Solr to remove tags.
 							solrDocument.addField("keywords", response);
 							solrDocument.addField("description", description.trim());
+							solrDocument.addField("scope_has_related_records", scopesToInclude);
+
 							//TODO: Add popularity
 							solrUpdateServer.add(solrDocument);
 						}

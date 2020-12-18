@@ -10,6 +10,7 @@ class SystemMessage extends DataObject
 	public $message;
 	public $showOn;
 	public /** @noinspection PhpUnused */ $dismissable;
+	public $messageStyle;
 	public $startDate;
 	public $endDate;
 
@@ -25,6 +26,7 @@ class SystemMessage extends DataObject
 			'title' => array('property'=>'title', 'type'=>'text', 'label'=>'Title (not shown)', 'description'=>'The title of the system message'),
 			'message' => array('property'=>'message', 'type'=>'markdown', 'label'=>'Message to show', 'description'=>'The body of the system message', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
 			'showOn' => array('property'=>'showOn', 'type'=>'enum', 'values' => [0=>'All Pages', 1=>'All Account Pages', 2=>'Checkouts Page', 3=>'Holds Page', 4=>'Fines Page'], 'label' => 'Show On', 'description'=>'The pages this message should be shown on'),
+			'messageStyle' => array('property'=>'messageStyle', 'type'=>'enum', 'values' => [''=>'none', 'danger'=>'Danger (red)', 'warning'=>'Warning (yellow)', 'info'=>'Info (blue)', 'success'=>'Success (Green)'], 'label' => 'Message Style', 'description'=>'The default style of the message'),
 			'startDate' => array('property'=>'startDate', 'type'=>'timestamp','label'=>'Start Date to Show', 'description'=> 'The first date the system message should be shown, leave blank to always show', 'unsetLabel'=>'No start date'),
 			'endDate' => array('property'=>'endDate', 'type'=>'timestamp','label'=>'End Date to Show', 'description'=> 'The end date the system message should be shown, leave blank to always show', 'unsetLabel'=>'No end date'),
 			'dismissable' => array('property' => 'dismissable', 'type' => 'checkbox', 'label' => 'Dismissable', 'description' => 'Whether or not a user can dismiss the system message'),

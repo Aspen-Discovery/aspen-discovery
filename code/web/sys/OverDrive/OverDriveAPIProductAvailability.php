@@ -6,6 +6,7 @@ class OverDriveAPIProductAvailability extends DataObject{
 	public $id;
 	public $productId;
 	public $libraryId;
+	public $settingId;
 	public $available;
 	public $copiesOwned;
 	public $copiesAvailable;

@@ -6,6 +6,7 @@ class Axis360Title {
 	private long id;
 	private String axis360Id;
 	private long checksum;
+	private boolean processed;
 	private boolean deleted;
 
 	private HashSet<Long> activeSettings = new HashSet<>(); //The settings (libraries) the title is active in
@@ -43,5 +44,13 @@ class Axis360Title {
 
 	int getNumSettings(){
 		return this.activeSettings.size();
+	}
+
+	boolean isProcessed() {
+		return processed;
+	}
+
+	void setProcessed(boolean processed) {
+		this.processed = processed;
 	}
 }

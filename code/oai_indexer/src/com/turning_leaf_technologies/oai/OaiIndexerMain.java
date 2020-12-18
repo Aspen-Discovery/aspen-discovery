@@ -107,6 +107,9 @@ public class OaiIndexerMain {
 		}
 
 		try {
+			PreparedStatement getLibrariesForCollectionStmt = aspenConn.prepareStatement("SELECT library.subdomain From library_open_archives_collection inner join library on library.libraryId = library_open_archives_collection.libraryId where collectionId = ?");
+			PreparedStatement getLocationsForCollectionStmt = aspenConn.prepareStatement("SELECT code, subLocation from location_open_archives_collection inner join location on location.locationId = location_open_archives_collection.locationId where collectionId = ?");
+
 			ResultSet collectionsRS = getOpenArchiveCollections.executeQuery();
 			while (collectionsRS.next()) {
 				String collectionName = collectionsRS.getString("name");
@@ -149,7 +152,31 @@ public class OaiIndexerMain {
 							}
 						}
 					}
-					extractAndIndexOaiCollection(collectionName, collectionId, subjectFilters, baseUrl, setName, currentTime, loadOneMonthAtATime);
+
+					HashSet<String> scopesToInclude = new HashSet<>();
+
+					//Get a list of libraries and locations that the setting applies to
+					getLibrariesForCollectionStmt.setLong(1, collectionId);
+					ResultSet librariesForCollectionRS = getLibrariesForCollectionStmt.executeQuery();
+					while (librariesForCollectionRS.next()){
+						String subdomain = librariesForCollectionRS.getString("subdomain");
+						subdomain = subdomain.replaceAll("[^a-zA-Z0-9_]", "");
+						scopesToInclude.add(subdomain);
+					}
+
+					getLocationsForCollectionStmt.setLong(1, collectionId);
+					ResultSet locationsForCollectionRS = getLocationsForCollectionStmt.executeQuery();
+					while (locationsForCollectionRS.next()){
+						String subLocation = locationsForCollectionRS.getString("subLocation");
+						if (!locationsForCollectionRS.wasNull() && subLocation.length() > 0){
+							scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", ""));
+						}else {
+							String code = locationsForCollectionRS.getString("code");
+							scopesToInclude.add(code.replaceAll("[^a-zA-Z0-9_]", ""));
+						}
+					}
+
+					extractAndIndexOaiCollection(collectionName, collectionId, subjectFilters, baseUrl, setName, currentTime, loadOneMonthAtATime, scopesToInclude);
 				}
 			}
 		} catch (SQLException e) {
@@ -163,7 +190,7 @@ public class OaiIndexerMain {
 		}
 	}
 
-	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime, boolean loadOneMonthAtATime) {
+	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime, boolean loadOneMonthAtATime, HashSet<String> scopesToInclude) {
 		//Get the existing records for the collection
 		//Get existing records for the collection
 		OpenArchivesExtractLogEntry logEntry = createDbLogEntry(collectionName);
@@ -263,7 +290,7 @@ public class OaiIndexerMain {
 									if (curRecordNode instanceof Element) {
 										logEntry.incNumRecords();
 										Element curRecordElement = (Element) curRecordNode;
-										if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry)) {
+										if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry, scopesToInclude)) {
 											numRecordsLoaded++;
 										} else {
 											numRecordsSkipped++;
@@ -363,10 +390,11 @@ public class OaiIndexerMain {
 		updateServer.setRequestWriter(new BinaryRequestWriter());
 	}
 
-	private static boolean indexElement(Element curRecordElement, HashMap<String, ExistingOAIRecord> existingRecords, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects, OpenArchivesExtractLogEntry logEntry) {
+	private static boolean indexElement(Element curRecordElement, HashMap<String, ExistingOAIRecord> existingRecords, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects, OpenArchivesExtractLogEntry logEntry, HashSet<String> scopesToInclude) {
 		OAISolrRecord solrRecord = new OAISolrRecord();
 		solrRecord.setCollectionId(collectionId);
 		solrRecord.setCollectionName(collectionName);
+		solrRecord.setScopesToInclude(scopesToInclude);
 		logger.debug("Indexing element");
 		NodeList children = curRecordElement.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {

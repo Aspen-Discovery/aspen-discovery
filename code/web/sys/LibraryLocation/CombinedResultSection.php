@@ -73,7 +73,7 @@ abstract class CombinedResultSection extends DataObject{
 			$search = array(array('lookfor' => $searchTerm, 'index' => $searchType));
 			return $prospector->getSearchLink($search);
 		}elseif ($this->source == 'websites'){
-			return "/Websites/Results?lookfor=$searchTerm&searchSource=open_archives";
+			return "/Websites/Results?lookfor=$searchTerm&searchSource=websites";
 		}else{
 			return '';
 		}

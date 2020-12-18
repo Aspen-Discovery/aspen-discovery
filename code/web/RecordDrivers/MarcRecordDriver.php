@@ -909,14 +909,25 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						$holdableVolumes[$itemDetail->volumeId] = $itemDetail->volume;
 					}
 				}
-				foreach ($holdableVolumes as $volumeId => $volumeName) {
+				if (count($holdableVolumes) > 3){
+					//Show a dialog to enable the patron to select a volume to place a hold on
 					$actions[] = array(
-						'title' => 'Hold ' . $volumeName,
+						'title' => 'Place Hold',
 						'url' => '',
-						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volumeId');",
+						'onclick' => "return AspenDiscovery.Record.showPlaceHoldVolumes('{$this->getModule()}', '$source', '$id');",
 						'requireLogin' => false,
 						'type' => 'ils_hold'
 					);
+				}else {
+					foreach ($holdableVolumes as $volumeId => $volumeName) {
+						$actions[] = array(
+							'title' => 'Hold ' . $volumeName,
+							'url' => '',
+							'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volumeId');",
+							'requireLogin' => false,
+							'type' => 'ils_hold'
+						);
+					}
 				}
 			} else {
 				$actions[] = array(

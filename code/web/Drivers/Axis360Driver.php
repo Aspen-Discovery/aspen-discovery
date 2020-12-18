@@ -432,12 +432,14 @@ class Axis360Driver extends AbstractEContentDriver
 	 */
 	public function trackUserUsageOfAxis360($user): void
 	{
+		global $fullServerName;
 		require_once ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php';
 		$userUsage = new UserAxis360Usage();
 		/** @noinspection DuplicatedCode */
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
+		$userUsage->instance = $fullServerName;
 
 		if ($userUsage->find(true)) {
 			$userUsage->usageCount++;
@@ -453,6 +455,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 */
 	function trackRecordCheckout($recordId): void
 	{
+		global $fullServerName;
 		require_once ROOT_DIR . '/sys/Axis360/Axis360RecordUsage.php';
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Title.php';
 		$recordUsage = new Axis360RecordUsage();
@@ -460,6 +463,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$product->axis360Id = $recordId;
 		if ($product->find(true)) {
 			$recordUsage->axis360Id = $product->axis360Id;
+			$recordUsage->instance = $fullServerName;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
 			if ($recordUsage->find(true)) {
@@ -478,12 +482,14 @@ class Axis360Driver extends AbstractEContentDriver
 	 */
 	function trackRecordHold($recordId): void
 	{
+		global $fullServerName;
 		require_once ROOT_DIR . '/sys/Axis360/Axis360RecordUsage.php';
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Title.php';
 		$recordUsage = new Axis360RecordUsage();
 		$product = new Axis360Title();
 		$product->axis360Id = $recordId;
 		if ($product->find(true)){
+			$recordUsage->instance = $fullServerName;
 			$recordUsage->axis360Id = $product->axis360Id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
@@ -648,10 +654,10 @@ class Axis360Driver extends AbstractEContentDriver
 
 	private function incrementStat(string $fieldName)
 	{
-		global $instanceName;
+		global $fullServerName;
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
 		$axis360Stats = new Axis360Stats();
-		$axis360Stats->instance = $instanceName;
+		$axis360Stats->instance = $fullServerName;
 		$axis360Stats->year = date('Y');
 		$axis360Stats->month = date('n');
 		if ($axis360Stats->find(true)) {

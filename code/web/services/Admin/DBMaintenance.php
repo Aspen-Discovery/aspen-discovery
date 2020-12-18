@@ -1876,6 +1876,33 @@ class Admin_DBMaintenance extends Admin_Admin
 					)
 				],
 
+				'aspen_usage_instance' => [
+					'title' => 'Aspen Usage - Instance Information',
+					'description' => 'Add Instance Information to Aspen Usage',
+					'sql' => [
+						'ALTER TABLE aspen_usage ADD COLUMN instance VARCHAR(100)',
+						'ALTER TABLE aspen_usage DROP INDEX year',
+						'ALTER TABLE aspen_usage ADD INDEX (instance, year, month)'
+					]
+				],
+
+				'aspen_usage_remove_slow_pages' => [
+					'title' => 'Aspen Usage - Remove slow pages',
+					'description' => 'Remove slow pages since it was not accurate',
+					'sql' => [
+						'ALTER TABLE aspen_usage DROP COLUMN slowPages',
+						'ALTER TABLE aspen_usage DROP COLUMN slowAjaxRequests',
+					]
+				],
+
+				'aspen_usage_add_sessions' => [
+					'title' => 'Aspen Usage - Add Sessions',
+					'description' => 'Add a count of the number of sessions started',
+					'sql' => [
+						'ALTER TABLE aspen_usage ADD COLUMN sessionsStarted INT(11) DEFAULT 0',
+					]
+				],
+
 				'slow_pages' => [
 					'title' => 'Slow Page Tracking',
 					'description' => 'Add tables to track which pages are slow',
@@ -2087,6 +2114,14 @@ class Admin_DBMaintenance extends Admin_Admin
 							locationId INT,
 							UNIQUE INDEX systemMessageLocation(systemMessageId, locationId)
 						) ENGINE = INNODB;',
+					]
+				],
+
+				'system_message_style' => [
+					'title' => 'System Message Style',
+					'description' => 'The default styling to apply to the message',
+					'sql' => [
+						"ALTER TABLE system_messages ADD COLUMN messageStyle VARCHAR(10) default ''"
 					]
 				],
 

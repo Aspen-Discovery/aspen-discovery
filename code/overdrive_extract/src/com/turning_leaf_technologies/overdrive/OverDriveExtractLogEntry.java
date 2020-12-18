@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 class OverDriveExtractLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
+	private long settingId;
 	private Date startTime;
 	private Date endTime;
 	private ArrayList<String> notes = new ArrayList<>();
@@ -26,11 +27,12 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 	private int numMetadataChanges = 0;
 	private Logger logger;
 	
-	OverDriveExtractLogEntry(Connection dbConn, Logger logger){
+	OverDriveExtractLogEntry(Connection dbConn, OverDriveSetting setting, Logger logger){
 		this.logger = logger;
+		this.settingId = setting.getId();
 		this.startTime = new Date();
 		try {
-			insertLogEntry = dbConn.prepareStatement("INSERT into overdrive_extract_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			insertLogEntry = dbConn.prepareStatement("INSERT into overdrive_extract_log (startTime, settingId) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateLogEntry = dbConn.prepareStatement("UPDATE overdrive_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numSkipped = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
@@ -70,6 +72,7 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 		try {
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);
+				insertLogEntry.setLong(2, settingId);
 				insertLogEntry.executeUpdate();
 				ResultSet generatedKeys = insertLogEntry.getGeneratedKeys();
 				if (generatedKeys.next()){
@@ -113,14 +116,14 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 		this.saveResults();
 	}
 	public void incErrors(String note) {
-		this.addNote(note);
+		this.addNote("ERROR: " + note);
 		numErrors++;
 		this.saveResults();
 		logger.error(note);
 	}
 
 	public void incErrors(String note, Exception e){
-		this.addNote(note + " " + e.toString());
+		this.addNote("ERROR: " + note + " " + e.toString());
 		numErrors++;
 		this.saveResults();
 		logger.error(note, e);

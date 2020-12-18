@@ -140,5 +140,23 @@ function getOpenArchivesUpdates()
 			]
 		],
 
+		'open_archives_scoping' => [
+			'title' => 'Open Archives scoping',
+			'description' => 'Add scoping for open archives',
+			'sql' => [
+				'CREATE TABLE library_open_archives_collection (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					collectionId INT(11) NOT NULL,
+					libraryId INT(11) NOT NULL,
+					UNIQUE (collectionId, libraryId)
+				) ENGINE = InnoDB',
+				'CREATE TABLE location_open_archives_collection (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					collectionId INT(11) NOT NULL,
+					locationId INT(11) NOT NULL,
+					UNIQUE (collectionId, locationId)
+				) ENGINE = InnoDB'
+			]
+		]
 	];
 }

@@ -326,6 +326,35 @@ function getOverDriveUpdates()
 				'ALTER TABLE overdrive_api_product_formats CHANGE partCount partCount SMALLINT',
 			]
 		],
+
+		'overdrive_add_setting_to_scope' => [
+			'title' => 'Add settingId to OverDrive scope',
+			'description' => 'Allow multiple settings to be defined for OverDrive within a consortium',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE overdrive_scopes ADD column settingId INT(11)',
+				'updateOverDriveScopes'
+			]
+		],
+
+		'overdrive_add_setting_to_log' => [
+			'title' => 'Add settingID to OverDrive log entry',
+			'description' => 'Define which settings are being logged',
+			'sql' => [
+				'ALTER table overdrive_extract_log ADD column settingId INT(11)',
+				'updateOverDriveLogEntries'
+			]
+		],
+
+		'overdrive_add_setting_to_product_availability' => [
+			'title' => 'Add settingID to OverDrive availability',
+			'description' => 'Define which settings the availability belongs to',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER table overdrive_api_product_availability ADD column settingId INT(11)',
+				'updateOverDriveAvailabilities'
+			]
+		],
 	);
 }
 
@@ -421,4 +450,44 @@ function getOverDriveScopeSettings($uniqueRow): OverDriveScope
 	$overdriveScope->overdriveAdvantageName = $uniqueRow['overdriveAdvantageName'];
 	$overdriveScope->overdriveAdvantageProductsKey = $uniqueRow['overdriveAdvantageProductsKey'];
 	return $overdriveScope;
+}
+
+/** @noinspection PhpUnused */
+function updateOverDriveScopes(){
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+	$overdriveSettings = new OverDriveSetting();
+	if ($overdriveSettings->find(true)){
+		$overdriveScopes = new OverDriveScope();
+		$overdriveScopes->find();
+		while ($overdriveScopes->fetch()){
+			$overdriveScopes->settingId = $overdriveSettings->id;
+			$overdriveScopes->update();
+		}
+	}
+}
+
+
+
+
+/** @noinspection PhpUnused */
+function updateOverDriveLogEntries(){
+	global $aspen_db;
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveExtractLogEntry.php';
+	$overdriveSettings = new OverDriveSetting();
+	if ($overdriveSettings->find(true)){
+		$aspen_db->query("update overdrive_extract_log set settingId = {$overdriveSettings->id}");
+	}
+}
+
+/** @noinspection PhpUnused */
+function updateOverDriveAvailabilities(){
+	global $aspen_db;
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
+	$overdriveSettings = new OverDriveSetting();
+	if ($overdriveSettings->find(true)){
+		$aspen_db->query("update overdrive_api_product_availability set settingId = {$overdriveSettings->id}");
+	}
 }

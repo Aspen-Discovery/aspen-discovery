@@ -124,16 +124,16 @@ class SearchAPI extends Action
 			while ($line = fgets($fh)) {
 				$pieces = array();
 				if (preg_match('/^MemTotal:\s+(\d+)\skB$/', $line, $pieces)) {
-					$totalMem = $pieces[1];
+					$totalMem = $pieces[1] * 1024;
 				}else if (preg_match('/^MemAvailable:\s+(\d+)\skB$/', $line, $pieces)) {
-					$freeMem = $pieces[1];
+					$freeMem = $pieces[1] * 1024;
 				}
 			}
 			$this->addServerStat($serverStats, 'Total Memory', StringUtils::formatBytes($totalMem));
 			$this->addServerStat($serverStats, 'Available Memory', StringUtils::formatBytes($freeMem));
 			$percentMemoryUsage = round((1 - ($freeMem / $totalMem)) * 100, 1);
 			$this->addServerStat($serverStats, 'Percent Memory In Use', $percentMemoryUsage);
-			if ($freeMem < 1000000){
+			if ($freeMem < 1000000000){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "Less than 1GB ($freeMem) of available memory exists, increase available resources");
 			}elseif ($percentMemoryUsage > 95){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "{$percentMemoryUsage}% of total memory is in use, increase available resources");
@@ -209,24 +209,36 @@ class SearchAPI extends Action
 				$logErrors = 0;
 				$logEntry->find();
 				$numUnfinishedEntries = 0;
+				$lastFinishTime = 0;
 				while ($logEntry->fetch()){
 					if ($logEntry->numErrors > 0){
 						$logErrors++;
 					}
 					if (empty($logEntry->endTime)){
 						$numUnfinishedEntries++;
-					}
-				}
-				if ($logErrors > 0){
-					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
-				}else{
-					if ($numUnfinishedEntries > 1){
-						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
 					}else{
-						$this->addCheck($checks, $aspenModule->name);
+						if ($logEntry->endTime > $lastFinishTime){
+							$lastFinishTime = $logEntry->endTime;
+						}
 					}
 				}
-
+				$checkEntriesInLast24Hours = true;
+				if ($aspenModule->name == 'Open Archives'){
+					$checkEntriesInLast24Hours = false;
+				}
+				if ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)){
+					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
+				}else{
+					if ($logErrors > 0){
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
+					}else{
+						if ($numUnfinishedEntries > 1){
+							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
+						}else{
+							$this->addCheck($checks, $aspenModule->name);
+						}
+					}
+				}
 			}
 		}
 

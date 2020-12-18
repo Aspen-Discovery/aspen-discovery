@@ -448,7 +448,7 @@ public class CarlXExportMain {
 			long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
 			if (lastUpdateFromMarc > lastCarlXExtractTime){
 				//get an extra hour since it can take awhile for the MARC export to complete.
-				lastCarlXExtractTime = lastUpdateFromMarc - 60 * 60;
+				lastCarlXExtractTime = lastUpdateFromMarc - (long)(2.5 * 60 * 60);
 			}else {
 				if (lastCarlXExtractTime == 0) {
 					lastCarlXExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;

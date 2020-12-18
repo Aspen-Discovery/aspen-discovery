@@ -17,7 +17,10 @@ lib/rater.min.js
 lib/recaptcha_ajax.min.js
 lib/simplemde.min.js
 lib/moment.min.js
+#rome.standalone.min.js must come after moment
 lib/rome.standalone.min.js
+#Chart.js must come after moment
+lib/Chart.min.js
 aspen/globals.js
 aspen/base.js
 aspen/account.js
