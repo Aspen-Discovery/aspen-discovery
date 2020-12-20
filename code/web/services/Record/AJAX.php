@@ -237,7 +237,7 @@ class Record_AJAX extends Action
 				);
 			}
 
-			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getId());
+			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 			$hasItemsWithoutVolumes = false;
 			foreach ($relatedRecord->getItems() as $item){
 				if (empty($item->volume)){
