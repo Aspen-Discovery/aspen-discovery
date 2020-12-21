@@ -11,7 +11,7 @@ class OverDrive_Dashboard extends Admin_Dashboard
 	{
 		global $interface;
 
-		$instanceName = $this->loadInstanceInformation('Axis360Stats');
+		$instanceName = $this->loadInstanceInformation('UserOverDriveUsage');
 		$this->loadDates();
 		//Generate stats
 
