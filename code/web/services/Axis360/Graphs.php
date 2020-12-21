@@ -11,7 +11,6 @@ class Graphs extends Admin_Admin
 	{
 		global $interface;
 		$title = 'Axis 360 Usage Graph';
-		$stat = $_REQUEST['stat'];
 		if (!empty($_REQUEST['instance'])){
 			$instanceName = $_REQUEST['instance'];
 		}else{
