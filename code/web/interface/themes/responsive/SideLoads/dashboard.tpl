@@ -2,7 +2,7 @@
 	<div id="main-content" class="col-sm-12">
 		<h1>Side Loading Dashboard</h1>
 		{include file="Admin/selectInterfaceForm.tpl"}
-		
+
 		{foreach from=$profiles item=profileName key=profileId}
 			<h2>{$profileName}</h2>
 			<div class="row">
