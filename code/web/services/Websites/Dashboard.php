@@ -99,7 +99,7 @@ class Websites_Dashboard extends Admin_Dashboard
 		$recordInfo = new WebsitePage();
 		$usage->joinAdd($recordInfo, 'INNER', 'record', 'webPageId', 'id');
 		if (!empty($instanceName)){
-			$recordInfo->instance = $instanceName;
+			$usage->instance = $instanceName;
 		}
 		if ($month != null) {
 			$usage->month = $month;
