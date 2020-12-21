@@ -42,6 +42,7 @@ class EBSCO_EDSDashboard extends Admin_Dashboard
 	}
 
 	/**
+	 * @param string|null $instanceName
 	 * @param string|null $month
 	 * @param string|null $year
 	 * @return int
@@ -49,6 +50,9 @@ class EBSCO_EDSDashboard extends Admin_Dashboard
 	public function getUserStats($month, $year): int
 	{
 		$userUsage = new UserEbscoEdsUsage();
+		if (!empty($instanceName)){
+			$userUsage->instance = $instanceName;
+		}
 		if ($month != null){
 			$userUsage->month = $month;
 		}
@@ -59,6 +63,7 @@ class EBSCO_EDSDashboard extends Admin_Dashboard
 	}
 
 	/**
+	 * @param string|null $instanceName
 	 * @param string|null $month
 	 * @param string|null $year
 	 * @return array
@@ -66,6 +71,9 @@ class EBSCO_EDSDashboard extends Admin_Dashboard
 	public function getRecordStats($month, $year): array
 	{
 		$usage = new EbscoEdsRecordUsage();
+		if (!empty($instanceName)){
+			$usage->instance = $instanceName;
+		}
 		if ($month != null){
 			$usage->month = $month;
 		}
