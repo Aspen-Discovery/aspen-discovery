@@ -47,7 +47,7 @@ class EBSCO_EDSDashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return int
 	 */
-	public function getUserStats($month, $year): int
+	public function getUserStats($instanceName, $month, $year): int
 	{
 		$userUsage = new UserEbscoEdsUsage();
 		if (!empty($instanceName)){
@@ -68,7 +68,7 @@ class EBSCO_EDSDashboard extends Admin_Dashboard
 	 * @param string|null $year
 	 * @return array
 	 */
-	public function getRecordStats($month, $year): array
+	public function getRecordStats($instanceName, $month, $year): array
 	{
 		$usage = new EbscoEdsRecordUsage();
 		if (!empty($instanceName)){
