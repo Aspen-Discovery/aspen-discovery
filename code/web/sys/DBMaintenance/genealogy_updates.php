@@ -129,9 +129,9 @@ function getGenealogyUpdates(){
 			'description' => 'Add split date information to marriages if not already added',
 			'continueOnError' => true,
 			'sql' => [
-				"ALTER TABLE marriage ADD COLUMN dateDay INT NULL",
-				"ALTER TABLE marriage ADD COLUMN dateMonth INT NULL",
-				"ALTER TABLE marriage ADD COLUMN dateYear INT NULL"
+				"ALTER TABLE marriage ADD COLUMN marriageDateDay INT NULL",
+				"ALTER TABLE marriage ADD COLUMN marriageDateMonth INT NULL",
+				"ALTER TABLE marriage ADD COLUMN marriageDateYear INT NULL"
 			]
 		],
 
