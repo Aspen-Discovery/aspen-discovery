@@ -197,6 +197,20 @@ function getHooplaUpdates()
 				'updateHooplaScopes'
 			]
 		],
+
+		'hoopla_usage_add_instance' => [
+			'title' => 'Hoopla Usage - Instance Information',
+			'description' => 'Add Instance Information to Hoopla Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE hoopla_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE hoopla_record_usage DROP INDEX hooplaId',
+				'ALTER TABLE hoopla_record_usage ADD UNIQUE INDEX (instance, hooplaId, year, month)',
+				'ALTER TABLE user_hoopla_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_hoopla_usage DROP INDEX userId',
+				'ALTER TABLE user_hoopla_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			]
+		],
 	);
 }
 
