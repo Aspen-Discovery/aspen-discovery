@@ -1,47 +1,41 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
 require_once ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php';
 
-class EBSCO_EDSDashboard extends Admin_Admin
+class EBSCO_EDSDashboard extends Admin_Dashboard
 {
 	function launch()
 	{
 		global $interface;
 
-		$thisMonth = date('n');
-		$thisYear = date('Y');
-		$lastMonth = $thisMonth - 1;
-		$lastMonthYear = $thisYear;
-		if ($lastMonth == 0){
-			$lastMonth = 12;
-			$lastMonthYear--;
-		}
-		$lastYear = $thisYear -1 ;
+		$instanceName = $this->loadInstanceInformation('EbscoEdsRecordUsage');
+		$this->loadDates();
+
 		//Generate stats
 
-		$activeUsersThisMonth = $this->getUserStats($thisMonth, $thisYear);
+		$activeUsersThisMonth = $this->getUserStats($instanceName, $this->thisMonth, $this->thisYear);
 		$interface->assign('activeUsersThisMonth', $activeUsersThisMonth);
-		$activeUsersLastMonth = $this->getUserStats($lastMonth, $lastMonthYear);
+		$activeUsersLastMonth = $this->getUserStats($instanceName, $this->lastMonth, $this->lastMonthYear);
 		$interface->assign('activeUsersLastMonth', $activeUsersLastMonth);
-		$activeUsersThisYear = $this->getUserStats(null, $thisYear);
+		$activeUsersThisYear = $this->getUserStats($instanceName, null, $this->thisYear);
 		$interface->assign('activeUsersThisYear', $activeUsersThisYear);
-		$activeUsersLastYear = $this->getUserStats(null, $lastYear);
+		$activeUsersLastYear = $this->getUserStats($instanceName, null, $this->lastYear);
 		$interface->assign('activeUsersLastYear', $activeUsersLastYear);
-		$activeUsersAllTime = $this->getUserStats(null, null);
+		$activeUsersAllTime = $this->getUserStats($instanceName, null, null);
 		$interface->assign('activeUsersAllTime', $activeUsersAllTime);
 
-		$thisMonthStats = $this->getRecordStats($thisMonth, $thisYear);
+		$thisMonthStats = $this->getRecordStats($instanceName, $this->thisMonth, $this->thisYear);
 		$interface->assign('thisMonthStats', $thisMonthStats);
-		$lastMonthStats = $this->getRecordStats($lastMonth, $lastMonthYear);
+		$lastMonthStats = $this->getRecordStats($instanceName, $this->lastMonth, $this->lastMonthYear);
 		$interface->assign('lastMonthStats', $lastMonthStats);
-		$thisYearStats = $this->getRecordStats(null, $thisYear);
+		$thisYearStats = $this->getRecordStats($instanceName, null, $this->thisYear);
 		$interface->assign('thisYearStats', $thisYearStats);
-		$lastYearStats = $this->getRecordStats(null, $lastYear);
+		$lastYearStats = $this->getRecordStats($instanceName, null, $this->lastYear);
 		$interface->assign('lastYearStats', $lastYearStats);
-		$allTimeStats = $this->getRecordStats(null, null);
+		$allTimeStats = $this->getRecordStats($instanceName, null, null);
 		$interface->assign('allTimeStats', $allTimeStats);
 
 		$this->display('edsDashboard.tpl', 'EBSCO EDS Dashboard');

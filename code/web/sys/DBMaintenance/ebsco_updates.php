@@ -95,5 +95,19 @@ function getEbscoUpdates(){
 				'ALTER TABLE user ADD COLUMN hideResearchStarters TINYINT(1) DEFAULT 0',
 			]
 		],
+
+		'ebsco_eds_usage_add_instance' => [
+			'title' => 'EBSCO EDS Usage - Instance Information',
+			'description' => 'Add Instance Information to EBSCO EDS Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ebsco_eds_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE ebsco_eds_usage DROP INDEX ebscoId',
+				'ALTER TABLE ebsco_eds_usage ADD UNIQUE INDEX (instance, ebscoId, year, month)',
+				'ALTER TABLE user_ebsco_eds_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_ebsco_eds_usage DROP INDEX year',
+				'ALTER TABLE user_ebsco_eds_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			]
+		],
 	];
 }
