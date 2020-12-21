@@ -503,6 +503,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$product = new CloudLibraryProduct();
 		$product->cloudLibraryId = $recordId;
 		if ($product->find(true)) {
+			$recordUsage->instance = $_SERVER['SERVER_NAME'];
 			$recordUsage->cloudLibraryId = $product->id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
@@ -528,6 +529,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$product = new CloudLibraryProduct();
 		$product->cloudLibraryId = $recordId;
 		if ($product->find(true)){
+			$recordUsage->instance = $_SERVER['SERVER_NAME'];
 			$recordUsage->cloudLibraryId = $product->id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');

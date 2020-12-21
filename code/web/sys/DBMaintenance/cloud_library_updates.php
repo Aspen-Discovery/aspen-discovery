@@ -159,6 +159,20 @@ function getCloudLibraryUpdates() {
 				'ALTER TABLE cloud_library_availability CHANGE COLUMN totalHoldCopies totalHoldCopies SMALLINT NOT NULL DEFAULT 0',
 				'ALTER TABLE cloud_library_availability CHANGE COLUMN sharedLoanCopies sharedLoanCopies SMALLINT NOT NULL DEFAULT 0'
 			]
-		]
+		],
+
+		'cloud_library_usage_add_instance' => [
+			'title' => 'Cloud Library Usage - Instance Information',
+			'description' => 'Add Instance Information to Cloud Library Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE cloud_library_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE cloud_library_record_usage DROP INDEX cloudLibraryId',
+				'ALTER TABLE cloud_library_record_usage ADD UNIQUE INDEX (instance, cloudLibraryId, year, month)',
+				'ALTER TABLE user_cloud_library_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_cloud_library_usage DROP INDEX userId',
+				'ALTER TABLE user_cloud_library_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			]
+		],
 	);
 }
