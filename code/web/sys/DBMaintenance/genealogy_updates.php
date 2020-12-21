@@ -124,6 +124,17 @@ function getGenealogyUpdates(){
 			]
 		],
 
+		'genealogy_marriage_date_update' => [
+			'title' => 'Genealogy Marriage date update',
+			'description' => 'Add split date information to marriages if not already added',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE marriage ADD COLUMN dateDay INT NULL",
+				"ALTER TABLE marriage ADD COLUMN dateMonth INT NULL",
+				"ALTER TABLE marriage ADD COLUMN dateYear INT NULL"
+			]
+		],
+
 		'genealogy_module' => [
 			'title' => 'Create Genealogy Module',
 			'description' => 'Create Genealogy Module',
