@@ -478,6 +478,20 @@ function getIndexingUpdates()
 			]
 		],
 
+		'ils_usage_add_instance' => [
+			'title' => 'ILS Usage - Instance Information',
+			'description' => 'Add Instance Information to ILS Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ils_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE ils_record_usage DROP INDEX recordId',
+				'ALTER TABLE ils_record_usage ADD UNIQUE INDEX (instance, indexingProfileId, recordId, year, month)',
+				'ALTER TABLE user_ils_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_ils_usage DROP INDEX userId',
+				'ALTER TABLE user_ils_usage ADD UNIQUE INDEX (instance, userId, indexingProfileId, year, month)',
+			]
+		],
+
 		'indexing_profile_add_continuous_update_fields' => [
 			'title' => 'Indexing Profile Add Continuous Update Fields',
 			'description' => 'Add fields to track when last updates were done and to trigger full updates',
@@ -714,6 +728,20 @@ function getIndexingUpdates()
 				"ALTER TABLE sideload_record_usage ADD INDEX (year, month)",
 			),
 		),
+
+		'sideload_usage_add_instance' => [
+			'title' => 'Side Load Usage - Instance Information',
+			'description' => 'Add Instance Information to Side Load Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE sideload_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE sideload_record_usage DROP INDEX sideloadId',
+				'ALTER TABLE sideload_record_usage ADD UNIQUE INDEX (instance, sideloadId, recordId, year, month)',
+				'ALTER TABLE user_sideload_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_sideload_usage DROP INDEX userId',
+				'ALTER TABLE user_sideload_usage ADD UNIQUE INDEX (instance, userId, sideLoadId, year, month)',
+			]
+		],
 
 		'sideload_log' => array(
 			'title' => 'Side Load log',
