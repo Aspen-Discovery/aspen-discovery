@@ -249,7 +249,7 @@ class Genealogy_Results extends ResultsAction {
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Genealogy Database');
 		$interface->assign('sidebar', 'Search/results-sidebar.tpl');
-		$sidebar = (($searchObject->getResultTotal() > 0) && (count($searchObject->getFacetList()) > 0)) ? 'Search/results-sidebar.tpl' : '';
+		$sidebar = $searchObject->getResultTotal() > 0 ? 'Search/results-sidebar.tpl' : '';
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $displayQuery, $sidebar, false);
 	}
 
