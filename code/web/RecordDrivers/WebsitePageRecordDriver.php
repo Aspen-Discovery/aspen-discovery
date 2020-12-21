@@ -53,6 +53,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 
 		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 		$webPageUsage = new WebPageUsage();
+		$webPageUsage->instance = $_SERVER['SERVER_NAME'];
 		$webPageUsage->webPageId = $this->getUniqueID();
 		$webPageUsage->year = date('Y');
 		$webPageUsage->month = date('n');

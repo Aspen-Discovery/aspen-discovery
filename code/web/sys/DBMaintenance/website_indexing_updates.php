@@ -78,6 +78,20 @@ function getWebsiteIndexingUpdates()
 			),
 		),
 
+		'website_usage_add_instance' => [
+			'title' => 'Website Usage - Instance Information',
+			'description' => 'Add Instance Information to Website Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE website_page_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE website_page_usage DROP INDEX webPageId',
+				'ALTER TABLE website_page_usage ADD INDEX (instance, webPageId, year, month)',
+				'ALTER TABLE user_website_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_website_usage DROP INDEX websiteId',
+				'ALTER TABLE user_website_usage ADD INDEX (instance, websiteId, year, month)',
+			]
+		],
+
 		'create_web_indexer_module' => [
 			'title' => 'Create Web Indexer Module',
 			'description' => 'Setup Web Indexer module',

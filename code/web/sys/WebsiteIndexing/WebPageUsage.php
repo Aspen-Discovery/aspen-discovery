@@ -6,6 +6,7 @@ class WebPageUsage extends DataObject
 {
 	public $__table = 'website_page_usage';
 	public $id;
+	public $instance;
 	public $webPageId;
 	public $year;
 	public $month;
