@@ -366,6 +366,8 @@ class WebsiteIndexer {
 					}
 				}
 			}
+		} catch (IllegalArgumentException e) {
+			logEntry.addNote("Invalid path provided " + pageToProcess + " " + e.toString());
 		} catch (Exception e) {
 			logEntry.incErrors("Error parsing page " + pageToProcess, e);
 		}
