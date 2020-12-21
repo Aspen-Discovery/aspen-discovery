@@ -67,7 +67,6 @@ class UserListIndexer {
 		HttpSolrClient.Builder openArchivesHttpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/open_archives");
 		openArchivesServer = openArchivesHttpBuilder.build();
 
-
 		scopes = IndexingUtils.loadScopes(dbConn, logger);
 	}
 
@@ -105,7 +104,7 @@ class UserListIndexer {
 				//Get a list of all public lists
 				numListsStmt = dbConn.prepareStatement("select count(id) as numLists from user_list WHERE deleted = 0 AND public = 1 and searchable = 1");
 				//noinspection SpellCheckingInspection
-				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND deleted = 0");
+				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND searchable = 1 AND deleted = 0");
 			}else{
 				//Get a list of all lists that are were changed since the last update
 				//Have to process all lists because one could have been deleted, made private, or made non searchable.
@@ -138,7 +137,7 @@ class UserListIndexer {
 			}
 
 			while (allPublicListsRS.next()){
-				if (updateSolrForList(updateServer, getTitlesForListStmt, allPublicListsRS, lastReindexTime, logEntry)){
+				if (updateSolrForList(fullReindex, updateServer, getTitlesForListStmt, allPublicListsRS, lastReindexTime, logEntry)){
 					numListsIndexed++;
 				}
 				numListsProcessed++;
@@ -154,7 +153,7 @@ class UserListIndexer {
 		return numListsProcessed;
 	}
 
-	private boolean updateSolrForList(ConcurrentUpdateSolrClient updateServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS, long lastReindexTime, ListIndexingLogEntry logEntry) throws SQLException, SolrServerException, IOException {
+	private boolean updateSolrForList(boolean fullReindex, ConcurrentUpdateSolrClient updateServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS, long lastReindexTime, ListIndexingLogEntry logEntry) throws SQLException, SolrServerException, IOException {
 		UserListSolr userListSolr = new UserListSolr(this);
 		long listId = allPublicListsRS.getLong("id");
 
@@ -163,7 +162,7 @@ class UserListIndexer {
 		int isSearchable = allPublicListsRS.getInt("searchable");
 		long userId = allPublicListsRS.getLong("user_id");
 		boolean indexed = false;
-		if (deleted == 1 || isPublic == 0 || isSearchable == 0){
+		if (!fullReindex && (deleted == 1 || isPublic == 0 || isSearchable == 0)){
 			updateServer.deleteByQuery("id:" + listId);
 			logEntry.incDeleted();
 		}else{
@@ -202,7 +201,7 @@ class UserListIndexer {
 			if (librariesByHomeLocation.containsKey(patronHomeLibrary)){
 				userListSolr.setOwningLibrary(librariesByHomeLocation.get(patronHomeLibrary));
 			} else {
-				//Don't know the owning library for some reason
+				//Don't know the owning library for some reason, most likely this is an admin user.
 				userListSolr.setOwningLibrary(-1);
 			}
 
@@ -268,7 +267,7 @@ class UserListIndexer {
 				// Index in the solr catalog
 				SolrInputDocument document = userListSolr.getSolrDocument();
 				if (document != null){
-					updateServer.add(userListSolr.getSolrDocument());
+					updateServer.add(document);
 					if (created > lastReindexTime){
 						logEntry.incAdded();
 					}else{
