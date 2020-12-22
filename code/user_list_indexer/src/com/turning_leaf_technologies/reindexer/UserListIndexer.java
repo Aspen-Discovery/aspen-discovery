@@ -41,7 +41,7 @@ class UserListIndexer {
 		this.logger = logger;
 		//Load a list of all list publishers
 		try {
-			PreparedStatement listPublishersStmt = dbConn.prepareStatement("SELECT userId FROM `user_roles` INNER JOIN roles on user_roles.roleId = roles.roleId where name = 'listPublisher'");
+			PreparedStatement listPublishersStmt = dbConn.prepareStatement("SELECT userId FROM user_roles INNER JOIN roles on user_roles.roleId = roles.roleId inner join role_permissions on role_permissions.roleId = roles.roleId where permissionId = (select id from permissions where name = 'Include Lists In Search Results')");
 			ResultSet listPublishersRS = listPublishersStmt.executeQuery();
 			while (listPublishersRS.next()){
 				usersThatCanShareLists.add(listPublishersRS.getLong(1));
