@@ -1941,7 +1941,7 @@ class SirsiDynixROA extends HorizonAPI
 	function getPasswordPinValidationRules(){
 		return [
 			'minLength' => 4,
-			'maxLength' => 256,
+			'maxLength' => 60,
 			'onlyDigitsAllowed' => false,
 		];
 	}
