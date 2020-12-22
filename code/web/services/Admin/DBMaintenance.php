@@ -2394,6 +2394,14 @@ class Admin_DBMaintenance extends Admin_Admin
 						"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All JavaScript Snippets'))",
 					]
 				],
+
+				'user_list_force_reindex_20_18' => [
+					'title' => 'Force Reindex of all lists for 20.18',
+					'description' => 'Force reindex of all lists due to new functionality in 20.18',
+					'sql' => [
+						'UPDATE list_indexing_settings set runFullUpdate = 1'
+					]
+				]
 			)
 		);
 	}
