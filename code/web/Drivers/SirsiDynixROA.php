@@ -1937,4 +1937,12 @@ class SirsiDynixROA extends HorizonAPI
 		);
 		$parameterIndex[$key] = $l;
 	}
+
+	function getPasswordPinValidationRules(){
+		return [
+			'minLength' => 4,
+			'maxLength' => 256,
+			'onlyDigitsAllowed' => false,
+		];
+	}
 }
