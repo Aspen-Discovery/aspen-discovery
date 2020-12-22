@@ -403,8 +403,26 @@ abstract class MarcRecordProcessor {
 		loadLiteraryForms(groupedWork, record, printItems, identifier);
 		loadTargetAudiences(groupedWork, record, printItems, identifier);
 		loadFountasPinnell(groupedWork, record);
+		loadLexileScore(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
+	}
+
+	private void loadLexileScore(GroupedWorkSolr groupedWork, Record record) {
+		List<DataField> targetAudiences = MarcUtil.getDataFields(record, "521");
+		for (DataField targetAudience : targetAudiences){
+			Subfield subfieldA = targetAudience.getSubfield('a');
+			Subfield subfieldB = targetAudience.getSubfield('b');
+			if (subfieldA != null && subfieldB != null){
+				if (subfieldB.getData().equalsIgnoreCase("lexile")){
+					String lexileValue = subfieldA.getData();
+					if (lexileValue.endsWith("L")){
+						lexileValue = lexileValue.substring(0, lexileValue.length() - 1);
+					}
+					groupedWork.setLexileScore(lexileValue);
+				}
+			}
+		}
 	}
 
 	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record) {
