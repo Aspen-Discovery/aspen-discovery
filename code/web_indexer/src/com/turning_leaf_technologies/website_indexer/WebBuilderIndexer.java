@@ -36,7 +36,7 @@ class WebBuilderIndexer {
 		loadLibrarySubdomains();
 
 		try {
-			solrUpdateServer.deleteByQuery("website_name:Local Content");
+			solrUpdateServer.deleteByQuery("website_name:\"Local Content\"");
 			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 		} catch (HttpSolrClient.RemoteSolrException rse) {
 			logEntry.addNote("Solr is not running properly, try restarting " + rse.toString());

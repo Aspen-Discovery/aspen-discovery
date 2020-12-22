@@ -158,16 +158,19 @@ class WebsiteIndexer {
 			}
 		}
 
-		for (WebPage curPage : existingPages.values()) {
-			try {
-				if (!curPage.isDeleted()) {
-					deletePageStmt.setLong(1, curPage.getId());
-					deletePageStmt.executeUpdate();
-					logEntry.incDeleted();
-					solrUpdateServer.deleteByQuery("id:" + curPage.getId() + "AND website_name:\"" + websiteName + "\"");
+		//If we are not doing a full reload, remove any pages that we didn't find on this go round.
+		if (!fullReload) {
+			for (WebPage curPage : existingPages.values()) {
+				try {
+					if (!curPage.isDeleted()) {
+						deletePageStmt.setLong(1, curPage.getId());
+						deletePageStmt.executeUpdate();
+						logEntry.incDeleted();
+						solrUpdateServer.deleteByQuery("id:" + curPage.getId() + "AND website_name:\"" + websiteName + "\"");
+					}
+				} catch (Exception e) {
+					logEntry.incErrors("Error deleting page");
 				}
-			} catch (Exception e) {
-				logEntry.incErrors("Error deleting page");
 			}
 		}
 
