@@ -423,7 +423,7 @@ class ExtractOverDriveInfo {
 			lastUpdateTimeParam = lastUpdateTimeParam.substring(0, lastUpdateTimeParam.length() - 2) + ":" + lastUpdateTimeParam.substring(lastUpdateTimeParam.length() - 2);
 		}else{
 			//Update the settings to mark the full update as not needed
-			dbConn.prepareStatement("UPDATE overdrive_settings set runFullUpdate = 0 where settingId = " + settings.getId()).executeUpdate();
+			dbConn.prepareStatement("UPDATE overdrive_settings set runFullUpdate = 0 where id = " + settings.getId()).executeUpdate();
 		}
 
 		PreparedStatement advantageCollectionMapStmt = dbConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey FROM library INNER JOIN overdrive_scopes on library.overDriveScopeId = overdrive_scopes.id where overdriveAdvantageName != '' and settingId = ?");
