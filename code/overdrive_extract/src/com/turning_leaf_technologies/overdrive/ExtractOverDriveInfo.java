@@ -226,7 +226,7 @@ class ExtractOverDriveInfo {
 			}
 		} catch (SQLException e) {
 			// handle any errors
-			this.logEntry.incErrors("Error initializing overdrive extraction " + e.toString());
+			this.logEntry.incErrors("Error initializing overdrive extraction ", e);
 		}
 		return numChanges;
 	}
