@@ -21,7 +21,7 @@ class CustomForm extends DataObject
 	{
 		$formFieldStructure = CustomFormField::getObjectStructure();
 		unset ($formFieldStructure['weight']);
-		$libraryList = Library::getLibraryList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Forms'));
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'title' => array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the page', 'size' => '40', 'maxLength' => 100, 'required' => true),

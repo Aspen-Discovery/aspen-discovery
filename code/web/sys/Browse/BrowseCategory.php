@@ -168,7 +168,7 @@ class BrowseCategory extends BaseBrowsable
 		unset($browseSubCategoryStructure['browseCategoryId']);
 		$browseCategorySources = BaseBrowsable::getBrowseSources();
 
-		$libraryList = Library::getLibraryList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 		$libraryList[-1] = 'No Library Selected';
 
 		return array(

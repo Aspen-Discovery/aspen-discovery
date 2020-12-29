@@ -21,7 +21,7 @@ class BasicPage extends DataObject
 
 	static function getObjectStructure()
 	{
-		$libraryList = Library::getLibraryList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Basic Pages'));
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$categoriesList = WebBuilderCategory::getCategories();
 		return [

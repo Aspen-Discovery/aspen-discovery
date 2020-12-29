@@ -19,8 +19,8 @@ class SystemMessage extends DataObject
 	private $_preFormattedMessage;
 
 	static function getObjectStructure(){
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All System Messages'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'title' => array('property'=>'title', 'type'=>'text', 'label'=>'Title (not shown)', 'description'=>'The title of the system message'),
@@ -135,7 +135,7 @@ class SystemMessage extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All System Messages'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$obj = new SystemMessageLibrary();
 				$obj->systemMessageId = $this->id;
@@ -155,7 +155,7 @@ class SystemMessage extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));
 			foreach ($locationList as $locationId => $displayName) {
 				$obj = new SystemMessageLocation();
 				$obj->systemMessageId = $this->id;

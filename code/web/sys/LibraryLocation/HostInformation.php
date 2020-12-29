@@ -11,9 +11,9 @@ class HostInformation extends DataObject
 	public $defaultPath;
 
 	public static function getObjectStructure(){
-		$libraryList = Library::getLibraryList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Host Information'));
 		$locationList = [-1, 'Default, no location specified'];
-		$locationList = array_merge($locationList, Location::getLocationList());
+		$locationList = array_merge($locationList, Location::getLocationList(!UserAccount::userHasPermission('Administer Host Information')));
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'host' => array('property' => 'host', 'type' => 'text', 'label' => 'Host name', 'description' => 'The name of the host.  I.e. discover.library.org or www.library.org', 'maxLength' => 100, 'required' => true),

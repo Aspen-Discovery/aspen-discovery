@@ -22,10 +22,10 @@ class Placard extends DataObject
 
 	static function getObjectStructure(){
 		$placardTriggerStructure = PlacardTrigger::getObjectStructure();
-		unset($placardTriggerStructure['browseCategoryId']);
+		unset($placardTriggerStructure['placardId']);
 
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Placards'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Placards'));
 
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
@@ -197,7 +197,7 @@ class Placard extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Placards'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$obj = new PlacardLibrary();
 				$obj->placardId = $this->id;
@@ -217,7 +217,7 @@ class Placard extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Placards'));
 			foreach ($locationList as $locationId => $displayName) {
 				$obj = new PlacardLocation();
 				$obj->placardId = $this->id;

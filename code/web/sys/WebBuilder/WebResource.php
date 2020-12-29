@@ -22,12 +22,10 @@ class WebResource extends DataObject
 	private $_libraries;
 	private $_audiences;
 	private $_categories;
-	private $_displayAudiences;
-	private $_displayCategories;
 
 	static function getObjectStructure()
 	{
-		$libraryList = Library::getLibraryList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Web Resources'));
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$categoriesList = WebBuilderCategory::getCategories();
 		return [

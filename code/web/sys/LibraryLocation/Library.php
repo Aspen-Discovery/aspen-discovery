@@ -1600,15 +1600,18 @@ class Library extends DataObject
 	}
 
 	/**
+	 * @param boolean $restrictByHomeLibrary whether or not only the patron's home library should be returned
 	 * @return array
 	 */
-	static function getLibraryList(): array
+	static function getLibraryList($restrictByHomeLibrary): array
 	{
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (!UserAccount::userHasPermission('Administer All Libraries')) {
+		if ($restrictByHomeLibrary) {
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$library->libraryId = $homeLibrary->libraryId;
+			if ($homeLibrary != null) {
+				$library->libraryId = $homeLibrary->libraryId;
+			}
 		}
 		$library->find();
 		$libraryList = [];

@@ -22,8 +22,8 @@ class OpenArchivesCollection extends DataObject
 
 	static function getObjectStructure()
 	{
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Open Archives'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer Open Archives'));
 
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
