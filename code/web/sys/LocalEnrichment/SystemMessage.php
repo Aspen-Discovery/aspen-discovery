@@ -130,6 +130,7 @@ class SystemMessage extends DataObject
 			$systemMessageLocation->systemMessageId = $this->id;
 			$systemMessageLocation->delete(true);
 		}
+		return $ret;
 	}
 
 	public function saveLibraries(){

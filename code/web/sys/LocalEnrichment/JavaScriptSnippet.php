@@ -81,6 +81,7 @@ class JavaScriptSnippet extends DataObject
 			$javascriptSnippetLocation->javascriptSnippetId = $this->id;
 			$javascriptSnippetLocation->delete(true);
 		}
+		return $ret;
 	}
 
 	public function __get($name){

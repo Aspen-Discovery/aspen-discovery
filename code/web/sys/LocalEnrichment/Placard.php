@@ -159,6 +159,7 @@ class Placard extends DataObject
 			$placardLocation->placardId = $this->id;
 			$placardLocation->delete(true);
 		}
+		return $ret;
 	}
 
 	public function saveTriggers(){
