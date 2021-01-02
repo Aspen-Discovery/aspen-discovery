@@ -12,7 +12,7 @@
 			{$submissionResultText}
 		</div>
 	{elseif !empty($submissionError)}
-		<div class="alert alert-success">
+		<div class="alert alert-danger">
 			{$submissionError}
 		</div>
 	{/if}

@@ -1,5 +1,5 @@
 <?php
-
+require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 
 class WebBuilder_Form extends Action{
 	private $form;
@@ -16,6 +16,23 @@ class WebBuilder_Form extends Action{
 		if (!$this->form->find(true)){
 			$this->display('../Record/invalidPage.tpl', 'Invalid Page');
 			die();
+		}
+
+		if (!UserAccount::isLoggedIn()) {
+			if (!$this->form->requireLogin) {
+				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+				$recaptcha = new RecaptchaSetting();
+				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
+					$captchaCode = recaptcha_get_html($recaptcha->publicKey);
+					$interface->assign('captcha', $captchaCode);
+				}
+			}else{
+				//Display a message that the user must be logged in
+				require_once ROOT_DIR . '/services/MyAccount/Login.php';
+				$myAccountAction = new MyAccount_Login();
+				$myAccountAction->launch();
+				exit();
+			}
 		}
 
 		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
