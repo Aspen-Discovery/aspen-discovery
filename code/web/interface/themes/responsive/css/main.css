@@ -9653,6 +9653,9 @@ a.browse-thumbnail-sorted.active {
   text-align: center;
   font-weight: bold;
 }
+#library-barcode-svg {
+  max-width: 100%;
+}
 /**
  * Additional Styling related to the help system
  */
