@@ -6,9 +6,6 @@ require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 
 class Millennium extends AbstractIlsDriver
 {
-	var $statusTranslations = null;
-	var $holdableStatiRegex = null;
-	var $availableStatiRegex = null;
 	/** @var  Solr */
 	public $db;
 
@@ -21,18 +18,16 @@ class Millennium extends AbstractIlsDriver
 	var $curlWrapper;
 
 	public function __construct($accountProfile)
-    {
-        parent::__construct($accountProfile);
-        $this->curlWrapper = new CurlWrapper();
-    }
+	{
+		parent::__construct($accountProfile);
+		$this->curlWrapper = new CurlWrapper();
+	}
 
-    protected function loadLoanRules(){
+	protected function loadLoanRules()
+	{
 		if (is_null($this->loanRules)){
-			/** @var Memcache $memCache */
 			global $memCache;
-//			global $configArray;
 			global $instanceName;
-//			$this->loanRules = $memCache->get($instanceName . '_loan_rules');
 			if (!$this->loanRules || isset($_REQUEST['reload'])){
 				$this->loanRules = array();
 				$loanRule = new LoanRule();
@@ -41,7 +36,6 @@ class Millennium extends AbstractIlsDriver
 					$this->loanRules[$loanRule->loanRuleId] = clone($loanRule);
 				}
 			}
-//			$memCache->set($instanceName . '_loan_rules', $this->loanRules, $configArray['Caching']['loan_rules']);
 
 			$this->loanRuleDeterminers = $memCache->get($instanceName . '_loan_rule_determiners');
 			if (!$this->loanRuleDeterminers || isset($_REQUEST['reload'])){
@@ -54,7 +48,6 @@ class Millennium extends AbstractIlsDriver
 					$this->loanRuleDeterminers[$loanRuleDeterminer->rowNumber] = clone($loanRuleDeterminer);
 				}
 			}
-//			$memCache->set($instanceName . '_loan_rule_determiners', $this->loanRuleDeterminers, $configArray['Caching']['loan_rules']);
 		}
 	}
 
@@ -135,11 +128,6 @@ class Millennium extends AbstractIlsDriver
 
 	}
 
-	static $libraryLocationInformationLoaded = false;
-	static $libraryLocations = null;
-	static $libraryLocationLabels = null;
-	static $homeLocationCode = null;
-	static $homeLocationLabel = null;
 	static $scopingLocationCode = null;
 
 	/**
@@ -223,7 +211,6 @@ class Millennium extends AbstractIlsDriver
 	public function _getPatronDump(&$barcode, $forceReload = false)
 	{
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		global $timer;
@@ -263,10 +250,9 @@ class Millennium extends AbstractIlsDriver
 
 				if (is_null($patronDump)){
 					return $patronDump;
-				}else if ((isset($patronDump['ERRNUM']) || count($patronDump) == 0) && $i != count($barcodesToTest) - 1){
+				}/** @noinspection PhpStatementHasEmptyBodyInspection */ elseif ((isset($patronDump['ERRNUM']) || count($patronDump) == 0) && $i != count($barcodesToTest) - 1){
 					//check the next barcode
 				}else{
-
 					$timer->logTime('Finished loading patron dump from ILS.');
 					$memCache->set("patron_dump_$barcode", $patronDump, $configArray['Caching']['patron_dump']);
 					//Need to wait a little bit since getting the patron api locks the record in the DB
@@ -429,9 +415,6 @@ class Millennium extends AbstractIlsDriver
 		$millenniumReadingHistory = new MillenniumReadingHistory($this);
 		$millenniumReadingHistory->doReadingHistoryAction($patron, $action, $selectedTitles);
 	}
-
-
-
 
 	/**
 	 * Get Patron Holds
@@ -904,7 +887,6 @@ class Millennium extends AbstractIlsDriver
 	}
 
 	function isItemHoldableToPatron($locationCode, $iType, $pTypes){
-		/** @var Memcache $memCache*/
 		global $memCache;
 		global $configArray;
 		global $timer;
@@ -1005,7 +987,6 @@ class Millennium extends AbstractIlsDriver
 	}
 
 	public function isItemBookableToPatron($locationCode, $iType, $pTypes){
-		/** @var Memcache $memCache*/
 		global $memCache;
 		global $configArray;
 		global $timer;
@@ -1522,7 +1503,7 @@ class Millennium extends AbstractIlsDriver
 
 	/**
 	 * Calculates a check digit for a III identifier
-	 * @param basedId String the base id without checksum
+	 * @param String basedId String the base id without checksum
 	 * @return String the check digit
 	 */
 	function getCheckDigit($baseId){

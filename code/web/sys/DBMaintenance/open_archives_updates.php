@@ -157,6 +157,20 @@ function getOpenArchivesUpdates()
 					UNIQUE (collectionId, locationId)
 				) ENGINE = InnoDB'
 			]
-		]
+		],
+
+		'open_archives_usage_add_instance' => [
+			'title' => 'Open Archives Usage - Instance Information',
+			'description' => 'Add Instance Information to Open Archives Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE open_archives_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE open_archives_record_usage DROP INDEX openArchivesRecordId',
+				'ALTER TABLE open_archives_record_usage ADD UNIQUE INDEX (instance, openArchivesRecordId, year, month)',
+				'ALTER TABLE user_open_archives_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_open_archives_usage DROP INDEX openArchivesCollectionId',
+				'ALTER TABLE user_open_archives_usage ADD UNIQUE INDEX (instance, openArchivesCollectionId, userId, year, month)',
+			]
+		],
 	];
 }

@@ -473,7 +473,10 @@ class CatalogConnection
 
 			//Opt out within Aspen since the ILS does not seem to implement this functionality
 			$patron->trackReadingHistory = false;
-			$patron->initialReadingHistoryLoaded = false;
+
+			//Do not unmark that the initial reading history was loaded to avoid reloading if the ILS does track it.
+			//TODO: Remove everything from the ILS when available.
+			//$patron->initialReadingHistoryLoaded = false;
 			$patron->update();
 			$result['success'] = true;
 			$result['message'] = translate('You have been opted out of tracking Reading History');

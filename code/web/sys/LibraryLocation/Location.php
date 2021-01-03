@@ -1339,15 +1339,18 @@ class Location extends DataObject
 	}
 
 	/**
+	 * @param boolean $restrictByHomeLibrary whether or not only locations for the patron's home library should be returned
 	 * @return array
 	 */
-	static function getLocationList(): array
+	static function getLocationList($restrictByHomeLibrary): array
 	{
 		$location = new Location();
 		$location->orderBy('displayName');
-		if (UserAccount::userHasPermission('Administer Home Library Locations')) {
+		if ($restrictByHomeLibrary) {
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$location->libraryId = $homeLibrary->libraryId;
+			if ($homeLibrary != null) {
+				$location->libraryId = $homeLibrary->libraryId;
+			}
 		}
 		$location->find();
 		$locationList = [];

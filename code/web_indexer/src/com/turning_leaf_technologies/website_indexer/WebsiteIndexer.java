@@ -158,16 +158,19 @@ class WebsiteIndexer {
 			}
 		}
 
-		for (WebPage curPage : existingPages.values()) {
-			try {
-				if (!curPage.isDeleted()) {
-					deletePageStmt.setLong(1, curPage.getId());
-					deletePageStmt.executeUpdate();
-					logEntry.incDeleted();
-					solrUpdateServer.deleteByQuery("id:" + curPage.getId() + "AND website_name:\"" + websiteName + "\"");
+		//If we are not doing a full reload, remove any pages that we didn't find on this go round.
+		if (!fullReload) {
+			for (WebPage curPage : existingPages.values()) {
+				try {
+					if (!curPage.isDeleted()) {
+						deletePageStmt.setLong(1, curPage.getId());
+						deletePageStmt.executeUpdate();
+						logEntry.incDeleted();
+						solrUpdateServer.deleteByQuery("id:" + curPage.getId() + "AND website_name:\"" + websiteName + "\"");
+					}
+				} catch (Exception e) {
+					logEntry.incErrors("Error deleting page");
 				}
-			} catch (Exception e) {
-				logEntry.incErrors("Error deleting page");
 			}
 		}
 
@@ -197,9 +200,10 @@ class WebsiteIndexer {
 					ContentType contentType = ContentType.getOrDefault(entity1);
 					String mimeType = contentType.getMimeType();
 					if (!mimeType.equals("text/html")) {
-						logEntry.addNote("Non HTML page " + pageToProcess + " " + mimeType);
 						//TODO: Index PDFs
-
+						if (!mimeType.equals("application/pdf")) {
+							logEntry.addNote("Non HTML page " + pageToProcess + " " + mimeType);
+						}
 					} else {
 						// do something useful with the response body
 						// and ensure it is fully consumed
@@ -364,8 +368,12 @@ class WebsiteIndexer {
 							solrUpdateServer.add(solrDocument);
 						}
 					}
+				} else if (status.getStatusCode() != 404 && status.getStatusCode() != 403){
+					logEntry.addNote("Received error " + status.getStatusCode() + " for url " + pageToProcess );
 				}
 			}
+		} catch (IllegalArgumentException e) {
+			logEntry.addNote("Invalid path provided " + pageToProcess + " " + e.toString());
 		} catch (Exception e) {
 			logEntry.incErrors("Error parsing page " + pageToProcess, e);
 		}

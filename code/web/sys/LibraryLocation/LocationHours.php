@@ -12,6 +12,11 @@ class LocationHours extends DataObject
 	public $closed;
 	public $notes;
 
+	public function getNumericColumnNames()
+	{
+		return ['locationId', 'day', 'closed'];
+	}
+
 	static function getObjectStructure(){
 		$location = new Location();
 		$location->orderBy('displayName');

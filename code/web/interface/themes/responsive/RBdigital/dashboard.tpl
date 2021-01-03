@@ -1,6 +1,7 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
 		<h1>{translate text="RBdigital Dashboard"}</h1>
+		{include file="Admin/selectInterfaceForm.tpl"}
 		<div>
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">

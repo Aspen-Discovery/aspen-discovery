@@ -26,8 +26,8 @@ class WebsiteIndexSetting extends DataObject
 
 	public static function getObjectStructure()
 	{
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Website Indexing Settings'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer Website Indexing Settings'));
 
 		return [
 			'id' => ['property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'],

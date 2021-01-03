@@ -12,7 +12,6 @@ class CustomFormSubmission extends DataObject
 	public $submission;
 
 	public function getObjectStructure(){
-		$libraryList = Library::getLibraryList();
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'libraryName' =>  array('property'=>'libraryName', 'type'=>'label', 'label'=>'Library', 'description'=>'The name of the library for the submission'),

@@ -21,7 +21,7 @@ class PortalPage extends DataObject
 	private $_categories;
 
 	static function getObjectStructure() {
-		$libraryList = Library::getLibraryList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Pages'));
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$categoriesList = WebBuilderCategory::getCategories();
 

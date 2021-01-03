@@ -18,8 +18,8 @@ class BrowseCategoryGroup extends DataObject
 	private $_locations;
 
 	public static function getObjectStructure(){
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 		
 		$browseCategoryStructure = BrowseCategoryGroupEntry::getObjectStructure();
 		unset($browseCategoryStructure['weight']);
@@ -171,7 +171,7 @@ class BrowseCategoryGroup extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$library = new Library();
 				$library->libraryId = $libraryId;
@@ -196,7 +196,7 @@ class BrowseCategoryGroup extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 			/**
 			 * @var int $locationId
 			 * @var Location $location

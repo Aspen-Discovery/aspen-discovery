@@ -10,15 +10,19 @@ AspenDiscovery.Record = (function(){
 				}
 				$.getJSON(url, function(data){
 					document.body.style.cursor = "default";
-					if (data.holdFormBypassed){
-						if (data.success){
+					if (data.holdFormBypassed) {
+						if (data.success) {
 							AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, false);
 							AspenDiscovery.Account.loadMenuData();
-						}else{
+						} else {
 							AspenDiscovery.showMessage('Hold Failed', data.message, false, false);
 						}
 					}
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					if (data.success){
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					}else{
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
 				}).fail(AspenDiscovery.ajaxFail);
 			}else{
 				AspenDiscovery.Account.ajaxLogin(null, function(){

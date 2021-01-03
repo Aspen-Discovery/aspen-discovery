@@ -355,6 +355,20 @@ function getOverDriveUpdates()
 				'updateOverDriveAvailabilities'
 			]
 		],
+
+		'overdrive_usage_add_instance' => [
+			'title' => 'OverDrive Usage - Instance Information',
+			'description' => 'Add Instance Information to OverDrive Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE overdrive_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE overdrive_record_usage DROP INDEX overdriveId',
+				'ALTER TABLE overdrive_record_usage ADD UNIQUE INDEX (instance, overdriveId, year, month)',
+				'ALTER TABLE user_overdrive_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_overdrive_usage DROP INDEX userId',
+				'ALTER TABLE user_overdrive_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			]
+		],
 	);
 }
 

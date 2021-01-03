@@ -14,8 +14,8 @@ class Axis360_Dashboard extends Admin_Dashboard
 
 		$instanceName = $this->loadInstanceInformation('Axis360Stats');
 		$this->loadDates();
-		//Generate stats
 
+		//Generate stats
 		$activeUsersThisMonth = $this->getUserStats($instanceName, $this->thisMonth, $this->thisYear);
 		$interface->assign('activeUsersThisMonth', $activeUsersThisMonth);
 		$activeUsersLastMonth = $this->getUserStats($instanceName, $this->lastMonth, $this->lastMonthYear);

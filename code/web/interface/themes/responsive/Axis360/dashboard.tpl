@@ -3,10 +3,15 @@
 		<h1>{translate text="Axis 360 Dashboard"}</h1>
 		{include file="Admin/selectInterfaceForm.tpl"}
 		<div class="row">
+			<div class="col-xs-12">
+				<a href="/Axis360/Graphs?instance={$selectedInstance}" title="{translate text="Show Active Users Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i> {translate text="View as graph"}</a>
+			</div>
+		</div>
+		<div class="row">
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Active Users"} <a href="/Axis360/Graphs?stat=activeUsers&instance={$selectedInstance}" title="{translate text="Show Active Users Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i></a></h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Active Users"}</h2>
 					</div>
 				</div>
 				<div class="row">
