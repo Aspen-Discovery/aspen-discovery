@@ -30,7 +30,7 @@ class MyAccount_Masquerade extends MyAccount
 		if (!empty($library) && $library->allowMasqueradeMode) {
 			if (!empty($_REQUEST['cardNumber'])) {
 				//$logger->log("Masquerading as " . $_REQUEST['cardNumber'], Logger::LOG_ERROR);
-				$libraryCard = $_REQUEST['cardNumber'];
+				$libraryCard = trim($_REQUEST['cardNumber']);
 				global $guidingUser;
 				if (empty($guidingUser)) {
 					$user = UserAccount::getLoggedInUser();
