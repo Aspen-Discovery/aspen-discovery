@@ -10,7 +10,7 @@
 	{/if}
 	<div class="row">
 		<div class="col-sm-2">
-			<a href="{$webResource->url}">
+			<a href="{$webResource->url}" {if $webResource->openInNewTab}target="_blank"{/if}>
 				<img class="img-responsive img-thumbnail" src="{$logo}" alt="{$title|escape}">
 			</a>
 		</div>
@@ -28,7 +28,7 @@
 					{translate text="web_resource_in_library_use" defaultText="This resource requires you to be in the library to use it."}
 				</em></p>
 			{/if}
-			<a href="{$webResource->url}" class="btn btn-primary">{translate text="Open Resource"}</a>
+			<a href="{$webResource->url}" class="btn btn-primary" {if $webResource->openInNewTab}target="_blank"{/if}>{translate text="Open Resource"}</a>
 		</div>
 		<div class="col-sm-12 col-md-3">
 			{if !empty($webResource->getAudiences())}
