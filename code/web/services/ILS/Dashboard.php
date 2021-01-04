@@ -11,7 +11,7 @@ class ILS_Dashboard extends Admin_Dashboard
 	{
 		global $interface;
 
-		$instanceName = $this->loadInstanceInformation('UserOverDriveUsage');
+		$instanceName = $this->loadInstanceInformation('UserILSUsage');
 		$this->loadDates();
 
 		//Generate stats
