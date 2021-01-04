@@ -450,10 +450,13 @@ class sip2
 		}
 		$this->_addVarOption('BY',$holdtype, true);
 		$this->_addVarOption('XG','', true); // CarlX custom field Issue Identifier // TO DO: Evaluate code changes for Issue level holds
-		if ($freeze == 'freeze' && !empty($freezeReactivationDate)) {
-			if (substr($freezeReactivationDate,-1) != 'B') {
+		if ($freeze == 'freeze' && !empty($freezeReactivateDate)) {
+			if (substr($freezeReactivateDate,-1) != 'B') {
 				$freezeReactivationDate .= 'B';
 			}
+		}
+		if ($freeze == 'thaw') {
+			$freezeReactivateDate = date('m/d/Y', $expDate); // CarlX 9.6.4.3 2020 12 31 will set hold cancel date equal to the previous Freeze Not Needed Before date unless a new value is supplied for Not Needed After in the thaw XI field, despite the fact that the same information is provided in BW
 		}
 		$this->_addVarOption('XI',$freezeReactivateDate, true); // CarlX custom field NNA or NNB Date used with suffix 'B' to indicate Freeze Reactivate Date
 
