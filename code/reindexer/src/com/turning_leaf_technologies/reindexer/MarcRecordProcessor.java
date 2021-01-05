@@ -419,7 +419,9 @@ abstract class MarcRecordProcessor {
 					if (lexileValue.endsWith("L")){
 						lexileValue = lexileValue.substring(0, lexileValue.length() - 1);
 					}
-					groupedWork.setLexileScore(lexileValue);
+					if (StringUtils.isNumeric(lexileValue)) {
+						groupedWork.setLexileScore(lexileValue);
+					}
 				}
 			}
 		}
