@@ -5,6 +5,7 @@ import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
+import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
@@ -102,6 +103,7 @@ public class SymphonyExportMain {
 			//Check for new marc out
 			exportVolumes(dbConn, indexingProfile, profileToLoad);
 			numChanges = updateRecords(dbConn);
+			processRecordsToReload(indexingProfile, logEntry);
 
 			if (recordGroupingProcessorSingleton != null) {
 				recordGroupingProcessorSingleton.close();
@@ -159,6 +161,48 @@ public class SymphonyExportMain {
 					logger.info("Thread was interrupted");
 				}
 			}
+		}
+	}
+
+	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+		try {
+			MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor(dbConn);
+			GroupedWorkIndexer indexer = getGroupedWorkIndexer(dbConn);
+
+			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()) {
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
+				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
+				if (!marcFile.exists()) {
+					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
+				} else {
+					FileInputStream marcFileStream = new FileInputStream(marcFile);
+					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
+					if (streamReader.hasNext()) {
+						Record marcRecord = streamReader.next();
+						//Regroup the record
+						String permanentId = recordGroupingProcessor.processMarcRecord(marcRecord, true);
+						//Reindex the record
+						indexer.processGroupedWork(permanentId);
+					} else {
+						logEntry.incErrors("Could not read file " + marcFile);
+					}
+				}
+
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+				markRecordToReloadAsProcessedStmt.executeUpdate();
+				numRecordsToReloadProcessed++;
+			}
+			if (numRecordsToReloadProcessed > 0) {
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
 
