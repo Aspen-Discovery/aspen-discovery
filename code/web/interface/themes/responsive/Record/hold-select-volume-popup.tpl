@@ -107,8 +107,19 @@
 					{/if}
 
 					<label class="control-label">{translate text="Place hold on"}</label>
-					<input type="hidden" name="holdType" value="volume"/>
-					<div id="volumeSelection" class="form-group">
+					{if $hasItemsWithoutVolumes}
+						<div id="holdTypeSelection" class="form-group">
+							<div class="col-tn-6">
+								<label for="holdTypeBib"><input type="radio" name="holdType" value="bib" id="holdTypeBib" {if !$majorityOfItemsHaveVolumes}checked{/if} onchange="$('#volumeSelection').hide()"> {translate text="First Available Item"}</label>
+							</div>
+							<div class="col-tn-6">
+								<label for="holdTypeItem"><input type="radio" name="holdType" value="volume" id="holdTypeItem" {if $majorityOfItemsHaveVolumes}checked{/if} onchange="$('#volumeSelection').show()"> {translate text="Specific Volume"}</label>
+							</div>
+						</div>
+					{else}
+						<input type="hidden" name="holdType" value="volume"/>
+					{/if}
+					<div id="volumeSelection" class="form-group" {if !$majorityOfItemsHaveVolumes}style="display: none" {/if}>
 						<select name="selectedVolume" id="selectedVolume" class="form-control" aria-label="{translate text="Selected Volume"}">
 							{foreach from=$volumes item=volume}
 								<option value="{$volume->volumeId}">{$volume->displayLabel}</option>

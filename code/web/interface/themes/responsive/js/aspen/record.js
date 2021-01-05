@@ -173,7 +173,16 @@ AspenDiscovery.Record = (function(){
 				alert("Please select a location to pick up your hold when it is ready.");
 				return false;
 			}
-			params['holdType'] = 'volume';
+			var holdType = $('#holdType');
+			if (holdType.length > 0){
+				params['holdType'] = holdType.val();
+			}else{
+				if ($('#holdTypeBib').is(':checked')){
+					params['holdType'] = 'bib';
+				}else{
+					params['holdType'] = 'volume';
+				}
+			}
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
