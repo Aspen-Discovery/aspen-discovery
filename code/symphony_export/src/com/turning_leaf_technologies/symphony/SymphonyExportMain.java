@@ -546,6 +546,17 @@ public class SymphonyExportMain {
 			logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
 		}
 
+		if (hasFullExportFile && indexingProfile.isRunFullUpdate()){
+			//Disable runFullUpdate
+			try {
+				PreparedStatement updateIndexingProfileStmt = dbConn.prepareStatement("UPDATE indexing_profiles set runFullUpdate = 0 where id = ?");
+				updateIndexingProfileStmt.setLong(1, indexingProfile.getId());
+				updateIndexingProfileStmt.executeUpdate();
+			}catch (Exception e){
+				logEntry.incErrors("Error updating disabling runFullUpdate", e);
+			}
+		}
+
 		return totalChanges;
 	}
 
