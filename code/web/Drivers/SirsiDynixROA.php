@@ -76,8 +76,6 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	private static $userPreferredAddresses = array();
-
 	function findNewUser($barcode)
 	{
 		// Creates a new user like patronLogin but looks up user by barcode.
@@ -85,7 +83,7 @@ class SirsiDynixROA extends HorizonAPI
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
-			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
+			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,pin,blockList{owed}");
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' . $barcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1) {
 				$userID = $lookupMyAccountInfoResponse->result[0]->key;
@@ -119,6 +117,9 @@ class SirsiDynixROA extends HorizonAPI
 				}
 				$user->_fullname = isset($fullName) ? $fullName : '';
 				$user->cat_username = $barcode;
+				if (!empty($lookupMyAccountInfoResponse->fields->pin)) {
+					$user->cat_password = $lookupMyAccountInfoResponse->fields->pin;
+				}
 
 				$Address1 = "";
 				$City = "";
@@ -127,8 +128,6 @@ class SirsiDynixROA extends HorizonAPI
 
 				if (isset($lookupMyAccountInfoResponse->fields->preferredAddress)) {
 					$preferredAddress = $lookupMyAccountInfoResponse->fields->preferredAddress;
-					// Set for Account Updating
-					self::$userPreferredAddresses[(string)$userID] = $preferredAddress;
 					// Used by My Account Profile to update Contact Info
 					if ($preferredAddress == 1) {
 						$address = $lookupMyAccountInfoResponse->fields->address1;
@@ -338,12 +337,6 @@ class SirsiDynixROA extends HorizonAPI
 			// phoneList is for texting notification preferences
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $staffSessionToken);
 			if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
-				$lastName = $lookupMyAccountInfoResponse->fields->lastName;
-				$firstName = $lookupMyAccountInfoResponse->fields->firstName;
-
-
-				$fullName = $lastName . ', ' . $firstName;
-
 				$userExistsInDB = false;
 				$user = new User();
 				$user->source = $this->accountProfile->name;
@@ -351,6 +344,8 @@ class SirsiDynixROA extends HorizonAPI
 				if ($user->find(true)) {
 					$userExistsInDB = true;
 				}
+				$user->cat_username = $username;
+				$user->cat_password = $password;
 
 				$forceDisplayNameUpdate = false;
 				$firstName = isset($firstName) ? $firstName : '';
@@ -366,157 +361,8 @@ class SirsiDynixROA extends HorizonAPI
 				if ($forceDisplayNameUpdate) {
 					$user->displayName = '';
 				}
-				$user->_fullname = isset($fullName) ? $fullName : '';
-				$user->cat_username = $username;
-				$user->cat_password = $password;
 
-				$Address1 = "";
-				$City = "";
-				$State = "";
-				$Zip = "";
-
-				if (isset($lookupMyAccountInfoResponse->fields->preferredAddress)) {
-					$preferredAddress = $lookupMyAccountInfoResponse->fields->preferredAddress;
-					// Set for Account Updating
-					self::$userPreferredAddresses[$sirsiRoaUserID] = $preferredAddress;
-					// Used by My Account Profile to update Contact Info
-					if ($preferredAddress == 1) {
-						$address = $lookupMyAccountInfoResponse->fields->address1;
-					} elseif ($preferredAddress == 2) {
-						$address = $lookupMyAccountInfoResponse->fields->address2;
-					} elseif ($preferredAddress == 3) {
-						$address = $lookupMyAccountInfoResponse->fields->address3;
-					} else {
-						$address = array();
-					}
-					foreach ($address as $addressField) {
-						$fields = $addressField->fields;
-						switch ($fields->code->key) {
-							case 'STREET' :
-								$Address1 = $fields->data;
-								break;
-							case 'CITY/STATE' :
-								$cityState = $fields->data;
-								if (substr_count($cityState, ' ') > 1) {
-									//Splitting multiple word cities
-									$last_space = strrpos($cityState, ' ');
-									$City = substr($cityState, 0, $last_space);
-									$State = substr($cityState, $last_space + 1);
-
-								} else {
-									list($City, $State) = explode(' ', $cityState);
-								}
-								break;
-							case 'ZIP' :
-								$Zip = $fields->data;
-								break;
-							case 'PHONE' :
-								$phone = $fields->data;
-								$user->phone = $phone;
-								break;
-							case 'EMAIL' :
-								$email = $fields->data;
-								$user->email = $email;
-								break;
-						}
-					}
-				}
-
-				//Get additional information about the patron's home branch for display.
-				if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
-					$homeBranchCode = strtolower(trim($lookupMyAccountInfoResponse->fields->library->key));
-					//Translate home branch to plain text
-					$location = new Location();
-					$location->code = $homeBranchCode;
-					if (!$location->find(true)) {
-						unset($location);
-					}
-				} else {
-					global $logger;
-					$logger->log('SirsiDynixROA Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, Logger::LOG_ERROR);
-					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
-				}
-
-				if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-					if (empty($user->homeLocationId) && !isset($location)) {
-						// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-						// try to find the main branch to assign to user
-						// or the first location for the library
-						global $library;
-
-						$location = new Location();
-						$location->libraryId = $library->libraryId;
-						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-						if (!$location->find(true)) {
-							// Seriously no locations even?
-							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
-							unset($location);
-						}
-					}
-					if (isset($location)) {
-						$user->homeLocationId = $location->locationId;
-						if (empty($user->myLocation1Id)) {
-							$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-							//Get display name for preferred location 1
-							$myLocation1 = new Location();
-							$myLocation1->locationId = $user->myLocation1Id;
-							if ($myLocation1->find(true)) {
-								$user->_myLocation1 = $myLocation1->displayName;
-							}
-						}
-
-						if (empty($user->myLocation2Id)) {
-							$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-							//Get display name for preferred location 2
-							$myLocation2 = new Location();
-							$myLocation2->locationId = $user->myLocation2Id;
-							if ($myLocation2->find(true)) {
-								$user->_myLocation2 = $myLocation2->displayName;
-							}
-						}
-					}
-				}
-
-				if (isset($location)) {
-					//Get display names that aren't stored
-					$user->_homeLocationCode = $location->code;
-					$user->_homeLocation = $location->displayName;
-				}
-
-				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
-					$user->_expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->_expires);
-					$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					$timeNow = time();
-					$timeToExpire = $timeExpire - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						if ($timeToExpire <= 0) {
-							$user->_expired = 1;
-						}
-						$user->_expireClose = 1;
-					}
-				}
-
-				$finesVal = 0;
-				if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
-					foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
-						$fineAmount = (float)$block->fields->owed->amount;
-						$finesVal += $fineAmount;
-					}
-				}
-
-				$user->_address1 = $Address1;
-				$user->_address2 = $City . ', ' . $State;
-				$user->_city = $City;
-				$user->_state = $State;
-				$user->_zip = $Zip;
-				$user->_fines = sprintf('$%01.2f', $finesVal);
-				$user->_finesVal = $finesVal;
-				$user->patronType = $lookupMyAccountInfoResponse->fields->profile->key;
-				$user->_notices = '-';
-				$user->_noticePreferenceLabel = 'Email';
-				$user->_web_note = '';
+				$this->loadContactInformationFromApiResult($user, $lookupMyAccountInfoResponse);
 
 				if ($userExistsInDB) {
 					$user->update();
@@ -1765,93 +1611,70 @@ class SirsiDynixROA extends HorizonAPI
 			if ($sessionToken) {
 				$webServiceURL = $this->getWebServiceURL();
 				if ($userID = $user->username) {
-					$updatePatronInfoParameters = array(
-						'fields' => array(),
-						'key' => $userID,
-						'resource' => '/user/patron',
-					);
-					if (!empty(self::$userPreferredAddresses[$userID])) {
-						$preferredAddress = self::$userPreferredAddresses[$userID];
-					} else {
-						// TODO: Also set the preferred address in the $updatePatronInfoParameters
-						$preferredAddress = 1;
-					}
+					//To update the patron, we need to load the patron from Symphony so we only overwrite changed values.
+					$updatePatronInfoParametersClass = $this->getWebServiceResponse($this->getWebServiceURL() . '/user/patron/key/' . $userID .'?includeFields=*,preferredAddress,address1,address2,address3', null, $sessionToken );
+					if ($updatePatronInfoParametersClass) {
+						//Convert from stdClass to associative array
+						$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
+						$preferredAddress = $updatePatronInfoParameters['fields']['preferredAddress'];
 
-					// Build Address Field with existing data
-					$index = 0;
+						// Build Address Field with existing data
+						$index = 0;
 
-					if (!empty($user->email)) {
-						$this->setPatronUpdateField('EMAIL', $user->email, $updatePatronInfoParameters, $preferredAddress, $index);
-					}
-
-					if (!empty($user->_address1)) {
-						$this->setPatronUpdateField('STREET', $user->_address1, $updatePatronInfoParameters, $preferredAddress, $index);
-					}
-
-					if (!empty($user->_zip)) {
-						$this->setPatronUpdateField('ZIP', $user->_zip, $updatePatronInfoParameters, $preferredAddress, $index);
-					}
-
-					if (!empty($user->_phone)) {
-						$this->setPatronUpdateField('PHONE', $user->phone, $updatePatronInfoParameters, $preferredAddress, $index);
-					}
-
-					if (!empty($user->_city) && !empty($user->_state)) {
-						$this->setPatronUpdateField('CITY/STATE', $user->_city .' '. $user->_state, $updatePatronInfoParameters, $preferredAddress, $index);
-					}
-
-
-					// Update Address Field with new data supplied by the user
-					if (isset($_REQUEST['email'])) {
-						$this->setPatronUpdateField('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress, $index);
-						$user->email = $_REQUEST['email'];
-					}
-
-					if (isset($_REQUEST['phone'])) {
-						$this->setPatronUpdateField('PHONE',$_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress, $index);
-						$user->phone = $_REQUEST['phone'];
-					}
-
-					if (isset($_REQUEST['address1'])) {
-						$this->setPatronUpdateField('STREET',$_REQUEST['address1'], $updatePatronInfoParameters, $preferredAddress, $index);
-						$user->_address1 = $_REQUEST['address1'];
-					}
-
-					if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-						$this->setPatronUpdateField('CITY/STATE',$_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress, $index);
-						$user->_city = $_REQUEST['city'];
-						$user->_state = $_REQUEST['state'];
-					}
-
-					if (isset($_REQUEST['zip'])) {
-						$this->setPatronUpdateField('ZIP',$_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress, $index);
-						$user->_zip = $_REQUEST['zip'];
-					}
-
-					// Update Home Location
-					if (!empty($_REQUEST['pickupLocation'])) {
-						$homeLibraryLocation = new Location();
-						if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])) {
-							$homeBranchCode = strtoupper($homeLibraryLocation->code);
-							$updatePatronInfoParameters['fields']['library'] = array(
-								'key' => $homeBranchCode,
-								'resource' => '/policy/library'
-							);
+						// Update Address Field with new data supplied by the user
+						if (isset($_REQUEST['email'])) {
+							$this->setPatronUpdateFieldBySearch('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress);
+							$user->email = $_REQUEST['email'];
 						}
-					}
 
-					$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $userID, $updatePatronInfoParameters, $sessionToken, 'PUT');
-
-					if (isset($updateAccountInfoResponse->messageList)) {
-						foreach ($updateAccountInfoResponse->messageList as $message) {
-							$result['messages'][] = $message->message;
+						if (isset($_REQUEST['phone'])) {
+							$this->setPatronUpdateFieldBySearch('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress);
+							$user->phone = $_REQUEST['phone'];
 						}
-						global $logger;
-						$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : '.implode(';', $result['messages']), Logger::LOG_ERROR);
+
+						if (isset($_REQUEST['address1'])) {
+							$this->setPatronUpdateFieldBySearch('STREET', $_REQUEST['address1'], $updatePatronInfoParameters, $preferredAddress);
+							$user->_address1 = $_REQUEST['address1'];
+						}
+
+						if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
+							$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+							$user->_city = $_REQUEST['city'];
+							$user->_state = $_REQUEST['state'];
+						}
+
+						if (isset($_REQUEST['zip'])) {
+							$this->setPatronUpdateFieldBySearch('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress);
+							$user->_zip = $_REQUEST['zip'];
+						}
+
+						// Update Home Location
+						if (!empty($_REQUEST['pickupLocation'])) {
+							$homeLibraryLocation = new Location();
+							if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])) {
+								$homeBranchCode = strtoupper($homeLibraryLocation->code);
+								$updatePatronInfoParameters['fields']['library'] = array(
+									'key' => $homeBranchCode,
+									'resource' => '/policy/library'
+								);
+							}
+						}
+
+						$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $userID.'?includeFields=*,preferredAddress,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
+
+						if (isset($updateAccountInfoResponse->messageList)) {
+							foreach ($updateAccountInfoResponse->messageList as $message) {
+								$result['messages'][] = $message->message;
+							}
+							global $logger;
+							$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $result['messages']), Logger::LOG_ERROR);
+						} else {
+							$result['success'] = true;
+							$result['messages'][] = 'Your account was updated successfully.';
+							$user->update();
+						}
 					}else{
-						$result['success'] = true;
-						$result['messages'][] = 'Your account was updated successfully.';
-						$user->update();
+						$result['messages'][] = 'Could not find the account to update.';
 					}
 				} else {
 					global $logger;
@@ -1938,11 +1761,214 @@ class SirsiDynixROA extends HorizonAPI
 		$parameterIndex[$key] = $l;
 	}
 
+	private function setPatronUpdateFieldBySearch($key, $value, &$updatePatronInfoParameters, $preferredAddress){
+		$addressField = 'address' . $preferredAddress;
+
+		$patronAddress = &$updatePatronInfoParameters['fields'][$addressField];
+		$fieldFound = false;
+		$maxKey = 0;
+		foreach ($patronAddress as $fieldIndex => &$field){
+			if ($field['key'] > $maxKey){
+				$maxKey = $field['key'];
+			}
+			if ($field['fields']['code']['key'] == $key){
+				$field['fields']['data'] = $value;
+				$fieldFound = true;
+				break;
+			}
+		}
+		if (!$fieldFound){
+			$patronAddress[] = [
+				'resource' => "/user/patron/$addressField",
+				'key' => $maxKey++,
+				'fields' => [
+					'code' => [
+						'resource' => "/user/patron/$addressField",
+						'key' => $key,
+					],
+					'data' => $value
+				]
+			];
+		}
+	}
+
 	function getPasswordPinValidationRules(){
 		return [
 			'minLength' => 4,
 			'maxLength' => 60,
 			'onlyDigitsAllowed' => false,
 		];
+	}
+
+	/**
+	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
+	 *
+	 * @param User $user
+	 */
+	public function loadContactInformation(User $user)
+	{
+		$webServiceURL = $this->getWebServiceURL();
+		$staffSessionToken = $this->getStaffSessionToken();
+		$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
+		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->username . '?includeFields=' . $includeFields;
+
+		// phoneList is for texting notification preferences
+		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $staffSessionToken);
+		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
+			$this->loadContactInformationFromApiResult($user, $lookupMyAccountInfoResponse);
+		}
+	}
+
+	/**
+	 * @param User $user;
+	 * @param $lookupMyAccountInfoResponse
+	 */
+	protected function loadContactInformationFromApiResult($user, $lookupMyAccountInfoResponse)
+	{
+		$lastName = $lookupMyAccountInfoResponse->fields->lastName;
+		$firstName = $lookupMyAccountInfoResponse->fields->firstName;
+
+		$fullName = $lastName . ', ' . $firstName;
+
+		$user->_fullname = isset($fullName) ? $fullName : '';
+
+		$Address1 = "";
+		$City = "";
+		$State = "";
+		$Zip = "";
+
+		if (isset($lookupMyAccountInfoResponse->fields->preferredAddress)) {
+			$preferredAddress = $lookupMyAccountInfoResponse->fields->preferredAddress;
+			// Used by My Account Profile to update Contact Info
+			$addressField = 'address' . $preferredAddress;
+			$address = $lookupMyAccountInfoResponse->fields->$addressField;
+			foreach ($address as $addressField) {
+				$fields = $addressField->fields;
+				switch ($fields->code->key) {
+					case 'STREET' :
+						$Address1 = $fields->data;
+						break;
+					case 'CITY/STATE' :
+						$cityState = $fields->data;
+						if (substr_count($cityState, ' ') > 1) {
+							//Splitting multiple word cities
+							$last_space = strrpos($cityState, ' ');
+							$City = substr($cityState, 0, $last_space);
+							$State = substr($cityState, $last_space + 1);
+
+						} else {
+							list($City, $State) = explode(' ', $cityState);
+						}
+						break;
+					case 'ZIP' :
+						$Zip = $fields->data;
+						break;
+					case 'PHONE' :
+						$phone = $fields->data;
+						$user->phone = $phone;
+						break;
+					case 'EMAIL' :
+						$email = $fields->data;
+						$user->email = $email;
+						break;
+				}
+			}
+		}
+
+		//Get additional information about the patron's home branch for display.
+		if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
+			$homeBranchCode = strtolower(trim($lookupMyAccountInfoResponse->fields->library->key));
+			//Translate home branch to plain text
+			$location = new Location();
+			$location->code = $homeBranchCode;
+			if (!$location->find(true)) {
+				unset($location);
+			}
+		} else {
+			global $logger;
+			$logger->log('SirsiDynixROA Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, Logger::LOG_ERROR);
+			// The code below will attempt to find a location for the library anyway if the homeLocation is already set
+		}
+
+		if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
+			if (empty($user->homeLocationId) && !isset($location)) {
+				// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
+				// try to find the main branch to assign to user
+				// or the first location for the library
+				global $library;
+
+				$location = new Location();
+				$location->libraryId = $library->libraryId;
+				$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+				if (!$location->find(true)) {
+					// Seriously no locations even?
+					global $logger;
+					$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
+					unset($location);
+				}
+			}
+			if (isset($location)) {
+				$user->homeLocationId = $location->locationId;
+				if (empty($user->myLocation1Id)) {
+					$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+					//Get display name for preferred location 1
+					$myLocation1 = new Location();
+					$myLocation1->locationId = $user->myLocation1Id;
+					if ($myLocation1->find(true)) {
+						$user->_myLocation1 = $myLocation1->displayName;
+					}
+				}
+
+				if (empty($user->myLocation2Id)) {
+					$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+					//Get display name for preferred location 2
+					$myLocation2 = new Location();
+					$myLocation2->locationId = $user->myLocation2Id;
+					if ($myLocation2->find(true)) {
+						$user->_myLocation2 = $myLocation2->displayName;
+					}
+				}
+			}
+		}
+
+		if (isset($location)) {
+			//Get display names that aren't stored
+			$user->_homeLocationCode = $location->code;
+			$user->_homeLocation = $location->displayName;
+		}
+
+		if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
+			$user->_expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
+			list ($yearExp, $monthExp, $dayExp) = explode("-", $user->_expires);
+			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			$timeNow = time();
+			$timeToExpire = $timeExpire - $timeNow;
+			if ($timeToExpire <= 30 * 24 * 60 * 60) {
+				if ($timeToExpire <= 0) {
+					$user->_expired = 1;
+				}
+				$user->_expireClose = 1;
+			}
+		}
+
+		$finesVal = 0;
+		if (isset($lookupMyAccountInfoResponse->fields->blockList)) {
+			foreach ($lookupMyAccountInfoResponse->fields->blockList as $block) {
+				$fineAmount = (float)$block->fields->owed->amount;
+				$finesVal += $fineAmount;
+			}
+		}
+
+		$user->_address1 = $Address1;
+		$user->_address2 = $City . ', ' . $State;
+		$user->_city = $City;
+		$user->_state = $State;
+		$user->_zip = $Zip;
+		$user->_fines = sprintf('$%01.2f', $finesVal);
+		$user->_finesVal = $finesVal;
+		$user->patronType = $lookupMyAccountInfoResponse->fields->profile->key;
+		$user->_notices = '-';
+		$user->_noticePreferenceLabel = 'Email';
+		$user->_web_note = '';
 	}
 }
