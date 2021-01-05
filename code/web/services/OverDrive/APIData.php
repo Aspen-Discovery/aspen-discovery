@@ -6,8 +6,27 @@ class OverDrive_APIData extends Admin_Admin
 {
 	function launch()
 	{
+		global $interface;
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+		$setting = new OverDriveSetting();
+		$setting->orderBy('url');
+		$setting->find();
+		$allSettings = array();
+		while ($setting->fetch()) {
+			$allSettings[$setting->id] = clone $setting;
+		}
+		$interface->assign('allSettings', $allSettings);
+
 		$driver = new OverDriveDriver();
+
+		if (isset($_REQUEST['settingId'])){
+			$activeSetting = $allSettings[$_REQUEST['settingId']];
+		}else{
+			$activeSetting = reset($allSettings);
+		}
+		$driver->setSettings($activeSetting);
+		$interface->assign('selectedSettingId', $activeSetting->id);
 
 		$libraryInfo = $driver->getLibraryAccountInformation();
 		$contents = "<h1>Main - {$libraryInfo->name}</h1>";
@@ -77,7 +96,6 @@ class OverDrive_APIData extends Admin_Admin
 			}
 		}
 
-		global $interface;
 		$interface->assign('overDriveAPIData', $contents);
 		$this->display('overdriveApiData.tpl', 'OverDrive API Data');
 	}

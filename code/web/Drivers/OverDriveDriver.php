@@ -1226,4 +1226,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 		}
 		return $bookshelfItem;
 	}
+
+	/**
+	 * @param OverDriveSetting $activeSetting
+	 */
+	public function setSettings($activeSetting)
+	{
+		$this->settings = $activeSetting;
+	}
 }
