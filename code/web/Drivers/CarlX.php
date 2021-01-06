@@ -1250,13 +1250,23 @@ class CarlX extends AbstractIlsDriver{
 				}
 				$fine->System = $this->getFineSystem($fine->Branch);
 
+				$fine->FineAmountOutstanding = 0;
 				if ($fine->FineAmountPaid > 0) {
-					$fine->FineAmount -= $fine->FineAmountPaid;
+					$fine->FineAmountOutstanding = $fine->FineAmount - $fine->FineAmountPaid;
 				}
+
+				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+					$fine->Identifier = substr($fine->Identifier,9);
+				}
+				$fine->Identifier = str_replace('#', '', $fine->Identifier);
+
 				$myFines[] = array(
+					'fineId' => $fine->Identifier,
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FineAmount,
 					'amountVal' => $fine->FineAmount,
+					'amountOutstanding' => $fine->FineAmountOutstanding,
+					'amountOutstandingVal' => $fine->FineAmountOutstanding,
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->FineAssessedDate)),
 					'system'  => $fine->System,
@@ -1282,7 +1292,12 @@ class CarlX extends AbstractIlsDriver{
 				}
 				$fine->System = $this->getFineSystem($fine->Branch);
 
+				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+					$fine->Identifier = substr($fine->Identifier,9);
+				}
+
 				$myFines[] = array(
+					'fineId' => $fine->Identifier,
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FeeAmount,
 					'amountVal'  => $fine->FeeAmount,
@@ -2114,4 +2129,12 @@ EOT;
 			$user->_expireClose = 1;
 		}
 	}
+
+	// TODO: implement showOutstanding Fines for partially paid fines. Might be nothing... 2020 11 23
+/*
+	public function showOutstandingFines()
+	{
+		return true;
+	}
+*/
 }

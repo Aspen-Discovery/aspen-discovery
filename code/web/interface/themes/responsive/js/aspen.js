@@ -5863,6 +5863,27 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
+		createMSBOrder: function(finesFormId) {
+			var redirectUrl = window.location.hostname + "/MyAccount/Home";
+			var params = {
+				PaymentType : "CC",
+				ReferenceID: $(finesFormId + " input[name=patronId]").val(),
+				TotalAmount: $(finesFormId + " input[name=totalToPay]").val(),
+				PaymentRedirectUrl: redirectUrl
+			};
+			$(finesFormId + " .selectedFine:checked").each(
+				function() {
+					var name = $(this).attr('name');
+					params[name] = $(this).val();
+					var fineAmount = $(finesFormId + " #amountToPay" + $(this).data("fine_id"));
+					if (fineAmount){
+						params[fineAmount.attr('name')] = fineAmount.val();
+					}
+				}
+			);
+			alert(params["TotalAmount"]);
+		},
+
 		createPayPalOrder: function(finesFormId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
