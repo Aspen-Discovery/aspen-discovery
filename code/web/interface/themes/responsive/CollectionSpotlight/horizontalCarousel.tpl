@@ -1,13 +1,13 @@
 {if $showCollectionSpotlightTitle || $showViewMoreLink}
-		<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
-			{if $scrollerTitle}
-				<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
-			{/if}
-			{if $showViewMoreLink}
-				<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">View More</a></div>
-			{/if}
-		</div>
-	{/if}
+	<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
+		{if $showCollectionSpotlightTitle && !empty($scrollerTitle)}
+			<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
+		{/if}
+		{if $showViewMoreLink}
+			<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">View More</a></div>
+		{/if}
+	</div>
+{/if}
 <div class="jcarousel-wrapper horizontalCarouselSpotlightWrapper">
 	<div class="jcarousel horizontalCarouselSpotlight {if $collectionSpotlight->coverSize == 'medium'}mediumScroller{/if}" id="collectionSpotlightCarousel{$list->id}">
 		<div class="loading">Loading carousel items...</div>
