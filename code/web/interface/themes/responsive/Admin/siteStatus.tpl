@@ -24,25 +24,25 @@
 		<h3>{$searchIndex.name}</h3>
 		<table class="table table-bordered" aria-label="Status of {$searchIndex.name} Solr index">
 			<tr>
-				<th>Record Count: </th>
+				<th>Record Count</th>
 				<td>{$searchIndex.index.numDocs}</td>
 			</tr>
 			<tr>
-				<th>Start Time: </th>
+				<th>Start Time</th>
 				<td>{$searchIndex.startTime|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
 			</tr>
 			<tr>
-				<th>Last Modified: </th>
+				<th>Last Modified</th>
 				<td>{$searchIndex.index.lastModified|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
 			</tr>
 			<tr>
-				<th>Uptime: </th>
+				<th>Uptime</th>
 				<td>{$searchIndexuptime|printms}</td>
 			</tr>
 			<tr>
-				<th>Full Status: </th>
-				<td><a onclick="$('#searcherStatus').show();">Show full status</a>
-					<div id="searcherStatus" style="display:none"><pre>{$searchIndex|print_r}</pre></div>
+				<th>Full Status</th>
+				<td><a onclick="$('#searcherStatus_{$searchIndex.name|escape:css}').show();">Show full status</a>
+					<div id="searcherStatus_{$searchIndex.name|escape:css}" style="display:none"><pre>{$searchIndex|print_r}</pre></div>
 				</td>
 			</tr>
 		</table>
