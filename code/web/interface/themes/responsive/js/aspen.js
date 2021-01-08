@@ -5853,7 +5853,6 @@ AspenDiscovery.Account = (function(){
 			var params = {
 				method: "createPayPalOrder",
 				patronId: $(finesFormId + " input[name=patronId]").val(),
-				fineTotal: $(finesFormId + " input[name=totalToPay]").val(),
 			};
 			$(finesFormId + " .selectedFine:checked").each(
 				function() {
