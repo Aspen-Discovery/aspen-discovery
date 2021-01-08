@@ -151,6 +151,10 @@ class Record_AJAX extends Action
 					}
 				} else {
 					$interface->assign('whileYouWaitTitles', []);
+					if (isset($results['items'])) {
+						$results = $this->getItemHoldForm($user->_homeLocationCode, $results, $shortId, $user, $user->getHomeLibrary());
+						$results['holdFormBypassed'] = true;
+					}
 				}
 			} else if (count($locations) == 0) {
 				$results = array(
@@ -465,24 +469,7 @@ class Record_AJAX extends Action
 					}
 
 					if (isset($return['items'])) {
-						$interface->assign('pickupBranch', $pickupBranch);
-						$items = $return['items'];
-						$interface->assign('items', $items);
-						$interface->assign('message', $return['message']);
-						$interface->assign('id', $shortId);
-						$interface->assign('patronId', $patron->id);
-						if (!empty($_REQUEST['autologout'])) $interface->assign('autologout', $_REQUEST['autologout']); // carry user selection to Item Hold Form
-
-						$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
-						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
-
-						// Need to place item level holds.
-						$results = array(
-							'success' => true,
-							'needsItemLevelHold' => true,
-							'message' => $interface->fetch('Record/item-hold-popup.tpl'),
-							'title' => isset($return['title']) ? $return['title'] : '',
-						);
+						$results = $this->getItemHoldForm($pickupBranch, $return, $shortId, $patron, $homeLibrary);
 					} else { // Completed Hold Attempt
 						$interface->assign('message', $return['message']);
 						$interface->assign('success', $return['success']);
@@ -991,5 +978,37 @@ class Record_AJAX extends Action
 	function getBreadcrumbs()
 	{
 		return [];
+	}
+
+	/**
+	 * @param $pickupBranch
+	 * @param array $return
+	 * @param string $shortId
+	 * @param $patron
+	 * @param Library|null $homeLibrary
+	 * @return array
+	 */
+	protected function getItemHoldForm($pickupBranch, array $return, string $shortId, $patron, ?Library $homeLibrary): array
+	{
+		global $interface;
+		$interface->assign('pickupBranch', $pickupBranch);
+		$items = $return['items'];
+		$interface->assign('items', $items);
+		$interface->assign('message', $return['message']);
+		$interface->assign('id', $shortId);
+		$interface->assign('patronId', $patron->id);
+		if (!empty($_REQUEST['autologout'])) $interface->assign('autologout', $_REQUEST['autologout']); // carry user selection to Item Hold Form
+
+		$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
+		$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
+
+		// Need to place item level holds.
+		return array(
+			'success' => true,
+			'needsItemLevelHold' => true,
+			'message' => $interface->fetch('Record/item-hold-popup.tpl'),
+			'title' => isset($return['title']) ? $return['title'] : '',
+			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>"
+		);
 	}
 }

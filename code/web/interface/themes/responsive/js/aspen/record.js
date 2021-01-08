@@ -12,8 +12,12 @@ AspenDiscovery.Record = (function(){
 					document.body.style.cursor = "default";
 					if (data.holdFormBypassed) {
 						if (data.success) {
-							AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, false);
-							AspenDiscovery.Account.loadMenuData();
+							if (data.needsItemLevelHold){
+								AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
+							}else {
+								AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, false);
+								AspenDiscovery.Account.loadMenuData();
+							}
 						} else {
 							AspenDiscovery.showMessage('Hold Failed', data.message, false, false);
 						}
