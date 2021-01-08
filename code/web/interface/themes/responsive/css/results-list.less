@@ -42,7 +42,9 @@
   vertical-align: top;
 }
 .facetValue {
-  padding: 0 0 0 30px;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+  margin-left:30px;
   color: #888888;
   font-size: small;
   font-weight: bold;
@@ -220,8 +222,6 @@
   -webkit-column-gap:   35px;
   -moz-column-gap:      35px;
   column-gap:           35px;
-  padding-left: 20px;
-  text-indent: -15px;
   @media(min-width: 0){
     -webkit-column-count: 1;
     -moz-column-count:    1;
@@ -237,9 +237,13 @@
     -moz-column-count:    2;
     column-count:         2;
   }
-  .checkboxFacet{
-    text-indent: -17px;
-    padding-left: 30px;
+  .checkboxFacet label{
+    padding-left: 1.2em;
+    text-indent: -1.2em;
+  }
+  .standardFacet{
+    padding-left: 2.5em;
+    text-indent: -1em;
   }
 }
 .highlight{

@@ -10097,7 +10097,9 @@ a.browse-thumbnail-sorted.active {
   vertical-align: top;
 }
 .facetValue {
-  padding: 0 0 0 30px;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+  margin-left: 30px;
   color: #888888;
   font-size: small;
   font-weight: bold;
@@ -10248,8 +10250,6 @@ a.browse-thumbnail-sorted.active {
   -webkit-column-gap: 35px;
   -moz-column-gap: 35px;
   column-gap: 35px;
-  padding-left: 20px;
-  text-indent: -15px;
 }
 @media (min-width: 0) {
   .moreFacetPopup {
@@ -10272,9 +10272,13 @@ a.browse-thumbnail-sorted.active {
     column-count: 2;
   }
 }
-.moreFacetPopup .checkboxFacet {
-  text-indent: -17px;
-  padding-left: 30px;
+.moreFacetPopup .checkboxFacet label {
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+.moreFacetPopup .standardFacet {
+  padding-left: 2.5em;
+  text-indent: -1em;
 }
 .highlight {
   font-weight: bolder;
