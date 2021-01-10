@@ -318,6 +318,6 @@ class Admin_UsageGraphs extends Admin_Admin
 
 	function canView()
 	{
-		return UserAccount::userHasPermission(['View System Reports']);
+		return UserAccount::userHasPermission(['View Dashboards', 'View System Reports']);
 	}
 }
