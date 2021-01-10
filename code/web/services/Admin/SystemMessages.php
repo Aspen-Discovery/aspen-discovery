@@ -17,7 +17,7 @@ class Admin_SystemMessages extends ObjectEditor
 		return 'SystemMessages';
 	}
 	function canDelete(){
-		return UserAccount::userHasPermission('Administer All System Messages');
+		return UserAccount::userHasPermission(['Administer All System Messages','Administer Library System Messages']);
 	}
 	function getAllObjects(){
 		$systemMessage = new SystemMessage();

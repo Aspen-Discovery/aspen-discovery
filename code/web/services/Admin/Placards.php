@@ -17,7 +17,7 @@ class Admin_Placards extends ObjectEditor
 		return 'Placards';
 	}
 	function canDelete(){
-		return UserAccount::userHasPermission('Administer All Placards');
+		return UserAccount::userHasPermission(['Administer All Placards','Administer Library Placards']);
 	}
 	function getAllObjects(){
 		$placard = new Placard();
