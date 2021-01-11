@@ -348,12 +348,12 @@ class SirsiDynixROA extends HorizonAPI
 				$user->cat_password = $password;
 
 				$forceDisplayNameUpdate = false;
-				$firstName = isset($firstName) ? $firstName : '';
+				$firstName = isset($lookupMyAccountInfoResponse->fields->firstName) ? $lookupMyAccountInfoResponse->fields->firstName : '';
 				if ($user->firstname != $firstName) {
 					$user->firstname = $firstName;
 					$forceDisplayNameUpdate = true;
 				}
-				$lastName = isset($lastName) ? $lastName : '';
+				$lastName = isset($lookupMyAccountInfoResponse->fields->lastName) ? $lookupMyAccountInfoResponse->fields->lastName : '';
 				if ($user->lastname != $lastName) {
 					$user->lastname = isset($lastName) ? $lastName : '';
 					$forceDisplayNameUpdate = true;

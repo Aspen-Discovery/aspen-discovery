@@ -2351,6 +2351,15 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'ip_address_logs_login_info' => [
+					'title' => 'Logging by IP Address - Add Login information',
+					'description' => 'Add number of login attempts and failed logins to IP Address logs',
+					'sql' => [
+						'ALTER TABLE usage_by_ip_address ADD COLUMN numLoginAttempts INT default 0',
+						'ALTER TABLE usage_by_ip_address ADD COLUMN numFailedLoginAttempts INT default 0',
+					]
+				],
+
 				'host_information' => [
 					'title' => 'Host Information',
 					'description' => 'Add a table to allow customization of where a patron goes by default based on host name',

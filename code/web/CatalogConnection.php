@@ -97,6 +97,7 @@ class CatalogConnection
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false)
 	{
 		global $offlineMode;
+		global $usageByIPAddress;
 
 		$barcodesToTest = array();
 		$barcodesToTest[$username] = $username;
