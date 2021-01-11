@@ -908,7 +908,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				foreach ($relatedRecord->getItems() as $itemDetail){
 					if ($itemDetail->holdable) {
 						if (!empty($itemDetail->volumeId)) {
-							$holdableVolumes[$itemDetail->volumeId] = $itemDetail->volume;
+							$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = $itemDetail->volume;
 						}else{
 							$hasItemsWithoutVolumes = true;
 						}
@@ -924,6 +924,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						'type' => 'ils_hold'
 					);
 				}else {
+					ksort($holdableVolumes);
 					foreach ($holdableVolumes as $volumeId => $volumeName) {
 						$actions[] = array(
 							'title' => 'Hold ' . $volumeName,
