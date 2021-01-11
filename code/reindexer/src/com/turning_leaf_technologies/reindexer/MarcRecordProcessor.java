@@ -408,6 +408,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
 	}
 
+	private static Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
 	private void loadLexileScore(GroupedWorkSolr groupedWork, Record record) {
 		List<DataField> targetAudiences = MarcUtil.getDataFields(record, "521");
 		for (DataField targetAudience : targetAudiences){
@@ -421,6 +422,14 @@ abstract class MarcRecordProcessor {
 					}
 					if (StringUtils.isNumeric(lexileValue)) {
 						groupedWork.setLexileScore(lexileValue);
+					}else{
+						Matcher lexileMatcher = lexileMatchingPattern.matcher(lexileValue);
+						if (lexileMatcher.find()){
+							String lexileCode = lexileMatcher.group(1);
+							String lexileScore = lexileMatcher.group(2);
+							groupedWork.setLexileScore(lexileScore);
+							groupedWork.setLexileCode(lexileCode);
+						}
 					}
 				}
 			}
