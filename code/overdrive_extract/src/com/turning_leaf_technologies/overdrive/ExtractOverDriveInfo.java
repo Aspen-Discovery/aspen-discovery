@@ -994,7 +994,9 @@ class ExtractOverDriveInfo {
 							JSONArray identifiers = format.getJSONArray("identifiers");
 							for (int j = 0; j < identifiers.length(); j++){
 								JSONObject identifier = identifiers.getJSONObject(j);
-								uniqueIdentifiers.add(identifier.getString("type") + ":" + identifier.getString("value"));
+								if (identifier.getString("value").length() > 0) {
+									uniqueIdentifiers.add(identifier.getString("type") + ":" + identifier.getString("value"));
+								}
 							}
 						}
 						//Default samples to null
