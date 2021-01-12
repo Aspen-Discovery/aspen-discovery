@@ -170,3 +170,4 @@ code/web/fonts/HalisR-S-Regular.otf
 .idea/deployment.xml
 code/web/migrations/importResults.txt
 .idea/watcherTasks.xml
+.idea/php.xml
