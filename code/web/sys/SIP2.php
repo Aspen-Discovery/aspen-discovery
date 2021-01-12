@@ -452,7 +452,7 @@ class sip2
 		$this->_addVarOption('XG','', true); // CarlX custom field Issue Identifier // TO DO: Evaluate code changes for Issue level holds
 		if ($freeze == 'freeze' && !empty($freezeReactivateDate)) {
 			if (substr($freezeReactivateDate,-1) != 'B') {
-				$freezeReactivationDate .= 'B';
+				$freezeReactivateDate .= 'B';
 			}
 		}
 		if ($freeze == 'thaw') {
