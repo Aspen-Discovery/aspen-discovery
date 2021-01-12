@@ -5863,12 +5863,12 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		createMSBOrder: function(finesFormId) {
+		createMSBOrder: function(finesFormId, totalToPay) {
 			var redirectUrl = window.location.hostname + "/MyAccount/Home";
 			var params = {
 				PaymentType : "CC",
 				ReferenceID: $(finesFormId + " input[name=patronId]").val(),
-				TotalAmount: $(finesFormId + " input[name=totalToPay]").val(),
+				TotalAmount: $(totalToPay).html(),
 				PaymentRedirectUrl: redirectUrl
 			};
 			$(finesFormId + " .selectedFine:checked").each(
@@ -5881,7 +5881,7 @@ AspenDiscovery.Account = (function(){
 					}
 				}
 			);
-			alert(params["TotalAmount"]);
+
 		},
 
 		createPayPalOrder: function(finesFormId) {

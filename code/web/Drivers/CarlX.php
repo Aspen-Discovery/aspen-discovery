@@ -175,7 +175,6 @@ class CarlX extends AbstractIlsDriver{
 		global $logger;
 
 		//renew the item via SIP 2
-		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mysip = new sip2();
 		$mysip->hostname = $this->accountProfile->sipHost;
 		$mysip->port = $this->accountProfile->sipPort;
@@ -1249,6 +1248,7 @@ class CarlX extends AbstractIlsDriver{
 					$fine->Branch = $fine->TransactionBranch;
 				}
 				$fine->System = $this->getFineSystem($fine->Branch);
+				$fine->CanPayFine = $this->canPayFine($fine->System);
 
 				$fine->FineAmountOutstanding = 0;
 				if ($fine->FineAmountPaid > 0) {
@@ -1270,6 +1270,7 @@ class CarlX extends AbstractIlsDriver{
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->FineAssessedDate)),
 					'system'  => $fine->System,
+					'canPayFine' => $fine->CanPayFine,
 				);
 			}
 		}
@@ -1291,6 +1292,7 @@ class CarlX extends AbstractIlsDriver{
 					$fine->Branch = $fine->TransactionBranch;
 				}
 				$fine->System = $this->getFineSystem($fine->Branch);
+				$fine->CanPayFine = $this->canPayFine($fine->System);
 
 				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
 					$fine->Identifier = substr($fine->Identifier,9);
@@ -1304,11 +1306,16 @@ class CarlX extends AbstractIlsDriver{
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->TransactionDate)),
 					'system'  => $fine->System,
+					'canPayFine' => $fine->CanPayFine,
 				);
 			}
 		}
 
 		return $myFines;
+	}
+
+	public function canPayFine($system){
+		return '';
 	}
 
 	public function getFineSystem($branchId){
@@ -1537,7 +1544,6 @@ class CarlX extends AbstractIlsDriver{
 		}
 		global $configArray;
 		//Place the hold via SIP 2
-		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
 		$mySip->port = $this->accountProfile->sipPort;
@@ -1659,7 +1665,6 @@ class CarlX extends AbstractIlsDriver{
 
 	public function renewCheckoutViaSIP($patron, $itemId, $useAlternateSIP = false){
 		//renew the item via SIP 2
-		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mysip = new sip2();
 		$mysip->hostname = $this->accountProfile->sipHost;
 		$mysip->port = $this->accountProfile->sipPort;

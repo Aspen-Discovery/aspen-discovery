@@ -53,10 +53,12 @@
 							<tbody>
 								{foreach from=$fines item=fine}
 									<tr>
-										{if ($finePaymentType == 2 || $finePaymentType == 3) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+										{if ($finePaymentType == 2 || $finePaymentType == 3) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount && $fine.canPayFine !== false}
 											<td>
 												<input type="checkbox" checked class="selectedFine" name="selectedFine[{$fine.fineId}]" aria-label="Pay Fine {$fine.reason|escapeCSS}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}')" data-fine_id="{$fine.fineId}" data-fine_amt="{$fine.amountVal}" data-outstanding_amt="{if $showOutstanding}{$fine.amountOutstandingVal}{else}0{/if}">
 											</td>
+										{elseif ($finePaymentType == 2 || $finePaymentType == 3) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+											<td></td>
 									    {/if}
 										{if $showDate}
 											<td>{$fine.date}</td>
@@ -86,12 +88,14 @@
 										{if $showOutstanding}
 											<td>{$fine.amountOutstanding}</td>
 										{/if}
-										{if $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
+										{if $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount && $fine.canPayFine !== false}
 											{if $showOutstanding}
-												<td><input aria-label="Amount to Pay for fine {$detail.label}" type="text" max="{$fine.amountOutstandingVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountOutstandingVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
+												<td><input aria-label="Amount to Pay for fine {$detail.label}" type="text" min="0" max="{$fine.amountOutstandingVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountOutstandingVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
 											{else}
-												<td><input aria-label="Amount to Pay for fine {$detail.label}" type="text" max="{$fine.amountVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
+												<td><input aria-label="Amount to Pay for fine {$detail.label}" type="text" min="0" max="{$fine.amountVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
 											{/if}
+										{elseif $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
+											<td></td>
 										{/if}
 									</tr>
 								{/foreach}
@@ -111,7 +115,7 @@
 									{if $showSystem}
 										<td></td>
 									{/if}
-									<th id="formattedTotal{$userId}">{$fineTotalsVal.$userId|formatCurrency}</th>
+										<th id="fi">{$fineTotalsVal.$userId|formatCurrency}</th>
 									{if $showOutstanding}
 										<th id="formattedOutstandingTotal{$userId}">{$outstandingTotalVal.$userId|formatCurrency}</th>
 									{/if}
