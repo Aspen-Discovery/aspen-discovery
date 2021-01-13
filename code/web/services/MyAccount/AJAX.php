@@ -1101,7 +1101,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $rbdigitalSummary
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = 'Invalid for RBdigital';
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -1227,7 +1227,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $hooplaSummary
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = 'Invalid for Hoopla';
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -1265,7 +1265,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $overDriveSummary
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = 'Invalid for OverDrive';
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';

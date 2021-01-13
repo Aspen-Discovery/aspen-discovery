@@ -42,10 +42,20 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		if ($this->settings == null) {
 			try {
-				//There should only be one setting row
-				require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-				$this->settings = new OverDriveSetting();
-				if (!$this->settings->find(true)) {
+				//There can be multiple settings so we will get based on the library being used.
+				//We may also want to do this based on the patron's home library?
+				global $library;
+				require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+				$overDriveScope = new OverDriveScope();
+				$overDriveScope->id = $library->overDriveScopeId;
+				if ($overDriveScope->find(true)){
+					require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+					$this->settings = new OverDriveSetting();
+					$this->settings->id = $overDriveScope->settingId;
+					if (!$this->settings->find(true)) {
+						$this->settings = false;
+					}
+				}else{
 					$this->settings = false;
 				}
 			} catch (Exception $e) {
@@ -154,8 +164,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 							return false;
 						}else{
 							if (IPAddress::showDebuggingInformation()){
-								echo("Error connecting to overdrive apis ". $patronTokenData->error);
-								$logger->log("Patron is not valid for OverDrive, { $patronTokenData->error}", Logger::LOG_ERROR);
+								$logger->log("Patron $patronBarcode is not valid for OverDrive, { $patronTokenData->error}", Logger::LOG_ERROR);
 							}
 						}
 					}else{
