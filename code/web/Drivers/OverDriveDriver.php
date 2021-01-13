@@ -68,10 +68,13 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	private function _connectToAPI($forceNewConnection = false){
 		global $memCache;
-		$tokenData = $memCache->get('overdrive_token');
+		$settings = $this->getSettings();
+		if ($settings == false){
+			return false;
+		}
+		$tokenData = $memCache->get('overdrive_token_' . $settings->id);
 		if ($forceNewConnection || $tokenData == false){
-			$settings = $this->getSettings();
-			if (!$settings == false && !empty($settings->clientKey) && !empty($settings->clientSecret)){
+			if (!empty($settings->clientKey) && !empty($settings->clientSecret)){
 				$ch = curl_init("https://oauth.overdrive.com/token");
 				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -88,7 +91,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				curl_close($ch);
 				$tokenData = json_decode($return);
 				if ($tokenData){
-					$memCache->set('overdrive_token', $tokenData, $tokenData->expires_in - 10);
+					$memCache->set('overdrive_token_' . $settings->id, $tokenData, $tokenData->expires_in - 10);
 				}
 			}else{
 				//OverDrive is not configured
