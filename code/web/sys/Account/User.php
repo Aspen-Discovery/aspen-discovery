@@ -484,42 +484,15 @@ class User extends DataObject
 			$userHomeLibrary = Library::getPatronHomeLibrary($this);
 			if ($userHomeLibrary) {
 				if ($source == 'overdrive') {
-					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-					$overDriveDriver = new OverDriveDriver();
-					return array_key_exists('OverDrive', $enabledModules) && $overDriveDriver->isUserValidForOverDrive($this);
+					return array_key_exists('OverDrive', $enabledModules) && $userHomeLibrary->overDriveScopeId > 0;
 				} elseif ($source == 'hoopla') {
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
 				} elseif ($source == 'rbdigital') {
-					if (array_key_exists('RBdigital', $enabledModules)){
-						if ($userHomeLibrary->rbdigitalScopeId > 0){
-							return true;
-						}
-					}
-					return false;
+					return array_key_exists('RBdigital', $enabledModules) && ($userHomeLibrary->rbdigitalScopeId > 0);
 				} elseif ($source == 'cloud_library') {
-					if (array_key_exists('Cloud Library', $enabledModules)){
-						require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
-						try {
-							$cloudLibrarySettings = new CloudLibrarySetting();
-							$cloudLibrarySettings->find();
-							return $cloudLibrarySettings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
-						}
-					}
-					return false;
+					return array_key_exists('Cloud Library', $enabledModules) && ($userHomeLibrary->cloudLibraryScopeId > 0);
 				} elseif ($source == 'axis360') {
-					if (array_key_exists('Axis 360', $enabledModules)){
-						require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
-						try {
-							$axis360Settings = new Axis360Setting();
-							$axis360Settings->find();
-							return $axis360Settings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
-						}
-					}
-					return false;
+					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				}
 			}
 		}
