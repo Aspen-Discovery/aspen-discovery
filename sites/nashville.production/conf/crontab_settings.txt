@@ -39,13 +39,13 @@
 #############################
 # ILS CarlX nightly extract #
 #############################
-0 23 * * *    root    expect /usr/local/aspen-discovery/sites/nashville.production/copyCarlXExport.exp nashville.production
+20 22 * * *    root    expect /usr/local/aspen-discovery/sites/nashville.production/copyCarlXExport.exp nashville.production
 
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
 0 2 * * *      root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar nashville.production
-0 22 * * *      root    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar nashville.production nightly
+40 22 * * *      root    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar nashville.production nightly
 
 ######################
 # MySQL Nightly Dump #
@@ -56,8 +56,8 @@
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-20 7 * * 0-1  root    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php nashville.production
-# update on Sundays and Mondays at 7:20
+45 11 * * 0-1  root    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php nashville.production
+# update on Sundays and Mondays at 11:45
 
 ###########################
 # Aspen Discovery Cleanup #
