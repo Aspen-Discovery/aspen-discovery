@@ -2177,6 +2177,32 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function deleteReadingHistoryEntryByTitleAuthor()
+	{
+		$result = [
+			'success' => false,
+			'title' => translate('Error'),
+			'message' => translate('Unknown error'),
+		];
+
+		$user = UserAccount::getActiveUserObj();
+		if ($user) {
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron == null) {
+				$result['message'] = 'You do not have permissions to delete reading history for this user';
+			} else {
+				$title = $_REQUEST['title'];
+				$author = $_REQUEST['author'];
+				$result = $patron->deleteReadingHistoryEntryByTitleAuthor($title, $author);
+			}
+		} else {
+			$result['message'] = 'You must be logged in to delete from the reading history';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
 	function dismissMessage()
 	{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';

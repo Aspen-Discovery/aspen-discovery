@@ -14,6 +14,26 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 			return false;
 		},
 
+		deleteEntryByTitleAuthor: function (patronId, title, author){
+			if (confirm('The item will be irreversibly deleted from your reading history.  Proceed?')){
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					'method' : 'deleteReadingHistoryEntryByTitleAuthor',
+					'patronId' : patronId,
+					'title' : title,
+					'author' : author
+				}
+				$.getJSON(url, params, function(data){
+					if (data.success){
+						$("#readingHistoryEntry" + id).hide();
+					}else{
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}
+			return false;
+		},
+
 		deleteAllAction: function (){
 			if (confirm('Your entire reading history will be irreversibly deleted.  Proceed?')){
 				$('#readingHistoryAction').val('deleteAll');

@@ -1517,6 +1517,10 @@ class User extends DataObject
 		return $results;
 	}
 
+	public function deleteReadingHistoryEntryByTitleAuthor($title, $author) {
+		return $this->getCatalogDriver()->deleteReadingHistoryEntryByTitleAuthor($this, $title, $author);
+	}
+
 	/**
 	 * Used by Account Profile, to show users any additional Admin roles they may have.
 	 * @return bool
