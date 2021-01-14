@@ -1106,7 +1106,7 @@ class Koha extends AbstractIlsDriver
 			$postParams = [
 				'patron_id' => $patron->username,
 				'pickup_library_id' => $pickupBranch,
-				'volume_id' => $volumeId,
+				'volume_id' => (int)$volumeId,
 				'biblio_id' => $recordId,
 			];
 			$postParams = json_encode($postParams);
