@@ -418,10 +418,19 @@ class Axis360Driver extends AbstractEContentDriver
 	}
 
 	private function getSettings(){
+		require_once ROOT_DIR . '/sys/Axis360/Axis360Scope.php';
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
-		$settings = new Axis360Setting();
-		if ($settings->find(true)) {
-			return $settings;
+		global $library;
+		$scope = new Axis360Scope();
+		$scope->id = $library->axis360ScopeId;
+		if ($scope->find(true)) {
+			$settings = new Axis360Setting();
+			$settings->id = $scope->settingId;
+			if ($settings->find(true)) {
+				return $settings;
+			} else {
+				return false;
+			}
 		}else{
 			return false;
 		}
