@@ -11,6 +11,8 @@ class OverDriveScope extends DataObject
 	public $includeAdult;
 	public $includeTeen;
 	public $includeKids;
+	public $clientSecret;
+	public $clientKey;
 	public $authenticationILSName;
 	public $requirePin;
 	public /** @noinspection PhpUnused */ $overdriveAdvantageName;
@@ -35,6 +37,8 @@ class OverDriveScope extends DataObject
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'settingId' => ['property' => 'settingId', 'type' => 'enum', 'values' => $overdriveSettings, 'label' => 'Setting Id'],
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
+			'clientKey' => array('property' => 'clientKey', 'type' => 'text', 'label' => 'Circulation Client Key (if different from settings)', 'description' => 'The client key provided by OverDrive when registering'),
+			'clientSecret' => array('property' => 'clientSecret', 'type' => 'text', 'label' => 'Circulation Client Secret (if different from settings)', 'description' => 'The client secret provided by OverDrive when registering'),
 			'authenticationILSName' => array('property'=>'authenticationILSName', 'type'=>'text', 'label'=>'The ILS Name Overdrive uses for user Authentication', 'description'=>'The name of the ILS that OverDrive uses to authenticate users logging into the Overdrive website.', 'size'=>'20', 'hideInLists' => true),
 			'requirePin' => array('property'=>'requirePin', 'type'=>'checkbox', 'label'=>'Is a Pin Required to log into Overdrive website?', 'description'=>'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => 0),
 			'overdriveAdvantageName' => array('property'=>'overdriveAdvantageName', 'type'=>'text', 'label'=>'Overdrive Advantage Name', 'description'=>'The name of the OverDrive Advantage account if any.', 'size'=>'80', 'hideInLists' => true, 'forcesReindex' => true),

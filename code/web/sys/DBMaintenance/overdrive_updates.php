@@ -369,6 +369,15 @@ function getOverDriveUpdates()
 				'ALTER TABLE user_overdrive_usage ADD UNIQUE INDEX (instance, userId, year, month)',
 			]
 		],
+
+		'overdrive_client_credentials' => [
+			'title' => 'OverDrive Scope Client Credentials',
+			'description' => 'Add client credential informtion to OverDrive Scopes',
+			'sql' => [
+				'ALTER TABLE overdrive_scopes ADD COLUMN clientSecret VARCHAR(50)',
+				'ALTER TABLE overdrive_scopes ADD COLUMN clientKey VARCHAR(50)',
+			]
+		]
 	);
 }
 
