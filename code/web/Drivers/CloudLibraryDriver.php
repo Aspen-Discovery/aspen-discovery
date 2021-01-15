@@ -440,10 +440,19 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	}
 
 	private function getSettings(){
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
-		$settings = new CloudLibrarySetting();
-		if ($settings->find(true)) {
-			return $settings;
+		global $library;
+		$scope = new CloudLibraryScope();
+		$scope->id = $library->cloudLibraryScopeId;
+		if ($scope->find(true)) {
+			$settings = new CloudLibrarySetting();
+			$settings->id = $scope->settingId;
+			if ($settings->find(true)) {
+				return $settings;
+			} else {
+				return false;
+			}
 		}else{
 			return false;
 		}

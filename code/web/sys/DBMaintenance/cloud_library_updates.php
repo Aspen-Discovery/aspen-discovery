@@ -174,5 +174,35 @@ function getCloudLibraryUpdates() {
 				'ALTER TABLE user_cloud_library_usage ADD UNIQUE INDEX (instance, userId, year, month)',
 			]
 		],
+
+		'cloud_library_add_scope_setting_id' => [
+			'title' => 'Add Setting Id to Cloud Library Scopes',
+			'description' => 'Add Setting Id to Cloud Library Scopes',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE cloud_library_scopes ADD COLUMN settingId INT(11)',
+				'UPDATE cloud_library_scopes set settingId = (SELECT MIN(id) from cloud_library_settings)'
+			]
+		],
+
+		'cloud_library_add_setting_to_availability' => [
+			'title' => 'Add settingID to Cloud Library availability',
+			'description' => 'Define availability based on settings',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER table cloud_library_availability ADD column settingId INT(11)',
+				'UPDATE cloud_library_availability set settingId = (SELECT MIN(id) from cloud_library_settings)',
+				'ALTER table cloud_library_availability DROP INDEX cloudLibraryId',
+				'ALTER table cloud_library_availability ADD UNIQUE cloudLibraryId(cloudLibraryId, settingId)',
+			]
+		],
+
+		'add_settings_cloud_library_exportLog' => array(
+			'title' => 'Add Settings to Cloud Library export log',
+			'description' => 'Add settings to Cloud Library export log.',
+			'sql' => array(
+				'ALTER table cloud_library_export_log ADD column settingId INT(11)'
+			)
+		),
 	);
 }
