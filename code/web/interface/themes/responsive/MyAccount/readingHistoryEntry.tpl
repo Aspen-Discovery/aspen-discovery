@@ -84,7 +84,7 @@
 				</div>
 
 				{if $showRatings == 1}
-					{if !empty($record.permanentId) && $record.permanentId != -1 && $record.ratingData}
+					{if $record.existsInCatalog && $record.ratingData}
 						<div class="row">
 							<div class="result-label col-tn-3">Rating&nbsp;</div>
 							<div class="result-value col-tn-9">
@@ -97,11 +97,15 @@
 
 			<div class="col-xs-12 col-md-3">
 				<div class="btn-group btn-group-vertical btn-block">
-					<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteEntry('{$selectedUser}', '{$record.permanentId}');" class="btn btn-sm btn-primary">{translate text='Delete'}</a>
+					{if empty($record.permanentId)}
+						<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteEntryByTitleAuthor('{$selectedUser}', '{$record.title}', '{$record.author}');" class="btn btn-sm btn-primary">{translate text='Delete'}</a>
+					{else}
+						<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteEntry('{$selectedUser}', '{$record.permanentId}');" class="btn btn-sm btn-primary">{translate text='Delete'}</a>
+					{/if}
 				</div>
 				{if $showWhileYouWait}
 					<div class="btn-group btn-group-vertical btn-block">
-						{if !empty($record.permanentId)}
+						{if $record.existsInCatalog}
 							<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.permanentId}');" class="btn btn-sm btn-default">{translate text="You Might Also Like"}</button>
 						{/if}
 					</div>
@@ -110,7 +114,7 @@
 		</div>
 
 
-		{if !empty($record.permanentId) && $record.permanentId != -1}
+		{if $record.existsInCatalog}
 			<div class="row">
 				<div class="col-xs-12">
 					{include file='GroupedWork/result-tools-horizontal.tpl' recordDriver=$record.recordDriver ratingData=$record.ratingData recordUrl=$record.linkUrl showMoreInfo=true}
