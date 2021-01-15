@@ -17,11 +17,12 @@ class Admin_Placards extends ObjectEditor
 		return 'Placards';
 	}
 	function canDelete(){
-		return UserAccount::userHasPermission('Administer All Placards');
+		return UserAccount::userHasPermission(['Administer All Placards','Administer Library Placards']);
 	}
 	function getAllObjects(){
 		$placard = new Placard();
 		$placard->orderBy('title');
+		$userHasExistingPlacards = true;
 		if (!UserAccount::userHasPermission('Administer All Placards')){
 			$libraryPlacard = new PlacardLibrary();
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
@@ -32,13 +33,19 @@ class Admin_Placards extends ObjectEditor
 				while ($libraryPlacard->fetch()){
 					$placardsForLibrary[] = $libraryPlacard->placardId;
 				}
-				$placard->whereAddIn('id', $placardsForLibrary, false);
+				if (count($placardsForLibrary) > 0) {
+					$placard->whereAddIn('id', $placardsForLibrary, false);
+				}else{
+					$userHasExistingPlacards = false;
+				}
 			}
 		}
 		$placard->find();
 		$list = array();
-		while ($placard->fetch()){
-			$list[$placard->id] = clone $placard;
+		if ($userHasExistingPlacards) {
+			while ($placard->fetch()) {
+				$list[$placard->id] = clone $placard;
+			}
 		}
 		return $list;
 	}

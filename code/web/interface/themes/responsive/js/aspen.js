@@ -5853,7 +5853,6 @@ AspenDiscovery.Account = (function(){
 			var params = {
 				method: "createPayPalOrder",
 				patronId: $(finesFormId + " input[name=patronId]").val(),
-				fineTotal: $(finesFormId + " input[name=totalToPay]").val(),
 			};
 			$(finesFormId + " .selectedFine:checked").each(
 				function() {
@@ -9821,6 +9820,26 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 			return false;
 		},
 
+		deleteEntryByTitleAuthor: function (patronId, title, author){
+			if (confirm('The item will be irreversibly deleted from your reading history.  Proceed?')){
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					'method' : 'deleteReadingHistoryEntryByTitleAuthor',
+					'patronId' : patronId,
+					'title' : title,
+					'author' : author
+				}
+				$.getJSON(url, params, function(data){
+					if (data.success){
+						$("#readingHistoryEntry" + id).hide();
+					}else{
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}
+			return false;
+		},
+
 		deleteAllAction: function (){
 			if (confirm('Your entire reading history will be irreversibly deleted.  Proceed?')){
 				$('#readingHistoryAction').val('deleteAll');
@@ -9864,8 +9883,12 @@ AspenDiscovery.Record = (function(){
 					document.body.style.cursor = "default";
 					if (data.holdFormBypassed) {
 						if (data.success) {
-							AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, false);
-							AspenDiscovery.Account.loadMenuData();
+							if (data.needsItemLevelHold){
+								AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
+							}else {
+								AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, false);
+								AspenDiscovery.Account.loadMenuData();
+							}
 						} else {
 							AspenDiscovery.showMessage('Hold Failed', data.message, false, false);
 						}
@@ -10025,7 +10048,16 @@ AspenDiscovery.Record = (function(){
 				alert("Please select a location to pick up your hold when it is ready.");
 				return false;
 			}
-			params['holdType'] = 'volume';
+			var holdType = $('#holdType');
+			if (holdType.length > 0){
+				params['holdType'] = holdType.val();
+			}else{
+				if ($('#holdTypeBib').is(':checked')){
+					params['holdType'] = 'bib';
+				}else{
+					params['holdType'] = 'volume';
+				}
+			}
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){

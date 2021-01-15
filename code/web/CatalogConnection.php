@@ -97,6 +97,7 @@ class CatalogConnection
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false)
 	{
 		global $offlineMode;
+		global $usageByIPAddress;
 
 		$barcodesToTest = array();
 		$barcodesToTest[$username] = $username;
@@ -494,6 +495,35 @@ class CatalogConnection
 		return $result;
 	}
 
+	/**
+	 * @param User $patron
+	 * @param string $title
+	 * @param string $author
+	 *
+	 * @return array
+	 */
+	function deleteReadingHistoryEntryByTitleAuthor($patron, $title, $author){
+		$numDeleted = 0;
+
+		$readingHistoryDB = new ReadingHistoryEntry();
+		$readingHistoryDB->userId = $patron->id;
+		$readingHistoryDB->title = $title;
+		$readingHistoryDB->author = $author;
+		$readingHistoryDB->find();
+		if ($readingHistoryDB->getNumResults() > 0) {
+			while ($readingHistoryDB->fetch()) {
+				$readingHistoryDB->deleted = 1;
+				$readingHistoryDB->update();
+				$numDeleted++;
+			}
+		}
+
+		$result['success'] = true;
+		$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted]);
+
+		return $result;
+	}
+
 
 	/**
 	 * Get Patron Holds
@@ -715,18 +745,19 @@ class CatalogConnection
 		$historyEntry['timesUsed'] = $readingHistoryDB->timesUsed;
 		/** @noinspection PhpUndefinedFieldInspection */
 		$historyEntry['checkedOut'] = $readingHistoryDB->checkedOut == null ? false : true;
+		$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
 		if (!$forExport) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
 
 			if ($recordDriver->isValid()) {
 				$historyEntry['recordDriver'] = $recordDriver;
-				$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
 				$historyEntry['ratingData'] = $recordDriver->getRatingData();
 				$historyEntry['linkUrl'] = $recordDriver->getLinkUrl();
 				$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('small');
+				$historyEntry['existsInCatalog'] = true;
 			} else {
-				$historyEntry['permanentId'] = '';
+				$historyEntry['existsInCatalog'] = false;
 				$historyEntry['ratingData'] = '';
 				$historyEntry['linkUrl'] = '';
 				$historyEntry['coverUrl'] = '';

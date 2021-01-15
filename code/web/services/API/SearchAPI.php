@@ -210,17 +210,22 @@ class SearchAPI extends Action
 				$logEntry->find();
 				$numUnfinishedEntries = 0;
 				$lastFinishTime = 0;
+				$isFirstEntry = true;
 				while ($logEntry->fetch()){
 					if ($logEntry->numErrors > 0){
 						$logErrors++;
 					}
 					if (empty($logEntry->endTime)){
 						$numUnfinishedEntries++;
+						if ($isFirstEntry && (time() - $logEntry->startTime) >= 8 * 60 * 60){
+							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last log entry for {$aspenModule->name} has been running for more than 8 hours");
+						}
 					}else{
 						if ($logEntry->endTime > $lastFinishTime){
 							$lastFinishTime = $logEntry->endTime;
 						}
 					}
+					$isFirstEntry = false;
 				}
 				$checkEntriesInLast24Hours = true;
 				if ($aspenModule->name == 'Open Archives'){
@@ -249,7 +254,7 @@ class SearchAPI extends Action
 		$cronLogEntry->limit(0, 1);
 		if ($cronLogEntry->find(true)){
 			if ($cronLogEntry->numErrors > 0){
-				$this->addCheck($checks, "Cron", self::STATUS_CRITICAL, "The last cron log entry had errors");
+				$this->addCheck($checks, "Cron", self::STATUS_WARN, "The last cron log entry had errors");
 			}else{
 				$this->addCheck($checks, "Cron");
 			}

@@ -158,7 +158,8 @@ class UserList extends DataObject
 				'source' => $listEntry->source,
 				'sourceId' => $listEntry->sourceId,
 				'notes' => $listEntry->notes,
-				'listEntryId' => $listEntry->id
+				'listEntryId' => $listEntry->id,
+				'listEntry' => $this->cleanListEntry(clone($listEntry)),
 			];
 			if ($sort == 'title') {
 				if ($listEntry->getRecordDriver() != null){
@@ -194,30 +195,23 @@ class UserList extends DataObject
 	}
 
 	/**
+	 * @param string $sortName How records should be sorted, if no sort is provided, will use the default for the list
 	 * @return UserListEntry[]|null
 	 */
-	function getListTitles()
+	function getListTitles($sortName = null)
 	{
 		if (isset($this->listTitles[$this->id])){
 			return $this->listTitles[$this->id];
 		}
-		$listTitles = array();
-
-		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
-		$listEntry = new UserListEntry();
-		$listEntry->listId = $this->id;
-		$listEntry->find();
-
-		while ($listEntry->fetch()){
-			$cleanedEntry = $this->cleanListEntry(clone($listEntry));
-			if ($cleanedEntry != false){
-				$listTitles[] = $cleanedEntry;
-			}
+		if ($sortName == null){
+			$sortName = $this->defaultSort;
 		}
-		$listEntry->__destruct();
-		$listEntry = null;
+		$listEntries = $this->getListEntries($sortName);
+		$this->listTitles[$this->id] = [];
+		foreach ($listEntries['listEntries'] as $listEntry){
+			$this->listTitles[$this->id][] = $listEntry['listEntry'];
+		}
 
-		$this->listTitles[$this->id] = $listTitles;
 		return $this->listTitles[$this->id];
 	}
 

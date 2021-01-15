@@ -63,7 +63,11 @@ class RosenLevelUPSettings extends ObjectEditor
 	}
 
 	function getBreadcrumbs(){
-		return [];
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Rosen/RosenLevelUPSettings', 'Rosen LevelUP Settings');
+		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection()

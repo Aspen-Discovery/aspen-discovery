@@ -903,13 +903,18 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$id = $this->id;
 			if (!is_null($volumeData) && count($volumeData) > 0) {
 				//Check the items to see which volumes are holdable
+				$hasItemsWithoutVolumes = false;
 				$holdableVolumes = [];
 				foreach ($relatedRecord->getItems() as $itemDetail){
-					if ($itemDetail->holdable && !empty($itemDetail->volumeId)){
-						$holdableVolumes[$itemDetail->volumeId] = $itemDetail->volume;
+					if ($itemDetail->holdable) {
+						if (!empty($itemDetail->volumeId)) {
+							$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = $itemDetail->volume;
+						}else{
+							$hasItemsWithoutVolumes = true;
+						}
 					}
 				}
-				if (count($holdableVolumes) > 3){
+				if (count($holdableVolumes) > 3 || $hasItemsWithoutVolumes){
 					//Show a dialog to enable the patron to select a volume to place a hold on
 					$actions[] = array(
 						'title' => 'Place Hold',
@@ -919,6 +924,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						'type' => 'ils_hold'
 					);
 				}else {
+					ksort($holdableVolumes);
 					foreach ($holdableVolumes as $volumeId => $volumeName) {
 						$actions[] = array(
 							'title' => 'Hold ' . $volumeName,

@@ -1723,7 +1723,9 @@ class Millennium extends AbstractIlsDriver
 		$user->email = isset($patronDump['EMAIL_ADDR']) ? $patronDump['EMAIL_ADDR'] : '';
 		$user->patronType = $patronDump['P_TYPE'];
 
-		if (isset($patronDump['MESSAGE'])) {
+		// MDN: Ticket https://ticket.bywatersolutions.com/Ticket/Display.html?id=76676
+		// in Sierra, there is not a
+		/*if (isset($patronDump['MESSAGE'])) {
 			$user->_web_note = $patronDump['MESSAGE'];
 		}
 		if (isset($patronDump['WEB_NOTE'])){
@@ -1731,7 +1733,7 @@ class Millennium extends AbstractIlsDriver
 				$user->_web_note .= '<br/>';
 			}
 			$user->_web_note = $patronDump['WEB_NOTE'];
-		}
+		}*/
 
 		//Setup home location
 		$location = null;

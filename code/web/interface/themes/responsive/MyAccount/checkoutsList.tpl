@@ -1,15 +1,26 @@
 {if $transList}
-	<form id="renewForm" action="/MyAccount/CheckedOut">
-		<div id="pager" class="navbar form-inline">
-			<label for="accountSort_{$source}" class="control-label">{translate text='Sort by'}&nbsp;</label>
-			<select name="accountSort" id="accountSort_{$source}" class="form-control" onchange="AspenDiscovery.Account.loadCheckouts('{$source}', $('#accountSort_{$source} option:selected').val(), !$('#hideCovers_{$source}').is(':checked'));">
-				{foreach from=$sortOptions item=sortDesc key=sortVal}
-					<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
-				{/foreach}
-			</select>
-
-			<label for="hideCovers_{$source}" class="control-label checkbox pull-right"> {translate text="Hide Covers"} <input id="hideCovers_{$source}" type="checkbox" onclick="AspenDiscovery.Account.loadCheckouts('{$source}', $('#accountSort_{$source} option:selected').val(), !$('#hideCovers_{$source}').is(':checked'));" {if $showCovers == false}checked="checked"{/if}></label>
+	<form id="renewForm_{$source}" action="/MyAccount/CheckedOut">
+		<div id="pager" class="row">
+			<div class="col-xs-6 form-inline">
+				<label for="accountSort_{$source}" class="control-label">{translate text='Sort by'}&nbsp;</label>
+				<select name="accountSort" id="accountSort_{$source}" class="form-control" onchange="AspenDiscovery.Account.loadCheckouts('{$source}', $('#accountSort_{$source} option:selected').val(), !$('#hideCovers_{$source}').is(':checked'));">
+					{foreach from=$sortOptions item=sortDesc key=sortVal}
+						<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
+					{/foreach}
+				</select>
+			</div>
+			<div class="col-xs-6">
+				<label for="hideCovers_{$source}" class="control-label checkbox pull-right"> {translate text="Hide Covers"} <input id="hideCovers_{$source}" type="checkbox" onclick="AspenDiscovery.Account.loadCheckouts('{$source}', $('#accountSort_{$source} option:selected').val(), !$('#hideCovers_{$source}').is(':checked'));" {if $showCovers == false}checked="checked"{/if}></label>
+			</div>
 		</div>
+
+		{if count($transList) > 1 && ($source=='all' || $source=='ils' || $source=='rbdigital')}
+			<div class="row">
+				<div class="col-xs-12">
+					<label for="selectAll_{$source}" class="control-label checkbox"> {translate text="Select/Deselect All"} <input id="selectAll_{$source}" type="checkbox" onclick="$('#renewForm_{$source} .titleSelect').prop('checked', $('#selectAll_{$source}').is(':checked'));"></label>
+				</div>
+			</div>
+		{/if}
 
 		<div class="striped">
 			{foreach from=$transList item=checkedOutTitle name=checkedOutTitleLoop key=checkedOutKey}

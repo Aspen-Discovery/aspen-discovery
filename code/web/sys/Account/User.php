@@ -484,42 +484,15 @@ class User extends DataObject
 			$userHomeLibrary = Library::getPatronHomeLibrary($this);
 			if ($userHomeLibrary) {
 				if ($source == 'overdrive') {
-					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-					$overDriveDriver = new OverDriveDriver();
-					return array_key_exists('OverDrive', $enabledModules) && $overDriveDriver->isUserValidForOverDrive($this);
+					return array_key_exists('OverDrive', $enabledModules) && $userHomeLibrary->overDriveScopeId > 0;
 				} elseif ($source == 'hoopla') {
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
 				} elseif ($source == 'rbdigital') {
-					if (array_key_exists('RBdigital', $enabledModules)){
-						if ($userHomeLibrary->rbdigitalScopeId > 0){
-							return true;
-						}
-					}
-					return false;
+					return array_key_exists('RBdigital', $enabledModules) && ($userHomeLibrary->rbdigitalScopeId > 0);
 				} elseif ($source == 'cloud_library') {
-					if (array_key_exists('Cloud Library', $enabledModules)){
-						require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
-						try {
-							$cloudLibrarySettings = new CloudLibrarySetting();
-							$cloudLibrarySettings->find();
-							return $cloudLibrarySettings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
-						}
-					}
-					return false;
+					return array_key_exists('Cloud Library', $enabledModules) && ($userHomeLibrary->cloudLibraryScopeId > 0);
 				} elseif ($source == 'axis360') {
-					if (array_key_exists('Axis 360', $enabledModules)){
-						require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
-						try {
-							$axis360Settings = new Axis360Setting();
-							$axis360Settings->find();
-							return $axis360Settings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
-						}
-					}
-					return false;
+					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				}
 			}
 		}
@@ -1517,6 +1490,10 @@ class User extends DataObject
 		return $results;
 	}
 
+	public function deleteReadingHistoryEntryByTitleAuthor($title, $author) {
+		return $this->getCatalogDriver()->deleteReadingHistoryEntryByTitleAuthor($this, $title, $author);
+	}
+
 	/**
 	 * Used by Account Profile, to show users any additional Admin roles they may have.
 	 * @return bool
@@ -1957,7 +1934,7 @@ class User extends DataObject
 
 		$sections['system_reports'] = new AdminSection('System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Site Status', 'View Status of Aspen Discovery.', '/Admin/SiteStatus'), 'View System Reports');
-		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), 'View System Reports');
+		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), ['View Dashboards', 'View System Reports']);
 		$sections['system_reports']->addAction(new AdminAction('Usage By IP Address', 'Reports which IP addresses have used Aspen Discovery.', '/Admin/UsageByIP'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Nightly Index Log', 'Nightly indexing log for Aspen Discovery.  The nightly index updates all records if needed.', '/Admin/ReindexLog'), ['View System Reports', 'View Indexing Logs']);
 		$sections['system_reports']->addAction(new AdminAction('Cron Log', 'View Cron Log. The cron process handles periodic cleanup tasks and updates reading history for users.', '/Admin/CronLog'), 'View System Reports');

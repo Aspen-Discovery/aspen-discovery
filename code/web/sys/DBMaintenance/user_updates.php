@@ -627,6 +627,14 @@ function getUserUpdates()
 				'fixNytUserPermissions'
 			],
 		],
+
+		'cleanup_invalid_reading_history_entries' => [
+			'title' => 'Cleanup Invalid Reading History Entries',
+			'description' => 'Remove old reading history entries that will display as Title Not Available',
+			'sql' => [
+				'DELETE FROM user_reading_history_work where (groupedWorkPermanentId is null or groupedWorkPermanentId = \'\') and (title is null or title = \'\') and (author is null OR author = \'\')'
+			]
+		]
 	);
 }
 

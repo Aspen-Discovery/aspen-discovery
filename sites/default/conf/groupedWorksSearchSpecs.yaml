@@ -152,26 +152,21 @@ Subject:
     - subject:
       - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
     - topic:
       - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
     - topic_proper:
       - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
     - geographic:
       - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
     - genre:
       - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
     - era:
+      - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
 
 SubjectProper:
   QueryFields:
@@ -340,12 +335,21 @@ Keyword:
 # Check everything else
     - table_of_contents:
       - [and, 50]
+    - subject:
+      - [onephrase, 300]
+      - [and, 50]
     - topic:
       - [onephrase, 125]
+      - [and, 25]
     - geographic:
       - [onephrase, 75]
+      - [and, 10]
     - genre:
       - [onephrase, 75]
+      - [and, 10]
+    - era:
+      - [onephrase, 75]
+      - [and, 10]
     - keywords:
       - [and, 10]
     - description:

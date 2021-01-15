@@ -1307,7 +1307,8 @@ public class SierraExportAPIMain {
 	private static boolean connectToSierraAPI(SierraInstanceInformation sierraInstanceInformation, String baseUrl){
 		//Check to see if we already have a valid token
 		if (sierraAPIToken != null){
-			if (sierraAPIExpiration - new Date().getTime() > 0){
+			//Give this a buffer of 60 seconds to be sure the next call completes in time
+			if (sierraAPIExpiration - new Date().getTime() > 60000){
 				//logger.debug("token is still valid");
 				return true;
 			}else{

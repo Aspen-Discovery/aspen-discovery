@@ -13,7 +13,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 	protected $ILSName;
 
 	/** @var OverDriveSetting */
+	private $scope = null;
 	protected $settings = null;
+	private $clientKey = null;
+	private $clientSecret = null;
 
 	protected $format_map = array(
 		'ebook-epub-adobe' => 'Adobe EPUB eBook',
@@ -42,14 +45,37 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		if ($this->settings == null) {
 			try {
-				//There should only be one setting row
-				require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-				$this->settings = new OverDriveSetting();
-				if (!$this->settings->find(true)) {
+				//There can be multiple settings so we will get based on the library being used.
+				//We may also want to do this based on the patron's home library?
+				global $library;
+				require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+				$this->scope = new OverDriveScope();
+				$this->scope->id = $library->overDriveScopeId;
+				if ($this->scope->find(true)){
+					require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+					$this->settings = new OverDriveSetting();
+					$this->settings->id = $this->scope->settingId;
+					if (!$this->settings->find(true)) {
+						$this->settings = false;
+					}else{
+						if (empty($this->scope->clientKey)){
+							$this->clientKey = $this->settings->clientKey;
+						}else{
+							$this->clientKey = $this->scope->clientKey;
+						}
+						if (empty($this->scope->clientSecret)){
+							$this->clientSecret = $this->settings->clientSecret;
+						}else{
+							$this->clientSecret = $this->scope->clientSecret;
+						}
+					}
+				}else{
 					$this->settings = false;
+					$this->scope = false;
 				}
 			} catch (Exception $e) {
 				$this->settings = false;
+				$this->scope = false;
 			}
 
 		}
@@ -58,17 +84,20 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	private function _connectToAPI($forceNewConnection = false){
 		global $memCache;
-		$tokenData = $memCache->get('overdrive_token');
+		$settings = $this->getSettings();
+		if ($settings == false){
+			return false;
+		}
+		$tokenData = $memCache->get('overdrive_token_' . $settings->id . '_' . $this->scope->id);
 		if ($forceNewConnection || $tokenData == false){
-			$settings = $this->getSettings();
-			if (!$settings == false && !empty($settings->clientKey) && !empty($settings->clientSecret)){
+			if (!empty($this->clientKey) && !empty($this->clientSecret)){
 				$ch = curl_init("https://oauth.overdrive.com/token");
 				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded;charset=UTF-8'));
-				curl_setopt($ch, CURLOPT_USERPWD, $settings->clientKey . ":" . $settings->clientSecret);
+				curl_setopt($ch, CURLOPT_USERPWD, $this->clientKey . ":" . $this->clientSecret);
 				curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
 				curl_setopt($ch, CURLOPT_POST, 1);
@@ -78,7 +107,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				curl_close($ch);
 				$tokenData = json_decode($return);
 				if ($tokenData){
-					$memCache->set('overdrive_token', $tokenData, $tokenData->expires_in - 10);
+					$memCache->set('overdrive_token_' . $settings->id . '_' . $this->scope->id, $tokenData, $tokenData->expires_in - 10);
 				}
 			}else{
 				//OverDrive is not configured
@@ -92,12 +121,15 @@ class OverDriveDriver extends AbstractEContentDriver{
 		global $memCache;
 		global $timer;
 		global $logger;
-		$patronTokenData = $memCache->get('overdrive_patron_token_' . $patronBarcode);
+		$settings = $this->getSettings();
+		if ($settings == false){
+			return false;
+		}
+		$patronTokenData = $memCache->get("overdrive_patron_token_{$settings->id}_{$this->scope->id}_$patronBarcode");
 		if ($forceNewConnection || $patronTokenData == false){
 			$tokenData = $this->_connectToAPI($forceNewConnection);
 			$timer->logTime("Connected to OverDrive API");
 			if ($tokenData){
-				$settings = $this->getSettings();
 				$ch = curl_init("https://oauth-patron.overdrive.com/patrontoken");
 				if (empty($settings->websiteId)){
 					if (IPAddress::showDebuggingInformation()) {
@@ -121,7 +153,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-				$encodedAuthValue = base64_encode($settings->clientKey . ":" . $settings->clientSecret);
+				$encodedAuthValue = base64_encode($this->clientKey . ":" . $this->clientSecret);
 				curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 					'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
 					"Authorization: Basic " . $encodedAuthValue,
@@ -154,13 +186,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 							return false;
 						}else{
 							if (IPAddress::showDebuggingInformation()){
-								echo("Error connecting to overdrive apis ". $patronTokenData->error);
-								$logger->log("Patron is not valid for OverDrive, { $patronTokenData->error}", Logger::LOG_ERROR);
+								$logger->log("Patron $patronBarcode is not valid for OverDrive, { $patronTokenData->error}", Logger::LOG_ERROR);
 							}
 						}
 					}else{
 						if (property_exists($patronTokenData, 'expires_in')){
-							$memCache->set('overdrive_patron_token_' . $patronBarcode, $patronTokenData, $patronTokenData->expires_in - 10);
+							$memCache->set("overdrive_patron_token_{$settings->id}_{$this->scope->id}_$patronBarcode", $patronTokenData, $patronTokenData->expires_in - 10);
 						}
 					}
 				}
@@ -1225,5 +1256,13 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}
 		}
 		return $bookshelfItem;
+	}
+
+	/**
+	 * @param OverDriveSetting $activeSetting
+	 */
+	public function setSettings($activeSetting)
+	{
+		$this->settings = $activeSetting;
 	}
 }

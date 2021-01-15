@@ -2558,6 +2558,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 			$volume = null;
 			$volumeId = null;
+			$volumeOrder = null;
 			if (count($volumeData) > 0) {
 				/** @var IlsVolumeInfo $volumeDataPoint */
 				foreach ($volumeData as $volumeDataPoint) {
@@ -2568,14 +2569,13 @@ class GroupedWorkDriver extends IndexRecordDriver
 						if (strlen($volumeDataPoint->relatedItems) > 0) {
 							$volume = $volumeDataPoint->displayLabel;
 							$volumeId = $volumeDataPoint->volumeId;
+							$volumeOrder = $volumeDataPoint->displayOrder;
 							break;
 						}
 					}
 				}
 			}
-			if ($volume) {
-				$description = $volume . $description;
-			}
+			$description = str_pad($volumeOrder, 10, '0', STR_PAD_LEFT) . $description;
 
 			$section = 'Other Locations';
 			if ($item->locallyOwned) {

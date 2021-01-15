@@ -196,7 +196,7 @@ class SystemMessage extends DataObject
 		if ($location != null) {
 			$systemMessageLocation = new SystemMessageLocation();
 			$systemMessageLocation->systemMessageId = $this->id;
-			$systemMessageLocation->locationId = $location->id;
+			$systemMessageLocation->locationId = $location->locationId;
 			return $systemMessageLocation->find(true);
 		}else {
 			$systemMessageLibrary = new SystemMessageLibrary();

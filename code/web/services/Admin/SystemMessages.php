@@ -17,11 +17,12 @@ class Admin_SystemMessages extends ObjectEditor
 		return 'SystemMessages';
 	}
 	function canDelete(){
-		return UserAccount::userHasPermission('Administer All System Messages');
+		return UserAccount::userHasPermission(['Administer All System Messages','Administer Library System Messages']);
 	}
 	function getAllObjects(){
 		$systemMessage = new SystemMessage();
 		$systemMessage->orderBy('title');
+		$userHasExistingMessages = true;
 		if (!UserAccount::userHasPermission('Administer All System Messages')){
 			$librarySystemMessage = new SystemMessageLibrary();
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
@@ -32,13 +33,19 @@ class Admin_SystemMessages extends ObjectEditor
 				while ($librarySystemMessage->fetch()){
 					$systemMessagesForLibrary[] = $librarySystemMessage->systemMessageId;
 				}
-				$systemMessage->whereAddIn('id', $systemMessagesForLibrary, false);
+				if (count($systemMessagesForLibrary) > 0) {
+					$systemMessage->whereAddIn('id', $systemMessagesForLibrary, false);
+				}else{
+					$userHasExistingMessages = false;
+				}
 			}
 		}
-		$systemMessage->find();
 		$list = array();
-		while ($systemMessage->fetch()){
-			$list[$systemMessage->id] = clone $systemMessage;
+		if ($userHasExistingMessages) {
+			$systemMessage->find();
+			while ($systemMessage->fetch()) {
+				$list[$systemMessage->id] = clone $systemMessage;
+			}
 		}
 		return $list;
 	}

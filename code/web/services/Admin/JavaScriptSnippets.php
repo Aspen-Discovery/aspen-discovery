@@ -22,23 +22,30 @@ class Admin_JavaScriptSnippets extends ObjectEditor
 	function getAllObjects(){
 		$javascriptSnippet = new JavaScriptSnippet();
 		$javascriptSnippet->orderBy('name');
+		$userHasExistingSnippets = true;
 		if (!UserAccount::userHasPermission('Administer All JavaScript Snippets')){
 			$libraryJavaScriptSnippet = new JavaScriptSnippetLibrary();
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			if ($library != null){
 				$libraryJavaScriptSnippet->libraryId = $library->libraryId;
-				$placardsForLibrary = [];
+				$snippetsForLibrary = [];
 				$libraryJavaScriptSnippet->find();
 				while ($libraryJavaScriptSnippet->fetch()){
-					$placardsForLibrary[] = $libraryJavaScriptSnippet->javascriptSnippetId;
+					$snippetsForLibrary[] = $libraryJavaScriptSnippet->javascriptSnippetId;
 				}
-				$javascriptSnippet->whereAddIn('id', $placardsForLibrary, false);
+				if (count($snippetsForLibrary) > 0) {
+					$javascriptSnippet->whereAddIn('id', $snippetsForLibrary, false);
+				}else{
+					$userHasExistingSnippets = false;
+				}
 			}
 		}
 		$javascriptSnippet->find();
 		$list = array();
-		while ($javascriptSnippet->fetch()){
-			$list[$javascriptSnippet->id] = clone $javascriptSnippet;
+		if ($userHasExistingSnippets) {
+			while ($javascriptSnippet->fetch()) {
+				$list[$javascriptSnippet->id] = clone $javascriptSnippet;
+			}
 		}
 		return $list;
 	}

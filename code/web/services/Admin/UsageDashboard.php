@@ -100,6 +100,6 @@ class Admin_UsageDashboard extends Admin_Dashboard
 
 	function canView()
 	{
-		return UserAccount::userHasPermission('View System Reports');
+		return UserAccount::userHasPermission(['View Dashboards', 'View System Reports']);
 	}
 }

@@ -1106,7 +1106,7 @@ class Koha extends AbstractIlsDriver
 			$postParams = [
 				'patron_id' => $patron->username,
 				'pickup_library_id' => $pickupBranch,
-				'volume_id' => $volumeId,
+				'volume_id' => (int)$volumeId,
 				'biblio_id' => $recordId,
 			];
 			$postParams = json_encode($postParams);
@@ -1774,7 +1774,7 @@ class Koha extends AbstractIlsDriver
 		if ($this->opacCurlWrapper == null) {
 			$this->opacCurlWrapper = new CurlWrapper();
 			//Extend timeout when talking to Koha via HTTP
-			$this->opacCurlWrapper->timeout = 20;
+			$this->opacCurlWrapper->timeout = 60;
 		}
 		return $this->opacCurlWrapper->curlPostPage($kohaUrl, $postParams);
 	}

@@ -299,6 +299,8 @@ class Grouping_StatusInformation
 		}else{
 			if ($this->getCopies() == 1){
 				$numberOfCopiesMessage .= '1 copy';
+			}elseif ($this->getCopies() > 10000){
+				$numberOfCopiesMessage .= 'Unlimited copies';
 			}elseif ($this->getCopies() > 1){
 				$numberOfCopiesMessage .= '%1% copies';
 			}
@@ -315,7 +317,7 @@ class Grouping_StatusInformation
 			if (!empty($numberOfCopiesMessage)){
 				$numberOfCopiesMessage .= '. ';
 			}
-			if ($this->getOnOrderCopies() > 0){
+			if ($this->getOnOrderCopies() > 0 && $this->getCopies() < 10000){
 				if ($library->showOnOrderCounts){
 					if ($this->getOnOrderCopies() == 1){
 						$numberOfCopiesMessage .= '1 copy on order.';

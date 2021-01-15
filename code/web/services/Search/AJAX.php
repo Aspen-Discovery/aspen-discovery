@@ -226,7 +226,7 @@ class AJAX extends Action {
 			$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
 			if ($collectionSpotlightList->sourceListId != null && $collectionSpotlightList->sourceListId > 0){
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-				$sourceList     = new UserList();
+				$sourceList = new UserList();
 				$sourceList->id = $collectionSpotlightList->sourceListId;
 				if ($sourceList->find(true)) {
 					$result['listTitle'] = $sourceList->title;

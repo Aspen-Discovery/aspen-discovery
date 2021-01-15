@@ -305,6 +305,14 @@ function getWebBuilderUpdates(){
 			]
 		],
 
+		'web_builder_resource_open_in_new_tab' => [
+			'title' => 'Web Builder add openInNewTab to Resources',
+			'description' => 'Add open in new window flag to web resources',
+			'sql' => [
+				'ALTER TABLE web_builder_resource ADD COLUMN openInNewTab TINYINT(1) DEFAULT 0'
+			]
+		],
+
 		'web_builder_custom_forms' => [
 			'title' => 'Web Builder Custom Forms',
 			'description' => 'Add the ability for a library to define custom forms',

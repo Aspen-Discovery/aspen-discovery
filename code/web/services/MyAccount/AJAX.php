@@ -1101,7 +1101,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $rbdigitalSummary
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = 'Invalid for RBdigital';
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -1227,7 +1227,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $hooplaSummary
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = 'Invalid for Hoopla';
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -1265,7 +1265,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $overDriveSummary
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = 'Invalid for OverDrive';
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -2169,6 +2169,32 @@ class MyAccount_AJAX extends JSON_Action
 				$selectedTitles = [$permanentId => $permanentId];
 				$readingHistoryAction = 'deleteMarked';
 				$result = $patron->doReadingHistoryAction($readingHistoryAction, $selectedTitles);
+			}
+		} else {
+			$result['message'] = 'You must be logged in to delete from the reading history';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function deleteReadingHistoryEntryByTitleAuthor()
+	{
+		$result = [
+			'success' => false,
+			'title' => translate('Error'),
+			'message' => translate('Unknown error'),
+		];
+
+		$user = UserAccount::getActiveUserObj();
+		if ($user) {
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron == null) {
+				$result['message'] = 'You do not have permissions to delete reading history for this user';
+			} else {
+				$title = $_REQUEST['title'];
+				$author = $_REQUEST['author'];
+				$result = $patron->deleteReadingHistoryEntryByTitleAuthor($title, $author);
 			}
 		} else {
 			$result['message'] = 'You must be logged in to delete from the reading history';

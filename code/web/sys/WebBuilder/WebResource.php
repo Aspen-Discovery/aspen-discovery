@@ -12,6 +12,7 @@ class WebResource extends DataObject
 	public $name;
 	public $logo;
 	public $url;
+	public $openInNewTab;
 	public /** @noinspection PhpUnused */ $featured;
 	public /** @noinspection PhpUnused */ $requiresLibraryCard;
 	public /** @noinspection PhpUnused */ $inLibraryUseOnly;
@@ -23,6 +24,11 @@ class WebResource extends DataObject
 	private $_audiences;
 	private $_categories;
 
+	public function getNumericColumnNames()
+	{
+		return ['openInNewTab', 'featured', 'requiresLibraryCard', 'inLibraryUseOnly', 'lastUpdate'];
+	}
+
 	static function getObjectStructure()
 	{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Web Resources'));
@@ -32,6 +38,7 @@ class WebResource extends DataObject
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the resource', 'size' => '40', 'maxLength'=>100),
 			'url' => array('property' => 'url', 'type' => 'url', 'label' => 'URL', 'description' => 'The url of the resource', 'size' => '40', 'maxLength'=>255),
+			'openInNewTab' => array('property' => 'openInNewTab', 'type' => 'checkbox', 'label' => 'Open In New Tab', 'description' => 'Whether or not the link should open in a new tab', 'default' => false),
 			'logo' => array('property' => 'logo', 'type' => 'image', 'label' => 'Logo', 'description' => 'An image to display for the resource', 'thumbWidth' => 200),
 			'featured' => array('property' => 'featured', 'type' => 'checkbox', 'label' => 'Featured?', 'description' => 'Whether or not the resource is a featured resource', 'default'=>0),
 			'audiences' => array(
