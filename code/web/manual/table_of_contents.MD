@@ -1,4 +1,9 @@
 ## Table of Contents
+### Community
+  - [Aspen Gathering](/Admin/HelpManual?page=Aspen-Gathering)
+  - [Aspen Weekly](/Admin/HelpManual?page=Aspen-Weekly)
+  - [Contributing to the Help Manual](/Admin/HelpManual?page=Manual-Contribution)
+
 ### Administration
   - [System Administration](/Admin/HelpManual?page=System-Administration)
     - [Permissions](/Admin/HelpManual?page=Permissions)
