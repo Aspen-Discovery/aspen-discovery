@@ -115,7 +115,7 @@
 									{if $showSystem}
 										<td></td>
 									{/if}
-										<th id="fi">{$fineTotalsVal.$userId|formatCurrency}</th>
+										<th id="formattedTotal{$userId}">{$fineTotalsVal.$userId|formatCurrency}</th>
 									{if $showOutstanding}
 										<th id="formattedOutstandingTotal{$userId}">{$outstandingTotalVal.$userId|formatCurrency}</th>
 									{/if}
