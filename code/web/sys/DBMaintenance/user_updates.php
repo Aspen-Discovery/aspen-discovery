@@ -634,7 +634,17 @@ function getUserUpdates()
 			'sql' => [
 				'DELETE FROM user_reading_history_work where (groupedWorkPermanentId is null or groupedWorkPermanentId = \'\') and (title is null or title = \'\') and (author is null OR author = \'\')'
 			]
-		]
+		],
+
+		'store_pickup_location' => [
+			'title' => 'Store the selected pickup location',
+			'description' => 'Store the selected pickup location with the user for cases when the library does not allow home location to be changed',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN pickupLocationId INT(11) DEFAULT 0',
+				'UPDATE user SET rememberHoldPickupLocation = 0',
+				'UPDATE user SET pickupLocationId = homeLocationId'
+			]
+		],
 	);
 }
 

@@ -41,9 +41,13 @@
 							{/if}
 						{/foreach}
 					{/if}
-					{if $rememberHoldPickupLocation || $onlyOnePickupLocation }
+					{if ($rememberHoldPickupLocation && $allowRememberPickupLocation) || $onlyOnePickupLocation }
 						<input type="hidden" name="pickupBranch" id="pickupBranch" value="{$user->getHomeLocationCode()}">
-						<input type="hidden" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation" value="true">
+						{if ($rememberHoldPickupLocation && $allowRememberPickupLocation)}
+							<input type="hidden" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation" value="true">
+						{else}
+							<input type="hidden" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation" value="off">
+						{/if}
 						<input type="hidden" name="user" id="user" value="{$user->id}">
 					{else}
 						<div id="pickupLocationOptions" class="form-group">
@@ -55,8 +59,7 @@
 											{if is_string($location)}
 												<option value="undefined">{$location}</option>
 											{else}
-												<option value="{$location->code}"{if is_object($location) && ($location->getSelected() == "selected")} selected="selected"{/if}
-														data-users="[{$location->pickupUsers|@implode:','}]">{$location->displayName}</option>
+												<option value="{$location->code}" data-users="[{$location->pickupUsers|@implode:','}]">{$location->displayName}</option>
 											{/if}
 										{/foreach}
 									{else}
@@ -64,7 +67,7 @@
 									{/if}
 								</select>
 
-								{if !$multipleUsers}
+								{if !$multipleUsers && $allowRememberPickupLocation}
 									<div class="form-group">
 										<label for="rememberHoldPickupLocation" class="checkbox"><input type="checkbox" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation"> {translate text="Always use this pickup location"}</label>
 									</div>

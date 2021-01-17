@@ -2305,6 +2305,31 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN loginNotes MEDIUMTEXT'
 			]
+		],
+
+		'library_allow_remember_pickup_location' => [
+			'title' => 'Library Allow Remember Pickup Location',
+			'description' => 'Add an option for whether or not users can remember their preferred pickup location',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowRememberPickupLocation TINYINT(1) DEFAULT 1'
+			]
+		],
+
+		'library_allow_home_library_updates' => [
+			'title' => 'Library - Allow Home Library Updates',
+			'description' => 'Add an option to determine whether or not the patron can update their home library',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowHomeLibraryUpdates TINYINT(1) DEFAULT 1',
+				'UPDATE library set allowHomeLibraryUpdates = allowProfileUpdates'
+			]
+		],
+
+		'library_rename_showPickupLocationInProfile' => [
+			'title' => 'Library rename showPickupLocationInProfile',
+			'description' => 'Rename showPickupLocationInProfile to allowPickupLocationUpdates TINYINT(1) DEFAULT 1',
+			'sql' => [
+				"ALTER TABLE library CHANGE COLUMN showPickupLocationInProfile allowPickupLocationUpdates TINYINT(1) DEFAULT 0"
+			]
 		]
 	);
 }

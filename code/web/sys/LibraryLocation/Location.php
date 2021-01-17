@@ -463,9 +463,9 @@ class Location extends DataObject
 		// For Example: MaterialsRequest_NewRequest
 		$homeLibraryInList = false;
 		$alternateLibraryInList = false;
+		$hasSelectedLocation = false;
 
 		//Get the library for the patron's home branch.
-		/** @var Library $librarySingleton */
 		global $librarySingleton;
 		if ($patronProfile) {
 			$homeLibrary = $librarySingleton->getLibraryForLocation($patronProfile->homeLocationId);
@@ -510,19 +510,16 @@ class Location extends DataObject
 				$tmpLocation->pickupUsers[] = $patronProfile->id;
 			}
 			if (($tmpLocation->validHoldPickupBranch == 1) || ($tmpLocation->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $tmpLocation->locationId)) {
-				if (!empty($selectedBranchId) && $tmpLocation->locationId == $selectedBranchId) {
-					$selected = 'selected';
-				} else {
-					$selected = '';
-				}
-				$this->setSelected($selected);
 				// Each location is prepended with a number to keep precedence for given locations when sorted below
 				if (isset($physicalLocation) && $physicalLocation->locationId == $tmpLocation->locationId) {
 					//If the user is in a branch, those holdings come first.
 					$locationList['1' . $tmpLocation->displayName] = $tmpLocation;
-				} else if (!empty($patronProfile) && $tmpLocation->locationId == $patronProfile->homeLocationId) {
-					//Next come the user's home branch if the user is logged in or has the home_branch cookie set.
+				} else if (!empty($patronProfile) && $tmpLocation->locationId == $patronProfile->pickupLocationId) {
+					//Next comes the user's preferred pickup branch if the user is logged in.
 					$locationList['21' . $tmpLocation->displayName] = $tmpLocation;
+				} else if (!empty($patronProfile) && $tmpLocation->locationId == $patronProfile->homeLocationId) {
+					//Next comes the user's home branch if the user is logged in or has the home_branch cookie set.
+					$locationList['22' . $tmpLocation->displayName] = $tmpLocation;
 					$homeLibraryInList = true;
 				} else if (isset($patronProfile->myLocation1Id) && $tmpLocation->locationId == $patronProfile->myLocation1Id) {
 					//Next come nearby locations for the user
@@ -557,20 +554,16 @@ class Location extends DataObject
 					foreach ($locationList as $location) {
 						if ($location->libraryId == $homeLocation->libraryId && $location->locationId == $homeLocation->locationId) {
 							$existingLocation = true;
-							if (!$isLinkedUser) {
-								$location->setSelected('selected');
-							}
 							//TODO: update sorting key as well?
 							break;
 						}
 					}
 					if (!$existingLocation) {
 						if (!$isLinkedUser) {
-							$homeLocation->setSelected('selected');
 							$locationList['1' . $homeLocation->displayName] = clone $homeLocation;
 							$homeLibraryInList = true;
 						} else {
-							$locationList['22' . $homeLocation->displayName] = clone $homeLocation;
+							$locationList['23' . $homeLocation->displayName] = clone $homeLocation;
 						}
 					}
 				}
@@ -1278,18 +1271,6 @@ class Location extends DataObject
 			}
 		}
 		return $this->_opacStatus;
-	}
-
-	private $_selected;
-
-	private function setSelected(string $selected)
-	{
-		$this->_selected = $selected;
-	}
-
-	public function getSelected()
-	{
-		return $this->_selected;
 	}
 
 	protected $_groupedWorkDisplaySettings = null;

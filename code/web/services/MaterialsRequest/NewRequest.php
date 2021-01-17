@@ -21,14 +21,15 @@ class MaterialsRequest_NewRequest extends Action
 			exit;
 		} else {
 			// Hold Pick-up Locations
-			$locations = $locationSingleton->getPickupBranches(UserAccount::getActiveUserObj(), UserAccount::getUserHomeLocationId());
+			$user = UserAccount::getActiveUserObj();
+			$locations = $locationSingleton->getPickupBranches($user, UserAccount::getUserHomeLocationId());
 
 			$pickupLocations = array();
 			foreach ($locations as $curLocation) {
 				$pickupLocations[] = array(
 					'id' => $curLocation->locationId,
 					'displayName' => $curLocation->displayName,
-					'selected' => is_object($curLocation) ? $curLocation->getSelected() : '',
+					'selected' => is_object($curLocation) ? ($curLocation->locationId == $user->pickupLocationId ? 'selected' : '') : '',
 				);
 			}
 			$interface->assign('pickupLocations', $pickupLocations);

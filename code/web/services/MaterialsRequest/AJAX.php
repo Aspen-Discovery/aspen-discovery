@@ -172,7 +172,7 @@ class MaterialsRequest_AJAX extends Action{
 										$pickupLocations[] = array(
 											'id' => $curLocation->locationId,
 											'displayName' => $curLocation->displayName,
-											'selected' => is_object($curLocation) ? $curLocation->getSelected() : '',
+											'selected' => is_object($curLocation) ? ($curLocation->locationId == $materialsRequest->holdPickupLocation ? 'selected' : '') : '',
 										);
 									}
 

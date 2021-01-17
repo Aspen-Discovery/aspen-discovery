@@ -121,9 +121,9 @@
 								{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
 							</div>
 						</div>
-						{if $showPickupLocationInProfile}
+						{if $allowHomeLibraryUpdates}
 							<div class="form-group">
-								<div class="col-xs-4"><label for="pickupLocation" class="">{translate text='Pickup Location'}</label></div>
+								<div class="col-xs-4"><label for="pickupLocation" class="">{translate text='Home Library'}</label></div>
 								<div class="col-xs-8">
 									{if $edit == true && $canUpdateContactInfo == true}
 										<select name="pickupLocation" id="pickupLocation" class="form-control">

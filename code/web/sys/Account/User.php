@@ -51,6 +51,7 @@ class User extends DataObject
 	public $searchPreferenceLanguage;
 
 	public $rememberHoldPickupLocation;
+	public $pickupLocationId;
 
 	public $lastListUsed;
 
@@ -754,6 +755,9 @@ class User extends DataObject
 
 	function updateUserPreferences(){
 		// Validate that the input data is correct
+		if (isset($_POST['pickupLocation']) && !is_array($_POST['pickupLocation']) && preg_match('/^\d{1,3}$/', $_POST['pickupLocation']) == 0){
+			return ['success' => false, 'message' => 'The preferred pickup location had an incorrect format.'];
+		}
 		if (isset($_POST['myLocation1']) && !is_array($_POST['myLocation1']) && preg_match('/^\d{1,3}$/', $_POST['myLocation1']) == 0){
 			return ['success' => false, 'message' => 'The 1st location had an incorrect format.'];
 		}
@@ -769,6 +773,19 @@ class User extends DataObject
 		}
 
 		//Make sure the selected location codes are in the database.
+		if (isset($_POST['pickupLocation'])){
+			if ($_POST['pickupLocation'] == 0){
+				$this->pickupLocationId = $_POST['pickupLocation'];
+			}else{
+				$location = new Location();
+				$location->get('locationId', $_POST['pickupLocation'] );
+				if ($location->getNumResults() != 1) {
+					return ['success' => false, 'message' => 'The pickup location could not be found in the database.'];
+				} else {
+					$this->pickupLocationId = $_POST['pickupLocation'];
+				}
+			}
+		}
 		if (isset($_POST['myLocation1'])){
 			if ($_POST['myLocation1'] == 0){
 				$this->myLocation1Id = $_POST['myLocation1'];
@@ -1203,6 +1220,24 @@ class User extends DataObject
 		return $this->displayName . ' - ' . $this->getHomeLibrarySystemName();
 	}
 
+	public function getValidHomeLibraryBranches($recordSource){
+		$pickupLocations = $this->getValidPickupBranches($recordSource);
+		$hasHomeLibrary = false;
+		foreach ($pickupLocations as $key => $pickupLocation){
+			if (is_object($pickupLocation)){
+				if ($pickupLocation->locationId == $this->homeLocationId) {
+					$hasHomeLibrary = true;
+				}
+			}else{
+				unset($pickupLocations[$key]);
+			}
+		}
+		if (!$hasHomeLibrary){
+			$pickupLocations = array_merge([$this->getHomeLocation()], $pickupLocations);
+		}
+		return $pickupLocations;
+	}
+
 	/**
 	 * Get a list of locations where a record can be picked up.  Handles liked accounts
 	 * and filtering to make sure that the user is able to
@@ -1216,7 +1251,7 @@ class User extends DataObject
 		// using $user to be consistent with other code use of getPickupBranches()
 		$userLocation = new Location();
 		if ($recordSource == $this->getAccountProfile()->recordSource){
-			$locations = $userLocation->getPickupBranches($this, $this->homeLocationId);
+			$locations = $userLocation->getPickupBranches($this, $this->pickupLocationId);
 		}else{
 			$locations = array();
 		}
@@ -1799,15 +1834,7 @@ class User extends DataObject
 
 	/** @noinspection PhpUnused */
 	function getHomeLocationName(){
-		if (empty($this->_homeLocation)) {
-			$location = new Location();
-			$location->locationId = $this->homeLocationId;
-			if ($location->find(true)){
-				$this->_homeLocation = $location->displayName;
-			}
-			$location->__destruct();
-		}
-		return $this->_homeLocation;
+		return $this->getHomeLocation()->displayName;
 	}
 
 	function getHomeLocation(){
