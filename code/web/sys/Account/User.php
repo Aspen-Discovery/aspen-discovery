@@ -625,6 +625,7 @@ class User extends DataObject
 			global $logger;
 			$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
 		}
+		$this->pickupLocationId = $this->homeLocationId;
 		if (!isset($this->myLocation1Id)) $this->myLocation1Id = 0;
 		if (!isset($this->myLocation2Id)) $this->myLocation2Id = 0;
 		if (!isset($this->bypassAutoLogout)) $this->bypassAutoLogout = 0;
