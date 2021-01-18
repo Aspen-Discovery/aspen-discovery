@@ -1848,6 +1848,12 @@ class SirsiDynixROA extends HorizonAPI
 					case 'STREET' :
 						$Address1 = $fields->data;
 						break;
+					case 'CITY' :
+						$City = $fields->data;
+						break;
+					case 'STATE' :
+						$State  = $fields->data;
+						break;
 					case 'CITY/STATE' :
 						$cityState = $fields->data;
 						if (substr_count($cityState, ' ') > 1) {
