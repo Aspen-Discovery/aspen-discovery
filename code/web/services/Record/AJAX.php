@@ -134,6 +134,22 @@ class Record_AJAX extends Action
 				}
 				$results['holdFormBypassed'] = true;
 
+				//If the result was successful, add a message for where the hold can be picked up with a link to the preferences page.
+				if ($results['success']){
+					$pickupLocation = new Location();
+					$pickupLocation->locationId = $user->pickupLocationId;
+					$pickupLocationName = '';
+					if ($pickupLocation->find(true)){
+						$pickupLocationName = $pickupLocation->displayName;
+					}
+					if (count($locations) > 1) {
+						$results['message'] .= '<br/>' . translate(['text'=>"When ready, your hold will be available at %1%, you can change your default pickup location <a href='/MyAccount/MyPreferences'>here</a>.", 1=>$pickupLocationName]);
+					}else{
+						$results['message'] .= '<br/>' . translate(['text'=>'When ready, your hold will be available at %1%', 1=>$pickupLocationName]);
+					}
+					$results['message'] = "<div class='alert alert-success'>" . $results['message'] . '</div>';
+				}
+
 				if ($results['success'] && $library->showWhileYouWait) {
 					$recordDriver = RecordDriverFactory::initRecordDriverById($id);
 					if ($recordDriver->isValid()) {
