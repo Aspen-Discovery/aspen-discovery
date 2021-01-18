@@ -1045,7 +1045,11 @@ class Koha extends AbstractIlsDriver
 			];
 
 			if ($cancelDate != null) {
-				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+				if ($this->getKohaVersion() >= 20.05) {
+					$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
+				}else{
+					$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+				}
 			}
 
 			$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);

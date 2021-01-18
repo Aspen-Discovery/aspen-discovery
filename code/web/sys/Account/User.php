@@ -51,6 +51,7 @@ class User extends DataObject
 	public $searchPreferenceLanguage;
 
 	public $rememberHoldPickupLocation;
+	public $pickupLocationId;
 
 	public $lastListUsed;
 
@@ -624,6 +625,7 @@ class User extends DataObject
 			global $logger;
 			$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
 		}
+		$this->pickupLocationId = $this->homeLocationId;
 		if (!isset($this->myLocation1Id)) $this->myLocation1Id = 0;
 		if (!isset($this->myLocation2Id)) $this->myLocation2Id = 0;
 		if (!isset($this->bypassAutoLogout)) $this->bypassAutoLogout = 0;
@@ -754,6 +756,9 @@ class User extends DataObject
 
 	function updateUserPreferences(){
 		// Validate that the input data is correct
+		if (isset($_POST['pickupLocation']) && !is_array($_POST['pickupLocation']) && preg_match('/^\d{1,3}$/', $_POST['pickupLocation']) == 0){
+			return ['success' => false, 'message' => 'The preferred pickup location had an incorrect format.'];
+		}
 		if (isset($_POST['myLocation1']) && !is_array($_POST['myLocation1']) && preg_match('/^\d{1,3}$/', $_POST['myLocation1']) == 0){
 			return ['success' => false, 'message' => 'The 1st location had an incorrect format.'];
 		}
@@ -769,6 +774,19 @@ class User extends DataObject
 		}
 
 		//Make sure the selected location codes are in the database.
+		if (isset($_POST['pickupLocation'])){
+			if ($_POST['pickupLocation'] == 0){
+				$this->pickupLocationId = $_POST['pickupLocation'];
+			}else{
+				$location = new Location();
+				$location->get('locationId', $_POST['pickupLocation'] );
+				if ($location->getNumResults() != 1) {
+					return ['success' => false, 'message' => 'The pickup location could not be found in the database.'];
+				} else {
+					$this->pickupLocationId = $_POST['pickupLocation'];
+				}
+			}
+		}
 		if (isset($_POST['myLocation1'])){
 			if ($_POST['myLocation1'] == 0){
 				$this->myLocation1Id = $_POST['myLocation1'];
@@ -1203,6 +1221,24 @@ class User extends DataObject
 		return $this->displayName . ' - ' . $this->getHomeLibrarySystemName();
 	}
 
+	public function getValidHomeLibraryBranches($recordSource){
+		$pickupLocations = $this->getValidPickupBranches($recordSource);
+		$hasHomeLibrary = false;
+		foreach ($pickupLocations as $key => $pickupLocation){
+			if (is_object($pickupLocation)){
+				if ($pickupLocation->locationId == $this->homeLocationId) {
+					$hasHomeLibrary = true;
+				}
+			}else{
+				unset($pickupLocations[$key]);
+			}
+		}
+		if (!$hasHomeLibrary){
+			$pickupLocations = array_merge([$this->getHomeLocation()], $pickupLocations);
+		}
+		return $pickupLocations;
+	}
+
 	/**
 	 * Get a list of locations where a record can be picked up.  Handles liked accounts
 	 * and filtering to make sure that the user is able to
@@ -1216,38 +1252,51 @@ class User extends DataObject
 		// using $user to be consistent with other code use of getPickupBranches()
 		$userLocation = new Location();
 		if ($recordSource == $this->getAccountProfile()->recordSource){
-			$locations = $userLocation->getPickupBranches($this, $this->homeLocationId);
+			$locations = $userLocation->getPickupBranches($this);
 		}else{
 			$locations = array();
 		}
 		$linkedUsers = $this->getLinkedUsers();
-		foreach ($linkedUsers as $linkedUser){
-			if ($recordSource == $linkedUser->source){
-				$linkedUserLocation = new Location();
-				$linkedUserPickupLocations = $linkedUserLocation->getPickupBranches($linkedUser, null, true);
-				foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation) {
-					foreach ($locations as $mainSortingKey => $mainPickupLocation) {
-						// Check For Duplicated Pickup Locations
-						if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId) {
-							// Merge Linked Users that all have this pick-up location
-							$pickupUsers = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
-							$mainPickupLocation->pickupUsers = $pickupUsers;
-							$pickupLocation->pickupUsers = $pickupUsers;
-
-							// keep location with better sort key, remove the other
-							if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0] ) {
-								unset ($linkedUserPickupLocations[$sortingKey]);
-							} elseif ($mainSortingKey[0] == $sortingKey[0]) {
-								if (strcasecmp($mainSortingKey, $sortingKey) > 0) unset ($locations[$mainSortingKey]);
-								else unset ($linkedUserPickupLocations[$sortingKey]);
-							} else {
-								unset ($locations[$mainSortingKey]);
+		if (count($linkedUsers) > 0){
+			$accountProfileForSource = new AccountProfile();
+			$accountProfileForSource->recordSource = $recordSource;
+			$accountProfileSource = '';
+			if ($accountProfileForSource->find(true)){
+				$accountProfileSource = $accountProfileForSource->name;
+			}
+			foreach ($linkedUsers as $linkedUser){
+				if ($accountProfileSource == $linkedUser->source){
+					$linkedUserLocation = new Location();
+					$linkedUserPickupLocations = $linkedUserLocation->getPickupBranches($linkedUser, true);
+					foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation) {
+						if (!is_object($pickupLocation)){
+							continue;
+						}
+						foreach ($locations as $mainSortingKey => $mainPickupLocation) {
+							if (!is_object($mainPickupLocation)){
+								continue;
 							}
+							// Check For Duplicated Pickup Locations
+							if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId) {
+								// Merge Linked Users that all have this pick-up location
+								$pickupUsers = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
+								$mainPickupLocation->pickupUsers = $pickupUsers;
+								$pickupLocation->pickupUsers = $pickupUsers;
 
+								// keep location with better sort key, remove the other
+								if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0] ) {
+									unset ($linkedUserPickupLocations[$sortingKey]);
+								} elseif ($mainSortingKey[0] == $sortingKey[0]) {
+									if (strcasecmp($mainSortingKey, $sortingKey) > 0) unset ($locations[$mainSortingKey]);
+									else unset ($linkedUserPickupLocations[$sortingKey]);
+								} else {
+									unset ($locations[$mainSortingKey]);
+								}
+							}
 						}
 					}
+					$locations = array_merge($locations, $linkedUserPickupLocations);
 				}
-				$locations = array_merge($locations, $linkedUserPickupLocations);
 			}
 		}
 		ksort($locations);
@@ -1799,15 +1848,7 @@ class User extends DataObject
 
 	/** @noinspection PhpUnused */
 	function getHomeLocationName(){
-		if (empty($this->_homeLocation)) {
-			$location = new Location();
-			$location->locationId = $this->homeLocationId;
-			if ($location->find(true)){
-				$this->_homeLocation = $location->displayName;
-			}
-			$location->__destruct();
-		}
-		return $this->_homeLocation;
+		return $this->getHomeLocation()->displayName;
 	}
 
 	function getHomeLocation(){

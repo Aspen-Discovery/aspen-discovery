@@ -12,8 +12,9 @@ import java.sql.SQLException;
 import java.util.zip.CRC32;
 
 class CloudLibraryEventHandler extends DefaultHandler {
-	private static PreparedStatement updateCloudLibraryAvailabilityStmt;
-	private static PreparedStatement getExistingCloudLibraryAvailabilityStmt;
+	private CloudLibraryExporter exporter;
+	private PreparedStatement updateCloudLibraryAvailabilityStmt;
+	private PreparedStatement getExistingCloudLibraryAvailabilityStmt;
 
 	private final boolean doFullReload;
 	private final RecordGroupingProcessor recordGroupingProcessor;
@@ -27,7 +28,8 @@ class CloudLibraryEventHandler extends DefaultHandler {
 
 	private static CRC32 checksumCalculator = new CRC32();
 
-	CloudLibraryEventHandler(boolean doFullReload, Long startTimeForLogging, Connection aspenConn, RecordGroupingProcessor recordGroupingProcessor, GroupedWorkIndexer groupedWorkIndexer, CloudLibraryExtractLogEntry logEntry, Logger logger) {
+	CloudLibraryEventHandler(CloudLibraryExporter exporter, boolean doFullReload, Long startTimeForLogging, Connection aspenConn, RecordGroupingProcessor recordGroupingProcessor, GroupedWorkIndexer groupedWorkIndexer, CloudLibraryExtractLogEntry logEntry, Logger logger) {
+		this.exporter = exporter;
 		this.recordGroupingProcessor = recordGroupingProcessor;
 		this.indexer = groupedWorkIndexer;
 		this.logEntry = logEntry;
@@ -64,7 +66,7 @@ class CloudLibraryEventHandler extends DefaultHandler {
 
 	private void updateAvailabilityForTitle(String cloudLibraryId) {
 		//Get availability for the title
-		CloudLibraryAvailability availability = CloudLibraryExportMain.loadAvailabilityForRecord(cloudLibraryId);
+		CloudLibraryAvailability availability = exporter.loadAvailabilityForRecord(cloudLibraryId);
 		if (availability == null) {
 			logEntry.addNote("Did not load availability for id " + cloudLibraryId);
 			return;

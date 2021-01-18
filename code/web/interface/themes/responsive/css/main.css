@@ -8916,11 +8916,6 @@ a.placard-link {
   background-color: #00a4e3;
   padding: 15px 0;
 }
-@media (max-width: 991px) {
-  #horizontal-search-box {
-    display: none;
-  }
-}
 #horizontal-search-box #searchForm .row {
   margin-left: 0;
   margin-right: 0;
@@ -8969,8 +8964,15 @@ a.placard-link {
     margin-top: 7px;
   }
 }
+#horizontal-search-box #lookfor-label {
+  height: 34px;
+  width: 40px;
+  text-align: center;
+}
 #horizontal-search-box #lookfor {
   height: 34px;
+  width: calc(100% - 35px);
+  display: inline-block;
 }
 #horizontal-search-box .searchSourceHorizontal,
 #horizontal-search-box .searchTypeHorizontal {

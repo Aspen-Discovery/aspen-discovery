@@ -9,9 +9,6 @@
 		<a href="{if empty($homeLink)}/{else}/Search/Home{/if}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Browse the catalog' inAttribute=true}" aria-label="{translate text='Browse the catalog' inAttribute=true}">
 			<i class="fas {if empty($homeLink)}fa-home{else}fa-book-open{/if} fa-lg"></i>{if !empty($homeLink)}<span class="menu-bar-label visible-inline-block-lg">{translate text='Browse'}</span>{/if}
 		</a>
-		<a onclick="AspenDiscovery.closeMenu();$('.dropdownMenu').slideUp('slow');AspenDiscovery.closeAccountMenu();$('#horizontal-search-box').slideToggle('slow');return false;" class="menu-icon menu-bar-option hidden-inline-md hidden-inline-lg" title="{translate text="Search" inAttribute=true}" aria-label="{translate text="Search" inAttribute=true}">
-			<i class="fas fa-search fa-lg"></i><span class="menu-bar-label visible-inline-block-lg hidden-inline-block-md hidden-inline-block-sm hidden-inline-block-xs">{translate text="Search"}</span>
-		</a>
 		{foreach from=$libraryLinks key=categoryName item=menuCategory}
 			{assign var=topCategory value=$menuCategory|@reset}
 			{if $topCategory->showInTopMenu || $topCategory->alwaysShowIconInTopMenu}

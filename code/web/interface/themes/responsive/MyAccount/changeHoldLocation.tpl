@@ -8,7 +8,7 @@
 			<select name="newPickupLocation" id="newPickupLocation" class="form-control">
 				{if count($pickupLocations) > 0}
 					{foreach from=$pickupLocations item=location key=locationCode}
-						<option value="{$location->code}" {if is_object($location) && $location->getSelected()}selected="selected"{/if}>{$location->displayName}</option>
+						<option value="{$location->code}" {if is_object($location) && ($location->locationId == $currentLocation)}selected="selected"{/if}>{$location->displayName}</option>
 					{/foreach}
 				{else}
 					<option>placeholder</option>

@@ -719,8 +719,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (dateAddedFormatter == null){
 					dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
 				}
-				Date dateAdded = dateAddedFormatter.parse(dateAddedStr);
-				itemInfo.setDateAdded(dateAdded);
+				if (!dateAddedStr.equals("NEVER")) {
+					Date dateAdded = dateAddedFormatter.parse(dateAddedStr);
+					itemInfo.setDateAdded(dateAdded);
+				}else{
+					logger.info("Date Added was never");
+				}
 			} catch (ParseException e) {
 				logger.error("Error processing date added for record identifier " + recordIdentifier + " profile " + profileType + " using format " + dateAddedFormat, e);
 			}

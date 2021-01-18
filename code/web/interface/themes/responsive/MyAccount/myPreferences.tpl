@@ -99,30 +99,60 @@
 						</div>
 					{/if}
 
-					{if $showPickupLocationInProfile}
-						{* Allow editing pickup location *}
+					{if $allowHomeLibraryUpdates}
+						{* Allow editing home library *}
 						<div class="form-group">
-							<div class="col-xs-4"><label for="pickupLocation" class="">{translate text='Pickup Location'}</label></div>
+							<div class="col-xs-4"><label for="homeLocation" class="">{translate text='Home Library'}</label></div>
 							<div class="col-xs-8">
 								{if $edit == true && $canUpdateContactInfo == true}
-									<select name="pickupLocation" id="pickupLocation" class="form-control">
-										{if count($pickupLocations) > 0}
-											{foreach from=$pickupLocations item=location}
-												<option value="{$location->code}" {if $location->displayName|escape == $profile->_homeLocation|escape}selected="selected"{/if}>{$location->displayName}</option>
+									<select name="homeLocation" id="homeLocation" class="form-control">
+										{if count($homeLibraryLocations) > 0}
+											{foreach from=$homeLibraryLocations item=location}
+												{if is_object($location)}
+													<option value="{$location->code}" {if $location->locationId == $profile->homeLocationId}selected="selected"{/if}>{$location->displayName}</option>
+												{else}
+													<option value="">{$location}</option>
+												{/if}
 											{/foreach}
 										{else}
 											<option>placeholder</option>
 										{/if}
 									</select>
 								{else}
-									{$profile->_homeLocation|escape}
+									{$profile->getHomeLocationName()}
 								{/if}
 							</div>
 						</div>
 					{else}
 						<div class="form-group">
-							<div class="col-xs-4"><strong>{translate text='Main Pickup Location'}</strong></div>
-							<div class="col-xs-8">{$profile->getHomeLocationName()|escape}</div>
+							<div class="col-xs-4"><strong>{translate text='Home Library'}</strong></div>
+							<div class="col-xs-8">{$profile->getHomeLocationName()}</div>
+						</div>
+					{/if}
+
+					{if $allowRememberPickupLocation && count($pickupLocations) > 1}
+						{* Allow editing the pickup location *}
+						<div class="form-group">
+							<div class="col-xs-4"><label for="pickupLocation" class="">{translate text='Preferred Pickup Location'}</label></div>
+							<div class="col-xs-8">
+								{if $edit == true}
+									<select name="pickupLocation" id="pickupLocation" class="form-control">
+										{if count($pickupLocations) > 0}
+											{foreach from=$pickupLocations item=location}
+												{if is_object($location)}
+													<option value="{$location->locationId}" {if $location->locationId == $profile->pickupLocationId}selected="selected"{/if}>{$location->displayName}</option>
+												{else}
+													<option value="0">{$location}</option>
+												{/if}
+											{/foreach}
+										{else}
+											<option>placeholder</option>
+										{/if}
+									</select>
+								{else}
+									{$profile->getPickupLibraryName()|escape}
+								{/if}
+							</div>
 						</div>
 					{/if}
 
@@ -147,16 +177,18 @@
 						{/if}
 					{/if}
 
-					<div class="form-group">
-						<div class="col-xs-4"><label for="rememberHoldPickupLocation" class="control-label" style="text-align: left">{translate text='one_click_hold_prefs' defaultText='Bypass pickup location prompt when placing holds'}</label></div>
-						<div class="col-xs-8">
-							{if $edit == true}
-								<input type="checkbox" class="form-control" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation" {if $profile->rememberHoldPickupLocation==1}checked='checked'{/if} data-switch="">
-							{else}
-								{if $profile->rememberHoldPickupLocation==0}No{else}Yes{/if}
-							{/if}
+					{if $allowRememberPickupLocation}
+						<div class="form-group">
+							<div class="col-xs-4"><label for="rememberHoldPickupLocation" class="control-label" style="text-align: left">{translate text='one_click_hold_prefs' defaultText='Bypass pickup location prompt when placing holds'}</label></div>
+							<div class="col-xs-8">
+								{if $edit == true}
+									<input type="checkbox" class="form-control" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation" {if $profile->rememberHoldPickupLocation==1}checked='checked'{/if} data-switch="">
+								{else}
+									{if $profile->rememberHoldPickupLocation==0}No{else}Yes{/if}
+								{/if}
+							</div>
 						</div>
-					</div>
+					{/if}
 
 					{if $showAutoRenewSwitch}
 						<div class="form-group">

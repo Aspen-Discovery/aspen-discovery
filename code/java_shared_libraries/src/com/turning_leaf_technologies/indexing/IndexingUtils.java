@@ -177,6 +177,7 @@ public class IndexingUtils {
 			while (cloudLibraryScopesRS.next()) {
 				CloudLibraryScope cloudLibraryScope = new CloudLibraryScope();
 				cloudLibraryScope.setId(cloudLibraryScopesRS.getLong("id"));
+				cloudLibraryScope.setSettingId(cloudLibraryScopesRS.getLong("settingId"));
 				cloudLibraryScope.setName(cloudLibraryScopesRS.getString("name"));
 				cloudLibraryScope.setIncludeEBooks(cloudLibraryScopesRS.getBoolean("includeEBooks"));
 				cloudLibraryScope.setIncludeEAudiobook(cloudLibraryScopesRS.getBoolean("includeEAudiobook"));

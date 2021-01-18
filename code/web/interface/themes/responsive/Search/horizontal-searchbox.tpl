@@ -18,10 +18,8 @@
 
 		<div class="col-xs-12 col-sm-10 col-md-11">
 			<div class="row">
-				<div class="col-lg-1 col-md-1 col-sm-2 col-xs-12 hidden-xs">
-					<label id="horizontal-search-label" for="lookfor" class="">{translate text="Search"} </label>
-				</div>
-				<div class="{if $hiddenSearchSource}col-lg-9 col-md-9{else}col-lg-6 col-md-6{/if} col-sm-10 col-xs-12">
+				<div class="{if $hiddenSearchSource}col-lg-10 col-md-10{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
+					<label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-2x"></i></label>
 					{* Main Search Term Box *}
 					<textarea class="form-control"{/strip}
 						id="lookfor"
@@ -37,7 +35,7 @@
 				</div>
 
 				{* Search Type *}
-				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if $hiddenSearchSource} col-sm-10 col-sm-offset-2 col-xs-12 col-xs-offset-0 {else} col-sm-5 col-sm-offset-2 col-xs-5 col-xs-offset-0{/if}">
+				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if $hiddenSearchSource} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-5 col-xs-offset-0{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
 						{foreach from=$searchIndexes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"  inAttribute=true} {translate text=$searchDesc  inAttribute=true}</option>
@@ -57,7 +55,7 @@
 				</div>
 
 				{if !$hiddenSearchSource}
-					<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
+					<div class="col-lg-3 col-md-3 col-sm-6 col-xs-7">
 						<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="AspenDiscovery.Searches.loadSearchTypes();" class="searchSourceHorizontal form-control" aria-label="Collection to Search">
 							{foreach from=$searchSources item=searchOption key=searchKey}
 								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description}" data-advanced_search="{$searchOption.hasAdvancedSearch}" data-advanced_search_label="{translate text="Advanced Search" inAttribute=true}"

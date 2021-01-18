@@ -134,6 +134,22 @@ class Record_AJAX extends Action
 				}
 				$results['holdFormBypassed'] = true;
 
+				//If the result was successful, add a message for where the hold can be picked up with a link to the preferences page.
+				if ($results['success']){
+					$pickupLocation = new Location();
+					$pickupLocation->locationId = $user->pickupLocationId;
+					$pickupLocationName = '';
+					if ($pickupLocation->find(true)){
+						$pickupLocationName = $pickupLocation->displayName;
+					}
+					if (count($locations) > 1) {
+						$results['message'] .= '<br/>' . translate(['text'=>"When ready, your hold will be available at %1%, you can change your default pickup location <a href='/MyAccount/MyPreferences'>here</a>.", 1=>$pickupLocationName]);
+					}else{
+						$results['message'] .= '<br/>' . translate(['text'=>'When ready, your hold will be available at %1%', 1=>$pickupLocationName]);
+					}
+					$results['message'] = "<div class='alert alert-success'>" . $results['message'] . '</div>';
+				}
+
 				if ($results['success'] && $library->showWhileYouWait) {
 					$recordDriver = RecordDriverFactory::initRecordDriverById($id);
 					if ($recordDriver->isValid()) {
@@ -430,20 +446,7 @@ class Record_AJAX extends Action
 					);
 				} else {
 					$homeLibrary = $patron->getHomeLibrary();
-					if (isset($_REQUEST['rememberHoldPickupLocation']) && ($_REQUEST['rememberHoldPickupLocation'] == 'true' || $_REQUEST['rememberHoldPickupLocation'] == 'on')){
-						if ($user->rememberHoldPickupLocation == false){
-							$user->rememberHoldPickupLocation = true;
 
-							//Get the branch id for the hold
-							$holdBranch = new Location();
-							$holdBranch->code = $pickupBranch;
-							if ($holdBranch->find(true)){
-								$user->homeLocationId = $holdBranch->locationId;
-								$user->_homeLocationCode = $holdBranch->code;
-							}
-							$user->update();
-						}
-					}
 					$holdType = $_REQUEST['holdType'];
 
 					if (!empty($_REQUEST['cancelDate'])) {
@@ -473,6 +476,23 @@ class Record_AJAX extends Action
 					} else { // Completed Hold Attempt
 						$interface->assign('message', $return['message']);
 						$interface->assign('success', $return['success']);
+
+						if ($return['success']){
+							//Only update remember hold pickup location and the preferred pickup location if the  hold is successful
+							if (isset($_REQUEST['rememberHoldPickupLocation']) && ($_REQUEST['rememberHoldPickupLocation'] == 'true' || $_REQUEST['rememberHoldPickupLocation'] == 'on')){
+								if ($patron->rememberHoldPickupLocation == 0){
+									$patron->rememberHoldPickupLocation = 1;
+									$patron->update();
+								}
+							}
+							$pickupLocation = new Location();
+							if ($pickupLocation->get('code', $pickupBranch)){
+								if ($pickupLocation->locationId != $user->pickupLocationId){
+									$patron->pickupLocationId = $pickupLocation->locationId;
+									$patron->update();
+								}
+							}
+						}
 
 						$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
 						// set update permission based on active library's settings. Or allow by default.
@@ -931,30 +951,43 @@ class Record_AJAX extends Action
 		$locations = $user->getValidPickupBranches($recordSource);
 		$multipleAccountPickupLocations = false;
 		$linkedUsers = $user->getLinkedUsers();
-		if (count($linkedUsers)) {
+		if (count($linkedUsers) > 0) {
 			foreach ($locations as $location) {
-				if (count($location->pickupUsers) > 1) {
+				if (is_object($location) && count($location->pickupUsers) > 1) {
 					$multipleAccountPickupLocations = true;
 					break;
 				}
 			}
 		}
 
-		if (!$multipleAccountPickupLocations) {
-			$rememberHoldPickupLocation = $user->rememberHoldPickupLocation;
-			$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
+		global $library;
+		if (!$multipleAccountPickupLocations && $library->allowRememberPickupLocation) {
+			//If the patron's preferred pickup location is not valid then force them to pick a new location
+			$preferredPickupLocationIsValid = false;
+			foreach ($locations as $location){
+				if (is_object($location) && ($location->locationId == $user->pickupLocationId)){
+					$preferredPickupLocationIsValid = true;
+					break;
+				}
+			}
+			if ($preferredPickupLocationIsValid) {
+				$rememberHoldPickupLocation = $user->rememberHoldPickupLocation;
+			}else{
+				$rememberHoldPickupLocation = false;
+			}
 		} else {
 			$rememberHoldPickupLocation = false;
 		}
+		$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
 
 		$interface->assign('pickupLocations', $locations);
 		$interface->assign('multipleUsers', $multipleAccountPickupLocations); // switch for displaying the account drop-down (used for linked accounts)
 
-		global $library;
 		$interface->assign('showHoldCancelDate', $library->showHoldCancelDate);
 		$interface->assign('defaultNotNeededAfterDays', $library->defaultNotNeededAfterDays);
 		$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
 		$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
+		$interface->assign('allowRememberPickupLocation', $library->allowRememberPickupLocation);
 
 		$holdDisclaimers = array();
 		$patronLibrary = $user->getHomeLibrary();
