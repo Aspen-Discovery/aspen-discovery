@@ -166,7 +166,7 @@ class MaterialsRequest_AJAX extends Action{
 
 									// Hold Pick-up Locations
 									$location = new Location();
-									$locationList = $location->getPickupBranches($requestUser, $materialsRequest->holdPickupLocation);
+									$locationList = $location->getPickupBranches($requestUser);
 									$pickupLocations = array();
 									foreach ($locationList as $curLocation) {
 										$pickupLocations[] = array(

@@ -453,11 +453,10 @@ class Location extends DataObject
 
 	/**
 	 * @param User $patronProfile
-	 * @param int $selectedBranchId
 	 * @param bool $isLinkedUser
 	 * @return Location[]
 	 */
-	function getPickupBranches($patronProfile, $selectedBranchId = null, $isLinkedUser = false)
+	function getPickupBranches($patronProfile, $isLinkedUser = false)
 	{
 		// Note: Some calls to this function will set $patronProfile to false. (No Patron is logged in)
 		// For Example: MaterialsRequest_NewRequest

@@ -612,7 +612,7 @@ class MyAccount_AJAX extends JSON_Action
 			$interface->assign('currentLocation', $currentLocation);
 
 			$location = new Location();
-			$pickupBranches = $location->getPickupBranches($patronOwningHold, $currentLocation);
+			$pickupBranches = $location->getPickupBranches($patronOwningHold);
 			$interface->assign('pickupLocations', $pickupBranches);
 
 			$results = array(

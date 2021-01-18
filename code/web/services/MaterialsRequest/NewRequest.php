@@ -22,7 +22,7 @@ class MaterialsRequest_NewRequest extends Action
 		} else {
 			// Hold Pick-up Locations
 			$user = UserAccount::getActiveUserObj();
-			$locations = $locationSingleton->getPickupBranches($user, UserAccount::getUserHomeLocationId());
+			$locations = $locationSingleton->getPickupBranches($user);
 
 			$pickupLocations = array();
 			foreach ($locations as $curLocation) {
