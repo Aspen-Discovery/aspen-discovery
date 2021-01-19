@@ -1,8 +1,8 @@
-##Library Systems
+## Library Systems
 
 - Library Systems is a part of inital setup for Aspen. This lives under Account -> Primary Configuration
 
-![Library Systems](/manual/images/Library-Systems.png)
+![Library Systems](/manual/images/Library-Systems-Update.png)
 
 - To create a library system, click the 'Add New' box.
 - If you have more than one system, you can click the small checkbox next to two and click 'Compare' at the bottom of the list to see the similarities and differences in configuration for the two.
@@ -50,6 +50,6 @@
 - Records to Include tells Aspen what records should be included in your searches.
 
 
-[![Library System and Locations](/manual/images/Library-System-and-Locations.jpg)](https://youtu.be/H51Q4jdd9MM)
+[![Library System and Locations](/manual/images/library-system-and-locations.jpg)](https://youtu.be/d720bfDRSUI)
 
-[Watch on Youtube](https://youtu.be/H51Q4jdd9MM)
+[Watch on Youtube](https://youtu.be/d720bfDRSUI)
