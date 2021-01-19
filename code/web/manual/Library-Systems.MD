@@ -51,7 +51,7 @@
 - Records owned allows you to tell Aspen what items are owned by your system. If you are a one branch system, you can input .* as your location, which tells Aspen all of the locations are your items. If you are a multi-branch system then you will need to define your distinct locations in the locations section under Library Systems. You can find more information on that on the location page of the manual. 
 - Records to Include tells Aspen what records should be included in your searches.
 
-### Video Tutorial 
+## Video Tutorial 
 
 [![Library System and Locations](/manual/images/library-system-and-locations.jpg)](https://youtu.be/d720bfDRSUI)
 
