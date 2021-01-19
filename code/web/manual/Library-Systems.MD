@@ -1,8 +1,10 @@
-##Library Systems
+## Library Systems
 
 - Library Systems is a part of inital setup for Aspen. This lives under Account -> Primary Configuration
 
-![Library Systems](/manual/images/Library-Systems.png)
+![Library Systems](/manual/images/Library-Systems-Update.png)
+
+### Creating a New Library System
 
 - To create a library system, click the 'Add New' box.
 - If you have more than one system, you can click the small checkbox next to two and click 'Compare' at the bottom of the list to see the similarities and differences in configuration for the two.
@@ -49,7 +51,8 @@
 - Records owned allows you to tell Aspen what items are owned by your system. If you are a one branch system, you can input .* as your location, which tells Aspen all of the locations are your items. If you are a multi-branch system then you will need to define your distinct locations in the locations section under Library Systems. You can find more information on that on the location page of the manual. 
 - Records to Include tells Aspen what records should be included in your searches.
 
+## Video Tutorial 
 
-[![Library System and Locations](/manual/images/Library-System-and-Locations.jpg)](https://youtu.be/H51Q4jdd9MM)
+[![Library System and Locations](/manual/images/library-system-and-locations.jpg)](https://youtu.be/d720bfDRSUI)
 
-[Watch on Youtube](https://youtu.be/H51Q4jdd9MM)
+[Watch on Youtube](https://youtu.be/d720bfDRSUI)
