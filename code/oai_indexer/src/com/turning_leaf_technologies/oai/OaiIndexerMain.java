@@ -161,7 +161,7 @@ public class OaiIndexerMain {
 					while (librariesForCollectionRS.next()){
 						String subdomain = librariesForCollectionRS.getString("subdomain");
 						subdomain = subdomain.replaceAll("[^a-zA-Z0-9_]", "");
-						scopesToInclude.add(subdomain);
+						scopesToInclude.add(subdomain.toLowerCase());
 					}
 
 					getLocationsForCollectionStmt.setLong(1, collectionId);
@@ -169,10 +169,10 @@ public class OaiIndexerMain {
 					while (locationsForCollectionRS.next()){
 						String subLocation = locationsForCollectionRS.getString("subLocation");
 						if (!locationsForCollectionRS.wasNull() && subLocation.length() > 0){
-							scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", ""));
+							scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
 						}else {
 							String code = locationsForCollectionRS.getString("code");
-							scopesToInclude.add(code.replaceAll("[^a-zA-Z0-9_]", ""));
+							scopesToInclude.add(code.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
 						}
 					}
 
@@ -181,12 +181,6 @@ public class OaiIndexerMain {
 			}
 		} catch (SQLException e) {
 			logger.error("Error loading collections", e);
-		}
-
-		try {
-			updateServer.commit(false, false, true);
-		} catch (Exception e) {
-			logger.error("Error in final commit", e);
 		}
 	}
 
@@ -352,6 +346,13 @@ public class OaiIndexerMain {
 			} catch (Exception e) {
 				logEntry.incErrors("Error deleting ids from index", e);
 			}
+		}
+
+		//Now that we are done with all changes, commit them.
+		try {
+			updateServer.commit(true, true, false);
+		} catch (Exception e) {
+			logger.error("Error in final commit", e);
 		}
 
 		//Update that we indexed the collection

@@ -140,6 +140,11 @@ class LibraryCalendarIndexer {
 					if (doFullReload || !eventExists || eventChanged){
 						//Add the event to solr
 						try {
+							if (curEvent.has("public")){
+								if (!curEvent.getBoolean("public")){
+									continue;
+								}
+							}
 							SolrInputDocument solrDocument = new SolrInputDocument();
 							solrDocument.addField("id", "lc_" + settingsId + "_" + eventId);
 							solrDocument.addField("identifier", eventId);
