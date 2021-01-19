@@ -72,7 +72,7 @@ class LibraryCalendarIndexer {
 			getLibraryScopesStmt.setLong(1, settingsId);
 			ResultSet getLibraryScopesRS = getLibraryScopesStmt.executeQuery();
 			while (getLibraryScopesRS.next()){
-				librariesToShowFor.add(getLibraryScopesRS.getString("subdomain"));
+				librariesToShowFor.add(getLibraryScopesRS.getString("subdomain").toLowerCase());
 			}
 
 		} catch (Exception e) {
