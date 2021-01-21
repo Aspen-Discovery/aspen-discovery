@@ -120,3 +120,6 @@
     - Linked Accounts
   - Search History
   - [User Lists](/Admin/HelpManual?page=User-Lists)
+
+## Troubleshooting
+  - [End User Issues](/Admin/HelpManual?page=Troubleshooting-End-User)
