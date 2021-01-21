@@ -454,6 +454,7 @@ public class KohaExportMain {
 			} catch (Exception e) {
 				tries++;
 				logger.error("Could not connect to the koha database, try " + tries);
+				logger.debug("Error", e);
 				try {
 					Thread.sleep(15000);
 				} catch (InterruptedException ex) {
