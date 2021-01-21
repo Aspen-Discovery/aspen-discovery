@@ -122,4 +122,5 @@
   - [User Lists](/Admin/HelpManual?page=User-Lists)
 
 ## Troubleshooting
+  - [Administration Issues](/Admin/HelpManual?page=Troubleshooting-Administration)
   - [End User Issues](/Admin/HelpManual?page=Troubleshooting-End-User)
