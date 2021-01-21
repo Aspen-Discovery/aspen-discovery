@@ -32,14 +32,19 @@ class EventsSolrConnector extends Solr
 	public function getScopingFilters($searchLibrary, $searchLocation)
 	{
 		global $library;
+		global $solrScope;
 		$filter = [];
-		if (!$library) {
-			//MDN: This does happen when called within migration tools
-			if (isset($searchLibrary)) {
-				$filter[] = "library_scopes:{$searchLibrary->subdomain}";
+		if (!$solrScope) {
+			if (!$library) {
+				//MDN: This does happen when called within migration tools
+				if (isset($searchLibrary)) {
+					$filter[] = "library_scopes:" . strtolower($searchLibrary->subdomain);
+				}
+			} else {
+				$filter[] = "library_scopes:" . strtolower($library->subdomain);
 			}
 		} else {
-			$filter[] = "library_scopes:$library->subdomain";
+			$filter[] = "scope_has_related_records:$solrScope";
 		}
 		return $filter;
 	}
