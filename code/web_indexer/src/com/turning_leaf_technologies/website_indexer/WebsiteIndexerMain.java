@@ -99,7 +99,7 @@ public class WebsiteIndexerMain {
 						while (librariesForSettingsRS.next()){
 							String subdomain = librariesForSettingsRS.getString("subdomain");
 							subdomain = subdomain.replaceAll("[^a-zA-Z0-9_]", "");
-							scopesToInclude.add(subdomain);
+							scopesToInclude.add(subdomain.toLowerCase());
 						}
 
 						getLocationsForSettingsStmt.setLong(1, websiteId);
@@ -107,10 +107,10 @@ public class WebsiteIndexerMain {
 						while (locationsForSettingsRS.next()){
 							String subLocation = locationsForSettingsRS.getString("subLocation");
 							if (!locationsForSettingsRS.wasNull() && subLocation.length() > 0){
-								scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", ""));
+								scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
 							}else {
 								String code = locationsForSettingsRS.getString("code");
-								scopesToInclude.add(code.replaceAll("[^a-zA-Z0-9_]", ""));
+								scopesToInclude.add(code.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
 							}
 						}
 
