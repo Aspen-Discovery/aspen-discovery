@@ -34,17 +34,13 @@ class EventsSolrConnector extends Solr
 		global $library;
 		global $solrScope;
 		$filter = [];
-		if (!$solrScope) {
-			if (!$library) {
-				//MDN: This does happen when called within migration tools
-				if (isset($searchLibrary)) {
-					$filter[] = "library_scopes:" . strtolower($searchLibrary->subdomain);
-				}
-			} else {
-				$filter[] = "library_scopes:" . strtolower($library->subdomain);
+		if (!$library) {
+			//MDN: This does happen when called within migration tools
+			if (isset($searchLibrary)) {
+				$filter[] = "library_scopes:" . strtolower($searchLibrary->subdomain);
 			}
 		} else {
-			$filter[] = "scope_has_related_records:$solrScope";
+			$filter[] = "library_scopes:" . strtolower($library->subdomain);
 		}
 		return $filter;
 	}

@@ -44,12 +44,12 @@ class WebsiteSolrConnector extends Solr
 		if (!$solrScope) {
 			//MDN: This does happen when called within migration tools
 			if (isset($searchLocation)) {
-				$filter[] = "scope_has_related_records:{$searchLocation->code}";
+				$filter[] = "scope_has_related_records:" . strtolower($searchLocation->code);
 			} elseif (isset($searchLibrary)) {
-				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
+				$filter[] = "scope_has_related_records:" . strtolower($searchLibrary->subdomain);
 			}
 		} else {
-			$filter[] = "scope_has_related_records:$solrScope";
+			$filter[] = "scope_has_related_records:". strtolower($solrScope);
 		}
 		return $filter;
 	}

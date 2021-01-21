@@ -43,7 +43,7 @@ class OpenArchivesSolrConnector extends Solr
 				$filter[] = "scope_has_related_records:" . strtolower($searchLibrary->subdomain);
 			}
 		} else {
-			$filter[] = "scope_has_related_records:$solrScope";
+			$filter[] = "scope_has_related_records:" . strtolower($solrScope);
 		}
 		return $filter;
 	}
