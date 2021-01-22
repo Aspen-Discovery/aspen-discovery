@@ -83,6 +83,7 @@ class PortalRow extends DataObject
 	public function insert(){
 		$ret = parent::insert();
 		if ($ret !== FALSE ){
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
 			$portalCell = new PortalCell();
 			$portalCell->portalRowId = $this->id;
 			$portalCell->weight = 0;
@@ -108,6 +109,7 @@ class PortalRow extends DataObject
 		$ret = parent::delete($useWhere);
 		if ($ret){
 			//Reorder the rows on the page to remove the gap
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 			$portalPage = new PortalPage();
 			$portalPage->id = $this->portalPageId;
 			if ($portalPage->find(true)){
@@ -135,6 +137,7 @@ class PortalRow extends DataObject
 	public function getCells($forceRefresh = false){
 		if ((!isset($this->_cells) || $forceRefresh) && $this->id){
 			$this->_cells = [];
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
 			$obj = new PortalCell();
 			$obj->portalRowId = $this->id;
 			$obj->orderBy('weight');
@@ -148,6 +151,7 @@ class PortalRow extends DataObject
 
 	/** @noinspection PhpUnused */
 	public function isLastRow(){
+		require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 		$myPage = new PortalPage();
 		$myPage->id = $this->portalPageId;
 		if ($myPage->find(true)){
