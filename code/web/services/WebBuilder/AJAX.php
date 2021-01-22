@@ -110,6 +110,7 @@ class WebBuilder_AJAX extends JSON_Action
 		$portalCell = null;
 		$result['selected'] = '-1';
 		if (!empty($portalCellId)){
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
 			$portalCell = new PortalCell();
 			$portalCell->id = $portalCellId;
 			if ($portalCell->find(true)){
@@ -217,6 +218,7 @@ class WebBuilder_AJAX extends JSON_Action
 			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
 				if (isset($_REQUEST['id'])) {
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 					$portalCell = new PortalCell();
 					$portalCell->id = $_REQUEST['id'];
 					if ($portalCell->find(true)){
