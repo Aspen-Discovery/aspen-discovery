@@ -83,6 +83,16 @@ class PortalRow extends DataObject
 	public function insert(){
 		$ret = parent::insert();
 		if ($ret !== FALSE ){
+			$portalCell = new PortalCell();
+			$portalCell->portalRowId = $this->id;
+			$portalCell->weight = 0;
+			$portalCell->widthTiny = 12;
+			$portalCell->widthXs = 12;
+			$portalCell->widthSm = 12;
+			$portalCell->widthMd = 12;
+			$portalCell->widthLg = 12;
+			$portalCell->insert();
+
 			$this->saveCells();
 		}
 		return $ret;
