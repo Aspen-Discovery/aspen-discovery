@@ -279,6 +279,16 @@ function getUserUpdates()
 			]
 		],
 
+		'user_payments_carlx' => [
+			'title' => 'User payments CarlX',
+			'description' => 'Add columns to user_payments to support CarlX credit card processing',
+			'sql' => [
+				'ALTER TABLE user_payments ADD COLUMN transactionDate INT(11)',
+				'ALTER TABLE user_payments ADD COLUMN feeType VARCHAR(10)',
+				'ALTER TABLE user_payments ADD COLUMN feeId VARCHAR(20)'
+			]
+		],
+
 		'user_display_name_length' => array(
 			'title' => 'User display name length',
 			'description' => 'Increase displayName field in the User table',
