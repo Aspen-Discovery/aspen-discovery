@@ -85,15 +85,19 @@ class Record_AJAX extends Action
 			$items = $marcRecord->getCopies();
 			$format = $marcRecord->getPrimaryFormat();
 
-			global $indexingProfiles;
-			$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
-			$formatMap = $indexingProfile->formatMap;
-			/** @var FormatMapValue $formatMapValue */
-			$holdType = 'bib';
-			foreach ($formatMap as $formatMapValue) {
-				if (strcasecmp($formatMapValue->format, $format) === 0) {
-					$holdType = $formatMapValue->holdType;
-					break;
+			if (isset($_REQUEST['volume'])) {
+				$holdType = 'volume';
+			}else{
+				global $indexingProfiles;
+				$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
+				$formatMap = $indexingProfile->formatMap;
+				/** @var FormatMapValue $formatMapValue */
+				$holdType = 'bib';
+				foreach ($formatMap as $formatMapValue) {
+					if (strcasecmp($formatMapValue->format, $format) === 0) {
+						$holdType = $formatMapValue->holdType;
+						break;
+					}
 				}
 			}
 
