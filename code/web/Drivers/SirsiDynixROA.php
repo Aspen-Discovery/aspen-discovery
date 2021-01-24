@@ -709,7 +709,7 @@ class SirsiDynixROA extends HorizonAPI
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
 		//Get a list of holds for the user
-		$includeFields = urlencode('circRecordList{*,item{bib{title},itemType,call{dispCallNumber}}}');
+		$includeFields = urlencode('circRecordList{*,item{bib{title,author},itemType,call{dispCallNumber}}}');
 		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 
 		if (!empty($patronCheckouts->fields->circRecordList)) {
@@ -751,7 +751,8 @@ class SirsiDynixROA extends HorizonAPI
 						$curTitle['title'] = $bibInfo->fields->title;
 						$simpleSortTitle = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
 						$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
-						$curTitle['author'] = $bibInfo->fields->author;
+						require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+						$curTitle['author'] = empty($bibInfo->fields->author) ? '' : StringUtils::removeTrailingPunctuation($bibInfo->fields->author);
 					}
 					if ($curTitle['format'] == 'Magazine' && !empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
 						$curTitle['title2'] = $checkout->fields->item->fields->call->fields->dispCallNumber;
