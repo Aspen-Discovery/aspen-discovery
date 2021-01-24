@@ -14,8 +14,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 
 public class UpdateReadingHistoryTask implements Runnable {
+	private static long numTasksRun = 0;
 	private String aspenUrl;
-	private long userId;
 	private String cat_username;
 	private String cat_password;
 	private CronProcessLogEntry processLog;
@@ -42,8 +42,10 @@ public class UpdateReadingHistoryTask implements Runnable {
 					try {
 						Thread.sleep(120000);
 					} catch (InterruptedException e) {
-						processLog.incErrors("Interrupted slepp when retrying to load");
+						processLog.incErrors("Interrupted sleep when retrying to load");
 					}
+				}else{
+					logger.debug(++numTasksRun + ") Updating reading history for " + cat_username);
 				}
 				hadError = false;
 				retry = false;
@@ -56,9 +58,9 @@ public class UpdateReadingHistoryTask implements Runnable {
 				conn.addRequestProperty("Cache-Control", "no-cache");
 				if (conn.getResponseCode() == 200) {
 					String patronDataJson = StringUtils.convertStreamToString(conn.getInputStream());
-					logger.debug(patronApiUrl.toString());
-					logger.debug("Json for patron reading history " + patronDataJson);
-					//logger.error("Got results for " + cat_username);
+					//logger.debug(patronApiUrl.toString());
+					//logger.debug("Json for patron reading history " + patronDataJson);
+					logger.debug("Got results for " + cat_username);
 					try {
 						JSONObject patronData = new JSONObject(patronDataJson);
 						JSONObject result = patronData.getJSONObject("result");
