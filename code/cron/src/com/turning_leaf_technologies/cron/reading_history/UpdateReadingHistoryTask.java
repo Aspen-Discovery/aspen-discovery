@@ -30,46 +30,67 @@ public class UpdateReadingHistoryTask implements Runnable {
 
 	@Override
 	public void run() {
-		boolean hadError;
+		boolean hadError = false;
 		try {
-			// Call the patron API to get their checked out items
-			URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(cat_username, "UTF-8") + "&password=" + URLEncoder.encode(cat_password, "UTF-8"));
-			//logger.error("Updating reading history for " + cat_username);
-			HttpURLConnection conn = (HttpURLConnection) patronApiUrl.openConnection();
-			conn.addRequestProperty("User-Agent","Aspen Discovery");
-			conn.addRequestProperty("Accept","*/*");
-			conn.addRequestProperty("Cache-Control","no-cache");
-			if (conn.getResponseCode() == 200) {
-				String patronDataJson = StringUtils.convertStreamToString(conn.getInputStream());
-				logger.debug(patronApiUrl.toString());
-				logger.debug("Json for patron reading history " + patronDataJson);
-				//logger.error("Got results for " + cat_username);
-				try {
-					JSONObject patronData = new JSONObject(patronDataJson);
-					JSONObject result = patronData.getJSONObject("result");
-					hadError = !result.getBoolean("success");
-					if (hadError) {
-						String message = result.getString("message");
-						if (!message.equals("Login unsuccessful")) {
-							processLog.incErrors("Updating reading history failed for " + cat_username + " " + message);
-						} else {
-							//This happens if the patron has changed their login or no longer exists.
-							processLog.incSkipped();
-							//Don't log that we couldn't update them, the skipped is enough
-							logger.debug("Updating reading history failed for " + cat_username + " " + message);
-							//processLog.addNote("Updating reading history failed for " + cat_username + " " + message);
-						}
+			int numTries = 0;
+			boolean retry = true;
+			while (retry) {
+				numTries++;
+				if (numTries > 1){
+					logger.debug("Try " + numTries + " for " + cat_username);
+					//Wait 2 minutes to give solr a chance to restart if needed
+					try {
+						Thread.sleep(120000);
+					} catch (InterruptedException e) {
+						processLog.incErrors("Interrupted slepp when retrying to load");
 					}
-				} catch (JSONException e) {
-					processLog.incErrors("Unable to load patron information from for " + cat_username + " exception loading response ", e);
-					logger.error(patronDataJson);
-					hadError = true;
 				}
-			}else{
-				//Received an error
-				String errorResponse = StringUtils.convertStreamToString(conn.getErrorStream());
-				processLog.incErrors("Error " + conn.getResponseCode() + " retrieving information from patron API for " + cat_username + " base url is " + aspenUrl + " " + errorResponse);
-				hadError = true;
+				hadError = false;
+				retry = false;
+				// Call the patron API to get their checked out items
+				URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(cat_username, "UTF-8") + "&password=" + URLEncoder.encode(cat_password, "UTF-8"));
+				//logger.error("Updating reading history for " + cat_username);
+				HttpURLConnection conn = (HttpURLConnection) patronApiUrl.openConnection();
+				conn.addRequestProperty("User-Agent", "Aspen Discovery");
+				conn.addRequestProperty("Accept", "*/*");
+				conn.addRequestProperty("Cache-Control", "no-cache");
+				if (conn.getResponseCode() == 200) {
+					String patronDataJson = StringUtils.convertStreamToString(conn.getInputStream());
+					logger.debug(patronApiUrl.toString());
+					logger.debug("Json for patron reading history " + patronDataJson);
+					//logger.error("Got results for " + cat_username);
+					try {
+						JSONObject patronData = new JSONObject(patronDataJson);
+						JSONObject result = patronData.getJSONObject("result");
+						hadError = !result.getBoolean("success");
+						if (hadError) {
+							String message = result.getString("message");
+							if (!message.equals("Login unsuccessful")) {
+								processLog.incErrors("Updating reading history failed for " + cat_username + " " + message);
+							} else {
+								//This happens if the patron has changed their login or no longer exists.
+								processLog.incSkipped();
+								//Don't log that we couldn't update them, the skipped is enough
+								logger.debug("Updating reading history failed for " + cat_username + " " + message);
+								//processLog.addNote("Updating reading history failed for " + cat_username + " " + message);
+							}
+						}
+					} catch (JSONException e) {
+						processLog.incErrors("Unable to load patron information from for " + cat_username + " exception loading response ", e);
+						logger.error(patronDataJson);
+						hadError = true;
+					}
+				} else {
+					//Received an error
+					String errorResponse = StringUtils.convertStreamToString(conn.getErrorStream());
+					if (numTries < 3){
+						processLog.incErrors("Error " + conn.getResponseCode() + " retrieving information from patron API for " + cat_username + " base url is " + aspenUrl + " " + errorResponse);
+						retry = true;
+					}
+				}
+				if (numTries > 3){
+					break;
+				}
 			}
 		} catch (MalformedURLException e) {
 			processLog.incErrors("Bad url for patron API " + e.toString());

@@ -73,11 +73,24 @@ public class UpdateReadingHistory implements IProcessHandler {
 				}
 				userResults.close();
 
+				long lastThreadsCompleted = 0;
+				int numTimesCompletedThreadsHasNotChanged = 0;
 				while ((executor.getCompletedTaskCount() + numSkipped) < numUsersToUpdate) {
+					if (lastThreadsCompleted != (executor.getCompletedTaskCount() + numSkipped)){
+						numTimesCompletedThreadsHasNotChanged = 0;
+						lastThreadsCompleted = (executor.getCompletedTaskCount() + numSkipped);
+					}else{
+						numTimesCompletedThreadsHasNotChanged++;
+					}
+					//If we haven't changed the number of threads completed for 10 minutes, something is stuck.
+					if (numTimesCompletedThreadsHasNotChanged == 10){
+						processLog.incErrors("Number of threads completed has not changed for 10 minutes and looks stuck");
+						break;
+					}
 					processLog.saveResults();
 					logger.debug("Num Users To Update = " + numUsersToUpdate + " Completed Task Count = " + executor.getCompletedTaskCount() + " Num Skipped = " + numSkipped);
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(60000);
 					} catch (InterruptedException e) {
 						logger.error("Sleep was interrupted", e);
 					}
