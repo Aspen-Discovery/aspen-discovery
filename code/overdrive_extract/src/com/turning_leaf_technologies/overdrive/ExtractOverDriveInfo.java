@@ -106,8 +106,18 @@ class ExtractOverDriveInfo {
 					logger.info("There are a total of " + allProductsInOverDrive.size() + " products in the combined overdrive collections");
 
 					//Remove any records that no longer exist
+					//There is currently an issue with OverDrive APIs so we will avoid deleting records if we are deleting
+					//more than 500 records or 5% of the collection
+					int totalRecordsToDelete = 0;
+					for (String overDriveId : existingProductsInAspen.keySet()) {
+						OverDriveDBInfo dbInfo = existingProductsInAspen.get(overDriveId);
+						if (!dbInfo.isDeleted()) {
+							totalRecordsToDelete ++;
+						}
+					}
+
 					int numRecordsDeleted = 0;
-					if (!this.hadTimeoutsFromOverDrive) {
+					if (!this.hadTimeoutsFromOverDrive && totalRecordsToDelete > 0 && totalRecordsToDelete < 500 && allProductsInOverDrive.size() > 0 && (((float)totalRecordsToDelete / allProductsInOverDrive.size()) < .05)) {
 						for (String overDriveId : existingProductsInAspen.keySet()) {
 							OverDriveDBInfo dbInfo = existingProductsInAspen.get(overDriveId);
 							//If the record is already deleted, don't bother re-deleting it.
@@ -120,9 +130,14 @@ class ExtractOverDriveInfo {
 									//Delete the work from solr and the database
 									getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 								}
+
 								numRecordsDeleted++;
 							}
 						}
+					}else if (totalRecordsToDelete >= 500) {
+						logEntry.incErrors("There were more than 500 records to delete , detected " + totalRecordsToDelete + ", not deleting records");
+					}else if ((((float)totalRecordsToDelete / allProductsInOverDrive.size()) >= .05)) {
+						logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + ", not deleting records");
 					}
 					logger.info("Deleted " + numRecordsDeleted + " records that no longer exist");
 
