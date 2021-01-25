@@ -419,6 +419,8 @@ class Axis360Driver extends AbstractEContentDriver
 					$this->incrementStat('numCheckouts');
 					$this->trackUserUsageOfAxis360($user);
 					$this->trackRecordCheckout($titleId);
+					$user->lastReadingHistoryUpdate = 0;
+					$user->update();
 				}
 			}
 		}else{

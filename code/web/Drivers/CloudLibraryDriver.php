@@ -412,6 +412,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			}else {
 				$this->trackUserUsageOfCloudLibrary($user);
 				$this->trackRecordCheckout($titleId);
+				$user->lastReadingHistoryUpdate = 0;
+				$user->update();
 
 				$result['success'] = true;
 				if ($fromRenew){
@@ -420,7 +422,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
 				}
 
-				/** @var Memcache $memCache */
 				global $memCache;
 				$memCache->delete('cloud_library_summary_' . $user->id);
 				$memCache->delete('cloud_library_circulation_info_' . $user->id);

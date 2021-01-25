@@ -645,6 +645,14 @@ function getUserUpdates()
 				'UPDATE user SET pickupLocationId = homeLocationId'
 			]
 		],
+
+		'user_add_last_reading_history_update_time' => [
+			'title' => 'Store when the reading history was last updated',
+			'description' =>  'Store when the reading history was last updated to optimize loading reading history',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN lastReadingHistoryUpdate INT(11) DEFAULT 0'
+			]
+		]
 	);
 }
 

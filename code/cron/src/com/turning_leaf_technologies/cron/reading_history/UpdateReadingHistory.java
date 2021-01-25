@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -33,6 +34,8 @@ public class UpdateReadingHistory implements IProcessHandler {
 
 		// Connect to the MySQL database
 		int numSkipped = 0;
+		int numAlreadyUpToDate = 0;
+		long startTime = (long)(new Date().getTime() / 1000);
 		try {
 			//Get the number of patrons to update
 			PreparedStatement getNumUsersStmt = dbConn.prepareStatement("SELECT count(*) as numUsers FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -44,7 +47,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 			}
 
 			// Get a list of all patrons that have reading history turned on.
-			PreparedStatement getUsersStmt = dbConn.prepareStatement("SELECT id, cat_username, cat_password FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getUsersStmt = dbConn.prepareStatement("SELECT id, cat_username, cat_password, lastReadingHistoryUpdate FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			if (numUsersToUpdate > 0) {
 				BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(numUsersToUpdate);
@@ -62,6 +65,14 @@ public class UpdateReadingHistory implements IProcessHandler {
 
 					if (cat_password == null || cat_password.length() == 0) {
 						numSkipped++;
+						processLog.incSkipped();
+						continue;
+					}
+
+					if (startTime - userResults.getLong("lastReadingHistoryUpdate") < (23 * 60 * 60)){
+						//Only update records every 23 hours (since the update runs everyday, we give it a bit of buffer to make sure that we do update daily unless
+						//the user has updated themselves.
+						numAlreadyUpToDate++;
 						processLog.incSkipped();
 						continue;
 					}
@@ -88,7 +99,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 						break;
 					}
 					processLog.saveResults();
-					logger.debug("Num Users To Update = " + numUsersToUpdate + " Completed Task Count = " + executor.getCompletedTaskCount() + " Num Skipped = " + numSkipped);
+					logger.debug("Num Users To Update = " + numUsersToUpdate + " Completed Task Count = " + executor.getCompletedTaskCount() + " Num Skipped = " + numSkipped + " Num already up to date = " + numAlreadyUpToDate);
 					try {
 						Thread.sleep(60000);
 					} catch (InterruptedException e) {

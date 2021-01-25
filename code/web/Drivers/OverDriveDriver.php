@@ -860,6 +860,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$result['message'] = translate(['text'=>'overdrive_checkout_success', 'defaultText'=>'Your title was checked out successfully. You may now download the title from your Account.']);
 			$this->trackUserUsageOfOverDrive($user);
 			$this->trackRecordCheckout($overDriveId);
+			$user->lastReadingHistoryUpdate = 0;
+			$user->update();
 		}else{
 			$result['message'] = translate('Sorry, we could not checkout this title to you.');
 			if (isset($response->errorCode) && $response->errorCode == 'PatronHasExceededCheckoutLimit'){

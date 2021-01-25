@@ -772,6 +772,12 @@ class CatalogConnection
 	 */
 	public function updateReadingHistoryBasedOnCurrentCheckouts($patron)
 	{
+		//Check to see if we need to update the reading history.  Only update every 5 minutes in normal situations.
+		$curTime = time();
+		if (($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5){
+			return;
+		}
+
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.
 		$readingHistoryDB = new ReadingHistoryEntry();
@@ -846,6 +852,10 @@ class CatalogConnection
 				}
 			}
 		}
+
+		//Set the last update time
+		$patron->lastReadingHistoryUpdate = $curTime;
+		$patron->update();
 	}
 
 	function cancelHold($patron, $recordId, $cancelId = null)

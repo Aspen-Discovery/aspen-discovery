@@ -25,6 +25,7 @@ class User extends DataObject
 	public $myLocation2Id;					 // int(11)
 	public $trackReadingHistory; 			 // tinyint
 	public $initialReadingHistoryLoaded;
+	public $lastReadingHistoryUpdate;
 	public $bypassAutoLogout;        //tinyint
 	public $disableRecommendations;     //tinyint
 	public $disableCoverArt;     //tinyint
