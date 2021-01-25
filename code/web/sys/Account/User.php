@@ -310,20 +310,29 @@ class User extends DataObject
 
 	function getBarcode()
 	{
-		if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+		if ($this->getAccountProfile() == null){
 			return trim($this->cat_username);
-		} else {
-			return trim($this->cat_password);
+		}else {
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return trim($this->cat_username);
+			} else {
+				return trim($this->cat_password);
+			}
 		}
 	}
 
 	function getPasswordOrPin()
 	{
-		if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+		if ($this->getAccountProfile() == null) {
 			return trim($this->cat_password);
-		} else {
-			return trim($this->cat_username);
+		}else{
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return trim($this->cat_password);
+			} else {
+				return trim($this->cat_username);
+			}
 		}
+
 	}
 
 	function saveRoles(){

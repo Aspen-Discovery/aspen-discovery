@@ -774,7 +774,7 @@ class CatalogConnection
 	{
 		//Check to see if we need to update the reading history.  Only update every 5 minutes in normal situations.
 		$curTime = time();
-		if (($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5){
+		if (($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5 && !isset($_REQUEST['reload'])){
 			return;
 		}
 

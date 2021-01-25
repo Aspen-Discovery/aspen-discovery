@@ -78,7 +78,7 @@ public class UpdateReadingHistoryTask implements Runnable {
 							}
 						}
 					} catch (JSONException e) {
-						processLog.incErrors("Unable to load patron information from for " + cat_username + " exception loading response ", e);
+						processLog.incErrors("Unable to load patron information for " + cat_username + " exception loading response ", e);
 						logger.error(patronDataJson);
 						hadError = true;
 					}
