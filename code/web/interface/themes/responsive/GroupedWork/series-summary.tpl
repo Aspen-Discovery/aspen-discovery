@@ -11,6 +11,7 @@
 			{if $summSeries.fromNovelist}
 				<br/>
 			{/if}
+			{assign var=showMoreSeries value="false"}
 			{if count($indexedSeries) >= 5}
 				{assign var=showMoreSeries value="true"}
 			{/if}
