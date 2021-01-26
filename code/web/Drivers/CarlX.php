@@ -1260,8 +1260,15 @@ class CarlX extends AbstractIlsDriver{
 				}
 				$fine->Identifier = str_replace('#', '', $fine->Identifier);
 
+				if ($fine->TransactionCode == 'FS' && $fine->FeeNotes == 'COLLECTION') {
+					$fineType = 'COLLECTION AGENCY';
+				} else {
+					$fineType = $fine->TransactionCode;
+				}
+
 				$myFines[] = array(
 					'fineId' => $fine->Identifier,
+					'type' => $fineType,
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FineAmount,
 					'amountVal' => $fine->FineAmount,
@@ -1300,6 +1307,7 @@ class CarlX extends AbstractIlsDriver{
 
 				$myFines[] = array(
 					'fineId' => $fine->Identifier,
+					'type' => $fine->TransactionCode,
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FeeAmount,
 					'amountVal'  => $fine->FeeAmount,
