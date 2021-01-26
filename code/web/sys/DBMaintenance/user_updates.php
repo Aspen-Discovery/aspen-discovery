@@ -289,6 +289,14 @@ function getUserUpdates()
 			]
 		],
 
+		'user_payments_finesPaid' => [
+			'title' => 'User payments finesPaid embiggening',
+			'description' => 'Increase finesPaid column space to 16K',
+			'sql' => [
+				"ALTER TABLE user_payments CHANGE finesPaid finesPaid VARCHAR(16384) NOT NULL DEFAULT ''",
+			]
+		],
+
 		'user_display_name_length' => array(
 			'title' => 'User display name length',
 			'description' => 'Increase displayName field in the User table',
