@@ -202,7 +202,7 @@ class Novelist3{
 							}
 						}
 					}else{
-						if (!is_null($decodedData->TitleInfo) && !empty($decodedData->TitleInfo->primary_isbn)){
+						if (!empty($decodedData->TitleInfo) && !empty($decodedData->TitleInfo->primary_isbn)){
 							$bestResponse = json_encode($decodedData);
 							$primaryISBN = $decodedData->TitleInfo->primary_isbn;
 						}
