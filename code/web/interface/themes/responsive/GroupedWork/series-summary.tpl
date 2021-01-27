@@ -11,9 +11,9 @@
 			{if $summSeries.fromNovelist}
 				<br/>
 			{/if}
-			{assign var=showMoreSeries value="false"}
+			{assign var=showMoreSeries value=false}
 			{if count($indexedSeries) >= 5}
-				{assign var=showMoreSeries value="true"}
+				{assign var=showMoreSeries value=true}
 			{/if}
 			{foreach from=$indexedSeries item=seriesItem name=loop}
 				{if !isset($series.seriesTitle) || ((strpos(strtolower($seriesItem.seriesTitle), strtolower($series.seriesTitle)) === false) && (strpos(strtolower($series.seriesTitle), strtolower($seriesItem.seriesTitle)) === false))}
@@ -24,7 +24,7 @@
 					{/if}
 				{/if}
 			{/foreach}
-			{if !empty($showMoreSeries)}
+			{if $showMoreSeries}
 				</div>
 			{/if}
 		{/if}
