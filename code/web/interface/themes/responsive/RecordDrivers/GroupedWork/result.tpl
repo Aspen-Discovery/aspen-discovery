@@ -64,7 +64,7 @@
 									{/if}
 								{/if}
 								{if $indexedSeries}
-									{assign var=showMoreSeries value="0"}
+									{assign var=showMoreSeries value=0}
 									{if count($indexedSeries) >= 5}
 										{assign var=showMoreSeries value="1"}
 									{/if}
