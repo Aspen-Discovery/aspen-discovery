@@ -11,20 +11,20 @@
 			{if $summSeries.fromNovelist}
 				<br/>
 			{/if}
-			{assign var=showMoreSeries value=false}
+			{assign var=showMoreSeries value="0"}
 			{if count($indexedSeries) >= 5}
-				{assign var=showMoreSeries value=true}
+				{assign var=showMoreSeries value="1"}
 			{/if}
 			{foreach from=$indexedSeries item=seriesItem name=loop}
 				{if !isset($series.seriesTitle) || ((strpos(strtolower($seriesItem.seriesTitle), strtolower($series.seriesTitle)) === false) && (strpos(strtolower($series.seriesTitle), strtolower($seriesItem.seriesTitle)) === false))}
 					<a href="/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br/>
-					{if !empty($showMoreSeries) && $smarty.foreach.loop.iteration == 3}
+					{if ($showMoreSeries == "1") && $smarty.foreach.loop.iteration == 3}
 						<a onclick="$('#moreSeries_{$recordDriver->getPermanentId()}').show();$('#moreSeriesLink_{$recordDriver->getPermanentId()}').hide();" id="moreSeriesLink_{$summId}">{translate text="More Series..."}</a>
 						<div id="moreSeries_{$recordDriver->getPermanentId()}" style="display:none">
 					{/if}
 				{/if}
 			{/foreach}
-			{if $showMoreSeries}
+			{if $showMoreSeries == "1"}
 				</div>
 			{/if}
 		{/if}
