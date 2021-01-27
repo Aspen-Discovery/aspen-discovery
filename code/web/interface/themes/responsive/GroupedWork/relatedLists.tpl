@@ -9,18 +9,18 @@
 			{/if}
 		</div>
 		<div class="result-value col-tn-8">
-			{assign var=showMoreLists value=false}
+			{assign var=showMoreLists value="0"}
 			{if count($appearsOnLists) >= 5}
-				{assign var=showMoreLists value=true}
+				{assign var=showMoreLists value="1"}
 			{/if}
 			{foreach from=$appearsOnLists item=appearsOnList name=loop}
 				<a href="{$appearsOnList.link}">{$appearsOnList.title}</a><br/>
-				{if !empty($showMoreLists) && $smarty.foreach.loop.iteration == 3}
+				{if ($showMoreLists == "1") && $smarty.foreach.loop.iteration == 3}
 					<a onclick="$('#moreLists_{$recordDriver->getPermanentId()}').show();$('#moreListsLink_{$recordDriver->getPermanentId()}').hide();" id="moreListsLink_{$recordDriver->getPermanentId()}">{translate text="More Lists..."}</a>
 					<div id="moreLists_{$recordDriver->getPermanentId()}" style="display:none">
 				{/if}
 			{/foreach}
-			{if !empty($showMoreLists)}
+			{if $showMoreLists == "1"}
 				</div>
 			{/if}
 		</div>
