@@ -284,16 +284,14 @@ function getUserUpdates()
 			'description' => 'Add columns to user_payments to support CarlX credit card processing',
 			'sql' => [
 				'ALTER TABLE user_payments ADD COLUMN transactionDate INT(11)',
-				'ALTER TABLE user_payments ADD COLUMN feeType VARCHAR(10)',
-				'ALTER TABLE user_payments ADD COLUMN feeId VARCHAR(20)'
 			]
 		],
 
 		'user_payments_finesPaid' => [
 			'title' => 'User payments finesPaid embiggening',
-			'description' => 'Increase finesPaid column space to 16K',
+			'description' => 'Increase finesPaid column space to 8K',
 			'sql' => [
-				"ALTER TABLE user_payments CHANGE finesPaid finesPaid VARCHAR(16384) NOT NULL DEFAULT ''",
+				"ALTER TABLE user_payments CHANGE finesPaid finesPaid VARCHAR(8192) NOT NULL DEFAULT ''",
 			]
 		],
 
