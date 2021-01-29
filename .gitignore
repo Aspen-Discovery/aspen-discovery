@@ -171,3 +171,8 @@ code/web/fonts/HalisR-S-Regular.otf
 code/web/migrations/importResults.txt
 .idea/watcherTasks.xml
 .idea/php.xml
+.idea/sqldialects.xml
+.idea/dataSources/ad5258ec-609a-4658-9d81-2b76b69fb1bc/storage_v2/_src_/schema/information_schema.FNRwLQ.meta
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/dataSources/ad5258ec-609a-4658-9d81-2b76b69fb1bc.xml
