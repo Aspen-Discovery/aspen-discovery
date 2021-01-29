@@ -14,11 +14,12 @@ class Admin_ArchiveRequests extends ObjectEditor {
 	function getPageTitle(){
 		return 'Requests for Copies of Archive Materials';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$object = new ArchiveRequest();
 		$object->orderBy('dateRequested desc');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasPermission('View Archive Material Requests')){
 			$homeLibrary = $user->getHomeLibrary();

@@ -945,6 +945,14 @@ function getIndexingUpdates()
 			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN includeLocationNameInDetailedLocation TINYINT(1) DEFAULT 1"
 			]
+		],
+
+		'indexing_lastUpdateOfAuthorities' => [
+			'title' => 'Indexing add lastUpdateOfAuthorities',
+			'description' => 'Add lastUpdateOfAuthorities to Indexing Profiles to optimize loading authorities from the ILS',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAuthorities INT(11) DEFAULT 0'
+			]
 		]
 	);
 }

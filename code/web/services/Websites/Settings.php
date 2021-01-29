@@ -18,9 +18,10 @@ class Websites_Settings extends ObjectEditor
 	function getPageTitle(){
 		return 'Website Indexing Settings';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new WebsiteIndexSetting();
 		$object->deleted = 0;
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

@@ -56,12 +56,13 @@ class ILS_IndexingProfiles extends ObjectEditor
 		return 'ILS Indexing Information';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$list = array();
 
 		$object = new IndexingProfile();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {
 			$list[$object->id] = clone $object;

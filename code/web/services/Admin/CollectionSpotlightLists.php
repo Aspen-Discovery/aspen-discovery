@@ -16,9 +16,10 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 	function getPageTitle(){
 		return 'Collection Spotlight Lists';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new CollectionSpotlightList();
 		$object->orderBy('weight');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$list = array();
 		while ($object->fetch()){

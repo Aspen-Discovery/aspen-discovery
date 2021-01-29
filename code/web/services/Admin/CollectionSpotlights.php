@@ -17,7 +17,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 	function getPageTitle(){
 		return 'Collection Spotlights';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$collectionSpotlight = new CollectionSpotlight();
@@ -26,6 +26,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 			$collectionSpotlight->libraryId = $patronLibrary->libraryId;
 		}
 		$collectionSpotlight->orderBy('name');
+		$collectionSpotlight->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$collectionSpotlight->find();
 		while ($collectionSpotlight->fetch()){
 			$list[$collectionSpotlight->id] = clone $collectionSpotlight;

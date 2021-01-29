@@ -35,7 +35,8 @@ public class RecordGroupingProcessor {
 	private PreparedStatement updateNovelistStmt;
 	private PreparedStatement updateDisplayInfoStmt;
 
-	private PreparedStatement getAuthorAuthorityStmt;
+	private PreparedStatement getAuthorAuthorityIdStmt;
+	private PreparedStatement getAuthoritativeAuthorStmt;
 	private PreparedStatement getTitleAuthorityStmt;
 
 	private PreparedStatement markWorkAsNeedingReindexStmt;
@@ -82,7 +83,8 @@ public class RecordGroupingProcessor {
 			getAdditionalPrimaryIdentifierForWorkStmt.close();
 			getPermanentIdByWorkIdStmt.close();
 
-			getAuthorAuthorityStmt.close();
+			getAuthorAuthorityIdStmt.close();
+			getAuthoritativeAuthorStmt.close();
 			getTitleAuthorityStmt.close();
 
 			getGroupedWorkIdByPermanentIdStmt.close();
@@ -174,7 +176,8 @@ public class RecordGroupingProcessor {
 			getAdditionalPrimaryIdentifierForWorkStmt = dbConnection.prepareStatement("SELECT * from grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getPermanentIdByWorkIdStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-			getAuthorAuthorityStmt = dbConnection.prepareStatement("SELECT * from author_authorities where originalName = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getAuthorAuthorityIdStmt = dbConnection.prepareStatement("SELECT authorId from author_authority_alternative where normalized = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getAuthoritativeAuthorStmt = dbConnection.prepareStatement("SELECT normalized from author_authority where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getTitleAuthorityStmt = dbConnection.prepareStatement("SELECT * from title_authorities where originalName = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			getGroupedWorkIdByPermanentIdStmt = dbConnection.prepareStatement("SELECT id from grouped_work WHERE permanent_id = ?");
@@ -736,15 +739,44 @@ public class RecordGroupingProcessor {
 			logEntry.incErrors("Error loading authorities", e);
 		}
 
+		//Normalize any authorities that have not been normalized yet.
+		try{
+			PreparedStatement getNonNormalizedAuthorsStmt = dbConn.prepareStatement("SELECT id, author FROM author_authority where normalized IS NULL or normalized = ''", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement setNormalizedAuthorStmt = dbConn.prepareStatement("UPDATE author_authority set normalized = ? where id = ?");
+			ResultSet getNonNormalizedAuthorsRS = getNonNormalizedAuthorsStmt.executeQuery();
+			while (getNonNormalizedAuthorsRS.next()){
+				String author = getNonNormalizedAuthorsRS.getString("author");
+				String normalizedAuthor = AuthorNormalizer.getNormalizedName(author);
+				setNormalizedAuthorStmt.setString(1, normalizedAuthor);
+				setNormalizedAuthorStmt.setLong(2, getNonNormalizedAuthorsRS.getLong("id"));
+				setNormalizedAuthorStmt.executeUpdate();
+			}
+			PreparedStatement getNonNormalizedAuthorAlternativesStmt = dbConn.prepareStatement("SELECT id, alternativeAuthor FROM author_authority_alternative where normalized IS NULL or normalized = ''", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement setNormalizedAlternativeAuthorStmt = dbConn.prepareStatement("UPDATE author_authority_alternative set normalized = ? where id = ?");
+			ResultSet getNonNormalizedAuthorAlternativesRS = getNonNormalizedAuthorAlternativesStmt.executeQuery();
+			while (getNonNormalizedAuthorAlternativesRS.next()){
+				String alternativeAuthor = getNonNormalizedAuthorAlternativesRS.getString("alternativeAuthor");
+				String normalizedAuthor = AuthorNormalizer.getNormalizedName(alternativeAuthor);
+				setNormalizedAlternativeAuthorStmt.setString(1, normalizedAuthor);
+				setNormalizedAlternativeAuthorStmt.setLong(2, getNonNormalizedAuthorAlternativesRS.getLong("id"));
+				setNormalizedAlternativeAuthorStmt.executeUpdate();
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error normalizing authorities", e);
+		}
 		logger.info("Done loading authorities");
 	}
 
 	String getAuthoritativeAuthor(String originalAuthor) {
 		try {
-			getAuthorAuthorityStmt.setString(1, originalAuthor);
-			ResultSet authorityRS = getAuthorAuthorityStmt.executeQuery();
+			getAuthorAuthorityIdStmt.setString(1, originalAuthor);
+			ResultSet authorityRS = getAuthorAuthorityIdStmt.executeQuery();
 			if (authorityRS.next()) {
-				return authorityRS.getString("authoritativeName");
+				getAuthoritativeAuthorStmt.setLong(1, authorityRS.getLong("authorId"));
+				ResultSet authoritativeAuthorRS = getAuthoritativeAuthorStmt.executeQuery();
+				if (authoritativeAuthorRS.next()) {
+					return authoritativeAuthorRS.getString("normalized");
+				}
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error getting authoritative author", e);

@@ -125,6 +125,8 @@
 		</table>
 	</div>
 
+	{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+
 	<input type='hidden' name='objectAction' id='objectAction' value='' />
 	{if $canCompare}
 		<div class="btn-group">

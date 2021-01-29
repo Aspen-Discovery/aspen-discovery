@@ -24,9 +24,10 @@ class WebBuilder_PortalCells extends ObjectEditor
 		return 'WebBuilder Portal Cells';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new PortalCell();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

@@ -24,9 +24,10 @@ class WebBuilder_StaffMembers extends ObjectEditor
 		return 'Staff Members';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new StaffMember();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

@@ -2049,7 +2049,8 @@ class User extends DataObject
 		$groupedWorkAction = new AdminAction('Grouped Work Display', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/GroupedWorkDisplay');
 		$groupedWorkAction->addSubAction(new AdminAction('Grouped Work Facets', 'Define information about what facets are displayed for grouped works in search results and Advanced Search.', '/Admin/GroupedWorkFacets'), ['Administer All Grouped Work Facets', 'Administer Library Grouped Work Facets']);
 		$sections['cataloging']->addAction($groupedWorkAction, ['Administer All Grouped Work Display Settings', 'Administer Library Grouped Work Display Settings']);
-		$sections['cataloging']->addAction(new AdminAction('Title / Author Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 

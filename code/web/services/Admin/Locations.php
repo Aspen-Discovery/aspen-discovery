@@ -15,7 +15,7 @@ class Locations extends ObjectEditor
 	function getPageTitle(){
 		return 'Locations (Branches)';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
@@ -30,6 +30,7 @@ class Locations extends ObjectEditor
 				$location->locationId = $user->homeLocationId;
 			}
 		}
+		$location->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$location->find();
 		$locationList = array();
 		while ($location->fetch()){

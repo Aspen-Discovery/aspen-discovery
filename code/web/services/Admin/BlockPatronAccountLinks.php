@@ -34,9 +34,10 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	/**
 	 * Load all objects into an array keyed by the primary key
 	 */
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new BlockPatronAccountLink();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

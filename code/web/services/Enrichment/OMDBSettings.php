@@ -26,9 +26,10 @@ class Enrichment_OMDBSettings extends ObjectEditor
 		return 'OMDB Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new OMDBSetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -83,6 +84,6 @@ class Enrichment_OMDBSettings extends ObjectEditor
 
 	function canAddNew()
 	{
-		return count($this->getAllObjects()) == 0;
+		return $this->getNumObjects() == 0;
 	}
 }

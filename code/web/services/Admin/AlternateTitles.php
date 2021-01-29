@@ -13,9 +13,10 @@ class Admin_AlternateTitles extends ObjectEditor
 	function getPageTitle(){
 		return 'Title / Author Authorities';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new GroupedWorkAlternateTitle();
 		$object->orderBy('alternateTitle');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

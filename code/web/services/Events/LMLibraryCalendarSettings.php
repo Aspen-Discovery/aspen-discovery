@@ -39,9 +39,10 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	/**
 	 * Load all objects into an array keyed by the primary key
 	 */
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new LMLibraryCalendarSetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

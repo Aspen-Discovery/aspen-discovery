@@ -18,9 +18,10 @@ class RBdigital_Scopes extends ObjectEditor
 	function getPageTitle(){
 		return 'RBdigital Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new RBdigitalScope();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

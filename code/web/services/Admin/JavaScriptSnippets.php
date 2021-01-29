@@ -19,9 +19,10 @@ class Admin_JavaScriptSnippets extends ObjectEditor
 	function canDelete(){
 		return UserAccount::userHasPermission(['Administer All JavaScript Snippets', 'Administer Library JavaScript Snippets']);
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$javascriptSnippet = new JavaScriptSnippet();
 		$javascriptSnippet->orderBy('name');
+		$javascriptSnippet->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingSnippets = true;
 		if (!UserAccount::userHasPermission('Administer All JavaScript Snippets')){
 			$libraryJavaScriptSnippet = new JavaScriptSnippetLibrary();

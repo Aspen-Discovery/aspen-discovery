@@ -26,9 +26,10 @@ class UserLists_Settings extends ObjectEditor
 		return 'List Indexing Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new ListIndexingSettings();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

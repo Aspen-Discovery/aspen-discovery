@@ -15,7 +15,7 @@ class LibraryFacetSettings extends ObjectEditor
 	function getPageTitle(){
 		return 'Library Facets';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$facetsList = array();
 		$library = new LibraryFacetSetting();
 		if (isset($_REQUEST['libraryId'])){
@@ -23,6 +23,7 @@ class LibraryFacetSettings extends ObjectEditor
 			$library->libraryId = $libraryId;
 		}
 		$library->orderBy('weight');
+		$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$library->find();
 		while ($library->fetch()){
 			$facetsList[$library->id] = clone $library;

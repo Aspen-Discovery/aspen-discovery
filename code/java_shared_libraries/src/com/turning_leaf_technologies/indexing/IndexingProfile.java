@@ -45,6 +45,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char subLocationSubfield;
 	private int determineAudienceBy;
 	private char audienceSubfield;
+	private long lastUpdateOfAuthorities;
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
 		this.filenamesToInclude = filenamesToInclude;
@@ -157,6 +158,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
 				indexingProfile.setLastUpdateFromMarcExport(indexingProfileRS.getLong("lastUpdateFromMarcExport"));
 				indexingProfile.setLastVolumeExportTimestamp(indexingProfileRS.getLong("lastVolumeExportTimestamp"));
+				indexingProfile.setLastUpdateOfAuthorities(indexingProfileRS.getLong("lastUpdateOfAuthorities"));
 
 				indexingProfile.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
 			} else {
@@ -494,5 +496,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public void setLastVolumeExportTimestamp(long lastVolumeExportTimestamp) {
 		this.lastVolumeExportTimestamp = lastVolumeExportTimestamp;
+	}
+
+	public long getLastUpdateOfAuthorities() {
+		return lastUpdateOfAuthorities;
+	}
+
+	private void setLastUpdateOfAuthorities(long lastUpdateOfAuthorities) {
+		this.lastUpdateOfAuthorities = lastUpdateOfAuthorities;
 	}
 }

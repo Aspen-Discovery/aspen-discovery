@@ -18,9 +18,10 @@ class Admin_Themes extends ObjectEditor
 	function canDelete(){
 		return UserAccount::userHasPermission('Administer All Themes');
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new Theme();
 		$object->orderBy('themeName');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Themes')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$object->id = $library->theme;

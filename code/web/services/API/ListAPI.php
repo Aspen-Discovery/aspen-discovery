@@ -3,7 +3,6 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-require_once ROOT_DIR . '/sys/Utils/Pagination.php';
 
 class ListAPI extends Action
 {

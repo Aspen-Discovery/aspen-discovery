@@ -14,10 +14,11 @@ class Admin_SystemVariables extends ObjectEditor{
 	function getPageTitle(){
 		return 'System Variables';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$variableList = array();
 
 		$variable = new SystemVariables();
+		$variable->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$variable->find();
 		while ($variable->fetch()){
 			$variableList[$variable->id] = clone $variable;
@@ -34,7 +35,7 @@ class Admin_SystemVariables extends ObjectEditor{
 		return 'id';
 	}
 	function canAddNew(){
-		return count($this->getAllObjects()) == 0;
+		return $this->getNumObjects() == 0;
 	}
 	function canDelete(){
 		return false;

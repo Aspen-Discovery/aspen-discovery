@@ -14,11 +14,12 @@ class Admin_AccountProfiles extends ObjectEditor {
 	function getPageTitle(){
 		return 'Account Profiles';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$object = new AccountProfile();
 		$object->orderBy('weight, name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;

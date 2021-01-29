@@ -65,10 +65,23 @@ abstract class ObjectEditor extends Admin_Admin
 	 * The title of the page to be displayed
 	 */
 	abstract function getPageTitle();
+
 	/**
 	 * Load all objects into an array keyed by the primary key
+	 * @param int $page - The current page to display
+	 * @param int $recordsPerPage - Number of records to show per page
+	 * @return DataObject[]
 	 */
-	abstract function getAllObjects();
+	abstract function getAllObjects($page, $recordsPerPage);
+	/**
+	 * Get a count of the number of objects so we can paginate as needed
+	 */
+	function getNumObjects(){
+		/** @var DataObject $object */
+		$objectType = $this->getObjectType();
+		$object = new $objectType();
+		return $object->count();
+	}
 	/**
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
@@ -157,8 +170,25 @@ abstract class ObjectEditor extends Admin_Admin
 	}
 	function viewExistingObjects(){
 		global $interface;
+		$numObjects = $this->getNumObjects();
+		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		if (!is_numeric($page)){
+			$page = 1;
+		}
+		$recordsPerPage = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 25;
 		//Basic List
-		$allObjects = $this->getAllObjects();
+		$allObjects = $this->getAllObjects($page, $recordsPerPage);
+
+		$options = [
+			'totalItems' => $numObjects,
+			'fileName'   => "/{$this->getModule()}/{$this->getToolName()}?page=%d",
+			'perPage'    => $recordsPerPage,
+			'canChangeRecordsPerPage' => true,
+			'canJumpToPage' => true
+		];
+		$pager = new Pager($options);
+		$interface->assign('pageLinks', $pager->getLinks());
+
 		$interface->assign('dataList', $allObjects);
 		if (count($allObjects) < 2){
 			$interface->assign('canCompare', false);

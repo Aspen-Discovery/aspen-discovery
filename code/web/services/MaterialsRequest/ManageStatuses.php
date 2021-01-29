@@ -21,7 +21,7 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 	function getPageTitle(){
 		return 'Materials Request Statuses';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$status = new MaterialsRequestStatus();
 
 		$homeLibrary = Library::getPatronHomeLibrary();
@@ -31,6 +31,7 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		$status->orderBy('isPatronCancel DESC');
 		$status->orderBy('isOpen DESC');
 		$status->orderBy('description ASC');
+		$status->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$status->find();
 		$objectList = array();
 		while ($status->fetch()){

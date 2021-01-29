@@ -16,9 +16,10 @@ class Admin_BrowseCategories extends ObjectEditor
 	function getPageTitle(){
 		return 'Browse Categories';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$browseCategory = new BrowseCategory();
 		$browseCategory->orderBy('label');
+		$browseCategory->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$libraryId = $library == null ? -1 : $library->libraryId;

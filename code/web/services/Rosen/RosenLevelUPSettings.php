@@ -26,9 +26,10 @@ class RosenLevelUPSettings extends ObjectEditor
 		return 'Rosen LevelUP Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new RosenLevelUPSetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -82,6 +83,6 @@ class RosenLevelUPSettings extends ObjectEditor
 
 	function canAddNew()
 	{
-		return count($this->getAllObjects()) == 0;
+		return $this->getNumObjects() == 0;
 	}
 }

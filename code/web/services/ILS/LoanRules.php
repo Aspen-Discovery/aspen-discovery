@@ -49,9 +49,10 @@ class LoanRules extends ObjectEditor
 	function getPageTitle(){
 		return 'Loan Rules';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new LoanRule();
 		$object->orderBy('loanRuleId');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

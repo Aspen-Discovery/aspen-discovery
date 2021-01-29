@@ -15,9 +15,10 @@ class Admin_IPAddresses extends ObjectEditor
 	function getPageTitle(){
 		return 'Location IP Addresses';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new IPAddress();
 		$object->orderBy('ip');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

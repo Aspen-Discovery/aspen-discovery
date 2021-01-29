@@ -19,9 +19,10 @@ class Admin_LayoutSettings extends ObjectEditor
 	function canDelete(){
 		return UserAccount::userHasPermission('Administer All Layout Settings');
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new LayoutSetting();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Layout Settings')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$object->id = $library->layoutSettingId;

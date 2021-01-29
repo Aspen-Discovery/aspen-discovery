@@ -14,18 +14,20 @@ class Admin_Libraries extends ObjectEditor
 	function getPageTitle(){
 		return 'Library Systems';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$libraryList = array();
 
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasPermission('Administer All Libraries')){
 			$library = new Library();
 			$library->orderBy('subdomain');
+			$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 			$library->find();
 			while ($library->fetch()){
 				$libraryList[$library->libraryId] = clone $library;
 			}
 		}else{
+			//This doesn't need pagination since there should only be one
 			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
 			$libraryList[$patronLibrary->libraryId] = clone $patronLibrary;
 		}
@@ -80,7 +82,7 @@ class Admin_Libraries extends ObjectEditor
 			header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 		}else{
 			//Prompt user for the library to copy from
-			$allLibraries = $this->getAllObjects();
+			$allLibraries = $this->getAllObjects(1, 5000);
 
 			unset($allLibraries[$libraryId]);
 			foreach ($allLibraries as $key => $library){

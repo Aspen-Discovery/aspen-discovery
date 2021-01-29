@@ -26,9 +26,10 @@ class RBdigital_Settings extends ObjectEditor
 		return 'RBdigital Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new RBdigitalSetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

@@ -24,10 +24,11 @@ class WebBuilder_WebResources extends ObjectEditor
 		return 'Library Resources';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new WebResource();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

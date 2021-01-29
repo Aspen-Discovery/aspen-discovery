@@ -14,10 +14,11 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 	function getPageTitle(){
 		return 'Claims of Authorship for Archive Materials';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$object = new ClaimAuthorshipRequest();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasPermission('View Archive Authorship Claims')){
 			$homeLibrary = $user->getHomeLibrary();

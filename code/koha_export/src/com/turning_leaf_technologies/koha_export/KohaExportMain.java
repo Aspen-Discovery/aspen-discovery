@@ -8,14 +8,12 @@ import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
-import org.marc4j.MarcPermissiveStreamReader;
-import org.marc4j.MarcStreamWriter;
-import org.marc4j.MarcWriter;
-import org.marc4j.MarcXmlReader;
+import org.marc4j.*;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
@@ -143,6 +141,8 @@ public class KohaExportMain {
 					updateNovelist(dbConn, kohaConn);
 
 					exportBookCovers(dbConn, kohaConn);
+
+					exportAuthorAuthorities(dbConn, kohaConn);
 				}
 
 				//Update works that have changed since the last index
@@ -199,6 +199,70 @@ public class KohaExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void exportAuthorAuthorities(Connection dbConn, Connection kohaConn) {
+		int numAuthoritiesExported = 0;
+		try{
+			//limit based on modification time
+			long curTime = new Date().getTime() / 1000;
+			Timestamp lastUpdateOfAuthorities = new Timestamp(indexingProfile.getLastUpdateOfAuthorities() * 1000);
+			PreparedStatement getAuthorAuthoritiesStmt = kohaConn.prepareStatement("SELECT modification_time, authtypecode, marc from auth_header where authtypecode IN('PERSO_NAME', 'CORPO_NAME') AND modification_time >= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getAuthorAuthoritiesStmt.setTimestamp(1, lastUpdateOfAuthorities);
+			PreparedStatement addAuthorStmt = dbConn.prepareStatement("INSERT INTO author_authority (id, dateAdded, author) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement getAuthorIdStmt = dbConn.prepareStatement("SELECT id from author_authority where author = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement addAlternativeNameStmt = dbConn.prepareStatement("INSERT INTO author_authority_alternative (id, authorId, alternativeAuthor) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
+			ResultSet getAuthorAuthoritiesRS = getAuthorAuthoritiesStmt.executeQuery();
+			while (getAuthorAuthoritiesRS.next()){
+				String authTypeCode = getAuthorAuthoritiesRS.getString("authtypecode");
+				if (authTypeCode.equals("PERSO_NAME") || authTypeCode.equals("CORPO_NAME")) {
+					MarcReader catalogReader = new MarcStreamReader(getAuthorAuthoritiesRS.getBinaryStream("marc"), "UTF8");
+					if (catalogReader.hasNext()) {
+						Record marcRecord = catalogReader.next();
+						String author = MarcUtil.getFirstFieldVal(marcRecord, "100abcdq:110ab");
+						if (author != null) {
+							Set<String> alternativeNames = MarcUtil.getFieldList(marcRecord, "400abcdq:410ab");
+							if (alternativeNames.size() > 0) {
+								numAuthoritiesExported++;
+								getAuthorIdStmt.setString(1, author);
+								ResultSet getAuthorIdRS = getAuthorIdStmt.executeQuery();
+								long authorAuthorityId = 0;
+								if (getAuthorIdRS.next()){
+									authorAuthorityId = getAuthorIdRS.getLong("id");
+								}else {
+									addAuthorStmt.setLong(1, curTime);
+									addAuthorStmt.setString(2, author);
+									addAuthorStmt.executeUpdate();
+									ResultSet generatedIds = addAuthorStmt.getGeneratedKeys();
+									if (generatedIds.next()) {
+										authorAuthorityId = generatedIds.getLong(1);
+									}
+								}
+								getAuthorIdRS.close();
+								if (authorAuthorityId != 0) {
+									for (String alternativeName : alternativeNames) {
+										addAlternativeNameStmt.setLong(1, authorAuthorityId);
+										addAlternativeNameStmt.setString(2, alternativeName);
+										addAlternativeNameStmt.executeUpdate();
+									}
+								}else{
+									logEntry.incErrors("Did not get an author id in the author_authority table for " + author);
+								}
+							}
+						}
+					}
+				}
+			}
+			PreparedStatement updateLastUpdateOfAuthoritiesTimestampStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAuthorities = ? WHERE id = ? ");
+			updateLastUpdateOfAuthoritiesTimestampStmt.setLong(1, curTime);
+			updateLastUpdateOfAuthoritiesTimestampStmt.setLong(2, indexingProfile.getId());
+			updateLastUpdateOfAuthoritiesTimestampStmt.executeUpdate();
+		}catch (SQLException e){
+			logEntry.incErrors("Error exporting author authorities", e);
+		}
+		if (numAuthoritiesExported > 0) {
+			logEntry.addNote("Exported " + numAuthoritiesExported + " author authorities from Koha");
+		}
 	}
 
 	private static void exportBookCovers(Connection dbConn, Connection kohaConn) {

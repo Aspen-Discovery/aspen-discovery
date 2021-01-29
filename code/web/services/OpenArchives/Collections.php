@@ -17,11 +17,12 @@ class OpenArchives_Collections extends ObjectEditor {
 	function getPageTitle(){
 		return 'Open Archives collections to include';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$object = new OpenArchivesCollection();
 		$object->orderBy('name asc');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
