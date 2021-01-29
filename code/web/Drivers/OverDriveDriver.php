@@ -1262,9 +1262,21 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	/**
 	 * @param OverDriveSetting $activeSetting
+	 * @param OverDriveScope $activeScope
 	 */
-	public function setSettings($activeSetting)
+	public function setSettings($activeSetting, $activeScope)
 	{
 		$this->settings = $activeSetting;
+		$this->scope = $activeScope;
+		if (empty($this->scope->clientKey)){
+			$this->clientKey = $this->settings->clientKey;
+		}else{
+			$this->clientKey = $this->scope->clientKey;
+		}
+		if (empty($this->scope->clientSecret)){
+			$this->clientSecret = $this->settings->clientSecret;
+		}else{
+			$this->clientSecret = $this->scope->clientSecret;
+		}
 	}
 }

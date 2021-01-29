@@ -7,6 +7,7 @@ class OverDrive_APIData extends Admin_Admin
 	function launch()
 	{
 		global $interface;
+		global $library;
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		$setting = new OverDriveSetting();
@@ -23,9 +24,30 @@ class OverDrive_APIData extends Admin_Admin
 		if (isset($_REQUEST['settingId'])){
 			$activeSetting = $allSettings[$_REQUEST['settingId']];
 		}else{
-			$activeSetting = reset($allSettings);
+			if ($library->overDriveScopeId > 0){
+				$activeSetting = $allSettings[$library->getOverdriveScope()->settingId];
+			}else {
+				$activeSetting = reset($allSettings);
+			}
 		}
-		$driver->setSettings($activeSetting);
+
+		$allScopes = $activeSetting->scopes;
+		$interface->assign('scopes', $allScopes);
+		$activeScope = null;
+		if (isset($_REQUEST['scopeId'])){
+			if (in_array($_REQUEST['scopeId'], $allScopes)){
+				$activeScope = $allScopes[$_REQUEST['scopeId']];
+			}
+		}
+		if (is_null($activeScope)){
+			if ($library->overDriveScopeId > 0 && in_array($library->overDriveScopeId, $allScopes)){
+				$activeScope = $allScopes[$library->overDriveScopeId];
+			}else{
+				$activeScope = reset($allScopes);
+			}
+		}
+
+		$driver->setSettings($activeSetting, $activeScope);
 		$interface->assign('selectedSettingId', $activeSetting->id);
 
 		$libraryInfo = $driver->getLibraryAccountInformation();
