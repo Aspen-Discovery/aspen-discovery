@@ -2618,38 +2618,13 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		global $configArray;
 		list($userLibrary, $payment, $purchaseUnits) = $this->createGenericOrder('msb');
-
 		$baseUrl = "https://msbpay.demo.gilacorp.com/"; // TODO: create a database variable
 		$paymentRequestUrl = $baseUrl . "NashvillePublicLibrary/"; // TODO: create a database variable
-		$paymentRequestUrl .= "?ReferenceID=".$purchaseUnits['custom_id'];
+		$paymentRequestUrl .= "?ReferenceID=".$payment->id;
 		$paymentRequestUrl .= "&PaymentType=CC";
 		$paymentRequestUrl .= "&TotalAmount=".$payment->totalPaid;
 		$paymentRequestUrl .= "&PaymentRedirectUrl=".$configArray['Site']['url'] . '/MyAccount/MSBReturn';
 		return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
-	}
-
-	/** @noinspection PhpUnused */
-	function completeMSBOrder()
-	{
-		$orderId = $_REQUEST['orderId'];
-		$patronId = $_REQUEST['patronId'];
-
-		//Get the order information
-		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
-		$payment = new UserPayment();
-		$payment->orderId = $orderId;
-		$payment->userId = $patronId;
-		if ($payment->find(true)) {
-			if ($payment->completed) {
-				return ['success' => false, 'message' => 'This payment has already been processed'];
-			} else {
-				$user = UserAccount::getActiveUserObj();
-				$patron = $user->getUserReferredTo($patronId);
-				return $patron->completeFinePayment($payment);
-			}
-		} else {
-			return ['success' => false, 'message' => 'Unable to find the order you processed, please visit the library with your receipt'];
-		}
 	}
 
 	/** @noinspection PhpUnused */

@@ -270,7 +270,7 @@ class sip2
 	}
 
 	/* Fee paid function should go here */
-	function msgFeePaid ($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '')
+	function msgFeePaid ($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = '')
 	{
 		/* Fee payment function (37) - untested */
 		/* Fee Types: */
@@ -308,7 +308,11 @@ class sip2
 		$this->_addFixedOption($curType, 3);
 		$this->_addVarOption('BV',$pmtAmount); /* due to currency format localization, it is up to the programmer to properly format their payment amount */
 		$this->_addVarOption('AO',$this->AO);
-		$this->_addVarOption('AA',$this->patron);
+		if (!empty($patronId)) {
+			$this->_addVarOption('AA',$patronId);
+		} else {
+			$this->_addVarOption('AA',$this->patron);
+		}
 		$this->_addVarOption('AC',$this->AC, true);
 //		$this->_addVarOption('AD',$this->patronpwd, true); // Patron password ignored in CarlX 9.6. Leave commented out until an Aspen ILS requires it.
 		$this->_addVarOption('CG',$feeId, true);

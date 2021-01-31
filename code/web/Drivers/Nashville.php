@@ -9,161 +9,42 @@ class Nashville extends CarlX {
 		parent::__construct($accountProfile);
 	}
 
-	public function completeFeePaidViaSIP($patronId, $pmtAmount, $feeId, $transId){
-			$mysip = new sip2();
-			$mysip->hostname = $this->accountProfile->sipHost;
-			$mysip->port = $this->accountProfile->sipPort;
-
-			$success = false;
-			$message = 'Failed to connect to complete requested action.';
-			if ($mysip->connect()) {
-				//send selfcheck status message
-				$in = $mysip->msgSCStatus();
-				$msg_result = $mysip->get_message($in);
-				// Make sure the response is 98 as expected
-				if (preg_match("/^98/", $msg_result)) {
-					$result = $mysip->parseACSStatusResponse($msg_result);
-
-					//  Use result to populate SIP2 settings
-					// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
-					if (isset($result['variable']['AO'][0])){
-						$mysip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
-					}else{
-						$mysip->AO = 'NASH';
-					}
-					if (isset($result['variable']['AN'][0])) {
-						$mysip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
-					}else{
-						$mysip->AN = '';
-					}
-
-					$in = $mysip->msgFeePaid('','', $pmtAmount, '', $feeId, $transId);
-					//print_r($in . '<br/>');
-					$msg_result = $mysip->get_message($in);
-					//print_r($msg_result);
-
-					if (preg_match("/^30/", $msg_result)) {
-						$result = $mysip->parseFeePaidResponse($msg_result);
-						$success = ($result['fixed']['Ok'] == 1);
-						$message = $result['variable']['AF'][0];
-						$patronId = $result['variable']['AA'][0];
-						$transId = $result['variable']['BK'][0];
-						if (!$success) {
-							$message += "<li>Payment unsuccessful. Transaction ID $transId ; Fee ID $feeId. $message</li>";
-						}
-					}
-				}
-			}else{
-				$message = "Could not connect to circulation server, please try again later.";
-			}
-
-			return array(
-				'patronId' => $patronId,
-				'transId' => $transId,
-				'feeId'  => $feeId,
-				'success' => $success,
-				'message' => $message
-			);
-		}
-
 	public function completeFinePayment(User $patron, UserPayment $payment)
 	{
 		global $logger;
-		$result = [
-			'success' => false,
-			'message' => 'Unknown error completing fine payment'
-		];
-/*
-		$creditType = 'payment';
-
 		$accountLinesPaid = explode(',', $payment->finesPaid);
-		$partialPayments = [];
-		$fullyPaidTotal = $payment->totalPaid;
-		foreach ($accountLinesPaid as $index => $accountLinePaid){
-			if (strpos($accountLinePaid, '|')){
-				//Partial Payments are in the form of fineId|paymentAmount
-				$accountLineInfo = explode('|', $accountLinePaid);
-				$partialPayments[] = $accountLineInfo;
-				$fullyPaidTotal -= $accountLineInfo[1];
-				unset($accountLinesPaid[$index]);
-			}else{
-				$accountLinesPaid[$index] = (int)$accountLinePaid;
+		$user = new User();
+		$user->id = $payment->userId;
+		if ($user->find(true)) {
+			$patronId = $user->cat_username;
+		} else {
+			return ['success' => false, 'message' => 'User Payment ' . $payment->id . 'failed with Invalid Patron'];
+		}
+		$allPaymentsucceed = true;
+		foreach ($accountLinesPaid as $line) {
+			// MSB Payments are in the form of fineId|paymentAmount
+			list($feeId, $pmtAmount) = explode('|', $line);
+			$response = $this->feePaidViaSIP('01', '02', $pmtAmount, 'USD', $feeId, $payment->id, $patronId);
+			if ($response['success'] === false) {
+				$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
+				$allPaymentsucceed = false;
 			}
 		}
-
-		//Process everything that has been fully paid
-		$allPaymentsSucceed = true;
-
-		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}/account/credits";
-		if (count($accountLinesPaid) > 0) {
-			$postVariables = [
-				'account_lines_ids' => $accountLinesPaid,
-				'amount' => (float)$fullyPaidTotal,
-				'credit_type' => $creditType,
-				'payment_type' => $payment->paymentType,
-				'description' => 'Paid Online via Aspen Discovery',
-				'note' => $payment->paymentType,
-			];
-
-			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);
-
-			$response = completeFeePaidViaSIP($patronId, $pmtAmount, $feeId, $transId);
-
-			if ($this->apiCurlWrapper->getResponseCode() != 200) {
-				if (strlen($response) > 0) {
-					$jsonResponse = json_decode($response);
-					if ($jsonResponse) {
-						$result['message'] = $jsonResponse->errors[0]->message;
-					} else {
-						$result['message'] = $response;
-					}
-				} else {
-					$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
-					$logger->log("Unable to authenticate with Koha while completing fine payment response code: {$this->apiCurlWrapper->getResponseCode()}", Logger::LOG_ERROR);
-				}
-				$allPaymentsSucceed = false;
-			}
+		if ($allPaymentsucceed === false) {
+			$success = false;
+			$message = "MSB Payment CarlX update failed.";
+			$payment->completed = 9;
+			$body = "MSB Payment CarlX update failed for Payment Reference ID $payment->id . Refer to log for more detail.";
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
+			$mailer = new Mailer();
+			$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment CarlX update", $body);
+		} else {
+			$success = true;
+			$message = "MSB payment successfully recorded in CarlX.";
+			$payment->completed = 1;
 		}
-		if (count($partialPayments) > 0){
-			foreach ($partialPayments as $paymentInfo){
-				$postVariables = [
-					'account_lines_ids' => [(int)$paymentInfo[0]],
-					'amount' => (float)$paymentInfo[1],
-					'credit_type' => $creditType,
-					'payment_type' => $payment->paymentType,
-					'description' => 'Paid Online via Aspen Discovery',
-					'note' => $payment->paymentType,
-				];
-
-				$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);
-				if ($this->apiCurlWrapper->getResponseCode() != 200) {
-					if (!isset($result['message'])) {$result['message'] = '';}
-					if (strlen($response) > 0) {
-						$jsonResponse = json_decode($response);
-						if ($jsonResponse) {
-							$result['message'] .= $jsonResponse->errors[0]['message'];
-						} else {
-							$result['message'] .= $response;
-						}
-					} else {
-						$result['message'] .= "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
-						$logger->log("Error {$this->apiCurlWrapper->getResponseCode()} updating your payment", Logger::LOG_ERROR);
-					}
-					$allPaymentsSucceed = false;
-				}
-			}
-		}
-		if ($allPaymentsSucceed){
-			$result = [
-				'success' => true,
-				'message' => 'Your fines have been paid successfully, thank you.'
-			];
-		}
-
-		global $memCache;
-		$memCache->delete('koha_summary_' . $patron->id);
-		return $result;
-*/
+		$payment->update();
+		return ['success' => $success, 'message' => $message];
 	}
 
 	public function canPayFine($system){
@@ -172,6 +53,27 @@ class Nashville extends CarlX {
 			$canPayFine = true;
 		}
 		return $canPayFine;
+	}
+
+	protected function feePaidViaSIP($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = '') {
+		$mySip = $this->initSIPConnection();
+		if (!is_null($mySip)) {
+			$in = $mySip->msgFeePaid($feeType, $pmtType, $pmtAmount, $curType, $feeId, $transId, $patronId);
+			$msg_result = $mySip->get_message($in);
+			if (preg_match("/^38/", $msg_result)) {
+				$result = $mySip->parseFeePaidResponse($msg_result);
+				$success = ($result['fixed']['PaymentAccepted'] == 'Y');
+				$message = $result['variable']['AF'][0];
+				if (!$success) {
+					// $patron = $result['variable']['AA'][0];
+					$transaction = $result['variable']['BK'][0];
+					$message = empty($transaction) ? $message : $transaction . ": " . $message;
+				}
+			}
+			return ['success' => $success, 'message' => $message];
+		} else {
+			return ['success' => false, 'message' => ['text' => 'sip_connect_fail', 'defaultText' => 'Could not connect to circulation server, please try again later.']];
+		}
 	}
 
 	public function getFineSystem($branchId){
@@ -191,6 +93,38 @@ class Nashville extends CarlX {
 			return 'Emails/nashville-self-registration.tpl';
 		}else{
 			return;
+		}
+	}
+
+	protected function initSIPConnection() {
+		$mySip = new sip2();
+		$mySip->hostname = $this->accountProfile->sipHost;
+		$mySip->port = $this->accountProfile->sipPort;
+
+		if ($mySip->connect()) {
+			//send selfcheck status message
+			$in = $mySip->msgSCStatus();
+			$msg_result = $mySip->get_message($in);
+			// Make sure the response is 98 as expected
+			if (preg_match("/^98/", $msg_result)) {
+				$result = $mySip->parseACSStatusResponse($msg_result);
+
+				//  Use result to populate SIP2 setings
+				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
+				if (isset($result['variable']['AO'][0])) {
+					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+				} else {
+					$mySip->AO = 'NASH'; /* set AO to value returned */ // hardcoded for Nashville
+				}
+				if (isset($result['variable']['AN'][0])) {
+					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+				} else {
+					$mySip->AN = '';
+				}
+			}
+			return $mySip;
+		} else {
+			return null;
 		}
 	}
 
