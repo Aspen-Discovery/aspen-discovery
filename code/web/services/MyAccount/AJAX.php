@@ -2331,24 +2331,26 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	function createPayPalOrder()
+	function createGenericOrder($paymentType = '')
 	{
+		$transactionDate = time();
 		global $configArray;
+		$ils = $configArray['Catalog']['ils'];
 		$user = UserAccount::getLoggedInUser();
 		if ($user == null) {
-			return ['success' => false, 'message' => 'You must be logged in to pay fines, please login again.'];
+			return ['success' => false, 'message' => translate(['text' => 'payment_not_signed_in', 'defaultText' => 'You must be signed in to pay fines, please sign in.'])];
 		} else {
 			$patronId = $_REQUEST['patronId'];
 
 			$patron = $user->getUserReferredTo($patronId);
 
 			if ($patron == false) {
-				return ['success' => false, 'message' => 'Could not find the patron referred to, please try again.'];
+				return ['success' => false, 'message' => translate(['text' => 'payment_patron_not_found', 'defaultText' => 'Could not find the patron referred to, please try again.'])];
 			}
 			$userLibrary = $patron->getHomeLibrary();
 
 			if (empty($_REQUEST['selectedFine']) && $userLibrary->finesToPay != 0) {
-				return ['success' => false, 'message' => 'Select at least one fine to pay.'];
+				return ['success' => false, 'message' => translate(['text' => 'payment_none_selected', 'defaultText' => 'Select at least one fine to pay.'])];
 			}
 			if (isset($_REQUEST['selectedFine'])) {
 				$selectedFines = $_REQUEST['selectedFine'];
@@ -2364,7 +2366,7 @@ class MyAccount_AJAX extends JSON_Action
 
 			$currencyCode = 'USD';
 			$variables = new SystemVariables();
-			if ($variables->find(true)){
+			if ($variables->find(true)) {
 				$currencyCode = $variables->currencyCode;
 			}
 
@@ -2377,34 +2379,39 @@ class MyAccount_AJAX extends JSON_Action
 			foreach ($fines[$patronId] as $fine) {
 				$finePayment = 0;
 				$addToOrder = false;
-				if ($userLibrary->finesToPay == 0){
+				if ($userLibrary->finesToPay == 0) {
 					$addToOrder = true;
-				}else{
+				} else {
 					foreach ($selectedFines as $fineId => $status) {
 						if ($fine['fineId'] == $fineId) {
 							$addToOrder = true;
 						}
 					}
 				}
-				if ($addToOrder){
+				if ($addToOrder) {
 					$finePayment = 2;
 					if (!empty($finesPaid)) {
 						$finesPaid .= ',';
 					}
 					$fineId = $fine['fineId'];
 					$finesPaid .= $fineId;
-					if (isset($_REQUEST['amountToPay'][$fineId])){
+					if (isset($_REQUEST['amountToPay'][$fineId])) {
 						$fineAmount = $_REQUEST['amountToPay'][$fineId];
 						$maxFineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
-						if (!is_numeric($fineAmount) || $fineAmount <= 0 || $fineAmount > $maxFineAmount){
-							return ['success' => false, 'message' => translate(['text' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.'])];
+						if (!is_numeric($fineAmount) || $fineAmount <= 0 || $fineAmount > $maxFineAmount) {
+							return ['success' => false, 'message' => translate(['text' => 'payment_invalid_amount', 'defaultText' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.'])];
 						}
 						if ($fineAmount != $maxFineAmount) {
 							//Record this is a partially paid fine
 							$finesPaid .= '|' . $fineAmount;
 							$finePayment = 1;
+						} else {
+							if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount // this is not working to write the | $fineAmount 2021 01 27
+								$finesPaid .= '|' . $fineAmount;
+							}
 						}
-					}else{
+
+					} else {
 						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
 					}
 
@@ -2421,17 +2428,17 @@ class MyAccount_AJAX extends JSON_Action
 					$totalFines += $fineAmount;
 				}
 
-				if (!array_key_exists(strtolower($fine['type']), $finesPaidByType)){
+				if (!array_key_exists(strtolower($fine['type']), $finesPaidByType)) {
 					$finesPaidByType[strtolower($fine['type'])] = $finePayment;
-				}else{
+				} else {
 					if ($finePayment == 0) {
-						if ($finesPaidByType[strtolower($fine['type'])] >= 1){
+						if ($finesPaidByType[strtolower($fine['type'])] >= 1) {
 							$finesPaidByType[strtolower($fine['type'])] = 1;
 						}
-					}elseif ($finePayment == 1){
+					} elseif ($finePayment == 1) {
 						$finesPaidByType[strtolower($fine['type'])] = 1;
-					}elseif ($finePayment == 2){
-						if ($finesPaidByType[strtolower($fine['type'])] != 2){
+					} elseif ($finePayment == 2) {
+						if ($finesPaidByType[strtolower($fine['type'])] != 2) {
 							$finesPaidByType[strtolower($fine['type'])] = 1;
 						}
 					}
@@ -2439,23 +2446,23 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			//Determine if fines have been paid in the proper order
-			if (!empty($userLibrary->finePaymentOrder)){
+			if (!empty($userLibrary->finePaymentOrder)) {
 				$paymentOrder = explode('|', strtolower($userLibrary->finePaymentOrder));
 
 				//Add another category for everything else.
 				$paymentOrder[] = '!!other!!';
 				//Find the actual status for each category
 				$paymentOrder = array_flip($paymentOrder);
-				foreach ($paymentOrder as $paymentOrderKey => $value){
+				foreach ($paymentOrder as $paymentOrderKey => $value) {
 					//-1 indicates there are no fines for this type
 					$paymentOrder[$paymentOrderKey] = -1;
 				}
 
-				foreach ($finesPaidByType as $type => $finePayment){
-					if (array_key_exists($type, $paymentOrder)){
+				foreach ($finesPaidByType as $type => $finePayment) {
+					if (array_key_exists($type, $paymentOrder)) {
 						$paymentOrder[$type] = $finePayment;
-					}else{
-						if ($finePayment > $paymentOrder['!!other!!']){
+					} else {
+						if ($finePayment > $paymentOrder['!!other!!']) {
 							$paymentOrder['!!other!!'] = $finePayment;
 						}
 					}
@@ -2464,14 +2471,14 @@ class MyAccount_AJAX extends JSON_Action
 				//This is the order everything should be paid in.
 				//We want to check to be sure nothing is partially or fully paid if the previous status is not fully paid
 				$paymentKeys = array_keys($paymentOrder);
-				for ($i = 0; $i < count($paymentKeys) -1; $i++){
+				for ($i = 0; $i < count($paymentKeys) - 1; $i++) {
 					$lastPaymentType = $paymentKeys[$i];
 					$lastPaymentStatus = $paymentOrder[$lastPaymentType];
-					for ($j = $i + 1; $j < count($paymentKeys); $j++){
+					for ($j = $i + 1; $j < count($paymentKeys); $j++) {
 						$nextPaymentType = $paymentKeys[$j];
 						$nextPaymentStatus = $paymentOrder[$nextPaymentType];
 						//We have a problem if a lower priority fine is partially or fully paid and the higher priority is not fully paid
-						if ($lastPaymentStatus != -1 && $lastPaymentStatus != 2 && $nextPaymentStatus >= 1){
+						if ($lastPaymentStatus != -1 && $lastPaymentStatus != 2 && $nextPaymentStatus >= 1) {
 							return ['success' => false, 'message' => translate(['text' => 'bad_payment_order', 'defaultText' => 'You must pay all fines of type <strong>%1%</strong> before paying other types.', 1 => $lastPaymentType])];
 						}
 					}
@@ -2496,84 +2503,90 @@ class MyAccount_AJAX extends JSON_Action
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 			$payment = new UserPayment();
 			$payment->userId = $patronId;
-			$payment->paymentType = 'paypal';
 			$payment->completed = 0;
 			$payment->finesPaid = $finesPaid;
 			$payment->totalPaid = $totalFines;
+			$payment->paymentType = $paymentType;
+			$payment->transactionDate = $transactionDate;
 			$paymentId = $payment->insert();
-
 			$purchaseUnits['custom_id'] = $paymentId;
 
-			require_once ROOT_DIR . '/sys/CurlWrapper.php';
-			$payPalAuthRequest = new CurlWrapper();
-
-			//Connect to PayPal
-			if ($userLibrary->payPalSandboxMode == 1) {
-				$baseUrl = 'https://api.sandbox.paypal.com';
-			} else {
-				$baseUrl = 'https://api.paypal.com';
-			}
-
-			$clientId = $userLibrary->payPalClientId;
-			$clientSecret = $userLibrary->payPalClientSecret;
-
-			//Get the access token
-			$authInfo = base64_encode("$clientId:$clientSecret");
-			$payPalAuthRequest->addCustomHeaders([
-				"Accept: application/json",
-				"Accept-Language: en_US",
-				"Authorization: Basic $authInfo"
-			], true);
-			$postParams = [
-				'grant_type' => 'client_credentials',
-			];
-
-			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
-			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
-			$accessTokenResults = json_decode($accessTokenResults);
-			if (empty($accessTokenResults->access_token)) {
-				return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
-			} else {
-				$accessToken = $accessTokenResults->access_token;
-			}
-
-			//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
-			$payPalPaymentRequest = new CurlWrapper();
-			$payPalPaymentRequest->addCustomHeaders([
-				"Accept: application/json",
-				"Content-Type: application/json",
-				"Accept-Language: en_US",
-				"Authorization: Bearer $accessToken"
-			], false);
-			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders';
-			$paymentRequestBody = [
-				'intent' => 'CAPTURE',
-				'application_context' => [
-					'brand_name' => $userLibrary->displayName,
-					'locale' => 'en-US',
-					'shipping_preferences' => 'NO_SHIPPING',
-					'user_action' => 'PAY_NOW',
-					'return_url' => $configArray['Site']['url'] . '/MyAccount/PayPalReturn',
-					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines'
-				],
-				'purchase_units' => [
-					0 => $purchaseUnits,
-				]
-			];
-
-			$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
-			$paymentResponse = json_decode($paymentResponse);
-
-			if ($paymentResponse->status != 'CREATED') {
-				return ['success' => false, 'message' => 'Unable to create your order in PayPal.'];
-			}
-
-			//Log the request in the database so we can validate it on return
-			$payment->orderId = $paymentResponse->id;
-			$payment->update();
-
-			return ['success' => true, 'orderInfo' => $paymentResponse, 'orderID' => $paymentResponse->id];
+			return [$userLibrary, $payment, $purchaseUnits];
 		}
+	}
+
+	function createPayPalOrder(){
+		global $configArray;
+		list($userLibrary, $payment, $purchaseUnits) = $this->createGenericOrder('paypal');
+
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$payPalAuthRequest = new CurlWrapper();
+		//Connect to PayPal
+		if ($userLibrary->payPalSandboxMode == 1) {
+			$baseUrl = 'https://api.sandbox.paypal.com';
+		} else {
+			$baseUrl = 'https://api.paypal.com';
+		}
+
+		$clientId = $userLibrary->payPalClientId;
+		$clientSecret = $userLibrary->payPalClientSecret;
+
+		//Get the access token
+		$authInfo = base64_encode("$clientId:$clientSecret");
+		$payPalAuthRequest->addCustomHeaders([
+			"Accept: application/json",
+			"Accept-Language: en_US",
+			"Authorization: Basic $authInfo"
+		], true);
+		$postParams = [
+			'grant_type' => 'client_credentials',
+		];
+
+		$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
+		$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
+		$accessTokenResults = json_decode($accessTokenResults);
+		if (empty($accessTokenResults->access_token)) {
+			return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
+		} else {
+			$accessToken = $accessTokenResults->access_token;
+		}
+
+		//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
+		$payPalPaymentRequest = new CurlWrapper();
+		$payPalPaymentRequest->addCustomHeaders([
+			"Accept: application/json",
+			"Content-Type: application/json",
+			"Accept-Language: en_US",
+			"Authorization: Bearer $accessToken"
+		], false);
+		$paymentRequestUrl = $baseUrl . '/v2/checkout/orders';
+		$paymentRequestBody = [
+			'intent' => 'CAPTURE',
+			'application_context' => [
+				'brand_name' => $userLibrary->displayName,
+				'locale' => 'en-US',
+				'shipping_preferences' => 'NO_SHIPPING',
+				'user_action' => 'PAY_NOW',
+				'return_url' => $configArray['Site']['url'] . '/MyAccount/PayPalReturn',
+				'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines'
+			],
+			'purchase_units' => [
+				0 => $purchaseUnits,
+			]
+		];
+
+		$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
+		$paymentResponse = json_decode($paymentResponse);
+
+		if ($paymentResponse->status != 'CREATED') {
+			return ['success' => false, 'message' => 'Unable to create your order in PayPal.'];
+		}
+
+		//Log the request in the database so we can validate it on return
+		$payment->orderId = $paymentResponse->id;
+		$payment->update();
+
+		return ['success' => true, 'orderInfo' => $paymentResponse, 'orderID' => $paymentResponse->id];
 	}
 
 	/** @noinspection PhpUnused */
@@ -2598,6 +2611,20 @@ class MyAccount_AJAX extends JSON_Action
 		} else {
 			return ['success' => false, 'message' => 'Unable to find the order you processed, please visit the library with your receipt'];
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function createMSBOrder()
+	{
+		global $configArray;
+		list($userLibrary, $payment, $purchaseUnits) = $this->createGenericOrder('msb');
+		$baseUrl = "https://msbpay.demo.gilacorp.com/"; // TODO: create a database variable
+		$paymentRequestUrl = $baseUrl . "NashvillePublicLibrary/"; // TODO: create a database variable
+		$paymentRequestUrl .= "?ReferenceID=".$payment->id;
+		$paymentRequestUrl .= "&PaymentType=CC";
+		$paymentRequestUrl .= "&TotalAmount=".$payment->totalPaid;
+		$paymentRequestUrl .= "&PaymentRedirectUrl=".$configArray['Site']['url'] . '/MyAccount/MSBReturn';
+		return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
 	}
 
 	/** @noinspection PhpUnused */

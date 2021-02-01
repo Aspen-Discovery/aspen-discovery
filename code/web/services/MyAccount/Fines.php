@@ -9,6 +9,7 @@ class MyAccount_Fines extends MyAccount
 		global $interface;
 		global $configArray;
 
+// TODO: get account profile -> ils instead of config.ini
 		$ils = $configArray['Catalog']['ils'];
 		$interface->assign('showDate', $ils == 'Koha' || $ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony');
 		$interface->assign('showReason', true);
