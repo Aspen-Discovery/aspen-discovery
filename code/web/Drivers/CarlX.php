@@ -1323,7 +1323,7 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	public function canPayFine($system){
-		return '';
+		return true;
 	}
 
 	public function getFineSystem($branchId){

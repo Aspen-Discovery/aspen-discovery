@@ -68,7 +68,6 @@ class FineAPI extends Action
 						$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $body);
 						return ['success' => false, 'message' => 'MSB Payment does not equal Aspen expected payment'];
 					}
-					// TODO: ensure this gets the user
 					$user = new User();
 					$user->id = $payment->userId;
 					if ($user->find(true)){
