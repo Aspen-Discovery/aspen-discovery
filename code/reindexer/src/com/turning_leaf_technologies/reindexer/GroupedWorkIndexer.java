@@ -627,7 +627,7 @@ public class GroupedWorkIndexer {
 
 			//Write the record to Solr.
 			try {
-				SolrInputDocument inputDocument = groupedWork.getSolrDocument();
+				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
 				UpdateResponse response = updateServer.add(inputDocument);
 				if (response.getException() != null){
 					logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);

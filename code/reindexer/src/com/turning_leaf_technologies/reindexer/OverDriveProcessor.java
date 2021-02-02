@@ -273,6 +273,7 @@ class OverDriveProcessor {
 							}
 
 							long libraryId = availabilityRS.getLong("libraryId");
+							long settingId = availabilityRS.getLong("settingId");
 							boolean available = availabilityRS.getBoolean("available");
 
 							itemInfo.setFormat(primaryFormat);
@@ -306,7 +307,7 @@ class OverDriveProcessor {
 							boolean isKids = targetAudience.equals("Juvenile");
 							if (libraryId == -1) {
 								for (Scope scope : indexer.getScopes()) {
-									if (scope.isIncludeOverDriveCollection()) {
+									if (scope.isIncludeOverDriveCollection() && (scope.getOverDriveScope().getSettingId() == settingId)) {
 										//Check based on the audience as well
 										boolean okToInclude = false;
 										if (isAdult && scope.getOverDriveScope().isIncludeAdult()) {

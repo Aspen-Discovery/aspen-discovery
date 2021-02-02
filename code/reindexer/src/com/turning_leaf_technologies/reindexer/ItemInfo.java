@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
@@ -67,10 +68,6 @@ public class ItemInfo {
 
 	void setDetailedStatus(String detailedStatus) {
 		this.detailedStatus = detailedStatus;
-	}
-
-	public String getDetailedStatus(){
-		return this.detailedStatus;
 	}
 
 	public String getLocationCode() {
@@ -174,11 +171,15 @@ public class ItemInfo {
 
 	private static final SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
 	private String baseDetails = null;
-	String getDetails(){
+	String getDetails(BaseLogEntry logEntry){
 		if (baseDetails == null){
 			String formattedLastCheckinDate = "";
 			if (lastCheckinDate != null){
-				formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
+				try {
+					formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
+				}catch (Exception e){
+					logEntry.incErrors("Error formatting check in date for " + lastCheckinDate, e);
+				}
 			}
 			//Cache the part that doesn't change depending on the scope
 			baseDetails = recordInfo.getFullIdentifier() + "|" +
