@@ -80,17 +80,22 @@ class GroupedWorksSolrConnector extends Solr
 	 * Uses SOLR MLT Query Handler
 	 *
 	 * @access    public
+	 * @param $id
+	 * @param bool $availableOnly
+	 * @param bool $limitFormat
+	 * @param null $limit
+	 * @param null $fieldsToReturn
 	 * @return    array                            An array of query results
 	 *
-	 * @throws    object                        PEAR Error
-	 * @var     string $id The id to retrieve similar titles for
 	 */
-	function getMoreLikeThis($id)
+	function getMoreLikeThis($id, $availableOnly = false, $limitFormat = true, $limit = null, $fieldsToReturn = null)
 	{
-		global $configArray;
-		$originalResult = $this->getRecord($id, 'target_audience_full,target_audience_full,literary_form,language,isbn,upc,series');
+		$originalResult = $this->getRecord($id, 'target_audience_full,mpaa_rating,literary_form,language,isbn,upc,series');
 		// Query String Parameters
-		$options = array('q' => "id:$id", 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return);
+		if ($fieldsToReturn == null){
+			$fieldsToReturn = SearchObject_GroupedWorkSearcher::$fields_to_return;
+		}
+		$options = array('q' => "id:$id", 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => $fieldsToReturn);
 		if ($originalResult) {
 			$options['fq'] = array();
 			if (isset($originalResult['target_audience_full'])) {
@@ -111,6 +116,22 @@ class GroupedWorksSolrConnector extends Solr
 					$options['fq'][] = 'target_audience_full:"' . $originalResult['target_audience_full'] . '"';
 				}
 			}
+			if (isset($originalResult['mpaa_rating'])){
+				if (is_array($originalResult['mpaa_rating'])) {
+					$filter = '';
+					foreach ($originalResult['mpaa_rating'] as $rating) {
+						if (strlen($filter) > 0) {
+							$filter .= ' OR ';
+						}
+						$filter .= 'mpaa_rating:"' . $rating . '"';
+					}
+					if (strlen($filter) > 0) {
+						$options['fq'][] = "($filter)";
+					}
+				} else {
+					$options['fq'][] = 'mpaa_rating:"' . $originalResult['mpaa_rating'] . '"';
+				}
+			}
 			if (isset($originalResult['literary_form'])) {
 				if (is_array($originalResult['literary_form'])) {
 					$filter = '';
@@ -129,7 +150,7 @@ class GroupedWorksSolrConnector extends Solr
 					$options['fq'][] = 'literary_form:"' . $originalResult['literary_form'] . '"';
 				}
 			}
-			if (isset($originalResult['language'])) {
+			if (isset($originalResult['language']) && count($originalResult['language']) == 1) {
 				$options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
 			}
 			if (isset($originalResult['series'])) {
@@ -145,17 +166,31 @@ class GroupedWorksSolrConnector extends Solr
 				$searchLocation = null;
 			}
 		}
+		if ($availableOnly){
+			global $solrScope;
+			$options['fq'][] = "availability_toggle_{$solrScope}:available OR availability_toggle_{$solrScope}:available_online";
+		}
 
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
 		}
-		$boostFactors = $this->getBoostFactors($searchLibrary);
-		if ($configArray['Index']['enableBoosting']) {
-			$options['bf'] = $boostFactors;
+
+		if (UserAccount::isLoggedIn()){
+			$options['fq'][] = '-user_rating_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
 
-		$result = $this->_select('GET', $options, false, 'mlt');
+		$boostFactors = $this->getBoostFactors($searchLibrary);
+		if (!empty($boostFactors)) {
+			$options['bf'] = $boostFactors;
+		}
+		if ($limit != null && is_numeric($limit)){
+			$options['rows'] = $limit;
+		}
+
+		$result = $this->_select('POST', $options, false, 'mlt');
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
 		}
@@ -172,15 +207,13 @@ class GroupedWorksSolrConnector extends Solr
 	 * @access    public
 	 *
 	 * @param array[] $ids
-	 * @param string[] $notInterestedIds
 	 * @param string $fieldsToReturn
 	 * @param int $page
 	 * @param int $limit
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $notInterestedIds, $fieldsToReturn, $page = 1, $limit = 25)
+	function getMoreLikeThese($ids, $fieldsToReturn, $page = 1, $limit = 25)
 	{
-		global $configArray;
 		// Query String Parameters
 		$idString = '';
 		foreach ($ids as $index => $ratingInfo) {
@@ -197,20 +230,25 @@ class GroupedWorksSolrConnector extends Solr
 		$searchLocation = Location::getSearchLocation();
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
-		if (count($notInterestedIds) > 0) {
-			$notInterestedString = implode(' OR ', $notInterestedIds);
-			$options['fq'][] = "-id:($notInterestedString)";
+		if (UserAccount::isLoggedIn()){
+			$options['fq'][] = '-user_rating_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
+			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
+//		if (count($notInterestedIds) > 0) {
+//			$notInterestedString = implode(' OR ', $notInterestedIds);
+//			$options['fq'][] = "-id:($notInterestedString)";
+//		}
 		$options['fq'][] = "-id:($idString)";
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
 		}
 		$boostFactors = $this->getBoostFactors($searchLibrary);
-		if ($configArray['Index']['enableBoosting']) {
+		if (!empty($boostFactors)) {
 			$options['bf'] = $boostFactors;
 		}
 
-		$result = $this->_select('GET', $options, true, 'mlt');
+		$result = $this->_select('POST', $options, true, 'mlt');
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result);
 		}
@@ -359,5 +397,21 @@ class GroupedWorksSolrConnector extends Solr
 		}
 
 		return $filter;
+	}
+
+	protected function getHighlightOptions($fields, &$options){
+		global $solrScope;
+		$highlightFields = $fields . ",table_of_contents";
+		$highlightFields = str_replace(",related_record_ids_$solrScope", '', $highlightFields);
+		$highlightFields = str_replace(",related_items_$solrScope", '', $highlightFields);
+		$highlightFields = str_replace(",format_$solrScope", '', $highlightFields);
+		$highlightFields = str_replace(",format_category_$solrScope", '', $highlightFields);
+		$options['hl'] = 'true';
+		$options['hl.fl'] = $highlightFields;
+		$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
+		$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
+		$options['f.display_description.hl.fragsize'] = 50000;
+		$options['f.title_display.hl.fragsize'] = 1000;
+		$options['f.title_full.hl.fragsize'] = 1000;
 	}
 }

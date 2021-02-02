@@ -1,7 +1,7 @@
 {strip}
 	<div id="main-content" class="col-md-12">
 		<form name="archiveSubjects" method="post">
-			<h3>Archive Subjects</h3>
+			<h1>Archive Subjects</h1>
 			<div class="form-group">
 				<label for="subjectsToIgnore">Subjects to Ignore for Explore More</label>
 				<p class="help-block">These subjects will not be used when linking from the archive to the catalog or EBSCO.  Enter one subject per line.</p>

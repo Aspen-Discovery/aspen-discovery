@@ -3,7 +3,7 @@
 	<div id="{$wrapperId}" class="titleScrollerWrapper">
 		{if $showCollectionSpotlightTitle || $showViewMoreLink}
 			<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
-				{if $scrollerTitle}
+				{if $showCollectionSpotlightTitle && !empty($scrollerTitle)}
 					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
 				{/if}
 				{if $showViewMoreLink}
@@ -12,7 +12,7 @@
 			</div>
 		{/if}
 		<div id="titleScroller{$scrollerName}" class="titleScrollerBody">
-			<div class="scrollerButtonUp btn btn-primary" onclick="{$scrollerVariable}.scrollToLeft();"><i class="glyphicon glyphicon-chevron-up"></i></div>
+			<div class="scrollerButtonUp btn btn-primary" onclick="{$scrollerVariable}.scrollToLeft();" aria-label="Scroll Up"><i class="glyphicon glyphicon-chevron-up"></i></div>
 			<div class="scrollerBodyContainer">
 				<div class="scrollerBody" style="display:none"></div>
 				<div class="scrollerLoadingContainer">
@@ -20,7 +20,7 @@
 				</div>
 			</div>
 			<div class="clearer"></div>
-			<div class="scrollerButtonDown btn btn-primary" onclick="{$scrollerVariable}.scrollToRight();"><i class="glyphicon glyphicon-chevron-down"></i></div>
+			<div class="scrollerButtonDown btn btn-primary" onclick="{$scrollerVariable}.scrollToRight();" aria-label="Scroll Down"><i class="glyphicon glyphicon-chevron-down"></i></div>
 		</div>
 	</div>
 </div>

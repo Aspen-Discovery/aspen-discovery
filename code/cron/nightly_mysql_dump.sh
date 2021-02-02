@@ -58,8 +58,8 @@ fi
 echo "Dumping to $DUMPFOLDER"
 
 DATABASES="$DBNAME"
-DUMPOPT1="-u root --events"
-DUMPOPT2="-u root --events --single-transaction"
+DUMPOPT1="--defaults-file=/etc/my.cnf --events"
+DUMPOPT2="--defaults-file=/etc/my.cnf --events --single-transaction"
 
 #-------------------------------------------------------------------------
 # main loop
@@ -80,7 +80,7 @@ $LOG "~> exit code $?"
 for DB in $DATABASES
 do
   $LOG "~> dumping $DB database"
-  mysqldump $DUMPOPT2 $DB > $DUMPFOLDER/$DB.$DATE.sql
+  mysqldump $DUMPOPT2 --ignore-table=$DB.cached_values $DB > $DUMPFOLDER/$DB.$DATE.sql
   $LOG "~> exit code $?"
   $LOG "~> change permissions on dump file"
   chmod 400 $DUMPFOLDER/$DB.$DATE.sql

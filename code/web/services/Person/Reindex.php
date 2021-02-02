@@ -22,7 +22,10 @@ class Reindex extends Action{
 		}else{
 			echo(json_encode(array("success" => false, "error" => "Could not find a record with that id")));
 		}
-
 	}
 
+	function getBreadcrumbs()
+	{
+		return [];
+	}
 }

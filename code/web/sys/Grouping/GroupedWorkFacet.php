@@ -22,6 +22,7 @@ class GroupedWorkFacet extends FacetSetting {
 			"collection" => "Collection",
 			"rating_facet" => "Rating",
 			"publishDate" => "Publication Year",
+			"publishDateSort" => "Earliest Publication Year",
 			"format" => "Format",
 			"format_category" => "Format Category",
 			"econtent_source" => "E-Content Collection",
@@ -44,6 +45,7 @@ class GroupedWorkFacet extends FacetSetting {
 			"time_since_added" => "Added In The Last",
 			"callnumber-first" => "LC Call Number",
 			"awards_facet" => "Awards",
+			"shelf_location" => "Shelf Location",
 			"detailed_location" => "Detailed Location",
 			"lc_subject" => "LC Subject",
 			"bisac_subject" => "Bisac Subject",
@@ -52,6 +54,7 @@ class GroupedWorkFacet extends FacetSetting {
 			"accelerated_reader_point_value" => "AR Point Value",
 			"fountas_pinnell" => "Fountas &amp; Pinnell",
 			"series_facet" => "Series",
+			"publisherStr" => "Publisher"
 		);
 
 		asort($availableFacets);
@@ -60,7 +63,7 @@ class GroupedWorkFacet extends FacetSetting {
 
 	static function getObjectStructure($availableFacets = null){
 
-		$structure = array(
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
 			'facetName' => array('property'=>'facetName', 'type'=>'enum', 'label'=>'Facet', 'values' => empty($availableFacets) ? self::getAvailableFacets() : $availableFacets, 'description'=>'The facet to include'),
@@ -77,6 +80,5 @@ class GroupedWorkFacet extends FacetSetting {
 			'sortMode' => array('property'=>'sortMode', 'type'=>'enum', 'label'=>'Sort', 'values' => array('alphabetically' => 'Alphabetically', 'num_results' => 'By number of results'), 'description'=>'How the facet values should be sorted.', 'default'=>'num_results'),
 			'numEntriesToShowByDefault' => array('property'=>'numEntriesToShowByDefault', 'type'=>'integer', 'label'=>'Num Entries', 'description'=>'The number of values to show by default.', 'default' => '5'),
 		);
-		return $structure;
 	}
 }

@@ -1,5 +1,5 @@
 {strip}
-<div id="openArchivesResult{$resultIndex|escape}" class="resultsList row">
+<div id="webPageResult{$resultIndex|escape}" class="resultsList row">
 	{if $showCovers}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 			{if $disableCoverArt != 1}
@@ -25,17 +25,6 @@
 				{/if}
 			</div>
 		</div>
-
-		{if !empty($summSnippets)}
-			{foreach from=$summSnippets item=snippet}
-				<div class="row">
-					<div class="result-label col-tn-3 col-xs-3">{translate text=$snippet.caption} </div>
-					<div class="result-value col-tn-9 col-xs-9">
-						{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br />{/if}
-					</div>
-				</div>
-			{/foreach}
-		{/if}
 
 		{if !empty($website_name)}
 			<div class="row">
@@ -69,6 +58,25 @@
 				</div>
 			</div>
 		{/if}
+
+		{if !empty($summSnippets)}
+			{foreach from=$summSnippets item=snippet}
+				<div class="row">
+					<div class="result-label col-tn-3 col-xs-3">{translate text=$snippet.caption} </div>
+					<div class="result-value col-tn-9 col-xs-9">
+						{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br />{/if}
+					</div>
+				</div>
+			{/foreach}
+		{/if}
+
+		<div class="row">
+			<div class="col-xs-12">
+                {include file='Websites/result-tools-horizontal.tpl' ratingData=$summRating recordUrl=$summUrl showMoreInfo=true}
+                {* TODO: id & shortId shouldn't be needed to be specified here, otherwise need to note when used.
+					summTitle only used by cart div, which is disabled as of now. 12-28-2015 plb *}
+			</div>
+		</div>
 	</div>
 </div>
 {/strip}

@@ -103,7 +103,7 @@ public class StringUtils {
 
 	public static char convertStringToChar(String subfieldString) {
 		char subfield = ' ';
-		if (subfieldString.length() > 0) {
+		if (subfieldString != null && subfieldString.length() > 0) {
 			subfield = subfieldString.charAt(0);
 		}
 		return subfield;

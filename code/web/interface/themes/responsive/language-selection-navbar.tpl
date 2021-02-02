@@ -1,6 +1,6 @@
 {strip}
 	{if count($validLanguages) > 1}
-		<div id="language-selection-header" class="navbar navbar-skinny">
+		<div id="language-selection-header" class="navbar navbar-skinny" role="form">
 			<div id="language-selection-dropdown" class="pull-right form-inline">
 				<div class="form-group">
 					<select aria-label="{translate text="Select a language for the catalog" inAttribute=true}" id="selected-language" class="form-control-sm" onchange="return AspenDiscovery.setLanguage();">

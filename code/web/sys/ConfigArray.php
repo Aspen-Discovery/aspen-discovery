@@ -167,7 +167,6 @@ function readConfig()
 		$fullServerName = $_SERVER['aspen_server'];
 		//echo("Server name is set as server var $fullServerName\r\n");
 	} else {
-
 		if (isset($_SERVER['SERVER_NAME'])) {
 			//Run from browser
 			$fullServerName = $_SERVER['SERVER_NAME'];
@@ -216,7 +215,7 @@ function readConfig()
 	}
 	// @codeCoverageIgnoreEnd
 
-	// Set a instanceName so that memcache variables can be stored for a specific instance of Pika,
+	// Set a instanceName so that memcache variables can be stored for a specific instance of Aspen Discovery,
 	// rather than the $serverName will depend on the specific interface a user is browsing to.
 	$instanceName = parse_url($mainArray['Site']['url'], PHP_URL_HOST);
 	// Have to set the instanceName before the transformation of $mainArray['Site']['url'] below.
@@ -286,11 +285,16 @@ function updateConfigForScoping($configArray)
 		//echo("Getting active library from server variable " . $_SERVER['active_library']);
 		$Library = new Library();
 		$Library->subdomain = $_SERVER['active_library'];
-		$Library->find($_SERVER['active_library']);
+		$Library->find();
 		if ($Library->getNumResults() == 1) {
-			$Library->fetch();
-			$library = $Library;
-			$timer->logTime("found the library based on active_library server variable");
+			try {
+				$Library->fetch();
+				$library = $Library;
+				$timer->logTime("found the library based on active_library server variable");
+			}catch (Exception $e){
+				global $logger;
+				$logger->log("Error loading library $e", Logger::LOG_ALERT);
+			}
 		}
 	}
 	if ($library == null) {

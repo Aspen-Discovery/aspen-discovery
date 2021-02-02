@@ -6,9 +6,9 @@
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 				</div>
 			{/if}
-
-			{* Alternate Mobile MyAccount Menu *}
-			{include file="MyAccount/mobilePageHeader.tpl"}
+			{if !empty($accountMessages)}
+				{include file='systemMessages.tpl' messages=$accountMessages}
+			{/if}
 
 			<span class='availableHoldsNoticePlaceHolder'></span>
 
@@ -20,14 +20,10 @@
 {*				{include file="MyAccount/switch-linked-user-form.tpl" label="View Contact Information for" actionPath="/MyAccount/ContactInformation"}*}
 
 				{if !empty($profileUpdateErrors)}
-					{foreach from=$profileUpdateErrors item=errorMsg}
-						<div class="alert alert-danger">{$errorMsg}</div>
-					{/foreach}
+					<div class="alert alert-danger">{$profileUpdateErrors}</div>
 				{/if}
 				{if !empty($profileUpdateMessage)}
-					{foreach from=$profileUpdateMessage item=msg}
-						<div class="alert alert-success">{$msg}</div>
-					{/foreach}
+					<div class="alert alert-success">{$profileUpdateMessage}</div>
 				{/if}
 
 				{if !empty($patronUpdateForm)}
@@ -40,23 +36,7 @@
 							<div class="col-xs-4"><strong>{translate text='Full Name'}</strong></div>
 							<div class="col-xs-8">{$profile->_fullname|escape}</div>
 						</div>
-						{if $showUsernameField}
-							<div class="form-group">
-								<div class="col-xs-4"><label for="username">{translate text="alternat_username_label" defaultText="Username"}</label></div>
-								<div class="col-xs-8">
-									<input type="text" name="username" id="username" value="{if !is_numeric(trim($profile->_alt_username))}{$profile->_alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
-									<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
-									<div id="usernameHelp" style="display:none">
-										A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “Account Settings” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters).
-									</div>
-								</div>
-							</div>
-						{/if}
 						{if !$offline}
-							<div class="form-group">
-								<div class="col-xs-4"><strong>{translate text='Fines'}</strong></div>
-								<div class="col-xs-8">{$profile->_fines|escape}</div>
-							</div>
 							{if $barcodePin}
 							{* Only Display Barcode when the barcode is used as a username and not a password *}
 							<div class="form-group">
@@ -69,10 +49,6 @@
 								<div class="col-xs-8">{$profile->_expires|escape}</div>
 							</div>
 						{/if}
-						<div class="form-group">
-							<div class="col-xs-4"><strong>{translate text='Home Library'}</strong></div>
-							<div class="col-xs-8">{$profile->_homeLocation|escape}</div>
-						</div>
 						{if !$offline}
 							{* Don't show inputs for the Horizon ILS as updating those account settings has not been implemented in the Horizon Driver. *}
 							<div class="form-group">
@@ -124,8 +100,8 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="phone">{translate text='Primary Phone Number'}</label></div>
 								<div class="col-xs-8">
-									{if $edit && $canUpdateContactInfo && ($ils != 'Horizon')}
-										<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control{*{if $primaryTheme =='arlington'} //Keep for debugging*}{if $libraryName =='Arlington Public Library'} digits{/if}">
+									{if $edit && $canUpdateContactInfo && $canUpdatePhoneNumber && ($ils != 'Horizon')}
+										<input type="tel" name="phone" id="phone" value="{$profile->phone|replace:'### TEXT ONLY':''|replace:'TEXT ONLY':''|escape}" size="50" maxlength="75" class="form-control">
 									{else}
 										{$profile->phone|escape}
 									{/if}
@@ -134,7 +110,7 @@
 							{if $showWorkPhoneInProfile}
 								<div class="form-group">
 									<div class="col-xs-4"><label for="workPhone">{translate text='Work Phone Number'}</label></div>
-									<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
+									<div class="col-xs-8">{if $edit && $canUpdateContactInfo && $canUpdatePhoneNumber && $ils != 'Horizon'}<input name="workPhone" id="workPhone" value="{$profile->workPhone|escape}" size="50" maxlength="75" class="form-control">{else}{$profile->workPhone|escape}{/if}</div>
 								</div>
 							{/if}
 						{/if}
@@ -145,9 +121,9 @@
 								{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
 							</div>
 						</div>
-						{if $showPickupLocationInProfile}
+						{if $allowHomeLibraryUpdates}
 							<div class="form-group">
-								<div class="col-xs-4"><label for="pickupLocation" class="">{translate text='Pickup Location'}</label></div>
+								<div class="col-xs-4"><label for="pickupLocation" class="">{translate text='Home Library'}</label></div>
 								<div class="col-xs-8">
 									{if $edit == true && $canUpdateContactInfo == true}
 										<select name="pickupLocation" id="pickupLocation" class="form-control">
@@ -164,7 +140,7 @@
 									{/if}
 								</div>
 							</div>
-						{/if}
+						 {/if}
 
 						{if $showNoticeTypeInProfile}
 							<p class="alert alert-info">
@@ -173,17 +149,17 @@
 
 						{if $ils != 'CarlX'}
 							<div class="form-group">
-								<div class="col-xs-4"><strong>{translate text='Receive notices by'}:</strong></div>
+								<div class="col-xs-4"><strong>{translate text='Receive notices by'}</strong></div>
 								<div class="col-xs-8">
 									{if $edit == true && $canUpdateContactInfo == true}
 										<div class="btn-group btn-group-sm" data-toggle="buttons">
 											{if $treatPrintNoticesAsPhoneNotices}
-													{* Tell the User the notice is Phone even though in the ILS it will be print *}
-													{* MDN 2/24/2016 - If the user changes their notice preference, make it phone to be more accurate, but show as selected if either print or mail is shown *}
-													<label for="sendEmail" class="btn btn-sm btn-default {if $profile->_notices == 'a'}active{/if}"><input type="radio" value="p" id="sendEmail" name="notices" {if $profile->_notices == 'a' || $profile->_notices == 'p'}checked="checked"{/if}> {translate text="Telephone"}</label>
+												{* Tell the User the notice is Phone even though in the ILS it will be print *}
+												{* MDN 2/24/2016 - If the user changes their notice preference, make it phone to be more accurate, but show as selected if either print or mail is shown *}
+												<label for="sendEmail" class="btn btn-sm btn-default {if $profile->_notices == 'a'}active{/if}"><input type="radio" value="p" id="sendEmail" name="notices" {if $profile->_notices == 'a' || $profile->_notices == 'p'}checked="checked"{/if}> {translate text="Telephone"}</label>
 											{else}
-													<label for="noticesMail" class="btn btn-sm btn-default {if $profile->_notices == 'a'}active{/if}"><input type="radio" value="a" id="noticesMail" name="notices" {if $profile->_notices == 'a'}checked="checked"{/if}> {translate text="Postal Mail"}</label>
-													<label for="noticesTel" class="btn btn-sm btn-default {if $profile->_notices == 'p'}active{/if}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->_notices == 'p'}checked="checked"{/if}> {translate text="Telephone"}</label>
+												<label for="noticesMail" class="btn btn-sm btn-default {if $profile->_notices == 'a'}active{/if}"><input type="radio" value="a" id="noticesMail" name="notices" {if $profile->_notices == 'a'}checked="checked"{/if}> {translate text="Postal Mail"}</label>
+												<label for="noticesTel" class="btn btn-sm btn-default {if $profile->_notices == 'p'}active{/if}"><input type="radio" value="p" id="noticesTel" name="notices" {if $profile->_notices == 'p'}checked="checked"{/if}> {translate text="Telephone"}</label>
 											{/if}
 											<label for="noticesEmail" class="btn btn-sm btn-default {if $profile->_notices == 'z'}active{/if}"><input type="radio" value="z" id="noticesEmail" name="notices" {if $profile->_notices == 'z'}checked="checked"{/if}> {translate text="Email"}</label>
 										</div>
@@ -211,7 +187,7 @@
 							</div>
 
 							<div class="form-group">
-								<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
+								<div class="col-xs-4"><label for="emailReceiptFlag" class="">{translate text='Email receipts for checkouts and renewals'}</label></div>
 								<div class="col-xs-8">
 									{if $edit == true}
 										<input type="checkbox" name="emailReceiptFlag" id="emailReceiptFlag" {if $profile->_emailReceiptFlag==1}checked='checked'{/if} data-switch="">
@@ -334,7 +310,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
+				You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 			</div>
 		{/if}
 	</div>

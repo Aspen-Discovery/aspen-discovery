@@ -43,4 +43,4 @@
 	</div>
 
 	{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
-	</div>
+</div>

@@ -14,18 +14,20 @@ class Admin_Libraries extends ObjectEditor
 	function getPageTitle(){
 		return 'Library Systems';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$libraryList = array();
 
 		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('opacAdmin')){
+		if (UserAccount::userHasPermission('Administer All Libraries')){
 			$library = new Library();
 			$library->orderBy('subdomain');
+			$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 			$library->find();
 			while ($library->fetch()){
 				$libraryList[$library->libraryId] = clone $library;
 			}
-		}else if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager')){
+		}else{
+			//This doesn't need pagination since there should only be one
 			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
 			$libraryList[$patronLibrary->libraryId] = clone $patronLibrary;
 		}
@@ -34,7 +36,7 @@ class Admin_Libraries extends ObjectEditor
 	}
 	function getObjectStructure(){
 		$objectStructure = Library::getObjectStructure();
-		if (!UserAccount::userHasRole('opacAdmin')){
+		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			unset($objectStructure['isDefault']);
 		}
 		return $objectStructure;
@@ -45,14 +47,11 @@ class Admin_Libraries extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'libraryId';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager');
-	}
 	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin');
+		return UserAccount::userHasPermission('Administer All Libraries');
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
+		return UserAccount::userHasPermission('Administer All Libraries');
 	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
@@ -72,18 +71,18 @@ class Admin_Libraries extends ObjectEditor
 			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
 			$library->find(true);
 
-			$facetsToCopy = $libraryToCopyFrom->archiveSearchFacets;
+			$facetsToCopy = $libraryToCopyFrom->getArchiveSearchFacets();
 			foreach ($facetsToCopy as $facetKey => $facet){
 				$facet->libraryId = $libraryId;
 				$facet->id = null;
 				$facetsToCopy[$facetKey] = $facet;
 			}
-			$library->facets = $facetsToCopy;
+			$library->setArchiveSearchFacets($facetsToCopy);
 			$library->update();
 			header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 		}else{
 			//Prompt user for the library to copy from
-			$allLibraries = $this->getAllObjects();
+			$allLibraries = $this->getAllObjects(1, 5000);
 
 			unset($allLibraries[$libraryId]);
 			foreach ($allLibraries as $key => $library){
@@ -100,6 +99,7 @@ class Admin_Libraries extends ObjectEditor
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function resetArchiveSearchFacetsToDefault(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
@@ -109,7 +109,7 @@ class Admin_Libraries extends ObjectEditor
 
 			$defaultFacets = Library::getDefaultArchiveSearchFacets($libraryId);
 
-			$library->archiveSearchFacets = $defaultFacets;
+			$library->setArchiveSearchFacets($defaultFacets);
 			$library->update();
 
 			$_REQUEST['objectAction'] = 'edit';
@@ -117,6 +117,7 @@ class Admin_Libraries extends ObjectEditor
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 	}
 
+	/** @noinspection PhpUnused */
 	function resetArchiveMoreDetailsToDefault(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
@@ -127,7 +128,7 @@ class Admin_Libraries extends ObjectEditor
 			require_once ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php';
 			$defaultArchiveMoreDetailsOptions = LibraryArchiveMoreDetails::getDefaultOptions($libraryId);
 
-			$library->archiveMoreDetailsOptions = $defaultArchiveMoreDetailsOptions;
+			$library->setArchiveMoreDetailsOptions($defaultArchiveMoreDetailsOptions);
 			$library->update();
 
 			$_REQUEST['objectAction'] = 'edit';
@@ -135,6 +136,7 @@ class Admin_Libraries extends ObjectEditor
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 	}
 
+	/** @noinspection PhpUnused */
 	function defaultMaterialsRequestForm(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
@@ -143,7 +145,7 @@ class Admin_Libraries extends ObjectEditor
 			$library->clearMaterialsRequestFormFields();
 
 			$defaultFieldsToDisplay = MaterialsRequestFormFields::getDefaultFormFields($libraryId);
-			$library->materialsRequestFormFields = $defaultFieldsToDisplay;
+			$library->setMaterialsRequestFormFields($defaultFieldsToDisplay);
 			$library->update();
 		}
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
@@ -151,6 +153,7 @@ class Admin_Libraries extends ObjectEditor
 
 	}
 
+	/** @noinspection PhpUnused */
 	function defaultMaterialsRequestFormats(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
@@ -159,20 +162,21 @@ class Admin_Libraries extends ObjectEditor
 			$library->clearMaterialsRequestFormats();
 
 			$defaultMaterialsRequestFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats($libraryId);
-			$library->materialsRequestFormats = $defaultMaterialsRequestFormats;
+			$library->setMaterialsRequestFormats($defaultMaterialsRequestFormats);
 			$library->update();
 		}
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 		die();
 	}
 
+	/** @noinspection PhpUnused */
 	function defaultArchiveExploreMoreOptions(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
 		$library->libraryId = $libraryId;
 		if ($library->find(true)){
 			$library->clearExploreMoreBar();
-			$library->exploreMoreBar = ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions($libraryId);
+			$library->setExploreMoreBar(ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions($libraryId));
 			$library->update();
 		}
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
@@ -180,10 +184,29 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	function getInstructions(){
-		return '';
+		return '/Admin/HelpManual?page=Library-Systems';
 	}
 
 	function getInitializationJs(){
 		return 'return AspenDiscovery.Admin.updateMaterialsRequestFields();';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Libraries', 'Library Systems');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}
 }

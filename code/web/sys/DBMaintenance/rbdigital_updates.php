@@ -5,14 +5,6 @@
 
 function getRBdigitalUpdates() {
 	return array(
-		'variables_lastRBdigitalExport' => array(
-			'title' => 'Variables Last RBdigital Export Time',
-			'description' => 'Add a variable for when RBdigital data was extracted from the API last.',
-			'sql' => array(
-				"INSERT INTO variables (name, value) VALUES ('lastRBdigitalExport', 'false')",
-			),
-		),
-
 		'rbdigital_exportTables' => array(
 			'title' => 'RBdigital title tables',
 			'description' => 'Create tables to store data exported from RBdigital.',
@@ -206,5 +198,136 @@ function getRBdigitalUpdates() {
 				"ALTER TABLE rbdigital_settings ADD COLUMN allowPatronLookupByEmail TINYINT(1) DEFAULT 1"
 			]
 		],
+
+		'rbdigital_add_setting_to_scope' => [
+			'title' => 'Add settingId to RBdigital scope',
+			'description' => 'Allow multiple settings to be defined for RBdigital within a consortium',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE rbdigital_scopes ADD column settingId INT(11)',
+				'updateRbDigitalScopes'
+			]
+		],
+
+		'rbdigital_add_setting_to_log' => [
+			'title' => 'Add settingID to RBdigital log entry',
+			'description' => 'Define which settings are being logged',
+			'sql' => [
+				'ALTER table rbdigital_export_log ADD column settingId INT(11)'
+			]
+		],
+
+		'rbdigital_add_setting_to_availability' => [
+			'title' => 'Add settingID to RBdigital availability',
+			'description' => 'Define availability based on settings',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER table rbdigital_availability ADD column settingId INT(11)',
+				'updateRbDigitalAvailability',
+				'ALTER table rbdigital_availability DROP INDEX rbdigitalId',
+				'ALTER table rbdigital_availability ADD UNIQUE rbdigitalId(rbdigitalId, settingId)',
+			]
+		],
+
+		'rbdigital_issues_tables' => [
+			'title' => 'Setup RBdigital issues tables',
+			'description' => 'Setup tables to store issues information for RBdigital',
+			'sql' => [
+				'CREATE TABLE rbdigital_magazine_issue (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					magazineId int(11) NOT NULL, 
+					issueId int(11) NOT NULL,
+					imageUrl VARCHAR(255), 
+					publishedOn varchar(10), 
+					coverDate varchar(10)
+				) ENGINE=INNODB',
+				'ALTER TABLE rbdigital_magazine_issue ADD UNIQUE (magazineId, issueId)',
+				'CREATE TABLE rbdigital_magazine_issue_availability (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					issueId int(11) NOT NULL,
+					settingId int(11) NOT NULL,
+					isAvailable tinyint(1), 
+					isOwned tinyint(1), 
+					stateId int
+				) ENGINE=INNODB',
+				'ALTER TABLE rbdigital_magazine_issue_availability ADD UNIQUE (issueId, settingId)'
+			]
+		],
+
+		'rbdigital_issue_tracking' => [
+			'title' => 'Update RBdigital Tracking for Issues',
+			'description' => 'Update RBdigital Tracking for Issues',
+			'sql' => [
+				'ALTER TABLE rbdigital_magazine_usage ADD COLUMN issueId INT(11)',
+				"ALTER TABLE rbdigital_magazine_usage DROP INDEX magazineId",
+				"ALTER TABLE rbdigital_magazine_usage ADD INDEX (magazineId, issueId, year, month)",
+			]
+		],
+
+		'rbdigital_module_add_log' =>[
+			'title' => 'RBdigital add log info to module',
+			'description' => 'Add logging information to RBdigital module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/RBdigital/RBdigitalExportLogEntry.php', logClassName='RBdigitalExportLogEntry' WHERE name='RBdigital'",
+			]
+		],
+
+		'rbdigital_usage_add_instance' => [
+			'title' => 'RBdigital Usage - Instance Information',
+			'description' => 'Add Instance Information to RBdigital Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE rbdigital_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE rbdigital_record_usage DROP INDEX rbdigitalId',
+				'ALTER TABLE rbdigital_record_usage ADD UNIQUE INDEX (instance, rbdigitalId, year, month)',
+				'ALTER TABLE rbdigital_magazine_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE rbdigital_magazine_usage DROP INDEX magazineId',
+				'ALTER TABLE rbdigital_magazine_usage ADD UNIQUE INDEX (instance, magazineId, year, month)',
+				'ALTER TABLE user_rbdigital_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_rbdigital_usage DROP INDEX userId',
+				'ALTER TABLE user_rbdigital_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			]
+		],
 	);
+}
+
+/** @noinspection PhpUnused */
+function updateRbDigitalScopes(){
+	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
+	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
+	$rbDigitalSettings = new RBdigitalSetting();
+	if ($rbDigitalSettings->find(true)){
+		$rbDigitalScopes = new RBdigitalScope();
+		$rbDigitalScopes->find();
+		while ($rbDigitalScopes->fetch()){
+			$rbDigitalScopes->settingId = $rbDigitalSettings->id;
+			$rbDigitalScopes->update();
+		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function updateRbDigitalAvailability(&$update){
+	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
+	$rbDigitalSettings = new RBdigitalSetting();
+	if ($rbDigitalSettings->find(true)){
+		/** @var PDO $aspen_db */
+		global $aspen_db;
+
+		try {
+			$aspen_db->query("UPDATE rbdigital_availability set settingId = {$rbDigitalSettings->id}");
+			if (!isset($update['status'])) {
+				$update['status'] = 'Update succeeded';
+			}
+		} catch (PDOException $e) {
+			if (isset($update['continueOnError']) && $update['continueOnError']) {
+				if (!isset($update['status'])) {
+					$update['status'] = '';
+				}
+				$update['status'] .= 'Warning: ' . $e;
+			} else {
+				$update['status'] = 'Update failed ' . $e;
+			}
+		}
+	}
 }

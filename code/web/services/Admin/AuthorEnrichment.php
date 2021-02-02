@@ -15,9 +15,10 @@ class Admin_AuthorEnrichment extends ObjectEditor
 	function getPageTitle(){
 		return 'Author Enrichment';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new AuthorEnrichment();
 		$object->orderBy('authorName');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -34,14 +35,26 @@ class Admin_AuthorEnrichment extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging');
-	}
 	function getInstructions(){
-		return "";
-	}
-	function getListInstructions(){
-		return $this->getInstructions();
+		return '/Admin/HelpManual?page=Wikipedia';
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/AuthorEnrichment', 'Wikipedia Integration');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Wikipedia Integration');
+	}
 }

@@ -26,7 +26,7 @@ abstract class DataObject
 	private $__limitStart;
 	private $__limitCount;
 	protected $__lastQuery;
-	private $__lastError;
+	protected $__lastError;
 	private $__joins = [];
 	protected $__fetchingFromDB = false;
 
@@ -48,6 +48,14 @@ abstract class DataObject
 		}
 	}
 
+	function getPrimaryKeyValue(){
+		$primaryKeyProperty = $this->__primaryKey;
+		return $this->$primaryKeyProperty;
+	}
+
+	function getPrimaryKey(){
+		return $this->__primaryKey;
+	}
 	public function find($fetchFirst = false){
 		if (!isset($this->__table)) {
 			echo("Table not defined for class " . self::class);
@@ -60,7 +68,6 @@ abstract class DataObject
 			$this->__queryStmt = null;
 		}
 
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		$query = $this->getSelectQuery($aspen_db);
 		$this->__lastQuery = $query;
@@ -83,7 +90,11 @@ abstract class DataObject
 
 	public function fetch(){
 		$this->__fetchingFromDB = true;
-		$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
+		if ($this->__queryStmt == null){
+			return null;
+		}else{
+			$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
+		}
 		$this->clearRuntimeDataVariables();
 		$this->__fetchingFromDB = false;
 		return $return;
@@ -184,7 +195,6 @@ abstract class DataObject
 	}
 
 	public function insert(){
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -219,7 +229,7 @@ abstract class DataObject
 			}
 		}
 		$insertQuery .= '(' . $propertyNames . ') VALUES (' . $propertyValues . ');';
-		$response = $aspen_db->prepare($insertQuery)->execute();
+		$response = $aspen_db->exec($insertQuery);
 		$this->{$this->__primaryKey} = $aspen_db->lastInsertId();
 		return $response;
 	}
@@ -229,7 +239,6 @@ abstract class DataObject
 		if (empty($this->$primaryKey)){
 			return $this->insert();
 		}
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -262,7 +271,8 @@ abstract class DataObject
 		}
 		$updateQuery .= ' SET ' . $updates . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		$this->__lastQuery = $updateQuery;
-		$response = $aspen_db->prepare($updateQuery)->execute();
+		/** @noinspection PhpUnnecessaryLocalVariableInspection */
+		$response = $aspen_db->exec($updateQuery);
 		return $response;
 	}
 
@@ -276,7 +286,6 @@ abstract class DataObject
 	}
 
 	public function delete($useWhere = false){
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -290,8 +299,7 @@ abstract class DataObject
 			$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		}
 
-		$response = $aspen_db->prepare($deleteQuery)->execute();
-		return $response;
+		return $aspen_db->exec($deleteQuery);
 	}
 
 	public function limit($start, $count){
@@ -305,7 +313,6 @@ abstract class DataObject
 			die();
 		}
 
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -340,7 +347,6 @@ abstract class DataObject
 			die();
 		}
 
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -360,7 +366,6 @@ abstract class DataObject
 	}
 
 	public function escape($variable){
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		return $aspen_db->quote($variable);
 	}
@@ -375,7 +380,6 @@ abstract class DataObject
 	}
 
 	public function table(){
-		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		if (!isset($aspen_db)){
 			return false;
@@ -390,6 +394,10 @@ abstract class DataObject
 			$row = $results->fetchObject();
 		}
 		return $columns;
+	}
+
+	protected function setLastError($errorMessage) {
+		$this->__lastError = $errorMessage;
 	}
 
 	public function getLastError(){
@@ -439,7 +447,7 @@ abstract class DataObject
 		$properties = get_object_vars($this);
 		$where = '';
 		foreach ($properties as $name => $value) {
-			if ($value != null && $name[0] != '_') {
+			if ($value !== null && $name[0] != '_') {
 				if (strlen($where) != 0) {
 					$where .= ' AND ';
 				}
@@ -550,7 +558,6 @@ abstract class DataObject
 	protected function clearOneToManyOptions($oneToManyDBObjectClassName, $keyOther) {
 		/** @var DataObject $oneToManyDBObject */
 		$oneToManyDBObject = new $oneToManyDBObjectClassName();
-		/** @noinspection PhpUndefinedFieldInspection */
 		$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
 		$oneToManyDBObject->delete(true);
 	}
@@ -583,6 +590,9 @@ abstract class DataObject
 		}
 	}
 
+	/**
+	 * @return integer
+	 */
 	public function getNumResults()
 	{
 		return $this->__N;
@@ -613,5 +623,49 @@ abstract class DataObject
 			}
 		}
 		return $equal;
+	}
+
+	/**
+	 * @param string $propertyName
+	 * @param $newValue
+	 * @param array|null $propertyStructure
+	 *
+	 * @return boolean true if the property changed, or false if it did not
+	 * @noinspection PhpUnused
+	 */
+	public function setProperty($propertyName, $newValue, $propertyStructure){
+		$propertyChanged = $this->$propertyName != $newValue || (is_null($this->$propertyName) && !is_null($newValue));
+		if ($propertyChanged) {
+			$oldValue = $this->$propertyName;
+			$this->$propertyName = $newValue;
+			if ($propertyStructure != null && !empty($propertyStructure['forcesReindex'])){
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				SystemVariables::forceNightlyIndex();
+			}
+			//Add the change to the history
+			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+			$history = new DataObjectHistory();
+			$history->objectType = get_class($this);
+			$primaryKey = $this->__primaryKey;
+			if (!empty($this->$primaryKey)) {
+				if (strlen($oldValue) >= 65535){
+					$oldValue = 'Too long to track history';
+				}
+				if (strlen($newValue) >= 65535){
+					$newValue = 'Too long to track history';
+				}
+ 				$history->objectId = $this->$primaryKey;
+				$history->oldValue = $oldValue;
+				$history->propertyName = $propertyName;
+				$history->newValue = $newValue;
+				$history->changedBy = UserAccount::getActiveUserId();
+				$history->changeDate = time();
+				$history->insert();
+			}
+
+			return true;
+		}else{
+			return false;
+		}
 	}
 }

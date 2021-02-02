@@ -2,6 +2,11 @@
 
 require_once ROOT_DIR . '/Action.php';
 
+/**
+ * Class Suggest
+ *
+ * Used as part of Open Search
+ */
 class Suggest extends Action {
 
 	function launch()
@@ -16,5 +21,10 @@ class Suggest extends Action {
 
 		$results = $db->getSuggestion(strtolower(strip_tags($_GET['lookfor'])), 'title_sort', 10);
 		echo json_encode($results);
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

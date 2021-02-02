@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<schema name="Aspen Grouped Work Index" version="1.5">
+<schema name="Aspen Open Archives Index" version="1.5">
 	<types>
 		<fieldType name="unchanged_string" class="StrField"/> 
 		<fieldType name="integer" class="IntPointField"/>
@@ -95,6 +95,7 @@
 		<field name="relation" type="unchanged_string" indexed="true" stored="true" multiValued="true" required="false"/>
 		<field name="rights" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="false"/>
 		<field name="date" type="date" indexed="true" stored="true" multiValued="true" required="false"/>
+		<field name="scope_has_related_records" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
 
 		<!-- Field to get random titles -->
 		<dynamicField name="random*" type="random" indexed="true" stored="true"/>

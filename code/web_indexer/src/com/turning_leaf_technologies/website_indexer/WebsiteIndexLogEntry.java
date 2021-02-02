@@ -21,7 +21,7 @@ class WebsiteIndexLogEntry implements BaseLogEntry {
 	private int numErrors = 0;
 	private Logger logger;
 
-    WebsiteIndexLogEntry(String websiteName, Connection dbConn, Logger logger){
+	WebsiteIndexLogEntry(String websiteName, Connection dbConn, Logger logger){
 		this.logger = logger;
 		this.startTime = new Date();
 		this.websiteName = websiteName;
@@ -31,6 +31,7 @@ class WebsiteIndexLogEntry implements BaseLogEntry {
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
+		saveResults();
 	}
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -117,7 +118,17 @@ class WebsiteIndexLogEntry implements BaseLogEntry {
 		return numErrors > 0;
 	}
 
-	void incErrors() {
+	public void incErrors(String note) {
+		this.addNote("ERROR: " + note);
 		numErrors++;
+		this.saveResults();
+		logger.error(note);
+	}
+
+	public void incErrors(String note, Exception e){
+		this.addNote("ERROR: " + note + " " + e.toString());
+		numErrors++;
+		this.saveResults();
+		logger.error(note, e);
 	}
 }

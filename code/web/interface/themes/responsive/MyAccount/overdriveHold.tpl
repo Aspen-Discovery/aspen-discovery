@@ -7,11 +7,11 @@
 				<div class="{*col-xs-10 *}text-center">
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
-							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}" aria-hidden="true">
 								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 						{/if}
 					{/if}
 				</div>
@@ -63,7 +63,7 @@
 					<div class="row">
 						<div class="result-label col-tn-4">{translate text='Source'}</div>
 						<div class="col-tn-8 result-value">
-                            OverDrive
+							OverDrive
 						</div>
 					</div>
 
@@ -106,31 +106,16 @@
 						{* Unavailable hold *}
 						<div class="row">
 							{if $record.frozen}
-							    <div class="result-label col-tn-4">{translate text='Status'}</div>
-							    <div class="col-tn-8 result-value">
-							        <span class="frozenHold">{$record.status}</span>
-							    </div>
+								<div class="result-label col-tn-4">{translate text='Status'}</div>
+								<div class="col-tn-8 result-value">
+									<span class="frozenHold label label-warning">{$record.status|translate}</span>
+								</div>
 							{else}
 								<div class="result-label col-tn-4">{translate text='Position'}</div>
 								<div class="col-tn-8 result-value">
 									{translate text="%1% out of %2%" 1=$record.holdQueuePosition 2=$record.holdQueueLength}
 								</div>
 							{/if}
-						</div>
-						<div class="row">
-							<div class="result-label col-tn-4"><label for="autoCheckout_{$record.overDriveId}">{translate text='Automatically Checkout'}</label></div>
-                            <div class="col-tn-8 result-value">
-	                            <input type="checkbox" class="autoCheckout_{$record.overDriveId}" name="autoCheckout_{$record.overDriveId}" {if $record.autoCheckout}checked="checked"{/if} data-switch="" data-size="small">
-	                            <script type="text/javascript">
-		                            $(function(){ldelim}
-			                            $('.autoCheckout_{$record.overDriveId}').bootstrapSwitch()
-				                            .on('switchChange', function(e, data){ldelim}
-                                                AspenDiscovery.OverDrive.setAutoCheckoutForHold('{$record.userId}', '{$record.overDriveId}', data.value);
-			                                {rdelim}
-		                                );
-		                            {rdelim});
-	                            </script>
-							</div>
 						</div>
 					{/if}
 				</div>
@@ -139,18 +124,24 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
-							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-primary">{translate text="Checkout"}</button>
+							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-action">{translate text="Checkout"}</button>
 						{/if}
 						<button onclick="return AspenDiscovery.OverDrive.cancelOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
-                        {if $record.allowFreezeHolds}
-                            {if $record.frozen}
+						{if $record.allowFreezeHolds}
+							{if $record.frozen}
 								<button onclick="return AspenDiscovery.OverDrive.thawHold('{$record.userId}', '{$record.overDriveId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
-                            {elseif $record.canFreeze}
+							{elseif $record.canFreeze}
 								<button onclick="return AspenDiscovery.OverDrive.freezeHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
-                            {/if}
-                        {/if}
+							{/if}
+						{/if}
 					</div>
-
+					{if $showWhileYouWait}
+						<div class="btn-group btn-group-vertical btn-block">
+							{if !empty($record.groupedWorkId)}
+								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record.groupedWorkId}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait"}</button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>

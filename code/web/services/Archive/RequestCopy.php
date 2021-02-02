@@ -4,6 +4,8 @@
 require_once ROOT_DIR . '/sys/Archive/ArchiveRequest.php';
 require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 class Archive_RequestCopy extends Action{
+	/** @var IslandoraRecordDriver $requestedObject */
+	private $requestedObject;
 	function launch(){
 		global $configArray;
 		global $interface;
@@ -16,8 +18,8 @@ class Archive_RequestCopy extends Action{
 
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$archiveObject = FedoraUtils::getInstance()->getObject($pid);
-		$requestedObject = RecordDriverFactory::initRecordDriver($archiveObject);
-		$interface->assign('requestedObject', $requestedObject);
+		$this->requestedObject = RecordDriverFactory::initRecordDriver($archiveObject);
+		$interface->assign('requestedObject', $this->requestedObject);
 
 		//Find the owning library
 		$owningLibrary = new Library();
@@ -31,15 +33,8 @@ class Archive_RequestCopy extends Action{
 		$archiveRequestFields['pid']['default'] = $pid; // add pid to the form
 
 		if (isset($_REQUEST['submit'])) {
-			if (isset($configArray['ReCaptcha']['privateKey'])){
-				$privatekey = $configArray['ReCaptcha']['privateKey'];
-				$resp = recaptcha_check_answer ($privatekey,
-					$_SERVER["REMOTE_ADDR"],
-					$_POST["g-recaptcha-response"]);
-				$recaptchaValid = $resp->is_valid;
-			}else{
-				$recaptchaValid = true;
-			}
+			require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+			$recaptchaValid = RecaptchaSetting::validateRecaptcha();
 
 			if (!$recaptchaValid) {
 				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
@@ -70,7 +65,7 @@ class Archive_RequestCopy extends Action{
 					if ($owningLibrary->find(true) && $owningLibrary->getNumResults() == 1){
 						//Send a copy of the request to the proper administrator
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
-							$body .= $configArray['Site']['url'] . $requestedObject->getRecordUrl();
+							$body .= $configArray['Site']['url'] . $this->requestedObject->getRecordUrl();
 							require_once ROOT_DIR . '/sys/Email/Mailer.php';
 							$mail = new Mailer();
 							$subject = 'New Request for Copies of Archive Content';
@@ -111,12 +106,14 @@ class Archive_RequestCopy extends Action{
 		$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);
 
 		// Set up captcha to limit spam self registrations
-		if (isset($configArray['ReCaptcha']['publicKey'])) {
-			$recaptchaPublicKey = $configArray['ReCaptcha']['publicKey'];
-			$captchaCode        = recaptcha_get_html($recaptchaPublicKey);
+		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+		$recaptcha = new RecaptchaSetting();
+		if ($recaptcha->find(true) && !empty($recaptcha->publicKey)){
+			$captchaCode        = recaptcha_get_html($recaptcha->publicKey);
 			$interface->assign('captcha', $captchaCode);
 		}
 
+		$interface->assign('formLabel', 'Archival Material Copy Request');
 		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 		$interface->assign('requestForm', $fieldsForm);
 
@@ -126,7 +123,6 @@ class Archive_RequestCopy extends Action{
 	function insertObject($structure){
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-		/** @var DataObject $newObject */
 		$newObject = new ArchiveRequest();
 		//Check to see if we are getting default values from the
 		DataObjectUtil::updateFromUI($newObject, $structure);
@@ -141,8 +137,7 @@ class Archive_RequestCopy extends Action{
 					$errorDescription = 'Unknown error';
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
-				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
-				$logger->log(mysql_error(), Logger::LOG_DEBUG);
+				$_SESSION['lastError'] = "An error occurred inserting Archive Request <br/>{$errorDescription}";
 				return false;
 			}
 		} else {
@@ -153,5 +148,15 @@ class Archive_RequestCopy extends Action{
 			return false;
 		}
 		return $newObject;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		if (!empty($this->requestedObject)){
+			$breadcrumbs[] = new Breadcrumb($this->requestedObject->getRecordUrl(), $this->requestedObject->getTitle());
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Claim Authorship');
+		return $breadcrumbs;
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 require_once ROOT_DIR . '/sys/Recommend/RecommendationFactory.php';
 
 /**
@@ -40,6 +40,9 @@ abstract class SearchObject_BaseSearcher
 	// Used to pass hidden filter queries to Solr
 	protected $hiddenFilters = array();
 
+	//Limiters applied to the search
+	protected $limiters = array();
+
 	// STATS
 	protected $resultsTotal = 0;
 
@@ -50,8 +53,6 @@ abstract class SearchObject_BaseSearcher
 	// Facets information
 	protected $facetConfig;    // Array of valid facet fields=>labels
 	protected $facetOptions = array();
-	// Default Search Handler
-	protected $defaultIndex = null;
 	// Available sort options
 	protected $sortOptions = array();
 	// An ID number for saving/retrieving search
@@ -137,6 +138,8 @@ abstract class SearchObject_BaseSearcher
 		return $this->searchSource;
 	}
 
+	public abstract function getEngineName();
+
 	/**
 	 * @return array
 	 */
@@ -191,8 +194,6 @@ abstract class SearchObject_BaseSearcher
 			$field = count($this->filterList) + 1;
 		}
 
-		global $solrScope;
-
 		// Check for duplicates -- if it's not in the array, we can add it
 		if (!$this->hasFilter($field, $value)) {
 			if (!is_numeric($field)) {
@@ -206,35 +207,7 @@ abstract class SearchObject_BaseSearcher
 					$field = 'target_audience_full';
 				}
 
-				if ($solrScope) {
-					if ($field === 'availability_toggle') {
-						$field = 'availability_toggle_' . $solrScope;
-					} elseif ($field === 'format') {
-						$field = 'format_' . $solrScope;
-					} elseif ($field === 'format_category') {
-						$field = 'format_category_' . $solrScope;
-					} elseif ($field === 'econtent_source') {
-						$field = 'econtent_source_' . $solrScope;
-					} elseif ($field === 'econtent_protection_type') {
-						$field = 'econtent_protection_type_' . $solrScope;
-					} elseif (($field === 'collection') || ($field === 'collection_group')) {
-						$field = 'collection_' . $solrScope;
-					} elseif ($field === 'detailed_location') {
-						$field = 'detailed_location_' . $solrScope;
-					} elseif ($field === 'owning_location') {
-						$field = 'owning_location_' . $solrScope;
-					} elseif ($field === 'owning_system') {
-						$field = 'owning_system_' . $solrScope;
-					} elseif ($field === 'available_at') {
-						$field = 'available_at_' . $solrScope;
-					} elseif ($field === 'time_since_added') {
-						$field = 'local_time_since_added_' . $solrScope;
-					} elseif ($field === 'itype') {
-						$field = 'itype_' . $solrScope;
-					} elseif ($field === 'detailed_location') {
-						$field = 'detailed_location_' . $solrScope;
-					}
-				}
+				$field = $this->getScopedFieldName($field);
 			}
 
 			$this->filterList[$field][] = $value;
@@ -284,34 +257,8 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function getFacetLabel($field)
 	{
-		global $solrScope;
-
 		$shortField = $field;
-		if (strpos($shortField, 'availability_toggle_') === 0) {
-			$shortField = 'availability_toggle';
-		} elseif (strpos($shortField, 'format') === 0) {
-			$shortField = 'format';
-		} elseif (strpos($shortField, 'format_category') === 0) {
-			$shortField = 'format_category';
-		} elseif (strpos($shortField, 'econtent_source') === 0) {
-			$shortField = 'econtent_source';
-		} elseif (strpos($shortField, 'econtent_protection_type') === 0) {
-			$shortField = 'econtent_protection_type';
-		} elseif (strpos($shortField, 'detailed_location') === 0) {
-			$shortField = 'detailed_location';
-		} elseif (strpos($shortField, 'owning_location') === 0) {
-			$shortField = 'owning_location';
-		} elseif (strpos($shortField, 'owning_library') === 0) {
-			$shortField = 'owning_library';
-		} elseif (strpos($shortField, 'available_at') === 0) {
-			$shortField = 'available_at';
-		} elseif (strpos($shortField, 'collection') === 0 || strpos($shortField, 'collection_group') === 0) {
-			$shortField = 'collection';
-		} elseif (strpos($shortField, 'local_time_since_added') === 0) {
-			$shortField = 'local_time_since_added';
-		} elseif (strpos($shortField, 'itype') === 0) {
-			$shortField = 'itype';
-		}
+		$shortField = $this->getUnscopedFieldName($shortField);
 		$facetConfig = $this->getFacetConfig();
 		if (isset($facetConfig[$field])) {
 			$facetConfig = $facetConfig[$field];
@@ -580,10 +527,10 @@ abstract class SearchObject_BaseSearcher
 			if (!isset($_REQUEST['lookfor'])) {
 				return false;
 			} else {
-				$searchTerm = StringUtils::removeTrailingPunctuation($_REQUEST['lookfor']);
+				$searchTerm = StringUtils::removeTrailingPunctuation(trim($_REQUEST['lookfor']));
 			}
 		}else{
-			$searchTerm = StringUtils::removeTrailingPunctuation($searchTerm);
+			$searchTerm = StringUtils::removeTrailingPunctuation(trim($searchTerm));
 		}
 
 		// If no type defined use default
@@ -600,11 +547,11 @@ abstract class SearchObject_BaseSearcher
 			//The type should never have punctuation in it (quotes, colons, etc)
 			$type = preg_replace('/[:"\']/', '', $type);
 
-			if (!array_key_exists($type, $this->searchIndexes) && !array_key_exists($type, $this->advancedTypes)){
-				$type = $this->defaultIndex;
+			if (!array_key_exists($type, $this->getSearchIndexes()) && !array_key_exists($type, $this->advancedTypes)){
+				$type = $this->getDefaultIndex();
 			}
 		} else {
-			$type = $this->defaultIndex;
+			$type = $this->getDefaultIndex();
 		}
 
 		if (strpos($searchTerm, ':') > 0) {
@@ -717,7 +664,7 @@ abstract class SearchObject_BaseSearcher
 							);
 						}else {
 							$group[] = array(
-								'field' => $this->defaultIndex,
+								'field' => $this->getDefaultIndex(),
 								'lookfor' => str_replace(':', ' ', $_REQUEST['lookfor']),
 								'bool' => 'AND'
 							);
@@ -762,7 +709,7 @@ abstract class SearchObject_BaseSearcher
 						if (!empty($_REQUEST['type' . $groupCount][$i])) {
 							$type = strip_tags($_REQUEST['type' . $groupCount][$i]);
 						} else {
-							$type = $this->defaultIndex;
+							$type = $this->getDefaultIndex();
 						}
 
 						//Marmot - search both ISBN-10 and ISBN-13
@@ -792,11 +739,11 @@ abstract class SearchObject_BaseSearcher
 			}
 
 			// Finally, if every advanced row was empty
-			if (count($this->searchTerms) == 0) {
+			if (empty($this->searchTerms)) {
 				// Treat it as an empty basic search
 				$this->searchType = $this->basicSearchType;
 				$this->searchTerms[] = array(
-					'index' => $this->defaultIndex,
+					'index' => $this->getDefaultIndex(),
 					'lookfor' => ''
 				);
 			}
@@ -898,7 +845,7 @@ abstract class SearchObject_BaseSearcher
 			}
 		}
 		//Validate the sort to make sure it is correct.
-		if (!array_key_exists($this->sort, $this->sortOptions)) {
+		if (!array_key_exists($this->sort, $this->getSortOptions())) {
 			$this->sort = $this->defaultSort;
 		}
 	}
@@ -906,6 +853,22 @@ abstract class SearchObject_BaseSearcher
 	public function setSort($sort)
 	{
 		$this->sort = $sort;
+	}
+
+	protected function initLimiters(){
+		if (isset($_REQUEST['limiters'])){
+			if (is_array($_REQUEST['limiters'])) {
+				foreach ($_REQUEST['limiters'] as $limiter) {
+					if (!is_array($limiter)) {
+						list($limiterName, $limiterValue) = explode(':', strip_tags($limiter));
+						$this->limiters[$limiterName] = $limiterValue;
+					}
+				}
+			} else {
+				list($limiterName, $limiterValue) = explode(':', strip_tags($_REQUEST['limiters']));
+				$this->limiters[$limiterName] = $limiterValue;
+			}
+		}
 	}
 
 	/**
@@ -974,6 +937,12 @@ abstract class SearchObject_BaseSearcher
 						}
 					}
 				}
+			}
+		}
+
+		if (!empty($this->limiters)){
+			foreach ($this->limiters as $limit => $value){
+				$params[] = "limiters[]=$limit%3A$value";
 			}
 		}
 
@@ -1122,7 +1091,7 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	/**
-	 * Return a url for the current search with a new limit
+	 * Return a url for the current search with a new limit (number of results)
 	 *
 	 * @param string $newLimit The new limit
 	 *
@@ -1148,6 +1117,59 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	/**
+	 * Return a url for the current search with a new limiter (checkbox)
+	 *
+	 * @param string $newLimit The new limit
+	 *
+	 * @return string         URL of a new search
+	 * @access public
+	 */
+	public function renderLinkWithLimiter($newLimit)
+	{
+		// Stash our old data for a minute
+		$oldLimiters = $this->limiters;
+		$oldPage = $this->page;
+		// Add the new limit
+		$this->limiters[$newLimit] = 'y';
+		// Remove page number
+		$this->page = 1;
+		// Get the new url
+		$url = $this->renderSearchUrl();
+		// Restore the old data
+		$this->limiters = $oldLimiters;
+		$this->page = $oldPage;
+		// Return the URL
+		return $url;
+	}
+
+	/**
+	 * Return a url for the current search with a new limiter (checkbox)
+	 *
+	 * @param string $newLimit The new limit
+	 *
+	 * @return string         URL of a new search
+	 * @access public
+	 */
+	public function renderLinkWithoutLimiter($newLimit)
+	{
+		// Stash our old data for a minute
+		$oldLimiters = $this->limiters;
+		$oldPage = $this->page;
+		// Add the new limit
+		$this->limiters[$newLimit] = 'n';
+
+		// Remove page number
+		$this->page = 1;
+		// Get the new url
+		$url = $this->renderSearchUrl();
+		// Restore the old data
+		$this->limiters = $oldLimiters;
+		$this->page = $oldPage;
+		// Return the URL
+		return $url;
+	}
+
+	/**
 	 * Return a list of urls for possible limits, along with which option
 	 *    should be currently selected.
 	 *
@@ -1162,9 +1184,10 @@ abstract class SearchObject_BaseSearcher
 		if (is_array($valid) && count($valid) > 0) {
 			foreach ($valid as $limit) {
 				$list[$limit] = array(
-					'limitUrl' => $this->renderLinkWithLimit($limit),
-					'desc' => $limit,
-					'selected' => ($limit == $this->limit)
+					'url' => $this->renderLinkWithLimit($limit),
+					'display' => $limit,
+					'value' => $limit,
+					'isApplied' => ($limit == $this->limit)
 				);
 			}
 		}
@@ -1312,7 +1335,7 @@ abstract class SearchObject_BaseSearcher
 	public function setBasicQuery($query, $index = null)
 	{
 		if (is_null($index)) {
-			$index = $this->defaultIndex;
+			$index = $this->getDefaultIndex();
 		}
 		$this->searchTerms = array();
 		$this->searchTerms[] = array(
@@ -1442,9 +1465,7 @@ abstract class SearchObject_BaseSearcher
 	protected function minify()
 	{
 		// Clone this object as a minified object
-		$newObject = new minSO($this);
-		// Return the new object
-		return $newObject;
+		return new minSO($this);
 	}
 
 	/**
@@ -1609,8 +1630,7 @@ abstract class SearchObject_BaseSearcher
 			if ($search->session_id == $currentSessionId || $search->user_id == UserAccount::getActiveUserId()) {
 				// They do, deminify it to a new object.
 				$minSO = unserialize($search->search_object);
-				$savedSearch = SearchObjectFactory::deminify($minSO);
-				return $savedSearch;
+				return SearchObjectFactory::deminify($minSO);
 			} else {
 				// Just get out, we don't need to show an error
 				return null;
@@ -1625,12 +1645,14 @@ abstract class SearchObject_BaseSearcher
 	 * unable to load a requested saved search, return a AspenError object.
 	 *
 	 * @access  protected
+	 *
+	 * @var     string $searchId
+	 * @var     boolean $redirect
+	 * @var     boolean $forceReload
+	 *
 	 * @return  mixed               Does not return on successful load, returns
 	 *                              false if no search to restore, returns
 	 *                              AspenError object in case of trouble.
-	 * @var     boolean $redirect
-	 * @var     boolean $forceReload
-	 * @var     string $searchId
 	 */
 	public function restoreSavedSearch($searchId = null, $redirect = true, $forceReload = false)
 	{
@@ -2383,7 +2405,7 @@ abstract class SearchObject_BaseSearcher
 		$searchTerms = $this->searchTerms;
 
 		$searchString = isset($searchTerms[0]['lookfor']) ? $searchTerms[0]['lookfor'] : '';
-		$searchIndex =  isset($searchTerms[0]['index']) ? $searchTerms[0]['index'] : $this->defaultIndex;
+		$searchIndex =  isset($searchTerms[0]['index']) ? $searchTerms[0]['index'] : $this->getDefaultIndex();
 
 		$this->searchTerms = array(
 			array(
@@ -2496,9 +2518,28 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	abstract function getSearchName();
+	public abstract function getDefaultIndex();
 
 	abstract function loadValidFields();
 	abstract function loadDynamicFields();
+
+	/**
+	 * @param string $scopedFieldName
+	 * @return string
+	 */
+	protected function getUnscopedFieldName(string $scopedFieldName): string
+	{
+		return $scopedFieldName;
+	}
+
+	/**
+	 * @param $field
+	 * @return string
+	 */
+	protected function getScopedFieldName($field): string
+	{
+		return $field;
+	}
 }//End of SearchObject_Base
 
 /**

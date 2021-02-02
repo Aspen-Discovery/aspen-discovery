@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.grouping;
 
 import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -13,13 +14,13 @@ import java.util.*;
 import java.util.Date;
 
 public class RecordGroupingProcessor {
+	protected BaseLogEntry logEntry;
 	protected Logger logger;
 
 	private PreparedStatement insertGroupedWorkStmt;
 	private PreparedStatement groupedWorkForIdentifierStmt;
 	private PreparedStatement updateDateUpdatedForGroupedWorkStmt;
 	private PreparedStatement addPrimaryIdentifierForWorkStmt;
-	private PreparedStatement removePrimaryIdentifiersForWorkStmt;
 
 	private PreparedStatement getWorkForPrimaryIdentifierStmt;
 	private PreparedStatement getAdditionalPrimaryIdentifierForWorkStmt;
@@ -32,32 +33,21 @@ public class RecordGroupingProcessor {
 	private PreparedStatement updateNotInterestedStmt;
 	private PreparedStatement updateUserListEntriesStmt;
 	private PreparedStatement updateNovelistStmt;
+	private PreparedStatement updateDisplayInfoStmt;
 
-	private PreparedStatement getAuthorAuthorityStmt;
+	private PreparedStatement getAuthorAuthorityIdStmt;
+	private PreparedStatement getAuthoritativeAuthorStmt;
 	private PreparedStatement getTitleAuthorityStmt;
 
 	private PreparedStatement markWorkAsNeedingReindexStmt;
 
 	private PreparedStatement getWorkByAlternateTitleAuthorStmt;
 
-	private int numRecordsProcessed = 0;
-	private int numGroupedWorksAdded = 0;
-
-	private long startTime = new Date().getTime();
-
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 
 	//A list of grouped works that have been manually merged.
-	private HashMap<String, String> mergedGroupedWorks = new HashMap<>();
-	private HashSet<String> recordsToNotGroup = new HashSet<>();
-	private Long updateTime = new Date().getTime() / 1000;
-
-	/**
-	 * Default constructor for use by subclasses.  Should only be used within Record Grouping module
-	 */
-	RecordGroupingProcessor(Logger logger) {
-		this.logger = logger;
-	}
+	private final HashSet<String> recordsToNotGroup = new HashSet<>();
+	private final Long updateTime = new Date().getTime() / 1000;
 
 	/**
 	 * Creates a record grouping processor that saves results to the database.  For use from external extractors
@@ -66,14 +56,53 @@ public class RecordGroupingProcessor {
 	 * @param serverName   - The server we are grouping data for
 	 * @param logger       - A logger to store debug and error messages to.
 	 */
-	public RecordGroupingProcessor(Connection dbConnection, String serverName, Logger logger) {
+	public RecordGroupingProcessor(Connection dbConnection, String serverName, BaseLogEntry logEntry, Logger logger) {
 		this.logger = logger;
+		this.logEntry = logEntry;
 
 		setupDatabaseStatements(dbConnection);
 
 		loadTranslationMaps(serverName);
 
 		loadAuthorities(dbConnection);
+	}
+
+	public void close(){
+		translationMaps.clear();
+		recordsToNotGroup.clear();
+		updatedAndInsertedWorksThisRun.clear();
+		formatsWarned.clear();
+		try {
+			insertGroupedWorkStmt.close();
+			updateDateUpdatedForGroupedWorkStmt.close();
+			addPrimaryIdentifierForWorkStmt.close();
+			groupedWorkForIdentifierStmt.close();
+
+			getWorkForPrimaryIdentifierStmt.close();
+			deletePrimaryIdentifierStmt.close();
+			getAdditionalPrimaryIdentifierForWorkStmt.close();
+			getPermanentIdByWorkIdStmt.close();
+
+			getAuthorAuthorityIdStmt.close();
+			getAuthoritativeAuthorStmt.close();
+			getTitleAuthorityStmt.close();
+
+			getGroupedWorkIdByPermanentIdStmt.close();
+
+			updateRatingsStmt.close();
+			updateReadingHistoryStmt.close();
+			updateNotInterestedStmt.close();
+			updateUserListEntriesStmt.close();
+			updateNovelistStmt.close();
+			updateDisplayInfoStmt.close();
+
+			markWorkAsNeedingReindexStmt.close();
+
+			getWorkByAlternateTitleAuthorStmt.close();
+
+		} catch (Exception e) {
+			logEntry.incErrors("Error closing prepared statements in record grouping processor", e);
+		}
 	}
 
 	/**
@@ -110,7 +139,7 @@ public class RecordGroupingProcessor {
 				}
 			}//If not true, already deleted skip this
 		} catch (Exception e) {
-			logger.error("Error processing deleted bibs", e);
+			logEntry.incErrors("Error processing deleted bibs", e);
 		}
 		return result;
 	}
@@ -130,17 +159,16 @@ public class RecordGroupingProcessor {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error processing deleted bibs", e);
+			logEntry.incErrors("Error processing deleted bibs", e);
 		}
 		return permanentId;
 	}
 
 	void setupDatabaseStatements(Connection dbConnection) {
 		try {
-			insertGroupedWorkStmt = dbConnection.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
+			insertGroupedWorkStmt = dbConnection.prepareStatement("INSERT INTO grouped_work (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS);
 			updateDateUpdatedForGroupedWorkStmt = dbConnection.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
 			addPrimaryIdentifierForWorkStmt = dbConnection.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
-			removePrimaryIdentifiersForWorkStmt = dbConnection.prepareStatement("DELETE FROM grouped_work_primary_identifiers where grouped_work_id = ?");
 			groupedWorkForIdentifierStmt = dbConnection.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work inner join grouped_work_primary_identifiers on grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			getWorkForPrimaryIdentifierStmt = dbConnection.prepareStatement("SELECT grouped_work_primary_identifiers.id, grouped_work_primary_identifiers.grouped_work_id, permanent_id from grouped_work_primary_identifiers inner join grouped_work on grouped_work_id = grouped_work.id where type = ? and identifier = ?");
@@ -148,7 +176,8 @@ public class RecordGroupingProcessor {
 			getAdditionalPrimaryIdentifierForWorkStmt = dbConnection.prepareStatement("SELECT * from grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getPermanentIdByWorkIdStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-			getAuthorAuthorityStmt = dbConnection.prepareStatement("SELECT * from author_authorities where originalName = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getAuthorAuthorityIdStmt = dbConnection.prepareStatement("SELECT authorId from author_authority_alternative where normalized = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getAuthoritativeAuthorStmt = dbConnection.prepareStatement("SELECT normalized from author_authority where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getTitleAuthorityStmt = dbConnection.prepareStatement("SELECT * from title_authorities where originalName = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			getGroupedWorkIdByPermanentIdStmt = dbConnection.prepareStatement("SELECT id from grouped_work WHERE permanent_id = ?");
@@ -156,16 +185,17 @@ public class RecordGroupingProcessor {
 			updateRatingsStmt = dbConnection.prepareStatement("UPDATE user_work_review SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
 			updateReadingHistoryStmt = dbConnection.prepareStatement("UPDATE user_reading_history_work SET groupedWorkPermanentId = ? where groupedWorkPermanentId = ?");
 			updateNotInterestedStmt = dbConnection.prepareStatement("UPDATE user_not_interested SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
-			updateUserListEntriesStmt = dbConnection.prepareStatement("UPDATE user_list_entry SET groupedWorkPermanentId = ? where groupedWorkPermanentId = ?");
+			updateUserListEntriesStmt = dbConnection.prepareStatement("UPDATE user_list_entry SET sourceId = ? where sourceId = ? and source = 'GroupedWork'");
 			updateNovelistStmt = dbConnection.prepareStatement("UPDATE novelist_data SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
+			updateDisplayInfoStmt = dbConnection.prepareStatement("UPDATE grouped_work_display_info SET permanent_id = ? where permanent_id = ?");
 
 			markWorkAsNeedingReindexStmt = dbConnection.prepareStatement("INSERT into grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
-			PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * from merged_grouped_works");
-			ResultSet mergedWorksRS = loadMergedWorksStmt.executeQuery();
-			while (mergedWorksRS.next()) {
-				mergedGroupedWorks.put(mergedWorksRS.getString("sourceGroupedWorkId"), mergedWorksRS.getString("destinationGroupedWorkId"));
-			}
-			mergedWorksRS.close();
+//			PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * from merged_grouped_works");
+//			ResultSet mergedWorksRS = loadMergedWorksStmt.executeQuery();
+//			while (mergedWorksRS.next()) {
+//				mergedGroupedWorks.put(mergedWorksRS.getString("sourceGroupedWorkId"), mergedWorksRS.getString("destinationGroupedWorkId"));
+//			}
+//			mergedWorksRS.close();
 			PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
 			ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery();
 			while (nonGroupedRecordsRS.next()) {
@@ -173,12 +203,13 @@ public class RecordGroupingProcessor {
 				recordsToNotGroup.add(identifier.toLowerCase());
 			}
 			nonGroupedRecordsRS.close();
+			recordsToNotGroupStmt.close();
 
 			getWorkByAlternateTitleAuthorStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work_alternate_titles where alternateTitle = ? and alternateAuthor = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 
 		} catch (Exception e) {
-			logger.error("Error setting up prepared statements", e);
+			logEntry.incErrors("Error setting up prepared statements", e);
 		}
 	}
 
@@ -202,9 +233,9 @@ public class RecordGroupingProcessor {
 		String groupedWorkPermanentId = groupedWork.getPermanentId();
 
 		//Check to see if we are doing a manual merge of the work
-		if (mergedGroupedWorks.containsKey(groupedWorkPermanentId)) {
-			groupedWorkPermanentId = handleMergedWork(groupedWork, groupedWorkPermanentId);
-		}
+//		if (mergedGroupedWorks.containsKey(groupedWorkPermanentId)) {
+//			groupedWorkPermanentId = handleMergedWork(groupedWork, groupedWorkPermanentId);
+//		}
 
 		try {
 			//Check to see if we know the work based on the title and author through the merge process
@@ -215,7 +246,7 @@ public class RecordGroupingProcessor {
 				groupedWorkPermanentId = getWorkByAlternateTitleAuthorRS.getString("permanent_id");
 			}
 		} catch (SQLException e) {
-			logger.error("Error looking for grouped work by alternate title title = " + groupedWork.getTitle() + " author = " + groupedWork.getAuthor(), e);
+			logEntry.incErrors("Error looking for grouped work by alternate title title = " + groupedWork.getTitle() + " author = " + groupedWork.getAuthor(), e);
 		}
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
@@ -242,11 +273,10 @@ public class RecordGroupingProcessor {
 			}
 			groupedWorkForIdentifierRS.close();
 		} catch (SQLException e) {
-			logger.error("Error determining existing grouped work for identifier", e);
+			logEntry.incErrors("Error determining existing grouped work for identifier", e);
 		}
 
 		//Add the work to the database
-		numRecordsProcessed++;
 		long groupedWorkId = -1;
 		try {
 			getGroupedWorkIdByPermanentIdStmt.setString(1, groupedWorkPermanentId);
@@ -276,7 +306,6 @@ public class RecordGroupingProcessor {
 					groupedWorkId = generatedKeysRS.getLong(1);
 				}
 				generatedKeysRS.close();
-				numGroupedWorksAdded++;
 
 				updatedAndInsertedWorksThisRun.add(groupedWorkId);
 			}
@@ -284,7 +313,7 @@ public class RecordGroupingProcessor {
 			//Update identifiers
 			addPrimaryIdentifierForWorkToDB(groupedWorkId, primaryIdentifier);
 		} catch (Exception e) {
-			logger.error("Error adding grouped record to grouped work ", e);
+			logEntry.incErrors("Error adding grouped record to grouped work ", e);
 		}
 
 	}
@@ -312,7 +341,7 @@ public class RecordGroupingProcessor {
 						updateRatingsStmt.setString(2, oldPermanentId);
 						numUpdatedRatings = updateRatingsStmt.executeUpdate();
 					}catch (SQLException e){
-						logger.error("Error moving ratings");
+						logEntry.incErrors("Error moving ratings", e);
 					}
 
 					//Move reading history
@@ -322,7 +351,7 @@ public class RecordGroupingProcessor {
 						updateReadingHistoryStmt.setString(2, oldPermanentId);
 						numUpdatedReadingHistory = updateReadingHistoryStmt.executeUpdate();
 					}catch (SQLException e){
-						logger.error("Error moving reading history");
+						logEntry.incErrors("Error moving reading history", e);
 					}
 
 					//Update list entries
@@ -332,7 +361,7 @@ public class RecordGroupingProcessor {
 						updateUserListEntriesStmt.setString(2, oldPermanentId);
 						numUpdatedListEntries = updateUserListEntriesStmt.executeUpdate();
 					}catch (SQLException e){
-						logger.error("Error moving list entries");
+						logEntry.incErrors("Error moving list entries", e);
 					}
 
 					//User Not Interested
@@ -342,7 +371,7 @@ public class RecordGroupingProcessor {
 						updateNotInterestedStmt.setString(2, oldPermanentId);
 						numUpdatedNotInterested = updateNotInterestedStmt.executeUpdate();
 					}catch (SQLException e){
-						logger.error("Error moving not interested info");
+						logEntry.incErrors("Error moving not interested info", e);
 					}
 
 					//Novelist
@@ -352,55 +381,30 @@ public class RecordGroupingProcessor {
 						updateNovelistStmt.setString(2, oldPermanentId);
 						numUpdatedNovelist = updateNovelistStmt.executeUpdate();
 					}catch (SQLException e){
-						logger.error("Error moving not interested info");
+						logEntry.incErrors("Error moving novelist info", e);
 					}
 
-					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries, " + numUpdatedNovelist + " novelist entries");
+					//Display info
+					int numUpdatedDisplayInfo = 0;
+					try{
+						updateDisplayInfoStmt.setString(1, newPermanentId);
+						updateDisplayInfoStmt.setString(2, oldPermanentId);
+						numUpdatedDisplayInfo = updateDisplayInfoStmt.executeUpdate();
+					}catch (SQLException e){
+						logEntry.incErrors("Error moving display info", e);
+					}
+
+					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries, " + numUpdatedNovelist + " novelist entries, " + numUpdatedDisplayInfo + " display info entries");
 				}
 			}else{
-				logger.error("Could not find the id of the work when merging enrichment " + oldPermanentId);
+				logEntry.incErrors("Could not find the id of the work when merging enrichment " + oldPermanentId);
 			}
 		}catch (Exception e){
-			logger.error("Error moving enrichment", e);
+			logEntry.incErrors("Error moving enrichment", e);
 		}
 	}
 
-	private String handleMergedWork(GroupedWorkBase groupedWork, String groupedWorkPermanentId) {
-		//Handle the merge
-		String originalGroupedWorkPermanentId = groupedWorkPermanentId;
-		//Override the work id
-		groupedWorkPermanentId = mergedGroupedWorks.get(groupedWorkPermanentId);
-		groupedWork.overridePermanentId(groupedWorkPermanentId);
-
-		logger.debug("Overriding grouped work " + originalGroupedWorkPermanentId + " with " + groupedWorkPermanentId);
-
-		//Mark that the original was updated
-		try {
-			getGroupedWorkIdByPermanentIdStmt.setString(1, groupedWorkPermanentId);
-			ResultSet existingIdRS = getGroupedWorkIdByPermanentIdStmt.executeQuery();
-
-			if (existingIdRS.next()) {
-				//There is an existing grouped record
-				long originalGroupedWorkId = existingIdRS.getLong("id");
-
-				//Make sure we mark the original work as updated so it can be removed from the index next time around
-				markWorkAsNeedingReindexStmt.setString(1, originalGroupedWorkPermanentId);
-				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 120); //Give it a buffer to make sure it indexes again
-				markWorkAsNeedingReindexStmt.executeUpdate();
-
-				//move enrichment from the old id to the new if the new old no longer has any records
-				moveGroupedWorkEnrichment(originalGroupedWorkPermanentId, groupedWorkPermanentId);
-
-				removePrimaryIdentifiersForWorkStmt.setLong(1, originalGroupedWorkId);
-				removePrimaryIdentifiersForWorkStmt.executeUpdate();
-			}
-		} catch (SQLException e) {
-			logger.error("Error removing primary identifiers for merged work " + originalGroupedWorkPermanentId, e);
-		}
-		return groupedWorkPermanentId;
-	}
-
-	private HashSet<Long> updatedAndInsertedWorksThisRun = new HashSet<>();
+	private final HashSet<Long> updatedAndInsertedWorksThisRun = new HashSet<>();
 
 	private void markWorkUpdated(long groupedWorkId) {
 		//Optimize to not continually mark the same works as updated
@@ -411,7 +415,7 @@ public class RecordGroupingProcessor {
 				updateDateUpdatedForGroupedWorkStmt.executeUpdate();
 				updatedAndInsertedWorksThisRun.add(groupedWorkId);
 			} catch (Exception e) {
-				logger.error("Error updating date updated for grouped work ", e);
+				logEntry.incErrors("Error updating date updated for grouped work ", e);
 			}
 		}
 	}
@@ -430,7 +434,7 @@ public class RecordGroupingProcessor {
 			primaryIdentifier.setIdentifierId(primaryIdentifierRS.getLong(1));
 			primaryIdentifierRS.close();*/
 		} catch (SQLException e) {
-			logger.error("Error adding primary identifier to grouped work " + groupedWorkId + " " + primaryIdentifier.toString(), e);
+			logEntry.incErrors("Error adding primary identifier to grouped work " + groupedWorkId + " " + primaryIdentifier.toString(), e);
 		}
 	}
 
@@ -461,7 +465,7 @@ public class RecordGroupingProcessor {
 			groupedWork.setGroupingCategory(groupingCategory);
 		} else {
 			if (!formatsWarned.contains(format)) {
-				logger.error("Could not find format category for format " + format + " setting to book");
+				logEntry.incErrors("Could not find format category for format " + format + " setting to book");
 				groupedWork.setGroupingCategory("book");
 				formatsWarned.add(format);
 			}
@@ -472,7 +476,7 @@ public class RecordGroupingProcessor {
 	}
 
 
-	private static HashSet<String> formatsWarned = new HashSet<>();
+	private static final HashSet<String> formatsWarned = new HashSet<>();
 	static HashMap<String, String> formatsToFormatCategory = new HashMap<>();
 
 	static {
@@ -577,6 +581,7 @@ public class RecordGroupingProcessor {
 		formatsToFormatCategory.put("seedpacket", "other");
 		formatsToFormatCategory.put("magazine-overdrive", "ebook");
 		formatsToFormatCategory.put("magazine", "book");
+		formatsToFormatCategory.put("xps", "ebook");
 	}
 
 	static HashMap<String, String> categoryMap = new HashMap<>();
@@ -589,15 +594,6 @@ public class RecordGroupingProcessor {
 		categoryMap.put("music", "music");
 		categoryMap.put("movie", "movie");
 		categoryMap.put("movies", "movie");
-	}
-
-
-	void dumpStats() {
-		long totalElapsedTime = new Date().getTime() - startTime;
-		long totalElapsedMinutes = totalElapsedTime / (60 * 1000);
-		logger.debug("-----------------------------------------------------------");
-		logger.debug("Processed " + numRecordsProcessed + " records in " + totalElapsedMinutes + " minutes");
-		logger.debug("Created a total of " + numGroupedWorksAdded + " grouped works");
 	}
 
 	private void loadTranslationMaps(String serverName) {
@@ -629,7 +625,7 @@ public class RecordGroupingProcessor {
 		try {
 			props.load(new FileReader(translationMapFile));
 		} catch (IOException e) {
-			logger.error("Could not read translation map, " + translationMapFile.getAbsolutePath(), e);
+			logEntry.incErrors("Could not read translation map, " + translationMapFile.getAbsolutePath(), e);
 		}
 		HashMap<String, String> translationMap = new HashMap<>();
 		for (Object keyObj : props.keySet()) {
@@ -639,7 +635,7 @@ public class RecordGroupingProcessor {
 		return translationMap;
 	}
 
-	private HashSet<String> unableToTranslateWarnings = new HashSet<>();
+	private final HashSet<String> unableToTranslateWarnings = new HashSet<>();
 
 	String translateValue(@SuppressWarnings("SameParameterValue") String mapName, String value) {
 		value = value.toLowerCase();
@@ -647,7 +643,7 @@ public class RecordGroupingProcessor {
 		String translatedValue;
 		if (translationMap == null) {
 			if (!unableToTranslateWarnings.contains("unable_to_find_" + mapName)) {
-				logger.error("Unable to find translation map for " + mapName);
+				logEntry.incErrors("Unable to find translation map for " + mapName);
 				unableToTranslateWarnings.add("unable_to_find_" + mapName);
 			}
 
@@ -700,13 +696,13 @@ public class RecordGroupingProcessor {
 							addAuthorAuthorityStmt.setString(2, curLine[1]);
 							addAuthorAuthorityStmt.executeUpdate();
 						} catch (SQLException e) {
-							logger.error("Error adding authority " + curLine[0]);
+							logEntry.incErrors("Error adding authority " + curLine[0]);
 						}
 						curLine = csvReader.readNext();
 					}
 					csvReader.close();
 				} catch (IOException e) {
-					logger.error("Unable to load author authorities", e);
+					logEntry.incErrors("Unable to load author authorities", e);
 				}
 			}
 
@@ -730,31 +726,60 @@ public class RecordGroupingProcessor {
 							addTitleAuthorityStmt.setString(2, curLine[1]);
 							addTitleAuthorityStmt.executeUpdate();
 						} catch (SQLException e) {
-							logger.error("Error adding authority " + curLine[0]);
+							logEntry.incErrors("Error adding authority " + curLine[0]);
 						}
 						curLine = csvReader.readNext();
 					}
 					csvReader.close();
 				} catch (IOException e) {
-					logger.error("Unable to load title authorities", e);
+					logEntry.incErrors("Unable to load title authorities", e);
 				}
 			}
 		} catch (SQLException e) {
-			logger.error("Error loading authorities", e);
+			logEntry.incErrors("Error loading authorities", e);
 		}
 
+		//Normalize any authorities that have not been normalized yet.
+		try{
+			PreparedStatement getNonNormalizedAuthorsStmt = dbConn.prepareStatement("SELECT id, author FROM author_authority where normalized IS NULL or normalized = ''", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement setNormalizedAuthorStmt = dbConn.prepareStatement("UPDATE author_authority set normalized = ? where id = ?");
+			ResultSet getNonNormalizedAuthorsRS = getNonNormalizedAuthorsStmt.executeQuery();
+			while (getNonNormalizedAuthorsRS.next()){
+				String author = getNonNormalizedAuthorsRS.getString("author");
+				String normalizedAuthor = AuthorNormalizer.getNormalizedName(author);
+				setNormalizedAuthorStmt.setString(1, normalizedAuthor);
+				setNormalizedAuthorStmt.setLong(2, getNonNormalizedAuthorsRS.getLong("id"));
+				setNormalizedAuthorStmt.executeUpdate();
+			}
+			PreparedStatement getNonNormalizedAuthorAlternativesStmt = dbConn.prepareStatement("SELECT id, alternativeAuthor FROM author_authority_alternative where normalized IS NULL or normalized = ''", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement setNormalizedAlternativeAuthorStmt = dbConn.prepareStatement("UPDATE author_authority_alternative set normalized = ? where id = ?");
+			ResultSet getNonNormalizedAuthorAlternativesRS = getNonNormalizedAuthorAlternativesStmt.executeQuery();
+			while (getNonNormalizedAuthorAlternativesRS.next()){
+				String alternativeAuthor = getNonNormalizedAuthorAlternativesRS.getString("alternativeAuthor");
+				String normalizedAuthor = AuthorNormalizer.getNormalizedName(alternativeAuthor);
+				setNormalizedAlternativeAuthorStmt.setString(1, normalizedAuthor);
+				setNormalizedAlternativeAuthorStmt.setLong(2, getNonNormalizedAuthorAlternativesRS.getLong("id"));
+				setNormalizedAlternativeAuthorStmt.executeUpdate();
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error normalizing authorities", e);
+		}
 		logger.info("Done loading authorities");
 	}
 
 	String getAuthoritativeAuthor(String originalAuthor) {
 		try {
-			getAuthorAuthorityStmt.setString(1, originalAuthor);
-			ResultSet authorityRS = getAuthorAuthorityStmt.executeQuery();
+			getAuthorAuthorityIdStmt.setString(1, originalAuthor);
+			ResultSet authorityRS = getAuthorAuthorityIdStmt.executeQuery();
 			if (authorityRS.next()) {
-				return authorityRS.getString("authoritativeName");
+				getAuthoritativeAuthorStmt.setLong(1, authorityRS.getLong("authorId"));
+				ResultSet authoritativeAuthorRS = getAuthoritativeAuthorStmt.executeQuery();
+				if (authoritativeAuthorRS.next()) {
+					return authoritativeAuthorRS.getString("normalized");
+				}
 			}
 		} catch (SQLException e) {
-			logger.error("Error getting authoritative author", e);
+			logEntry.incErrors("Error getting authoritative author", e);
 		}
 		return originalAuthor;
 	}
@@ -767,8 +792,12 @@ public class RecordGroupingProcessor {
 				return authorityRS.getString("authoritativeName");
 			}
 		} catch (SQLException e) {
-			logger.error("Error getting authoritative title", e);
+			logEntry.incErrors("Error getting authoritative title", e);
 		}
 		return originalTitle;
+	}
+
+	BaseLogEntry getLogEntry(){
+		return this.logEntry;
 	}
 }

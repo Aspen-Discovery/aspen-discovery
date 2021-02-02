@@ -8,6 +8,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public $isValid = true;
 
+	/** @var SearchObject_GroupedWorkSearcher */
+	private static $recordLookupSearcher = null;
 	public function __construct($indexFields)
 	{
 		if (is_string($indexFields)) {
@@ -16,20 +18,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$id = str_replace('groupedWork:', '', $id);
 			//Just got a record id, let's load the full record from Solr
 			// Setup Search Engine Connection
-			/** @var SearchObject_GroupedWorkSearcher $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->disableScoping();
+			if (GroupedWorkDriver::$recordLookupSearcher == null){
+				GroupedWorkDriver::$recordLookupSearcher = SearchObjectFactory::initSearchObject();
+				GroupedWorkDriver::$recordLookupSearcher->disableScoping();
+			}
+
 			if (function_exists('disableErrorHandler')) {
 				disableErrorHandler();
 			}
 
 			// Retrieve the record from Solr
-			if (!($record = $searchObject->getRecord($id))) {
+			if (!($record = GroupedWorkDriver::$recordLookupSearcher->getRecord($id))) {
 				$this->isValid = false;
 			} else {
 				$this->fields = $record;
 			}
-			$searchObject->enableScoping();
 			if (function_exists('enableErrorHandler')) {
 				enableErrorHandler();
 			}
@@ -126,7 +129,15 @@ class GroupedWorkDriver extends IndexRecordDriver
 	static function compareEditionsForRecords($literaryForm, $a, $b)
 	{
 		//We only want to compare editions if the work is non-fiction
-		if ($literaryForm == 'Non Fiction') {
+		if ($a->format == 'eMagazine' && $b->format == 'eMagazine') {
+			if ($a->getShelfLocation() == $b->getShelfLocation()){
+				return 0;
+			} else if ($a->getShelfLocation() > $b->getShelfLocation()) {
+				return -1;
+			} else {
+				return 1;
+			}
+		}elseif ($literaryForm == 'Non Fiction') {
 			$editionA = GroupedWorkDriver::normalizeEdition($a->edition);
 			$editionB = GroupedWorkDriver::normalizeEdition($b->edition);
 			if ($editionA == $editionB) {
@@ -409,17 +420,17 @@ class GroupedWorkDriver extends IndexRecordDriver
 			} else {
 				require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
 				//Check for cached links
-				$samePikaCache = new IslandoraSamePikaCache();
-				$samePikaCache->groupedWorkId = $groupedWorkId;
+				$sameCatalogRecordCache = new IslandoraSamePikaCache();
+				$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
 				$foundLink = false;
-				if ($samePikaCache->find(true)) {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $samePikaCache->archiveLink;
-					$archiveLink = $samePikaCache->archiveLink;
+				if ($sameCatalogRecordCache->find(true)) {
+					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $sameCatalogRecordCache->archiveLink;
+					$archiveLink = $sameCatalogRecordCache->archiveLink;
 					$foundLink = true;
 				} else {
 					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = false;
-					$samePikaCache->archiveLink = '';
-					$samePikaCache->insert();
+					$sameCatalogRecordCache->archiveLink = '';
+					$sameCatalogRecordCache->insert();
 				}
 
 				if (!$foundLink || isset($_REQUEST['reload'])) {
@@ -444,15 +455,15 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 							$archiveLink = $firstObjectDriver->getRecordUrl();
 
-							$samePikaCache = new IslandoraSamePikaCache();
-							$samePikaCache->groupedWorkId = $groupedWorkId;
-							if ($samePikaCache->find(true) && $samePikaCache->archiveLink != $archiveLink) {
-								$samePikaCache->archiveLink = $archiveLink;
-								$samePikaCache->pid = $firstObjectDriver->getUniqueID();
-								$numUpdates = $samePikaCache->update();
+							$sameCatalogRecordCache = new IslandoraSamePikaCache();
+							$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
+							if ($sameCatalogRecordCache->find(true) && $sameCatalogRecordCache->archiveLink != $archiveLink) {
+								$sameCatalogRecordCache->archiveLink = $archiveLink;
+								$sameCatalogRecordCache->pid = $firstObjectDriver->getUniqueID();
+								$numUpdates = $sameCatalogRecordCache->update();
 								if ($numUpdates == 0) {
 									global $logger;
-									$logger->log("Did not update same pika cache " . print_r($samePikaCache->getLastError(), true), Logger::LOG_ERROR);
+									$logger->log("Did not update same catalog record cache " . print_r($sameCatalogRecordCache->getLastError(), true), Logger::LOG_ERROR);
 								}
 							}
 							GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
@@ -519,9 +530,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 		// Rating Settings
-		/** @var Library $library */
 		global $library;
-		/** @var Location $location */
 		global $location;
 		$browseCategoryRatingsMode = null;
 		if ($location) { // Try Location Setting
@@ -786,11 +795,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
-		// By default, do not display AJAX status; we won't assume that all
-		// records exist in the ILS.  Child classes can override this setting
-		// to turn on AJAX as needed:
-		$interface->assign('summAjaxStatus', false);
-
 		$interface->assign('recordDriver', $this);
 
 		return 'RecordDrivers/GroupedWork/combinedResult.tpl';
@@ -859,15 +863,23 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$contributorInfo = explode('|', $contributor);
 						$curContributor = array(
 							'name' => $contributorInfo[0],
-							'role' => $contributorInfo[1],
+							'roles' =>explode(',', $contributorInfo[1]),
 						);
+						ksort($curContributor['roles']);
 					} else {
 						$curContributor = array(
 							'name' => $contributor,
+							'roles' => []
 						);
 					}
-					$this->detailedContributors[] = $curContributor;
+					if (array_key_exists($curContributor['name'], $this->detailedContributors)){
+						$this->detailedContributors[$curContributor['name']]['roles'] = array_keys(array_merge(array_flip($this->detailedContributors[$curContributor['name']]['roles']), array_flip($curContributor['roles'])));
+						ksort($this->detailedContributors[$curContributor['name']]['roles']);
+					}else{
+						$this->detailedContributors[$curContributor['name']] = $curContributor;
+					}
 				}
+				ksort($this->detailedContributors);
 			}
 		}
 		return $this->detailedContributors;
@@ -1048,11 +1060,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return array();
-	}
-
 	public function getLexileCode()
 	{
 		return isset($this->fields['lexile_code']) ? $this->fields['lexile_code'] : null;
@@ -1089,13 +1096,12 @@ class GroupedWorkDriver extends IndexRecordDriver
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param object $user User object owning tag/note metadata.
 	 * @param int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true)
+	public function getListEntry($listId = null, $allowEdit = true)
 	{
 		global $configArray;
 		global $interface;
@@ -1152,26 +1158,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		$timer->logTime('Finished Loading Series');
 
-		//Get information from list entry
-		if ($listId) {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-			$listEntry = new UserListEntry();
-			$listEntry->groupedWorkPermanentId = $this->getUniqueID();
-			$listEntry->listId = $listId;
-			if ($listEntry->find(true)) {
-				$interface->assign('listEntryNotes', $listEntry->notes);
-			} else {
-				$interface->assign('listEntryNotes', '');
-			}
-			$interface->assign('listEditAllowed', $allowEdit);
-		}
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		// By default, do not display AJAX status; we won't assume that all
-		// records exist in the ILS.  Child classes can override this setting
-		// to turn on AJAX as needed:
-		$interface->assign('summAjaxStatus', false);
 
 		$interface->assign('recordDriver', $this);
 
@@ -1209,6 +1197,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 		];
 		if ($collectionSpotlight->style == 'text-list'){
 			$result['formattedTextOnlyTitle'] = $interface->fetch('CollectionSpotlight/formattedTextOnlyTitle.tpl');
+		}elseif ($collectionSpotlight->style == 'horizontal-carousel'){
+			$result['formattedTitle'] = $interface->fetch('CollectionSpotlight/formattedHorizontalCarouselTitle.tpl');
 		}else{
 			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
 		}
@@ -1218,7 +1208,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getSummaryInformation()
 	{
-		$summaryInfo = array(
+		return array(
 			'id' => $this->getPermanentId(),
 			'shortId' => $this->getPermanentId(),
 			'recordtype' => 'grouped_work',
@@ -1232,8 +1222,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 			'publisher' => '',
 			'ratingData' => $this->getRatingData(),
 		);
-
-		return $summaryInfo;
 	}
 
 
@@ -1264,7 +1252,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
+				'onShow' => "AspenDiscovery.GroupedWork.getStaffView('{$this->getPermanentId()}');",
+				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 
@@ -1321,8 +1310,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	function getOGType()
 	{
-		$pikaFormat = strtolower($this->getFormatCategory());
-		switch ($pikaFormat) {
+		$format = strtolower($this->getFormatCategory());
+		switch ($format) {
 			case 'books':
 			case 'ebook':
 			case 'audio books':
@@ -1377,6 +1366,11 @@ class GroupedWorkDriver extends IndexRecordDriver
 		return isset($this->fields['publishDate']) ? $this->fields['publishDate'] : array();
 	}
 
+	function getEarliestPublicationDate()
+	{
+		return isset($this->fields['publishDateSort']) ? $this->fields['publishDateSort'] : '';
+	}
+
 	/**
 	 * Get the publishers of the record.
 	 *
@@ -1393,11 +1387,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		require_once ROOT_DIR . '/services/API/WorkAPI.php';
 		$workAPI = new WorkAPI();
 		return $workAPI->getRatingData($this->getPermanentId());
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-	{
-		return array();
 	}
 
 	public function getRecordUrl()
@@ -1473,7 +1462,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$searchPreferenceLanguage = 0;
 			}
 
-			/** @var Language $activeLanguage */
 			global $activeLanguage;
 			if ($activeLanguage->code != 'en' && ($searchPreferenceLanguage == 2)) {
 				$selectedLanguages[] = $activeLanguage->facetValue;
@@ -1635,6 +1623,11 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('summSnippets', $snippets);
 		$timer->logTime("Loaded highlighted snippets");
 
+		//Check to see if there are lists the record is on
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->getPermanentId());
+		$interface->assign('appearsOnLists', $appearsOnLists);
+
 		$summPublisher = null;
 		$summPubDate = null;
 		$summPhysicalDesc = null;
@@ -1702,11 +1695,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		// By default, do not display AJAX status; we won't assume that all
-		// records exist in the ILS.  Child classes can override this setting
-		// to turn on AJAX as needed:
-		$interface->assign('summAjaxStatus', false);
 
 		$interface->assign('recordDriver', $this);
 
@@ -1854,21 +1842,39 @@ class GroupedWorkDriver extends IndexRecordDriver
 		ksort($fields);
 		$interface->assign('details', $fields);
 
-		$groupedWorkDetails = $this->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
+		$this->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
+		return 'RecordDrivers/GroupedWork/staff-view.tpl';
+	}
+
+	public function assignGroupedWorkStaffView(){
+		global $interface;
+
+		$interface->assign('groupedWorkDetails', $this->getGroupedWorkDetails());
 
 		$interface->assign('alternateTitles', $this->getAlternateTitles());
 
 		$interface->assign('primaryIdentifiers', $this->getPrimaryIdentifiers());
 
-		return 'RecordDrivers/GroupedWork/staff-view.tpl';
+		$interface->assign('specifiedDisplayInfo', $this->getSpecifiedDisplayInfo());
+	}
+
+	public function getSpecifiedDisplayInfo() {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
+		$existingDisplayInfo  = new GroupedWorkDisplayInfo();
+		$existingDisplayInfo->permanent_id = $this->getPermanentId();
+		if ($existingDisplayInfo->find(true)){
+			return $existingDisplayInfo;
+		}else{
+			return null;
+		}
 	}
 
 	public function getAlternateTitles(){
 		//Load alternate titles
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging')){
+		if (UserAccount::userHasPermission('Set Grouped Work Display Information')){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 			$alternateTitle = new GroupedWorkAlternateTitle();
 			$alternateTitle->permanent_id = $this->getPermanentId();
@@ -1884,7 +1890,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getPrimaryIdentifiers(){
 		$primaryIdentifiers = [];
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging')){
+		if (UserAccount::userHasPermission('Manually Group and Ungroup Works')){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$groupedWork->permanent_id = $this->getUniqueID();
@@ -2233,14 +2239,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$groupedWorkIdsToSearch = array();
 			foreach ($groupedWorkIds as $groupedWorkId) {
 				//Check for cached links
-				$samePikaCache = new IslandoraSamePikaCache();
-				$samePikaCache->groupedWorkId = $groupedWorkId;
-				if ($samePikaCache->find(true)) {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $samePikaCache->archiveLink;
+				$sameCatalogRecordCache = new IslandoraSamePikaCache();
+				$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
+				if ($sameCatalogRecordCache->find(true)) {
+					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $sameCatalogRecordCache->archiveLink;
 				} else {
 					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = false;
-					$samePikaCache->archiveLink = '';
-					$samePikaCache->insert();
+					$sameCatalogRecordCache->archiveLink = '';
+					$sameCatalogRecordCache->insert();
 					$groupedWorkIdsToSearch[] = $groupedWorkId;
 				}
 			}
@@ -2274,15 +2280,15 @@ class GroupedWorkDriver extends IndexRecordDriver
 							$archiveLink = $firstObjectDriver->getRecordUrl();
 							foreach ($groupedWorkIdsToSearch as $groupedWorkId) {
 								if (strpos($doc['mods_extension_marmotLocal_externalLink_samePika_link_s'], $groupedWorkId) !== false) {
-									$samePikaCache = new IslandoraSamePikaCache();
-									$samePikaCache->groupedWorkId = $groupedWorkId;
-									if ($samePikaCache->find(true) && $samePikaCache->archiveLink != $archiveLink) {
-										$samePikaCache->archiveLink = $archiveLink;
-										$samePikaCache->pid = $firstObjectDriver->getUniqueID();
-										$numUpdates = $samePikaCache->update();
+									$sameCatalogRecordCache = new IslandoraSamePikaCache();
+									$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
+									if ($sameCatalogRecordCache->find(true) && $sameCatalogRecordCache->archiveLink != $archiveLink) {
+										$sameCatalogRecordCache->archiveLink = $archiveLink;
+										$sameCatalogRecordCache->pid = $firstObjectDriver->getUniqueID();
+										$numUpdates = $sameCatalogRecordCache->update();
 										if ($numUpdates == 0) {
 											global $logger;
-											$logger->log("Did not update same pika cache " . print_r($samePikaCache->getLastError(), true), Logger::LOG_ERROR);
+											$logger->log("Did not update same catalog record cache " . print_r($sameCatalogRecordCache->getLastError(), true), Logger::LOG_ERROR);
 										}
 									}
 									GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
@@ -2502,11 +2508,12 @@ class GroupedWorkDriver extends IndexRecordDriver
 	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers = false)
 	{
 		//Check to see if we have any volume data for the record
-		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
+		require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 		global $memoryWatcher;
 		$volumeData = array();
 		$volumeDataDB = new IlsVolumeInfo();
 		$volumeDataDB->recordId = $recordDetails[0];
+		$volumeDataDB->orderBy('displayOrder ASC, displayLabel ASC');
 		//D-81 show volume information even if there aren't related items
 		//$volumeDataDB->whereAdd('length(relatedItems) > 0');
 		if ($volumeDataDB->find()) {
@@ -2551,6 +2558,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 			$volume = null;
 			$volumeId = null;
+			$volumeOrder = null;
 			if (count($volumeData) > 0) {
 				/** @var IlsVolumeInfo $volumeDataPoint */
 				foreach ($volumeData as $volumeDataPoint) {
@@ -2561,14 +2569,13 @@ class GroupedWorkDriver extends IndexRecordDriver
 						if (strlen($volumeDataPoint->relatedItems) > 0) {
 							$volume = $volumeDataPoint->displayLabel;
 							$volumeId = $volumeDataPoint->volumeId;
+							$volumeOrder = $volumeDataPoint->displayOrder;
 							break;
 						}
 					}
 				}
 			}
-			if ($volume) {
-				$description = $volume . $description;
-			}
+			$description = str_pad($volumeOrder, 10, '0', STR_PAD_LEFT) . $description;
 
 			$section = 'Other Locations';
 			if ($item->locallyOwned) {
@@ -2676,7 +2683,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$memoryWatcher->logMemory("Setup record items");
 
 		if (!$forCovers) {
-			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $relatedRecord->isBookable(), [], $volumeData) : array());
+			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord, $relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $relatedRecord->isBookable(), $volumeData) : array());
 			$timer->logTime("Loaded actions");
 			$memoryWatcher->logMemory("Loaded actions");
 		}
@@ -2718,6 +2725,58 @@ class GroupedWorkDriver extends IndexRecordDriver
 			return $bookCoverInfo;
 		}else{
 			return null;
+		}
+	}
+
+	function getWhileYouWait(){
+		global $library;
+		if (!$library->showWhileYouWait){
+			return [];
+		}
+		//Load Similar titles (from Solr)
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		/** @var SearchObject_GroupedWorkSearcher $db */
+		$searchObject = SearchObjectFactory::initSearchObject();
+		$searchObject->init();
+		$searchObject->disableScoping();
+		$user = UserAccount::getActiveUserObj();
+		$similar = $searchObject->getMoreLikeThis($this->getPermanentId(), true, false, 3);
+		// Send the similar items to the template; if there is only one, we need
+		// to force it to be an array or things will not display correctly.
+		if (isset($similar) && count($similar['response']['docs']) > 0) {
+			$whileYouWaitTitles = array();
+			foreach ($similar['response']['docs'] as $key => $similarTitle){
+				$similarTitleDriver = new GroupedWorkDriver($similarTitle);
+				$formatCategoryInfo = [];
+				$relatedManifestations = $similarTitleDriver->getRelatedManifestations();
+				foreach ($relatedManifestations as $relatedManifestation){
+					if ($relatedManifestation->isAvailable() || $relatedManifestation->isAvailableOnline()){
+						$formatCategoryInfo[$relatedManifestation->formatCategory] = [
+							'formatCategory' => $relatedManifestation->formatCategory,
+							'available' => true,
+							'image' => strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_available.png"
+						];
+					}else{
+						if (!array_key_exists($relatedManifestation->formatCategory, $formatCategoryInfo)){
+							$formatCategoryInfo[$relatedManifestation->formatCategory] = [
+								'formatCategory' => $relatedManifestation->formatCategory,
+								'available' => false,
+								'image' => strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_small.png",
+							];
+						}
+					}
+				}
+				$whileYouWaitTitles[] = [
+					'driver' => $similarTitleDriver,
+					'url' => $similarTitleDriver->getLinkUrl(),
+					'title' => $similarTitleDriver->getTitle(),
+					'coverUrl' => $similarTitleDriver->getBookcoverUrl('medium'),
+					'formatCategories' => $formatCategoryInfo,
+				];
+			}
+			return $whileYouWaitTitles;
+		}else{
+			return [];
 		}
 	}
 }

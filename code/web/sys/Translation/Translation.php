@@ -13,7 +13,7 @@ class Translation extends DataObject
 
 	public function getNumericColumnNames()
 	{
-		return ['termId', 'languageId'];
+		return ['termId', 'languageId', 'translated', 'needsReview'];
 	}
 
 	public function setTranslation($translation)
@@ -26,7 +26,6 @@ class Translation extends DataObject
 		$term = new TranslationTerm();
 		$term->id = $this->termId;
 		$term->find(true);
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $activeLanguage;
 		$memCache->delete('translation_' . $activeLanguage->id . '_0_' . $term->term);

@@ -1,5 +1,8 @@
 package com.turning_leaf_technologies.indexing;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +12,7 @@ import java.util.Objects;
 import java.util.TreeSet;
 
 import org.apache.logging.log4j.Logger;
+import org.ini4j.Ini;
 
 public class IndexingUtils {
 
@@ -19,15 +23,17 @@ public class IndexingUtils {
 			HashMap<Long, OverDriveScope> overDriveScopes = loadOverDriveScopes(dbConn, logger);
 			HashMap<Long, HooplaScope> hooplaScopes = loadHooplaScopes(dbConn, logger);
 			HashMap<Long, RbdigitalScope> rbdigitalScopes = loadRbdigitalScopes(dbConn, logger);
+			HashMap<Long, Axis360Scope> axis360Scopes = loadAxis360Scopes(dbConn, logger);
 			HashMap<Long, CloudLibraryScope> cloudLibraryScopes = loadCloudLibraryScopes(dbConn, logger);
 			HashMap<Long, SideLoadScope> sideLoadScopes = loadSideLoadScopes(dbConn, logger);
 			HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings = loadGroupedWorkDisplaySettings(dbConn, logger);
 
-			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn, logger);
+			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
 
-			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn, logger);
+			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
 		} catch (SQLException e) {
 			logger.error("Error setting up scopes", e);
+			return null;
 		}
 
 		return scopes;
@@ -102,6 +108,7 @@ public class IndexingUtils {
 				RbdigitalScope rbdigitalScope = new RbdigitalScope();
 				rbdigitalScope.setId(rbdigitalScopesRS.getLong("id"));
 				rbdigitalScope.setName(rbdigitalScopesRS.getString("name"));
+				rbdigitalScope.setSettingId(rbdigitalScopesRS.getLong("settingId"));
 				rbdigitalScope.setIncludeEBooks(rbdigitalScopesRS.getBoolean("includeEBooks"));
 				rbdigitalScope.setIncludeEMagazines(rbdigitalScopesRS.getBoolean("includeEMagazines"));
 				rbdigitalScope.setIncludeEAudiobook(rbdigitalScopesRS.getBoolean("includeEAudiobook"));
@@ -116,6 +123,27 @@ public class IndexingUtils {
 		return rbdigitalScopes;
 	}
 
+	private static HashMap<Long, Axis360Scope> loadAxis360Scopes(Connection dbConn, Logger logger) {
+		HashMap<Long, Axis360Scope> axis360Scopes = new HashMap<>();
+		try {
+			PreparedStatement axis360ScopeStmt = dbConn.prepareStatement("SELECT * from axis360_scopes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet axis360ScopesRS = axis360ScopeStmt.executeQuery();
+
+			while (axis360ScopesRS.next()) {
+				Axis360Scope axis360Scope = new Axis360Scope();
+				axis360Scope.setId(axis360ScopesRS.getLong("id"));
+				axis360Scope.setName(axis360ScopesRS.getString("name"));
+				axis360Scope.setSettingId(axis360ScopesRS.getLong("settingId"));
+
+				axis360Scopes.put(axis360Scope.getId(), axis360Scope);
+			}
+
+		} catch (SQLException e) {
+			logger.error("Error loading Axis 360 scopes", e);
+		}
+		return axis360Scopes;
+	}
+
 	private static HashMap<Long, OverDriveScope> loadOverDriveScopes(Connection dbConn, Logger logger) {
 		HashMap<Long, OverDriveScope> overDriveScopes = new HashMap<>();
 		try {
@@ -125,6 +153,7 @@ public class IndexingUtils {
 			while (overDriveScopesRS.next()) {
 				OverDriveScope overDriveScope = new OverDriveScope();
 				overDriveScope.setId(overDriveScopesRS.getLong("id"));
+				overDriveScope.setSettingId(overDriveScopesRS.getLong("settingId"));
 				overDriveScope.setName(overDriveScopesRS.getString("name"));
 				overDriveScope.setIncludeAdult(overDriveScopesRS.getBoolean("includeAdult"));
 				overDriveScope.setIncludeTeen(overDriveScopesRS.getBoolean("includeTeen"));
@@ -148,6 +177,7 @@ public class IndexingUtils {
 			while (cloudLibraryScopesRS.next()) {
 				CloudLibraryScope cloudLibraryScope = new CloudLibraryScope();
 				cloudLibraryScope.setId(cloudLibraryScopesRS.getLong("id"));
+				cloudLibraryScope.setSettingId(cloudLibraryScopesRS.getLong("settingId"));
 				cloudLibraryScope.setName(cloudLibraryScopesRS.getString("name"));
 				cloudLibraryScope.setIncludeEBooks(cloudLibraryScopesRS.getBoolean("includeEBooks"));
 				cloudLibraryScope.setIncludeEAudiobook(cloudLibraryScopesRS.getBoolean("includeEAudiobook"));
@@ -188,7 +218,7 @@ public class IndexingUtils {
 		return sideLoadScopes;
 	}
 
-	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
 						"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 						"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
@@ -197,7 +227,8 @@ public class IndexingUtils {
 						"library.overDriveScopeId as overDriveScopeIdLibrary, location.overDriveScopeId as overDriveScopeIdLocation, " +
 						"library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation, " +
 						"library.rbdigitalScopeId as rbdigitalScopeLibrary, location.rbdigitalScopeId as rbdigitalScopeLocation, " +
-						"library.cloudLibraryScopeId as cloudLibraryScopeLibrary, location.cloudLibraryScopeId as cloudLibraryScopeLocation " +
+						"library.cloudLibraryScopeId as cloudLibraryScopeLibrary, location.cloudLibraryScopeId as cloudLibraryScopeLocation, " +
+						"library.axis360ScopeId as axis360ScopeLibrary, location.axis360ScopeId as axis360ScopeLocation " +
 						"FROM location INNER JOIN library on library.libraryId = location.libraryId ORDER BY code ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement locationOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.name FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
@@ -282,7 +313,7 @@ public class IndexingUtils {
 				if (rbdigitalScopeLibrary != -1) {
 					locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
 				}
-			} else if (rbdigitalScopeLocation == -2) {
+			} else if (rbdigitalScopeLocation != -2) {
 				locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLocation));
 			}
 
@@ -292,8 +323,18 @@ public class IndexingUtils {
 				if (cloudLibraryScopeLibrary != -1) {
 					locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLibrary));
 				}
-			} else if (rbdigitalScopeLocation == -2) {
+			} else if (cloudLibraryScopeLocation != -2) {
 				locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLocation));
+			}
+
+			long axis360ScopeLocation = locationInformationRS.getLong("axis360ScopeLocation");
+			long axis360ScopeLibrary = locationInformationRS.getLong("axis360ScopeLibrary");
+			if (axis360ScopeLocation == -1) {
+				if (axis360ScopeLibrary != -1) {
+					locationScopeInfo.setAxis360Scope(axis360Scopes.get(axis360ScopeLibrary));
+				}
+			} else if (axis360ScopeLocation != -2) {
+				locationScopeInfo.setAxis360Scope(axis360Scopes.get(axis360ScopeLocation));
 			}
 
 			locationSideLoadScopesStmt.setLong(1, locationId);
@@ -304,17 +345,25 @@ public class IndexingUtils {
 					librarySideLoadScopesStmt.setLong(1, libraryId);
 					ResultSet librarySideLoadScopesRS = librarySideLoadScopesStmt.executeQuery();
 					while (librarySideLoadScopesRS.next()) {
-						locationScopeInfo.addSideLoadScope(sideLoadScopes.get(librarySideLoadScopesRS.getLong("sideLoadScopeId")));
+						long sideLoadScopeId = librarySideLoadScopesRS.getLong("sideLoadScopeId");
+						if (sideLoadScopes.containsKey(sideLoadScopeId)) {
+							locationScopeInfo.addSideLoadScope(sideLoadScopes.get(sideLoadScopeId));
+						}
 					}
 				} else {
-					locationScopeInfo.addSideLoadScope(sideLoadScopes.get(scopeId));
+					if (sideLoadScopes.containsKey(scopeId)) {
+						locationScopeInfo.addSideLoadScope(sideLoadScopes.get(scopeId));
+					}
 				}
 			}
 			if (includeLibraryRecordsToInclude){
 				librarySideLoadScopesStmt.setLong(1, libraryId);
 				ResultSet librarySideLoadScopesRS = librarySideLoadScopesStmt.executeQuery();
 				while (librarySideLoadScopesRS.next()) {
-					locationScopeInfo.addSideLoadScope(sideLoadScopes.get(librarySideLoadScopesRS.getLong("sideLoadScopeId")));
+					long sideLoadScopeId = librarySideLoadScopesRS.getLong("sideLoadScopeId");
+					if (sideLoadScopes.containsKey(sideLoadScopeId)) {
+						locationScopeInfo.addSideLoadScope(sideLoadScopes.get(sideLoadScopeId));
+					}
 				}
 			}
 
@@ -322,7 +371,7 @@ public class IndexingUtils {
 			locationOwnedRecordRulesStmt.setLong(1, locationId);
 			ResultSet locationOwnedRecordRulesRS = locationOwnedRecordRulesStmt.executeQuery();
 			while (locationOwnedRecordRulesRS.next()) {
-				locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("name"), locationOwnedRecordRulesRS.getString("location"), locationOwnedRecordRulesRS.getString("subLocation")));
+				locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("name"), locationOwnedRecordRulesRS.getString("location"), locationOwnedRecordRulesRS.getString("subLocation"), locationOwnedRecordRulesRS.getString("locationsToExclude"), locationOwnedRecordRulesRS.getString("subLocationsToExclude")));
 			}
 
 			locationRecordInclusionRulesStmt.setLong(1, locationId);
@@ -331,6 +380,8 @@ public class IndexingUtils {
 				locationScopeInfo.addInclusionRule(new InclusionRule(locationRecordInclusionRulesRS.getString("name"),
 						locationRecordInclusionRulesRS.getString("location"),
 						locationRecordInclusionRulesRS.getString("subLocation"),
+						locationRecordInclusionRulesRS.getString("locationsToExclude"),
+						locationRecordInclusionRulesRS.getString("subLocationsToExclude"),
 						locationRecordInclusionRulesRS.getString("iType"),
 						locationRecordInclusionRulesRS.getString("audience"),
 						locationRecordInclusionRulesRS.getString("format"),
@@ -352,6 +403,8 @@ public class IndexingUtils {
 					locationScopeInfo.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("name"),
 							libraryRecordInclusionRulesRS.getString("location"),
 							libraryRecordInclusionRulesRS.getString("subLocation"),
+							libraryRecordInclusionRulesRS.getString("locationsToExclude"),
+							libraryRecordInclusionRulesRS.getString("subLocationsToExclude"),
 							libraryRecordInclusionRulesRS.getString("iType"),
 							libraryRecordInclusionRulesRS.getString("audience"),
 							libraryRecordInclusionRulesRS.getString("format"),
@@ -385,11 +438,11 @@ public class IndexingUtils {
 
 	private static PreparedStatement libraryRecordInclusionRulesStmt;
 
-	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, pTypes, restrictOwningBranchesAndSystems, publicListsToInclude, " +
 						"additionalLocationsToShowAvailabilityFor, overDriveScopeId, " +
-						"groupedWorkDisplaySettingId, hooplaScopeId, rbdigitalScopeId, cloudLibraryScopeId " +
+						"groupedWorkDisplaySettingId, hooplaScopeId, rbdigitalScopeId, cloudLibraryScopeId, axis360ScopeId " +
 						"FROM library ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -451,10 +504,18 @@ public class IndexingUtils {
 				newScope.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLibrary));
 			}
 
+			long axis360ScopeLibrary = libraryInformationRS.getLong("axis360ScopeId");
+			if (axis360ScopeLibrary != -1) {
+				newScope.setAxis360Scope(axis360Scopes.get(axis360ScopeLibrary));
+			}
+
 			librarySideLoadScopesStmt.setLong(1, libraryId);
 			ResultSet librarySideLoadScopesRS = librarySideLoadScopesStmt.executeQuery();
 			while (librarySideLoadScopesRS.next()) {
-				newScope.addSideLoadScope(sideLoadScopes.get(librarySideLoadScopesRS.getLong("sideLoadScopeId")));
+				long sideLoadScopeId = librarySideLoadScopesRS.getLong("sideLoadScopeId");
+				if (sideLoadScopes.containsKey(sideLoadScopeId)) {
+					newScope.addSideLoadScope(sideLoadScopes.get(sideLoadScopeId));
+				}
 			}
 
 			newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
@@ -464,7 +525,7 @@ public class IndexingUtils {
 			libraryOwnedRecordRulesStmt.setLong(1, libraryId);
 			ResultSet libraryOwnedRecordRulesRS = libraryOwnedRecordRulesStmt.executeQuery();
 			while (libraryOwnedRecordRulesRS.next()) {
-				newScope.addOwnershipRule(new OwnershipRule(libraryOwnedRecordRulesRS.getString("name"), libraryOwnedRecordRulesRS.getString("location"), libraryOwnedRecordRulesRS.getString("subLocation")));
+				newScope.addOwnershipRule(new OwnershipRule(libraryOwnedRecordRulesRS.getString("name"), libraryOwnedRecordRulesRS.getString("location"), libraryOwnedRecordRulesRS.getString("subLocation"), libraryOwnedRecordRulesRS.getString("locationsToExclude"), libraryOwnedRecordRulesRS.getString("subLocationsToExclude")));
 			}
 
 			libraryRecordInclusionRulesStmt.setLong(1, libraryId);
@@ -473,6 +534,8 @@ public class IndexingUtils {
 				newScope.addInclusionRule(new InclusionRule(libraryRecordInclusionRulesRS.getString("name"),
 						libraryRecordInclusionRulesRS.getString("location"),
 						libraryRecordInclusionRulesRS.getString("subLocation"),
+						libraryRecordInclusionRulesRS.getString("locationsToExclude"),
+						libraryRecordInclusionRulesRS.getString("subLocationsToExclude"),
 						libraryRecordInclusionRulesRS.getString("iType"),
 						libraryRecordInclusionRulesRS.getString("audience"),
 						libraryRecordInclusionRulesRS.getString("format"),
@@ -491,4 +554,48 @@ public class IndexingUtils {
 		}
 	}
 
+	public static boolean isNightlyIndexRunning(Ini configIni, String serverName, Logger logger) {
+		if (configIni.get("System", "operatingSystem").equalsIgnoreCase("windows")){
+			try {
+				String line;
+				Process p = Runtime.getRuntime().exec("tasklist.exe /fo csv /nh /v /fi \"IMAGENAME eq cmd.exe\"");
+				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				while ((line = input.readLine()) != null) {
+					logger.info(line);
+					if (line.matches(".*reindexer\\.jar " + serverName + " nightly.*")){
+						return true;
+					}
+				}
+				input.close();
+			} catch (IOException e) {
+				logger.error("Error checking to see if reindexer is running", e);
+			}
+
+		}else{
+			try {
+				String line;
+				Process p = Runtime.getRuntime().exec("ps -ef");
+				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				while ((line = input.readLine()) != null) {
+					logger.info(line);
+					if (line.matches(".*reindexer\\.jar " + serverName + " nightly.*")){
+						return true;
+					}
+				}
+				input.close();
+			} catch (IOException e) {
+				logger.error("Error checking to see if reindexer is running", e);
+			}
+		}
+		return false;
+	}
+
+	public static void markNightlyIndexNeeded(Connection dbConn, Logger logger) {
+		try {
+			//Mark that nightly index does not need to run since we are currently running it.
+			dbConn.prepareStatement("UPDATE system_variables set runNightlyFullIndex = 1").executeUpdate();
+		}catch (SQLException e) {
+			logger.error("Unable to update that the nightly index should run tonight", e);
+		}
+	}
 }

@@ -140,8 +140,7 @@ class GoDeeperData{
 	}
 
 	private static function getContentCafeData(ContentCafeSetting $contentCafeSettings, $isbn, $upc, $field = 'AvailableContent') {
-		$url = 'https://contentcafe2.btol.com';
-		$url .= '/ContentCafe/ContentCafe.asmx?WSDL';
+		$url = 'https://contentcafe2.btol.com/ContentCafe/ContentCafe.asmx?WSDL';
 
 		$SOAP_options = array(
 				'features' => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
@@ -200,7 +199,6 @@ class GoDeeperData{
 	 */
 	private static function getContentCafeSummary($settings, $isbn, $upc) {
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCacheKey = "contentcafe_summary_{$isbn}_{$upc}";
 		$summaryData = $memCache->get($memCacheKey);
@@ -211,7 +209,8 @@ class GoDeeperData{
 				$temp = array();
 				if (isset($response[0]->AnnotationItems->AnnotationItem)){
 					foreach ($response[0]->AnnotationItems->AnnotationItem as $summary) {
-						$temp[strlen($summary->Annotation)] = $summary->Annotation;
+						//Correct poorly encoded quotes
+						$temp[strlen($summary->Annotation)] = str_replace('&amp;&#34;', '"', $summary->Annotation);
 					}
 					$summaryData['summary'] = end($temp); // Grab the Longest Summary
 				}

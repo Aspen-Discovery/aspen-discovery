@@ -1,29 +1,34 @@
+<div class="row">
+	<div class="col-xs-12 col-md-9">
+		<h1 id="pageTitle">{$pageTitleShort}</h1>
+	</div>
+	<div class="col-xs-12 col-md-3 help-link">
+        {if $instructions}<a href="{$instructions}"><img src="/images/silk/help.png" alt="Help" /> Documentation</a>{/if}
+	</div>
+</div>
 
-<h1 id="pageTitle">{$pageTitleShort}</h1>
 {if $lastError}
 	<div class="alert alert-danger">
 		{$lastError}
 	</div>
 {/if}
-{if $instructions}
-	<div class="alert alert-info">
-		{$instructions}
-	</div>
-{/if}
+
+{if $canCompare || $canAddNew || !empty($customListActions)}
 <form action="" method="get" id='compare' class="form-inline">
+{/if}
 	<div class='adminTableRegion'>
-		<table class="adminTable table table-striped table-condensed smallText" id="adminTable">
+		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects">
 			<thead>
 				<tr>
 					{if $canCompare}
-						<th>{translate text='Select'} </th>
+						<th>{translate text='Select'}</th>
 					{/if}
 					{foreach from=$structure item=property key=id}
 						{if !isset($property.hideInLists) || $property.hideInLists == false}
-						<th><label title='{$property.description}'>{$property.label|translate}</label></th>
+						<th><span title='{$property.description}'>{$property.label|translate}</span></th>
 						{/if}
 					{/foreach}
-					<th>Actions</th>
+					<th>{translate text='Actions'}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -38,17 +43,29 @@
 							{assign var=propValue value=$dataItem->$propName}
 
 							{if !isset($property.hideInLists) || $property.hideInLists == false}
-								<td>
+								<td aria-label="{$dataItem} {$propName}{if empty($propValue)} - empty{/if}">
 								{if $property.type == 'label'}
 									{if $dataItem->class != 'objectDeleted'}
-										<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'> {$propValue}</a>
+										{if $propName == $dataItem->getPrimaryKey()}<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>{/if}
+										{$propValue}
+										{if $propName == $dataItem->getPrimaryKey()}</a>{/if}
 									{/if}
+								{elseif $property.type == 'regularExpression'}
+									{$propValue|escape}
 								{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email' || $property.type == 'url'}
 									{$propValue}
 								{elseif $property.type == 'date'}
 									{$propValue|date_format}
 								{elseif $property.type == 'timestamp'}
-									{$propValue|date_format:"%D %T"}
+									{if $propValue == 0}
+										{if empty($property.unsetLabel)}
+											{translate text="Never"}
+										{else}
+											{translate text=$property.unsetLabel}
+										{/if}
+									{else}
+										{$propValue|date_format:"%D %T"}
+									{/if}
 								{elseif $property.type == 'partialDate'}
 									{assign var=propNameMonth value=$property.propNameMonth}
 									{assign var=propMonthValue value=$dataItem->$propNameMonth}
@@ -67,7 +84,7 @@
 								{elseif $property.type == 'multiSelect'}
 									{if is_array($propValue) && count($propValue) > 0}
 										{foreach from=$property.values item=propertyName key=propertyValue}
-											{if in_array($propertyValue, array_keys($propValue))}{$propertyName}<br/>{/if}
+											{if array_key_exists($propertyValue, $propValue)}{$propertyName}<br/>{/if}
 										{/foreach}
 									{else}
 										No values selected
@@ -80,6 +97,8 @@
 									{/if}
 								{elseif $property.type == 'checkbox'}
 									{if ($propValue == 1)}Yes{else}No{/if}
+								{elseif $property.type == 'image'}
+									<img src="{$property.displayUrl}{$dataItem->id}" class="img-responsive" alt="{$propName}">
 								{else}
 									Unknown type to display {$property.type}
 								{/if}
@@ -88,12 +107,15 @@
 						{/foreach}
 						{if $dataItem->class != 'objectDeleted'}
 							<td>
-								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>Edit</a>
+								<div class="btn-group-vertical">
+								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm" aria-label="Edit Item {$id}">{translate text="Edit"}</a>
+								<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}">{translate text="History"}</a>
 								{if $additionalActions}
 									{foreach from=$additionalActions item=action}
-										<a href='{$action.path}&amp;id={$id}'>{$action.name}</a>
+										<a href='{$action.path}&amp;id={$id}' class="btn btn-default btn-sm" aria-label="{$action.name} for Item {$id}">{$action.name|translate}</a>
 									{/foreach}
 								{/if}
+								</div>
 							</td>
 						{/if}
 					</tr>
@@ -102,6 +124,8 @@
 			</tbody>
 		</table>
 	</div>
+
+	{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 
 	<input type='hidden' name='objectAction' id='objectAction' value='' />
 	{if $canCompare}
@@ -119,7 +143,9 @@
 			<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}')">{$customAction.label}</button>
 		{/foreach}
 	</div>
+{if $canCompare || $canAddNew || !empty($customListActions)}
 </form>
+{/if}
 
 {if isset($dataList) && is_array($dataList) && count($dataList) > 5}
 <script type="text/javascript">

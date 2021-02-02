@@ -78,6 +78,20 @@ function getWebsiteIndexingUpdates()
 			),
 		),
 
+		'website_usage_add_instance' => [
+			'title' => 'Website Usage - Instance Information',
+			'description' => 'Add Instance Information to Website Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE website_page_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE website_page_usage DROP INDEX webPageId',
+				'ALTER TABLE website_page_usage ADD INDEX (instance, webPageId, year, month)',
+				'ALTER TABLE user_website_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_website_usage DROP INDEX websiteId',
+				'ALTER TABLE user_website_usage ADD INDEX (instance, websiteId, year, month)',
+			]
+		],
+
 		'create_web_indexer_module' => [
 			'title' => 'Create Web Indexer Module',
 			'description' => 'Setup Web Indexer module',
@@ -94,5 +108,56 @@ function getWebsiteIndexingUpdates()
 				"ALTER TABLE website_indexing_settings ADD COLUMN pathsToExclude MEDIUMTEXT",
 			]
 		],
+
+		'web_indexer_module_add_log' =>[
+			'title' => 'Web Indexer add log info to module',
+			'description' => 'Add logging information to web indexer module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/WebsiteIndexing/WebsiteIndexLogEntry.php', logClassName='WebsiteIndexLogEntry' WHERE name='Web Indexer'",
+			]
+		],
+
+		'web_indexer_add_title_expression' =>[
+			'title' => 'Web Indexer add title expression',
+			'description' => 'Add a regular expression to extract titles from',
+			'sql' => [
+				"ALTER TABLE website_indexing_settings ADD COLUMN pageTitleExpression VARCHAR(255) DEFAULT ''",
+			]
+		],
+
+		'web_indexer_add_description_expression' =>[
+			'title' => 'Web Indexer add description expression',
+			'description' => 'Add a regular expression to extract description from',
+			'sql' => [
+				"ALTER TABLE website_indexing_settings ADD COLUMN descriptionExpression VARCHAR(255) DEFAULT ''",
+			]
+		],
+
+		'web_indexer_deleted_settings' => [
+			'title' => 'Web Indexer add the ability to delete settings',
+			'description' => 'Add deleted field for website indexing settings',
+			'sql' => [
+				'ALTER TABLE website_indexing_settings ADD COLUMN deleted TINYINT(1) DEFAULT 0'
+			]
+		],
+
+		'web_indexer_scoping' => [
+			'title' => 'Web Indexer scoping',
+			'description' => 'Add scoping for the web indexer',
+			'sql' => [
+				'CREATE TABLE library_website_indexing (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					settingId INT(11) NOT NULL,
+					libraryId INT(11) NOT NULL,
+					UNIQUE (settingId, libraryId)
+				) ENGINE = InnoDB',
+				'CREATE TABLE location_website_indexing (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					settingId INT(11) NOT NULL,
+					locationId INT(11) NOT NULL,
+					UNIQUE (settingId, locationId)
+				) ENGINE = InnoDB'
+			]
+		]
 	);
 }

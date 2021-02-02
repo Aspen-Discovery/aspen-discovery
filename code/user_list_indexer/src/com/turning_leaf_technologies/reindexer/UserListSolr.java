@@ -11,16 +11,16 @@ import java.util.HashSet;
 class UserListSolr {
 	private final UserListIndexer userListIndexer;
 	private long id;
-	private HashSet<String> relatedRecordIds = new HashSet<>();
+	private final HashSet<String> relatedRecordIds = new HashSet<>();
 	private String author;
 	private String title;
-	private HashSet<String> contents = new HashSet<>(); //A list of the titles and authors for the list
+	private final HashSet<String> contents = new HashSet<>(); //A list of the titles and authors for the list
 	private String description;
 	private long numTitles = 0;
 	private long created;
 	private long owningLibrary;
 	private String owningLocation;
-	private boolean ownerHasListPublisherRole = false;
+	private boolean ownerCanShareListsInSearchResults = false;
 
 	UserListSolr(UserListIndexer userListIndexer) {
 		this.userListIndexer = userListIndexer;
@@ -54,21 +54,22 @@ class UserListSolr {
 
 		//Do things based on scoping
 		int numValidScopes = 0;
+		HashSet<String> relevantScopes = new HashSet<>();
 		for (Scope scope: userListIndexer.getScopes()) {
 			boolean okToInclude;
 			if (scope.isLibraryScope()) {
 				okToInclude = (scope.getPublicListsToInclude() == 2) || //All public lists
 						((scope.getPublicListsToInclude() == 1) && (scope.getLibraryId() == owningLibrary)) || //All lists for the current library
-						((scope.getPublicListsToInclude() == 3) && ownerHasListPublisherRole && (scope.getLibraryId() == owningLibrary)) || //All lists for list publishers at the current library
-						((scope.getPublicListsToInclude() == 4) && ownerHasListPublisherRole) //All lists for list publishers
+						((scope.getPublicListsToInclude() == 3) && ownerCanShareListsInSearchResults && (scope.getLibraryId() == owningLibrary || scope.getLibraryId() == -1)) || //All lists for list publishers at the current library
+						((scope.getPublicListsToInclude() == 4) && ownerCanShareListsInSearchResults) //All lists for list publishers
 						;
 			} else {
 				okToInclude = (scope.getPublicListsToInclude() == 3) || //All public lists
 						((scope.getPublicListsToInclude() == 1) && (scope.getLibraryId() == owningLibrary)) || //All lists for the current library
 						((scope.getPublicListsToInclude() == 2) && scope.getScopeName().equals(owningLocation)) || //All lists for the current location
-						((scope.getPublicListsToInclude() == 4) && ownerHasListPublisherRole && (scope.getLibraryId() == owningLibrary)) || //All lists for list publishers at the current library
-						((scope.getPublicListsToInclude() == 5) && ownerHasListPublisherRole && scope.getScopeName().equals(owningLocation)) || //All lists for list publishers the current location
-						((scope.getPublicListsToInclude() == 6) && ownerHasListPublisherRole) //All lists for list publishers
+						((scope.getPublicListsToInclude() == 4) && ownerCanShareListsInSearchResults && (scope.getLibraryId() == owningLibrary || scope.getLibraryId() == -1)) || //All lists for list publishers at the current library
+						((scope.getPublicListsToInclude() == 5) && ownerCanShareListsInSearchResults && scope.getScopeName().equals(owningLocation)) || //All lists for list publishers the current location
+						((scope.getPublicListsToInclude() == 6) && ownerCanShareListsInSearchResults) //All lists for list publishers
 						;
 			}
 			if (okToInclude) {
@@ -77,13 +78,14 @@ class UserListSolr {
 				doc.addField("local_days_since_added_" + scope.getScopeName(), DateUtils.getDaysSinceAddedForDate(dateAdded));
 				//doc.addField("format_" + scope.getScopeName(), "list");
 				//doc.addField("format_category_" + scope.getScopeName(), "list");
-				doc.addField("scope_has_related_records", scope.getScopeName());
+				relevantScopes.add(scope.getScopeName());
 			}
 		}
 
 		if (numValidScopes == 0){
 			return null;
 		}else{
+			doc.addField("scope_has_related_records", relevantScopes);
 			return doc;
 		}
 	}
@@ -100,8 +102,8 @@ class UserListSolr {
 		this.author = author;
 	}
 
-	void addListTitle(String groupedWorkId, Object title, Object author) {
-		relatedRecordIds.add("grouped_work:" + groupedWorkId);
+	void addListTitle(String source, String groupedWorkId, Object title, Object author) {
+		relatedRecordIds.add(source + ":" + groupedWorkId);
 		contents.add(title + " - " + author);
 		numTitles++;
 	}
@@ -122,8 +124,8 @@ class UserListSolr {
 		this.owningLibrary = owningLibrary;
 	}
 
-	void setOwnerHasListPublisherRole(boolean ownerHasListPublisherRole){
-		this.ownerHasListPublisherRole = ownerHasListPublisherRole;
+	void setOwnerCanShareListsInSearchResults(boolean ownerCanShareListsInSearchResults){
+		this.ownerCanShareListsInSearchResults = ownerCanShareListsInSearchResults;
 	}
 
 	long getNumTitles(){

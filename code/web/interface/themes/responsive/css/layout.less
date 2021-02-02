@@ -25,7 +25,7 @@ hr.menu{
   border-top: 1px solid #d3d3d3;
 }
 
-//Breadcrumbs (above header)
+//Breadcrumbs (within main content)
 .breadcrumbs{
   background-color: @breadcrumb-bg;
   padding: 3px;
@@ -50,15 +50,26 @@ hr.menu{
   text-align: center;
   padding: 3px;
 }
-//Define the header elements
-#header-container{
+.system-message{
+  padding: 5px;
+}
+.system-message-text{
+  display: inline-block;
+}
+.dismissable-system-message-text{
+  width: calc(100% - 30px);
+}
+
+#header-wrapper{
   padding-top: 0;
-  height: @header-height;
   background-color: @header-top-color;
-  //background: linear-gradient(to bottom, @header-top-color, @header-middle-color 85%, @header-bottom-color);
-  border-bottom: @header-bottom-border-width solid @header-bottom-border-color;
   margin-bottom: 0;
-  min-height: 110px;
+}
+
+#header-logo-container{
+  @media(max-width: @screen-tn-max) {
+    text-align: center;
+  }
 }
 #header-logo{
   padding: 10px 10px 0 0;
@@ -67,27 +78,78 @@ hr.menu{
     height:auto;
   }
 }
+#horizontal-menu-bar-container{
+  background-color: @header-top-color;
+  border-bottom: @header-bottom-border-width solid @header-bottom-border-color;
+}
 
-
-// New Version, markup is a > div.header-button
-.header-button{
-  // Prevent Button Text from overflowing or creating new lines (Only Nashville needs at this time. 2-5-2016 plb)
-  white-space: nowrap;
-  overflow-x: hidden;
-
+.availableLanguage{
+  display: inline-block;
+  padding-right: 10px;
+}
+#menuToggleButton{
+  width: 36px;
+  display: inline-block;
   text-align: center;
-  vertical-align: middle;
-  background-color: rgba(51,51,51,0.6);
-  margin-top: 20px;
-  //height: 60px !important;
-  line-height: 60px !important;
-  border: 0;
-  border-radius:  0.5em;
-  color: white !important;
-  &:hover{
-    text-decoration: underline;
-    border-bottom: 0;
-    box-shadow: 2px 2px 5px #fff;
+}
+
+#menuToggleButton.selected{
+  background-color: #ededed;
+}
+
+.dropdownMenu {
+  display: none;
+  position: absolute;
+  background-color: #ededed;
+  min-width: 220px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 3;
+}
+
+#header-menu {
+  display: none;
+  position: absolute;
+  background-color: #ededed;
+  min-width: 220px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 3;
+}
+
+.header-menu-option{
+  margin-bottom: 3px;
+  cursor: pointer;
+
+  i {
+    float:right;
+  }
+}
+
+#account-menu {
+  display: none;
+  position: absolute;
+  background-color: #ededed;
+  min-width: 220px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 3;
+}
+
+#accountMenuToggleButton.selected{
+  background-color: #ededed;
+}
+
+.childMenuItem{
+  margin-left: 15px;
+}
+
+.header-menu-section{
+  margin-bottom: 3px;
+  cursor: pointer;
+
+  i {
+    float:right;
   }
 }
 #library-name-header{
@@ -153,159 +215,47 @@ hr.menu{
 }
 
 #horizontal-menu-bar-wrapper {
-
+  @media print {
+    display: none;
+  }
 }
-// Horizontal Menu Bar for small devices
-#horizontal-menu-bar-container {
+
+#horizontal-menu-bar-container{
+  display: flex;
+  flex-direction: row;
+  .menu-section{
+    display: block;
+  }
+
   .menu-icon {
-    float: right;
-    padding: 5px;
+    line-height: 16px;
+    display: inline-block;
+    padding: 12px 5px 7px 5px;
+    cursor: pointer;
     margin-left: 5px;
     margin-right: 5px;
-    height: 40px;
-    &:focus {
-      outline: none;
-    }
-    &.menu-left {
-      float: left;
-    }
-    &.menu-icon-selected {
-      background-color: @menu-bar-selected-background-color;
-    }
-  }
-  padding-left: @padding-xs-horizontal;
-  padding-right: @padding-xs-horizontal;
-
-  &.sticky-menu-bar {
-    // sticks to top of view port
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: @menu-bar-z-index;
-  }
-
-
-}
-
-// Vertical Menu Bar
-
-.sticky-sidebar {
-  // sticks to top-right of view port
-  position: fixed;
-  top: 0;
-  z-index: @menu-bar-z-index;
-}
-
-#vertical-menu-bar-wrapper {
-  width: @vertical-menu-bar-width;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-#vertical-menu-bar {
-  width: @vertical-menu-bar-width;
-  //height: 2000px; // needs to extend out of view, fallback option
-  height: 100vh;  // best solution, height of the view port
-  background-color: @menu-bar-background-color;
-  color: @menu-bar-color;
-  padding-left: 0;
-  padding-right: 0;
-  margin-top: 2px;
-  border-right: 3px solid @content-bg;
-
-  .menu-bar-option {
-    width: 100%;
-    padding-top: @padding-base-vertical;
-    border-top: 3px solid @content-bg;
-    &.menu-icon-selected {
-      background-color: @menu-bar-selected-background-color;
-      color: @menu-bar-selected-color;
-    }
-
-    // To Get Labeling to display Nicely
-    position: relative;
-  }
-  .menu-icon {
-    @menu-icon-padding: 5px;
-    padding: @menu-icon-padding;
-    img {
-      width: @vertical-menu-bar-width - 2*@menu-icon-padding;
-    }
+    font-size: 16px;
     &:visited,&:hover,&:focus {
       text-decoration: none;
-      color: @menu-bar-color;
       outline: none;
     }
     .menu-bar-label {
-      color: @menu-bar-color;
       font-weight: bold;
       text-transform: uppercase;
       font-size:16px;
 
-      margin-top: 10px;
+      margin-left: 5px;
+      text-align: left;
+      display: inline-block;
     }
   }
 }
 
-// Gives Vertical Rotated Text space that tracks with the document flow
-// requires two nested tags: <span class="rotated-text"><span class="rotated-text-inner">{text}</span></span>
-.rotated-text {
-  display: inline-block;
-  overflow: hidden;
-
-  width: @vertical-menu-bar-width;
-  line-height: @vertical-menu-bar-width; // need a set height for the rotated space to flow properly
+.menu-section-left{
+  flex-grow: 10;
 }
-.rotated-text-inner {
-  display: inline-block;
-  white-space: nowrap;  // multiple word labels need to stay on the same line
-
-  // Rotate Text Vertically
-  transform: rotate(-90deg) translateX(-100%);
-  transform-origin: 0 0;
-
-  // puts the rotated text into the document flow like we want
-  &:after {
-    content: "";
-    float: left;
-    margin-top: 100%;
-  }
-}
-
-// Toggles Collapsed Sidebar
-// Applied to container divs, remove class to restore original width classes
-.collapsedSidebar {
-  width: @vertical-menu-bar-width;
-  &.rightSidebar {
-    @media (min-width: @screen-sm) {
-      left: 100% - percentage( round(@vertical-menu-bar-width/(@container-sm - @grid-gutter-width), 4) );
-    }
-    @media (min-width: @screen-md) {
-      left:  100% - percentage( round(@vertical-menu-bar-width/(@container-md - @grid-gutter-width), 4) );
-    }
-    @media (min-width: @screen-lg-min) {
-      left: 100% - percentage( round(@vertical-menu-bar-width/(@container-lg - @grid-gutter-width), 4) );
-    }
-  }
-}
-
-// Toggles Expanding Main Content when Sidebar is collapsed
-.mainContentWhenSideBarCollapsed {
-
-  @media (min-width: @screen-sm) {
-    width: 100% - percentage( round(@vertical-menu-bar-width/(@container-sm - @grid-gutter-width), 4) );
-  }
-  @media (min-width: @screen-md) {
-    width: 100% - percentage( round(@vertical-menu-bar-width/(@container-md - @grid-gutter-width), 4) );
-  }
-  @media (min-width: @screen-lg-min) {
-    width: 100% - percentage( round(@vertical-menu-bar-width/(@container-lg - @grid-gutter-width), 4) );
-  }
-  &.rightSidebar {
-    // Adjustments to display when the sidebar is on the right hand side.
-    right: @vertical-menu-bar-width;
-  }
+.menu-section-right{
+  align-self: flex-end;
 }
 
 // Sidebar & Main content
@@ -314,17 +264,15 @@ hr.menu{
   @media print {
     display: none;
   }
+  @media (max-width: @screen-xs-max){
+    display: none;
+  }
 }
 #main-content-with-sidebar{
-  //padding-right: 0; //TODO delete; undone for right side bar
   padding-bottom: 15px;
   @media print{
     width:100%;
     display: block !important;
-  }
-  & > .row{
-    //margin-right: -30px;// TODO delete; undone for right side bar
-    //margin-right: 15px;
   }
 }
 
@@ -354,7 +302,20 @@ hr.menu{
 }
 
 .required-input{
-  color: red;
+  color: #c62828;
+}
+
+.hiddenTitle{
+  font-size: 0;
+  width: 1px;
+  height: 1px;
+  display: inline-block;
+  overflow: hidden;
+  position: absolute!important;
+  border: 0!important;
+  padding: 0!important;
+  margin: 0!important;
+  clip: rect(1px,1px,1px,1px);
 }
 
 #language-selection-header{
@@ -420,16 +381,99 @@ ul.account-submenu{
 }
 
 .placard{
-  border: 1px solid black;
-  background-color: lightyellow;
+  border: 1px solid #bbb;
+  background-color:  #f0f5f5;
   padding: 10px;
+  margin: 5px;
+}
+
+a.placard-link{
+  text-decoration: none;
 }
 
 .placard-image{
   float: left;
   padding-right: 10px;
+  max-width: 100%; // Part 1: Set a maximum relative to the parent
+  height: auto; // Part 2: Scale the height according to the width, otherwise you get stretching
 }
 
 .placard-body{
   font-weight: bold;
+}
+
+.table-sticky{
+  overflow-y: auto;
+  thead {
+    tr {
+      th {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 2;
+      }
+    }
+  }
+}
+
+.rd-container {
+  z-index: 5;
+}
+
+#webMenuNavBar {
+  background-color: @home-search-top-color;
+  color: @home-search-label-color;
+  border: 0;
+  border-top: solid @home-search-label-color 2px;
+  border-radius: 0;
+  min-height: auto;
+
+  .nav > li > a, .nav > li > a:visited {
+    color: @home-search-label-color;
+    padding: 7px 10px;
+  }
+
+  .navbar-nav > li.open > a, .navbar-nav > li.open > a:visited {
+    color: rgb(85, 85, 85);
+  }
+}
+
+.help-link{
+  margin-top: 20px;
+  line-height: 50px;
+  text-align: right;
+}
+
+.propertyDescription{
+  margin-bottom: 6px;
+}
+
+.image-popup .modal-dialog {
+	width: auto;
+
+	.img-responsive {
+		margin: auto;
+	}
+}
+
+.badge{
+  background-color: #666666;
+}
+
+/* with flexbox */
+.grid {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.grid-col {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+  padding: 5px;
 }

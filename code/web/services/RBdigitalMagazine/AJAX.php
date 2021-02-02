@@ -17,41 +17,8 @@ class RBdigitalMagazine_AJAX extends Action
 		}
 	}
 
-	/** @noinspection PhpUnused */
-	function reloadCover()
+	function getBreadcrumbs()
 	{
-		require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
-		$id = $_REQUEST['id'];
-		$recordDriver = new RBdigitalMagazineDriver($id);
-
-		//Reload small cover
-		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small', true)) . '&reload';
-		file_get_contents($smallCoverUrl);
-
-		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('medium', true)) . '&reload';
-		file_get_contents($mediumCoverUrl);
-
-		//Reload large cover
-		$largeCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('large', true)) . '&reload';
-		file_get_contents($largeCoverUrl);
-
-		//Also reload covers for the grouped work
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$groupedWorkDriver = new GroupedWorkDriver($recordDriver->getGroupedWorkId());
-
-		//Reload small cover
-		$smallCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('small', true)) . '&reload';
-		file_get_contents($smallCoverUrl);
-
-		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('medium', true)) . '&reload';
-		file_get_contents($mediumCoverUrl);
-
-		//Reload large cover
-		$largeCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('large', true)) . '&reload';
-		file_get_contents($largeCoverUrl);
-
-		return json_encode(array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'));
+		return [];
 	}
 }

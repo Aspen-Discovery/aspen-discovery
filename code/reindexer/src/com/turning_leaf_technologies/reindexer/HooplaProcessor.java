@@ -2,11 +2,13 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.HooplaScope;
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONString;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,7 +34,7 @@ class HooplaProcessor {
 		}
 	}
 
-	void processRecord(GroupedWorkSolr groupedWork, String identifier) {
+	void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -104,7 +106,7 @@ class HooplaProcessor {
 					groupedWork.addSeries(series);
 					String volume = "";
 					if (rawResponse.has("episode")){
-						volume = rawResponse.getString("episode");
+						volume = rawResponse.get("episode").toString();
 					}
 					groupedWork.addSeriesWithVolume(series, volume);
 				}
@@ -188,7 +190,9 @@ class HooplaProcessor {
 				String publisher = rawResponse.getString("publisher");
 				groupedWork.addPublisher(publisher);
 				//publication date
-				String releaseYear = rawResponse.getString("year");
+				Object yearObj = rawResponse.get("year");
+				String releaseYear = yearObj.toString();
+
 				groupedWork.addPublicationDate(releaseYear);
 				//physical description
 				if (rawResponse.has("duration")){
@@ -212,6 +216,7 @@ class HooplaProcessor {
 				itemInfo.setIsEContent(true);
 				itemInfo.seteContentUrl(rawResponse.getString("url"));
 				itemInfo.setShelfLocation("Online Hoopla Collection");
+				itemInfo.setDetailedLocation("Online Hoopla Collection");
 				itemInfo.setCallNumber("Online Hoopla");
 				itemInfo.setSortableCallNumber("Online Hoopla");
 				itemInfo.setFormat(primaryFormat);
@@ -290,11 +295,11 @@ class HooplaProcessor {
 			}
 			productRS.close();
 		}catch (NullPointerException e) {
-			logger.error("Null pointer exception processing Hoopla record ", e);
+			logEntry.incErrors("Null pointer exception processing Hoopla record ", e);
 		} catch (JSONException e) {
-			logger.error("Error parsing raw data for Hoopla", e);
+			logEntry.incErrors("Error parsing raw data for Hoopla", e);
 		} catch (SQLException e) {
-			logger.error("Error loading information from Database for Hoopla title", e);
+			logEntry.incErrors("Error loading information from Database for Hoopla title", e);
 		}
 	}
 

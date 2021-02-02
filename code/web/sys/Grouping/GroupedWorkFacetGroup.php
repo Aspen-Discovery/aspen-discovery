@@ -216,7 +216,7 @@ class GroupedWorkFacetGroup extends DataObject
 		}
 
 		$facet = new GroupedWorkFacet();
-		$facet->setupSideFacet('publishDate', 'Publication Date', true);
+		$facet->setupSideFacet('publishDateSort', 'Publication Date', true);
 		$facet->facetGroupId = $this->id;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;

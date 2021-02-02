@@ -10,7 +10,7 @@
 				</div>
 				<div class="col-xs-9 text-center">
 					{if $record.id}
-					<a href="{$record.linkUrl}">
+					<a href="{$record.linkUrl}" aria-hidden="true">
 						{/if}
 						<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 						{if $record.id}

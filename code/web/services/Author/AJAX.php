@@ -14,6 +14,7 @@ class Author_AJAX {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getEnrichmentInfo() {
 		global $interface;
 		global $memoryWatcher;
@@ -40,11 +41,11 @@ class Author_AJAX {
 		return json_encode($enrichmentResult);
 	}
 
+	/** @noinspection PhpUnused */
 	function getWikipediaData(){
 		global $configArray;
 		global $library;
 		global $interface;
-		/** @var Memcache $memCache */
 		global $memCache;
 		$returnVal = array();
 		if ($library->showWikipediaContent == 1) {
@@ -94,5 +95,10 @@ class Author_AJAX {
 			$returnVal['success'] = false;
 		}
 		return  json_encode($returnVal);
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

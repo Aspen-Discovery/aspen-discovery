@@ -2,8 +2,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pager.php';
-require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-require_once ROOT_DIR . '/sys/Utils/Pagination.php';
+require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 
 class ListAPI extends Action
 {
@@ -11,18 +10,22 @@ class ListAPI extends Action
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
+		if ($method != 'getRSSFeed' && !IPAddress::allowAPIAccessForClientIP()){
+			$this->forbidAPIAccess();
+		}
+
+		if (!in_array($method, ['getSavedSearchTitles', 'getCacheInfoForListId', 'getSystemListTitles']) && method_exists($this, $method)) {
 			if ($method == 'getRSSFeed') {
 				header('Content-type: text/xml');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-				$xml .= $this->$_REQUEST['method']();
+				$xml .= $this->$method();
 
 				echo $xml;
 
 			} else {
-				header('Content-type: text/plain');
+				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				$output = json_encode(array('result' => $this->$method()));
@@ -59,7 +62,6 @@ class ListAPI extends Action
 	 */
 	function getPublicLists()
 	{
-		/** @var PDO $aspen_db */
 		global $aspen_db;
 		$list = new UserList();
 		$list->public = 1;
@@ -67,7 +69,7 @@ class ListAPI extends Action
 		$results = array();
 		if ($list->getNumResults() > 0) {
 			while ($list->fetch()) {
-				$query = "SELECT count(groupedWorkPermanentId) as numTitles FROM user_list_entry where listId = " . $list->id;
+				$query = "SELECT count(id) as numTitles FROM user_list_entry where listId = " . $list->id;
 				$stmt = $aspen_db->prepare($query);
 				$stmt->setFetchMode(PDO::FETCH_ASSOC);
 				$success = $stmt->execute();
@@ -92,15 +94,17 @@ class ListAPI extends Action
 	/**
 	 * Get all lists that a particular user has created.
 	 * includes id, title, description, number of titles, and whether or not the list is public
+	 * @noinspection PhpUnused
 	 */
 	function getUserLists()
 	{
-		$username = $_REQUEST['username'];
-		$password = $_REQUEST['password'];
-		$user = UserAccount::validateAccount($username, $password);
 		if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
 			return array('success' => false, 'message' => 'The username and password must be provided to load lists.');
 		}
+
+        $username = $_REQUEST['username'];
+        $password = $_REQUEST['password'];
+        $user = UserAccount::validateAccount($username, $password);
 
 		if ($user == false) {
 			return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
@@ -123,7 +127,7 @@ class ListAPI extends Action
 				);
 			}
 		}
-		require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+		require_once(ROOT_DIR . '/sys/Suggestions.php');
 		$suggestions = Suggestions::getSuggestions($userId);
 		if (count($suggestions) > 0) {
 			$results[] = array(
@@ -139,6 +143,7 @@ class ListAPI extends Action
 
 	/**
 	 * Get's RSS Feed
+	 * @noinspection PhpUnused
 	 */
 	function getRSSFeed()
 	{
@@ -159,7 +164,7 @@ class ListAPI extends Action
 
 			if ($titleCount > 0) {
 
-				$listTitle = $titleData["listTitle"];
+				$listTitle = $titleData["listName"];
 				$listDesc = $titleData["listDescription"];
 
 				$rssFeed .= '<title>' . $listTitle . '</title>';
@@ -267,31 +272,7 @@ class ListAPI extends Action
 				}
 			}
 
-			require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
-			$user = UserAccount::getLoggedInUser();
-			$favoriteHandler = new FavoriteHandler($list, $user, false);
-			$isMixedContentList = $favoriteHandler->isMixedUserList();
-			$orderedListOfIds = $isMixedContentList ? $favoriteHandler->getFavorites() : array();
-			// Use this array to combined Mixed Lists Back into their list-defined order
-
-			$catalogItems = $archiveItems = array();
-			$catalogIds = $favoriteHandler->getCatalogIds();
-			$archiveIds = $favoriteHandler->getArchiveIds();
-			if (count($catalogIds) > 0) {
-				$catalogItems = $this->loadTitleInformationForIds($catalogIds, $numTitlesToShow, $orderedListOfIds);
-			}
-			if (count($archiveIds) > 0) {
-				$archiveItems = $this->loadArchiveInformationForIds($archiveIds, $numTitlesToShow, $orderedListOfIds);
-			}
-			if ($isMixedContentList) {
-				$titles = $catalogItems + $archiveItems;
-				ksort($titles, SORT_NUMERIC);
-				$titles = array_slice($titles, 0, $numTitlesToShow);
-
-			} else {
-				$titles = $catalogItems + $archiveItems; // One of these should always be empty, but add them together just in case
-			}
-
+			$titles = $list->getListRecords(0, $numTitlesToShow, false, 'summary');
 
 			return array('success' => true, 'listName' => $list->title, 'listDescription' => $list->description, 'titles' => $titles);
 		} else {
@@ -366,7 +347,7 @@ class ListAPI extends Action
 					return array('success' => false, 'message' => 'A valid user must be provided to load recommendations.');
 				} else {
 					$userId = $user->id;
-					require_once(ROOT_DIR . '/services/MyResearch/lib/Suggestions.php');
+					require_once(ROOT_DIR . '/sys/Suggestions.php');
 					$suggestions = Suggestions::getSuggestions($userId);
 					$titles = array();
 					foreach ($suggestions as $id => $suggestion) {
@@ -405,6 +386,7 @@ class ListAPI extends Action
 	 * Loads caching information to determine what the list should be cached as
 	 * and whether it is cached for all users and products (general), for a single user,
 	 * or for a single product.
+	 * @noinspection PhpUnused
 	 */
 	function getCacheInfoForList()
 	{
@@ -473,48 +455,6 @@ class ListAPI extends Action
 		}
 	}
 
-	function comparePublicationDates($a, $b)
-	{
-		if ($a['pubDate'] == $b['pubDate']) {
-			return 0;
-		} else {
-			return $a['pubDate'] > $b['pubDate'] ? 1 : -1;
-		}
-	}
-
-	function loadTitleInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array())
-	{
-		$titles = array();
-		if (count($ids) > 0) {
-			/** @var SearchObject_GroupedWorkSearcher $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init();
-			$searchObject->setLimit($numTitlesToShow);
-			$searchObject->setQueryIDs($ids);
-			$searchObject->processSearch();
-			$titles = $searchObject->getTitleSummaryInformation($orderedListOfIds);
-		}
-		return $titles;
-	}
-
-	function loadArchiveInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array())
-	{
-		$titles = array();
-		if (count($ids) > 0) {
-			/** @var SearchObject_IslandoraSearcher $archiveSearchObject */
-			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
-			$archiveSearchObject->init();
-			$archiveSearchObject->setPrimarySearch(true);
-			$archiveSearchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-			$archiveSearchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
-			$archiveSearchObject->setLimit($numTitlesToShow);
-			$archiveSearchObject->setQueryIDs($ids);
-			$archiveSearchObject->processSearch();
-			$titles = $archiveSearchObject->getTitleSummaryInformation($orderedListOfIds);
-		}
-		return $titles;
-	}
-
 	function getSavedSearchTitles($searchId, $numTitlesToShow)
 	{
 		//return a random selection of 30 titles from the list.
@@ -530,6 +470,8 @@ class ListAPI extends Action
 			}
 			$searchObj->processSearch(false, false);
 			$listTitles = $searchObj->getTitleSummaryInformation();
+		}else{
+			$listTitles = false;
 		}
 
 		return $listTitles;
@@ -558,13 +500,14 @@ class ListAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/ListAPI?method=createList&username=23025003575917&password=1234&title=Test+List&description=Test&public=0
+	 * https://aspenurl/API/ListAPI?method=createList&username=userbarcode&password=userpin&title=Test+List&description=Test&public=0
 	 * </code>
 	 *
 	 * Sample Response:
 	 * <code>
 	 * {"result":{"success":true,"listId":"1688"}}
 	 * </code>
+	 * @noinspection PhpUnused
 	 */
 	function createList()
 	{
@@ -584,10 +527,11 @@ class ListAPI extends Action
 			$list->find();
 			if (isset($_REQUEST['recordIds'])) {
 				$_REQUEST['listId'] = $list->id;
-				$result = $this->addTitlesToList();
-				return $result;
+				return $this->addTitlesToList();
+			}else{
+				//There wasn't anything to add so it worked
+				return array('success' => true, 'listId' => $list->id);
 			}
-			return array('success' => true, 'listId' => $list->id);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -618,7 +562,7 @@ class ListAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/ListAPI?method=createList&username=23025003575917&password=1234&title=Test+List&description=Test&public=0
+	 * https://aspenurl/API/ListAPI?method=createList&username=userbarcode&password=userpin&title=Test+List&description=Test&public=0
 	 * </code>
 	 *
 	 * Sample Response:
@@ -651,11 +595,12 @@ class ListAPI extends Action
 			} else {
 				$numAdded = 0;
 				foreach ($recordIds as $id) {
-					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 					$userListEntry = new UserListEntry();
 					$userListEntry->listId = $list->id;
 					if (preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)) {
-						$userListEntry->groupedWorkPermanentId = $id;
+						$userListEntry->source = 'GroupedWork';
+						$userListEntry->sourceId = $id;
 
 						$existingEntry = false;
 						if ($userListEntry->find(true)) {
@@ -703,13 +648,14 @@ class ListAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/ListAPI?method=clearListTitles&username=23025003575917&password=1234&listId=1234
+	 * https://aspenurl/API/ListAPI?method=clearListTitles&username=userbarcode&password=userpin&listId=1234
 	 * </code>
 	 *
 	 * Sample Response:
 	 * <code>
 	 * {"result":{"success":true}}
 	 * </code>
+	 * @noinspection PhpUnused
 	 */
 	function clearListTitles()
 	{
@@ -736,12 +682,12 @@ class ListAPI extends Action
 
 	function getSystemListTitles($listName, $numTitlesToShow)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
 		$listTitles = $memCache->get('system_list_titles_' . $listName);
 		if ($listTitles == false || isset($_REQUEST['reload'])) {
 			//return a random selection of 30 titles from the list.
+			/** @var SearchObject_GroupedWorkSearcher $searchObj */
 			$searchObj = SearchObjectFactory::initSearchObject();
 			$searchObj->init();
 			$searchObj->setBasicQuery("*:*");
@@ -766,18 +712,15 @@ class ListAPI extends Action
 	 *
 	 * @param string $selectedList machine readable name of the new york times list
 	 * @return array
+	 * @throws Exception
 	 */
-	public function createUserListFromNYT($selectedList = null)
+	public function createUserListFromNYT($selectedList = null): array
 	{
-		global $configArray;
-
 		if ($selectedList == null) {
 			$selectedList = $_REQUEST['listToUpdate'];
 		}
 
-
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
-		global $configArray;
 		$nytSettings = new NewYorkTimesSetting();
 		if (!$nytSettings->find(true)) {
 			return array(
@@ -826,22 +769,24 @@ class ListAPI extends Action
 		//Get a list of titles from NYT API
 		$listTitlesRaw = $nyt_api->get_list($selectedList);
 		$listTitles = json_decode($listTitlesRaw);
-		//TODO: error handling for this call
 
+		$lastModified = date_timestamp_get(new DateTime($listTitles->last_modified));
+		$lastModifiedDay = date("M j, Y", $lastModified);
 
 		// Look for selected List
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$nytList = new UserList();
 		$nytList->user_id = $nytListUser->id;
 		$nytList->title = $selectedListTitle;
 		$listExistsInAspen = $nytList->find(1);
 
-		//We didn't find the list in Pika, create one
+		//We didn't find the list in Aspen Discovery, create one
 		if (!$listExistsInAspen) {
 			$nytList = new UserList();
 			$nytList->title = $selectedListTitle;
-			$nytList->description = "New York Times - " . $selectedListTitleShort; //TODO: Add update date to list description
+			$nytList->description = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
 			$nytList->public = 1;
+			$nytList->searchable = 1;
 			$nytList->defaultSort = 'custom';
 			$nytList->user_id = $nytListUser->id;
 			$success = $nytList->insert();
@@ -862,10 +807,20 @@ class ListAPI extends Action
 
 		} else {
 			$listID = $nytList->id;
+			$newDescription = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
+			if ($nytList->description == $newDescription){
+				//Nothing has changed, no need to update
+				return array(
+					'success' => true,
+					'message' => "List <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a> has not changed since it was last loaded."
+				);
+			}
+			$nytList->description = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
 			$results = array(
 				'success' => true,
 				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"
 			);
+			$nytList->searchable = 1;
 			//We already have a list, clear the contents so we don't have titles from last time
 			$nytList->removeAllListEntries();
 		}
@@ -875,7 +830,7 @@ class ListAPI extends Action
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		// Include UserListEntry Class
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
 		$numTitlesAdded = 0;
 		foreach ($listTitles->results as $titleResult) {
@@ -920,7 +875,8 @@ class ListAPI extends Action
 
 				$userListEntry = new UserListEntry();
 				$userListEntry->listId = $nytList->id;
-				$userListEntry->groupedWorkPermanentId = $aspenID;
+				$userListEntry->source = 'GroupedWork';
+				$userListEntry->sourceId = $aspenID;
 
 				$existingEntry = false;
 				if ($userListEntry->find(true)) {
@@ -950,5 +906,10 @@ class ListAPI extends Action
 		}
 
 		return $results;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

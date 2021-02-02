@@ -12,12 +12,9 @@ class CronProcessLogEntry extends DataObject
 	public $endTime;
 	public $numErrors;
 	public $numUpdated;
+	public $numSkipped;
 	public $notes;
 
-	function keys() {
-		return array('id');
-	}
-	
 	function getElapsedTime(){
 		if (!isset($this->endTime) || is_null($this->endTime)){
 			return "";

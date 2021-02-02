@@ -20,9 +20,14 @@
   color: @gray-dark;
   //text-shadow: 1px 1px #fff;
 }
-#account-settings-accordion .active .panel-title{
-  color: #fff;
-  //text-shadow: 1px 1px @gray;
+#account-link-accordion .panel.active, #account-settings-accordion .panel.active{
+  .panel-title {
+    color: white;
+
+    > a {
+      color: white;
+    }
+  }
 }
 #account-settings-accordion .panel-body{
   font-size:12px;
@@ -33,21 +38,15 @@
   border-style: solid;
 }
 .overdueLabel{
-  color: red;
+  color: #c62828;
   font-weight: bold;
 }
-.dueSoonLabel{
-  color: #e58e29;
+.return_claim{
+  color: #2e7d32;
   font-weight: bold;
 }
 .holdDisclaimerLibrary{
   font-weight: bold;
-}
-#mobileHeader {
-  .myAccountLink {
-    font-weight: bold;
-    font-size: 18px;
-  }
 }
 
 // Account Profile
@@ -57,4 +56,13 @@
   background-color: @btn-primary-bg;
   .box-shadow(none);
   color: @btn-primary-color;
+}
+
+#library-barcode{
+  text-align: center;
+  font-weight: bold;
+}
+
+#library-barcode-svg{
+  max-width: 100%;
 }

@@ -161,3 +161,7 @@ main.tmpcss
 
 code/web/fonts/HalisR-Regular.otf
 code/web/fonts/HalisR-S-Regular.otf
+code/web/migrations/importResults.txt
+.idea/aspen-discovery.iml
+.idea/*.xml
+.idea/dataSources/**

@@ -1,6 +1,6 @@
 {strip}
 <div id="main-content" class="col-md-12">
-	<h3>{translate text="Translations"}</h3>
+	<h1>{translate text="Translations"}</h1>
 	<form class="form" id="translationSettings">
 		<div class="form-group">
 			{if $translationModeActive}
@@ -10,7 +10,13 @@
 			{/if}
 
 			<button class="btn btn-primary" type="submit" name="exportAllTranslations">{translate text="Export All Translations"}</button>
+			{if $activeLanguage->id != 1}
+				<button class="btn btn-primary" type="submit" name="exportForBulkTranslation">{translate text="Export For Bulk Translation"}</button>
+			{/if}
 			<a class="btn btn-primary" id="importTranslations" href="/Translation/ImportTranslations">{translate text="Import Translations"}</a>
+			{if $activeLanguage->id != 1}
+				<a class="btn btn-primary" id="importBulkTranslations" href="/Translation/ImportBulkTranslations">{translate text="Import Bulk Translations"}</a>
+			{/if}
 		</div>
 		<div class="form-group">
 			<input type="checkbox" name="showAllTranslations" id="showAllTranslations" {if $showAllTranslations}checked{/if}>

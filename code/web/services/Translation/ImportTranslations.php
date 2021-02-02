@@ -2,7 +2,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class ImportTranslations extends Admin_Admin
+class Translation_ImportTranslations extends Admin_Admin
 {
 	function launch(){
 		global $interface;
@@ -67,7 +67,6 @@ class ImportTranslations extends Admin_Admin
 								}
 							}
 						}
-						/** @var Memcache $memCache */
 						global $memCache;
 						while ($curRow = fgetcsv($fHnd)) {
 							$term = $curRow[0];
@@ -111,8 +110,23 @@ class ImportTranslations extends Admin_Admin
 		$this->display('importTranslationsForm.tpl', 'Import Translations');
 	}
 
-	function getAllowableRoles()
+	function getBreadcrumbs()
 	{
-		return ['opacAdmin', 'translator'];
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#translations', 'Languages and Translations');
+		$breadcrumbs[] = new Breadcrumb('/Translation/Translations', 'Translations');
+		$breadcrumbs[] = new Breadcrumb('', 'Import Translations');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'translations';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Translate Aspen');
 	}
 }

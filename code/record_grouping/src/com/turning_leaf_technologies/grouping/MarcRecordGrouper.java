@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.grouping;
 
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -28,11 +29,9 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	 * @param dbConnection   - The Connection to the database
 	 * @param profile        - The profile that we are grouping records for
 	 * @param logger         - A logger to store debug and error messages to.
-	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
-	 *                         Determines if old works are loaded at the beginning.
 	 */
-	public MarcRecordGrouper(String serverName, Connection dbConnection, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
-		super(serverName, profile, dbConnection, fullRegrouping, logger);
+	public MarcRecordGrouper(String serverName, Connection dbConnection, IndexingProfile profile, BaseLogEntry logEntry, Logger logger) {
+		super(serverName, profile, dbConnection, logEntry, logger);
 		this.profile = profile;
 
 		itemTag = profile.getItemTag();
@@ -72,7 +71,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			}
 			translationMapsRS.close();
 		}catch (Exception e){
-			logger.error("Error loading translation maps", e);
+			logEntry.incErrors("Error loading translation maps", e);
 		}
 
 	}

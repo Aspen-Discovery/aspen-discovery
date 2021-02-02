@@ -29,6 +29,7 @@ class SideLoads_DownloadMarc extends Admin_Admin
 				ob_clean();
 				flush();
 				readfile($fullName);
+				die();
 			}else{
 				$interface->assign('error', 'Could not find the file to download.');
 			}
@@ -38,7 +39,26 @@ class SideLoads_DownloadMarc extends Admin_Admin
 		$this->display('sideloadError.tpl', 'Error Downloading File');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#side_loads', 'Side Load');
+		$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads', 'Side Loads');
+		if (!empty($this->activeObject) && $this->activeObject instanceof SideLoad){
+			$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads?objectAction=edit&id=' . $this->activeObject->id , $this->activeObject->name);
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Download MARC Record');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'side_loads';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Side Loads');
 	}
 }

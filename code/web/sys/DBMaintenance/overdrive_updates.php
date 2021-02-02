@@ -309,70 +309,151 @@ function getOverDriveUpdates()
 				'ALTER TABLE location DROP COLUMN enableOverdriveCollection',
 				'ALTER TABLE location DROP COLUMN repeatInOverdrive',
 			]
+		],
+
+		'overdrive_module_add_log' =>[
+			'title' => 'OverDrive add log info to module',
+			'description' => 'Add logging information to OverDrive module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/OverDrive/OverDriveExtractLogEntry.php', logClassName='OverDriveExtractLogEntry' WHERE name='OverDrive'",
+			]
+		],
+
+		'overdrive_part_count' => [
+			'title' => 'OverDrive part count',
+			'description' => 'Increase the size of the partCount field',
+			'sql' => [
+				'ALTER TABLE overdrive_api_product_formats CHANGE partCount partCount SMALLINT',
+			]
+		],
+
+		'overdrive_add_setting_to_scope' => [
+			'title' => 'Add settingId to OverDrive scope',
+			'description' => 'Allow multiple settings to be defined for OverDrive within a consortium',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE overdrive_scopes ADD column settingId INT(11)',
+				'updateOverDriveScopes'
+			]
+		],
+
+		'overdrive_add_setting_to_log' => [
+			'title' => 'Add settingID to OverDrive log entry',
+			'description' => 'Define which settings are being logged',
+			'sql' => [
+				'ALTER table overdrive_extract_log ADD column settingId INT(11)',
+				'updateOverDriveLogEntries'
+			]
+		],
+
+		'overdrive_add_setting_to_product_availability' => [
+			'title' => 'Add settingID to OverDrive availability',
+			'description' => 'Define which settings the availability belongs to',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER table overdrive_api_product_availability ADD column settingId INT(11)',
+				'updateOverDriveAvailabilities'
+			]
+		],
+
+		'overdrive_usage_add_instance' => [
+			'title' => 'OverDrive Usage - Instance Information',
+			'description' => 'Add Instance Information to OverDrive Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE overdrive_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE overdrive_record_usage DROP INDEX overdriveId',
+				'ALTER TABLE overdrive_record_usage ADD UNIQUE INDEX (instance, overdriveId, year, month)',
+				'ALTER TABLE user_overdrive_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_overdrive_usage DROP INDEX userId',
+				'ALTER TABLE user_overdrive_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			]
+		],
+
+		'overdrive_client_credentials' => [
+			'title' => 'OverDrive Scope Client Credentials',
+			'description' => 'Add client credential informtion to OverDrive Scopes',
+			'sql' => [
+				'ALTER TABLE overdrive_scopes ADD COLUMN clientSecret VARCHAR(50)',
+				'ALTER TABLE overdrive_scopes ADD COLUMN clientKey VARCHAR(50)',
+			]
 		]
 	);
 }
 
-function buildDefaultOverDriveScopes()
+function buildDefaultOverDriveScopes($update)
 {
 	global $aspen_db;
 
-	//Process libraries
-	$uniqueOverDriveSettingsSQL = "SELECT libraryId as id, displayName, enableOverdriveCollection, includeOverDriveAdult, includeOverDriveTeen, includeOverDriveKids, overDriveAuthenticationILSName, overdriveRequirePin, overdriveAdvantageName, overdriveAdvantageProductsKey From library";
+	try {
 
-	$uniqueSettingsRS = $aspen_db->query($uniqueOverDriveSettingsSQL, PDO::FETCH_ASSOC);
-	$uniqueRow = $uniqueSettingsRS->fetch();
-	while ($uniqueRow != null){
-		$library = new Library();
-		$library->libraryId = $uniqueRow['id'];
-		if ($library->find(true)) {
-			if ($uniqueRow['enableOverDriveCollection'] = 0 || ($uniqueRow['includeOverDriveAdult'] == 0 && $uniqueRow['includeOverDriveTeen'] == 0 && $uniqueRow['includeOverDriveKids'] == 0)) {
-				$library->overDriveScopeId = -1;
-			}else{
-				//Get the correct id
-				$overdriveScope = getOverDriveScopeSettings($uniqueRow);
-				if ($overdriveScope->find(true)){
-					$library->overDriveScopeId = $overdriveScope->id;
-				}else{
-					$overdriveScope->name = 'Library: ' . $uniqueRow['displayName'];
-					$overdriveScope->insert();
-					$library->overDriveScopeId = $overdriveScope->id;
-				}
-			}
-			$library->update();
-		}
+		//Process libraries
+		$uniqueOverDriveSettingsSQL = "SELECT libraryId as id, displayName, enableOverdriveCollection, includeOverDriveAdult, includeOverDriveTeen, includeOverDriveKids, overDriveAuthenticationILSName, overdriveRequirePin, overdriveAdvantageName, overdriveAdvantageProductsKey From library";
+
+		$uniqueSettingsRS = $aspen_db->query($uniqueOverDriveSettingsSQL, PDO::FETCH_ASSOC);
 		$uniqueRow = $uniqueSettingsRS->fetch();
-	}
+		while ($uniqueRow != null) {
+			$library = new Library();
+			$library->libraryId = $uniqueRow['id'];
+			if ($library->find(true)) {
+				if ($uniqueRow['enableOverDriveCollection'] = 0 || ($uniqueRow['includeOverDriveAdult'] == 0 && $uniqueRow['includeOverDriveTeen'] == 0 && $uniqueRow['includeOverDriveKids'] == 0)) {
+					$library->overDriveScopeId = -1;
+				} else {
+					//Get the correct id
+					$overdriveScope = getOverDriveScopeSettings($uniqueRow);
+					if ($overdriveScope->find(true)) {
+						$library->overDriveScopeId = $overdriveScope->id;
+					} else {
+						$overdriveScope->name = 'Library: ' . $uniqueRow['displayName'];
+						$overdriveScope->insert();
+						$library->overDriveScopeId = $overdriveScope->id;
+					}
+				}
+				$library->update();
+			}
+			$uniqueRow = $uniqueSettingsRS->fetch();
+		}
 
-	//Process locations
-	$uniqueOverDriveSettingsSQL = "SELECT locationId as id, locationId, location.libraryId, location.displayName, location.enableOverdriveCollection, location.includeOverDriveAdult, location.includeOverDriveTeen, location.includeOverDriveKids, overDriveAuthenticationILSName, overdriveRequirePin, overdriveAdvantageName, overdriveAdvantageProductsKey, library.overDriveScopeId as libraryOverDriveScopeId From location inner join library on location.libraryId = library.libraryId";
+		//Process locations
+		$uniqueOverDriveSettingsSQL = "SELECT locationId as id, locationId, location.libraryId, location.displayName, location.enableOverdriveCollection, location.includeOverDriveAdult, location.includeOverDriveTeen, location.includeOverDriveKids, overDriveAuthenticationILSName, overdriveRequirePin, overdriveAdvantageName, overdriveAdvantageProductsKey, library.overDriveScopeId as libraryOverDriveScopeId From location inner join library on location.libraryId = library.libraryId";
 
-	$uniqueSettingsRS = $aspen_db->query($uniqueOverDriveSettingsSQL, PDO::FETCH_ASSOC);
-	$uniqueRow = $uniqueSettingsRS->fetch();
-	while ($uniqueRow != null){
-		$location = new Location();
-		$location->locationId = $uniqueRow['locationId'];
-		if ($location->find(true)) {
-			if ($uniqueRow['enableOverDriveCollection'] = 0 || ($uniqueRow['includeOverDriveAdult'] == 0 && $uniqueRow['includeOverDriveTeen'] == 0 && $uniqueRow['includeOverDriveKids'] == 0)) {
-				$location->overDriveScopeId = -2;
-			}else{
-				//Get the correct id
-				$overdriveScope = getOverDriveScopeSettings($uniqueRow);
-				if ($overdriveScope->find(true)) {
-					if ($overdriveScope->id == $uniqueRow['libraryOverDriveScopeId']){
-						$location->overDriveScopeId = -1;
-					}else{
+		$uniqueSettingsRS = $aspen_db->query($uniqueOverDriveSettingsSQL, PDO::FETCH_ASSOC);
+		$uniqueRow = $uniqueSettingsRS->fetch();
+		while ($uniqueRow != null) {
+			$location = new Location();
+			$location->locationId = $uniqueRow['locationId'];
+			if ($location->find(true)) {
+				if ($uniqueRow['enableOverDriveCollection'] = 0 || ($uniqueRow['includeOverDriveAdult'] == 0 && $uniqueRow['includeOverDriveTeen'] == 0 && $uniqueRow['includeOverDriveKids'] == 0)) {
+					$location->overDriveScopeId = -2;
+				} else {
+					//Get the correct id
+					$overdriveScope = getOverDriveScopeSettings($uniqueRow);
+					if ($overdriveScope->find(true)) {
+						if ($overdriveScope->id == $uniqueRow['libraryOverDriveScopeId']) {
+							$location->overDriveScopeId = -1;
+						} else {
+							$location->overDriveScopeId = $overdriveScope->id;
+						}
+					} else {
+						$overdriveScope->name = 'Location: ' . $uniqueRow['displayName'];
+						$overdriveScope->insert();
 						$location->overDriveScopeId = $overdriveScope->id;
 					}
-				}else{
-					$overdriveScope->name = 'Location: ' . $uniqueRow['displayName'];
-					$overdriveScope->insert();
-					$location->overDriveScopeId = $overdriveScope->id;
 				}
+				$location->update();
 			}
-			$location->update();
+			$uniqueRow = $uniqueSettingsRS->fetch();
 		}
-		$uniqueRow = $uniqueSettingsRS->fetch();
+		$update['status'] = 'Update succeeded';
+	}catch (Exception $e){
+		if (isset($update['continueOnError']) && $update['continueOnError']) {
+			if (!isset($update['status'])) {
+				$update['status'] = '';
+			}
+			$update['status'] .= 'Warning: ' . $e;
+		} else {
+			$update['status'] = 'Update failed ' . $e;
+		}
 	}
 }
 
@@ -392,4 +473,44 @@ function getOverDriveScopeSettings($uniqueRow): OverDriveScope
 	$overdriveScope->overdriveAdvantageName = $uniqueRow['overdriveAdvantageName'];
 	$overdriveScope->overdriveAdvantageProductsKey = $uniqueRow['overdriveAdvantageProductsKey'];
 	return $overdriveScope;
+}
+
+/** @noinspection PhpUnused */
+function updateOverDriveScopes(){
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+	$overdriveSettings = new OverDriveSetting();
+	if ($overdriveSettings->find(true)){
+		$overdriveScopes = new OverDriveScope();
+		$overdriveScopes->find();
+		while ($overdriveScopes->fetch()){
+			$overdriveScopes->settingId = $overdriveSettings->id;
+			$overdriveScopes->update();
+		}
+	}
+}
+
+
+
+
+/** @noinspection PhpUnused */
+function updateOverDriveLogEntries(){
+	global $aspen_db;
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveExtractLogEntry.php';
+	$overdriveSettings = new OverDriveSetting();
+	if ($overdriveSettings->find(true)){
+		$aspen_db->query("update overdrive_extract_log set settingId = {$overdriveSettings->id}");
+	}
+}
+
+/** @noinspection PhpUnused */
+function updateOverDriveAvailabilities(){
+	global $aspen_db;
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
+	$overdriveSettings = new OverDriveSetting();
+	if ($overdriveSettings->find(true)){
+		$aspen_db->query("update overdrive_api_product_availability set settingId = {$overdriveSettings->id}");
+	}
 }

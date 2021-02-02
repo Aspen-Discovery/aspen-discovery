@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SqlResolve */
 
 function getLibraryLocationUpdates(){
 	return array(
@@ -37,17 +37,9 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'library_5' => array(
-			'title' => 'Library 5',
-			'description' => 'Set up a link to boopsie in mobile',
-			'sql' => array(
-				"ALTER TABLE `library` ADD `boopsieLink` VARCHAR(150) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;",
-			),
-		),
-
 		'library_6' => array(
 			'title' => 'Library 6',
-			'description' => 'Add fields orginally defined for Marmot',
+			'description' => 'Add fields originally defined for Marmot',
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `library` ADD `showHoldCancelDate` TINYINT(4) NOT NULL DEFAULT '0';",
@@ -83,7 +75,7 @@ function getLibraryLocationUpdates(){
 
 		'library_8' => array(
 			'title' => 'Library 8',
-			'description' => 'Add eContenLinkRules to determine how to load library specific link urls',
+			'description' => 'Add eContentLinkRules to determine how to load library specific link urls',
 			'sql' => array(
 				"ALTER TABLE `library` ADD `eContentLinkRules` VARCHAR(512) DEFAULT '';",
 			),
@@ -128,7 +120,7 @@ function getLibraryLocationUpdates(){
 			'description' => 'Add abbreviation for library name for use in some cases where the full name is not desired.',
 			'sql' => array(
 				"ALTER TABLE `library` ADD `abbreviatedDisplayName` VARCHAR(20) DEFAULT '';",
-				"UPDATE `library` SET `abbreviatedDisplayName` = LEFT(`displayName`, 20);",
+				"UPDATE `library` SET `abbreviatedDisplayName` = LEFT(`displayName`, 20) WHERE abbreviatedDisplayName = '';",
 			),
 		),
 
@@ -150,7 +142,7 @@ function getLibraryLocationUpdates(){
 
 		'library_15' => array(
 			'title' => 'Library 15',
-			'description' => 'Add showProspectorResultsAtEndOfSearch to library so prospector titles can be removed from search results without completely diasabling prospector',
+			'description' => 'Add showProspectorResultsAtEndOfSearch to library so prospector titles can be removed from search results without completely disabling prospector',
 			'sql' => array(
 				"ALTER TABLE `library` ADD `showProspectorResultsAtEndOfSearch` TINYINT DEFAULT '1';",
 			),
@@ -165,6 +157,16 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE `library` ADD `overdriveAdvantageProductsKey` VARCHAR(20) DEFAULT '';",
 			),
 		),
+
+		'library_remove_overdrive_advantage_info' => [
+			'title' => 'Library remove OverDrive Advantage Info',
+			'description' => 'Remove OverDrive Advantage Info from library info because it already exists in the scopes',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE library DROP COLUMN overdriveAdvantageName',
+				'ALTER TABLE library DROP COLUMN overdriveAdvantageProductsKey',
+			]
+		],
 
 		'library_17' => array(
 			'title' => 'Library 17',
@@ -250,9 +252,17 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
+		'library_system_message' => [
+			'title' => 'Library System Message Length',
+			'description' => 'Increase library system message length',
+			'sql' => [
+				"ALTER TABLE library change column systemMessage systemMessage TEXT",
+			]
+		],
+
 		'library_30' => array(
 			'title' => 'Library 30',
-			'description' => 'Add bettter controls for restricting what is searched',
+			'description' => 'Add better controls for restricting what is searched',
 			'sql' => array(
 				"ALTER TABLE library ADD restrictSearchByLibrary TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE library ADD includeDigitalCollection TINYINT(1) DEFAULT '1'",
@@ -402,16 +412,46 @@ function getLibraryLocationUpdates(){
 		),
 
 		'library_links_display_options' => array(
-				'title' => 'LibraryLinks Display Options',
-				'description' => 'Allow showing library links in account or help. ',
-				'continueOnError' => true,
-				'sql' => array(
-						"ALTER TABLE `library_links` ADD COLUMN `showInAccount` TINYINT DEFAULT 0",
-						"ALTER TABLE `library_links` ADD COLUMN `showInHelp` TINYINT DEFAULT 1",
-						"ALTER TABLE `library_links` ADD COLUMN `showExpanded` TINYINT DEFAULT 0",
-				),
+			'title' => 'LibraryLinks Display Options',
+			'description' => 'Allow showing library links in account or help. ',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE `library_links` ADD COLUMN `showInAccount` TINYINT DEFAULT 0",
+				"ALTER TABLE `library_links` ADD COLUMN `showInHelp` TINYINT DEFAULT 1",
+				"ALTER TABLE `library_links` ADD COLUMN `showExpanded` TINYINT DEFAULT 0",
+			),
 		),
 
+		'library_links_open_in_new_tab' => [
+			'title' => 'LibraryLinks Open in new tab',
+			'description' => 'Allow library links to be opened in a new tab. ',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE `library_links` ADD COLUMN `openInNewTab` TINYINT DEFAULT 1",
+			),
+		],
+
+		'library_links_showToLoggedInUsersOnly' => [
+			'title' => 'Library Links - Show to logged in users only',
+			'description' => 'Allow library links to only be shown to users that are logged in',
+			'sql' => [
+				'ALTER TABLE library_links ADD COLUMN showToLoggedInUsersOnly TINYINT DEFAULT 0'
+			]
+		],
+
+
+		'library_links_menu_update' => [
+			'title' => 'Library Links - updates for menu improvements',
+			'description' => 'Menu system improvements for library links',
+			'sql' => [
+				'ALTER TABLE library_links ADD COLUMN showInTopMenu TINYINT DEFAULT 0',
+				"ALTER TABLE library_links ADD COLUMN iconName VARCHAR(30) DEFAULT ''",
+				'ALTER TABLE library_links ADD COLUMN alwaysShowIconInTopMenu TINYINT DEFAULT 0',
+				'ALTER TABLE library_links ADD COLUMN published TINYINT DEFAULT 1',
+				'ALTER TABLE library_links DROP COLUMN showInAccount',
+				'ALTER TABLE library_links DROP COLUMN showInHelp',
+			]
+		],
 
 		'library_top_links' => array(
 			'title' => 'Library Top Links',
@@ -429,6 +469,14 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE `library_top_links` ADD INDEX `libraryId` (`libraryId`)",
 			),
 		),
+
+		'remove_library_top_links' => [
+			'title' => 'Remove Library Top Links',
+			'description' => 'Remove unused Library Top Links',
+			'sql' => [
+				'DROP TABLE library_top_links'
+			]
+		],
 
 		'library_pin_reset' => array(
 			'title' => 'Library PIN Reset',
@@ -695,17 +743,17 @@ function getLibraryLocationUpdates(){
 
 		'collapse_facets' => array(
 			'title' => 'Collapse Facets',
-			'description' => 'Collapse all facets by default. To match new Pika style.',
+			'description' => 'Collapse all facets by default. To match new style.',
 			'continueOnError' => true,
 			'sql' => array(
-				"UPDATE location_facet_setting SET collapseByDefault = '1'",
-				"UPDATE library_facet_setting SET collapseByDefault = '1'",
+				"UPDATE location_facet_setting SET collapseByDefault = '1' where true",
+				"UPDATE library_facet_setting SET collapseByDefault = '1' where true",
 			),
 		),
 
 		'location_1' => array(
 			'title' => 'Location 1',
-			'description' => 'Add fields orginally defined for Marmot',
+			'description' => 'Add fields originally defined for Marmot',
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `location` ADD `defaultPType` INT(11) NOT NULL DEFAULT '-1';",
@@ -747,7 +795,7 @@ function getLibraryLocationUpdates(){
 
 		'location_7' => array(
 			'title' => 'Location 7',
-			'description' => 'Add extraLocationCodesToInclude field for indexing of juvenile collections and other special collections, and add bettter controls for restricting what is searched',
+			'description' => 'Add extraLocationCodesToInclude field for indexing of juvenile collections and other special collections, and add better controls for restricting what is searched',
 			'sql' => array(
 				"ALTER TABLE location ADD extraLocationCodesToInclude VARCHAR(255) DEFAULT ''",
 				"ALTER TABLE location ADD restrictSearchByLocation TINYINT(1) DEFAULT '0'",
@@ -953,6 +1001,16 @@ function getLibraryLocationUpdates(){
 			'sql' => array(
 				"ALTER TABLE `library` ADD `youtubeLink` VARCHAR(255) DEFAULT NULL AFTER twitterLink;",
 				"ALTER TABLE `library` ADD `instagramLink` VARCHAR(255) DEFAULT NULL AFTER youtubeLink;",
+			),
+		),
+
+		'pinterest_library_contact_links' => array(
+			'title' => 'Pinterest Library Contact Links',
+			'description' => 'Add additional contact link for Pinterest to library config.',
+			'dependencies' => array(),
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE `library` ADD `pinterestLink` VARCHAR(255) DEFAULT NULL AFTER twitterLink;",
 			),
 		),
 
@@ -1162,7 +1220,7 @@ function getLibraryLocationUpdates(){
 
 		'disable_auto_correction_of_searches' => array(
 			'title' => 'Disable Automatic Search Corrections',
-			'description' => 'Whether or not Pika will try to automatically replace search terms (similar to Google) .',
+			'description' => 'Whether or not we will try to automatically replace search terms (similar to Google) .',
 			'sql' => array(
 				"ALTER TABLE `library` ADD COLUMN `allowAutomaticSearchReplacements` TINYINT(1) DEFAULT 1",
 			),
@@ -1286,45 +1344,45 @@ function getLibraryLocationUpdates(){
 			),
 
 			'library_max_fines_for_account_update' => array(
-					'title' => 'Library Maximum fines to allow account updates',
-					'description' => 'Add option to prevent patrons with high fines from updating their account',
-					'sql' => array(
-							'ALTER TABLE `library` ADD COLUMN `maxFinesToAllowAccountUpdates` FLOAT DEFAULT 10',
-					),
+				'title' => 'Library Maximum fines to allow account updates',
+				'description' => 'Add option to prevent patrons with high fines from updating their account',
+				'sql' => array(
+					'ALTER TABLE `library` ADD COLUMN `maxFinesToAllowAccountUpdates` FLOAT DEFAULT 10',
+				),
 			),
 
 			'show_Refresh_Account_Button' => array(
-					'title' => 'Show Refresh Account Button Setting',
-					'description' => 'Add library admin option to show Refresh Account button when the Pay Fines Online link is clicked.',
-					'sql' => array(
-							'ALTER TABLE `library` ADD `showRefreshAccountButton` TINYINT NOT NULL DEFAULT 1;',
-					),
+				'title' => 'Show Refresh Account Button Setting',
+				'description' => 'Add library admin option to show Refresh Account button when the Pay Fines Online link is clicked.',
+				'sql' => array(
+					'ALTER TABLE `library` ADD `showRefreshAccountButton` TINYINT NOT NULL DEFAULT 1;',
+				),
 			),
 
 			'library_eds_integration' => array(
-					'title' => 'Library EDS Integration',
-					'description' => 'Setup information for connection to EDS APIs',
-					'sql' => array(
-							'ALTER TABLE `library` ADD COLUMN `edsApiProfile` VARCHAR(50)',
-							'ALTER TABLE `library` ADD COLUMN `edsApiUsername` VARCHAR(50)',
-							'ALTER TABLE `library` ADD COLUMN `edsApiPassword` VARCHAR(50)',
-					),
+				'title' => 'Library EDS Integration',
+				'description' => 'Setup information for connection to EDS APIs',
+				'sql' => array(
+					'ALTER TABLE `library` ADD COLUMN `edsApiProfile` VARCHAR(50)',
+					'ALTER TABLE `library` ADD COLUMN `edsApiUsername` VARCHAR(50)',
+					'ALTER TABLE `library` ADD COLUMN `edsApiPassword` VARCHAR(50)',
+				),
 			),
 
 			'library_eds_search_integration' => array(
-					'title' => 'Library EDS Search Integration',
-					'description' => 'Setup information for linking to EDS',
-					'sql' => array(
-							'ALTER TABLE `library` ADD COLUMN `edsSearchProfile` VARCHAR(50)',
-					),
+				'title' => 'Library EDS Search Integration',
+				'description' => 'Setup information for linking to EDS',
+				'sql' => array(
+					'ALTER TABLE `library` ADD COLUMN `edsSearchProfile` VARCHAR(50)',
+				),
 			),
 
 			'library_patronNameDisplayStyle' => array(
-					'title' => 'Library Patron Display Name Style',
-					'description' => 'Setup the style for how the display name for patrons is generated',
-					'sql' => array(
-							"ALTER TABLE `library` ADD COLUMN `patronNameDisplayStyle` ENUM('firstinitial_lastname', 'lastinitial_firstname') DEFAULT 'firstinitial_lastname';",
-					),
+				'title' => 'Library Patron Display Name Style',
+				'description' => 'Setup the style for how the display name for patrons is generated',
+				'sql' => array(
+					"ALTER TABLE `library` ADD COLUMN `patronNameDisplayStyle` ENUM('firstinitial_lastname', 'lastinitial_firstname') DEFAULT 'firstinitial_lastname';",
+				),
 			),
 
 			'location_additional_branches_to_show_in_facets' => array(
@@ -1387,7 +1445,7 @@ function getLibraryLocationUpdates(){
 
 			'library_archive_pid' => array(
 				'title' => 'Library Archive PID',
-				'description' => 'Setup a link from Pika to the archive',
+				'description' => 'Setup a link from catalog to the archive',
 				'sql' => array(
 					'ALTER TABLE library ADD COLUMN archivePid VARCHAR(50)',
 				)
@@ -1516,7 +1574,7 @@ function getLibraryLocationUpdates(){
 
 			'location_include_library_records_to_include' => array(
 					'title' => 'Location Include Library Records To Include',
-					'description' => 'Flag for whether or not a location should include all the records to include settings for a libary automatically',
+					'description' => 'Flag for whether or not a location should include all the records to include settings for a library automatically',
 					'continueOnError' => true,
 					'sql' => array(
 							"ALTER TABLE `location` ADD COLUMN `includeLibraryRecordsToInclude` TINYINT(1) DEFAULT '0';",
@@ -1609,14 +1667,14 @@ function getLibraryLocationUpdates(){
 					),
 			),
 
-			'library_show_series_in_main_details' => array(
-					'title' => 'Default Show Series In Main Details On',
-					'description' => 'Update all libraries to have show series in main details set to on',
-					'continueOnError' => false,
-					'sql' => array(
-							"updateShowSeriesInMainDetails",
-					),
+		'library_show_series_in_main_details' => array(
+			'title' => 'Default Show Series In Main Details On',
+			'description' => 'Updates to all libraries to have show series in main details set to on',
+			'continueOnError' => false,
+			'sql' => array(
+				"updateShowSeriesInMainDetails",
 			),
+		),
 
 		'library_use_theme' => array(
 			'title' => 'Use Themes for libraries and locations',
@@ -1721,6 +1779,15 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+		'library_location_axis360_scoping' => [
+			'title' => 'Library and Location Scoping of Axis360',
+			'description' => 'Add information about how to scope Axis360 records',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN axis360ScopeId INT(11) default -1',
+				'ALTER TABLE location ADD COLUMN axis360ScopeId INT(11) default -1',
+			]
+		],
+
 		'library_show_quick_copy' => [
 			'title' => 'Library Show Quick Copy',
 			'description' => 'Add a column for whether or not quick copy should be shown',
@@ -1735,6 +1802,14 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				'ALTER TABLE location_hours DROP INDEX locationId',
 				'ALTER TABLE location_hours ADD INDEX location (locationId, day, open)',
+			]
+		],
+
+		'location_add_notes_to_hours' =>[
+			'title' => 'Location add notes to hours',
+			'description' => 'Add a column for notes for the time period when the library is open',
+			'sql' => [
+				'ALTER TABLE location_hours ADD COLUMN notes VARCHAR(255)'
 			]
 		],
 
@@ -1874,6 +1949,22 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library DROP COLUMN homeLinkText",
 				"ALTER TABLE library DROP COLUMN showLibraryHoursAndLocationsLink",
 			],
+		],
+
+		'layout_settings_remove_showSidebarMenu' => [
+			'title' => 'Layout Settings - Remove Show Sidebar Menu',
+			'description' => 'Remove Show Sidebar menu since it is no longer used',
+			'sql' => [
+				'ALTER TABLE layout_settings DROP COLUMN showSidebarMenu'
+			]
+		],
+
+		'layout_settings_remove_sidebarMenuButtonText' => [
+			'title' => 'Layout Settings - Sidebar Menu Button Text',
+			'description' => 'Remove Sidebar Menu Button Text since it is no longer used',
+			'sql' => [
+				'ALTER TABLE layout_settings DROP COLUMN sidebarMenuButtonText'
+			]
 		],
 
 		'grouped_work_display_settings' => [
@@ -2050,6 +2141,195 @@ function getLibraryLocationUpdates(){
 				"UPDATE grouped_work_display_settings set defaultAvailabilityToggle = 'available' where name = 'school_elem'",
 				"UPDATE grouped_work_display_settings set defaultAvailabilityToggle = 'local' where name = 'academic' OR name = 'school_upper'",
 			],
+		],
+
+		'defaultGroupedWorkDisplaySettings' => [
+			'title' => 'Default Grouped Work Display Settings',
+			'description' => 'Add a flag for which grouped work display settings should be the default when creating a library',
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings add column isDefault TINYINT(0) DEFAULT 0',
+				"UPDATE grouped_work_display_settings set isDefault = 1 where name = 'public'"
+			]
+		],
+
+		'selfRegistrationLocationRestrictions' => [
+			'title' => 'Self Registration Location Restrictions',
+			'description' => 'Setup restrictions for valid locations for self registration',
+			'sql' => [
+				'ALTER TABLE library add column selfRegistrationLocationRestrictions INT DEFAULT 2',
+			],
+		],
+
+		'library_sitemap_changes' => [
+			'title' => 'Updates to handle sitemaps for libraries',
+			'description' => 'Update libraries to include base url and a flag for whether or not a sitemap should be generated',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN baseUrl VARCHAR(75)',
+				'ALTER TABLE library ADD COLUMN generateSitemap TINYINT(1) DEFAULT 1',
+			]
+		],
+
+		'selfRegistrationUrl' => [
+			'title' => 'Self Registration with external url',
+			'description' => 'Update libraries to allow self registration by redirecting to another URL',
+			'sql' => [
+				'ALTER TABLE library add COLUMN selfRegistrationUrl VARCHAR(255)',
+			]
+		],
+
+		'showWhileYouWait' => [
+			'title' => 'Library Show While You Wait',
+			'description' => 'Update libraries to allow While You Wait functionality to be disabled',
+			'sql' => [
+				'ALTER TABLE library add COLUMN showWhileYouWait TINYINT(1) DEFAULT 1',
+			]
+		],
+
+
+		'library_enable_web_builder' => [
+			'title' => 'Library enable web builder',
+			'description' => 'Add a flag for whether or not web builder is active',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN enableWebBuilder TINYINT(1) DEFAULT 0',
+			]
+		],
+
+		'selfRegistrationCustomizations' => [
+			'title' => 'Self Registration Customizations',
+			'description' => 'Allow customization of whether or not self registration is all caps or not and which states should be allowed',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN useAllCapsWhenSubmittingSelfRegistration TINYINT(1) DEFAULT 0',
+				"ALTER TABLE library ADD COLUMN validSelfRegistrationStates VARCHAR(255) DEFAULT ''",
+			]
+		],
+
+		'selfRegistrationPasswordNotes' => [
+			'title' => 'Self Registration Password Notes',
+			'description' => 'Allow customization of additional instructions for creating a PIN or Password',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN selfRegistrationPasswordNotes VARCHAR(255) DEFAULT ''",
+			]
+		],
+
+		'selfRegistrationZipCodeValidation' => [
+			'title' => 'Self Registration Zip Code Validation',
+			'description' => 'Allow customization of how Zip Codes are validated',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN validSelfRegistrationZipCodes VARCHAR(255) DEFAULT ''",
+			]
+		],
+
+		'libraryAlternateCardSetup' => [
+			'title' => 'Library Alternate Card Setup',
+			'description' => 'Add fields to allow definition of alternate library cards',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN showAlternateLibraryCard TINYINT DEFAULT 0",
+				"ALTER TABLE library ADD COLUMN showAlternateLibraryCardPassword TINYINT DEFAULT 0",
+				"ALTER TABLE library ADD COLUMN alternateLibraryCardLabel VARCHAR(50) DEFAULT ''",
+				"ALTER TABLE library ADD COLUMN alternateLibraryCardPasswordLabel VARCHAR(50) DEFAULT ''"
+			]
+		],
+
+		'libraryCardBarcode' => [
+			'title' => 'Library Card Barcode',
+			'description' => 'Add fields to to define how barcodes should be rendered',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN libraryCardBarcodeStyle VARCHAR(20) DEFAULT 'none'",
+				"ALTER TABLE library ADD COLUMN alternateLibraryCardStyle VARCHAR(20) DEFAULT 'none'",
+			]
+		],
+
+		'locationHistoricCode' => [
+			'title' => 'Location Historic Code',
+			'description' => 'Add historic code for location for use in some instances when the code is not provided',
+			'sql' => [
+				"ALTER TABLE location ADD COLUMN historicCode VARCHAR(20) DEFAULT ''"
+			]
+		],
+
+		'libraryAllowUsernameUpdates' => [
+			'title' => 'Library Allow Username Updates',
+			'description' => 'Add a flag for whether or not the user can update their username (if available in the ILS)',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN allowUsernameUpdates TINYINT(1) DEFAULT 0"
+			]
+		],
+
+		'libraryProfileUpdateOptions' => [
+			'title' => 'Library User Profile Update Options',
+			'description' => 'Add options for how profile updates are done',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN useAllCapsWhenUpdatingProfile TINYINT(1) DEFAULT 0",
+				"ALTER TABLE library ADD COLUMN bypassReviewQueueWhenUpdatingProfile TINYINT(1) DEFAULT 0"
+			]
+		],
+
+		'libraryProfileRequireNumericPhoneNumbersWhenUpdatingProfile' => [
+			'title' => 'Library User Profile - require numeric phone numbers',
+			'description' => 'Add options for how profile updates are done for phone numbers',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN requireNumericPhoneNumbersWhenUpdatingProfile TINYINT(1) DEFAULT 0",
+			]
+		],
+
+		'libraryAvailableHoldDelay' => [
+			'title' => 'Library Available Hold Delay',
+			'description' => 'Add option for delaying when a hold moves from unavailable to available',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN availableHoldDelay INT DEFAULT 0"
+			]
+		],
+
+		'library_add_can_update_phone_number' => array(
+			'title' => 'Library Add Can Update Phone Number',
+			'description' => 'Allow control over if a library can update their phone number',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE library ADD allowPatronPhoneNumberUpdates TINYINT(1) DEFAULT 1",
+				"UPDATE library set allowPatronPhoneNumberUpdates = allowPatronAddressUpdates"
+			),
+		),
+
+		'location_tty_description' => [
+			'title' => 'Location TTY & Description Fields',
+			'description' => 'Add TTY and Description fields to location table',
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN tty VARCHAR(25)',
+				'ALTER TABLE location ADD COLUMN description MEDIUMTEXT'
+			]
+		],
+
+		'library_login_notes' => [
+			'title' => 'Library Login Notes',
+			'description' => 'Add Notes to show on library login forms',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN loginNotes MEDIUMTEXT'
+			]
+		],
+
+		'library_allow_remember_pickup_location' => [
+			'title' => 'Library Allow Remember Pickup Location',
+			'description' => 'Add an option for whether or not users can remember their preferred pickup location',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowRememberPickupLocation TINYINT(1) DEFAULT 1'
+			]
+		],
+
+		'library_allow_home_library_updates' => [
+			'title' => 'Library - Allow Home Library Updates',
+			'description' => 'Add an option to determine whether or not the patron can update their home library',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowHomeLibraryUpdates TINYINT(1) DEFAULT 1',
+				'UPDATE library set allowHomeLibraryUpdates = allowProfileUpdates'
+			]
+		],
+
+		'library_rename_showPickupLocationInProfile' => [
+			'title' => 'Library rename showPickupLocationInProfile',
+			'description' => 'Rename showPickupLocationInProfile to allowPickupLocationUpdates TINYINT(1) DEFAULT 1',
+			'sql' => [
+				"ALTER TABLE library CHANGE COLUMN showPickupLocationInProfile allowPickupLocationUpdates TINYINT(1) DEFAULT 0"
+			]
 		]
 	);
 }
@@ -2089,7 +2369,6 @@ function createFacetGroupsForLibrariesAndLocations(){
 		$facetGroups[$facetGroup->id] = clone $facetGroup;
 	}
 	//Now go through the existing facets to see if we need to create new groups
-	/** @var PDO $aspen_db */
 	global $aspen_db;
 	$library = new Library();
 	$library->find();
@@ -2318,6 +2597,7 @@ function createFacetGroupsForLibrariesAndLocations(){
 				if ($location->getGroupedWorkDisplaySettings()->facetGroupId != $newFacetGroup->id){
 					if ($location->getGroupedWorkDisplaySettings()->facetGroupId != 0) {
 						//We need to create a new set of display settings for the new facet group
+						/** @var GroupedWorkDisplaySetting $newGroupedWorkDisplaySettings */
 						$newGroupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings()->copy(['name' => 'Location: ' . $location->displayName], true);
 						$location->setGroupedWorkDisplaySettings($newGroupedWorkDisplaySettings);
 						$location->update();
@@ -2344,7 +2624,6 @@ function createFacetGroupsForLibrariesAndLocations(){
 
 /** @noinspection PhpUnused */
 function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
-	/** @var PDO $aspen_db */
 	global $aspen_db;
 
 	$uniqueSearchSettingsSQL = "(SELECT libraryId as id, 'library' as tableType, displayName, true as isMainBranch, applyNumberOfHoldingsBoost, showSearchTools, showQuickCopy, showInSearchResultsMainDetails, alwaysShowSearchResultsMainDetails, availabilityToggleLabelSuperScope, IF (availabilityToggleLabelLocal = '', '{display name}', availabilityToggleLabelLocal) as availabilityToggleLabelLocal, availabilityToggleLabelAvailable, availabilityToggleLabelAvailableOnline, 0 as baseAvailabilityToggleOnLocalHoldingsOnly, includeOnlineMaterialsInAvailableToggle, includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets From library)
@@ -2370,6 +2649,7 @@ function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInsp
 		$groupedWorkDisplaySetting->includeOnlineMaterialsInAvailableToggle = $uniqueSearchSettingsRow['includeOnlineMaterialsInAvailableToggle'];
 		$groupedWorkDisplaySetting->includeAllRecordsInShelvingFacets = $uniqueSearchSettingsRow['includeAllRecordsInShelvingFacets'];
 		$groupedWorkDisplaySetting->includeAllRecordsInDateAddedFacets = $uniqueSearchSettingsRow['includeAllRecordsInDateAddedFacets'];
+		$searchId = null;
 		if ($groupedWorkDisplaySetting->find(true)){
 			$searchId = $groupedWorkDisplaySetting->id;
 		}else{
@@ -2405,10 +2685,9 @@ function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInsp
 
 /** @noinspection PhpUnused */
 function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
-	/** @var PDO $aspen_db */
 	global $aspen_db;
 
-	$uniqueLayoutSettingsSQL = "SELECT libraryId as id, displayName, showSidebarMenu, sidebarMenuButtonText, useHomeLinkInBreadcrumbs, useHomeLinkForLogo, homeLinkText, showLibraryHoursAndLocationsLink From library";
+	$uniqueLayoutSettingsSQL = "SELECT libraryId as id, displayName, showSidebarMenu, useHomeLinkInBreadcrumbs, useHomeLinkForLogo, homeLinkText, showLibraryHoursAndLocationsLink From library";
 
 	$uniqueLayoutSettingsRS = $aspen_db->query($uniqueLayoutSettingsSQL, PDO::FETCH_ASSOC);
 	$uniqueLayoutSettingsRow = $uniqueLayoutSettingsRS->fetch();
@@ -2417,11 +2696,11 @@ function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspectio
 		//Check to see if we already have a settings group with this information
 		$layoutSetting = new LayoutSetting();
 		$layoutSetting->showSidebarMenu = $uniqueLayoutSettingsRow['showSidebarMenu'];
-		$layoutSetting->sidebarMenuButtonText = $uniqueLayoutSettingsRow['sidebarMenuButtonText'];
 		$layoutSetting->useHomeLinkInBreadcrumbs = $uniqueLayoutSettingsRow['useHomeLinkInBreadcrumbs'];
 		$layoutSetting->useHomeLinkForLogo = $uniqueLayoutSettingsRow['useHomeLinkForLogo'];
 		$layoutSetting->homeLinkText = $uniqueLayoutSettingsRow['homeLinkText'];
 		$layoutSetting->showLibraryHoursAndLocationsLink = $uniqueLayoutSettingsRow['showLibraryHoursAndLocationsLink'];
+		$settingId = null;
 		if ($layoutSetting->find(true)){
 			$settingId = $layoutSetting->id;
 		}else{
@@ -2446,9 +2725,9 @@ function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspectio
 	}
 }
 
+/** @noinspection PhpUnused */
 function convertLibraryMoreDetailsToGroupedWork(&$update){
 	//This should only be called once or it will do weird things
-	/** @var PDO $aspen_db */
 	global $aspen_db;
 
 	//Get all of the records from the more details

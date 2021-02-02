@@ -13,6 +13,7 @@ class RbdigitalExtractLogEntry implements BaseLogEntry {
 	private Date startTime;
 	private Date endTime;
 	private ArrayList<String> notes = new ArrayList<>();
+	private long settingId;
 	private int numProducts = 0;
 	private int numErrors = 0;
 	private int numAdded = 0;
@@ -22,15 +23,17 @@ class RbdigitalExtractLogEntry implements BaseLogEntry {
 	private int numMetadataChanges = 0;
 	private Logger logger;
 
-    RbdigitalExtractLogEntry(Connection dbConn, Logger logger){
+    RbdigitalExtractLogEntry(Long settingId, Connection dbConn, Logger logger){
 		this.logger = logger;
 		this.startTime = new Date();
+		this.settingId = settingId;
 		try {
-			insertLogEntry = dbConn.prepareStatement("INSERT into rbdigital_export_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			insertLogEntry = dbConn.prepareStatement("INSERT into rbdigital_export_log (startTime, settingId) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateLogEntry = dbConn.prepareStatement("UPDATE rbdigital_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
+		saveResults();
 	}
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -66,6 +69,7 @@ class RbdigitalExtractLogEntry implements BaseLogEntry {
 		try {
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);
+				insertLogEntry.setLong(2, settingId);
 				insertLogEntry.executeUpdate();
 				ResultSet generatedKeys = insertLogEntry.getGeneratedKeys();
 				if (generatedKeys.next()){
@@ -101,8 +105,17 @@ class RbdigitalExtractLogEntry implements BaseLogEntry {
 		this.addNote("Finished Rbdigital extraction");
 		this.saveResults();
 	}
-	void incErrors(){
+	public void incErrors(String note){
 		numErrors++;
+		this.addNote("ERROR: " + note);
+		this.saveResults();
+		logger.error(note);
+	}
+	public void incErrors(String note, Exception e){
+		this.addNote("ERROR: " + note + " " + e.toString());
+		numErrors++;
+		this.saveResults();
+		logger.error(note, e);
 	}
 	void incAdded(){
 		numAdded++;

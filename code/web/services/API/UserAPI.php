@@ -14,17 +14,21 @@ class UserAPI extends Action
 	 *
 	 * @see Action::launch()
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function launch()
 	{
+		//Make sure the user can access the API based on the IP address
+		if (!IPAddress::allowAPIAccessForClientIP()){
+			$this->forbidAPIAccess();
+		}
+
 		header('Content-type: application/json');
 		//header('Content-type: text/html');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if (method_exists($this, $method)) {
+		if ($method != 'getCatalogConnection' && $method != 'getUserForApiCall' && method_exists($this, $method)) {
 			$result = [
 				'result' => $this->$method()
 			];
@@ -57,7 +61,7 @@ class UserAPI extends Action
 	 *
 	 * Sample call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=isLoggedIn
+	 * https://aspenurl/API/UserAPI?method=isLoggedIn
 	 * </code>
 	 *
 	 * Sample response:
@@ -66,7 +70,6 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function isLoggedIn()
 	{
@@ -83,7 +86,7 @@ class UserAPI extends Action
 	 *
 	 * Sample call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI
+	 * https://aspenurl/API/UserAPI
 	 * Post variables:
 	 *   method=login
 	 *   username=23025003575917
@@ -96,7 +99,6 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function login()
 	{
@@ -135,7 +137,7 @@ class UserAPI extends Action
 	 *
 	 * Sample call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=logout
+	 * https://aspenurl/API/UserAPI?method=logout
 	 * </code>
 	 *
 	 * Sample response:
@@ -144,7 +146,6 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function logout()
 	{
@@ -165,20 +166,20 @@ class UserAPI extends Action
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success - false if the username or password could not be found, or the folowing user information if the account is valid.</li>
-	 * <li>id � The id of the user within VuFind</li>
-	 * <li>username, cat_username � The patron's library card number</li>
-	 * <li>password, cat_password � The patron's PIN number</li>
-	 * <li>firstname � The first name of the patron in the ILS</li>
-	 * <li>lastname � The last name of the patron in the ILS</li>
-	 * <li>email � The patron's email address if set within Horizon.</li>
-	 * <li>homeLocationId � the id of the patron's home library within Aspen.</li>
-	 * <li>MyLocation1Id, myLocation2Id � not currently used</li>
+	 * <li>success - false if the username or password could not be found, or the following user information if the account is valid.</li>
+	 * <li>id - The id of the user within VuFind</li>
+	 * <li>username, cat_username - The patron's library card number</li>
+	 * <li>password, cat_password - The patron's PIN number</li>
+	 * <li>firstname - The first name of the patron in the ILS</li>
+	 * <li>lastname - The last name of the patron in the ILS</li>
+	 * <li>email - The patron's email address if set within Horizon.</li>
+	 * <li>homeLocationId - the id of the patron's home library within Aspen.</li>
+	 * <li>MyLocation1Id, myLocation2Id - not currently used</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=validateAccount&username=23025003575917&password=7604
+	 * https://aspenurl/API/UserAPI?method=validateAccount&username=userbarcode&password=userpin
 	 * </code>
 	 *
 	 * Sample Response:
@@ -206,7 +207,6 @@ class UserAPI extends Action
 	 * {"result":{"success":false}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function validateAccount()
 	{
@@ -253,27 +253,27 @@ class UserAPI extends Action
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid, false if the username or password were incorrect</li>
-	 * <li>message � a reason why the method failed if success is false</li>
-	 * <li>profile � profile information including name, address, email, number of holds, number of checked out items, fines.</li>
-	 * <li>firstname � The first name of the patron in the ILS</li>
-	 * <li>lastname � The last name of the patron in the ILS</li>
-	 * <li>fullname � The combined first and last name for the patron in the ILS</li>
-	 * <li>address1 � The street information for the patron</li>
-	 * <li>city � The city where the patron lives</li>
-	 * <li>state � The state where the patron lives</li>
-	 * <li>zip � The zip code for the patron</li>
-	 * <li>phone � The phone number for the patron</li>
-	 * <li>email � The email for the patron</li>
-	 * <li>homeLocationId � The id of the patron's home branch within VuFind</li>
-	 * <li>homeLocationName � The full name of the patron's home branch</li>
-	 * <li>expires � The expiration date of the patron's library card</li>
-	 * <li>fines � the amount of fines on the patron's account formatted for display</li>
-	 * <li>finesVal � the amount of  fines on the patron's account without formatting</li>
-	 * <li>numHolds � The number of holds the patron currently has</li>
-	 * <li>numHoldsAvailable � The number of holds the patron currently has that are available</li>
-	 * <li>numHoldsRequested � The number of holds the patron currently has that are not available</li>
-	 * <li>numCheckedOut � The number of items the patron currently has checked out.</li>
+	 * <li>success - true if the account is valid, false if the username or password were incorrect</li>
+	 * <li>message - a reason why the method failed if success is false</li>
+	 * <li>profile - profile information including name, address, email, number of holds, number of checked out items, fines.</li>
+	 * <li>firstname - The first name of the patron in the ILS</li>
+	 * <li>lastname - The last name of the patron in the ILS</li>
+	 * <li>fullname - The combined first and last name for the patron in the ILS</li>
+	 * <li>address1 - The street information for the patron</li>
+	 * <li>city - The city where the patron lives</li>
+	 * <li>state - The state where the patron lives</li>
+	 * <li>zip - The zip code for the patron</li>
+	 * <li>phone - The phone number for the patron</li>
+	 * <li>email - The email for the patron</li>
+	 * <li>homeLocationId - The id of the patron's home branch within VuFind</li>
+	 * <li>homeLocationName - The full name of the patron's home branch</li>
+	 * <li>expires - The expiration date of the patron's library card</li>
+	 * <li>fines - the amount of fines on the patron's account formatted for display</li>
+	 * <li>finesVal - the amount of  fines on the patron's account without formatting</li>
+	 * <li>numHolds - The number of holds the patron currently has</li>
+	 * <li>numHoldsAvailable - The number of holds the patron currently has that are available</li>
+	 * <li>numHoldsRequested - The number of holds the patron currently has that are not available</li>
+	 * <li>numCheckedOut - The number of items the patron currently has checked out.</li>
 	 * <li>bypassAutoLogout - 1 if the user has chosen to bypass te automatic logout script or 0 if they have not.</li>
 	 * <li>numEContentCheckedOut - The number of eContent items that the user currently has checked out. </li>
 	 * <li>numEContentAvailableHolds - The number of available eContent holds for the user that can be checked out. </li>
@@ -283,7 +283,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronProfile&username=23025003575917&password=7604
+	 * https://aspenurl/API/UserAPI?method=getPatronProfile&username=userbarcode&password=userpin
 	 * </code>
 	 *
 	 * Sample Response failed login:
@@ -326,7 +326,7 @@ class UserAPI extends Action
 	 * } }
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function getPatronProfile()
 	{
@@ -351,6 +351,23 @@ class UserAPI extends Action
 					$userData->$key = $value;
 				}
 			}
+
+			$catalogConnection = $this->getCatalogConnection();
+			$accountSummary = $catalogConnection->getAccountSummary($user);
+			$userData->numCheckedOutIls = $accountSummary['numCheckedOut'];
+			$userData->numHoldsIls = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
+			$userData->numHoldsAvailableIls =$accountSummary['numAvailableHolds'];
+			$userData->numHoldsRequestedIls = $accountSummary['numUnavailableHolds'];
+			$userData->finesVal = $accountSummary['totalFines'];
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+			$userData->fines = $currencyFormatter->formatCurrency($userData->finesVal, $currencyCode);
 
 			//Add overdrive data
 			if ($user->isValidForEContentSource('overdrive')) {
@@ -379,27 +396,26 @@ class UserAPI extends Action
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid, false if the username or password were incorrect</li>
-	 * <li>message � a reason why the method failed if success is false</li>
-	 * <li>holds � information about each hold including when it was placed, when it expires, and whether or not it is available for pickup.  Holds are broken into two sections: available and unavailable.  Available holds are ready for pickup.</li>
-	 * <li>Id � the record/bib id of the title being held</li>
-	 * <li>location � The location where the title will be picked up</li>
-	 * <li>expire � the date the hold will expire if it is unavailable or the date that it must be picked up if the hold is available</li>
-	 * <li>expireTime � the expire information in number of days since January 1, 1970 </li>
-	 * <li>create � the date the hold was originally placed</li>
-	 * <li>createTime � the create information in number of days since January 1, 1970</li>
-	 * <li>reactivate � The date the hold will be reactivated if the hold is suspended</li>
-	 * <li>reactivateTime � the reactivate information in number of days since January 1, 1970</li>
-	 * <li>available � whether or not the hold is available for pickup</li>
-	 * <li>position � the patron's position in the hold queue</li>
-	 * <li>frozen � whether or not the hold is frozen</li>
-	 * <li>itemId � the barcode of the item that filled the hold if the hold has been filled.</li>
-	 * <li>Status � a textual status of the item (Available, Suspended, Active, In Transit)</li>
+	 * <li>success - true if the account is valid, false if the username or password were incorrect</li>
+	 * <li>message - a reason why the method failed if success is false</li>
+	 * <li>holds - information about each hold including when it was placed, when it expires, and whether or not it is available for pickup.  Holds are broken into two sections: available and unavailable.  Available holds are ready for pickup.</li>
+	 * <li>Id - the record/bib id of the title being held</li>
+	 * <li>location - The location where the title will be picked up</li>
+	 * <li>expire - the timestamp the hold will expire if it is unavailable or the date that it must be picked up if the hold is available</li>
+	 * <li>create - the date the hold was originally placed</li>
+	 * <li>createTime - the create information in number of days since January 1, 1970</li>
+	 * <li>reactivate - The date the hold will be reactivated if the hold is suspended</li>
+	 * <li>reactivateTime - the reactivate information in number of days since January 1, 1970</li>
+	 * <li>available - whether or not the hold is available for pickup</li>
+	 * <li>position - the patron's position in the hold queue</li>
+	 * <li>frozen - whether or not the hold is frozen</li>
+	 * <li>itemId - the barcode of the item that filled the hold if the hold has been filled.</li>
+	 * <li>Status - a textual status of the item (Available, Suspended, Active, In Transit)</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronHolds&username=23025003575917&password=7604
+	 * https://aspenurl/API/UserAPI?method=getPatronHolds&username=userbarcode&password=userpin
 	 * </code>
 	 *
 	 * Sample Response:
@@ -413,8 +429,7 @@ class UserAPI extends Action
 	 *            "barcode" : "33025016545293",
 	 *            "create" : "2011-12-20 00:00:00",
 	 *            "createTime" : 15328,
-	 *            "expire" : "[No expiration date]",
-	 *            "expireTime" : null,
+	 *            "expire" : 15429,
 	 *            "format" : "Book",
 	 *            "format_category" : [ "Books" ],
 	 *            "frozen" : false,
@@ -440,8 +455,7 @@ class UserAPI extends Action
 	 *            "barcode" : "33025025084185",
 	 *            "create" : "2011-09-27 00:00:00",
 	 *            "createTime" : 15244,
-	 *            "expire" : "2012-01-09 00:00:00",
-	 *            "expireTime" : 15348,
+	 *            "expire" : 15429,
 	 *            "format" : "Book",
 	 *            "format_category" : [ "Books" ],
 	 *            "frozen" : false,
@@ -465,18 +479,22 @@ class UserAPI extends Action
 	 * }
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function getPatronHolds()
 	{
-		list($username, $password) = $this->loadUsernameAndPassword();
-
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)) {
-			$allHolds = $user->getHolds();
-			return array('success' => true, 'holds' => $allHolds);
+		global $offlineMode;
+		if ($offlineMode) {
+			return array('success' => false, 'message' => 'Circulation system is offline');
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			$user = $this->getUserForApiCall();
+			if ($user && !($user instanceof AspenError)) {
+				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
+				$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
+				return array('success' => true, 'holds' => $allHolds);
+			} else {
+				return array('success' => false, 'message' => 'Login unsuccessful');
+			}
 		}
 	}
 
@@ -493,7 +511,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronHoldsOverDrive&username=23025003575917&password=7604
+	 * https://aspenurl/API/UserAPI?method=getPatronHoldsOverDrive&username=userbarcode&password=userpin
 	 * </code>
 	 *
 	 * Sample Response:
@@ -541,7 +559,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function getPatronHoldsOverDrive()
 	{
@@ -559,7 +577,7 @@ class UserAPI extends Action
 
 	/**
 	 * Get a list of items that are currently checked out to the user within OverDrive.
-	 * Note: VuFind takes care of caching the checked out items page appropriately.  The caling application should not
+	 * Note: Aspen takes care of caching the checked out items page appropriately.  The calling application should not
 	 * do additional caching.
 	 *
 	 * Parameters:
@@ -570,7 +588,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronCheckedOutItemsOverDrive&username=23025003575917&password=7604
+	 * https://aspenurl/API/UserAPI?method=getPatronCheckedOutItemsOverDrive&username=userbarcode&password=userpin
 	 * </code>
 	 *
 	 * Sample Response:
@@ -584,7 +602,7 @@ class UserAPI extends Action
 	 *      "subTitle":"",
 	 *      "format":"OverDrive WMA Audiobook ",
 	 *      "downloadSize":"106251 kb",
-	 *      "downloadLink":"http:\/\/ofs.contentreserve.com\/bin\/OFSGatewayModule.dll\/AnObjectofBeauty9781607889410.odm?RetailerID=douglascounty&Expires=1326047065&Token=a17a4a46-ea2a-4d2b-b076-79044d911a46&Signature=qCCvuYGCXS16C7TkMDg98%2fQU5YY%3d",
+	 *      "downloadLink":"http:\/\/ofs.contentreserve.com\/bin\/OFSGatewayModule.dll\/AnObjectOfBeauty9781607889410.odm?...",
 	 *      "checkedOutOn":"Jan 05, 2012",
 	 *      "expiresOn":"Jan 12, 2012",
 	 *      "recordId":"14955"
@@ -593,7 +611,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function getPatronCheckedOutItemsOverDrive()
 	{
@@ -625,7 +643,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronOverDriveSummary&username=23025003575917&password=7604
+	 * https://aspenurl/API/UserAPI?method=getPatronOverDriveSummary&username=userbarcode&password=userpin
 	 * </code>
 	 *
 	 * Sample Response:
@@ -641,7 +659,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function getPatronOverDriveSummary()
 	{
@@ -669,7 +687,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronFines&username=23025003575917&password=7604
+	 * https://aspenurl/API/UserAPI?method=getPatronFines&username=userbarcode&password=userpin
 	 * </code>
 	 *
 	 * Sample Response:
@@ -691,16 +709,33 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function getPatronFines()
 	{
-		list($username, $password) = $this->loadUsernameAndPassword();
 		$includeMessages = isset($_REQUEST['includeMessages']) ? $_REQUEST['includeMessages'] : false;
-		$user = UserAccount::validateAccount($username, $password);
+		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$fines = $this->getCatalogConnection()->getFines($user, $includeMessages);
-			return array('success' => true, 'fines' => $fines);
+			$totalOwed = 0;
+			foreach ($fines as &$fine) {
+				if (isset($fine['amountOutstandingVal'])) {
+					$totalOwed += $fine['amountOutstandingVal'];
+				}elseif (isset($fine['amountVal'])) {
+					$totalOwed += $fine['amountVal'];
+				}elseif (isset($fine['amount'])) {
+					$totalOwed += $fine['amount'];
+				}
+				if (array_key_exists('amount', $fine) && array_key_exists('amountOutstanding', $fine)){
+					$fine['amountOriginal'] = $fine['amount'];
+					$fine['amount'] = $fine['amountOutstanding'];
+				}
+				if (array_key_exists('amountVal', $fine) && array_key_exists('amountOutstandingVal', $fine)){
+					$fine['amountOriginalVal'] = $fine['amountVal'];
+					$fine['amountVal'] = $fine['amountOutstandingVal'];
+				}
+			}
+			return array('success' => true, 'fines' => $fines, 'totalOwed' => $totalOwed);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -710,6 +745,7 @@ class UserAPI extends Action
 	 * Returns lending options for a patron from OverDrive.
 	 *
 	 * @return array
+	 * @noinspection PhpUnused
 	 */
 	function getOverDriveLendingOptions()
 	{
@@ -736,7 +772,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronCheckedOutItems&username=23025003575917&password=7604
+	 * https://aspenurl/API/UserAPI?method=getPatronCheckedOutItems&username=userbarcode&password=userpin
 	 * </code>
 	 *
 	 * Sample Response:
@@ -767,7 +803,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function getPatronCheckedOutItems()
 	{
@@ -775,10 +811,10 @@ class UserAPI extends Action
 		if ($offlineMode) {
 			return array('success' => false, 'message' => 'Circulation system is offline');
 		} else {
-			list($username, $password) = $this->loadUsernameAndPassword();
-			$user = UserAccount::validateAccount($username, $password);
+			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
-				$allCheckedOut = $user->getCheckouts(false, true);
+				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
+				$allCheckedOut = $user->getCheckouts(false, $source);
 				foreach ($allCheckedOut as $key => $checkout){
 					if (isset($checkout['canRenew'])){
 						/** @noinspection SpellCheckingInspection */
@@ -811,7 +847,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=renewCheckout&username=23025003575917&password=7604&itemBarcode=33025021368319
+	 * https://aspenurl/API/UserAPI?method=renewCheckout&username=userbarcode&password=userpin&itemBarcode=33025021368319
 	 * </code>
 	 *
 	 * Sample Response (failed renewal):
@@ -838,7 +874,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function renewCheckout()
 	{
@@ -855,6 +890,7 @@ class UserAPI extends Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function renewItem()
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -880,7 +916,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=renewAll&username=23025003575917&password=7604
+	 * https://aspenurl/API/UserAPI?method=renewAll&username=userbarcode&password=userpin
 	 * </code>
 	 *
 	 * Sample Response:
@@ -891,7 +927,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function renewAll()
 	{
@@ -925,7 +960,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=renewAll&username=23025003575917&password=7604&bibId=1004012&pickupBranch=pa
+	 * https://aspenurl/API/UserAPI?method=renewAll&username=userbarcode&password=userpin&bibId=1004012&pickupBranch=pa
 	 * </code>
 	 *
 	 * Sample Response (successful hold):
@@ -944,7 +979,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function placeHold()
 	{
@@ -953,17 +987,36 @@ class UserAPI extends Action
 
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
-			if (isset($_REQUEST['pickupBranch'])) {
-				$pickupBranch = trim($_REQUEST['pickupBranch']);
-				$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
-				if (!$locationValid){
-					return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+			global $library;
+			if ($library->showHoldButton) {
+				if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
+					if (isset($_REQUEST['pickupBranch'])) {
+						$pickupBranch = trim($_REQUEST['pickupBranch']);
+					} else {
+						$pickupBranch = trim($_REQUEST['campus']);
+					}
+					$locationValid = $patron->validatePickupBranch($pickupBranch);
+					if (!$locationValid) {
+						return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText' => 'This location is no longer available, please select a different pickup location']));
+					}
+				} else {
+					$pickupBranch = $patron->_homeLocationCode;
 				}
-			} else {
-				$pickupBranch = $patron->_homeLocationCode;
+				//Make sure that there are not volumes available
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($bibId);
+				if ($recordDriver->isValid()) {
+					require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+					$volumeDataDB = new IlsVolumeInfo();
+					$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+					if ($volumeDataDB->find(true)){
+						return array('success' => false, 'message' => translate(['text' => 'You must place a volume hold on this title.']));
+					}
+				}
+				return $patron->placeHold($bibId, $pickupBranch);
+			}else{
+				return array('success' => false, 'message' => 'Sorry, holds are not currently allowed.');
 			}
-			$holdMessage = $patron->placeHold($bibId, $pickupBranch);
-			return $holdMessage;
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -977,23 +1030,40 @@ class UserAPI extends Action
 
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
-			if (isset($_REQUEST['pickupBranch'])) {
-				$pickupBranch = trim($_REQUEST['pickupBranch']);
-				$pickupBranch = trim($_REQUEST['pickupBranch']);
-				$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
-				if (!$locationValid){
-					return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+			global $library;
+			if ($library->showHoldButton) {
+				if (isset($_REQUEST['pickupBranch'])) {
+					$pickupBranch = trim($_REQUEST['pickupBranch']);
+					$locationValid = $patron->validatePickupBranch($pickupBranch);
+					if (!$locationValid){
+						return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+					}
+				} else {
+					$pickupBranch = $patron->_homeLocationCode;
 				}
+				//Make sure that there are not volumes available
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($bibId);
+				if ($recordDriver->isValid()) {
+					require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+					$volumeDataDB = new IlsVolumeInfo();
+					$volumeDataDB = new IlsVolumeInfo();
+					$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+					if ($volumeDataDB->find(true)){
+						return array('success' => false, 'message' => translate(['text' => 'You must place a volume hold on this title.']));
+					}
+				}
+				return $patron->placeItemHold($bibId, $itemId, $pickupBranch);
 			} else {
 				$pickupBranch = $patron->_homeLocationCode;
 			}
-			$holdMessage = $patron->placeItemHold($bibId, $itemId, $pickupBranch);
-			return $holdMessage;
+			return $patron->placeHold($bibId, $pickupBranch);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function changeHoldPickUpLocation()
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -1001,6 +1071,10 @@ class UserAPI extends Action
 		$newLocation = $_REQUEST['location'];
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
+			$locationValid = $patron->validatePickupBranch($newLocation);
+			if (!$locationValid){
+				return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+			}
 			$holdMessage = $patron->changeHoldPickUpLocation($holdId, $newLocation);
 			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
 		} else {
@@ -1024,13 +1098,13 @@ class UserAPI extends Action
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li>
-	 * <li>message � information about the process for display to the user.</li>
+	 * <li>success - true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li>
+	 * <li>message - information about the process for display to the user.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=placeOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
+	 * https://aspenurl/API/UserAPI?method=placeOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1041,7 +1115,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function placeOverDriveHold()
 	{
@@ -1076,13 +1150,13 @@ class UserAPI extends Action
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be cancelled, false if the username or password were incorrect or the hold could not be cancelled.</li>
-	 * <li>message � information about the process for display to the user.</li>
+	 * <li>success - true if the account is valid and the hold could be cancelled, false if the username or password were incorrect or the hold could not be cancelled.</li>
+	 * <li>message - information about the process for display to the user.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=cancelOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
+	 * https://aspenurl/API/UserAPI?method=cancelOverDriveHold&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1093,7 +1167,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function cancelOverDriveHold()
 	{
@@ -1123,13 +1197,13 @@ class UserAPI extends Action
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li>
-	 * <li>message � information about the process for display to the user.</li>
+	 * <li>success - true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li>
+	 * <li>message - information about the process for display to the user.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=checkoutOverDriveItem&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F
+	 * https://aspenurl/API/UserAPI?method=checkoutOverDriveItem&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1140,7 +1214,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function checkoutOverDriveItem()
 	{
@@ -1165,18 +1239,18 @@ class UserAPI extends Action
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>cancelId[] � an array of holds that should be canceled.  Each item should be specfied as <bibId>:<itemId>. BibId and itemId can be retrieved as part of the getPatronHolds API</li>
+	 * <li>cancelId[] - an array of holds that should be canceled.  Each item should be specified as <bibId>:<itemId>. BibId and itemId can be retrieved as part of the getPatronHolds API</li>
 	 * </ul>
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false</li>
+	 * <li>success - true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li>
+	 * <li>holdMessage - a reason why the method failed if success is false</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=cancelHold&username=23025003575917&password=1234&cancelId[]=1003198
+	 * https://aspenurl/API/UserAPI?method=cancelHold&username=23025003575917&password=1234&cancelId[]=1003198
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1199,7 +1273,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function cancelHold()
 	{
@@ -1245,7 +1319,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=freezeHold&username=23025003575917&password=1234&cancelId[]=1004012:0&suspendDate=1/25/2012
+	 * https://aspenurl/API/UserAPI?method=freezeHold&username=23025003575917&password=1234&cancelId[]=1004012:0&suspendDate=1/25/2012
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1256,7 +1330,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function freezeHold()
 	{
@@ -1269,8 +1343,7 @@ class UserAPI extends Action
 				$recordId = $_REQUEST['recordId'];
 				$holdId = $_REQUEST['holdId'];
 				$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : null;
-				$result = $user->freezeHold($recordId, $holdId, $reactivationDate);
-				return $result;
+				return $user->freezeHold($recordId, $holdId, $reactivationDate);
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -1298,7 +1371,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=activateHold&username=23025003575917&password=1234&cancelId[]=1004012:0
+	 * https://aspenurl/API/UserAPI?method=activateHold&username=23025003575917&password=1234&cancelId[]=1004012:0
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1309,7 +1382,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function activateHold()
 	{
@@ -1321,8 +1394,7 @@ class UserAPI extends Action
 			} else {
 				$recordId = $_REQUEST['recordId'];
 				$holdId = $_REQUEST['holdId'];
-				$result = $user->thawHold($recordId, $holdId);
-				return $result;
+				return $user->thawHold($recordId, $holdId);
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -1341,13 +1413,13 @@ class UserAPI extends Action
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false</li>
+	 * <li>success - true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li>
+	 * <li>holdMessage - a reason why the method failed if success is false</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=getPatronReadingHistory&username=23025003575917&password=1234
+	 * https://aspenurl/API/UserAPI?method=getPatronReadingHistory&username=23025003575917&password=1234
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1385,7 +1457,7 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function getPatronReadingHistory()
 	{
@@ -1405,6 +1477,7 @@ class UserAPI extends Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function updatePatronReadingHistory()
 	{
 		global $offlineMode;
@@ -1435,12 +1508,12 @@ class UserAPI extends Action
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the reading history could be turned on, false if the username or password were incorrect or the reading history could not be turned on.</li>
+	 * <li>success - true if the account is valid and the reading history could be turned on, false if the username or password were incorrect or the reading history could not be turned on.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=optIntoReadingHistory&username=23025003575917&password=1234
+	 * https://aspenurl/API/UserAPI?method=optIntoReadingHistory&username=23025003575917&password=1234
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1448,7 +1521,7 @@ class UserAPI extends Action
 	 * {"result":{"success":true}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function optIntoReadingHistory()
 	{
@@ -1478,7 +1551,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=optOutOfReadingHistory&username=23025003575917&password=1234
+	 * https://aspenurl/API/UserAPI?method=optOutOfReadingHistory&username=23025003575917&password=1234
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1486,7 +1559,7 @@ class UserAPI extends Action
 	 * {"result":{"success":true}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function optOutOfReadingHistory()
 	{
@@ -1517,14 +1590,14 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=deleteAllFromReadingHistory&username=23025003575917&password=1234
+	 * https://aspenurl/API/UserAPI?method=deleteAllFromReadingHistory&username=23025003575917&password=1234
 	 * </code>
 	 *
 	 * Sample Response:
 	 * <code>
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function deleteAllFromReadingHistory()
 	{
@@ -1555,7 +1628,7 @@ class UserAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=deleteSelectedFromReadingHistory&username=23025003575917&password=1234&selected[]=25855
+	 * https://aspenurl/API/UserAPI?method=deleteSelectedFromReadingHistory&username=23025003575917&password=1234&selected[]=25855
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1563,7 +1636,7 @@ class UserAPI extends Action
 	 * {"result":{"success":true}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
+	 * @noinspection PhpUnused
 	 */
 	function deleteSelectedFromReadingHistory()
 	{
@@ -1580,6 +1653,7 @@ class UserAPI extends Action
 
 	/**
 	 * @return array
+	 * @noinspection PhpUnused
 	 */
 	private function loadUsernameAndPassword()
 	{
@@ -1602,31 +1676,73 @@ class UserAPI extends Action
 		return array($username, $password);
 	}
 
+	/** @noinspection PhpUnused */
+	function getBarcodeForPatron(){
+		$results = array('success' => false, 'message' => 'Unknown error loading barcode');
+		if (isset($_REQUEST['patronId'])){
+			$user = new User();
+			$user->username = $_REQUEST['patronId'];
+			if ($user->find(true)){
+				$results = array('success' => true, 'barcode' => $user->getBarcode());
+			}else{
+				$results['message'] = 'Invalid Patron';
+			}
+		}else if (isset($_REQUEST['id'])){
+			$user = new User();
+			$user->id = $_REQUEST['id'];
+			if ($user->find(true)){
+				$results = array('success' => true, 'barcode' => $user->getBarcode());
+			}else{
+				$results['message'] = 'Invalid Patron';
+			}
+		}else{
+			$results['message'] = 'No patron id was provided';
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getUserByBarcode(){
+		$results = array('success' => false, 'message' => 'Unknown error loading patronId');
+		if (isset($_REQUEST['username'])){
+			$user = UserAccount::getUserByBarcode($_REQUEST['username']);
+			if ($user->find(true)){
+				$results = array('success' => true, 'id' => $user->id, 'patronId' => $user->username, 'displayName' => $user->displayName);
+			}else{
+				$results['message'] = 'Invalid Patron';
+			}
+		}else{
+			$results['message'] = 'No barcode was provided';
+		}
+		return $results;
+	}
+
 	/**
-	 * @param string $pickupBranch
-	 * @param User $patron
-	 * @return bool
+	 * @return bool|false|User
 	 */
-	protected function validatePickupBranch(string $pickupBranch, User $patron): bool
+	protected function getUserForApiCall()
 	{
-//Validate the selected pickup branch
-		$location = new Location();
-		$location->code = $pickupBranch;
-		$location->find();
-		$locationValid = true;
-		if ($location->N == 1) {
-			$location->fetch();
-			if ($location->validHoldPickupBranch == 2) {
-				//Valid for no one
-				$locationValid = false;
-			} elseif ($location->validHoldPickupBranch == 0) {
-				//Valid for patrons of the branch only
-				$locationValid = $location->code == $patron->_homeLocationCode;
+		if (isset($_REQUEST['patronId'])) {
+			$user = new User();
+			$user->username = $_REQUEST['patronId'];
+			if (!$user->find(true)) {
+				$user = false;
+			}
+		} else if (isset($_REQUEST['id'])) {
+			$user = new User();
+			$user->id = $_REQUEST['id'];
+			if (!$user->find(true)) {
+				$user = false;
 			}
 		} else {
-			//Location is deleted
-			$locationValid = false;
+			list($username, $password) = $this->loadUsernameAndPassword();
+			$user = UserAccount::validateAccount($username, $password);
 		}
-		return $locationValid;
+		return $user;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

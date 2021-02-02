@@ -4,6 +4,7 @@ import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -33,9 +34,11 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 		}
 		this.saveResults();
 	}
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	@Override
 	public void addNote(String note) {
-		this.notes.add(note);
+		Date date = new Date();
+		this.notes.add(dateFormat.format(date) + " - " + note);
 	}
 	
 	private String getNotesHtml() {
@@ -103,8 +106,18 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 		this.saveResults();
 	}
 
-	public void incErrors(){
+	public void incErrors(String note) {
+		this.addNote("ERROR: " + note);
 		numErrors++;
+		this.saveResults();
+		logger.error(note);
+	}
+
+	public void incErrors(String note, Exception e){
+		this.addNote("ERROR: " + note + " " + e.toString());
+		numErrors++;
+		this.saveResults();
+		logger.error(note, e);
 	}
 	public void incAdded(){
 		numAdded++;

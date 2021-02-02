@@ -6,9 +6,6 @@ require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 
 class Millennium extends AbstractIlsDriver
 {
-	var $statusTranslations = null;
-	var $holdableStatiRegex = null;
-	var $availableStatiRegex = null;
 	/** @var  Solr */
 	public $db;
 
@@ -21,18 +18,16 @@ class Millennium extends AbstractIlsDriver
 	var $curlWrapper;
 
 	public function __construct($accountProfile)
-    {
-        parent::__construct($accountProfile);
-        $this->curlWrapper = new CurlWrapper();
-    }
+	{
+		parent::__construct($accountProfile);
+		$this->curlWrapper = new CurlWrapper();
+	}
 
-    protected function loadLoanRules(){
+	protected function loadLoanRules()
+	{
 		if (is_null($this->loanRules)){
-			/** @var Memcache $memCache */
 			global $memCache;
-//			global $configArray;
 			global $instanceName;
-//			$this->loanRules = $memCache->get($instanceName . '_loan_rules');
 			if (!$this->loanRules || isset($_REQUEST['reload'])){
 				$this->loanRules = array();
 				$loanRule = new LoanRule();
@@ -41,7 +36,6 @@ class Millennium extends AbstractIlsDriver
 					$this->loanRules[$loanRule->loanRuleId] = clone($loanRule);
 				}
 			}
-//			$memCache->set($instanceName . '_loan_rules', $this->loanRules, $configArray['Caching']['loan_rules']);
 
 			$this->loanRuleDeterminers = $memCache->get($instanceName . '_loan_rule_determiners');
 			if (!$this->loanRuleDeterminers || isset($_REQUEST['reload'])){
@@ -54,7 +48,6 @@ class Millennium extends AbstractIlsDriver
 					$this->loanRuleDeterminers[$loanRuleDeterminer->rowNumber] = clone($loanRuleDeterminer);
 				}
 			}
-//			$memCache->set($instanceName . '_loan_rule_determiners', $this->loanRuleDeterminers, $configArray['Caching']['loan_rules']);
 		}
 	}
 
@@ -135,11 +128,6 @@ class Millennium extends AbstractIlsDriver
 
 	}
 
-	static $libraryLocationInformationLoaded = false;
-	static $libraryLocations = null;
-	static $libraryLocationLabels = null;
-	static $homeLocationCode = null;
-	static $homeLocationLabel = null;
 	static $scopingLocationCode = null;
 
 	/**
@@ -223,7 +211,6 @@ class Millennium extends AbstractIlsDriver
 	public function _getPatronDump(&$barcode, $forceReload = false)
 	{
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		global $timer;
@@ -263,10 +250,9 @@ class Millennium extends AbstractIlsDriver
 
 				if (is_null($patronDump)){
 					return $patronDump;
-				}else if ((isset($patronDump['ERRNUM']) || count($patronDump) == 0) && $i != count($barcodesToTest) - 1){
+				}/** @noinspection PhpStatementHasEmptyBodyInspection */ elseif ((isset($patronDump['ERRNUM']) || count($patronDump) == 0) && $i != count($barcodesToTest) - 1){
 					//check the next barcode
 				}else{
-
 					$timer->logTime('Finished loading patron dump from ILS.');
 					$memCache->set("patron_dump_$barcode", $patronDump, $configArray['Caching']['patron_dump']);
 					//Need to wait a little bit since getting the patron api locks the record in the DB
@@ -429,9 +415,6 @@ class Millennium extends AbstractIlsDriver
 		$millenniumReadingHistory = new MillenniumReadingHistory($this);
 		$millenniumReadingHistory->doReadingHistoryAction($patron, $action, $selectedTitles);
 	}
-
-
-
 
 	/**
 	 * Get Patron Holds
@@ -613,7 +596,10 @@ class Millennium extends AbstractIlsDriver
 	 * @return array                         Array of error messages for errors that occurred
 	 */
 	public function updatePatronInfo($user, $canUpdateContactInfo){
-		$updateErrors = array();
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
 
 		if ($canUpdateContactInfo){
 			//Setup the call to Millennium
@@ -682,14 +668,14 @@ class Millennium extends AbstractIlsDriver
 			//Validate we have required info for notices
 			if (isset($extraPostInfo['notices'])){
 				if ($extraPostInfo['notices'] == 'z' && strlen($extraPostInfo['email']) == 0){
-					$updateErrors[] = 'To receive notices by email you must set an email address.';
+					$result['messages'][] = 'To receive notices by email you must set an email address.';
 				}elseif ($extraPostInfo['notices'] == 'p' && strlen($extraPostInfo['tele1']) == 0){
-					$updateErrors[] = 'To receive notices by phone you must provide a telephone number.';
+					$result['messages'][] = 'To receive notices by phone you must provide a telephone number.';
 				}elseif (strlen($extraPostInfo['addr1a']) == 0 || strlen($extraPostInfo['addr1b']) == 0){
-					$updateErrors[] = 'To receive notices by mail you must provide a complete mailing address.';
+					$result['messages'][] = 'To receive notices by mail you must provide a complete mailing address.';
 				}
-				if (count($updateErrors) > 0){
-					return $updateErrors;
+				if (count($result['messages']) > 0){
+					return $result;
 				}
 			}
 
@@ -705,11 +691,11 @@ class Millennium extends AbstractIlsDriver
 			if (isset($sresult) && strpos($sresult, 'Patron information updated') !== false){
 				$user->phone = $_REQUEST['phone'];
 				$user->email = $_REQUEST['email'];
-				$user->_alt_username = $_REQUEST['username'];
 				$user->update();
-				/* @var Memcache $memCache */
 				global $memCache;
 				$memCache->delete("patron_dump_$barcode"); // because the update will affect the patron dump information also clear that cache as well
+				$result['success'] = true;
+				$result['messages'][] = 'Your account was updated successfully.';
 			}else{
 				// Doesn't look like the millennium (actually sierra) server ever provides error messages. plb 4-29-2015
 				if (preg_match('/<h2 class="errormessage">(.*?)<\/h2>/i', $sresult, $errorMatches)){
@@ -718,12 +704,12 @@ class Millennium extends AbstractIlsDriver
 					$errorMsg = 'There were errors updating your information.'; // generic error message
 				}
 
-				$updateErrors[] = $errorMsg;
+				$result['messages'][] = $errorMsg;
 			}
 		} else {
-			$updateErrors[] = 'You can not update your information.';
+			$result['messages'][] = 'You can not update your information.';
 		}
-		return $updateErrors;
+		return $result;
 	}
 
 	/** @var  int[] */
@@ -740,7 +726,6 @@ class Millennium extends AbstractIlsDriver
 			$this->pTypes = array();
 			/** @var $user User */
 			$user = UserAccount::getLoggedInUser();
-			/** @var $locationSingleton Location */
 			global $locationSingleton;
 			$searchLocation = $locationSingleton->getSearchLocation();
 			$searchLibrary = Library::getSearchLibrary();
@@ -902,7 +887,6 @@ class Millennium extends AbstractIlsDriver
 	}
 
 	function isItemHoldableToPatron($locationCode, $iType, $pTypes){
-		/** @var Memcache $memCache*/
 		global $memCache;
 		global $configArray;
 		global $timer;
@@ -1003,7 +987,6 @@ class Millennium extends AbstractIlsDriver
 	}
 
 	public function isItemBookableToPatron($locationCode, $iType, $pTypes){
-		/** @var Memcache $memCache*/
 		global $memCache;
 		global $configArray;
 		global $timer;
@@ -1370,7 +1353,17 @@ class Millennium extends AbstractIlsDriver
 		return $messages;
 	}
 
-	public function requestPinReset($barcode){
+	public function getEmailResetPinTemplate(){
+		return 'requestPinReset.tpl';
+	}
+
+	public function getEmailResetPinResultsTemplate(){
+		return 'requestPinResetResults.tpl';
+	}
+
+	public function processEmailResetPinForm(){
+		$barcode = strip_tags($_REQUEST['barcode']);
+
 		//Go to the pinreset page
 		$pinResetUrl = $this->getVendorOpacUrl() . '/pinreset';
 		$cookieJar = tempnam ("/tmp", "CURLCOOKIE");
@@ -1421,7 +1414,7 @@ class Millennium extends AbstractIlsDriver
 	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
 	 */
 	function importListsFromIls($patron){
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$user = UserAccount::getLoggedInUser();
 		$results = array(
 			'totalTitles' => 0,
@@ -1482,7 +1475,8 @@ class Millennium extends AbstractIlsDriver
 
 							if (!$resourceOnList){
 								$listEntry = new UserListEntry();
-								$listEntry->groupedWorkPermanentId = $primaryIdentifier->permanent_id;
+								$listEntry->source = 'GroupedWork';
+								$listEntry->sourceId = $primaryIdentifier->permanent_id;
 								$listEntry->listId = $newList->id;
 								$listEntry->notes = '';
 								$listEntry->dateAdded = time();
@@ -1509,7 +1503,7 @@ class Millennium extends AbstractIlsDriver
 
 	/**
 	 * Calculates a check digit for a III identifier
-	 * @param basedId String the base id without checksum
+	 * @param String basedId String the base id without checksum
 	 * @return String the check digit
 	 */
 	function getCheckDigit($baseId){
@@ -1729,7 +1723,9 @@ class Millennium extends AbstractIlsDriver
 		$user->email = isset($patronDump['EMAIL_ADDR']) ? $patronDump['EMAIL_ADDR'] : '';
 		$user->patronType = $patronDump['P_TYPE'];
 
-		if (isset($patronDump['MESSAGE'])) {
+		// MDN: Ticket https://ticket.bywatersolutions.com/Ticket/Display.html?id=76676
+		// in Sierra, there is not a
+		/*if (isset($patronDump['MESSAGE'])) {
 			$user->_web_note = $patronDump['MESSAGE'];
 		}
 		if (isset($patronDump['WEB_NOTE'])){
@@ -1737,7 +1733,7 @@ class Millennium extends AbstractIlsDriver
 				$user->_web_note .= '<br/>';
 			}
 			$user->_web_note = $patronDump['WEB_NOTE'];
-		}
+		}*/
 
 		//Setup home location
 		$location = null;
@@ -1859,10 +1855,6 @@ class Millennium extends AbstractIlsDriver
 
 		$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
 		$user->_fines = $patronDump['MONEY_OWED'];
-
-		if (isset($patronDump['USERNAME'])) {
-			$user->_alt_username = $patronDump['USERNAME'];
-		}
 
 		$numHoldsAvailable = 0;
 		$numHoldsRequested = 0;

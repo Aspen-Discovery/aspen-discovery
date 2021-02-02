@@ -1,21 +1,18 @@
 {strip}
 {* Search box *}
-	{include file="login-sidebar.tpl"}
+	<div class="row">
+		{if !empty($userPermissions)}
+			<a href="/Admin/Home">
+				<div class="sidebar-button custom-sidebar-button">
+					{translate text="Aspen Administration"}
+				</div>
+			</a>
+		{/if}
+	</div>
 
 	{if $loggedIn}
 		{* Account Menu *}
-		{include file="MyAccount/menu.tpl"}
+		{include file="MyAccount/account-sidebar.tpl"}
 	{/if}
 
-	{if !empty($showExploreMore)}
-		<div id="explore-more-header" class="row">Explore More</div>
-		<div id="explore-more-body" class="row">
-			<div id="loadingExploreMore">
-				<img src="{img filename=loading.gif}" alt="loading...">
-				Loading...
-			</div>
-		</div>
-	{/if}
-
-	{include file="library-sidebar.tpl"}
 {/strip}

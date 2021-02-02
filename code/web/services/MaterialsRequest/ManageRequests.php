@@ -17,11 +17,8 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
 		$homeLibrary = Library::getPatronHomeLibrary();
 		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('library_material_requests')){
-			$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
-		}else{
-			$libraryList[-1] = 'Default';
-		}
+
+		$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
 		$materialsRequestStatus->find();
 
 		$allStatuses = array();
@@ -49,9 +46,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$assigneesToShow = array();
 		if (isset($_REQUEST['assigneesFilter'])) {
 			$assigneesToShow = $_REQUEST['assigneesFilter'];
-//			$_SESSION['materialsRequestAssigneesFilter'] = $assigneesToShow;
-//		} elseif (!empty($_SESSION['materialsRequestAssigneesFilter'])) {
-//			$assigneesToShow = $_SESSION['materialsRequestAssigneesFilter'];
 		}
 		$interface->assign('assigneesFilter', $assigneesToShow);
 		$showUnassigned = !empty($_REQUEST['showUnassigned']) && $_REQUEST['showUnassigned'] == 'on';
@@ -62,8 +56,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			//Look for which titles should be modified
 			$selectedRequests = $_REQUEST['select'];
 			$statusToSet = $_REQUEST['newStatus'];
-			require_once ROOT_DIR . '/sys/Email/Mailer.php';
-			$mail = new Mailer();
 			foreach ($selectedRequests as $requestId => $selected){
 				$materialRequest = new MaterialsRequest();
 				$materialRequest->id = $requestId;
@@ -72,46 +64,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					$materialRequest->dateUpdated = time();
 					$materialRequest->update();
 
-					if ($allStatuses[$statusToSet]->sendEmailToPatron == 1 && $materialRequest->email){
-						$replyToAddress = $emailSignature = '';
-						if (!empty($materialRequest->assignedTo)) {
-							require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-							$staffSettings = new UserStaffSettings();
-							$staffSettings->get('userId', $materialRequest->assignedTo);
-							if (!empty($staffSettings->materialsRequestReplyToAddress)) {
-								$replyToAddress = $staffSettings->materialsRequestReplyToAddress;
-							}
-							if (!empty($staffSettings->materialsRequestEmailSignature)) {
-								$emailSignature = $staffSettings->materialsRequestEmailSignature;
-							}
-						}
-
-						$body = '*****This is an auto-generated email response. Please do not reply.*****';
-						$body .= "\r\n\r\n" . $allStatuses[$statusToSet]->emailTemplate;
-
-						if (!empty($emailSignature)) {
-							$body .= "\r\n\r\n" .$emailSignature;
-						}
-
-						//Replace tags with appropriate values
-						$materialsRequestUser = new User();
-						$materialsRequestUser->id = $materialRequest->createdBy;
-						$materialsRequestUser->find(true);
-						foreach ($materialsRequestUser as $fieldName => $fieldValue){
-							if (!is_array($fieldValue)){
-								$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
-							}
-						}
-						foreach ($materialRequest as $fieldName => $fieldValue){
-							if (!is_array($fieldValue)){
-								$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
-							}
-						}
-						$error = $mail->send($materialRequest->email, "Your Materials Request Update", $body, $replyToAddress);
-						if (($error instanceof AspenError)) {
-							$interface->assign('error', $error->getMessage());
-						}
-					}
+					$materialRequest->sendStatusChangeEmail();
 				}
 			}
 		}
@@ -163,20 +116,19 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$materialsRequests->joinAdd(new User(), 'INNER', 'user', 'createdBy', 'id');
 			$materialsRequests->joinAdd(new User(), 'LEFT', 'assignee', 'assignedTo', 'id');
 			$materialsRequests->selectAdd();
-			$materialsRequests->selectAdd('materials_request.*, description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $configArray['Catalog']['barcodeProperty'] . ' as barcode, assignee.displayName as assignedTo');
-			if (UserAccount::userHasRole('library_material_requests')){
-				//Need to limit to only requests submitted for the user's home location
-				$userHomeLibrary = Library::getPatronHomeLibrary();
-				$locations = new Location();
-				$locations->libraryId = $userHomeLibrary->libraryId;
-				$locations->find();
-				$locationsForLibrary = array();
-				while ($locations->fetch()){
-					$locationsForLibrary[] = $locations->locationId;
-				}
+			$materialsRequests->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $configArray['Catalog']['barcodeProperty'] . ' as barcode, assignee.displayName as assignedTo');
 
-				$materialsRequests->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
+			//Need to limit to only requests submitted for the user's home location
+			$userHomeLibrary = Library::getPatronHomeLibrary();
+			$locations = new Location();
+			$locations->libraryId = $userHomeLibrary->libraryId;
+			$locations->find();
+			$locationsForLibrary = array();
+			while ($locations->fetch()){
+				$locationsForLibrary[] = $locations->locationId;
 			}
+
+			$materialsRequests->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
 
 			if (count($availableStatuses) > count($statusesToShow)){
 				$statusSql = "";
@@ -244,27 +196,33 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$allRequests = $materialsRequests->fetchAll();
 			}
 
-			// $assignees used for both set assignee dropdown and filter by assigned To checkboxes
-			// TODO: determine if There is a case where an non-materials request manager can filter.
-			// opac_admins w/o materials_request role would expect to filter by assignee
-			if (UserAccount::userHasRole('library_material_requests')) {
-				$role = new Role();
-				if ($role->get('name', 'library_material_requests')) {
+			//Get a list of other users that are materials request users for this library
+			$permission = new Permission();
+			$permission->name = 'Manage Library Materials Requests';
+			if ($permission->find(true)){
+				//Get roles for the user
+				$rolePermissions = new RolePermissions();
+				$rolePermissions->permissionId = $permission->id;
+				$rolePermissions->find();
+				$assignees = array();
+				while ($rolePermissions->fetch()){
 					// Get Available Assignees
 					$materialsRequestManagers = new User();
 
 					require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 					$userRole         = new UserRoles();
-					$userRole->roleId = $role->roleId;
+					$userRole->roleId = $rolePermissions->roleId;
 
 					$materialsRequestManagers->joinAdd($userRole, 'INNER', 'user', 'id', 'userId');
 					$materialsRequestManagers->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
-					$assignees = array();
+
 					if ($materialsRequestManagers->find()) {
-						$assignees = $materialsRequestManagers->fetchAll('id', 'displayName');
+						while ($materialsRequestManagers->fetch()){
+							$assignees[$materialsRequestManagers->id] = $materialsRequestManagers->displayName;
+						}
 					}
-					$interface->assign('assignees', $assignees);
 				}
+				$interface->assign('assignees', $assignees);
 			}
 		}else{
 			$interface->assign('error', "You must be logged in to manage requests.");
@@ -471,7 +429,20 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		exit;
 	}
 
-	function getAllowableRoles(){
-		return array('library_material_requests');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'materials_request';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Manage Library Materials Requests');
 	}
 }

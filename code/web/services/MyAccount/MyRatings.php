@@ -17,7 +17,9 @@ class MyRatings extends MyAccount{
 		$ratings = [];
 		$ratedIds = [];
 		while($rating->fetch()){
-			$ratedIds[$rating->groupedRecordPermanentId] = clone($rating);
+			if (!array_key_exists($rating->groupedRecordPermanentId, $ratedIds)) {
+				$ratedIds[$rating->groupedRecordPermanentId] = clone $rating;
+			}
 			//$ratings[$rating->groupedRecordPermanentId] = [];
 		}
 		$timer->logTime("Loaded ids of titles the user has rated");
@@ -27,8 +29,7 @@ class MyRatings extends MyAccount{
 		$records = $searchObject->getRecords(array_keys($ratedIds));
 		foreach ($ratedIds as $permanentId => $rating){
 			if (array_key_exists($permanentId, $records)){
-				$record = $records[$permanentId];
-				$groupedWorkDriver = new GroupedWorkDriver($record);
+				$groupedWorkDriver = $records[$permanentId];
 				if ($groupedWorkDriver->isValid){
 					$ratings[$rating->groupedRecordPermanentId] = array(
 						'id' =>$rating->id,
@@ -64,16 +65,17 @@ class MyRatings extends MyAccount{
 		$records = $searchObject->getRecords(array_keys($notInterestedIds));
 		foreach ($notInterestedIds as $permanentId => $notInterestedObj){
 			if (array_key_exists($permanentId, $notInterestedIds)) {
-				$record = $records[$permanentId];
-				$groupedWorkDriver = new GroupedWorkDriver($record);
-				if ($groupedWorkDriver->isValid) {
-					$notInterested[] = array(
-						'id' => $notInterestedObj->id,
-						'title' => $groupedWorkDriver->getTitle(),
-						'author' => $groupedWorkDriver->getPrimaryAuthor(),
-						'dateMarked' => $notInterestedObj->dateMarked,
-						'link' => $groupedWorkDriver->getLinkUrl()
-					);
+				if (array_key_exists($permanentId, $records)) {
+					$groupedWorkDriver = $records[$permanentId];
+					if ($groupedWorkDriver->isValid) {
+						$notInterested[] = array(
+							'id' => $notInterestedObj->id,
+							'title' => $groupedWorkDriver->getTitle(),
+							'author' => $groupedWorkDriver->getPrimaryAuthor(),
+							'dateMarked' => $notInterestedObj->dateMarked,
+							'link' => $groupedWorkDriver->getLinkUrl()
+						);
+					}
 				}
 			}
 		}
@@ -84,5 +86,13 @@ class MyRatings extends MyAccount{
 		$interface->assign('showNotInterested', false);
 
 		$this->display('myRatings.tpl', 'My Ratings', 'Search/home-sidebar.tpl');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'My Ratings');
+		return $breadcrumbs;
 	}
 }

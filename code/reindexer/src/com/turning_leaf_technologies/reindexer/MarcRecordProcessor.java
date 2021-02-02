@@ -17,10 +17,11 @@ import java.util.regex.PatternSyntaxException;
 abstract class MarcRecordProcessor {
 	protected Logger logger;
 	protected GroupedWorkIndexer indexer;
-	private static Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)Rated\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
-	private static Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
-	private static Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
-	private HashSet<String> unknownSubjectForms = new HashSet<>();
+	private static final Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)Rated\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
+	private final HashSet<String> unknownSubjectForms = new HashSet<>();
 	int numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
 	String individualMarcPath;
@@ -28,12 +29,13 @@ abstract class MarcRecordProcessor {
 	String specifiedFormat;
 	String specifiedFormatCategory;
 	int specifiedFormatBoost;
+	String treatUnknownLanguageAs = null;
+	String treatUndeterminedLanguageAs = null;
 
 	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger) {
 		this.indexer = indexer;
 		this.logger = logger;
 	}
-
 
 	/**
 	 * Load MARC record from disk based on identifier
@@ -230,9 +232,11 @@ abstract class MarcRecordProcessor {
 									curSubjectField.getSubfield('2').getData().equals("bisacmt") ||
 									curSubjectField.getSubfield('2').getData().equals("bisacrt")) {
 								isLCSubject = false;
+								isBisacSubject = true;
 							}
 						}
 					} else {
+						isLCSubject = false;
 						if (curSubjectField.getSubfield('2') != null) {
 							if (curSubjectField.getSubfield('2').getData().equals("bisacsh") ||
 									curSubjectField.getSubfield('2').getData().equals("bisacmt") ||
@@ -399,8 +403,37 @@ abstract class MarcRecordProcessor {
 		loadLiteraryForms(groupedWork, record, printItems, identifier);
 		loadTargetAudiences(groupedWork, record, printItems, identifier);
 		loadFountasPinnell(groupedWork, record);
+		loadLexileScore(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
+	}
+
+	private static Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
+	private void loadLexileScore(GroupedWorkSolr groupedWork, Record record) {
+		List<DataField> targetAudiences = MarcUtil.getDataFields(record, "521");
+		for (DataField targetAudience : targetAudiences){
+			Subfield subfieldA = targetAudience.getSubfield('a');
+			Subfield subfieldB = targetAudience.getSubfield('b');
+			if (subfieldA != null && subfieldB != null){
+				if (subfieldB.getData().equalsIgnoreCase("lexile")){
+					String lexileValue = subfieldA.getData();
+					if (lexileValue.endsWith("L")){
+						lexileValue = lexileValue.substring(0, lexileValue.length() - 1);
+					}
+					if (StringUtils.isNumeric(lexileValue)) {
+						groupedWork.setLexileScore(lexileValue);
+					}else{
+						Matcher lexileMatcher = lexileMatchingPattern.matcher(lexileValue);
+						if (lexileMatcher.find()){
+							String lexileCode = lexileMatcher.group(1);
+							String lexileScore = lexileMatcher.group(2);
+							groupedWork.setLexileScore(lexileScore);
+							groupedWork.setLexileCode(lexileCode);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record) {
@@ -498,7 +531,14 @@ abstract class MarcRecordProcessor {
 						// + " Rated " + getId());
 						return mpaaMatcher2.group(1) + " Rated";
 					} else {
-						return null;
+						Matcher mpaaMatcher3 = mpaaRatingRegex3.matcher(val);
+						if (mpaaMatcher3.find()) {
+							// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
+							// + " Rated " + getId());
+							return mpaaMatcher3.group(1) + " Rated";
+						} else {
+							return null;
+						}
 					}
 				}
 			} catch (PatternSyntaxException ex) {
@@ -533,16 +573,13 @@ abstract class MarcRecordProcessor {
 					) {
 				char targetAudienceChar;
 				if (ohOhSixField != null && ohOhSixField.getData().length() > 5) {
-					targetAudienceChar = Character.toUpperCase(ohOhSixField.getData()
-							.charAt(5));
+					targetAudienceChar = Character.toUpperCase(ohOhSixField.getData().charAt(5));
 					if (targetAudienceChar != ' ') {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
 				}
-				if (targetAudiences.size() == 0 && ohOhEightField != null
-						&& ohOhEightField.getData().length() > 22) {
-					targetAudienceChar = Character.toUpperCase(ohOhEightField.getData()
-							.charAt(22));
+				if (targetAudiences.size() == 0 && ohOhEightField != null && ohOhEightField.getData().length() > 22) {
+					targetAudienceChar = Character.toUpperCase(ohOhEightField.getData().charAt(22));
 					if (targetAudienceChar != ' ') {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
@@ -623,6 +660,7 @@ abstract class MarcRecordProcessor {
 					|| subjectForm.equalsIgnoreCase("Junior fiction" )
 					|| subjectForm.equalsIgnoreCase("Comic books, strips, etc")
 					|| subjectForm.equalsIgnoreCase("Comic books,strips, etc")
+					|| subjectForm.equalsIgnoreCase("Science fiction comics")
 					|| subjectForm.equalsIgnoreCase("Children's fiction" )
 					|| subjectForm.equalsIgnoreCase("Fictional Works" )
 					|| subjectForm.equalsIgnoreCase("Cartoons and comics" )
@@ -808,7 +846,7 @@ abstract class MarcRecordProcessor {
 				if (curField.getIndicator2() == '1'){
 					Subfield subFieldB = curField.getSubfield('b');
 					if (subFieldB != null){
-						publisher.add(subFieldB.getData());
+						publisher.add(StringUtils.trimTrailingPunctuation(subFieldB.getData()));
 					}
 				}
 			}
@@ -825,6 +863,11 @@ abstract class MarcRecordProcessor {
 		boolean isFirstLanguage = true;
 		for (String language : languages){
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
+			if (treatUnknownLanguageAs != null && treatUnknownLanguageAs.length() > 0 && translatedLanguage.equals("Unknown")){
+				translatedLanguage = treatUnknownLanguageAs;
+			}else if (treatUndeterminedLanguageAs != null && treatUndeterminedLanguageAs.length() > 0 && translatedLanguage.equals("Undetermined")){
+				translatedLanguage = treatUndeterminedLanguageAs;
+			}
 			translatedLanguages.add(translatedLanguage);
 			if (isFirstLanguage){
 				for (RecordInfo ilsRecord : ilsRecords){
@@ -874,10 +917,16 @@ abstract class MarcRecordProcessor {
 		List<DataField> contributorFields = MarcUtil.getDataFields(record, new String[]{"700","710"});
 		HashSet<String> contributors = new HashSet<>();
 		for (DataField contributorField : contributorFields){
-			StringBuilder contributor = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "abcdetmnr", "");
-			if (contributorField.getTag().equals("700") && contributorField.getSubfield('4') != null){
-				String role = indexer.translateSystemValue("contributor_role", StringUtils.trimTrailingPunctuation(contributorField.getSubfield('4').getData()), identifier);
-				contributor.append("|").append(role);
+			StringBuilder contributor = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "abcd", "");
+			if (contributor.length() == 0){
+				continue;
+			}
+			if (contributor.substring(contributor.length() - 1, contributor.length()).equals(",")){
+				contributor = new StringBuilder(contributor.substring(0, contributor.length() - 1));
+			}
+			StringBuilder roles = MarcUtil.getSpecifiedSubfieldsAsString(contributorField, "e4", ",");
+			if (roles.length() > 0){
+				contributor.append("|").append(roles.toString().replaceAll(",,", ","));
 			}
 			contributors.add(contributor.toString());
 		}
@@ -993,7 +1042,7 @@ abstract class MarcRecordProcessor {
 		char ind2char = df.getIndicator2();
 		int result = 0;
 		if (Character.isDigit(ind2char))
-			result = Integer.valueOf(String.valueOf(ind2char));
+			result = Integer.parseInt(String.valueOf(ind2char));
 		return result;
 	}
 
@@ -1054,7 +1103,7 @@ abstract class MarcRecordProcessor {
 		}
 		return printFormats;
 	}
-	private HashSet<String> formatsToFilter = new HashSet<>();
+	private final HashSet<String> formatsToFilter = new HashSet<>();
 
 	private void getFormatFromDigitalFileCharacteristics(Record record, LinkedHashSet<String> printFormats) {
 		Set<String> fields = MarcUtil.getFieldList(record, "347b");
@@ -1465,7 +1514,7 @@ abstract class MarcRecordProcessor {
 							boolean okToAdd = false;
 							if (field.getSubfield('v') != null){
 								String subfieldVData = field.getSubfield('v').getData().toLowerCase();
-								if (!subfieldVData.contains("Television adaptation")){
+								if (!subfieldVData.contains("television adaptation")){
 									okToAdd = true;
 									//}else{
 									//System.out.println("Not including graphic novel format");

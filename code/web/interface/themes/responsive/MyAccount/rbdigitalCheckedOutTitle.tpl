@@ -15,11 +15,11 @@
 						{if $disableCoverArt != 1}{*TODO: should become part of $showCovers *}
 							{if $record.coverUrl}
 								{if $record.recordId && $record.linkUrl}
-									<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+									<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}" aria-hidden="true">
 										<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 									</a>
 								{else} {* Cover Image but no Record-View link *}
-									<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+									<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 								{/if}
 							{/if}
 						{/if}
@@ -69,7 +69,7 @@
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Rating'}&nbsp;</div>
 							<div class="result-value col-tn-8 col-lg-9">
-								{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.groupedWorkId ratingData=$record.ratingData showNotInterested=false}
+								{include file="GroupedWork/title-rating.tpl" id=$record.groupedWorkId ratingData=$record.ratingData showNotInterested=false}
 							</div>
 						</div>
 					{/if}
@@ -92,15 +92,22 @@
 				{* Actions for Title *}
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
-						<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-primary">{translate text='Open in RBdigital'}</a>
+						<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action">{translate text='Open in RBdigital'}</a>
 						{if $record.downloadUrl}
-							<a href="{$record.downloadUrl}" target="_blank" class="btn btn-sm btn-primary">{translate text='Download'}</a>
+							<a href="{$record.downloadUrl}" target="_blank" class="btn btn-sm btn-action">{translate text='Download'}</a>
 						{/if}
 						{if $record.canRenew}
 							<a href="#" onclick="return AspenDiscovery.RBdigital.renewCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout'}</a>
 						{/if}
 						<a href="#" onclick="return AspenDiscovery.RBdigital.returnCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-warning">{translate text='Return&nbsp;Now'}</a>
 					</div>
+					{if $showWhileYouWait}
+						<div class="btn-group btn-group-vertical btn-block">
+							{if !empty($record.groupedWorkId)}
+								<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.groupedWorkId}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like"}</button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>

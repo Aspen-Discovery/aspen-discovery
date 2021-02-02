@@ -3,7 +3,6 @@
 require_once ROOT_DIR . '/sys/WikipediaParser.php';
 class Author_Wikipedia {
 
-
 	/**
 	 * getWikipedia
 	 *

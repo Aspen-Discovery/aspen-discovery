@@ -6,9 +6,9 @@
 					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 				</div>
 			{/if}
-
-			{* Alternate Mobile MyAccount Menu *}
-			{include file="MyAccount/mobilePageHeader.tpl"}
+			{if !empty($accountMessages)}
+				{include file='systemMessages.tpl' messages=$accountMessages}
+			{/if}
 
 			<span class='availableHoldsNoticePlaceHolder'></span>
 
@@ -26,16 +26,6 @@
 						<div class="col-xs-4"><label for="overdriveEmail" class="control-label">{translate text='OverDrive Hold email'}</label></div>
 						<div class="col-xs-8">
 							{if $edit == true}<input name="overdriveEmail" id="overdriveEmail" class="form-control" value='{$profile->overdriveEmail|escape}' size='50' maxlength='75'>{else}{$profile->overdriveEmail|escape}{/if}
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="col-xs-4"><label for="overdriveAutoCheckout" class="control-label">{translate text="overdrive_auto_checkout" defaultText="Automatically checkout when available"}</label></div>
-						<div class="col-xs-8">
-                            {if $edit == true}
-								<input type="checkbox" name="overdriveAutoCheckout" id="overdriveAutoCheckout" {if $profile->overdriveAutoCheckout==1}checked='checked'{/if} data-switch="">
-                            {else}
-                                {if $profile->overdriveAutoCheckout==0}No{else}Yes{/if}
-                            {/if}
 						</div>
 					</div>
 					<div class="form-group">
@@ -81,7 +71,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
+				You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
 			</div>
 		{/if}
 	</div>

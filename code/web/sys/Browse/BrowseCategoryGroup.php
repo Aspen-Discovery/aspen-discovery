@@ -18,14 +18,14 @@ class BrowseCategoryGroup extends DataObject
 	private $_locations;
 
 	public static function getObjectStructure(){
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 		
 		$browseCategoryStructure = BrowseCategoryGroupEntry::getObjectStructure();
 		unset($browseCategoryStructure['weight']);
 		unset($browseCategoryStructure['browseCategoryGroupId']);
 
-		$structure = [
+		return [
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the group', 'maxLength' => 50, 'required' => true),
 			'defaultBrowseMode' => array('property' => 'defaultBrowseMode', 'type' => 'enum', 'label'=>'Default Viewing Mode', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,
 				'values'=> array('0' => 'Show Covers Only', '1' => 'Show as Grid'),
@@ -74,34 +74,14 @@ class BrowseCategoryGroup extends DataObject
 				'values' => $locationList,
 			),
 		];
-
-		return $structure;
 	}
 
 	public function __get($name)
 	{
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
-				$this->_libraries = [];
-				$obj = new Library();
-				$obj->browseCategoryGroupId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_libraries[$obj->libraryId] = $obj->libraryId;
-				}
-			}
-			return $this->_libraries;
+			return $this->getLibraries();
 		} elseif ($name == "locations") {
-			if (!isset($this->_locations) && $this->id){
-				$this->_locations = [];
-				$obj = new Location();
-				$obj->browseCategoryGroupId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_locations[$obj->locationId] = $obj->locationId;
-				}
-			}
-			return $this->_locations;
+			return $this->getLocations();
 		} elseif ($name == 'browseCategories') {
 			return $this->getBrowseCategories();
 		} else {
@@ -127,9 +107,9 @@ class BrowseCategoryGroup extends DataObject
 	public function __set($name, $value)
 	{
 		if ($name == "libraries") {
-			$this->_libraries = $value;
+			$this->setLibraries($value);
 		}elseif ($name == "locations") {
-			$this->_locations = $value;
+			$this->setLocations($value);
 		}elseif ($name == 'browseCategories') {
 			$this->_browseCategories = $value;
 		}else{
@@ -191,7 +171,7 @@ class BrowseCategoryGroup extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$library = new Library();
 				$library->libraryId = $libraryId;
@@ -216,7 +196,7 @@ class BrowseCategoryGroup extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 			/**
 			 * @var int $locationId
 			 * @var Location $location
@@ -253,36 +233,40 @@ class BrowseCategoryGroup extends DataObject
 	/** @return Library[] */
 	public function getLibraries()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
+		if (!isset($this->_libraries) && $this->id){
+			$this->_libraries = [];
+			$obj = new Library();
+			$obj->browseCategoryGroupId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_libraries[$obj->libraryId] = $obj->libraryId;
+			}
+		}
 		return $this->_libraries;
 	}
 
 	/** @return Location[] */
 	public function getLocations()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
+		if (!isset($this->_locations) && $this->id){
+			$this->_locations = [];
+			$obj = new Location();
+			$obj->browseCategoryGroupId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_locations[$obj->locationId] = $obj->locationId;
+			}
+		}
 		return $this->_locations;
 	}
 
 	public function setLibraries($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
 	public function setLocations($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
-		$this->_libraries = $val;
-	}
-
-	public function clearLibraries(){
-		$this->clearOneToManyOptions('Library', 'browseCategoryGroupId');
-		unset($this->_libraries);
-	}
-
-	public function clearLocations(){
-		$this->clearOneToManyOptions('Location', 'browseCategoryGroupId');
-		unset($this->_locations);
+		$this->_locations = $val;
 	}
 }

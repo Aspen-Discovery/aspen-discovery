@@ -14,9 +14,6 @@ function loadSearchInformation(){
 	//Determine the Search Source, need to do this always.
 	global $searchSource;
 	global $library;
-	/** @var Memcache $memCache */
-	global $memCache;
-	global $instanceName;
 	global $configArray;
 
 	$module = (isset($_GET['module'])) ? $_GET['module'] : null;
@@ -54,7 +51,7 @@ function loadSearchInformation(){
 			}elseif ($module == 'List'){
 				$searchSource = 'lists';
 			}elseif ($module == 'EBSCO'){
-				$searchSource = 'ebsco';
+				$searchSource = 'ebsco_eds';
 			}else{
 				require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
 				$searchSources = new SearchSources();
@@ -62,7 +59,7 @@ function loadSearchInformation(){
 				$location = $locationSingleton->getActiveLocation();
 				list($enableCombinedResults, $showCombinedResultsFirst) = $searchSources::getCombinedSearchSetupParameters($location, $library);
 				if ($enableCombinedResults && $showCombinedResultsFirst){
-					$searchSource = 'combinedResults';
+					$searchSource = 'combined';
 				}else{
 					$searchSource = 'local';
 				}
@@ -131,7 +128,6 @@ function loadSearchInformation(){
 
 	//Load indexing profiles
 	require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
-	/** @var $indexingProfiles IndexingProfile[] */
 	global $indexingProfiles;
 	$indexingProfiles = array();
 	$indexingProfile = new IndexingProfile();

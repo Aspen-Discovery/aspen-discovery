@@ -26,9 +26,10 @@ class Enrichment_DPLASettings extends ObjectEditor
 		return 'DP.LA Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new DPLASetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -52,21 +53,6 @@ class Enrichment_DPLASettings extends ObjectEditor
 		return 'id';
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin', 'libraryAdmin');
-	}
-
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
 	function getAdditionalObjectActions($existingObject)
 	{
 		return [];
@@ -74,6 +60,30 @@ class Enrichment_DPLASettings extends ObjectEditor
 
 	function getInstructions()
 	{
-		return '';
+		return '/Admin/HelpManual?page=DPLA';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Enrichment/DPLASettings', 'DP.LA Settings');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'third_party_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Third Party Enrichment API Keys');
+	}
+
+	function canAddNew()
+	{
+		return $this->getNumObjects() == 0;
 	}
 }

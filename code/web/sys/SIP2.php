@@ -270,7 +270,7 @@ class sip2
 	}
 
 	/* Fee paid function should go here */
-	function msgFeePaid ($feeType, $pmtType, $pmtAmount, $curType = 'USD', $feeId = '', $transId = '')
+	function msgFeePaid ($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = '')
 	{
 		/* Fee payment function (37) - untested */
 		/* Fee Types: */
@@ -306,11 +306,15 @@ class sip2
 		$this->_addFixedOption(sprintf('%02d', $feeType), 2);
 		$this->_addFixedOption(sprintf('%02d', $pmtType), 2);
 		$this->_addFixedOption($curType, 3);
-		$this->_addVarOption('BV',$pmtAmount); /* due to currancy format localization, it is up to the programmer to properly format their payment amount */
+		$this->_addVarOption('BV',$pmtAmount); /* due to currency format localization, it is up to the programmer to properly format their payment amount */
 		$this->_addVarOption('AO',$this->AO);
-		$this->_addVarOption('AA',$this->patron);
+		if (!empty($patronId)) {
+			$this->_addVarOption('AA',$patronId);
+		} else {
+			$this->_addVarOption('AA',$this->patron);
+		}
 		$this->_addVarOption('AC',$this->AC, true);
-		$this->_addVarOption('AD',$this->patronpwd, true);
+//		$this->_addVarOption('AD',$this->patronpwd, true); // Patron password ignored in CarlX 9.6. Leave commented out until an Aspen ILS requires it.
 		$this->_addVarOption('CG',$feeId, true);
 		$this->_addVarOption('BK',$transId, true);
 
@@ -385,10 +389,10 @@ class sip2
 		$this->_newMessage('15');
 		$this->_addFixedOption($mode, 1);
 		$this->_addFixedOption($this->_datestamp(), 18);
-		//$this->msgBuild .= $this->fldTerminator;
+		$this->msgBuild .= $this->fldTerminator;
 		if ($expDate != '') {
 			/* hold expiration date,  due to the use of the datestamp function, we have to check here for empty value. when datestamp is passed an empty value it will generate a current datestamp */
-			$this->_addVarOption('BW', $this->_datestamp($expDate), true); /*spec says this is fixed field, but it behaves like a var field and is optional... */
+			$this->_addVarOption('BW', $this->_datestamp($expDate), true); /*CarlX Hold spec says this is fixed field, but it behaves like a var field and is optional... */
 		}
 		$this->_addVarOption('BS',$pkupLocation, true);
 		$this->_addVarOption('BY',$holdtype, true);
@@ -405,9 +409,8 @@ class sip2
 	}
 
 	// For CarlX Only
-	function freezeSuspendHold($reactivateDate = '', $freeze = true, $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '')
+	function msgHoldCarlX($mode, $expDate = '', $holdtype = '', $item = '', $title = '', $fee = null, $pkupLocation = '', $queuePosition = null, $freeze = null, $freezeReactivateDate = null)
 	{
-		$mode = '*';
 		/* mode validity check */
 		/*
 		 * - remove hold
@@ -436,26 +439,30 @@ class sip2
 		$this->_addFixedOption($mode, 1);
 		$this->_addFixedOption($this->_datestamp(), 18);
 		$this->msgBuild .= $this->fldTerminator;
-//		if ($expDate != '') {
-//			/* hold expiration date,  due to the use of the datestamp function, we have to check here for empty value. when datestamp is passed an empty value it will generate a current datestamp */
-//			$this->_addVarOption('BW', $this->_datestamp($expDate), true); /*spec says this is fixed field, but it behaves like a var field and is optional... */
-//		}
-		$this->_addVarOption('BW', '', false);
-		$this->_addVarOption('BS',$pkupLocation, false);
-		$this->_addVarOption('BY',$holdtype, true);
-		$this->_addVarOption('AO',$this->AO);
 		$this->_addVarOption('AA',$this->patron);
+		$this->_addVarOption('AB',$item, true);
+		$this->_addVarOption('AC',$this->AC, true);
 		$this->_addVarOption('AD',$this->patronpwd, true);
-//		$this->_addVarOption('AB',$item, true);
-		$this->_addVarOption('AB',$item, false);
 		$this->_addVarOption('AJ',$title, true);
-//		$this->_addVarOption('AC',$this->AC, false);
-		$this->_addVarOption('AC','', true);
+		$this->_addVarOption('AO',$this->AO);
 		$this->_addVarOption('BO',$fee, true); /* Y when user has agreed to a fee notice */
-
-		$this->_addVarOption('BR', '1', false);
-		$this->_addVarOption('XG', '', false);
-		$this->_addVarOption('XI',$reactivateDate . ($freeze ? 'B' : ''), true);  // Custom Field to suspend holds
+		$this->_addVarOption('BR',$queuePosition, true);
+		$this->_addVarOption('BS',$pkupLocation, true);
+		if ($expDate != '') {
+			/* hold expiration date,  due to the use of the datestamp function, we have to check here for empty value. when datestamp is passed an empty value it will generate a current datestamp */
+			$this->_addVarOption('BW', $this->_datestamp($expDate), true); /*CarlX Hold spec says this is fixed field, but it behaves like a var field and is optional... */
+		}
+		$this->_addVarOption('BY',$holdtype, true);
+		$this->_addVarOption('XG','', true); // CarlX custom field Issue Identifier // TO DO: Evaluate code changes for Issue level holds
+		if ($freeze == 'freeze' && !empty($freezeReactivateDate)) {
+			if (substr($freezeReactivateDate,-1) != 'B') {
+				$freezeReactivateDate .= 'B';
+			}
+		}
+		if ($freeze == 'thaw') {
+			$freezeReactivateDate = date('m/d/Y', $expDate); // CarlX 9.6.4.3 2020 12 31 will set hold cancel date equal to the previous Freeze Not Needed Before date unless a new value is supplied for Not Needed After in the thaw XI field, despite the fact that the same information is provided in BW
+		}
+		$this->_addVarOption('XI',$freezeReactivateDate, true); // CarlX custom field NNA or NNB Date used with suffix 'B' to indicate Freeze Reactivate Date
 
 		return $this->_returnMessage();
 

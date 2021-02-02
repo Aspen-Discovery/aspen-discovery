@@ -1,18 +1,18 @@
 <?php
 
-if (file_exists(ROOT_DIR . '/services/MyResearch/lib/Search.php')) {
-	require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+if (file_exists(ROOT_DIR . '/sys/SearchEntry.php')) {
+	require_once ROOT_DIR . '/sys/SearchEntry.php';
 }
 
-class SessionInterface {
+class SessionInterface implements SessionHandlerInterface{
 
-	static public $lifetime = 3600;
-	static public $rememberMeLifetime = 1209600;
+	static public $lifetime = 3600; //one hour
+	static public $rememberMeLifetime = 1209600; //2 weeks
 
 	public function init($lt, $rememberMeLifetime) {
 		self::$lifetime = $lt;
 		self::$rememberMeLifetime = $rememberMeLifetime;
-		session_set_save_handler(array(get_class($this), 'open'), array(get_class($this),'close'), array(get_class($this),'read'), array(get_class($this),'write'), array(get_class($this),'destroy'), array(get_class($this),'gc'));
+		session_set_save_handler($this);
 		//Have to set the default timeout before we call session start, set a really long timeout by default since PHP doesn't like to extend the PHPSESSION timeout
 		//Set one year by default
 		session_set_cookie_params(0, '/');
@@ -20,19 +20,19 @@ class SessionInterface {
 	}
 
 	// the following need to be static since they are used as callback functions
-	static public function open($sess_path, $sess_name) {
+	public function open($sess_path, $sess_name) {
 		return true;
 	}
-	static public function close() {
+	public function close() {
 		return true;
 	}
-	static public function read($sess_id) { }
-	static public function write($sess_id, $data) { }
+	public function read($sess_id) { }
+	public function write($sess_id, $data) { }
 
 	// IMPORTANT:  The functionality defined in this method is global to all session
 	//      mechanisms.  If you override this method, be sure to still call
 	//      parent::destroy() in addition to any new behavior.
-	static public function destroy($sess_id)
+	public function destroy($sess_id)
 	{
 		if (class_exists('SearchEntry')){
 			// Delete the searches stored for this session
@@ -48,6 +48,7 @@ class SessionInterface {
 				}
 			}
 		}
+		return true;
 	}
 
 	// how often does this get called (if at all)?
@@ -61,5 +62,5 @@ class SessionInterface {
 	// Anecdotal testing Today and Yesterday seems to indicate destroy()
 	//   is called by the garbage collector and everything is good.
 	// Something to keep in mind though.
-	static public function gc($sess_maxlifetime) { }
+	public function gc($sess_maxlifetime) { }
 }

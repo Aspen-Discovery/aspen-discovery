@@ -7,8 +7,14 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		editListAction: function (){
-			$('#listDescription,#listTitle,#FavEdit').hide();
-			$('#listEditControls,#FavSave').show();
+			$('#listDescription,#listTitle,#FavEdit,.listViewButton').hide();
+			$('#listEditControls,#FavSave,.listEditButton').show();
+			return false;
+		},
+
+		cancelEditListAction: function (){
+			$('#listDescription,#listTitle,#FavEdit,.listViewButton').show();
+			$('#listEditControls,#FavSave,.listEditButton').hide();
 			return false;
 		},
 
@@ -39,7 +45,7 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		emailListAction: function (listId) {
-			let urlToDisplay = Globals.path + '/MyAccount/AJAX';
+			var urlToDisplay = Globals.path + '/MyAccount/AJAX';
 			AspenDiscovery.loadingMessage();
 			$.getJSON(urlToDisplay, {
 					method  : 'getEmailMyListForm'
@@ -53,7 +59,7 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		sendMyListEmail: function () {
-			let url = Globals.path + "/MyAccount/AJAX";
+			var url = Globals.path + "/MyAccount/AJAX";
 
 			$.getJSON(url,
 				{ // form inputs passed as data
@@ -93,7 +99,7 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		changeList: function (){
-			let availableLists = $("#availableLists");
+			var availableLists = $("#availableLists");
 			window.location = Globals.path + "/MyAccount/MyList/" + availableLists.val();
 		},
 

@@ -15,11 +15,16 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 		return 'Grouped Work Display Settings';
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
+		return UserAccount::userHasPermission('Administer All Grouped Work Display Settings');
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new GroupedWorkDisplaySetting();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		if (!UserAccount::userHasPermission('Administer All Grouped Work Display Settings')){
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$object->id = $library->groupedWorkDisplaySettingId;
+		}
 		$object->find();
 		$list = array();
 		while ($object->fetch()){
@@ -36,17 +41,9 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
 
 	function getInstructions(){
-		//return 'For more information on themes see TBD';
-		return '';
-	}
-
-	function getListInstructions(){
-		return $this->getInstructions();
+		return '/Admin/HelpManual?page=Grouped-Work-Display-Settings';
 	}
 
 	/** @noinspection PhpUnused */
@@ -70,11 +67,30 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 				$defaultOptions[] = $optionObj;
 			}
 
-			$groupedWorkSetting->moreDetailsOptions = $defaultOptions;
+			$groupedWorkSetting->setMoreDetailsOptions($defaultOptions);
 			$groupedWorkSetting->update();
 
 			$_REQUEST['objectAction'] = 'edit';
 		}
 		header("Location: /Admin/GroupedWorkDisplay?objectAction=edit&id=" . $groupedWorkSettingId);
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cataloging', 'Catalog / Grouped Works');
+		$breadcrumbs[] = new Breadcrumb('/Admin/GroupedWorkDisplay', 'Grouped Work Display');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'cataloging';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Grouped Work Display Settings','Administer Library Grouped Work Display Settings']);
 	}
 }

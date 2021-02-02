@@ -16,7 +16,7 @@ class CollectionSpotlight extends DataObject
 	public $customCss;
 	public $listDisplayType;
 	public $showMultipleTitles;
-	public $style; //'vertical', 'horizontal', 'single', 'single-with-next'
+	public $style; //'vertical', 'horizontal', 'single', 'single-with-next', 'text-list', 'horizontal-carousel'
 	public $autoRotate;
 	public $libraryId;
 	public /** @noinspection PhpUnused */ $showRatings;
@@ -27,7 +27,7 @@ class CollectionSpotlight extends DataObject
 	public /** @noinspection PhpUnused */ $numTitlesToShow;
 
 	// Spotlight Styles and their labels
-	private static $_styles = array('horizontal' => 'Horizontal', 'vertical' => 'Vertical', 'single' => 'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
+	private static $_styles = array('horizontal' => 'Horizontal', 'horizontal-carousel' => 'Horizontal Carousel', 'vertical' => 'Vertical', 'single' => 'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
 
 	// Spotlight Display Types and their labels
 	private static $_displayTypes = array(
@@ -43,36 +43,22 @@ class CollectionSpotlight extends DataObject
 		return ['id'];
 	}
 
-	public function getStyles()
-	{
-		return CollectionSpotlight::$_styles;
-	}
-
 	public function getStyle($styleName)
 	{
 		return CollectionSpotlight::$_styles[$styleName];
 	}
 
-	public function getDisplayTypes()
-	{
-		return CollectionSpotlight::$_displayTypes;
-	}
-
+	/** @noinspection PhpUnused */
 	public function getDisplayType($typeName)
 	{
 		return CollectionSpotlight::$_displayTypes[$typeName];
-	}
-
-	function keys()
-	{
-		return array('id');
 	}
 
 	static function getObjectStructure()
 	{
 		//Load Libraries for lookup values
 		$libraryList = array();
-		if (UserAccount::userHasRole('opacAdmin')) {
+		if (UserAccount::userHasPermission('Administer All Collection Spotlights')) {
 			$library = new Library();
 			$library->orderBy('displayName');
 			$library->find();
@@ -80,12 +66,17 @@ class CollectionSpotlight extends DataObject
 			while ($library->fetch()) {
 				$libraryList[$library->libraryId] = $library->displayName;
 			}
-		} elseif (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('contentEditor')) {
+		} else{
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
 		}
 
-		$structure = array(
+		$spotlightListStructure = CollectionSpotlightList::getObjectStructure();
+		unset($spotlightListStructure['searchTerm']);
+		unset($spotlightListStructure['defaultFilter']);
+		unset($spotlightListStructure['sourceListId']);
+		unset($spotlightListStructure['defaultSort']);
+		return array(
 			'id' => array(
 				'property' => 'id',
 				'type' => 'hidden',
@@ -226,18 +217,20 @@ class CollectionSpotlight extends DataObject
 				'keyThis' => 'id',
 				'keyOther' => 'collectionSpotlightId',
 				'subObjectType' => 'CollectionSpotlightList',
-				'structure' => CollectionSpotlightList::getObjectStructure(),
+				'structure' => $spotlightListStructure,
 				'label' => 'Lists',
 				'description' => 'The lists to be displayed.',
 				'sortable' => true,
 				'storeDb' => true,
 				'serverValidation' => 'validateLists',
 				'hideInLists' => false,
+				'allowEdit' => true,
+				'canEdit' => true,
 			),
 		);
-		return $structure;
 	}
 
+	/** @noinspection PhpUnused */
 	function validateName()
 	{
 		//Setup validation return array

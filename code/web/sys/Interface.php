@@ -14,7 +14,7 @@ class UInterface extends Smarty
 	private $theme;
 	/** @var Theme */
 	private $appliedTheme = null;
-	private $isMobile = false;
+	private $isMobile;
 	private $url;
 	private $debug = false;
 
@@ -38,25 +38,16 @@ class UInterface extends Smarty
 			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 			$googleSettings = new GoogleApiSetting();
 			if ($googleSettings->find(true)) {
-				if (!empty($googleSettings->googleTranslateKey)) {
-					$this->assign('google_translate_key', $googleSettings->googleTranslateKey);
-					$this->assign('google_included_languages', $googleSettings->googleTranslateLanguages);
-				} else {
-					//setup translations within Aspen
-					$this->assign('enableLanguageSelector', true);
-				}
-
 				//Get all images related to the event
 				if (!empty($googleSettings->googleMapsKey)) {
 					$this->assign('mapsKey', $googleSettings->googleMapsKey);
 				}
-			} else {
-				$this->assign('enableLanguageSelector', true);
 			}
 		}catch (Exception $e){
 			//This happens when google analytics isn't setup yet
 			$this->assign('enableLanguageSelector', true);
 		}
+		$this->assign('enableLanguageSelector', true);
 
 		//Check to see if we have a google site verification key
 		if (isset($configArray['Site']['google_verification_key']) && strlen($configArray['Site']['google_verification_key']) > 0){
@@ -72,15 +63,7 @@ class UInterface extends Smarty
 		//to just set the themes in use globally someplace rather than passing through the INI
 		$themeArray = explode(',', $configArray['Site']['theme']);
 		$this->themes = $themeArray;
-		if (count($themeArray) > 1) {
-			$this->template_dir = array();
-			foreach ($themeArray as $currentTheme) {
-				$currentTheme = trim($currentTheme);
-				$this->template_dir[] = "$local/interface/themes/$currentTheme";
-			}
-		} else {
-			$this->template_dir  = "$local/interface/themes/" . $themeArray[0];
-		}
+		$this->template_dir  = "$local/interface/themes/responsive/";
 		if (isset($timer)){
 			$timer->logTime('Set theme');
 		}
@@ -122,13 +105,18 @@ class UInterface extends Smarty
 		$this->register_function('char', 'char');
 
 		$this->assign('site', $configArray['Site']);
-		$url = $_SERVER['SERVER_NAME'];
-		if (isset($_SERVER['HTTPS'])){
+		if (isset($_SERVER['SERVER_NAME'])) {
+			$url = $_SERVER['SERVER_NAME'];
+		}else {
+			$url = $configArray['Site']['url'];
+		}
+		if (isset($_SERVER['HTTPS'])) {
 			$url = "https://" . $url;
-		}else{
+		} else {
 			$url = "http://" . $url;
 		}
 		$this->url = $url;
+
 		$this->assign('template_dir',$this->template_dir);
 		$this->assign('url', $url);
 
@@ -188,7 +176,7 @@ class UInterface extends Smarty
 
 		$timer->logTime('Basic configuration');
 
-		if ($configArray['System']['debug']){
+		if (IPAddress::showDebuggingInformation()){
 			$this->assign('debug', true);
 		}
 		if ($configArray['System']['debugJs']){
@@ -212,7 +200,6 @@ class UInterface extends Smarty
 			$this->assign('session', session_id() . ' - not saved');
 		}
 
-		/** @var IndexingProfile $activeRecordProfile */
 		global $activeRecordProfile;
 		if ($activeRecordProfile){
 			$this->assign('activeRecordProfileModule', $activeRecordProfile->recordUrlComponent);
@@ -228,7 +215,7 @@ class UInterface extends Smarty
 			$user = UserAccount::getActiveUserObj();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$finePaymentType     = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
+			$finePaymentType = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
 
 			$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
 			$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
@@ -334,24 +321,11 @@ class UInterface extends Smarty
 		return $resource;
 	}
 
-	public function isMobile(){
-		return $this->isMobile;
-	}
-
-	public function getPrimaryTheme(){
-		if (is_array($this->themes)){
-			return reset($this->themes);
-		}else{
-			return $this->themes;
-		}
-	}
-
 	function getAppliedTheme(){
 		return $this->appliedTheme;
 	}
 
 	function loadDisplayOptions(){
-		/** @var Library $library */
 		global $library;
 		global $locationSingleton;
 		global $configArray;
@@ -429,6 +403,7 @@ class UInterface extends Smarty
 			$logger->log("Theme interface not found", Logger::LOG_ALERT);
 		}
 
+		/** @var Location $location */
 		$location = $locationSingleton->getActiveLocation();
 		$this->assign('logoLink', '');
 		$this->assign('logoAlt', 'Return to Catalog Home');
@@ -448,10 +423,54 @@ class UInterface extends Smarty
 			$this->assign('homeLink', $library->homeLink);
 		}
 
+		//Load JavaScript Snippets
+		$customJavascript = '';
+		if (!isset($_REQUEST['noCustomJavaScript']) && !isset($_REQUEST['noCustomJavascript'])) {
+			try {
+				if (isset($location)) {
+					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLocation.php';
+					$javascriptSnippetLocation = new JavaScriptSnippetLocation();
+					$javascriptSnippetLocation->locationId = $location->locationId;
+					$javascriptSnippetLocation->find();
+					while ($javascriptSnippetLocation->fetch()) {
+						require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
+						$javascriptSnippet = new JavaScriptSnippet();
+						$javascriptSnippet->id = $javascriptSnippetLocation->javascriptSnippetId;
+						if ($javascriptSnippet->find(true)) {
+							if (strlen($customJavascript) > 0) {
+								$customJavascript .= "\n";
+							}
+							$customJavascript .= trim($javascriptSnippet->snippet);
+						}
+					}
+				} else {
+					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLibrary.php';
+					$javascriptSnippetLibrary = new JavaScriptSnippetLibrary();
+					$javascriptSnippetLibrary->libraryId = $library->libraryId;
+					$javascriptSnippetLibrary->find();
+					while ($javascriptSnippetLibrary->fetch()) {
+						require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
+						$javascriptSnippet = new JavaScriptSnippet();
+						$javascriptSnippet->id = $javascriptSnippetLibrary->javascriptSnippetId;
+						if ($javascriptSnippet->find(true)) {
+							if (strlen($customJavascript) > 0) {
+								$customJavascript .= "\n";
+							}
+							$customJavascript .= trim($javascriptSnippet->snippet);
+						}
+					}
+				}
+			} catch (PDOException $e) {
+				//This happens before the database update runs
+			}
+		}
+		$this->assign('customJavascript', $customJavascript);
+
 		$this->assign('facebookLink', $library->facebookLink);
 		$this->assign('twitterLink', $library->twitterLink);
 		$this->assign('youtubeLink', $library->youtubeLink);
 		$this->assign('instagramLink', $library->instagramLink);
+		$this->assign('pinterestLink', $library->pinterestLink);
 		$this->assign('goodreadsLink', $library->goodreadsLink);
 		$this->assign('generalContactLink', $library->generalContactLink);
 		$this->assign('showLoginButton', $library->showLoginButton);
@@ -465,6 +484,7 @@ class UInterface extends Smarty
 		$this->assign('showExpirationWarnings', $library->showExpirationWarnings);
 		$this->assign('expiredMessage', $library->expiredMessage);
 		$this->assign('expirationNearMessage', $library->expirationNearMessage);
+		$this->assign('showWhileYouWait', $library->showWhileYouWait);
 
 		$this->assign('showItsHere', $library->showItsHere);
 		$this->assign('enableMaterialsBooking', $library->enableMaterialsBooking);
@@ -474,12 +494,12 @@ class UInterface extends Smarty
 		$this->assign('allowReadingHistoryDisplayInMasqueradeMode', $library->allowReadingHistoryDisplayInMasqueradeMode);
 		$this->assign('interLibraryLoanName', $library->interLibraryLoanName);
 		$this->assign('interLibraryLoanUrl', $library->interLibraryLoanUrl);
-		$this->assign('displaySidebarMenu', $library->getLayoutSettings()->showSidebarMenu);
-		$this->assign('sidebarMenuButtonText', $library->getLayoutSettings()->sidebarMenuButtonText);
 		$this->assign('showGroupedHoldCopiesCount', $library->showGroupedHoldCopiesCount);
 		$this->assign('showOnOrderCounts', $library->showOnOrderCounts);
 
 		$this->assign('showConvertListsFromClassic', $library->showConvertListsFromClassic);
+
+		$this->assign('showAlternateLibraryCard', $library->showAlternateLibraryCard);
 
 		if ($location != null){ // library and location
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
@@ -558,37 +578,45 @@ class UInterface extends Smarty
 			$this->assign('enableAspenMaterialsRequest', false);
 		}
 
+		//Determine whether or not Rosen LevelUP functionality should be enabled
+		try {
+			require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
+			$rosenLevelUPSetting = new RosenLevelUPSetting();
+			if ($rosenLevelUPSetting->find(true)) {
+				$this->assign('enableRosenLevelUP', true);
+			} else {
+				$this->assign('enableRosenLevelUP', false);
+			}
+		} catch (PDOException $e) {
+			global $logger;
+			$logger->log("Rosen LevelUP API Settings table not yet built in database: run DBMaintenance", Logger::LOG_ALERT);
+		}
+
 		//Load library links
-		/** @noinspection PhpUndefinedFieldInspection */
 		$links = $library->libraryLinks;
-		$libraryHelpLinks = array();
-		$libraryAccountLinks = array();
-		$expandedLinkCategories = array();
+		$libraryLinks = [];
+		$expandedLinkCategories = [];
 		/** @var LibraryLink $libraryLink */
 		foreach ($links as $libraryLink){
-			if ($libraryLink->showInHelp || (!$libraryLink->showInHelp && !$libraryLink->showInAccount)){
-				if (!array_key_exists($libraryLink->category, $libraryHelpLinks)){
-					$libraryHelpLinks[$libraryLink->category] = array();
-				}
-				$libraryHelpLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+			if ($libraryLink->showToLoggedInUsersOnly && !UserAccount::isLoggedIn()){
+				continue;
 			}
-			if ($libraryLink->showInAccount){
-				if (!array_key_exists($libraryLink->category, $libraryAccountLinks)){
-					$libraryAccountLinks[$libraryLink->category] = array();
-				}
-				$libraryAccountLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+			if (!$libraryLink->published && !UserAccount::userHasPermission('View Unpublished Content')){
+				continue;
 			}
+			if (empty($libraryLink->category)){
+				$libraryLink->category = 'none-' . $libraryLink->id;
+			}
+			if (!array_key_exists($libraryLink->category, $libraryLinks)){
+				$libraryLinks[$libraryLink->category] = array();
+			}
+			$libraryLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
 			if ($libraryLink->showExpanded){
 				$expandedLinkCategories[$libraryLink->category] = 1;
 			}
 		}
-		$this->assign('libraryAccountLinks', $libraryAccountLinks);
-		$this->assign('libraryHelpLinks', $libraryHelpLinks);
+		$this->assign('libraryLinks', $libraryLinks);
 		$this->assign('expandedLinkCategories', $expandedLinkCategories);
-
-		/** @noinspection PhpUndefinedFieldInspection */
-		$topLinks = $library->libraryTopLinks;
-		$this->assign('topLinks', $topLinks);
 	}
 
 	/**
@@ -649,7 +677,12 @@ function translate($params) {
 	// object.
 	if (!is_object($translator)) {
 		global $activeLanguage;
-		$translator = new Translator('lang', $activeLanguage->code);
+		if (empty($activeLanguage)){
+			$code = 'en';
+		}else{
+			$code = $activeLanguage->code;
+		}
+		$translator = new Translator('lang', $code);
 	}
 	if (is_array($params)) {
 		$defaultText = isset($params['defaultText']) ? $params['defaultText'] : null;

@@ -37,7 +37,7 @@ AspenDiscovery.Ratings = (function(){
 }(AspenDiscovery.Ratings));
 
 /*
-*  Jquery Ratings Plugin, Adapted for Pika
+*  Jquery Ratings Plugin, Adapted for Aspen Discovery
  *
 * */
 //copyright 2008 Jarrett Vance

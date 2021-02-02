@@ -3,6 +3,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
+require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 
 abstract class Admin_IndexingLog extends Admin_Admin
 {
@@ -27,6 +28,10 @@ abstract class Admin_IndexingLog extends Admin_Admin
 			$interface->assign('processedLimit', $_REQUEST['processedLimit']);
 			$this->applyMinProcessedFilter($logEntry, $_REQUEST['processedLimit']);
 		}
+		if (isset($_REQUEST['showErrorsOnly'])){
+			$interface->assign('showErrorsOnly', true);
+			$this->applyShowErrorsOnlyFilter($logEntry);
+		}
 		$logEntry->find();
 		while ($logEntry->fetch()){
 			$logEntries[] = clone($logEntry);
@@ -43,11 +48,7 @@ abstract class Admin_IndexingLog extends Admin_Admin
 		$this->display($this->getTemplateName(), $this->getTitle());
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
-	}
-
-	abstract function getIndexLogEntryObject() : DataObject;
+	abstract function getIndexLogEntryObject() : BaseLogEntry;
 
 	abstract function getTemplateName() : string;
 
@@ -56,4 +57,14 @@ abstract class Admin_IndexingLog extends Admin_Admin
 	abstract function getModule() : string;
 
 	abstract function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed);
+
+	function applyShowErrorsOnlyFilter(DataObject $logEntry)
+	{
+		$logEntry->whereAdd('numErrors > 0');
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports','View Indexing Logs']);
+	}
 }

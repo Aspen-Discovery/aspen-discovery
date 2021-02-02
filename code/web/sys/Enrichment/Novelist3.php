@@ -158,48 +158,67 @@ class Novelist3{
 			}else{
 				$novelistData->hasNovelistData = 0;
 
-				$bestIsbn = '';
-				$bestRawJson = '';
-				//Check each ISBN for enrichment data
-				foreach ($isbns as $isbn){
-					$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile={$novelistSettings->profile}&password={$novelistSettings->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
-					//echo($requestUrl);
-					try{
-						//Get the JSON from the service
-						disableErrorHandler();
-						$req = new CurlWrapper();
+				//Check up to 50 ISBNs for enrichment data, Novelist now accepts these all at once and we should generally just get back response
+				if (count($isbns) > 50){
+					$isbns = array_slice($isbns, 0, 50);
+				}
+				$isbnParam = '';
+				foreach ($isbns as $isbn) {
+					$isbnParam .= "&ISBN={$isbn}";
+				}
+				$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile={$novelistSettings->profile}&password={$novelistSettings->pwd}&ClientIdentifier=test{$isbnParam}&version=2.6&tmpstmp=" . time();
 
-						$response = $req->curlGetPage($requestUrl);
-						$timer->logTime("Made call to Novelist for enrichment information $isbn");
+				//echo($requestUrl);
+				try{
+					//Get the JSON from the service
+					disableErrorHandler();
+					$req = new CurlWrapper();
+					$req->setConnectTimeout(5);
+					$req->setTimeout(20);
+
+					$response = $req->curlGetPage($requestUrl);
+					$timer->logTime("Made call to Novelist for enrichment information $isbnParam");
 
 
-						//Parse the JSON
-						$decodedData = json_decode($response);
-						if (!is_null($decodedData->TitleInfo) && is_array($decodedData->TitleInfo->isbns) && count($decodedData->TitleInfo->isbns) > 0){
-							$novelistData->hasNovelistData = 1;
+					//Parse the JSON
+					$decodedData = json_decode($response);
+					$bestResponse = '';
+					$primaryISBN = '';
+					$numManifestationsForBest = -1;
+					//Get the ISBN
+					if (!empty($decodedData->titles)) {
+						foreach ($decodedData->titles as $title) {
+							if (!is_null($title->TitleInfo)) {
+								$numManifestations = count($title->TitleInfo->manifestations);
+								if ($numManifestations > 0 && $numManifestations > $numManifestationsForBest) {
+									$novelistData->hasNovelistData = 1;
 
-							if (isset($decodedData->FeatureContent->SeriesInfo) && count($decodedData->FeatureContent->SeriesInfo->series_titles) > 0){
-								//Try to get something with series data since that is our primary use
-								$bestRawJson = $response;
-								$bestIsbn = $decodedData->TitleInfo->primary_isbn;
-								break;
-							}elseif (strlen($response) > strlen($bestRawJson)){
-								//Try to get the longest json since that should have the most information for us.
-								$bestRawJson = $response;
-								$bestIsbn = $decodedData->TitleInfo->primary_isbn;
+									$bestResponse = json_encode($title);
+									if (!empty($title->TitleInfo->primary_isbn)) {
+										$primaryISBN = $title->TitleInfo->primary_isbn;
+									}
+									$numManifestationsForBest = $numManifestations;
+								}
 							}
 						}
-					}catch (Exception $e) {
-						global $logger;
-						$logger->log("Error fetching data from NoveList $e", Logger::LOG_ERROR);
-						if (isset($response)){
-							$logger->log($response, Logger::LOG_DEBUG);
+					}else{
+						if (!empty($decodedData->TitleInfo) && !empty($decodedData->TitleInfo->primary_isbn)){
+							$bestResponse = json_encode($decodedData);
+							$primaryISBN = $decodedData->TitleInfo->primary_isbn;
 						}
-						$data = null;
 					}
+					if (!empty($bestResponse)) {
+						$novelistData->jsonResponse = $bestResponse;
+						$novelistData->primaryISBN = $primaryISBN;
+					}
+				}catch (Exception $e) {
+					global $logger;
+					$logger->log("Error fetching data from NoveList $e", Logger::LOG_ERROR);
+					if (isset($response)){
+						$logger->log($response, Logger::LOG_DEBUG);
+					}
+					$data = null;
 				}
-				$novelistData->jsonResponse = $bestRawJson;
-				$novelistData->primaryISBN = $bestIsbn;
 			}
 
 			$novelistData->update();
@@ -288,7 +307,8 @@ class Novelist3{
 			$novelistData->seriesNote = null;
 		}else{
 			foreach ($items as $item){
-				if (in_array($novelistData->primaryISBN, $item->isbns)){
+				$isbns = $this->getIsbnsForNovelistTitle($item);
+				if (in_array($novelistData->primaryISBN, $isbns)){
 					$novelistData->volume = $this->normalizeSeriesVolume($item->volume);
 					break;
 				}elseif ($item->main_title == $data->TitleInfo->main_title){
@@ -416,13 +436,14 @@ class Novelist3{
 			}
 
 			//Load based on ISBN
-			if ($titleList[$index] == null && count($item->isbns) > 0){
-				$allIsbns = implode(' OR ', $item->isbns);
+			$isbns = $this->getIsbnsForNovelistTitle($item);
+			if ($titleList[$index] == null && count($isbns) > 0){
+				$allIsbns = implode(' OR ', $isbns);
 
 				//First check novelist cache by ISBN
 				$novelistCache = new NovelistData();
 				$allIsbnsQuoted = '';
-				foreach ($item->isbns as $isbn){
+				foreach ($isbns as $isbn){
 					if (strlen($allIsbnsQuoted) > 0){
 						$allIsbnsQuoted .= ', ';
 					}
@@ -476,7 +497,7 @@ class Novelist3{
 			//If we got this far, we don't own the title
 			if ($titleList[$index] == null){
 
-				$isbn = reset($item->isbns);
+				$isbn = reset($isbns);
 				$isbn13 = strlen($isbn) == 13 ? $isbn : ISBNConverter::convertISBN10to13($isbn);
 				$isbn10 = strlen($isbn) == 10 ? $isbn : ISBNConverter::convertISBN13to10($isbn);
 				$curTitle = array(
@@ -579,7 +600,7 @@ class Novelist3{
 		$fullRecordLink = $recordDriver->getLinkUrl();
 
 		//See if we can get the series title from the record
-		$curTitle = array(
+		return [
 			'title' => $recordDriver->getTitle(),
 			'title_short' => $recordDriver->getTitle(),
 			'author' => $recordDriver->getPrimaryAuthor(),
@@ -598,8 +619,7 @@ class Novelist3{
 			'recordDriver' => $recordDriver,
 			'smallCover' => $recordDriver->getBookcoverUrl('small'),
 			'mediumCover' => $recordDriver->getBookcoverUrl('medium'),
-		);
-		return $curTitle;
+		];
 	}
 
 	/**
@@ -615,5 +635,22 @@ class Novelist3{
 		}else{
 			return $novelistSettings;
 		}
+	}
+
+	private function getIsbnsForNovelistTitle($item)
+	{
+		$isbns = [];
+		if (!empty($item->isbns)){
+			$isbns = $item->isbns;
+		}else{
+			if (!empty($item->manifestations)){
+				foreach ($item->manifestations as $manifestation){
+					if (!empty($manifestation->ISBN)) {
+						$isbns[$manifestation->ISBN] = $manifestation->ISBN;
+					}
+				}
+			}
+		}
+		return $isbns;
 	}
 }

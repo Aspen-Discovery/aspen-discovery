@@ -15,7 +15,7 @@ class LibraryFacetSettings extends ObjectEditor
 	function getPageTitle(){
 		return 'Library Facets';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$facetsList = array();
 		$library = new LibraryFacetSetting();
 		if (isset($_REQUEST['libraryId'])){
@@ -23,6 +23,7 @@ class LibraryFacetSettings extends ObjectEditor
 			$library->libraryId = $libraryId;
 		}
 		$library->orderBy('weight');
+		$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$library->find();
 		while ($library->fetch()){
 			$facetsList[$library->id] = clone $library;
@@ -39,17 +40,6 @@ class LibraryFacetSettings extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
-	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin');
-	}
 	function getAdditionalObjectActions($existingObject){
 		$objectActions = array();
 		if (isset($existingObject) && $existingObject != null){
@@ -59,5 +49,27 @@ class LibraryFacetSettings extends ObjectEditor
 			);
 		}
 		return $objectActions;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#primary_configuration', 'Primary Configuration');
+		if (!empty($this->activeObject) && $this->activeObject instanceof LibraryFacetSetting){
+			$breadcrumbs[] = new Breadcrumb('/Admin/Libraries?objectAction=edit&id=' . $this->activeObject->libraryId, 'Library');
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Archive Facet Settings');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'primary_configuration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}
 }

@@ -4,9 +4,6 @@ require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequest.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
-require_once(ROOT_DIR . "/sys/pChart/class/pData.class.php");
-require_once(ROOT_DIR . "/sys/pChart/class/pDraw.class.php");
-require_once(ROOT_DIR . "/sys/pChart/class/pImage.class.php");
 require_once(ROOT_DIR . "/PHPExcel.php");
 
 class MaterialsRequest_SummaryReport extends Admin_Admin {
@@ -79,8 +76,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$periodData = array();
 
 		$locationsToRestrictTo = '';
-		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('library_material_requests')){
+		if (UserAccount::userHasPermission('View Materials Requests Reports')){
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary = Library::getPatronHomeLibrary();
 			$locations = new Location();
@@ -123,7 +119,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$materialsRequest->selectAdd();
 			$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests,description');
 			$materialsRequest->whereAdd('dateUpdated >= ' . $periodStart->getTimestamp() . ' AND dateUpdated < ' . $periodEnd->getTimestamp());
-			if (UserAccount::userHasRole('library_material_requests')){
+			if (UserAccount::userHasPermission('View Materials Requests Reports')){
 				//Need to limit to only requests submitted for the user's home location
 				$userHomeLibrary = Library::getPatronHomeLibrary();
 				$locations = new Location();
@@ -214,58 +210,64 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');
 		exit;
-
 	}
 
 	function generateGraph($periodData, $statuses){
-		global $configArray;
 		global $interface;
-		$reportData = new pData();
+
+		$graphColors = [
+			0 => [255, 99, 132],
+			1 => [54, 162, 235],
+			2 => [255, 159, 64],
+			3 => [0, 255, 55, 1],
+			4 => [154, 75, 244],
+			5 => [255, 206, 86],
+			6 => [75, 192, 192],
+			7 => [153, 102, 255],
+			8 => [165, 42, 42],
+			9 => [50, 205, 50],
+			10 => [220, 60, 20],
+		];
+		$dataSeries = [];
+		$columnLabels = [];
 
 		//Add points for each status
-		$periodsFormatted = array();
+		$statusNumber = 0;
+		foreach ($periodData as $date => $periodInfo){
+			$columnLabels[] = date('M-d-Y', $date);;
+		}
 		foreach ($statuses as $status => $statusLabel){
-			$statusData = array();
+			$curColor = $statusNumber % 10;
+			$dataSeries[$statusLabel] = [
+				'borderColor' => "rgba({$graphColors[$curColor][0]}, {$graphColors[$curColor][1]}, {$graphColors[$curColor][2]}, 1)",
+				'backgroundColor' => "rgba({$graphColors[$curColor][0]}, {$graphColors[$curColor][1]}, {$graphColors[$curColor][2]}, 0.2)",
+				'data' => []
+			];
 			foreach ($periodData as $date => $periodInfo){
-				$periodsFormatted[$date] = date('M-d-Y', $date);
-				$statusData[$date] = isset($periodInfo[$status]) ? $periodInfo[$status] : 0;
+				$dataSeries[$statusLabel]['data'][$date] = isset($periodInfo[$status]) ? $periodInfo[$status] : 0;
 			}
-			$reportData->addPoints($statusData, $status);
+			$statusNumber++;
 		}
 
-		$reportData->setAxisName(0,"Requests");
-
-		$reportData->addPoints($periodsFormatted, "Dates");
-		$reportData->setAbscissa("Dates");
-
-		/* Create the pChart object */
-		$myPicture = new pImage(700,290,$reportData);
-
-		/* Draw the background */
-		$Settings = array("R"=>225, "G"=>225, "B"=>225);
-		$myPicture->drawFilledRectangle(0,0,700,290,$Settings);
-
-		/* Add a border to the picture */
-		$myPicture->drawRectangle(0,0,699,289,array("R"=>0,"G"=>0,"B"=>0));
-
-		$myPicture->setFontProperties(array("FontName"=> ROOT_DIR . "/sys/pChart/fonts/verdana.ttf","FontSize"=>9));
-		$myPicture->setGraphArea(50,30,670,190);
-		//$myPicture->drawFilledRectangle(30,30,670,150,array("R"=>255,"G"=>255,"B"=>255,"Surrounding"=>-200,"Alpha"=>10));
-		$myPicture->drawScale(array("DrawSubTicks"=>TRUE, "LabelRotation"=>90));
-		$myPicture->setFontProperties(array("FontName"=> ROOT_DIR . "/sys/pChart/fonts/verdana.ttf","FontSize"=>9));
-		$myPicture->drawLineChart(array("DisplayValues"=>TRUE,"DisplayColor"=>DISPLAY_AUTO));
-
-		/* Write the chart legend */
-		$myPicture->drawLegend(80,20,array("Style"=>LEGEND_NOBORDER,"Mode"=>LEGEND_HORIZONTAL));
-
-		/* Render the picture (choose the best way) */
-		$chartHref = "/images/charts/materialsRequestSummary". time() . ".png";
-		$chartPath = $configArray['Site']['local'] . $chartHref;
-		$myPicture->render($chartPath);
-		$interface->assign('chartPath', $chartHref);
+		$interface->assign('columnLabels', $columnLabels);
+		$interface->assign('dataSeries', $dataSeries);
 	}
 
-	function getAllowableRoles(){
-		return array('library_material_requests');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
+		$breadcrumbs[] = new Breadcrumb('', 'Summary Report');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'materials_request';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View Materials Requests Reports');
 	}
 }

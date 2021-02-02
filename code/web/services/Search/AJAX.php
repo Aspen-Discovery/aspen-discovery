@@ -68,17 +68,16 @@ class AJAX extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getAutoSuggestList(){
-		require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
+	function getAutoSuggestList()
+	{
+		require_once ROOT_DIR . '/sys/SearchSuggestions.php';
 		global $timer;
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : $_REQUEST['q'];
-        $searchIndex = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : '';
-        $searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : '';
-		$cacheKey = 'auto_suggest_list_' . urlencode($searchSource) . '_' . urlencode($searchIndex
-            ) . '_' . urlencode($searchTerm);
+		$searchIndex = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : '';
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : '';
+		$cacheKey = 'auto_suggest_list_' . urlencode($searchSource) . '_' . urlencode($searchIndex) . '_' . urlencode($searchTerm);
 		$searchSuggestions = $memCache->get($cacheKey);
 		if ($searchSuggestions == false || isset($_REQUEST['reload'])){
 			$suggestions = new SearchSuggestions();
@@ -86,11 +85,13 @@ class AJAX extends Action {
 			$commonSearchTerms = array();
 			foreach ($commonSearches as $searchTerm){
 				if (is_array($searchTerm)){
-				    $plainText = preg_replace('~</?b>~i', '', $searchTerm['phrase']);
-					$commonSearchTerms[] =[
-					    'label' => $searchTerm['phrase'],
-                        'value' => $plainText
-                    ];
+					$plainText = preg_replace('~</?b>~i', '', $searchTerm['phrase']);
+					$plainText = str_replace(':', '', $plainText);
+					$plainText = preg_replace('~\s{2,}~', ' ', $plainText);
+					$commonSearchTerms[] = [
+						'label' => $searchTerm['phrase'],
+						'value' => $plainText
+					];
 				}else{
 					$commonSearchTerms[] = $searchTerm;
 				}
@@ -159,7 +160,7 @@ class AJAX extends Action {
 			if (is_array($titles)){
 				foreach ($titles as $key => $rawData){
 					$interface->assign('key', $key);
-					// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
+					// 20131206 James Staub: bookTitle is in the list API and it removes the final front slash, but I didn't get $rawData['bookTitle'] to load
 
 					$titleShort = preg_replace(array('/:.*?$/', '/\s*\/$\s*/'),'', $rawData['title']);
 
@@ -221,29 +222,30 @@ class AJAX extends Action {
 			$collectionSpotlight->id = $collectionSpotlightList->collectionSpotlightId;
 			$collectionSpotlight->find(true);
 
+			$interface->assign('collectionSpotlight', $collectionSpotlight);
 			$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
 			if ($collectionSpotlightList->sourceListId != null && $collectionSpotlightList->sourceListId > 0){
-				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-				$sourceList     = new UserList();
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+				$sourceList = new UserList();
 				$sourceList->id = $collectionSpotlightList->sourceListId;
 				if ($sourceList->find(true)) {
 					$result['listTitle'] = $sourceList->title;
 					$result['listDescription'] = $sourceList->description;
 					$result['titles'] = $sourceList->getSpotlightTitles( $collectionSpotlight);
-					$result['currentIndex'] = 0;
-				} else {
-					$records = array();
+					$currentIndex = 0;
+					$result['currentIndex'] = $currentIndex;
 				}
 				$result['searchUrl'] = '/MyAccount/MyList/' . $collectionSpotlightList->sourceListId;
 			}else{
 				$searchObject = $collectionSpotlightList->getSearchObject();
 
-				$searchResult = $searchObject->processSearch();
+				$searchObject->processSearch();
 
 				$result['listTitle'] = $collectionSpotlightList->name;
 				$result['listDescription'] = '';
 				$result['titles'] = $searchObject->getSpotlightResults($collectionSpotlight);
-				$result['currentIndex'] = 0;
+				$currentIndex = 0;
+				$result['currentIndex'] = $currentIndex;
 			}
 			return $result;
 		}else{
@@ -257,12 +259,11 @@ class AJAX extends Action {
 	/** @noinspection PhpUnused */
 	function getEmailForm(){
 		global $interface;
-		$results = array(
+		return array(
 			'title' => 'Email Search',
 			'modalBody' => $interface->fetch('Search/email.tpl'),
 			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send Email</span>"
 		);
-		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -270,13 +271,20 @@ class AJAX extends Action {
 		require_once ROOT_DIR . '/sys/SearchObject/DPLA.php';
 		$dpla = new DPLA();
 		$searchTerm = $_REQUEST['searchTerm'];
-		$results = $dpla->getDPLAResults($searchTerm);
-		$formattedResults = $dpla->formatResults($results['records']);
+		if (!empty($searchTerm)){
+			$results = $dpla->getDPLAResults($searchTerm);
+			$formattedResults = $dpla->formatResults($results['records']);
 
-		$returnVal = array(
-			'rawResults' => $results['records'],
-			'formattedResults' => $formattedResults,
-		);
+			$returnVal = array(
+				'rawResults' => $results['records'],
+				'formattedResults' => $formattedResults,
+			);
+		}else{
+			$returnVal = array(
+				'rawResults' => [],
+				'formattedResults' => '',
+			);
+		}
 
 		//Format the results
 		return $returnVal;
@@ -446,5 +454,40 @@ class AJAX extends Action {
 			$response['message'] = 'That facet is already unlocked';
 		}
 		return $response;
+	}
+
+	function getSearchIndexes(){
+		$searchSource = $_REQUEST['searchSource'];
+		if ($searchSource == 'combined'){
+			$response = [
+				'success' => true,
+				'searchIndexes' => ['Keyword' => 'Keyword'],
+				'selectedIndex' => 'Keyword',
+				'defaultSearchIndex' => 'Keyword',
+			];
+		}else{
+			$searchObject = SearchSources::getSearcherForSource($searchSource);
+			if (!is_object($searchObject)){
+				$response = [
+					'success' => false,
+					'message' => 'Unknown search source ' . $searchSource
+				];
+			}else{
+				$searchIndexes = SearchSources::getSearchIndexesForSource($searchObject, $searchSource);
+				$response = [
+					'success' => true,
+					'searchIndexes' => $searchIndexes,
+					'selectedIndex' => $searchObject->getDefaultIndex(),
+					'defaultSearchIndex' => $searchObject->getDefaultIndex(),
+				];
+			}
+		}
+
+		return $response;
+	}
+
+	function getBreadcrumbs()
+	{
+		return [];
 	}
 }

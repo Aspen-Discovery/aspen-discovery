@@ -11,7 +11,7 @@ class ClaimAuthorshipRequest extends DataObject{
 	public $dateRequested;
 
 	public static function getObjectStructure(){
-		$structure = array(
+		return array(
 				array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'Name', 'maxLength' => 100, 'required' => true),
 				array('property'=>'phone', 'type'=>'text', 'label'=>'Phone', 'description'=>'Phone', 'maxLength' => 20, 'required' => true),
 				array('property'=>'email', 'type'=>'email', 'label'=>'Email Address', 'description'=>'Email Address', 'maxLength' => 100, 'required' => true),
@@ -20,7 +20,6 @@ class ClaimAuthorshipRequest extends DataObject{
 				'dateRequested' => array('property'=>'dateRequested', 'type'=>'hidden', 'label'=>'The date this request was made'),
 
 		);
-		return $structure;
 	}
 
 	public function insert() {

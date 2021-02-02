@@ -14,6 +14,7 @@ class GroupedWorkDisplaySetting extends DataObject
 	public $__displayNameColumn = 'name';
 	public $id;
 	public $name;
+	public $isDefault;
 
 	//Processing search
 	public $applyNumberOfHoldingsBoost;
@@ -97,8 +98,8 @@ class GroupedWorkDisplaySetting extends DataObject
 	private $_locations;
 
 	static function getObjectStructure(){
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 
 		$facetGroups = [];
 		$facetGroup = new GroupedWorkFacetGroup();
@@ -193,7 +194,8 @@ class GroupedWorkDisplaySetting extends DataObject
 							)
 						)
 					),
-				)),
+				)
+			),
 
 			'libraries' => array(
 				'property' => 'libraries',
@@ -233,14 +235,16 @@ class GroupedWorkDisplaySetting extends DataObject
 		if ($return) {
 			if (isset($this->showInSearchResultsMainDetails) && is_string($this->showInSearchResultsMainDetails) && !empty($this->showInSearchResultsMainDetails)) {
 				// convert to array retrieving from database
-				$this->showInSearchResultsMainDetails = unserialize($this->showInSearchResultsMainDetails);
+				$unSerialized = unserialize($this->showInSearchResultsMainDetails);
+				$this->showInSearchResultsMainDetails = array_combine($unSerialized, $unSerialized);
 				if (!$this->showInSearchResultsMainDetails) $this->showInSearchResultsMainDetails = array();
 			}
 
 			if (isset($this->showInMainDetails) && is_string($this->showInMainDetails) && !empty($this->showInMainDetails)) {
 				// convert to array retrieving from database
 				try{
-					$this->showInMainDetails = unserialize($this->showInMainDetails);
+					$unSerialized = unserialize($this->showInMainDetails);
+					$this->showInMainDetails = array_combine($unSerialized, $unSerialized);
 					if (!$this->showInMainDetails) $this->showInMainDetails = array();
 				}catch (Exception $e){
 					global $logger;
@@ -395,28 +399,27 @@ class GroupedWorkDisplaySetting extends DataObject
 
 	public function clearMoreDetailsOptions(){
 		$this->clearOneToManyOptions('GroupedWorkMoreDetails', 'groupedWorkSettingsId');
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_moreDetailsOptions = array();
 	}
 
 	public static function getDefaultDisplaySettings(){
-		$defaultDiplaySettings = new GroupedWorkDisplaySetting();
-		$defaultDiplaySettings->name = 'default';
-		$defaultDiplaySettings->applyNumberOfHoldingsBoost = true;
-		$defaultDiplaySettings->includeOutOfSystemExternalLinks = false;
-		$defaultDiplaySettings->showSearchTools = true;
-		$defaultDiplaySettings->showQuickCopy = true;
-		$defaultDiplaySettings->alwaysShowSearchResultsMainDetails = false;
-		$defaultDiplaySettings->availabilityToggleLabelSuperScope = 'Entire Collection';
-		$defaultDiplaySettings->availabilityToggleLabelLocal = '';
-		$defaultDiplaySettings->availabilityToggleLabelAvailable = 'Available Now';
-		$defaultDiplaySettings->availabilityToggleLabelAvailableOnline = 'Available Online';
-		return $defaultDiplaySettings;
+		$defaultDisplaySettings = new GroupedWorkDisplaySetting();
+		$defaultDisplaySettings->name = 'default';
+		$defaultDisplaySettings->applyNumberOfHoldingsBoost = true;
+		$defaultDisplaySettings->includeOutOfSystemExternalLinks = false;
+		$defaultDisplaySettings->showSearchTools = true;
+		$defaultDisplaySettings->showQuickCopy = true;
+		$defaultDisplaySettings->alwaysShowSearchResultsMainDetails = false;
+		$defaultDisplaySettings->availabilityToggleLabelSuperScope = 'Entire Collection';
+		$defaultDisplaySettings->availabilityToggleLabelLocal = '';
+		$defaultDisplaySettings->availabilityToggleLabelAvailable = 'Available Now';
+		$defaultDisplaySettings->availabilityToggleLabelAvailableOnline = 'Available Online';
+		return $defaultDisplaySettings;
 	}
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$library = new Library();
 				$library->libraryId = $libraryId;
@@ -441,7 +444,7 @@ class GroupedWorkDisplaySetting extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 			/**
 			 * @var int $locationId
 			 * @var Location $location
@@ -471,37 +474,41 @@ class GroupedWorkDisplaySetting extends DataObject
 		}
 	}
 
-	/** @return Library[] */
+	/** @return Library[]
+	 * @noinspection PhpUnused
+	 */
 	public function getLibraries()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_libraries;
 	}
 
-	/** @return Location[] */
+	/** @return Location[]
+	 * @noinspection PhpUnused
+	 */
 	public function getLocations()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_locations;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setLibraries($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setLocations($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearLibraries(){
 		$this->clearOneToManyOptions('Library', 'groupedWorkDisplaySettingId');
 		unset($this->_libraries);
 	}
 
+	/** @noinspection PhpUnused */
 	public function clearLocations(){
 		$this->clearOneToManyOptions('Location', 'groupedWorkDisplaySettingId');
 		unset($this->_locations);

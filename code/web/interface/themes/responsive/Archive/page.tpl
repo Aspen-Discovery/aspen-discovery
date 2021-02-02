@@ -10,7 +10,7 @@
 			<div id="main-content" class="col-xs-12 text-center">
 				{if $canView}
 					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
-						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
+						{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 						<label class="btn btn-group-small btn-default">
 							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="AspenDiscovery.Archive.changeActiveBookViewer('pdf', AspenDiscovery.Archive.activeBookPage);">
 							View As PDF
@@ -33,7 +33,7 @@
 					<div id="view-image" style="display: none">
 						<div class="large-image-wrapper">
 							<div class="large-image-content">
-								<div id="pika-openseadragon" class="openseadragon"></div>
+								<div id="custom-openseadragon" class="openseadragon"></div>
 							</div>
 						</div>
 					</div>
@@ -55,7 +55,7 @@
 				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
+				<a onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Islandora', '{$pid|escape}');" class="btn btn-default ">{translate text='Add to list'}</a>
 			{/if}
 		</div>
 
@@ -66,13 +66,13 @@
 <script src="/js/openseadragon/djtilesource.js" ></script>
 
 <script type="text/javascript">
-	{if !($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
+	{if !($anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload))}
 	AspenDiscovery.Archive.allowPDFView = false;
 	{/if}
 	{assign var=pageCounter value=1}
 	AspenDiscovery.Archive.pageDetails['{$page.pid}'] = {ldelim}
 		pid: '{$page.pid}',
-		pdf: {if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}'{$page.pdf}'{else}''{/if},
+		pdf: {if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}'{$page.pdf}'{else}''{/if},
 		jp2: '{$page.jp2}',
 		transcript: '{$page.transcript}'
 	{rdelim};

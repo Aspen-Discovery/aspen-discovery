@@ -18,7 +18,7 @@
 						Clip Image
 					</a> *}
 					<div class="large-image-content">
-						<div id="pika-openseadragon" class="openseadragon" oncontextmenu="return false;"></div>
+						<div id="custom-openseadragon" class="openseadragon" oncontextmenu="return false;"></div>
 					</div>
 				</div>
 			{else}
@@ -35,12 +35,12 @@
 				{if $hasLargeImage && ($anonymousLcDownload || ($loggedIn && $verifiedLcDownload))}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadLC">Download Large Image</a>
 				{elseif ($hasLargeImage && !$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Login to Download Large Image</a>
+					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Sign in to Download Large Image</a>
 				{/if}
-				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
+				{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original Image</a>
-				{elseif (!$loggedIn && $verifiedMasterDownload)}
-					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Login to Download Original Image</a>
+				{elseif (!$loggedIn && $verifiedOriginalDownload)}
+					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Sign in to Download Original Image</a>
 				{/if}
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
@@ -50,7 +50,7 @@
 				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
+				<a onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Islandora', '{$pid|escape}');" class="btn btn-default ">{translate text='Add to list'}</a>
 			{/if}
 		</div>
 
@@ -61,15 +61,15 @@
 {if $canView}
 	<script type="text/javascript">
 		$(document).ready(function(){ldelim}
-			if (!$('#pika-openseadragon').hasClass('processed')) {ldelim}
+			if (!$('#custom-openseadragon').hasClass('processed')) {ldelim}
 				var openSeadragonSettings = {ldelim}
 					"pid":"{$pid}",
 					"resourceUri":{$large_image|@json_encode nofilter},
 					"tileSize":256,
 					"tileOverlap":0,
-					"id":"pika-openseadragon",
+					"id":"custom-openseadragon",
 					"settings": {ldelim}
-							"id":"pika-openseadragon",
+							"id":"custom-openseadragon",
 							"prefixUrl":"{$encodedRepositoryUrl}\/sites\/all\/libraries\/openseadragon\/images\/",
 							"debugMode":false,
 							"djatokaServerBaseURL":"\/AJAX\/DjatokaResolver",
@@ -108,7 +108,7 @@
 				openSeadragonSettings.settings.tileSources.push(tileSource);
 
 				var viewer = new OpenSeadragon(openSeadragonSettings.settings);
-				$('#pika-openseadragon').addClass('processed');
+				$('#custom-openseadragon').addClass('processed');
 			{rdelim}
 		{rdelim});
 	</script>

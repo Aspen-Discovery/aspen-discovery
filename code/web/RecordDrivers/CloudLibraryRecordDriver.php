@@ -10,7 +10,6 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	/** @var CloudLibraryProduct */
 	private $cloudLibraryProduct;
 
-	/** @noinspection PhpMissingParentConstructorInspection */
 	public function __construct($recordId, $groupedWork = null) {
 		$this->id = $recordId;
 
@@ -166,19 +165,15 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
+				'onShow' => "AspenDiscovery.CloudLibrary.getStaffView('{$this->id}');",
+				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return [];
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
 		$actions = array();
 		if ($isAvailable){
@@ -186,12 +181,14 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 				'title' => 'Check Out Cloud Library',
 				'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'cloud_library_checkout'
 			);
 		}else{
 			$actions[] = array(
 				'title' => 'Place Hold Cloud Library',
 				'onclick' => "return AspenDiscovery.CloudLibrary.placeHold('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'cloud_library_hold'
 			);
 		}
 		return $actions;
@@ -322,23 +319,15 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	public function getStaffView()
 	{
 		global $interface;
-		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
-
-		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
+		$interface->assign('cloudLibraryProduct', $this->cloudLibraryProduct);
+
 		$interface->assign('marcRecord', $this->getMarcRecord());
 
-		if ($this->groupedWork != null) {
-			$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
-			$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
-		}
-
-		return 'RecordDrivers/Marc/staff.tpl';
+		return 'RecordDrivers/CloudLibrary/staff.tpl';
 	}
 
 	function getAvailability()
@@ -348,5 +337,11 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		$availability->cloudLibraryId = $this->id;
 		$availability->find(true);
 		return $availability;
+	}
+
+	function getAccessOnlineLink($patron)
+	{
+		global $configArray;
+		return $configArray['Site']['url'] . '/CloudLibrary/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
 	}
 }

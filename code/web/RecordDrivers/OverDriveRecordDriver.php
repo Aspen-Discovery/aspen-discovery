@@ -112,7 +112,6 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	public function getHoldings() {
         require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 
-        /** @var OverDriveAPIProductFormats[] $items */
         $items = $this->getItems();
         //Add links as needed
         $availability = $this->getAvailability();
@@ -133,15 +132,13 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
                     'onclick' => $checkoutLink,
                     'text' => 'Check Out',
                     'overDriveId' => $this->getUniqueID(),
-                    'formatId' => $item->numericId,
                     'action' => 'CheckOut'
                 );
             }else if ($addPlaceHoldLink){
                 $item->links[] = array(
-                    'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->getUniqueID()}', '{$item->numericId}');",
+                    'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->getUniqueID()}');",
                     'text' => 'Place Hold',
                     'overDriveId' => $this->getUniqueID(),
-                    'formatId' => $item->numericId,
                     'action' => 'Hold'
                 );
             }
@@ -264,12 +261,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	{
 		global $interface;
 
-		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
-
-		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
@@ -277,6 +269,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		$overDriveAPIProduct->overdriveId = strtolower($this->id);
 		if ($overDriveAPIProduct->find(true)) {
 			$interface->assign('overDriveProduct', $overDriveAPIProduct);
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductMetaData.php';
 			$overDriveAPIProductMetaData = new OverDriveAPIProductMetaData();
 			$overDriveAPIProductMetaData->productId = $overDriveAPIProduct->id;
 			if ($overDriveAPIProductMetaData->find(true)) {
@@ -287,9 +280,6 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 				$interface->assign('overDriveMetaDataRaw', $overDriveMetadata);
 			}
 		}
-
-		$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
-		$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 
 		return 'RecordDrivers/OverDrive/staff.tpl';
 	}
@@ -688,7 +678,8 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		if ($interface->getVariable('showStaffView')){
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
+				'onShow' => "AspenDiscovery.OverDrive.getStaffView('{$this->id}');",
+				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 
@@ -772,23 +763,21 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		return $this->groupedWorkDriver;
 	}
 
-	public function getItemActions($itemInfo){
-		return array();
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null) {
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null) {
 		$actions = array();
 		if ($isAvailable){
 			$actions[] = array(
 				'title' => 'Check Out OverDrive',
 				'onclick' => "return AspenDiscovery.OverDrive.checkOutTitle('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'overdrive_checkout'
 			);
 		}else{
 			$actions[] = array(
 				'title' => 'Place Hold OverDrive',
 				'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'overdrive_hold'
 			);
 		}
 		return $actions;

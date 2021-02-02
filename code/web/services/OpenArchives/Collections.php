@@ -17,11 +17,12 @@ class OpenArchives_Collections extends ObjectEditor {
 	function getPageTitle(){
 		return 'Open Archives collections to include';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$object = new OpenArchivesCollection();
 		$object->orderBy('name asc');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
@@ -32,21 +33,29 @@ class OpenArchives_Collections extends ObjectEditor {
 	function getObjectStructure(){
 		return OpenArchivesCollection::getObjectStructure();
 	}
-	function getAllowableRoles(){
-
-		return array('opacAdmin', 'libraryAdmin', 'archives');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function canAddNew(){
-		return true;
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('archives');
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#open_archives', 'Open Archives');
+		$breadcrumbs[] = new Breadcrumb('/OpenArchives/Collections', 'Collections');
+		return $breadcrumbs;
 	}
 
+	function getActiveAdminSection()
+	{
+		return 'open_archives';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Open Archives');
+	}
 }

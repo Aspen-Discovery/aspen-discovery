@@ -107,6 +107,9 @@ public class OaiIndexerMain {
 		}
 
 		try {
+			PreparedStatement getLibrariesForCollectionStmt = aspenConn.prepareStatement("SELECT library.subdomain From library_open_archives_collection inner join library on library.libraryId = library_open_archives_collection.libraryId where collectionId = ?");
+			PreparedStatement getLocationsForCollectionStmt = aspenConn.prepareStatement("SELECT code, subLocation from location_open_archives_collection inner join location on location.locationId = location_open_archives_collection.locationId where collectionId = ?");
+
 			ResultSet collectionsRS = getOpenArchiveCollections.executeQuery();
 			while (collectionsRS.next()) {
 				String collectionName = collectionsRS.getString("name");
@@ -149,21 +152,39 @@ public class OaiIndexerMain {
 							}
 						}
 					}
-					extractAndIndexOaiCollection(collectionName, collectionId, subjectFilters, baseUrl, setName, currentTime, loadOneMonthAtATime);
+
+					HashSet<String> scopesToInclude = new HashSet<>();
+
+					//Get a list of libraries and locations that the setting applies to
+					getLibrariesForCollectionStmt.setLong(1, collectionId);
+					ResultSet librariesForCollectionRS = getLibrariesForCollectionStmt.executeQuery();
+					while (librariesForCollectionRS.next()){
+						String subdomain = librariesForCollectionRS.getString("subdomain");
+						subdomain = subdomain.replaceAll("[^a-zA-Z0-9_]", "");
+						scopesToInclude.add(subdomain.toLowerCase());
+					}
+
+					getLocationsForCollectionStmt.setLong(1, collectionId);
+					ResultSet locationsForCollectionRS = getLocationsForCollectionStmt.executeQuery();
+					while (locationsForCollectionRS.next()){
+						String subLocation = locationsForCollectionRS.getString("subLocation");
+						if (!locationsForCollectionRS.wasNull() && subLocation.length() > 0){
+							scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
+						}else {
+							String code = locationsForCollectionRS.getString("code");
+							scopesToInclude.add(code.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
+						}
+					}
+
+					extractAndIndexOaiCollection(collectionName, collectionId, subjectFilters, baseUrl, setName, currentTime, loadOneMonthAtATime, scopesToInclude);
 				}
 			}
 		} catch (SQLException e) {
 			logger.error("Error loading collections", e);
 		}
-
-		try {
-			updateServer.commit(false, false, true);
-		} catch (Exception e) {
-			logger.error("Error in final commit", e);
-		}
 	}
 
-	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime, boolean loadOneMonthAtATime) {
+	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime, boolean loadOneMonthAtATime, HashSet<String> scopesToInclude) {
 		//Get the existing records for the collection
 		//Get existing records for the collection
 		OpenArchivesExtractLogEntry logEntry = createDbLogEntry(collectionName);
@@ -263,7 +284,7 @@ public class OaiIndexerMain {
 									if (curRecordNode instanceof Element) {
 										logEntry.incNumRecords();
 										Element curRecordElement = (Element) curRecordNode;
-										if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry)) {
+										if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry, scopesToInclude)) {
 											numRecordsLoaded++;
 										} else {
 											numRecordsSkipped++;
@@ -320,16 +341,18 @@ public class OaiIndexerMain {
 				}
 				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 			} catch (HttpSolrClient.RemoteSolrException rse) {
-				logger.error("Solr is not running properly, try restarting", rse);
-				logEntry.addNote("Solr is not running properly");
-				logEntry.incErrors();
-				logEntry.saveResults();
+				logEntry.incErrors("Solr is not running properly, try restarting", rse);
 				System.exit(-1);
 			} catch (Exception e) {
-				logger.error("Error deleting ids from index", e);
-				logEntry.addNote("Error deleting ids from index " + e.toString());
-				logEntry.incErrors();
+				logEntry.incErrors("Error deleting ids from index", e);
 			}
+		}
+
+		//Now that we are done with all changes, commit them.
+		try {
+			updateServer.commit(true, true, false);
+		} catch (Exception e) {
+			logger.error("Error in final commit", e);
 		}
 
 		//Update that we indexed the collection
@@ -339,9 +362,7 @@ public class OaiIndexerMain {
 			updateCollectionAfterIndexing.setLong(3, collectionId);
 			updateCollectionAfterIndexing.executeUpdate();
 		} catch (SQLException e) {
-			logger.error("Error updating the last fetch time for collection", e);
-			logEntry.addNote("Error updating the last fetch time for collection " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error updating the last fetch time for collection", e);
 		}
 
 		logEntry.setFinished();
@@ -370,10 +391,11 @@ public class OaiIndexerMain {
 		updateServer.setRequestWriter(new BinaryRequestWriter());
 	}
 
-	private static boolean indexElement(Element curRecordElement, HashMap<String, ExistingOAIRecord> existingRecords, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects, OpenArchivesExtractLogEntry logEntry) {
+	private static boolean indexElement(Element curRecordElement, HashMap<String, ExistingOAIRecord> existingRecords, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects, OpenArchivesExtractLogEntry logEntry, HashSet<String> scopesToInclude) {
 		OAISolrRecord solrRecord = new OAISolrRecord();
 		solrRecord.setCollectionId(collectionId);
 		solrRecord.setCollectionName(collectionName);
+		solrRecord.setScopesToInclude(scopesToInclude);
 		logger.debug("Indexing element");
 		NodeList children = curRecordElement.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
@@ -546,20 +568,14 @@ public class OaiIndexerMain {
 							logEntry.incAdded();
 						}
 					} catch (SQLException e) {
-						logger.error("Error adding record to database", e);
-						logEntry.addNote("Error adding record to database " + e.toString());
-						logEntry.incErrors();
+						logEntry.incErrors("Error adding record to database", e);
 					}
 				}
 			}
 		} catch (SolrServerException e) {
-			logger.error("Error adding document to solr server", e);
-			logEntry.addNote("Error adding document to solr server " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error adding document to solr server", e);
 		} catch (IOException e) {
-			logger.error("I/O Error adding document to solr server", e);
-			logEntry.addNote("I/O Error adding document to solr server " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("I/O Error adding document to solr server", e);
 		}
 		if (addedToIndex && existingRecords.containsKey(solrRecord.getIdentifier())) {
 			existingRecords.get(solrRecord.getIdentifier()).processed = true;

@@ -19,4 +19,9 @@ class SendGridSetting extends DataObject
 		);
 		return $structure;
 	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_admin';
+	}
 }

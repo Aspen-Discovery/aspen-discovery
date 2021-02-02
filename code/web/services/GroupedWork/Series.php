@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/sys/NovelistFactory.php';
 
 class GroupedWork_Series extends Action
 {
+	private $seriesTitle;
 	function launch()
 	{
 		global $interface;
@@ -21,7 +22,7 @@ class GroupedWork_Series extends Action
 			$interface->assign('id', $id);
 			$logger->log("Did not find a record for id {$id} in solr." , Logger::LOG_DEBUG);
 			$interface->setTemplate('../Record/invalidRecord.tpl');
-			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
 		$timer->logTime('Initialized the Record Driver');
@@ -37,7 +38,7 @@ class GroupedWork_Series extends Action
 		}
 
 		//Loading the series title is not reliable.  Do not try to load it.
-		$seriesTitle = null;
+		$this->seriesTitle = null;
 		$seriesAuthors = array();
 		$resourceList = array();
 		$seriesTitles = $seriesData->getSeriesTitles();
@@ -45,8 +46,8 @@ class GroupedWork_Series extends Action
 		if (isset($seriesTitles) && is_array($seriesTitles)){
 			foreach ($seriesTitles as $key => $title){
 				if (isset($title['series']) && strlen($title['series']) > 0 && !(isset($seriesTitle))){
-					$seriesTitle = $title['series'];
-					$interface->assign('seriesTitle', $seriesTitle);
+					$this->seriesTitle = $title['series'];
+					$interface->assign('seriesTitle', $this->seriesTitle);
 				}
 				if (isset($title['author'])){
 					$author = preg_replace('/[^\w]*$/i', '', $title['author']);
@@ -63,6 +64,11 @@ class GroupedWork_Series extends Action
 					$resourceList[] = $interface->fetch('RecordDrivers/Index/nonowned_result.tpl');
 				}
 			}
+			$interface->assign('recordEnd', count($seriesTitles));
+			$interface->assign('recordCount', count($seriesTitles));
+		}else{
+			$interface->assign('recordEnd', 0);
+			$interface->assign('recordCount', 0);
 		}
 
 		$interface->assign('seriesAuthors', $seriesAuthors);
@@ -70,15 +76,20 @@ class GroupedWork_Series extends Action
 		$interface->assign('resourceList', $resourceList);
 
 		$interface->assign('recordStart', 1);
-		$interface->assign('recordEnd', count($seriesTitles));
-		$interface->assign('recordCount', count($seriesTitles));
+
 
 		$interface->assign('recordDriver', $recordDriver);
 
 		$this->setShowCovers();
 
 		// Display Page
-		$this->display('view-series.tpl', $seriesTitle,'Search/home-sidebar.tpl', false);
+		$this->display('view-series.tpl', $this->seriesTitle,'', false);
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('', $this->seriesTitle, false);
+		return $breadcrumbs;
+	}
 }

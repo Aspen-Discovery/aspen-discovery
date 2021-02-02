@@ -87,6 +87,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 					}
 					itemInfo.setCallNumber("Online");
 					itemInfo.setShelfLocation(itemInfo.geteContentSource());
+					itemInfo.setDetailedLocation(itemInfo.geteContentSource());
 					RecordInfo relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
 					relatedRecord.setSubSource(profileType);
 					relatedRecord.addItem(itemInfo);
@@ -228,21 +229,6 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 
 	protected boolean loanRulesAreBasedOnCheckoutLocation(){
 		return false;
-	}
-
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
-		//For Flatirons, load audiences based on the final character of the location codes
-		HashSet<String> targetAudiences = new HashSet<>();
-		for (ItemInfo printItem : printItems){
-			String locationCode = printItem.getLocationCode();
-			if (locationCode.length() > 0) {
-				String lastCharacter = locationCode.substring(locationCode.length() - 1);
-				targetAudiences.add(lastCharacter);
-			}
-		}
-
-		groupedWork.addTargetAudiences(translateCollection("target_audience", targetAudiences, identifier));
-		groupedWork.addTargetAudiencesFull(translateCollection("target_audience", targetAudiences, identifier));
 	}
 
 	private class IsRecordEContent {

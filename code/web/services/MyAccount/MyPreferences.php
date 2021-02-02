@@ -23,26 +23,64 @@ class MyAccount_MyPreferences extends MyAccount
 				$interface->assign('selectedUser', $patronId);
 			}
 
-			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($patron);
 			if ($patronHomeLibrary == null){
+				$canUpdateContactInfo = false;
 				$showAlternateLibraryOptionsInProfile = true;
+				$allowPickupLocationUpdates = true;
+				$allowRememberPickupLocation = false;
+				$allowHomeLibraryUpdates = false;
 			}else{
+				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
+				$allowPickupLocationUpdates = ($patronHomeLibrary->allowPickupLocationUpdates == 1);
+				$allowRememberPickupLocation = ($patronHomeLibrary->allowRememberPickupLocation == 1);
+				$allowHomeLibraryUpdates = ($patronHomeLibrary->allowHomeLibraryUpdates == 1);
 			}
 
+			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
+			$interface->assign('allowPickupLocationUpdates', $allowPickupLocationUpdates);
+			$interface->assign('allowRememberPickupLocation', $allowRememberPickupLocation);
+			$interface->assign('allowHomeLibraryUpdates', $allowHomeLibraryUpdates);
 
 			// Determine Pickup Locations
+			$homeLibraryLocations = $patron->getValidHomeLibraryBranches($patron->getAccountProfile()->recordSource);
+			$interface->assign('homeLibraryLocations', $homeLibraryLocations);
 			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
 			$interface->assign('pickupLocations', $pickupLocations);
+
+			if ($patron->hasEditableUsername()){
+				$interface->assign('showUsernameField', true);
+				$interface->assign('editableUsername', $patron->getEditableUsername());
+			}else{
+				$interface->assign('showUsernameField', false);
+			}
+
+			$showAutoRenewSwitch = $user->getShowAutoRenewSwitch();
+			$interface->assign('showAutoRenewSwitch', $showAutoRenewSwitch);
+			if ($showAutoRenewSwitch){
+				$interface->assign('autoRenewalEnabled', $user->isAutoRenewalEnabledForUser());
+			}
 
 			// Save/Update Actions
 			global $offlineMode;
 			if (isset($_POST['updateScope']) && !$offlineMode) {
-				$patron->updateUserPreferences();
+				$result = $patron->updateUserPreferences();
+				$user->updateMessage = implode('<br/>', $result['messages']);
+				$user->updateMessageIsError = !$result['success'];
+
+				if ($canUpdateContactInfo && $allowHomeLibraryUpdates){
+					$result2 = $user->updateHomeLibrary($_REQUEST['homeLocation']);
+					if (!empty($user->updateMessage)){
+						$user->updateMessage .= '<br/>';
+					}
+					$user->updateMessage .= implode('<br/>', $result2['messages']);
+					$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
+				}
+				$user->update();
 
 				session_write_close();
 				$actionUrl = '/MyAccount/MyPreferences' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
@@ -53,6 +91,14 @@ class MyAccount_MyPreferences extends MyAccount
 			} else {
 				$interface->assign('edit', false);
 			}
+
+			global $enabledModules;
+			global $library;
+			$showEdsPreferences = false;
+			if (array_key_exists('EBSCO EDS', $enabledModules) && !empty($library->edsSettingsId)){
+				$showEdsPreferences = true;
+			}
+			$interface->assign('showEdsPreferences', $showEdsPreferences);
 
 			if ($showAlternateLibraryOptionsInProfile) {
 				//Get the list of locations for display in the user interface.
@@ -68,9 +114,26 @@ class MyAccount_MyPreferences extends MyAccount
 			}
 
 			$interface->assign('profile', $patron);
+
+			if (!empty($user->updateMessage)) {
+				if ($user->updateMessageIsError){
+					$interface->assign('profileUpdateErrors', $user->updateMessage);
+				}else{
+					$interface->assign('profileUpdateMessage', $user->updateMessage);
+				}
+				$user->updateMessage = '';
+				$user->update();
+			}
 		}
 
 		$this->display('myPreferences.tpl', 'My Preferences');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'My Preferences');
+		return $breadcrumbs;
+	}
 }

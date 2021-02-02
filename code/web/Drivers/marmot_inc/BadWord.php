@@ -7,10 +7,6 @@ class BadWord extends DataObject
 	public $id;                      //int(11)
 	public $word;                    //varchar(50)
 	public $replacement;             //varchar(50)
-	 
-	function keys() {
-		return array('id', 'word');
-	}
 
 	function getBadWordExpressions(){
 		/** @var $memCache Memcache */

@@ -72,12 +72,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	public function getStaffView()
 	{
 		global $interface;
-		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
-
-		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
@@ -195,11 +190,6 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return [];
-	}
-
 	public function getISBNs()
 	{
 		$isbns = [];
@@ -214,7 +204,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return array();
 	}
 
-	function getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $relatedUrls = null, $volumeData = null){
+	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $recordBookable, $volumeData = null){
 		$actions = array();
 
 		/** @var Library $searchLibrary */
@@ -224,17 +214,9 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			$title = 'Check Out Hoopla';
 			$actions[] = array(
 				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
-				'title'   => $title
+				'title'   => $title,
+				'type' => 'hoopla_checkout'
 			);
-		} else {
-			$title = translate('hoopla_url_action');
-			foreach ($relatedUrls as $url){
-				$actions[] = array(
-					'url' => $url['url'],
-					'title' => $title,
-					'requireLogin' => false,
-				);
-			}
 		}
 
 		return $actions;

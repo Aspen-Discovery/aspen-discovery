@@ -1,8 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
+require_once ROOT_DIR . '/sys/Suggestions.php';
 
 class SuggestedTitles extends MyAccount
 {
@@ -21,7 +20,6 @@ class SuggestedTitles extends MyAccount
 			foreach($suggestions as $suggestion) {
 				$interface->assign('resultIndex', ++$curIndex);
 				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				/** @var GroupedWorkDriver $recordDriver */
 				$recordDriver = new GroupedWorkDriver($suggestion['titleInfo']);
 				$resourceEntry = $interface->fetch($recordDriver->getSearchResult());
 				$resourceList[] = $resourceEntry;
@@ -35,6 +33,14 @@ class SuggestedTitles extends MyAccount
 		$interface->assign('hasRatings', $user->hasRatings());
 
 		$this->display('suggestedTitles.tpl', 'Recommended for You');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Recommended for You');
+		return $breadcrumbs;
 	}
 
 }

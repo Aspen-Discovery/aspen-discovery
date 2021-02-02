@@ -55,10 +55,6 @@ class Websites_PageStats extends Admin_Admin
 		$this->display('pageStats.tpl', 'Page Stats');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin');
-	}
-
 	/**
 	 * @param string|null $month
 	 * @param string|null $year
@@ -100,5 +96,25 @@ class Websites_PageStats extends Admin_Admin
 			}
 		}
 		return $usageStats;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#web_indexer', 'Website Indexing');
+		$breadcrumbs[] = new Breadcrumb('/Websites/Dashboard', 'Usage Dashboard');
+		$breadcrumbs[] = new Breadcrumb('', 'Page Stats');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'web_indexer';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}
 }

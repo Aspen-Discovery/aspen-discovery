@@ -438,10 +438,10 @@ abstract class HorizonAPI extends Horizon{
 				$hold_result = array();
 				if ($createHoldResponse == true){
 					$hold_result['success'] = true;
-					$hold_result['message'] = 'Your hold was placed successfully.';
+					$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 				}else{
 					$hold_result['success'] = false;
-					$hold_result['message'] = 'Your hold could not be placed. ';
+					$hold_result['message'] = translate(['text'=>"ils_hold_failed", 'defaultText'=>"Your hold could not be placed."]);
 					if (isset($createHoldResponse->message)){
 						$hold_result['message'] .= (string)$createHoldResponse->message;
 					}else if (isset($createHoldResponse->string)){
@@ -821,7 +821,7 @@ abstract class HorizonAPI extends Horizon{
      * @param string $newPin
      * @return array
      */
-    function updatePin($user, $oldPin, $newPin){
+    function updatePinUser(User $user, string $oldPin, string $newPin){
 		global $configArray;
 		$userId = $user->id;
 
@@ -832,7 +832,7 @@ abstract class HorizonAPI extends Horizon{
 			//Log the user in
 			list($userValid, $sessionToken) = $this->loginViaWebService($user->cat_username, $user->cat_password);
 			if (!$userValid){
-				return ['success' => false, 'errors' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
+				return ['success' => false, 'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
 			}
 		}
 
@@ -846,7 +846,7 @@ abstract class HorizonAPI extends Horizon{
 //			UserAccount::updateSession($user);  //TODO only if $user is the primary user
 			return ['success' => true, 'message' => "Your pin number was updated successfully."];
 		}else{
-			return ['success' => false, 'errors' => "Sorry, we could not update your pin number. Please try again later."];
+			return ['success' => false, 'message' => "Sorry, we could not update your pin number. Please try again later."];
 		}
 	}
 

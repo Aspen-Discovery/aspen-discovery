@@ -3,425 +3,120 @@ package com.turning_leaf_technologies.cron.reading_history;
 import com.turning_leaf_technologies.cron.CronLogEntry;
 import com.turning_leaf_technologies.cron.CronProcessLogEntry;
 import com.turning_leaf_technologies.cron.IProcessHandler;
-import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unused")
 public class UpdateReadingHistory implements IProcessHandler {
-	private CronProcessLogEntry processLog;
-	private PreparedStatement insertReadingHistoryStmt;
-	private String aspenUrl;
-	private Logger logger;
 
 	public void doCronProcess(String servername, Ini configIni, Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
-		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Update Reading History");
-		processLog.saveToDatabase(dbConn, logger);
-		
-		this.logger = logger;
+		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry, "Update Reading History", dbConn, logger);
+		processLog.saveResults();
+
 		logger.info("Updating Reading History");
 		processLog.addNote("Updating Reading History");
 
-		aspenUrl = configIni.get("Site", "url");
+		String aspenUrl = configIni.get("Site", "url");
 		if (aspenUrl == null || aspenUrl.length() == 0) {
-			logger.error("Unable to get URL for Aspen in General settings.  Please add a url key to Site section.");
-			processLog.incErrors();
-			processLog.addNote("Unable to get URL for Aspen in General settings.  Please add a url key to Site section.");
+			processLog.incErrors("Unable to get URL for Aspen in General settings.  Please add a url key to Site section.");
 			return;
 		}
 
 		// Connect to the MySQL database
 		int numSkipped = 0;
+		int numAlreadyUpToDate = 0;
+		long startTime = (long)(new Date().getTime() / 1000);
 		try {
-			// Get a list of all patrons that have reading history turned on.
-			PreparedStatement getUsersStmt = dbConn.prepareStatement("SELECT id, cat_username, cat_password, initialReadingHistoryLoaded FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement updateInitialReadingHistoryLoaded = dbConn.prepareStatement("UPDATE user SET initialReadingHistoryLoaded = 1 WHERE id = ?");
-
-			PreparedStatement getCheckedOutTitlesForUser = dbConn.prepareStatement("SELECT id, groupedWorkPermanentId, source, sourceId, title FROM user_reading_history_work WHERE userId=? and checkInDate is null", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement updateReadingHistoryStmt = dbConn.prepareStatement("UPDATE user_reading_history_work SET checkInDate=? WHERE id = ?");
-			insertReadingHistoryStmt = dbConn.prepareStatement("INSERT INTO user_reading_history_work (userId, groupedWorkPermanentId, source, sourceId, title, author, format, checkOutDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-			
-			ResultSet userResults = getUsersStmt.executeQuery();
-			while (userResults.next()) {
-				// For each patron
-				long userId = userResults.getLong("id");
-				String cat_username = userResults.getString("cat_username");
-				String cat_password = userResults.getString("cat_password");
-
-				if (cat_password == null || cat_password.length() == 0){
-					numSkipped++;
-					continue;
-				}
-
-				if (!updateReadingHistoryForUser(userId, cat_username, cat_password)){
-					processLog.incErrors();
-				}else{
-					processLog.incUpdated();
-				}
-
-//				boolean initialReadingHistoryLoaded = userResults.getBoolean("initialReadingHistoryLoaded");
-//				boolean errorLoadingInitialReadingHistory = false;
-//				if (!initialReadingHistoryLoaded){
-//					//Get the initial reading history from the ILS
-//					try {
-//						if (loadInitialReadingHistoryForUser(userId, cat_username, cat_password)) {
-//							updateInitialReadingHistoryLoaded.setLong(1, userId);
-//							updateInitialReadingHistoryLoaded.executeUpdate();
-//						}else{
-//							errorLoadingInitialReadingHistory = true;
-//						}
-//					}catch (SQLException e){
-//						logger.error("Error loading initial reading history", e);
-//						errorLoadingInitialReadingHistory = true;
-//					}
-//				}
-//
-//				if (!errorLoadingInitialReadingHistory) {
-//					//Get a list of titles that are currently checked out
-//					getCheckedOutTitlesForUser.setLong(1, userId);
-//					ResultSet checkedOutTitlesRS = getCheckedOutTitlesForUser.executeQuery();
-//					ArrayList<CheckedOutTitle> checkedOutTitles = new ArrayList<>();
-//					while (checkedOutTitlesRS.next()) {
-//						CheckedOutTitle curCheckout = new CheckedOutTitle();
-//						curCheckout.setId(checkedOutTitlesRS.getLong("id"));
-//						curCheckout.setSource(checkedOutTitlesRS.getString("source"));
-//						curCheckout.setSourceId(checkedOutTitlesRS.getString("sourceId"));
-//						curCheckout.setTitle(checkedOutTitlesRS.getString("title"));
-//						checkedOutTitles.add(curCheckout);
-//					}
-//
-//					logger.info("Loading Reading History for patron " + cat_username);
-//					processTitlesForUser(userId, cat_username, cat_password, checkedOutTitles);
-//
-//					//Any titles that are left in checkedOutTitles were checked out previously and are no longer checked out.
-//					long curTime = new Date().getTime() / 1000;
-//					for (CheckedOutTitle curTitle : checkedOutTitles) {
-//						updateReadingHistoryStmt.setLong(1, curTime);
-//						updateReadingHistoryStmt.setLong(2, curTitle.getId());
-//						updateReadingHistoryStmt.executeUpdate();
-//					}
-//				}
-
-				processLog.saveToDatabase(dbConn, logger);
-				try {
-					Thread.sleep(1000);
-				}catch (Exception e){
-					logger.warn("Sleep was interrupted while processing reading history for user.");
-				}
+			//Get the number of patrons to update
+			PreparedStatement getNumUsersStmt = dbConn.prepareStatement("SELECT count(*) as numUsers FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet numUsersResults = getNumUsersStmt.executeQuery();
+			int numUsersToUpdate = 0;
+			if (numUsersResults.next()) {
+				numUsersToUpdate = numUsersResults.getInt("numUsers");
+				processLog.addNote("Preparing to process " + numUsersToUpdate + " users");
 			}
-			userResults.close();
 
-			processLog.addNote("Skipped " + numSkipped + " records because the password was null");
+			// Get a list of all patrons that have reading history turned on.
+			PreparedStatement getUsersStmt = dbConn.prepareStatement("SELECT id, cat_username, cat_password, lastReadingHistoryUpdate FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			if (numUsersToUpdate > 0) {
+				BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(numUsersToUpdate);
+
+				//Process all the threads, we will allow up to 20 concurrent threads to start
+				ThreadPoolExecutor executor = new ThreadPoolExecutor(4, 8, 5000, TimeUnit.MILLISECONDS, blockingQueue);
+
+				//Setup the ThreadGroup
+				ResultSet userResults = getUsersStmt.executeQuery();
+				while (userResults.next()) {
+
+					// For each patron
+					String cat_username = userResults.getString("cat_username");
+					String cat_password = userResults.getString("cat_password");
+
+					if (cat_password == null || cat_password.length() == 0) {
+						numSkipped++;
+						processLog.incSkipped();
+						continue;
+					}
+
+					if (startTime - userResults.getLong("lastReadingHistoryUpdate") < (23 * 60 * 60)){
+						//Only update records every 23 hours (since the update runs everyday, we give it a bit of buffer to make sure that we do update daily unless
+						//the user has updated themselves.
+						numAlreadyUpToDate++;
+						processLog.incSkipped();
+						continue;
+					}
+
+					UpdateReadingHistoryTask newTask = new UpdateReadingHistoryTask(aspenUrl, cat_username, cat_password, processLog, logger);
+					executor.execute(newTask);
+
+					processLog.saveResults();
+				}
+				userResults.close();
+
+				long lastThreadsCompleted = 0;
+				int numTimesCompletedThreadsHasNotChanged = 0;
+				while ((executor.getCompletedTaskCount() + numSkipped) < numUsersToUpdate) {
+					if (lastThreadsCompleted != (executor.getCompletedTaskCount() + numSkipped)){
+						numTimesCompletedThreadsHasNotChanged = 0;
+						lastThreadsCompleted = (executor.getCompletedTaskCount() + numSkipped);
+					}else{
+						numTimesCompletedThreadsHasNotChanged++;
+					}
+					//If we haven't changed the number of threads completed for 10 minutes, something is stuck.
+					if (numTimesCompletedThreadsHasNotChanged == 10){
+						processLog.incErrors("Number of threads completed has not changed for 10 minutes and looks stuck");
+						break;
+					}
+					processLog.saveResults();
+					logger.debug("Num Users To Update = " + numUsersToUpdate + " Completed Task Count = " + executor.getCompletedTaskCount() + " Num Skipped = " + numSkipped + " Num already up to date = " + numAlreadyUpToDate);
+					try {
+						Thread.sleep(60000);
+					} catch (InterruptedException e) {
+						logger.error("Sleep was interrupted", e);
+					}
+				}
+				logger.debug("Finished processing all threads");
+
+				executor.shutdownNow();
+
+				processLog.addNote("Skipped " + numSkipped + " records because the password was null");
+			}
 		} catch (SQLException e) {
-			logger.error("Unable get a list of users that need to have their reading list updated ", e);
-			processLog.incErrors();
-			processLog.addNote("Unable get a list of users that need to have their reading list updated " + e.toString());
+			processLog.incErrors("Unable get a list of users that need to have their reading list updated ", e);
 		}
 		
 		processLog.setFinished();
-		processLog.saveToDatabase(dbConn, logger);
-	}
-
-	private boolean updateReadingHistoryForUser(Long userId, String cat_username, String cat_password) {
-		boolean hadError = false;
-		try {
-			// Call the patron API to get their checked out items
-			URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(cat_username, "UTF-8") + "&password=" + URLEncoder.encode(cat_password, "UTF-8"));
-			logger.debug("Loading initial reading history for " + cat_username);
-			Object responseRaw = patronApiUrl.getContent();
-			if (responseRaw instanceof InputStream) {
-				String patronDataJson = StringUtils.convertStreamToString((InputStream) responseRaw);
-				logger.debug(patronApiUrl.toString());
-				logger.debug("Json for patron reading history " + patronDataJson);
-				try {
-					JSONObject patronData = new JSONObject(patronDataJson);
-					JSONObject result = patronData.getJSONObject("result");
-					hadError = !result.getBoolean("success");
-				} catch (JSONException e) {
-					logger.error("Unable to load patron information from for " + cat_username + " exception loading response ", e);
-					logger.error(patronDataJson);
-					processLog.incErrors();
-					processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
-					hadError = true;
-				}
-			} else {
-				logger.error("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
-						+ responseRaw.getClass().getName());
-				processLog.incErrors();
-				hadError = true;
-			}
-		} catch (MalformedURLException e) {
-			logger.error("Bad url for patron API " + e.toString());
-			processLog.incErrors();
-			hadError = true;
-		} catch (IOException e) {
-			logger.error("Unable to retrieve information from patron API for " + cat_username /*+ ": " + e.toString()*/);
-			processLog.incErrors();
-			hadError = true;
-		}
-		return !hadError;
-	}
-
-
-	private boolean loadInitialReadingHistoryForUser(Long userId, String cat_username, String cat_password) {
-		boolean hadError = false;
-		try {
-			// Call the patron API to get their checked out items
-			URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=getPatronReadingHistory&username=" + URLEncoder.encode(cat_username, "UTF-8") + "&password=" + URLEncoder.encode(cat_password, "UTF-8"));
-			logger.debug("Loading initial reading history from " + patronApiUrl);
-			Object patronDataRaw = patronApiUrl.getContent();
-			if (patronDataRaw instanceof InputStream) {
-				String patronDataJson = StringUtils.convertStreamToString((InputStream) patronDataRaw);
-				logger.debug(patronApiUrl.toString());
-				logger.debug("Json for patron reading history " + patronDataJson);
-				try {
-					JSONObject patronData = new JSONObject(patronDataJson);
-					JSONObject result = patronData.getJSONObject("result");
-					if (result.getBoolean("success") && result.has("readingHistory")) {
-						if (result.get("readingHistory").getClass() == JSONObject.class){
-							JSONObject readingHistoryItems = result.getJSONObject("readingHistory");
-							@SuppressWarnings("unchecked")
-							Iterator<String> keys = (Iterator<String>) readingHistoryItems.keys();
-							while (keys.hasNext()) {
-								String curKey = keys.next();
-								JSONObject readingHistoryItem = readingHistoryItems.getJSONObject(curKey);
-								processReadingHistoryTitle(readingHistoryItem, userId);
-
-							}
-						}else if (result.get("readingHistory").getClass() == JSONArray.class){
-							JSONArray readingHistoryItems = result.getJSONArray("readingHistory");
-							for (int i = 0; i < readingHistoryItems.length(); i++){
-								processReadingHistoryTitle(readingHistoryItems.getJSONObject(i), userId);
-							}
-						}else{
-							processLog.incErrors();
-							processLog.addNote("Unexpected JSON for patron reading history " + result.get("readingHistory").getClass());
-							hadError = true;
-						}
-					} else {
-						logger.info("Call to getPatronReadingHistory returned a success code of false for " + cat_username);
-						hadError = true;
-					}
-				} catch (JSONException e) {
-					logger.error("Unable to load patron information from for " + cat_username + " exception loading response ", e);
-					logger.error(patronDataJson);
-					processLog.incErrors();
-					processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
-					hadError = true;
-				}
-			} else {
-				logger.error("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
-						+ patronDataRaw.getClass().getName());
-				processLog.incErrors();
-				hadError = true;
-			}
-		} catch (MalformedURLException e) {
-			logger.error("Bad url for patron API " + e.toString());
-			processLog.incErrors();
-			hadError = true;
-		} catch (IOException e) {
-			logger.error("Unable to retrieve information from patron API for " + cat_username /*+ ": " + e.toString()*/);
-			processLog.incErrors();
-			hadError = true;
-		}
-		return !hadError;
-	}
-
-	private void processReadingHistoryTitle(JSONObject readingHistoryTitle, Long userId) throws JSONException {
-		String source = "ILS";
-		String sourceId = "";
-		if (readingHistoryTitle.has("recordId")) {
-			sourceId = readingHistoryTitle.getString("recordId");
-		}
-		if (sourceId == null || sourceId.length() == 0){
-			//Don't try to add records we know nothing about.
-			return;
-		}
-		SimpleDateFormat checkoutDateFormat = new SimpleDateFormat("MM-dd-yyyy");
-
-		//This is a newly checked out title
-		try {
-			insertReadingHistoryStmt.setLong(1, userId);
-			insertReadingHistoryStmt.setString(2, readingHistoryTitle.getString("permanentId") == null ? "" : readingHistoryTitle.getString("permanentId"));
-			insertReadingHistoryStmt.setString(3, source);
-			insertReadingHistoryStmt.setString(4, sourceId);
-			insertReadingHistoryStmt.setString(5, StringUtils.trimTo(150, readingHistoryTitle.getString("title")));
-			insertReadingHistoryStmt.setString(6, StringUtils.trimTo(75, readingHistoryTitle.has("author") ? readingHistoryTitle.getString("author") : ""));
-			String format = readingHistoryTitle.getString("format");
-			if (format.startsWith("[")){
-				//This is an array of formats, just grab one
-				format = format.replace("[", "");
-				format = format.replace("]", "");
-				format = format.replace("\"", "");
-				String[] formats = format.split(",");
-				format = formats[0];
-			}
-			insertReadingHistoryStmt.setString(7, StringUtils.trimTo(50, format));
-			String checkoutDate = readingHistoryTitle.getString("checkout");
-			long checkoutTime = new Date().getTime();
-			if (checkoutDate.matches("^\\d+$")){
-				checkoutTime = Long.parseLong(checkoutDate);
-			}else{
-				try {
-					checkoutTime = checkoutDateFormat.parse(checkoutDate).getTime() / 1000;
-				} catch (ParseException e) {
-					logger.error("Error loading checkout date " + checkoutDate + " was not the expected format");
-				}
-			}
-
-			insertReadingHistoryStmt.setLong(8, checkoutTime);
-			insertReadingHistoryStmt.executeUpdate();
-			processLog.incUpdated();
-			//return true;
-		}catch (SQLException e){
-			logger.error("Error adding title for user " + userId + " " + readingHistoryTitle.getString("title"), e);
-			processLog.incErrors();
-			//return false;
-		}
-	}
-
-	private void processTitlesForUser(Long userId, String cat_username, String cat_password, ArrayList<CheckedOutTitle> checkedOutTitles){
-		try {
-			// Call the patron API to get their checked out items
-			URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=getPatronCheckedOutItems&username=" + URLEncoder.encode(cat_username, "UTF-8") + "&password=" + URLEncoder.encode(cat_password, "UTF-8"));
-			Object patronDataRaw = patronApiUrl.getContent();
-			if (patronDataRaw instanceof InputStream) {
-				String patronDataJson = StringUtils.convertStreamToString((InputStream) patronDataRaw);
-				logger.debug(patronApiUrl.toString());
-				logger.debug("Json for patron checked out items " + patronDataJson);
-				try {
-					JSONObject patronData = new JSONObject(patronDataJson);
-					JSONObject result = patronData.getJSONObject("result");
-					if (result.getBoolean("success") && result.has("checkedOutItems")) {
-						if (result.get("checkedOutItems").getClass() == JSONObject.class){
-							JSONObject checkedOutItems = result.getJSONObject("checkedOutItems");
-							@SuppressWarnings("unchecked")
-							Iterator<String> keys = (Iterator<String>) checkedOutItems.keys();
-							while (keys.hasNext()) {
-								String curKey = keys.next();
-								JSONObject checkedOutItem = checkedOutItems.getJSONObject(curKey);
-								processCheckedOutTitle(checkedOutItem, userId, checkedOutTitles);
-								
-							}
-						}else if (result.get("checkedOutItems").getClass() == JSONArray.class){
-							JSONArray checkedOutItems = result.getJSONArray("checkedOutItems");
-							for (int i = 0; i < checkedOutItems.length(); i++){
-								processCheckedOutTitle(checkedOutItems.getJSONObject(i), userId, checkedOutTitles);
-							}
-						}else{
-							processLog.incErrors();
-							processLog.addNote("Unexpected JSON for patron checked out items received " + result.get("checkedOutItems").getClass());
-						}
-					} else {
-						logger.info("Call to getPatronCheckedOutItems returned a success code of false for " + cat_username);
-					}
-				} catch (JSONException e) {
-					logger.error("Unable to load patron information from for " + cat_username + " exception loading response ", e);
-					logger.error(patronDataJson);
-					processLog.incErrors();
-					processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
-				}
-			} else {
-				logger.error("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
-						+ patronDataRaw.getClass().getName());
-				processLog.incErrors();
-			}
-		} catch (MalformedURLException e) {
-			logger.error("Bad url for patron API " + e.toString());
-			processLog.incErrors();
-		} catch (IOException e) {
-			logger.error("Unable to retrieve information from patron API for " + cat_username /*+ ": " + e.toString()*/);
-			processLog.incErrors();
-		}
-	}
-	
-	private void processCheckedOutTitle(JSONObject checkedOutItem, long userId, ArrayList<CheckedOutTitle> checkedOutTitles) throws JSONException{
-		try {
-			// System.out.println(checkedOutItem.toString());
-			String source = checkedOutItem.getString("checkoutSource");
-			String sourceId = "?";
-			switch (source) {
-				case "OverDrive":
-					sourceId = checkedOutItem.getString("overDriveId");
-					break;
-				case "ILS":
-					sourceId = checkedOutItem.getString("id");
-					break;
-				case "Hoopla":
-					sourceId = checkedOutItem.getString("hooplaId");
-					break;
-				case "RBdigital":
-				case "RBdigitalMagazine":
-				case "CloudLibrary":
-					sourceId = checkedOutItem.getString("recordId");
-					break;
-				case "eContent":
-					source = checkedOutItem.getString("recordType");
-					sourceId = checkedOutItem.getString("id");
-					break;
-				default:
-					logger.error("Unknown source updating reading history: " + source);
-			}
-
-			//Check to see if this is an existing checkout.  If it is, skip inserting
-			if (checkedOutTitles != null) {
-				for (CheckedOutTitle curTitle : checkedOutTitles) {
-					boolean sourceMatches = StringUtils.compareStrings(curTitle.getSource(), source);
-					boolean sourceIdMatches = StringUtils.compareStrings(curTitle.getSourceId(), sourceId);
-					boolean titleMatches = StringUtils.compareStrings(curTitle.getTitle(), checkedOutItem.getString("title"));
-					if (
-							(sourceMatches && sourceIdMatches) ||
-							titleMatches
-						 ) {
-						checkedOutTitles.remove(curTitle);
-						return;
-					}
-				}
-			}
-
-			//This is a newly checked out title
-			insertReadingHistoryStmt.setLong(1, userId);
-			String groupedWorkId = checkedOutItem.has("groupedWorkId") ? checkedOutItem.getString("groupedWorkId") : "";
-			if (groupedWorkId == null){
-				groupedWorkId = "";
-			}
-			insertReadingHistoryStmt.setString(2, groupedWorkId);
-			insertReadingHistoryStmt.setString(3, source);
-			insertReadingHistoryStmt.setString(4, sourceId);
-			insertReadingHistoryStmt.setString(5, StringUtils.trimTo(150, checkedOutItem.getString("title")));
-			insertReadingHistoryStmt.setString(6, checkedOutItem.has("author") ? StringUtils.trimTo(75, checkedOutItem.getString("author")) : "");
-			insertReadingHistoryStmt.setString(7, checkedOutItem.has("format") ? StringUtils.trimTo(50, checkedOutItem.getString("format")) : "");
-			long checkoutTime = new Date().getTime() / 1000;
-			insertReadingHistoryStmt.setLong(8, checkoutTime);
-			insertReadingHistoryStmt.executeUpdate();
-			processLog.incUpdated();
-		}catch (Exception e){
-			if (checkedOutItem.has("title")) {
-				logger.error("Error adding title for user " + userId + " " + checkedOutItem.getString("title"), e);
-			}else{
-				logger.error("Error adding title for user " + userId + " " + checkedOutItem.toString(), e);
-			}
-			processLog.incErrors();
-		}
+		processLog.saveResults();
 	}
 }

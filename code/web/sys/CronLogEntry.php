@@ -8,12 +8,9 @@ class CronLogEntry extends DataObject
 	public $startTime;
 	public $lastUpdate;
 	public $endTime;
+	public $numErrors;
 	public $notes;
 	private $_processes = null;
-
-	function keys() {
-		return array('id');
-	}
 
 	function processes(){
 		if (is_null($this->_processes)){

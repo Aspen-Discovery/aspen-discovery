@@ -20,7 +20,7 @@
 							<div class="btn-group btn-group-vertical btn-block">
 								{* Options for the user to view online or download *}
 								{foreach from=$summaryActions item=link}
-									<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick && strlen($link.onclick) > 0}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-primary" target="_blank">{$link.title}</a>&nbsp;
+									<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick && strlen($link.onclick) > 0}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action" target="_blank">{$link.title}</a>&nbsp;
 								{/foreach}
 							</div>
 						</div>

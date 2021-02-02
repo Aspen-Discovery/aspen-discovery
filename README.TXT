@@ -10,7 +10,7 @@ You should have received a copy of the GNU General Public License along with thi
 Aspen Discovery was originally derived from VuFind by Villanova University and Pika by Marmot Library Network. Significant changes have been made in this fork of the application. 
 
 All code is covered by the GNU General Public License version 2 with notable contributions by:
-- Mark Noble - Marmot Library Network and Turning Leaf Technologies, LLC
+- Mark Noble - ByWater Solutions, Turning Leaf Technologies, and Marmot Library Network
 - Pascal Brammeier - Marmot Library Network
 - James Staub - Nashville Public Library
 - Demian Katz - Villanova University 

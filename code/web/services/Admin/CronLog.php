@@ -5,12 +5,11 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once(ROOT_DIR . "/PHPExcel.php");
 
-class CronLog extends Admin_Admin
+class Admin_CronLog extends Admin_Admin
 {
 	function launch()
 	{
-		global $interface,
-		       $configArray;
+		global $interface;
 
 		$logEntries = array();
 		$cronLogEntry = new CronLogEntry();
@@ -26,17 +25,33 @@ class CronLog extends Admin_Admin
 		}
 		$interface->assign('logEntries', $logEntries);
 
-		$options = array('totalItems' => $total,
-		                 'fileName'   => '/Admin/CronLog?page=%d',
-		                 'perPage'    => 30,
-		);
+		$options = [
+			'totalItems' => $total,
+			'fileName'   => '/Admin/CronLog?page=%d',
+			'perPage'    => 30,
+		];
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('cronLog.tpl', 'Cron Log');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'Cron Log');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('View System Reports');
 	}
 }

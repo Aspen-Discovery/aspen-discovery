@@ -1,26 +1,26 @@
 package com.turning_leaf_technologies.koha_export;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
-import org.marc4j.MarcPermissiveStreamReader;
-import org.marc4j.MarcStreamWriter;
-import org.marc4j.MarcWriter;
-import org.marc4j.MarcXmlReader;
+import org.marc4j.*;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 
 import java.io.*;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -32,7 +32,7 @@ public class KohaExportMain {
 	private static IndexingProfile indexingProfile;
 	private static PreparedStatement getBaseMarcRecordStmt;
 	private static PreparedStatement getBibItemsStmt;
-	private static MarcFactory marcFactory = MarcFactory.newInstance();
+	private static final MarcFactory marcFactory = MarcFactory.newInstance();
 	private static MarcRecordGrouper recordGroupingProcessorSingleton;
 	private static GroupedWorkIndexer groupedWorkIndexer;
 	private static Ini configIni;
@@ -43,18 +43,38 @@ public class KohaExportMain {
 	private static IlsExtractLogEntry logEntry;
 
 	public static void main(String[] args) {
+		boolean extractSingleWork = false;
+		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
+			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
+				extractSingleWork = true;
+			}
 		} else {
 			serverName = args[0];
+			if (args.length > 1){
+				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")){
+					extractSingleWork = true;
+				}
+			}
 		}
-		String profileToLoad = "koha";
+		if (extractSingleWork) {
+			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
+		}
+		String profileToLoad = "ils";
 
-		logger = LoggingUtil.setupLogging(serverName, "koha_export");
+		String processName = "koha_export";
+		logger = LoggingUtil.setupLogging(serverName, processName);
+
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
+		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 			Date startTime = new Date();
@@ -93,8 +113,7 @@ public class KohaExportMain {
 				Connection kohaConn;
 				KohaInstanceInformation kohaInstanceInformation = initializeKohaConnection(dbConn);
 				if (kohaInstanceInformation == null) {
-					logEntry.incErrors();
-					logEntry.addNote("Could not connect to the Koha database");
+					logEntry.incErrors("Could not connect to the Koha database");
 					logEntry.setFinished();
 					continue;
 				} else {
@@ -104,37 +123,33 @@ public class KohaExportMain {
 
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
 
-				updateBranchInfo(dbConn, kohaConn);
-				logEntry.addNote("Finished updating branch information");
+				if (!extractSingleWork) {
+					updateBranchInfo(dbConn, kohaConn);
+					logEntry.addNote("Finished updating branch information");
 
-				updatePatronTypes(dbConn, kohaConn);
-				logEntry.addNote("Finished updating patron types");
+					updatePatronTypes(dbConn, kohaConn);
+					logEntry.addNote("Finished updating patron types");
 
-				updateTranslationMaps(dbConn, kohaConn);
-				logEntry.addNote("Finished updating translation maps");
+					updateTranslationMaps(dbConn, kohaConn);
+					logEntry.addNote("Finished updating translation maps");
 
-				exportHolds(dbConn, kohaConn);
-				logEntry.addNote("Finished loading holds");
+					exportHolds(dbConn, kohaConn);
+					logEntry.addNote("Finished loading holds");
+
+					exportVolumes(dbConn, kohaConn);
+
+					updateNovelist(dbConn, kohaConn);
+
+					exportBookCovers(dbConn, kohaConn);
+
+					exportAuthorAuthorities(dbConn, kohaConn);
+				}
 
 				//Update works that have changed since the last index
-				numChanges = updateRecords(dbConn, kohaConn);
+				numChanges = updateRecords(dbConn, kohaConn, singleWorkId);
 
 				logEntry.setFinished();
 
-				try {
-					//Close the connection
-					dbConn.close();
-				} catch (Exception e) {
-					System.out.println("Error closing aspen connection: " + e.toString());
-					e.printStackTrace();
-				}
-				try {
-					//Close the connection
-					kohaConn.close();
-				} catch (Exception e) {
-					System.out.println("Error closing koha connection: " + e.toString());
-					e.printStackTrace();
-				}
 				Date currentTime = new Date();
 				logger.info(currentTime.toString() + ": Finished Koha Extract");
 			} catch (Exception e) {
@@ -142,18 +157,309 @@ public class KohaExportMain {
 				//Don't exit, we will try again in a few minutes
 			}
 
-			//Pause before running the next export (longer if we didn't get any actual changes)
-			try {
-				System.gc();
-				if (numChanges == 0) {
-					Thread.sleep(1000 * 60 * 5);
-				} else {
-					Thread.sleep(1000 * 60);
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase();
+				break;
+			}
+			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase();
+				break;
+			}
+			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
+				disconnectDatabase();
+				break;
+			}
+			if (extractSingleWork) {
+				disconnectDatabase();
+				break;
+			}
+			disconnectDatabase();
+
+			//Check to see if nightly indexing is running and if so, wait until it is done.
+			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+				//Quit and we will restart after if finishes
+				System.exit(0);
+			}else{
+				//Pause before running the next export (longer if we didn't get any actual changes)
+				try {
+					System.gc();
+					if (numChanges == 0) {
+						//noinspection BusyWait
+						Thread.sleep(1000 * 60 * 5);
+					} else {
+						//noinspection BusyWait
+						Thread.sleep(1000 * 60);
+					}
+				} catch (InterruptedException e) {
+					logger.info("Thread was interrupted");
 				}
-			} catch (InterruptedException e) {
-				logger.info("Thread was interrupted");
 			}
 		} //Infinite loop
+	}
+
+	private static void exportAuthorAuthorities(Connection dbConn, Connection kohaConn) {
+		int numAuthoritiesExported = 0;
+		try{
+			//limit based on modification time
+			long curTime = new Date().getTime() / 1000;
+			Timestamp lastUpdateOfAuthorities = new Timestamp(indexingProfile.getLastUpdateOfAuthorities() * 1000);
+			PreparedStatement getAuthorAuthoritiesStmt = kohaConn.prepareStatement("SELECT modification_time, authtypecode, marc from auth_header where authtypecode IN('PERSO_NAME', 'CORPO_NAME') AND modification_time >= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getAuthorAuthoritiesStmt.setTimestamp(1, lastUpdateOfAuthorities);
+			PreparedStatement addAuthorStmt = dbConn.prepareStatement("INSERT INTO author_authority (id, dateAdded, author) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement getAuthorIdStmt = dbConn.prepareStatement("SELECT id from author_authority where author = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement addAlternativeNameStmt = dbConn.prepareStatement("INSERT INTO author_authority_alternative (id, authorId, alternativeAuthor) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
+			ResultSet getAuthorAuthoritiesRS = getAuthorAuthoritiesStmt.executeQuery();
+			while (getAuthorAuthoritiesRS.next()){
+				String authTypeCode = getAuthorAuthoritiesRS.getString("authtypecode");
+				if (authTypeCode.equals("PERSO_NAME") || authTypeCode.equals("CORPO_NAME")) {
+					MarcReader catalogReader = new MarcStreamReader(getAuthorAuthoritiesRS.getBinaryStream("marc"), "UTF8");
+					if (catalogReader.hasNext()) {
+						Record marcRecord = catalogReader.next();
+						String author = MarcUtil.getFirstFieldVal(marcRecord, "100abcdq:110ab");
+						if (author != null) {
+							Set<String> alternativeNames = MarcUtil.getFieldList(marcRecord, "400abcdq:410ab");
+							if (alternativeNames.size() > 0) {
+								numAuthoritiesExported++;
+								getAuthorIdStmt.setString(1, author);
+								ResultSet getAuthorIdRS = getAuthorIdStmt.executeQuery();
+								long authorAuthorityId = 0;
+								if (getAuthorIdRS.next()){
+									authorAuthorityId = getAuthorIdRS.getLong("id");
+								}else {
+									addAuthorStmt.setLong(1, curTime);
+									addAuthorStmt.setString(2, author);
+									addAuthorStmt.executeUpdate();
+									ResultSet generatedIds = addAuthorStmt.getGeneratedKeys();
+									if (generatedIds.next()) {
+										authorAuthorityId = generatedIds.getLong(1);
+									}
+								}
+								getAuthorIdRS.close();
+								if (authorAuthorityId != 0) {
+									for (String alternativeName : alternativeNames) {
+										addAlternativeNameStmt.setLong(1, authorAuthorityId);
+										addAlternativeNameStmt.setString(2, alternativeName);
+										addAlternativeNameStmt.executeUpdate();
+									}
+								}else{
+									logEntry.incErrors("Did not get an author id in the author_authority table for " + author);
+								}
+							}
+						}
+					}
+				}
+			}
+			PreparedStatement updateLastUpdateOfAuthoritiesTimestampStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAuthorities = ? WHERE id = ? ");
+			updateLastUpdateOfAuthoritiesTimestampStmt.setLong(1, curTime);
+			updateLastUpdateOfAuthoritiesTimestampStmt.setLong(2, indexingProfile.getId());
+			updateLastUpdateOfAuthoritiesTimestampStmt.executeUpdate();
+		}catch (SQLException e){
+			logEntry.incErrors("Error exporting author authorities", e);
+		}
+		if (numAuthoritiesExported > 0) {
+			logEntry.addNote("Exported " + numAuthoritiesExported + " author authorities from Koha");
+		}
+	}
+
+	private static void exportBookCovers(Connection dbConn, Connection kohaConn) {
+		//Get a list of all images within the Koha database
+		int numCoversExported = 0;
+		try{
+			PreparedStatement getKohaCoversStmt = kohaConn.prepareStatement("SELECT imagenumber, biblionumber from biblioimages", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from biblioimages  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getGroupedWorkForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work inner join grouped_work_primary_identifiers on grouped_work.id = grouped_work_id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement clearBookCoverInfoStmt = dbConn.prepareStatement("UPDATE bookcover_info set imageSource = '', thumbnailLoaded=0, mediumLoaded=0, largeLoaded= 0 where recordType = 'grouped_work' and recordId = ?");
+
+			String coversPath = configIni.get("Site","coverPath") + "/original/";
+			ResultSet kohaCoversRS = getKohaCoversStmt.executeQuery();
+			while (kohaCoversRS.next()){
+				getGroupedWorkForRecordStmt.setString(1, indexingProfile.getName());
+				getGroupedWorkForRecordStmt.setString(2, kohaCoversRS.getString("biblionumber"));
+				ResultSet getGroupedWorkForRecordRS = getGroupedWorkForRecordStmt.executeQuery();
+				if (getGroupedWorkForRecordRS.next()){
+					//Check to see if we have an existing uploaded record
+					String groupedWorkId = getGroupedWorkForRecordRS.getString("permanent_id");
+					File coverFile = new File(coversPath + groupedWorkId + ".png");
+					if (!coverFile.exists() || coverFile.length() == 0) {
+						getKohaCoverStmt.setLong(1, kohaCoversRS.getLong("imagenumber"));
+						ResultSet kohaCoverRS = getKohaCoverStmt.executeQuery();
+						if (kohaCoverRS.next()){
+							try {
+								FileOutputStream writer = new FileOutputStream(coverFile);
+								Blob kohaCover = kohaCoverRS.getBlob("imagefile");
+								long curPos = 1;
+								int bufferSize = 1024;
+								long bytesWritten = 0;
+								boolean moreToWrite = true;
+								while (moreToWrite){
+									if (kohaCover.length() - bytesWritten <= bufferSize){
+										bufferSize = (int)(kohaCover.length() - bytesWritten);
+										moreToWrite = false;
+									}
+									writer.write(kohaCover.getBytes(curPos, bufferSize));
+									bytesWritten += bufferSize;
+									curPos += bufferSize;
+								}
+
+								writer.close();
+								clearBookCoverInfoStmt.setString(1, groupedWorkId);
+								int numUpdates = clearBookCoverInfoStmt.executeUpdate();
+								if (numUpdates > 0){
+									logger.debug("Cleared cover cache info for " + groupedWorkId);
+								}
+								numCoversExported++;
+							}catch (IOException e){
+								logEntry.incErrors("Error creating book cover for " + kohaCoversRS.getString("biblionumber"), e);
+							}
+						}
+					}
+				}else{
+					logger.debug("No grouped work found for biblio " + kohaCoversRS.getString("biblionumber"));
+				}
+			}
+		}catch (SQLException e){
+			logEntry.incErrors("Error exporting book covers", e);
+		}
+		if (numCoversExported > 0) {
+			logEntry.addNote("Exported " + numCoversExported + " covers from Koha");
+		}
+	}
+
+	private static void disconnectDatabase() {
+		try {
+			//Close the connection
+			if (dbConn != null) {
+				dbConn.close();
+				dbConn = null;
+			}
+		} catch (Exception e) {
+			System.out.println("Error closing aspen connection: " + e.toString());
+			e.printStackTrace();
+		}
+	}
+
+	private static void updateNovelist(Connection dbConn, Connection kohaConn) {
+		try{
+			PreparedStatement getExistingNovelistSettingsStmt = dbConn.prepareStatement("SELECT * from novelist_settings");
+			ResultSet existingNovelistSettingsRS = getExistingNovelistSettingsStmt.executeQuery();
+			if (!existingNovelistSettingsRS.next()){
+				PreparedStatement kohaNovelistSettingsStmt = kohaConn.prepareStatement("SELECT * from systempreferences where variable LIKE 'Novelist%'");
+				ResultSet kohaNovelistSettingsRS = kohaNovelistSettingsStmt.executeQuery();
+				boolean novelistEnabled = false;
+				String novelistPassword = "";
+				String novelistProfile = "";
+				while (kohaNovelistSettingsRS.next()){
+					String variableName = kohaNovelistSettingsRS.getString("variable");
+					switch (variableName){
+						case "NovelistSelectEnabled":
+							novelistEnabled = kohaNovelistSettingsRS.getBoolean("value");
+						case "NovelistSelectPassword":
+							novelistPassword = kohaNovelistSettingsRS.getString("value");
+						case "NovelistSelectProfile":
+							novelistProfile = kohaNovelistSettingsRS.getString("value");
+					}
+				}
+				if (novelistEnabled){
+					PreparedStatement addNovelistSettingsStmt = dbConn.prepareStatement("INSERT INTO novelist_settings (profile, pwd) VALUES (?, ?)");
+					addNovelistSettingsStmt.setString(1, novelistProfile);
+					addNovelistSettingsStmt.setString(2, novelistPassword);
+					addNovelistSettingsStmt.executeUpdate();
+					logEntry.addNote("Added Novelist settings from Koha");
+				}
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error updating Novelist information", e);
+		}
+	}
+
+	private static void exportVolumes(Connection dbConn, Connection kohaConn) {
+		try{
+			logEntry.addNote("Starting export of volume information");
+			//Get the existing volumes
+			PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT volumeId from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			HashSet<Long> existingVolumes = new HashSet<>();
+			ResultSet existingVolumesRS = getExistingVolumes.executeQuery();
+			while (existingVolumesRS.next()){
+				existingVolumes.add(existingVolumesRS.getLong("volumeId"));
+			}
+			existingVolumesRS.close();
+
+			PreparedStatement getVolumeInfoStmt = kohaConn.prepareStatement("SELECT * from volumes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getItemsForVolumeStmt = kohaConn.prepareStatement("SELECT * from volume_items", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
+			PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
+
+			ResultSet volumeInfoRS = null;
+			boolean loadError = false;
+
+			HashMap<Long, String> itemsForVolume = new HashMap<>(); //Volume Id, list of item
+			try {
+				volumeInfoRS = getVolumeInfoStmt.executeQuery();
+
+				ResultSet getItemsForVolumeRS = getItemsForVolumeStmt.executeQuery();
+				while (getItemsForVolumeRS.next()){
+					String itemRecordNum = getItemsForVolumeRS.getString("itemnumber");
+
+					Long volumeId = getItemsForVolumeRS.getLong("volume_id");
+					itemsForVolume.merge(volumeId, itemRecordNum, (a, b) -> a + "|" + b);
+				}
+				getItemsForVolumeRS.close();
+			} catch (SQLSyntaxErrorException e1) {
+				logEntry.addNote("Volume table does not exist within the database");
+				return;
+			} catch (SQLException e1) {
+				logEntry.incErrors("Error loading volume information", e1);
+				loadError = true;
+			}
+
+			if (!loadError) {
+				int numVolumesUpdated = 0;
+				while (volumeInfoRS.next()) {
+					long recordId = volumeInfoRS.getLong("biblionumber");
+					long volumeId = volumeInfoRS.getLong("id");
+					int displayOrder = volumeInfoRS.getInt("display_order");
+					String description = volumeInfoRS.getString("description");
+					existingVolumes.remove(volumeId);
+					String relatedItems = itemsForVolume.get(volumeId);
+					if (relatedItems == null){
+						relatedItems = "";
+					}
+
+					try {
+						addVolumeStmt.setString(1, "ils:" + recordId);
+						addVolumeStmt.setLong(2, volumeId);
+						addVolumeStmt.setString(3, description);
+						addVolumeStmt.setString(4, relatedItems);
+						addVolumeStmt.setInt(5, displayOrder);
+						int numUpdates = addVolumeStmt.executeUpdate();
+						if (numUpdates > 0) {
+							numVolumesUpdated++;
+						}
+					}catch (SQLException sqlException){
+						logEntry.incErrors("Error adding volume", sqlException);
+					}
+				}
+				volumeInfoRS.close();
+
+
+				//Remove anything that no longer exists
+				long numVolumesDeleted = 0;
+				for (Long existingVolume : existingVolumes){
+					logEntry.addNote("Deleted volume " + existingVolume);
+					deleteVolumeStmt.setLong(1, existingVolume);
+					deleteVolumeStmt.executeUpdate();
+					numVolumesDeleted++;
+				}
+				logEntry.addNote("Updated " + numVolumesUpdated + " volumes and deleted " + numVolumesDeleted + " volumes");
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error exporting volume information", e);
+		}
+		logEntry.saveResults();
 	}
 
 	private static KohaInstanceInformation initializeKohaConnection(Connection dbConn) throws SQLException {
@@ -212,6 +518,7 @@ public class KohaExportMain {
 			} catch (Exception e) {
 				tries++;
 				logger.error("Could not connect to the koha database, try " + tries);
+				logger.debug("Error", e);
 				try {
 					Thread.sleep(15000);
 				} catch (InterruptedException ex) {
@@ -238,17 +545,32 @@ public class KohaExportMain {
 			HashMap<String, String> existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaBranchesStmt, "branchcode", "branchname", insertTranslationStmt, translationMapId, existingValues);
 
-			//Load LOC into sub location
-			PreparedStatement kohaLocStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = 'LOC'");
-			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "sub_location");
-			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
-			updateTranslationMap(kohaLocStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+			//Load sub location
+			String authorizedValueType = getAuthorizedValueTypeForSubfield(indexingProfile.getSubLocationSubfield());
+			if (authorizedValueType != null){
+				PreparedStatement kohaLocStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = '" + authorizedValueType + "'");
+				translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "sub_location");
+				existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+				updateTranslationMap(kohaLocStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+			}
 
-			//Load ccodes into shelf location
-			PreparedStatement kohaCCodesStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = 'CCODE'");
-			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "shelf_location");
-			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
-			updateTranslationMap(kohaCCodesStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+			//Load shelf location
+			authorizedValueType = getAuthorizedValueTypeForSubfield(indexingProfile.getShelvingLocationSubfield());
+			if (authorizedValueType != null) {
+				PreparedStatement kohaCCodesStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = '" + authorizedValueType + "'");
+				translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "shelf_location");
+				existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+				updateTranslationMap(kohaCCodesStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+			}
+
+			//Load collection
+			authorizedValueType = getAuthorizedValueTypeForSubfield(indexingProfile.getCollectionSubfield());
+			if (authorizedValueType != null) {
+				PreparedStatement kohaCCodesStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = '" + authorizedValueType + "'");
+				translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "collection");
+				existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+				updateTranslationMap(kohaCCodesStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+			}
 
 			//Load itemtypes into formats for the indexing profile
 			PreparedStatement kohaItemTypesStmt = kohaConn.prepareStatement("SELECT itemtype, description FROM itemtypes");
@@ -263,6 +585,16 @@ public class KohaExportMain {
 		} catch (SQLException e) {
 			logger.error("Error updating translation maps", e);
 		}
+	}
+
+	private static String getAuthorizedValueTypeForSubfield(char subfield) {
+		String authorizedValueType = null;
+		if (subfield == '8'){
+			authorizedValueType = "CCODE";
+		}else if (indexingProfile.getSubLocationSubfield() == 'c'){
+			authorizedValueType = "LOC";
+		}
+		return authorizedValueType;
 	}
 
 	private static void updateFormatMap(PreparedStatement kohaValuesStmt, PreparedStatement insertFormatStmt, Long indexingProfileId, HashMap<String, String> existingValues) throws SQLException {
@@ -291,10 +623,11 @@ public class KohaExportMain {
 	private static void updateTranslationMap(PreparedStatement kohaValuesStmt, String valueColumn, String translationColumn, PreparedStatement insertTranslationStmt, Long translationMapId, HashMap<String, String> existingValues) throws SQLException {
 		ResultSet kohaValuesRS = kohaValuesStmt.executeQuery();
 		while (kohaValuesRS.next()) {
-			String value = kohaValuesRS.getString(valueColumn);
+			String value = kohaValuesRS.getString(valueColumn).trim();
 			String translation = kohaValuesRS.getString(translationColumn);
-			if (existingValues.containsKey(value)) {
-				if (!existingValues.get(value).equals(translation)) {
+			if (existingValues.containsKey(value.toLowerCase())) {
+				translation = translation.trim();
+				if (!existingValues.get(value.toLowerCase()).equals(translation)) {
 					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
 				}
 			} else {
@@ -302,10 +635,14 @@ public class KohaExportMain {
 					translation = value;
 				}
 				if (value.length() > 0) {
-					insertTranslationStmt.setLong(1, translationMapId);
-					insertTranslationStmt.setString(2, value);
-					insertTranslationStmt.setString(3, translation);
-					insertTranslationStmt.executeUpdate();
+					try {
+						insertTranslationStmt.setLong(1, translationMapId);
+						insertTranslationStmt.setString(2, value);
+						insertTranslationStmt.setString(3, translation);
+						insertTranslationStmt.executeUpdate();
+					}catch (SQLException e){
+						logEntry.addNote("Error adding translation map value " + value + " with a translation of " + translation + " e");
+					}
 				}
 			}
 		}
@@ -326,7 +663,7 @@ public class KohaExportMain {
 		getExistingValuesForMapStmt.setLong(1, translationMapId);
 		ResultSet getExistingValuesForMapRS = getExistingValuesForMapStmt.executeQuery();
 		while (getExistingValuesForMapRS.next()) {
-			existingValues.put(getExistingValuesForMapRS.getString("value"), getExistingValuesForMapRS.getString("translation"));
+			existingValues.put(getExistingValuesForMapRS.getString("value").toLowerCase(), getExistingValuesForMapRS.getString("translation"));
 		}
 		return existingValues;
 	}
@@ -629,7 +966,7 @@ public class KohaExportMain {
 		logger.info("Finished exporting holds");
 	}
 
-	private static int updateRecords(Connection dbConn, Connection kohaConn) {
+	private static int updateRecords(Connection dbConn, Connection kohaConn, String singleWorkId) {
 		int totalChanges = 0;
 
 		try {
@@ -644,24 +981,62 @@ public class KohaExportMain {
 
 			HashSet<String> changedBibIds = new HashSet<>();
 
-			//Get a list of bibs that have changed
-			PreparedStatement getChangedBibsFromKohaStmt;
-			if (indexingProfile.isRunFullUpdate()) {
-				getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio");
-				logEntry.addNote("Getting all records from Koha");
-			} else {
-				getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
-				logEntry.addNote("Getting changes to records since " + lastExtractTimestamp.toString() + " UTC");
+			if (singleWorkId != null){
+				changedBibIds.add(singleWorkId);
+			}else {
+				//Get a list of bibs that have changed
+				PreparedStatement getChangedBibsFromKohaStmt;
+				if (indexingProfile.isRunFullUpdate()) {
+					getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio");
+					logEntry.addNote("Getting all records from Koha");
+				} else {
+					getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
+					logEntry.addNote("Getting changes to records since " + lastExtractTimestamp.toString() + " UTC");
 
-				getChangedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+					getChangedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+				}
+
+				ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
+				while (getChangedBibsFromKohaRS.next()) {
+					changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
+				}
+
+				//Get a list of changed bibs by biblio_metadata timestamp as well
+				if (!indexingProfile.isRunFullUpdate()){
+					PreparedStatement getChangedBibMetadataFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio_metadata where timestamp >= ?");
+					logEntry.addNote("Getting changes to record metadata since " + lastExtractTimestamp.toString() + " UTC");
+
+					getChangedBibMetadataFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+
+					ResultSet getChangedBibMetadataFromKohaRS = getChangedBibMetadataFromKohaStmt.executeQuery();
+					int numRecordsWithChangedMetadata = 0;
+					while (getChangedBibMetadataFromKohaRS.next()) {
+						if (changedBibIds.add(getChangedBibMetadataFromKohaRS.getString("biblionumber"))){
+							numRecordsWithChangedMetadata++;
+						}
+					}
+					logEntry.addNote(numRecordsWithChangedMetadata + " records had changes to the metadata, but not the bib.");
+				}
+
+				//Finally check the zebraqueue because some actions don't trigger either a biblio timestamp change or metadata timestamp change
+				// specifically we know that moving one item bib to another does not update the original bib
+				if (!indexingProfile.isRunFullUpdate()){
+					PreparedStatement getZebraQueueBibsToReindexStmt = kohaConn.prepareStatement("select biblio_auth_number from zebraqueue where time >= ? AND server = 'biblioserver'");
+					logEntry.addNote("Getting records to reindex from zebra queue since " + lastExtractTimestamp.toString() + " UTC");
+
+					getZebraQueueBibsToReindexStmt.setTimestamp(1, lastExtractTimestamp);
+					ResultSet getZebraQueueBibsToReindexRS = getZebraQueueBibsToReindexStmt.executeQuery();
+					int numRecordsToForceReindex = 0;
+					while (getZebraQueueBibsToReindexRS.next()) {
+						if (changedBibIds.add(getZebraQueueBibsToReindexRS.getString("biblio_auth_number"))){
+							numRecordsToForceReindex++;
+						}
+					}
+					logEntry.addNote(numRecordsToForceReindex + " records were marked for reindex in the Zebra queue, but not the bib.");
+				}
 			}
 
-			ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
-			while (getChangedBibsFromKohaRS.next()) {
-				changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
-			}
-
-			if (!indexingProfile.isRunFullUpdate()) {
+			if (singleWorkId == null && !indexingProfile.isRunFullUpdate()) {
 				//Get a list of items that have changed
 				PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from items where timestamp >= ?");
 				getChangedItemsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
@@ -694,65 +1069,71 @@ public class KohaExportMain {
 					logEntry.saveResults();
 				}
 			}
+			logger.info("Updated " + changedBibIds.size() + " records");
 
 			//Process any bibs that have been deleted
-			PreparedStatement getDeletedBibsFromKohaStmt;
-			if (indexingProfile.isRunFullUpdate()) {
-				getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio");
-			} else {
-				getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio where timestamp >= ?");
-				getDeletedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
-			}
-
-			ResultSet bibDeletedRS = getDeletedBibsFromKohaStmt.executeQuery();
 			int numRecordsDeleted = 0;
-			while (bibDeletedRS.next()) {
-				String bibId = bibDeletedRS.getString("biblionumber");
-				RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibId);
-				if (result.reindexWork) {
-					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-				} else if (result.deleteWork) {
-					//Delete the work from solr and the database
-					getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+			if (singleWorkId == null) {
+				PreparedStatement getDeletedBibsFromKohaStmt;
+				if (indexingProfile.isRunFullUpdate()) {
+					getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio");
+				} else {
+					getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio where timestamp >= ?");
+					getDeletedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 				}
-				numRecordsDeleted++;
-				logEntry.incDeleted();
-			}
-			logEntry.saveResults();
 
-			logger.info("Updated " + changedBibIds.size() + " records");
-			logger.info("Deleted " + numRecordsDeleted + " records");
+				ResultSet bibDeletedRS = getDeletedBibsFromKohaStmt.executeQuery();
+				while (bibDeletedRS.next()) {
+					String bibId = bibDeletedRS.getString("biblionumber");
+					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibId);
+					if (result.reindexWork) {
+						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+					} else if (result.deleteWork) {
+						//Delete the work from solr and the database
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+					}
+					numRecordsDeleted++;
+					logEntry.incDeleted();
+				}
+				logEntry.saveResults();
+				logger.info("Deleted " + numRecordsDeleted + " records");
+			}
 
 			processRecordsToReload(indexingProfile, logEntry);
 
 			totalChanges = changedBibIds.size() + numRecordsDeleted;
 
+			if (recordGroupingProcessorSingleton != null) {
+				recordGroupingProcessorSingleton.close();
+				recordGroupingProcessorSingleton = null;
+			}
+
 			if (groupedWorkIndexer != null) {
 				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-				recordGroupingProcessorSingleton = null;
+				groupedWorkIndexer.close();
 				groupedWorkIndexer = null;
 			}
 
 			//Update the last extract time for the indexing profile
-			if (indexingProfile.isRunFullUpdate()) {
-				PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
-				updateVariableStmt.setLong(1, startTimeForLogging);
-				updateVariableStmt.setLong(2, indexingProfile.getId());
-				updateVariableStmt.executeUpdate();
-				updateVariableStmt.close();
-			} else {
-				if (!logEntry.hasErrors()) {
-					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+			if (singleWorkId == null) {
+				if (indexingProfile.isRunFullUpdate()) {
+					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
 					updateVariableStmt.setLong(1, startTimeForLogging);
 					updateVariableStmt.setLong(2, indexingProfile.getId());
 					updateVariableStmt.executeUpdate();
 					updateVariableStmt.close();
+				} else {
+					if (!logEntry.hasErrors()) {
+						PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+						updateVariableStmt.setLong(1, startTimeForLogging);
+						updateVariableStmt.setLong(2, indexingProfile.getId());
+						updateVariableStmt.executeUpdate();
+						updateVariableStmt.close();
+					}
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error loading changed records from Koha database", e);
-			logEntry.addNote("Error loading changed records from Koha database: " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error loading changed records from Koha database", e);
 			//Don't quit since that keeps the exporter from running continuously
 		}
 		logger.info("Finished loading changed records from Koha database");
@@ -771,8 +1152,7 @@ public class KohaExportMain {
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
 				if (!marcFile.exists()) {
-					logEntry.incErrors();
-					logEntry.addNote("Could not find marc for record to reload " + recordIdentifier);
+					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
 				} else {
 					FileInputStream marcFileStream = new FileInputStream(marcFile);
 					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
@@ -783,8 +1163,7 @@ public class KohaExportMain {
 						//Reindex the record
 						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 					} else {
-						logEntry.incErrors();
-						logEntry.addNote("Could not read file " + marcFile);
+						logEntry.incErrors("Could not read file " + marcFile);
 					}
 				}
 
@@ -797,8 +1176,7 @@ public class KohaExportMain {
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
-			logEntry.incErrors();
-			logEntry.addNote("Error processing records to reload " + e.toString());
+			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
 
@@ -817,7 +1195,7 @@ public class KohaExportMain {
 			while (baseMarcRecordRS.next()) {
 				String marcXML = baseMarcRecordRS.getString("metadata");
 				marcXML = StringUtils.stripNonValidXMLCharacters(marcXML);
-				MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(marcXML.getBytes(Charset.forName("UTF-8"))));
+				MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(marcXML.getBytes(StandardCharsets.UTF_8)));
 
 				//This record has all the basic bib data
 				Record marcRecord = marcXmlReader.next();
@@ -891,9 +1269,7 @@ public class KohaExportMain {
 			} else if (e instanceof SQLException && ((SQLException) e).getSQLState().equals("S1009")) {
 				throw e;
 			} else {
-				logger.error("Error updating marc record for bib " + curBibId, e);
-				logEntry.addNote("Error updating marc record for bib " + curBibId + ": " + e.toString());
-				logEntry.incErrors();
+				logEntry.incErrors("Error updating marc record for bib " + curBibId, e);
 			}
 		}
 	}
@@ -910,14 +1286,14 @@ public class KohaExportMain {
 
 	private static MarcRecordGrouper getRecordGroupingProcessor() {
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logger, false);
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}
 
 	private static GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}

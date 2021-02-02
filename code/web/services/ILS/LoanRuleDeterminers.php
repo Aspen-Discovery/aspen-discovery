@@ -45,9 +45,10 @@ class LoanRuleDeterminers extends ObjectEditor {
 	function getPageTitle(){
 		return 'Loan Rule Determiners';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new LoanRuleDeterminer();
 		$object->orderBy('rowNumber');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -64,9 +65,6 @@ class LoanRuleDeterminers extends ObjectEditor {
 	function getIdKeyColumn(){
 		return 'rowNumber';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 	function customListActions(){
 		$actions = array();
 		$actions[] = array(
@@ -81,5 +79,24 @@ class LoanRuleDeterminers extends ObjectEditor {
 	public function canCompare()
 	{
 		return false;
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('/ILS/LoanRuleDeterminers', 'Loan Rule Determiners');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Loan Rules');
 	}
 }

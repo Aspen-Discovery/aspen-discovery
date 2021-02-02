@@ -3,8 +3,6 @@
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_CheckedOut extends MyAccount{
 
-	const SORT_LAST_ALPHA = 'zzzzz';
-
 	function launch(){
 		global $interface;
 		global $library;
@@ -25,4 +23,11 @@ class MyAccount_CheckedOut extends MyAccount{
 		$this->display('checkedout.tpl','Checked Out Titles');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'My Checked Out Titles');
+		return $breadcrumbs;
+	}
 }

@@ -2,44 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/queryTooLong.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/index.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" afterDir="false" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="ComposerSettings">
-    <execution>
-      <executable />
-    </execution>
-  </component>
-  <component name="DatabaseView">
-    <option name="SHOW_INTERMEDIATE" value="true" />
-    <option name="GROUP_DATA_SOURCES" value="true" />
-    <option name="GROUP_SCHEMA" value="true" />
-    <option name="GROUP_CONTENTS" value="false" />
-    <option name="SORT_POSITIONED" value="false" />
-    <option name="SHOW_EMPTY_GROUPS" value="false" />
-    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
-    <option name="HIDDEN_KINDS">
-      <set />
-    </option>
-    <expand>
-      <path>
-        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
-        <item name="MariaDB - aspen@localhost" type="feb32156:DbDataSourceImpl" />
-      </path>
-    </expand>
-    <select />
-  </component>
-  <component name="FavoritesManager">
-    <favorites_list name="web" />
+    <execution />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -64,6 +36,7 @@
     <auto-save>true</auto-save>
   </component>
   <component name="NamedScopeManager">
+    <scope name="Local Javascript" pattern="file[web]:interface/themes/responsive/js/aspen//*" />
     <order>
       <scope name="main.css files" />
     </order>
@@ -71,7 +44,6 @@
   <component name="PhpDebugGeneral" listening_started="true" />
   <component name="PhpServers">
     <servers>
-      <server host="aspen.demo" id="ee91db44-1a35-4b87-986d-da53797cd41b" name="aspen.demo" />
       <server host="basinlibraries.localhost" id="aea1563c-25bb-4c37-8e5e-b1ec20a28931" name="basinlibraries.localhost" />
       <server host="uintah.basinlibraries.localhost" id="92185654-48bf-4aad-9995-a95e5b551f71" name="uintah.basinlibraries.localhost" />
       <server host="duchesne.basinlibraries.localhost" id="ebc6cf94-867c-4f36-a999-0510a7b96e97" name="duchesne.basinlibraries.localhost" />
@@ -89,22 +61,43 @@
       <server host="train1.localhost" id="e41363f1-cffe-4bf1-9e7a-f182269b8b47" name="train1.localhost" />
       <server host="lyons.aspencat.localhost" id="25ba1d17-b550-4e94-b9fa-be2a349b3253" name="lyons.aspencat.localhost" />
       <server host="aurora.aspencat.localhost" id="34019d2d-6e93-4690-a4f1-061233dbb1e7" name="aurora.aspencat.localhost" />
+      <server host="uintah.localwebsite" id="47f40674-de24-4275-8306-064756132b61" name="uintah.localwebsite" use_path_mappings="true">
+        <path_mappings>
+          <mapping local-root="$PROJECT_DIR$" remote-root="C:/web/web-builder/code/web" />
+        </path_mappings>
+      </server>
+      <server host="wasatch.basinlibraries.localhost" id="914e1869-abd0-42ed-b365-d8c234bb5e4e" name="wasatch.basinlibraries.localhost" />
+      <server host="nederland.aspencat.localhost" id="f9c9d3e1-29cc-4bc6-86ef-a7a330a42b6e" name="nederland.aspencat.localhost" />
+      <server host="arlington.koha.local" id="88213282-7667-4f99-9209-81efc10079fa" name="arlington.koha.local" />
+      <server host="swan.localhost" id="2c1357ff-4245-40e6-9077-d348d472ed00" name="swan.localhost" />
+      <server host="arcadiaca.localhost" id="5e41d943-af05-4728-836b-43ca3a7a76ad" name="arcadiaca.localhost" />
+      <server host="www.basinlibraries.localhost" id="07e1ca77-e5db-4db6-8093-231e23c5a462" name="www.basinlibraries.localhost" />
+      <server host="105.nashville.aspenlocal" id="88620d36-2851-47a4-be5a-3c2a47706c98" name="105.nashville.aspenlocal" />
+      <server host="ajax.localhost" id="f6e5196f-702b-44f1-b7d8-1ddea7ce67fa" name="ajax.localhost" />
+      <server host="salina.localhost" id="c8200ab3-ad1f-4f1c-bcd7-204915caab2e" name="salina.localhost" />
+      <server host="berthoud.aspencat.localhost" id="6557adac-82ef-4c29-ac3f-50613f5fb8fb" name="berthoud.aspencat.localhost" />
+      <server host="santafe.localhost" id="4d4e1192-0aac-4ebe-942d-4c8c6235b78d" name="santafe.localhost" />
     </servers>
   </component>
-  <component name="PhpWebServerValidation" path_to_validation_script="C:\web\aspen-discovery\code\web" selected_validation_type="LOCAL" web_path_to_validation_script="http://aspen.demo" />
-  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.1">
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.3">
     <include_path>
-      <path value="C:/Bitnami/wampstack-7.3.3-1/php" />
+      <path value="$PROJECT_DIR$/../../../../Bitnami/wampstack-7.3.3-1/php" />
     </include_path>
   </component>
   <component name="ProjectId" id="1OW1o0nR89VagBknOyBYfpbOOIz" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent">
     <property name="DatabaseDriversLRU" value="mysql" />
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="NewWatcherDialog.advanced.open" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/interface/themes/responsive" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/interface/themes/responsive/Axis360" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.jscs" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
@@ -118,77 +111,97 @@
     <property name="node.js.selected.package.standard" value="" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="configurable.group.editor" />
+    <property name="php.override.implement.member.chooser.php.doc" value="NONE" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.General" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\web\aspen-discovery\code\web\services\ILS" />
-      <recent name="C:\web\aspen-discovery\code\web\sys\Grouping" />
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Search" />
-      <recent name="C:\web\aspen-discovery\sites\basinlibraries.production" />
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\ILS" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive" />
-      <recent name="C:\web\aspen-discovery\code\web\services\SideLoads" />
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\GroupedWork" />
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Admin" />
-      <recent name="C:\web\aspen-discovery\code\web\services\OverDrive" />
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Axis360" />
+      <recent name="C:\web\aspen-discovery\code\web\migrations" />
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\MyAccount" />
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\RecordDrivers\Events" />
+      <recent name="C:\web\aspen-discovery\code\web\services\Admin" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\RecordDrivers\Index" />
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\MyAccount" />
+      <recent name="C:\web\aspen-discovery\code\web\sys\Indexing" />
+      <recent name="C:\web\aspen-discovery\code\web\sys\ILS" />
+      <recent name="C:\web\aspen-discovery\code\web\services\ILS" />
     </key>
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
-  </component>
-  <component name="RunManager" selected="PHP Script.importPikaData">
+  <component name="RunManager" selected="PHP Script.updateWidgetsWithSavedSearches">
     <configuration default="true" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../cron/updateNYTLists.sh" scriptParameters="basinlibraries.localhost">
       <method v="2" />
     </configuration>
     <configuration name="checkBackgroundProcesses" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/checkBackgroundProcesses.php" scriptParameters="pueblo.localhost">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
+      <method v="2" />
+    </configuration>
+    <configuration name="cleanupPikaReadingHistory" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/migrations/cleanupPikaReadingHistory.php" scriptParameters="nashville.aspenlocal">
       <method v="2" />
     </configuration>
     <configuration name="createSite" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../../install/createSite.php">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
       <method v="2" />
     </configuration>
-    <configuration name="importPikaData" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/migrations/importPikaData.php" scriptParameters="arlington.localhost">
+    <configuration name="createSitemaps" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/createSitemaps.php" scriptParameters="aspencat.localhost">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
       <method v="2" />
     </configuration>
-    <configuration name="updateNYTLists" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/updateNYTLists.php" scriptParameters="pueblo.localhost">
+    <configuration name="importPikaData" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/migrations/importPikaData.php" scriptParameters="nashville.aspenlocal N">
+      <method v="2" />
+    </configuration>
+    <configuration name="mergeJavascript" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/interface/themes/responsive/js/merge_javascript.php">
+      <CommandLine workingDirectory="$PROJECT_DIR$/interface/themes/responsive/js/">
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
+      <method v="2" />
+    </configuration>
+    <configuration name="updateNYTLists" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/updateNYTLists.php" scriptParameters="basinlibraries.localhost">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
       <method v="2" />
     </configuration>
     <configuration name="updateSuggesters" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/cron/updateSuggesters.php" scriptParameters="pueblo.localhost">
+      <CommandLine>
+        <PhpTestInterpreterSettings>
+          <option name="interpreterName" value="PHP 7.3" />
+        </PhpTestInterpreterSettings>
+      </CommandLine>
+      <method v="2" />
+    </configuration>
+    <configuration name="updateWidgetsWithSavedSearches" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/migrations/updateWidgetsWithSavedSearches.php" scriptParameters="nashville.aspenlocal">
       <method v="2" />
     </configuration>
     <list>
       <item itemvalue="PHP Script.checkBackgroundProcesses" />
       <item itemvalue="PHP Script.createSite" />
+      <item itemvalue="PHP Script.createSitemaps" />
       <item itemvalue="PHP Script.importPikaData" />
+      <item itemvalue="PHP Script.cleanupPikaReadingHistory" />
+      <item itemvalue="PHP Script.updateWidgetsWithSavedSearches" />
+      <item itemvalue="PHP Script.mergeJavascript" />
       <item itemvalue="PHP Script.updateNYTLists" />
       <item itemvalue="PHP Script.updateSuggesters" />
     </list>
-  </component>
-  <component name="ServiceViewManager">
-    <option name="allServicesViewState">
-      <serviceView>
-        <treeState>
-          <expand>
-            <path>
-              <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
-              <item name="com.intellij.execution.services.ServiceModel$ServiceGroupNode@2b277a7a" type="7427dc5b:ServiceModel$ServiceGroupNode" />
-            </path>
-          </expand>
-          <select />
-        </treeState>
-      </serviceView>
-    </option>
   </component>
   <component name="StructureViewFactory">
     <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR,Show Fields" />
@@ -203,611 +216,136 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1547769580133</updated>
-      <workItem from="1547769582682" duration="1122000" />
-      <workItem from="1547843317644" duration="8850000" />
-      <workItem from="1548256258326" duration="55527000" />
-      <workItem from="1550333588484" duration="3079000" />
-      <workItem from="1550521171479" duration="36000" />
-      <workItem from="1550522749781" duration="36596000" />
-      <workItem from="1551736550406" duration="1860000" />
-      <workItem from="1551760873497" duration="105456000" />
-      <workItem from="1552434510365" duration="30613000" />
-      <workItem from="1552853538384" duration="17957000" />
-      <workItem from="1552923349913" duration="24067000" />
-      <workItem from="1552968273467" duration="35285000" />
-      <workItem from="1553139995071" duration="164318000" />
-      <workItem from="1553876772046" duration="8234000" />
-      <workItem from="1554209908222" duration="27808000" />
-      <workItem from="1554469942897" duration="28017000" />
-      <workItem from="1554829125457" duration="43575000" />
-      <workItem from="1554940325735" duration="34977000" />
-      <workItem from="1555332992227" duration="46832000" />
-      <workItem from="1555443253379" duration="104805000" />
-      <workItem from="1556209018321" duration="34751000" />
-      <workItem from="1556674597766" duration="140309000" />
-      <workItem from="1558007221797" duration="50350000" />
-      <workItem from="1558195065290" duration="66000" />
-      <workItem from="1558195362463" duration="27831000" />
-      <workItem from="1558466222680" duration="78552000" />
-      <workItem from="1559142568493" duration="216258000" />
-      <workItem from="1560174705168" duration="41741000" />
-      <workItem from="1560342337599" duration="198530000" />
-      <workItem from="1561377984489" duration="173712000" />
-      <workItem from="1562801945055" duration="174844000" />
-      <workItem from="1563803858236" duration="34880000" />
-      <workItem from="1564078728125" duration="5065000" />
-      <workItem from="1564173088696" duration="39084000" />
-      <workItem from="1565050081723" duration="36899000" />
-      <workItem from="1565272499951" duration="64627000" />
-      <workItem from="1565834749207" duration="50548000" />
-      <workItem from="1566134130854" duration="149972000" />
-      <workItem from="1567188395973" duration="59371000" />
-      <workItem from="1568079789633" duration="17785000" />
-      <workItem from="1568248313782" duration="31141000" />
-      <workItem from="1568748246354" duration="32356000" />
-      <workItem from="1569327059428" duration="120342000" />
-      <workItem from="1570714047783" duration="6696000" />
-      <workItem from="1570800733109" duration="23498000" />
-      <workItem from="1570901205286" duration="72616000" />
-      <workItem from="1571426989275" duration="52868000" />
-      <workItem from="1572014772654" duration="2093000" />
-      <workItem from="1572039459878" duration="34132000" />
-      <workItem from="1572610832980" duration="65933000" />
-      <workItem from="1573218362294" duration="85001000" />
-      <workItem from="1573823274236" duration="17408000" />
-      <workItem from="1574009622710" duration="75141000" />
-      <workItem from="1574457053082" duration="1817000" />
-      <workItem from="1574650741738" duration="89277000" />
-      <workItem from="1575551072665" duration="112184000" />
-      <workItem from="1576501617057" duration="117873000" />
-      <workItem from="1581549131747" duration="55119000" />
-      <workItem from="1581783694636" duration="20185000" />
-      <workItem from="1582037799927" duration="5746000" />
+      <workItem from="1585151082702" duration="25886000" />
+      <workItem from="1587042805091" duration="10044000" />
+      <workItem from="1603803803948" duration="1546000" />
+      <workItem from="1603806037190" duration="56617000" />
+      <workItem from="1604081413650" duration="73336000" />
+      <workItem from="1604526508878" duration="7942000" />
+      <workItem from="1604540439705" duration="35720000" />
+      <workItem from="1604763989865" duration="60258000" />
+      <workItem from="1605100817394" duration="68162000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="1" />
+    <option name="version" value="2" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="COLUMN_ORDER" />
-            </State>
+            <State />
           </value>
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="82" y="95" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1605380373808">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="82" y="95" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.824@0.0.1536.824" timestamp="1605380373808" />
+    <state x="498" y="192" key="#com.intellij.ide.scriptingContext.ui.PerFileMappingsDialogWrapper" timestamp="1603894290397">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="498" y="192" key="#com.intellij.ide.scriptingContext.ui.PerFileMappingsDialogWrapper/0.0.1536.824@0.0.1536.824" timestamp="1603894290397" />
+    <state x="556" y="81" key="#com.jetbrains.php.refactoring.extractMethod.PhpExtractMethodDialog#method1" timestamp="1604346897556">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="556" y="81" key="#com.jetbrains.php.refactoring.extractMethod.PhpExtractMethodDialog#method1/0.0.1536.824@0.0.1536.824" timestamp="1604346897556" />
+    <state x="524" y="115" key="#xdebugger.evaluate" timestamp="1605490987925">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="524" y="115" key="#xdebugger.evaluate/0.0.1536.824@0.0.1536.824" timestamp="1605490987925" />
+    <state width="1493" height="164" key="GridCell.Tab.0.bottom" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.0.center" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.0.left" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.0.right" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.1.bottom" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.1.center" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.1.left" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.1.right" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.2.bottom" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.2.bottom/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.2.center" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.2.center/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.2.left" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.2.left/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state width="1493" height="164" key="GridCell.Tab.2.right" timestamp="1605542494087">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="164" key="GridCell.Tab.2.right/0.0.1536.824@0.0.1536.824" timestamp="1605542494087" />
+    <state x="604" y="335" key="NewPhpFileDialog" timestamp="1605305976495">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="604" y="335" key="NewPhpFileDialog/0.0.1536.824@0.0.1536.824" timestamp="1605305976495" />
+    <state x="277" y="57" key="SettingsEditor" timestamp="1604423101070">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="277" y="57" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1604423101070" />
+    <state width="1028" height="432" key="XDebugger.FullValuePopup" timestamp="1605313984163">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1028" height="432" key="XDebugger.FullValuePopup/0.0.1536.824@0.0.1536.824" timestamp="1605313984163" />
+    <state x="445" y="26" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1605073887416">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="445" y="26" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.1536.824@0.0.1536.824" timestamp="1605073887416" />
+    <state x="285" y="141" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1605542489797">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="285" y="141" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1536.824@0.0.1536.824" timestamp="1605542489797" />
+    <state x="90" y="140" width="986" height="624" key="find.popup" timestamp="1605541696156">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="90" y="140" width="986" height="624" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1605541696156" />
+    <state x="425" y="187" key="run.anything.popup" timestamp="1603806839943">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="425" y="187" key="run.anything.popup/0.0.1536.824@0.0.1536.824" timestamp="1603806839943" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1605540830140">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1605540830140" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/UserAccount.php</url>
-          <line>65</line>
-          <option name="timeStamp" value="71" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/RecordDrivers/EbscoRecordDriver.php</url>
-          <line>84</line>
-          <option name="timeStamp" value="103" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DataObjectUtil.php</url>
-          <line>391</line>
-          <option name="timeStamp" value="159" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Browse/BrowseCategory.php</url>
-          <line>240</line>
-          <option name="timeStamp" value="180" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DataObjectUtil.php</url>
-          <line>303</line>
-          <option name="timeStamp" value="223" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/API/ListAPI.php</url>
-          <line>10</line>
-          <option name="timeStamp" value="500" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Yaml.php</url>
-          <line>157</line>
-          <option name="timeStamp" value="510" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Yaml.php</url>
-          <line>145</line>
-          <option name="timeStamp" value="512" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Yaml.php</url>
-          <line>167</line>
-          <option name="timeStamp" value="514" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SolrDataObject.php</url>
-          <line>156</line>
-          <option name="timeStamp" value="552" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SolrConnector/Solr.php</url>
-          <line>515</line>
-          <option name="timeStamp" value="586" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/IslandoraSearcher.php</url>
-          <line>878</line>
-          <option name="timeStamp" value="589" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/cron/updateSuggesters.php</url>
-          <line>1</line>
-          <option name="timeStamp" value="706" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/bookcover.php</url>
-          <option name="timeStamp" value="984" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>1484</line>
-          <option name="timeStamp" value="1080" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <condition expression="$name == 'borrower_altcontactaddress'" language="PHP" />
-          <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>181</line>
-          <option name="timeStamp" value="1103" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/RecordDrivers/GroupedWorkDriver.php</url>
-          <line>1727</line>
-          <option name="timeStamp" value="1114" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Novelist/Novelist3.php</url>
-          <line>102</line>
-          <option name="timeStamp" value="1196" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Novelist/Novelist3.php</url>
-          <line>96</line>
-          <option name="timeStamp" value="1197" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/API/ListAPI.php</url>
-          <line>337</line>
-          <option name="timeStamp" value="1261" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/RecordDrivers/HooplaRecordDriver.php</url>
-          <line>229</line>
-          <option name="timeStamp" value="1357" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/CarlX.php</url>
-          <line>666</line>
-          <option name="timeStamp" value="1363" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/SolrSearcher.php</url>
-          <line>377</line>
-          <option name="timeStamp" value="1429" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/RBdigital/AJAX.php</url>
-          <line>68</line>
-          <option name="timeStamp" value="1445" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SolrConnector/GroupedWorksSolrConnector.php</url>
-          <line>228</line>
-          <option name="timeStamp" value="1447" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/RecordDrivers/MarcRecordDriver.php</url>
-          <line>80</line>
-          <option name="timeStamp" value="1467" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Smarty/internals/core.smarty_include_php.php</url>
-          <line>23</line>
-          <option name="timeStamp" value="1482" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/MemoryCache/Memcache.php</url>
-          <line>20</line>
-          <option name="timeStamp" value="1537" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
-          <line>986</line>
-          <option name="timeStamp" value="1555" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/RBdigitalDriver.php</url>
-          <line>63</line>
-          <option name="timeStamp" value="1615" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>767</line>
-          <option name="timeStamp" value="1621" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>788</line>
-          <option name="timeStamp" value="1622" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>797</line>
-          <option name="timeStamp" value="1623" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/RBdigitalDriver.php</url>
-          <line>847</line>
-          <option name="timeStamp" value="1628" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/RecordDrivers/MarcRecordDriver.php</url>
-          <line>634</line>
-          <option name="timeStamp" value="1661" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/RBdigitalDriver.php</url>
-          <line>552</line>
-          <option name="timeStamp" value="1681" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/CloudLibraryDriver.php</url>
-          <line>277</line>
-          <option name="timeStamp" value="1683" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Record/AJAX.php</url>
-          <line>234</line>
-          <option name="timeStamp" value="1731" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Record/AJAX.php</url>
-          <line>422</line>
-          <option name="timeStamp" value="1740" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/RecordDrivers/SideLoadedRecord.php</url>
-          <line>114</line>
-          <option name="timeStamp" value="1798" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/ExternalEContent/AccessOnline.php</url>
-          <line>49</line>
-          <option name="timeStamp" value="1807" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
-          <line>1313</line>
-          <option name="timeStamp" value="1815" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
-          <line>1475</line>
-          <option name="timeStamp" value="1816" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/LocalEnrichment/UserListEntry.php</url>
-          <line>38</line>
-          <option name="timeStamp" value="1825" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/bootstrap_aspen.php</url>
-          <line>43</line>
-          <option name="timeStamp" value="1842" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/CurlWrapper.php</url>
-          <line>193</line>
-          <option name="timeStamp" value="1887" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/CloudLibraryDriver.php</url>
-          <line>123</line>
-          <option name="timeStamp" value="1893" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>1218</line>
-          <option name="timeStamp" value="1894" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/cron/checkBackgroundProcesses.php</url>
-          <line>93</line>
-          <option name="timeStamp" value="1924" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/cron/checkBackgroundProcesses.php</url>
-          <line>43</line>
-          <option name="timeStamp" value="1926" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/cron/checkBackgroundProcesses.php</url>
-          <line>38</line>
-          <option name="timeStamp" value="1928" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>932</line>
-          <option name="timeStamp" value="1934" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>791</line>
-          <option name="timeStamp" value="1935" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Search/Results.php</url>
-          <line>345</line>
-          <option name="timeStamp" value="1942" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Browse/BrowseCategory.php</url>
-          <line>102</line>
-          <option name="timeStamp" value="1962" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/IslandoraSearcher.php</url>
-          <line>584</line>
-          <option name="timeStamp" value="1996" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/GroupedWorkSearcher.php</url>
-          <line>180</line>
-          <option name="timeStamp" value="1997" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/IslandoraSearcher.php</url>
-          <line>1117</line>
-          <option name="timeStamp" value="2003" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>297</line>
-          <option name="timeStamp" value="2006" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <condition expression="$this instanceof GroupedWorksSolrConnector" language="PHP" />
-          <url>file://$PROJECT_DIR$/sys/SolrConnector/Solr.php</url>
-          <line>1328</line>
-          <option name="timeStamp" value="2014" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>1310</line>
-          <option name="timeStamp" value="2037" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <condition expression="!empty($translationMaps)" language="PHP" />
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>710</line>
-          <option name="timeStamp" value="2138" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/OverDriveDriver.php</url>
-          <line>812</line>
-          <option name="timeStamp" value="2201" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Lists/Results.php</url>
-          <line>66</line>
-          <option name="timeStamp" value="2234" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SolrConnector/Solr.php</url>
-          <line>1409</line>
-          <option name="timeStamp" value="2257" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/../../install/createSite.php</url>
-          <line>17</line>
-          <option name="timeStamp" value="2262" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Covers/CoverImageUtils.php</url>
-          <line>50</line>
-          <option name="timeStamp" value="2286" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/CloudLibrary/AJAX.php</url>
-          <line>28</line>
-          <option name="timeStamp" value="2316" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/CloudLibrary/AJAX.php</url>
-          <line>89</line>
-          <option name="timeStamp" value="2319" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>625</line>
-          <option name="timeStamp" value="2337" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>2156</line>
-          <option name="timeStamp" value="2366" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>2159</line>
-          <option name="timeStamp" value="2367" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/ConfigArray.php</url>
-          <line>328</line>
-          <option name="timeStamp" value="2433" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/SideLoads/Scopes.php</url>
-          <line>108</line>
-          <option name="timeStamp" value="2441" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
-          <line>2372</line>
-          <option name="timeStamp" value="2461" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/overdrive_updates.php</url>
-          <line>279</line>
-          <option name="timeStamp" value="2490" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/LibraryLocation/Library.php</url>
-          <line>1392</line>
-          <option name="timeStamp" value="2498" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/OverDrive/OverDriveScope.php</url>
-          <line>167</line>
-          <option name="timeStamp" value="2502" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2178</line>
-          <option name="timeStamp" value="2513" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2212</line>
-          <option name="timeStamp" value="2518" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2094</line>
-          <option name="timeStamp" value="2521" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2266</line>
-          <option name="timeStamp" value="2546" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2295</line>
-          <option name="timeStamp" value="2549" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2307</line>
-          <option name="timeStamp" value="2550" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2079</line>
-          <option name="timeStamp" value="2551" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/CloudLibrary/CloudLibraryScope.php</url>
-          <line>172</line>
-          <option name="timeStamp" value="2562" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/CloudLibrary/CloudLibraryScope.php</url>
-          <line>185</line>
-          <option name="timeStamp" value="2564" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/API/ItemAPI.php</url>
-          <line>161</line>
-          <option name="timeStamp" value="3104" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/API/SearchAPI.php</url>
-          <line>55</line>
-          <option name="timeStamp" value="3109" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/migrations/importPikaData.php</url>
-          <line>215</line>
-          <option name="timeStamp" value="3110" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/migrations/importPikaData.php</url>
-          <line>35</line>
-          <option name="timeStamp" value="3118" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <condition expression="$barcode == '21000000000005'" language="PHP" />
-          <url>file://$PROJECT_DIR$/Drivers/Millennium.php</url>
-          <line>176</line>
-          <option name="timeStamp" value="3134" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/migrations/importPikaData.php</url>
-          <line>124</line>
-          <option name="timeStamp" value="3145" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/OverDrive/AJAX.php</url>
-          <line>34</line>
-          <option name="timeStamp" value="3162" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/CarlX.php</url>
-          <line>1607</line>
-          <option name="timeStamp" value="3177" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/searches.js</url>
-          <line>153</line>
-          <option name="timeStamp" value="795" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/base.js</url>
-          <line>13</line>
-          <option name="timeStamp" value="1573" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/account.js</url>
-          <line>196</line>
-          <option name="timeStamp" value="1582" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/account.js</url>
-          <line>31</line>
-          <option name="timeStamp" value="1586" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <watches-manager>
       <configuration name="index.php">
-        <watch expression="$field" />
+        <watch expression="$savedSearch-&gt;displayQuery()" />
       </configuration>
     </watches-manager>
-  </component>
-  <component name="masterDetails">
-    <states>
-      <state key="ScopeChooserConfigurable.UI">
-        <settings>
-          <last-edited>main.css files</last-edited>
-          <splitter-proportions>
-            <option name="proportions">
-              <list>
-                <option value="0.2" />
-              </list>
-            </option>
-          </splitter-proportions>
-          <order>
-            <scope name="main.css files" />
-          </order>
-        </settings>
-      </state>
-    </states>
   </component>
 </project>

@@ -276,8 +276,7 @@ function continueSession(){
 }
 
 function endSession(){
-	var masqueradeMode = $('#masquerade-header').is(':visible');
-	if (masqueradeMode) {
+	if (Globals.masqueradeMode) {
 		AspenDiscovery.Account.endMasquerade()
 	} else {
 		//Redirect to logout page

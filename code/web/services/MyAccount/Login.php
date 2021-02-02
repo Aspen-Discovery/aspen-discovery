@@ -19,47 +19,21 @@ class MyAccount_Login extends Action
 			die();
 		}
 
-		//TODO: Determine if these are used
-		$returnUrl = isset($_REQUEST['return']) ? $_REQUEST['return'] : '';
-		if ($returnUrl != ''){
-			header('Location: ' . $returnUrl);
-			exit;
-		}
-
 		// Assign the followup task to come back to after they login -- note that
 		//     we need to check for a pre-existing followup task in case we've
 		//     looped back here due to an error (bad username/password, etc.).
-		//TODO: Determine if these are used
-		$followup = isset($_REQUEST['followup']) ?  strip_tags($_REQUEST['followup']) : $action;
+		$followupAction = isset($_REQUEST['followupAction']) ?  strip_tags($_REQUEST['followupAction']) : $action;
+		$followupModule = isset($_REQUEST['followupModule']) ?  strip_tags($_REQUEST['followupModule']) : $module;
 
 		// Don't go to the trouble if we're just logging in to the Home action
-		if ($followup != 'Home' || (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction']))) {
-			$interface->assign('followup', $followup);
-			$interface->assign('followupModule', isset($_REQUEST['followupModule']) ? strip_tags($_REQUEST['followupModule']) : $module);
+		if (!($followupAction == 'Home' && $followupModule == 'MyAccount')) {
+			$interface->assign('followupModule', $followupModule);
+			$interface->assign('followupAction', $followupAction);
 
-			// Special case -- if user is trying to view a private list, we need to
-			// attach the list ID to the action:
-			$finalAction = $action;
-			if ($finalAction == 'MyList') {
-				if (isset($_GET['id'])){
-					$finalAction .= '/' . $_GET['id'];
-				}
-			}
-			$interface->assign('followupAction', isset($_REQUEST['followupAction']) ? $_REQUEST['followupAction'] : $finalAction);
+			$recordId = isset($_REQUEST['id']) ? strip_tags($_REQUEST['id']) : '';
+			$interface->assign('recordId', $recordId);
 
-			// If we have a save or delete action, create the appropriate recordId
-			//     parameter.  If we've looped back due to user error and already have
-			//     a recordId parameter, remember it for future reference.
-			//TODO: Determine if these are used
-			if (isset($_REQUEST['delete'])) {
-				$interface->assign('returnUrl', $_SERVER['REQUEST_URI']);
-			} else if (isset($_REQUEST['save'])) {
-				$interface->assign('returnUrl', $_SERVER['REQUEST_URI']);
-			} else if (isset($_REQUEST['recordId'])) {
-				$interface->assign('returnUrl', $_REQUEST['recordId']);
-			}
-
-			// comments and tags also need to be preserved if present
+			// comments need to be preserved if present
 			if (isset($_REQUEST['comment'])) {
 				$interface->assign('comment', $_REQUEST['comment']);
 			}
@@ -77,8 +51,17 @@ class MyAccount_Login extends Action
 			$interface->assign('username', $_REQUEST['username']);
 		}
 		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
+		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
 		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
+
+		if (!empty($library->loginNotes)){
+			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+			$parsedown = AspenParsedown::instance();
+			$parsedown->setBreaksEnabled(true);
+			$loginNotes = $parsedown->parse($library->loginNotes);
+			$interface->assign('loginNotes', $loginNotes);
+		}
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
@@ -88,7 +71,14 @@ class MyAccount_Login extends Action
 
 		$interface->assign('isLoginPage', true);
 
-		$this->display('../MyAccount/login.tpl', 'Login');
+		$this->display('../MyAccount/login.tpl', 'Login', '');
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('', 'Login');
+		return $breadcrumbs;
 	}
 }
 

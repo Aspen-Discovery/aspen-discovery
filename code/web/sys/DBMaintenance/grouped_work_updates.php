@@ -156,5 +156,51 @@ function getGroupedWorkUpdates(){
 				) ENGINE INNODB'
 			],
 		],
+
+		'grouped_work_display_info' => [
+			'title' => 'Grouped Work Display Information',
+			'description' => 'Allow the display title, author, and series information to be set for a grouped work',
+			'sql' => [
+				'DROP TABLE IF EXISTS grouped_work_display_title_author',
+				'CREATE TABLE IF NOT EXISTS grouped_work_display_info (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					permanent_id CHAR(36) NOT NULL UNIQUE,
+					title VARCHAR(276),
+					author VARCHAR(50),
+					seriesName VARCHAR(255),
+					seriesDisplayOrder INT DEFAULT 0,
+					addedBy INT(11),
+					dateAdded INT(11),
+					INDEX (permanent_id)
+				) ENGINE INNODB'
+			],
+		],
+
+		'author_authorities' => [
+			'title' => 'Setup author authorities',
+			'description' => 'Create tables to store author authority information',
+			'sql' => [
+				'CREATE TABLE author_authority (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					author VARCHAR(512) NOT NULL UNIQUE,
+					dateAdded INT(11)
+				)',
+				'CREATE TABLE author_authority_alternative (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					authorId INT(11),
+					alternativeAuthor VARCHAR(512) NOT NULL UNIQUE,
+					INDEX (authorId)
+				)'
+			]
+		],
+
+		'author_authorities_normalized_values' => [
+			'title' => 'Add Normalized Values to Author Authorities',
+			'description' => 'Add a normalized value for author authorities to optimize grouping',
+			'sql'=> [
+				'ALTER TABLE author_authority ADD COLUMN normalized VARCHAR(512)',
+				'ALTER TABLE author_authority_alternative ADD COLUMN normalized VARCHAR(512)',
+			]
+		]
 	);
 }

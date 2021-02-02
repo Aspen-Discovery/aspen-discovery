@@ -1,8 +1,7 @@
 {strip}
-	<div id="archive{$jquerySafeId|escape}" class="resultsList" data-order="{$resultIndex}">
+	<div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
 		{* Because colons give css & jquery trouble the Ids from Islandora have : replaced with _ *}
-		<a name="record{$summId|escape:"url"}"></a>{* TODO: remove colons from these Ids as well *}
-		<div class="row">
+		<div class="row" id="record{$summId|escape:"url"}">
 			{if $showCovers}
 			<div class="col-xs-12 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1}
@@ -13,14 +12,11 @@
 			</div>
 			{/if}
 
-			<div class="{if !$showCovers}col-xs-10 col-sm-10 col-md-10 col-lg-11{else}col-xs-7 col-sm-7 col-md-7 col-lg-9{/if}">
+			<div class="{if !$showCovers}col-xs-10 col-sm-10 col-md-10 col-lg-11{else}col-xs-7 col-sm-7 col-md-7 col-lg-8{/if}">
 				<div class="row">
 					<div class="col-xs-12">
 						<span class="result-index">{$resultIndex})</span>&nbsp;
 						<a href="{$summUrl}" class="result-title notranslate">{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}</a>
-						{if $summTitleStatement}
-							&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
-						{/if}
 					</div>
 				</div>
 
@@ -98,12 +94,12 @@
 
 			</div>
 
-			<div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
+			<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
 				{if $listEditAllowed}
 					<div class="btn-group-vertical" role="group">
-						<a href="/MyAccount/Edit?id={$summId|escape:"url"}{if !is_null($listSelected)}&amp;list_id={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit'}</a>
+						<a href="/MyAccount/Edit?listEntryId={$listEntryId|escape:"url"}{if !is_null($listSelected)}&amp;listId={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit'}</a>
 						{* Use a different delete URL if we're removing from a specific list or the overall favorites: *}
-						<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$summId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-default">{translate text='Delete'}</a>
+						<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$listEntryId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-default">{translate text='Delete'}</a>
 					</div>
 				{/if}
 			</div>

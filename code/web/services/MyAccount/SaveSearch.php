@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 
 class SaveSearch extends MyAccount
 {
@@ -46,6 +46,7 @@ class SaveSearch extends MyAccount
 	 * Add a search to the database
 	 *
 	 * @param SearchEntry $search
+	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
 	private function addSearch($search)
 	{
@@ -60,6 +61,7 @@ class SaveSearch extends MyAccount
 	 * Delete a search from the database
 	 *
 	 * @param SearchEntry $search
+	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
 	private function deleteSearch($search)
 	{
@@ -67,5 +69,13 @@ class SaveSearch extends MyAccount
 			$search->saved = 0;
 			$search->update();
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Saved Searches');
+		return $breadcrumbs;
 	}
 }

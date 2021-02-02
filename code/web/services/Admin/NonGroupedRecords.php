@@ -15,9 +15,10 @@ class Admin_NonGroupedRecords extends ObjectEditor
 	function getPageTitle(){
 		return 'Records to Not Group';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new NonGroupedRecord();
 		$object->orderBy('source, recordId');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -34,16 +35,28 @@ class Admin_NonGroupedRecords extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging');
-	}
 	function getInstructions(){
-		global $interface;
-		return $interface->fetch('Admin/ungrouping_work_instructions.tpl');
-	}
-	function getListInstructions(){
+//		global $interface;
+//		return $interface->fetch('Admin/ungrouping_work_instructions.tpl');
 		return '';
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cataloging', 'Catalog / Grouped Works');
+		$breadcrumbs[] = new Breadcrumb('/Admin/NonGroupedRecords', 'Records To Not Group');
+		return $breadcrumbs;
+	}
 
+	function getActiveAdminSection()
+	{
+		return 'cataloging';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Manually Group and Ungroup Works');
+	}
 }

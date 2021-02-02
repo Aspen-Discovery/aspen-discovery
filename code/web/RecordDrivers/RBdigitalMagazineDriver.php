@@ -3,12 +3,15 @@
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazine.php';
+require_once ROOT_DIR . '/sys/RBdigital/RBdigitalIssue.php';
 
 class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 {
 	private $id;
 	/** @var RBdigitalMagazine */
 	private $rbdigitalProduct;
+	/** @var RBdigitalIssue */
+	private $rbdigitalIssue;
 	private $rbdigitalRawMetadata;
 	private $valid;
 
@@ -17,11 +20,22 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 	{
 		$this->id = $recordId;
 
+		list($magazineId, $issueId) = explode('_', $recordId);
+
 		$this->rbdigitalProduct = new RBdigitalMagazine();
-		$this->rbdigitalProduct->magazineId = $recordId;
+		$this->rbdigitalProduct->magazineId = $magazineId;
 		if ($this->rbdigitalProduct->find(true)) {
-			$this->valid = true;
 			$this->rbdigitalRawMetadata = json_decode($this->rbdigitalProduct->rawResponse);
+			$this->rbdigitalIssue = new RBdigitalIssue();
+			$this->rbdigitalIssue->magazineId = $magazineId;
+			$this->rbdigitalIssue->issueId = $issueId;
+			if ($this->rbdigitalIssue->find(true)){
+				$this->valid = true;
+			}else{
+				$this->valid = false;
+				$this->rbdigitalProduct = null;
+				$this->rbdigitalIssue = null;
+			}
 		} else {
 			$this->valid = false;
 			$this->rbdigitalProduct = null;
@@ -45,7 +59,7 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
-			$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital_magazine' AND identifier = '" . $this->getUniqueID() . "'";
+			$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital_magazine' AND identifier = '" . $this->rbdigitalProduct->magazineId . "'";
 			$groupedWork->query($query);
 
 			if ($groupedWork->getNumResults() == 1) {
@@ -57,11 +71,7 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 
 	public function getRBdigitalBookcoverUrl()
 	{
-		$images = $this->rbdigitalRawMetadata->images;
-		foreach ($images as $image) {
-			return $image->url;
-		}
-		return null;
+		return $this->rbdigitalIssue->imageUrl;
 	}
 
 	public function getModule()
@@ -80,12 +90,7 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 	public function getStaffView()
 	{
 		global $interface;
-		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
-
-		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
@@ -180,22 +185,17 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
+				'onShow' => "AspenDiscovery.RBdigital.getMagazineStaffView('{$this->id}');",
+				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return [];
-	}
-
 	public function getISBNs()
 	{
-		$isbns = [];
-		return $isbns;
+		return [];
 	}
 
 	public function getISSNs()
@@ -203,7 +203,7 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		return array();
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
 		$actions = array();
 		if ($isAvailable) {
@@ -211,12 +211,14 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 				'title' => 'Check Out RBdigital',
 				'onclick' => "return AspenDiscovery.RBdigital.checkOutMagazine('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'overdrive_magazine_checkout'
 			);
 		} else {
 			$actions[] = array(
 				'title' => 'Place Hold RBdigital',
 				'onclick' => "return AspenDiscovery.RBdigital.placeHoldMagazine('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'overdrive_magazine_hold'
 			);
 		}
 		return $actions;
@@ -405,10 +407,10 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		return $statusSummary;
 	}
 
-	function getRBdigitalLinkUrl()
+	function getRBdigitalLinkUrl(User $patron)
 	{
 		require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 		$rbdigitalDriver = new RBdigitalDriver();
-		return $rbdigitalDriver->getUserInterfaceURL() . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalProduct->issueId;
+		return $rbdigitalDriver->getUserInterfaceURL($patron) . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalIssue->issueId;
 	}
 }

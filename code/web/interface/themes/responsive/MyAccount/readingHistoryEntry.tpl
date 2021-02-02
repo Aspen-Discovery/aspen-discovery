@@ -4,11 +4,11 @@
 		<div class="col-xs-3 col-sm-4 col-md-2 text-center">
 			{if $record.coverUrl}
 				{if $record.recordId && $record.linkUrl}
-					<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+					<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}" aria-hidden="true">
 						<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 					</a>
 				{else} {* Cover Image but no Record-View link *}
-					<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+					<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
 				{/if}
 			{/if}
 		</div>
@@ -84,11 +84,11 @@
 				</div>
 
 				{if $showRatings == 1}
-					{if !empty($record.permanentId) && $record.permanentId != -1 && $record.ratingData}
+					{if $record.existsInCatalog && $record.ratingData}
 						<div class="row">
 							<div class="result-label col-tn-3">Rating&nbsp;</div>
 							<div class="result-value col-tn-9">
-								{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
+								{include file="GroupedWork/title-rating.tpl" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
 							</div>
 						</div>
 					{/if}
@@ -97,13 +97,24 @@
 
 			<div class="col-xs-12 col-md-3">
 				<div class="btn-group btn-group-vertical btn-block">
-					<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteEntry('{$selectedUser}', '{$record.permanentId}');" class="btn btn-sm btn-primary">{translate text='Delete'}</a>
+					{if empty($record.permanentId)}
+						<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteEntryByTitleAuthor('{$selectedUser}', '{$record.title}', '{$record.author}');" class="btn btn-sm btn-primary">{translate text='Delete'}</a>
+					{else}
+						<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteEntry('{$selectedUser}', '{$record.permanentId}');" class="btn btn-sm btn-primary">{translate text='Delete'}</a>
+					{/if}
 				</div>
+				{if $showWhileYouWait}
+					<div class="btn-group btn-group-vertical btn-block">
+						{if $record.existsInCatalog}
+							<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.permanentId}');" class="btn btn-sm btn-default">{translate text="You Might Also Like"}</button>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		</div>
 
 
-		{if !empty($record.permanentId) && $record.permanentId != -1}
+		{if $record.existsInCatalog}
 			<div class="row">
 				<div class="col-xs-12">
 					{include file='GroupedWork/result-tools-horizontal.tpl' recordDriver=$record.recordDriver ratingData=$record.ratingData recordUrl=$record.linkUrl showMoreInfo=true}

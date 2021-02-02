@@ -6,15 +6,8 @@ require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 
 class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 {
-	// Field List
-	//private $fields = '*,score';
-	private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
-
 	//Whether or not filters should be applied
 	private $applyStandardFilters = true;
-
-	// Facets information
-	private $allFacetSettings = array();
 
 	// Display Modes //
 	public $viewOptions = array('list', 'covers');
@@ -30,10 +23,14 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		// Call base class constructor
 		parent::__construct();
 
+		$this->fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
+
+		$this->idFieldName = 'PID';
+
 		global $configArray;
 		global $timer;
 		// Include our solr index
-		require_once ROOT_DIR . "/sys/SolrConnector/Solr.php";
+		require_once ROOT_DIR . "/sys/SolrConnector/IslandoraSolrConnector.php";
 		$this->searchType = 'islandora';
 		$this->basicSearchType = 'islandora';
 		// Initialise the index
@@ -54,7 +51,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('islandoraSearches');
-		$this->defaultIndex = 'IslandoraKeyword';
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -180,7 +176,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		//********************
 		// Basic Search logic
 		$this->searchTerms[] = [
-			'index' => $this->defaultIndex,
+			'index' => $this->getDefaultIndex(),
 			'lookfor' => ""
 		];
 
@@ -206,74 +202,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		} else {
 			return null;
 		}
-	}
-
-	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results suitable for use on a user's "favorites" page.
-	 *
-	 * @access  public
-	 * @param object $user User object owning tag/note metadata.
-	 * @param int $listId ID of list containing desired tags/notes (or
-	 *                              null to show tags/notes from all user's lists).
-	 * @param bool $allowEdit Should we display edit controls?
-	 * @param array $IDList optional list of IDs to re-order the archive Objects by (ie User List sorts)
-	 * @param bool $isMixedUserList Used to correctly number items in a list of mixed content (eg catalog & archive content)
-	 * @return array Array of HTML chunks for individual records.
-	 */
-	public function getResultListHTML($user, $listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false)
-	{
-		global $interface;
-		$html = array();
-
-		if ($IDList) {
-			//Reorder the documents based on the list of id's
-			//TODO: taken from Solr.php (May need to adjust for Islandora
-			$x = 0;
-			foreach ($IDList as $listPosition => $currentId) {
-				// use $IDList as the order guide for the html
-				$current = null; // empty out in case we don't find the matching record
-				foreach ($this->indexResult['response']['docs'] as $docIndex => $doc) {
-					if ($doc['PID'] == $currentId) {
-						$current = &$this->indexResult['response']['docs'][$docIndex];
-						break;
-					}
-				}
-				if (empty($current)) {
-					continue; // In the case the record wasn't found, move on to the next record
-				} else {
-					if ($isMixedUserList) {
-						$interface->assign('recordIndex', $listPosition + 1);
-						$interface->assign('resultIndex', $listPosition + 1 + (($this->page - 1) * $this->limit));
-					} else {
-						$interface->assign('recordIndex', $x + 1);
-						$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-					}
-					if (!$this->debug) {
-						unset($current['explain']);
-						unset($current['score']);
-					}
-					/** @var IslandoraRecordDriver $record */
-					$record = RecordDriverFactory::initRecordDriver($current);
-					if ($isMixedUserList) {
-						$html[$listPosition] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
-					} else {
-						$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
-						$x++;
-					}
-				}
-			}
-		} else {
-			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-				$current = &$this->indexResult['response']['docs'][$x];
-				/** @var IslandoraRecordDriver $record */
-				$record = RecordDriverFactory::initRecordDriver($current);
-				$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
-			}
-		}
-		return $html;
 	}
 
 	/**
@@ -684,42 +612,41 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$namespaceLookup = $field == 'namespace_s';
 			foreach ($values as $value) {
 				// Add to the list unless it's in the list of fields to skip:
-				if (!in_array($field, $skipList)) {
-					$facetLabel = $this->getFacetLabel($field);
-					if ($namespaceLookup) {
-						$tmpLibrary = new Library();
-						$tmpLibrary->archiveNamespace = $value;
-						if ($tmpLibrary->find(true)) {
-							$display = $tmpLibrary->displayName;
-						}
-					} elseif ($lookupPid) {
-						$pid = str_replace('info:fedora/', '', $value);
-						if ($field == 'RELS_EXT_isMemberOfCollection_uri_ms') {
-							$okToShow = $this->showCollectionAsFacet($pid);
-						} else {
-							$okToShow = true;
-						}
-						if ($okToShow) {
-							$display = $fedoraUtils->getObjectLabel($pid);
-							if ($display == 'Invalid Object') {
-								continue;
-							}
-						} else {
+
+				$facetLabel = $this->getFacetLabel($field);
+				if ($namespaceLookup) {
+					$tmpLibrary = new Library();
+					$tmpLibrary->archiveNamespace = $value;
+					if ($tmpLibrary->find(true)) {
+						$display = $tmpLibrary->displayName;
+					}
+				} elseif ($lookupPid) {
+					$pid = str_replace('info:fedora/', '', $value);
+					if ($field == 'RELS_EXT_isMemberOfCollection_uri_ms') {
+						$okToShow = $this->showCollectionAsFacet($pid);
+					} else {
+						$okToShow = true;
+					}
+					if ($okToShow) {
+						$display = $fedoraUtils->getObjectLabel($pid);
+						if ($display == 'Invalid Object') {
 							continue;
 						}
-					} elseif ($translate) {
-						$display = translate($value);
 					} else {
-						$display = $value;
+						continue;
 					}
-
-					$list[$facetLabel][] = array(
-						'value' => $value,     // raw value for use with Solr
-						'display' => $display,   // version to display to user
-						'field' => $field,
-						'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
-					);
+				} elseif ($translate) {
+					$display = translate($value);
+				} else {
+					$display = $value;
 				}
+
+				$list[$facetLabel][] = array(
+					'value' => $value,     // raw value for use with Solr
+					'display' => $display,   // version to display to user
+					'field' => $field,
+					'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
+				);
 			}
 		}
 		return $list;
@@ -854,7 +781,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * @param string $id The document to retrieve from Solr
 	 * @access  public
 	 * @return  array               The requested resource
-	 * @throws  object              PEAR Error
+	 * @throws  AspenError
 	 */
 	function getRecord($id)
 	{
@@ -876,7 +803,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		if (isset($_REQUEST['islandoraType'])) {
 			$params[] = 'islandoraType=' . $_REQUEST['islandoraType'];
 		} else {
-			$params[] = 'islandoraType=' . $this->defaultIndex;
+			$params[] = 'islandoraType=' . $this->getDefaultIndex();
 		}
 		return $params;
 	}
@@ -1174,7 +1101,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$archiveObject = $fedoraUtils->getObject($pid);
 			if ($archiveObject == null) {
 				$okToShow = true; //These are things like People, Places, Events, Large Image Collection, etc
-			} else if (!$fedoraUtils->isObjectValidForPika($archiveObject)) {
+			} else if (!$fedoraUtils->isObjectValidForDisplay($archiveObject)) {
 				$okToShow = false;
 			}
 		}
@@ -1202,5 +1129,14 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	public function getSearchesFile()
 	{
 		return 'islandoraSearches';
+	}
+
+	public function getEngineName(){
+		return 'Islandora';
+	}
+
+	public function getDefaultIndex()
+	{
+		return 'IslandoraKeyword';
 	}
 }

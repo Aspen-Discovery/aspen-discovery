@@ -5,9 +5,9 @@
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 			</div>
 		{/if}
-
-		{* Alternate Mobile MyAccount Menu *}
-		{include file="MyAccount/mobilePageHeader.tpl"}
+		{if !empty($accountMessages)}
+			{include file='systemMessages.tpl' messages=$accountMessages}
+		{/if}
 
 		<span class='availableHoldsNoticePlaceHolder'></span>
 

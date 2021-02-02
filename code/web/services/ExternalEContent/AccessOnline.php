@@ -2,6 +2,8 @@
 
 class ExternalEContent_AccessOnline extends Action
 {
+	/** @var ExternalEContentDriver $recordDriver */
+	private $recordDriver;
 	function launch(){
 		global $interface;
 
@@ -27,9 +29,9 @@ class ExternalEContent_AccessOnline extends Action
 
 		/** @var ExternalEContentDriver $recordDriver */
 		require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
-		$recordDriver = new ExternalEContentDriver($subType . ':'. $id);
+		$this->recordDriver = new ExternalEContentDriver($subType . ':'. $id);
 
-		$relatedRecord = $recordDriver->getRelatedRecord();
+		$relatedRecord = $this->recordDriver->getRelatedRecord();
 		$recordActions = $relatedRecord->getActions();
 
 		$actionIndex = $_REQUEST['index'];
@@ -40,13 +42,13 @@ class ExternalEContent_AccessOnline extends Action
 		global $sideLoadSettings;
 		$sideLoadId = -1;
 		foreach ($sideLoadSettings as $sideLoad){
-			if ($sideLoad->name == $recordDriver->getRecordType()){
+			if ($sideLoad->name == $this->recordDriver->getRecordType()){
 				$sideLoadId = $sideLoad->id;
 			}
 		}
 
 		if ($sideLoadId != -1) {
-			$this->trackRecordUsage($sideLoadId, $recordDriver->getId());
+			$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
 			$this->trackUserUsageOfSideLoad($sideLoadId);
 		}
 
@@ -58,6 +60,7 @@ class ExternalEContent_AccessOnline extends Action
 	{
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php';
 		$recordUsage = new SideLoadedRecordUsage();
+		$recordUsage->instance = $_SERVER['SERVER_NAME'];
 		$recordUsage->sideloadId = $sideLoadId;
 		$recordUsage->recordId = $recordId;
 		$recordUsage->year = date('Y');
@@ -75,6 +78,7 @@ class ExternalEContent_AccessOnline extends Action
 	{
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
+		$userUsage->instance = $_SERVER['SERVER_NAME'];
 		if (UserAccount::getActiveUserId() == false){
 			//User is not logged in
 			$userUsage->userId = -1;
@@ -92,5 +96,14 @@ class ExternalEContent_AccessOnline extends Action
 			$userUsage->usageCount = 1;
 			$userUsage->insert();
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle());
+		$breadcrumbs[] = new Breadcrumb('', 'Access Online');
+		return $breadcrumbs;
 	}
 }

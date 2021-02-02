@@ -9,7 +9,7 @@
 			<div id="main-content" class="col-xs-12 text-center">
 				{if $canView}
 					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
-						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
+						{if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}
 						<label class="btn btn-group-small btn-default">
 							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="return AspenDiscovery.Archive.handleBookClick('{$pid}', AspenDiscovery.Archive.activeBookPage, 'pdf');">
 							{*TODO: set bookPID*}
@@ -48,7 +48,7 @@
 					<div id="view-image" style="display: none">
 						<div class="large-image-wrapper">
 							<div class="large-image-content" oncontextmenu="return false;">
-								<div id="pika-openseadragon" class="openseadragon"></div>
+								<div id="custom-openseadragon" class="openseadragon"></div>
 							</div>
 						</div>
 					</div>
@@ -82,10 +82,10 @@
 			<a class="btn btn-default" href="/Archive/{$activePage}/DownloadPDF" id="downloadPageAsPDF">Download Page As PDF</a>
 			*}
 			<br/>
-			{if $hasPdf && ($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
+			{if $hasPdf && ($anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload))}
 				<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">{translate text="Download PDF"}</a>
-			{elseif ($hasPdf && !$loggedIn && $verifiedMasterDownload)}
-				<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">{translate text="Login to Download PDF"}</a>
+			{elseif ($hasPdf && !$loggedIn && $verifiedOriginalDownload)}
+				<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">{translate text="Sign in to Download PDF"}</a>
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
 				<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">{translate text="Request Copy"}</a>
@@ -94,7 +94,7 @@
 				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">{translate text="Claim Authorship"}</a>
 			{/if}
 			{if $showFavorites == 1}
-				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
+				<a onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Islandora', '{$pid|escape}');" class="btn btn-default ">{translate text='Add to list'}</a>
 			{/if}
 		</div>
 
@@ -147,7 +147,7 @@
 <script src="/js/openseadragon/djtilesource.js" ></script>
 {if $canView}
 <script type="text/javascript">
-	{if !($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
+	{if !($anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload))}
 		AspenDiscovery.Archive.allowPDFView = false;
 	{/if}
 	{assign var=pageCounter value=1}
@@ -155,7 +155,7 @@
 		AspenDiscovery.Archive.pageDetails['{$section.pid}'] = {ldelim}
 			pid: '{$section.pid}',
 			title: "{$section.title|escape:javascript}",
-			pdf: {if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}'{$section.pdf}'{else}''{/if},
+			pdf: {if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}'{$section.pdf}'{else}''{/if},
 			jp2: '',
 			video: '{$section.video}',
 			audio: '{$section.audio}',
@@ -167,7 +167,7 @@
 			AspenDiscovery.Archive.pageDetails['{$page.pid}'] = {ldelim}
 				pid: '{$page.pid}',
 				title: 'Page {$pageCounter}',
-				pdf: {if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}'{$page.pdf}'{else}''{/if},
+				pdf: {if $anonymousOriginalDownload || ($loggedIn && $verifiedOriginalDownload)}'{$page.pdf}'{else}''{/if},
 				jp2: '{$page.jp2}',
 				transcript: '{$page.transcript}',
 				video: '{$page.video}',

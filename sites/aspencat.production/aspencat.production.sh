@@ -7,10 +7,10 @@ fi
 
 if [[ ( "$1" == "stop" ) || ( "$1" == "restart") ]]
   then
-    runuser solr -c '/usr/local/aspen-discovery/sites/default/solr-7.6.0/bin/solr stop -p 8080 -s "/data/aspen-discovery/aspencat.production/solr7" -d "/usr/local/aspen-discovery/sites/default/solr-7.6.0/server"'
+    /usr/local/aspen-discovery/sites/default/solr-7.6.0/bin/solr stop -p 8080 -s "/data/aspen-discovery/aspencat.production/solr7" -d "/usr/local/aspen-discovery/sites/default/solr-7.6.0/server"
 fi
 
 if [[ ( "$1" == "start" ) || ( "$1" == "restart") ]]
   then
-    runuser solr -c '/usr/local/aspen-discovery/sites/default/solr-7.6.0/bin/solr start -m 10g -p 8080 -s "/data/aspen-discovery/aspencat.production/solr7" -d "/usr/local/aspen-discovery/sites/default/solr-7.6.0/server"'
+    /usr/local/aspen-discovery/sites/default/solr-7.6.0/bin/solr start -m 21g -p 8080 -s "/data/aspen-discovery/aspencat.production/solr7" -d "/usr/local/aspen-discovery/sites/default/solr-7.6.0/server"
 fi

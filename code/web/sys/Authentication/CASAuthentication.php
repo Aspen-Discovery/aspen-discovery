@@ -89,7 +89,7 @@ class CASAuthentication implements Authentication {
 
 			global $library;
 			global $configArray;
-			if ($configArray['System']['debug']) {
+			if (IPAddress::showDebuggingInformation()) {
 				phpCAS::setDebug();
 				phpCAS::setVerbose(true);
 			}

@@ -69,7 +69,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		return $this->islandoraObjectCache;
 	}
 
-	function getBookcoverUrl($size = 'small'){
+	function getBookcoverUrl($size = 'small', $absolutePath = false){
 		global $configArray;
 
 		$cachedData = $this->getCachedData();
@@ -190,13 +190,12 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 	 * user's favorites list.
 	 *
 	 * @access  public
-	 * @param   object $user User object owning tag/note metadata.
 	 * @param   int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
 	 * @param   bool $allowEdit Should we display edit controls?
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true) {
+	public function getListEntry($listId = null, $allowEdit = true) {
 		global $interface;
 
 		$id = $this->getUniqueID();
@@ -211,7 +210,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		// The below template variables are in the listEntry.tpl but the driver doesn't currently
 		// supply this information, so we are making sure they are set to a null value.
 		$interface->assign('summShortId', null);
-		$interface->assign('summTitleStatement', null);
 		$interface->assign('summAuthor', null);
 		$interface->assign('summPublisher', null);
 		$interface->assign('summPubDate', null);
@@ -225,10 +223,11 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 
 		//Get information from list entry
 		if ($listId) {
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-			$listEntry                         = new UserListEntry();
-			$listEntry->groupedWorkPermanentId = $this->getUniqueID();
-			$listEntry->listId                 = $listId;
+			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+			$listEntry = new UserListEntry();
+			$listEntry->source = 'Islandora';
+			$listEntry->sourceId = $this->getUniqueID();
+			$listEntry->listId = $listId;
 			if ($listEntry->find(true)) {
 				$interface->assign('listEntryNotes', $listEntry->notes);
 			}
@@ -236,11 +235,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		}
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		// By default, do not display AJAX status; we won't assume that all
-		// records exist in the ILS.  Child classes can override this setting
-		// to turn on AJAX as needed:
-		$interface->assign('summAjaxStatus', false);
 
 		$interface->assign('recordDriver', $this);
 
@@ -672,7 +666,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		$repositoryLink = $configArray['Islandora']['repositoryUrl'] . '/islandora/object/' . $this->getUniqueID();
 		$interface->assign('repositoryLink', $repositoryLink);
 		$user = UserAccount::getLoggedInUser();
-		if($user && (UserAccount::userHasRole('archives') || UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin'))) {
+		if($user && (UserAccount::userHasPermission('Administer Islandora Archive'))) {
 			$moreDetailsOptions['staffView'] = array(
 				'label' => 'Staff View',
 				'body' => $interface->fetch('Archive/staffViewSection.tpl'),
@@ -722,14 +716,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 			}
 		}
 		return $filteredMoreDetailsOptions;
-	}
-
-	public function getItemActions($itemInfo) {
-		return array();
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null) {
-		return array();
 	}
 
     /**
@@ -929,7 +915,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 			$collectionsRaw = $this->getArchiveObject()->relationships->get(FEDORA_RELS_EXT_URI, 'isMemberOfCollection');
 			$fedoraUtils = FedoraUtils::getInstance();
 			foreach ($collectionsRaw as $collectionInfo) {
-				if ($fedoraUtils->isPidValidForPika($collectionInfo['object']['value'])){
+				if ($fedoraUtils->isPidValidForDisplay($collectionInfo['object']['value'])){
 					$collectionObject = $fedoraUtils->getObject($collectionInfo['object']['value']);
 					$driver = RecordDriverFactory::initRecordDriver($collectionObject);
 					$this->relatedCollections[$collectionInfo['object']['value']] = array(
@@ -945,7 +931,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 
 			if (count($this->relatedCollections) == 0){
 				foreach ($collectionsRaw as $collectionInfo) {
-					if (!$fedoraUtils->isPidValidForPika($collectionInfo['object']['value'])){
+					if (!$fedoraUtils->isPidValidForDisplay($collectionInfo['object']['value'])){
 						$parentObject = $fedoraUtils->getObject($collectionInfo['object']['value']);
 						/** @var IslandoraRecordDriver $parentDriver */
 						$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
@@ -1310,12 +1296,12 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		return $this->links;
 	}
 
-	protected $relatedPikaRecords;
-	public function getRelatedPikaContent(){
-		if ($this->relatedPikaRecords == null){
+	protected $relatedCatalogRecords;
+	public function getRelatedCatalogContent(){
+		if ($this->relatedCatalogRecords == null){
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 
-			$this->relatedPikaRecords = array();
+			$this->relatedCatalogRecords = array();
 
 			//Look for things linked directly to this object
 			$links = $this->getLinks();
@@ -1329,39 +1315,38 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 				}
 			}
 
-			if (count($relatedWorkIds) > 0){
-                /** @var SearchObject_GroupedWorkSearcher $searchObject */
-                $searchObject = SearchObjectFactory::initSearchObject();
-                $searchObject->init();
-                $linkedWorkData = $searchObject->getRecords($relatedWorkIds);
-                foreach ($linkedWorkData as $workData) {
-                    $workDriver = new GroupedWorkDriver($workData);
-                    if ($workDriver->isValid) {
-                        $this->relatedPikaRecords[] = array(
-                            'link' => $workDriver->getLinkUrl(),
-                            'label' => $workDriver->getTitle(),
-                            'image' => $workDriver->getBookcoverUrl('medium'),
-                            'id' => $workDriver->getPermanentId()
-                        );
-                        //$this->links[$id]['hidden'] = true;
-                    }
-                }
-                $searchObject = null;
-                unset ($searchObject);
-            }
+			if (count($relatedWorkIds) > 0) {
+				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$searchObject->init();
+				$linkedWorkData = $searchObject->getRecords($relatedWorkIds);
+				foreach ($linkedWorkData as $workDriver) {
+					if ($workDriver->isValid) {
+						$this->relatedCatalogRecords[] = array(
+							'link' => $workDriver->getLinkUrl(),
+							'label' => $workDriver->getTitle(),
+							'image' => $workDriver->getBookcoverUrl('medium'),
+							'id' => $workDriver->getPermanentId()
+						);
+						//$this->links[$id]['hidden'] = true;
+					}
+				}
+				$searchObject = null;
+				unset ($searchObject);
+			}
 
 			//Look for links related to the collection(s) this object is linked to
 			$collections = $this->getRelatedCollections();
 			foreach ($collections as $collection){
 				/** @var IslandoraRecordDriver $collectionDriver */
 				$collectionDriver = RecordDriverFactory::initRecordDriver($collection['object']);
-				$relatedFromCollection = $collectionDriver->getRelatedPikaContent();
+				$relatedFromCollection = $collectionDriver->getRelatedCatalogContent();
 				if (count($relatedFromCollection)){
-					$this->relatedPikaRecords = array_merge($this->relatedPikaRecords, $relatedFromCollection);
+					$this->relatedCatalogRecords = array_merge($this->relatedCatalogRecords, $relatedFromCollection);
 				}
 			}
 		}
-		return $this->relatedPikaRecords;
+		return $this->relatedCatalogRecords;
 	}
 
 	protected $directlyRelatedObjects = null;

@@ -56,6 +56,15 @@ class SearchObjectFactory
 			case 'genealogy' :
 				$engine = 'Genealogy';
 				break;
+			case 'websites' :
+				$engine = 'Websites';
+				break;
+			case 'events' :
+				$engine = 'Events';
+				break;
+			case 'ebsco_eds' :
+				$engine = 'EbscoEds';
+				break;
 			default:
 				$engine = 'GroupedWork';
 				break;
@@ -93,32 +102,41 @@ class SearchObjectFactory
 		static $objectCache = array();
 
 		// Figure out the engine type for the object we're about to construct:
-		switch ($minSO->ty) {
+		switch ($minSO->ss) {
 			case 'islandora' :
-				$type = 'Islandora';
+				$source = 'Islandora';
 				break;
 			case 'open_archives' :
-				$type = 'OpenArchives';
+				$source = 'OpenArchives';
 				break;
 			case 'lists' :
-				$type = 'Lists';
+				$source = 'Lists';
 				break;
 			case 'genealogy' :
-				$type = 'Genealogy';
+				$source = 'Genealogy';
+				break;
+			case 'websites' :
+				$source = 'Websites';
+				break;
+			case 'events' :
+				$source = 'Events';
+				break;
+			case 'ebsco_eds' :
+				$source = 'EbscoEds';
 				break;
 			default:
-				$type = 'GroupedWork';
+				$source = 'GroupedWork';
 				break;
 		}
 
 		// Construct a new object if we don't already have one:
-		if (!isset($objectCache[$type])) {
-			$objectCache[$type] = self::initSearchObject($type);
+		if (!isset($objectCache[$source])) {
+			$objectCache[$source] = self::initSearchObject($source);
 		}
 
 		// Populate and return the expanded object:
-		$objectCache[$type]->deminify($minSO);
+		$objectCache[$source]->deminify($minSO);
 		//MDN 1/5/2015 return a clone of the search object since we may deminify several search objects in a single page load. 
-		return clone $objectCache[$type];
+		return clone $objectCache[$source];
 	}
 }

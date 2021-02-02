@@ -12,7 +12,6 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	private $rbdigitalRawMetadata;
 	private $valid;
 
-	/** @noinspection PhpMissingParentConstructorInspection */
 	public function __construct($recordId, $groupedWork = null)
 	{
 		$this->id = $recordId;
@@ -88,12 +87,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	public function getStaffView()
 	{
 		global $interface;
-		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
-
-		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
@@ -192,16 +186,12 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = array(
 				'label' => 'Staff View',
-				'body' => $interface->fetch($this->getStaffView()),
+				'onShow' => "AspenDiscovery.RBdigital.getStaffView('{$this->id}');",
+				'body' => '<div id="staffViewPlaceHolder">Loading Staff View.</div>',
 			);
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
-	}
-
-	public function getItemActions($itemInfo)
-	{
-		return [];
 	}
 
 	public function getISBNs()
@@ -216,7 +206,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 		return array();
 	}
 
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
 		$actions = array();
 		if ($isAvailable) {
@@ -224,12 +214,14 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 				'title' => 'Check Out RBdigital',
 				'onclick' => "return AspenDiscovery.RBdigital.checkOutTitle('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'rbdigital_checkout'
 			);
 		} else {
 			$actions[] = array(
 				'title' => 'Place Hold RBdigital',
 				'onclick' => "return AspenDiscovery.RBdigital.placeHold('{$this->id}');",
 				'requireLogin' => false,
+				'type' => 'rbdigital_hold'
 			);
 		}
 		return $actions;

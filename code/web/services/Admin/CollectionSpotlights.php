@@ -7,13 +7,6 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-/**
- * Provides a method of running SQL updates to the database.
- * Shows a list of updates that are available with a description of the
- *
- * @author Mark Noble
- *
- */
 class Admin_CollectionSpotlights extends ObjectEditor {
 	function getObjectType(){
 		return 'CollectionSpotlight';
@@ -24,15 +17,16 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 	function getPageTitle(){
 		return 'Collection Spotlights';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$collectionSpotlight = new CollectionSpotlight();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')){
 			$patronLibrary = Library::getPatronHomeLibrary();
 			$collectionSpotlight->libraryId = $patronLibrary->libraryId;
 		}
 		$collectionSpotlight->orderBy('name');
+		$collectionSpotlight->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$collectionSpotlight->find();
 		while ($collectionSpotlight->fetch()){
 			$list[$collectionSpotlight->id] = clone $collectionSpotlight;
@@ -43,9 +37,6 @@ class Admin_CollectionSpotlights extends ObjectEditor {
     function getObjectStructure(){
 		return CollectionSpotlight::getObjectStructure();
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
@@ -53,10 +44,11 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		return 'id';
 	}
 	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager');
+		//Collection spotlights should be added from search results.
+		return false;
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
+		return true;
 	}
 	function launch() {
 		global $interface;
@@ -81,9 +73,9 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		//Get all available spotlights
 		$availableSpotlights = array();
 		$collectionSpotlight = new CollectionSpotlight();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')){
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$collectionSpotlight->libraryId = $homeLibrary->libraryId;
+			$collectionSpotlight->whereAdd('libraryId = ' . $homeLibrary->libraryId . ' OR libraryId = -1');
 		}
 		$collectionSpotlight->orderBy('name ASC');
 		$collectionSpotlight->find();
@@ -96,6 +88,8 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])){
 			$spotlight = $availableSpotlights[$_REQUEST['id']];
 			$interface->assign('object', $spotlight);
+		}else{
+			$spotlight = null;
 		}
 
 		//Do actions that require pre-processing
@@ -144,6 +138,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 						break;
 					case 'single' :
 					case 'single-with-next' :
+					default:
 						$width = ($spotlight->coverSize == 'medium') ? 300 : 225;
 						$height = ($spotlight->coverSize == 'medium') ? 350 : 275;
 						break;
@@ -155,6 +150,24 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		}
 
 		$this->display($interface->getTemplate(), 'Collection Spotlights');
+	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/CollectionSpotlights', 'Collection Spotlights');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'local_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Collection Spotlights','Administer Library Collection Spotlights']);
 	}
 }

@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/ILS/IlsExtractLogEntry.php';
 
 class ILS_IndexingLog extends Admin_IndexingLog
 {
-	function getIndexLogEntryObject(): DataObject
+	function getIndexLogEntryObject(): BaseLogEntry
 	{
 		return new IlsExtractLogEntry();
 	}
@@ -30,4 +30,17 @@ class ILS_IndexingLog extends Admin_IndexingLog
 		}
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
 }

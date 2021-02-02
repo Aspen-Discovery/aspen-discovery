@@ -40,7 +40,7 @@ class MillenniumHolds{
 				//Hold was successful
 				$hold_result['success'] = true;
 				if (!isset($reason) || strlen($reason) == 0){
-					$hold_result['message'] = 'Your hold was placed successfully.  It may take up to 45 seconds for the hold to appear on your account.';
+					$hold_result['message'] = translate(['text'=>"millennium_hold_success", 'defaultText'=>"Your hold was placed successfully.  It may take up to 45 seconds for the hold to appear on your account."]);
 				}else{
 					$hold_result['message'] = $reason;
 				}
@@ -394,10 +394,6 @@ class MillenniumHolds{
 						$bibid = '';
 						$shortId = '';
 						$title = trim($sCols[$i]);
-						/*global $configArray;
-						if ($configArray['System']['debug']){
-							echo("Unexpected format in title column.  Got " . htmlentities($sCols[$i]) . "<br/>");
-						}*/
 					}
 					if (preg_match('/.*<span class="patFuncVol">(.*?)<\/span>.*/si', $sCols[$i], $matches)) {
 						$curHold['volume'] = $matches[1];
@@ -520,7 +516,7 @@ class MillenniumHolds{
 				//This is a volume level hold
 				$volumeId = '.' . substr($curHold['cancelId'], 0, strpos($curHold['cancelId'], '~'));
 				$volumeId .= $this->driver->getCheckDigit($volumeId);
-				require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
+				require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 				$volumeInfo = new IlsVolumeInfo();
 				$volumeInfo->volumeId = $volumeId;
 				if ($volumeInfo->find(true)){
@@ -580,6 +576,7 @@ class MillenniumHolds{
 				disableErrorHandler();
 				$recordDriver = new MarcRecordDriver($this->driver->accountProfile->recordSource . ":" . $hold['recordId']);
 				if ($recordDriver->isValid()){
+					$hold['groupedWorkId'] = $recordDriver->getPermanentId();
 					$hold['id'] = $recordDriver->getUniqueID();
 					$hold['shortId'] = $recordDriver->getShortId();
 					//Load title, author, and format information about the title

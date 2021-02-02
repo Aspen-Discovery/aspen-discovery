@@ -1,14 +1,12 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/ResultsAction.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/NovelistFactory.php';
 
-class Author_Home extends Action
+class Author_Home extends ResultsAction
 {
-	private $lang;
-
 	function launch()
 	{
 		global $interface;
@@ -116,6 +114,7 @@ class Author_Home extends Action
 		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
+		$searchObject->setPrimarySearch(true);
 
 		// Build RSS Feed for Results (if requested)
 		if ($searchObject->getView() == 'rss') {
@@ -126,10 +125,6 @@ class Author_Home extends Action
 		}
 
 		$interface->caching = false;
-
-		// What language should we use?
-		global $activeLanguage;
-		$this->lang = $activeLanguage->code;
 
 		// Retrieve User Search History -- note that we only want to offer a
 		// "back to search" link if the saved URL is not for the current action;
@@ -222,8 +217,10 @@ class Author_Home extends Action
 		// Process Search
 		/** @var AspenError|null $result */
 		$result = $searchObject->processSearch(false, true);
-		if ($result instanceof AspenError) {
-			AspenError::raiseError($result->getMessage());
+		if ($result instanceof AspenError || !empty($result['error'])) {
+			$interface->assign('searchError', $result);
+			$this->display('searchError.tpl', 'Error in Search');
+			return;
 		}
 
 		// Some more variables
@@ -284,5 +281,11 @@ class Author_Home extends Action
 
 			$this->display('home.tpl', $authorName, 'Author/sidebar.tpl', false);
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		global $interface;
+		return parent::getResultsBreadcrumbs($interface->getVariable('authorName'));
 	}
 }

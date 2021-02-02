@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -20,8 +21,6 @@ public class UserListIndexerMain {
 
 	private static UserListIndexer listProcessor;
 
-	//General configuration
-	private static String serverName;
 	private static Connection dbConn;
 
 	/**
@@ -30,48 +29,44 @@ public class UserListIndexerMain {
 	 * @param args String[] The server name to index with optional parameter for properties of indexing
 	 */
 	public static void main(String[] args) {
-		startTime = new Date().getTime();
-		boolean runContinuously = true;
+		//General configuration
+		String serverName;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-			String runFullIndex = StringUtils.getInputFromCommandLine("Run a full index (y/N)");
-			if (runFullIndex.equalsIgnoreCase("y")){
-				fullReindex = true;
-			}
 		} else {
 			serverName = args[0];
-			if (args.length >= 2) {
-				String firstArg = args[1].replaceAll("\\s", "");
-				if (firstArg.equalsIgnoreCase("full")) {
-					fullReindex = true;
-				}
-			}
 		}
-		System.setProperty("reindex.process.serverName", serverName);
 
-		while (runContinuously) {
-			runContinuously = !fullReindex;
+		String processName = "user_list_indexer";
+		logger = LoggingUtil.setupLogging(serverName, processName);
 
-			initializeIndexer();
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+
+		while (true) {
+			startTime = new Date().getTime();
+
+			ListIndexingLogEntry logEntry = initializeIndexer(serverName);
 
 			//Process lists
 			long numListsProcessed = 0;
 			try {
 				logger.info("Reindexing lists");
-				numListsProcessed = listProcessor.processPublicUserLists(fullReindex, lastReindexTime);
+				numListsProcessed = listProcessor.processPublicUserLists(fullReindex, lastReindexTime, logEntry);
 			} catch (Error e) {
-				logger.error("Error processing reindex ", e);
+				logEntry.incErrors("Error processing reindex ", e);
 			} catch (Exception e) {
-				logger.error("Exception processing reindex ", e);
+				logEntry.incErrors("Exception processing reindex ", e);
 			}
 
 			// Send completion information
 			endTime = new Date().getTime();
-			finishIndexing();
+			logEntry.setFinished();
+			finishIndexing(logEntry);
 
 			logger.info("Finished Reindex for " + serverName + " processed " + numListsProcessed);
 			long endTime = new Date().getTime();
@@ -84,18 +79,20 @@ public class UserListIndexerMain {
 			listProcessor.close();
 			listProcessor = null;
 
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
 			//Pause before running the next export (longer if we didn't get any actual changes)
-			if (runContinuously) {
-				System.gc();
-				try {
-					if (numListsProcessed == 0) {
-						Thread.sleep(1000 * 60 * 5);
-					} else {
-						Thread.sleep(1000 * 60);
-					}
-				} catch (InterruptedException e) {
-					logger.info("Thread was interrupted");
+			System.gc();
+			try {
+				if (numListsProcessed == 0) {
+					Thread.sleep(1000 * 60 * 5);
+				} else {
+					Thread.sleep(1000 * 60);
 				}
+			} catch (InterruptedException e) {
+				logger.info("Thread was interrupted");
 			}
 		}
 	}
@@ -109,26 +106,26 @@ public class UserListIndexerMain {
 		}
 	}
 
-	private static void finishIndexing() {
+	private static void finishIndexing(ListIndexingLogEntry logEntry) {
 		long elapsedTime = endTime - startTime;
 		float elapsedMinutes = (float) elapsedTime / (float) (60000);
 		logger.info("Time elapsed: " + elapsedMinutes + " minutes");
 
 		try {
-			PreparedStatement finishedStatement = dbConn.prepareStatement("INSERT INTO variables (name, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)");
-			finishedStatement.setString(1, "last_user_list_index_time");
-			finishedStatement.setLong(2, startTime / 1000);
+			String columnToUpdate = "lastUpdateOfChangedLists";
+			if (fullReindex){
+				columnToUpdate = "lastUpdateOfAllLists";
+			}
+			PreparedStatement finishedStatement = dbConn.prepareStatement("UPDATE  list_indexing_settings set runFullUpdate = 0, " + columnToUpdate + " = ?");
+			finishedStatement.setLong(1, startTime / 1000);
 			finishedStatement.executeUpdate();
 			finishedStatement.close();
 		} catch (SQLException e) {
-			logger.error("Unable to update variables with completion time.", e);
+			logEntry.incErrors("Unable to update settings with completion time.", e);
 		}
 	}
 
-	private static void initializeIndexer() {
-		String processName = "user_list_reindex";
-		logger = LoggingUtil.setupLogging(serverName, processName);
-
+	private static ListIndexingLogEntry initializeIndexer(String serverName) {
 		logger.info("Starting Reindex for " + serverName);
 
 		// Parse the configuration file
@@ -137,7 +134,7 @@ public class UserListIndexerMain {
 		logger.info("Setting up database connections");
 		String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
-			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
+			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_aspen_jdbc.");
 			System.exit(1);
 		}
 		try {
@@ -147,8 +144,18 @@ public class UserListIndexerMain {
 			System.exit(1);
 		}
 
+		ListIndexingLogEntry logEntry = createDbLogEntry(dbConn);
+
 		//Load the last Index time
 		try {
+			PreparedStatement loadSettingsStmt = dbConn.prepareStatement("SELECT * from list_indexing_settings");
+			ResultSet loadSettingsRS = loadSettingsStmt.executeQuery();
+			if (loadSettingsRS.next()){
+				fullReindex = loadSettingsRS.getBoolean("runFullUpdate");
+				lastReindexTime = loadSettingsRS.getLong("lastUpdateOfChangedLists");
+			}else{
+				logEntry.incErrors("No Settings were found for list indexing");
+			}
 			PreparedStatement loadLastIndexTimeStmt = dbConn.prepareStatement("SELECT * from variables WHERE name = 'last_user_list_index_time'");
 			ResultSet lastIndexTimeRS = loadLastIndexTimeStmt.executeQuery();
 			if (lastIndexTimeRS.next()) {
@@ -157,10 +164,27 @@ public class UserListIndexerMain {
 			lastIndexTimeRS.close();
 			loadLastIndexTimeStmt.close();
 		} catch (Exception e) {
-			logger.error("Could not load last index time from variables table ", e);
+			logEntry.incErrors("Could not load last index time from variables table ", e);
 		}
 
 		listProcessor = new UserListIndexer(configIni, dbConn, logger);
+
+		return logEntry;
 	}
 
+	private static ListIndexingLogEntry createDbLogEntry(Connection aspenConn) {
+		//Remove log entries older than 45 days
+		long earliestLogToKeep = (startTime / 1000) - (60 * 60 * 24 * 45);
+		try {
+			int numDeletions = aspenConn.prepareStatement("DELETE from website_index_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
+			logger.info("Deleted " + numDeletions + " old log entries");
+		} catch (SQLException e) {
+			logger.error("Error deleting old log entries", e);
+		}
+
+		//Start a log entry
+		ListIndexingLogEntry logEntry = new ListIndexingLogEntry(aspenConn, logger);
+		logEntry.saveResults();
+		return logEntry;
+	}
 }

@@ -25,13 +25,20 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		return $this->valid;
 	}
 
-	public function getListEntry($user, $listId = null, $allowEdit = true)
+	public function getListEntry($listId = null, $allowEdit = true)
 	{
-		return $this->getSearchResult('list');
+		//Use getSearchResult to do the bulk of the assignments
+		$this->getSearchResult('list', false);
+		//Switch template
+		return 'RecordDrivers/OpenArchives/listEntry.tpl';
 	}
 
-	public function getSearchResult($view = 'list')
+	public function getSearchResult($view = 'list', $showListsAppearingOn = true)
 	{
+		if ($view == 'covers') { // Displaying Results as bookcover tiles
+			return $this->getBrowseResult();
+		}
+
 		global $interface;
 
 		$interface->assign('id', $this->getId());
@@ -54,9 +61,17 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 			$interface->assign('date', null);
 		}
 
+		//Check to see if there are lists the record is on
+		if ($showListsAppearingOn) {
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$appearsOnLists = UserList::getUserListsForRecord('OpenArchives', $this->getId());
+			$interface->assign('appearsOnLists', $appearsOnLists);
+		}
+
 		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php';
 		$openArchivesUsage = new OpenArchivesRecordUsage();
 		$openArchivesUsage->openArchivesRecordId = $this->getUniqueID();
+		$openArchivesUsage->instance = $_SERVER['SERVER_NAME'];
 		$openArchivesUsage->year = date('Y');
 		$openArchivesUsage->month = date('n');
 		if ($openArchivesUsage->find(true)) {
@@ -69,6 +84,14 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		}
 
 		return 'RecordDrivers/OpenArchives/result.tpl';
+	}
+
+	public function getBrowseResult()
+	{
+		global $interface;
+		$interface->assign('openInNewWindow', true);
+		$interface->assign('onclick', "AspenDiscovery.OpenArchives.trackUsage('{$this->getId()}')");
+		return parent::getBrowseResult();
 	}
 
 	public function getBookcoverUrl($size = 'small', $absolutePath = false)
@@ -100,17 +123,6 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		return $this->fields['description'];
 	}
 
-	public function getItemActions($itemInfo)
-	{
-		return array();
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-	{
-		// TODO: Implement getRecordActions() method.
-		return array();
-	}
-
 	/**
 	 * Return the unique identifier of this record within the Solr index;
 	 * useful for retrieving additional information (like tags and user
@@ -128,4 +140,5 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 	{
 		return $this->fields['identifier'];
 	}
+
 }

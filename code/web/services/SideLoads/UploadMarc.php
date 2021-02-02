@@ -77,7 +77,26 @@ class SideLoads_UploadMarc extends Admin_Admin
 		$this->display('uploadMarc.tpl', 'Upload MARC File');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'cataloging');
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#side_loads', 'Side Loads');
+		$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads', 'Side Load Settings');
+		if (!empty($this->activeObject) && $this->activeObject instanceof SideLoad){
+			$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads?objectAction=edit&id=' . $this->activeObject->id , $this->activeObject->name);
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Upload MARC Record');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'side_loads';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Side Loads');
 	}
 }

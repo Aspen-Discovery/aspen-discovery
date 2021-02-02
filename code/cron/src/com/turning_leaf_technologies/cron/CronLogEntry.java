@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -14,6 +15,7 @@ public class CronLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
 	private Date startTime;
 	private Date endTime;
+	private int numErrors;
 	private ArrayList<String> notes = new ArrayList<>();
 
 	private Logger logger;
@@ -26,7 +28,7 @@ public class CronLogEntry implements BaseLogEntry {
 
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into cron_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE cron_log SET lastUpdate = ?, endTime = ?, notes = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE cron_log SET lastUpdate = ?, endTime = ?, numErrors = ?, notes = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
@@ -35,12 +37,15 @@ public class CronLogEntry implements BaseLogEntry {
 		//The last time the log entry was updated so we can tell if a process is stuck
 		return new Date();
 	}
-	public Long getLogEntryId() {
+	Long getLogEntryId() {
 		return logEntryId;
 	}
-	
+
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	@Override
 	public void addNote(String note) {
-		this.notes.add(note);
+		Date date = new Date();
+		this.notes.add(dateFormat.format(date) + " - " + note);
 	}
 	
 	private String getNotesHtml() {
@@ -79,8 +84,9 @@ public class CronLogEntry implements BaseLogEntry {
 				}else{
 					updateLogEntry.setLong(2, endTime.getTime() / 1000);
 				}
-				updateLogEntry.setString(3, getNotesHtml());
-				updateLogEntry.setLong(4, logEntryId);
+				updateLogEntry.setLong(3, numErrors);
+				updateLogEntry.setString(4, getNotesHtml());
+				updateLogEntry.setLong(5, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
 			return true;
@@ -91,6 +97,23 @@ public class CronLogEntry implements BaseLogEntry {
 	}
 	public void setFinished() {
 		this.endTime = new Date();
+	}
+
+	void incErrors(){
+		numErrors++;
+		this.saveResults();
+	}
+	public void incErrors(String note){
+		numErrors++;
+		this.addNote("ERROR: " + note);
+		this.saveResults();
+		logger.error(note);
+	}
+	public void incErrors(String note, Exception e){
+		this.addNote("ERROR: " + note + " " + e.toString());
+		numErrors++;
+		this.saveResults();
+		logger.error(note, e);
 	}
 	
 }

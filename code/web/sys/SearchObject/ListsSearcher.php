@@ -27,7 +27,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 
 		// Load search preferences:
 		$searchSettings = getExtraConfigArray('listsSearches');
-		$this->defaultIndex = 'ListsKeyword';
+
 		if (isset($searchSettings['General']['default_sort'])) {
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
@@ -184,7 +184,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
-	//TODO: Convert this to use definitions
+	//TODO: Convert this to use definitions so they can be customized in admin
 	public function getFacetConfig()
 	{
 		if ($this->facetConfig == null) {
@@ -203,5 +203,14 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 			$this->facetConfig = $facetConfig;
 		}
 		return $this->facetConfig;
+	}
+
+	public function getEngineName(){
+		return 'Lists';
+	}
+
+	public function getDefaultIndex()
+	{
+		return 'ListsKeyword';
 	}
 }

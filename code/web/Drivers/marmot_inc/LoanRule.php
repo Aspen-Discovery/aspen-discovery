@@ -14,10 +14,6 @@ class LoanRule extends DataObject
 	public $homePickup;
 	public $shippable;
 
-	function keys() {
-		return array('iId');
-	}
-
 	function getNumericColumnNames()
 	{
 		return ['holdable', 'bookable', 'homePickup', 'shippable'];

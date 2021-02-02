@@ -24,6 +24,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private String recordNumberTag;
 	String itemTag;
 	char formatSubfield;
+	boolean checkRecordForLargePrint;
 	char barcodeSubfield;
 	char statusSubfieldIndicator;
 	Pattern statusesToSuppressPattern = null;
@@ -37,6 +38,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char dateCreatedSubfield;
 	private String dateAddedFormat;
 	char locationSubfieldIndicator;
+	boolean includeLocationNameInDetailedLocation;
 	private Pattern nonHoldableLocations;
 	Pattern locationsToSuppressPattern = null;
 	Pattern collectionsToSuppressPattern = null;
@@ -60,6 +62,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char itemUrlSubfieldIndicator;
 	boolean suppressItemlessBibs;
 
+	private int determineAudienceBy;
+	private char audienceSubfield;
+
 	//Fields for loading order information
 	private String orderTag;
 	private char orderLocationSubfield;
@@ -68,14 +73,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char orderStatusSubfield;
 	private char orderCode3Subfield;
 
-	private HashMap<String, Integer> numberOfHoldsByIdentifier = new HashMap<>();
+	private final HashMap<String, Integer> numberOfHoldsByIdentifier = new HashMap<>();
 
-	private HashMap<String, TranslationMap> translationMaps = new HashMap<>();
-	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
-	private HashSet<String> formatsToSuppress = new HashSet<>();
-	private HashSet<String> statusesToSuppress = new HashSet<>();
-	private HashSet<String> inLibraryUseOnlyFormats = new HashSet<>();
-	private HashSet<String> inLibraryUseOnlyStatuses = new HashSet<>();
+	private final HashMap<String, TranslationMap> translationMaps = new HashMap<>();
+	private final ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
+	private final HashSet<String> formatsToSuppress = new HashSet<>();
+	private final HashSet<String> statusesToSuppress = new HashSet<>();
+	private final HashSet<String> inLibraryUseOnlyFormats = new HashSet<>();
+	private final HashSet<String> inLibraryUseOnlyStatuses = new HashSet<>();
+	private final HashSet<String> nonHoldableFormats = new HashSet<>();
+	protected boolean suppressRecordsWithNoCollection = true;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);
@@ -99,6 +106,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			callNumberPoststampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPoststamp");
 
 			locationSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "location");
+			includeLocationNameInDetailedLocation = indexingProfileRS.getBoolean("includeLocationNameInDetailedLocation");
 			try {
 				String pattern = indexingProfileRS.getString("nonHoldableLocations");
 				if (pattern != null && pattern.length() > 0) {
@@ -127,7 +135,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			specifiedFormatCategory = indexingProfileRS.getString("specifiedFormatCategory");
 			specifiedFormatBoost = indexingProfileRS.getInt("specifiedFormatBoost");
 			formatSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "format");
+			checkRecordForLargePrint = indexingProfileRS.getBoolean("checkRecordForLargePrint");
 			barcodeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "barcode");
+			if (itemRecordNumberSubfieldIndicator == ' '){
+				itemRecordNumberSubfieldIndicator = barcodeSubfield;
+			}
 			statusSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "status");
 			String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
 			if (statusesToSuppress.length() > 0){
@@ -186,6 +198,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			orderStatusSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
 			orderCode3Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
 
+			treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
+			treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
+
+			determineAudienceBy = indexingProfileRS.getInt("determineAudienceBy");
+			audienceSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "audienceSubfield");
+
 			//loadAvailableItemBarcodes(marcRecordPath, logger);
 			loadHoldsByIdentifier(dbConn, logger);
 
@@ -242,10 +260,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		while (formatMapRS.next()){
 			String format = formatMapRS.getString("value");
 			if (formatMapRS.getBoolean("suppress")){
-				formatsToSuppress.add(format);
+				formatsToSuppress.add(format.toUpperCase());
 			}
 			if (formatMapRS.getBoolean("inLibraryUseOnly")){
-				inLibraryUseOnlyFormats.add(format);
+				inLibraryUseOnlyFormats.add(format.toUpperCase());
+			}
+			if (formatMapRS.getString("holdType").equals("none")){
+				nonHoldableFormats.add(formatMapRS.getString("format").toUpperCase());
 			}
 			formatMap.addValue(format, formatMapRS.getString("format"));
 			formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"));
@@ -505,6 +526,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		//Add the library this is on order for
 		itemInfo.setShelfLocation("On Order");
+		itemInfo.setDetailedLocation("On Order");
 
 		recordInfo.addItem(itemInfo);
 
@@ -542,7 +564,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					scopingInfo.setLibraryOwned(libraryOwned);
 					//TODO: Should this be here or should this only happen for consortia?
 					if (libraryOwned && itemInfo.getShelfLocation().equals("On Order")){
-						itemInfo.setShelfLocation(scopingInfo.getScope().getFacetLabel() + " On Order");
+						itemInfo.setShelfLocation("On Order");
+						itemInfo.setDetailedLocation(scopingInfo.getScope().getFacetLabel() + " On Order");
 					}
 				}
 				if (scopingInfo.isLocallyOwned()){
@@ -615,7 +638,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
 		loadItemCallNumber(record, itemField, itemInfo);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
-		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, identifier));
+		itemInfo.setShelfLocation(getShelfLocationForItem(itemField, identifier));
+		itemInfo.setDetailedLocation(getDetailedLocationForItem(itemInfo, itemField, identifier));
 
 		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
 
@@ -684,7 +708,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (itemInfo.geteContentUrl() == null || itemInfo.geteContentUrl().length() == 0){
 			return null;
 		}else{
-			//System.out.println(identifier + "\t" + itemInfo.getItemIdentifier() + "\t" + itemInfo.geteContentUrl());
 			return relatedRecord;
 		}
 	}
@@ -696,8 +719,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (dateAddedFormatter == null){
 					dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
 				}
-				Date dateAdded = dateAddedFormatter.parse(dateAddedStr);
-				itemInfo.setDateAdded(dateAdded);
+				if (!dateAddedStr.equals("NEVER")) {
+					Date dateAdded = dateAddedFormatter.parse(dateAddedStr);
+					itemInfo.setDateAdded(dateAdded);
+				}else{
+					logger.info("Date Added was never");
+				}
 			} catch (ParseException e) {
 				logger.error("Error processing date added for record identifier " + recordIdentifier + " profile " + profileType + " using format " + dateAddedFormat, e);
 			}
@@ -710,8 +737,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private SimpleDateFormat dateAddedFormatter = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
-	private HashSet<String> unhandledFormatBoosts = new HashSet<>();
-	void createPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
+	private final HashSet<String> unhandledFormatBoosts = new HashSet<>();
+	ItemInfo createPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
 		}
@@ -719,12 +746,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			lastCheckInFormatter = new SimpleDateFormat(lastCheckInFormat);
 		}
 		ItemInfo itemInfo = new ItemInfo();
+
 		//Load base information from the Marc Record
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
 		String itemStatus = getItemStatus(itemField, recordInfo.getRecordIdentifier());
 		if (statusesToSuppress.contains(itemStatus)){
-			return;
+			return null;
 		}
 
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
@@ -741,10 +769,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		//if the status and location are null, we can assume this is not a valid item
-		if (isItemInvalid(itemStatus, itemLocation)) return;
+		if (isItemInvalid(itemStatus, itemLocation)) return null;
 
 		setShelfLocationCode(itemField, itemInfo, recordInfo.getRecordIdentifier());
-		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, recordInfo.getRecordIdentifier()));
+		itemInfo.setShelfLocation(getShelfLocationForItem(itemField, recordInfo.getRecordIdentifier()));
+		itemInfo.setDetailedLocation(getDetailedLocationForItem(itemInfo, itemField, recordInfo.getRecordIdentifier()));
 
 		loadDateAdded(recordInfo.getRecordIdentifier(), itemField, itemInfo);
 		getDueDate(itemField, itemInfo);
@@ -762,12 +791,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (lastCheckInFormatter != null) {
 			String lastCheckInDate = getItemSubfieldData(lastCheckInSubfield, itemField);
 			Date lastCheckIn = null;
-			if (lastCheckInDate != null && lastCheckInDate.length() > 0)
+			if (lastCheckInDate != null && lastCheckInDate.length() > 0) {
 				try {
 					lastCheckIn = lastCheckInFormatter.parse(lastCheckInDate);
 				} catch (ParseException e) {
 					logger.debug("Could not parse check in date " + lastCheckInDate, e);
 				}
+			}
 			itemInfo.setLastCheckinDate(lastCheckIn);
 		}
 
@@ -796,15 +826,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 
-		//This is done later so we don't need to do it here.
-		//loadScopeInfoForPrintIlsItem(recordInfo, groupedWork.getTargetAudiences(), itemInfo, record);
-
 		groupedWork.addKeywords(itemLocation);
 		if (itemSublocation.length() > 0){
 			groupedWork.addKeywords(itemSublocation);
 		}
 
+		itemInfo.setMarcField(itemField);
+
 		recordInfo.addItem(itemInfo);
+
+		return itemInfo;
 	}
 
 	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
@@ -921,10 +952,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (inLibraryUseOnlyStatuses.contains(itemInfo.getStatusCode())){
 			return true;
 		}
-		if (inLibraryUseOnlyFormats.contains(itemInfo.getFormat())){
-			return true;
+		String format = itemInfo.getFormat();
+		if (format == null){
+			format = itemInfo.getRecordInfo().getPrimaryFormat();
 		}
-		return false;
+		return inLibraryUseOnlyFormats.contains(format.toUpperCase());
 	}
 
 	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, String identifier) {
@@ -1052,13 +1084,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 				sortableCallNumber.append(callNumberPostStamp);
 			}
-			//ARL-203 do not create an item level call number that is just a volume
-			if (volume != null && fullCallNumber.length() > 0){
-				if (fullCallNumber.charAt(fullCallNumber.length() - 1) != ' '){
-					fullCallNumber.append(' ');
-				}
-				fullCallNumber.append(volume);
-			}
 			if (fullCallNumber.length() > 0){
 				hasCallNumber = true;
 				itemInfo.setCallNumber(fullCallNumber.toString().trim());
@@ -1096,6 +1121,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 				itemInfo.setCallNumber(callNumber.toString().trim());
 				itemInfo.setSortableCallNumber(callNumber.toString().trim());
+			}else if (volume != null){
+				itemInfo.setCallNumber(volume.trim());
+				itemInfo.setSortableCallNumber(volume.trim());
 			}
 		}
 	}
@@ -1104,11 +1132,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return true;
 	}
 
-	private HashMap<String, Boolean> iTypesThatHaveHoldabilityChecked = new HashMap<>();
-	private HashMap<String, Boolean> locationsThatHaveHoldabilityChecked = new HashMap<>();
-	private HashMap<String, Boolean> statusesThatHaveHoldabilityChecked = new HashMap<>();
+	private final HashMap<String, Boolean> iTypesThatHaveHoldabilityChecked = new HashMap<>();
+	private final HashMap<String, Boolean> locationsThatHaveHoldabilityChecked = new HashMap<>();
+	private final HashMap<String, Boolean> statusesThatHaveHoldabilityChecked = new HashMap<>();
 
-	private HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
+	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
 		String itemItypeCode =  itemInfo.getITypeCode();
 		if (nonHoldableITypes != null && itemItypeCode != null && itemItypeCode.length() > 0){
 			if (!iTypesThatHaveHoldabilityChecked.containsKey(itemItypeCode)){
@@ -1133,10 +1161,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				statusesThatHaveHoldabilityChecked.put(itemStatusCode, !nonHoldableStatuses.matcher(itemStatusCode).matches());
 			}
 			if (!statusesThatHaveHoldabilityChecked.get(itemStatusCode)){
-
-
 				return new HoldabilityInformation(false, new HashSet<>());
 			}
+		}
+		String format = itemInfo.getFormat();
+		if (format == null){
+			format = itemInfo.getRecordInfo().getPrimaryFormat();
+		}
+		if (nonHoldableFormats.contains(format.toUpperCase())){
+			return new HoldabilityInformation(false, new HashSet<>());
 		}
 		return new HoldabilityInformation(true, new HashSet<>());
 	}
@@ -1153,7 +1186,19 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return isBookableUnscoped;
 	}
 
-	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+	String getShelfLocationForItem(DataField itemField, String identifier) {
+		String shelfLocation = null;
+		if (itemField != null) {
+			shelfLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
+		}
+		if (shelfLocation == null || shelfLocation.length() == 0 || shelfLocation.equals("none")){
+			return "";
+		}else {
+			return translateValue("shelf_location", shelfLocation, identifier);
+		}
+	}
+
+	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String shelfLocation = null;
 		if (itemField != null) {
 			shelfLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
@@ -1281,7 +1326,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (collectionSubfield != ' '){
 			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
 			if (collectionSubfieldValue == null){
-				return true;
+				if (this.suppressRecordsWithNoCollection) {
+					return true;
+				}
 			}else{
 				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()){
 					return true;
@@ -1293,7 +1340,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (formatSubfieldValue != null){
 				String formatValue = formatSubfieldValue.getData();
 				//noinspection RedundantIfStatement
-				if (formatsToSuppress.contains(formatValue)){
+				if (formatsToSuppress.contains(formatValue.toUpperCase())){
 					return true;
 				}
 			}
@@ -1337,11 +1384,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		HashSet<String> translatedFormatCategories = translateCollection("format_category", printFormats, recordInfo.getRecordIdentifier());
 		recordInfo.addFormats(translatedFormats);
 		recordInfo.addFormatCategories(translatedFormatCategories);
-		Long formatBoost = 0L;
+		long formatBoost = 0L;
 		HashSet<String> formatBoosts = translateCollection("format_boost", printFormats, recordInfo.getRecordIdentifier());
 		for (String tmpFormatBoost : formatBoosts) {
 			try {
-				Long tmpFormatBoostLong = Long.parseLong(tmpFormatBoost);
+				long tmpFormatBoostLong = Long.parseLong(tmpFormatBoost);
 				if (tmpFormatBoostLong > formatBoost) {
 					formatBoost = tmpFormatBoostLong;
 				}
@@ -1432,6 +1479,46 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		return translatedValues;
+	}
+
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+		if (determineAudienceBy == 0) {
+			super.loadTargetAudiences(groupedWork, record, printItems, identifier);
+		}else{
+			HashSet<String> targetAudiences = new HashSet<>();
+			if (determineAudienceBy == 1) {
+				//Load based on collection
+				for (ItemInfo printItem : printItems){
+					String collection = printItem.getCollection();
+					if (collection != null) {
+						targetAudiences.add(collection.toLowerCase());
+					}
+				}
+			}else if (determineAudienceBy == 2) {
+				//Load based on shelf location
+				for (ItemInfo printItem : printItems){
+					String shelfLocationCode = printItem.getShelfLocationCode();
+					if (shelfLocationCode != null) {
+						targetAudiences.add(shelfLocationCode.toLowerCase());
+					}
+				}
+			}else if (determineAudienceBy == 3){
+				//Load based on a specified subfield
+				for (ItemInfo printItem : printItems){
+					String audienceCode = printItem.getSubfield(audienceSubfield);
+					if (audienceCode != null) {
+						targetAudiences.add(audienceCode.toLowerCase());
+					}
+				}
+			}
+			HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier);
+			if (translatedAudiences.size() == 0){
+				translatedAudiences.add("Other");
+			}
+			groupedWork.addTargetAudiences(translatedAudiences);
+			groupedWork.addTargetAudiencesFull(translatedAudiences);
+		}
+
 
 	}
 }

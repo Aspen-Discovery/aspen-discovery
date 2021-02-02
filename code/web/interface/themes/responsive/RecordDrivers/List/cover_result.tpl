@@ -15,7 +15,7 @@
 		<a href="{$summUrl}">
 			{*  TODO: add pop-up for list *}
 			<div>
-				<img src="{img filename="lists.png"}{*$bookCoverUrlMedium*}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
+				<img src="{$bookCoverUrlMedium}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
 			</div>
 		</a>
 	</div>

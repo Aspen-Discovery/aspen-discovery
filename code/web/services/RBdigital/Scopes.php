@@ -18,9 +18,10 @@ class RBdigital_Scopes extends ObjectEditor
 	function getPageTitle(){
 		return 'RBdigital Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new RBdigitalScope();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -37,20 +38,33 @@ class RBdigital_Scopes extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
-	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging');
-	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
 	}
 
 	function getInstructions(){
 		return '';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#rbdigital', 'RBdigital');
+		if (!empty($this->activeObject) && $this->activeObject instanceof RBdigitalScope){
+			$breadcrumbs[] = new Breadcrumb('/RBdigital/Settings?objectAction=edit&id=' . $this->activeObject->settingId , 'Settings');
+		}
+		$breadcrumbs[] = new Breadcrumb('/RBdigital/Scopes', 'Scopes');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'rbdigital';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer RBdigital');
 	}
 }

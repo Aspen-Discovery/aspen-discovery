@@ -37,9 +37,10 @@ class SideLoads_Scopes extends ObjectEditor
 	function getPageTitle(){
 		return 'Side Loaded eContent Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new SideLoadScope();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -55,15 +56,6 @@ class SideLoads_Scopes extends ObjectEditor
 	}
 	function getIdKeyColumn(){
 		return 'id';
-	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
-	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging');
-	}
-	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging');
 	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
@@ -153,5 +145,27 @@ class SideLoads_Scopes extends ObjectEditor
 			$sideLoadScope->clearLocations();
 		}
 		header("Location: /SideLoads/Scopes?objectAction=edit&id=" . $scopeId);
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#side_loads', 'Side Loads');
+		if (!empty($this->activeObject) && $this->activeObject instanceof SideLoadScope){
+			$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads?objectAction=edit&id=' . $this->activeObject->sideLoadId , 'Side Load Settings');
+		}
+		$breadcrumbs[] = new Breadcrumb('/SideLoads/Scopes', 'Scopes');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'side_loads';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Side Loads');
 	}
 }

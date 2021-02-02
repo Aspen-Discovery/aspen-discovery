@@ -2,10 +2,6 @@
 @import (reference) "variables.less";
 
 // Explore More SideBar
-#explore-more-sidebar{
-  background-color: @home-search-top-color;
-  background: linear-gradient(to bottom, @home-search-top-color, @home-search-bottom-color);
-}
 #explore-more-header{
   padding: 10px 25px 5px 0;
   margin-top: 5px; // to match other menus
@@ -18,7 +14,6 @@
   font-size: 16px;
 }
 #sidebar-content{
-  background-color: @explore-more-sidebar-body-bg-color;
   //MDN 5/5 disabling separation on sidebar until we can do a little more refinement
   //border: solid @explore-more-bar-border-width @explore-more-bar-label-bg-color;
   //border-width: @explore-more-bar-border-width @explore-more-bar-border-width+1 @explore-more-bar-border-width+2 0;
@@ -101,6 +96,8 @@
     @media (max-width: @screen-tn-max) {
       white-space: normal;
     }
+    font-size: 18px;
+    padding: 4px;
   }
 
   // Explore More Bar Label on the Left Hand Side
@@ -201,8 +198,6 @@
 
   .jcarousel-control-prev, .jcarousel-control-next {
     height: 100%;
-    //background: @content-bg;
-    //background-color: @explore-more-sidebar-body-bg-color;
     background-color: transparent;
     color: @explore-more-bar-label-bg-color;
     z-index: 2; // keep above carousel content
@@ -222,10 +217,9 @@
     right: 2px;
   }
 
-  // Acordion Styling
+  // Accordion Styling
   .panel-body {
     background-color: transparent;
-    //background-color: @explore-more-sidebar-body-bg-color; // override standard accordion background color
   }
 }
 

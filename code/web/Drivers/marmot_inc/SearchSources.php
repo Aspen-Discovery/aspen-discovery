@@ -1,19 +1,67 @@
 <?php
 class SearchSources{
 	static function getSearchSources(){
-		$searchSources = SearchSources::getSearchSourcesDefault();
-		return $searchSources;
+		return SearchSources::getSearchSourcesDefault();
+	}
+
+	/**
+	 * @param string $source
+	 *
+	 * @return SearchObject_BaseSearcher
+	 */
+	static function getSearcherForSource($source){
+		switch ($source)
+		{
+			case 'ebsco_eds':
+				$searchObject = SearchObjectFactory::initSearchObject('EbscoEds');
+				break;
+			case 'events':
+				$searchObject = SearchObjectFactory::initSearchObject('Events');
+				break;
+			case 'genealogy':
+				$searchObject = SearchObjectFactory::initSearchObject('Genealogy');
+				break;
+			case 'islandora':
+				$searchObject = SearchObjectFactory::initSearchObject('Islandora');
+				break;
+			case 'lists':
+				$searchObject = SearchObjectFactory::initSearchObject('Lists');
+				break;
+			case 'open_archives':
+				$searchObject = SearchObjectFactory::initSearchObject('OpenArchives');
+				break;
+			case 'websites':
+				$searchObject = SearchObjectFactory::initSearchObject('Websites');
+				break;
+			case 'catalog':
+			default:
+				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+		}
+		$searchObject->init();
+
+		return $searchObject;
+	}
+
+
+	/**
+	 * @param SearchObject_BaseSearcher $searchObject
+	 * @param string $source
+	 * @return array
+	 */
+	static function getSearchIndexesForSource($searchObject, $source){
+		if ($searchObject == null) {
+			$searchObject = SearchSources::getSearcherForSource($source);
+		}
+		return is_object($searchObject) ? $searchObject->getSearchIndexes() : array();
 	}
 
 	private static function getSearchSourcesDefault(){
 		$searchOptions = array();
 		//Check to see if marmot catalog is a valid option
 		global $library;
-		global $configArray;
 		global $enabledModules;
-		$searchEbsco = false;
 
-		/** @var $locationSingleton Location */
 		global $locationSingleton;
 		$location = $locationSingleton->getActiveLocation();
 		if ($location != null && $location->useScope && $location->restrictSearchByLocation){
@@ -32,21 +80,20 @@ class SearchSources{
 			$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
 		}
 
-		$searchGenealogy = $library->enableGenealogy;
+		$searchGenealogy = array_key_exists('Genealogy', $enabledModules) && $library->enableGenealogy;
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
 		$searchArchive = $library->enableArchive == 1;
-		//TODO: Re-enable once we do full EDS integration
-		//$searchEbsco = $library->edsApiProfile != '';
-        $searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
+		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1;
+		$searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
 
-		$marmotAdded = false;
 		if ($enableCombinedResults && $showCombinedResultsFirst){
-			$searchOptions['combinedResults'] = array(
-					'name' => $combinedResultsName,
-					'description' => "Combined results from multiple sources.",
-					'catalogType' => 'combined'
+			$searchOptions['combined'] = array(
+				'name' => $combinedResultsName,
+				'description' => "Combined results from multiple sources.",
+				'catalogType' => 'combined',
+				'hasAdvancedSearch' => false
 			);
 		}
 
@@ -55,13 +102,15 @@ class SearchSources{
 			$searchOptions['local'] = array(
 				'name' => $location->displayName,
 				'description' => "The {$location->displayName} catalog.",
-				'catalogType' => 'catalog'
+				'catalogType' => 'catalog',
+				'hasAdvancedSearch' => true
 			);
 		}else{
 			$searchOptions['local'] = array(
 				'name' => 'Library Catalog',
 				'description' => "The {$library->displayName} catalog.",
-				'catalogType' => 'catalog'
+				'catalogType' => 'catalog',
+				'hasAdvancedSearch' => true
 			);
 		}
 
@@ -70,9 +119,10 @@ class SearchSources{
 			($location->useScope && $location->restrictSearchByLocation)
 		){
 			$searchOptions[$library->subdomain] = array(
-		        'name' => $library->displayName,
-		        'description' => "The entire {$library->displayName} catalog not limited to a particular branch.",
-				'catalogType' => 'catalog'
+				'name' => $library->displayName,
+				'description' => "The entire {$library->displayName} catalog not limited to a particular branch.",
+				'catalogType' => 'catalog',
+				'hasAdvancedSearch' => true
 			);
 		}
 
@@ -88,8 +138,9 @@ class SearchSources{
 
 						$searchOptions[$repeatInLibrary->subdomain] = array(
 							'name' => $repeatInLibrary->displayName,
-				            'description' => '',
-							'catalogType' => 'catalog'
+							'description' => '',
+							'catalogType' => 'catalog',
+							'hasAdvancedSearch' => true
 						);
 					}else{
 						//See if this is a repeat within a location
@@ -101,8 +152,9 @@ class SearchSources{
 
 							$searchOptions[$repeatInLocation->code] = array(
 								'name' => $repeatInLocation->displayName,
-				                'description' => '',
-								'catalogType' => 'catalog'
+								'description' => '',
+								'catalogType' => 'catalog',
+								'hasAdvancedSearch' => true
 							);
 						}
 					}
@@ -120,16 +172,41 @@ class SearchSources{
 		if ($includeOnlineOption){
 			//eContent Search
 			$searchOptions['econtent'] = array(
-					'name' => 'Online Collection',
-					'description' => 'Digital Media available for use online and with portable devices',
-					'catalogType' => 'catalog'
+				'name' => 'Online Collection',
+				'description' => 'Digital Media available for use online and with portable devices',
+				'catalogType' => 'catalog',
+				'hasAdvancedSearch' => true
 			);
+		}
+
+		if ($searchEbsco){
+			$searchOptions['ebsco_eds'] = array(
+				'name' => 'Articles & Databases',
+				'description' => 'EBSCO EDS - Articles and Database',
+				'catalogType' => 'ebsco_eds',
+				'hasAdvancedSearch' => false
+			);
+		}
+
+		if (array_key_exists('Events', $enabledModules)){
+			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+			$libraryEventsSetting = new LibraryEventsSetting();
+			$libraryEventsSetting->libraryId = $library->libraryId;
+			if ($libraryEventsSetting->find(true)){
+				$searchOptions['events'] = array(
+					'name' => 'Events',
+					'description' => 'Search events at the library',
+					'catalogType' => 'events',
+					'hasAdvancedSearch' => false
+				);
+			}
 		}
 
 		$searchOptions['lists'] = array(
 			'name' => 'Lists',
 			'description' => 'User Lists',
-			'catalogType' => 'lists'
+			'catalogType' => 'lists',
+			'hasAdvancedSearch' => false
 		);
 
 		if (array_key_exists('Web Indexer', $enabledModules)){
@@ -144,58 +221,64 @@ class SearchSources{
 				$searchOptions['websites'] = array(
 					'name' => $websiteSetting->searchCategory,
 					'description' => $websiteSetting->searchCategory,
+					'catalogType' => 'websites',
+					'hasAdvancedSearch' => false
+				);
+			}
+			//Local search, activate if we have at least one page
+			if ($library->enableWebBuilder) {
+				$searchOptions['websites'] = array(
+					'name' => 'Library Website',
+					'description' => 'Library Website',
 					'catalogType' => 'websites'
 				);
 			}
 		}
 
-		if ($searchEbsco){
-			$searchOptions['ebsco'] = array(
-				'name' => 'EBSCO',
-				'description' => 'EBSCO',
-				'catalogType' => 'ebsco'
-			);
-		}
-
 		if ($searchArchive){
 			$searchOptions['islandora'] = array(
 				'name' => 'Local Digital Archive',
-				'description' => 'Local Digital Archive in Colorado',
-				'catalogType' => 'islandora'
+				'description' => 'Local Digital Archive for the library',
+				'catalogType' => 'islandora',
+				'hasAdvancedSearch' => false
 			);
 		}
 
 		if ($searchOpenArchives){
-            $searchOptions['open_archives'] = array(
-                'name' => 'Archives',
-                'description' => 'Archive Information',
-                'catalogType' => 'open_archives'
-            );
-        }
+			$searchOptions['open_archives'] = array(
+				'name' => 'History & Archives',
+				'description' => 'Local History and Archive Information',
+				'catalogType' => 'open_archives',
+				'hasAdvancedSearch' => false
+			);
+		}
 
 		//Genealogy Search
 		if ($searchGenealogy){
 			$searchOptions['genealogy'] = array(
-                'name' => 'Genealogy Records',
-                'description' => 'Genealogy Records',
-				'catalogType' => 'genealogy'
+				'name' => 'Genealogy Records',
+				'description' => 'Genealogy Records',
+				'catalogType' => 'genealogy',
+				'hasAdvancedSearch' => false
 			);
 		}
 
 		if ($enableCombinedResults && !$showCombinedResultsFirst){
-			$searchOptions['combinedResults'] = array(
-                'name' => $combinedResultsName,
-                'description' => "Combined results from multiple sources.",
-                'catalogType' => 'combined'
+			$searchOptions['combined'] = array(
+				'name' => $combinedResultsName,
+				'description' => "Combined results from multiple sources.",
+				'catalogType' => 'combined',
+				'hasAdvancedSearch' => false
 			);
 		}
 
 		if ($repeatInProspector){
 			$searchOptions['prospector'] = array(
-                'name' => 'Prospector Catalog',
-                'description' => 'A shared catalog of academic, public, and special libraries all over Colorado.',
-                'external' => true,
-				'catalogType' => 'catalog'
+				'name' => 'Prospector Catalog',
+				'description' => 'A shared catalog of academic, public, and special libraries all over Colorado.',
+				'external' => true,
+				'catalogType' => 'catalog',
+				'hasAdvancedSearch' => false
 			);
 		}
 
@@ -203,25 +286,28 @@ class SearchSources{
 		if ($repeatCourseReserves){
 			//Mesa State
 			$searchOptions['course-reserves-course-name'] = array(
-                'name' => 'Course Reserves by Name or Number',
-                'description' => 'Search course reserves by course name or number',
-                'external' => true,
-				'catalogType' => 'courseReserves'
+				'name' => 'Course Reserves by Name or Number',
+				'description' => 'Search course reserves by course name or number',
+				'external' => true,
+				'catalogType' => 'courseReserves',
+				'hasAdvancedSearch' => false
 			);
 			$searchOptions['course-reserves-instructor'] = array(
-                'name' => 'Course Reserves by Instructor',
-                'description' => 'Search course reserves by professor, lecturer, or instructor name',
-                'external' => true,
-				'catalogType' => 'courseReserves'
+				'name' => 'Course Reserves by Instructor',
+				'description' => 'Search course reserves by professor, lecturer, or instructor name',
+				'external' => true,
+				'catalogType' => 'courseReserves',
+				'hasAdvancedSearch' => false
 			);
 		}
 
 		if ($repeatInWorldCat){
 			$searchOptions['worldcat'] = array(
-                'name' => 'WorldCat',
-                'description' => 'A shared catalog of libraries all over the world.',
-                'external' => true,
-				'catalogType' => 'catalog'
+				'name' => 'WorldCat',
+				'description' => 'A shared catalog of libraries all over the world.',
+				'external' => true,
+				'catalogType' => 'catalog',
+				'hasAdvancedSearch' => false
 			);
 		}
 
@@ -293,11 +379,18 @@ class SearchSources{
 			}
 			return $worldCatLink;
 		}else if ($searchSource == 'overdrive'){
-            require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-            $overDriveSettings = new OverDriveSetting();
-            $overDriveSettings->find((true));
-			$overDriveUrl = $overDriveSettings->url;
-			return "$overDriveUrl/search?query=" . urlencode($lookFor);
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+			$overDriveScope = new OverDriveScope();
+			$overDriveScope->id = $library->overDriveScopeId;
+			if ($overDriveScope->find(true)){
+				require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+				$overDriveSettings = new OverDriveSetting();
+				$overDriveSettings->id = $overDriveScope->settingId;
+				if ($overDriveSettings->find(true)) {
+					$overDriveUrl = $overDriveSettings->url;
+					return "$overDriveUrl/search?query=" . urlencode($lookFor);
+				}
+			}
 		}else if ($searchSource == 'prospector'){
 			$prospectorSearchType = $this->getProspectorSearchType($type);
 			$lookFor = str_replace('+', '%20', rawurlencode($lookFor));

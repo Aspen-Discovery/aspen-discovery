@@ -30,7 +30,7 @@ class MyAccount_Masquerade extends MyAccount
 		if (!empty($library) && $library->allowMasqueradeMode) {
 			if (!empty($_REQUEST['cardNumber'])) {
 				//$logger->log("Masquerading as " . $_REQUEST['cardNumber'], Logger::LOG_ERROR);
-				$libraryCard = $_REQUEST['cardNumber'];
+				$libraryCard = trim($_REQUEST['cardNumber']);
 				global $guidingUser;
 				if (empty($guidingUser)) {
 					$user = UserAccount::getLoggedInUser();
@@ -57,7 +57,7 @@ class MyAccount_Masquerade extends MyAccount
 							$accountProfile->selectAdd();
 							$accountProfile->selectAdd('loginConfiguration');
 							$accountProfile->groupBy('loginConfiguration');
-							$numConfigurations = $accountProfile->find();
+							$accountProfile->find();
 							if ($accountProfile->getNumResults() > 1) {
 								// Now that we know there is more than loginConfiguration type, check the opposite column
 								$masqueradedUser = new User();
@@ -70,7 +70,7 @@ class MyAccount_Masquerade extends MyAccount
 							}
 
 							if ($masqueradedUser->getNumResults() == 0) {
-								// Test for a user that hasn't logged into Pika before
+								// Test for a user that hasn't logged into Aspen Discovery before
 								$masqueradedUser = UserAccount::findNewUser($libraryCard);
 								if (!$masqueradedUser) {
 									return array(
@@ -84,8 +84,52 @@ class MyAccount_Masquerade extends MyAccount
 						// Now that we have found the masqueraded User, check Masquerade Levels
 						if ($masqueradedUser) {
 							//Check for errors
-							switch ($user->getMasqueradeLevel()) {
-							case 'location' :
+							$masqueradedUserPType = new PType();
+							$masqueradedUserPType->pType = $masqueradedUser->patronType;
+							$isRestrictedUser = true;
+							if ($masqueradedUserPType->find(true)) {
+								if ($masqueradedUserPType->restrictMasquerade == 0) {
+									$isRestrictedUser = false;
+								}
+							}
+							/** @noinspection PhpStatementHasEmptyBodyInspection */
+							if (UserAccount::userHasPermission('Masquerade as any user')) {
+								//The user can masquerade as anyone, no additional checks needed
+							}elseif (UserAccount::userHasPermission('Masquerade as unrestricted patron types')) {
+								if ($isRestrictedUser) {
+									return array(
+										'success' => false,
+										'error' => 'Cannot masquerade as patrons of this type.'
+									);
+								}
+							}elseif (UserAccount::userHasPermission('Masquerade as patrons with same home library') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home library')) {
+								$guidingUserLibrary = $user->getHomeLibrary();
+								if (!$guidingUserLibrary) {
+									return array(
+										'success' => false,
+										'error' => 'Could not determine your home library.'
+									);
+								}
+								$masqueradedUserLibrary = $masqueradedUser->getHomeLibrary();
+								if (!$masqueradedUserLibrary) {
+									return array(
+										'success' => false,
+										'error' => 'Could not determine the patron\'s home library.'
+									);
+								}
+								if ($guidingUserLibrary->libraryId != $masqueradedUserLibrary->libraryId) {
+									return array(
+										'success' => false,
+										'error' => 'You do not have the same home library as the patron.'
+									);
+								}
+								if ($isRestrictedUser && !UserAccount::userHasPermission('Masquerade as patrons with same home library')) {
+									return array(
+										'success' => false,
+										'error' => 'Cannot masquerade as patrons of this type.'
+									);
+								}
+							}elseif (UserAccount::userHasPermission('Masquerade as patrons with same home location') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home location')) {
 								if (empty($user->homeLocationId)) {
 									return array(
 										'success' => false,
@@ -104,63 +148,36 @@ class MyAccount_Masquerade extends MyAccount
 										'error'   => 'You do not have the same home library branch as the patron.'
 									);
 								}
-								break;
-							case 'library' :
-								$guidingUserLibrary = $user->getHomeLibrary();
-								if (!$guidingUserLibrary) {
+								if ($isRestrictedUser && !UserAccount::userHasPermission('Masquerade as patrons with same home location')) {
 									return array(
 										'success' => false,
-										'error'   => 'Could not determine your home library.'
+										'error' => 'Cannot masquerade as patrons of this type.'
 									);
 								}
-								$masqueradedUserLibrary = $masqueradedUser->getHomeLibrary();
-								if (!$masqueradedUserLibrary) {
-									return array(
-										'success' => false,
-										'error' => 'Could not determine the patron\'s home library.'
-									);
-								}
-								if ($guidingUserLibrary->libraryId != $masqueradedUserLibrary->libraryId) {
-									return array(
-										'success' => false,
-										'error'   => 'You do not have the same home library as the patron.'
-									);
-								}
-								break;
-							case 'any' :
-
 							}
 
 							//Setup the guiding user and masqueraded user
 							global $guidingUser;
-							//$logger->log("Logging in with masqueraded user information", Logger::LOG_ERROR);
-							//$logger->log("Guiding User " . (empty($guidingUser) ? 'none' : $guidingUser->id), Logger::LOG_ERROR);
-							//$logger->log("User " . (empty($user) ? 'none' : $user->id), Logger::LOG_ERROR);
 							$guidingUser = $user;
-							//$logger->log("New Guiding User " . (empty($guidingUser) ? 'none' : $guidingUser->id), Logger::LOG_ERROR);
-							// NOW login in as masquerade user
-							//$logger->log("Masqueraded User " . (empty($masqueradedUser) ? 'none' : $masqueradedUser->id), Logger::LOG_ERROR);
-//							$_REQUEST['username'] = $masqueradedUser->cat_username;
-//							$_REQUEST['password'] = $masqueradedUser->cat_password;
-							//$logger->log("Masquerade Login " . $_REQUEST['username'] . " " . $_REQUEST['password'], Logger::LOG_ERROR);
-							$user                 = $masqueradedUser;
-							//$logger->log("New User " . (empty($user) ? 'none' : $user->id), Logger::LOG_ERROR);
+							$user = $masqueradedUser;
 							if (!empty($user) && !($user instanceof AspenError)){
 								@session_start(); // (suppress notice if the session is already started)
 								$_SESSION['guidingUserId'] = $guidingUser->id;
 								$_SESSION['activeUserId'] = $user->id;
-								@session_commit();
+								@session_write_close();
 								return array('success' => true);
 							} else {
 								unset($_SESSION['guidingUserId']);
-								$user = $guidingUser;
 								return array(
-										'success' => false,
-										'error'   => 'Failed to initiate masquerade as specified user.'
+									'success' => false,
+									'error'   => 'Failed to initiate masquerade as specified user.'
 								);
 							}
 						} else {
-
+							return array(
+								'success' => false,
+								'error'   => 'Could not load user to masquerade as.'
+							);
 						}
 					} else {
 						return array(
@@ -190,21 +207,30 @@ class MyAccount_Masquerade extends MyAccount
 
 	static function endMasquerade() {
 		if (UserAccount::isLoggedIn()) {
-			global $guidingUser,
-			       $masqueradeMode;
+			global $guidingUser;
+			global $masqueradeMode;
 			@session_start();  // (suppress notice if the session is already started)
 			unset($_SESSION['guidingUserId']);
 			$masqueradeMode = false;
 			if ($guidingUser) {
-				$_REQUEST['username'] = $guidingUser->cat_username;
-				$_REQUEST['password'] = $guidingUser->cat_password;
+				$_REQUEST['username'] = $guidingUser->getBarcode();
+				$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
 				$user = UserAccount::login();
 				if ($user && !($user instanceof AspenError)) {
 					return array('success' => true);
+				}else{
+					UserAccount::softLogout();
 				}
 			}
 		}
 		return array('success' => false);
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'Masquerade as another user');
+		return $breadcrumbs;
+	}
 }

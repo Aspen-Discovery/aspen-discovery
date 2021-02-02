@@ -27,6 +27,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char locationSubfield;
 	private char itemStatusSubfield;
 	private char iTypeSubfield;
+	private char collectionSubfield;
 	private char shelvingLocationSubfield;
 	private char yearToDateCheckoutsSubfield;
 	private char totalCheckoutsSubfield;
@@ -39,6 +40,12 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char format;
 	private boolean groupUnchangedFiles;
 	private long lastUpdateFromMarcExport;
+	private long lastVolumeExportTimestamp;
+	private boolean checkRecordForLargePrint;
+	private char subLocationSubfield;
+	private int determineAudienceBy;
+	private char audienceSubfield;
+	private long lastUpdateOfAuthorities;
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
 		this.filenamesToInclude = filenamesToInclude;
@@ -117,11 +124,15 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 				indexingProfile.setShelvingLocationSubfield(getCharFromRecordSet(indexingProfileRS,"shelvingLocation"));
 				indexingProfile.setITypeSubfield(getCharFromRecordSet(indexingProfileRS,"iType"));
+				indexingProfile.setCollectionSubfield(getCharFromRecordSet(indexingProfileRS,"collection"));
+				indexingProfile.setSubLocationSubfield(getCharFromRecordSet(indexingProfileRS,"subLocation"));
 
 				indexingProfile.setGroupingClass(indexingProfileRS.getString("groupingClass"));
 				indexingProfile.setFormatSource(indexingProfileRS.getString("formatSource"));
 				indexingProfile.setSpecifiedFormatCategory(indexingProfileRS.getString("specifiedFormatCategory"));
 				indexingProfile.setFormat(getCharFromRecordSet(indexingProfileRS, "format"));
+				indexingProfile.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
+
 				indexingProfile.setGroupUnchangedFiles(indexingProfileRS.getBoolean("groupUnchangedFiles"));
 
 				indexingProfile.setDoAutomaticEcontentSuppression(indexingProfileRS.getBoolean("doAutomaticEcontentSuppression"));
@@ -129,6 +140,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 				indexingProfile.setLastYearCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS, "lastYearCheckouts"));
 				indexingProfile.setBarcodeSubfield(getCharFromRecordSet(indexingProfileRS, "barcode"));
+				if (indexingProfile.getItemRecordNumberSubfield() == ' '){
+					indexingProfile.setItemRecordNumberSubfield(indexingProfile.getBarcodeSubfield());
+				}
 				indexingProfile.setTotalRenewalsSubfield(getCharFromRecordSet(indexingProfileRS, "totalRenewals"));
 				indexingProfile.setICode2Subfield(getCharFromRecordSet(indexingProfileRS, "iCode2"));
 
@@ -137,9 +151,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setVolume(getCharFromRecordSet(indexingProfileRS, "volume"));
 				indexingProfile.setItemUrl(getCharFromRecordSet(indexingProfileRS, "itemUrl"));
 
+				indexingProfile.setDetermineAudienceBy(indexingProfileRS.getInt("determineAudienceBy"));
+				indexingProfile.setAudienceSubfield(getCharFromRecordSet(indexingProfileRS, "audienceSubfield"));
+
 				indexingProfile.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
 				indexingProfile.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
 				indexingProfile.setLastUpdateFromMarcExport(indexingProfileRS.getLong("lastUpdateFromMarcExport"));
+				indexingProfile.setLastVolumeExportTimestamp(indexingProfileRS.getLong("lastVolumeExportTimestamp"));
+				indexingProfile.setLastUpdateOfAuthorities(indexingProfileRS.getLong("lastUpdateOfAuthorities"));
 
 				indexingProfile.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
 			} else {
@@ -147,9 +166,17 @@ public class IndexingProfile extends BaseIndexingSettings {
 			}
 
 		}catch (Exception e){
-			logger.error("Error reading index profile for CarlX", e);
+			logger.error("Error reading index profile " + profileToLoad, e);
 		}
 		return indexingProfile;
+	}
+
+	private void setAudienceSubfield(char audienceSubfield) {
+		this.audienceSubfield = audienceSubfield;
+	}
+
+	public char getAudienceSubfield(){
+		return this.audienceSubfield;
 	}
 
 	public String getItemTag() {
@@ -431,4 +458,51 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return lastUpdateFromMarcExport;
 	}
 
+	private void setCheckRecordForLargePrint(boolean checkRecordForLargePrint) {
+		this.checkRecordForLargePrint = checkRecordForLargePrint;
+	}
+
+	public boolean getCheckRecordForLargePrint() {
+		return checkRecordForLargePrint;
+	}
+
+	private void setCollectionSubfield(char collectionSubfield) {
+		this.collectionSubfield = collectionSubfield;
+	}
+
+	public char getCollectionSubfield() {
+		return collectionSubfield;
+	}
+
+	private void setSubLocationSubfield(char sublocationSubfield) {
+		this.subLocationSubfield = sublocationSubfield;
+	}
+
+	public char getSubLocationSubfield() {
+		return subLocationSubfield;
+	}
+
+	public int getDetermineAudienceBy() {
+		return determineAudienceBy;
+	}
+
+	private void setDetermineAudienceBy(int determineAudienceBy) {
+		this.determineAudienceBy = determineAudienceBy;
+	}
+
+	public long getLastVolumeExportTimestamp() {
+		return lastVolumeExportTimestamp;
+	}
+
+	public void setLastVolumeExportTimestamp(long lastVolumeExportTimestamp) {
+		this.lastVolumeExportTimestamp = lastVolumeExportTimestamp;
+	}
+
+	public long getLastUpdateOfAuthorities() {
+		return lastUpdateOfAuthorities;
+	}
+
+	private void setLastUpdateOfAuthorities(long lastUpdateOfAuthorities) {
+		this.lastUpdateOfAuthorities = lastUpdateOfAuthorities;
+	}
 }

@@ -63,12 +63,13 @@ class SideLoads_SideLoads extends ObjectEditor
 		return 'Side Loaded eContent Collections';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$list = array();
 
 		$object = new SideLoad();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
@@ -82,11 +83,6 @@ class SideLoads_SideLoads extends ObjectEditor
 		return SideLoad::getObjectStructure();
 	}
 
-	function getAllowableRoles()
-	{
-		return array('opacAdmin');
-	}
-
 	function getPrimaryKeyColumn()
 	{
 		return 'id';
@@ -97,19 +93,9 @@ class SideLoads_SideLoads extends ObjectEditor
 		return 'id';
 	}
 
-	function canAddNew()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
-	function canDelete()
-	{
-		return UserAccount::userHasRole('opacAdmin');
-	}
-
 	function getInstructions()
 	{
-		return null;
+		return '/Admin/HelpManual?page=Side-Loaded-eContent';
 	}
 
 	function getAdditionalObjectActions($existingObject)
@@ -129,4 +115,22 @@ class SideLoads_SideLoads extends ObjectEditor
 		return $actions;
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#side_loads', 'Side Load');
+		$breadcrumbs[] = new Breadcrumb('/SideLoads/SideLoads', 'Side Load Settings');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'side_loads';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Side Loads');
+	}
 }

@@ -17,16 +17,36 @@ class Admin_Placards extends ObjectEditor
 		return 'Placards';
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
-		return UserAccount::userHasRole('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager', 'contentEditor');
+		return UserAccount::userHasPermission(['Administer All Placards','Administer Library Placards']);
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$placard = new Placard();
 		$placard->orderBy('title');
+		$placard->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$userHasExistingPlacards = true;
+		if (!UserAccount::userHasPermission('Administer All Placards')){
+			$libraryPlacard = new PlacardLibrary();
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			if ($library != null){
+				$libraryPlacard->libraryId = $library->libraryId;
+				$placardsForLibrary = [];
+				$libraryPlacard->find();
+				while ($libraryPlacard->fetch()){
+					$placardsForLibrary[] = $libraryPlacard->placardId;
+				}
+				if (count($placardsForLibrary) > 0) {
+					$placard->whereAddIn('id', $placardsForLibrary, false);
+				}else{
+					$userHasExistingPlacards = false;
+				}
+			}
+		}
 		$placard->find();
 		$list = array();
-		while ($placard->fetch()){
-			$list[$placard->id] = clone $placard;
+		if ($userHasExistingPlacards) {
+			while ($placard->fetch()) {
+				$list[$placard->id] = clone $placard;
+			}
 		}
 		return $list;
 	}
@@ -39,8 +59,26 @@ class Admin_Placards extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'locationManager', 'contentEditor');
+	function getInstructions()
+	{
+		return '/Admin/HelpManual?page=Placards';
+	}
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#local_enrichment', 'Local Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Placards', 'Placards');
+		return $breadcrumbs;
 	}
 
+	function getActiveAdminSection()
+	{
+		return 'local_enrichment';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['Administer All Placards','Administer Library Placards']);
+	}
 }

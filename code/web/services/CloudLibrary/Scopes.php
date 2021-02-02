@@ -18,9 +18,10 @@ class CloudLibrary_Scopes extends ObjectEditor
 	function getPageTitle(){
 		return 'Cloud Library Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new CloudLibraryScope();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -37,14 +38,11 @@ class CloudLibrary_Scopes extends ObjectEditor
 	function getIdKeyColumn(){
 		return 'id';
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
-	}
 	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging');
+		return true;
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging');
+		return true;
 	}
 	function getAdditionalObjectActions($existingObject){
 		return [];
@@ -52,5 +50,24 @@ class CloudLibrary_Scopes extends ObjectEditor
 
 	function getInstructions(){
 		return '';
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'Cloud Library');
+		$breadcrumbs[] = new Breadcrumb('/CloudLibrary/Scopes', 'Scopes');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'cloud_library';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Cloud Library');
 	}
 }

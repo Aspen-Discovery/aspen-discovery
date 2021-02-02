@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -18,32 +19,32 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class OverDriveProcessor {
-	private GroupedWorkIndexer indexer;
-	private Logger logger;
+	private final GroupedWorkIndexer indexer;
+	private final Logger logger;
 	private PreparedStatement getProductInfoStmt;
 	private PreparedStatement getNumCopiesStmt;
 	private PreparedStatement getProductMetadataStmt;
 	private PreparedStatement getProductAvailabilityStmt;
 	private PreparedStatement getProductFormatsStmt;
-	private SimpleDateFormat publishDateFormatter = new SimpleDateFormat("MM/dd/yyyy");
-	private SimpleDateFormat publishDateFormatter2 = new SimpleDateFormat("MM/yyyy");
-	private Pattern publishDatePattern = Pattern.compile("([a-zA-Z]{3})\\s([\\s\\d]\\d)\\s(\\d{4}).*");
+	private final SimpleDateFormat publishDateFormatter = new SimpleDateFormat("MM/dd/yyyy");
+	private final SimpleDateFormat publishDateFormatter2 = new SimpleDateFormat("MM/yyyy");
+	private final Pattern publishDatePattern = Pattern.compile("([a-zA-Z]{3})\\s([\\s\\d]\\d)\\s(\\d{4}).*");
 
 	OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
 		this.indexer = groupedWorkIndexer;
 		this.logger = logger;
 		try {
-			getProductInfoStmt = dbConn.prepareStatement("SELECT * from overdrive_api_products where overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getNumCopiesStmt = dbConn.prepareStatement("SELECT sum(copiesOwned) as totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getProductMetadataStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getProductAvailabilityStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ? and shared = 0", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getProductFormatsStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_formats where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = dbConn.prepareStatement("SELECT * from overdrive_api_products where overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getNumCopiesStmt = dbConn.prepareStatement("SELECT sum(copiesOwned) as totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getProductMetadataStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getProductAvailabilityStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ? and shared = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getProductFormatsStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_formats where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Error setting up overdrive processor", e);
 		}
 	}
 
-	void processRecord(GroupedWorkSolr groupedWork, String identifier) {
+	void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
@@ -86,6 +87,10 @@ class OverDriveProcessor {
 								formatCategory = "Movies";
 								primaryFormat = "eVideo";
 								break;
+							case "Magazine":
+								formatCategory = "eBook";
+								primaryFormat = "eMagazine";
+								break;
 							default:
 								formatCategory = mediaType;
 								primaryFormat = mediaType;
@@ -99,75 +104,89 @@ class OverDriveProcessor {
 						try {
 							rawMetadataDecoded = new JSONObject(metadata.get("rawMetadata"));
 						} catch (JSONException e) {
-							logger.error("Error loading raw data for OverDrive MetaData");
+							logEntry.incErrors("Error loading raw data for OverDrive MetaData", e);
 						}
 
 						boolean isOnOrder = false;
 						Date publishDate = null;
-						if (rawMetadataDecoded.has("onSaleDate")){
-							String onSaleDate = rawMetadataDecoded.getString("onSaleDate");
-						}else if (rawMetadataDecoded.has("publishDateText")){
-							String publishDateText = rawMetadataDecoded.getString("publishDateText");
-							if (publishDateText.length() == 4){
-								GregorianCalendar publishCal = new GregorianCalendar();
-								publishCal.set(Integer.parseInt(publishDateText), 1, 1);
-								publishDate = publishCal.getTime();
-								if (publishDate.after(new Date())) {
-									isOnOrder = true;
-								}
-							}else {
-								try {
-									publishDate = publishDateFormatter.parse(publishDateText);
+						if (rawMetadataDecoded != null) {
+							if (rawMetadataDecoded.has("onSaleDate")) {
+								String onSaleDate = rawMetadataDecoded.getString("onSaleDate");
+							} else if (rawMetadataDecoded.has("publishDateText")) {
+								String publishDateText = rawMetadataDecoded.getString("publishDateText");
+								if (publishDateText.length() == 4) {
+									GregorianCalendar publishCal = new GregorianCalendar();
+									publishCal.set(Integer.parseInt(publishDateText), Calendar.JANUARY, 1);
+									publishDate = publishCal.getTime();
 									if (publishDate.after(new Date())) {
 										isOnOrder = true;
 									}
-								} catch (ParseException e) {
+								} else {
 									try {
-										publishDate = publishDateFormatter2.parse(publishDateText);
+										publishDate = publishDateFormatter.parse(publishDateText);
 										if (publishDate.after(new Date())) {
 											isOnOrder = true;
 										}
-									}catch (ParseException e2){
-										Matcher publishDateMatcher = publishDatePattern.matcher(publishDateText);
-										if (publishDateMatcher.matches()){
-											String month = publishDateMatcher.group(1).toLowerCase();
-											String day = publishDateMatcher.group(2).trim();
-											String year = publishDateMatcher.group(3);
-											GregorianCalendar publishCal = new GregorianCalendar();
-											int monthInt = 1;
-											switch (month){
-												case "jan":
-													monthInt = Calendar.JANUARY; break;
-												case "feb":
-													monthInt = Calendar.FEBRUARY; break;
-												case "mar":
-													monthInt = Calendar.MARCH; break;
-												case "apr":
-													monthInt = Calendar.APRIL; break;
-												case "may":
-													monthInt = Calendar.MAY; break;
-												case "jun":
-													monthInt = Calendar.JUNE; break;
-												case "jul":
-													monthInt = Calendar.JULY; break;
-												case "aug":
-													monthInt = Calendar.AUGUST; break;
-												case "sep":
-													monthInt = Calendar.SEPTEMBER; break;
-												case "oct":
-													monthInt = Calendar.OCTOBER; break;
-												case "nov":
-													monthInt = Calendar.NOVEMBER; break;
-												case "dec":
-													monthInt = Calendar.DECEMBER; break;
-											}
-											publishCal.set(Integer.parseInt(year), monthInt, (Integer.parseInt(day)));
-											publishDate = publishCal.getTime();
+									} catch (ParseException e) {
+										try {
+											publishDate = publishDateFormatter2.parse(publishDateText);
 											if (publishDate.after(new Date())) {
 												isOnOrder = true;
 											}
-										}else {
-											logger.error("Error parsing publication date " + publishDateText);
+										} catch (ParseException e2) {
+											Matcher publishDateMatcher = publishDatePattern.matcher(publishDateText);
+											if (publishDateMatcher.matches()) {
+												String month = publishDateMatcher.group(1).toLowerCase();
+												String day = publishDateMatcher.group(2).trim();
+												String year = publishDateMatcher.group(3);
+												GregorianCalendar publishCal = new GregorianCalendar();
+												int monthInt = 1;
+												switch (month) {
+													case "jan":
+														monthInt = Calendar.JANUARY;
+														break;
+													case "feb":
+														monthInt = Calendar.FEBRUARY;
+														break;
+													case "mar":
+														monthInt = Calendar.MARCH;
+														break;
+													case "apr":
+														monthInt = Calendar.APRIL;
+														break;
+													case "may":
+														monthInt = Calendar.MAY;
+														break;
+													case "jun":
+														monthInt = Calendar.JUNE;
+														break;
+													case "jul":
+														monthInt = Calendar.JULY;
+														break;
+													case "aug":
+														monthInt = Calendar.AUGUST;
+														break;
+													case "sep":
+														monthInt = Calendar.SEPTEMBER;
+														break;
+													case "oct":
+														monthInt = Calendar.OCTOBER;
+														break;
+													case "nov":
+														monthInt = Calendar.NOVEMBER;
+														break;
+													case "dec":
+														monthInt = Calendar.DECEMBER;
+														break;
+												}
+												publishCal.set(Integer.parseInt(year), monthInt, (Integer.parseInt(day)));
+												publishDate = publishCal.getTime();
+												if (publishDate.after(new Date())) {
+													isOnOrder = true;
+												}
+											} else {
+												logEntry.addNote("Error parsing publication date " + publishDateText);
+											}
 										}
 									}
 								}
@@ -213,7 +232,7 @@ class OverDriveProcessor {
 							try {
 								formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_overdrive", curFormat.replace(' ', '_'), identifier));
 							} catch (Exception e) {
-								logger.warn("Could not translate format boost for " + primaryFormat);
+								logEntry.addNote("Could not translate format boost for " + primaryFormat);
 							}
 							if (formatBoost > maxFormatBoost) {
 								maxFormatBoost = formatBoost;
@@ -221,7 +240,11 @@ class OverDriveProcessor {
 						}
 						overDriveRecord.setFormatBoost(maxFormatBoost);
 
-						overDriveRecord.setEdition("");
+						if (rawMetadataDecoded.has("edition")){
+							overDriveRecord.setEdition(rawMetadataDecoded.getString("edition"));
+						}else {
+							overDriveRecord.setEdition("");
+						}
 						overDriveRecord.setPrimaryLanguage(primaryLanguage);
 						overDriveRecord.setPublisher(StringUtils.trimTrailingPunctuation(metadata.get("publisher")));
 						overDriveRecord.setPublicationDate(metadata.get("publicationDate"));
@@ -239,16 +262,15 @@ class OverDriveProcessor {
 							itemInfo.seteContentSource("OverDrive");
 							itemInfo.setIsEContent(true);
 							itemInfo.setShelfLocation("Online OverDrive Collection");
+							itemInfo.setDetailedLocation("Online OverDrive Collection");
 							itemInfo.setCallNumber("Online OverDrive");
 							itemInfo.setSortableCallNumber("Online OverDrive");
 							if (isOnOrder) {
 								itemInfo.setIsOrderItem();
 								itemInfo.setDateAdded(publishDate);
-							}else{
+							} else {
 								itemInfo.setDateAdded(dateAdded);
 							}
-
-							overDriveRecord.addItem(itemInfo);
 
 							long libraryId = availabilityRS.getLong("libraryId");
 							boolean available = availabilityRS.getBoolean("available");
@@ -271,6 +293,13 @@ class OverDriveProcessor {
 							} else {
 								itemInfo.setDetailedStatus("Checked Out");
 							}
+
+							if (copiesOwned == 0 && libraryId != -1){
+								//Don't add advantage info if the library does not own additional copies (or have additional copies shared with it)
+								continue;
+							}
+
+							overDriveRecord.addItem(itemInfo);
 
 							boolean isAdult = targetAudience.equals("Adult");
 							boolean isTeen = targetAudience.equals("Young Adult");
@@ -297,7 +326,7 @@ class OverDriveProcessor {
 											if (isOnOrder) {
 												scopingInfo.setStatus("On Order");
 												scopingInfo.setGroupedStatus("On Order");
-											}else if (available) {
+											} else if (available) {
 												scopingInfo.setStatus("Available Online");
 												scopingInfo.setGroupedStatus("Available Online");
 											} else {
@@ -309,8 +338,9 @@ class OverDriveProcessor {
 								}
 							} else {
 								for (Scope curScope : indexer.getScopes()) {
-									if (curScope.isLibraryScope() && curScope.getLibraryId().equals(libraryId)){
-										itemInfo.setShelfLocation(curScope.getFacetLabel() + " - OverDrive Advantage");
+									if (curScope.isLibraryScope() && curScope.getLibraryId().equals(libraryId)) {
+										itemInfo.setShelfLocation("Online OverDrive Collection");
+										itemInfo.setDetailedLocation(curScope.getFacetLabel() + " - OverDrive Advantage");
 									}
 									if (curScope.isIncludeOverDriveCollection() && curScope.getLibraryId().equals(libraryId)) {
 										boolean okToInclude = false;
@@ -337,7 +367,7 @@ class OverDriveProcessor {
 											if (isOnOrder) {
 												scopingInfo.setStatus("On Order");
 												scopingInfo.setGroupedStatus("On Order");
-											}else if (available) {
+											} else if (available) {
 												scopingInfo.setStatus("Available Online");
 												scopingInfo.setGroupedStatus("Available Online");
 											} else {
@@ -358,42 +388,46 @@ class OverDriveProcessor {
 			}
 			productRS.close();
 		} catch (JSONException e) {
-			logger.error("Error loading information from JSON for overdrive title", e);
+			logEntry.incErrors("Error loading information from JSON for overdrive title", e);
 		} catch (SQLException e) {
-			logger.error("Error loading information from Database for overdrive title", e);
+			logEntry.incErrors("Error loading information from Database for overdrive title", e);
 		}
 
 	}
 
 	private void loadOverDriveIdentifiers(GroupedWorkSolr groupedWork, JSONObject productMetadata, String primaryFormat) throws JSONException {
-		JSONArray formats = productMetadata.getJSONArray("formats");
-		for (int i = 0; i < formats.length(); i++){
-			JSONObject curFormat = formats.getJSONObject(i);
-			//Things like videos do not have identifiers so we need to check for the lack here
-			if (curFormat.has("identifiers")){
-				JSONArray identifiers = curFormat.getJSONArray("identifiers");
-				for (int j = 0; j < identifiers.length(); j ++){
-					JSONObject curIdentifier = identifiers.getJSONObject(j);
-					String type = curIdentifier.getString("type");
-					String value = curIdentifier.getString("value");
-					//For now, ignore anything that isn't an ISBN
-					if (type.equals("ISBN")){
-						groupedWork.addIsbn(value, primaryFormat);
-					}else if (type.equals("UPC")){
-						groupedWork.addUpc(value);
+		if (productMetadata.has("formats")) {
+			JSONArray formats = productMetadata.getJSONArray("formats");
+			for (int i = 0; i < formats.length(); i++) {
+				JSONObject curFormat = formats.getJSONObject(i);
+				//Things like videos do not have identifiers so we need to check for the lack here
+				if (curFormat.has("identifiers")) {
+					JSONArray identifiers = curFormat.getJSONArray("identifiers");
+					for (int j = 0; j < identifiers.length(); j++) {
+						JSONObject curIdentifier = identifiers.getJSONObject(j);
+						String type = curIdentifier.getString("type");
+						String value = curIdentifier.getString("value");
+						//For now, ignore anything that isn't an ISBN
+						if (type.equals("ISBN")) {
+							groupedWork.addIsbn(value, primaryFormat);
+						} else if (type.equals("UPC")) {
+							groupedWork.addUpc(value);
+						}
 					}
 				}
 			}
+		}else{
+			logger.warn("OverDrive product did not have formats");
 		}
 	}
 
 	/**
 	 * Load information based on subjects for the record
 	 *
-	 * @param groupedWork    The Grouped Work being updated
-	 * @param productMetadata   JSON representing the raw data metadata from OverDrive
+	 * @param groupedWork     The Grouped Work being updated
+	 * @param productMetadata JSON representing the raw data metadata from OverDrive
 	 * @return The target audience for use later in scoping
-	 * @throws JSONException	Exception if something goes horribly wrong
+	 * @throws JSONException Exception if something goes horribly wrong
 	 */
 	private String loadOverDriveSubjects(GroupedWorkSolr groupedWork, JSONObject productMetadata) throws JSONException {
 		//Load subject data
@@ -404,41 +438,41 @@ class OverDriveProcessor {
 		HashMap<String, Integer> literaryFormFull = new HashMap<>();
 		String targetAudience = "Adult";
 		String targetAudienceFull = "Adult";
-		if (productMetadata.has("subjects")){
+		if (productMetadata.has("subjects")) {
 			JSONArray subjects = productMetadata.getJSONArray("subjects");
-			for (int i = 0; i < subjects.length(); i++){
+			for (int i = 0; i < subjects.length(); i++) {
 				String curSubject = subjects.getJSONObject(i).getString("value");
-				if (curSubject.contains("Nonfiction")){
+				if (curSubject.contains("Nonfiction")) {
 					Util.addToMapWithCount(literaryForm, "Non Fiction");
 					Util.addToMapWithCount(literaryFormFull, "Non Fiction");
 					genres.add("Non Fiction");
-				}else	if (curSubject.contains("Fiction")){
+				} else if (curSubject.contains("Fiction")) {
 					Util.addToMapWithCount(literaryForm, "Fiction");
 					Util.addToMapWithCount(literaryFormFull, "Fiction");
 					genres.add("Fiction");
 				}
 
-				if (curSubject.contains("Poetry")){
+				if (curSubject.contains("Poetry")) {
 					Util.addToMapWithCount(literaryForm, "Fiction");
 					Util.addToMapWithCount(literaryFormFull, "Poetry");
-				}else if (curSubject.contains("Essays")){
+				} else if (curSubject.contains("Essays")) {
 					Util.addToMapWithCount(literaryForm, "Non Fiction");
 					Util.addToMapWithCount(literaryFormFull, curSubject);
-				}else if (curSubject.contains("Short Stories") || curSubject.contains("Drama")){
+				} else if (curSubject.contains("Short Stories") || curSubject.contains("Drama")) {
 					Util.addToMapWithCount(literaryForm, "Fiction");
 					Util.addToMapWithCount(literaryFormFull, curSubject);
 				}
 
-				if (curSubject.contains("Juvenile")){
+				if (curSubject.contains("Juvenile")) {
 					targetAudience = "Juvenile";
 					targetAudienceFull = "Juvenile";
-				}else if (curSubject.contains("Young Adult")){
+				} else if (curSubject.contains("Young Adult")) {
 					targetAudience = "Young Adult";
 					targetAudienceFull = "Adolescent (14-17)";
-				}else if (curSubject.contains("Picture Book")){
+				} else if (curSubject.contains("Picture Book")) {
 					targetAudience = "Juvenile";
 					targetAudienceFull = "Preschool (0-5)";
-				}else if (curSubject.contains("Beginning Reader")){
+				} else if (curSubject.contains("Beginning Reader")) {
 					targetAudience = "Juvenile";
 					targetAudienceFull = "Primary (6-8)";
 				}
@@ -449,10 +483,10 @@ class OverDriveProcessor {
 			groupedWork.addTopicFacet(topics);
 			groupedWork.addGenre(genres);
 			groupedWork.addGenreFacet(genres);
-			if (literaryForm.size() > 0){
+			if (literaryForm.size() > 0) {
 				groupedWork.addLiteraryForms(literaryForm);
 			}
-			if (literaryFormFull.size() > 0){
+			if (literaryFormFull.size() > 0) {
 				groupedWork.addLiteraryFormsFull(literaryFormFull);
 			}
 		}
@@ -466,16 +500,16 @@ class OverDriveProcessor {
 	private String loadOverDriveLanguages(GroupedWorkSolr groupedWork, JSONObject productMetadata, String identifier) throws JSONException {
 		String primaryLanguage = null;
 		if (productMetadata.has("languages")) {
-            JSONArray languagesFromMetadata = productMetadata.getJSONArray("languages");
+			JSONArray languagesFromMetadata = productMetadata.getJSONArray("languages");
 
-            //Load languages
-            HashSet<String> languages = new HashSet<>();
-            for (int i = 0; i < languagesFromMetadata.length(); i++) {
-                JSONObject curLanguageObj = languagesFromMetadata.getJSONObject(i);
-                String language = curLanguageObj.getString("name");
-                //OverDrive no adds multiple languages separated by commas
+			//Load languages
+			HashSet<String> languages = new HashSet<>();
+			for (int i = 0; i < languagesFromMetadata.length(); i++) {
+				JSONObject curLanguageObj = languagesFromMetadata.getJSONObject(i);
+				String language = curLanguageObj.getString("name");
+				//OverDrive no adds multiple languages separated by commas
 				String[] splitLanguages = language.split(";");
-				for (String curLanguage : splitLanguages){
+				for (String curLanguage : splitLanguages) {
 					curLanguage = curLanguage.trim();
 					languages.add(curLanguage);
 					if (primaryLanguage == null) {
@@ -493,13 +527,13 @@ class OverDriveProcessor {
 					Long languageBoostVal = Long.parseLong(languageBoostEs);
 					groupedWork.setLanguageBoostSpanish(languageBoostVal);
 				}
-            }
-            groupedWork.setLanguages(languages);
-        }else {
-		    groupedWork.addLanguage("English");
-        }
+			}
+			groupedWork.setLanguages(languages);
+		} else {
+			groupedWork.addLanguage("English");
+		}
 
-		if (primaryLanguage == null){
+		if (primaryLanguage == null) {
 			primaryLanguage = "English";
 		}
 		return primaryLanguage;
@@ -510,17 +544,17 @@ class OverDriveProcessor {
 		getProductFormatsStmt.setLong(1, productId);
 		ResultSet formatsRS = getProductFormatsStmt.executeQuery();
 		HashSet<String> formats = new HashSet<>();
-		Long formatBoost = 1L;
-		while (formatsRS.next()){
+		long formatBoost = 1L;
+		while (formatsRS.next()) {
 			String format = formatsRS.getString("name");
 			formats.add(format);
 			String formatBoostStr = indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier);
-			try{
-				Long curFormatBoost = Long.parseLong(formatBoostStr);
-				if (curFormatBoost > formatBoost){
+			try {
+				long curFormatBoost = Long.parseLong(formatBoostStr);
+				if (curFormatBoost > formatBoost) {
 					formatBoost = curFormatBoost;
 				}
-			}catch (NumberFormatException e){
+			} catch (NumberFormatException e) {
 				logger.warn("Could not parse format_boost " + formatBoostStr);
 			}
 		}
@@ -534,7 +568,7 @@ class OverDriveProcessor {
 		//Load metadata
 		getProductMetadataStmt.setLong(1, productId);
 		ResultSet metadataRS = getProductMetadataStmt.executeQuery();
-		if (metadataRS.next()){
+		if (metadataRS.next()) {
 			returnMetadata.put("sortTitle", metadataRS.getString("sortTitle"));
 			String publisher = metadataRS.getString("publisher");
 			groupedWork.addPublisher(publisher);

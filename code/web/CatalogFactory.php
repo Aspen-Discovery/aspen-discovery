@@ -12,7 +12,6 @@ class CatalogFactory {
 	public static function getCatalogConnectionInstance($driver = null, $accountProfile = null){
 		require_once ROOT_DIR . '/CatalogConnection.php';
 		if ($driver == null){
-			/** @var IndexingProfile $activeRecordProfile */
 			global $activeRecordProfile;
 			if ($activeRecordProfile == null || strlen($activeRecordProfile->catalogDriver) == 0){
 				global $configArray;

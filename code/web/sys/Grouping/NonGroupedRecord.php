@@ -22,15 +22,15 @@ class NonGroupedRecord extends DataObject{
 		$availableSources['overdrive'] = 'Overdrive';
 		$availableSources['rbdigital'] = 'RBdigital';
 
-		$structure = array(
-			array(
+		return [
+			[
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
 				'description' => 'The unique id of the merged grouped work in the database',
 				'storeDb' => true,
-			),
-			array(
+			],
+			[
 				'property' => 'source',
 				'type' => 'enum',
 				'values' => $availableSources,
@@ -39,8 +39,8 @@ class NonGroupedRecord extends DataObject{
 				'default' => 'ils',
 				'storeDb' => true,
 				'required' => true,
-			),
-			array(
+			],
+			[
 				'property' => 'recordId',
 				'type' => 'text',
 				'size' => 36,
@@ -49,8 +49,8 @@ class NonGroupedRecord extends DataObject{
 				'description' => 'The id of the record that should not be merged.',
 				'storeDb' => true,
 				'required' => true,
-			),
-			array(
+			],
+			[
 				'property' => 'notes',
 				'type' => 'text',
 				'size' => 255,
@@ -59,9 +59,8 @@ class NonGroupedRecord extends DataObject{
 				'description' => 'Notes related to the record.',
 				'storeDb' => true,
 				'required' => true,
-			),
-		);
-		return $structure;
+			],
+		];
 	}
 
 }

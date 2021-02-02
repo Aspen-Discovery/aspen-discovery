@@ -822,7 +822,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 			$logger->log('Horizon ROA Place Hold Error: ' . $errorMessage, Logger::LOG_ERROR);
 		} elseif (!empty($createHoldResponse->holdRecord)) {
 			$hold_result['success'] = true;
-			$hold_result['message'] = 'Your hold was placed successfully.';
+			$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 		}
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
@@ -1130,7 +1130,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 		}
 		return $blockPolicy;
 	}
-	public function updatePin($patron, $oldPin, $newPin){
+	public function updatePin(User $patron, string $oldPin, string $newPin){
 		$updatePinResponse = $this->changeMyPin($patron, $newPin, $oldPin);
 		if (isset($updatePinResponse->messageList)) {
 			$errors = '';
@@ -1188,26 +1188,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 			} /** @noinspection PhpStatementHasEmptyBodyInspection */ else {
 				//TODO: Look up user in Horizon
 			}
-//				// If possible, check if Horizon has an email address for the patron
-//				if (!empty($patron->cat_password)) {
-//					list($userValid, $sessionToken, $ilsUserID) = $this->loginViaWebService($barcode, $patron->cat_password);
-//					if ($userValid) {
-//						// Yay! We were able to login with the pin Pika has!
-//
-//						//Now check for an email address
-//						$lookupMyAccountInfoResponse = $this->getWebServiceResponse($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true');
-//						if ($lookupMyAccountInfoResponse) {
-//							if (isset($lookupMyAccountInfoResponse->AddressInfo)) {
-//								if (empty($lookupMyAccountInfoResponse->AddressInfo->email)) {
-//									// return an error message because horizon doesn't have an email.
-//									return array(
-//										'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your pin.'
-//									);
-//								}
-//							}
-//						}
-//					}
-//				}
+
 			if ($userID) {
 				//TODO: looks like user ID will still be required
 				// email the pin to the user
@@ -1268,7 +1249,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
 		} elseif (!empty($changeMyPinResponse->sessionToken)){
-			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Pika user
+			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
 				//TODO: check that this still applies
 				$user->cat_password = $newPin;
 				$user->update();
@@ -1288,7 +1269,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 		$staffUser = $configArray['Catalog']['webServiceStaffUser'];
 		$staffPass = $configArray['Catalog']['webServiceStaffPass'];
 		$body = ['login'=>$staffUser, 'password'=>$staffPass];
-		$xtraHeaders = ['sd-originating-app-id'=>'Pika'];
+		$xtraHeaders = ['sd-originating-app-id'=>'Aspen Discovery'];
 		$res = $this->getWebServiceResponse($this->webServiceURL . '/v1/user/staff/login', $body, null, "POST", $xtraHeaders);
 		if(!$res || !isset($res->sessionToken)) {
 			return false;
@@ -1301,7 +1282,10 @@ abstract class HorizonROA extends AbstractIlsDriver
 	 * @return array                         Array of error messages for errors that occurred
 	 */
 	function updatePatronInfo($patron, $canUpdateContactInfo) {
-		$updateErrors = array();
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
 		if ($canUpdateContactInfo) {
 			$sessionToken = $this->getSessionToken($patron);
 			if ($sessionToken) {
@@ -1333,18 +1317,22 @@ abstract class HorizonROA extends AbstractIlsDriver
 				$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $horizonRoaUserId, $updatePatronInfoParameters, $sessionToken, 'PUT');
 				if (isset($updateAccountInfoResponse->messageList)) {
 					foreach ($updateAccountInfoResponse->messageList as $message) {
-						$updateErrors[] = $message->message;
+						$result['messages'][] = $message->message;
 					}
 					global $logger;
-					$logger->log('Horizon ROA Driver - Patron Info Update Error - Error from ILS : '.implode(';', $updateErrors), Logger::LOG_ERROR);
+					$logger->log('Horizon ROA Driver - Patron Info Update Error - Error from ILS : '.implode(';', $result['messages']), Logger::LOG_ERROR);
 				}
 			} else {
-				$updateErrors[] = 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+				$result['messages'][] = 'Sorry, it does not look like you are logged in currently.  Please login and try again';
 			}
 		} else {
-			$updateErrors[] = 'You do not have permission to update profile information.';
+			$result['messages'][] = 'You do not have permission to update profile information.';
 		}
-		return $updateErrors;
+		if (empty($result['messages'])){
+			$result['success'] = true;
+			$result['messages'][] = 'Your account was updated successfully.';
+		}
+		return $result;
 	}
 	public function selfRegister() {
 		global $configArray;

@@ -7,15 +7,15 @@ class SideLoadScope extends DataObject
 	public $id;
 	public $name;
 	public $sideLoadId;
-	public $restrictToChildrensMaterial;
+	public /** @noinspection PhpUnused */ $restrictToChildrensMaterial;
 
 	//The next 3 fields allow inclusion or exclusion of records based on a marc tag
-	public $marcTagToMatch;
-	public $marcValueToMatch;
-	public $includeExcludeMatches;
+	public /** @noinspection PhpUnused */ $marcTagToMatch;
+	public /** @noinspection PhpUnused */ $marcValueToMatch;
+	public /** @noinspection PhpUnused */ $includeExcludeMatches;
 	//The next 2 fields determine how urls are constructed
-	public $urlToMatch;
-	public $urlReplacement;
+	public /** @noinspection PhpUnused */ $urlToMatch;
+	public /** @noinspection PhpUnused */ $urlReplacement;
 
 	private $_libraries;
 	private $_locations;
@@ -36,7 +36,7 @@ class SideLoadScope extends DataObject
 		$locationSideLoadScopeStructure = LocationSideLoadScope::getObjectStructure();
 		unset($locationSideLoadScopeStructure['sideLoadScopeId']);
 
-		$structure = array(
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'sideLoadId' => array('property' => 'sideLoadId', 'type' => 'enum', 'values'=>$validSideLoads, 'label' => 'Side Load', 'description' =>'The Side Load to apply the scope to'),
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
@@ -98,10 +98,10 @@ class SideLoadScope extends DataObject
 						'url' => '/SideLoads/Scopes?id=$id&amp;objectAction=clearLocations',
 						'class' => 'btn-warning',
 					),
-				)
+				),
+				'forcesReindex' => true
 			),
 		);
-		return $structure;
 	}
 
 	function getEditLink(){
@@ -138,10 +138,8 @@ class SideLoadScope extends DataObject
 
 	public function __set($name, $value){
 		if ($name == "libraries") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_libraries = $value;
 		}elseif ($name == "locations") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_locations = $value;
 		}else {
 			$this->_data[$name] = $value;
@@ -185,26 +183,22 @@ class SideLoadScope extends DataObject
 	/** @return LibrarySideLoadScope[] */
 	public function getLibraries()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_libraries;
 	}
 
 	/** @return LocationSideLoadScope[] */
 	public function getLocations()
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		return $this->_locations;
 	}
 
 	public function setLibraries($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_libraries = $val;
 	}
 
 	public function setLocations($val)
 	{
-		/** @noinspection PhpUndefinedFieldInspection */
 		$this->_locations = $val;
 	}
 

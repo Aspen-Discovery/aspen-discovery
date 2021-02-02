@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mnoble
- * Date: 10/24/2017
- * Time: 9:36 PM
- */
 
 class IslandoraSamePikaCache extends DataObject
 {

@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.RbdigitalScope;
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -17,8 +18,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 class RbdigitalProcessor {
-	private GroupedWorkIndexer indexer;
-	private Logger logger;
+	private final GroupedWorkIndexer indexer;
+	private final Logger logger;
 
 	private PreparedStatement getProductInfoStmt;
 	private PreparedStatement getAvailabilityStmt;
@@ -35,14 +36,14 @@ class RbdigitalProcessor {
 		}
 	}
 
-	void processRecord(GroupedWorkSolr groupedWork, String identifier) {
+	void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry) {
 		try {
 			getProductInfoStmt.setString(1, identifier);
 			ResultSet productRS = getProductInfoStmt.executeQuery();
 			if (productRS.next()) {
 				//Make sure the record isn't deleted
 				if (productRS.getBoolean("deleted")) {
-					logger.debug("Rbdigital product " + identifier + " was deleted, skipping");
+					logger.debug("RBdigital product " + identifier + " was deleted, skipping");
 					return;
 				}
 
@@ -68,7 +69,7 @@ class RbdigitalProcessor {
 						primaryFormat = "eMagazine";
 						break;
 					default:
-						logger.warn("Unhandled rbdigital mediaType " + mediaType);
+						logEntry.addNote("Unhandled rbdigital mediaType " + mediaType);
 						formatCategory = mediaType;
 						primaryFormat = mediaType;
 						break;
@@ -121,7 +122,7 @@ class RbdigitalProcessor {
 				try {
 					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_rbdigital", primaryFormat, identifier));
 				} catch (Exception e) {
-					logger.warn("Could not translate format boost for " + primaryFormat + " create translation map format_boost_rbdigital");
+					logEntry.addNote("Could not translate format boost for " + primaryFormat + " create translation map format_boost_rbdigital");
 				}
 				rbdigitalRecord.setFormatBoost(formatBoost);
 				if (rawResponse.has("narrators")) {
@@ -193,11 +194,12 @@ class RbdigitalProcessor {
 				groupedWork.addIsbn(isbn, primaryFormat);
 
 				ItemInfo itemInfo = new ItemInfo();
-				itemInfo.seteContentSource("Rbdigital");
+				itemInfo.seteContentSource("RBdigital");
 				itemInfo.setIsEContent(true);
-				itemInfo.setShelfLocation("Online Rbdigital Collection");
-				itemInfo.setCallNumber("Online Rbdigital");
-				itemInfo.setSortableCallNumber("Online Rbdigital");
+				itemInfo.setShelfLocation("Online RBdigital Collection");
+				itemInfo.setDetailedLocation("Online RBdigital Collection");
+				itemInfo.setCallNumber("Online RBdigital");
+				itemInfo.setSortableCallNumber("Online RBdigital");
 				itemInfo.setFormat(primaryFormat);
 				itemInfo.setFormatCategory(formatCategory);
 				//We don't currently have a way to determine how many copies are owned
@@ -208,8 +210,9 @@ class RbdigitalProcessor {
 
 				getAvailabilityStmt.setString(1, identifier);
 				ResultSet availabilityRS = getAvailabilityStmt.executeQuery();
-				if (availabilityRS.next()) {
+				while (availabilityRS.next()) {
 					boolean available = availabilityRS.getBoolean("isAvailable");
+					long settingId = availabilityRS.getLong("settingId");
 					if (available) {
 						itemInfo.setDetailedStatus("Available Online");
 					} else {
@@ -219,13 +222,15 @@ class RbdigitalProcessor {
 						boolean okToAdd = false;
 						RbdigitalScope rbdigitalScope = scope.getRbdigitalScope();
 						if (rbdigitalScope != null) {
-							if (rbdigitalScope.isIncludeEBooks() && formatCategory.equals("eBook")) {
-								okToAdd = true;
-							} else if (rbdigitalScope.isIncludeEAudiobook() && primaryFormat.equals("eAudiobook")) {
-								okToAdd = true;
-							}
-							if (rbdigitalScope.isRestrictToChildrensMaterial() && !isChildrens) {
-								okToAdd = false;
+							if (rbdigitalScope.getSettingId() == settingId) {
+								if (rbdigitalScope.isIncludeEBooks() && formatCategory.equals("eBook")) {
+									okToAdd = true;
+								} else if (rbdigitalScope.isIncludeEAudiobook() && primaryFormat.equals("eAudiobook")) {
+									okToAdd = true;
+								}
+								if (rbdigitalScope.isRestrictToChildrensMaterial() && !isChildrens) {
+									okToAdd = false;
+								}
 							}
 						}
 						if (okToAdd) {
@@ -250,11 +255,11 @@ class RbdigitalProcessor {
 			}
 			productRS.close();
 		} catch (NullPointerException e) {
-			logger.error("Null pointer exception processing rbdigital record ", e);
+			logEntry.incErrors("Null pointer exception processing rbdigital record ", e);
 		} catch (JSONException e) {
-			logger.error("Error parsing raw data for rbdigital", e);
+			logEntry.incErrors("Error parsing raw data for rbdigital", e);
 		} catch (SQLException e) {
-			logger.error("Error loading information from Database for rbdigital title", e);
+			logEntry.incErrors("Error loading information from Database for rbdigital title", e);
 		}
 	}
 

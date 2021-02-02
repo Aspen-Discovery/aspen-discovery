@@ -128,7 +128,7 @@ class Sierra extends Millennium{
 			$headers = array(
 					"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 					"User-Agent: Aspen Discovery",
-					"X-Forwarded-For: " . Location::getActiveIp(),
+					"X-Forwarded-For: " . IPAddress::getActiveIp(),
 					"Host: " . $_SERVER['SERVER_NAME'],
 			);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -162,10 +162,5 @@ class Sierra extends Millennium{
 		} else {
 			return 'none';
 		}
-	}
-
-	function getEmailResetPinTemplate()
-	{
-		return 'requestPinReset.tpl';
 	}
 }

@@ -5,13 +5,16 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 abstract class ObjectEditor extends Admin_Admin
 {
+	protected $activeObject;
 	function launch()
 	{
 		global $interface;
 
-		if (isset($_SESSION['lastError'])){
-			$interface->assign('lastError', $_SESSION['lastError']);
-			unset($_SESSION['lastError']);
+		$user = UserAccount::getActiveUserObj();
+		if (!empty($user->updateMessage)){
+			$interface->assign('lastError', $user->updateMessage);
+			$user->updateMessage = '';
+			$user->update();
 		}
 
 		$interface->assign('canAddNew', $this->canAddNew());
@@ -37,6 +40,8 @@ abstract class ObjectEditor extends Admin_Admin
 			$this->editObject($objectAction, $structure);
 		}elseif ($objectAction == 'compare') {
 			$this->compareObjects($structure);
+		}elseif ($objectAction == 'history') {
+			$this->showHistory();
 		}else{
 			//check to see if a custom action is being called.
 			if (method_exists($this, $objectAction)){
@@ -46,7 +51,7 @@ abstract class ObjectEditor extends Admin_Admin
 				$this->viewIndividualObject($structure);
 			}
 		}
-		$this->display($interface->getTemplate(), $this->getPageTitle(), 'Search/home-sidebar.tpl');
+		$this->display($interface->getTemplate(), $this->getPageTitle());
 	}
 	/**
 	 * The class name of the object which is being edited
@@ -60,10 +65,23 @@ abstract class ObjectEditor extends Admin_Admin
 	 * The title of the page to be displayed
 	 */
 	abstract function getPageTitle();
+
 	/**
 	 * Load all objects into an array keyed by the primary key
+	 * @param int $page - The current page to display
+	 * @param int $recordsPerPage - Number of records to show per page
+	 * @return DataObject[]
 	 */
-	abstract function getAllObjects();
+	abstract function getAllObjects($page, $recordsPerPage);
+	/**
+	 * Get a count of the number of objects so we can paginate as needed
+	 */
+	function getNumObjects(){
+		/** @var DataObject $object */
+		$objectType = $this->getObjectType();
+		$object = new $objectType();
+		return $object->count();
+	}
 	/**
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
@@ -93,6 +111,10 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 	}
 
+	/**
+	 * @param $structure
+	 * @return DataObject|false
+	 */
 	function insertObject($structure){
 		$objectType = $this->getObjectType();
 		/** @var DataObject $newObject */
@@ -109,8 +131,10 @@ abstract class ObjectEditor extends Admin_Admin
 					$errorDescription = 'Unknown error';
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
-				@session_start();
-				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
+				$user = UserAccount::getActiveUserObj();
+				$user->updateMessage = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
+				$user->updateMessageIsError = true;
+				$user->update();
 
 				$logger->log($errorDescription, Logger::LOG_DEBUG);
 				return false;
@@ -119,8 +143,10 @@ abstract class ObjectEditor extends Admin_Admin
 			global $logger;
 			$errorDescription = implode(', ', $validationResults['errors']);
 			$logger->log('Could not validate new object ' . $objectType . ' ' . $errorDescription, Logger::LOG_DEBUG);
-			@session_start();
-			$_SESSION['lastError'] = "The information entered was not valid. <br/>" . implode('<br/>', $validationResults['errors']);
+			$user = UserAccount::getActiveUserObj();
+			$user->updateMessage = "The information entered was not valid. <br/>" . implode('<br/>', $validationResults['errors']);
+			$user->updateMessageIsError = true;
+			$user->update();
 
 			return false;
 		}
@@ -132,19 +158,37 @@ abstract class ObjectEditor extends Admin_Admin
 			$propertyName = $property['property'];
 			if (isset($_REQUEST[$propertyName])){
 				$object->$propertyName = $_REQUEST[$propertyName];
+			}elseif (!empty($property['default'])){
+				$object->$propertyName = $property['default'];
 			}
 		}
 	}
 	function updateFromUI($object, $structure){
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 		DataObjectUtil::updateFromUI($object, $structure);
-		$validationResults = DataObjectUtil::validateObject($structure, $object);
-		return $validationResults;
+		return DataObjectUtil::validateObject($structure, $object);
 	}
 	function viewExistingObjects(){
 		global $interface;
+		$numObjects = $this->getNumObjects();
+		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		if (!is_numeric($page)){
+			$page = 1;
+		}
+		$recordsPerPage = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 25;
 		//Basic List
-		$allObjects = $this->getAllObjects();
+		$allObjects = $this->getAllObjects($page, $recordsPerPage);
+
+		$options = [
+			'totalItems' => $numObjects,
+			'fileName'   => "/{$this->getModule()}/{$this->getToolName()}?page=%d",
+			'perPage'    => $recordsPerPage,
+			'canChangeRecordsPerPage' => true,
+			'canJumpToPage' => true
+		];
+		$pager = new Pager($options);
+		$interface->assign('pageLinks', $pager->getLinks());
+
 		$interface->assign('dataList', $allObjects);
 		if (count($allObjects) < 2){
 			$interface->assign('canCompare', false);
@@ -166,6 +210,7 @@ abstract class ObjectEditor extends Admin_Admin
 			if (method_exists($existingObject, 'label')){
 				$interface->assign('objectName', $existingObject->label());
 			}
+			$this->activeObject = $existingObject;
 		}else{
 			$existingObject = null;
 		}
@@ -198,6 +243,8 @@ abstract class ObjectEditor extends Admin_Admin
 			if ($curObject == false){
 				//The session lastError is updated
 				$errorOccurred = true;
+			}else{
+				$id = $curObject->getPrimaryKeyValue();
 			}
 		}else{
 			//Work with an existing record
@@ -205,6 +252,7 @@ abstract class ObjectEditor extends Admin_Admin
 			if (!is_null($curObject)){
 				if ($objectAction == 'save'){
 					//Update the object
+					$user = UserAccount::getActiveUserObj();
 					$validationResults = $this->updateFromUI($curObject, $structure);
 					if ($validationResults['validatedOk']) {
 						$ret = $curObject->update();
@@ -214,25 +262,35 @@ abstract class ObjectEditor extends Admin_Admin
 							} else {
 								$errorDescription = 'Unknown error';
 							}
-							$_SESSION['lastError'] = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+							$user->updateMessage = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+							$user->updateMessageIsError = true;
+							$user->update();
 							$errorOccurred         = true;
 						}
 					} else {
-						$errorDescription = implode(', ', $validationResults['errors']);
-						$_SESSION['lastError'] = "An error occurred validating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+						$errorDescription = implode('<br/>', $validationResults['errors']);
+						$user->updateMessage = "An error occurred validating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
+						$user->updateMessageIsError = true;
+						$user->update();
 						$errorOccurred         = true;
 					}
 				}else if ($objectAction =='delete'){
 					//Delete the record
 					$ret = $curObject->delete();
-					if ($ret === false){
-						$_SESSION['lastError'] = "Unable to delete {$this->getObjectType()} with id of $id";
+					if ($ret == 0){
+						$user = UserAccount::getActiveUserObj();
+						$user->updateMessage = "Unable to delete {$this->getObjectType()} with id of $id";
+						$user->updateMessageIsError = true;
+						$user->update();
 						$errorOccurred = true;
 					}
 				}
 			}else{
 				//Couldn't find the record.  Something went haywire.
-				$_SESSION['lastError'] = "An error occurred, could not find {$this->getObjectType()} with id of $id";
+				$user = UserAccount::getActiveUserObj();
+				$user->updateMessage = "An error occurred, could not find {$this->getObjectType()} with id of $id";
+				$user->updateMessageIsError = true;
+				$user->update();
 				$errorOccurred = true;
 			}
 		}
@@ -303,7 +361,7 @@ abstract class ObjectEditor extends Admin_Admin
 		return '';
 	}
 	function getListInstructions(){
-		return '';
+		return $this->getInstructions();
 	}
 	function getInitializationJs(){
 		return '';
@@ -332,7 +390,7 @@ abstract class ObjectEditor extends Admin_Admin
 				$interface->assign('error', 'Could not load object from the database');
 			}else{
 				$properties = [];
-				$properties = $this->compareObjectProperties($structure, $object1, $object2, $properties);
+				$properties = $this->compareObjectProperties($structure, $object1, $object2, $properties, '');
 				$interface->assign('properties', $properties);
 			}
 		}else{
@@ -347,24 +405,44 @@ abstract class ObjectEditor extends Admin_Admin
 	 * @param DataObject|null $object1
 	 * @param DataObject|null $object2
 	 * @param array $properties
+	 * @param string|null $sectionName
 	 * @return array
 	 */
-	protected function compareObjectProperties($structure, ?DataObject $object1, ?DataObject $object2, array $properties): array
+	protected function compareObjectProperties($structure, ?DataObject $object1, ?DataObject $object2, array $properties, $sectionName): array
 	{
 		foreach ($structure as $property) {
 			if ($property['type'] == 'section') {
-				$properties = $this->compareObjectProperties($property['properties'], $object1, $object2, $properties);
+				$label = $property['label'];
+				if (!empty($sectionName)) {
+					$label = $sectionName . ': ' . $label;
+				}
+				$properties = $this->compareObjectProperties($property['properties'], $object1, $object2, $properties, $label);
 			} else {
 				$propertyName = $property['property'];
 				$uniqueProperty = isset($property['uniqueProperty']) ? $property['uniqueProperty'] : ($propertyName == $this->getPrimaryKeyColumn());
 				$propertyValue1 = $this->getPropertyValue($property, $object1->$propertyName, $property['type']);
 				$propertyValue2 = $this->getPropertyValue($property, $object2->$propertyName, $property['type']);
+				$label = $property['label'];
+				if (!empty($sectionName)) {
+					$label = $sectionName . ': ' . $label;
+				}
 				$properties[] = [
-					'name' => $property['label'],
+					'name' => $label,
 					'value1' => $propertyValue1,
 					'value2' => $propertyValue2,
 					'uniqueProperty' => $uniqueProperty,
 				];
+				if ($property['type'] == 'color' || $property['type'] == 'font') {
+					$defaultPropertyName = $propertyName . 'Default';
+					$propertyValue1Default = $this->getPropertyValue($property, $object1->$defaultPropertyName, $property['type']) == 1 ? 'Yes' : 'No';
+					$propertyValue2Default = $this->getPropertyValue($property, $object1->$defaultPropertyName, $property['type']) == 1 ? 'Yes' : 'No';
+					$properties[] = [
+						'name' => $label . ' Use Default',
+						'value1' => $propertyValue1Default,
+						'value2' => $propertyValue2Default,
+						'uniqueProperty' => $uniqueProperty,
+					];
+				}
 			}
 		}
 		return $properties;
@@ -379,5 +457,43 @@ abstract class ObjectEditor extends Admin_Admin
 		} else {
 			return is_array($propertyValue) ? implode(', ', $propertyValue) : (is_object($propertyValue) ? (string)$propertyValue : $propertyValue);
 		}
+	}
+
+	function showHistory() {
+		$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
+		if (empty($id) || $id < 0){
+			AspenError::raiseError('Please select an object to show history for');
+		}else{
+			//Work with an existing record
+			global $interface;
+			$curObject = $this->getExistingObjectById($id);
+			$interface->assign('curObject', $curObject);
+			$interface->assign('id', $id);
+			$displayNameColumn = $curObject->__displayNameColumn;
+			$primaryField = $curObject->__primaryKey;
+			$objectHistory = [];
+			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+			$historyEntry = new DataObjectHistory();
+			$historyEntry->objectType = get_class($curObject);
+			$historyEntry->objectId = $curObject->$primaryField;
+			if ($displayNameColumn != null){
+				$title = 'History for ' . $curObject->$displayNameColumn;
+			}else{
+				$title = 'History for ' . $historyEntry->objectType . ' - ' . $historyEntry->objectId;
+			}
+			$interface->assign('title', $title);
+			$historyEntry->orderBy('changeDate desc');
+			$historyEntry->find();
+			while ($historyEntry->fetch()){
+				$objectHistory[] = clone $historyEntry;
+			}
+			$interface->assign('objectHistory', $objectHistory);
+			$this->display('../Admin/objectHistory.tpl',$title);
+			exit();
+		}
+	}
+
+	public function hasHistory(){
+		return true;
 	}
 }

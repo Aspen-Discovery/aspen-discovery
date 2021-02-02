@@ -1,7 +1,7 @@
 {strip}
 	<div id="main-content" class="col-md-12">
 		<form name="archiveSubjects" method="post">
-			<h3>Archive Private Collections</h3>
+			<h1>Archive Private Collections</h1>
 			<div class="form-group"><label>Collections that will be shown to the owning library only</label>
 				<p class="help-block">List one PID per line</p>
 				<textarea name="privateCollections" id="privateCollections" class="form-control">

@@ -7,9 +7,9 @@ class TimeToReshelve  extends DataObject{
 	public $weight;
 	public $indexingProfileId;
 	public $locations;
-	public $numHoursToOverride;
+	public /** @noinspection PhpUnused */ $numHoursToOverride;
 	public $status;
-	public $groupedStatus;
+	public /** @noinspection PhpUnused */ $groupedStatus;
 
     static function getObjectStructure(){
 		$indexingProfiles = array();
@@ -20,12 +20,12 @@ class TimeToReshelve  extends DataObject{
 		while ($indexingProfile->fetch()){
 			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;
 		}
-		$structure = array(
+		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id within the database'),
 			'indexingProfileId' => array('property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'),
-			'locations' => array('property'=>'locations', 'type'=>'text', 'label'=>'Locations', 'description'=>'The locations to apply this rule to', 'maxLength' => '100', 'required' => true),
-			'numHoursToOverride' => array('property'=>'numHoursToOverride', 'type'=>'integer', 'label'=>'Num. Hours to Override', 'description'=>'The number of hours that this override should be applied', 'required' => true),
-			'status' => array('property'=>'status', 'type'=>'text', 'label'=>'Status', 'description'=>'The Status to display to the user in full record/copies', 'hideInLists' => false, 'default'=>false),
+			'locations' => array('property'=>'locations', 'type'=>'text', 'label'=>'Locations', 'description'=>'The locations to apply this rule to', 'maxLength' => '100', 'required' => true, 'forcesReindex' => true),
+			'numHoursToOverride' => array('property'=>'numHoursToOverride', 'type'=>'integer', 'label'=>'Num. Hours to Override', 'description'=>'The number of hours that this override should be applied', 'required' => true, 'forcesReindex' => true),
+			'status' => array('property'=>'status', 'type'=>'text', 'label'=>'Status', 'description'=>'The Status to display to the user in full record/copies', 'hideInLists' => false, 'default'=>false, 'forcesReindex' => true),
 			'groupedStatus' => array('property'=>'groupedStatus', 'type'=>'enum', 'values' => array(
 					'Currently Unavailable' => 'Currently Unavailable',
 					'On Order' => 'On Order',
@@ -36,8 +36,7 @@ class TimeToReshelve  extends DataObject{
 					'Available Online' => 'Available Online',
 					'In Transit' => 'In Transit',
 					'On Shelf' => 'On Shelf'
-			), 'label'=>'Grouped Status', 'description'=>'The Status to display to the when grouping multiple copies', 'hideInLists' => false, 'default'=>false),
+			), 'label'=>'Grouped Status', 'description'=>'The Status to display to the when grouping multiple copies', 'hideInLists' => false, 'default'=>false, 'forcesReindex' => true),
 		);
-		return $structure;
 	}
 }

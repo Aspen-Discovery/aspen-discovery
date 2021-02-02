@@ -1,8 +1,10 @@
 package com.turning_leaf_technologies.hoopla;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
+import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
@@ -56,52 +58,101 @@ public class HooplaExportMain {
 			serverName = args[0];
 		}
 
-		logger = LoggingUtil.setupLogging(serverName, "hoopla_export");
+		String processName = "hoopla_export";
+		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Hoopla only needs to run once a day so just run it in cron
-		Date startTime = new Date();
-		startTimeForLogging = startTime.getTime() / 1000;
-		logger.info(startTime.toString() + ": Starting Hoopla Export");
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
+		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
-		// Read the base INI file to get information about the server (current directory/cron/config.ini)
-		configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
+		while (true) {
+			//Hoopla only needs to run once a day so just run it in cron
+			Date startTime = new Date();
+			startTimeForLogging = startTime.getTime() / 1000;
+			logger.info(startTime.toString() + ": Starting Hoopla Export");
 
-		//Connect to the Aspen database
-		aspenConn = connectToDatabase();
+			// Read the base INI file to get information about the server (current directory/cron/config.ini)
+			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
-		//Start a log entry
-		createDbLogEntry(startTime, aspenConn);
-		logEntry.addNote("Starting extract");
-		logEntry.saveResults();
+			//Connect to the Aspen database
+			aspenConn = connectToDatabase();
 
-		//Get a list of all existing records in the database
-		loadExistingTitles();
+			//Start a log entry
+			createDbLogEntry(startTime, aspenConn);
+			logEntry.addNote("Starting extract");
+			logEntry.saveResults();
 
-		//Do work here
-		exportHooplaData();
+			//Get a list of all existing records in the database
+			loadExistingTitles();
 
-		processRecordsToReload(logEntry);
+			//Do work here
+			exportHooplaData();
+			int numChanges = logEntry.getNumChanges();
 
-		if (groupedWorkIndexer != null) {
-			groupedWorkIndexer.finishIndexingFromExtract(logEntry);
-			recordGroupingProcessorSingleton = null;
-			groupedWorkIndexer = null;
-			existingRecords = null;
+			processRecordsToReload(logEntry);
+
+			if (recordGroupingProcessorSingleton != null) {
+				recordGroupingProcessorSingleton.close();
+				recordGroupingProcessorSingleton = null;
+			}
+
+			if (groupedWorkIndexer != null) {
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
+				groupedWorkIndexer.close();
+				groupedWorkIndexer = null;
+				existingRecords = null;
+			}
+
+			if (logEntry.hasErrors()) {
+				logger.error("There were errors during the export!");
+			}
+
+			logger.info("Finished exporting data " + new Date().toString());
+			long endTime = new Date().getTime();
+			long elapsedTime = endTime - startTime.getTime();
+			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+
+			//Mark that indexing has finished
+			logEntry.setFinished();
+
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
+				break;
+			}
+			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
+				break;
+			}
+			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
+				disconnectDatabase(aspenConn);
+				break;
+			}
+
+			disconnectDatabase(aspenConn);
+
+			//Check to see if nightly indexing is running and if so, wait until it is done.
+			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
+				//Quit and we will restart after if finishes
+				System.exit(0);
+			}else {
+				//Pause before running the next export (longer if we didn't get any actual changes)
+				try {
+					System.gc();
+					if (numChanges == 0) {
+						Thread.sleep(1000 * 60 * 5);
+					} else {
+						Thread.sleep(1000 * 60);
+					}
+				} catch (InterruptedException e) {
+					logger.info("Thread was interrupted");
+				}
+			}
 		}
-
-		if (logEntry.hasErrors()) {
-			logger.error("There were errors during the export!");
-		}
-
-		logger.info("Finished exporting data " + new Date().toString());
-		long endTime = new Date().getTime();
-		long elapsedTime = endTime - startTime.getTime();
-		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
-
-		//Mark that indexing has finished
-		logEntry.setFinished();
-
-		disconnectDatabase(aspenConn);
 
 	}
 
@@ -109,12 +160,13 @@ public class HooplaExportMain {
 		try {
 			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='hoopla'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
-			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT title, primaryAuthor, mediaType, rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
 			int numRecordsToReloadProcessed = 0;
 			while (getRecordsToReloadRS.next()){
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
-				long hooplaId = getRecordsToReloadRS.getLong("identifier");
+				String recordId = getRecordsToReloadRS.getString("identifier");
+				long hooplaId = Long.parseLong(recordId.replace("MWT", ""));
 				//Regroup the record
 				getItemDetailsForRecordStmt.setLong(1, hooplaId);
 				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
@@ -130,12 +182,14 @@ public class HooplaExportMain {
 						markRecordToReloadAsProcessedStmt.executeUpdate();
 						numRecordsToReloadProcessed++;
 					}catch (JSONException e){
-						logEntry.incErrors();
-						logEntry.addNote("Could not parse item details for record to reload " + hooplaId);
+						logEntry.incErrors("Could not parse item details for record to reload " + hooplaId, e);
 					}
 				}else{
-					logEntry.incErrors();
-					logEntry.addNote("Could not get details for record to reload " + hooplaId);
+					//The record has likely been deleted
+					logEntry.addNote("Could not get details for record to reload " + hooplaId + " it has been deleted");
+					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+					markRecordToReloadAsProcessedStmt.executeUpdate();
+					numRecordsToReloadProcessed++;
 				}
 				getItemDetailsForRecordRS.close();
 			}
@@ -144,8 +198,7 @@ public class HooplaExportMain {
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
-			logEntry.incErrors();
-			logEntry.addNote("Error processing records to reload " + e.toString());
+			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
 
@@ -241,8 +294,7 @@ public class HooplaExportMain {
 
 				String accessToken = getAccessToken(apiUsername, apiPassword);
 				if (accessToken == null) {
-					logEntry.incErrors();
-					logEntry.addNote("Could not load access token");
+					logEntry.incErrors("Could not load access token");
 					return;
 				}
 
@@ -259,8 +311,7 @@ public class HooplaExportMain {
 				headers.put("Accept", "application/json");
 				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
 				if (!response.isSuccess()){
-					logEntry.incErrors();
-					logEntry.addNote("Could not get titles from " + url + " " + response.getMessage());
+					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());
 				}else {
 					JSONObject responseJSON = new JSONObject(response.getMessage());
 					if (responseJSON.has("titles")) {
@@ -272,12 +323,15 @@ public class HooplaExportMain {
 
 						String startToken = null;
 						if (responseJSON.has("nextStartToken")) {
-							startToken = responseJSON.getString("nextStartToken");
+							startToken = responseJSON.get("nextStartToken").toString();
 						}
 
 						int numTries = 0;
 						while (startToken != null) {
 							url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startToken=" + startToken;
+							if (!doFullReload && lastUpdate > 0) {
+								url += "&startTime=" + lastUpdate;
+							}
 							response = NetworkUtils.getURL(url, logger, headers);
 							if (response.isSuccess()){
 								responseJSON = new JSONObject(response.getMessage());
@@ -288,7 +342,7 @@ public class HooplaExportMain {
 									}
 								}
 								if (responseJSON.has("nextStartToken")) {
-									startToken = responseJSON.getString("nextStartToken");
+									startToken = responseJSON.get("nextStartToken").toString();
 								} else {
 									startToken = null;
 								}
@@ -296,16 +350,14 @@ public class HooplaExportMain {
 								if (response.getResponseCode() == 401 || response.getResponseCode() == 504){
 									numTries++;
 									if (numTries >= 3){
-										logEntry.incErrors();
-										logEntry.addNote("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
+										logEntry.incErrors("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
 										startToken = null;
 									}else{
 										accessToken = getAccessToken(apiUsername, apiPassword);
 										headers.put("Authorization", "Bearer " + accessToken);
 									}
 								}else {
-									logEntry.incErrors();
-									logEntry.addNote("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
+									logEntry.incErrors("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
 									startToken = null;
 								}
 							}
@@ -336,9 +388,7 @@ public class HooplaExportMain {
 				logger.error("Unable to find settings for Hoopla, please add settings to the database");
 			}
 		}catch (Exception e){
-			logger.error("Error exporting hoopla data", e);
-			logEntry.addNote("Error exporting hoopla data " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error exporting hoopla data", e);
 		}
 	}
 
@@ -418,17 +468,15 @@ public class HooplaExportMain {
 
 							String groupedWorkId = groupRecord(curTitle, hooplaId);
 							indexRecord(groupedWorkId);
+						}catch (DataTruncation e) {
+							logEntry.addNote("Record " + hooplaId + " " + curTitle.getString("title") + " contained invalid data " + e.toString());
 						}catch (SQLException e){
-							logger.error("Error updating hoopla data in database ", e);
-							logEntry.addNote("Error updating hoopla data  in database " + e.toString());
-							logEntry.incErrors();
+							logEntry.incErrors("Error updating hoopla data in database for record " + hooplaId + " " + curTitle.getString("title"), e);
 						}
 					}
 				}
 			}catch (Exception e){
-				logger.error("Error updating hoopla data", e);
-				logEntry.addNote("Error updating hoopla data " + e.toString());
-				logEntry.incErrors();
+				logEntry.incErrors("Error updating hoopla data", e);
 			}
 		}
 
@@ -541,14 +589,14 @@ public class HooplaExportMain {
 
 	private static GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
-			groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, false, logger);
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
 	}
 
 	private static RecordGroupingProcessor getRecordGroupingProcessor(){
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger);
+			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}

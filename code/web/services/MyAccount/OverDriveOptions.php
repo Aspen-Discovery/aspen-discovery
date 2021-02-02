@@ -43,15 +43,22 @@ class MyAccount_OverDriveOptions extends MyAccount
 
 			/** @var Translator $translator */
 			global $translator;
-			$notice         = $translator->translate('overdrive_account_preferences_notice');
-            require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-            $overDriveSettings = new OverDriveSetting();
-            $overDriveSettings->find((true));
-            $overDriveUrl = $overDriveSettings->url;
-			$replacementUrl = empty($overDriveUrl) ? '#' : $overDriveUrl;
-			$notice         = str_replace('{OVERDRIVEURL}', $replacementUrl, $notice); // Insert the Overdrive URL into the notice
+			global $library;
+			$notice = $translator->translate('overdrive_account_preferences_notice');
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+			$overDriveScope = new OverDriveScope();
+			$overDriveScope->id = $library->overDriveScopeId;
+			if ($overDriveScope->find(true)){
+				require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+				$overDriveSettings = new OverDriveSetting();
+				$overDriveSettings->id = $overDriveScope->settingId;
+				if ($overDriveSettings->find(true)) {
+					$overDriveUrl = $overDriveSettings->url;
+					$replacementUrl = empty($overDriveUrl) ? '#' : $overDriveUrl;
+					$notice = str_replace('{OVERDRIVEURL}', $replacementUrl, $notice); // Insert the Overdrive URL into the notice
+				}
+			}
 			$interface->assign('overdrivePreferencesNotice', $notice);
-
 
 			$interface->assign('profile', $patron);
 		}
@@ -59,4 +66,11 @@ class MyAccount_OverDriveOptions extends MyAccount
 		$this->display('overDriveOptions.tpl', 'Account Settings');
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('', 'OverDrive Options');
+		return $breadcrumbs;
+	}
 }

@@ -4,23 +4,15 @@ require_once ROOT_DIR . "/Action.php";
 
 require_once 'Home.php';
 
+/**
+ * Class MyAccount_Edit
+ *
+ * Used to edit notes for a list entry
+ */
 class MyAccount_Edit extends Action
 {
-	function __construct()
-	{
-	}
-
-	private function saveChanges($user)
-	{
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-		$userListEntry = new UserListEntry();
-		$userListEntry->id = $_REQUEST['listEntry'];
-		if ($userListEntry->find(true)){
-			$userListEntry->notes = strip_tags($_REQUEST['notes']);
-			$userListEntry->update();
-		}
-	}
-
+	private $listId;
+	private $listTitle;
 	function launch($msg = null)
 	{
 		global $interface;
@@ -30,70 +22,62 @@ class MyAccount_Edit extends Action
 			$launchAction = new MyAccount_Login();
 			$launchAction->launch();
 			exit();
-		}else{
-			$user = UserAccount::getLoggedInUser();
 		}
 
 		// Save Data
-		$listId = isset($_REQUEST['list_id']) ? $_REQUEST['list_id'] : null;
+		$listId = isset($_REQUEST['listId']) ? $_REQUEST['listId'] : null;
 		if (is_array($listId)){
 			$listId = array_pop($listId);
 		}
-		if (!empty($listId) && ctype_digit($listId)) {
-			if (isset($_POST['submit'])) {
-				$this->saveChanges($user);
-
-				// After changes are saved, send the user back to an appropriate page;
-				// either the list they were viewing when they started editing, or the
-				// overall favorites list.
-				if (isset($listId)) {
-					$nextAction = 'MyList/' . $listId;
-				} else {
-					$nextAction = 'Home';
-				}
-				header('Location: /MyAccount/' . $nextAction);
-				exit();
-			}
-
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		if (!empty($listId) && is_numeric($listId)) {
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$userList     = new UserList();
 			$userList->id = $listId;
 			if ($userList->find(true)) {
-				$interface->assign('list', $userList);
+				$userObj = UserAccount::getActiveUserObj();
+				if ($userObj == false){
+					$interface->assign('error', 'You must be logged in to edit list entries, please login again.');
+				}else {
+					$this->listId = $userList->id;
+					$this->listTitle = $userList->title;
+					$userCanEdit = $userObj->canEditList($userList);
+					if (!$userCanEdit){
+						$interface->assign('error', 'Sorry, you don\'t have permissions to edit this list.');
+					}else{
+						if (isset($_POST['submit'])) {
+							$this->saveChanges();
 
-				$id = $_GET['id'];
-				if (!empty($id)) {
-					// Item ID
-					$interface->assign('recordId', $id);
-
-					if (strpos($id, ':') === false) {
-						// Grouped Works (Catalog Items)
-						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-						$groupedWorkDriver = new GroupedWorkDriver($id);
-						if ($groupedWorkDriver->isValid) {
-							$interface->assign('recordDriver', $groupedWorkDriver);
+							// After changes are saved, send the user back to an appropriate page;
+							// either the list they were viewing when they started editing, or the
+							// overall favorites list.
+							if (isset($listId)) {
+								$nextAction = 'MyList/' . $listId;
+							} else {
+								$nextAction = 'Home';
+							}
+							header('Location: /MyAccount/' . $nextAction);
+							exit();
 						}
-					} else {
-						// Archive Objects
-						require_once ROOT_DIR . './sys/Utils/FedoraUtils.php';
-						$fedoraUtils         = FedoraUtils::getInstance();
-						$archiveObject       = $fedoraUtils->getObject($id);
-						$archiveRecordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
-						$interface->assign('recordDriver', $archiveRecordDriver);
-					}
 
-					// Retrieve saved information about record
-					require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-					$userListEntry                         = new UserListEntry();
-					$userListEntry->groupedWorkPermanentId = $id;
-					$userListEntry->listId                 = $listId;
-					if ($userListEntry->find(true)) {
-						$interface->assign('listEntry', $userListEntry);
-					} else {
-						$interface->assign('error', 'The item you selected is not part of the selected list.');
+						$interface->assign('list', $userList);
+
+						$listEntryId = $_REQUEST['listEntryId'];
+						if (!empty($listEntryId)) {
+
+							// Retrieve saved information about record
+							require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+							$userListEntry = new UserListEntry();
+							$userListEntry->id = $listEntryId;
+							if ($userListEntry->find(true)) {
+								$interface->assign('listEntry', $userListEntry);
+								$interface->assign('recordDriver', $userListEntry->getRecordDriver());
+							} else {
+								$interface->assign('error', 'The item you selected is not part of the selected list.');
+							}
+						} else {
+							$interface->assign('error', 'No ID for the list item.');
+						}
 					}
-				} else {
-					$interface->assign('error', 'No ID for the list item.');
 				}
 			} else {
 				$interface->assign('error', "List {$listId} was not found.");
@@ -102,6 +86,28 @@ class MyAccount_Edit extends Action
 			$interface->assign('error', 'Invalid List ID.');
 		}
 		$this->display('editListTitle.tpl', 'Edit List Entry');
+	}
+
+	private function saveChanges()
+	{
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+		$userListEntry = new UserListEntry();
+		$userListEntry->id = $_REQUEST['listEntry'];
+		if ($userListEntry->find(true)){
+			$userListEntry->notes = strip_tags($_REQUEST['notes']);
+			$userListEntry->update();
+		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		if (!empty($this->listId)) {
+			$breadcrumbs[] = new Breadcrumb('/MyAccount/MyList/' . $this->listId, $this->listTitle);
+		}
+		$breadcrumbs[] = new Breadcrumb('', 'Edit');
+		return $breadcrumbs;
 	}
 }
 

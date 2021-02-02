@@ -129,11 +129,12 @@ class ILS_TranslationMaps extends ObjectEditor {
 	function getPageTitle(){
 		return 'Translation Maps';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$object = new TranslationMap();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
@@ -144,9 +145,6 @@ class ILS_TranslationMaps extends ObjectEditor {
 	function getObjectStructure(){
 		return TranslationMap::getObjectStructure();
 	}
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
 	function getPrimaryKeyColumn(){
 		return 'id';
 	}
@@ -154,10 +152,10 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return 'id';
 	}
 	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin');
+		return true;
 	}
 	function canDelete(){
-		return UserAccount::userHasRole('opacAdmin');
+		return true;
 	}
 
 	/**
@@ -184,4 +182,25 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return $actions;
 	}
 
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		if (!empty($this->activeObject) && $this->activeObject instanceof TranslationMap){
+			$breadcrumbs[] = new Breadcrumb('/ILS/IndexingProfiles?objectAction=edit&id=' . $this->activeObject->indexingProfileId, 'Indexing Profile');
+		}
+		$breadcrumbs[] = new Breadcrumb('/ILS/TranslationMaps', 'Translation Maps');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'ils_integration';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission('Administer Translation Maps');
+	}
 }

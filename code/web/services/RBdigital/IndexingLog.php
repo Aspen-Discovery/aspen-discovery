@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/RBdigital/RBdigitalExportLogEntry.php';
 
 class RBdigital_IndexingLog extends Admin_IndexingLog
 {
-	function getIndexLogEntryObject(): DataObject
+	function getIndexLogEntryObject(): BaseLogEntry
 	{
 		return new RBdigitalExportLogEntry();
 	}
@@ -28,5 +28,19 @@ class RBdigital_IndexingLog extends Admin_IndexingLog
 		if ($indexingObject instanceof RBdigitalExportLogEntry){
 			$indexingObject->whereAdd('(numAdded + numDeleted + numUpdated) >= ' . $minProcessed);
 		}
+	}
+
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#rbdigital', 'RBdigital');
+		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'rbdigital';
 	}
 }

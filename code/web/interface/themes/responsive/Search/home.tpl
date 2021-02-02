@@ -1,4 +1,5 @@
 {strip}
+	<h1 class="hiddenTitle">{translate text='Browse the Catalog'}</h1>
 	<div id="home-page-browse-header" class="row">
 		<div class="col-sm-12">
 			<div class="row text-center" id="browse-category-picker">
@@ -7,16 +8,16 @@
 						<ul>
 							{foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
 								<li id="browse-category-{$browseCategory->textId}" class="browse-category {if (!$selectedBrowseCategory && $smarty.foreach.browseCategoryLoop.index == 0) || $selectedBrowseCategory && $selectedBrowseCategory->textId == $browseCategory->textId} selected{/if}" data-category-id="{$browseCategory->textId}">
-										<div >
-											{translate text=$browseCategory->label}
-										</div>
+									<div >
+										{translate text=$browseCategory->label}
+									</div>
 								</li>
 							{/foreach}
 						</ul>
 					</div>
 
-					<a href="#" class="jcarousel-control-prev"></a>
-					<a href="#" class="jcarousel-control-next"></a>
+					<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Category" inAttribute=true}"></a>
+					<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Category" inAttribute=true}"></a>
 
 					<p class="jcarousel-pagination"></p>
 				</div>
@@ -55,13 +56,20 @@
 			</div>
 
 			<div id="home-page-browse-results">
-				<div class="row">
+				<div class="grid">
+					<!-- columns -->
+					<div class="grid-col grid-col--1"></div>
+					<div class="grid-col grid-col--2"></div>
+					<div class="grid-col grid-col--3"></div>
+					<div class="grid-col grid-col--4"></div>
+					<div class="grid-col grid-col--5"></div>
+					<div class="grid-col grid-col--6"></div>
 				</div>
 			</div>
 
-			<a onclick="return AspenDiscovery.Browse.getMoreResults()" role="button">
+			<a onclick="return AspenDiscovery.Browse.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true}">
 				<div class="row" id="more-browse-results">
-					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true}"></span>
 				</div>
 			</a>
 		</div>
@@ -75,7 +83,7 @@
 		{/if}
 		{if !$onInternalIP}
 		if (!Globals.opac && AspenDiscovery.hasLocalStorage()){ldelim}
-			let temp = window.localStorage.getItem('browseMode');
+			var temp = window.localStorage.getItem('browseMode');
 			if (AspenDiscovery.Browse.browseModeClasses.hasOwnProperty(temp)) AspenDiscovery.Browse.browseMode = temp; {* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
 			else AspenDiscovery.Browse.browseMode = '{$browseMode}';
 		{rdelim}

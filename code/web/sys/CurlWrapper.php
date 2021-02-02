@@ -6,7 +6,8 @@ class CurlWrapper
 	private $cookieJar;
 	private $headers = [];
 	public $curl_connection; // need access in order to check for curl errors.
-	public $timeout = 5;
+	public $connectTimeout = 2;
+	public $timeout = 10;
 
 	public function __construct()
 	{
@@ -68,7 +69,7 @@ class CurlWrapper
 
 			$this->curl_connection = curl_init($curlUrl);
 			$default_curl_options = array(
-				CURLOPT_CONNECTTIMEOUT => 1,
+				CURLOPT_CONNECTTIMEOUT => $this->connectTimeout,
 				CURLOPT_TIMEOUT => $this->timeout,
 				CURLOPT_HTTPHEADER => $this->headers,
 				CURLOPT_RETURNTRANSFER => true,
@@ -83,7 +84,7 @@ class CurlWrapper
 			);
 
 			global $configArray;
-			if ($configArray['System']['debug'] && $configArray['System']['debugCurl']){
+			if (IPAddress::showDebuggingInformation() && $configArray['System']['debugCurl']){
 				$default_curl_options[CURLOPT_VERBOSE] = true;
 			}
 
@@ -127,7 +128,7 @@ class CurlWrapper
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
-			$logger->log('curl get error : ' . curl_error($this->curl_connection), Logger::LOG_ERROR);
+			$logger->log("curl get error for $url: " . curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
 		return $return;
 	}
@@ -140,7 +141,7 @@ class CurlWrapper
 	 *
 	 * @return string   The response from the web page if any
 	 */
-	public function curlPostPage($url, $postParams)
+	public function curlPostPage($url, $postParams, $curlOptions = null)
 	{
 		if (is_string($postParams)) {
 			$post_string = $postParams;
@@ -152,10 +153,13 @@ class CurlWrapper
 			CURLOPT_POST => true,
 			CURLOPT_POSTFIELDS => $post_string
 		));
+		if ($curlOptions != null){
+			curl_setopt_array($this->curl_connection, $curlOptions);
+		}
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
-			$logger->log('curl post error : ' . curl_error($this->curl_connection), Logger::LOG_ERROR);
+			$logger->log("curl post error for $url: " . curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
 		return $return;
 	}
@@ -210,7 +214,7 @@ class CurlWrapper
 				$curl_info = curl_getinfo($this->curl_connection);
 			}
 			global $logger;
-			$logger->log('curl get error : ' . curl_error($this->curl_connection), Logger::LOG_ERROR);
+			$logger->log("curl send error for url $url : " . curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
 		return $return;
 	}
@@ -243,6 +247,23 @@ class CurlWrapper
 			$this->headers = $customHeaders;
 		} else {
 			$this->headers = array_merge($this->headers, $customHeaders);
+		}
+		if (!empty($this->curl_connection)){
+			curl_setopt($this->curl_connection, CURLOPT_HEADER, $this->headers);
+		}
+	}
+
+	function setTimeout($timeout){
+		$this->timeout = $timeout;
+		if (!empty($this->curl_connection)){
+			curl_setopt($this->curl_connection, CURLOPT_TIMEOUT, $this->timeout);
+		}
+	}
+
+	function setConnectTimeout($timeout) {
+		$this->connectTimeout = $timeout;
+		if (!empty($this->curl_connection)){
+			curl_setopt($this->curl_connection, CURLOPT_CONNECTTIMEOUT, $this->connectTimeout);
 		}
 	}
 }

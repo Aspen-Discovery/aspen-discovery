@@ -1,54 +1,40 @@
 <?php
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 
-class Admin_UsageDashboard extends Admin_Admin
+class Admin_UsageDashboard extends Admin_Dashboard
 {
 	function launch()
 	{
 		global $interface;
 
-		/** @var IndexingProfile[] $indexingProfiles*/
-		global $indexingProfiles;
-		$profilesToGetStatsFor = [];
-		foreach ($indexingProfiles as $indexingProfile){
-			$profilesToGetStatsFor[$indexingProfile->id] = $indexingProfile->name;
-		}
-		$interface->assign('profiles', $profilesToGetStatsFor);
+		$instanceName = $this->loadInstanceInformation('AspenUsage');
+		$this->loadDates();
 
-		$thisMonth = date('n');
-		$thisYear = date('Y');
-		$lastMonth = $thisMonth - 1;
-		$lastMonthYear = $thisYear;
-		if ($lastMonth == 0){
-			$lastMonth = 12;
-			$lastMonthYear--;
-		}
-
-		$usageThisMonth = $this->getStats($thisMonth, $thisYear);
+		$usageThisMonth = $this->getStats($instanceName, $this->thisMonth, $this->thisYear);
 		$interface->assign('usageThisMonth', $usageThisMonth);
-		$usageLastMonth = $this->getStats($lastMonth, $lastMonthYear);
+		$usageLastMonth = $this->getStats($instanceName, $this->lastMonth, $this->lastMonthYear);
 		$interface->assign('usageLastMonth', $usageLastMonth);
-		$usageThisYear = $this->getStats(null, $thisYear);
+		$usageThisYear = $this->getStats($instanceName, null, $this->thisYear);
 		$interface->assign('usageThisYear', $usageThisYear);
-		$usageAllTime = $this->getStats(null, null);
+		$usageAllTime = $this->getStats($instanceName, null, null);
 		$interface->assign('usageAllTime', $usageAllTime);
 
 		$this->display('usage_dashboard.tpl', 'Aspen Usage Dashboard');
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin');
-	}
-
 	/**
+	 * @param string|null $instanceName
 	 * @param string|null $month
 	 * @param string|null $year
 	 * @return int[]
 	 */
-	function getStats($month, $year): array
+	function getStats($instanceName, $month, $year): array
 	{
 		$usage = new AspenUsage();
+		if (!empty($instanceName)){
+			$usage->instance = $instanceName;
+		}
 		if ($month != null){
 			$usage->month = $month;
 		}
@@ -57,6 +43,9 @@ class Admin_UsageDashboard extends Admin_Admin
 		}
 		$usage->selectAdd();
 		$usage->selectAdd('SUM(pageViews) as totalViews');
+		$usage->selectAdd('SUM(pageViewsByBots) as totalPageViewsByBots');
+		$usage->selectAdd('SUM(pageViewsByAuthenticatedUsers) as totalPageViewsByAuthenticatedUsers');
+		$usage->selectAdd('SUM(sessionsStarted) as totalSessionsStarted');
 		$usage->selectAdd('SUM(coverViews) as totalCovers');
 		$usage->selectAdd('SUM(pagesWithErrors) as totalErrors');
 		$usage->selectAdd('SUM(ajaxRequests) as totalAsyncRequests');
@@ -66,12 +55,19 @@ class Admin_UsageDashboard extends Admin_Admin
 		$usage->selectAdd('SUM(openArchivesSearches) as totalOpenArchivesSearches');
 		$usage->selectAdd('SUM(userListSearches) as totalUserListSearches');
 		$usage->selectAdd('SUM(websiteSearches) as totalWebsiteSearches');
+		$usage->selectAdd('SUM(eventsSearches) as totalEventsSearches');
+		$usage->selectAdd('SUM(ebscoEdsSearches) as totalEbscoEdsSearches');
+		$usage->selectAdd('SUM(blockedRequests) as totalBlockedRequests');
+		$usage->selectAdd('SUM(blockedApiRequests) as totalBlockedApiRequests');
 
 		$usage->find(true);
 
 		/** @noinspection PhpUndefinedFieldInspection */
-		$stats = [
+		return [
 			'totalViews' => $usage->totalViews,
+			'totalPageViewsByBots' => $usage->totalPageViewsByBots,
+			'totalPageViewsByAuthenticatedUsers' => $usage->totalPageViewsByAuthenticatedUsers,
+			'totalSessionsStarted' => $usage->totalSessionsStarted,
 			'totalCovers' => $usage->totalCovers,
 			'totalErrors' => $usage->totalErrors,
 			'totalAsyncRequests' => $usage->totalAsyncRequests,
@@ -81,8 +77,29 @@ class Admin_UsageDashboard extends Admin_Admin
 			'totalOpenArchivesSearches' => $usage->totalOpenArchivesSearches,
 			'totalUserListSearches' => $usage->totalUserListSearches,
 			'totalWebsiteSearches' => $usage->totalWebsiteSearches,
+			'totalEventsSearches' => $usage->totalEventsSearches,
+			'totalEbscoEdsSearches' => $usage->totalEbscoEdsSearches,
+			'totalBlockedRequests' => $usage->totalBlockedRequests,
+			'totalBlockedApiRequests' => $usage->totalBlockedApiRequests,
 		];
+	}
 
-		return $stats;
+	function getBreadcrumbs()
+	{
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_reports', 'System Reports');
+		$breadcrumbs[] = new Breadcrumb('', 'Usage Dashboard');
+		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection()
+	{
+		return 'system_reports';
+	}
+
+	function canView()
+	{
+		return UserAccount::userHasPermission(['View Dashboards', 'View System Reports']);
 	}
 }

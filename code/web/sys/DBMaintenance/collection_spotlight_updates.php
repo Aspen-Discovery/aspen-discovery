@@ -47,24 +47,9 @@ function getCollectionSpotlightUpdates(){
 			'title' => 'List Widget Home',
 			'description' => 'Create the default homepage widget',
 			'sql' => array(
-				"INSERT INTO list_widgets (name, description, showTitleDescriptions, onSelectCallback) VALUES ('home', 'Default example widget.', '1','')",
+				"INSERT INTO list_widgets (name, description, showTitleDescriptions, onSelectCallback, customCss) VALUES ('home', 'Default example widget.', '1','','')",
 				"INSERT INTO list_widget_lists (listWidgetId, weight, source, name, displayFor) VALUES ('1', '1', 'highestRated', 'Highest Rated', 'all')",
 				"INSERT INTO list_widget_lists (listWidgetId, weight, source, name, displayFor) VALUES ('1', '2', 'recentlyReviewed', 'Recently Reviewed', 'all')",
-			),
-		),
-
-		'addTableListWidgetListsLinks' => array(
-			'title' => 'Widget Lists',
-			'description' => 'Add a new table: list_widget_lists_links',
-			'sql' => array(
-				"CREATE TABLE IF NOT EXISTS `list_widget_lists_links`(
-					`id` int(11) NOT NULL AUTO_INCREMENT, 
-					`listWidgetListsId` int(11) NOT NULL, 
-					`name` varchar(50) NOT NULL, 
-					`link` text NOT NULL, 
-					`weight` int(3) NOT NULL DEFAULT '0',
-					PRIMARY KEY (`id`) 
-				) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
 			),
 		),
 
@@ -120,7 +105,7 @@ function getCollectionSpotlightUpdates(){
 			'description' => 'Add Text-Only List as a style option.',
 			'sql' => array(
 				"ALTER TABLE `list_widgets` CHANGE `style` `style` ENUM('vertical', 'horizontal', 'single', 'single-with-next', 'text-list') NOT NULL DEFAULT 'horizontal'",
-				"ALTER TABLE `list_widgets` COMMENT = 'A widget that can be displayed within Pika or within other sites'",
+				"ALTER TABLE `list_widgets` COMMENT = 'A widget that can be displayed within Aspen Discovery or within other sites'",
 			),
 		),
 
@@ -155,7 +140,7 @@ function getCollectionSpotlightUpdates(){
 			'title' => 'Remove Widget List Links',
 			'description' => 'Remove table list_widget_lists_links',
 			'sql' => [
-				"DROP TABLE list_widget_lists_links"
+				"DROP TABLE IF EXISTS list_widget_lists_links"
 			],
 		],
 
@@ -168,6 +153,68 @@ function getCollectionSpotlightUpdates(){
 				"RENAME TABLE list_widgets TO collection_spotlights",
 				"RENAME TABLE list_widget_lists TO collection_spotlight_lists",
 			]
+		],
+
+		'update_spotlight_sources' => [
+			'title' => 'Update Spotlight sources',
+			'description' => 'Update Spotlight Sources to make it easier to add other types of searches.',
+			'sql' => [
+				'updateSpotlightSources'
+			]
+		],
+
+		'collection_spotlights_carousel_style' => [
+			'title' => 'Collection Spotlights Carousel Style',
+			'description' => 'Add carousel style to collection spotlights',
+			'sql' => [
+				"ALTER TABLE `collection_spotlights` CHANGE `style` `style` ENUM('vertical', 'horizontal', 'single', 'single-with-next', 'text-list', 'horizontal-carousel') NOT NULL DEFAULT 'horizontal'",
+			]
 		]
 	);
+}
+
+/** @noinspection PhpUnused */
+function updateSpotlightSources(){
+	require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
+	$validSources = BaseBrowsable::getBrowseSources();
+	$spotlightLists = new CollectionSpotlightList();
+	$spotlightLists->find();
+	$allSpotlights = [];
+	while ($spotlightLists->fetch()) {
+		$allSpotlights[] = clone $spotlightLists;
+	}
+	foreach ($allSpotlights as $index => $spotlightList){
+		if (!empty($spotlightList->source)){
+			$source = $spotlightList->source;
+			if (strpos($source, ':') > 0){
+				list($sourceName, $sourceId) = explode(':', $source);
+				if ($sourceName == 'list'){
+					$spotlightList->source = 'List';
+					if (empty($spotlightList->sourceListId)){
+						$spotlightList->source = $sourceId;
+					}
+					$spotlightList->update();
+				}elseif ($sourceName == 'search') {
+					if (empty($spotlightList->sourceListId)){
+						/** @var SearchObject_GroupedWorkSearcher $searcher */
+						$searcher = SearchObjectFactory::initSearchObject('GroupedWork');
+						$savedSearch = $searcher->restoreSavedSearch($sourceId, false, true);
+						if ($savedSearch !== false) {
+							$spotlightList->updateFromSearch($savedSearch);
+							$spotlightList->update();
+						}
+					}
+				}
+			}
+		}else{
+			if (!array_key_exists($spotlightList->source, $validSources)) {
+				if (!empty($spotlightList->sourceListId) && $spotlightList->sourceListId != -1) {
+					$spotlightList->source = 'List';
+				} else {
+					$spotlightList->source = 'GroupedWork';
+				}
+				$spotlightList->update();
+			}
+		}
+	}
 }

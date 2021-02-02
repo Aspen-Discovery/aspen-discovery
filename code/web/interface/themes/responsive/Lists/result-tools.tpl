@@ -1,7 +1,17 @@
 <div class="result-tools-horizontal btn-toolbar" role="toolbar">
 	<div class="btn-group btn-group-sm">
 		{if $showMoreInfo !== false}
-		<a href="/MyAccount/MyList/{$summShortId}" class="btn btn-sm">{translate text="More Info"}</a>
+			<a href="/MyAccount/MyList/{$summShortId}" class="btn btn-sm">{translate text="More Info"}</a>
 		{/if}
+	</div>
+
+	{if $showFavorites == 1}
+		<div class="btn-group btn-group-sm">
+			<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Lists', '{$summShortId|escape}');" class="btn btn-sm ">{translate text='Add to list'}</button>
+		</div>
+	{/if}
+
+	<div class="btn-group btn-group-sm">
+        {include file="Lists/share-tools.tpl"}
 	</div>
 </div>
