@@ -321,4 +321,104 @@ class Admin_AJAX extends JSON_Action
 			];
 		}
 	}
+
+	function getBatchUpdateFieldForm(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+		$batchUpdateScope = $_REQUEST['batchUpdateScope'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		if ($tool->canBatchEdit()) {
+
+			$batchFormatFields = $tool->getBatchFormatFields();
+			global $interface;
+			$interface->assign('batchFormatFields', $batchFormatFields);
+
+			$modalBody = $interface->fetch('Admin/batchUpdateFieldForm.tpl');
+			return [
+				'success' => true,
+				'title' => "Batch Update {$tool->getPageTitle()}",
+				'modalBody' => $modalBody,
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchUpdateFieldForm('{$moduleName}', '{$toolName}', '{$batchUpdateScope}');\" class=\"modal-buttons btn btn-primary\">" . translate('Update') . "</button>"
+			];
+		}else{
+			return [
+				'success' => false,
+				'message' => "Sorry, you don't have permission to batch edit",
+			];
+		}
+	}
+
+	function doBatchUpdateField(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+		$batchUpdateScope = $_REQUEST['batchUpdateScope'];
+		$selectedField = $_REQUEST['selectedField'];
+		$newValue = $_REQUEST['newValue'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		if ($tool->canBatchEdit()) {
+			$batchFormatFields = $tool->getBatchFormatFields();
+			$fieldStructure = null;
+			foreach ($batchFormatFields as $field){
+				if ($field['property'] == $selectedField){
+					$fieldStructure = $field;
+					break;
+				}
+			}
+			if ($fieldStructure == null){
+				return [
+					'success' => false,
+					'message' => "Could not find the selected field to edit",
+				];
+			}else {
+				if ($batchUpdateScope == 'all') {
+					$numObjects = $tool->getNumObjects();
+					$recordsPerPage = 100;
+					$numBatches = ceil($numObjects / $recordsPerPage);
+					for ($i = 0; $i < $numBatches; $i++) {
+						$objectsForBatch = $tool->getAllObjects($i + 1, 1000);
+						foreach ($objectsForBatch as $dataObject) {
+							$dataObject->setProperty($selectedField, $newValue, $fieldStructure);
+							$dataObject->update();
+						}
+					}
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}.",
+					];
+				} else {
+					foreach ($_REQUEST['selectedObject'] as $id => $value){
+						$dataObject = $tool->getExistingObjectById($id);
+						if ($dataObject != null) {
+							$dataObject->setProperty($selectedField, $newValue, $fieldStructure);
+							$dataObject->update();
+						}
+					}
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => "Updated selected {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}.",
+					];
+				}
+			}
+		}else{
+			return [
+				'success' => false,
+				'title' => 'Error Processing Update',
+				'message' => "Sorry, you don't have permission to batch edit",
+			];
+		}
+	}
 }

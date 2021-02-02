@@ -6020,10 +6020,6 @@ AspenDiscovery.Account = (function(){
 }(AspenDiscovery.Account || {}));
 AspenDiscovery.Admin = (function(){
 	return {
-		showRecordGroupingNotes: function (id){
-			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getRecordGroupingNotes&id=" + id, true);
-			return false;
-		},
 		showReindexNotes: function (id){
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getReindexNotes&id=" + id, true);
 			return false;
@@ -6155,6 +6151,69 @@ AspenDiscovery.Admin = (function(){
 				return true;
 			}else{
 				AspenDiscovery.showMessage("Error", "Please select only two objects to compare");
+				return false;
+			}
+		},
+		showBatchUpdateFieldForm: function(module, toolName, batchUpdateScope) {
+			var selectedObjects = $('.selectedObject:checked');
+			if (batchUpdateScope === 'all' || selectedObjects.length >= 1){
+				var url = Globals.path + "/Admin/AJAX";
+				var params =  {
+					method : 'getBatchUpdateFieldForm',
+					moduleName : module,
+					toolName: toolName,
+					batchUpdateScope: batchUpdateScope
+				};
+				$.getJSON(url, params,
+					function(data) {
+						if (data.success) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+						} else {
+							$("#releaseNotes").html("Error + " + data.message);
+						}
+					}
+				).fail(AspenDiscovery.ajaxFail);
+				return false;
+			}else{
+				AspenDiscovery.showMessage("Error", "Please select at least one object to update");
+				return false;
+			}
+		},
+		processBatchUpdateFieldForm: function(module, toolName, batchUpdateScope){
+			var selectedObjects = $('.selectedObject:checked');
+			if (batchUpdateScope === 'all' || selectedObjects.length >= 1){
+				var url = Globals.path + "/Admin/AJAX";
+				var selectedField = $('#fieldSelector').val();
+				var selectedFieldControl = $('#' + selectedField);
+				var newValue;
+				if (selectedFieldControl.prop("type") === 'checkbox'){
+					newValue = selectedFieldControl.prop("checked") ? 1 : 0;
+				}else {
+					newValue = selectedFieldControl.val();
+				}
+				var params =  {
+					method : 'doBatchUpdateField',
+					moduleName : module,
+					toolName: toolName,
+					batchUpdateScope: batchUpdateScope,
+					selectedField: selectedField,
+					newValue: newValue
+				};
+				selectedObjects.each(function(){
+					params[$(this).prop('name')] = 'on';
+				});
+				$.getJSON(url, params,
+					function(data) {
+						if (data.success) {
+							AspenDiscovery.showMessage(data.title, data.message, true, true);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message);
+						}
+					}
+				).fail(AspenDiscovery.ajaxFail);
+				return false;
+			}else{
+				AspenDiscovery.showMessage("Error", "Please select at least one object to update");
 				return false;
 			}
 		},

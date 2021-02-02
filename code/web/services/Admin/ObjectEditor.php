@@ -21,6 +21,7 @@ abstract class ObjectEditor extends Admin_Admin
 		$interface->assign('canCopy', $this->canCopy());
 		$interface->assign('canCompare', $this->canCompare());
 		$interface->assign('canDelete', $this->canDelete());
+		$interface->assign('canBatchUpdate', $this->canBatchEdit());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
 		$interface->assign('objectType', $this->getObjectType());
@@ -345,6 +346,10 @@ abstract class ObjectEditor extends Admin_Admin
 		return true;
 	}
 
+	public function canBatchEdit() {
+		return true;
+	}
+
 	public function customListActions(){
 		return array();
 	}
@@ -495,5 +500,29 @@ abstract class ObjectEditor extends Admin_Admin
 
 	public function hasHistory(){
 		return true;
+	}
+
+	public function getBatchFormatFields(){
+		$structure = $this->getObjectStructure();
+
+		$batchFormatFields = [];
+		foreach ($structure as $fieldName => $field){
+			$this->addFieldToBatchFormatFieldsArray($batchFormatFields, $field);
+		}
+		ksort($batchFormatFields);
+		return $batchFormatFields;
+	}
+
+	private function addFieldToBatchFormatFieldsArray(&$batchFormatFields, $field){
+		if ($field['type'] == 'section'){
+			foreach ($field['properties'] as $subFieldName => $subField){
+				$this->addFieldToBatchFormatFieldsArray($batchFormatFields, $subField);
+			}
+		} else {
+			$canBatchUpdate = !isset($field['canBatchUpdate']) || ($field['canBatchUpdate'] == true);
+			if ($canBatchUpdate && in_array($field['type'], ['checkbox', 'enum', 'currency', 'date', 'timestamp', 'text', 'integer', 'email', 'url'])) {
+				$batchFormatFields[$field['label']] = $field;
+			}
+		}
 	}
 }

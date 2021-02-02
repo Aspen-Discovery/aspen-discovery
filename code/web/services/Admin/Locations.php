@@ -3,7 +3,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class Locations extends ObjectEditor
+class Admin_Locations extends ObjectEditor
 {
 
 	function getObjectType(){
