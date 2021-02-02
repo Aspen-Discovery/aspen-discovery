@@ -5863,10 +5863,10 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		createPayPalOrder: function(finesFormId) {
+		createGenericOrder: function(finesFormId, paymentType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
-				method: "createPayPalOrder",
+				method: "create" + paymentType + "Order",
 				patronId: $(finesFormId + " input[name=patronId]").val(),
 			};
 			$(finesFormId + " .selectedFine:checked").each(
@@ -5894,12 +5894,24 @@ AspenDiscovery.Account = (function(){
 						AspenDiscovery.showMessage("Error", response.message);
 						return false;
 					}else{
-						orderInfo = response.orderID;
+						if(paymentType == 'PayPal') {
+							orderInfo = response.orderID;
+						} else if(paymentType == 'MSB') {
+							orderInfo = response.paymentRequestUrl;
+						}
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
-
 			return orderInfo;
+		},
+
+		createMSBOrder: function(finesFormId) {
+			$url = this.createGenericOrder(finesFormId, 'MSB');
+			window.location.href = $url;
+		},
+
+		createPayPalOrder: function(finesFormId) {
+			this.createGenericOrder(finesFormId, 'PayPal');
 		},
 
 		completePayPalOrder: function(orderId, patronId) {
@@ -5918,6 +5930,7 @@ AspenDiscovery.Account = (function(){
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
+
 		updateFineTotal: function(finesFormId, userId, paymentType) {
 			var totalFineAmt = 0;
 			var totalOutstandingAmt = 0;
