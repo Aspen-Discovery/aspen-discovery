@@ -291,7 +291,13 @@ class CatalogConnection
 	 */
 	public function getFines($patron, $includeMessages = false)
 	{
-		return $this->driver->getFines($patron, $includeMessages);
+		$fines = $this->driver->getFines($patron, $includeMessages);
+		foreach ($fines as &$fine){
+			if (!array_key_exists('canPayFine', $fine)){
+				$fine['canPayFine'] = true;
+			}
+		}
+		return $fines;
 	}
 
 	/**
