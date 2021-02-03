@@ -1316,7 +1316,7 @@ class ExtractOverDriveInfo {
 								changesMade = true;
 							}
 						} catch (SQLException e) {
-							logEntry.incErrors("SQL Error loading availability for title " + overDriveInfo.getId(), e);
+							logEntry.incErrors("SQL Error adding availability for title " + overDriveInfo.getId(), e);
 						}
 					}else{
 						if (singleWork) {
