@@ -111,6 +111,7 @@
     - [Topic Facet](/Admin/HelpManual?page=Topic-Facets)
     - [Genre Facet](/Admin/HelpManual?page=Genre-Facets)
     - [Geographic Region Facet](/Admin/HelpManual?page=GeographicRegion-Facets)
+    - [Language Facet](/Admin/HelpManual?page=Language-Facet)
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - System Messages
 - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
