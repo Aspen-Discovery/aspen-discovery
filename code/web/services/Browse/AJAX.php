@@ -186,18 +186,7 @@ class Browse_AJAX extends Action {
 				'message' => 'Your session has timed out, please login again to view suggestions'
 			];
 		}
-		// Only Fetches one page of results
-		$browseMode = $this->setBrowseMode();
-		if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {
-			global $memCache;
-			global $solrScope;
-			$activeUserId = UserAccount::getActiveUserId();
-			$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
-			$browseCategoryInfo = $memCache->get($key);
-			if ($browseCategoryInfo != false){
-				return $browseCategoryInfo;
-			}
-		}
+		//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
 
 		global $interface;
 		$interface->assign('browseCategoryId', $this->textId);
@@ -231,13 +220,6 @@ class Browse_AJAX extends Action {
 		$result['records']    = implode('',$records);
 		$result['numRecords'] = count($records);
 
-		if ($pageToLoad == 1){
-			global $memCache, $configArray, $solrScope;
-			$activeUserId = UserAccount::getActiveUserId();
-			$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
-			$memCache->set($key, $result, $configArray['Caching']['browse_category_info']);
-		}
-
 		return $result;
 	}
 
@@ -245,18 +227,7 @@ class Browse_AJAX extends Action {
 		if ($this->textId == 'system_recommended_for_you') {
 			return $this->getSuggestionsBrowseCategoryResults($pageToLoad);
 		} else {
-			$browseMode = $this->setBrowseMode();
-			if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {
-				// only first page is cached
-				global $memCache;
-				global $solrScope;
-				$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
-				$browseCategoryInfo = $memCache->get($key);
-				if ($browseCategoryInfo != false) {
-					return $browseCategoryInfo;
-				}
-			}
-
+			//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
 			$result = array('success' => false);
 			$browseCategory = $this->getBrowseCategory();
 			if ($browseCategory) {
@@ -334,12 +305,6 @@ class Browse_AJAX extends Action {
 				$result['numRecords'] = count($records);
 			}
 
-			// Store first page of browse category in the MemCache
-			if ($pageToLoad == 1) {
-				global $memCache, $configArray, $solrScope;
-				$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
-				$memCache->set($key, $result, $configArray['Caching']['browse_category_info']);
-			}
 			return $result;
 		}
 	}
