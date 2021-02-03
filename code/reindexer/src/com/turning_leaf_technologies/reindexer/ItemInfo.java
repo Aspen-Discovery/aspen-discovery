@@ -169,17 +169,12 @@ public class ItemInfo {
 		this.isEContent = isEContent;
 	}
 
-	private static final SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
 	private String baseDetails = null;
 	String getDetails(BaseLogEntry logEntry){
 		if (baseDetails == null){
 			String formattedLastCheckinDate = "";
 			if (lastCheckinDate != null){
-				try {
-					formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
-				}catch (Exception e){
-					logEntry.incErrors("Error formatting check in date for " + lastCheckinDate, e);
-				}
+				formattedLastCheckinDate = formatLastCheckInDate(lastCheckinDate, logEntry);
 			}
 			//Cache the part that doesn't change depending on the scope
 			baseDetails = recordInfo.getFullIdentifier() + "|" +
@@ -201,6 +196,18 @@ public class ItemInfo {
 					Util.getCleanDetailValue(subLocation) + "|";
 		}
 		return baseDetails;
+	}
+
+	private static final SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
+	private synchronized String formatLastCheckInDate(Date lastCheckinDate, BaseLogEntry logEntry){
+		String formattedLastCheckinDate;
+		try {
+			formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
+		}catch (Exception e){
+			logEntry.incErrors("Error formatting check in date for " + lastCheckinDate, e);
+			formattedLastCheckinDate = "";
+		}
+		return formattedLastCheckinDate;
 	}
 
 	Date getDateAdded() {

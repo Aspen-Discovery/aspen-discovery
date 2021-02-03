@@ -41,9 +41,9 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 		}
 		saveResults();
 	}
-	private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	@Override
-	public synchronized void addNote(String note) {
+	public void addNote(String note) {
 		Date date = new Date();
 		this.notes.add(dateFormat.format(date) + " - " + note);
 	}

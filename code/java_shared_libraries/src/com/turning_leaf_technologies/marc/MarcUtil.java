@@ -469,7 +469,7 @@ public class MarcUtil {
 
 	private static SimpleDateFormat oo8DateFormat = new SimpleDateFormat("yyMMdd");
 	private static SimpleDateFormat oo5DateFormat = new SimpleDateFormat("yyyyMMdd");
-	public static Long getDateAddedForRecord(Record marcRecord, String recordNumber, String source, File individualFile, Logger logger) {
+	public synchronized static Long getDateAddedForRecord(Record marcRecord, String recordNumber, String source, File individualFile, Logger logger) {
 		//Set first detection date based on the creation date of the file
 		Long timeAdded = null;
 		if (individualFile.exists()){

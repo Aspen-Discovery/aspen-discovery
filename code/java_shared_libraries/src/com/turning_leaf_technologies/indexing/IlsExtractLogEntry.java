@@ -34,7 +34,7 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 		}
 		this.saveResults();
 	}
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	@Override
 	public void addNote(String note) {
 		Date date = new Date();
