@@ -326,6 +326,7 @@ class Theme extends DataObject
 			'PT Sans',
 			'Raleway',
 			'Roboto',
+			'Rubik',
 			'Source Sans Pro',
 			'Ubuntu',
 		];
@@ -348,6 +349,7 @@ class Theme extends DataObject
 			'Roboto',
 			'Roboto Condensed',
 			'Roboto Slab',
+			'Rubik',
 			'Source Sans Pro',
 			'Ubuntu',
 		];
