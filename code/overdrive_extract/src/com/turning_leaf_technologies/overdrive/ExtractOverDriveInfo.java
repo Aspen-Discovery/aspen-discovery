@@ -417,7 +417,7 @@ class ExtractOverDriveInfo {
 		addFormatStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_formats set id = NULL, productId = ?, textId = ?, numericId = ?, name = ?, fileName = ?, fileSize = ?, partCount = ?, sampleSource_1 = ?, sampleUrl_1 = ?, sampleSource_2 = ?, sampleUrl_2 = ? ON DUPLICATE KEY update id = id", PreparedStatement.RETURN_GENERATED_KEYS);
 		clearIdentifiersStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_identifiers where productId = ?");
 		addIdentifierStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_identifiers set productId = ?, type = ?, value = ?");
-		getExistingAvailabilityForProductStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ?");
+		getExistingAvailabilityForProductStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ? and settingId = ?");
 		updateAvailabilityStmt = dbConn.prepareStatement("UPDATE overdrive_api_product_availability set available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?, shared =? WHERE id = ?");
 		addAvailabilityStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_availability set productId = ?, settingId = ?, libraryId = ?, available = ?, copiesOwned = ?, copiesAvailable = ?, numberOfHolds = ?, availabilityType = ?, shared = ?");
 		deleteAvailabilityStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability where id = ?");
@@ -1150,6 +1150,7 @@ class ExtractOverDriveInfo {
 		HashMap<Long, OverDriveAvailabilityInfo> existingAvailabilities = new HashMap<>();
 		try {
 			getExistingAvailabilityForProductStmt.setLong(1, databaseId);
+			getExistingAvailabilityForProductStmt.setLong(2, settings.getId());
 
 			ResultSet existingAvailabilityRS = getExistingAvailabilityForProductStmt.executeQuery();
 			while (existingAvailabilityRS.next()){
@@ -1344,7 +1345,7 @@ class ExtractOverDriveInfo {
 						logEntry.addNote("Deleting availability for library " + existingAvailability.getLibraryId());
 					}
 				} catch (SQLException e) {
-					logEntry.incErrors("SQL Error loading availability for title " + overDriveInfo.getId(), e);
+					logEntry.incErrors("SQL Error deleting availability for title " + overDriveInfo.getId(), e);
 				}
 			}
 		}
