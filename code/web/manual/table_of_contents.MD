@@ -101,8 +101,10 @@
 - Searching
   - Search Types
   - [Facets](/Admin/HelpManual?page=Facets)
-    - [Nonfiction/Fiction Facets](/Admin/HelpManual?page=Literary-Forms)
-    - [Subject Facets](/Admin/HelpManual?page=Subject-Facets)
+    - [Nonfiction/Fiction Facet](/Admin/HelpManual?page=Literary-Forms)
+    - [Full Subject Facet](/Admin/HelpManual?page=FullSubject-Facet)
+    - [BISAC Subject Facet](/Admin/HelpManual?page=BISACSubject-Facet)
+    - [LC Subject Facet](/Admin/HelpManual?page=LCSubject-Facet)
     - [Audience Facet](/Admin/HelpManual?page=Audience-Facets)
     - [Reading Level Facet](/Admin/HelpManual?page=ReadingLevel-Facets)
     - [Era Facet](/Admin/HelpManual?page=Era-Facets)
