@@ -100,6 +100,13 @@ class OverDriveProcessor {
 
 						HashMap<String, String> metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat);
 
+						if (!metadata.containsKey("rawMetadata")){
+							//We didn't get metadata for the title.  This shouldn't happen in normal cases, but if it does,
+							//we should just skip processing this record.
+							logEntry.addNote("OverDrive record " + identifier + " did not have metadata, skipping");
+							productRS.close();
+							return;
+						}
 						//Decode JSON data to get a little more information
 						JSONObject rawMetadataDecoded = null;
 						try {
