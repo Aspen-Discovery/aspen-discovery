@@ -2406,7 +2406,7 @@ class MyAccount_AJAX extends JSON_Action
 							$finesPaid .= '|' . $fineAmount;
 							$finePayment = 1;
 						} else {
-							if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount // this is not working to write the | $fineAmount 2021 01 27
+							if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount 
 								$finesPaid .= '|' . $fineAmount;
 							}
 						}
