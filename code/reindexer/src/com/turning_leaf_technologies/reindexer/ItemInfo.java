@@ -6,8 +6,14 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 public class ItemInfo {
 	private String itemIdentifier;
@@ -198,10 +204,12 @@ public class ItemInfo {
 		return baseDetails;
 	}
 
-	private static final SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
-	private synchronized String formatLastCheckInDate(Date lastCheckinDate, BaseLogEntry logEntry){
+	private String formatLastCheckInDate(Date lastCheckinDate, BaseLogEntry logEntry){
 		String formattedLastCheckinDate;
 		try {
+			//We need to create this each time because the DateTimeFomatter is not ThreadSafe and just synchronizing
+			// this method is not working. Eventually, we can convert everything that uses Date to Java 8's new Date classes
+			SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
 			formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
 		}catch (Exception e){
 			logEntry.incErrors("Error formatting check in date for " + lastCheckinDate, e);
