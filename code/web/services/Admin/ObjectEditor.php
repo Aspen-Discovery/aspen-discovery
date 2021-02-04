@@ -520,7 +520,7 @@ abstract class ObjectEditor extends Admin_Admin
 			}
 		} else {
 			$canBatchUpdate = !isset($field['canBatchUpdate']) || ($field['canBatchUpdate'] == true);
-			if ($canBatchUpdate && in_array($field['type'], ['checkbox', 'enum', 'currency', 'date', 'timestamp', 'text', 'integer', 'email', 'url'])) {
+			if ($canBatchUpdate && in_array($field['type'], ['checkbox', 'enum', 'currency', 'text', 'integer', 'email', 'url'])) {
 				$batchFormatFields[$field['label']] = $field;
 			}
 		}
