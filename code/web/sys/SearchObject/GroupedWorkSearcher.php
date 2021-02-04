@@ -1042,6 +1042,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				//Setup the key to allow sorting alphabetically if needed.
 				$valueKey = $facet[0];
 				$okToAdd = true;
+				//Don't include empty settings since they don't work properly with Solr
+				if (strlen(trim($facet[0])) == 0){
+					$okToAdd = false;
+				}
 				if ($doInstitutionProcessing) {
 					if ($facet[0] == $currentLibrary->facetLabel) {
 						$valueKey = '1' . $valueKey;
