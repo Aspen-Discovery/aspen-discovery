@@ -426,6 +426,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if ($productsKey == null){
 			$productsKey = $this->getSettings()->productsKey;
 		}
+		if (is_numeric($overDriveId)){
+			//This is a crossRefId, we need to search for the product by crossRefId to get the actual id
+			$searchUrl = "https://api.overdrive.com/v1/collections/$productsKey/products?crossRefId=$overDriveId";
+			$searchResults = $this->_callUrl($searchUrl);
+			if (!empty($searchResults->products) && count($searchResults->products) > 0){
+				$overDriveId = $searchResults->products[0]->id;
+			}
+		}
 		$overDriveId= strtoupper($overDriveId);
 		$metadataUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId/metadata";
 		return $this->_callUrl($metadataUrl);
@@ -530,20 +538,22 @@ class OverDriveDriver extends AbstractEContentDriver{
 						//Figure out which eContent record this is for.
 						require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 						$overDriveRecord = new OverDriveRecordDriver($checkout['overDriveId']);
-						$checkout['recordId'] = $overDriveRecord->getUniqueID();
-						$groupedWorkId = $overDriveRecord->getGroupedWorkId();
-						if ($groupedWorkId != null){
-							$checkout['groupedWorkId'] = $overDriveRecord->getGroupedWorkId();
+						if ($overDriveRecord->isValid()) {
+							$checkout['recordId'] = $overDriveRecord->getUniqueID();
+							$groupedWorkId = $overDriveRecord->getGroupedWorkId();
+							if ($groupedWorkId != null) {
+								$checkout['groupedWorkId'] = $overDriveRecord->getGroupedWorkId();
+							}
+							$formats = $overDriveRecord->getFormats();
+							$checkout['groupedWorkId'] = $overDriveRecord->getPermanentId();
+							$checkout['format'] = reset($formats);
+							$checkout['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
+							$checkout['ratingData'] = $overDriveRecord->getRatingData();
+							$checkout['recordUrl'] = $overDriveRecord->getLinkUrl(true);
+							$checkout['title'] = $overDriveRecord->getTitle();
+							$checkout['author'] = $overDriveRecord->getAuthor();
+							$checkout['linkUrl'] = $overDriveRecord->getLinkUrl(false);
 						}
-						$formats = $overDriveRecord->getFormats();
-						$checkout['groupedWorkId'] = $overDriveRecord->getPermanentId();
-						$checkout['format'] = reset($formats);
-						$checkout['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
-						$checkout['ratingData'] = $overDriveRecord->getRatingData();
-						$checkout['recordUrl'] = $overDriveRecord->getLinkUrl(true);
-						$checkout['title'] = $overDriveRecord->getTitle();
-						$checkout['author'] = $overDriveRecord->getAuthor();
-						$checkout['linkUrl'] = $overDriveRecord->getLinkUrl(false);
 					}
 					$checkout['user'] = $patron->getNameAndLibraryLabel();
 					$checkout['userId'] = $patron->id;

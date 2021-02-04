@@ -1188,7 +1188,7 @@ class ExtractOverDriveInfo {
 				if (singleWork) {
 					logEntry.addNote("Found availability for api key " + apiKey);
 				}
-				logEntry.incErrors("Error availability API for product " + overDriveInfo.getId());
+				logEntry.incErrors("Error availability API for product " + overDriveInfo.getId() + " response code " + availabilityResponse.getResponseCode());
 				logger.info(availabilityResponse.getResponseCode() + ":" + availabilityResponse.getMessage());
 			}else if (availabilityResponse.getMessage() == null){
 				//Delete all availability for this record
