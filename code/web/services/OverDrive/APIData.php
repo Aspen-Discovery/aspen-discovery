@@ -75,6 +75,7 @@ class OverDrive_APIData extends Admin_Admin
 
 		if (!empty($_REQUEST['id'])) {
 			$overDriveId = $_REQUEST['id'];
+			$interface->assign('overDriveId', $overDriveId);
 			$contents .= "<h2>Metadata</h2>";
 			$contents .= "<h3>Metadata for $overDriveId</h3>";
 			$metadata = $driver->getProductMetadata($overDriveId, $productKey);
