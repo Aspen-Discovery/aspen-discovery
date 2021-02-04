@@ -235,7 +235,7 @@
 				{/if}
 			{/if}
 			{* Display a table of the association with the ability to add and edit new values *}
-			<input type="file" name='{$propName}' id='{$propName}' size="80">
+			<input type="file" name='{$propName}' id='{$propName}' size="80" {if $property.required}required="required"{/if}>
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
