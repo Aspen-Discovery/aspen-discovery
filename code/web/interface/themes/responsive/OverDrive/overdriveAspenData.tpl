@@ -34,22 +34,22 @@
 
 		{if !empty($overDriveMetadata)}
 			<h3>Metadata</h3>
-			<div class="row"><div class="col-sm-4">Sort Title</div><div class="col-sm-8">{$overDriveProduct->sortTitle}</div></div>
-			<div class="row"><div class="col-sm-4">Publisher</div><div class="col-sm-8">{$overDriveProduct->publisher}</div></div>
-			<div class="row"><div class="col-sm-4">Publish Date</div><div class="col-sm-8">{$overDriveProduct->publishDate}</div></div>
-			<div class="row"><div class="col-sm-4">Is Public Domain</div><div class="col-sm-8">{$overDriveProduct->isPublicDomain}</div></div>
-			<div class="row"><div class="col-sm-4">Is Public Performance Allowed</div><div class="col-sm-8">{$overDriveProduct->isPublicPerformanceAllowed}</div></div>
+			<div class="row"><div class="col-sm-4">Sort Title</div><div class="col-sm-8">{$overDriveMetadata->sortTitle}</div></div>
+			<div class="row"><div class="col-sm-4">Publisher</div><div class="col-sm-8">{$overDriveMetadata->publisher}</div></div>
+			<div class="row"><div class="col-sm-4">Publish Date</div><div class="col-sm-8">{$overDriveMetadata->publishDate}</div></div>
+			<div class="row"><div class="col-sm-4">Is Public Domain</div><div class="col-sm-8">{$overDriveMetadata->isPublicDomain}</div></div>
+			<div class="row"><div class="col-sm-4">Is Public Performance Allowed</div><div class="col-sm-8">{$overDriveMetadata->isPublicPerformanceAllowed}</div></div>
 		{/if}
 
 		{if !empty($overDriveAvailabilities)}
 			<h3>Availabilities</h3>
 			{foreach from=$overDriveAvailabilities item=overDriveAvailability}
 				<h4>{$overDriveAvailability->getLibraryName()} {$overDriveAvailability->getSettingName()}</h4>
-				<div class="row"><div class="col-sm-4">Available?</div><div class="col-sm-8">{$overDriveProduct->available}</div></div>
-				<div class="row"><div class="col-sm-4">Copies Owned</div><div class="col-sm-8">{$overDriveProduct->copiesOwned}</div></div>
-				<div class="row"><div class="col-sm-4">Copies Available</div><div class="col-sm-8">{$overDriveProduct->copiesAvailable}</div></div>
-				<div class="row"><div class="col-sm-4">Number of Holds</div><div class="col-sm-8">{$overDriveProduct->numberOfHolds}</div></div>
-				<div class="row"><div class="col-sm-4">Shared?</div><div class="col-sm-8">{$overDriveProduct->shared}</div></div>
+				<div class="row"><div class="col-sm-4">Available?</div><div class="col-sm-8">{$overDriveAvailability->available}</div></div>
+				<div class="row"><div class="col-sm-4">Copies Owned</div><div class="col-sm-8">{$overDriveAvailability->copiesOwned}</div></div>
+				<div class="row"><div class="col-sm-4">Copies Available</div><div class="col-sm-8">{$overDriveAvailability->copiesAvailable}</div></div>
+				<div class="row"><div class="col-sm-4">Number of Holds</div><div class="col-sm-8">{$overDriveAvailability->numberOfHolds}</div></div>
+				<div class="row"><div class="col-sm-4">Shared?</div><div class="col-sm-8">{$overDriveAvailability->shared}</div></div>
 			{/foreach}
 		{/if}
 	</div>

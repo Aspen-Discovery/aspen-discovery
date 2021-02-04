@@ -33,6 +33,7 @@ class OverDrive_AspenData extends Admin_Admin
 				while ($overDriveAvailability->fetch()){
 					$overDriveAvailabilities[] = clone $overDriveAvailability;
 				}
+				$interface->assign('overDriveAvailabilities', $overDriveAvailabilities);
 			}else{
 				$errors = 'Could not find a product with that identifier';
 			}
