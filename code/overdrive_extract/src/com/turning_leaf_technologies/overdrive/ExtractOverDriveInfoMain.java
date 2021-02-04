@@ -136,11 +136,6 @@ public class ExtractOverDriveInfoMain {
 					logger.error("Error waiting for all extracts to finish");
 				}
 			}
-			try {
-				dbConn.close();
-			} catch (SQLException e) {
-				logger.error("Error closing database connection", e);
-			}
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
@@ -157,6 +152,12 @@ public class ExtractOverDriveInfoMain {
 			}
 			if (extractSingleWork) {
 				break;
+			}
+
+			try {
+				dbConn.close();
+			} catch (SQLException e) {
+				logger.error("Error closing database connection", e);
 			}
 
 			//Check to see if nightly indexing is running and if so, wait until it is done.
@@ -182,6 +183,13 @@ public class ExtractOverDriveInfoMain {
 					logger.info("Thread was interrupted");
 				}
 			}
+		}
+		try {
+			if (dbConn != null && !dbConn.isClosed()){
+				dbConn.close();
+			}
+		} catch (SQLException e) {
+			logger.error("Error closing database connection", e);
 		}
 	}
 
