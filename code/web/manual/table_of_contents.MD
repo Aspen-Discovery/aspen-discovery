@@ -111,7 +111,7 @@
   - [Checked Out Titles](/Admin/HelpManual?page=Checked-Out-Titles)
   - [Titles On Hold](/Admin/HelpManual?page=Titles-On-Hold)
   - [Reading History](/Admin/HelpManual?page=Reading-History)
-  - [Paying Fines/Fees](/Admin/HelpManual?page=eCommerce)
+  - [Paying Fines/Fees](/Admin/HelpManual?page=Fines-and-Fees)
   - [Materials Requests & Purchase Suggestions](/Admin/HelpManual?page=Materials-Requests-Purchase-Suggestions)
   - [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
   - [Recommendations](/Admin/HelpManual?page=Recommendations)
