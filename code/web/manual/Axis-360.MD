@@ -4,6 +4,6 @@ The Axis 360 module will need to first be enabled through the System Asministrat
 
 ###Video Tutorial
 
-[![Axis 360](/manual/images/Axis-360.png)](https://youtu.be/w8cF7XThMAY)
+[![Axis 360](/manual/images/Axis-360.jpg)](https://youtu.be/w8cF7XThMAY)
 
 [Watch on Youtube](https://youtu.be/w8cF7XThMAY)
