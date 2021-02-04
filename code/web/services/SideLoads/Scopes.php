@@ -37,9 +37,10 @@ class SideLoads_Scopes extends ObjectEditor
 	function getPageTitle(){
 		return 'Side Loaded eContent Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new SideLoadScope();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

@@ -13,6 +13,7 @@ public class OverDriveSetting {
 	private final boolean runFullUpdate;
 	private final long lastUpdateOfChangedRecords;
 	private final long lastUpdateOfAllRecords;
+	private final boolean allowLargeDeletes;
 
 	OverDriveSetting(ResultSet settingRS) throws SQLException {
 		id = settingRS.getLong("id");
@@ -22,6 +23,7 @@ public class OverDriveSetting {
 		websiteId = settingRS.getString("websiteId");
 		productsKey = settingRS.getString("productsKey");
 		runFullUpdate = settingRS.getBoolean("runFullUpdate");
+		allowLargeDeletes = settingRS.getBoolean("allowLargeDeletes");
 		lastUpdateOfChangedRecords = settingRS.getLong("lastUpdateOfChangedRecords");
 		lastUpdateOfAllRecords = settingRS.getLong("lastUpdateOfAllRecords");
 	}
@@ -60,5 +62,9 @@ public class OverDriveSetting {
 
 	public long getLastUpdateOfAllRecords() {
 		return lastUpdateOfAllRecords;
+	}
+
+	public boolean isAllowLargeDeletes() {
+		return allowLargeDeletes;
 	}
 }

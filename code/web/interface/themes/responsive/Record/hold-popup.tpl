@@ -124,7 +124,7 @@
 								</div>
 							</div>
 						{else}
-							<input type="hidden" name="holdType" value="item"/>
+							<input type="hidden" name="holdType" id="holdType" value="item"/>
 						{/if}
 						<div id="itemSelection" class="form-group" {if $holdType=='either'}style="display: none"{/if}>
 							<select name="selectedItem" id="selectedItem" class="form-control" aria-label="{translate text="Selected Item"}">
@@ -136,7 +136,7 @@
 							</select>
 						</div>
 					{else}
-						<input type="hidden" name="holdType" value="bib"/>
+						<input type="hidden" name="holdType" id="holdType" value="{$holdType}"/>
 					{/if}
 
 					{if $showHoldCancelDate == 1}

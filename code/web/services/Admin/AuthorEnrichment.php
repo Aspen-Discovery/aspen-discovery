@@ -15,9 +15,10 @@ class Admin_AuthorEnrichment extends ObjectEditor
 	function getPageTitle(){
 		return 'Author Enrichment';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new AuthorEnrichment();
 		$object->orderBy('authorName');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

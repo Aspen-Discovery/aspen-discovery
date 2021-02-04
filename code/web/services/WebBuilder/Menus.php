@@ -24,13 +24,14 @@ class WebBuilder_Menus extends ObjectEditor
 		return 'WebBuilder Menus';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		global $library;
 		$object = new WebBuilderMenu();
 		$object->parentMenuId = -1;
 		$object->libraryId = $library->libraryId;
 		$object->orderBy('weight asc');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

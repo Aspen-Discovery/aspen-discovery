@@ -24,10 +24,11 @@ class WebBuilder_CustomForms extends ObjectEditor
 		return 'Custom WebBuilder Forms';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new CustomForm();
 		$object->orderBy('title');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

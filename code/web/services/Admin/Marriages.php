@@ -15,9 +15,10 @@ class Admin_Marriages extends ObjectEditor
 	function getPageTitle(){
 		return 'Marriages';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new Marriage();
 		$object->orderBy('marriageDate');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

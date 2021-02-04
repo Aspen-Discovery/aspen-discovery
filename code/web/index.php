@@ -943,8 +943,13 @@ function loadModuleActionId(){
 	try {
 		if ($checkWebBuilderAliases && array_key_exists('Web Builder', $enabledModules)) {
 			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+			//Request path will go up to any query parameters (first ?)
+			$requestPath = $requestURI;
+			if (strpos($requestPath, '?') > 0){
+				$requestPath = substr($requestPath, 0, strpos($requestPath, '?'));
+			}
 			$basicPage = new BasicPage();
-			$basicPage->urlAlias = $requestURI;
+			$basicPage->urlAlias = $requestPath;
 			if ($basicPage->find(true)) {
 				$_GET['module'] = 'WebBuilder';
 				$_GET['action'] = 'BasicPage';
@@ -955,7 +960,7 @@ function loadModuleActionId(){
 			} else {
 				require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 				$portalPage = new PortalPage();
-				$portalPage->urlAlias = $requestURI;
+				$portalPage->urlAlias = $requestPath;
 				if ($portalPage->find(true)) {
 					$_GET['module'] = 'WebBuilder';
 					$_GET['action'] = 'PortalPage';
@@ -966,7 +971,7 @@ function loadModuleActionId(){
 				} else {
 					require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
 					$form = new CustomForm();
-					$form->urlAlias = $requestURI;
+					$form->urlAlias = $requestPath;
 					if ($form->find(true)) {
 						$_GET['module'] = 'WebBuilder';
 						$_GET['action'] = 'Form';

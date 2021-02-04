@@ -15,9 +15,10 @@ class Admin_NonGroupedRecords extends ObjectEditor
 	function getPageTitle(){
 		return 'Records to Not Group';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new NonGroupedRecord();
 		$object->orderBy('source, recordId');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

@@ -3,6 +3,9 @@ package com.turning_leaf_technologies.overdrive;
 import java.sql.*;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
@@ -84,38 +87,54 @@ public class ExtractOverDriveInfoMain {
 			}
 
 			HashSet<OverDriveSetting> settings = loadSettings();
-			int numChanges = 0;
+			final int[] numChanges = {0};
 
+			try {
+				if (dbConn.isClosed()) {
+					dbConn = DriverManager.getConnection(databaseConnectionInfo);
+				}
+			} catch (SQLException e) {
+				logger.error("Could not connect to database", e);
+				System.exit(1);
+			}
+
+			ExecutorService es = Executors.newCachedThreadPool();
 			for(OverDriveSetting setting : settings) {
-				try {
-					if (dbConn.isClosed()) {
-						dbConn = DriverManager.getConnection(databaseConnectionInfo);
+				boolean finalExtractSingleWork = extractSingleWork;
+				String finalSingleWorkId = singleWorkId;
+				es.execute(() -> {
+					OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(dbConn, setting, logger);
+					if (!logEntry.saveResults()) {
+						logger.error("Could not save log entry to database, quitting");
+						return;
 					}
-				} catch (SQLException e) {
-					logger.error("Could not connect to database", e);
-					System.exit(1);
+
+					ExtractOverDriveInfo extractor = new ExtractOverDriveInfo(setting);
+					if (finalExtractSingleWork) {
+						numChanges[0] += extractor.processSingleWork(finalSingleWorkId, configIni, serverName, dbConn, logEntry);
+					} else {
+						numChanges[0] += extractor.extractOverDriveInfo(configIni, serverName, dbConn, logEntry);
+					}
+
+					logEntry.setFinished();
+					logger.info("Finished OverDrive extraction");
+					Date endTime = new Date();
+					long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
+					logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
+
+					extractor.close();
+				});
+			}
+			es.shutdown();
+			while (true) {
+				try {
+					boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
+					if (terminated){
+						break;
+					}
+				} catch (InterruptedException e) {
+					logger.error("Error waiting for all extracts to finish");
 				}
-
-				OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(dbConn, setting, logger);
-				if (!logEntry.saveResults()) {
-					logger.error("Could not save log entry to database, quitting");
-					return;
-				}
-
-				ExtractOverDriveInfo extractor = new ExtractOverDriveInfo(setting);
-				if (extractSingleWork) {
-					numChanges = extractor.processSingleWork(singleWorkId, configIni, serverName, dbConn, logEntry);
-				} else {
-					numChanges = extractor.extractOverDriveInfo(configIni, serverName, dbConn, logEntry);
-				}
-
-				logEntry.setFinished();
-				logger.info("Finished OverDrive extraction");
-				Date endTime = new Date();
-				long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
-				logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
-
-				extractor.close();
 			}
 
 			//Check to see if the jar has changes, and if so quit
@@ -135,6 +154,12 @@ public class ExtractOverDriveInfoMain {
 				break;
 			}
 
+			try {
+				dbConn.close();
+			} catch (SQLException e) {
+				logger.error("Error closing database connection", e);
+			}
+
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
 				//Quit and we will restart after if finishes
@@ -143,7 +168,13 @@ public class ExtractOverDriveInfoMain {
 				//Based on number of changes, pause for a little while and then continue on so we are running continuously
 				try {
 					System.gc();
-					if (numChanges == 0) {
+					int maxChanges = 0;
+					for (int numChange : numChanges) {
+						if (numChange > maxChanges) {
+							maxChanges = numChange;
+						}
+					}
+					if (maxChanges == 0) {
 						Thread.sleep(1000 * 60 * 5);
 					} else {
 						Thread.sleep(1000 * 60);
@@ -152,6 +183,13 @@ public class ExtractOverDriveInfoMain {
 					logger.info("Thread was interrupted");
 				}
 			}
+		}
+		try {
+			if (dbConn != null && !dbConn.isClosed()){
+				dbConn.close();
+			}
+		} catch (SQLException e) {
+			logger.error("Error closing database connection", e);
 		}
 	}
 

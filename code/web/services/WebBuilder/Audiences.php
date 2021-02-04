@@ -24,10 +24,11 @@ class WebBuilder_Audiences extends ObjectEditor
 		return 'Audiences';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new WebBuilderAudience();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

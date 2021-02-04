@@ -18,9 +18,10 @@ class CloudLibrary_Scopes extends ObjectEditor
 	function getPageTitle(){
 		return 'Cloud Library Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new CloudLibraryScope();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

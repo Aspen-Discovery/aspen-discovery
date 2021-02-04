@@ -6,17 +6,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 
 class OverDriveExtractLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
-	private long settingId;
-	private Date startTime;
+	private final long settingId;
+	private final Date startTime;
 	private Date endTime;
-	private ArrayList<String> notes = new ArrayList<>();
+	private final List<String> notes = Collections.synchronizedList(new ArrayList<>());
 	private int numProducts = 0;
 	private int numErrors = 0;
 	private int numAdded = 0;
@@ -25,7 +27,7 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 	private int numSkipped = 0;
 	private int numAvailabilityChanges = 0;
 	private int numMetadataChanges = 0;
-	private Logger logger;
+	private final Logger logger;
 	
 	OverDriveExtractLogEntry(Connection dbConn, OverDriveSetting setting, Logger logger){
 		this.logger = logger;
@@ -39,9 +41,10 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 		}
 		saveResults();
 	}
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	@Override
-	public void addNote(String note) {
+	//Synchronized to prevent concurrent modification of the notes ArrayList
+	public synchronized void addNote(String note) {
 		Date date = new Date();
 		this.notes.add(dateFormat.format(date) + " - " + note);
 	}
@@ -66,9 +69,9 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 		return returnText;
 	}
 	
-	private static PreparedStatement insertLogEntry;
-	private static PreparedStatement updateLogEntry;
-	public boolean saveResults() {
+	private PreparedStatement insertLogEntry;
+	private PreparedStatement updateLogEntry;
+	public synchronized boolean saveResults() {
 		try {
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);
@@ -102,11 +105,10 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 		} catch (SQLException e) {
 			if (logEntryId == null) {
 				logger.error("Error creating overdrive log entry", e);
-				logger.info(this.toString());
 			}else{
 				logger.error("Error updating overdrive log entry", e);
-				logger.info(this.toString());
 			}
+			logger.info(this.toString());
 			return false;
 		}
 	}

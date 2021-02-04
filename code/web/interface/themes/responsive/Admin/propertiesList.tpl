@@ -13,7 +13,7 @@
 	</div>
 {/if}
 
-{if $canCompare || $canAddNew || !empty($customListActions)}
+{if $canCompare || $canAddNew || $canBatchUpdate  || !empty($customListActions)}
 <form action="" method="get" id='compare' class="form-inline">
 {/if}
 	<div class='adminTableRegion'>
@@ -125,10 +125,20 @@
 		</table>
 	</div>
 
+	{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+
 	<input type='hidden' name='objectAction' id='objectAction' value='' />
 	{if $canCompare}
 		<div class="btn-group">
 			<button type='submit' value='compare' class="btn btn-default" onclick="$('#objectAction').val('compare');return AspenDiscovery.Admin.validateCompare();">{translate text='Compare'}</button>
+		</div>
+	{/if}
+	{if $canBatchUpdate}
+		<div class="btn-group">
+			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'selected')">{translate text='Batch Update Selected'}</button>
+		</div>
+		<div class="btn-group">
+			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'all')">{translate text='Batch Update All'}</button>
 		</div>
 	{/if}
 	{if $canAddNew}
@@ -141,7 +151,7 @@
 			<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}')">{$customAction.label}</button>
 		{/foreach}
 	</div>
-{if $canCompare || $canAddNew || !empty($customListActions)}
+{if $canCompare || $canAddNew || $canBatchUpdate || !empty($customListActions)}
 </form>
 {/if}
 

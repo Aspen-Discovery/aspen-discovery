@@ -11,7 +11,6 @@ class BotChecker{
 		if (BotChecker::$isBot == null){
 			global $logger;
 			global $timer;
-			/** @var Memcache $memCache */
 			global $memCache;
 			global $configArray;
 			if (isset($_SERVER['HTTP_USER_AGENT'])){

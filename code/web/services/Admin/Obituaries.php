@@ -15,9 +15,10 @@ class Obituaries extends ObjectEditor
 	function getPageTitle(){
 		return 'Obituaries';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new Obituary();
 		$object->orderBy('date');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

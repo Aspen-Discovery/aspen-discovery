@@ -21,12 +21,13 @@ class RedwoodUserContributions extends ObjectEditor
 		return 'Submit Material to the Archive';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$list = array();
 
 		$object = new UserContribution();
 		$object->orderBy('dateContributed desc');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {
 			$list[$object->id] = clone $object;

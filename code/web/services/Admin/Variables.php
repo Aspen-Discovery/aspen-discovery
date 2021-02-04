@@ -14,11 +14,12 @@ class Admin_Variables extends ObjectEditor{
 	function getPageTitle(){
 		return 'System Variables';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$variableList = array();
 
 		$variable = new Variable();
 		$variable->orderBy('name');
+		$variable->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$variable->find();
 		while ($variable->fetch()){
 			$variableList[$variable->id] = clone $variable;

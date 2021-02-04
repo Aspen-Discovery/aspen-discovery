@@ -16,7 +16,7 @@ class Admin_LibraryLinks extends ObjectEditor
 	function getPageTitle(){
 		return 'Library Links';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
@@ -30,6 +30,7 @@ class Admin_LibraryLinks extends ObjectEditor
 		}
 
 		$object->orderBy('weight');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$list = array();
 		while ($object->fetch()){

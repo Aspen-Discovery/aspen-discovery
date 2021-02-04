@@ -16,7 +16,7 @@
 {/if}
 {strip}
 {if ((!isset($property.storeDb) || $property.storeDb == true) && !($property.type == 'oneToManyAssociation' || $property.type == 'hidden' || $property.type == 'method'))}
-	<div class="form-group" id="propertyRow{$propName}">
+	<div {if $addFormGroupToProperty !== false}class="form-group"{/if} id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
 			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required}({translate text="required"}){/if}</label>
@@ -235,7 +235,7 @@
 				{/if}
 			{/if}
 			{* Display a table of the association with the ability to add and edit new values *}
-			<input type="file" name='{$propName}' id='{$propName}' size="80">
+			<input type="file" name='{$propName}' id='{$propName}' size="80" {if $property.required}required="required"{/if}>
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>

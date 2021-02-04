@@ -18,9 +18,10 @@ class Axis360_Scopes extends ObjectEditor
 	function getPageTitle(){
 		return 'Axis 360 Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new Axis360Scope();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

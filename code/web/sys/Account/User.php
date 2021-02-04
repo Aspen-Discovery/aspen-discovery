@@ -25,6 +25,7 @@ class User extends DataObject
 	public $myLocation2Id;					 // int(11)
 	public $trackReadingHistory; 			 // tinyint
 	public $initialReadingHistoryLoaded;
+	public $lastReadingHistoryUpdate;
 	public $bypassAutoLogout;        //tinyint
 	public $disableRecommendations;     //tinyint
 	public $disableCoverArt;     //tinyint
@@ -309,20 +310,29 @@ class User extends DataObject
 
 	function getBarcode()
 	{
-		if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+		if ($this->getAccountProfile() == null){
 			return trim($this->cat_username);
-		} else {
-			return trim($this->cat_password);
+		}else {
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return trim($this->cat_username);
+			} else {
+				return trim($this->cat_password);
+			}
 		}
 	}
 
 	function getPasswordOrPin()
 	{
-		if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+		if ($this->getAccountProfile() == null) {
 			return trim($this->cat_password);
-		} else {
-			return trim($this->cat_username);
+		}else{
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return trim($this->cat_password);
+			} else {
+				return trim($this->cat_username);
+			}
 		}
+
 	}
 
 	function saveRoles(){
@@ -2039,7 +2049,8 @@ class User extends DataObject
 		$groupedWorkAction = new AdminAction('Grouped Work Display', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/GroupedWorkDisplay');
 		$groupedWorkAction->addSubAction(new AdminAction('Grouped Work Facets', 'Define information about what facets are displayed for grouped works in search results and Advanced Search.', '/Admin/GroupedWorkFacets'), ['Administer All Grouped Work Facets', 'Administer Library Grouped Work Facets']);
 		$sections['cataloging']->addAction($groupedWorkAction, ['Administer All Grouped Work Display Settings', 'Administer Library Grouped Work Display Settings']);
-		$sections['cataloging']->addAction(new AdminAction('Title / Author Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 
@@ -2150,6 +2161,7 @@ class User extends DataObject
 			$sections['overdrive']->addAction(new AdminAction('Indexing Log', 'View the indexing log for OverDrive.', '/OverDrive/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['overdrive']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for OverDrive integration.', '/OverDrive/Dashboard'), ['View Dashboards', 'View System Reports']);
 			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for OverDrive integration to test connections.', '/OverDrive/APIData'), 'View OverDrive Test Interface');
+			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an OverDrive product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
 		}
 
 		if (array_key_exists('RBdigital', $enabledModules)) {

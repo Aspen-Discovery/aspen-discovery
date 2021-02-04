@@ -36,10 +36,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 
-		$settings = $this->getSettings();
+		$checkouts = [];
+		$settings = $this->getSettings($user);
+		if ($settings == false){
+			return $checkouts;
+		}
 
 		$circulation = $this->getPatronCirculation($user);
-		$checkouts = [];
 
 		if (isset($circulation->Checkouts->Item)) {
 			foreach ($circulation->Checkouts->Item as $checkoutFromCloudLibrary) {
@@ -131,7 +134,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	public function returnCheckout($patron, $recordId)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
-		$settings = $this->getSettings();
+		$settings = $this->getSettings($patron);
 		$patronId = $patron->getBarcode();
 		$apiPath = "/cirrus/library/{$settings->libraryId}/checkin";
 		$requestBody =
@@ -181,11 +184,16 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 
-		$circulation = $this->getPatronCirculation($user);
 		$holds = array(
 			'available' => array(),
 			'unavailable' => array()
 		);
+
+		$settings = $this->getSettings($user);
+		if ($settings == false){
+			return $holds;
+		}
+		$circulation = $this->getPatronCirculation($user);
 
 		if (isset($circulation->Holds->Item)) {
 			$index = 0;
@@ -230,7 +238,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
-		$settings = $this->getSettings();
+		$settings = $this->getSettings($patron);
 		$patronId = $patron->getBarcode();
 		$password = $patron->getPasswordOrPin();
 		$patronEligibleForHolds = $patron->eligibleForHolds();
@@ -276,7 +284,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				}
 			}
 
-			/** @var Memcache $memCache */
 			global $memCache;
 			$memCache->delete('cloud_library_summary_' . $patron->id);
 			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
@@ -306,7 +313,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
-		$settings = $this->getSettings();
+		$settings = $this->getSettings($patron);
 		$patronId = $patron->getBarcode();
 		$apiPath = "/cirrus/library/{$settings->libraryId}/cancelhold";
 		$requestBody =
@@ -383,7 +390,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
-		$settings = $this->getSettings();
+		$settings = $this->getSettings($user);
 		$patronId = $user->getBarcode();
 		$password = $user->getPasswordOrPin();
 		if (!$user->eligibleForHolds()){
@@ -405,6 +412,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			}else {
 				$this->trackUserUsageOfCloudLibrary($user);
 				$this->trackRecordCheckout($titleId);
+				$user->lastReadingHistoryUpdate = 0;
+				$user->update();
 
 				$result['success'] = true;
 				if ($fromRenew){
@@ -413,7 +422,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
 				}
 
-				/** @var Memcache $memCache */
 				global $memCache;
 				$memCache->delete('cloud_library_summary_' . $user->id);
 				$memCache->delete('cloud_library_circulation_info_' . $user->id);
@@ -424,36 +432,50 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 	private function getPatronCirculation(User $user)
 	{
-		/** @var Memcache $memCache */
-		global $memCache;
-		$circulationInfo = $memCache->get('cloud_library_circulation_info_' . $user->id);
-		if ($circulationInfo == false || isset($_REQUEST['reload'])){
-			$settings = $this->getSettings();
-			$patronId = $user->getBarcode();
-			$password = $user->getPasswordOrPin();
-			$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
-			$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
-			global $configArray;
-			$memCache->set('cloud_library_circulation_info_' . $user->id, $circulationInfo, $configArray['Caching']['account_summary']);
+		$settings = $this->getSettings($user);
+		if ($settings != false) {
+			global $memCache;
+			$circulationInfo = $memCache->get('cloud_library_circulation_info_' . $user->id);
+			if ($circulationInfo == false || isset($_REQUEST['reload'])) {
+				$patronId = $user->getBarcode();
+				$password = $user->getPasswordOrPin();
+				$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
+				$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
+				global $configArray;
+				$memCache->set('cloud_library_circulation_info_' . $user->id, $circulationInfo, $configArray['Caching']['account_summary']);
+			}
+			return simplexml_load_string($circulationInfo);
+		}else{
+			return null;
 		}
-		return simplexml_load_string($circulationInfo);
 	}
 
-	private function getSettings(){
+	private function getSettings(User $user = null){
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
-		global $library;
+		$activeLibrary = null;
+		if ($user != null){
+			$activeLibrary = $user->getHomeLibrary();
+		}
+		if ($activeLibrary == null){
+			global $library;
+			$activeLibrary = $library;
+		}
 		$scope = new CloudLibraryScope();
-		$scope->id = $library->cloudLibraryScopeId;
-		if ($scope->find(true)) {
-			$settings = new CloudLibrarySetting();
-			$settings->id = $scope->settingId;
-			if ($settings->find(true)) {
-				return $settings;
-			} else {
+		$scope->id = $activeLibrary->cloudLibraryScopeId;
+		if ($activeLibrary->cloudLibraryScopeId > 0){
+			if ($scope->find(true)) {
+				$settings = new CloudLibrarySetting();
+				$settings->id = $scope->settingId;
+				if ($settings->find(true)) {
+					return $settings;
+				} else {
+					return false;
+				}
+			}else{
 				return false;
 			}
-		}else{
+		}else {
 			return false;
 		}
 	}
@@ -554,7 +576,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	}
 
 	function checkAuthentication(User $user){
-		$settings = $this->getSettings();
+		$settings = $this->getSettings($user);
+		if ($settings == false){
+			return false;
+		}
 		$patronId = $user->getBarcode();
 		$password = $user->getPasswordOrPin();
 		$apiPath = "/cirrus/library/{$settings->libraryId}/patron/$patronId";
@@ -612,7 +637,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @return null|string
 	 */
 	public function getItemStatus($itemId, $patron){
-		$settings = $this->getSettings();
+		$settings = $this->getSettings($patron);
 		$patronId = $patron->getBarcode();
 		$apiPath = "/cirrus/library/{$settings->libraryId}/item/status/$patronId/$itemId";
 		$itemStatusInfo = $this->callCloudLibraryUrl($settings, $apiPath);
@@ -628,7 +653,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 	public function redirectToCloudLibrary(User $patron, CloudLibraryRecordDriver $recordDriver)
 	{
-		$settings = $this->getSettings();
+		$settings = $this->getSettings($patron);
 		$userInterfaceUrl = $settings->userInterfaceUrl;
 		if (substr($userInterfaceUrl, -1) == '/'){
 			$userInterfaceUrl = substr($userInterfaceUrl, 0, -1);

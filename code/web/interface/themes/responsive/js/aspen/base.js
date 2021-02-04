@@ -65,6 +65,21 @@ var AspenDiscovery = (function(){
 			window.location.href = url;
 		},
 
+		changePage: function(){
+			var url = window.location.href;
+			if (url.match(/[&?]page=\d+/)) {
+				url = url.replace(/page=\d+/, "page=" + $("#page").val());
+			} else {
+				if (url.indexOf("?", 0) > 0){
+					url = url+ "&page=" + $("#page").val();
+				}else{
+					url = url+ "?page=" + $("#page").val();
+				}
+			}
+			window.location.href = url;
+			return false;
+		},
+
 		closeLightbox: function(callback){
 			var modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){

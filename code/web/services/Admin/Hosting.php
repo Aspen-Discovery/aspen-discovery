@@ -15,9 +15,10 @@ class Admin_Hosting extends ObjectEditor
 	function getPageTitle(){
 		return 'Host Information';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new HostInformation();
 		$object->orderBy('host');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

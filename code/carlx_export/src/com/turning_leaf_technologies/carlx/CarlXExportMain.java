@@ -497,7 +497,7 @@ public class CarlXExportMain {
 
 				// Fetch Item Information for each ID.  What we really want is a full list of BIDs
 				// so we can fetch MARC records for them.
-				itemUpdates = fetchItemInformation(updatedItemIDs);
+				itemUpdates = fetchItemInformation(updatedItemIDs, deletedBibs);
 				if (hadErrors) {
 					logEntry.incErrors("Failed to Fetch Item Information for updated items");
 					return totalChanges;
@@ -511,7 +511,7 @@ public class CarlXExportMain {
 				}
 
 				if (createdItemIDs.size() > 0) {
-					createdItems = fetchItemInformation(createdItemIDs);
+					createdItems = fetchItemInformation(createdItemIDs, deletedBibs);
 					if (hadErrors) {
 						logEntry.incErrors("Failed to Fetch Item Information for created items");
 						return totalChanges;
@@ -526,7 +526,7 @@ public class CarlXExportMain {
 				}
 
 				if (deletedItemIDs.size() > 0) {
-					deletedItems = fetchItemInformation(deletedItemIDs);
+					deletedItems = fetchItemInformation(deletedItemIDs, deletedBibs);
 					if (hadErrors) {
 						logEntry.addNote("Failed to Fetch Item Information for deleted items");
 						//return totalChanges;
@@ -725,7 +725,7 @@ public class CarlXExportMain {
 
 								//Check to see if we need to load items
 								if (extractSingleWork){
-									createdItems = fetchItemsForBib(currentBibID);
+									createdItems = fetchItemsForBib(currentBibID, bibsNotFound);
 								}
 
 								if (currentMarcRecord != null) {
@@ -1039,7 +1039,7 @@ public class CarlXExportMain {
 		return updatedMarcRecordFromAPICall;
 	}
 
-	private static ArrayList<ItemChangeInfo> fetchItemsForBib(String bibId) {
+	private static ArrayList<ItemChangeInfo> fetchItemsForBib(String bibId, ArrayList<String> bibsNotFound) {
 		ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
 		//Set an upper limit on number of IDs for one request, and process in batches
 		String getItemInformationSoapRequest = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:mar=\"http://tlcdelivers.com/cx/schemas/marcoutAPI\" xmlns:req=\"http://tlcdelivers.com/cx/schemas/request\">\n" +
@@ -1055,7 +1055,7 @@ public class CarlXExportMain {
 				"</soapenv:Body>\n" +
 				"</soapenv:Envelope>";
 		try {
-			processItemInformationRequest(itemUpdates, getItemInformationSoapRequest);
+			processItemInformationRequest(itemUpdates, bibsNotFound, getItemInformationSoapRequest);
 		} catch (Exception e) {
 			logger.error("Error Retrieving SOAP updated items", e);
 			logEntry.addNote("Error Retrieving SOAP updated items " + e.toString());
@@ -1064,7 +1064,7 @@ public class CarlXExportMain {
 		return itemUpdates;
 	}
 
-	private static ArrayList<ItemChangeInfo> fetchItemInformation(ArrayList<String> itemIDs) {
+	private static ArrayList<ItemChangeInfo> fetchItemInformation(ArrayList<String> itemIDs, ArrayList<String> bibsNotFound) {
 		ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
 		hadErrors = false;
 		logger.debug("Getting item information for " + itemIDs.size() + " Item IDs");
@@ -1102,7 +1102,7 @@ public class CarlXExportMain {
 				}
 				getItemInformationSoapRequest.append(getItemInformationSoapRequestEnd);
 
-				processItemInformationRequest(itemUpdates, getItemInformationSoapRequest.toString());
+				processItemInformationRequest(itemUpdates, bibsNotFound, getItemInformationSoapRequest.toString());
 			} catch (Exception e) {
 				logger.error("Error Retrieving SOAP updated items", e);
 				logEntry.addNote("Error Retrieving SOAP updated items " + e.toString());
@@ -1112,7 +1112,7 @@ public class CarlXExportMain {
 		return itemUpdates;
 	}
 
-	private static void processItemInformationRequest(ArrayList<ItemChangeInfo> itemUpdates, String getItemInformationSoapRequest) throws ParserConfigurationException, IOException, SAXException {
+	private static void processItemInformationRequest(ArrayList<ItemChangeInfo> itemUpdates, ArrayList<String> bibsNotFound, String getItemInformationSoapRequest) throws ParserConfigurationException, IOException, SAXException {
 		WebServiceResponse ItemInformationSOAPResponse = NetworkUtils.postToURL(marcOutURL, getItemInformationSoapRequest, "text/xml", null, logger);
 		if (ItemInformationSOAPResponse.isSuccess()) {
 
@@ -1125,7 +1125,7 @@ public class CarlXExportMain {
 			// There is a Response Statuses Node, which then contains the Response Status Node
 			String responseStatusCode = responseStatus.getFirstChild().getTextContent();
 			logger.debug("Item information response " + doc.toString());
-			if (responseStatusCode.equals("0")) { // Successful response
+			if (responseStatusCode.equals("0") || responseStatusCode.equals("60")) { // Successful response
 
 				NodeList ItemStatuses = getItemInformationResponseNode.getChildNodes();
 
@@ -1134,7 +1134,18 @@ public class CarlXExportMain {
 					// start with i = 1 to skip first node, because that is the response status node and not an item status
 
 					Node itemStatus = ItemStatuses.item(i);
-					if (itemStatus.getNodeName().contains("ItemStatus")) { // avoid other occasional nodes like "Message"
+					if (itemStatus.getNodeName().contains("Message")) {
+						//We get messages for missing items that have been deleted or suppressed.
+						NodeList itemDetails = itemStatus.getChildNodes();
+						for (int j = 0; j < itemDetails.getLength(); j++) {
+							Node detail = itemDetails.item(j);
+							String detailName = detail.getNodeName();
+							String detailValue = detail.getTextContent();
+							if (detailName.contains("MissingIDs")){
+								bibsNotFound.add(detailValue);
+							}
+						}
+					}if (itemStatus.getNodeName().contains("ItemStatus")) { // avoid other occasional nodes like "Message"
 
 						NodeList itemDetails = itemStatus.getChildNodes();
 						ItemChangeInfo currentItem = new ItemChangeInfo();
@@ -1273,19 +1284,19 @@ public class CarlXExportMain {
 	}
 
 	private static void getIDsFromNodeList(ArrayList<String> arrayOfIds, NodeList walkThroughMe) {
-		int l       = walkThroughMe.getLength();
+		int l = walkThroughMe.getLength();
 		for (int i = 0; i < l; i++) {
 			arrayOfIds.add(walkThroughMe.item(i).getTextContent());
 		}
 	}
 
+	//If we make this multi-threaded, will want to make the formatter non-static
+	private static final SimpleDateFormat itemInformationFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 	private static String formatDateFieldForMarc(String dateFormat, String date) {
 		String dateForMarc = null;
 		try {
-			String itemInformationDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
-			SimpleDateFormat dateFormatter = new SimpleDateFormat(itemInformationDateFormat);
-			dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-			Date marcDate = dateFormatter.parse(date);
+			itemInformationFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+			Date marcDate = itemInformationFormatter.parse(date);
 			SimpleDateFormat marcDateCreatedFormat = new SimpleDateFormat(dateFormat);
 			dateForMarc = marcDateCreatedFormat.format(marcDate);
 		} catch (Exception e) {
@@ -1295,7 +1306,7 @@ public class CarlXExportMain {
 	}
 
 	private static void getIDsArrayListFromNodeList(NodeList walkThroughMe, ArrayList<String> idList) {
-		int l                = walkThroughMe.getLength();
+		int l = walkThroughMe.getLength();
 		for (int i = 0; i < l; i++) {
 			String itemID = walkThroughMe.item(i).getTextContent();
 			idList.add(itemID);

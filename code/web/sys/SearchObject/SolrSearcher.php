@@ -604,6 +604,10 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 			$list[$field]['hasApplied'] = false;
 			// Loop through values:
 			foreach ($data as $facet) {
+				//Don't include empty settings since they don't work properly with Solr
+				if (strlen(trim($facet[0])) == 0){
+					continue;
+				}
 				// Initialize the array of data about the current facet:
 				$currentSettings = array();
 				$currentSettings['value'] = $facet[0];

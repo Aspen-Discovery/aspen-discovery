@@ -356,6 +356,16 @@ function getOverDriveUpdates()
 			]
 		],
 
+		'overdrive_availability_update_indexes' => [
+			'title' => 'Update OverDrive Availability Indexes',
+			'description' => 'Fix indexes for overdrive availability to include settings',
+			'sql' => [
+				'ALTER TABLE overdrive_api_product_availability drop index productId',
+				'ALTER TABLE overdrive_api_product_availability drop index productId_2',
+				'ALTER TABLE overdrive_api_product_availability ADD UNIQUE (productId, settingId, libraryId)'
+			]
+		],
+
 		'overdrive_usage_add_instance' => [
 			'title' => 'OverDrive Usage - Instance Information',
 			'description' => 'Add Instance Information to OverDrive Usage stats',
@@ -376,6 +386,14 @@ function getOverDriveUpdates()
 			'sql' => [
 				'ALTER TABLE overdrive_scopes ADD COLUMN clientSecret VARCHAR(50)',
 				'ALTER TABLE overdrive_scopes ADD COLUMN clientKey VARCHAR(50)',
+			]
+		],
+
+		'overdrive_allow_large_deletes' => [
+			'title' => 'OverDrive - Allow Large Deletes',
+			'description' => 'Allow the OverDrive process to delete more than 500 records or 5% of the collection',
+			'sql' => [
+				'ALTER TABLE overdrive_settings ADD COLUMN allowLargeDeletes TINYINT(1) DEFAULT 0'
 			]
 		]
 	);

@@ -26,9 +26,10 @@ class CloudLibrary_Settings extends ObjectEditor
 		return 'Cloud Library Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new CloudLibrarySetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

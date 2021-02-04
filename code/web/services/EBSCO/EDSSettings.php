@@ -26,9 +26,10 @@ class EBSCO_EDSSettings extends ObjectEditor
 		return 'EBSCO EDS Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new EDSSettings();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

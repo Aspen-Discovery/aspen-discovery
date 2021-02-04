@@ -24,9 +24,10 @@ class WebBuilder_PortalRows extends ObjectEditor
 		return 'WebBuilder Portal Rows';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new PortalRow();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

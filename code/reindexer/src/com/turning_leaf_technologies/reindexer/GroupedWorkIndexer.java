@@ -529,7 +529,8 @@ public class GroupedWorkIndexer {
 							logger.warn("Error committing changes", e);
 						}
 					}
-					logEntry.addNote("Processed " + numWorksProcessed + " grouped works processed.");
+					//Change to a debug statement to avoid filling up the notes.
+					logger.debug("Processed " + numWorksProcessed + " grouped works processed.");
 				}
 				if (lastUpdated == null){
 					setLastUpdatedTime.setLong(1, indexStartTime - 1); //Set just before the index started so we don't index multiple times
@@ -626,7 +627,7 @@ public class GroupedWorkIndexer {
 
 			//Write the record to Solr.
 			try {
-				SolrInputDocument inputDocument = groupedWork.getSolrDocument();
+				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
 				UpdateResponse response = updateServer.add(inputDocument);
 				if (response.getException() != null){
 					logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);

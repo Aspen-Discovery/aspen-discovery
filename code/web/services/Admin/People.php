@@ -15,9 +15,10 @@ class Admin_People extends ObjectEditor
 	function getPageTitle(){
 		return 'People';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new Person();
 		$object->orderBy('lastName, firstName');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

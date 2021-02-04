@@ -26,10 +26,11 @@ class OverDrive_Scopes extends ObjectEditor
 		return 'OverDrive Scopes';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new OverDriveScope();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

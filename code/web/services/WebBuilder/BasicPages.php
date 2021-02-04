@@ -24,10 +24,11 @@ class WebBuilder_BasicPages extends ObjectEditor
 		return 'Basic WebBuilder Pages';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new BasicPage();
 		$object->orderBy('title');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

@@ -175,7 +175,6 @@ class CarlX extends AbstractIlsDriver{
 		global $logger;
 
 		//renew the item via SIP 2
-		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mysip = new sip2();
 		$mysip->hostname = $this->accountProfile->sipHost;
 		$mysip->port = $this->accountProfile->sipPort;
@@ -1249,17 +1248,36 @@ class CarlX extends AbstractIlsDriver{
 					$fine->Branch = $fine->TransactionBranch;
 				}
 				$fine->System = $this->getFineSystem($fine->Branch);
+				$fine->CanPayFine = $this->canPayFine($fine->System);
 
+				$fine->FineAmountOutstanding = 0;
 				if ($fine->FineAmountPaid > 0) {
-					$fine->FineAmount -= $fine->FineAmountPaid;
+					$fine->FineAmountOutstanding = $fine->FineAmount - $fine->FineAmountPaid;
 				}
+
+				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+					$fine->Identifier = substr($fine->Identifier,9);
+				}
+				$fine->Identifier = str_replace('#', '', $fine->Identifier);
+
+				if ($fine->TransactionCode == 'FS' && $fine->FeeNotes == 'COLLECTION') {
+					$fineType = 'COLLECTION AGENCY';
+				} else {
+					$fineType = $fine->TransactionCode;
+				}
+
 				$myFines[] = array(
+					'fineId' => $fine->Identifier,
+					'type' => $fineType,
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FineAmount,
 					'amountVal' => $fine->FineAmount,
+					'amountOutstanding' => $fine->FineAmountOutstanding,
+					'amountOutstandingVal' => $fine->FineAmountOutstanding,
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->FineAssessedDate)),
 					'system'  => $fine->System,
+					'canPayFine' => $fine->CanPayFine,
 				);
 			}
 		}
@@ -1281,19 +1299,31 @@ class CarlX extends AbstractIlsDriver{
 					$fine->Branch = $fine->TransactionBranch;
 				}
 				$fine->System = $this->getFineSystem($fine->Branch);
+				$fine->CanPayFine = $this->canPayFine($fine->System);
+
+				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+					$fine->Identifier = substr($fine->Identifier,9);
+				}
 
 				$myFines[] = array(
+					'fineId' => $fine->Identifier,
+					'type' => $fine->TransactionCode,
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FeeAmount,
 					'amountVal'  => $fine->FeeAmount,
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->TransactionDate)),
 					'system'  => $fine->System,
+					'canPayFine' => $fine->CanPayFine,
 				);
 			}
 		}
 
 		return $myFines;
+	}
+
+	public function canPayFine($system){
+		return true;
 	}
 
 	public function getFineSystem($branchId){
@@ -1522,7 +1552,6 @@ class CarlX extends AbstractIlsDriver{
 		}
 		global $configArray;
 		//Place the hold via SIP 2
-		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
 		$mySip->port = $this->accountProfile->sipPort;
@@ -1644,7 +1673,6 @@ class CarlX extends AbstractIlsDriver{
 
 	public function renewCheckoutViaSIP($patron, $itemId, $useAlternateSIP = false){
 		//renew the item via SIP 2
-		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mysip = new sip2();
 		$mysip->hostname = $this->accountProfile->sipHost;
 		$mysip->port = $this->accountProfile->sipPort;
@@ -2114,4 +2142,12 @@ EOT;
 			$user->_expireClose = 1;
 		}
 	}
+
+	// TODO: implement showOutstanding Fines for partially paid fines. Might be nothing... 2020 11 23
+/*
+	public function showOutstandingFines()
+	{
+		return true;
+	}
+*/
 }

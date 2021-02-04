@@ -24,11 +24,12 @@ class WebBuilder_Images extends ObjectEditor
 		return 'Uploaded Images';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new ImageUpload();
 		$object->type = 'web_builder_image';
 		$object->orderBy('title');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

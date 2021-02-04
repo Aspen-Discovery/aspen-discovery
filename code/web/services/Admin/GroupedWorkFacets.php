@@ -14,9 +14,10 @@ class Admin_GroupedWorkFacets extends ObjectEditor
 	function getPageTitle(){
 		return 'Grouped Work Facets';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new GroupedWorkFacetGroup();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Grouped Work Facets')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();

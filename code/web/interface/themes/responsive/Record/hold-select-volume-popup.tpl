@@ -120,7 +120,7 @@
 							</div>
 						</div>
 					{else}
-						<input type="hidden" name="holdType" value="volume"/>
+						<input type="hidden" name="holdType" id="holdType" value="volume"/>
 					{/if}
 					<div id="volumeSelection" class="form-group" {if !$majorityOfItemsHaveVolumes}style="display: none" {/if}>
 						<select name="selectedVolume" id="selectedVolume" class="form-control" aria-label="{translate text="Selected Volume"}">

@@ -63,12 +63,13 @@ class SideLoads_SideLoads extends ObjectEditor
 		return 'Side Loaded eContent Collections';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$list = array();
 
 		$object = new SideLoad();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {
 			$list[$object->id] = clone $object;

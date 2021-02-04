@@ -129,11 +129,12 @@ class ILS_TranslationMaps extends ObjectEditor {
 	function getPageTitle(){
 		return 'Translation Maps';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$object = new TranslationMap();
 		$object->orderBy('name');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;

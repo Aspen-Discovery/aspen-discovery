@@ -101,8 +101,17 @@
 - Searching
   - Search Types
   - [Facets](/Admin/HelpManual?page=Facets)
-    - [Nonfiction/Fiction Facets](/Admin/HelpManual?page=Literary-Forms)
-    - [Subject Facets](/Admin/HelpManual?page=Subject-Facets)
+    - [Literary Form (Nonfiction/Fiction) Facet](/Admin/HelpManual?page=Literary-Forms)
+    - [Subjects (Full Subject) Facet](/Admin/HelpManual?page=FullSubject-Facet)
+    - [Bisac Subject Facet](/Admin/HelpManual?page=BISACSubject-Facet)
+    - [LC Subject Facet](/Admin/HelpManual?page=LCSubject-Facet)
+    - [Audience Facet](/Admin/HelpManual?page=Audience-Facets)
+    - [Reading Level Facet](/Admin/HelpManual?page=ReadingLevel-Facets)
+    - [Era Facet](/Admin/HelpManual?page=Era-Facets)
+    - [Topics Facet](/Admin/HelpManual?page=Topic-Facets)
+    - [Genre Facet](/Admin/HelpManual?page=Genre-Facets)
+    - [Region Facet](/Admin/HelpManual?page=GeographicRegion-Facets)
+    - [Language Facet](/Admin/HelpManual?page=Language-Facet)
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - System Messages
 - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
@@ -120,3 +129,7 @@
     - Linked Accounts
   - [Search History](/Admin/HelpManual?page=Search-History)
   - [User Lists](/Admin/HelpManual?page=User-Lists)
+
+## Troubleshooting
+  - [Administration Issues](/Admin/HelpManual?page=Troubleshooting-Administration)
+  - [End User Issues](/Admin/HelpManual?page=Troubleshooting-End-User)

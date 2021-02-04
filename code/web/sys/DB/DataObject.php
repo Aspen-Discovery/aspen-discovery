@@ -637,6 +637,13 @@ abstract class DataObject
 		$propertyChanged = $this->$propertyName != $newValue || (is_null($this->$propertyName) && !is_null($newValue));
 		if ($propertyChanged) {
 			$oldValue = $this->$propertyName;
+			if ($propertyStructure['type'] == 'checkbox'){
+				if ($newValue == 'off' || $newValue == false){
+					$newValue = 0;
+				}elseif ($newValue == 'on' || $newValue == true){
+					$newValue = 1;
+				}
+			}
 			$this->$propertyName = $newValue;
 			if ($propertyStructure != null && !empty($propertyStructure['forcesReindex'])){
 				require_once ROOT_DIR . '/sys/SystemVariables.php';

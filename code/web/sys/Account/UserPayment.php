@@ -12,4 +12,5 @@ class UserPayment extends DataObject
 	public $completed;
 	public $finesPaid;
 	public $totalPaid;
+	public $transactionDate;
 }

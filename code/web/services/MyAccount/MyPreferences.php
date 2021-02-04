@@ -73,7 +73,7 @@ class MyAccount_MyPreferences extends MyAccount
 				$user->updateMessageIsError = !$result['success'];
 
 				if ($canUpdateContactInfo && $allowHomeLibraryUpdates){
-					$result2 = $user->updateHomeLibrary($_REQUEST['homeLibrary']);
+					$result2 = $user->updateHomeLibrary($_REQUEST['homeLocation']);
 					if (!empty($user->updateMessage)){
 						$user->updateMessage .= '<br/>';
 					}

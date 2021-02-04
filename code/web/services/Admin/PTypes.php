@@ -16,11 +16,12 @@ class Admin_PTypes extends ObjectEditor
 	function getPageTitle(){
 		return 'Patron Types';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$libraryList = array();
 
 		$library = new PType();
 		$library->orderBy('pType');
+		$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$library->find();
 		while ($library->fetch()){
 			$libraryList[$library->id] = clone $library;

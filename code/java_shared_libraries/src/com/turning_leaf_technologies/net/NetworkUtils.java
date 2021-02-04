@@ -31,7 +31,7 @@ public class NetworkUtils {
 			URL urlToCall = new URL(url);
 			HttpURLConnection conn = (HttpURLConnection) urlToCall.openConnection();
 			conn.setConnectTimeout(10000);
-			conn.setReadTimeout(300000);
+			conn.setReadTimeout(readTimeout);
 			if (headers != null) {
 				for (String header : headers.keySet()) {
 					conn.setRequestProperty(header, headers.get(header));
@@ -53,7 +53,7 @@ public class NetworkUtils {
 				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 				String line;
 				while ((line = rd.readLine()) != null) {
-					response.append(line + "\r\n");
+					response.append(line).append("\r\n");
 				}
 
 				rd.close();

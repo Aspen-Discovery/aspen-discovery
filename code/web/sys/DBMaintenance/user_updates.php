@@ -279,6 +279,22 @@ function getUserUpdates()
 			]
 		],
 
+		'user_payments_carlx' => [
+			'title' => 'User payments CarlX',
+			'description' => 'Add columns to user_payments to support CarlX credit card processing',
+			'sql' => [
+				'ALTER TABLE user_payments ADD COLUMN transactionDate INT(11)',
+			]
+		],
+
+		'user_payments_finesPaid' => [
+			'title' => 'User payments finesPaid embiggening',
+			'description' => 'Increase finesPaid column space to 8K',
+			'sql' => [
+				"ALTER TABLE user_payments CHANGE finesPaid finesPaid VARCHAR(8192) NOT NULL DEFAULT ''",
+			]
+		],
+
 		'user_display_name_length' => array(
 			'title' => 'User display name length',
 			'description' => 'Increase displayName field in the User table',
@@ -645,6 +661,14 @@ function getUserUpdates()
 				'UPDATE user SET pickupLocationId = homeLocationId'
 			]
 		],
+
+		'user_add_last_reading_history_update_time' => [
+			'title' => 'Store when the reading history was last updated',
+			'description' =>  'Store when the reading history was last updated to optimize loading reading history',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN lastReadingHistoryUpdate INT(11) DEFAULT 0'
+			]
+		]
 	);
 }
 
