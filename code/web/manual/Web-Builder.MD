@@ -1,27 +1,27 @@
 ## Web Builder
 
-The Web Builder section of Aspen Discovery administration menu includes Basic Pages, Custom Pages, Custom Forms, Web Resources, Staff Members, Images, PDFs, Audiences, and Categories.
+The Web Builder section of Aspen Discovery administration menu includes Basic Pages, Custom Pages, Custom Forms, Web Resources, Staff Members, Images, PDFs, Audiences, and Categories. Once tese pages have been created, they are not automatically available to patrons, except by using the specific link or if they have been added as a menu link to Aspen Discovery.
 
 ### Web Builder Functions
 
 #### [Basic Pages](/Admin/HelpManual?page=Web-Builder_Basic-Pages)
-Create basic pages with a simple layout.
+Basic pages have simple, straight-forward boxes to fill out with information that will create a page with headers, images, links, and lists.
 #### [Custom Pages](/Admin/HelpManual?page=Web-Builder_Custom-Pages)
-Create custom pages with a more complex cell based layout.
+Custom pages are more complex, and are created using a cell-based layout. After adding a cell ,you will need to edit the contents of that cell, similarly to creating a basic page.
 #### [Custom Forms](/Admin/HelpManual?page=Web-Builder_Custom-Forms)
-Create custom forms within Aspen Discovery for patrons to fill out.
+Custom forms can be create with the web builder function for patrons to fill out directly in Aspen discovery.
 #### [Web Resources](/Admin/HelpManual?page=Web-Builder_Web-Resources)
-Add resources within Aspen Discovery that the library provides.
+The web resources page will display images and links to web resources that are added in this section of the Web Buidler.
 #### [Staff Members](/Admin/HelpManual?page=Web-Builder_Staff-Members)
-Add staff members to create a staff directory.
+Create a staff directory easily by simply adding staff information to the Staff Members page, including the name, role, contact info, image, and description.
 #### Images
-Add images to Aspen Discovery.
+Upload images to Aspen Discovery and resize images to specific dimensions.
 #### PDFs
-Add PDFs to Aspen Discovery.
+Upload, view, or download PDFs from Aspen Discovery.
 #### Audiences
-Define Audiences to categorize content within Aspen Discovery.
+Define audiences that can be applied to pages or resources within the Web Builder to make these resources more easily discoverable. 
 #### Categories
-Define Categories to categorize content within Aspen Discovery.
+Define categories that can be applied to pages or resources within the Web Builder to make these resources more easily discoverable.
 
 ### Tutorial Video for Setting Up Web Builder
 

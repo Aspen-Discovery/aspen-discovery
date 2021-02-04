@@ -1,6 +1,8 @@
 ## Web Builder - Staff Members
 
-The Staff Members section of the Web Builder allows you to create a staff directory within Aspen.
+To build a staff directory in Aspen Discovery, simply add the staff member's contact information to the Staff Members page. You are able to add their name, role, contact info, an image, and a description.
+
+The URL Alias for the Staff Directory is /WebBuilder/StaffDirectory
 
 ### Tutorial Video
 

@@ -117,17 +117,17 @@
 - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
 
 #### Patron Account
-  - Checked Out Titles
-  - Titles On Hold
+  - [Checked Out Titles](/Admin/HelpManual?page=Checked-Out-Titles)
+  - [Titles On Hold](/Admin/HelpManual?page=Titles-On-Hold)
   - [Reading History](/Admin/HelpManual?page=Reading-History)
-  - [Paying Fines/Fees](/Admin/HelpManual?page=eCommerce)
+  - [Paying Fines/Fees](/Admin/HelpManual?page=Fines-and-Fees)
   - [Materials Requests & Purchase Suggestions](/Admin/HelpManual?page=Materials-Requests-Purchase-Suggestions)
   - [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
   - [Recommendations](/Admin/HelpManual?page=Recommendations)
-  - Account Settings
+  - [Account Settings](/Admin/HelpManual?page=Account-Settings)
     - Preferences and Language Settings
     - Linked Accounts
-  - Search History
+  - [Search History](/Admin/HelpManual?page=Search-History)
   - [User Lists](/Admin/HelpManual?page=User-Lists)
 
 ## Troubleshooting

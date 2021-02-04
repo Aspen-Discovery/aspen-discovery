@@ -1,4 +1,5 @@
 ## Ratings and Reviews
+
 - Ratings
   - Users can rate titles on a scale of 1 to 5 stars. Where 1 is a low rating and 5 is a high rating. 
   - Users must log into Aspen before rating a title.
@@ -6,3 +7,9 @@
 - Reviews
   - Users can write reviews of titles they enjoyed or disliked or felt "ok" about. 
   - Once logged into the system the user can click on the "Add Review" button. This will populate a modal window where the user can adjust their rating from a dropdown menu and begin writing their review. Once complete, the user will click submit review. 
+
+## Video Tutorial
+
+[![Ratings and Reviews](/manual/images/PA_Ratings.png)](https://youtu.be/57cGVGozVfk)
+
+[Watch on Youtube](https://youtu.be/57cGVGozVfk)
