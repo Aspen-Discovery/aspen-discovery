@@ -1,4 +1,4 @@
-## Geographic Region Facet
+## Region Facet
 
 The values for the geographic region facet come from the following places in your bibliographic records:
 
