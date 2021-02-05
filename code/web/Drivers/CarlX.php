@@ -1301,6 +1301,13 @@ class CarlX extends AbstractIlsDriver{
 				$fine->System = $this->getFineSystem($fine->Branch);
 				$fine->CanPayFine = $this->canPayFine($fine->System);
 
+				$fine->FeeAmountOutstanding = 0;
+				if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
+					$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
+				} else {
+					$fine->FeeAmountOutstanding = $fine->FeeAmount;
+				}
+
 				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
 					$fine->Identifier = substr($fine->Identifier,9);
 				}
@@ -1311,6 +1318,8 @@ class CarlX extends AbstractIlsDriver{
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FeeAmount,
 					'amountVal'  => $fine->FeeAmount,
+					'amountOutstanding' => $fine->FeeAmountOutstanding,
+					'amountOutstandingVal' => $fine->FeeAmountOutstanding,
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->TransactionDate)),
 					'system'  => $fine->System,
