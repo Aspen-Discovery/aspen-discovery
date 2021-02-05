@@ -324,11 +324,13 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	 * @return OverDriveAPIProductAvailability[]
 	 */
 	function getAvailability(){
+		global $library;
 		if ($this->availability == null){
 			$this->availability = array();
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
 			$availability = new OverDriveAPIProductAvailability();
 			$availability->productId = $this->overDriveProduct->id;
+			$availability->settingId = $library->getOverdriveScope()->settingId;
 			//Only include shared collection if include digital collection is on
 			$searchLibrary = Library::getSearchLibrary();
 			$searchLocation = Location::getSearchLocation();
@@ -353,14 +355,14 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
             while ($availability->fetch()){
 				$this->availability[$availability->libraryId] = clone $availability;
 				if ($availability->libraryId != -1){
-				    if ($availability->shared){
-                        $copiesInLibraryCollection += $availability->copiesOwned;
-                    }
-                }
-			}
-			if ($copiesInLibraryCollection > 0){
-                $this->availability[-1]->copiesOwned -= $copiesInLibraryCollection;
+					if ($availability->shared) {
+						$copiesInLibraryCollection += $availability->copiesOwned;
+					}
+				}
             }
+			if ($copiesInLibraryCollection > 0) {
+				$this->availability[-1]->copiesOwned -= $copiesInLibraryCollection;
+			}
 		}
 		return $this->availability;
 	}
