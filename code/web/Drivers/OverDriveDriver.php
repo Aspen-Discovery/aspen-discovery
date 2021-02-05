@@ -497,7 +497,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 						'userId' => $patron->id,
 					];
 					$supplementalMaterial = $this->loadCheckoutFormatInformation($curTitle, $supplementalMaterial);
-					$parentCheckout['supplementalMaterials'][] = $supplementalMaterial;
+					if (isset($supplementalMaterial['selectedFormat']) && !empty($supplementalMaterial['selectedFormat']['format'])) {
+						$parentCheckout['supplementalMaterials'][] = $supplementalMaterial;
+					}
 					$checkedOutTitles['OverDrive' . $parentCheckoutId] = $parentCheckout;
 				}else{
 					//Load data from api
