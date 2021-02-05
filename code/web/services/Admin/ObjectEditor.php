@@ -74,14 +74,19 @@ abstract class ObjectEditor extends Admin_Admin
 	 * @return DataObject[]
 	 */
 	abstract function getAllObjects($page, $recordsPerPage);
+
+	protected $_numObjects = null;
 	/**
 	 * Get a count of the number of objects so we can paginate as needed
 	 */
 	function getNumObjects(){
-		/** @var DataObject $object */
-		$objectType = $this->getObjectType();
-		$object = new $objectType();
-		return $object->count();
+		if ($this->_numObjects == null) {
+			/** @var DataObject $object */
+			$objectType = $this->getObjectType();
+			$object = new $objectType();
+			$this->_numObjects = $object->count();
+		}
+		return $this->_numObjects;
 	}
 	/**
 	 * Define the properties which are editable for the object
@@ -347,7 +352,7 @@ abstract class ObjectEditor extends Admin_Admin
 	}
 
 	public function canBatchEdit() {
-		return true;
+		return $this->getNumObjects() > 1;
 	}
 
 	public function customListActions(){

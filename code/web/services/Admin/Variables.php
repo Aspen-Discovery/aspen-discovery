@@ -141,4 +141,14 @@ class Admin_Variables extends ObjectEditor{
 	{
 		return UserAccount::userHasPermission('Administer System Variables');
 	}
+
+	function canBatchEdit()
+	{
+		return false;
+	}
+
+	function canCompare()
+	{
+		return false;
+	}
 }

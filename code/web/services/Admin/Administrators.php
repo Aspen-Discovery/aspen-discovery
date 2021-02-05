@@ -147,4 +147,9 @@ class Admin_Administrators extends ObjectEditor
 	{
 		return UserAccount::userHasPermission('Administer Users');
 	}
+
+	function canBatchEdit()
+	{
+		return false;
+	}
 }

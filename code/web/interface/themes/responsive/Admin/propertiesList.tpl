@@ -20,7 +20,7 @@
 		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects">
 			<thead>
 				<tr>
-					{if $canCompare}
+					{if $canCompare || $canBatchUpdate}
 						<th>{translate text='Select'}</th>
 					{/if}
 					{foreach from=$structure item=property key=id}
@@ -35,7 +35,7 @@
 				{if isset($dataList) && is_array($dataList)}
 					{foreach from=$dataList item=dataItem key=id}
 					<tr class='{cycle values="odd,even"} {$dataItem->class}'>
-						{if $canCompare}
+						{if $canCompare || $canBatchUpdate}
 							<td><input type="checkbox" class="selectedObject" name="selectedObject[{$id}]" aria-label="Select Item {$id}"> </td>
 						{/if}
 						{foreach from=$structure item=property}
