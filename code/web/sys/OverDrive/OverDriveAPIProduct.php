@@ -5,6 +5,7 @@ class OverDriveAPIProduct extends DataObject{
 
 	public $id;
 	public $overdriveId;
+	public $crossRefId;
 	public $mediaType;
 	public $title;
 	public $subtitle;

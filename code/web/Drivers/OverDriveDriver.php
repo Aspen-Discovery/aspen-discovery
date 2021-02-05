@@ -553,6 +553,43 @@ class OverDriveDriver extends AbstractEContentDriver{
 							$checkout['title'] = $overDriveRecord->getTitle();
 							$checkout['author'] = $overDriveRecord->getAuthor();
 							$checkout['linkUrl'] = $overDriveRecord->getLinkUrl(false);
+						}else{
+							//The title doesn't exist in the collection - this happens with Magazines right now (early 2021).
+							//Load the title information from metadata, but don't link it.
+							$overDriveMetadata = $this->getProductMetadata($checkout['overDriveId']);
+							if ($overDriveMetadata){
+								$checkout['format'] = $overDriveMetadata->mediaType;
+								$checkout['coverUrl'] = $overDriveMetadata->images->cover150Wide->href;
+								$checkout['title'] = $overDriveMetadata->title;
+								$checkout['author'] = $overDriveMetadata->publisher;
+								//Magazines link to the searchable record by the parent magazine title id
+								if (!empty($overDriveMetadata->parentMagazineTitleId)){
+									require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
+									$overDriveProduct = new OverDriveAPIProduct();
+									$overDriveProduct->crossRefId = $overDriveMetadata->parentMagazineTitleId;
+									if ($overDriveProduct->find(true)){
+										//we have the product, now we need to find the grouped work id
+										require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+										$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
+										$groupedWorkPrimaryIdentifier->type = 'overdrive';
+										$groupedWorkPrimaryIdentifier->identifier = $overDriveProduct->overdriveId;
+										if ($groupedWorkPrimaryIdentifier->find(true)){
+											require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+											$groupedWork = new GroupedWork();
+											$groupedWork->id = $groupedWorkPrimaryIdentifier->grouped_work_id;
+											if ($groupedWork->find(true)){
+												$checkout['groupedWorkId'] = $groupedWork->permanent_id;
+												require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+												$groupedWorkDriver = new GroupedWorkDriver($groupedWork->permanent_id);
+												$checkout['ratingData'] = $groupedWorkDriver->getRatingData();
+												$checkout['recordUrl'] = $groupedWorkDriver->getLinkUrl(true);
+												$checkout['linkUrl'] = $groupedWorkDriver->getLinkUrl(false);
+											}
+										}
+									}
+								}
+
+							}
 						}
 					}
 					$checkout['user'] = $patron->getNameAndLibraryLabel();
@@ -883,9 +920,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 			if ($response == false || (isset($response->errorCode) && ($response->errorCode == 'NoCopiesAvailable' || $response->errorCode == 'PatronHasExceededCheckoutLimit'))) {
 				$result['noCopies'] = true;
 				$result['message'] .= "\r\n\r\n" . translate('Would you like to place a hold instead?');
+			}else if ($response->errorCode == 'TitleAlreadyCheckedOut') {
+				$result['message'] = translate(['text' => 'overdrive_already_checked_out', 'defaultText' => "This title is already checked out to you, you can read it by visiting <a href='/MyAccount/CheckedOut'>Your Account</a>."]);
 			}else{
 				//Give more information about why it might gave failed, ie expired card or too much fines
-				$result['message'] =  translate(['text'=>'overdrive_checkout_failed', 'defaultText'=>'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.']);
+				$result['message'] .= ' ' . translate(['text' => 'overdrive_checkout_failed', 'defaultText' => 'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.']);
 			}
 
 		}
