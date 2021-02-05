@@ -112,6 +112,7 @@
     - [Genre Facet](/Admin/HelpManual?page=Genre-Facets)
     - [Region Facet](/Admin/HelpManual?page=GeographicRegion-Facets)
     - [Language Facet](/Admin/HelpManual?page=Language-Facet)
+    - [Awards Facet](/Admin/HelpManual?page=Awards-Facet)
   - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - System Messages
 - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
