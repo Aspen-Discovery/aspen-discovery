@@ -2143,11 +2143,8 @@ EOT;
 		}
 	}
 
-	// TODO: implement showOutstanding Fines for partially paid fines. Might be nothing... 2020 11 23
-/*
 	public function showOutstandingFines()
 	{
 		return true;
 	}
-*/
 }
