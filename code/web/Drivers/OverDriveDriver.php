@@ -672,6 +672,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$hold['linkUrl'] = $overDriveRecord->getLinkUrl(true);
 					$hold['format'] = $overDriveRecord->getFormats();
 					$hold['ratingData'] = $overDriveRecord->getRatingData();
+
+					$hold['previewActions'] = $overDriveRecord->getPreviewActions();
 				}
 				$hold['user'] = $user->getNameAndLibraryLabel();
 				$hold['userId'] = $user->id;
