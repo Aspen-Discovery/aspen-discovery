@@ -95,7 +95,7 @@ class ExtractOverDriveInfo {
 
 			try {
 				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
-					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
+					logEntry.addNote("Did not find correct configuration in settings, not loading overdrive titles");
 				} else {
 					//Load products from database this lets us know what is new, what has been deleted, and what has been updated
 					if (!loadProductsFromDatabase()) {
@@ -301,7 +301,7 @@ class ExtractOverDriveInfo {
 
 			try {
 				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
-					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
+					logEntry.addNote("Did not find correct configuration in settings, not loading overdrive titles");
 				} else {
 					//Load products from database this lets us know what is new, what has been deleted, and what has been updated
 					if (!loadProductsFromDatabase()) {
