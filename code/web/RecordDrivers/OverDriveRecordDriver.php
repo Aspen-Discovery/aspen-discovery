@@ -782,6 +782,33 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 				'type' => 'overdrive_hold'
 			);
 		}
+
+		$items = $this->getItems();
+		$previewLinks = [];
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		foreach ($items as $item){
+			if (!empty($item->sampleUrl_1) && !in_array($item->sampleUrl_1, $previewLinks) && !StringUtils::endsWith($item->sampleUrl_1, '.epub')){
+				$previewLinks[] = $item->sampleUrl_1;
+				$actions[] = array(
+					'title' => 'Preview ' . $item->sampleSource_1,
+					'onclick' => "return AspenDiscovery.OverDrive.showPreview('{$this->id}', '{$item->id}', '1');",
+					'requireLogin' => false,
+					'type' => 'overdrive_sample',
+					'btnType' => 'btn-info'
+				);
+			}
+			if (!empty($item->sampleUrl_2) && !in_array($item->sampleUrl_2, $previewLinks) && !StringUtils::endsWith($item->sampleUrl_2, '.epub')){
+				$previewLinks[] = $item->sampleUrl_2;
+				$actions[] = array(
+					'title' => 'Preview ' . $item->sampleSource_2,
+					'onclick' => "return AspenDiscovery.OverDrive.showPreview('{$this->id}', '{$item->id}', '2');",
+					'requireLogin' => false,
+					'type' => 'overdrive_sample',
+					'btnType' => 'btn-info'
+				);
+			}
+		}
+
 		return $actions;
 	}
 

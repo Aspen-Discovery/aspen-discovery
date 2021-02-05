@@ -149,4 +149,17 @@ class StringUtils
 
 		return round($bytes, $precision) . ' ' . $units[$pow];
 	}
+
+	static function startsWith( $haystack, $needle ) {
+		$length = strlen( $needle );
+		return substr( $haystack, 0, $length ) === $needle;
+	}
+
+	static function endsWith( $haystack, $needle ) {
+		$length = strlen( $needle );
+		if( !$length ) {
+			return true;
+		}
+		return substr( $haystack, -$length ) === $needle;
+	}
 }
