@@ -406,12 +406,14 @@ class OverDrive_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getPreview(){
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error loading preview'
 		];
 		$id = $_REQUEST['id'];
+		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 		$recordDriver = new OverDriveRecordDriver($id);
 		if ($recordDriver->isValid()){
@@ -427,6 +429,9 @@ class OverDrive_AJAX extends JSON_Action
 					$result['title'] =  'Preview ' . $format->sampleSource_1;
 					$sampleUrl = $format->sampleUrl_1;
 				}
+
+				$overDriveDriver = new OverDriveDriver();
+				$overDriveDriver->incrementStat('numPreviews');
 
 				$result['modalBody'] = "<iframe src='{$sampleUrl}' class='previewFrame'></iframe>";
 				$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewPreviewFullSize' href='$sampleUrl' target='_blank'>" . translate("View Full Screen"). "</a>";

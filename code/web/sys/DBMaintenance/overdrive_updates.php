@@ -395,7 +395,36 @@ function getOverDriveUpdates()
 			'sql' => [
 				'ALTER TABLE overdrive_settings ADD COLUMN allowLargeDeletes TINYINT(1) DEFAULT 0'
 			]
-		]
+		],
+
+		'track_overdrive_stats' => array(
+			'title' => 'OverDrive Stats',
+			'description' => 'Add a table to track how OverDrive is used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE overdrive_stats (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					numCheckouts INT(11) NOT NULL DEFAULT 0,
+					numFailedCheckouts INT(11) NOT NULL DEFAULT 0,
+					numRenewals INT(11) NOT NULL DEFAULT 0,
+					numEarlyReturns INT(11) NOT NULL DEFAULT 0,
+					numHoldsPlaced INT(11) NOT NULL DEFAULT 0,
+					numFailedHolds INT(11) NOT NULL DEFAULT 0,
+					numHoldsCancelled INT(11) NOT NULL DEFAULT 0,
+					numHoldsFrozen INT(11) NOT NULL DEFAULT 0,
+					numHoldsThawed INT(11) NOT NULL DEFAULT 0,
+					numDownloads INT(11) NOT NULL DEFAULT 0,
+					numPreviews INT(11) NOT NULL DEFAULT 0, 
+					numOptionsUpdates INT(11) NOT NULL DEFAULT 0, 
+					numApiErrors INT(11) NOT NULL DEFAULT 0,
+					numConnectionFailures INT(11) NOT NULL DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE overdrive_stats ADD INDEX (instance, year, month)",
+			),
+		),
 	);
 }
 

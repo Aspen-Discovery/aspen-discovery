@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php';
 require_once ROOT_DIR . '/sys/Axis360/Axis360RecordUsage.php';
 require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
 
-class Graphs extends Admin_Admin
+class Axis360_Graphs extends Admin_Admin
 {
 	function launch()
 	{
