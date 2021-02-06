@@ -67,6 +67,7 @@ class OverDriveProcessor {
 						indexer.overDriveRecordsSkipped.add(identifier);
 						return;
 					} else {
+						boolean hasKindle = false;
 
 						RecordInfo overDriveRecord = groupedWork.addRelatedRecord("overdrive", identifier);
 						overDriveRecord.setRecordIdentifier("overdrive", identifier);
@@ -279,6 +280,9 @@ class OverDriveProcessor {
 
 						//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
 						HashSet<String> validFormats = loadOverDriveFormats(productId, identifier);
+						if (validFormats.contains("Kindle Book")){
+							hasKindle = true;
+						}
 						String detailedFormats = Util.getCsvSeparatedString(validFormats);
 						//overDriveRecord.addFormats(validFormats);
 						if (rawMetadataDecoded != null) {
@@ -441,9 +445,17 @@ class OverDriveProcessor {
 							}//End processing availability
 						}
 						groupedWork.addHoldings(totalCopiesOwned);
+
+						if (hasKindle){
+							RecordInfo kindleRecord = groupedWork.addRelatedRecord("overdrive", "kindle", identifier);
+							kindleRecord.copyFrom(overDriveRecord);
+							for (ItemInfo itemInfo: kindleRecord.getRelatedItems()){
+								itemInfo.setFormat("Kindle");
+								itemInfo.setSubFormats("");
+							}
+						}
 					}
 					numCopiesRS.close();
-
 				}
 			}
 			productRS.close();

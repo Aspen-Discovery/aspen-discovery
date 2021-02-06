@@ -6,6 +6,8 @@ require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 class OverDriveRecordDriver extends GroupedWorkSubDriver
 {
 	private $id;
+	//This will be either blank or kindle for now
+	private $subSource;
 	/** @var OverDriveAPIProduct */
 	private $overDriveProduct;
 	/** @var  OverDriveAPIProductMetaData */
@@ -37,6 +39,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 	{
 		if (is_string($recordId)) {
 			//The record is the identifier for the overdrive title
+			//Check to see if we have a subSource
+			if (strpos($recordId, ':') > 0){
+				list($this->subSource, $recordId) = explode(':', $recordId);
+			}
 			$this->id = $recordId;
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 			$this->overDriveProduct = new OverDriveAPIProduct();
@@ -541,8 +547,12 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 	public function getFormats()
 	{
 		$formats = array();
-		foreach ($this->getItems() as $item) {
-			$formats[] = $item->name;
+		if ($this->subSource == 'kindle') {
+			$formats[] = 'Kindle';
+		}else{
+			foreach ($this->getItems() as $item) {
+				$formats[] = $item->name;
+			}
 		}
 		return $formats;
 	}
@@ -572,6 +582,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 			$this->items = array();
 			if ($this->valid) {
 				$overDriveFormats->productId = $this->overDriveProduct->id;
+				if ($this->subSource == 'kindle') {
+					$overDriveFormats->textId = 'ebook-kindle';
+				}
 				$overDriveFormats->find();
 				while ($overDriveFormats->fetch()) {
 					$this->items[] = clone $overDriveFormats;
@@ -723,7 +736,11 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 	public function getRecordUrl()
 	{
 		$id = $this->getUniqueID();
-		$linkUrl = '/OverDrive/' . $id . '/Home';
+		if ($this->subSource) {
+			$linkUrl = "/OverDrive/{$this->subSource}:" . $id . '/Home';
+		}else{
+			$linkUrl = "/OverDrive/" . $id . '/Home';
+		}
 		return $linkUrl;
 	}
 

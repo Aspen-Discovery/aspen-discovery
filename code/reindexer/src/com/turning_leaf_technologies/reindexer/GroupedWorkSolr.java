@@ -1724,6 +1724,18 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	RecordInfo addRelatedRecord(String source, String subSource, String recordIdentifier) {
+		String recordIdentifierWithType = source + ":" + subSource + ":" + recordIdentifier;
+		if (relatedRecords.containsKey(recordIdentifierWithType)) {
+			return relatedRecords.get(recordIdentifierWithType);
+		} else {
+			RecordInfo newRecord = new RecordInfo(source, recordIdentifier);
+			newRecord.setSubSource(subSource);
+			relatedRecords.put(recordIdentifierWithType, newRecord);
+			return newRecord;
+		}
+	}
+
 	void addLCSubject(String lcSubject) {
 		this.lcSubjects.add(StringUtils.normalizeSubject(lcSubject));
 	}
