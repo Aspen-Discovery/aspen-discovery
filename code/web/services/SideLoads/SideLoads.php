@@ -68,7 +68,7 @@ class SideLoads_SideLoads extends ObjectEditor
 		$list = array();
 
 		$object = new SideLoad();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {
@@ -76,6 +76,11 @@ class SideLoads_SideLoads extends ObjectEditor
 		}
 
 		return $list;
+	}
+
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 
 	function getObjectStructure()

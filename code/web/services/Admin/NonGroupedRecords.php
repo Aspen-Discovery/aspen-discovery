@@ -17,7 +17,7 @@ class Admin_NonGroupedRecords extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new NonGroupedRecord();
-		$object->orderBy('source, recordId');
+		$object->orderBy($this->getSort() . ', recordId');
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -25,6 +25,10 @@ class Admin_NonGroupedRecords extends ObjectEditor
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'source asc';
 	}
 	function getObjectStructure(){
 		return NonGroupedRecord::getObjectStructure();

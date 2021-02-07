@@ -18,7 +18,7 @@ class Admin_BrowseCategories extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$browseCategory = new BrowseCategory();
-		$browseCategory->orderBy('label');
+		$browseCategory->orderBy($this->getSort());
 		$browseCategory->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
@@ -33,6 +33,11 @@ class Admin_BrowseCategories extends ObjectEditor
 		}
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'label asc';
+	}
+
 	function getObjectStructure(){
 		return BrowseCategory::getObjectStructure();
 	}

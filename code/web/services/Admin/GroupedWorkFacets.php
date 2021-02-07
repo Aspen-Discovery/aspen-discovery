@@ -16,7 +16,7 @@ class Admin_GroupedWorkFacets extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new GroupedWorkFacetGroup();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Grouped Work Facets')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
@@ -31,6 +31,10 @@ class Admin_GroupedWorkFacets extends ObjectEditor
 			$list[$object->id] = clone $object;
 		}
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return GroupedWorkFacetGroup::getObjectStructure();

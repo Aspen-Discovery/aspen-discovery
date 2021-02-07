@@ -27,6 +27,7 @@ class WebBuilder_StaffMembers extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new StaffMember();
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -34,6 +35,11 @@ class WebBuilder_StaffMembers extends ObjectEditor
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 
 	function getObjectStructure()

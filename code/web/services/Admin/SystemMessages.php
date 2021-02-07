@@ -21,7 +21,7 @@ class Admin_SystemMessages extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$systemMessage = new SystemMessage();
-		$systemMessage->orderBy('title');
+		$systemMessage->orderBy($this->getSort());
 		$systemMessage->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingMessages = true;
 		if (!UserAccount::userHasPermission('Administer All System Messages')){
@@ -49,6 +49,10 @@ class Admin_SystemMessages extends ObjectEditor
 			}
 		}
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'title asc';
 	}
 	function getObjectStructure(){
 		return SystemMessage::getObjectStructure();

@@ -30,12 +30,17 @@ class Axis360_Settings extends ObjectEditor
 	{
 		$object = new Axis360Setting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'userInterfaceUrl asc';
 	}
 
 	function getObjectStructure()

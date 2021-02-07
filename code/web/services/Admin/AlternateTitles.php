@@ -15,7 +15,7 @@ class Admin_AlternateTitles extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new GroupedWorkAlternateTitle();
-		$object->orderBy('alternateTitle');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -24,6 +24,11 @@ class Admin_AlternateTitles extends ObjectEditor
 		}
 		return $objectList;
 	}
+	function getDefaultSort()
+	{
+		return 'alternateTitle asc';
+	}
+
 	function getObjectStructure(){
 		return GroupedWorkAlternateTitle::getObjectStructure();
 	}

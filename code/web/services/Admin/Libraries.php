@@ -20,7 +20,7 @@ class Admin_Libraries extends ObjectEditor
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasPermission('Administer All Libraries')){
 			$library = new Library();
-			$library->orderBy('subdomain');
+			$library->orderBy($this->getSort());
 			$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 			$library->find();
 			while ($library->fetch()){
@@ -33,6 +33,10 @@ class Admin_Libraries extends ObjectEditor
 		}
 
 		return $libraryList;
+	}
+	function getDefaultSort()
+	{
+		return 'subdomain asc';
 	}
 	function getObjectStructure(){
 		$objectStructure = Library::getObjectStructure();

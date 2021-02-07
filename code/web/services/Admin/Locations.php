@@ -20,7 +20,7 @@ class Admin_Locations extends ObjectEditor
 		$user = UserAccount::getLoggedInUser();
 
 		$location = new Location();
-		$location->orderBy('displayName');
+		$location->orderBy($this->getSort());
 		if (!UserAccount::userHasPermission('Administer All Locations')){
 			if (!UserAccount::userHasPermission('Administer Home Library Locations')){
 				//Scope to just locations for the user based on home library
@@ -37,6 +37,11 @@ class Admin_Locations extends ObjectEditor
 			$locationList[$location->locationId] = clone $location;
 		}
 		return $locationList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'displayName asc';
 	}
 
 	function getObjectStructure(){

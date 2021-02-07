@@ -18,7 +18,7 @@ class Admin_AccountProfiles extends ObjectEditor {
 		$list = array();
 
 		$object = new AccountProfile();
-		$object->orderBy('weight, name');
+		$object->orderBy($this->getSort() . ', name');
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
@@ -27,6 +27,11 @@ class Admin_AccountProfiles extends ObjectEditor {
 
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'weight asc';
+	}
+
 	function getObjectStructure(){
 		return AccountProfile::getObjectStructure();
 	}

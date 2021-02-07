@@ -21,7 +21,7 @@ class Admin_Placards extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$placard = new Placard();
-		$placard->orderBy('title');
+		$placard->orderBy($this->getSort());
 		$placard->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingPlacards = true;
 		if (!UserAccount::userHasPermission('Administer All Placards')){
@@ -49,6 +49,10 @@ class Admin_Placards extends ObjectEditor
 			}
 		}
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'title asc';
 	}
 	function getObjectStructure(){
 		return Placard::getObjectStructure();

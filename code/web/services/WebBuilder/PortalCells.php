@@ -36,6 +36,16 @@ class WebBuilder_PortalCells extends ObjectEditor
 		return $objectList;
 	}
 
+	function getDefaultSort()
+	{
+		return 'weight asc';
+	}
+
+	function canSort()
+	{
+		return false;
+	}
+
 	function getObjectStructure()
 	{
 		return PortalCell::getObjectStructure();

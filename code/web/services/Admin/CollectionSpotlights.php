@@ -25,7 +25,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 			$patronLibrary = Library::getPatronHomeLibrary();
 			$collectionSpotlight->libraryId = $patronLibrary->libraryId;
 		}
-		$collectionSpotlight->orderBy('name');
+		$collectionSpotlight->orderBy($this->getSort());
 		$collectionSpotlight->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$collectionSpotlight->find();
 		while ($collectionSpotlight->fetch()){
@@ -34,7 +34,12 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 
 		return $list;
 	}
-    function getObjectStructure(){
+	function getDefaultSort()
+	{
+		return 'name asc';
+	}
+
+	function getObjectStructure(){
 		return CollectionSpotlight::getObjectStructure();
 	}
 	function getPrimaryKeyColumn(){

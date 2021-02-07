@@ -52,6 +52,15 @@ class Admin_Administrators extends ObjectEditor
 
 		return $adminList;
 	}
+	function getDefaultSort()
+	{
+		return 'id';
+	}
+	function canSort()
+	{
+		return false;
+	}
+
 	function getObjectStructure(){
 		return User::getObjectStructure();
 	}

@@ -17,7 +17,7 @@ class Admin_Marriages extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new Marriage();
-		$object->orderBy('marriageDate');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -25,6 +25,10 @@ class Admin_Marriages extends ObjectEditor
 			$objectList[$object->marriageId] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'marriageDate asc';
 	}
     function getObjectStructure(){
 		return Marriage::getObjectStructure();

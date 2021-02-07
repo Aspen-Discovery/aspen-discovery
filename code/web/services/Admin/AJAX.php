@@ -334,8 +334,8 @@ class Admin_AJAX extends JSON_Action
 		$tool = new $fullToolName();
 
 		if ($tool->canBatchEdit()) {
-
-			$batchFormatFields = $tool->getBatchFormatFields();
+			$structure = $tool->getObjectStructure();
+			$batchFormatFields = $tool->getBatchUpdateFields($structure);
 			global $interface;
 			$interface->assign('batchFormatFields', $batchFormatFields);
 
@@ -368,7 +368,8 @@ class Admin_AJAX extends JSON_Action
 		$tool = new $fullToolName();
 
 		if ($tool->canBatchEdit()) {
-			$batchFormatFields = $tool->getBatchFormatFields();
+			$structure = $tool->getObjectStructure();
+			$batchFormatFields = $tool->getBatchUpdateFields($structure);
 			$fieldStructure = null;
 			foreach ($batchFormatFields as $field){
 				if ($field['property'] == $selectedField){

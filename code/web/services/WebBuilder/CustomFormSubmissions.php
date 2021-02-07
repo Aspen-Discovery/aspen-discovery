@@ -30,7 +30,7 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 		$object = new CustomFormSubmission();
 		$formId = $_REQUEST['formId'];
 		$object->formId = $formId;
-		$object->orderBy('dateSubmitted desc');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -38,6 +38,10 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'dateSubmitted desc';
 	}
 
 	function getObjectStructure()

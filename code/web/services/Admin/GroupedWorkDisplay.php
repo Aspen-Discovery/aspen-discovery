@@ -19,7 +19,7 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new GroupedWorkDisplaySetting();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Grouped Work Display Settings')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
@@ -32,6 +32,11 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 		}
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'name asc';
+	}
+
 	function getObjectStructure(){
 		return GroupedWorkDisplaySetting::getObjectStructure();
 	}

@@ -39,6 +39,15 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		}
 		return $objectList;
 	}
+	function getDefaultSort()
+	{
+		return 'isDefault desc';
+	}
+	function canSort()
+	{
+		return false;
+	}
+
 	function getObjectStructure(){
 		return MaterialsRequestStatus::getObjectStructure();
 	}

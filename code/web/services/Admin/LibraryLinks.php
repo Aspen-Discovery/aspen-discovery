@@ -22,7 +22,7 @@ class Admin_LibraryLinks extends ObjectEditor
 
 		$object = new LibraryLink();
 		$location = new Location();
-		$location->orderBy('displayName');
+		$location->orderBy($this->getSort());
 		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			//Scope to just locations for the user based on home library
 			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
@@ -37,6 +37,10 @@ class Admin_LibraryLinks extends ObjectEditor
 			$list[$object->id] = clone $object;
 		}
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'displayName asc';
 	}
 	function getObjectStructure(){
 		$structure = LibraryLink::getObjectStructure();

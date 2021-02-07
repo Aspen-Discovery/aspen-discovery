@@ -21,6 +21,7 @@ abstract class ObjectEditor extends Admin_Admin
 		$interface->assign('canCopy', $this->canCopy());
 		$interface->assign('canCompare', $this->canCompare());
 		$interface->assign('canDelete', $this->canDelete());
+		$interface->assign('canSort', $this->canSort());
 		$interface->assign('canBatchUpdate', $this->canBatchEdit());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
@@ -36,6 +37,9 @@ abstract class ObjectEditor extends Admin_Admin
 		$interface->assign('customListActions', $customListActions);
 		if (is_null($objectAction) || $objectAction == 'list'){
 			$interface->assign('instructions', $this->getListInstructions());
+			$interface->assign('sortableFields', $this->getSortableFields($structure));
+			$interface->assign('sort', $this->getSort());
+			$interface->assign('filterFields', $this->getFilterFields($structure));
 			$this->viewExistingObjects();
 		}elseif (($objectAction == 'save' || $objectAction == 'delete')) {
 			$this->editObject($objectAction, $structure);
@@ -355,6 +359,16 @@ abstract class ObjectEditor extends Admin_Admin
 		return $this->getNumObjects() > 1;
 	}
 
+	public function canSort() {
+		return $this->getNumObjects() > 3;
+	}
+
+	function getSort(){
+		return isset($_REQUEST['sort'])? $_REQUEST['sort'] : $this->getDefaultSort();
+	}
+
+	abstract function getDefaultSort();
+
 	public function customListActions(){
 		return array();
 	}
@@ -507,21 +521,63 @@ abstract class ObjectEditor extends Admin_Admin
 		return true;
 	}
 
-	public function getBatchFormatFields(){
-		$structure = $this->getObjectStructure();
-
+	public function getBatchUpdateFields($structure){
 		$batchFormatFields = [];
 		foreach ($structure as $fieldName => $field){
-			$this->addFieldToBatchFormatFieldsArray($batchFormatFields, $field);
+			$this->addFieldToBatchUpdateFieldsArray($batchFormatFields, $field);
 		}
 		ksort($batchFormatFields);
 		return $batchFormatFields;
 	}
 
-	private function addFieldToBatchFormatFieldsArray(&$batchFormatFields, $field){
+	public function getSortableFields($structure){
+		$sortFields = [];
+		foreach ($structure as $fieldName => $field){
+			$this->addFieldToSortableFieldsArray($sortFields, $field);
+		}
+		ksort($sortFields);
+		return $sortFields;
+	}
+
+	private function addFieldToSortableFieldsArray(&$sortableFields, $field){
 		if ($field['type'] == 'section'){
 			foreach ($field['properties'] as $subFieldName => $subField){
-				$this->addFieldToBatchFormatFieldsArray($batchFormatFields, $subField);
+				$this->addFieldToSortableFieldsArray($batchFormatFields, $subField);
+			}
+		} else {
+			$canSort = !isset($field['canSort']) || ($field['canSort'] == true);
+			if ($canSort && in_array($field['type'], ['checkbox', 'label', 'date', 'timestamp', 'enum', 'currency', 'text', 'integer', 'email', 'url'])) {
+				$sortableFields[$field['label']] = $field;
+			}
+		}
+	}
+
+	public function getFilterFields($structure){
+		$sortFields = [];
+		foreach ($structure as $fieldName => $field){
+			$this->addFieldToFilterFieldsArray($sortFields, $field);
+		}
+		ksort($sortFields);
+		return $sortFields;
+	}
+
+	private function addFieldToFilterFieldsArray(&$filterFields, $field){
+		if ($field['type'] == 'section'){
+			foreach ($field['properties'] as $subFieldName => $subField){
+				$this->addFieldToFilterFieldsArray($filterFields, $subField);
+			}
+		} else {
+			$canSort = !isset($field['canSort']) || ($field['canSort'] == true);
+			if ($canSort && in_array($field['type'], ['checkbox', 'label', 'date', 'timestamp', 'enum', 'currency', 'text', 'integer', 'email', 'url'])) {
+				$filterFields[$field['label']] = $field;
+			}
+		}
+	}
+
+	private function addFieldToBatchUpdateFieldsArray(&$batchFormatFields, $field){
+		if ($field['type'] == 'section'){
+			foreach ($field['properties'] as $subFieldName => $subField){
+				$this->addFieldToBatchUpdateFieldsArray($batchFormatFields, $subField);
 			}
 		} else {
 			$canBatchUpdate = !isset($field['canBatchUpdate']) || ($field['canBatchUpdate'] == true);

@@ -27,6 +27,7 @@ class WebBuilder_PortalPages extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new PortalPage();
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -34,6 +35,11 @@ class WebBuilder_PortalPages extends ObjectEditor
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'title asc';
 	}
 
 	function getObjectStructure()

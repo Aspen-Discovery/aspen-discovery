@@ -18,13 +18,18 @@ class Admin_Variables extends ObjectEditor{
 		$variableList = array();
 
 		$variable = new Variable();
-		$variable->orderBy('name');
+		$variable->orderBy($this->getSort());
 		$variable->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$variable->find();
 		while ($variable->fetch()){
 			$variableList[$variable->id] = clone $variable;
 		}
 		return $variableList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return Variable::getObjectStructure();

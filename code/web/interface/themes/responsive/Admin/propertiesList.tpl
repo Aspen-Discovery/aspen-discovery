@@ -16,6 +16,21 @@
 {if $canCompare || $canAddNew || $canBatchUpdate  || !empty($customListActions)}
 <form action="" method="get" id='compare' class="form-inline">
 {/if}
+	{if $canSort && count($sortableFields) > 0}
+		<div class="row">
+			<div class="col-xs-12">
+				<label for="sort">{translate text='Sort by'}</label>
+				<select name="sort" id="sort" onchange="return AspenDiscovery.changeSort();" class="form-control form-control-sm">
+					{foreach from=$sortableFields item=field}
+						{capture assign=fieldValueAsc}{$field.property} asc{/capture}
+                        {capture assign=fieldValueDesc}{$field.property} desc{/capture}
+						<option value="{$fieldValueAsc}" {if $fieldValueAsc == $sort}selected="selected"{/if}>{$field.label} {translate text="Ascending"}</option>
+						<option value="{$fieldValueDesc}" {if $fieldValueDesc == $sort}selected="selected"{/if}>{$field.label} {translate text="Descending"}</option>
+					{/foreach}
+				</select>
+			</div>
+		</div>
+	{/if}
 	<div class='adminTableRegion'>
 		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects">
 			<thead>
@@ -155,10 +170,10 @@
 </form>
 {/if}
 
-{if isset($dataList) && is_array($dataList) && count($dataList) > 5}
-<script type="text/javascript">
-	{literal}
-	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
-	{/literal}
-</script>
-{/if}
+{*{if isset($dataList) && is_array($dataList) && count($dataList) > 5}*}
+{*<script type="text/javascript">*}
+{*	{literal}*}
+{*	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });*}
+{*	{/literal}*}
+{*</script>*}
+{*{/if}*}

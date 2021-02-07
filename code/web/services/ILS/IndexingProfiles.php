@@ -61,7 +61,7 @@ class ILS_IndexingProfiles extends ObjectEditor
 		$list = array();
 
 		$object = new IndexingProfile();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {
@@ -69,6 +69,10 @@ class ILS_IndexingProfiles extends ObjectEditor
 		}
 
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 
 	function getObjectStructure()

@@ -51,7 +51,7 @@ class LoanRules extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new LoanRule();
-		$object->orderBy('loanRuleId');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -59,6 +59,10 @@ class LoanRules extends ObjectEditor
 			$objectList[$object->loanRuleId] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'loanRuleId asc';
 	}
 	function getObjectStructure(){
 		return LoanRule::getObjectStructure();

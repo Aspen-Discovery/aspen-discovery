@@ -25,7 +25,7 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 			$archiveNamespace = $homeLibrary->archiveNamespace;
 			$object->whereAdd("pid LIKE '{$archiveNamespace}:%'");
 		}
-		$object->orderBy('dateRequested desc');
+		$object->orderBy($this->getSort());
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
@@ -33,6 +33,11 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'dateRequested desc';
+	}
+
 	function getObjectStructure(){
 		return ClaimAuthorshipRequest::getObjectStructure();
 	}

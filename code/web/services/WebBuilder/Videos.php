@@ -28,7 +28,7 @@ class WebBuilder_Videos extends ObjectEditor
 	{
 		$object = new FileUpload();
 		$object->type = 'web_builder_video';
-		$object->orderBy('title');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -36,6 +36,11 @@ class WebBuilder_Videos extends ObjectEditor
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'title asc';
 	}
 
 	function updateFromUI($object, $structure){

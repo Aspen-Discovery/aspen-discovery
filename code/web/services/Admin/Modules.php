@@ -18,7 +18,7 @@ class Admin_Modules extends ObjectEditor {
 		$list = array();
 
 		$object = new Module();
-		$object->orderBy('name asc');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
@@ -26,6 +26,10 @@ class Admin_Modules extends ObjectEditor {
 		}
 
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return Module::getObjectStructure();

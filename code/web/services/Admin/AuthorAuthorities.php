@@ -16,7 +16,7 @@ class AuthorAuthorities extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new AuthorAuthority();
-		$object->orderBy('author');
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -24,6 +24,10 @@ class AuthorAuthorities extends ObjectEditor
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort(){
+		return 'author asc';
 	}
 	function getObjectStructure(){
 		return AuthorAuthority::getObjectStructure();

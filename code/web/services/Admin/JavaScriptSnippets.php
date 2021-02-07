@@ -21,7 +21,7 @@ class Admin_JavaScriptSnippets extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$javascriptSnippet = new JavaScriptSnippet();
-		$javascriptSnippet->orderBy('name');
+		$javascriptSnippet->orderBy($this->getSort());
 		$javascriptSnippet->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingSnippets = true;
 		if (!UserAccount::userHasPermission('Administer All JavaScript Snippets')){
@@ -49,6 +49,10 @@ class Admin_JavaScriptSnippets extends ObjectEditor
 			}
 		}
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return JavaScriptSnippet::getObjectStructure();

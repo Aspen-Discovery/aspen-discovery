@@ -3,7 +3,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class LibraryFacetSettings extends ObjectEditor
+class Admin_LibraryFacetSettings extends ObjectEditor
 {
 
 	function getObjectType(){
@@ -22,7 +22,7 @@ class LibraryFacetSettings extends ObjectEditor
 			$libraryId = $_REQUEST['libraryId'];
 			$library->libraryId = $libraryId;
 		}
-		$library->orderBy('weight');
+		$library->orderBy($this->getSort());
 		$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$library->find();
 		while ($library->fetch()){
@@ -30,6 +30,10 @@ class LibraryFacetSettings extends ObjectEditor
 		}
 
 		return $facetsList;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return LibraryFacetSetting::getObjectStructure();

@@ -46,6 +46,16 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 		return $objectList;
 	}
 
+	function getDefaultSort()
+	{
+		return 'id';
+	}
+
+	function canSort()
+	{
+		return false;
+	}
+
 	/**
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property

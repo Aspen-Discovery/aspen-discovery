@@ -37,6 +37,15 @@ class Admin_SendGridSettings extends ObjectEditor
 		}
 		return $objectList;
 	}
+	function getDefaultSort()
+	{
+		return 'id asc';
+	}
+
+	function canSort()
+	{
+		return false;
+	}
 
 	function getObjectStructure()
 	{

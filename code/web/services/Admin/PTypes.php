@@ -20,7 +20,7 @@ class Admin_PTypes extends ObjectEditor
 		$libraryList = array();
 
 		$library = new PType();
-		$library->orderBy('pType');
+		$library->orderBy($this->getSort());
 		$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$library->find();
 		while ($library->fetch()){
@@ -28,6 +28,10 @@ class Admin_PTypes extends ObjectEditor
 		}
 
 		return $libraryList;
+	}
+	function getDefaultSort()
+	{
+		return 'pType asc';
 	}
 	function getObjectStructure(){
 		return PType::getObjectStructure();
