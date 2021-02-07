@@ -153,7 +153,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 
 								// following successful registration, email the parent with registration information
 								try {
-									$body = $firstName . " " . $lastName . "\n\n";
+									$body = $this->parent_first_name . " " . $this->parent_last_name . "\n\n";
 									$body .= translate(['text' => 'rosen_email_1', 'defaultText' =>'Welcome to LevelUP! Your PARENT username: %2%. Your STUDENT\'S username: %1%.', 1 => $this->student_username, 2 => $this->parent_username]);
 									$body_template = $interface->fetch('Emails/rosen-levelup.tpl');
 									$body .= $body_template;
