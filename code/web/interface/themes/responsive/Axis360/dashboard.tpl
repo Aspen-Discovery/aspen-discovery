@@ -4,7 +4,7 @@
 		{include file="Admin/selectInterfaceForm.tpl"}
 		<div class="row">
 			<div class="col-xs-12">
-				<a href="/Axis360/Graphs?instance={$selectedInstance}" title="{translate text="Show Active Users Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i> {translate text="View as graph"}</a>
+				<a href="/Axis360/Graphs?instance={$selectedInstance}" title="{translate text="Show Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i> {translate text="View as graph"}</a>
 			</div>
 		</div>
 		<div class="row">

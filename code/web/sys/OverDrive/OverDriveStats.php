@@ -1,6 +1,5 @@
 <?php
 
-
 class OverDriveStats extends DataObject
 {
 	public $__table = 'overdrive_stats';
