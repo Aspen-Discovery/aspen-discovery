@@ -134,6 +134,7 @@ class ILS_TranslationMaps extends ObjectEditor {
 
 		$object = new TranslationMap();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){

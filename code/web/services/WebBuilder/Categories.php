@@ -28,6 +28,7 @@ class WebBuilder_Categories extends ObjectEditor
 	{
 		$object = new WebBuilderCategory();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

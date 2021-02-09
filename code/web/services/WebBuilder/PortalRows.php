@@ -28,6 +28,7 @@ class WebBuilder_PortalRows extends ObjectEditor
 	{
 		$object = new PortalRow();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

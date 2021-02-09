@@ -30,6 +30,7 @@ class Hoopla_Settings extends ObjectEditor
 	{
 		$object = new HooplaSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();

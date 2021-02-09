@@ -3,7 +3,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Grouping/AuthorAuthority.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class AuthorAuthorities extends ObjectEditor
+class Admin_AuthorAuthorities extends ObjectEditor
 {
 	function getObjectType(){
 		return 'AuthorAuthority';
@@ -17,6 +17,7 @@ class AuthorAuthorities extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage){
 		$object = new AuthorAuthority();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

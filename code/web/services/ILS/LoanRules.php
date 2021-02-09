@@ -52,6 +52,7 @@ class LoanRules extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage){
 		$object = new LoanRule();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

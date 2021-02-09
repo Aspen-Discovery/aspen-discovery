@@ -18,6 +18,7 @@ class Admin_Marriages extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage){
 		$object = new Marriage();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

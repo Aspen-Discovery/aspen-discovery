@@ -19,6 +19,7 @@ class Admin_ArchiveRequests extends ObjectEditor {
 
 		$object = new ArchiveRequest();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasPermission('View Archive Material Requests')){

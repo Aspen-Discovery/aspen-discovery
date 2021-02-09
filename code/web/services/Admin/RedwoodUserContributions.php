@@ -27,6 +27,7 @@ class Admin_RedwoodUserContributions extends ObjectEditor
 
 		$object = new UserContribution();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {

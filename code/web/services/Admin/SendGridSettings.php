@@ -30,6 +30,7 @@ class Admin_SendGridSettings extends ObjectEditor
 	{
 		$object = new SendGridSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

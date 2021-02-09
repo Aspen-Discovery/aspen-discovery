@@ -18,6 +18,7 @@ class Admin_ErrorReport extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage){
 		$object = new AspenError();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

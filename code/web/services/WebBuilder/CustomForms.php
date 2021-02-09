@@ -28,6 +28,7 @@ class WebBuilder_CustomForms extends ObjectEditor
 	{
 		$object = new CustomForm();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

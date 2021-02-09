@@ -22,14 +22,15 @@ class Admin_LibraryLinks extends ObjectEditor
 
 		$object = new LibraryLink();
 		$location = new Location();
-		$location->orderBy($this->getSort());
+		$location->orderBy('displayName asc');
 		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			//Scope to just locations for the user based on home library
 			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
 			$object->libraryId = $patronLibrary->libraryId;
 		}
 
-		$object->orderBy('weight');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$list = array();
@@ -40,7 +41,7 @@ class Admin_LibraryLinks extends ObjectEditor
 	}
 	function getDefaultSort()
 	{
-		return 'displayName asc';
+		return 'weight asc';
 	}
 	function getObjectStructure(){
 		$structure = LibraryLink::getObjectStructure();

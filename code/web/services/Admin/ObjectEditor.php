@@ -22,6 +22,7 @@ abstract class ObjectEditor extends Admin_Admin
 		$interface->assign('canCompare', $this->canCompare());
 		$interface->assign('canDelete', $this->canDelete());
 		$interface->assign('canSort', $this->canSort());
+		$interface->assign('canFilter', $this->canFilter());
 		$interface->assign('canBatchUpdate', $this->canBatchEdit());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
@@ -39,7 +40,9 @@ abstract class ObjectEditor extends Admin_Admin
 			$interface->assign('instructions', $this->getListInstructions());
 			$interface->assign('sortableFields', $this->getSortableFields($structure));
 			$interface->assign('sort', $this->getSort());
-			$interface->assign('filterFields', $this->getFilterFields($structure));
+			$filterFields = $this->getFilterFields($structure);
+			$interface->assign('filterFields', $filterFields);
+			$interface->assign('appliedFilters', $this->getAppliedFilters($filterFields));
 			$this->viewExistingObjects();
 		}elseif (($objectAction == 'save' || $objectAction == 'delete')) {
 			$this->editObject($objectAction, $structure);
@@ -88,6 +91,7 @@ abstract class ObjectEditor extends Admin_Admin
 			/** @var DataObject $object */
 			$objectType = $this->getObjectType();
 			$object = new $objectType();
+			$this->applyFilters($object);
 			$this->_numObjects = $object->count();
 		}
 		return $this->_numObjects;
@@ -369,6 +373,10 @@ abstract class ObjectEditor extends Admin_Admin
 
 	abstract function getDefaultSort();
 
+	public function canFilter(){
+		return ($this->getNumObjects() > 3) || $this->getAppliedFilters($this->getObjectStructure()) > 0;
+	}
+
 	public function customListActions(){
 		return array();
 	}
@@ -569,8 +577,48 @@ abstract class ObjectEditor extends Admin_Admin
 		} else {
 			$canSort = !isset($field['canSort']) || ($field['canSort'] == true);
 			if ($canSort && in_array($field['type'], ['checkbox', 'label', 'date', 'timestamp', 'enum', 'currency', 'text', 'integer', 'email', 'url'])) {
-				$filterFields[$field['label']] = $field;
+				$filterFields[$field['property']] = $field;
 			}
+		}
+	}
+
+	public function getAppliedFilters($filterFields){
+		$appliedFilters = [];
+		if (isset($_REQUEST['filterType'])){
+			foreach ($_REQUEST['filterType'] as $fieldName => $value){
+				$appliedFilters[$fieldName] = [
+					'fieldName' => $fieldName,
+					'filterType' => $value,
+					'filterValue' => isset($_REQUEST['filterValue'][$fieldName]) ? $_REQUEST['filterValue'][$fieldName] : '',
+					'field' => $filterFields[$fieldName]
+				];
+			}
+		}
+		return $appliedFilters;
+	}
+
+	function applyFilters(DataObject $object){
+		/** @noinspection PhpPossiblePolymorphicInvocationInspection */
+		$appliedFilters = $this->getAppliedFilters($object::getObjectStructure());
+		foreach ($appliedFilters as $fieldName => $filter){
+			if ($filter['filterType'] == 'matches'){
+				$object->$fieldName = $filter['filterValue'];
+			}elseif ($filter['filterType'] == 'contains'){
+				$object->whereAdd($fieldName . ' like ' . $object->escape('%' . $filter['filterValue'] . '%'));
+			}elseif ($filter['filterType'] == 'startsWith'){
+				$object->whereAdd($fieldName . ' like ' . $object->escape($filter['filterValue'] . '%'));
+			}elseif ($filter['filterType'] == 'beforeTime'){
+				$fieldValue = strtotime($filter['filterValue']);
+				if ($fieldValue !== false) {
+					$object->whereAdd($fieldName . ' < ' . $fieldValue);
+				}
+			}elseif ($filter['filterType'] == 'afterTime'){
+				$fieldValue = strtotime($filter['filterValue']);
+				if ($fieldValue !== false) {
+					$object->whereAdd($fieldName . ' > ' . $fieldValue);
+				}
+			}
+
 		}
 	}
 

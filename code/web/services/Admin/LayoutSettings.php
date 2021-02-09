@@ -22,6 +22,7 @@ class Admin_LayoutSettings extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage){
 		$object = new LayoutSetting();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Layout Settings')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());

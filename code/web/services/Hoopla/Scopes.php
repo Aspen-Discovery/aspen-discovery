@@ -21,6 +21,7 @@ class Hoopla_Scopes extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage){
 		$object = new HooplaScope();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

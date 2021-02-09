@@ -28,6 +28,7 @@ class WebBuilder_BasicPages extends ObjectEditor
 	{
 		$object = new BasicPage();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

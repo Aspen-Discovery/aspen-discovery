@@ -19,6 +19,7 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 
 		$object = new ClaimAuthorshipRequest();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasPermission('View Archive Authorship Claims')){
 			$homeLibrary = $user->getHomeLibrary();

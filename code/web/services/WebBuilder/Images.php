@@ -28,6 +28,7 @@ class WebBuilder_Images extends ObjectEditor
 	{
 		$object = new ImageUpload();
 		$object->type = 'web_builder_image';
+		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();

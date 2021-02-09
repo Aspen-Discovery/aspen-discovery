@@ -17,16 +17,17 @@ class Admin_LibraryArchiveSearchFacetSettings extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$facetsList = array();
-		$library = new LibraryArchiveSearchFacetSetting();
+		$object = new LibraryArchiveSearchFacetSetting();
 		if (isset($_REQUEST['libraryId'])){
 			$libraryId = $_REQUEST['libraryId'];
-			$library->libraryId = $libraryId;
+			$object->libraryId = $libraryId;
 		}
-		$library->orderBy($this->getSort());
-		$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		$library->find();
-		while ($library->fetch()){
-			$facetsList[$library->id] = clone $library;
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->find();
+		while ($object->fetch()){
+			$facetsList[$object->id] = clone $object;
 		}
 
 		return $facetsList;

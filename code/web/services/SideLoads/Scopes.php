@@ -39,9 +39,9 @@ class SideLoads_Scopes extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new SideLoadScope();
-		$object->orderBy('name');
 		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

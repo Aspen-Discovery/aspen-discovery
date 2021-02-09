@@ -18,6 +18,7 @@ class Admin_Obituaries extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage){
 		$object = new Obituary();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

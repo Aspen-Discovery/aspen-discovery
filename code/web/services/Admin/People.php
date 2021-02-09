@@ -18,6 +18,7 @@ class Admin_People extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage){
 		$object = new Person();
 		$object->orderBy($this->getSort() . ', lastName asc, firstName asc');
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

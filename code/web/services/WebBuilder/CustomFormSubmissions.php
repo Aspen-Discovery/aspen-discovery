@@ -29,6 +29,7 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 	{
 		$object = new CustomFormSubmission();
 		$formId = $_REQUEST['formId'];
+		$this->applyFilters($object);
 		$object->formId = $formId;
 		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);

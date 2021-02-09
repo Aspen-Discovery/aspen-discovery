@@ -62,6 +62,7 @@ class ILS_IndexingProfiles extends ObjectEditor
 
 		$object = new IndexingProfile();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {

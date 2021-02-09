@@ -30,6 +30,7 @@ class Enrichment_ARSettings extends ObjectEditor
 	{
 		$object = new ARSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();

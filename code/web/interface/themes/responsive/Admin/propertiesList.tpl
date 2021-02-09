@@ -13,8 +13,8 @@
 	</div>
 {/if}
 
-{if $canCompare || $canAddNew || $canBatchUpdate  || !empty($customListActions)}
-<form action="" method="get" id='compare' class="form-inline">
+{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter || !empty($customListActions)}
+<form action="" method="get" id='propertiesListForm' class="form-inline">
 {/if}
 	{if $canSort && count($sortableFields) > 0}
 		<div class="row">
@@ -31,6 +31,38 @@
 			</div>
 		</div>
 	{/if}
+	{if $canFilter}
+		<div id="filtersList" class="">
+			<div id="filters-accordion" class="panel-group">
+				<div class="panel {if count($appliedFilters) > 0}active{/if}" id="filtersPanel">
+					<a data-toggle="collapse" href="#filtersPanelBody">
+						<div class="panel-heading">
+							<div class="panel-title">
+								{translate text="Filters"}
+							</div>
+						</div>
+					</a>
+
+					<div id="filtersPanelBody" class="panel-collapse collapse {if count($appliedFilters) > 0}in{/if}">
+						<div class="panel-body">
+							<div id="activeFilters">
+								{foreach from=$appliedFilters key=filterName item=appliedFilter}
+									{include file='DataObjectUtil/filterField.tpl' filterField=$appliedFilter.field}
+								{/foreach}
+							</div>
+							<div id="filterActions">
+								<div class="row">
+									<div class="col-tn-5 col-xs-3"><button class="btn btn-default btn-sm" onclick="return AspenDiscovery.Admin.addFilterRow('{$module}', '{$toolName}');">{translate text="Add Filter"}</button></div>
+									<div class="col-tn-5 col-xs-3 col-tn-offset-2 col-xs-offset-6 text-right"><button class="btn btn-default btn-sm" onclick="$('#objectAction').val('list');$('#propertiesListForm').submit();">{translate text="Apply Filters"}</button></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<div class='adminTableRegion'>
 		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects">
 			<thead>
@@ -166,7 +198,7 @@
 			<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}')">{$customAction.label}</button>
 		{/foreach}
 	</div>
-{if $canCompare || $canAddNew || $canBatchUpdate || !empty($customListActions)}
+{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter|| !empty($customListActions)}
 </form>
 {/if}
 

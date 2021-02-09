@@ -30,6 +30,7 @@ class Enrichment_GoogleApiSettings extends ObjectEditor
 	{
 		$object = new GoogleApiSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();

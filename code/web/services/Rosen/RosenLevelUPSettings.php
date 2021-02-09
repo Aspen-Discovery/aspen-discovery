@@ -30,6 +30,7 @@ class Rosen_RosenLevelUPSettings extends ObjectEditor
 	{
 		$object = new RosenLevelUPSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

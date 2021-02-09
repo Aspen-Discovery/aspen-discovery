@@ -19,12 +19,13 @@ class Admin_PTypes extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage){
 		$libraryList = array();
 
-		$library = new PType();
-		$library->orderBy($this->getSort());
-		$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		$library->find();
-		while ($library->fetch()){
-			$libraryList[$library->id] = clone $library;
+		$object = new PType();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->find();
+		while ($object->fetch()){
+			$libraryList[$object->id] = clone $object;
 		}
 
 		return $libraryList;

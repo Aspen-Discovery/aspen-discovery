@@ -30,6 +30,7 @@ class OverDrive_Scopes extends ObjectEditor
 	{
 		$object = new OverDriveScope();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

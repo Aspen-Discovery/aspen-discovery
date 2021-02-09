@@ -422,4 +422,80 @@ class Admin_AJAX extends JSON_Action
 			];
 		}
 	}
+
+	function getFilterOptions(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		if ($tool->canFilter()){
+			$objectStructure = $tool->getObjectStructure();
+			$availableFilters = $tool->getFilterFields($objectStructure);
+			global $interface;
+			$interface->assign('availableFilters', $availableFilters);
+			if (count($availableFilters) == 0){
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => "There are no fields left to use as filters",
+				];
+			}else{
+				$modalBody = $interface->fetch('Admin/selectFilterForm.tpl');
+				return [
+					'success' => true,
+					'title' => 'Filter by',
+					'modalBody' => $modalBody,
+					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.getNewFilterRow('{$moduleName}', '{$toolName}');\" class=\"modal-buttons btn btn-primary\">" . translate('Add Filter') . "</button>"
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => "Sorry, this form cannot be filtered",
+			];
+		}
+	}
+
+	function getNewFilterRow(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+		$selectedFilter = $_REQUEST['selectedFilter'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		if ($tool->canFilter()){
+			$objectStructure = $tool->getObjectStructure();
+			$availableFilters = $tool->getFilterFields($objectStructure);
+			if (array_key_exists($selectedFilter, $availableFilters)){
+				global $interface;
+				$interface->assign('filterField', $availableFilters[$selectedFilter]);
+				return [
+					'success' => true,
+					'filterRow' => $interface->fetch('DataObjectUtil/filterField.tpl')
+				];
+			}else{
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => "Cannot filter by the selected field",
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => "Sorry, this form cannot be filtered",
+			];
+		}
+	}
 }

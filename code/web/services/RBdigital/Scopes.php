@@ -22,6 +22,7 @@ class RBdigital_Scopes extends ObjectEditor
 		$object = new RBdigitalScope();
 		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){

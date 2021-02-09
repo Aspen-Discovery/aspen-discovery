@@ -30,6 +30,7 @@ class Enrichment_NovelistSettings extends ObjectEditor
 	{
 		$object = new NovelistSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();

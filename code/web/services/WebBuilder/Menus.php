@@ -30,6 +30,7 @@ class WebBuilder_Menus extends ObjectEditor
 		$object = new WebBuilderMenu();
 		$object->parentMenuId = -1;
 		$object->libraryId = $library->libraryId;
+		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();

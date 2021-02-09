@@ -28,6 +28,7 @@ class WebBuilder_Videos extends ObjectEditor
 	{
 		$object = new FileUpload();
 		$object->type = 'web_builder_video';
+		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();

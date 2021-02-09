@@ -29,6 +29,7 @@ class WebBuilder_PDFs extends ObjectEditor
 		$object = new FileUpload();
 		$object->type = 'web_builder_pdf';
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

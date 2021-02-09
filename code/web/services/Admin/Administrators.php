@@ -15,7 +15,7 @@ class Admin_Administrators extends ObjectEditor
 		return 'Administrators';
 	}
 
-	//TODO: This currently does not respect loading by page
+	//TODO: This currently does not respect loading by page or filtering
 	function getAllObjects($page, $recordsPerPage){
 		require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 		$userRole = new UserRoles();

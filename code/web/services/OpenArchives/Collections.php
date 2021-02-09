@@ -22,6 +22,7 @@ class OpenArchives_Collections extends ObjectEditor {
 
 		$object = new OpenArchivesCollection();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){

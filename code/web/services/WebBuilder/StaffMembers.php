@@ -28,6 +28,7 @@ class WebBuilder_StaffMembers extends ObjectEditor
 	{
 		$object = new StaffMember();
 		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();

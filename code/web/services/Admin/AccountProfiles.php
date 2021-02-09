@@ -19,6 +19,7 @@ class Admin_AccountProfiles extends ObjectEditor {
 
 		$object = new AccountProfile();
 		$object->orderBy($this->getSort() . ', name');
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
