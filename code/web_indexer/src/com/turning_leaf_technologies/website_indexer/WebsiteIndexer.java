@@ -31,6 +31,7 @@ class WebsiteIndexer {
 	private String siteUrl;
 	private final String siteUrlShort;
 	private final boolean fullReload;
+	private final long maxPagesToIndex;
 	private final WebsiteIndexLogEntry logEntry;
 	private final Connection aspenConn;
 	private final HashMap<String, WebPage> existingPages = new HashMap<>();
@@ -48,7 +49,7 @@ class WebsiteIndexer {
 
 	private final ConcurrentUpdateSolrClient solrUpdateServer;
 
-	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
+	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, long maxPagesToIndex, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
 		this.websiteId = websiteId;
 		this.websiteName = websiteName;
 		this.searchCategory = searchCategory;
@@ -59,6 +60,7 @@ class WebsiteIndexer {
 		}
 		this.siteUrlShort = siteUrl.replaceAll("http[s]?://", "");
 		this.scopesToInclude = scopesToInclude;
+		this.maxPagesToIndex = maxPagesToIndex;
 
 		this.logEntry = logEntry;
 		this.aspenConn = aspenConn;
@@ -153,8 +155,8 @@ class WebsiteIndexer {
 			} else {
 				moreToProcess = false;
 			}
-			if (allLinks.size() > 2500){
-				logEntry.incErrors("Error processing website, found more than 2500 links in the site");
+			if (allLinks.size() > this.maxPagesToIndex){
+				logEntry.incErrors("Error processing website, found more than " + this.maxPagesToIndex + " links in the site");
 			}
 		}
 
