@@ -44,6 +44,14 @@
 			</select>
 		</div>
 	{elseif $filterField.type == 'enum'}
+		<div class="col-xs-8">
+			<input type="hidden" name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" value="matches"/>
+			<select name="filterValue[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="Type of filtering for {$filterField.label|escape:css}">
+				{foreach from=$filterField.values item=propertyName key=propertyValue}
+					<option value="{$propertyValue}" {if !empty($appliedFilter) && $appliedFilter.filterValue == $propertyValue}selected="selected"{/if}>{$propertyName}</option>
+				{/foreach}
+			</select>
+		</div>
 	{else}
 		<div class="col-xs-8">
 			&nbsp;Unhandled filter type {$filterField.type}
