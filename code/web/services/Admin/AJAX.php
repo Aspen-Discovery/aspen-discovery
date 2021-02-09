@@ -433,8 +433,8 @@ class Admin_AJAX extends JSON_Action
 		/** @var ObjectEditor $tool */
 		$tool = new $fullToolName();
 
-		if ($tool->canFilter()){
-			$objectStructure = $tool->getObjectStructure();
+		$objectStructure = $tool->getObjectStructure();
+		if ($tool->canFilter($objectStructure)){
 			$availableFilters = $tool->getFilterFields($objectStructure);
 			global $interface;
 			$interface->assign('availableFilters', $availableFilters);
@@ -473,8 +473,8 @@ class Admin_AJAX extends JSON_Action
 		/** @var ObjectEditor $tool */
 		$tool = new $fullToolName();
 
-		if ($tool->canFilter()){
-			$objectStructure = $tool->getObjectStructure();
+		$objectStructure = $tool->getObjectStructure();
+		if ($tool->canFilter($objectStructure)){
 			$availableFilters = $tool->getFilterFields($objectStructure);
 			if (array_key_exists($selectedFilter, $availableFilters)){
 				global $interface;

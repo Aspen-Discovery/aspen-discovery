@@ -161,4 +161,9 @@ class Admin_Administrators extends ObjectEditor
 	{
 		return false;
 	}
+
+	function canFilter($objectStructure)
+	{
+		return false;
+	}
 }

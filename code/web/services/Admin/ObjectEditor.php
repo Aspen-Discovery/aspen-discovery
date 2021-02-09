@@ -17,12 +17,13 @@ abstract class ObjectEditor extends Admin_Admin
 			$user->update();
 		}
 
+		$structure = $this->getObjectStructure();
 		$interface->assign('canAddNew', $this->canAddNew());
 		$interface->assign('canCopy', $this->canCopy());
 		$interface->assign('canCompare', $this->canCompare());
 		$interface->assign('canDelete', $this->canDelete());
 		$interface->assign('canSort', $this->canSort());
-		$interface->assign('canFilter', $this->canFilter());
+		$interface->assign('canFilter', $this->canFilter($structure));
 		$interface->assign('canBatchUpdate', $this->canBatchEdit());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
@@ -31,7 +32,6 @@ abstract class ObjectEditor extends Admin_Admin
 		$interface->assign('initializationJs', $this->getInitializationJs());
 
 		//Define the structure of the object.
-		$structure = $this->getObjectStructure();
 		$interface->assign('structure', $structure);
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
 		$customListActions = $this->customListActions();
@@ -373,8 +373,8 @@ abstract class ObjectEditor extends Admin_Admin
 
 	abstract function getDefaultSort();
 
-	public function canFilter(){
-		return ($this->getNumObjects() > 3) || $this->getAppliedFilters($this->getObjectStructure()) > 0;
+	public function canFilter($objectStructure){
+		return ($this->getNumObjects() > 3) || (count($this->getAppliedFilters($objectStructure)) > 0);
 	}
 
 	public function customListActions(){
@@ -618,7 +618,6 @@ abstract class ObjectEditor extends Admin_Admin
 					$object->whereAdd($fieldName . ' > ' . $fieldValue);
 				}
 			}
-
 		}
 	}
 

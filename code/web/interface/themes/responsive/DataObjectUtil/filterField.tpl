@@ -35,9 +35,18 @@
 				{rdelim});
 			</script>
 		</div>
+	{elseif $filterField.type == 'checkbox'}
+		<div class="col-xs-8">
+			<input type="hidden" name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" value="matches"/>
+			<select name="filterValue[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="Type of filtering for {$filterField.label|escape:css}">
+				<option value="1" {if !empty($appliedFilter) && $appliedFilter.filterValue == '1'}selected="selected"{/if}>{translate text="Selected"}</option>
+				<option value="0" {if !empty($appliedFilter) && $appliedFilter.filterValue == '0'}selected="selected"{/if}>{translate text="Deselected"}</option>
+			</select>
+		</div>
+	{elseif $filterField.type == 'enum'}
 	{else}
 		<div class="col-xs-8">
-			&nbsp;
+			&nbsp;Unhandled filter type {$filterField.type}
 		</div>
 	{/if}
 	<div class="col-xs-1 text-right">
