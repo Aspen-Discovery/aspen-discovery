@@ -113,7 +113,10 @@
     - [Region Facet](/Admin/HelpManual?page=GeographicRegion-Facets)
     - [Language Facet](/Admin/HelpManual?page=Language-Facet)
     - [Awards Facet](/Admin/HelpManual?page=Awards-Facet)
-  - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
+    - [Item Type Facet](/Admin/HelpManual?page=itemtype-facet)
+    - [Collection Facet](/Admin/HelpManual?page=Collection-Facet)
+    - [Shelf Location Facet](/Admin/HelpManual?page=ShelfLocation-Facet)
+- [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - System Messages
 - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
 
