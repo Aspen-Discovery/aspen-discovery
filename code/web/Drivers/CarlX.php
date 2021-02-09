@@ -1253,6 +1253,8 @@ class CarlX extends AbstractIlsDriver{
 				$fine->FineAmountOutstanding = 0;
 				if ($fine->FineAmountPaid > 0) {
 					$fine->FineAmountOutstanding = $fine->FineAmount - $fine->FineAmountPaid;
+				} else {
+					$fine->FineAmountOutstanding = $fine->FineAmount;
 				}
 
 				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
@@ -1260,8 +1262,12 @@ class CarlX extends AbstractIlsDriver{
 				}
 				$fine->Identifier = str_replace('#', '', $fine->Identifier);
 
-				if ($fine->TransactionCode == 'FS' && $fine->FeeNotes == 'COLLECTION') {
+				if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes,'COLLECTION') !== false) {
 					$fineType = 'COLLECTION AGENCY';
+					$fine->FeeNotes = 'COLLECTION AGENCY';
+				} elseif ($fine->TransactionCode == 'F2') {
+					$fineType = $fine->TransactionCode;
+					$fine->FeeNotes .= ' : Processing fee';
 				} else {
 					$fineType = $fine->TransactionCode;
 				}

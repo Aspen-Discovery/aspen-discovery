@@ -80,7 +80,7 @@ class Nashville extends CarlX {
 	}
 
 	public function getFineSystem($branchId){
-		if (($branchId >= 30 && $branchId <= 178 && $branchId != 42 && $branchId != 171) || ($branchId >= 180 && $branchId <= 212 && $branchId != 185 && $branchId != 187)) {
+		if (($branchId >= 30 && $branchId <= 178 && $branchId != 42 && $branchId != 167 && $branchId != 171) || ($branchId >= 180 && $branchId <= 212 && $branchId != 185 && $branchId != 187)) {
 			return "MNPS";
 		} else {
 			return "NPL";
