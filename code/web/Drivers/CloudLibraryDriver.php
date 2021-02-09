@@ -642,10 +642,12 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$apiPath = "/cirrus/library/{$settings->libraryId}/item/status/$patronId/$itemId";
 		$itemStatusInfo = $this->callCloudLibraryUrl($settings, $apiPath);
 		if ($this->curlWrapper->getResponseCode() == 200){
-			/** @var SimpleXMLElement $itemStatus */
 			$itemStatus = simplexml_load_string($itemStatusInfo);
 			$this->curlWrapper = new CurlWrapper();
 			return (string)$itemStatus->DocumentStatus->status;
+		}else if ($this->curlWrapper->getResponseCode() == 403){
+			$errorMessage = simplexml_load_string($itemStatusInfo);
+			return (string)$errorMessage->Message;
 		}else{
 			return false;
 		}

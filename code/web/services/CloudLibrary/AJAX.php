@@ -241,6 +241,11 @@ class CloudLibrary_AJAX extends JSON_Action
 				'result' => true,
 				'message' => translate(['text' => 'cloud_library_not_available', 'defaultText' => 'Sorry, this title is no longer available.'])
 			];
+		} elseif ($itemStatus == 'Authentication failed') {
+			$result = [
+				'result' => true,
+				'message' => translate(['text' => 'cloud_library_authentication_failed', 'defaultText' => 'We were unable to authenticate your account in Cloud Library. If this problem persists, please contact the library.'])
+			];
 		} else {
 			$result = [
 				'result' => true,
