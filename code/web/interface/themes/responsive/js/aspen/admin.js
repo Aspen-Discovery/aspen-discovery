@@ -166,6 +166,9 @@ AspenDiscovery.Admin = (function(){
 				var selectedField = $('#fieldSelector').val();
 				var selectedFieldControl = $('#' + selectedField);
 				var newValue;
+				if (selectedFieldControl.prop("type") === undefined){
+					selectedFieldControl = $('#' + selectedField + "Select");
+				}
 				if (selectedFieldControl.prop("type") === 'checkbox'){
 					newValue = selectedFieldControl.prop("checked") ? 1 : 0;
 				}else {

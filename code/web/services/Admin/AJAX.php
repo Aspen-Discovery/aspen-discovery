@@ -322,6 +322,7 @@ class Admin_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getBatchUpdateFieldForm(){
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
@@ -354,12 +355,20 @@ class Admin_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function doBatchUpdateField(){
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$batchUpdateScope = $_REQUEST['batchUpdateScope'];
 		$selectedField = $_REQUEST['selectedField'];
-		$newValue = $_REQUEST['newValue'];
+		if (isset($_REQUEST['newValue'])) {
+			$newValue = $_REQUEST['newValue'];
+		}else{
+			return [
+				'success' => false,
+				'message' => "New Value was not provided",
+			];
+		}
 
 		/** @noinspection PhpIncludeInspection */
 		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
