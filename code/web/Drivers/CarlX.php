@@ -715,6 +715,11 @@ class CarlX extends AbstractIlsDriver{
 		return $result;
 	}
 
+	/**
+	 * @param User $user
+	 * @param boolean $canUpdateContactInfo
+	 * @return array
+	 */
 	public function updatePatronInfo($user, $canUpdateContactInfo) {
 		$result = [
 			'success' => false,
@@ -729,9 +734,11 @@ class CarlX extends AbstractIlsDriver{
 			$request->Patron->Email  = $_REQUEST['email'];
 			if (isset($_REQUEST['phone'])) {
 				$request->Patron->Phone1 = $_REQUEST['phone'];
+				$user->phone = $_REQUEST['phone'];
 			}
 			if (isset($_REQUEST['workPhone'])){
 				$request->Patron->Phone2 = $_REQUEST['workPhone'];
+				$user->_workPhone = $_REQUEST['workPhone'];
 			}
 			if (!isset($request->Addresses)){
 				$request->Patron->Addresses = new stdClass();
@@ -742,15 +749,19 @@ class CarlX extends AbstractIlsDriver{
 			$request->Patron->Addresses->Address->Type        = 'Primary';
 			if (isset($_REQUEST['address1'])) {
 				$request->Patron->Addresses->Address->Street = $_REQUEST['address1'];
+				$user->_address1 = $_REQUEST['address1'];
 			}
 			if (isset($_REQUEST['city'])) {
 				$request->Patron->Addresses->Address->City = $_REQUEST['city'];
+				$user->_city = $_REQUEST['city'];
 			}
 			if (isset($_REQUEST['state'])) {
 				$request->Patron->Addresses->Address->State = $_REQUEST['state'];
+				$user->_state = $_REQUEST['state'];
 			}
 			if (isset($_REQUEST['zip'])) {
 				$request->Patron->Addresses->Address->PostalCode = $_REQUEST['zip'];
+				$user->_zip = $_REQUEST['zip'];;
 			}
 			if (isset($_REQUEST['emailReceiptFlag']) && ($_REQUEST['emailReceiptFlag'] == 'yes' || $_REQUEST['emailReceiptFlag'] == 'on')){
 				// if set check & on check must be combined because checkboxes/radios don't report 'offs'
@@ -772,10 +783,12 @@ class CarlX extends AbstractIlsDriver{
 			}
 			if (isset($_REQUEST['phoneType'])) {
 				$request->Patron->PhoneType = $_REQUEST['phoneType'];
+				$user->_phoneType = $_REQUEST['phoneType'];
 			}
 
 			if (isset($_REQUEST['notices'])){
 				$request->Patron->EmailNotices = $_REQUEST['notices'];
+				$user->_notices = $_REQUEST['notices'];
 			}
 
 			if (!empty($_REQUEST['pickupLocation'])) {
@@ -783,6 +796,9 @@ class CarlX extends AbstractIlsDriver{
 				if ($homeLocation->get('code', $_REQUEST['pickupLocation'])) {
 					$homeBranchCode = strtoupper($_REQUEST['pickupLocation']);
 					$request->Patron->DefaultBranch = $homeBranchCode;
+					$user->homeLocationId = $homeLocation->locationId;
+					$user->_homeLocationCode = $homeLocation->code;
+					$user->_homeLocation = $homeLocation;
 				}
 			}
 
@@ -796,6 +812,7 @@ class CarlX extends AbstractIlsDriver{
 				}else{
 					$result['success'] = true;
 					$result['messages'][] = 'Your account was updated successfully.';
+					$user->update();
 				}
 
 			} else {
@@ -1999,6 +2016,7 @@ EOT;
 			} else if ($showOverdueOnly == 'overdue') {
 				$statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L')";
 			}
+			/** @noinspection SqlResolve */
 			$sql = <<<EOT
 				select
 				  patronbranch.branchcode AS Home_Lib_Code
