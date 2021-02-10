@@ -117,7 +117,7 @@
 - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
 
 #### Patron Account
-  - [Checked Out Titles](/Admin/HelpManual?page=Checked-Out-Titles)
+  - [Checked Out Titles](/Admin/HelpManual?page=Check-Out-Titles)
   - [Titles On Hold](/Admin/HelpManual?page=Titles-On-Hold)
   - [Reading History](/Admin/HelpManual?page=Reading-History)
   - [Paying Fines/Fees](/Admin/HelpManual?page=Fines-and-Fees)
