@@ -153,8 +153,13 @@ class GroupedWorksSolrConnector extends Solr
 			if (isset($originalResult['language']) && count($originalResult['language']) == 1) {
 				$options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
 			}
-			if (isset($originalResult['series'])) {
-				$options['fq'][] = '!series:"' . $originalResult['series'][0] . '"';
+			//Don't include results from the same series unless the library does not have NoveList
+			require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';;
+			$novelistSettings = new NovelistSetting();
+			if ($novelistSettings->count() > 0) {
+				if (isset($originalResult['series'])) {
+					$options['fq'][] = '!series:"' . $originalResult['series'][0] . '"';
+				}
 			}
 			//Don't want to get other editions of the same work (that's a different query)
 		}
