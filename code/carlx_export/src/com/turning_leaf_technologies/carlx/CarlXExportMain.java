@@ -490,6 +490,16 @@ public class CarlXExportMain {
 				if (!getChangedItemsFromCarlXApi(beginTimeString, updatedItemIDs, createdItemIDs, deletedItemIDs)) {
 					//Halt execution
 					logEntry.incErrors("Failed to getChangedItemsFromCarlXApi, exiting");
+					//This happens due to bad data within CARL.X and the only fix is to skip the bad record by increasing the
+					//lastUpdateOfChangedRecords and trying again. We will increase the timeout by 30 seconds at a time.
+					if (indexingProfile.getLastUpdateOfChangedRecords() != 0) {
+						PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+						updateVariableStmt.setLong(1, indexingProfile.getLastUpdateOfChangedRecords() + 30);
+						updateVariableStmt.setLong(2, indexingProfile.getId());
+						updateVariableStmt.executeUpdate();
+						updateVariableStmt.close();
+						logEntry.addNote("Increased lastUpdateOfChangedRecords by 30 seconds to skip the bad record");
+					}
 					return totalChanges;
 				} else {
 					logger.info("Loaded updated items");
