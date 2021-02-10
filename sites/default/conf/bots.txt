@@ -1,6 +1,7 @@
 ; User agent for bots and link checkers that should not be tracked by Aspen-Discovery
 ; Loaded from http://www.useragentstring.com/pages/Crawlerlist/
 Mozilla/5.0 (compatible; 008/0.83; http://www.80legs.com/webcrawler.html) Gecko/2008032620
+ABCdatos BotLink/1.0.2 (test links)
 ABACHOBot
 Accoona-AI-Agent/1.1.2 (aicrawler at accoonabot dot com)
 Accoona-AI-Agent/1.1.2
@@ -9,6 +10,7 @@ Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0) AddSugarSpiderBot www.idealob
 Mozilla/5.0 (compatible; AnyApexBot/1.0; +http://www.anyapex.com/bot.html)
 Mozilla/4.0 (compatible; Arachmo)
 Mozilla/4.0 (compatible; B-l-i-t-z-B-O-T)
+Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)
 Baiduspider+(+http://www.baidu.com/search/spider_jp.html)
 Baiduspider+(+http://www.baidu.com/search/spider.htm)
 BaiDuSpider
@@ -19,6 +21,7 @@ BillyBobBot/1.0 (+http://www.billybobbot.com/crawler/)
 Bimbot/1.0
 Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)
 Mozilla/5.0 (compatible; bingbot/2.0 +http://www.bing.com/bingbot.htm)
+Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)
 Mozilla/4.0 (compatible; BlitzBot)
 BlitzBOT@tricus.net (Mozilla compatible)
 BlitzBOT@tricus.com (Mozilla compatible)
@@ -57,11 +60,17 @@ DiamondBot
 Mozilla/5.0 (compatible; discobot/1.0; +http://discoveryengine.com/discobot.html)
 Mozilla/5.0 (compatible; DotBot/1.1; http://www.dotnetdotcom.org/, crawler@dotnetdotcom.org)
 DotBot/1.0.1 (http://www.dotnetdotcom.org/#info, crawler@dotnetdotcom.org)
+DuckDuckBot/1.0; (+http://duckduckgo.com/duckduckbot.html)
 EmeraldShield.com WebBot (http://www.emeraldshield.com/webbot.aspx)
 envolk[ITS]spider/1.6 (+http://www.envolk.com/envolkspider.html)
 envolk[ITS]spider/1.6 ( http://www.envolk.com/envolkspider.html)
 EsperanzaBot(+http://www.esperanza.to/bot/)
 Exabot/2.0
+Mozilla/5.0 (compatible; Konqueror/3.5; Linux) KHTML/3.5.5 (like Gecko) (Exabot-Thumbnails)
+Mozilla/5.0 (compatible; Exabot/3.0; +http://www.exabot.com/go/robot)
+facebot
+facebookexternalhit/1.0 (+http://www.facebook.com/externalhit_uatext.php)
+facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)
 FAST Enterprise Crawler 6 used by Schibsted (webcrawl@schibstedsok.no)
 FAST Enterprise Crawler 6 / Scirus scirus-crawler@fast.no; http://www.scirus.com/srsapp/contactus/
 FAST Enteprise Crawler/6 (www dot fastsearch dot com)
@@ -124,7 +133,15 @@ Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
 Googlebot/2.1 (+http://www.googlebot.com/bot.html)
 Googlebot/2.1 (+http://www.google.com/bot.html)
 Googlebot-Image/1.0
+Googlebot-News
+Googlebot-Video/1.0
 GoogleStackdriverMonitoring-UptimeChecks(https://cloud.google.com/monitoring)
+SAMSUNG-SGH-E250/1.0 Profile/MIDP-2.0 Configuration/CLDC-1.1 UP.Browser/6.2.3.3.c.1.101 (GUI) MMP/2.0 (compatible; Googlebot-Mobile/2.1; +http://www.google.com/bot.html)
+Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
+(compatible; Mediapartners-Google/2.1; +http://www.google.com/bot.html)
+Mediapartners-Google
+AdsBot-Google (+http://www.google.com/adsbot.html)
+AdsBot-Google-Mobile-Apps
 Mozilla/5.0 GurujiBot/1.0 (+http://www.guruji.com/en/WebmasterFAQ.html)
 Mozilla/5.0 GurujiBot/1.0 ( http://www.guruji.com/en/WebmasterFAQ.html)
 Mozilla/5.0 (compatible; GurujiBot/1.0; +http://www.guruji.com/en/WebmasterFAQ.html)
@@ -155,6 +172,7 @@ ia_archiver/8.2 (Windows 7.6; en-US;)
 ia_archiver/8.1 (Windows 2000 1.9; en-US;)
 ia_archiver/8.0 (Windows 2.4; en-US;)
 ia_archiver
+ia_archiver (+http://www.alexa.com/site/help/webmasters; crawler@alexa.com)
 iCCrawler (http://www.iccenter.net/bot.htm)
 ichiro/4.0 (http://help.goo.ne.jp/door/crawler.html)
 ichiro/3.0 (http://help.goo.ne.jp/door/crawler.html)
@@ -341,6 +359,11 @@ Mozilla/5.0 (compatible; SiteBot/0.1; http://www.sitebot.org/robot/)
 Snappy/1.1 ( http://www.urltrends.com/ )
 sogou spider
 Sosospider+(+http://help.soso.com/webspider.htm)
+Sogou Pic Spider/3.0( http://www.sogou.com/docs/help/webmasters.htm#07)
+Sogou head spider/3.0( http://www.sogou.com/docs/help/webmasters.htm#07)
+Sogou web spider/4.0(+http://www.sogou.com/docs/help/webmasters.htm#07)
+Sogou Orion spider/3.0( http://www.sogou.com/docs/help/webmasters.htm#07)
+Sogou-Test-Spider/4.0 (compatible; MSIE 5.5; Windows 98)
 Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) Speedy Spider (http://www.entireweb.com/about/search_tech/speedy_spider/)
 Mozilla/5.0 (compatible; Speedy Spider; http://www.entireweb.com/about/search_tech/speedy_spider/)
 Speedy Spider (Entireweb; Beta/1.3; http://www.entireweb.com/about/search_tech/speedyspider/)

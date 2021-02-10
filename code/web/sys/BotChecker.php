@@ -23,12 +23,12 @@ class BotChecker{
 			$isBot = $memCache->get("bot_by_user_agent_" . $userAgent);
 			if ($isBot === FALSE){
 				global $serverName;
-				if (file_exists('../../sites/' . $serverName . '/conf/bots.ini')){
-					$fileHandle = fopen('../../sites/' . $serverName . '/conf/bots.ini', 'r');
-				}elseif (file_exists('../../sites/default/conf/bots.ini')){
-					$fileHandle = fopen('../../sites/default/conf/bots.ini', 'r');
+				if (file_exists('../../sites/' . $serverName . '/conf/bots.txt')){
+					$fileHandle = fopen('../../sites/' . $serverName . '/conf/bots.txt', 'r');
+				}elseif (file_exists('../../sites/default/conf/bots.txt')){
+					$fileHandle = fopen('../../sites/default/conf/bots.txt', 'r');
 				}else{
-					$logger->log("Did not find bots.ini file, cannot detect bots", Logger::LOG_ERROR);
+					$logger->log("Did not find bots.txt file, cannot detect bots", Logger::LOG_ERROR);
 					return false;
 				}
 
