@@ -53,6 +53,6 @@
 
 ## Video Tutorial 
 
-[![Library System and Locations](/manual/images/library-system-and-locations.jpg)](https://youtu.be/d720bfDRSUI)
+[![Library System and Locations](/manual/images/library-systems-and-locations.jpg)](https://youtu.be/d720bfDRSUI)
 
 [Watch on Youtube](https://youtu.be/d720bfDRSUI)
