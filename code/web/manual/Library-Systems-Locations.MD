@@ -24,6 +24,6 @@
 
 ## Video Tutorial
 
-[![Library System and Locations](/manual/images/Library-System-and-Locations.jpg)](https://youtu.be/H51Q4jdd9MM)
+[![Library System and Locations](/manual/images/Library-Systems-and-Locations.jpg)](https://youtu.be/H51Q4jdd9MM)
 
 [Watch on Youtube](https://youtu.be/H51Q4jdd9MM)
