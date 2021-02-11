@@ -86,7 +86,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 
 				long lastThreadsCompleted = 0;
 				int numTimesCompletedThreadsHasNotChanged = 0;
-				while ((executor.getCompletedTaskCount() + numSkipped) < numUsersToUpdate) {
+				while ((executor.getCompletedTaskCount() + numSkipped + numAlreadyUpToDate) < numUsersToUpdate) {
 					if (lastThreadsCompleted != (executor.getCompletedTaskCount() + numSkipped)){
 						numTimesCompletedThreadsHasNotChanged = 0;
 						lastThreadsCompleted = (executor.getCompletedTaskCount() + numSkipped);
