@@ -28,7 +28,8 @@ class WebBuilder_PDFs extends ObjectEditor
 	{
 		$object = new FileUpload();
 		$object->type = 'web_builder_pdf';
-		$object->orderBy('title');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -36,6 +37,11 @@ class WebBuilder_PDFs extends ObjectEditor
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'title asc';
 	}
 
 	function updateFromUI($object, $structure){

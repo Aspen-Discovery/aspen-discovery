@@ -2575,7 +2575,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 					}
 				}
 			}
-			$description = str_pad($volumeOrder, 10, '0', STR_PAD_LEFT) . $description;
+			$key = str_pad($volumeOrder, 10, '0', STR_PAD_LEFT) . $description;
 
 			$section = 'Other Locations';
 			if ($item->locallyOwned) {
@@ -2595,7 +2595,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 				}
 				$relatedRecord->addLocalCopies($item->numCopies);
 				$relatedRecord->setHasLocalItem(true);
-				$key = '1 ' . $description;
+				$key = '1 ' . $key;
 				$sectionId = 1;
 				$section = 'In this library';
 			} elseif ($item->libraryOwned) {
@@ -2612,15 +2612,15 @@ class GroupedWorkDriver extends IndexRecordDriver
 				if ($searchLocation == null || $item->isEContent) {
 					$relatedRecord->setHasLocalItem(true);
 				}
-				$key = '5 ' . $description;
+				$key = '5 ' . $key;
 				$sectionId = 5;
 				$section = $library->displayName;
 			} elseif ($item->isOrderItem) {
-				$key = '7 ' . $description;
+				$key = '7 ' . $key;
 				$sectionId = 7;
 				$section = 'On Order';
 			} else {
-				$key = '6 ' . $description;
+				$key = '6 ' . $key;
 				$sectionId = 6;
 			}
 

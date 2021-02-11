@@ -21,13 +21,19 @@ class Websites_Settings extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage){
 		$object = new WebsiteIndexSetting();
 		$object->deleted = 0;
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'id asc';
 	}
 	function getObjectStructure(){
 		return WebsiteIndexSetting::getObjectStructure();

@@ -19,13 +19,14 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 
 		$object = new ClaimAuthorshipRequest();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasPermission('View Archive Authorship Claims')){
 			$homeLibrary = $user->getHomeLibrary();
 			$archiveNamespace = $homeLibrary->archiveNamespace;
 			$object->whereAdd("pid LIKE '{$archiveNamespace}:%'");
 		}
-		$object->orderBy('dateRequested desc');
+		$object->orderBy($this->getSort());
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
@@ -33,6 +34,11 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'dateRequested desc';
+	}
+
 	function getObjectStructure(){
 		return ClaimAuthorshipRequest::getObjectStructure();
 	}

@@ -8870,6 +8870,12 @@ a.placard-link {
   flex-basis: 0;
   padding: 5px;
 }
+.previewFrame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  min-height: 50vh;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;
@@ -11171,6 +11177,16 @@ a.browse-thumbnail-sorted.active {
 .permissionDescription {
   font-style: italic;
   font-size: 10px;
+}
+#filtersList {
+  padding: 8px 0;
+}
+#filterActions {
+  padding-top: 4px;
+}
+#activeFilters select,
+#activeFilters input {
+  width: 100%;
 }
 .staff-member {
   padding: 5px 10px;

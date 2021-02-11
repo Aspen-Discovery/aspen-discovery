@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
 
-class RosenLevelUPSettings extends ObjectEditor
+class Rosen_RosenLevelUPSettings extends ObjectEditor
 {
 	function getObjectType()
 	{
@@ -30,12 +30,22 @@ class RosenLevelUPSettings extends ObjectEditor
 	{
 		$object = new RosenLevelUPSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'id asc';
+	}
+
+	function canSort()
+	{
+		return false;
 	}
 
 	function getObjectStructure()

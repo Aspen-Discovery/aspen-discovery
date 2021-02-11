@@ -109,7 +109,6 @@ class UserList extends DataObject
 		$this->dateUpdated = time();
 		$result = parent::update();
 		if ($result) {
-			$this->flushUserListBrowseCategory();
 			global $memCache;
 			$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		}
@@ -597,19 +596,6 @@ class UserList extends DataObject
 		}
 
 		return $results;
-	}
-	private function flushUserListBrowseCategory(){
-		// Check if the list is a part of a browse category and clear the cache.
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$userListBrowseCategory = new BrowseCategory();
-		$userListBrowseCategory->sourceListId = $this->id;
-		if ($userListBrowseCategory->find()) {
-			while ($userListBrowseCategory->fetch()) {
-				$userListBrowseCategory->deleteCachedBrowseCategoryResults();
-			}
-		}
-		$userListBrowseCategory->__destruct();
-		$userListBrowseCategory = null;
 	}
 
 	public static function getUserListsForSaveForm($source, $sourceId){

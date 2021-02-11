@@ -322,6 +322,7 @@ class Admin_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getBatchUpdateFieldForm(){
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
@@ -334,8 +335,8 @@ class Admin_AJAX extends JSON_Action
 		$tool = new $fullToolName();
 
 		if ($tool->canBatchEdit()) {
-
-			$batchFormatFields = $tool->getBatchFormatFields();
+			$structure = $tool->getObjectStructure();
+			$batchFormatFields = $tool->getBatchUpdateFields($structure);
 			global $interface;
 			$interface->assign('batchFormatFields', $batchFormatFields);
 
@@ -354,12 +355,20 @@ class Admin_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function doBatchUpdateField(){
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$batchUpdateScope = $_REQUEST['batchUpdateScope'];
 		$selectedField = $_REQUEST['selectedField'];
-		$newValue = $_REQUEST['newValue'];
+		if (isset($_REQUEST['newValue'])) {
+			$newValue = $_REQUEST['newValue'];
+		}else{
+			return [
+				'success' => false,
+				'message' => "New Value was not provided",
+			];
+		}
 
 		/** @noinspection PhpIncludeInspection */
 		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
@@ -368,7 +377,8 @@ class Admin_AJAX extends JSON_Action
 		$tool = new $fullToolName();
 
 		if ($tool->canBatchEdit()) {
-			$batchFormatFields = $tool->getBatchFormatFields();
+			$structure = $tool->getObjectStructure();
+			$batchFormatFields = $tool->getBatchUpdateFields($structure);
 			$fieldStructure = null;
 			foreach ($batchFormatFields as $field){
 				if ($field['property'] == $selectedField){
@@ -418,6 +428,82 @@ class Admin_AJAX extends JSON_Action
 				'success' => false,
 				'title' => 'Error Processing Update',
 				'message' => "Sorry, you don't have permission to batch edit",
+			];
+		}
+	}
+
+	function getFilterOptions(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		$objectStructure = $tool->getObjectStructure();
+		if ($tool->canFilter($objectStructure)){
+			$availableFilters = $tool->getFilterFields($objectStructure);
+			global $interface;
+			$interface->assign('availableFilters', $availableFilters);
+			if (count($availableFilters) == 0){
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => "There are no fields left to use as filters",
+				];
+			}else{
+				$modalBody = $interface->fetch('Admin/selectFilterForm.tpl');
+				return [
+					'success' => true,
+					'title' => 'Filter by',
+					'modalBody' => $modalBody,
+					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.getNewFilterRow('{$moduleName}', '{$toolName}');\" class=\"modal-buttons btn btn-primary\">" . translate('Add Filter') . "</button>"
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => "Sorry, this form cannot be filtered",
+			];
+		}
+	}
+
+	function getNewFilterRow(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+		$selectedFilter = $_REQUEST['selectedFilter'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		$objectStructure = $tool->getObjectStructure();
+		if ($tool->canFilter($objectStructure)){
+			$availableFilters = $tool->getFilterFields($objectStructure);
+			if (array_key_exists($selectedFilter, $availableFilters)){
+				global $interface;
+				$interface->assign('filterField', $availableFilters[$selectedFilter]);
+				return [
+					'success' => true,
+					'filterRow' => $interface->fetch('DataObjectUtil/filterField.tpl')
+				];
+			}else{
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => "Cannot filter by the selected field",
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => "Sorry, this form cannot be filtered",
 			];
 		}
 	}

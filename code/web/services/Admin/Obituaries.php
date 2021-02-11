@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
-class Obituaries extends ObjectEditor
+class Admin_Obituaries extends ObjectEditor
 {
 	function getObjectType(){
 		return 'Obituary';
@@ -17,7 +17,8 @@ class Obituaries extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new Obituary();
-		$object->orderBy('date');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -25,6 +26,10 @@ class Obituaries extends ObjectEditor
 			$objectList[$object->obituaryId] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'date asc';
 	}
 	function getObjectStructure(){
 		return Obituary::getObjectStructure();

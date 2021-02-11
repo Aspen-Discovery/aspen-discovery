@@ -30,12 +30,18 @@ class Enrichment_NewYorkTimesSettings extends ObjectEditor
 	{
 		$object = new NewYorkTimesSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'id asc';
 	}
 
 	function getObjectStructure()

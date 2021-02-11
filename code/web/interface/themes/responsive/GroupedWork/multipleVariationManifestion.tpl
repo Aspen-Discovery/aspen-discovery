@@ -31,9 +31,9 @@
 					<div class="btn-group btn-group-vertical btn-block">
 						{foreach from=$variation->getActions() item=curAction}
 							{if $curAction.url && strlen($curAction.url) > 0}
-								<a href="{$curAction.url}" class="btn btn-sm btn-action btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{$curAction.title|translate}</a>
+								<a href="{$curAction.url}" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{$curAction.title|translate}</a>
 							{else}
-								<a href="#" class="btn btn-sm btn-action btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{$curAction.title|translate}</a>
+								<a href="#" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{$curAction.title|translate}</a>
 							{/if}
 						{/foreach}
 					</div>

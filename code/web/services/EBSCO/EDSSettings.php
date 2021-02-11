@@ -30,12 +30,18 @@ class EBSCO_EDSSettings extends ObjectEditor
 	{
 		$object = new EDSSettings();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 
 	function getObjectStructure()

@@ -20,9 +20,10 @@ class Admin_Placards extends ObjectEditor
 		return UserAccount::userHasPermission(['Administer All Placards','Administer Library Placards']);
 	}
 	function getAllObjects($page, $recordsPerPage){
-		$placard = new Placard();
-		$placard->orderBy('title');
-		$placard->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object = new Placard();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingPlacards = true;
 		if (!UserAccount::userHasPermission('Administer All Placards')){
 			$libraryPlacard = new PlacardLibrary();
@@ -35,20 +36,24 @@ class Admin_Placards extends ObjectEditor
 					$placardsForLibrary[] = $libraryPlacard->placardId;
 				}
 				if (count($placardsForLibrary) > 0) {
-					$placard->whereAddIn('id', $placardsForLibrary, false);
+					$object->whereAddIn('id', $placardsForLibrary, false);
 				}else{
 					$userHasExistingPlacards = false;
 				}
 			}
 		}
-		$placard->find();
+		$object->find();
 		$list = array();
 		if ($userHasExistingPlacards) {
-			while ($placard->fetch()) {
-				$list[$placard->id] = clone $placard;
+			while ($object->fetch()) {
+				$list[$object->id] = clone $object;
 			}
 		}
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'title asc';
 	}
 	function getObjectStructure(){
 		return Placard::getObjectStructure();

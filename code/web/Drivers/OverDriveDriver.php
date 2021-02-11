@@ -108,6 +108,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 				$tokenData = json_decode($return);
 				if ($tokenData){
 					$memCache->set('overdrive_token_' . $settings->id . '_' . $this->scope->id, $tokenData, $tokenData->expires_in - 10);
+				}else{
+					$this->incrementStat('numConnectionFailures');
 				}
 			}else{
 				//OverDrive is not configured
@@ -192,11 +194,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 					}else{
 						if (property_exists($patronTokenData, 'expires_in')){
 							$memCache->set("overdrive_patron_token_{$settings->id}_{$this->scope->id}_$patronBarcode", $patronTokenData, $patronTokenData->expires_in - 10);
+						}else{
+							$this->incrementStat('numConnectionFailures');
 						}
 					}
 				}
 			}else{
 				$logger->log("Could not connect to OverDrive", Logger::LOG_ERROR);
+				$this->incrementStat('numConnectionFailures');
 				return false;
 			}
 		}
@@ -468,6 +473,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$response = $this->_callPatronUrl($patron, $url);
 		if ($response == false){
 			//The user is not authorized to use OverDrive
+			$this->incrementStat('numApiErrors');
 			return array();
 		}
 
@@ -497,7 +503,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 						'userId' => $patron->id,
 					];
 					$supplementalMaterial = $this->loadCheckoutFormatInformation($curTitle, $supplementalMaterial);
-					$parentCheckout['supplementalMaterials'][] = $supplementalMaterial;
+					if (isset($supplementalMaterial['selectedFormat']) && !empty($supplementalMaterial['selectedFormat']['format'])) {
+						$parentCheckout['supplementalMaterials'][] = $supplementalMaterial;
+					}
 					$checkedOutTitles['OverDrive' . $parentCheckoutId] = $parentCheckout;
 				}else{
 					//Load data from api
@@ -553,6 +561,43 @@ class OverDriveDriver extends AbstractEContentDriver{
 							$checkout['title'] = $overDriveRecord->getTitle();
 							$checkout['author'] = $overDriveRecord->getAuthor();
 							$checkout['linkUrl'] = $overDriveRecord->getLinkUrl(false);
+						}else{
+							//The title doesn't exist in the collection - this happens with Magazines right now (early 2021).
+							//Load the title information from metadata, but don't link it.
+							$overDriveMetadata = $this->getProductMetadata($checkout['overDriveId']);
+							if ($overDriveMetadata){
+								$checkout['format'] = $overDriveMetadata->mediaType;
+								$checkout['coverUrl'] = $overDriveMetadata->images->cover150Wide->href;
+								$checkout['title'] = $overDriveMetadata->title;
+								$checkout['author'] = $overDriveMetadata->publisher;
+								//Magazines link to the searchable record by the parent magazine title id
+								if (!empty($overDriveMetadata->parentMagazineTitleId)){
+									require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
+									$overDriveProduct = new OverDriveAPIProduct();
+									$overDriveProduct->crossRefId = $overDriveMetadata->parentMagazineTitleId;
+									if ($overDriveProduct->find(true)){
+										//we have the product, now we need to find the grouped work id
+										require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+										$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
+										$groupedWorkPrimaryIdentifier->type = 'overdrive';
+										$groupedWorkPrimaryIdentifier->identifier = $overDriveProduct->overdriveId;
+										if ($groupedWorkPrimaryIdentifier->find(true)){
+											require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+											$groupedWork = new GroupedWork();
+											$groupedWork->id = $groupedWorkPrimaryIdentifier->grouped_work_id;
+											if ($groupedWork->find(true)){
+												$checkout['groupedWorkId'] = $groupedWork->permanent_id;
+												require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+												$groupedWorkDriver = new GroupedWorkDriver($groupedWork->permanent_id);
+												$checkout['ratingData'] = $groupedWorkDriver->getRatingData();
+												$checkout['recordUrl'] = $groupedWorkDriver->getLinkUrl(true);
+												$checkout['linkUrl'] = $groupedWorkDriver->getLinkUrl(false);
+											}
+										}
+									}
+								}
+
+							}
 						}
 					}
 					$checkout['user'] = $patron->getNameAndLibraryLabel();
@@ -590,6 +635,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 		}
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds';
 		$response = $this->_callPatronUrl($user, $url);
+		if ($response == false){
+			$this->incrementStat('numApiErrors');
+			return $holds;
+		}
 		if (isset($response->holds)){
 			foreach ($response->holds as $curTitle){
 				$hold = array();
@@ -635,6 +684,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$hold['linkUrl'] = $overDriveRecord->getLinkUrl(true);
 					$hold['format'] = $overDriveRecord->getFormats();
 					$hold['ratingData'] = $overDriveRecord->getRatingData();
+
+					$hold['previewActions'] = $overDriveRecord->getPreviewActions();
 				}
 				$hold['user'] = $user->getNameAndLibraryLabel();
 				$hold['userId'] = $user->id;
@@ -718,6 +769,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if (isset($response->holdListPosition)){
 			$this->trackUserUsageOfOverDrive($user);
 			$this->trackRecordHold($overDriveId);
+			$this->incrementStat('numHoldsPlaced');
 
 			$holdResult['success'] = true;
 			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=>'overdrive_hold_success', 'defaultText' => 'Your hold was placed successfully.  You are number %1% on the wait list.', 1=>$response->holdListPosition]) . "</p>";
@@ -746,6 +798,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not place a hold for you on this title.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
+			$this->incrementStat('numFailedHolds');
 		}
 		$user->clearCache();
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -781,11 +834,13 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$holdResult['message'] = '';
 
 		if (isset($response->holdListPosition) && isset($response->holdSuspension)){
+			$this->incrementStat('numHoldsFrozen');
 			$holdResult['success'] = true;
 			$holdResult['message'] = translate(['text'=>'overdrive_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not freeze the hold on this title.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
+			$this->incrementStat('numApiErrors');
 		}
 		$user->clearCache();
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -807,9 +862,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if ($response == true){
 			$holdResult['success'] = true;
 			$holdResult['message'] = translate(['text'=>'overdrive_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
+			$this->incrementStat('numHoldsThawed');
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not thaw the hold on this title.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
+			$this->incrementStat('numApiErrors');
 		}
 		$user->clearCache();
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -834,9 +891,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if ($response === true){
 			$cancelHoldResult['success'] = true;
 			$cancelHoldResult['message'] = translate('Your hold was cancelled successfully.');
+			$this->incrementStat('numHoldsCancelled');
 		}else{
 			$cancelHoldResult['message'] = translate('There was an error cancelling your hold.');
 		    if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
+			$this->incrementStat('numApiErrors');
 		}
 		$memCache->delete('overdrive_summary_' . $user->id);
 		$user->clearCache();
@@ -870,9 +929,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$result['message'] = translate(['text'=>'overdrive_checkout_success', 'defaultText'=>'Your title was checked out successfully. You may now download the title from your Account.']);
 			$this->trackUserUsageOfOverDrive($user);
 			$this->trackRecordCheckout($overDriveId);
+			$this->incrementStat('numCheckouts');
 			$user->lastReadingHistoryUpdate = 0;
 			$user->update();
 		}else{
+			$this->incrementStat('numFailedCheckouts');
 			$result['message'] = translate('Sorry, we could not checkout this title to you.');
 			if (isset($response->errorCode) && $response->errorCode == 'PatronHasExceededCheckoutLimit'){
 				$result['message'] .= "\r\n\r\n" . translate(['text'=>'overdrive_exceeded_checkouts', 'defaultText'=>'You have reached the maximum number of OverDrive titles you can checkout one time.']);
@@ -883,9 +944,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 			if ($response == false || (isset($response->errorCode) && ($response->errorCode == 'NoCopiesAvailable' || $response->errorCode == 'PatronHasExceededCheckoutLimit'))) {
 				$result['noCopies'] = true;
 				$result['message'] .= "\r\n\r\n" . translate('Would you like to place a hold instead?');
+			}else if ($response->errorCode == 'TitleAlreadyCheckedOut') {
+				$result['message'] = translate(['text' => 'overdrive_already_checked_out', 'defaultText' => "This title is already checked out to you, you can read it by visiting <a href='/MyAccount/CheckedOut'>Your Account</a>."]);
 			}else{
 				//Give more information about why it might gave failed, ie expired card or too much fines
-				$result['message'] =  translate(['text'=>'overdrive_checkout_failed', 'defaultText'=>'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.']);
+				$result['message'] .= ' ' . translate(['text' => 'overdrive_checkout_failed', 'defaultText' => 'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.']);
 			}
 
 		}
@@ -912,9 +975,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if ($response === true){
 			$cancelHoldResult['success'] = true;
 			$cancelHoldResult['message'] = translate('Your item was returned successfully.');
+			$this->incrementStat('numEarlyReturns');
 		}else{
 			$cancelHoldResult['message'] =translate( 'There was an error returning this item.');
 			if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
+			$this->incrementStat('numApiErrors');
 		}
 
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -945,6 +1010,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		}else{
 			$result['message'] = translate('Sorry, but we could not select a format for you.');
 			if (isset($response->message)) $result['message'] .= "  {$response->message}";
+			$this->incrementStat('numApiErrors');
 		}
 		$memCache->delete('overdrive_summary_' . $user->id);
 
@@ -1000,9 +1066,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$result['success'] = true;
 			$result['message'] = translate('Created Download Link');
 			$result['downloadUrl'] = $response->links->contentlink->href;
+			$this->incrementStat('numDownloads');
 		}else{
 			$result['message'] = translate('Sorry, but we could not get a download link for you.');
 			if (isset($response->message)) $result['message'] .= "  {$response->message}";
+			$this->incrementStat('numApiErrors');
 		}
 
 		return $result;
@@ -1059,9 +1127,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 			$holdResult['success'] = true;
 			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=>'overdrive_renew_success', 'defaultText' => 'Your title has been requested again, you are number %1% on the list.', 1=>$response->holdListPosition]) . "</p>";
+			$this->incrementStat('numRenewals');
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not renew this title for you.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
+			$this->incrementStat('numApiErrors');
 		}
 		$patron->clearCache();
 		$memCache->delete('overdrive_summary_' . $patron->id);
@@ -1197,6 +1267,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				}
 			}
 		}
+		$this->incrementStat('numOptionsUpdates');
 		return true;
 	}
 
@@ -1287,6 +1358,22 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$this->clientSecret = $this->settings->clientSecret;
 		}else{
 			$this->clientSecret = $this->scope->clientSecret;
+		}
+	}
+
+	function incrementStat(string $fieldName)
+	{
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveStats.php';
+		$axis360Stats = new OverDriveStats();
+		$axis360Stats->instance = $_SERVER['SERVER_NAME'];
+		$axis360Stats->year = date('Y');
+		$axis360Stats->month = date('n');
+		if ($axis360Stats->find(true)) {
+			$axis360Stats->$fieldName++;
+			$axis360Stats->update();
+		} else {
+			$axis360Stats->$fieldName = 1;
+			$axis360Stats->insert();
 		}
 	}
 }

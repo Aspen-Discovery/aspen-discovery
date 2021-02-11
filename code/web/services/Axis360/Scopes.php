@@ -20,7 +20,8 @@ class Axis360_Scopes extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new Axis360Scope();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -28,6 +29,10 @@ class Axis360_Scopes extends ObjectEditor
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return Axis360Scope::getObjectStructure();

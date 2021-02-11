@@ -19,12 +19,13 @@ class Admin_Libraries extends ObjectEditor
 
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasPermission('Administer All Libraries')){
-			$library = new Library();
-			$library->orderBy('subdomain');
-			$library->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-			$library->find();
-			while ($library->fetch()){
-				$libraryList[$library->libraryId] = clone $library;
+			$object = new Library();
+			$object->orderBy($this->getSort());
+			$this->applyFilters($object);
+			$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+			$object->find();
+			while ($object->fetch()){
+				$libraryList[$object->libraryId] = clone $object;
 			}
 		}else{
 			//This doesn't need pagination since there should only be one
@@ -33,6 +34,10 @@ class Admin_Libraries extends ObjectEditor
 		}
 
 		return $libraryList;
+	}
+	function getDefaultSort()
+	{
+		return 'subdomain asc';
 	}
 	function getObjectStructure(){
 		$objectStructure = Library::getObjectStructure();

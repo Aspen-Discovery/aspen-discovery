@@ -95,7 +95,7 @@ class ExtractOverDriveInfo {
 
 			try {
 				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
-					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
+					logEntry.addNote("Did not find correct configuration in settings, not loading overdrive titles");
 				} else {
 					//Load products from database this lets us know what is new, what has been deleted, and what has been updated
 					if (!loadProductsFromDatabase()) {
@@ -301,7 +301,7 @@ class ExtractOverDriveInfo {
 
 			try {
 				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
-					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
+					logEntry.addNote("Did not find correct configuration in settings, not loading overdrive titles");
 				} else {
 					//Load products from database this lets us know what is new, what has been deleted, and what has been updated
 					if (!loadProductsFromDatabase()) {
@@ -949,7 +949,7 @@ class ExtractOverDriveInfo {
 		String url = "https://api.overdrive.com/v1/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/metadata";
 		WebServiceResponse metaDataResponse = callOverDriveURL(url);
 		if (metaDataResponse.getResponseCode() != 200){
-			logEntry.incErrors("Could not load metadata from " + url );
+			logEntry.incErrors("Could not load metadata (code " + metaDataResponse.getResponseCode() + ") from " + url );
 			logger.info(metaDataResponse.getResponseCode() + ":" + metaDataResponse.getMessage());
 		}else{
 			JSONObject metaData = metaDataResponse.getJSONResponse();
@@ -1382,7 +1382,9 @@ class ExtractOverDriveInfo {
 						logger.warn("Timeout waiting to retry call to OverDrive", e);
 					}
 				}else{
-					break;
+					if (!response.isCallTimedOut() && response.getResponseCode() != 500) {
+						break;
+					}
 				}
 			}
 			return response;

@@ -27,7 +27,8 @@ class WebBuilder_BasicPages extends ObjectEditor
 	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new BasicPage();
-		$object->orderBy('title');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -36,7 +37,10 @@ class WebBuilder_BasicPages extends ObjectEditor
 		}
 		return $objectList;
 	}
-
+	function getDefaultSort()
+	{
+		return 'title asc';
+	}
 	function getObjectStructure()
 	{
 		return BasicPage::getObjectStructure();

@@ -47,7 +47,8 @@ class LoanRuleDeterminers extends ObjectEditor {
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new LoanRuleDeterminer();
-		$object->orderBy('rowNumber');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -55,6 +56,10 @@ class LoanRuleDeterminers extends ObjectEditor {
 			$objectList[$object->rowNumber] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'rowNumber asc';
 	}
 	function getObjectStructure(){
 		return LoanRuleDeterminer::getObjectStructure();

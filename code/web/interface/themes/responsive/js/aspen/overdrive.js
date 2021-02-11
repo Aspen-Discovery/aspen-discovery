@@ -343,6 +343,17 @@ AspenDiscovery.OverDrive = (function(){
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
 			});
+		},
+
+		showPreview: function (overdriveId, formatId, sampleNumber) {
+			var url = Globals.path + "/OverDrive/" + overdriveId + "/AJAX?method=getPreview&formatId=" + formatId + "&sampleNumber=" + sampleNumber;
+			$.getJSON(url, function (data){
+				if (data.success){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}else{
+					AspenDiscovery.showMessage('Error', data.message);
+				}
+			});
 		}
 	}
 }(AspenDiscovery.OverDrive || {}));

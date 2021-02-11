@@ -20,7 +20,8 @@ class Admin_Themes extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new Theme();
-		$object->orderBy('themeName');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Themes')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
@@ -32,6 +33,10 @@ class Admin_Themes extends ObjectEditor
 			$list[$object->id] = clone $object;
 		}
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'themeName asc';
 	}
 	function getObjectStructure(){
 		return Theme::getObjectStructure();

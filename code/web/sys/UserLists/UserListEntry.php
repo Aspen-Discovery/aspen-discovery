@@ -18,9 +18,6 @@ class UserListEntry extends DataObject{
 	function insert($updateBrowseCategories = true)
 	{
 		$result = parent::insert();
-		if ($result && $updateBrowseCategories) {
-			$this->flushUserListBrowseCategory();
-		}
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -33,9 +30,6 @@ class UserListEntry extends DataObject{
 	function update($updateBrowseCategories = true)
 	{
 		$result = parent::update();
-		if ($result && $updateBrowseCategories) {
-			$this->flushUserListBrowseCategory();
-		}
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -49,26 +43,9 @@ class UserListEntry extends DataObject{
 	function delete($useWhere = false, $updateBrowseCategories = true)
 	{
 		$result = parent::delete($useWhere);
-		if ($result && $updateBrowseCategories) {
-			$this->flushUserListBrowseCategory();
-		}
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
-	}
-
-	private function flushUserListBrowseCategory(){
-		// Check if the list is a part of a browse category and clear the cache.
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$userListBrowseCategory = new BrowseCategory();
-		$userListBrowseCategory->sourceListId = $this->listId;
-		if ($userListBrowseCategory->find()) {
-			while ($userListBrowseCategory->fetch()) {
-				$userListBrowseCategory->deleteCachedBrowseCategoryResults();
-			}
-		}
-		$userListBrowseCategory->__destruct();
-		$userListBrowseCategory = null;
 	}
 
 	public function getRecordDriver()

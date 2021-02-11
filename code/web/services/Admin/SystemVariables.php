@@ -25,6 +25,15 @@ class Admin_SystemVariables extends ObjectEditor{
 		}
 		return $variableList;
 	}
+	function getDefaultSort()
+	{
+		return 'id asc';
+	}
+	function canSort()
+	{
+		return false;
+	}
+
 	function getObjectStructure(){
 		return SystemVariables::getObjectStructure();
 	}

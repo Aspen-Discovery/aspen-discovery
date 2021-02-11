@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Redwood/UserContribution.php';
 
-class RedwoodUserContributions extends ObjectEditor
+class Admin_RedwoodUserContributions extends ObjectEditor
 {
 	function getObjectType()
 	{
@@ -26,7 +26,8 @@ class RedwoodUserContributions extends ObjectEditor
 		$list = array();
 
 		$object = new UserContribution();
-		$object->orderBy('dateContributed desc');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {
@@ -34,6 +35,11 @@ class RedwoodUserContributions extends ObjectEditor
 		}
 
 		return $list;
+	}
+
+	function getDefaultSort()
+	{
+		return 'dateContributed desc';
 	}
 
 	function getObjectStructure()

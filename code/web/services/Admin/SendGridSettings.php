@@ -30,12 +30,22 @@ class Admin_SendGridSettings extends ObjectEditor
 	{
 		$object = new SendGridSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'id asc';
+	}
+
+	function canSort()
+	{
+		return false;
 	}
 
 	function getObjectStructure()

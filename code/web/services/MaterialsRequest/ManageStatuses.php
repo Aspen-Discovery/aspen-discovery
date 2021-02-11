@@ -22,23 +22,33 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		return 'Materials Request Statuses';
 	}
 	function getAllObjects($page, $recordsPerPage){
-		$status = new MaterialsRequestStatus();
+		$object = new MaterialsRequestStatus();
 
 		$homeLibrary = Library::getPatronHomeLibrary();
-		$status->libraryId = $homeLibrary->libraryId;
+		$object->libraryId = $homeLibrary->libraryId;
+		$this->applyFilters($object);
 
-		$status->orderBy('isDefault DESC');
-		$status->orderBy('isPatronCancel DESC');
-		$status->orderBy('isOpen DESC');
-		$status->orderBy('description ASC');
-		$status->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		$status->find();
+		$object->orderBy('isDefault DESC');
+		$object->orderBy('isPatronCancel DESC');
+		$object->orderBy('isOpen DESC');
+		$object->orderBy('description ASC');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->find();
 		$objectList = array();
-		while ($status->fetch()){
-			$objectList[$status->id] = clone $status;
+		while ($object->fetch()){
+			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
+	function getDefaultSort()
+	{
+		return 'isDefault desc';
+	}
+	function canSort()
+	{
+		return false;
+	}
+
 	function getObjectStructure(){
 		return MaterialsRequestStatus::getObjectStructure();
 	}

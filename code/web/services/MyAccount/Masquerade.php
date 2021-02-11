@@ -35,49 +35,40 @@ class MyAccount_Masquerade extends MyAccount
 				if (empty($guidingUser)) {
 					$user = UserAccount::getLoggedInUser();
 					if ($user && $user->canMasquerade()) {
-						$masqueradedUser = new User();
-						//TODO: below, when $masquerade User account is in another ILS and the other ILS has a different $authenticationMethod (ie barcode/pin)
-						if ($user->getAccountProfile()->loginConfiguration == 'barcode_pin') {
-							$masqueradedUser->cat_username = $libraryCard;
-						} else {
-							$masqueradedUser->cat_password = $libraryCard;
-						}
-						if ($masqueradedUser->find(true)) {
-							if ($masqueradedUser->id == $user->id) {
-								return array(
-									'success' => false,
-									'error' => 'No need to masquerade as yourself.'
-								);
+						//Check to see if the user already exists in the database
+						$foundExistingUser = false;
+						$accountProfile = new AccountProfile();
+						$accountProfile->find();
+						$masqueradedUser = null;
+						while ($accountProfile->fetch()){
+							$masqueradedUser = new User();
+							$masqueradedUser->source = $accountProfile->name;
+							if ($accountProfile->loginConfiguration == 'barcode_pin') {
+								$masqueradedUser->cat_username = $libraryCard;
+							} else {
+								$masqueradedUser->cat_password = $libraryCard;
 							}
-							//$logger->log("Found masqueraded user with card " . $libraryCard, Logger::LOG_ERROR);
-						} else {
-							//$logger->log("Testing a different login configuration", Logger::LOG_ERROR);
-							// Check for another ILS with a different login configuration
-							$accountProfile = new AccountProfile();
-							$accountProfile->selectAdd();
-							$accountProfile->selectAdd('loginConfiguration');
-							$accountProfile->groupBy('loginConfiguration');
-							$accountProfile->find();
-							if ($accountProfile->getNumResults() > 1) {
-								// Now that we know there is more than loginConfiguration type, check the opposite column
-								$masqueradedUser = new User();
-								if ($user->getAccountProfile()->loginConfiguration == 'barcode_pin') {
-									$masqueradedUser->cat_password = $libraryCard;
-								} else {
-									$masqueradedUser->cat_username = $libraryCard;
-								}
-								$masqueradedUser->find(true);
-							}
-
-							if ($masqueradedUser->getNumResults() == 0) {
-								// Test for a user that hasn't logged into Aspen Discovery before
-								$masqueradedUser = UserAccount::findNewUser($libraryCard);
-								if (!$masqueradedUser) {
+							if ($masqueradedUser->find(true)) {
+								if ($masqueradedUser->id == $user->id) {
 									return array(
 										'success' => false,
-										'error' => 'Invalid User'
+										'error' => 'No need to masquerade as yourself.'
 									);
 								}
+								$foundExistingUser = true;
+							}else{
+								$masqueradedUser = null;
+							}
+						}
+
+						if (!$foundExistingUser) {
+							// Test for a user that hasn't logged into Aspen Discovery before
+							$masqueradedUser = UserAccount::findNewUser($libraryCard);
+							if (!$masqueradedUser) {
+								return array(
+									'success' => false,
+									'error' => 'Invalid User'
+								);
 							}
 						}
 

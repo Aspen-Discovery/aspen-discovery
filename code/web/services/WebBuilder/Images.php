@@ -28,7 +28,8 @@ class WebBuilder_Images extends ObjectEditor
 	{
 		$object = new ImageUpload();
 		$object->type = 'web_builder_image';
-		$object->orderBy('title');
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -36,6 +37,10 @@ class WebBuilder_Images extends ObjectEditor
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'title asc';
 	}
 
 	function updateFromUI($object, $structure){

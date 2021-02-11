@@ -20,17 +20,20 @@ class Nashville extends CarlX {
 		} else {
 			return ['success' => false, 'message' => 'User Payment ' . $payment->id . 'failed with Invalid Patron'];
 		}
-		$allPaymentsucceed = true;
+		$allPaymentsSucceed = true;
 		foreach ($accountLinesPaid as $line) {
 			// MSB Payments are in the form of fineId|paymentAmount
 			list($feeId, $pmtAmount) = explode('|', $line);
-			$response = $this->feePaidViaSIP('01', '02', $pmtAmount, 'USD', $feeId, $payment->id, $patronId);
+			if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
+				$feeId = '#' . $feeId;
+			}
+			$response = $this->feePaidViaSIP('01', '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
 			if ($response['success'] === false) {
 				$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
-				$allPaymentsucceed = false;
+				$allPaymentsSucceed = false;
 			}
 		}
-		if ($allPaymentsucceed === false) {
+		if ($allPaymentsSucceed === false) {
 			$success = false;
 			$message = "MSB Payment CarlX update failed.";
 			$payment->completed = 9;
@@ -77,7 +80,7 @@ class Nashville extends CarlX {
 	}
 
 	public function getFineSystem($branchId){
-		if (($branchId >= 30 && $branchId <= 178 && $branchId != 42 && $branchId != 171) || ($branchId >= 180 && $branchId <= 212 && $branchId != 185 && $branchId != 187)) {
+		if (($branchId >= 30 && $branchId <= 178 && $branchId != 42 && $branchId != 167 && $branchId != 171) || ($branchId >= 180 && $branchId <= 212 && $branchId != 185 && $branchId != 187)) {
 			return "MNPS";
 		} else {
 			return "NPL";

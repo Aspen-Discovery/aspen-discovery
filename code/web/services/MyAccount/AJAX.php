@@ -2623,7 +2623,7 @@ class MyAccount_AJAX extends JSON_Action
 		$paymentRequestUrl .= "?ReferenceID=".$payment->id;
 		$paymentRequestUrl .= "&PaymentType=CC";
 		$paymentRequestUrl .= "&TotalAmount=".$payment->totalPaid;
-		$paymentRequestUrl .= "&PaymentRedirectUrl=".$configArray['Site']['url'] . '/MyAccount/MSBReturn';
+		$paymentRequestUrl .= "&PaymentRedirectUrl=".$configArray['Site']['url'] . '/MyAccount/Fines';
 		return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
 	}
 

@@ -30,6 +30,8 @@ class Enrichment_RecaptchaSettings extends ObjectEditor
 	{
 		$object = new RecaptchaSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -38,6 +40,10 @@ class Enrichment_RecaptchaSettings extends ObjectEditor
 		return $objectList;
 	}
 
+	function getDefaultSort()
+	{
+		return 'id asc';
+	}
 	function getObjectStructure()
 	{
 		return RecaptchaSetting::getObjectStructure();

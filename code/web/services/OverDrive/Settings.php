@@ -30,12 +30,19 @@ class OverDrive_Settings extends ObjectEditor
 	{
 		$object = new OverDriveSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'id asc';
 	}
 
 	function getObjectStructure()

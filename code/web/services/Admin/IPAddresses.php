@@ -17,7 +17,8 @@ class Admin_IPAddresses extends ObjectEditor
 	}
 	function getAllObjects($page, $recordsPerPage){
 		$object = new IPAddress();
-		$object->orderBy('ip');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -25,6 +26,10 @@ class Admin_IPAddresses extends ObjectEditor
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'ip asc';
 	}
 	function getObjectStructure(){
 		return IPAddress::getObjectStructure();

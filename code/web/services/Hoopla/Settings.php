@@ -30,12 +30,19 @@ class Hoopla_Settings extends ObjectEditor
 	{
 		$object = new HooplaSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'apiUrl asc';
 	}
 
 	function getObjectStructure()

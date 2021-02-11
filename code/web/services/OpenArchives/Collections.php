@@ -21,7 +21,8 @@ class OpenArchives_Collections extends ObjectEditor {
 		$list = array();
 
 		$object = new OpenArchivesCollection();
-		$object->orderBy('name asc');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
@@ -29,6 +30,10 @@ class OpenArchives_Collections extends ObjectEditor {
 		}
 
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return OpenArchivesCollection::getObjectStructure();

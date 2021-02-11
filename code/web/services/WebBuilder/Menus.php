@@ -30,7 +30,8 @@ class WebBuilder_Menus extends ObjectEditor
 		$object = new WebBuilderMenu();
 		$object->parentMenuId = -1;
 		$object->libraryId = $library->libraryId;
-		$object->orderBy('weight asc');
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
@@ -39,7 +40,7 @@ class WebBuilder_Menus extends ObjectEditor
 			$subMenu = new WebBuilderMenu();
 			$subMenu->parentMenuId = $object->id;
 			$subMenu->libraryId = $library->libraryId;
-			$subMenu->orderBy('weight asc');
+			$subMenu->orderBy($this->getSort());
 			$subMenu->find();
 			while ($subMenu->fetch()) {
 				$subMenu->label = "--- " . $subMenu->label;
@@ -47,6 +48,16 @@ class WebBuilder_Menus extends ObjectEditor
 			}
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'weight asc';
+	}
+
+	function canSort()
+	{
+		return false;
 	}
 
 	function getObjectStructure()

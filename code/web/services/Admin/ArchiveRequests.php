@@ -18,7 +18,8 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		$list = array();
 
 		$object = new ArchiveRequest();
-		$object->orderBy('dateRequested desc');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasPermission('View Archive Material Requests')){
@@ -33,6 +34,11 @@ class Admin_ArchiveRequests extends ObjectEditor {
 
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'dateRequested desc';
+	}
+
 	function getObjectStructure(){
 		return ArchiveRequest::getObjectStructure();
 	}

@@ -715,6 +715,11 @@ class CarlX extends AbstractIlsDriver{
 		return $result;
 	}
 
+	/**
+	 * @param User $user
+	 * @param boolean $canUpdateContactInfo
+	 * @return array
+	 */
 	public function updatePatronInfo($user, $canUpdateContactInfo) {
 		$result = [
 			'success' => false,
@@ -729,9 +734,11 @@ class CarlX extends AbstractIlsDriver{
 			$request->Patron->Email  = $_REQUEST['email'];
 			if (isset($_REQUEST['phone'])) {
 				$request->Patron->Phone1 = $_REQUEST['phone'];
+				$user->phone = $_REQUEST['phone'];
 			}
 			if (isset($_REQUEST['workPhone'])){
 				$request->Patron->Phone2 = $_REQUEST['workPhone'];
+				$user->_workPhone = $_REQUEST['workPhone'];
 			}
 			if (!isset($request->Addresses)){
 				$request->Patron->Addresses = new stdClass();
@@ -742,15 +749,19 @@ class CarlX extends AbstractIlsDriver{
 			$request->Patron->Addresses->Address->Type        = 'Primary';
 			if (isset($_REQUEST['address1'])) {
 				$request->Patron->Addresses->Address->Street = $_REQUEST['address1'];
+				$user->_address1 = $_REQUEST['address1'];
 			}
 			if (isset($_REQUEST['city'])) {
 				$request->Patron->Addresses->Address->City = $_REQUEST['city'];
+				$user->_city = $_REQUEST['city'];
 			}
 			if (isset($_REQUEST['state'])) {
 				$request->Patron->Addresses->Address->State = $_REQUEST['state'];
+				$user->_state = $_REQUEST['state'];
 			}
 			if (isset($_REQUEST['zip'])) {
 				$request->Patron->Addresses->Address->PostalCode = $_REQUEST['zip'];
+				$user->_zip = $_REQUEST['zip'];;
 			}
 			if (isset($_REQUEST['emailReceiptFlag']) && ($_REQUEST['emailReceiptFlag'] == 'yes' || $_REQUEST['emailReceiptFlag'] == 'on')){
 				// if set check & on check must be combined because checkboxes/radios don't report 'offs'
@@ -772,10 +783,12 @@ class CarlX extends AbstractIlsDriver{
 			}
 			if (isset($_REQUEST['phoneType'])) {
 				$request->Patron->PhoneType = $_REQUEST['phoneType'];
+				$user->_phoneType = $_REQUEST['phoneType'];
 			}
 
 			if (isset($_REQUEST['notices'])){
 				$request->Patron->EmailNotices = $_REQUEST['notices'];
+				$user->_notices = $_REQUEST['notices'];
 			}
 
 			if (!empty($_REQUEST['pickupLocation'])) {
@@ -783,6 +796,9 @@ class CarlX extends AbstractIlsDriver{
 				if ($homeLocation->get('code', $_REQUEST['pickupLocation'])) {
 					$homeBranchCode = strtoupper($_REQUEST['pickupLocation']);
 					$request->Patron->DefaultBranch = $homeBranchCode;
+					$user->homeLocationId = $homeLocation->locationId;
+					$user->_homeLocationCode = $homeLocation->code;
+					$user->_homeLocation = $homeLocation;
 				}
 			}
 
@@ -796,6 +812,7 @@ class CarlX extends AbstractIlsDriver{
 				}else{
 					$result['success'] = true;
 					$result['messages'][] = 'Your account was updated successfully.';
+					$user->update();
 				}
 
 			} else {
@@ -1253,6 +1270,8 @@ class CarlX extends AbstractIlsDriver{
 				$fine->FineAmountOutstanding = 0;
 				if ($fine->FineAmountPaid > 0) {
 					$fine->FineAmountOutstanding = $fine->FineAmount - $fine->FineAmountPaid;
+				} else {
+					$fine->FineAmountOutstanding = $fine->FineAmount;
 				}
 
 				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
@@ -1260,8 +1279,12 @@ class CarlX extends AbstractIlsDriver{
 				}
 				$fine->Identifier = str_replace('#', '', $fine->Identifier);
 
-				if ($fine->TransactionCode == 'FS' && $fine->FeeNotes == 'COLLECTION') {
+				if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes,'COLLECTION') !== false) {
 					$fineType = 'COLLECTION AGENCY';
+					$fine->FeeNotes = 'COLLECTION AGENCY';
+				} elseif ($fine->TransactionCode == 'F2') {
+					$fineType = $fine->TransactionCode;
+					$fine->FeeNotes .= ' : Processing fee';
 				} else {
 					$fineType = $fine->TransactionCode;
 				}
@@ -1301,6 +1324,13 @@ class CarlX extends AbstractIlsDriver{
 				$fine->System = $this->getFineSystem($fine->Branch);
 				$fine->CanPayFine = $this->canPayFine($fine->System);
 
+				$fine->FeeAmountOutstanding = 0;
+				if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
+					$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
+				} else {
+					$fine->FeeAmountOutstanding = $fine->FeeAmount;
+				}
+
 				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
 					$fine->Identifier = substr($fine->Identifier,9);
 				}
@@ -1311,6 +1341,8 @@ class CarlX extends AbstractIlsDriver{
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FeeAmount,
 					'amountVal'  => $fine->FeeAmount,
+					'amountOutstanding' => $fine->FeeAmountOutstanding,
+					'amountOutstandingVal' => $fine->FeeAmountOutstanding,
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->TransactionDate)),
 					'system'  => $fine->System,
@@ -1984,6 +2016,7 @@ EOT;
 			} else if ($showOverdueOnly == 'overdue') {
 				$statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L')";
 			}
+			/** @noinspection SqlResolve */
 			$sql = <<<EOT
 				select
 				  patronbranch.branchcode AS Home_Lib_Code
@@ -2143,11 +2176,8 @@ EOT;
 		}
 	}
 
-	// TODO: implement showOutstanding Fines for partially paid fines. Might be nothing... 2020 11 23
-/*
 	public function showOutstandingFines()
 	{
 		return true;
 	}
-*/
 }

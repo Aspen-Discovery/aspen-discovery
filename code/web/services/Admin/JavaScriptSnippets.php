@@ -20,9 +20,10 @@ class Admin_JavaScriptSnippets extends ObjectEditor
 		return UserAccount::userHasPermission(['Administer All JavaScript Snippets', 'Administer Library JavaScript Snippets']);
 	}
 	function getAllObjects($page, $recordsPerPage){
-		$javascriptSnippet = new JavaScriptSnippet();
-		$javascriptSnippet->orderBy('name');
-		$javascriptSnippet->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object = new JavaScriptSnippet();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingSnippets = true;
 		if (!UserAccount::userHasPermission('Administer All JavaScript Snippets')){
 			$libraryJavaScriptSnippet = new JavaScriptSnippetLibrary();
@@ -35,20 +36,24 @@ class Admin_JavaScriptSnippets extends ObjectEditor
 					$snippetsForLibrary[] = $libraryJavaScriptSnippet->javascriptSnippetId;
 				}
 				if (count($snippetsForLibrary) > 0) {
-					$javascriptSnippet->whereAddIn('id', $snippetsForLibrary, false);
+					$object->whereAddIn('id', $snippetsForLibrary, false);
 				}else{
 					$userHasExistingSnippets = false;
 				}
 			}
 		}
-		$javascriptSnippet->find();
+		$object->find();
 		$list = array();
 		if ($userHasExistingSnippets) {
-			while ($javascriptSnippet->fetch()) {
-				$list[$javascriptSnippet->id] = clone $javascriptSnippet;
+			while ($object->fetch()) {
+				$list[$object->id] = clone $object;
 			}
 		}
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return JavaScriptSnippet::getObjectStructure();

@@ -43,15 +43,13 @@
 					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
 						<div class="btn-toolbar">
 							<div class="btn-group btn-group-vertical btn-block">
-								{* Show hold/checkout button as appropriate *}
-								{if $holdingsSummary.showPlaceHold}
-									{* Place hold link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="placeHold{$recordDriver->getUniqueID()|escape:"url"}" onclick="return AspenDiscovery.OverDrive.placeHold('{$recordDriver->getUniqueID()}')">{translate text="Place Hold"}</a>
-								{/if}
-								{if $holdingsSummary.showCheckout}
-									{* Checkout link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return AspenDiscovery.OverDrive.checkOutTitle('{$recordDriver->getUniqueID()}')">{translate text="Checkout"}</a>
-								{/if}
+								{foreach from=$actions item=curAction}
+									{if $curAction.url && strlen($curAction.url) > 0}
+										<a href="{$curAction.url}" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{$curAction.title|translate}</a>
+									{else}
+										<a href="#" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{$curAction.title|translate}</a>
+									{/if}
+								{/foreach}
 							</div>
 						</div>
 					</div>

@@ -86,7 +86,7 @@
 										{/if}
 										<td>{$fine.amountVal|formatCurrency}</td>
 										{if $showOutstanding}
-											<td>{$fine.amountOutstanding}</td>
+											<td>{$fine.amountOutstanding|formatCurrency}</td>
 										{/if}
 										{if $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount && $fine.canPayFine !== false}
 											{if $showOutstanding}

@@ -170,6 +170,7 @@ if ($siteOnWindows) {
 	replaceVariables($siteDir . "/{$sitename}.sh", $variables);
 }
 replaceVariables($siteDir . "/conf/config.ini", $variables);
+replaceVariables($siteDir . "/conf/config.cron.ini", $variables);
 replaceVariables($siteDir . "/conf/config.pwd.ini", $variables);
 
 if (!$siteOnWindows){
@@ -257,6 +258,9 @@ if ($siteOnWindows){
 	//Link cron to /etc/cron.d folder
 	exec("ln -s /usr/local/aspen-discovery/sites/{$sitename}/conf/crontab_settings.txt /etc/cron.d/{$cleanSitename}");
 }
+
+//Update my.cnf for backups
+replaceVariables("/etc/my.cnf", $variables);
 
 echo("\r\n");
 echo("\r\n");

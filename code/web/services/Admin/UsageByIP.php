@@ -51,7 +51,6 @@ class Admin_UsageByIP extends Admin_Dashboard
 		$this->display('usage_by_ip.tpl', 'Aspen Usage By IP');
 	}
 
-
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

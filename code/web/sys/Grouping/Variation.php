@@ -106,7 +106,7 @@ class Grouping_Variation
 					if ($promptForAlternateEdition) {
 						$alteredActions = array();
 						foreach ($bestRecord->getActions() as $action) {
-							$action['onclick'] = str_replace('Record.showPlaceHold', 'Record.showPlaceHoldEditions', $action['onclick']);
+							$action['onclick'] = str_replace('Record.showPlaceHold(', 'Record.showPlaceHoldEditions(', $action['onclick']);
 							$alteredActions[] = $action;
 						}
 						$this->_actions = $alteredActions;

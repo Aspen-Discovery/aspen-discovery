@@ -133,7 +133,8 @@ class ILS_TranslationMaps extends ObjectEditor {
 		$list = array();
 
 		$object = new TranslationMap();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
@@ -141,6 +142,10 @@ class ILS_TranslationMaps extends ObjectEditor {
 		}
 
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return TranslationMap::getObjectStructure();

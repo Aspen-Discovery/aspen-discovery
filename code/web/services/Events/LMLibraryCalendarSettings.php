@@ -43,12 +43,18 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	{
 		$object = new LMLibraryCalendarSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'id asc';
 	}
 
 	/**
