@@ -272,6 +272,14 @@ function getRBdigitalUpdates() {
 			]
 		],
 
+		'rbdigital_module_add_settings' => [
+			'title' => 'Add Settings to RBdigital module',
+			'description' => 'Add Settings to RBdigital module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/RBdigital/RBdigitalSetting.php', settingsClassName = 'RBdigitalSetting' WHERE name = 'Hoopla'"
+			]
+		],
+
 		'rbdigital_usage_add_instance' => [
 			'title' => 'RBdigital Usage - Instance Information',
 			'description' => 'Add Instance Information to RBdigital Usage stats',

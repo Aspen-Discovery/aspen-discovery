@@ -117,6 +117,15 @@ function getWebsiteIndexingUpdates()
 			]
 		],
 
+		'web_builder_add_settings' => [
+			'title' => 'Add Settings to Web Builder module',
+			'description' => 'Add Settings to Web Builder module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/WebsiteIndexing/WebsiteIndexSetting.php', settingsClassName = 'WebsiteIndexSetting' WHERE name = 'Web Indexer'"
+			]
+		],
+
+
 		'web_indexer_add_title_expression' =>[
 			'title' => 'Web Indexer add title expression',
 			'description' => 'Add a regular expression to extract titles from',

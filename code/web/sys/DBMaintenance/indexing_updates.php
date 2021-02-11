@@ -908,6 +908,14 @@ function getIndexingUpdates()
 			]
 		],
 
+		'indexing_module_add_settings' => [
+			'title' => 'Add Settings to Indexing module',
+			'description' => 'Add Settings to Indexing module',
+			'sql' => [
+				"UPDATE modules set settingsClassName = '/sys/Indexing/IndexingProfile.php' WHERE name in ('Koha', 'CARL.X', 'Sierra', 'Horizon', 'Symphony')"
+			]
+		],
+
 		'indexing_profile_determineAudienceBy' => [
 			'title' => 'Indexing Profile - determineAudienceBy',
 			'description' => 'Add the ability to control how audience is determined to Indexing Profiles',

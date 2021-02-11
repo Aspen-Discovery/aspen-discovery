@@ -188,6 +188,14 @@ function getHooplaUpdates()
 			]
 		],
 
+		'hoopla_add_settings' => [
+			'title' => 'Add Settings to Hoopla module',
+			'description' => 'Add Settings to Hoopla module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/Hoopla/HooplaSetting.php', settingsClassName = 'HooplaSetting' WHERE name = 'Hoopla'"
+			]
+		],
+
 		'hoopla_add_setting_to_scope' => [
 			'title' => 'Add settingId to Hoopla scope',
 			'description' => 'Allow multiple settings to be defined for Hoopla within a consortium',

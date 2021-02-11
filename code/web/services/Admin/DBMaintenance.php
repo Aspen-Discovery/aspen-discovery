@@ -132,6 +132,14 @@ class Admin_DBMaintenance extends Admin_Admin
 						'ALTER TABLE modules ADD COLUMN logClassPath VARCHAR(100)',
 						'ALTER TABLE modules ADD COLUMN logClassName VARCHAR(35)',
 					]
+				],
+				'module_settings_information' => [
+					'title' => 'Settings Information for modules',
+					'description' => 'Add settings information to modules table',
+					'sql' => [
+						'ALTER TABLE modules ADD COLUMN settingsClassPath VARCHAR(100)',
+						'ALTER TABLE modules ADD COLUMN settingsClassName VARCHAR(35)',
+					]
 				]
 			],
 			$library_location_updates,

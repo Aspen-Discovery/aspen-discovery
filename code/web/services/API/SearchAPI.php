@@ -200,12 +200,24 @@ class SearchAPI extends Action
 		$aspenModule->find();
 		while ($aspenModule->fetch()){
 			if (!empty($aspenModule->logClassPath) && !empty($aspenModule->logClassName)){
+				//Check to see how many settings we have
+				$numSettings = 1;
+				if (!empty($aspenModule->settingsClassPath) && !empty($aspenModule->settingsClassName)){
+					/** @noinspection PhpIncludeInspection */
+					require_once ROOT_DIR . $aspenModule->settingsClassPath;
+					/** @var DataObject $settings */
+					$settings = new $aspenModule->settingsClassName;
+					$numSettings = $settings->count();
+				}
+				if ($numSettings == 0){
+					continue;
+				}
 				/** @noinspection PhpIncludeInspection */
 				require_once ROOT_DIR . $aspenModule->logClassPath;
 				/** @var BaseLogEntry $logEntry */
 				$logEntry = new $aspenModule->logClassName();
 				$logEntry->orderBy("id DESC");
-				$logEntry->limit(0, 3);
+				$logEntry->limit(0, 3 * $numSettings);
 				$logErrors = 0;
 				$logEntry->find();
 				$numUnfinishedEntries = 0;
@@ -237,7 +249,7 @@ class SearchAPI extends Action
 					if ($logErrors > 0){
 						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
 					}else{
-						if ($numUnfinishedEntries > 1){
+						if ($numUnfinishedEntries > $numSettings){
 							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
 						}else{
 							$this->addCheck($checks, $aspenModule->name);

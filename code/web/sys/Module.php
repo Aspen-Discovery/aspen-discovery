@@ -11,6 +11,8 @@ class Module extends DataObject
 	public $backgroundProcess;
 	public $logClassPath;
 	public $logClassName;
+	public $settingsClassPath;
+	public $settingsClassName;
 
 	static function getObjectStructure(){
 		return [
@@ -21,6 +23,8 @@ class Module extends DataObject
 			'backgroundProcess' => array('property'=>'backgroundProcess', 'type'=>'text', 'label'=>'Background Process', 'description'=>'The name of the background process being run if any', 'canBatchUpdate'=>false),
 			'logClassPath' => array('property'=>'logClassPath', 'type'=>'text', 'label'=>'Log Class Path', 'description'=>'The path to the class where logs are stored', 'canBatchUpdate'=>false),
 			'logClassName' => array('property'=>'logClassName', 'type'=>'text', 'label'=>'Log Class Name', 'description'=>'The name of the class that does logging', 'canBatchUpdate'=>false),
+			'settingsClassPath' => array('property'=>'settingsClassPath', 'type'=>'text', 'label'=>'Settings Class Path', 'description'=>'The path of the class that stores settings for the module', 'canBatchUpdate'=>false),
+			'settingsClassName' => array('property'=>'settingsClassName', 'type'=>'text', 'label'=>'Settings Class Name', 'description'=>'The name of the class that stores settings for the module', 'canBatchUpdate'=>false),
 		];
 	}
 }
