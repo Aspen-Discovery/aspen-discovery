@@ -323,7 +323,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$json_string .= '"location": "default",';
 		$json_string .= '"districtManagers": [],';
 		$json_string .= '"schools": [{';
-		$json_string .= '"name": "' . $this->rosenLevelUPSetting->lu_school_name . '",';
+		$json_string .= '"name": "' . $_REQUEST['student_school'] . '",';
 		$json_string .= '"classRooms": [{';
 		$json_string .= '"name": "' . $this->parent_username . '",';
 		$json_string .= '"gradeLevel": "' . $this->student_grade_level . '",';
