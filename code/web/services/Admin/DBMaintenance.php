@@ -140,7 +140,14 @@ class Admin_DBMaintenance extends Admin_Admin
 						'ALTER TABLE modules ADD COLUMN settingsClassPath VARCHAR(100)',
 						'ALTER TABLE modules ADD COLUMN settingsClassName VARCHAR(35)',
 					]
-				]
+				],
+				'create_field_encryption_file' => [
+					'title' => 'Create field encryption fiel',
+					'description' => 'Setup field level encryption for specific fields (i.e. PINs, Passwords, API keys, etc)',
+					'sql' => [
+						'createKeyFile'
+					]
+				],
 			],
 			$library_location_updates,
 			$user_updates,
@@ -2722,5 +2729,39 @@ class Admin_DBMaintenance extends Admin_Admin
 	function canView()
 	{
 		return UserAccount::userHasPermission('Run Database Maintenance');
+	}
+
+	/** @noinspection PhpUnused */
+	function createKeyFile(){
+		global $serverName;
+		if (!file_exists(ROOT_DIR . "/../../sites/$serverName/conf/passkey")) {
+			// Return the file path (note that all ini files are in the conf/ directory)
+			$passkeyFile = ROOT_DIR . "/../../sites/$serverName/conf/passkey";
+			$methods = [
+				'aes-256-gcm',
+				'aes-128-gcm'
+			];
+			foreach ($methods as $cipher) {
+				if (in_array($cipher, openssl_get_cipher_methods())) {
+					//Generate a 32 character password which will encode to 64 characters in hex notation
+					$key = bin2hex(openssl_random_pseudo_bytes(32));
+					break;
+				}
+			}
+			$passkeyFhnd = fopen($passkeyFile, 'w');
+			fwrite($passkeyFhnd, $cipher . ':' . $key);
+			fclose($passkeyFhnd);
+
+			//Make sure the file is not readable by anyone except the aspen user
+			if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN'){
+				$runningOnWindows = true;
+			}else{
+				$runningOnWindows = false;
+			}
+			if (!$runningOnWindows){
+				exec('chown aspen:aspen ' . $passkeyFile);
+				exec('chmod 400 ' . $passkeyFile);
+			}
+		}
 	}
 }
