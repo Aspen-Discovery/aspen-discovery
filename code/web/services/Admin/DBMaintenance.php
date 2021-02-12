@@ -142,7 +142,7 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 				'create_field_encryption_file' => [
-					'title' => 'Create field encryption fiel',
+					'title' => 'Create field encryption file',
 					'description' => 'Setup field level encryption for specific fields (i.e. PINs, Passwords, API keys, etc)',
 					'sql' => [
 						'createKeyFile'
@@ -2759,8 +2759,8 @@ class Admin_DBMaintenance extends Admin_Admin
 				$runningOnWindows = false;
 			}
 			if (!$runningOnWindows){
-				exec('chown aspen:aspen ' . $passkeyFile);
-				exec('chmod 400 ' . $passkeyFile);
+				exec('chown aspen:aspen_apache ' . $passkeyFile);
+				exec('chmod 440 ' . $passkeyFile);
 			}
 		}
 	}
