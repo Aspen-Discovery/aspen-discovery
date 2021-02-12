@@ -36,6 +36,10 @@ abstract class DataObject
 		return [];
 	}
 
+	function getEncryptedFieldNames(){
+		return [];
+	}
+
 	function __toString(){
 		$stringProperty = $this->__primaryKey;
 		if ($this->__displayNameColumn != null){
@@ -71,7 +75,7 @@ abstract class DataObject
 		global $aspen_db;
 		$query = $this->getSelectQuery($aspen_db);
 		$this->__lastQuery = $query;
-		$this->__queryStmt = $aspen_db->prepare($query);
+		$this->__queryStmt = $aspen_db->prepare($query, array(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false, PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
 		$this->__queryStmt->setFetchMode(PDO::FETCH_INTO, $this);
 		if ($this->__queryStmt->execute()){
 			$this->__N = $this->__queryStmt->rowCount();
@@ -96,6 +100,7 @@ abstract class DataObject
 			$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
 		}
 		$this->clearRuntimeDataVariables();
+		$this->decryptFields();
 		$this->__fetchingFromDB = false;
 		return $return;
 	}
@@ -202,6 +207,7 @@ abstract class DataObject
 		$insertQuery = 'INSERT INTO ' . $this->__table;
 
 		$numericColumns = $this->getNumericColumnNames();
+		$encryptedFields = $this->getEncryptedFieldNames();
 
 		$properties = get_object_vars($this);
 		$propertyNames = '';
@@ -214,15 +220,17 @@ abstract class DataObject
 				}
 				$propertyNames .= $name;
 				if (in_array($name, $numericColumns)) {
-					if ($value === true){
+					if ($value === true) {
 						$propertyValues .= 1;
-					}else if ($value == false) {
+					} else if ($value == false) {
 						$propertyValues .= 0;
 					} elseif (is_numeric($value)) {
 						$propertyValues .= $value;
 					} else {
 						$propertyValues .= 'NULL';
 					}
+				}elseif (in_array($name, $encryptedFields)){
+					$propertyValues .= $aspen_db->quote(EncryptionUtils::encryptField($value));
 				} else {
 					$propertyValues .= $aspen_db->quote($value);
 				}
@@ -246,6 +254,7 @@ abstract class DataObject
 		$updateQuery = 'UPDATE ' . $this->__table;
 
 		$numericColumns = $this->getNumericColumnNames();
+		$encryptedFields = $this->getEncryptedFieldNames();
 
 		$properties = get_object_vars($this);
 		$updates = '';
@@ -264,6 +273,8 @@ abstract class DataObject
 					} else {
 						$updates .= $name . ' = NULL';
 					}
+				}elseif (in_array($name, $encryptedFields)){
+					$updates .= $name . ' = ' . $aspen_db->quote(EncryptionUtils::encryptField($value));
 				} else {
 					$updates .= $name . ' = ' . $aspen_db->quote($value);
 				}
@@ -673,6 +684,13 @@ abstract class DataObject
 			return true;
 		}else{
 			return false;
+		}
+	}
+
+	protected function decryptFields(){
+		$encryptedFields = $this->getEncryptedFieldNames();
+		foreach ($encryptedFields as $fieldName){
+			$this->$fieldName = EncryptionUtils::decryptField($this->$fieldName);
 		}
 	}
 }

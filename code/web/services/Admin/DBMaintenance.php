@@ -2425,7 +2425,7 @@ class Admin_DBMaintenance extends Admin_Admin
 					'sql' => [
 						'UPDATE list_indexing_settings set runFullUpdate = 1'
 					]
-				]
+				],
 			)
 		);
 	}
@@ -2734,9 +2734,9 @@ class Admin_DBMaintenance extends Admin_Admin
 	/** @noinspection PhpUnused */
 	function createKeyFile(){
 		global $serverName;
-		if (!file_exists(ROOT_DIR . "/../../sites/$serverName/conf/passkey")) {
+		$passkeyFile = ROOT_DIR . "/../../sites/$serverName/conf/passkey";
+		if (!file_exists($passkeyFile)) {
 			// Return the file path (note that all ini files are in the conf/ directory)
-			$passkeyFile = ROOT_DIR . "/../../sites/$serverName/conf/passkey";
 			$methods = [
 				'aes-256-gcm',
 				'aes-128-gcm'

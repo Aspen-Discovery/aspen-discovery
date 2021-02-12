@@ -45,7 +45,7 @@ class ILSAuthentication implements Authentication {
 			$this->password = reset($this->password);
 		}
 
-		$logger->log("Authenticating user '{$this->username}', '{$this->password}' via the ILS", Logger::LOG_DEBUG);
+		$logger->log("Authenticating user '{$this->username}' via the ILS", Logger::LOG_DEBUG);
 		if(!$validatedViaSSO && ($this->username == '' || $this->password == '')){
 			$user = new AspenError('authentication_error_blank');
 		} else {
@@ -74,7 +74,7 @@ class ILSAuthentication implements Authentication {
 		$this->username = $username;
 		$this->password = $password;
 
-		$logger->log("validating account for user '{$this->username}', '{$this->password}' via the ILS", Logger::LOG_DEBUG);
+		$logger->log("validating account for user '{$this->username}' via the ILS", Logger::LOG_DEBUG);
 		//Password is not required if we have validated via single sign on or if the user is masquerading
 		if($this->username == '' || ($this->password == '' && !$validatedViaSSO && !UserAccount::isUserMasquerading())){
 			$validUser = new AspenError('authentication_error_blank');
