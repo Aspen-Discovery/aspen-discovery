@@ -668,6 +668,35 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user ADD COLUMN lastReadingHistoryUpdate INT(11) DEFAULT 0'
 			]
+		],
+
+		'user_remove_college_major' => [
+			'title' => 'Remove College and Major',
+			'description' => 'Remove unused college and major fields from user table',
+			'sql' => [
+				'ALTER TABLE user DROP COLUMN college',
+				'ALTER TABLE user DROP COLUMN major',
+			]
+		],
+		'encrypt_user_table' => [
+			'title' => 'Encrypt User Table (Slow)',
+			'description' => 'Encrypt data within the user table, this can take a long time for instances with a lot of users.',
+			'sql' => [
+				//First increase field lengths
+				'ALTER TABLE user CHANGE COLUMN password password VARCHAR(256)',
+				'ALTER TABLE user CHANGE COLUMN firstname firstname VARCHAR(256) NOT NULL',
+				'ALTER TABLE user CHANGE COLUMN lastname lastname VARCHAR(256) NOT NULL',
+				'ALTER TABLE user CHANGE COLUMN email email VARCHAR(256) NOT NULL',
+				'ALTER TABLE user CHANGE COLUMN cat_username cat_username VARCHAR(256)',
+				'ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) NOT NULL',
+				'ALTER TABLE user CHANGE COLUMN displayName displayName VARCHAR(256) NOT NULL',
+				"ALTER TABLE user CHANGE COLUMN phone phone VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN overdriveEmail overdriveEmail VARCHAR(256) NOT NULL DEFAULT ''",
+				'ALTER TABLE user CHANGE COLUMN rbdigitalPassword rbdigitalPassword VARCHAR(256)',
+				"ALTER TABLE user CHANGE COLUMN alternateLibraryCardPassword alternateLibraryCardPassword VARCHAR(256) NOT NULL DEFAULT ''",
+				//Now do the actual encryption
+				'encryptUserFields'
+			]
 		]
 	);
 }
@@ -754,5 +783,23 @@ function fixNytUserPermissions()
 			$nytLists->searchable = 1;
 			$nytLists->update();
 		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function encryptUserFields(){
+	set_time_limit(0);
+	$user = new User();
+	$numUsers = $user->count();
+	$numBatches = (int)ceil($numUsers / 1000);
+	for ($i = 0; $i < $numBatches; $i++){
+		$user = new User();
+		$user->limit($i * 1000, 1000);
+		$user->find();
+		while ($user->fetch()){
+			//Just need to re-save to make the encryption work
+			$user->update();
+		}
+		$user->__destruct();
 	}
 }

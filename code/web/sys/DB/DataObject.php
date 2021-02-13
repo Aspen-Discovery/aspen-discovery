@@ -75,7 +75,7 @@ abstract class DataObject
 		global $aspen_db;
 		$query = $this->getSelectQuery($aspen_db);
 		$this->__lastQuery = $query;
-		$this->__queryStmt = $aspen_db->prepare($query, array(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => false, PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
+		$this->__queryStmt = $aspen_db->prepare($query, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
 		$this->__queryStmt->setFetchMode(PDO::FETCH_INTO, $this);
 		if ($this->__queryStmt->execute()){
 			$this->__N = $this->__queryStmt->rowCount();
