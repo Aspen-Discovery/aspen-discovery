@@ -115,6 +115,10 @@ class User extends DataObject
 		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
 	}
 
+	function getEncryptedFieldNames(){
+		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'rbdigitalPassword', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
+	}
+
 	function getLists() {
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 
@@ -132,7 +136,7 @@ class User extends DataObject
 		return $lists;
 	}
 
-	private $catalogDriver = null;
+	protected $_catalogDriver = null;
 
 	/**
 	 * Get a connection to the catalog for the user
@@ -141,17 +145,17 @@ class User extends DataObject
 	 */
 	function getCatalogDriver()
 	{
-		if ($this->catalogDriver == null) {
+		if ($this->_catalogDriver == null) {
 			//Based off the source of the user, get the AccountProfile
 			$accountProfile = $this->getAccountProfile();
 			if ($accountProfile) {
 				$catalogDriver = trim($accountProfile->driver);
 				if (!empty($catalogDriver)) {
-					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
+					$this->_catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
 				}
 			}
 		}
-		return $this->catalogDriver;
+		return $this->_catalogDriver;
 	}
 
 	function hasIlsConnection()
@@ -168,7 +172,7 @@ class User extends DataObject
 	}
 
 	/** @var AccountProfile */
-	private $_accountProfile;
+	protected $_accountProfile;
 
 	/**
 	 * @return AccountProfile
@@ -332,7 +336,18 @@ class User extends DataObject
 				return trim($this->cat_username);
 			}
 		}
+	}
 
+	function getPasswordOrPinField(){
+		if ($this->getAccountProfile() == null) {
+			return 'cat_password';
+		}else{
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return 'cat_password';
+			} else {
+				return 'cat_username';
+			}
+		}
 	}
 
 	function saveRoles(){
@@ -2276,6 +2291,14 @@ class User extends DataObject
 			}
 		}
 		return false;
+	}
+
+	protected function clearRuntimeDataVariables(){
+		if ($this->_accountProfile != null){
+			$this->_accountProfile->__destruct();
+			$this->_accountProfile = null;
+		}
+		parent::clearRuntimeDataVariables();
 	}
 }
 
