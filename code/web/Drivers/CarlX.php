@@ -1307,51 +1307,65 @@ class CarlX extends AbstractIlsDriver{
 		}
 
 		// Lost Item Fees
+		if ($result && $result->LostItemsCount > 0) {
+			// TODO: Lost Items don't have the fine amount
+			$request->TransactionType = 'Lost';
+			$result = $this->doSoapRequest('getPatronTransactions', $request);
+			//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), Logger::LOG_ERROR);
 
-		// TODO: Lost Items don't have the fine amount
-		$request->TransactionType = 'Lost';
-		$result = $this->doSoapRequest('getPatronTransactions', $request);
-		//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), Logger::LOG_ERROR);
-
-		if ($result && !empty($result->LostItems->LostItem)) {
-			if (!is_array($result->LostItems->LostItem)) {
-				$result->LostItems->LostItem = array($result->LostItems->LostItem);
-			}
-			foreach($result->LostItems->LostItem as $fine) {
-				// hard coded Nashville school branch IDs
-				if ($fine->Branch == 0) {
-					$fine->Branch = $fine->TransactionBranch;
+			if ($result && !empty($result->LostItems->LostItem)) {
+				if (!is_array($result->LostItems->LostItem)) {
+					$result->LostItems->LostItem = array($result->LostItems->LostItem);
 				}
-				$fine->System = $this->getFineSystem($fine->Branch);
-				$fine->CanPayFine = $this->canPayFine($fine->System);
+				foreach($result->LostItems->LostItem as $fine) {
+					// hard coded Nashville school branch IDs
+					if ($fine->Branch == 0) {
+						$fine->Branch = $fine->TransactionBranch;
+					}
+					$fine->System = $this->getFineSystem($fine->Branch);
+					$fine->CanPayFine = $this->canPayFine($fine->System);
 
-				$fine->FeeAmountOutstanding = 0;
-				if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
-					$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
-				} else {
-					$fine->FeeAmountOutstanding = $fine->FeeAmount;
+					$fine->FeeAmountOutstanding = 0;
+					if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
+						$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
+					} else {
+						$fine->FeeAmountOutstanding = $fine->FeeAmount;
+					}
+
+					if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+						$fine->Identifier = substr($fine->Identifier, 9);
+					}
+
+					$myFines[] = array(
+						'fineId' => $fine->Identifier,
+						'type' => $fine->TransactionCode,
+						'reason' => $fine->FeeNotes,
+						'amount' => $fine->FeeAmount,
+						'amountVal' => $fine->FeeAmount,
+						'amountOutstanding' => $fine->FeeAmountOutstanding,
+						'amountOutstandingVal' => $fine->FeeAmountOutstanding,
+						'message' => $fine->Title,
+						'date' => date('M j, Y', strtotime($fine->TransactionDate)),
+						'system' => $fine->System,
+						'canPayFine' => $fine->CanPayFine,
+					);
 				}
-
-				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
-					$fine->Identifier = substr($fine->Identifier,9);
+				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
+				$myLostFines = $this->getLostViaSIP($user->cat_username);
+				$myFinesIds = array_column($myFines, 'fineId');
+				foreach ($myLostFines as $myLostFine) {
+					$keys = array_keys($myFinesIds, $myLostFine['fineId']);
+					foreach ($keys as $key) {
+						// CarlX can have Processing fees and Lost fees associated with the same item id; here we target only the Lost, because Processing fees correctly report previous partial payments through the PatronAPI
+						if ($myFines[$key]['type'] == "L") {
+							$myFines[$key]['amountOutstanding'] = $myLostFine['amountOutstanding'];
+							$myFines[$key]['amountOutstandingVal'] = $myLostFine['amountOutstandingVal'];
+							break;
+						}
+					}
 				}
-
-				$myFines[] = array(
-					'fineId' => $fine->Identifier,
-					'type' => $fine->TransactionCode,
-					'reason'  => $fine->FeeNotes,
-					'amount'  => $fine->FeeAmount,
-					'amountVal'  => $fine->FeeAmount,
-					'amountOutstanding' => $fine->FeeAmountOutstanding,
-					'amountOutstandingVal' => $fine->FeeAmountOutstanding,
-					'message' => $fine->Title,
-					'date'    => date('M j, Y', strtotime($fine->TransactionDate)),
-					'system'  => $fine->System,
-					'canPayFine' => $fine->CanPayFine,
-				);
 			}
 		}
-
 		return $myFines;
 	}
 

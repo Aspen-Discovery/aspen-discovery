@@ -87,6 +87,48 @@ class Nashville extends CarlX {
 		}
 	}
 
+	protected function getLostViaSIP($patron) {
+		$mySip = $this->initSIPConnection();
+		$mySip->patron = $patron;
+		if (!is_null($mySip)) {
+			$in = $mySip->msgPatronInformation('none');
+			$msg_result = $mySip->get_message($in);
+			if (preg_match("/^64/", $msg_result)) {
+				$result = $mySip->parsePatronInfoResponse($msg_result);
+				$fineCount = $result['fixed']['FineCount'];
+				$in = $mySip->msgPatronInformation('fine', 1, $fineCount);
+				$msg_result = $mySip->get_message($in);
+				if (preg_match("/^64/", $msg_result)) {
+					$myLostFees = [];
+					$result = $mySip->parsePatronInfoResponse($msg_result);
+					foreach ($result['variable']['AV'] as $feeItem) {
+						$feeItemFields = explode('^', $feeItem);
+						$feeItemParsed = [];
+						foreach ($feeItemFields as $feeItemField) {
+							$fieldName = substr($feeItemField, 0, 1);
+							$fieldValue = substr($feeItemField, 1);
+							$feeItemParsed[$fieldName] = $fieldValue;
+						}
+						if ($feeItemParsed['S'] == 'Lost - fee charged') {
+							$myLostFees[] = array(
+								'fineId' => $feeItemParsed['I'],
+								//'type' => 'L',
+								//'reason' => $feeItem['T'],
+								//'amount' => $feeItem[], // not in CarlX SIP2 Patron Information > Fees
+								//'amountVal' => $feeItem[], // not in CarlX SIP2 Patron Information > Fees
+								'amountOutstanding' => $feeItemParsed['F'],
+								'amountOutstandingVal' => $feeItemParsed['F'],
+								//'message' => $feeItem['T'],
+								//'date' => date('M j, Y', strtotime($feeItem['1']))
+							);
+						}
+					}
+					return $myLostFees;
+				}
+			}
+		}
+	}
+
 	function getSelfRegTemplate($reason){
 		if ($reason == 'duplicate_email'){
 			return 'Emails/nashville-self-registration-denied-duplicate_email.tpl';
