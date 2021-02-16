@@ -684,12 +684,12 @@ function getUserUpdates()
 			'sql' => [
 				//First increase field lengths
 				'ALTER TABLE user CHANGE COLUMN password password VARCHAR(256)',
-				'ALTER TABLE user CHANGE COLUMN firstname firstname VARCHAR(256) NOT NULL',
-				'ALTER TABLE user CHANGE COLUMN lastname lastname VARCHAR(256) NOT NULL',
-				'ALTER TABLE user CHANGE COLUMN email email VARCHAR(256) NOT NULL',
+				"ALTER TABLE user CHANGE COLUMN firstname firstname VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN lastname lastname VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN email email VARCHAR(256) NOT NULL DEFAULT ''",
 				'ALTER TABLE user CHANGE COLUMN cat_username cat_username VARCHAR(256)',
 				'ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) NOT NULL',
-				'ALTER TABLE user CHANGE COLUMN displayName displayName VARCHAR(256) NOT NULL',
+				"ALTER TABLE user CHANGE COLUMN displayName displayName VARCHAR(256) NOT NULL DEFAULT ''",
 				"ALTER TABLE user CHANGE COLUMN phone phone VARCHAR(256) NOT NULL DEFAULT ''",
 				"ALTER TABLE user CHANGE COLUMN overdriveEmail overdriveEmail VARCHAR(256) NOT NULL DEFAULT ''",
 				'ALTER TABLE user CHANGE COLUMN rbdigitalPassword rbdigitalPassword VARCHAR(256)',
