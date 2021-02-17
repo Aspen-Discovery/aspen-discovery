@@ -17,3 +17,7 @@ chown -R apache:aspen_apache /usr/local/aspen-discovery/code/web
 chown -R apache:aspen_apache /usr/local/aspen-discovery/sites
 
 #Change file permissions so /data is owned by the aspen user
+chown -R aspen:aspen /data/aspen-discovery
+
+#Change file permissions so /var/log/aspen-discovery is owned by the aspen user
+chown -R aspen:aspen /var/log/aspen-discovery
