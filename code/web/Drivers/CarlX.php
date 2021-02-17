@@ -1265,11 +1265,9 @@ class CarlX extends AbstractIlsDriver{
 				if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes,'COLLECTION') !== false) {
 					$fineType = 'COLLECTION AGENCY';
 					$fine->FeeNotes = 'COLLECTION AGENCY';
-				} elseif ($fine->TransactionCode == 'F2') {
-					$fineType = $fine->TransactionCode;
-					$fine->FeeNotes .= ' : Processing fee';
 				} else {
 					$fineType = $fine->TransactionCode;
+					$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 				}
 
 				$myFines[] = array(
@@ -1318,9 +1316,12 @@ class CarlX extends AbstractIlsDriver{
 						$fine->Identifier = substr($fine->Identifier, 9);
 					}
 
+					$fineType = $fine->TransactionCode;
+					$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+
 					$myFines[] = array(
 						'fineId' => $fine->Identifier,
-						'type' => $fine->TransactionCode,
+						'type' => $fineType,
 						'reason' => $fine->FeeNotes,
 						'amount' => $fine->FeeAmount,
 						'amountVal' => $fine->FeeAmount,
@@ -2176,4 +2177,12 @@ EOT;
 	{
 		return true;
 	}
+
+	static $fineTypeTranslations = [
+		'F'		=> 'Fine',
+		'F2'	=> 'Processing Fee',
+		'FS'	=> 'Manual Fine',
+		'L'		=> 'Lost'
+	];
+
 }
