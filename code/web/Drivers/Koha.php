@@ -780,14 +780,6 @@ class Koha extends AbstractIlsDriver
 		}
 	}
 
-	function closeDatabaseConnection()
-	{
-		if ($this->dbConnection != null){
-			mysqli_close($this->dbConnection);
-			$this->dbConnection = null;
-		}
-	}
-
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -806,10 +798,8 @@ class Koha extends AbstractIlsDriver
 
 		//Cleanup any connections we have to other systems
 		if ($this->dbConnection != null) {
-			if ($this->getNumHoldsStmt != null) {
-				$this->getNumHoldsStmt->close();
-			}
 			mysqli_close($this->dbConnection);
+			$this->dbConnection = null;
 		}
 	}
 
@@ -1529,9 +1519,6 @@ class Koha extends AbstractIlsDriver
 
 		return $fines;
 	}
-
-	/** @var mysqli_stmt */
-	private $getNumHoldsStmt = null;
 
 	/**
 	 * Get Total Outstanding fines for a user.  Lifted from Koha:
@@ -2787,11 +2774,9 @@ class Koha extends AbstractIlsDriver
 			$patronId = $lookupUserRow['borrowernumber'];
 			$newUser = $this->loadPatronInfoFromDB($patronId, null);
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
-				$this->closeDatabaseConnection();
 				return $newUser;
 			}
 		}
-		$this->closeDatabaseConnection();
 		return false;
 	}
 
