@@ -171,7 +171,7 @@ class Nashville extends CarlX {
 						$fine->Identifier = substr($fine->Identifier, 9);
 					}
 
-					$fineType = $fine->TransactionCode;
+					$fineType = 'FEE';
 					$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 
 					$myFines[] = array(
