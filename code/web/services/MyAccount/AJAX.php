@@ -2413,6 +2413,9 @@ class MyAccount_AJAX extends JSON_Action
 
 					} else {
 						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+						if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount
+							$finesPaid .= '|' . $fineAmount;
+						}
 					}
 
 					$purchaseUnits['items'][] = [
@@ -2618,7 +2621,7 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		global $configArray;
 		$result = $this->createGenericOrder('msb');
-		if (is_array($result) && $result['success'] === false) {
+		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
 			list($userLibrary, $payment, $purchaseUnits) = $result;
