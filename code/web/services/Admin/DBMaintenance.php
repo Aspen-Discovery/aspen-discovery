@@ -2768,8 +2768,8 @@ class Admin_DBMaintenance extends Admin_Admin
 				$runningOnWindows = false;
 			}
 			if (!$runningOnWindows){
-				exec('chown aspen:aspen_apache ' . $passkeyFile);
-				exec('chmod 440 ' . $passkeyFile);
+				exec('chown apache:apache ' . $passkeyFile);
+				exec('chmod 400 ' . $passkeyFile);
 			}
 		}
 	}
