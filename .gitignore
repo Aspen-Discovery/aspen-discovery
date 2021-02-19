@@ -7,7 +7,7 @@ tmp
 sites/*/backup
 sites/*/conf/log4j.*.properties
 sites/*/conf/passkey
-!sites/defult/conf/log4j.properties
+!sites/default/conf/log4j.properties
 !sites/default/backup
 sites/default/solr5/docs/*
 sites/default/solr5/example/*
