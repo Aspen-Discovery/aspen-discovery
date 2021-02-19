@@ -265,7 +265,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param array $soapRequestOptions
 	 * @return false|stdClass
 	 */
-	private function doSoapRequest($requestName, $request, $WSDL = '', $soapRequestOptions = array()) {
+	protected function doSoapRequest($requestName, $request, $WSDL = '', $soapRequestOptions = array()) {
 		if (empty($WSDL)) { // Let the patron WSDL be the assumed default WSDL when not specified.
 			if (!empty($this->patronWsdl)) {
 				$WSDL = $this->patronWsdl;
@@ -1248,7 +1248,6 @@ class CarlX extends AbstractIlsDriver{
 
 	public function getFines($user, $includeMessages = false) {
 		$myFines = array();
-
 		$request = $this->getSearchbyPatronIdRequest($user);
 
 		// Fines
@@ -1265,8 +1264,6 @@ class CarlX extends AbstractIlsDriver{
 				if ($fine->Branch == 0) {
 					$fine->Branch = $fine->TransactionBranch;
 				}
-				$fine->System = $this->getFineSystem($fine->Branch);
-				$fine->CanPayFine = $this->canPayFine($fine->System);
 
 				$fine->FineAmountOutstanding = 0;
 				if ($fine->FineAmountPaid > 0) {
@@ -1279,16 +1276,8 @@ class CarlX extends AbstractIlsDriver{
 					$fine->Identifier = substr($fine->Identifier,9);
 				}
 				$fine->Identifier = str_replace('#', '', $fine->Identifier);
-
-				if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes,'COLLECTION') !== false) {
-					$fineType = 'COLLECTION AGENCY';
-					$fine->FeeNotes = 'COLLECTION AGENCY';
-				} elseif ($fine->TransactionCode == 'F2') {
-					$fineType = $fine->TransactionCode;
-					$fine->FeeNotes .= ' : Processing fee';
-				} else {
-					$fineType = $fine->TransactionCode;
-				}
+				$fineType = $fine->TransactionCode;
+				$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 
 				$myFines[] = array(
 					'fineId' => $fine->Identifier,
@@ -1300,8 +1289,6 @@ class CarlX extends AbstractIlsDriver{
 					'amountOutstandingVal' => $fine->FineAmountOutstanding,
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->FineAssessedDate)),
-					'system'  => $fine->System,
-					'canPayFine' => $fine->CanPayFine,
 				);
 			}
 		}
@@ -1336,9 +1323,12 @@ class CarlX extends AbstractIlsDriver{
 						$fine->Identifier = substr($fine->Identifier, 9);
 					}
 
+					$fineType = $fine->TransactionCode;
+					$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+
 					$myFines[] = array(
 						'fineId' => $fine->Identifier,
-						'type' => $fine->TransactionCode,
+						'type' => $fineType,
 						'reason' => $fine->FeeNotes,
 						'amount' => $fine->FeeAmount,
 						'amountVal' => $fine->FeeAmount,
@@ -1346,8 +1336,6 @@ class CarlX extends AbstractIlsDriver{
 						'amountOutstandingVal' => $fine->FeeAmountOutstanding,
 						'message' => $fine->Title,
 						'date' => date('M j, Y', strtotime($fine->TransactionDate)),
-						'system' => $fine->System,
-						'canPayFine' => $fine->CanPayFine,
 					);
 				}
 				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
@@ -1366,6 +1354,7 @@ class CarlX extends AbstractIlsDriver{
 				}
 			}
 		}
+		array_multisort(array_column($myFines, 'message', SORT_ASC), $myFines);
 		return $myFines;
 	}
 
@@ -1483,7 +1472,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param $user
 	 * @return stdClass
 	 */
-	private function getSearchbyPatronIdRequest($user)
+	protected function getSearchbyPatronIdRequest($user)
 	{
 		$request             = new stdClass();
 		$request->SearchType = 'Patron ID';
@@ -2195,4 +2184,19 @@ EOT;
 	{
 		return true;
 	}
+
+	static $fineTypeTranslations = [
+		'F'		=> 'Fine',
+		'F2'	=> 'Processing',
+		'FS'	=> 'Manual',
+		'L'		=> 'Lost'
+	];
+
+	static  $fineTypeSIP2Translations = [
+		'F'		=> '04',
+		'F2'	=> '05',
+		'FS'	=> '01',
+		'L'		=> '07'
+	];
+
 }

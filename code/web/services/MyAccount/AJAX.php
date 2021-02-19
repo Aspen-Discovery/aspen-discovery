@@ -2413,6 +2413,9 @@ class MyAccount_AJAX extends JSON_Action
 
 					} else {
 						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+						if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount
+							$finesPaid .= '|' . $fineAmount;
+						}
 					}
 
 					$purchaseUnits['items'][] = [
@@ -2617,14 +2620,19 @@ class MyAccount_AJAX extends JSON_Action
 	function createMSBOrder()
 	{
 		global $configArray;
-		list($userLibrary, $payment, $purchaseUnits) = $this->createGenericOrder('msb');
-		$baseUrl = "https://msbpay.demo.gilacorp.com/"; // TODO: create a database variable
-		$paymentRequestUrl = $baseUrl . "NashvillePublicLibrary/"; // TODO: create a database variable
-		$paymentRequestUrl .= "?ReferenceID=".$payment->id;
-		$paymentRequestUrl .= "&PaymentType=CC";
-		$paymentRequestUrl .= "&TotalAmount=".$payment->totalPaid;
-		$paymentRequestUrl .= "&PaymentRedirectUrl=".$configArray['Site']['url'] . '/MyAccount/Fines';
-		return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
+		$result = $this->createGenericOrder('msb');
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			list($userLibrary, $payment, $purchaseUnits) = $result;
+			$baseUrl = "https://msbpay.demo.gilacorp.com/"; // TODO: create a database variable
+			$paymentRequestUrl = $baseUrl . "NashvillePublicLibrary/"; // TODO: create a database variable
+			$paymentRequestUrl .= "?ReferenceID=" . $payment->id;
+			$paymentRequestUrl .= "&PaymentType=CC";
+			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;
+			$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/MyAccount/Fines';
+			return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
+		}
 	}
 
 	/** @noinspection PhpUnused */

@@ -9,7 +9,7 @@ class Nashville extends CarlX {
 		parent::__construct($accountProfile);
 	}
 
-	public function completeFinePayment(User $patron, UserPayment $payment)
+	public function completeFinePayment(User $patron, UserPayment $payment): array
 	{
 		global $logger;
 		$accountLinesPaid = explode(',', $payment->finesPaid);
@@ -24,23 +24,27 @@ class Nashville extends CarlX {
 		foreach ($accountLinesPaid as $line) {
 			// MSB Payments are in the form of fineId|paymentAmount
 			list($feeId, $pmtAmount) = explode('|', $line);
+			list($feeId, $feeType) = explode('-', $feeId);
+			$feeType = $fineTypeSIP2Translations[$feeType];
 			if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
 				$feeId = '#' . $feeId;
 			}
-			$response = $this->feePaidViaSIP('01', '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
+			$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
 			if ($response['success'] === false) {
 				$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
 				$allPaymentsSucceed = false;
 			}
 		}
 		if ($allPaymentsSucceed === false) {
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
+			$mailer = new Mailer();
+			$variables = new SystemVariables();
+			global $serverName;
 			$success = false;
 			$message = "MSB Payment CarlX update failed.";
 			$payment->completed = 9;
 			$body = "MSB Payment CarlX update failed for Payment Reference ID $payment->id . Refer to log for more detail.";
-			require_once ROOT_DIR . '/sys/Email/Mailer.php';
-			$mailer = new Mailer();
-			$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment CarlX update", $body);
+			$mailer->send($variables->errorEmail, "$serverName Error with MSB Payment CarlX update", $body);
 		} else {
 			$success = true;
 			$message = "MSB payment successfully recorded in CarlX.";
@@ -50,7 +54,8 @@ class Nashville extends CarlX {
 		return ['success' => $success, 'message' => $message];
 	}
 
-	public function canPayFine($system){
+	public function canPayFine($system): bool
+	{
 		$canPayFine = false;
 		if ($system == 'NPL') {
 			$canPayFine = true;
@@ -58,7 +63,8 @@ class Nashville extends CarlX {
 		return $canPayFine;
 	}
 
-	protected function feePaidViaSIP($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = '') {
+	protected function feePaidViaSIP($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = ''): array
+	{
 		$mySip = $this->initSIPConnection();
 		if (!is_null($mySip)) {
 			$in = $mySip->msgFeePaid($feeType, $pmtType, $pmtAmount, $curType, $feeId, $transId, $patronId);
@@ -69,8 +75,7 @@ class Nashville extends CarlX {
 				$message = $result['variable']['AF'][0];
 				if (!$success) {
 					// $patron = $result['variable']['AA'][0];
-					$transaction = $result['variable']['BK'][0];
-					$message = empty($transaction) ? $message : $transaction . ": " . $message;
+					$message = empty($transId) ? $message : $transId . ": " . $message;
 				}
 			}
 			return ['success' => $success, 'message' => $message];
@@ -79,7 +84,133 @@ class Nashville extends CarlX {
 		}
 	}
 
-	public function getFineSystem($branchId){
+	public function getFines($user, $includeMessages = false): array
+	{
+		$myFines = array();
+
+		$request = $this->getSearchbyPatronIdRequest($user);
+
+		// Fines
+		$request->TransactionType = 'Fine';
+		$result = $this->doSoapRequest('getPatronTransactions', $request);
+		//global $logger;
+		//$logger->log("Result of getPatronTransactions (Fine)\r\n" . print_r($result, true), Logger::LOG_ERROR);
+		if ($result && !empty($result->FineItems->FineItem)) {
+			if (!is_array($result->FineItems->FineItem)) {
+				$result->FineItems->FineItem = array($result->FineItems->FineItem);
+			}
+			foreach($result->FineItems->FineItem as $fine) {
+				// hard coded Nashville school branch IDs
+				if ($fine->Branch == 0) {
+					$fine->Branch = $fine->TransactionBranch;
+				}
+				$fine->System = $this->getFineSystem($fine->Branch);
+				$fine->CanPayFine = $this->canPayFine($fine->System);
+
+				$fine->FineAmountOutstanding = 0;
+				if ($fine->FineAmountPaid > 0) {
+					$fine->FineAmountOutstanding = $fine->FineAmount - $fine->FineAmountPaid;
+				} else {
+					$fine->FineAmountOutstanding = $fine->FineAmount;
+				}
+
+				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+					$fine->Identifier = substr($fine->Identifier,9);
+				}
+				$fine->Identifier = str_replace('#', '', $fine->Identifier);
+
+				if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes,'COLLECTION') !== false) {
+					$fineType = 'COLLECTION AGENCY';
+					$fine->FeeNotes = 'COLLECTION AGENCY: must be paid last';
+				} else {
+					$fineType = 'FEE';
+					$fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+				}
+
+				$myFines[] = array(
+					'fineId' => $fine->Identifier . "-" . $fine->TransactionCode,
+					'type' => $fineType,
+					'reason'  => $fine->FeeNotes,
+					'amount'  => $fine->FineAmount,
+					'amountVal' => $fine->FineAmount,
+					'amountOutstanding' => $fine->FineAmountOutstanding,
+					'amountOutstandingVal' => $fine->FineAmountOutstanding,
+					'message' => $fine->Title,
+					'date'    => date('M j, Y', strtotime($fine->FineAssessedDate)),
+					'system'  => $fine->System,
+					'canPayFine' => $fine->CanPayFine,
+				);
+			}
+		}
+
+		// Lost Item Fees
+		if ($result && $result->LostItemsCount > 0) {
+			$request->TransactionType = 'Lost';
+			$result = $this->doSoapRequest('getPatronTransactions', $request);
+			//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), Logger::LOG_ERROR);
+
+			if ($result && !empty($result->LostItems->LostItem)) {
+				if (!is_array($result->LostItems->LostItem)) {
+					$result->LostItems->LostItem = array($result->LostItems->LostItem);
+				}
+				foreach($result->LostItems->LostItem as $fine) {
+					// hard coded Nashville school branch IDs
+					if ($fine->Branch == 0) {
+						$fine->Branch = $fine->TransactionBranch;
+					}
+					$fine->System = $this->getFineSystem($fine->Branch);
+					$fine->CanPayFine = $this->canPayFine($fine->System);
+
+					$fine->FeeAmountOutstanding = 0;
+					if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
+						$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
+					} else {
+						$fine->FeeAmountOutstanding = $fine->FeeAmount;
+					}
+
+					if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+						$fine->Identifier = substr($fine->Identifier, 9);
+					}
+
+					$fineType = 'FEE';
+					$fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+
+					$myFines[] = array(
+						'fineId' => $fine->Identifier . "-" . $fine->TransactionCode,
+						'type' => $fineType,
+						'reason' => $fine->FeeNotes,
+						'amount' => $fine->FeeAmount,
+						'amountVal' => $fine->FeeAmount,
+						'amountOutstanding' => $fine->FeeAmountOutstanding,
+						'amountOutstandingVal' => $fine->FeeAmountOutstanding,
+						'message' => $fine->Title,
+						'date' => date('M j, Y', strtotime($fine->TransactionDate)),
+						'system' => $fine->System,
+						'canPayFine' => $fine->CanPayFine,
+					);
+				}
+				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
+				$myLostFines = $this->getLostViaSIP($user->cat_username);
+				$myFinesIds = array_column($myFines, 'fineId');
+				foreach ($myLostFines as $myLostFine) {
+					$keys = array_keys($myFinesIds, $myLostFine['fineId'] . '-L');
+					foreach ($keys as $key) {
+						// CarlX can have Processing fees and Lost fees associated with the same item id; here we target only the Lost, because Processing fees correctly report previous partial payments through the PatronAPI
+						if (substr($myFines[$key]['fineId'], -1) == "L") {
+							$myFines[$key]['amountOutstanding'] = $myLostFine['amountOutstanding'];
+							$myFines[$key]['amountOutstandingVal'] = $myLostFine['amountOutstandingVal'];
+							break;
+						}
+					}
+				}
+			}
+		}
+		array_multisort(array_column($myFines, 'message', SORT_ASC), $myFines);
+		return $myFines;
+	}
+
+	public function getFineSystem($branchId): string
+	{
 		if (($branchId >= 30 && $branchId <= 178 && $branchId != 42 && $branchId != 167 && $branchId != 171) || ($branchId >= 180 && $branchId <= 212 && $branchId != 185 && $branchId != 187)) {
 			return "MNPS";
 		} else {
@@ -87,7 +218,8 @@ class Nashville extends CarlX {
 		}
 	}
 
-	protected function getLostViaSIP($patron) {
+	protected function getLostViaSIP($patron): array
+	{
 		$mySip = $this->initSIPConnection();
 		$mySip->patron = $patron;
 		if (!is_null($mySip)) {
@@ -129,7 +261,8 @@ class Nashville extends CarlX {
 		}
 	}
 
-	function getSelfRegTemplate($reason){
+	function getSelfRegTemplate($reason): string
+	{
 		if ($reason == 'duplicate_email'){
 			return 'Emails/nashville-self-registration-denied-duplicate_email.tpl';
 		}elseif ($reason == 'duplicate_name+birthdate') {
@@ -137,7 +270,7 @@ class Nashville extends CarlX {
 		}elseif ($reason == 'success') {
 			return 'Emails/nashville-self-registration.tpl';
 		}else{
-			return;
+			return '';
 		}
 	}
 
