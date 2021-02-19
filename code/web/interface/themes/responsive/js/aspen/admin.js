@@ -278,6 +278,24 @@ AspenDiscovery.Admin = (function(){
 			}else{
 				$("#propertyRowaudienceSubfield").hide();
 			}
+			var formatSource = $('#formatSourceSelect').val();
+			if (formatSource === 'specified'){
+				$("#propertyRowspecifiedFormat").show();
+				$("#propertyRowspecifiedFormatCategory").show();
+				$("#propertyRowspecifiedFormatBoost").show();
+				$("#propertyRowcheckRecordForLargePrint").hide();
+				$("#propertyRowformatMap").hide();
+			}else{
+				$("#propertyRowspecifiedFormat").hide();
+				$("#propertyRowspecifiedFormatCategory").hide();
+				$("#propertyRowspecifiedFormatBoost").hide();
+				$("#propertyRowformatMap").show();
+				if (formatSource === 'item'){
+					$("#propertyRowcheckRecordForLargePrint").show();
+				}else{
+					$("#propertyRowcheckRecordForLargePrint").hide();
+				}
+			}
 		},
 		showCreateRoleForm: function(){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getCreateRoleForm', true);
