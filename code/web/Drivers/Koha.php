@@ -2987,7 +2987,7 @@ class Koha extends AbstractIlsDriver
 				}
 				//Show the number of holds the patron has used.
 				$accountSummary = $this->getAccountSummary($patron, true);
-				$maxReserves = $this->getKohaSystemPreference('maxreserves');
+				$maxReserves = $this->getKohaSystemPreference('maxreserves', 50);
 				$totalHolds = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
 				$remainingHolds = $maxReserves - $totalHolds;
 				if ($remainingHolds <= 3){
@@ -3139,7 +3139,7 @@ class Koha extends AbstractIlsDriver
 		}
 
 		//Check maximum holds
-		$maxHolds = $this->getKohaSystemPreference('maxreserves');
+		$maxHolds = $this->getKohaSystemPreference('maxreserves', 50);
 		//Get total holds
 		$currentHoldsForUser = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
 		if ($currentHoldsForUser >= $maxHolds) {
@@ -3400,15 +3400,17 @@ class Koha extends AbstractIlsDriver
 		return $this->getKohaSystemPreference('Version');
 	}
 
-	private function getKohaSystemPreference(string $preferenceName)
+	private function getKohaSystemPreference(string $preferenceName, $default = '')
 	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
 		$sql = "SELECT value FROM systempreferences WHERE variable='$preferenceName';";
 		$results = mysqli_query($this->dbConnection, $sql);
-		$preference = '';
+		$preference = $default;
 		while ($curRow = $results->fetch_assoc()) {
-			$preference = $curRow['value'];
+			if ($curRow['value'] != '') {
+				$preference = $curRow['value'];
+			}
 		}
 		$results->close();
 		return $preference;
