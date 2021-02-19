@@ -24,10 +24,12 @@ class Nashville extends CarlX {
 		foreach ($accountLinesPaid as $line) {
 			// MSB Payments are in the form of fineId|paymentAmount
 			list($feeId, $pmtAmount) = explode('|', $line);
+			list($feeId, $feeType) = explode('-', $feeId);
+			$feeType = $fineTypeSIP2Translations[$feeType];
 			if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
 				$feeId = '#' . $feeId;
 			}
-			$response = $this->feePaidViaSIP('01', '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
+			$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
 			if ($response['success'] === false) {
 				$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
 				$allPaymentsSucceed = false;
@@ -119,14 +121,14 @@ class Nashville extends CarlX {
 
 				if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes,'COLLECTION') !== false) {
 					$fineType = 'COLLECTION AGENCY';
-					$fine->FeeNotes = 'COLLECTION AGENCY';
+					$fine->FeeNotes = 'COLLECTION AGENCY: must be paid last';
 				} else {
 					$fineType = 'FEE';
-					$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+					$fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 				}
 
 				$myFines[] = array(
-					'fineId' => $fine->Identifier,
+					'fineId' => $fine->Identifier . "-" . $fine->TransactionCode,
 					'type' => $fineType,
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FineAmount,
@@ -143,7 +145,6 @@ class Nashville extends CarlX {
 
 		// Lost Item Fees
 		if ($result && $result->LostItemsCount > 0) {
-			// TODO: Lost Items don't have the fine amount
 			$request->TransactionType = 'Lost';
 			$result = $this->doSoapRequest('getPatronTransactions', $request);
 			//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), Logger::LOG_ERROR);
@@ -172,10 +173,10 @@ class Nashville extends CarlX {
 					}
 
 					$fineType = 'FEE';
-					$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+					$fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 
 					$myFines[] = array(
-						'fineId' => $fine->Identifier,
+						'fineId' => $fine->Identifier . "-" . $fine->TransactionCode,
 						'type' => $fineType,
 						'reason' => $fine->FeeNotes,
 						'amount' => $fine->FeeAmount,
@@ -192,10 +193,10 @@ class Nashville extends CarlX {
 				$myLostFines = $this->getLostViaSIP($user->cat_username);
 				$myFinesIds = array_column($myFines, 'fineId');
 				foreach ($myLostFines as $myLostFine) {
-					$keys = array_keys($myFinesIds, $myLostFine['fineId']);
+					$keys = array_keys($myFinesIds, $myLostFine['fineId'] . '-L');
 					foreach ($keys as $key) {
 						// CarlX can have Processing fees and Lost fees associated with the same item id; here we target only the Lost, because Processing fees correctly report previous partial payments through the PatronAPI
-						if ($myFines[$key]['type'] == "L") {
+						if (substr($myFines[$key]['fineId'], -1) == "L") {
 							$myFines[$key]['amountOutstanding'] = $myLostFine['amountOutstanding'];
 							$myFines[$key]['amountOutstandingVal'] = $myLostFine['amountOutstandingVal'];
 							break;
@@ -204,6 +205,7 @@ class Nashville extends CarlX {
 				}
 			}
 		}
+		array_multisort(array_column($myFines, 'message', SORT_ASC), $myFines);
 		return $myFines;
 	}
 

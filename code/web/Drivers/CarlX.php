@@ -1336,6 +1336,7 @@ class CarlX extends AbstractIlsDriver{
 				}
 			}
 		}
+		array_multisort(array_column($myFines, 'message', SORT_ASC), $myFines);
 		return $myFines;
 	}
 
@@ -2167,9 +2168,16 @@ EOT;
 
 	static $fineTypeTranslations = [
 		'F'		=> 'Fine',
-		'F2'	=> 'Processing Fee',
-		'FS'	=> 'Manual Fine',
+		'F2'	=> 'Processing',
+		'FS'	=> 'Manual',
 		'L'		=> 'Lost'
+	];
+
+	static  $fineTypeSIP2Translations = [
+		'F'		=> '04',
+		'F2'	=> '05',
+		'FS'	=> '01',
+		'L'		=> '07'
 	];
 
 }
