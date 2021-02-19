@@ -8,16 +8,20 @@ for ID in $(cat /etc/passwd | grep /home | cut -d ':' -f1); do (usermod -a -G as
 groupadd aspen_apache
 #Add apache to the aspen_apache group
 usermod -a -G aspen_apache apache
+usermod -a -G aspen solr
 
 #Change file permissions so /usr/local/aspen-discovery is owned by the aspen user
 chown -R aspen:aspen /usr/local/aspen-discovery
 #Now change files back for those that need apache to own them
 chown -R apache:aspen_apache /usr/local/aspen-discovery/tmp
 chown -R apache:aspen_apache /usr/local/aspen-discovery/code/web
-chown -R apache:aspen_apache /usr/local/aspen-discovery/sites
+chown -R aspen:aspen_apache /usr/local/aspen-discovery/sites
+chown -R aspen:aspen_apache /usr/local/aspen-discovery/sites/default
+chown -R solr:aspen /usr/local/aspen-discovery/sites/default/solr-7.6.0
 
 #Change file permissions so /data is owned by the aspen user
-chown -R aspen:aspen /data/aspen-discovery
+chown -R aspen:aspen_apache /data/aspen-discovery
 
 #Change file permissions so /var/log/aspen-discovery is owned by the aspen user
 chown -R aspen:aspen /var/log/aspen-discovery
+

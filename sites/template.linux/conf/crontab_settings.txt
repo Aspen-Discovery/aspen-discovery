@@ -1,18 +1,11 @@
 ##################
 ## Crontab setting from a 'configuration' file
 ##
-## to save current crontab to file: crontab -l > crontab_settings.txt
-##
-## to set the current crontab from a file : crontab < crontab_settings.txt
+## crontab for the site should be linked to from /etc/cron.d
+## when updated, cron simply needs to be restarted.  I.e.
+## sudo service crond restart
 ##
 ##################
-
-# !! Please make all changes to the crontab within the git repository system and apply through the above method.
-#
-# ie :
-# git pull origin {current branch}
-# sudo /usr/local/aspen-discovery/code/cron/check_crontab.sh {sitename}
-# sudo crontab < /usr/local/aspen-discovery/sites/{sitename}/conf/crontab_settings.txt
 
 ###################
 # * * * * *  command to execute
