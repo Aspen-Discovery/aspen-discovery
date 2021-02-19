@@ -3,6 +3,7 @@
 if [ -z "$1" ]
   then
     echo "Please provide the server name to update as the first argument."
+    exit 1
 fi
 chown root:root /usr/local/aspen-discovery/sites/$1/httpd-$1.conf
 chown root:root /usr/local/aspen-discovery/sites/$1/conf/crontab_settings.txt
