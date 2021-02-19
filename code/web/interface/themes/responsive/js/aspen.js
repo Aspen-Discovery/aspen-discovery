@@ -5922,7 +5922,11 @@ AspenDiscovery.Account = (function(){
 
 		createMSBOrder: function(finesFormId) {
 			$url = this.createGenericOrder(finesFormId, 'MSB');
-			window.location.href = $url;
+			if ($url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				window.location.href = $url;
+			}
 		},
 
 		createPayPalOrder: function(finesFormId) {
