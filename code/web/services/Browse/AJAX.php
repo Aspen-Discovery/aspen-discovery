@@ -187,6 +187,7 @@ class Browse_AJAX extends Action {
 			];
 		}
 		//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
+		$browseMode = $this->setBrowseMode();
 
 		global $interface;
 		$interface->assign('browseCategoryId', $this->textId);
@@ -227,6 +228,7 @@ class Browse_AJAX extends Action {
 		if ($this->textId == 'system_recommended_for_you') {
 			return $this->getSuggestionsBrowseCategoryResults($pageToLoad);
 		} else {
+			$browseMode = $this->setBrowseMode();
 			//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
 			$result = array('success' => false);
 			$browseCategory = $this->getBrowseCategory();
