@@ -961,7 +961,19 @@ function getIndexingUpdates()
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAuthorities INT(11) DEFAULT 0'
 			]
-		]
+		],
+
+		'indexing_simplify_format_boosting' => [
+			'title' => 'Indexing Simplify Format Boosting',
+			'description' => 'Simply Format Boosting using a dropdown rather than raw numbers',
+			'sql' => [
+				'UPDATE format_map_values SET formatBoost = 3 WHERE formatBoost > 1 and formatBoost <=4',
+				'UPDATE format_map_values SET formatBoost = 6 WHERE formatBoost > 4 and formatBoost <=7',
+				'UPDATE format_map_values SET formatBoost = 6 WHERE formatBoost > 7 and formatBoost <=8',
+				'UPDATE format_map_values SET formatBoost = 9 WHERE formatBoost > 8 and formatBoost <=10',
+				'UPDATE format_map_values SET formatBoost = 12 WHERE formatBoost > 10'
+			]
+		],
 	);
 }
 
