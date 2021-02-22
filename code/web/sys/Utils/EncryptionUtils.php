@@ -47,24 +47,36 @@ class EncryptionUtils
 
 	private static $_key = null;
 	private static function loadKey(){
+		/** MemoryCache $memCache */
+		global $memCache;
 		if (EncryptionUtils::$_key == null){
 			global $serverName;
-			$passkeyFile = ROOT_DIR . "/../../sites/$serverName/conf/passkey";
-			if (file_exists($passkeyFile)) {
-				$passkeyFhnd = fopen($passkeyFile, 'r');
-				$key = fgets($passkeyFhnd);
-				fclose($passkeyFhnd);
-				if ($key != false){
-					list($cipher, $key) = explode(':', $key, 2);
-					EncryptionUtils::$_key = [
-						'cipher' => $cipher,
-						'key' => hex2bin($key)
-					];
-				}else{
+			$cachedKey = $memCache->get('encryption_key_' . $serverName);
+			if ($cachedKey === false) {
+				$passkeyFile = ROOT_DIR . "/../../sites/$serverName/conf/passkey";
+				if (file_exists($passkeyFile)) {
+					$passkeyFhnd = fopen($passkeyFile, 'r');
+					$key = fgets($passkeyFhnd);
+					fclose($passkeyFhnd);
+					if ($key != false) {
+						$memCache->set('encryption_key_' . $serverName, $key, 86400);
+						list($cipher, $key) = explode(':', $key, 2);
+						EncryptionUtils::$_key = [
+							'cipher' => $cipher,
+							'key' => hex2bin($key)
+						];
+					} else {
+						EncryptionUtils::$_key = false;
+					}
+				} else {
 					EncryptionUtils::$_key = false;
 				}
 			}else{
-				EncryptionUtils::$_key = false;
+				list($cipher, $key) = explode(':', $cachedKey, 2);
+				EncryptionUtils::$_key = [
+					'cipher' => $cipher,
+					'key' => hex2bin($key)
+				];
 			}
 		}
 		return EncryptionUtils::$_key;
