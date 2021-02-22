@@ -11,7 +11,9 @@ chown aspen:aspen /usr/local/aspen-discovery/sites/$1/$1.sh
 chown aspen:aspen /usr/local/aspen-discovery/sites/$1/conf/log4j*
 chown aspen:aspen_apache /usr/local/aspen-discovery/sites/$1/conf/config*
 chown -R aspen:aspen_apache /data/aspen-discovery/$1/covers
+chmod -R g+w /data/aspen-discovery/$1/covers
 chown -R aspen:aspen_apache /data/aspen-discovery/$1/uploads
+chmod -R g+w /data/aspen-discovery/$1/uploads
 chown -R solr:aspen /data/aspen-discovery/$1/solr7
 chown -R root:root /data/aspen-discovery/$1/sql_backup
 chown aspen:aspen_apache /var/log/aspen-discovery/$1/*
