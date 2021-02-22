@@ -7200,10 +7200,11 @@ body > .container {
   }
 }
 .btn-editions {
-  display: inline;
+  display: inline-block;
   color: #212529;
   background-color: #f8f9fa;
   border-color: #999999;
+  margin-top: 3px;
 }
 .btn-editions:hover,
 .btn-editions:focus,
