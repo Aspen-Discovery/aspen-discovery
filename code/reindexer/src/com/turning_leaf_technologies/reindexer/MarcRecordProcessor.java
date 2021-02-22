@@ -1407,6 +1407,8 @@ abstract class MarcRecordProcessor {
 						result.add("MP3Disc");
 					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches()) {
 						result.add("SoundDisc");
+					} else if (subfield.getCode() == 'a' && physicalDescriptionData.matches("^\\d+\\s+(p\\.|pages)[\\s\\W]*$")){
+						result.add("Book");
 					}
 					//Since this is fairly generic, only use it if we have no other formats yet
 					if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
@@ -1486,27 +1488,14 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
+	Pattern playStation5Pattern = Pattern.compile(".*(playstation\\s?5|ps\\s?5).*");
+	Pattern playStation4Pattern = Pattern.compile(".*(playstation\\s?4|ps\\s?4).*");
+	Pattern playStation3Pattern = Pattern.compile(".*(playstation\\s?3|ps\\s?3).*");
+	Pattern playStation2Pattern = Pattern.compile(".*(playstation\\s?2|ps\\s?2).*");
+	Pattern playStationVitaPattern = Pattern.compile(".*(playstation\\s?vita|ps\\s?vita).*");
 	private String getGameFormatFromValue(String value) {
 		if (value.contains("kinect sensor")) {
 			return "Kinect";
-		} else if (value.contains("xbox one") && !value.contains("compatible")) {
-			return "XboxOne";
-		} else if (value.contains("xbox") && !value.contains("compatible")) {
-			return "Xbox360";
-		} else if ((value.contains("xbox series x") || value.contains("xbox x")) && !value.contains("compatible")) {
-			return "XBox Series X";
-		} else if ((value.contains("playstation 5") || value.contains("ps5")) && !value.contains("compatible")) {
-			return "PlayStation5";
-		} else if ((value.contains("playstation vita") || value.contains("ps vita")) && !value.contains("compatible")) {
-			return "PlayStationVita";
-		} else if ((value.contains("playstation 4") || value.contains("ps4")) && !value.contains("compatible")) {
-			return "PlayStation4";
-		} else if ((value.contains("playstation 3") || value.contains("ps3")) && !value.contains("compatible")) {
-			return "PlayStation3";
-		} else if ((value.contains("playstation 2") || value.contains("ps2")) && !value.contains("compatible")) {
-			return "PlayStation2";
-		} else if (value.contains("playstation") && !value.contains("compatible")) {
-			return "PlayStation";
 		} else if (value.contains("wii u")) {
 			return "WiiU";
 		} else if (value.contains("nintendo wii")) {
@@ -1519,6 +1508,28 @@ abstract class MarcRecordProcessor {
 			return "NintendoDS";
 		} else if (value.contains("directx")) {
 			return "WindowsGame";
+		} else if (!value.contains("compatible")) {
+			if (value.contains("xbox one")) {
+				return "XboxOne";
+			} else if (value.contains("xbox")) {
+				return "Xbox360";
+			} else if ((value.contains("xbox series x") || value.contains("xbox x"))) {
+				return "XBox Series X";
+			} else if (playStation5Pattern.matcher(value).matches()) {
+				return "PlayStation5";
+			} else if (playStationVitaPattern.matcher(value).matches()) {
+				return "PlayStationVita";
+			} else if (playStation4Pattern.matcher(value).matches()) {
+				return "PlayStation4";
+			} else if (playStation3Pattern.matcher(value).matches()) {
+				return "PlayStation3";
+			} else if (playStation2Pattern.matcher(value).matches()) {
+				return "PlayStation2";
+			} else if (value.contains("playstation")) {
+				return "PlayStation";
+			}else{
+				return null;
+			}
 		}else{
 			return null;
 		}
