@@ -268,6 +268,15 @@ function getIndexingUpdates()
 			)
 		),
 
+		'indexing_profile__remove_groupUnchangedFiles' => array(
+			'title' => 'Indexing Profiles - Remove Group Unchanged Files',
+			'description' => 'Remove Group Unchanged Files since it is not used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE indexing_profiles DROP COLUMN groupUnchangedFiles",
+			)
+		),
+
 		'indexing_profile_marc_record_subfield' => array(
 			'title' => 'Indexing Profiles - Marc Record Subfield',
 			'description' => 'Define the subfield for the marc record',

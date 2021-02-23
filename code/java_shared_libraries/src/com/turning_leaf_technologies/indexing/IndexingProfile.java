@@ -38,7 +38,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char eContentDescriptor = ' ';
 	private boolean doAutomaticEcontentSuppression;
 	private char format;
-	private boolean groupUnchangedFiles;
 	private long lastUpdateFromMarcExport;
 	private long lastVolumeExportTimestamp;
 	private boolean checkRecordForLargePrint;
@@ -77,14 +76,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public void setFormat(char format) {
 		this.format = format;
-	}
-
-	public boolean isGroupUnchangedFiles() {
-		return groupUnchangedFiles;
-	}
-
-	private void setGroupUnchangedFiles(boolean groupUnchangedFiles) {
-		this.groupUnchangedFiles = groupUnchangedFiles;
 	}
 
 	public static IndexingProfile loadIndexingProfile(Connection dbConn, String profileToLoad, Logger logger) {
@@ -132,8 +123,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setSpecifiedFormatCategory(indexingProfileRS.getString("specifiedFormatCategory"));
 				indexingProfile.setFormat(getCharFromRecordSet(indexingProfileRS, "format"));
 				indexingProfile.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
-
-				indexingProfile.setGroupUnchangedFiles(indexingProfileRS.getBoolean("groupUnchangedFiles"));
 
 				indexingProfile.setDoAutomaticEcontentSuppression(indexingProfileRS.getBoolean("doAutomaticEcontentSuppression"));
 				indexingProfile.setEContentDescriptor(getCharFromRecordSet(indexingProfileRS, "eContentDescriptor"));
