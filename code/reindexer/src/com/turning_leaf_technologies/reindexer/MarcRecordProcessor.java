@@ -1108,13 +1108,13 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		if (printFormats.size() == 0){
+		if (printFormats.size() == 0) {
 			logger.debug("Did not get any formats for print record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
 			printFormats.add("Book");
-		}else if (printFormats.size() > 1){
-			for(String format: printFormats){
-				logger.debug("    found format " + format);
-			}
+//		}else if (printFormats.size() > 1){
+//			for(String format: printFormats){
+//				logger.debug("    found format " + format);
+//			}
 		}
 
 		if (printFormats.size() > 1) {
@@ -1267,7 +1267,7 @@ abstract class MarcRecordProcessor {
 			printFormats.remove("Manuscript");
 		}
 		if (printFormats.contains("Kinect") || printFormats.contains("XBox360")  || printFormats.contains("Xbox360")
-				|| printFormats.contains("XBoxOne") || printFormats.contains("XBoxSeriesX") || printFormats.contains("PlayStation")
+				|| printFormats.contains("XboxOne") || printFormats.contains("XboxSeriesX") || printFormats.contains("PlayStation")
 				|| printFormats.contains("PlayStation2") || printFormats.contains("PlayStation3")
 				|| printFormats.contains("PlayStation4") || printFormats.contains("PlayStation5") || printFormats.contains("PlayStationVita")
 				|| printFormats.contains("Wii") || printFormats.contains("WiiU")
@@ -1278,6 +1278,7 @@ abstract class MarcRecordProcessor {
 			printFormats.remove("CDROM");
 			printFormats.remove("Blu-ray");
 			printFormats.remove("Blu-ray/DVD");
+			printFormats.remove("DVD");
 		}
 	}
 
@@ -1365,7 +1366,7 @@ abstract class MarcRecordProcessor {
 				String editionData = edition.getSubfield('a').getData().toLowerCase();
 				if (editionData.contains("large type") || editionData.contains("large print")) {
 					result.add("LargePrint");
-				}else if (dvdBlurayComboRegex.matcher(editionData).matches() || editionData.contains("combo pack")) {
+				}else if (dvdBlurayComboRegex.matcher(editionData).matches()) {
 					result.add("Blu-ray/DVD");
 				}else if (editionData.contains("go reader")) {
 					result.add("GoReader");
@@ -1498,7 +1499,7 @@ abstract class MarcRecordProcessor {
 			return "Kinect";
 		} else if (value.contains("wii u")) {
 			return "WiiU";
-		} else if (value.contains("nintendo wii")) {
+		} else if (value.contains("nintendo wii") || value.contains("wii")) {
 			return "Wii";
 		} else if (value.contains("nintendo 3ds")) {
 			return "3DS";
