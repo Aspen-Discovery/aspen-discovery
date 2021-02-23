@@ -15,10 +15,8 @@
 			{* Display Title *}
 			<h1>
 				{*{$recordDriver->getTitle()|escape}*}{* // ever a case when the trailing punction is needed? *}
+				{* Title includes the title section *}
 				{$recordDriver->getTitle()|removeTrailingPunctuation}
-				{if $recordDriver->getTitleSection()}
-					:&nbsp;{$recordDriver->getTitleSection()|removeTrailingPunctuation|escape}
-				{/if}
 				{if $recordDriver->getFormats()}
 					<br><small>({implode subject=$recordDriver->getFormats() glue=", ", translate=true})</small>
 				{/if}
