@@ -25,7 +25,7 @@ class Nashville extends CarlX {
 			// MSB Payments are in the form of fineId|paymentAmount
 			list($feeId, $pmtAmount) = explode('|', $line);
 			list($feeId, $feeType) = explode('-', $feeId);
-			$feeType = $fineTypeSIP2Translations[$feeType];
+			$feeType = $this->fineTypeSIP2Translations[$feeType];
 			if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
 				$feeId = '#' . $feeId;
 			}
