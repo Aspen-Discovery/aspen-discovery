@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.grouping;
 
-import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,13 +18,12 @@ import java.util.regex.Pattern;
 class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 
-	private static Pattern initialsFix = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
-	private static Pattern apostropheStrip = Pattern.compile("'s");
-	private static Pattern specialCharacterStrip = Pattern.compile("[^\\p{L}\\d\\s]");
-	private static Pattern consecutiveSpaceStrip = Pattern.compile("\\s{2,}");
+	private static final Pattern initialsFix = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
+	private static final Pattern apostropheStrip = Pattern.compile("'s");
+	private static final Pattern specialCharacterStrip = Pattern.compile("[^\\p{L}\\d\\s]");
+	private static final Pattern consecutiveSpaceStrip = Pattern.compile("\\s{2,}");
 	@SuppressWarnings("RegExpRedundantEscape")
-	private static Pattern bracketedCharacterStrip = Pattern.compile("\\[(.*?)\\]");
-	private static Pattern parentheticalCharacterStrip = Pattern.compile("\\((.*?)\\)");
+	private static final Pattern bracketedCharacterStrip = Pattern.compile("\\[(.*?)\\]");
 
 	static Logger logger = LogManager.getLogger(GroupedWork5.class);
 
@@ -43,7 +41,7 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return AuthorNormalizer.getNormalizedName(author);
 	}
 
-	private static Pattern editionRemovalPattern = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update)");
+	private static final Pattern editionRemovalPattern = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update)");
 
 	private String normalizeTitle(String fullTitle, int numNonFilingCharacters) {
 		String groupingTitle;
@@ -57,8 +55,6 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		groupingTitle = StringUtils.makeValueSortable(groupingTitle);
 		//Remove any bracketed parts of the title
 		groupingTitle = removeBracketedPartOfTitle(groupingTitle);
-		//TODO: Figure out if this is a good idea
-		//groupingTitle = removeParentheticalPartOfTitle(groupingTitle);
 
 		groupingTitle = cleanTitleCharacters(groupingTitle);
 
@@ -83,8 +79,8 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return groupingTitle;
 	}
 
-	private static Pattern dashPattern = Pattern.compile("&#8211");
-	private static Pattern ampersandPattern = Pattern.compile("&");
+	private static final Pattern dashPattern = Pattern.compile("&#8211");
+	private static final Pattern ampersandPattern = Pattern.compile("&");
 	private String cleanTitleCharacters(String groupingTitle) {
 		//Fix abbreviations
 		groupingTitle = initialsFix.matcher(groupingTitle).replaceAll(" ");
@@ -105,16 +101,16 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return groupingTitle;
 	}
 
-	private static Pattern firstPattern = Pattern.compile("1st");
-	private static Pattern secondPattern = Pattern.compile("2nd");
-	private static Pattern thirdPattern = Pattern.compile("3rd");
-	private static Pattern fourthPattern = Pattern.compile("4th");
-	private static Pattern fifthPattern = Pattern.compile("5th");
-	private static Pattern sixthPattern = Pattern.compile("6th");
-	private static Pattern seventhPattern = Pattern.compile("7th");
-	private static Pattern eighthPattern = Pattern.compile("8th");
-	private static Pattern ninthPattern = Pattern.compile("9th");
-	private static Pattern tenthPattern = Pattern.compile("10th");
+	private static final Pattern firstPattern = Pattern.compile("1st");
+	private static final Pattern secondPattern = Pattern.compile("2nd");
+	private static final Pattern thirdPattern = Pattern.compile("3rd");
+	private static final Pattern fourthPattern = Pattern.compile("4th");
+	private static final Pattern fifthPattern = Pattern.compile("5th");
+	private static final Pattern sixthPattern = Pattern.compile("6th");
+	private static final Pattern seventhPattern = Pattern.compile("7th");
+	private static final Pattern eighthPattern = Pattern.compile("8th");
+	private static final Pattern ninthPattern = Pattern.compile("9th");
+	private static final Pattern tenthPattern = Pattern.compile("10th");
 	private String normalizeNumericTitleText(String groupingTitle) {
 		//Normalize numeric titles
 		groupingTitle = firstPattern.matcher(groupingTitle).replaceAll("first");
@@ -130,8 +126,8 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return groupingTitle;
 	}
 
-	private static Pattern commonSubtitlesSimplePattern = Pattern.compile("(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel|large type edition|novel)$");
-	private static Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una|an)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|[\\w\\s]+serie libro \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+|^novel|[\\w\\s]+series|.+\\sbook\\s\\d+)$");
+	private static final Pattern commonSubtitlesSimplePattern = Pattern.compile("(by\\s\\w+\\s\\w+|a novel of .*|stories|an autobiography|a biography|a memoir in books|poems|the movie|large print|graphic novel|magazine|audio cd|book club kit|with illustrations|book \\d+|the original classic edition|classic edition|a novel|large type edition|novel)$");
+	private static final Pattern commonSubtitlesComplexPattern = Pattern.compile("((a|una|an)\\s(.*)novel(a|la)?|a(.*)memoir|a(.*)mystery|a(.*)thriller|by\\s\\w+\\s\\w+|an? .* story|a .*\\s?book|[\\w\\s]+series book \\d+|[\\w\\s]+serie libro \\d+|the[\\w\\s]+chronicles book \\d+|[\\w\\s]+trilogy book \\d+|^novel|[\\w\\s]+series|.+\\sbook\\s\\d+)$");
 	private String removeCommonSubtitles(String groupingTitle) {
 		boolean changeMade = true;
 		while (changeMade){
@@ -141,28 +137,6 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 				groupingTitle = commonSubtitleMatcher.replaceAll("").trim();
 				changeMade = true;
 			}
-		}
-		return groupingTitle;
-	}
-
-	private String removeParentheticalPartOfTitle(String groupingTitle) {
-		if (groupingTitle.indexOf("(") == -1) {
-			return groupingTitle;
-		}
-		//Remove any bracketed parts of the title
-		String tmpTitle = parentheticalCharacterStrip.matcher(groupingTitle).replaceAll("");
-		//Make sure we don't strip the entire title
-		if (tmpTitle.length() > 0){
-			//And make sure we don't have just special characters
-			tmpTitle = specialCharacterStrip.matcher(tmpTitle).replaceAll(" ").toLowerCase().trim();
-			if (tmpTitle.length() > 0) {
-				groupingTitle = tmpTitle;
-				//}else{
-				//	logger.warn("Just saved us from trimming " + groupingTitle + " to nothing");
-			}
-		}else{
-			//The entire title is in brackets, just remove the brackets
-			groupingTitle = groupingTitle.replace("(", "").replace(")","");
 		}
 		return groupingTitle;
 	}
@@ -209,7 +183,7 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	}
 
 	@Override
-	public void setTitle(String title, int numNonFilingCharacters, String subtitle) {
+	public void setTitle(String title, int numNonFilingCharacters, String subtitle, String partInformation) {
 		//this.fullTitle = title;
 		//if (subtitle != null) title += " " + subtitle;
 		if (subtitle != null && subtitle.length() > 0){
@@ -219,7 +193,18 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 			title = normalizeSubtitleWithinMainTitle(title);
 		}
 		title = normalizeTitle(title, numNonFilingCharacters);
+		if (partInformation != null && partInformation.length() > 0){
+			title += " " + normalizePartInformation(partInformation);
+		}
 		this.fullTitle = title.trim();
+	}
+
+	private String normalizePartInformation(String partInformation){
+		String normalizedPartInformation = partInformation.toLowerCase();
+		normalizedPartInformation = normalizeDiacritics(normalizedPartInformation);
+		normalizedPartInformation = cleanTitleCharacters(normalizedPartInformation);
+		normalizedPartInformation = normalizeNumericTitleText(normalizedPartInformation);
+		return normalizedPartInformation;
 	}
 
 	private String normalizePassedInSubtitle(String title, String subtitle) {
@@ -280,7 +265,7 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		this.permanentId = groupedWorkPermanentId;
 	}
 
-	private static Pattern validCategories = Pattern.compile("^(book|music|movie)$");
+	private static final Pattern validCategories = Pattern.compile("^(book|music|movie)$");
 	@Override
 	public void setGroupingCategory(String groupingCategory) {
 		groupingCategory = groupingCategory.toLowerCase();

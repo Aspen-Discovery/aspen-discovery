@@ -480,16 +480,17 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			}
 
 			//Group volumes, seasons, etc. independently
+			StringBuilder partInfo = new StringBuilder();
 			if (field245.getSubfield('n') != null) {
-				if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
-				groupingSubtitle.append(field245.getSubfield('n').getData());
+				if (partInfo.length() > 0) partInfo.append(" ");
+				partInfo.append(field245.getSubfield('n').getData());
 			}
 			if (field245.getSubfield('p') != null) {
-				if (groupingSubtitle.length() > 0) groupingSubtitle.append(" ");
-				groupingSubtitle.append(field245.getSubfield('p').getData());
+				if (partInfo.length() > 0) partInfo.append(" ");
+				partInfo.append(field245.getSubfield('p').getData());
 			}
 
-			workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString());
+			workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString(), partInfo.toString());
 		}
 		return field245;
 	}

@@ -88,7 +88,7 @@ public abstract class GroupedWorkBase {
 		return authoritativeTitle;
 	}
 
-	abstract void setTitle(String title, int numNonFilingCharacters, String subtitle);
+	abstract void setTitle(String title, int numNonFilingCharacters, String subtitle, String partInformation);
 
 	abstract String getAuthor();
 

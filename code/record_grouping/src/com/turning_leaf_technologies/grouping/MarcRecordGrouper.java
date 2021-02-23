@@ -19,10 +19,10 @@ import java.util.regex.Pattern;
  * by library.
  */
 public class MarcRecordGrouper extends BaseMarcRecordGrouper {
-	private IndexingProfile profile;
-	private String itemTag;
-	private boolean useEContentSubfield;
-	private char eContentDescriptor;
+	private final IndexingProfile profile;
+	private final String itemTag;
+	private final boolean useEContentSubfield;
+	private final char eContentDescriptor;
 	/**
 	 * Creates a record grouping processor that saves results to the database.
 	 *
@@ -37,7 +37,6 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		itemTag = profile.getItemTag();
 		eContentDescriptor = profile.getEContentDescriptor();
 		useEContentSubfield = profile.getEContentDescriptor() != ' ';
-
 
 		super.setupDatabaseStatements(dbConnection);
 
@@ -76,7 +75,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 	}
 
-	private static Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?lib\\.overdrive\\.com/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$");
+	private static final Pattern overdrivePattern = Pattern.compile("(?i)^http://.*?lib\\.overdrive\\.com/ContentDetails\\.htm\\?id=[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$");
 
 	private String getFormatFromItems(Record record, char formatSubfield) {
 		List<DataField> itemFields = getDataFields(record, itemTag);

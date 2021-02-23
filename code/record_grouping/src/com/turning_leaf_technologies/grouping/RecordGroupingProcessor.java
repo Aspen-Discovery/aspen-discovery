@@ -453,7 +453,7 @@ public class RecordGroupingProcessor {
 		GroupedWorkBase groupedWork = GroupedWorkFactory.getInstance(-1, this);
 
 		//Replace & with and for better matching
-		groupedWork.setTitle(title, 0, subtitle);
+		groupedWork.setTitle(title, 0, subtitle, "");
 
 		if (author != null) {
 			groupedWork.setAuthor(author);
