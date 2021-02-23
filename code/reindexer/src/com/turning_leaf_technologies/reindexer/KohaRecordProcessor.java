@@ -482,6 +482,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String sourceType = null;
 		if (itemField.getSubfield('e') != null){
 			sourceType = itemField.getSubfield('e').getData();
+			if (sourceType.toLowerCase().equals("marcexpress")){
+				sourceType = "OverDrive";
+			}
 		}else{
 			List<DataField> urlFields = record.getDataFields("856");
 			for (DataField urlDataField : urlFields) {
