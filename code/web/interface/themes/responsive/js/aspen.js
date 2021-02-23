@@ -5926,7 +5926,7 @@ AspenDiscovery.Account = (function(){
 		},
 
 		createPayPalOrder: function(finesFormId) {
-			this.createGenericOrder(finesFormId, 'PayPal');
+			return this.createGenericOrder(finesFormId, 'PayPal');
 		},
 
 		completePayPalOrder: function(orderId, patronId) {
