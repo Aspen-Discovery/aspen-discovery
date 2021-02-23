@@ -38,7 +38,7 @@
 						{/foreach}
 					</div>
 				{else}
-					<a href="{$topCategory->url}" class="menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" title="{translate text=$categoryName inAttribute=true}" aria-label="{translate text=$categoryName inAttribute=true}">
+					<a href="{$topCategory->url}" class="menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" title="{translate text=$categoryName inAttribute=true}" aria-label="{translate text=$categoryName inAttribute=true}" {if $topCategory->openInNewTab}target="_blank"{/if}>
 						{if !empty($topCategory->iconName)}
 							<i class="fas fa-{$topCategory->iconName} fa-lg"></i>
 						{/if}
