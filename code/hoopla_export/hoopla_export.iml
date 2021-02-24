@@ -12,7 +12,6 @@
     <orderEntry type="library" name="log4j-api-2.11.2" level="project" />
     <orderEntry type="library" name="commons-codec-1.12" level="project" />
     <orderEntry type="module" module-name="reindexer" />
-    <orderEntry type="module" module-name="record_grouping" />
     <orderEntry type="library" name="mysql-connector-java-8.0.15" level="project" />
   </component>
 </module>

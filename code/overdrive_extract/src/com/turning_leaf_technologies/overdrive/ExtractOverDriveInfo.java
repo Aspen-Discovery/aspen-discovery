@@ -489,7 +489,7 @@ class ExtractOverDriveInfo {
 					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 				} else if (result.deleteWork) {
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+					getGroupedWorkIndexer().deleteRecord(result.permanentId);
 				}
 			}
 		} catch (SQLException e) {

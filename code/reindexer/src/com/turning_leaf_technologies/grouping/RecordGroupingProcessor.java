@@ -688,7 +688,7 @@ public class RecordGroupingProcessor {
 			if (reloadAuthorAuthorities) {
 				PreparedStatement addAuthorAuthorityStmt = dbConn.prepareStatement("INSERT into author_authorities (originalName, authoritativeName) VALUES (?, ?)");
 				try {
-					CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/author_authorities.properties")));
+					CSVReader csvReader = new CSVReader(new FileReader(new File("../reindexer/author_authorities.properties")));
 					String[] curLine = csvReader.readNext();
 					while (curLine != null) {
 						try {
@@ -718,7 +718,7 @@ public class RecordGroupingProcessor {
 			if (reloadTitleAuthorities) {
 				PreparedStatement addTitleAuthorityStmt = dbConn.prepareStatement("INSERT into title_authorities (originalName, authoritativeName) VALUES (?, ?)");
 				try {
-					CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/title_authorities.properties")));
+					CSVReader csvReader = new CSVReader(new FileReader(new File("../reindexer/title_authorities.properties")));
 					String[] curLine = csvReader.readNext();
 					while (curLine != null) {
 						try {

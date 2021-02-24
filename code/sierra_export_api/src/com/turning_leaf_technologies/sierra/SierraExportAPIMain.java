@@ -97,7 +97,6 @@ public class SierraExportAPIMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
-		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 			Date startTime = new Date();
@@ -252,11 +251,6 @@ public class SierraExportAPIMain {
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				disconnectDatabase();
-				break;
-			}
-			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
 				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
 				disconnectDatabase();
 				break;
@@ -615,7 +609,7 @@ public class SierraExportAPIMain {
 				getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 			} else if (result.deleteWork) {
 				//Delete the work from solr and the database
-				getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+				getGroupedWorkIndexer().deleteRecord(result.permanentId);
 			}
 			logEntry.incDeleted();
 		} catch (Exception e) {

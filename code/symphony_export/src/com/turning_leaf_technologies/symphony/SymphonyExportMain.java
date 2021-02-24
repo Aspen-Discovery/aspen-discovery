@@ -1,11 +1,9 @@
 package com.turning_leaf_technologies.symphony;
 
-import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
@@ -58,7 +56,6 @@ public class SymphonyExportMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
-		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 			reindexStartTime = new Date();
@@ -131,11 +128,6 @@ public class SymphonyExportMain {
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				disconnectDatabase();
-				break;
-			}
-			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
 				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
 				disconnectDatabase();
 				break;
@@ -546,7 +538,7 @@ public class SymphonyExportMain {
 								getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 							}else if (result.deleteWork){
 								//Delete the work from solr and the database
-								getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+								getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
 							}
 							logEntry.incDeleted();
 							totalChanges++;
@@ -573,7 +565,7 @@ public class SymphonyExportMain {
 					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 				}else if (result.deleteWork){
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
 				}
 				logEntry.incDeleted();
 				totalChanges++;

@@ -18,6 +18,5 @@ Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../java
  -lib/slf4j-api-1.7.24.jar ../../sites/default/solr-7.6.0/dist/solrj-lib
  /stax2-api-3.1.4.jar ../../sites/default/solr-7.6.0/dist/solrj-lib/wood
  stox-core-asl-4.4.1.jar ../../sites/default/solr-7.6.0/dist/solrj-lib/z
- ookeeper-3.4.11.jar ../record_grouping/record_grouping.jar ../reindexer
- /reindexer.jar
+ ookeeper-3.4.11.jar ../reindexer/reindexer.jar
 

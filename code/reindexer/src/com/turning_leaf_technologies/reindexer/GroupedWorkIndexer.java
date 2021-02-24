@@ -360,7 +360,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void deleteRecord(String permanentId, @SuppressWarnings("unused") Long groupedWorkId) {
+	public void deleteRecord(String permanentId) {
 		logger.info("Clearing existing work " + permanentId + " from index");
 		try {
 			updateServer.deleteById(permanentId);
@@ -660,7 +660,7 @@ public class GroupedWorkIndexer {
 			//Log that this record did not have primary identifiers after
 			logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
 			if (!this.clearIndex){
-				this.deleteRecord(permanentId, id);
+				this.deleteRecord(permanentId);
 			}
 
 		}
