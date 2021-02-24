@@ -116,7 +116,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$materialsRequests->joinAdd(new User(), 'INNER', 'user', 'createdBy', 'id');
 			$materialsRequests->joinAdd(new User(), 'LEFT', 'assignee', 'assignedTo', 'id');
 			$materialsRequests->selectAdd();
-			$materialsRequests->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $configArray['Catalog']['barcodeProperty'] . ' as barcode, assignee.displayName as assignedTo');
+			$materialsRequests->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location');
 
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary = Library::getPatronHomeLibrary();
@@ -144,7 +144,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$formatSql = "";
 				foreach ($formatsToShow as $format){
 					if (strlen($formatSql) > 0) $formatSql .= ",";
-					$formatSql .= "'" . $materialsRequests->escape($format) . "'";
+					$formatSql .= $materialsRequests->escape($format);
 				}
 				$materialsRequests->whereAdd("format in ($formatSql)");
 			}
@@ -153,8 +153,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$condition = $assigneesSql = '';
 				if (!empty($assigneesToShow)) {
 					foreach ($assigneesToShow as $assignee) {
-						if (strlen($assigneesSql) > 0) $assigneesSql .= ',';
-						$assigneesSql .= "'{$materialsRequests->escape($assignee)}'";
+						$assignee = trim($assignee);
+						if (is_numeric($assignee)) {
+							if (strlen($assigneesSql) > 0) $assigneesSql .= ',';
+							$assigneesSql .= $assignee;
+						}
 					}
 					$assigneesSql = "assignedTo IN ($assigneesSql)";
 				}
@@ -185,8 +188,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$ids = explode(',', $idsToShow);
 				$formattedIds = '';
 				foreach ($ids as $id){
-					if (strlen($formattedIds) > 0) $formattedIds .= ',';
-					$formattedIds .= "'" . trim($id) . "'";
+					$id = trim($id);
+					if (is_numeric($id)) {
+						if (strlen($formattedIds) > 0) $formattedIds .= ',';
+						$formattedIds .= $id;
+					}
 				}
 				$materialsRequests->whereAdd("materials_request.id IN ($formattedIds)");
 				$interface->assign('idsToShow', $idsToShow);
@@ -382,11 +388,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->abridged == 0 ? 'Unabridged' : ($request->abridged == 1 ? 'Abridged' : 'Not Applicable'));
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->about);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->comments);
-				$requestUser = new User();
-				$requestUser->get($request->createdBy);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->lastname . ', ' . $requestUser->firstname);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->$configArray['Catalog']['barcodeProperty']);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->email);
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByLastName() . ', ' . $request->getCreatedByFirstName());
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->getBarcode());
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->email);
 				if ($configArray['MaterialsRequest']['showPlaceHoldField']){
 					if ($request->placeHoldWhenAvailable == 1){
 						$value = 'Yes ' . $request->holdPickupLocation;
