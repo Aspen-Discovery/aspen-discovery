@@ -2165,6 +2165,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 				} else {
 					$userReview->setDisplayName($userForReview->lastname);
 				}
+			}else{
+				$userReview->setDisplayName($userForReview->displayName);
 			}
 
 			// Clean-up User Review Text
