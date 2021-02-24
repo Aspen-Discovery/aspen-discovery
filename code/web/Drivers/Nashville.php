@@ -77,8 +77,10 @@ class Nashville extends CarlX {
 					// $patron = $result['variable']['AA'][0];
 					$message = empty($transId) ? $message : $transId . ": " . $message;
 				}
+				return ['success' => $success, 'message' => $message];
+			} else {
+				return ['success' => false, 'message' => ['text' => 'sip_unknown_fail', 'defaultText' => 'Unknown problem with circulation server, please try again later.']];
 			}
-			return ['success' => $success, 'message' => $message];
 		} else {
 			return ['success' => false, 'message' => ['text' => 'sip_connect_fail', 'defaultText' => 'Could not connect to circulation server, please try again later.']];
 		}
