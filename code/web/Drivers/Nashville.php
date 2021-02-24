@@ -51,6 +51,25 @@ class Nashville extends CarlX {
 			$payment->completed = 1;
 		}
 		$payment->update();
+		$request = new stdClass();
+		$request->Note = new stdClass();
+		$request->Note->PatronID = $patronId;
+		$request->Note->NoteType = 2;
+		$request->Note->NoteText = "Nexus Transaction Reference: $payment->id";
+		$request->Modifiers = '';
+		$result = $this->doSoapRequest('addPatronNote', $request);
+		if ($result) {
+			$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+			if (!$success) {
+				return ['success' => false, 'message' => translate(['text' => 'payment_add_patronnote_failed', 'defaultText' => 'Failed to add patron note for payment in CarlX.'])];
+			} else {
+				return ['success' => true, 'message' => translate(['text'=> 'payment_add_patronnote_success', 'defaultText' => 'Patron note for payment added successfully in CarlX.'])];
+			}
+		} else {
+			global $logger;
+			$logger->log('CarlX ILS gave no response when attempting to add patron note for payment.', Logger::LOG_ERROR);
+			return ['success' => false, 'message' => translate(['text' => 'payment_add_patronnote_failed', 'defaultText' => 'Failed to add patron note for payment in CarlX.'])];
+		}
 		return ['success' => $success, 'message' => $message];
 	}
 
