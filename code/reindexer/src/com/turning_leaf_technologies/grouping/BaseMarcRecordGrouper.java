@@ -47,7 +47,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 	}
 
-	public abstract String processMarcRecord(Record marcRecord, boolean primaryDataChanged);
+	public abstract String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId);
 
 	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordType) {
 		RecordIdentifier identifier = null;

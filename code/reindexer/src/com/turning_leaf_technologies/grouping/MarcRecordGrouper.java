@@ -99,14 +99,14 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		return format;
 	}
 
-	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged) {
+	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId) {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile.getName(), profile.isDoAutomaticEcontentSuppression());
 
 		if (primaryIdentifier != null){
 			//Get data for the grouped record
 			GroupedWork workForTitle = setupBasicWorkForIlsRecord(marcRecord);
 
-			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged);
+			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged, originalGroupedWorkId);
 			return workForTitle.getPermanentId();
 		}else{
 			//The record is suppressed
@@ -210,7 +210,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
 			Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
 			if (marcRecord != null) {
-				String groupedWorkId = processMarcRecord(marcRecord, false);
+				String groupedWorkId = processMarcRecord(marcRecord, false, originalGroupedWorkId);
 				if (originalGroupedWorkId == null || !originalGroupedWorkId.equals(groupedWorkId)) {
 					logEntry.incChangedAfterGrouping();
 				}

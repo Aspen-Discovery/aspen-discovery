@@ -22,14 +22,14 @@ public class SideLoadedRecordGrouper extends BaseMarcRecordGrouper {
 		this.settings = settings;
 	}
 
-	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged) {
+	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId) {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, settings.getName());
 
 		if (primaryIdentifier != null){
 			//Get data for the grouped record
 			GroupedWork workForTitle = setupBasicWorkForIlsRecord(marcRecord);
 
-			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged);
+			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged, originalGroupedWorkId);
 			return workForTitle.getPermanentId();
 		}else{
 			//The record is suppressed

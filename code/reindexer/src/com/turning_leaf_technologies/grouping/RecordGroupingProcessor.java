@@ -219,7 +219,7 @@ public class RecordGroupingProcessor {
 	 * @param primaryIdentifier The primary identifier we are updating the work for
 	 * @param groupedWork       Information about the work itself
 	 */
-	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWork groupedWork, boolean primaryDataChanged) {
+	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWork groupedWork, boolean primaryDataChanged, String originalGroupedWorkId) {
 		//Check to see if we need to ungroup this
 		String primaryIdentifierString = primaryIdentifier.toString();
 		if (recordsToNotGroup.contains(primaryIdentifierString.toLowerCase())) {
@@ -231,27 +231,40 @@ public class RecordGroupingProcessor {
 		groupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId);
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
-		try {
-			groupedWorkForIdentifierStmt.setString(1, primaryIdentifier.getType());
-			groupedWorkForIdentifierStmt.setString(2, primaryIdentifier.getIdentifier());
+		boolean addPrimaryIdentifierToWork = true;
 
-			ResultSet groupedWorkForIdentifierRS = groupedWorkForIdentifierStmt.executeQuery();
-			if (groupedWorkForIdentifierRS.next()) {
-				//We have an existing grouped work
-				String existingGroupedWorkPermanentId = groupedWorkForIdentifierRS.getString("permanent_id");
-				if (!existingGroupedWorkPermanentId.equals(groupedWorkPermanentId)) {
-					//For realtime indexing we will want to trigger a reindex of the old record as well
-					markWorkAsNeedingReindexStmt.setString(1, existingGroupedWorkPermanentId);
-					markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 120); //Give it a buffer to make sure it indexes again
-					markWorkAsNeedingReindexStmt.executeUpdate();
+		if (originalGroupedWorkId == null){
+			try {
+				groupedWorkForIdentifierStmt.setString(1, primaryIdentifier.getType());
+				groupedWorkForIdentifierStmt.setString(2, primaryIdentifier.getIdentifier());
 
-					//move enrichment from the old id to the new if the new old no longer has any records
-					moveGroupedWorkEnrichment(existingGroupedWorkPermanentId, groupedWorkPermanentId);
+				ResultSet groupedWorkForIdentifierRS = groupedWorkForIdentifierStmt.executeQuery();
+				if (groupedWorkForIdentifierRS.next()) {
+
+					//We have an existing grouped work
+					originalGroupedWorkId = groupedWorkForIdentifierRS.getString("permanent_id");
 				}
+				groupedWorkForIdentifierRS.close();
+			} catch (SQLException e) {
+				logEntry.incErrors("Error determining existing grouped work for identifier", e);
 			}
-			groupedWorkForIdentifierRS.close();
-		} catch (SQLException e) {
-			logEntry.incErrors("Error determining existing grouped work for identifier", e);
+		}
+
+		if (originalGroupedWorkId != null && !originalGroupedWorkId.equals(groupedWorkPermanentId)) {
+			try {
+				//For realtime indexing we will want to trigger a reindex of the old record as well
+				markWorkAsNeedingReindexStmt.setString(1, originalGroupedWorkId);
+				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 120); //Give it a buffer to make sure it indexes again
+				markWorkAsNeedingReindexStmt.executeUpdate();
+
+				//move enrichment from the old id to the new if the new old no longer has any records
+				moveGroupedWorkEnrichment(originalGroupedWorkId, groupedWorkPermanentId);
+			} catch (SQLException e) {
+				logEntry.incErrors("Error marking record for reindexing", e);
+			}
+		}else if (originalGroupedWorkId != null){
+			//We don't need to add the primary identifier since it is already on the correct work
+			addPrimaryIdentifierToWork = false;
 		}
 
 		//Add the work to the database
@@ -289,7 +302,9 @@ public class RecordGroupingProcessor {
 			}
 
 			//Update identifiers
-			addPrimaryIdentifierForWorkToDB(groupedWorkId, primaryIdentifier);
+			if (addPrimaryIdentifierToWork) {
+				addPrimaryIdentifierForWorkToDB(groupedWorkId, primaryIdentifier);
+			}
 		} catch (Exception e) {
 			logEntry.incErrors("Error adding grouped record to grouped work ", e);
 		}
@@ -422,10 +437,6 @@ public class RecordGroupingProcessor {
 			addPrimaryIdentifierForWorkStmt.setString(2, primaryIdentifier.getType());
 			addPrimaryIdentifierForWorkStmt.setString(3, primaryIdentifier.getIdentifier());
 			addPrimaryIdentifierForWorkStmt.executeUpdate();
-			/*ResultSet primaryIdentifierRS = addPrimaryIdentifierForWorkStmt.getGeneratedKeys();
-			primaryIdentifierRS.next();
-			primaryIdentifier.setIdentifierId(primaryIdentifierRS.getLong(1));
-			primaryIdentifierRS.close();*/
 		} catch (SQLException e) {
 			logEntry.incErrors("Error adding primary identifier to grouped work " + groupedWorkId + " " + primaryIdentifier.toString(), e);
 		}
@@ -464,7 +475,7 @@ public class RecordGroupingProcessor {
 			}
 		}
 
-		addGroupedWorkToDatabase(primaryIdentifier, groupedWork, primaryDataChanged);
+		addGroupedWorkToDatabase(primaryIdentifier, groupedWork, primaryDataChanged, null);
 		return groupedWork.getPermanentId();
 	}
 

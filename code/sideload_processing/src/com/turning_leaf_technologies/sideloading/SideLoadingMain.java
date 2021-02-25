@@ -316,7 +316,7 @@ public class SideLoadingMain {
 					if (streamReader.hasNext()) {
 						Record marcRecord = streamReader.next();
 						//Regroup the record
-						String groupedWorkId = recordGrouper.processMarcRecord(marcRecord, true);
+						String groupedWorkId = recordGrouper.processMarcRecord(marcRecord, true, null);
 						//Reindex the record
 						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 					} else {
@@ -353,7 +353,7 @@ public class SideLoadingMain {
 						String recordNumber = recordIdentifier.getIdentifier();
 						BaseMarcRecordGrouper.MarcStatus marcStatus = recordGrouper.writeIndividualMarc(settings, marcRecord, recordNumber, logger);
 						if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || settings.isRunFullUpdate()) {
-							String permanentId = recordGrouper.processMarcRecord(marcRecord, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED);
+							String permanentId = recordGrouper.processMarcRecord(marcRecord, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED, null);
 							if (permanentId == null) {
 								//Delete the record since it is suppressed
 								deleteRecord = true;
