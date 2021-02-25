@@ -115,6 +115,9 @@ class Admin_AJAX extends JSON_Action
 		} elseif ($source == 'lists') {
 			require_once ROOT_DIR . '/sys/UserLists/ListIndexingLogEntry.php';
 			$extractLog = new ListIndexingLogEntry();
+		} elseif ($source == 'open_archives') {
+			require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesExportLogEntry.php';
+			$extractLog = new OpenArchivesExportLogEntry();
 		}
 
 		if ($extractLog == null) {
