@@ -350,8 +350,8 @@ function getUserUpdates()
 			'description' => 'Add the ability to define a secondary library card for a user',
 			'sql' => [
 				"ALTER TABLE user ADD COLUMN alternateLibraryCard VARCHAR(50) DEFAULT ''",
-				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(60) DEFAULT ''",
-				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(60) DEFAULT ''",
+				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(256) DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''",
 			]
 		],
 
@@ -688,7 +688,7 @@ function getUserUpdates()
 				"ALTER TABLE user CHANGE COLUMN lastname lastname VARCHAR(256) NOT NULL DEFAULT ''",
 				"ALTER TABLE user CHANGE COLUMN email email VARCHAR(256) NOT NULL DEFAULT ''",
 				'ALTER TABLE user CHANGE COLUMN cat_username cat_username VARCHAR(256)',
-				'ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) NOT NULL',
+				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''",
 				"ALTER TABLE user CHANGE COLUMN displayName displayName VARCHAR(256) NOT NULL DEFAULT ''",
 				"ALTER TABLE user CHANGE COLUMN phone phone VARCHAR(256) NOT NULL DEFAULT ''",
 				"ALTER TABLE user CHANGE COLUMN overdriveEmail overdriveEmail VARCHAR(256) NOT NULL DEFAULT ''",
