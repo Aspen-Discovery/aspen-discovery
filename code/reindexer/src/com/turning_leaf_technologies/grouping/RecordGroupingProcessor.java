@@ -190,12 +190,7 @@ public class RecordGroupingProcessor {
 			updateDisplayInfoStmt = dbConnection.prepareStatement("UPDATE grouped_work_display_info SET permanent_id = ? where permanent_id = ?");
 
 			markWorkAsNeedingReindexStmt = dbConnection.prepareStatement("INSERT into grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
-//			PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * from merged_grouped_works");
-//			ResultSet mergedWorksRS = loadMergedWorksStmt.executeQuery();
-//			while (mergedWorksRS.next()) {
-//				mergedGroupedWorks.put(mergedWorksRS.getString("sourceGroupedWorkId"), mergedWorksRS.getString("destinationGroupedWorkId"));
-//			}
-//			mergedWorksRS.close();
+
 			PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
 			ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery();
 			while (nonGroupedRecordsRS.next()) {
@@ -224,30 +219,16 @@ public class RecordGroupingProcessor {
 	 * @param primaryIdentifier The primary identifier we are updating the work for
 	 * @param groupedWork       Information about the work itself
 	 */
-	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWorkBase groupedWork, boolean primaryDataChanged) {
+	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWork groupedWork, boolean primaryDataChanged) {
 		//Check to see if we need to ungroup this
-		if (recordsToNotGroup.contains(primaryIdentifier.toString().toLowerCase())) {
-			groupedWork.makeUnique(primaryIdentifier.toString());
+		String primaryIdentifierString = primaryIdentifier.toString();
+		if (recordsToNotGroup.contains(primaryIdentifierString.toLowerCase())) {
+			groupedWork.makeUnique(primaryIdentifierString);
 		}
 
 		String groupedWorkPermanentId = groupedWork.getPermanentId();
 
-		//Check to see if we are doing a manual merge of the work
-//		if (mergedGroupedWorks.containsKey(groupedWorkPermanentId)) {
-//			groupedWorkPermanentId = handleMergedWork(groupedWork, groupedWorkPermanentId);
-//		}
-
-		try {
-			//Check to see if we know the work based on the title and author through the merge process
-			getWorkByAlternateTitleAuthorStmt.setString(1, groupedWork.getTitle());
-			getWorkByAlternateTitleAuthorStmt.setString(2, groupedWork.getAuthor());
-			ResultSet getWorkByAlternateTitleAuthorRS = getWorkByAlternateTitleAuthorStmt.executeQuery();
-			if (getWorkByAlternateTitleAuthorRS.next()){
-				groupedWorkPermanentId = getWorkByAlternateTitleAuthorRS.getString("permanent_id");
-			}
-		} catch (SQLException e) {
-			logEntry.incErrors("Error looking for grouped work by alternate title title = " + groupedWork.getTitle() + " author = " + groupedWork.getAuthor(), e);
-		}
+		groupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId);
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
 		try {
@@ -266,9 +247,6 @@ public class RecordGroupingProcessor {
 
 					//move enrichment from the old id to the new if the new old no longer has any records
 					moveGroupedWorkEnrichment(existingGroupedWorkPermanentId, groupedWorkPermanentId);
-
-				}else{
-					logger.debug("Permanent id matched");
 				}
 			}
 			groupedWorkForIdentifierRS.close();
@@ -316,6 +294,21 @@ public class RecordGroupingProcessor {
 			logEntry.incErrors("Error adding grouped record to grouped work ", e);
 		}
 
+	}
+
+	private String checkForAlternateTitleAuthor(GroupedWork groupedWork, String groupedWorkPermanentId) {
+		try {
+			//Check to see if we know the work based on the title and author through the merge process
+			getWorkByAlternateTitleAuthorStmt.setString(1, groupedWork.getTitle());
+			getWorkByAlternateTitleAuthorStmt.setString(2, groupedWork.getAuthor());
+			ResultSet getWorkByAlternateTitleAuthorRS = getWorkByAlternateTitleAuthorStmt.executeQuery();
+			if (getWorkByAlternateTitleAuthorRS.next()){
+				groupedWorkPermanentId = getWorkByAlternateTitleAuthorRS.getString("permanent_id");
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error looking for grouped work by alternate title title = " + groupedWork.getTitle() + " author = " + groupedWork.getAuthor(), e);
+		}
+		return groupedWorkPermanentId;
 	}
 
 	private void moveGroupedWorkEnrichment(String oldPermanentId, String newPermanentId) {
@@ -450,7 +443,7 @@ public class RecordGroupingProcessor {
 	 * @return The permanent id of the grouped work
 	 */
 	public String processRecord(RecordIdentifier primaryIdentifier, String title, String subtitle, String author, String format, boolean primaryDataChanged) {
-		GroupedWorkBase groupedWork = GroupedWorkFactory.getInstance(-1, this);
+		GroupedWork groupedWork = new GroupedWork(this);
 
 		//Replace & with and for better matching
 		groupedWork.setTitle(title, 0, subtitle, "");

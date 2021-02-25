@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
@@ -407,7 +408,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void processScheduledWorks(BaseLogEntry logEntry) {
+	public void processScheduledWorks(BaseLogEntry logEntry) {
 		//Check to see what records still need to be indexed based on a timed index
 		logEntry.addNote("Checking for additional works that need to be indexed");
 

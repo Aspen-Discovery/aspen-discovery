@@ -15,6 +15,7 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -139,6 +140,10 @@ public class CarlXExportMain {
 				}
 
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+				if (!extractSingleWork && indexingProfile.isRegroupAllRecords()) {
+					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor(dbConn);
+					recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(dbConn), logEntry);
+				}
 				if (indexingProfile.isRunFullUpdate()){
 					//Un mark that a full update needs to be done
 					PreparedStatement updateSettingsStmt = dbConn.prepareStatement("UPDATE indexing_profiles set runFullUpdate = 0 where id = ?");
@@ -251,20 +256,12 @@ public class CarlXExportMain {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				if (!marcFile.exists()) {
-					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
-				} else {
-					FileInputStream marcFileStream = new FileInputStream(marcFile);
-					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
-					if (streamReader.hasNext()) {
-						Record marcRecord = streamReader.next();
-						//Regroup the record
-						String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true);
-						//Reindex the record
-						getGroupedWorkIndexer(dbConn).processGroupedWork(groupedWorkId);
-					} else {
-						logEntry.incErrors("Could not read file " + marcFile);
-					}
+				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				if (marcRecord != null) {
+					//Regroup the record
+					String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true);
+					//Reindex the record
+					getGroupedWorkIndexer(dbConn).processGroupedWork(groupedWorkId);
 				}
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);

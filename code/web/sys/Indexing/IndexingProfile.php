@@ -81,6 +81,7 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $doAutomaticEcontentSuppression;
 	public /** @noinspection PhpUnused */ $determineAudienceBy;
 	public /** @noinspection PhpUnused */ $audienceSubfield;
+	public $regroupAllRecords;
 	public $runFullUpdate;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
@@ -227,6 +228,7 @@ class IndexingProfile extends DataObject
 				'orderCode3' => array('property' => 'orderCode3', 'type' => 'text', 'label' => 'Order Code3', 'maxLength' => 1, 'description' => 'Code 3 for the order record', 'forcesReindex' => true),
 			]],
 
+			'regroupAllRecords' => array('property' => 'regroupAllRecords', 'type' => 'checkbox', 'label' => 'Regroup all Records', 'description' => 'Whether or not all existing records should be regrouped', 'default' => 0),
 			'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0),
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when all records were loaded from the API', 'default' => 0),

@@ -416,6 +416,15 @@ function getIndexingUpdates()
 			)
 		),
 
+		'ils_exportLog_num_regroups' => array(
+			'title' => 'ILS export log add regroups',
+			'description' => 'Add tracking of number of records regrouped to export log',
+			'sql' => array(
+				"ALTER TABLE ils_extract_log ADD COLUMN numChangedAfterGrouping INT(11) DEFAULT 0",
+				"ALTER TABLE ils_extract_log ADD COLUMN numRegrouped INT(11) DEFAULT 0",
+			)
+		),
+
 		'track_ils_user_usage' => array(
 			'title' => 'ILS Usage by user',
 			'description' => 'Add a table to track how often a particular user uses the ils and side loads.',
@@ -524,6 +533,14 @@ function getIndexingUpdates()
 			'description' => 'Add fields to track when the last volume export file was saved',
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN lastVolumeExportTimestamp INT(11) DEFAULT 0',
+			]
+		],
+
+		'indexing_profile_regroup_all_records' => [
+			'title' => 'Indexing Profile Add Regroup All Records',
+			'description' => 'Add the ability to regroup all records at the beginning of indexing',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN regroupAllRecords TINYINT(1) DEFAULT 0',
 			]
 		],
 

@@ -27,7 +27,7 @@ public class SideLoadedRecordGrouper extends BaseMarcRecordGrouper {
 
 		if (primaryIdentifier != null){
 			//Get data for the grouped record
-			GroupedWorkBase workForTitle = setupBasicWorkForIlsRecord(marcRecord);
+			GroupedWork workForTitle = setupBasicWorkForIlsRecord(marcRecord);
 
 			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged);
 			return workForTitle.getPermanentId();

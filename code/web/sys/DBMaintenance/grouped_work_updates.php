@@ -201,6 +201,16 @@ function getGroupedWorkUpdates(){
 				'ALTER TABLE author_authority ADD COLUMN normalized VARCHAR(512)',
 				'ALTER TABLE author_authority_alternative ADD COLUMN normalized VARCHAR(512)',
 			]
+		],
+
+		'grouped_work_title_length' => [
+			'title' => 'Grouped Work increase title length',
+			'description' => 'Increase the length of the title field for grouped works',
+			'sql' => [
+				'ALTER TABLE grouped_work CHANGE COLUMN full_title full_title VARCHAR(750) NOT NULL',
+				'ALTER TABLE grouped_work_alternate_titles CHANGE COLUMN alternateTitle alternateTitle VARCHAR(750)',
+				'ALTER TABLE grouped_work_display_info CHANGE COLUMN title title VARCHAR(750)',
+			]
 		]
 	);
 }

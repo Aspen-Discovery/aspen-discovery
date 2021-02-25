@@ -1,14 +1,19 @@
 package com.turning_leaf_technologies.grouping;
 
+import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.marc.MarcUtil;
+import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -99,7 +104,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 		if (primaryIdentifier != null){
 			//Get data for the grouped record
-			GroupedWorkBase workForTitle = setupBasicWorkForIlsRecord(marcRecord);
+			GroupedWork workForTitle = setupBasicWorkForIlsRecord(marcRecord);
 
 			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged);
 			return workForTitle.getPermanentId();
@@ -109,7 +114,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		}
 	}
 
-	protected String setGroupingCategoryForWork(Record marcRecord, GroupedWorkBase workForTitle) {
+	protected String setGroupingCategoryForWork(Record marcRecord, GroupedWork workForTitle) {
 		String groupingFormat;
 		if (profile.getFormatSource().equals("item")){
 			//get format from item
@@ -191,5 +196,34 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			}
 		}
 		return super.getFormatFromBib(record);
+	}
+
+	public void regroupAllRecords(Connection dbConn, IndexingProfile indexingProfile, GroupedWorkIndexer indexer, IlsExtractLogEntry logEntry)  throws SQLException {
+		logEntry.addNote("Starting to regroup all records");
+		PreparedStatement getAllRecordsToRegroupStmt = dbConn.prepareStatement("SELECT identifier, permanent_id from grouped_work_primary_identifiers left join grouped_work on grouped_work_id = grouped_work.id WHERE type = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		getAllRecordsToRegroupStmt.setString(1, indexingProfile.getName());
+		ResultSet allRecordsToRegroupRS = getAllRecordsToRegroupStmt.executeQuery();
+		while (allRecordsToRegroupRS.next()) {
+			logEntry.incRecordsRegrouped();
+			String recordIdentifier = allRecordsToRegroupRS.getString("identifier");
+			String originalGroupedWorkId = allRecordsToRegroupRS.getString("permanent_id");
+			File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
+			Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+			if (marcRecord != null) {
+				String groupedWorkId = processMarcRecord(marcRecord, false);
+				if (originalGroupedWorkId == null || !originalGroupedWorkId.equals(groupedWorkId)) {
+					logEntry.incChangedAfterGrouping();
+				}
+			}
+		}
+
+		//Process all of the records to reload which will handle reindexing anything that just changed
+		if (logEntry.getNumChangedAfterGrouping() > 0){
+			indexer.processScheduledWorks(logEntry);
+		}
+
+		indexingProfile.clearRegroupAllRecords(dbConn, logEntry);
+		logEntry.addNote("Finished regrouping all records");
+		logEntry.saveResults();
 	}
 }

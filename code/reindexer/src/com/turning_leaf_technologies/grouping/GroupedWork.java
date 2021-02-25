@@ -1,9 +1,13 @@
 package com.turning_leaf_technologies.grouping;
 
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,8 +19,19 @@ import java.util.regex.Pattern;
  * 3) Add trimming dates and parenthetical information to authors
  * 4) Group title and sub title at the same time
  */
-class GroupedWork5 extends GroupedWorkBase implements Cloneable {
+class GroupedWork implements Cloneable {
+	private final static Logger logger = LogManager.getLogger(GroupedWork.class);
+	protected BaseLogEntry logEntry;
 
+	//The id of the work within the database.
+	String permanentId;
+
+	String fullTitle = "";              //Up to 100 chars
+	String originalAuthorName = "";
+	protected String author = "";             //Up to 50  chars
+	String groupingCategory = "";   //Up to 25  chars
+	private String uniqueIdentifier = null;
+	private final RecordGroupingProcessor processor;
 
 	private static final Pattern initialsFix = Pattern.compile("(?<=[A-Z])\\.(?=(\\s|[A-Z]|$))");
 	private static final Pattern apostropheStrip = Pattern.compile("'s");
@@ -25,10 +40,73 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	@SuppressWarnings("RegExpRedundantEscape")
 	private static final Pattern bracketedCharacterStrip = Pattern.compile("\\[(.*?)\\]");
 
-	static Logger logger = LogManager.getLogger(GroupedWork5.class);
+	GroupedWork(RecordGroupingProcessor processor) {
+		this.processor = processor;
+		this.logEntry = processor.getLogEntry();
+	}
 
-	GroupedWork5(RecordGroupingProcessor processor) {
-		super(processor);
+	String getPermanentId() {
+		if (this.permanentId == null){
+			StringBuilder permanentId;
+			try {
+				MessageDigest idGenerator = MessageDigest.getInstance("MD5");
+				String fullTitle = getAuthoritativeTitle();
+				if (fullTitle.equals("")){
+					idGenerator.update("--null--".getBytes());
+				}else{
+					idGenerator.update(fullTitle.getBytes());
+				}
+
+				String authoritativeAuthor = getAuthoritativeAuthor();
+				//TODO: Delete this if block
+				if (!authoritativeAuthor.equals(this.author)){
+					logger.warn("Authoritative author " + authoritativeAuthor + " used for " + fullTitle);
+				}
+				if (author.equals("")){
+					idGenerator.update("--null--".getBytes());
+				}else{
+					idGenerator.update(authoritativeAuthor.getBytes());
+				}
+				if (groupingCategory.equals("")){
+					idGenerator.update("--null--".getBytes());
+				}else{
+					idGenerator.update(groupingCategory.getBytes());
+				}
+				if (uniqueIdentifier != null){
+					idGenerator.update(uniqueIdentifier.getBytes());
+				}
+				permanentId = new StringBuilder(new BigInteger(1, idGenerator.digest()).toString(16));
+				while (permanentId.length() < 32){
+					permanentId.insert(0, "0");
+				}
+				//Insert -'s for formatting
+				this.permanentId = permanentId.substring(0, 8) + "-" + permanentId.substring(8, 12) + "-" + permanentId.substring(12, 16) + "-" + permanentId.substring(16, 20) + "-" + permanentId.substring(20);
+			} catch (NoSuchAlgorithmException e) {
+				System.out.println("Error generating permanent id" + e.toString());
+			}
+		}
+		//System.out.println("Permanent Id is " + this.permanentId);
+		return this.permanentId;
+	}
+
+	private String authoritativeTitle;
+	String getAuthoritativeTitle() {
+		if (authoritativeTitle == null) {
+			authoritativeTitle = processor.getAuthoritativeTitle(fullTitle);
+		}
+		return authoritativeTitle;
+	}
+
+	private String authoritativeAuthor = null;
+	String getAuthoritativeAuthor() {
+		if (authoritativeAuthor == null) {
+			authoritativeAuthor = processor.getAuthoritativeAuthor(author);
+		}
+		return authoritativeAuthor;
+	}
+
+	void makeUnique(String primaryIdentifier) {
+		uniqueIdentifier = primaryIdentifier;
 	}
 
 	private String normalizeAuthor(String author) {
@@ -167,25 +245,21 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
 	}
 
-	public GroupedWorkBase clone() {
+	public GroupedWork clone() {
 
 		try {
-			return (GroupedWorkBase)super.clone();
+			return (GroupedWork)super.clone();
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 			return null;
 		}
 	}
 
-	@Override
 	public String getTitle() {
 		return fullTitle;
 	}
 
-	@Override
 	public void setTitle(String title, int numNonFilingCharacters, String subtitle, String partInformation) {
-		//this.fullTitle = title;
-		//if (subtitle != null) title += " " + subtitle;
 		if (subtitle != null && subtitle.length() > 0){
 			title = normalizePassedInSubtitle(title, subtitle);
 		}else{
@@ -249,24 +323,17 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		return title;
 	}
 
-	@Override
 	public String getAuthor() {
 		return author;
 	}
 
-	@Override
 	public void setAuthor(String author) {
 		originalAuthorName = author;
 		this.author = normalizeAuthor(author);
 	}
 
-	@Override
-	public void overridePermanentId(String groupedWorkPermanentId) {
-		this.permanentId = groupedWorkPermanentId;
-	}
-
 	private static final Pattern validCategories = Pattern.compile("^(book|music|movie)$");
-	@Override
+
 	public void setGroupingCategory(String groupingCategory) {
 		groupingCategory = groupingCategory.toLowerCase();
 		if (!validCategories.matcher(groupingCategory).matches()) {

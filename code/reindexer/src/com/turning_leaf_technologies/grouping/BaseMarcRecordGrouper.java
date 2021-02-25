@@ -402,7 +402,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return "Unknown";
 	}
 
-	String setGroupingCategoryForWork(Record marcRecord, GroupedWorkBase workForTitle) {
+	String setGroupingCategoryForWork(Record marcRecord, GroupedWork workForTitle) {
 		//Format
 		String groupingFormat;
 		switch (baseSettings.getFormatSource()) {
@@ -426,7 +426,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return groupingFormat;
 	}
 
-	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle, DataField field245, String groupingFormat) {
+	private void setWorkAuthorBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle, DataField field245, String groupingFormat) {
 		String author = null;
 		DataField field100 = marcRecord.getDataField("100");
 		DataField field110 = marcRecord.getDataField("110");
@@ -461,7 +461,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 	}
 
-	private DataField setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWorkBase workForTitle) {
+	private DataField setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle) {
 		DataField field245 = marcRecord.getDataField("245");
 		if (field245 != null && field245.getSubfield('a') != null) {
 			String fullTitle = field245.getSubfield('a').getData();
@@ -495,8 +495,8 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return field245;
 	}
 
-	GroupedWorkBase setupBasicWorkForIlsRecord(Record marcRecord) {
-		GroupedWorkBase workForTitle = GroupedWorkFactory.getInstance(-1, this);
+	GroupedWork setupBasicWorkForIlsRecord(Record marcRecord) {
+		GroupedWork workForTitle = new GroupedWork(this);
 
 		//Title
 		DataField field245 = setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);

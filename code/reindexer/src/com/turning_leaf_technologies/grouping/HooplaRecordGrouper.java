@@ -21,7 +21,7 @@ class HooplaRecordGrouper extends MarcRecordGrouper {
 		super(serverName, dbConnection, profile, logEntry, logger);
 	}
 
-	protected String setGroupingCategoryForWork(Record marcRecord, String loadFormatFrom, char formatSubfield, String specifiedFormatCategory, GroupedWorkBase workForTitle) {
+	protected String setGroupingCategoryForWork(Record marcRecord, String loadFormatFrom, char formatSubfield, String specifiedFormatCategory, GroupedWork workForTitle) {
 		//Load the format (broad format for grouping book, music, movie) we can get these from the 099
 		List<DataField> fields099 = getDataFields(marcRecord, "099");
 		String groupingFormat = "";

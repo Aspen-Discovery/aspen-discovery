@@ -7,6 +7,7 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -169,20 +170,12 @@ public class SymphonyExportMain {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				if (!marcFile.exists()) {
-					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
-				} else {
-					FileInputStream marcFileStream = new FileInputStream(marcFile);
-					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
-					if (streamReader.hasNext()) {
-						Record marcRecord = streamReader.next();
-						//Regroup the record
-						String permanentId = recordGroupingProcessor.processMarcRecord(marcRecord, true);
-						//Reindex the record
-						indexer.processGroupedWork(permanentId);
-					} else {
-						logEntry.incErrors("Could not read file " + marcFile);
-					}
+				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				if (marcRecord != null) {
+					//Regroup the record
+					String permanentId = recordGroupingProcessor.processMarcRecord(marcRecord, true);
+					//Reindex the record
+					indexer.processGroupedWork(permanentId);
 				}
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
@@ -388,6 +381,16 @@ public class SymphonyExportMain {
 	}
 
 	private static int updateRecords(Connection dbConn){
+		//Check to see if we should regroup all existing records
+		try {
+			if (indexingProfile.isRegroupAllRecords()) {
+				MarcRecordGrouper recordGrouper = getRecordGroupingProcessor(dbConn);
+				recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(dbConn), logEntry);
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error regrouping all records", e);
+		}
+
 		//Get the last export from MARC time
 		long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
 
