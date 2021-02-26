@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	private final String recordNumberTag;
@@ -462,37 +463,71 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	}
 
 	private DataField setWorkTitleBasedOnMarcRecord(Record marcRecord, GroupedWork workForTitle) {
+		//Check for a uniform title field
+		//The uniform title is useful for movies (often has the release year)
+		DataField field130 = marcRecord.getDataField("130");
+		if (field130 != null && field130.getSubfield('a') != null){
+			Subfield subfieldK = field130.getSubfield('k');
+			if (subfieldK == null || !subfieldK.getData().toLowerCase().contains("selections")) {
+				assignTitleInfoFromMarcField(workForTitle, field130, 1);
+				return field130;
+			}
+		}
+
+		//The 240 only gives good information if the language is not English.  If the language isn't English,
+		//it generally gives the english translation which could help to group translated versions with the original work.
+		// Not implementing this for now until we get additional feedback 2/2021
+		/*DataField field240 = marcRecord.getDataField("240");
+		if (field240 != null && field240.getSubfield('a') != null){
+			if (field240.getSubfield('l') != null) {
+				if (!field240.getSubfield('l').getData().equalsIgnoreCase("English")) {
+					assignTitleInfoFromMarcField(workForTitle, field240);
+					return field240;
+				}
+			}
+		}*/
+
 		DataField field245 = marcRecord.getDataField("245");
 		if (field245 != null && field245.getSubfield('a') != null) {
-			String fullTitle = field245.getSubfield('a').getData();
-
-			char nonFilingCharacters = field245.getIndicator2();
-			if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
-			int numNonFilingCharacters = 0;
-			if (nonFilingCharacters >= '0' && nonFilingCharacters <= '9') {
-				numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
-			}
-
-			//Add in subtitle (subfield b as well to avoid problems with gov docs, etc)
-			StringBuilder groupingSubtitle = new StringBuilder();
-			if (field245.getSubfield('b') != null) {
-				groupingSubtitle.append(field245.getSubfield('b').getData());
-			}
-
-			//Group volumes, seasons, etc. independently
-			StringBuilder partInfo = new StringBuilder();
-			if (field245.getSubfield('n') != null) {
-				if (partInfo.length() > 0) partInfo.append(" ");
-				partInfo.append(field245.getSubfield('n').getData());
-			}
-			if (field245.getSubfield('p') != null) {
-				if (partInfo.length() > 0) partInfo.append(" ");
-				partInfo.append(field245.getSubfield('p').getData());
-			}
-
-			workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString(), partInfo.toString());
+			assignTitleInfoFromMarcField(workForTitle, field245, 2);
+			return field245;
 		}
-		return field245;
+		return null;
+	}
+
+	private void assignTitleInfoFromMarcField(GroupedWork workForTitle, DataField field245, int nonFilingCharactersIndicator) {
+		String fullTitle = field245.getSubfield('a').getData();
+
+		char nonFilingCharacters;
+		if (nonFilingCharactersIndicator == 1){
+			nonFilingCharacters = field245.getIndicator1();
+		}else {
+			nonFilingCharacters = field245.getIndicator2();
+		}
+		if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
+		int numNonFilingCharacters = 0;
+		if (nonFilingCharacters >= '0' && nonFilingCharacters <= '9') {
+			numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
+		}
+
+		//Add in subtitle (subfield b as well to avoid problems with gov docs, etc)
+		StringBuilder groupingSubtitle = new StringBuilder();
+		if (field245.getSubfield('b') != null) {
+			groupingSubtitle.append(field245.getSubfield('b').getData());
+		}
+
+		//Group volumes, seasons, etc. independently
+		StringBuilder partInfo = new StringBuilder();
+		if (field245.getSubfield('n') != null) {
+			if (partInfo.length() > 0) partInfo.append(" ");
+			partInfo.append(field245.getSubfield('n').getData());
+		}
+		if (field245.getSubfield('p') != null) {
+			if (partInfo.length() > 0) partInfo.append(" ");
+			partInfo.append(field245.getSubfield('p').getData());
+		}
+
+		workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString(), partInfo.toString());
 	}
 
 	GroupedWork setupBasicWorkForIlsRecord(Record marcRecord) {
