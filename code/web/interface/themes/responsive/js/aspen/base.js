@@ -53,6 +53,9 @@ var AspenDiscovery = (function(){
 
 		changePageSize: function(){
 			var url = window.location.href;
+			if (url.match(/[&?]page=\d+/)) {
+				url = url.replace(/page=\d+/, "page=1");
+			}
 			if (url.match(/[&?]pageSize=\d+/)) {
 				url = url.replace(/pageSize=\d+/, "pageSize=" + $("#pageSize").val());
 			} else {
