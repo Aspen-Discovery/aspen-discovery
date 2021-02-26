@@ -142,10 +142,11 @@ public class SymphonyExportMain {
 				System.exit(0);
 			}else {
 				//Pause before running the next export (longer if we didn't get any actual changes)
+				//But not too much longer since we get regular marc delta files that we want to catch as quickly as possible
 				try {
 					if (numChanges == 0 || logEntry.hasErrors()) {
 						//noinspection BusyWait
-						Thread.sleep(1000 * 60 * 5);
+						Thread.sleep(1000 * 60 * 2);
 					} else {
 						//noinspection BusyWait
 						Thread.sleep(1000 * 60);
