@@ -1,8 +1,8 @@
 {strip}
 	{if $browseMode == '1'}
-		<div class="{*browse-title *}browse-list grid-item">
+		<div class="browse-list grid-item">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', '{$browseCategoryId}')" href="{$summUrl}">
-					<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
+				<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
 				<div><strong>{$summTitle}</strong><br> by {$summAuthor}</div>
 			</a>
 		</div>
