@@ -11,6 +11,9 @@ class SystemVariables extends DataObject
 	public $loadCoversFrom020z;
 	public $currencyCode;
 	public $runNightlyFullIndex;
+	public $allowableHtmlTags;
+	public $allowHtmlInMarkdownFields;
+	public $useHtmlEditorRatherThanMarkdown;
 
 	static function getObjectStructure() {
 		return [
@@ -21,6 +24,9 @@ class SystemVariables extends DataObject
 			'currencyCode' => array('property' => 'currencyCode', 'type' => 'enum', 'values' => ['USD' => 'USD', 'CAD' => 'CAD'], 'label' => 'Currency Code', 'description' => 'Currency code to use when formatting money', 'required' => true, 'default' => 'USD' ),
 			'runNightlyFullIndex' => array('property' => 'runNightlyFullIndex', 'type' => 'checkbox', 'label' => 'Run full index tonight', 'description' => 'Whether or not a full index should be run in the middle of the night', 'default' => false),
 			'loadCoversFrom020z' => array('property' => 'loadCoversFrom020z', 'type' => 'checkbox', 'label' => 'Load covers from cancelled & invalid ISBNs (020$z)', 'description' => 'Whether or not covers can be loaded from the 020z', 'default' => false),
+			'allowableHtmlTags' => array('property' => 'allowableHtmlTags', 'type' => 'text', 'label' => 'Allowable HTML Tags (blank to allow all, separate tags with pipes)', 'description' => 'HTML Tags to allow in HTML and Markdown fields', 'maxLength' => 512, 'default'=>'p|a|b|em|ul|ol|em><li><strong><i><br>', 'hideInLists'=>true),
+			'allowHtmlInMarkdownFields' => array('property' => 'allowHtmlInMarkdownFields', 'type' => 'checkbox', 'label' => 'Allow HTML in Markdown fields', 'description' => 'Whether or administrators can add HTML to a Markdown field, if disabled, all tags will be stripped', 'default' => false),
+			'useHtmlEditorRatherThanMarkdown' => array('property' => 'useHtmlEditorRatherThanMarkdown', 'type' => 'checkbox', 'label' => 'Use HTML Editor rather than Markdown', 'description' => 'Changes all Markdown fields to HTML fields', 'default' => false),
 		];
 	}
 
@@ -33,5 +39,21 @@ class SystemVariables extends DataObject
 				$variables->update();
 			}
 		}
+	}
+
+	protected static $_systemVariables = null;
+
+	/**
+	 * @return SystemVariables|false
+	 */
+	public static function getSystemVariables()
+	{
+		if (SystemVariables::$_systemVariables == null){
+			SystemVariables::$_systemVariables = new SystemVariables();
+			if (!SystemVariables::$_systemVariables->find(true)){
+				SystemVariables::$_systemVariables = false;
+			}
+		}
+		return SystemVariables::$_systemVariables;
 	}
 }

@@ -940,6 +940,17 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'htmlForMarkdown' => [
+					'title' => 'Add fields to use HTML with or instead of Markdown',
+					'description' => 'Add allowHtmlInMarkdownFields and useHtmlEditorRatherThanMarkdown to system variables',
+					'continueOnError' => true,
+					'sql' => [
+						"ALTER TABLE system_variables ADD COLUMN allowableHtmlTags VARCHAR(512) DEFAULT 'p|div|span|a|b|em|strong|i|ul|ol|li|br|h1|h2|h3|h4|h5|h6'",
+						"ALTER TABLE system_variables ADD COLUMN allowHtmlInMarkdownFields TINYINT(1) DEFAULT 0",
+						"ALTER TABLE system_variables ADD COLUMN useHtmlEditorRatherThanMarkdown TINYINT(1) DEFAULT 0"
+					]
+				],
+
 				'utf8_update' => array(
 					'title' => 'Update to UTF-8',
 					'description' => 'Update database to use UTF-8 encoding',
