@@ -49,10 +49,10 @@ class MyAccount_Fines extends MyAccount
 						$payment->id = $_REQUEST['id'];
 						$finePaymentResult = new stdClass();
 						if ($payment->find(true)) {
-							if ($payment->completed === 1) {
+							if ($payment->completed == 1) {
 								$finePaymentResult->success = true;
 								$finePaymentResult->message = 'Your payment was processed successfully, thank you.';
-							} elseif ($payment->completed === 9) {
+							} elseif ($payment->completed == 9) {
 								$finePaymentResult->success = false;
 								$finePaymentResult->message = 'The payment failed to update the Library system.';
 							} else { // i.e., $payment->completed == 0

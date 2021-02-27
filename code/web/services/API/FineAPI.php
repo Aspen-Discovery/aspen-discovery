@@ -61,8 +61,8 @@ class FineAPI extends Action
 				require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 				$payment = new UserPayment();
 				$payment->id = $msb["PaymentReference"];
-				$payment->orderId = $msb["TransactionID"];
 				if ($payment->find(true)) {
+					$payment->orderId = $msb["TransactionID"];
 					$payment->update();
 					if ($payment->completed != 0) {
 						$success = false;
@@ -88,7 +88,7 @@ class FineAPI extends Action
 					}
 				} else {
 					$success = false;
-					$message = 'Unable to find the order you processed, please visit the library with your receipt';
+					$message = "MSB Payment not found in Aspen for Payment Reference ID $payment->id .";
 					$level = 'Logger::LOG_ERROR';
 				}
 			}
