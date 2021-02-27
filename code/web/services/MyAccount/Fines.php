@@ -41,6 +41,31 @@ class MyAccount_Fines extends MyAccount
 					$interface->assign('payPalClientId', $clientId);
 				}
 
+				// MSB payment result message
+				if ($userLibrary->finePaymentType == 3) {
+					if (!empty($_REQUEST['id'])) {
+						require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+						$payment = new UserPayment();
+						$payment->id = $_REQUEST['id'];
+						$finePaymentResult = new stdClass();
+						if ($payment->find(true)) {
+							if ($payment->completed === 1) {
+								$finePaymentResult->success = true;
+								$finePaymentResult->message = 'Your payment was processed successfully, thank you.';
+							} elseif ($payment->completed === 9) {
+								$finePaymentResult->success = false;
+								$finePaymentResult->message = 'The payment failed to update the Library system.';
+							} else { // i.e., $payment->completed == 0
+								$finePaymentResult->success = false;
+								$finePaymentResult->message = 'The payment has not yet been updated in the Library system.';
+							}
+						} else {
+							$finePaymentResult->success = false;
+							$finePaymentResult->message = 'Unable to find the order you processed, please visit the library with your receipt';
+						}
+						$interface->assign('finePaymentResult', $finePaymentResult);
+					}
+				}
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
 
 				$interface->assign('userFines', $fines);
@@ -82,7 +107,7 @@ class MyAccount_Fines extends MyAccount
 		$this->display('fines.tpl', 'My Fines');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs(): array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

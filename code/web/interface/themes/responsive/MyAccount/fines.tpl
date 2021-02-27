@@ -13,6 +13,9 @@
 	{if $offline}
 		<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 	{else}
+		{if $finePaymentResult}
+			<div class="alert alert-{if $finePaymentResult->success === true}success{else}danger{/if}" id="finePaymentResult">{$finePaymentResult->message}</div>
+		{/if}
 		{if count($userFines) > 0}
 			{* Show Fine Alert when the user has no linked accounts *}
 			{if  count($userFines) == 1 && $profile->_fines}
