@@ -2625,8 +2625,7 @@ class MyAccount_AJAX extends JSON_Action
 			return $result;
 		} else {
 			list($userLibrary, $payment, $purchaseUnits) = $result;
-			$baseUrl = "https://msbpay.demo.gilacorp.com/"; // TODO: create a database variable
-			$paymentRequestUrl = $baseUrl . "NashvillePublicLibrary/"; // TODO: create a database variable
+			$paymentRequestUrl = $userLibrary->msbUrl;
 			$paymentRequestUrl .= "?ReferenceID=" . $payment->id;
 			$paymentRequestUrl .= "&PaymentType=CC";
 			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;

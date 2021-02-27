@@ -1870,6 +1870,15 @@ function getLibraryLocationUpdates(){
 			],
 		],
 
+		'library_fine_updates_msb' => [
+			'title' => 'Library Fine Updates MSB',
+			'description' => 'Updates to library settings for MSB payment integration.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN msbUrl VARCHAR(80)"
+			],
+		],
+
 		'library_fine_payment_order' => [
 			'title' => 'Library Fine Payment Order',
 			'description' => 'Updates to library settings to allow libraries to identify the order fines should be paid in.',
