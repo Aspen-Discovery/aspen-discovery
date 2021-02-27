@@ -62,34 +62,36 @@ class FineAPI extends Action
 				$payment = new UserPayment();
 				$payment->id = $msb["PaymentReference"];
 				$payment->orderId = $msb["TransactionID"];
-				$payment->update();
-				if ($payment->completed != 0) {
-					$success = false;
-					$message = "MSB Payment has already been processed for Payment Reference ID $payment->id";
-					$level = 'Logger::LOG_ERROR';
-				} else {
-					// Ensure MSB-reported transaction amount (which does not include convenience fee) equals Aspen-expected total paid
-					if ($payment->totalPaid != $msb["TransactionAmount"]) {
+				if ($payment->find(true)) {
+					$payment->update();
+					if ($payment->completed != 0) {
 						$success = false;
-						$message = "MSB Payment does not equal Aspen expected payment for Payment Reference ID $payment->id : " . $msb['TransactionAmount'] . " != $payment->totalPaid";
+						$message = "MSB Payment has already been processed for Payment Reference ID $payment->id";
 						$level = 'Logger::LOG_ERROR';
 					} else {
-						$user = new User();
-						$user->id = $payment->userId;
-						if ($user->find(true)) {
-							return $user->completeFinePayment($payment);
-						} else {
+						// Ensure MSB-reported transaction amount (which does not include convenience fee) equals Aspen-expected total paid
+						if ($payment->totalPaid != $msb["TransactionAmount"]) {
 							$success = false;
-							$message = 'User Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron';
+							$message = "MSB Payment does not equal Aspen expected payment for Payment Reference ID $payment->id : " . $msb['TransactionAmount'] . " != $payment->totalPaid";
 							$level = 'Logger::LOG_ERROR';
+						} else {
+							$user = new User();
+							$user->id = $payment->userId;
+							if ($user->find(true)) {
+								return $user->completeFinePayment($payment);
+							} else {
+								$success = false;
+								$message = 'User Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron';
+								$level = 'Logger::LOG_ERROR';
+							}
 						}
 					}
+				} else {
+					$success = false;
+					$message = 'Unable to find the order you processed, please visit the library with your receipt';
+					$level = 'Logger::LOG_ERROR';
 				}
 			}
-		} else {
-			$success = false;
-			$message = 'Unable to find the order you processed, please visit the library with your receipt';
-			$level = 'Logger::LOG_ERROR';
 		}
 		$logger->log($message, $level);
 		$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
