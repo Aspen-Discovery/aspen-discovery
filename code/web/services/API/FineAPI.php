@@ -46,6 +46,7 @@ class FineAPI extends Action
 		global $serverName;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 		$mailer = new Mailer();
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = new SystemVariables();
 		$json_params = file_get_contents("php://input");
 		if (strlen($json_params) > 0 && $this->isValidJSON($json_params)) {
@@ -94,7 +95,9 @@ class FineAPI extends Action
 			}
 		}
 		$logger->log($message, $level);
-		$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
+		if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
+			$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
+		}
 		return ['success' => $success, 'message' => $message];
 	}
 
