@@ -63,7 +63,7 @@ class FineAPI extends Action
 				$payment->id = $msb["PaymentReference"];
 				$payment->orderId = $msb["TransactionID"];
 				$payment->update();
-				if ($payment->completed !== 0) {
+				if ($payment->completed != 0) {
 					$success = false;
 					$message = "MSB Payment has already been processed for Payment Reference ID $payment->id";
 					$level = 'Logger::LOG_ERROR';
