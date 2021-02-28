@@ -252,13 +252,18 @@ public class RecordGroupingProcessor {
 
 		if (originalGroupedWorkId != null && !originalGroupedWorkId.equals(groupedWorkPermanentId)) {
 			try {
-				//For realtime indexing we will want to trigger a reindex of the old record as well
-				markWorkAsNeedingReindexStmt.setString(1, originalGroupedWorkId);
-				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 120); //Give it a buffer to make sure it indexes again
-				markWorkAsNeedingReindexStmt.executeUpdate();
-
 				//move enrichment from the old id to the new if the new old no longer has any records
 				moveGroupedWorkEnrichment(originalGroupedWorkId, groupedWorkPermanentId);
+
+				//For realtime indexing we will want to trigger a reindex of the old record as well
+				markWorkAsNeedingReindexStmt.setString(1, originalGroupedWorkId);
+				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 2);
+				markWorkAsNeedingReindexStmt.executeUpdate();
+
+				//Also trigger a reindex of the new record.
+				markWorkAsNeedingReindexStmt.setString(1, groupedWorkPermanentId);
+				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 2);
+				markWorkAsNeedingReindexStmt.executeUpdate();
 			} catch (SQLException e) {
 				logEntry.incErrors("Error marking record for reindexing", e);
 			}
