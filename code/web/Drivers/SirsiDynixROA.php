@@ -7,7 +7,7 @@ class SirsiDynixROA extends HorizonAPI
 {
 	//TODO: Additional caching of sessionIds by patron
 	private static $sessionIdsForUsers = array();
-	private static $logAllAPICalls = true;
+	private static $logAllAPICalls = false;
 
 	private function staffOrPatronSessionTokenSwitch()
 	{
@@ -52,7 +52,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		global $instanceName;
@@ -68,12 +68,13 @@ class SirsiDynixROA extends HorizonAPI
 			$logger->log(print_r($headers, true), Logger::LOG_ERROR);
 			$logger->log(print_r($json, true), Logger::LOG_ERROR);
 		}
-		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
+			curl_close($ch);
 			return json_decode($json);
 		} else {
-			$logger->log('Curl problem in getWebServiceResponse', Logger::LOG_ERROR);
+			$logger->log('Curl problem in getWebServiceResponse ' . curl_error($ch), Logger::LOG_ERROR);
+			curl_close($ch);
 			return false;
 		}
 	}
@@ -399,11 +400,12 @@ class SirsiDynixROA extends HorizonAPI
 		];
 
 		$webServiceURL = $this->getWebServiceURL();
-		$includeFields = urlencode("circRecordList{overdue},blockList{owed},holdRecordList{status},privilegeExpiresDate");
+		$includeFields = urlencode("privilegeExpiresDate,circRecordList{overdue},blockList{owed},holdRecordList{status}");
 		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->username . '?includeFields=' . $includeFields;
 
 		$sessionToken = $this->getSessionToken($user);
 		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
+
 		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 			$summary['numCheckedOut'] = count($lookupMyAccountInfoResponse->fields->circRecordList);
 			foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkout) {
