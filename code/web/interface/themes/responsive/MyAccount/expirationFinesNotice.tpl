@@ -19,7 +19,7 @@
 						</a>
 					</div>
 				{else}
-					<div class="myAccountLink" title="Please contact your local library to pay fines or charges." style="color:#c62828; font-weight:bold;" onclick="alert('Please contact your local library to pay fines or charges.')">
+					<div class="myAccountLink" title="Please contact your local library to pay fines or charges." style="color:#c62828; font-weight:bold;" onclick="alert('{translate text='Please contact your local library to pay fines or charges.'}')">
 						{if count($user->getLinkedUsers())>0}
 							{translate text="Your accounts have %1% in fines." 1=$ilsSummary.totalFines|formatCurrency}
 						{else}
