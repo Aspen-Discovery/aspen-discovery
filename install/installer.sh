@@ -13,6 +13,7 @@ yum -y install php php-mcrypt php-gd php-curl php-mysql php-zip php-fileinfo
 yum -y install php-xml
 yum -y install bind-utils
 yum -y install php-intl
+yum -y install php-mbstring
 service httpd start
 chkconfig httpd on
 # New PHP ini file
