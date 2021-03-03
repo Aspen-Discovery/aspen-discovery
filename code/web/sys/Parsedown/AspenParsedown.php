@@ -49,7 +49,6 @@ class AspenParsedown extends ParsedownExtra{
 		if ($systemVariables != false && !empty($systemVariables->allowHtmlInMarkdownFields)){
 			$text = strip_tags($text, '<' . implode('><', explode('|', $systemVariables->allowableHtmlTags)). '>');
 		}
-		$parsedText = parent::parse($text);
-		return $parsedText;
+		return parent::parse($text);
 	}
 }
