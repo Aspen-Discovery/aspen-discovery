@@ -1,5 +1,5 @@
 {strip}
-	<div id="rbdigitalCheckout_{$record.recordId|escape}" class="result row">
+	<div id="rbdigitalCheckout_{$record->recordId|escape}" class="result row">
 
 		{* Cover Column *}
 		{if $showCovers}

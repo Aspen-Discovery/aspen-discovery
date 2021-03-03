@@ -697,7 +697,82 @@ function getUserUpdates()
 				//Now do the actual encryption
 				'encryptUserFields'
 			]
-		]
+		],
+
+		'user_cache_holds' => [
+			'title' => 'User account cache holds',
+			'description' => 'Cache holds for a user to improve performance',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN holdInfoLastLoaded INT(11) DEFAULT 0',
+				"CREATE TABLE user_hold (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					type VARCHAR(20) NOT NULL,
+					source VARCHAR(50) NOT NULL,
+					userId INT(11) NOT NULL,
+					sourceId VARCHAR(50) NOT NULL,
+					recordId VARCHAR(50) NOT NULL,
+					shortId VARCHAR(50),
+					itemId VARCHAR(50),
+					title VARCHAR(500),
+					title2 VARCHAR(500),
+					author VARCHAR(500),
+					volume VARCHAR(50),
+					callNumber VARCHAR(50),
+					available TINYINT(1),
+					cancelable TINYINT(1),
+					cancelId VARCHAR(50),
+					locationUpdateable TINYINT(1),
+					pickupLocationId VARCHAR(50),
+					pickupLocationName VARCHAR(100),
+					status VARCHAR(50),
+					position INT(11),
+					holdQueueLength INT(11),
+					createDate INT(11),
+					availableDate INT(11),
+					expirationDate INT(11),
+					automaticCancellationDate INT(11),
+					frozen TINYINT(1),
+					canFreeze TINYINT(1),
+					reactivateDate INT(11)
+				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8"
+			]
+		],
+
+		'user_cache_checkouts' => [
+			'title' => 'User account cache checkouts',
+			'description' => 'Cache checkouts for a user to improve performance',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN checkoutInfoLastLoaded INT(11) DEFAULT 0',
+				"CREATE TABLE user_checkout (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					type VARCHAR(20) NOT NULL,
+					source VARCHAR(50) NOT NULL,
+					userId INT(11) NOT NULL,
+					sourceId VARCHAR(50) NOT NULL,
+					recordId VARCHAR(50) NOT NULL,
+					shortId VARCHAR(50),
+					itemId VARCHAR(50),
+					itemIndex VARCHAR(50),
+					renewalId VARCHAR(50),
+					barcode VARCHAR(50),
+					title VARCHAR(500),
+					title2 VARCHAR(500),
+					author VARCHAR(500),
+					callNumber VARCHAR(50),
+					volume VARCHAR(50),
+					checkoutDate INT(11),
+					dueDate INT(11),
+					renewCount INT(11),
+					canRenew TINYINT(1),
+					autoRenew TINYINT(1),
+					autoRenewError VARCHAR(500),
+					maxRenewals INT(11),
+					fine FLOAT,
+					returnClaim VARCHAR(500),
+					holdQueueLength INT(11)
+				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8"
+			]
+		],
 	);
 }
 

@@ -9665,6 +9665,12 @@ a.browse-thumbnail-sorted.active {
 #library-barcode-svg {
   max-width: 100%;
 }
+.refresh-indicator {
+  font-size: 85%;
+  float: right !important;
+  margin-right: 6px;
+  margin-top: 6px;
+}
 /**
  * Additional Styling related to the help system
  */

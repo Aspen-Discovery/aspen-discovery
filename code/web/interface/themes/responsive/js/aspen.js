@@ -4885,6 +4885,8 @@ AspenDiscovery.Account = (function(){
 		ajaxCallback: null,
 		closeModalOnAjaxSuccess: false,
 		showCovers: null,
+		currentHoldSource: null,
+		currentCheckoutsSource: null,
 
 		addAccountLink: function(){
 			var url = Globals.path + "/MyAccount/AJAX?method=getAddAccountLinkForm";
@@ -5016,7 +5018,29 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
+		//Force the current page to be reloaded from the source
+		reloadCheckouts: function(){
+			var source = 'all';
+			if (AspenDiscovery.Account.currentCheckoutsSource != null){
+				source = AspenDiscovery.Account.currentCheckoutsSource;
+			}
+			document.body.style.cursor = "wait";
+			var url = Globals.path + "/MyAccount/AJAX?method=getCheckouts&source=" + source + "&refreshCheckouts=true";
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, function(data){
+				document.body.style.cursor = "default";
+				if (data.success){
+					$('#accountLoadTime').html(data.accountLoadTime);
+					$("#" + source + "CheckoutsPlaceholder").html(data.holds);
+				}else{
+					$("#" + source + "CheckoutsPlaceholder").html(data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
 		loadCheckouts: function(source, sort, showCovers){
+			AspenDiscovery.Account.currentCheckoutsSource = source;
 			var url = Globals.path + "/MyAccount/AJAX?method=getCheckouts&source=" + source;
 			if (sort !== undefined){
 				url += "&sort=" + sort;
@@ -5053,6 +5077,7 @@ AspenDiscovery.Account = (function(){
 			$.getJSON(url, function(data){
 				document.body.style.cursor = "default";
 				if (data.success){
+					$('#accountLoadTime').html(data.holdInfoLastLoaded);
 					$("#" + source + "CheckoutsPlaceholder").html(data.checkouts);
 				}else{
 					$("#" + source + "CheckoutsPlaceholder").html(data.message);
@@ -5061,7 +5086,29 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
+		//Force the current page to be reloaded from the source
+		reloadHolds: function(){
+			var source = 'all';
+			if (AspenDiscovery.Account.currentHoldSource != null){
+				source = AspenDiscovery.Account.currentHoldSource;
+			}
+			document.body.style.cursor = "wait";
+			var url = Globals.path + "/MyAccount/AJAX?method=getHolds&source=" + source + "&refreshHolds=true";
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, function(data){
+				document.body.style.cursor = "default";
+				if (data.success){
+					$('#accountLoadTime').html(data.accountLoadTime);
+					$("#" + source + "HoldsPlaceholder").html(data.holds);
+				}else{
+					$("#" + source + "HoldsPlaceholder").html(data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
 		loadHolds: function(source, availableHoldSort, unavailableHoldSort, showCovers){
+			AspenDiscovery.Account.currentHoldSource = source;
 			var url = Globals.path + "/MyAccount/AJAX?method=getHolds&source=" + source;
 			if (availableHoldSort !== undefined){
 				url += "&availableHoldSort=" + availableHoldSort;
@@ -5088,6 +5135,8 @@ AspenDiscovery.Account = (function(){
 					label = 'OverDrive Holds';
 				}else if (source === 'rbdigital'){
 					label = 'RBdigital Holds';
+				}else if (source === 'cloud_library'){
+					label = 'Cloud Library Holds';
 				}else if (source === 'axis360'){
 					label = 'Axis 360 Holds';
 				}
@@ -5098,6 +5147,7 @@ AspenDiscovery.Account = (function(){
 			$.getJSON(url, function(data){
 				document.body.style.cursor = "default";
 				if (data.success){
+					$('#accountLoadTime').html(data.holdInfoLastLoaded);
 					$("#" + source + "HoldsPlaceholder").html(data.holds);
 				}else{
 					$("#" + source + "HoldsPlaceholder").html(data.message);

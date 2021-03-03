@@ -105,8 +105,11 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 	 */
 	public function getTitle()
 	{
-		$title = $this->rbdigitalProduct->title;
-		return $title;
+		return $this->rbdigitalProduct->title;
+	}
+
+	public function getSortableTitle(){
+		return $this->getTitle();
 	}
 
 	/**
@@ -382,10 +385,10 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 	 * @param User $patron
 	 * @return string mixed
 	 */
-	public function getAccessOnlineLinkUrl($patron)
+	public function getAccessOnlineLinkUrl($patronId)
 	{
 		global $configArray;
-		return $configArray['Site']['url'] . '/RBdigitalMagazine/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
+		return $configArray['Site']['url'] . '/RBdigitalMagazine/' . $this->id . '/AccessOnline?patronId=' . $patronId;
 	}
 
 	function getStatusSummary()

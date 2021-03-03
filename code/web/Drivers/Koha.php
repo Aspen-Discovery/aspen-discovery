@@ -317,13 +317,9 @@ class Koha extends AbstractIlsDriver
 		return $result;
 	}
 
-	private $checkouts = array();
-
 	public function getCheckouts($patron)
 	{
-		if (isset($this->checkouts[$patron->id])) {
-			return $this->checkouts[$patron->id];
-		}
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
 
 		//Get checkouts by screen scraping
 		$checkouts = array();
@@ -336,18 +332,20 @@ class Koha extends AbstractIlsDriver
 		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()) {
-			$checkout = array();
-			$checkout['checkoutSource'] = 'ILS';
+			$curCheckout = new Checkout();
+			$curCheckout->type = 'ils';
+			$curCheckout->source = $this->getIndexingProfile()->name;
+			$curCheckout->sourceId = $curRow['issue_id'];
+			$curCheckout->userId = $patron->id;
 
-			$checkout['id'] = $curRow['issue_id'];
-			$checkout['recordId'] = $curRow['biblionumber'];
-			$checkout['shortId'] = $curRow['biblionumber'];
-			$checkout['title'] = $curRow['title'];
+			$curCheckout->recordId = $curRow['biblionumber'];
+			$curCheckout->shortId = $curRow['biblionumber'];
+			$curCheckout->title = $curRow['title'];
 			if (isset($curRow['itemcallnumber'])) {
-				$checkout['callNumber'] = $curRow['itemcallnumber'];
+				$curCheckout->callNumber = $curRow['itemcallnumber'];
 			}
 			if (isset($curRow['enumchron'])) {
-				$checkout['volume'] = $curRow['enumchron'];
+				$curCheckout->volume = $curRow['enumchron'];
 			}
 
 			$itemNumber = $curRow['itemnumber'];
@@ -358,7 +356,7 @@ class Koha extends AbstractIlsDriver
 			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
 			if ($volumeResults !== false) { //This is false if Koha does not support volumes
 				if ($volumeRow = $volumeResults->fetch_assoc()) {
-					$checkout['volume'] = $volumeRow['description'];
+					$curCheckout->volume = $volumeRow['description'];
 				}
 				$volumeResults->close();
 			}
@@ -367,12 +365,12 @@ class Koha extends AbstractIlsDriver
 			/** @noinspection SqlResolve */
 			$claimsReturnedSql = "SELECT created_on from return_claims where issue_id = {$curRow['issue_id']}";
 			$claimsReturnedResults = mysqli_query($this->dbConnection, $claimsReturnedSql);
-			$checkout['return_claim'] = '';
+			$curCheckout->returnClaim = '';
 			if ($claimsReturnedResults !== false) { //This is false if Koha does not support volumes
 				if ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
 					try {
 						$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
-						$checkout['return_claim'] = translate(['text'=>'return_claim_message','defaultText'=> 'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y')]);
+						$curCheckout->returnClaim = translate(['text'=>'return_claim_message','defaultText'=> 'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y')]);
 					} catch (Exception $e) {
 						global $logger;
 						$logger->log("Error parsing claims returned info " . $claimsReturnedResult['created_on'] . " $e", Logger::LOG_ERROR);
@@ -381,24 +379,24 @@ class Koha extends AbstractIlsDriver
 				$claimsReturnedResults->close();
 			}
 
-			$checkout['author'] = $curRow['author'];
+			$curCheckout->author = $curRow['author'];
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
 			if ($dateDue) {
 				$renewalDate = $dateDue->format('D M jS');
-				$checkout['renewalDate'] = $renewalDate;
+				$curCheckout->renewalDate = $renewalDate;
 				$dueTime = $dateDue->getTimestamp();
 			} else {
 				$renewalDate = 'Unknown';
 				$dueTime = null;
 			}
-			$checkout['dueDate'] = $dueTime;
-			$checkout['itemId'] = $itemNumber;
-			$checkout['renewIndicator'] = $curRow['itemnumber'];
-			$checkout['renewCount'] = $curRow['renewals'];
+			$curCheckout->dueDate = $dueTime;
+			$curCheckout->itemId = $itemNumber;
+			$curCheckout->renewIndicator = $curRow['itemnumber'];
+			$curCheckout->renewCount = $curRow['renewals'];
 
-			$checkout['canRenew'] = !$curRow['auto_renew'] && $opacRenewalAllowed;
-			$checkout['autoRenew'] = $curRow['auto_renew'];
+			$curCheckout->canRenew = !$curRow['auto_renew'] && $opacRenewalAllowed;
+			$curCheckout->autoRenew = $curRow['auto_renew'];
 			$autoRenewError = $curRow['auto_renew_error'];
 
 			if ($autoRenewError) {
@@ -412,7 +410,7 @@ class Koha extends AbstractIlsDriver
 					$autoRenewError = translate(['text' => 'koha_auto_renew_auto', 'defaultText' => 'If eligible, this item wil renew on<br/>%1%', '1' => $renewalDate]);
 				}
 			}
-			$checkout['autoRenewError'] = $autoRenewError;
+			$curCheckout->autoRenewError = $autoRenewError;
 
 			//Get the max renewals by figuring out what rule the checkout was issued under
 			$patronType = $patron->patronType;
@@ -423,39 +421,13 @@ class Koha extends AbstractIlsDriver
 			$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
 			if ($issuingRulesRS !== false) {
 				if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
-					$checkout['maxRenewals'] = $issuingRulesRow['renewalsallowed'];
+					$curCheckout->maxRenewals = $issuingRulesRow['renewalsallowed'];
 				}
 				$issuingRulesRS->close();
 			}
 
-			if ($checkout['id'] && strlen($checkout['id']) > 0) {
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($checkout['recordId']);
-				if ($recordDriver->isValid()) {
-					$checkout['groupedWorkId'] = $recordDriver->getPermanentId();
-					$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-					$checkout['ratingData'] = $recordDriver->getRatingData();
-					$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-					$checkout['format'] = $recordDriver->getPrimaryFormat();
-					$checkout['author'] = $recordDriver->getPrimaryAuthor();
-					$checkout['title'] = $recordDriver->getTitle();
-					$curTitle['title_sort'] = $recordDriver->getSortableTitle();
-					$checkout['link'] = $recordDriver->getLinkUrl();
-				} else {
-					$checkout['coverUrl'] = "";
-					$checkout['groupedWorkId'] = "";
-					$checkout['format'] = "Unknown";
-				}
-				$recordDriver->__destruct();
-				$recordDriver = null;
-			}
-
-			$checkout['user'] = $patron->getNameAndLibraryLabel();
-
-			$checkouts[] = $checkout;
+			$checkouts[$curCheckout->source . $curCheckout->sourceId . $curCheckout->userId] = $curCheckout;
 		}
-
-		$this->checkouts[$patron->id] = $checkouts;
 
 		return $checkouts;
 	}
@@ -1221,6 +1193,7 @@ class Koha extends AbstractIlsDriver
 	 */
 	public function getHolds($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'title')
 	{
+		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
 		$unavailableHolds = array();
 		$holds = array(
@@ -1235,18 +1208,19 @@ class Koha extends AbstractIlsDriver
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()) {
 			//Each row in the table represents a hold
-			$curHold = array();
-			$curHold['holdSource'] = 'ILS';
+			$curHold = new Hold();
+			$curHold->userId = $patron->id;
+			$curHold->type = 'ils';
+			$curHold->source = $this->getIndexingProfile()->name;
 			$bibId = $curRow['biblionumber'];
-			$curHold['id'] = $curRow['biblionumber'];
-			$curHold['shortId'] = $curRow['biblionumber'];
-			$curHold['recordId'] = $curRow['biblionumber'];
-			$curHold['title'] = $curRow['title'];
+			$curHold->sourceId = $curRow['biblionumber'];
+			$curHold->recordId = $curRow['biblionumber'];
+			$curHold->title = $curRow['title'];
 			if (isset($curRow['itemcallnumber'])) {
-				$curHold['callNumber'] = $curRow['itemcallnumber'];
+				$curHold->callNumber = $curRow['itemcallnumber'];
 			}
 			if (isset($curRow['enumchron'])) {
-				$curHold['volume'] = $curRow['enumchron'];
+				$curHold->volume = $curRow['enumchron'];
 			}
 			if (isset($curRow['volume_id'])){
 				//Get the volume info
@@ -1254,86 +1228,72 @@ class Koha extends AbstractIlsDriver
 				$volumeInfo = new IlsVolumeInfo();
 				$volumeInfo->volumeId = $curRow['volume_id'];
 				if ($volumeInfo->find(true)){
-					$curHold['volume'] = $volumeInfo->displayLabel;
+					$curHold->volume = $volumeInfo->displayLabel;
 				}
 			}
 			if (strpos($curRow['reservedate'], ':') > 0){
-				$curHold['create'] = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
+				$curHold->createDate = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
 			}else{
-				$curHold['create'] = date_parse_from_format('Y-m-d', $curRow['reservedate']);
+				$curHold->createDate = date_parse_from_format('Y-m-d', $curRow['reservedate']);
 			}
 
 			if (!empty($curRow['expirationdate'])) {
 				$dateTime = date_create_from_format('Y-m-d', $curRow['expirationdate']);
-				$curHold['expire'] = $dateTime->getTimestamp();
+				$curHold->expirationDate = $dateTime->getTimestamp();
 			}
 
 			if (!empty($curRow['cancellationdate'])) {
-				$curHold['automaticCancellation'] = date_parse_from_format('Y-m-d H:i:s', $curRow['cancellationdate']);
+				$curHold->automaticCancellationDate = date_parse_from_format('Y-m-d H:i:s', $curRow['cancellationdate']);
 			}else{
-				$curHold['automaticCancellation'] = '';
+				$curHold->automaticCancellationDate = '';
 			}
 
-			$curHold['currentPickupId'] = $curRow['branchcode'];
-			$curHold['location'] = $curRow['branchcode'];
-			$curHold['locationUpdateable'] = false;
-			$curHold['currentPickupName'] = $curHold['location'];
-			$curHold['position'] = $curRow['priority'];
-			$curHold['frozen'] = false;
-			$curHold['canFreeze'] = false;
-			$curHold['cancelable'] = true;
+			$curPickupBranch = new Location();
+			$curPickupBranch->code = $curRow['branchcode'];
+			if ($curPickupBranch->find(true)) {
+				$curPickupBranch->fetch();
+				$curHold->pickupLocationId = $curPickupBranch->locationId;
+				$curHold->pickupLocationName = $curPickupBranch->displayName;
+			}else{
+				$curHold->pickupLocationName = $curPickupBranch->code;
+			}
+			$curHold->locationUpdateable = false;
+			$curHold->position = $curRow['priority'];
+			$curHold->frozen = false;
+			$curHold->canFreeze = false;
+			$curHold->cancelable = true;
 			if ($curRow['suspend'] == '1') {
-				$curHold['frozen'] = true;
-				$curHold['status'] = "Frozen";
+				$curHold->frozen = true;
+				$curHold->status = "Frozen";
 				if ($curRow['suspend_until'] != null) {
-					$curHold['status'] .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
+					$curHold->status .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
-				$curHold['locationUpdateable'] = true;
+				$curHold->locationUpdateable = true;
 			} elseif ($curRow['found'] == 'W') {
-				$curHold['cancelable'] = false;
-				$curHold['status'] = "Ready to Pickup";
+				$curHold->cancelable = false;
+				$curHold->status = "Ready to Pickup";
 			} elseif ($curRow['found'] == 'T') {
-				$curHold['status'] = "In Transit";
+				$curHold->status = "In Transit";
 			} else {
-				$curHold['status'] = "Pending";
-				$curHold['canFreeze'] = true;
-				$curHold['locationUpdateable'] = true;
+				$curHold->status = "Pending";
+				$curHold->canFreeze = true;
+				$curHold->locationUpdateable = true;
 			}
-			$curHold['cancelId'] = $curRow['reserve_id'];
+			$curHold->cancelId = $curRow['reserve_id'];
 
-			if ($bibId) {
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($bibId);
-				if ($recordDriver->isValid()) {
-					$curHold['groupedWorkId'] = $recordDriver->getPermanentId();
-					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
-					$curHold['format'] = $recordDriver->getFormat();
-					$curHold['author'] = $recordDriver->getPrimaryAuthor();
-					$curHold['isbn'] = $recordDriver->getCleanISBN();
-					$curHold['upc'] = $recordDriver->getCleanUPC();
-					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-					$curHold['link'] = $recordDriver->getLinkUrl();
-
-					//Load rating information
-					$curHold['ratingData'] = $recordDriver->getRatingData();
-				}
-			}
-			$curHold['user'] = $patron->getNameAndLibraryLabel();
-
-			$isAvailable = isset($curHold['status']) && preg_match('/^Ready to Pickup.*/i', $curHold['status']);
+			$isAvailable = isset($curHold->status) && preg_match('/^Ready to Pickup.*/i', $curHold->status);
 			global $library;
 			if ($isAvailable && $library->availableHoldDelay > 0){
 				$holdAvailableOn = strtotime($curRow['waitingdate']);
 				if ((time() - $holdAvailableOn) < 60 * 60 * 24 * $library->availableHoldDelay){
 					$isAvailable = false;
-					$curHold['status'] = 'In transit';
+					$curHold->status = 'In transit';
 				}
 			}
 			if (!$isAvailable) {
-				$holds['unavailable'][$curHold['holdSource'] . $curHold['cancelId']. $curHold['user']] = $curHold;
+				$holds['unavailable'][$curHold->source . $curHold->cancelId. $curHold->userId] = $curHold;
 			} else {
-				$holds['available'][$curHold['holdSource'] . $curHold['cancelId']. $curHold['user']] = $curHold;
+				$holds['available'][$curHold->source . $curHold->cancelId. $curHold->userId] = $curHold;
 			}
 		}
 

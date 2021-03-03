@@ -64,6 +64,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 */
 	public function getCheckouts(User $user)
 	{
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		if (isset($this->checkouts[$user->id])){
 			return $this->checkouts[$user->id];
 		}
@@ -186,6 +187,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 */
 	public function getHolds($user, $forSummary = false)
 	{
+		require_once ROOT_DIR . '/sys/User/Hold.php';
 		if (isset($this->holds[$user->id])){
 			return $this->holds[$user->id];
 		}
@@ -534,88 +536,71 @@ class Axis360Driver extends AbstractEContentDriver
 	}
 
 	/** @noinspection PhpUndefinedFieldInspection */
-	private function loadHoldInfo(SimpleXMLElement $rawHold, array &$holds, User $user, $forSummary)
+	private function loadHoldInfo(SimpleXMLElement $rawHold, array &$holds, User $user, $forSummary) : Hold
 	{
-		$hold = array();
+		$hold = new Hold();
+		$hold->type = 'axis360';
+		$hold->source = 'axis360';
+
 		$available = (string)$rawHold->isAvailable == 'Y';
 		$titleId = (string)$rawHold->titleID;
-		$hold['holdSource'] = 'Axis360';
-		$hold['axis360Id'] = $titleId;
-		$hold['holdQueueLength'] = (string)$rawHold->totalHoldSize;
-		$hold['holdQueuePosition'] = (string)$rawHold->holdPosition;
-		$hold['position'] = (string)$rawHold->holdPosition;
-		$hold['available'] = $available;
+		$hold->sourceId = $titleId;
+		$hold->recordId = $titleId;
+		$hold->title = (string)$rawHold->bookTitle;
+		$hold->holdQueueLength = (string)$rawHold->totalHoldSize;
+		$hold->position = (string)$rawHold->holdPosition;
+		$hold->available = $available;
 		if (!$available){
-			$hold['allowFreezeHolds'] = true;
-			$hold['canFreeze'] = true;
-			$hold['frozen'] = (string)$rawHold->isSuspendHold == 'R';
-			if ($hold['frozen']){
-				$hold['status'] = "Frozen";
+			$hold->canFreeze = true;
+			$hold->frozen = (string)$rawHold->isSuspendHold == 'R';
+			if ($hold->frozen){
+				$hold->status = "Frozen";
 			}
 		}else{
-			$hold['expire'] = strtotime($rawHold->reservedEndDate);
+			$hold->expire = strtotime($rawHold->reservedEndDate);
 		}
 
-		require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-		if (!$forSummary){
-			$axis360Record = new Axis360RecordDriver($titleId);
-			$hold['groupedWorkId'] = $axis360Record->getPermanentId();
-			$hold['recordId'] = $axis360Record->getUniqueID();
-			$hold['coverUrl'] = $axis360Record->getBookcoverUrl('medium', true);
-			$hold['recordUrl'] = $axis360Record->getAbsoluteUrl();
-			$hold['title'] = $axis360Record->getTitle();
-			$hold['sortTitle'] = $axis360Record->getTitle();
-			$hold['author'] = $axis360Record->getPrimaryAuthor();
-			$hold['linkUrl'] = $axis360Record->getLinkUrl(true);
-			$hold['format'] = $axis360Record->getFormats();
-			$hold['ratingData'] = $axis360Record->getRatingData();
-		}
-		$hold['user'] = $user->getNameAndLibraryLabel();
-		$hold['userId'] = $user->id;
-		$key = $hold['holdSource'] . $hold['axis360Id'] . $hold['user'];
+		$hold->userId = $user->id;
+		$key = $hold->source . $hold->sourceId . $hold->userId;
 		if ($available){
 			$holds['available'][$key] = $hold;
 		}else{
 			$holds['unavailable'][$key] = $hold;
 		}
+		return $hold;
 	}
 
 	/** @noinspection PhpUndefinedFieldInspection */
 	private function loadCheckoutInfo(SimpleXMLElement $title, &$checkouts, User $user)
 	{
-		$checkout = [
-			'checkoutSource' => 'Axis360',
-			'axis360Id' => (string)$title->titleId,
-			'recordId' => (string)$title->titleId
-		];
+		$checkout = new Checkout();
+		$checkout->type = 'axis360';
+		$checkout->source = 'axis360';
+		$checkout->sourceId = (string)$title->titleId;
+		$checkout->recordId = (string)$title->titleId;
 
 		//After a title is returned, Axis 360 will still return it for a bit, but mark it as not checked out.
 		if ((string)$title->availability->isCheckedout == 'N'){
 			return;
 		}
-		$checkout['canRenew'] = (string)$title->availability->IsButtonRenew != 'N';
+		$checkout->canRenew = (string)$title->availability->IsButtonRenew != 'N';
 		$expirationDate = new DateTime($title->availability->checkoutEndDate);
-		$checkout['dueDate'] = $expirationDate->getTimestamp();
-		$checkout['accessOnlineUrl'] = (string)$title->titleUrl;
-		$checkout['transactionId'] = (string)$title->availability->transactionID;
+		$checkout->dueDate = $expirationDate->getTimestamp();
+		$checkout->accessOnlineUrl = (string)$title->titleUrl;
+		$checkout->transactionId = (string)$title->availability->transactionID;
 		require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 
 		$axis360Record = new Axis360RecordDriver((string)$title->titleId);
 		if ($axis360Record->isValid()) {
 			$formats = $axis360Record->getFormats();
-			$checkout['groupedWorkId'] = $axis360Record->getPermanentId();
-			$checkout['format'] = reset($formats);
-			$checkout['coverUrl'] = $axis360Record->getBookcoverUrl('medium', true);
-			$checkout['ratingData'] = $axis360Record->getRatingData();
-			$checkout['recordUrl'] = $axis360Record->getLinkUrl(true);
-			$checkout['title'] = $axis360Record->getTitle();
-			$checkout['author'] = $axis360Record->getPrimaryAuthor();
-			$checkout['linkUrl'] = $axis360Record->getLinkUrl(false);
+			$checkout->groupedWorkId = $axis360Record->getPermanentId();
+			$checkout->format = reset($formats);
+			$checkout->title = $axis360Record->getTitle();
+			$checkout->author = $axis360Record->getPrimaryAuthor();
 		}
-		$checkout['user'] = $user->getNameAndLibraryLabel();
-		$checkout['userId'] = $user->id;
+		$checkout->userId = $user->id;
 
-		$key = $checkout['checkoutSource'] . $checkout['axis360Id'];
+		$key = $checkout->source . $checkout->sourceId . $checkout->userId;
 		$checkouts[$key] = $checkout;
 	}
 

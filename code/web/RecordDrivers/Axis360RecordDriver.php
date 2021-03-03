@@ -94,6 +94,14 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	}
 
 	/**
+	 * @return  string
+	 */
+	public function getAuthor()
+	{
+		return $this->axis360Title->primaryAuthor;
+	}
+
+	/**
 	 * The Table of Contents extracted from the record.
 	 * Returns null if no Table of Contents is available.
 	 *
