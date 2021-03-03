@@ -523,6 +523,50 @@ class UserList extends DataObject
 	}
 
 	/**
+	 * @param int $start     position of first list item to fetch
+	 * @param int $numItems  Number of items to fetch for this result
+	 * @return array     Array of HTML to display to the user
+	 */
+	public function getBrowseRecordsRaw($start, $numItems) {
+		//Get all entries for the list
+		$listEntryInfo = $this->getListEntries();
+
+		//Trim to the number of records we want to return
+		$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);
+
+		$filteredIdsBySource = [];
+		foreach ($filteredListEntries as $listItemEntry) {
+			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)){
+				$filteredIdsBySource[$listItemEntry['source']] = [];
+			}
+			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
+		}
+
+		//Load catalog items
+		$browseRecords = [];
+		foreach ($filteredIdsBySource as $sourceType => $sourceIds){
+			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
+			if ($searchObject === false){
+				AspenError::raiseError("Unknown List Entry Source $sourceType");
+			}else{
+				$records = $searchObject->getRecords($sourceIds);
+				foreach ($records as $key => $record){
+					if ($record instanceof ListsRecordDriver){
+						$browseRecords[$key] = $record->getFields();
+					}else{
+						$browseRecords[$key] = $record;
+					}
+				}
+			}
+		}
+
+		//Properly sort items
+		ksort($browseRecords);
+
+		return $browseRecords;
+	}
+
+	/**
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results suitable for use while displaying lists
 	 *

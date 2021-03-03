@@ -723,8 +723,270 @@ class SearchAPI extends Action
 		return $jsonResults;
 	}
 
+	function getActiveBrowseCategories(){
+		//Figure out which library or location we are looking at
+		global $library;
+		global $locationSingleton;
+		global $configArray;
+		//Check to see if we have an active location, will be null if we don't have a specific location
+		//based off of url, branch parameter, or IP address
+		$activeLocation = $locationSingleton->getActiveLocation();
+
+		//Get a list of browse categories for that library / location
+		/** @var BrowseCategoryGroupEntry[] $browseCategories */
+		if ($activeLocation == null){
+			//We don't have an active location, look at the library
+			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
+		}else{
+			//We have a location get data for that
+			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
+		}
+
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		//Format for return to the user, we want to return
+		// - the text id of the category
+		// - the display label
+		// - Clickable link to load the category
+		$formattedCategories = array();
+		foreach ($browseCategories as $curCategory){
+			$categoryInformation = new BrowseCategory();
+			$categoryInformation->id = $curCategory->browseCategoryId;
+
+			if ($categoryInformation->find(true)){
+				$formattedCategories[] = array(
+					'text_id' => $categoryInformation->textId,
+					'display_label' => $categoryInformation->label,
+					'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId
+				);
+			}
+		}
+		return $formattedCategories;
+	}
+
+	function getSubCategories($textId = null){
+		$textId = $this->getTextId($textId);
+		if (!empty($textId)){
+			$activeBrowseCategory = $this->getBrowseCategory($textId);
+			if ($activeBrowseCategory != null){
+				$subCategories = array();
+				/** @var SubBrowseCategories $subCategory */
+				foreach ($activeBrowseCategory->getSubCategories() as $subCategory) {
+					// Get Needed Info about sub-category
+					$temp = new BrowseCategory();
+					$temp->id = $subCategory->subCategoryId;
+					if ($temp->find(true)) {
+						$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
+					}else{
+						global $logger;
+						$logger->log("Did not find subcategory with id {$subCategory->subCategoryId}", Logger::LOG_WARNING);
+					}
+				}
+				return [
+					'success' => true,
+					'subCategories' => $subCategories
+				];
+			}else{
+				return [
+					'success' => false,
+					'message' => 'Could not find a category with that text id.'
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'message' => 'Please provide the text id to load sub categories for.'
+			];
+		}
+	}
+
+	function getBrowseCategoryInfo(){
+		$textId = $this->getTextId();
+		if ($textId == null){
+			return array('success' => false);
+		}
+		$response = ['success' => true];
+		$response['textId'] = $textId;
+		$subCategoryInfo = $this->getSubCategories($textId);
+		if ($subCategoryInfo['success']){
+			$response['subcategories'] = $subCategoryInfo['subCategories'];
+		}else{
+			$response['subcategories'] = [];
+		}
+
+
+		$mainCategory = $this->getBrowseCategory($textId);
+
+		if ($mainCategory != null){
+			// If this category has subcategories, get the results of a sub-category instead.
+			if (!empty($response['subcategories']['subCategories'])) {
+				// passed URL variable, or first sub-category
+				if (!empty($_REQUEST['subCategoryTextId'])) {
+					$subCategoryTextId = $_REQUEST['subCategoryTextId'];
+				} else {
+					$subCategoryTextId = $response['subcategories'][0]['textId'];
+				}
+				$response['subCategoryTextId'] = $subCategoryTextId;
+
+				// Set the main category label before we fetch the sub-categories main results
+				$response['label']  = translate($mainCategory->label);
+
+				$subCategory = $this->getBrowseCategory($subCategoryTextId);
+				if ($subCategory != null){
+					return [
+						'success' => false,
+						'message' => 'Could not find the sub category "' . $subCategoryTextId . '"'
+					];
+				}else{
+					$this->getBrowseCategoryResults($subCategory, $response);
+				}
+			}else{
+				$this->getBrowseCategoryResults($mainCategory, $response);
+			}
+		}else{
+			return [
+				'success' => false,
+				'message' => 'Could not find the main category "' . $textId . '"'
+			];
+		}
+
+		return $response;
+	}
+
+	/**
+	 * @param null $textId  Optional Id to set the object's textId to
+	 * @return null         Return the object's textId value
+	 */
+	private function getTextId($textId = null){
+		if (!empty($textId)) {
+			return $textId;
+		} else { // set Id only once
+			return isset($_REQUEST['textId']) ? $_REQUEST['textId'] : null;
+		}
+	}
+
+	/**
+	 * @param string $textId
+	 * @return BrowseCategory
+	 */
+	private function getBrowseCategory($textId) {
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		$browseCategory = new BrowseCategory();
+		$browseCategory->textId = $textId;
+		if ($browseCategory->find(true)) {
+			return $browseCategory;
+		}else{
+			return null;
+		}
+	}
+
+	const ITEMS_PER_PAGE = 24;
+	private function getBrowseCategoryResults($browseCategory, &$response){
+		if (isset($_REQUEST['pageToLoad']) && is_int($_REQUEST['pageToLoad'])) {
+			$pageToLoad = (int) $_REQUEST['pageToLoad'];
+		}else{
+			$pageToLoad = 1;
+		}
+		if ($browseCategory->textId == 'system_recommended_for_you') {
+			$this->getSuggestionsBrowseCategoryResults($pageToLoad, $response);
+		} else {
+			if ($browseCategory->source == 'List') {
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+				$sourceList     = new UserList();
+				$sourceList->id = $browseCategory->sourceListId;
+				if ($sourceList->find(true)) {
+					$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+				} else {
+					$records = array();
+				}
+				$response['searchUrl'] = '/MyAccount/MyList/' . $browseCategory->sourceListId;
+
+				// Search Browse Category //
+			} else {
+				$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
+				$defaultFilterInfo  = $browseCategory->defaultFilter;
+				$defaultFilters     = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
+				foreach ($defaultFilters as $filter) {
+					$searchObject->addFilter(trim($filter));
+				}
+				//Set Sorting, this is actually slightly mangled from the category to Solr
+				$searchObject->setSort($browseCategory->getSolrSort());
+				if ($browseCategory->searchTerm != '') {
+					$searchObject->setSearchTerm($browseCategory->searchTerm);
+				}
+
+				//Get titles for the list
+				$searchObject->clearFacets();
+				$searchObject->disableSpelling();
+				$searchObject->disableLogging();
+				$searchObject->setLimit(self::ITEMS_PER_PAGE);
+				$searchObject->setPage($pageToLoad);
+				$searchObject->processSearch();
+
+				// Big one - our results
+				$records = $searchObject->getResultRecordSet();
+				//Remove fields as needed to improve the display.
+				foreach ($records as $recordKey => $record) {
+					unset($record['auth_author']);
+					unset($record['auth_authorStr']);
+					unset($record['callnumber-first-code']);
+					unset($record['spelling']);
+					unset($record['callnumber-first']);
+					unset($record['title_auth']);
+					unset($record['callnumber-subject']);
+					unset($record['author-letter']);
+					unset($record['marc_error']);
+					unset($record['shortId']);
+					$records[$recordKey] = $record;
+				}
+
+				$response['searchUrl'] = $searchObject->renderSearchUrl();
+
+				// Shutdown the search object
+				$searchObject->close();
+			}
+			$response['records'] = $records;
+			$response['numRecords'] = count($records);
+		}
+	}
+
 	function getBreadcrumbs()
 	{
 		return [];
+	}
+
+	private function getSuggestionsBrowseCategoryResults(int $pageToLoad, &$response)
+	{
+		if (!UserAccount::isLoggedIn()){
+			$response = [
+				'success' => false,
+				'message' => 'Your session has timed out, please login again to view suggestions'
+			];
+			return;
+		}else{
+			$response['label'] = translate('Recommended for you');
+			$response['searchUrl'] = '/MyAccount/SuggestedTitles';
+
+			require_once ROOT_DIR . '/sys/Suggestions.php';
+			$suggestions = Suggestions::getSuggestions(-1, $pageToLoad,self::ITEMS_PER_PAGE);
+			$records = array();
+			foreach ($suggestions as $suggestedItemId => $suggestionData) {
+				$record = $suggestionData['titleInfo'];
+				unset($record['auth_author']);
+				unset($record['auth_authorStr']);
+				unset($record['callnumber-first-code']);
+				unset($record['spelling']);
+				unset($record['callnumber-first']);
+				unset($record['title_auth']);
+				unset($record['callnumber-subject']);
+				unset($record['author-letter']);
+				unset($record['marc_error']);
+				unset($record['shortId']);
+				$records[] = $record;
+			}
+
+			$response['records'] = $records;
+			$response['numRecords'] = count($suggestions);
+		}
+
 	}
 }
