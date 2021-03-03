@@ -1276,8 +1276,6 @@ abstract class Solr
 							$options['facet.field'][] = "{!ex={$facetKey}}" . $key;
 						} elseif (strpos($facetName, 'availability_toggle') === 0 || strpos($facetName, 'availability_by_format') === 0) {
 							$options['facet.field'][] = '{!ex=avail}' . $key;
-							//No longer need missing since we provide a value for the entire scope
-							//$options["f.{$key}.facet.missing"] = 'true';
 						} else {
 							$options['facet.field'][] = $key;
 						}
@@ -1324,7 +1322,7 @@ abstract class Solr
 			foreach ($filters as $key => $value) {
 				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0) {
 					$filters[$key] = '{!tag=avail}' . $value;
-				} elseif (isset($facet['field'][$key])) {
+				}elseif (isset($facet['field'][$key])) {
 					$facetSetting = $facet['field'][$key];
 					if ($facetSetting instanceof FacetSetting) {
 						if ($facetSetting->multiSelect) {
@@ -2039,7 +2037,6 @@ abstract class Solr
 
 	function loadDynamicFields()
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $solrScope;
 		$fields = $memCache->get("schema_dynamic_fields_{$solrScope}_{$this->index}");
@@ -2048,7 +2045,6 @@ abstract class Solr
 			$schemaUrl = $configArray['Index']['url'] . '/grouped_works/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema = simplexml_load_file($schemaUrl);
 			$fields = array();
-			/** @var SimpleXMLElement $field */
 			/** @noinspection PhpUndefinedFieldInspection */
 			foreach ($schema->fields->dynamicField as $field) {
 				$fields[] = substr((string)$field['name'], 0, -1);
@@ -2060,7 +2056,6 @@ abstract class Solr
 
 	function loadValidFields()
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $solrScope;
 		if (isset($_REQUEST['allFields'])) {
@@ -2075,7 +2070,6 @@ abstract class Solr
 				AspenError::raiseError("Solr is not currently running");
 			}
 			$fields = array();
-			/** @var SimpleXMLElement $field */
 			/** @noinspection PhpUndefinedFieldInspection */
 			foreach ($schema->fields->field as $field) {
 				//print_r($field);

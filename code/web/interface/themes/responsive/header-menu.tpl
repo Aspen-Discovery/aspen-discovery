@@ -1,5 +1,11 @@
 {strip}
 <div id="header-menu" class="dropdownMenu" style="display: none">
+	<div id="hamburger-menu-my-account" class="header-menu-option">
+		<a href="/MyAccount/Home">
+			<i class="fas fa-user"></i>{translate text='My Account'}
+		</a>
+	</div>
+
 	{if !empty($userPermissions)}
 		<div id="home-page-home-button" class="header-menu-option">
 			<a href="/Admin/Home">

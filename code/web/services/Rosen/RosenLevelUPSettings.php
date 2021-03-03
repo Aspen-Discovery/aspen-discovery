@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
 
-class RosenLevelUPSettings extends ObjectEditor
+class Rosen_RosenLevelUPSettings extends ObjectEditor
 {
 	function getObjectType()
 	{
@@ -26,15 +26,26 @@ class RosenLevelUPSettings extends ObjectEditor
 		return 'Rosen LevelUP Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new RosenLevelUPSetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'id asc';
+	}
+
+	function canSort()
+	{
+		return false;
 	}
 
 	function getObjectStructure()
@@ -63,7 +74,11 @@ class RosenLevelUPSettings extends ObjectEditor
 	}
 
 	function getBreadcrumbs(){
-		return [];
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#third_party_enrichment', 'Third Party Enrichment');
+		$breadcrumbs[] = new Breadcrumb('/Rosen/RosenLevelUPSettings', 'Rosen LevelUP Settings');
+		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection()
@@ -78,6 +93,6 @@ class RosenLevelUPSettings extends ObjectEditor
 
 	function canAddNew()
 	{
-		return count($this->getAllObjects()) == 0;
+		return $this->getNumObjects() == 0;
 	}
 }

@@ -15,9 +15,11 @@ class Admin_AuthorEnrichment extends ObjectEditor
 	function getPageTitle(){
 		return 'Author Enrichment';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new AuthorEnrichment();
-		$object->orderBy('authorName');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -25,6 +27,11 @@ class Admin_AuthorEnrichment extends ObjectEditor
 		}
 		return $objectList;
 	}
+	function getDefaultSort()
+	{
+		return 'authorName asc';
+	}
+
 	function getObjectStructure(){
 		return AuthorEnrichment::getObjectStructure();
 	}

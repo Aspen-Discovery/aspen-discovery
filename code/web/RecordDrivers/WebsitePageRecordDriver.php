@@ -53,6 +53,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 
 		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 		$webPageUsage = new WebPageUsage();
+		$webPageUsage->instance = $_SERVER['SERVER_NAME'];
 		$webPageUsage->webPageId = $this->getUniqueID();
 		$webPageUsage->year = date('Y');
 		$webPageUsage->month = date('n');
@@ -103,7 +104,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 	public function getDescription()
 	{
 		if (isset($this->fields['description'])) {
-			return $this->fields['description'];
+			return strip_tags($this->fields['description']);
 		}else{
 			return '';
 		}

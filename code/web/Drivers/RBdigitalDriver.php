@@ -195,6 +195,8 @@ class RBdigitalDriver extends AbstractEContentDriver
 				if (!empty($response->output) && $response->output == 'SUCCESS') {
 					$this->trackUserUsageOfRBdigital($patron);
 					$this->trackRecordCheckout($recordId);
+					$patron->lastReadingHistoryUpdate = 0;
+					$patron->update();
 
 					$result['success'] = true;
 					$result['message'] = translate(['text' => 'rbdigital-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
@@ -246,6 +248,8 @@ class RBdigitalDriver extends AbstractEContentDriver
 				if ($result['success'] == true) {
 					$this->trackUserUsageOfRBdigital($patron);
 					$this->trackMagazineCheckout($magazineId, $issueId);
+					$patron->lastReadingHistoryUpdate = 0;
+					$patron->update();
 
 					$result['message'] = 'The magazine was checked out successfully. You can read the magazine from the RBdigital app.';
 				}
@@ -752,6 +756,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 	{
 		require_once ROOT_DIR . '/sys/RBdigital/UserRBdigitalUsage.php';
 		$userUsage = new UserRBdigitalUsage();
+		$userUsage->instance = $_SERVER['SERVER_NAME'];
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
@@ -775,6 +780,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 		$product = new RBdigitalProduct();
 		$product->rbdigitalId = $rbdigitalId;
 		if ($product->find(true)) {
+			$recordUsage->instance = $_SERVER['SERVER_NAME'];
 			$recordUsage->rbdigitalId = $product->id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
@@ -796,6 +802,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 		$product = new RBdigitalMagazine();
 		$product->magazineId = $magazineId;
 		if ($product->find(true)) {
+			$recordUsage->instance = $_SERVER['SERVER_NAME'];
 			$recordUsage->magazineId = $product->id;
 			$recordUsage->issueId = $issueId;
 			$recordUsage->year = date('Y');
@@ -821,6 +828,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 		$product = new RBdigitalProduct();
 		$product->rbdigitalId = $rbdigitalId;
 		if ($product->find(true)) {
+			$recordUsage->instance = $_SERVER['SERVER_NAME'];
 			$recordUsage->rbdigitalId = $product->id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');

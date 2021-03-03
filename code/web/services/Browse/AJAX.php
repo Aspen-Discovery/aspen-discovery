@@ -186,18 +186,8 @@ class Browse_AJAX extends Action {
 				'message' => 'Your session has timed out, please login again to view suggestions'
 			];
 		}
-		// Only Fetches one page of results
+		//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
 		$browseMode = $this->setBrowseMode();
-		if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {
-			global $memCache;
-			global $solrScope;
-			$activeUserId = UserAccount::getActiveUserId();
-			$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
-			$browseCategoryInfo = $memCache->get($key);
-			if ($browseCategoryInfo != false){
-				return $browseCategoryInfo;
-			}
-		}
 
 		global $interface;
 		$interface->assign('browseCategoryId', $this->textId);
@@ -231,13 +221,6 @@ class Browse_AJAX extends Action {
 		$result['records']    = implode('',$records);
 		$result['numRecords'] = count($records);
 
-		if ($pageToLoad == 1){
-			global $memCache, $configArray, $solrScope;
-			$activeUserId = UserAccount::getActiveUserId();
-			$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
-			$memCache->set($key, $result, $configArray['Caching']['browse_category_info']);
-		}
-
 		return $result;
 	}
 
@@ -246,17 +229,7 @@ class Browse_AJAX extends Action {
 			return $this->getSuggestionsBrowseCategoryResults($pageToLoad);
 		} else {
 			$browseMode = $this->setBrowseMode();
-			if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {
-				// only first page is cached
-				global $memCache;
-				global $solrScope;
-				$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
-				$browseCategoryInfo = $memCache->get($key);
-				if ($browseCategoryInfo != false) {
-					return $browseCategoryInfo;
-				}
-			}
-
+			//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
 			$result = array('success' => false);
 			$browseCategory = $this->getBrowseCategory();
 			if ($browseCategory) {
@@ -334,12 +307,6 @@ class Browse_AJAX extends Action {
 				$result['numRecords'] = count($records);
 			}
 
-			// Store first page of browse category in the MemCache
-			if ($pageToLoad == 1) {
-				global $memCache, $configArray, $solrScope;
-				$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
-				$memCache->set($key, $result, $configArray['Caching']['browse_category_info']);
-			}
 			return $result;
 		}
 	}
@@ -441,9 +408,6 @@ class Browse_AJAX extends Action {
 	private function upBrowseCategoryCounter(){
 		if ($this->browseCategory){
 			$this->browseCategory->numTimesShown += 1;
-//			if ($this->subCategories){ // Avoid unneeded sql update calls of subBrowseCategories
-//				unset ($this->browseCategory->subBrowseCategories);
-//			}
 		    $this->browseCategory->update_stats_only();
 		}
 	}
@@ -507,79 +471,31 @@ class Browse_AJAX extends Action {
 	 * @return string
 	 */
 	function getSubCategories() {
-		$this->setTextId();
-		$this->getBrowseCategory();
-		if ($this->browseCategory){
-			$subCategories = array();
-			/** @var SubBrowseCategories $subCategory */
-			foreach ($this->browseCategory->getSubCategories() as $subCategory) {
-
-				// Get Needed Info about sub-category
-				$temp = new BrowseCategory();
-				$temp->id = $subCategory->subCategoryId;
-				if ($temp->find(true)) {
-					$this->subCategories[] = $temp;
-					$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
-				}else{
-					global $logger;
-					$logger->log("Did not find subcategory with id {$subCategory->subCategoryId}", Logger::LOG_WARNING);
-				}
-			}
-			if ($subCategories) {
+		require_once ROOT_DIR . '/services/API/SearchAPI.php';
+		$searchAPI = new SearchAPI();
+		$result = $searchAPI->getSubCategories();
+		if ($result['success']){
+			$subCategories = $result['subCategories'];
+			if (!empty($subCategories)) {
 				global $interface;
 				$interface->assign('subCategories', $subCategories);
 				return $interface->fetch('Search/browse-sub-category-menu.tpl');
 			}
 		}
 		return null;
+
 	}
 
 	/**
 	 * Return a list of browse categories that are assigned to the home page for the current library.
 	 *
 	 * This is used in the Drupal module, but not in Aspen itself
-	 *
-	 * TODO: Load subcategories for the main categories
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function getActiveBrowseCategories(){
-		//Figure out which library or location we are looking at
-		global $library;
-		global $locationSingleton;
-		global $configArray;
-		//Check to see if we have an active location, will be null if we don't have a specific location
-		//based off of url, branch parameter, or IP address
-		$activeLocation = $locationSingleton->getActiveLocation();
-
-		//Get a list of browse categories for that library / location
-		/** @var BrowseCategoryGroupEntry[] $browseCategories */
-		if ($activeLocation == null){
-			//We don't have an active location, look at the library
-			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
-		}else{
-			//We have a location get data for that
-			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
-		}
-
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		//Format for return to the user, we want to return
-		// - the text id of the category
-		// - the display label
-		// - Clickable link to load the category
-		$formattedCategories = array();
-		foreach ($browseCategories as $curCategory){
-			$categoryInformation = new BrowseCategory();
-			$categoryInformation->id = $curCategory->browseCategoryId;
-
-			if ($categoryInformation->find(true)){
-				$formattedCategories[] = array(
-						'text_id' => $categoryInformation->textId,
-						'display_label' => $categoryInformation->label,
-						'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId
-				);
-			}
-		}
-		return $formattedCategories;
+		require_once ROOT_DIR . '/services/API/SearchAPI.php';
+		$searchAPI = new SearchAPI();
+		return $searchAPI->getActiveBrowseCategories();
 	}
 
 	function getBreadcrumbs()

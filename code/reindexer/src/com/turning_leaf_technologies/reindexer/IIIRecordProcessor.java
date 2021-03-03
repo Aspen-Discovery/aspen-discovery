@@ -17,7 +17,6 @@ import java.util.*;
 
 abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private HashMap<String, ArrayList<OrderInfo>> orderInfoFromExport = new HashMap<>();
-	//private HashMap<String, DueDateInfo> dueDateInfoFromExport = new HashMap<>();
 	private boolean loanRuleDataLoaded = false;
 	private HashMap<Long, LoanRule> loanRules = new HashMap<>();
 	private ArrayList<LoanRuleDeterminer> loanRuleDeterminers = new ArrayList<>();
@@ -33,7 +32,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			logger.error("Unable to load marc path from indexing profile");
 		}
 		loadLoanRuleInformation(dbConn, logger);
-		//loadDueDateInformation();
 		validCheckedOutStatusCodes.add("-");
 	}
 
@@ -148,44 +146,49 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private HashMap<String, HoldabilityInformation> holdabilityCache = new HashMap<>();
 	@Override
 	protected HoldabilityInformation isItemHoldable(ItemInfo itemInfo, Scope curScope, HoldabilityInformation isHoldableUnscoped) {
-		//Check to make sure this isn't an unscoped record
-		if (curScope.isUnscoped()){
-			//This is an unscoped scope (everything should be holdable unless the location/itype/status is not holdable
+		//If no loan rules are provided, just use the default method.
+		if (loanRuleDeterminers.size() == 0 || loanRules.size() == 0){
 			return isHoldableUnscoped;
-		}else{
-			//First check to see if the overall record is not holdable based on suppression rules
-			if (isHoldableUnscoped.isHoldable()) {
-				String locationCode;
-				if (loanRulesAreBasedOnCheckoutLocation()) {
-					//Loan rule determiner by lending location
-					locationCode = curScope.getIlsCode();
-				}else{
-					//Loan rule determiner by owning location
-					locationCode = itemInfo.getLocationCode();
-				}
-
-				String itemIType = itemInfo.getITypeCode();
-
-				String key = curScope.getScopeName() + locationCode + itemIType;
-				HoldabilityInformation cachedInfo = holdabilityCache.get(key);
-				if (cachedInfo == null){
-					HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes());
-					HashSet<Long> holdablePTypes = new HashSet<>();
-
-					//Set back to false and then prove true
-					boolean holdable = false;
-					for (RelevantLoanRule loanRule : relevantLoanRules.keySet()) {
-						if (loanRule.getLoanRule().getHoldable()) {
-							holdablePTypes.addAll(loanRule.getPatronTypes());
-							holdable = true;
-						}
-					}
-					cachedInfo = new HoldabilityInformation(holdable, holdablePTypes);
-					holdabilityCache.put(key, cachedInfo);
-				}
-				return cachedInfo;
-			}else{
+		}else {
+			//Check to make sure this isn't an unscoped record
+			if (curScope.isUnscoped()) {
+				//This is an unscoped scope (everything should be holdable unless the location/itype/status is not holdable
 				return isHoldableUnscoped;
+			} else {
+				//First check to see if the overall record is not holdable based on suppression rules
+				if (isHoldableUnscoped.isHoldable()) {
+					String locationCode;
+					if (loanRulesAreBasedOnCheckoutLocation()) {
+						//Loan rule determiner by lending location
+						locationCode = curScope.getIlsCode();
+					} else {
+						//Loan rule determiner by owning location
+						locationCode = itemInfo.getLocationCode();
+					}
+
+					String itemIType = itemInfo.getITypeCode();
+
+					String key = curScope.getScopeName() + locationCode + itemIType;
+					HoldabilityInformation cachedInfo = holdabilityCache.get(key);
+					if (cachedInfo == null) {
+						HashMap<RelevantLoanRule, LoanRuleDeterminer> relevantLoanRules = getRelevantLoanRules(itemIType, locationCode, curScope.getRelatedNumericPTypes());
+						HashSet<Long> holdablePTypes = new HashSet<>();
+
+						//Set back to false and then prove true
+						boolean holdable = false;
+						for (RelevantLoanRule loanRule : relevantLoanRules.keySet()) {
+							if (loanRule.getLoanRule().getHoldable()) {
+								holdablePTypes.addAll(loanRule.getPatronTypes());
+								holdable = true;
+							}
+						}
+						cachedInfo = new HoldabilityInformation(holdable, holdablePTypes);
+						holdabilityCache.put(key, cachedInfo);
+					}
+					return cachedInfo;
+				} else {
+					return isHoldableUnscoped;
+				}
 			}
 		}
 	}
@@ -292,15 +295,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		return "Unknown";
 	}
 
-//	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
-//		DueDateInfo dueDate = dueDateInfoFromExport.get(itemInfo.getItemIdentifier());
-//		if (dueDate == null) {
-//			itemInfo.setDueDate("");
-//		}else{
-//			itemInfo.setDueDate(dueDateFormatter.format(dueDate.getDueDate()));
-//		}
-//	}
-
 	/**
 	 * Calculates a check digit for a III identifier
 	 * @param basedId String the base id without checksum
@@ -319,25 +313,6 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			return Integer.toString(modValue);
 		}
 	}
-
-//	private void loadDueDateInformation() {
-//		File dueDatesFile = new File(this.exportPath + "/due_dates.csv");
-//		if (dueDatesFile.exists()){
-//			try{
-//				CSVReader reader = new CSVReader(new FileReader(dueDatesFile));
-//				String[] dueDateData;
-//				while ((dueDateData = reader.readNext()) != null){
-//					DueDateInfo dueDateInfo = new DueDateInfo();
-//					dueDateInfo.setItemId(dueDateData[0]);
-//					long dueDate = Long.parseLong(dueDateData[1]);
-//					dueDateInfo.setDueDate(new Date(dueDate));
-//					dueDateInfoFromExport.put(dueDateInfo.getItemId(), dueDateInfo);
-//				}
-//			}catch(Exception e){
-//				logger.error("Error loading order records from active orders", e);
-//			}
-//		}
-//	}
 
 	void loadOrderInformationFromExport() {
 		File activeOrders = new File(this.exportPath + "/active_orders.csv");

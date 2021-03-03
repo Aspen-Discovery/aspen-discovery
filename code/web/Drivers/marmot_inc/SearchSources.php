@@ -379,11 +379,18 @@ class SearchSources{
 			}
 			return $worldCatLink;
 		}else if ($searchSource == 'overdrive'){
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-			$overDriveSettings = new OverDriveSetting();
-			$overDriveSettings->find((true));
-			$overDriveUrl = $overDriveSettings->url;
-			return "$overDriveUrl/search?query=" . urlencode($lookFor);
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+			$overDriveScope = new OverDriveScope();
+			$overDriveScope->id = $library->overDriveScopeId;
+			if ($overDriveScope->find(true)){
+				require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+				$overDriveSettings = new OverDriveSetting();
+				$overDriveSettings->id = $overDriveScope->settingId;
+				if ($overDriveSettings->find(true)) {
+					$overDriveUrl = $overDriveSettings->url;
+					return "$overDriveUrl/search?query=" . urlencode($lookFor);
+				}
+			}
 		}else if ($searchSource == 'prospector'){
 			$prospectorSearchType = $this->getProspectorSearchType($type);
 			$lookFor = str_replace('+', '%20', rawurlencode($lookFor));

@@ -90,7 +90,12 @@ class Translator
 							$translationTerm->insert();
 						} catch (Exception $e) {
 							if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
-								return "TERM TOO LONG for translation \"$phrase\"";
+								//Just show the phrase for now, maybe show the error in debug mode?
+								if (IPAddress::showDebuggingInformation()){
+									return "TERM TOO LONG for translation \"$phrase\"";
+								}else {
+									return $phrase;
+								}
 							} else {
 								return $phrase;
 							}

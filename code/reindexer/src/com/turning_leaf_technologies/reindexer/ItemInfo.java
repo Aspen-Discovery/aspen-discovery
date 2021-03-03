@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
@@ -8,7 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-public class ItemInfo {
+public class ItemInfo{
 	private String itemIdentifier;
 	private String locationCode;
 	private String subLocation;
@@ -67,10 +68,6 @@ public class ItemInfo {
 
 	void setDetailedStatus(String detailedStatus) {
 		this.detailedStatus = detailedStatus;
-	}
-
-	public String getDetailedStatus(){
-		return this.detailedStatus;
 	}
 
 	public String getLocationCode() {
@@ -172,13 +169,12 @@ public class ItemInfo {
 		this.isEContent = isEContent;
 	}
 
-	private static final SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
 	private String baseDetails = null;
-	String getDetails(){
+	String getDetails(BaseLogEntry logEntry){
 		if (baseDetails == null){
 			String formattedLastCheckinDate = "";
 			if (lastCheckinDate != null){
-				formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
+				formattedLastCheckinDate = formatLastCheckInDate(lastCheckinDate, logEntry);
 			}
 			//Cache the part that doesn't change depending on the scope
 			baseDetails = recordInfo.getFullIdentifier() + "|" +
@@ -200,6 +196,20 @@ public class ItemInfo {
 					Util.getCleanDetailValue(subLocation) + "|";
 		}
 		return baseDetails;
+	}
+
+	private String formatLastCheckInDate(Date lastCheckinDate, BaseLogEntry logEntry){
+		String formattedLastCheckinDate;
+		try {
+			//We need to create this each time because the DateTimeFomatter is not ThreadSafe and just synchronizing
+			// this method is not working. Eventually, we can convert everything that uses Date to Java 8's new Date classes
+			SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
+			formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
+		}catch (Exception e){
+			logEntry.incErrors("Error formatting check in date for " + lastCheckinDate, e);
+			formattedLastCheckinDate = "";
+		}
+		return formattedLastCheckinDate;
 	}
 
 	Date getDateAdded() {
@@ -379,6 +389,41 @@ public class ItemInfo {
 			return null;
 		}else{
 			return subfield.getData();
+		}
+	}
+
+	public void copyFrom(ItemInfo itemInfo) {
+		this.itemIdentifier = itemInfo.itemIdentifier;
+		this.locationCode = itemInfo.locationCode;
+		this.subLocation = itemInfo.subLocation;
+		this.subLocationCode = itemInfo.subLocationCode;
+		this.format = itemInfo.format;
+		this.formatCategory = itemInfo.formatCategory;
+		this.numCopies = itemInfo.numCopies;
+		this.isOrderItem = itemInfo.isOrderItem;
+		this.isEContent = itemInfo.isEContent;
+		this.shelfLocation = itemInfo.shelfLocation;
+		this.detailedLocation = itemInfo.detailedLocation;
+		this.callNumber = itemInfo.callNumber;
+		this.sortableCallNumber = itemInfo.sortableCallNumber;
+		this.dateAdded = itemInfo.dateAdded;
+		this.IType = itemInfo.IType;
+		this.ITypeCode = itemInfo.ITypeCode;
+		this.eContentSource = itemInfo.eContentSource;
+		this.eContentFilename = itemInfo.eContentFilename;
+		this.eContentUrl = itemInfo.eContentUrl;
+		this.statusCode = itemInfo.statusCode;
+		this.detailedStatus = itemInfo.detailedStatus;
+		this.dueDate = itemInfo.dueDate;
+		this.collection = itemInfo.collection;
+		this.lastCheckinDate = itemInfo.lastCheckinDate;
+		this.shelfLocationCode = itemInfo.shelfLocationCode;
+		this.autoReindexTime = itemInfo.autoReindexTime;
+		this.marcField = itemInfo.marcField;
+		for (String scope : itemInfo.scopingInfo.keySet()){
+			ScopingInfo curScopingInfo = itemInfo.scopingInfo.get(scope);
+			ScopingInfo clonedScope = addScope(curScopingInfo.getScope());
+			clonedScope.copyFrom(curScopingInfo);
 		}
 	}
 }

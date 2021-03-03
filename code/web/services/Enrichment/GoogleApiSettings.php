@@ -26,15 +26,22 @@ class Enrichment_GoogleApiSettings extends ObjectEditor
 		return 'Google Api Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new GoogleApiSetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'id asc';
 	}
 
 	function getObjectStructure()
@@ -83,6 +90,6 @@ class Enrichment_GoogleApiSettings extends ObjectEditor
 
 	function canAddNew()
 	{
-		return count($this->getAllObjects()) == 0;
+		return $this->getNumObjects() == 0;
 	}
 }

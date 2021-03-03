@@ -279,6 +279,22 @@ function getUserUpdates()
 			]
 		],
 
+		'user_payments_carlx' => [
+			'title' => 'User payments CarlX',
+			'description' => 'Add columns to user_payments to support CarlX credit card processing',
+			'sql' => [
+				'ALTER TABLE user_payments ADD COLUMN transactionDate INT(11)',
+			]
+		],
+
+		'user_payments_finesPaid' => [
+			'title' => 'User payments finesPaid embiggening',
+			'description' => 'Increase finesPaid column space to 8K',
+			'sql' => [
+				"ALTER TABLE user_payments CHANGE finesPaid finesPaid VARCHAR(8192) NOT NULL DEFAULT ''",
+			]
+		],
+
 		'user_display_name_length' => array(
 			'title' => 'User display name length',
 			'description' => 'Increase displayName field in the User table',
@@ -334,8 +350,8 @@ function getUserUpdates()
 			'description' => 'Add the ability to define a secondary library card for a user',
 			'sql' => [
 				"ALTER TABLE user ADD COLUMN alternateLibraryCard VARCHAR(50) DEFAULT ''",
-				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(60) DEFAULT ''",
-				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(60) DEFAULT ''",
+				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(256) DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''",
 			]
 		],
 
@@ -627,6 +643,61 @@ function getUserUpdates()
 				'fixNytUserPermissions'
 			],
 		],
+
+		'cleanup_invalid_reading_history_entries' => [
+			'title' => 'Cleanup Invalid Reading History Entries',
+			'description' => 'Remove old reading history entries that will display as Title Not Available',
+			'sql' => [
+				'DELETE FROM user_reading_history_work where (groupedWorkPermanentId is null or groupedWorkPermanentId = \'\') and (title is null or title = \'\') and (author is null OR author = \'\')'
+			]
+		],
+
+		'store_pickup_location' => [
+			'title' => 'Store the selected pickup location',
+			'description' => 'Store the selected pickup location with the user for cases when the library does not allow home location to be changed',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN pickupLocationId INT(11) DEFAULT 0',
+				'UPDATE user SET rememberHoldPickupLocation = 0',
+				'UPDATE user SET pickupLocationId = homeLocationId'
+			]
+		],
+
+		'user_add_last_reading_history_update_time' => [
+			'title' => 'Store when the reading history was last updated',
+			'description' =>  'Store when the reading history was last updated to optimize loading reading history',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN lastReadingHistoryUpdate INT(11) DEFAULT 0'
+			]
+		],
+
+		'user_remove_college_major' => [
+			'title' => 'Remove College and Major',
+			'description' => 'Remove unused college and major fields from user table',
+			'sql' => [
+				'ALTER TABLE user DROP COLUMN college',
+				'ALTER TABLE user DROP COLUMN major',
+			]
+		],
+		'encrypt_user_table' => [
+			'title' => 'Encrypt User Table (Slow)',
+			'description' => 'Encrypt data within the user table, this can take a long time for instances with a lot of users.',
+			'sql' => [
+				//First increase field lengths
+				'ALTER TABLE user CHANGE COLUMN password password VARCHAR(256)',
+				"ALTER TABLE user CHANGE COLUMN firstname firstname VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN lastname lastname VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN email email VARCHAR(256) NOT NULL DEFAULT ''",
+				'ALTER TABLE user CHANGE COLUMN cat_username cat_username VARCHAR(256)',
+				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN displayName displayName VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN phone phone VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN overdriveEmail overdriveEmail VARCHAR(256) NOT NULL DEFAULT ''",
+				'ALTER TABLE user CHANGE COLUMN rbdigitalPassword rbdigitalPassword VARCHAR(256)',
+				"ALTER TABLE user CHANGE COLUMN alternateLibraryCardPassword alternateLibraryCardPassword VARCHAR(256) NOT NULL DEFAULT ''",
+				//Now do the actual encryption
+				'encryptUserFields'
+			]
+		]
 	);
 }
 
@@ -712,5 +783,23 @@ function fixNytUserPermissions()
 			$nytLists->searchable = 1;
 			$nytLists->update();
 		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function encryptUserFields(){
+	set_time_limit(0);
+	$user = new User();
+	$numUsers = $user->count();
+	$numBatches = (int)ceil($numUsers / 1000);
+	for ($i = 0; $i < $numBatches; $i++){
+		$user = new User();
+		$user->limit($i * 1000, 1000);
+		$user->find();
+		while ($user->fetch()){
+			//Just need to re-save to make the encryption work
+			$user->update();
+		}
+		$user->__destruct();
 	}
 }

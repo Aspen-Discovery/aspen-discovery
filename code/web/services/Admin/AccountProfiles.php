@@ -14,11 +14,13 @@ class Admin_AccountProfiles extends ObjectEditor {
 	function getPageTitle(){
 		return 'Account Profiles';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$object = new AccountProfile();
-		$object->orderBy('weight, name');
+		$object->orderBy($this->getSort() . ', name');
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
@@ -26,6 +28,11 @@ class Admin_AccountProfiles extends ObjectEditor {
 
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'weight asc';
+	}
+
 	function getObjectStructure(){
 		return AccountProfile::getObjectStructure();
 	}

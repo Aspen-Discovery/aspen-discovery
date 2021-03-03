@@ -1,6 +1,12 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
 		<h1>{translate text="Axis 360 Dashboard"}</h1>
+		{include file="Admin/selectInterfaceForm.tpl"}
+		<div class="row">
+			<div class="col-xs-12">
+				<a href="/Axis360/Graphs?instance={$selectedInstance}" title="{translate text="Show Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i> {translate text="View as graph"}</a>
+			</div>
+		</div>
 		<div class="row">
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">

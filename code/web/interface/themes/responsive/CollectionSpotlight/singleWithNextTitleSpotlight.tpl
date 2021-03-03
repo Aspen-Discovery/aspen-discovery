@@ -3,7 +3,7 @@
 	<div id="{$wrapperId}" class="titleScrollerWrapper singleTitleSpotlightWrapper">
 		{if $showCollectionSpotlightTitle || $showViewMoreLink}
 			<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
-				{if $scrollerTitle}
+				{if $showCollectionSpotlightTitle && !empty($scrollerTitle)}
 					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
 				{/if}
 				{if $showViewMoreLink}

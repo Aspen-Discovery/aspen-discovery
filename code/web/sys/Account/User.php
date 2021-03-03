@@ -25,6 +25,7 @@ class User extends DataObject
 	public $myLocation2Id;					 // int(11)
 	public $trackReadingHistory; 			 // tinyint
 	public $initialReadingHistoryLoaded;
+	public $lastReadingHistoryUpdate;
 	public $bypassAutoLogout;        //tinyint
 	public $disableRecommendations;     //tinyint
 	public $disableCoverArt;     //tinyint
@@ -51,6 +52,7 @@ class User extends DataObject
 	public $searchPreferenceLanguage;
 
 	public $rememberHoldPickupLocation;
+	public $pickupLocationId;
 
 	public $lastListUsed;
 
@@ -113,6 +115,10 @@ class User extends DataObject
 		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
 	}
 
+	function getEncryptedFieldNames(){
+		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'rbdigitalPassword', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
+	}
+
 	function getLists() {
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 
@@ -130,7 +136,7 @@ class User extends DataObject
 		return $lists;
 	}
 
-	private $catalogDriver = null;
+	protected $_catalogDriver = null;
 
 	/**
 	 * Get a connection to the catalog for the user
@@ -139,17 +145,17 @@ class User extends DataObject
 	 */
 	function getCatalogDriver()
 	{
-		if ($this->catalogDriver == null) {
+		if ($this->_catalogDriver == null) {
 			//Based off the source of the user, get the AccountProfile
 			$accountProfile = $this->getAccountProfile();
 			if ($accountProfile) {
 				$catalogDriver = trim($accountProfile->driver);
 				if (!empty($catalogDriver)) {
-					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
+					$this->_catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
 				}
 			}
 		}
-		return $this->catalogDriver;
+		return $this->_catalogDriver;
 	}
 
 	function hasIlsConnection()
@@ -166,7 +172,7 @@ class User extends DataObject
 	}
 
 	/** @var AccountProfile */
-	private $_accountProfile;
+	protected $_accountProfile;
 
 	/**
 	 * @return AccountProfile
@@ -308,19 +314,39 @@ class User extends DataObject
 
 	function getBarcode()
 	{
-		if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+		if ($this->getAccountProfile() == null){
 			return trim($this->cat_username);
-		} else {
-			return trim($this->cat_password);
+		}else {
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return trim($this->cat_username);
+			} else {
+				return trim($this->cat_password);
+			}
 		}
 	}
 
 	function getPasswordOrPin()
 	{
-		if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+		if ($this->getAccountProfile() == null) {
 			return trim($this->cat_password);
-		} else {
-			return trim($this->cat_username);
+		}else{
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return trim($this->cat_password);
+			} else {
+				return trim($this->cat_username);
+			}
+		}
+	}
+
+	function getPasswordOrPinField(){
+		if ($this->getAccountProfile() == null) {
+			return 'cat_password';
+		}else{
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return 'cat_password';
+			} else {
+				return 'cat_username';
+			}
 		}
 	}
 
@@ -484,42 +510,15 @@ class User extends DataObject
 			$userHomeLibrary = Library::getPatronHomeLibrary($this);
 			if ($userHomeLibrary) {
 				if ($source == 'overdrive') {
-					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-					$overDriveDriver = new OverDriveDriver();
-					return array_key_exists('OverDrive', $enabledModules) && $overDriveDriver->isUserValidForOverDrive($this);
+					return array_key_exists('OverDrive', $enabledModules) && $userHomeLibrary->overDriveScopeId > 0;
 				} elseif ($source == 'hoopla') {
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
 				} elseif ($source == 'rbdigital') {
-					if (array_key_exists('RBdigital', $enabledModules)){
-						if ($userHomeLibrary->rbdigitalScopeId > 0){
-							return true;
-						}
-					}
-					return false;
+					return array_key_exists('RBdigital', $enabledModules) && ($userHomeLibrary->rbdigitalScopeId > 0);
 				} elseif ($source == 'cloud_library') {
-					if (array_key_exists('Cloud Library', $enabledModules)){
-						require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
-						try {
-							$cloudLibrarySettings = new CloudLibrarySetting();
-							$cloudLibrarySettings->find();
-							return $cloudLibrarySettings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
-						}
-					}
-					return false;
+					return array_key_exists('Cloud Library', $enabledModules) && ($userHomeLibrary->cloudLibraryScopeId > 0);
 				} elseif ($source == 'axis360') {
-					if (array_key_exists('Axis 360', $enabledModules)){
-						require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
-						try {
-							$axis360Settings = new Axis360Setting();
-							$axis360Settings->find();
-							return $axis360Settings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
-						}
-					}
-					return false;
+					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				}
 			}
 		}
@@ -651,6 +650,7 @@ class User extends DataObject
 			global $logger;
 			$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
 		}
+		$this->pickupLocationId = $this->homeLocationId;
 		if (!isset($this->myLocation1Id)) $this->myLocation1Id = 0;
 		if (!isset($this->myLocation2Id)) $this->myLocation2Id = 0;
 		if (!isset($this->bypassAutoLogout)) $this->bypassAutoLogout = 0;
@@ -781,6 +781,9 @@ class User extends DataObject
 
 	function updateUserPreferences(){
 		// Validate that the input data is correct
+		if (isset($_POST['pickupLocation']) && !is_array($_POST['pickupLocation']) && preg_match('/^\d{1,3}$/', $_POST['pickupLocation']) == 0){
+			return ['success' => false, 'message' => 'The preferred pickup location had an incorrect format.'];
+		}
 		if (isset($_POST['myLocation1']) && !is_array($_POST['myLocation1']) && preg_match('/^\d{1,3}$/', $_POST['myLocation1']) == 0){
 			return ['success' => false, 'message' => 'The 1st location had an incorrect format.'];
 		}
@@ -796,6 +799,19 @@ class User extends DataObject
 		}
 
 		//Make sure the selected location codes are in the database.
+		if (isset($_POST['pickupLocation'])){
+			if ($_POST['pickupLocation'] == 0){
+				$this->pickupLocationId = $_POST['pickupLocation'];
+			}else{
+				$location = new Location();
+				$location->get('locationId', $_POST['pickupLocation'] );
+				if ($location->getNumResults() != 1) {
+					return ['success' => false, 'message' => 'The pickup location could not be found in the database.'];
+				} else {
+					$this->pickupLocationId = $_POST['pickupLocation'];
+				}
+			}
+		}
 		if (isset($_POST['myLocation1'])){
 			if ($_POST['myLocation1'] == 0){
 				$this->myLocation1Id = $_POST['myLocation1'];
@@ -1230,6 +1246,24 @@ class User extends DataObject
 		return $this->displayName . ' - ' . $this->getHomeLibrarySystemName();
 	}
 
+	public function getValidHomeLibraryBranches($recordSource){
+		$pickupLocations = $this->getValidPickupBranches($recordSource);
+		$hasHomeLibrary = false;
+		foreach ($pickupLocations as $key => $pickupLocation){
+			if (is_object($pickupLocation)){
+				if ($pickupLocation->locationId == $this->homeLocationId) {
+					$hasHomeLibrary = true;
+				}
+			}else{
+				unset($pickupLocations[$key]);
+			}
+		}
+		if (!$hasHomeLibrary){
+			$pickupLocations = array_merge([$this->getHomeLocation()], $pickupLocations);
+		}
+		return $pickupLocations;
+	}
+
 	/**
 	 * Get a list of locations where a record can be picked up.  Handles liked accounts
 	 * and filtering to make sure that the user is able to
@@ -1243,38 +1277,51 @@ class User extends DataObject
 		// using $user to be consistent with other code use of getPickupBranches()
 		$userLocation = new Location();
 		if ($recordSource == $this->getAccountProfile()->recordSource){
-			$locations = $userLocation->getPickupBranches($this, $this->homeLocationId);
+			$locations = $userLocation->getPickupBranches($this);
 		}else{
 			$locations = array();
 		}
 		$linkedUsers = $this->getLinkedUsers();
-		foreach ($linkedUsers as $linkedUser){
-			if ($recordSource == $linkedUser->source){
-				$linkedUserLocation = new Location();
-				$linkedUserPickupLocations = $linkedUserLocation->getPickupBranches($linkedUser, null, true);
-				foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation) {
-					foreach ($locations as $mainSortingKey => $mainPickupLocation) {
-						// Check For Duplicated Pickup Locations
-						if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId) {
-							// Merge Linked Users that all have this pick-up location
-							$pickupUsers = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
-							$mainPickupLocation->pickupUsers = $pickupUsers;
-							$pickupLocation->pickupUsers = $pickupUsers;
-
-							// keep location with better sort key, remove the other
-							if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0] ) {
-								unset ($linkedUserPickupLocations[$sortingKey]);
-							} elseif ($mainSortingKey[0] == $sortingKey[0]) {
-								if (strcasecmp($mainSortingKey, $sortingKey) > 0) unset ($locations[$mainSortingKey]);
-								else unset ($linkedUserPickupLocations[$sortingKey]);
-							} else {
-								unset ($locations[$mainSortingKey]);
+		if (count($linkedUsers) > 0){
+			$accountProfileForSource = new AccountProfile();
+			$accountProfileForSource->recordSource = $recordSource;
+			$accountProfileSource = '';
+			if ($accountProfileForSource->find(true)){
+				$accountProfileSource = $accountProfileForSource->name;
+			}
+			foreach ($linkedUsers as $linkedUser){
+				if ($accountProfileSource == $linkedUser->source){
+					$linkedUserLocation = new Location();
+					$linkedUserPickupLocations = $linkedUserLocation->getPickupBranches($linkedUser, true);
+					foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation) {
+						if (!is_object($pickupLocation)){
+							continue;
+						}
+						foreach ($locations as $mainSortingKey => $mainPickupLocation) {
+							if (!is_object($mainPickupLocation)){
+								continue;
 							}
+							// Check For Duplicated Pickup Locations
+							if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId) {
+								// Merge Linked Users that all have this pick-up location
+								$pickupUsers = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
+								$mainPickupLocation->pickupUsers = $pickupUsers;
+								$pickupLocation->pickupUsers = $pickupUsers;
 
+								// keep location with better sort key, remove the other
+								if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0] ) {
+									unset ($linkedUserPickupLocations[$sortingKey]);
+								} elseif ($mainSortingKey[0] == $sortingKey[0]) {
+									if (strcasecmp($mainSortingKey, $sortingKey) > 0) unset ($locations[$mainSortingKey]);
+									else unset ($linkedUserPickupLocations[$sortingKey]);
+								} else {
+									unset ($locations[$mainSortingKey]);
+								}
+							}
 						}
 					}
+					$locations = array_merge($locations, $linkedUserPickupLocations);
 				}
-				$locations = array_merge($locations, $linkedUserPickupLocations);
 			}
 		}
 		ksort($locations);
@@ -1515,6 +1562,10 @@ class User extends DataObject
 		$results = $this->getCatalogDriver()->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
 		$this->clearCache();
 		return $results;
+	}
+
+	public function deleteReadingHistoryEntryByTitleAuthor($title, $author) {
+		return $this->getCatalogDriver()->deleteReadingHistoryEntryByTitleAuthor($this, $title, $author);
 	}
 
 	/**
@@ -1822,15 +1873,7 @@ class User extends DataObject
 
 	/** @noinspection PhpUnused */
 	function getHomeLocationName(){
-		if (empty($this->_homeLocation)) {
-			$location = new Location();
-			$location->locationId = $this->homeLocationId;
-			if ($location->find(true)){
-				$this->_homeLocation = $location->displayName;
-			}
-			$location->__destruct();
-		}
-		return $this->_homeLocation;
+		return $this->getHomeLocation()->displayName;
 	}
 
 	function getHomeLocation(){
@@ -1957,7 +2000,7 @@ class User extends DataObject
 
 		$sections['system_reports'] = new AdminSection('System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Site Status', 'View Status of Aspen Discovery.', '/Admin/SiteStatus'), 'View System Reports');
-		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), 'View System Reports');
+		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), ['View Dashboards', 'View System Reports']);
 		$sections['system_reports']->addAction(new AdminAction('Usage By IP Address', 'Reports which IP addresses have used Aspen Discovery.', '/Admin/UsageByIP'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Nightly Index Log', 'Nightly indexing log for Aspen Discovery.  The nightly index updates all records if needed.', '/Admin/ReindexLog'), ['View System Reports', 'View Indexing Logs']);
 		$sections['system_reports']->addAction(new AdminAction('Cron Log', 'View Cron Log. The cron process handles periodic cleanup tasks and updates reading history for users.', '/Admin/CronLog'), 'View System Reports');
@@ -2021,7 +2064,8 @@ class User extends DataObject
 		$groupedWorkAction = new AdminAction('Grouped Work Display', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/GroupedWorkDisplay');
 		$groupedWorkAction->addSubAction(new AdminAction('Grouped Work Facets', 'Define information about what facets are displayed for grouped works in search results and Advanced Search.', '/Admin/GroupedWorkFacets'), ['Administer All Grouped Work Facets', 'Administer Library Grouped Work Facets']);
 		$sections['cataloging']->addAction($groupedWorkAction, ['Administer All Grouped Work Display Settings', 'Administer Library Grouped Work Display Settings']);
-		$sections['cataloging']->addAction(new AdminAction('Title / Author Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 
@@ -2132,6 +2176,7 @@ class User extends DataObject
 			$sections['overdrive']->addAction(new AdminAction('Indexing Log', 'View the indexing log for OverDrive.', '/OverDrive/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['overdrive']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for OverDrive integration.', '/OverDrive/Dashboard'), ['View Dashboards', 'View System Reports']);
 			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for OverDrive integration to test connections.', '/OverDrive/APIData'), 'View OverDrive Test Interface');
+			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an OverDrive product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
 		}
 
 		if (array_key_exists('RBdigital', $enabledModules)) {
@@ -2246,6 +2291,14 @@ class User extends DataObject
 			}
 		}
 		return false;
+	}
+
+	protected function clearRuntimeDataVariables(){
+		if ($this->_accountProfile != null){
+			$this->_accountProfile->__destruct();
+			$this->_accountProfile = null;
+		}
+		parent::clearRuntimeDataVariables();
 	}
 }
 

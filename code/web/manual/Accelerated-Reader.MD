@@ -1,4 +1,4 @@
-##Accelerated Reader
+## Accelerated Reader
 
 - You can integrate Accelerated Reader data and information into your catalog and searches. You can find your configuration setup for Accelerated Reader under Enrichment within Account in Accelerated Reading Settings
 
@@ -12,7 +12,7 @@
 ![Accelerated Reader Searches](/manual/images/Accelerated-Reader-Facets.png)
 
 
-###Tutorial Video
+## Tutorial Video
 
 [![Accelerated Reader](/manual/images/Accelerated-Reader.jpg)](https://youtu.be/FSPzWPiyd_4)
 

@@ -167,7 +167,7 @@ public class UserListIndexerMain {
 			logEntry.incErrors("Could not load last index time from variables table ", e);
 		}
 
-		listProcessor = new UserListIndexer(configIni, dbConn, logger);
+		listProcessor = new UserListIndexer(serverName, configIni, dbConn, logger);
 
 		return logEntry;
 	}

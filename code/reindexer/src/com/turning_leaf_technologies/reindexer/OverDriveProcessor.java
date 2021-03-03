@@ -29,6 +29,7 @@ class OverDriveProcessor {
 	private final SimpleDateFormat publishDateFormatter = new SimpleDateFormat("MM/dd/yyyy");
 	private final SimpleDateFormat publishDateFormatter2 = new SimpleDateFormat("MM/yyyy");
 	private final Pattern publishDatePattern = Pattern.compile("([a-zA-Z]{3})\\s([\\s\\d]\\d)\\s(\\d{4}).*");
+	private final Pattern publishDateFullMonthPattern = Pattern.compile("(january|february|march|april|may|june|july|august|september|october|november|december),?\\s(\\d{4}).*", Pattern.CASE_INSENSITIVE);
 
 	OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
 		this.indexer = groupedWorkIndexer;
@@ -66,6 +67,7 @@ class OverDriveProcessor {
 						indexer.overDriveRecordsSkipped.add(identifier);
 						return;
 					} else {
+						boolean hasKindle = false;
 
 						RecordInfo overDriveRecord = groupedWork.addRelatedRecord("overdrive", identifier);
 						overDriveRecord.setRecordIdentifier("overdrive", identifier);
@@ -87,6 +89,10 @@ class OverDriveProcessor {
 								formatCategory = "Movies";
 								primaryFormat = "eVideo";
 								break;
+							case "Magazine":
+								formatCategory = "eBook";
+								primaryFormat = "eMagazine";
+								break;
 							default:
 								formatCategory = mediaType;
 								primaryFormat = mediaType;
@@ -95,6 +101,13 @@ class OverDriveProcessor {
 
 						HashMap<String, String> metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat);
 
+						if (!metadata.containsKey("rawMetadata")){
+							//We didn't get metadata for the title.  This shouldn't happen in normal cases, but if it does,
+							//we should just skip processing this record.
+							logEntry.addNote("OverDrive record " + identifier + " did not have metadata, skipping");
+							productRS.close();
+							return;
+						}
 						//Decode JSON data to get a little more information
 						JSONObject rawMetadataDecoded = null;
 						try {
@@ -181,7 +194,58 @@ class OverDriveProcessor {
 													isOnOrder = true;
 												}
 											} else {
-												logEntry.addNote("Error parsing publication date " + publishDateText);
+												Matcher publishDateFullMonthMatcher = publishDateFullMonthPattern.matcher(publishDateText);
+												if (publishDateFullMonthMatcher.matches()){
+													String month = publishDateFullMonthMatcher.group(1).toLowerCase();
+													String year = publishDateFullMonthMatcher.group(2);
+													GregorianCalendar publishCal = new GregorianCalendar();
+													int monthInt = 1;
+													switch (month) {
+														case "january":
+															monthInt = Calendar.JANUARY;
+															break;
+														case "february":
+															monthInt = Calendar.FEBRUARY;
+															break;
+														case "march":
+															monthInt = Calendar.MARCH;
+															break;
+														case "april":
+															monthInt = Calendar.APRIL;
+															break;
+														case "may":
+															monthInt = Calendar.MAY;
+															break;
+														case "june":
+															monthInt = Calendar.JUNE;
+															break;
+														case "july":
+															monthInt = Calendar.JULY;
+															break;
+														case "august":
+															monthInt = Calendar.AUGUST;
+															break;
+														case "september":
+															monthInt = Calendar.SEPTEMBER;
+															break;
+														case "october":
+															monthInt = Calendar.OCTOBER;
+															break;
+														case "november":
+															monthInt = Calendar.NOVEMBER;
+															break;
+														case "december":
+															monthInt = Calendar.DECEMBER;
+															break;
+													}
+													publishCal.set(Integer.parseInt(year), monthInt, 1);
+													publishDate = publishCal.getTime();
+													if (publishDate.after(new Date())) {
+														isOnOrder = true;
+													}
+												}else {
+													logEntry.addNote("Error parsing publication date " + publishDateText);
+												}
 											}
 										}
 									}
@@ -216,6 +280,9 @@ class OverDriveProcessor {
 
 						//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
 						HashSet<String> validFormats = loadOverDriveFormats(productId, identifier);
+						if (validFormats.contains("Kindle Book")){
+							hasKindle = true;
+						}
 						String detailedFormats = Util.getCsvSeparatedString(validFormats);
 						//overDriveRecord.addFormats(validFormats);
 						if (rawMetadataDecoded != null) {
@@ -236,7 +303,11 @@ class OverDriveProcessor {
 						}
 						overDriveRecord.setFormatBoost(maxFormatBoost);
 
-						overDriveRecord.setEdition("");
+						if (rawMetadataDecoded.has("edition")){
+							overDriveRecord.setEdition(rawMetadataDecoded.getString("edition"));
+						}else {
+							overDriveRecord.setEdition("");
+						}
 						overDriveRecord.setPrimaryLanguage(primaryLanguage);
 						overDriveRecord.setPublisher(StringUtils.trimTrailingPunctuation(metadata.get("publisher")));
 						overDriveRecord.setPublicationDate(metadata.get("publicationDate"));
@@ -265,6 +336,7 @@ class OverDriveProcessor {
 							}
 
 							long libraryId = availabilityRS.getLong("libraryId");
+							long settingId = availabilityRS.getLong("settingId");
 							boolean available = availabilityRS.getBoolean("available");
 
 							itemInfo.setFormat(primaryFormat);
@@ -298,7 +370,7 @@ class OverDriveProcessor {
 							boolean isKids = targetAudience.equals("Juvenile");
 							if (libraryId == -1) {
 								for (Scope scope : indexer.getScopes()) {
-									if (scope.isIncludeOverDriveCollection()) {
+									if (scope.isIncludeOverDriveCollection() && (scope.getOverDriveScope().getSettingId() == settingId)) {
 										//Check based on the audience as well
 										boolean okToInclude = false;
 										if (isAdult && scope.getOverDriveScope().isIncludeAdult()) {
@@ -373,9 +445,17 @@ class OverDriveProcessor {
 							}//End processing availability
 						}
 						groupedWork.addHoldings(totalCopiesOwned);
+
+						if (hasKindle){
+							RecordInfo kindleRecord = groupedWork.addRelatedRecord("overdrive", "kindle", identifier);
+							kindleRecord.copyFrom(overDriveRecord);
+							for (ItemInfo itemInfo: kindleRecord.getRelatedItems()){
+								itemInfo.setFormat("Kindle");
+								itemInfo.setSubFormats("");
+							}
+						}
 					}
 					numCopiesRS.close();
-
 				}
 			}
 			productRS.close();

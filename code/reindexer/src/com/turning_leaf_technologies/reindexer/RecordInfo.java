@@ -12,8 +12,8 @@ public class RecordInfo {
 
 	//Formats exist at both the item and record level because
 	//Various systems define them in both ways.
-	private final HashSet<String> formats = new HashSet<>();
-	private final HashSet<String> formatCategories = new HashSet<>();
+	private HashSet<String> formats = new HashSet<>();
+	private HashSet<String> formatCategories = new HashSet<>();
 	private long formatBoost = 1;
 
 	private String edition;
@@ -266,6 +266,10 @@ public class RecordInfo {
 		return values;
 	}
 
+	void clearFormats(){
+		this.formats.clear();;
+	}
+
 	void addFormats(HashSet<String> translatedFormats) {
 		this.formats.addAll(translatedFormats);
 	}
@@ -338,6 +342,25 @@ public class RecordInfo {
 			if (curItem.getAutoReindexTime() != null){
 				autoReindexTimes.add(curItem.getAutoReindexTime());
 			}
+		}
+	}
+
+	void copyFrom(RecordInfo recordInfo){
+		//noinspection unchecked
+		this.formats = (HashSet<String>) recordInfo.formats.clone();
+		//noinspection unchecked
+		this.formatCategories = (HashSet<String>)recordInfo.formatCategories.clone();
+		this.formatBoost = recordInfo.formatBoost;
+		this.edition = recordInfo.edition;
+		this.primaryLanguage = recordInfo.primaryLanguage;
+		this.publisher = recordInfo.publisher;
+		this.publicationDate = recordInfo.publicationDate;
+		this.physicalDescription = recordInfo.physicalDescription;
+		//noinspection unchecked
+		for (ItemInfo itemInfo : recordInfo.relatedItems) {
+			ItemInfo clonedItem = new ItemInfo();
+			addItem(clonedItem);
+			clonedItem.copyFrom(itemInfo);
 		}
 	}
 }

@@ -24,15 +24,23 @@ class WebBuilder_StaffMembers extends ObjectEditor
 		return 'Staff Members';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new StaffMember();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 
 	function getObjectStructure()

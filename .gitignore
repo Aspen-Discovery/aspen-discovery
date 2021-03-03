@@ -6,7 +6,8 @@
 tmp
 sites/*/backup
 sites/*/conf/log4j.*.properties
-!sites/defult/conf/log4j.properties
+sites/*/conf/passkey
+!sites/default/conf/log4j.properties
 !sites/default/backup
 sites/default/solr5/docs/*
 sites/default/solr5/example/*
@@ -161,11 +162,7 @@ main.tmpcss
 
 code/web/fonts/HalisR-Regular.otf
 code/web/fonts/HalisR-S-Regular.otf
-.idea/aspen-discovery.iml
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
-.idea/workspace.xml
-.idea/codeStyles/codeStyleConfig.xml
-.idea/deployment.xml
 code/web/migrations/importResults.txt
+.idea/aspen-discovery.iml
+.idea/*.xml
+.idea/dataSources/**

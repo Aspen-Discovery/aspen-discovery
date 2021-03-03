@@ -14,17 +14,23 @@ class Admin_Modules extends ObjectEditor {
 	function getPageTitle(){
 		return 'Aspen Discovery Modules';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$object = new Module();
-		$object->orderBy('name asc');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
 		}
 
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return Module::getObjectStructure();

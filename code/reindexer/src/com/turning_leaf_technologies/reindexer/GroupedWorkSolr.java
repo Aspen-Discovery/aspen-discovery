@@ -3,9 +3,9 @@ package com.turning_leaf_technologies.reindexer;
 import com.sun.istack.internal.NotNull;
 import com.turning_leaf_technologies.dates.DateUtils;
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 
@@ -202,7 +202,7 @@ public class GroupedWorkSolr implements Cloneable {
 		return clonedWork;
 	}
 
-	SolrInputDocument getSolrDocument() {
+	SolrInputDocument getSolrDocument(BaseLogEntry logEntry) {
 		SolrInputDocument doc = new SolrInputDocument();
 		//Main identification
 		doc.addField("id", id);
@@ -407,7 +407,7 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("display_description", displayDescription);
 
 		//Save information from scopes
-		addScopedFieldsToDocument(doc);
+		addScopedFieldsToDocument(doc, logEntry);
 
 		return doc;
 	}
@@ -466,14 +466,14 @@ public class GroupedWorkSolr implements Cloneable {
 		return earliestDate;
 	}
 
-	private void addScopedFieldsToDocument(SolrInputDocument doc) {
+	private void addScopedFieldsToDocument(SolrInputDocument doc, BaseLogEntry logEntry) {
 		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
 		//have a lot of scopes and a lot of items & records.
 		int numScopesForWork = 0;
 		for (RecordInfo curRecord : relatedRecords.values()) {
 			doc.addField("record_details", curRecord.getDetails());
 			for (ItemInfo curItem : curRecord.getRelatedItems()) {
-				doc.addField("item_details", curItem.getDetails());
+				doc.addField("item_details", curItem.getDetails(logEntry));
 				HashMap<String, ScopingInfo> curScopingInfo = curItem.getScopingInfo();
 				Set<String> scopingNames = curScopingInfo.keySet();
 				for (String curScopeName : scopingNames) {
@@ -930,7 +930,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
-	private static ArrayList<String> nonFictionFullLiteraryForms = new ArrayList<>();
+	private static final ArrayList<String> nonFictionFullLiteraryForms = new ArrayList<>();
 
 	static {
 		nonFictionFullLiteraryForms.add("Non Fiction");
@@ -981,9 +981,9 @@ public class GroupedWorkSolr implements Cloneable {
 		this.id = id;
 	}
 
-	private static Pattern removeBracketsPattern = Pattern.compile("\\[.*?]");
-	private static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
-	private static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
+	private final static Pattern removeBracketsPattern = Pattern.compile("\\[.*?]");
+	private final static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
+	private final static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 
 	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
 		this.setTitle(shortTitle, displayTitle, sortableTitle, recordFormat, false);
@@ -1244,10 +1244,6 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void addPopularity(double itemPopularity) {
 		this.popularity += itemPopularity;
-	}
-
-	double getPopularity() {
-		return popularity;
 	}
 
 	void addTopic(Set<String> fieldList) {
@@ -1512,7 +1508,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (cleanDate != null) {
 			this.publicationDates.add(cleanDate);
 			//Convert the date to a long and see if it is before the current date
-			Long pubDateLong = Long.parseLong(cleanDate);
+			long pubDateLong = Long.parseLong(cleanDate);
 			if (earliestPublicationDate == null || pubDateLong < earliestPublicationDate) {
 				earliestPublicationDate = pubDateLong;
 			}
@@ -1728,6 +1724,18 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
+	RecordInfo addRelatedRecord(String source, String subSource, String recordIdentifier) {
+		String recordIdentifierWithType = source + ":" + subSource + ":" + recordIdentifier;
+		if (relatedRecords.containsKey(recordIdentifierWithType)) {
+			return relatedRecords.get(recordIdentifierWithType);
+		} else {
+			RecordInfo newRecord = new RecordInfo(source, recordIdentifier);
+			newRecord.setSubSource(subSource);
+			relatedRecords.put(recordIdentifierWithType, newRecord);
+			return newRecord;
+		}
+	}
+
 	void addLCSubject(String lcSubject) {
 		this.lcSubjects.add(StringUtils.normalizeSubject(lcSubject));
 	}
@@ -1762,16 +1770,6 @@ public class GroupedWorkSolr implements Cloneable {
 		for (RecordInfo curRecord : relatedRecords.values()) {
 			curRecord.updateIndexingStats(indexingStats);
 		}
-	}
-
-	boolean getIsLibraryOwned(Scope scope) {
-		HashSet<RecordInfo> relatedRecordsForScope = new HashSet<>();
-		HashSet<ItemInfo> relatedItems = new HashSet<>();
-		loadRelatedRecordsAndItemsForScope(scope, relatedRecordsForScope, relatedItems);
-		if (relatedRecordsForScope.size() > 0) {
-			return isLibraryOwned(relatedItems, scope);
-		}
-		return false;
 	}
 
 	int getNumRecords() {

@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 
 public class IndexingProfile extends BaseIndexingSettings {
@@ -38,12 +39,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char eContentDescriptor = ' ';
 	private boolean doAutomaticEcontentSuppression;
 	private char format;
-	private boolean groupUnchangedFiles;
 	private long lastUpdateFromMarcExport;
+	private long lastVolumeExportTimestamp;
 	private boolean checkRecordForLargePrint;
 	private char subLocationSubfield;
 	private int determineAudienceBy;
 	private char audienceSubfield;
+	private long lastUpdateOfAuthorities;
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
 		this.filenamesToInclude = filenamesToInclude;
@@ -75,14 +77,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public void setFormat(char format) {
 		this.format = format;
-	}
-
-	public boolean isGroupUnchangedFiles() {
-		return groupUnchangedFiles;
-	}
-
-	private void setGroupUnchangedFiles(boolean groupUnchangedFiles) {
-		this.groupUnchangedFiles = groupUnchangedFiles;
 	}
 
 	public static IndexingProfile loadIndexingProfile(Connection dbConn, String profileToLoad, Logger logger) {
@@ -131,8 +125,6 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setFormat(getCharFromRecordSet(indexingProfileRS, "format"));
 				indexingProfile.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
 
-				indexingProfile.setGroupUnchangedFiles(indexingProfileRS.getBoolean("groupUnchangedFiles"));
-
 				indexingProfile.setDoAutomaticEcontentSuppression(indexingProfileRS.getBoolean("doAutomaticEcontentSuppression"));
 				indexingProfile.setEContentDescriptor(getCharFromRecordSet(indexingProfileRS, "eContentDescriptor"));
 
@@ -155,14 +147,17 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
 				indexingProfile.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
 				indexingProfile.setLastUpdateFromMarcExport(indexingProfileRS.getLong("lastUpdateFromMarcExport"));
+				indexingProfile.setLastVolumeExportTimestamp(indexingProfileRS.getLong("lastVolumeExportTimestamp"));
+				indexingProfile.setLastUpdateOfAuthorities(indexingProfileRS.getLong("lastUpdateOfAuthorities"));
 
 				indexingProfile.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
+				indexingProfile.setRegroupAllRecords(indexingProfileRS.getBoolean("regroupAllRecords"));
 			} else {
 				logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
 			}
 
 		}catch (Exception e){
-			logger.error("Error reading index profile for CarlX", e);
+			logger.error("Error reading index profile " + profileToLoad, e);
 		}
 		return indexingProfile;
 	}
@@ -446,6 +441,10 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.runFullUpdate = runFullUpdate;
 	}
 
+	private void setRegroupAllRecords(boolean regroupAllRecords) {
+		this.regroupAllRecords = regroupAllRecords;
+	}
+
 	private void setLastUpdateFromMarcExport(long lastUpdateFromMarcExport) {
 		this.lastUpdateFromMarcExport = lastUpdateFromMarcExport;
 	}
@@ -484,5 +483,31 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private void setDetermineAudienceBy(int determineAudienceBy) {
 		this.determineAudienceBy = determineAudienceBy;
+	}
+
+	public long getLastVolumeExportTimestamp() {
+		return lastVolumeExportTimestamp;
+	}
+
+	public void setLastVolumeExportTimestamp(long lastVolumeExportTimestamp) {
+		this.lastVolumeExportTimestamp = lastVolumeExportTimestamp;
+	}
+
+	public long getLastUpdateOfAuthorities() {
+		return lastUpdateOfAuthorities;
+	}
+
+	private void setLastUpdateOfAuthorities(long lastUpdateOfAuthorities) {
+		this.lastUpdateOfAuthorities = lastUpdateOfAuthorities;
+	}
+
+	public void clearRegroupAllRecords(Connection dbConn, BaseLogEntry logEntry) {
+		try {
+			PreparedStatement clearRegroupAllRecordsStmt = dbConn.prepareStatement("UPDATE indexing_profiles set regroupAllRecords = 0 where id =?");
+			clearRegroupAllRecordsStmt.setLong(1, id);
+			clearRegroupAllRecordsStmt.executeUpdate();
+		}catch (Exception e){
+			logEntry.incErrors("Could not clear regroup all records", e);
+		}
 	}
 }

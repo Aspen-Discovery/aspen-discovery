@@ -79,13 +79,15 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $orderCopies;
 	public /** @noinspection PhpUnused */ $orderCode3;
 	public /** @noinspection PhpUnused */ $doAutomaticEcontentSuppression;
-	public /** @noinspection PhpUnused */ $groupUnchangedFiles;
 	public /** @noinspection PhpUnused */ $determineAudienceBy;
 	public /** @noinspection PhpUnused */ $audienceSubfield;
+	public $regroupAllRecords;
 	public $runFullUpdate;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
 	public /** @noinspection PhpUnused */ $lastUpdateFromMarcExport;
+	public /** @noinspection PhpUnused */$lastVolumeExportTimestamp;
+	public /** @noinspection PhpUnused */$lastUpdateOfAuthorities;
 	
 	private $_translationMaps;
 	private $_timeToReshelve;
@@ -112,7 +114,6 @@ class IndexingProfile extends DataObject
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this indexing profile', 'required' => true),
 			'marcPath' => array('property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true, 'forcesReindex' => true),
 			'filenamesToInclude' => array('property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc', 'forcesReindex' => true),
-			'groupUnchangedFiles' => array('property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group unchanged files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be processed.', 'forcesReindex' => true),
 			'marcEncoding' => array('property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => array('MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'), 'default' => 'MARC8', 'forcesReindex' => true),
 			'individualMarcPath' => array('property' => 'individualMarcPath', 'type' => 'text', 'label' => 'Individual MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where individual MARC records can be found', 'required' => true, 'forcesReindex' => true),
 			'numCharsToCreateFolderFrom' => array('property' => 'numCharsToCreateFolderFrom', 'type' => 'integer', 'label' => 'Number of characters to create folder from', 'maxLength' => 50, 'description' => 'The number of characters to use when building a sub folder for individual marc records', 'required' => false, 'default' => '4', 'forcesReindex' => true),
@@ -178,7 +179,7 @@ class IndexingProfile extends DataObject
 			]],
 
 			'formatSection' => ['property' => 'formatMappingSection', 'type' => 'section', 'label' => 'Format Information', 'hideInLists' => true, 'properties' => [
-				'formatSource' => array('property' => 'formatSource', 'type' => 'enum', 'label' => 'Load Format from', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'), 'default' => 'bib', 'forcesReindex' => true),
+				'formatSource' => array('property' => 'formatSource', 'type' => 'enum', 'label' => 'Load Format from', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'), 'default' => 'bib', 'forcesReindex' => true, 'onchange'=>'return AspenDiscovery.Admin.updateIndexingProfileFields();'),
 				'specifiedFormat' => array('property' => 'specifiedFormat', 'type' => 'text', 'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => '', 'forcesReindex' => true),
 				'specifiedFormatCategory' => array('property' => 'specifiedFormatCategory', 'type' => 'enum', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'label' => 'Specified Format Category', 'maxLength' => 50, 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => '', 'forcesReindex' => true),
 				'specifiedFormatBoost' => array('property' => 'specifiedFormatBoost', 'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8', 'forcesReindex' => true),
@@ -227,10 +228,13 @@ class IndexingProfile extends DataObject
 				'orderCode3' => array('property' => 'orderCode3', 'type' => 'text', 'label' => 'Order Code3', 'maxLength' => 1, 'description' => 'Code 3 for the order record', 'forcesReindex' => true),
 			]],
 
+			'regroupAllRecords' => array('property' => 'regroupAllRecords', 'type' => 'checkbox', 'label' => 'Regroup all Records', 'description' => 'Whether or not all existing records should be regrouped', 'default' => 0),
 			'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0),
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when all records were loaded from the API', 'default' => 0),
 			'lastUpdateFromMarcExport' => array('property' => 'lastUpdateFromMarcExport', 'type' => 'timestamp', 'label' => 'Last Update from MARC Export', 'description' => 'The timestamp when all records were loaded from a MARC export', 'default' => 0),
+			'lastVolumeExportTimestamp' => array('property' => 'lastVolumeExportTimestamp', 'type' => 'timestamp', 'label' => 'Last Volume Export Timestamp (Symphony Only)', 'description' => 'The timestamp of the last volume export file used', 'default' => 0),
+			'lastUpdateOfAuthorities' => array('property' => 'lastUpdateOfAuthorities', 'type' => 'timestamp', 'label' => 'Last Authority Export Timestamp (Koha Only)', 'description' => 'The timestamp when authorities were last loaded', 'default' => 0),
 
 			'translationMaps' => array(
 				'property' => 'translationMaps',
@@ -288,6 +292,8 @@ class IndexingProfile extends DataObject
 		}
 		if ($ils == 'Koha') {
 			unset($structure['timeToReshelve']);
+		}else{
+			unset($structure['lastUpdateOfAuthorities']);
 		}
 		return $structure;
 	}

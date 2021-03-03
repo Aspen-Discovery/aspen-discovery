@@ -44,7 +44,6 @@ class PortalCell extends DataObject
 			'collection_spotlight' => 'Collection Spotlight',
 			'custom_form' => 'Form',
 			'image' => 'Image',
-			'video' => 'Video',
 			'vimeo_video' => 'Vimeo Video',
 			'youtube_video' => 'YouTube Video',
 		];
@@ -53,13 +52,15 @@ class PortalCell extends DataObject
 			'portalRowId' => ['property'=>'portalRowId', 'type'=>'label', 'label'=>'Portal Row', 'description'=>'The parent row'],
 			'weight' => ['property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.', 'required'=> true],
 			'title' => ['property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'An optional title for the cell'],
-			'widthTiny' => ['property'=>'widthTiny', 'type'=>'integer', 'label'=>'Column Width Tiny Size', 'description'=>'The width of the column when viewed at tiny size', 'min'=>1, 'max'=>'12', 'default'=>12],
-			'widthXs' => ['property'=>'widthXs', 'type'=>'integer', 'label'=>'Column Width Extra Small Size', 'description'=>'The width of the column when viewed at extra small size', 'min'=>1, 'max'=>'12', 'default'=>12],
-			'widthSm' => ['property'=>'widthSm', 'type'=>'integer', 'label'=>'Column Width Small Size', 'description'=>'The width of the column when viewed at small size', 'min'=>1, 'max'=>'12', 'default'=>12],
-			'widthMd' => ['property'=>'widthMd', 'type'=>'integer', 'label'=>'Column Width Medium Size', 'description'=>'The width of the column when viewed at Medium size', 'min'=>1, 'max'=>'12', 'default'=>12],
-			'widthLg' => ['property'=>'widthLg', 'type'=>'integer', 'label'=>'Column Width Large Size', 'description'=>'The width of the column when viewed at Large size', 'min'=>1, 'max'=>'12', 'default'=>12],
-			'verticalAlignment' => ['property'=>'verticalAlignment', 'type'=>'enum', 'values'=>$verticalAlignmentOptions, 'label'=>'Vertical Alignment', 'description'=>'Vertical alignment of the cell', 'default'=>'stretch'],
-			'horizontalJustification' => ['property'=>'horizontalJustification', 'type'=>'enum', 'values'=>$horizontalJustificationOptions, 'label'=>'Horizontal Justification', 'description'=>'Horizontal Justification of the cell', 'default'=>'start'],
+			'layoutSettingsSection' => ['property' => 'layoutSettingsSection', 'type' => 'section', 'label' => 'Layout Settings', 'hideInLists' => true, 'properties' => [
+				'widthTiny' => ['property'=>'widthTiny', 'type'=>'integer', 'label'=>'Column Width Tiny Size', 'description'=>'The width of the column when viewed at tiny size', 'min'=>1, 'max'=>'12', 'default'=>12],
+				'widthXs' => ['property'=>'widthXs', 'type'=>'integer', 'label'=>'Column Width Extra Small Size', 'description'=>'The width of the column when viewed at extra small size', 'min'=>1, 'max'=>'12', 'default'=>12],
+				'widthSm' => ['property'=>'widthSm', 'type'=>'integer', 'label'=>'Column Width Small Size', 'description'=>'The width of the column when viewed at small size', 'min'=>1, 'max'=>'12', 'default'=>12],
+				'widthMd' => ['property'=>'widthMd', 'type'=>'integer', 'label'=>'Column Width Medium Size', 'description'=>'The width of the column when viewed at Medium size', 'min'=>1, 'max'=>'12', 'default'=>12],
+				'widthLg' => ['property'=>'widthLg', 'type'=>'integer', 'label'=>'Column Width Large Size', 'description'=>'The width of the column when viewed at Large size', 'min'=>1, 'max'=>'12', 'default'=>12],
+				'verticalAlignment' => ['property'=>'verticalAlignment', 'type'=>'enum', 'values'=>$verticalAlignmentOptions, 'label'=>'Vertical Alignment', 'description'=>'Vertical alignment of the cell', 'default'=>'stretch'],
+				'horizontalJustification' => ['property'=>'horizontalJustification', 'type'=>'enum', 'values'=>$horizontalJustificationOptions, 'label'=>'Horizontal Justification', 'description'=>'Horizontal Justification of the cell', 'default'=>'start'],
+			]],
 			'sourceType' => ['property'=>'sourceType', 'type'=>'enum', 'values'=>$sourceOptions, 'label'=>'Source Type', 'description'=>'Source type for the content of cell', 'onchange' => 'return AspenDiscovery.WebBuilder.getPortalCellValuesForSource();'],
 			'sourceId' => ['property'=>'sourceId', 'type'=>'enum', 'values'=>[], 'label'=>'Source Id', 'description'=>'Source for the content of cell'],
 			'markdown' => ['property' => 'markdown', 'type' => 'markdown', 'label' => 'Contents', 'description' => 'Contents of the cell'],
@@ -107,16 +108,6 @@ class PortalCell extends DataObject
 			$customForm->id = $this->sourceId;
 			if ($customForm->find(true)){
 				$contents .= $customForm->getFormattedFields();
-			}
-		}elseif ($this->sourceType == 'video'){
-			require_once ROOT_DIR . '/sys/File/FileUpload.php';
-			$fileUpload = new FileUpload();
-			$fileUpload->id = $this->sourceId;
-			if ($fileUpload->find(true)){
-				$fileSize = filesize($fileUpload->fullPath);
-				$interface->assign('fileSize', StringUtils::formatBytes($fileSize));
-				$interface->assign('videoPath', $configArray['Site']['url'] . '/Files/' . $this->sourceId . '/Contents');
-				$contents .= $interface->fetch('Files/embeddedVideo.tpl');
 			}
 		}elseif ($this->sourceType == 'vimeo_video'){
 			$sourceInfo = $this->sourceInfo;

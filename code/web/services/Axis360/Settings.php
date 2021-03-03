@@ -26,15 +26,22 @@ class Axis360_Settings extends ObjectEditor
 		return 'Axis 360 Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new Axis360Setting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'userInterfaceUrl asc';
 	}
 
 	function getObjectStructure()

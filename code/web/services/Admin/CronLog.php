@@ -25,10 +25,11 @@ class Admin_CronLog extends Admin_Admin
 		}
 		$interface->assign('logEntries', $logEntries);
 
-		$options = array('totalItems' => $total,
-		                 'fileName'   => '/Admin/CronLog?page=%d',
-		                 'perPage'    => 30,
-		);
+		$options = [
+			'totalItems' => $total,
+			'fileName'   => '/Admin/CronLog?page=%d',
+			'perPage'    => 30,
+		];
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 

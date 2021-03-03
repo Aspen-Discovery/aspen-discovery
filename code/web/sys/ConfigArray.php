@@ -167,7 +167,6 @@ function readConfig()
 		$fullServerName = $_SERVER['aspen_server'];
 		//echo("Server name is set as server var $fullServerName\r\n");
 	} else {
-
 		if (isset($_SERVER['SERVER_NAME'])) {
 			//Run from browser
 			$fullServerName = $_SERVER['SERVER_NAME'];

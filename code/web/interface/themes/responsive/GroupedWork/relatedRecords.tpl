@@ -60,7 +60,7 @@
 					<div class="btn-group btn-group-vertical btn-group-sm">
 						<a href="{$relatedRecord->getUrl()}" class="btn btn-sm btn-info">{translate text="More Info"}</a>
 						{foreach from=$relatedRecord->getActions() item=curAction}
-							<a href="{if !empty($curAction.url)}{$curAction.url}{else}#{/if}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm btn-action btn-wrap" {if !empty($curAction.alt)}title="{$curAction.alt}"{/if}>{$curAction.title|translate}</a>
+							<a href="{if !empty($curAction.url)}{$curAction.url}{else}#{/if}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" {if !empty($curAction.alt)}title="{$curAction.alt}"{/if}>{$curAction.title|translate}</a>
 						{/foreach}
 					</div>
 				</td>

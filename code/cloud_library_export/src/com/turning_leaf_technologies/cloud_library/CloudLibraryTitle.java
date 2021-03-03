@@ -5,12 +5,14 @@ class CloudLibraryTitle {
 	private String cloudLibraryId;
 	private long checksum;
 	private boolean deleted;
+	private Long availabilityId;
 
-	CloudLibraryTitle(long id, String cloudLibraryId, long checksum, boolean deleted) {
+	CloudLibraryTitle(long id, String cloudLibraryId, long checksum, boolean deleted, Long availabilityId) {
 		this.id = id;
 		this.cloudLibraryId = cloudLibraryId;
 		this.checksum = checksum;
 		this.deleted = deleted;
+		this.availabilityId = availabilityId;
 	}
 
 	long getId() {
@@ -27,5 +29,13 @@ class CloudLibraryTitle {
 
 	boolean isDeleted() {
 		return deleted;
+	}
+
+	Long getAvailabilityId(){
+		return availabilityId;
+	}
+
+	boolean wasPartOfSettings(){
+		return availabilityId != null;
 	}
 }

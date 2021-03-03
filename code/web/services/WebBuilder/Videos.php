@@ -24,17 +24,24 @@ class WebBuilder_Videos extends ObjectEditor
 		return 'Uploaded Videos';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new FileUpload();
 		$object->type = 'web_builder_video';
-		$object->orderBy('title');
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'title asc';
 	}
 
 	function updateFromUI($object, $structure){

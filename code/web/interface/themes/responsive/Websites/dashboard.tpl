@@ -1,6 +1,7 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
 		<h1>{translate text="Website Search Dashboard"}</h1>
+		{include file="Admin/selectInterfaceForm.tpl"}
 		{foreach from=$websites item=websiteName key=websiteId}
 			<h2>{$websiteName}</h2>
 			<div class="row">

@@ -38,8 +38,9 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 		saveResults();
 	}
 
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	public void addNote(String note) {
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	//Synchronized to prevent concurrent modification of the notes ArrayList
+	public synchronized void addNote(String note) {
 		Date date = new Date();
 		this.notes.add(dateFormat.format(date) + " - " + note);
 		saveResults();
@@ -106,14 +107,14 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 	}
 
 	public void incErrors(String note) {
-		this.addNote(note);
+		this.addNote("ERROR: " + note);
 		numErrors++;
 		this.saveResults();
 		logger.error(note);
 	}
 
 	public void incErrors(String note, Exception e){
-		this.addNote(note + " " + e.toString());
+		this.addNote("ERROR: " + note + " " + e.toString());
 		numErrors++;
 		this.saveResults();
 		logger.error(note, e);

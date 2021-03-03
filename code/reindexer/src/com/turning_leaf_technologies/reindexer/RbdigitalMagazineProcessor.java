@@ -24,8 +24,8 @@ class RbdigitalMagazineProcessor {
 	private PreparedStatement getMagazineIssuesStmt;
 	private PreparedStatement getIssueAvailabilityStmt;
 
-	private static SimpleDateFormat dateFormatter = new SimpleDateFormat("M/d/yyyy");
-	private static SimpleDateFormat sortableDateFormatter = new SimpleDateFormat("yyyy/MM/dd");
+	private SimpleDateFormat dateFormatter = new SimpleDateFormat("M/d/yyyy");
+	private SimpleDateFormat sortableDateFormatter = new SimpleDateFormat("yyyy/MM/dd");
 
 	RbdigitalMagazineProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
 		this.indexer = groupedWorkIndexer;

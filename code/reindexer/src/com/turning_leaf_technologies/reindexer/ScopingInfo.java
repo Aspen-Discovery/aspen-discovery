@@ -2,8 +2,8 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 
-class ScopingInfo {
-	private final ItemInfo item;
+class ScopingInfo{
+	private ItemInfo item;
 	private final Scope scope;
 	private String status;
 	private String groupedStatus;
@@ -99,5 +99,19 @@ class ScopingInfo {
 
 	void setLocalUrl(String localUrl) {
 		this.localUrl = localUrl;
+	}
+
+	void copyFrom(ScopingInfo scopingInfo) {
+		this.status = scopingInfo.status;
+		this.groupedStatus = scopingInfo.groupedStatus;
+		this.available = scopingInfo.available;
+		this.holdable = scopingInfo.holdable;
+		this.locallyOwned = scopingInfo.locallyOwned;
+		this.bookable = scopingInfo.bookable;
+		this.inLibraryUseOnly = scopingInfo.inLibraryUseOnly;
+		this.libraryOwned = scopingInfo.libraryOwned;
+		this.holdablePTypes = scopingInfo.holdablePTypes;
+		this.bookablePTypes = scopingInfo.bookablePTypes;
+		this.localUrl = scopingInfo.localUrl;
 	}
 }

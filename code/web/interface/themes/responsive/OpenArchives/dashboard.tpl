@@ -1,6 +1,7 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
 		<h1>Open Archives Dashboard</h1>
+		{include file="Admin/selectInterfaceForm.tpl"}
 		{foreach from=$collections item=collectionName key=collectionId}
 			<h2>{$collectionName}</h2>
 			<div class="row">

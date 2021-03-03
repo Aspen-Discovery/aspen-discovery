@@ -115,6 +115,9 @@ class Admin_AJAX extends JSON_Action
 		} elseif ($source == 'lists') {
 			require_once ROOT_DIR . '/sys/UserLists/ListIndexingLogEntry.php';
 			$extractLog = new ListIndexingLogEntry();
+		} elseif ($source == 'open_archives') {
+			require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesExportLogEntry.php';
+			$extractLog = new OpenArchivesExportLogEntry();
 		}
 
 		if ($extractLog == null) {
@@ -318,6 +321,192 @@ class Admin_AJAX extends JSON_Action
 			return [
 				'success' => false,
 				'message' => "Sorry, you don't have permissions to delete roles",
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getBatchUpdateFieldForm(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+		$batchUpdateScope = $_REQUEST['batchUpdateScope'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		if ($tool->canBatchEdit()) {
+			$structure = $tool->getObjectStructure();
+			$batchFormatFields = $tool->getBatchUpdateFields($structure);
+			global $interface;
+			$interface->assign('batchFormatFields', $batchFormatFields);
+
+			$modalBody = $interface->fetch('Admin/batchUpdateFieldForm.tpl');
+			return [
+				'success' => true,
+				'title' => "Batch Update {$tool->getPageTitle()}",
+				'modalBody' => $modalBody,
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchUpdateFieldForm('{$moduleName}', '{$toolName}', '{$batchUpdateScope}');\" class=\"modal-buttons btn btn-primary\">" . translate('Update') . "</button>"
+			];
+		}else{
+			return [
+				'success' => false,
+				'message' => "Sorry, you don't have permission to batch edit",
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function doBatchUpdateField(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+		$batchUpdateScope = $_REQUEST['batchUpdateScope'];
+		$selectedField = $_REQUEST['selectedField'];
+		if (isset($_REQUEST['newValue'])) {
+			$newValue = $_REQUEST['newValue'];
+		}else{
+			return [
+				'success' => false,
+				'message' => "New Value was not provided",
+			];
+		}
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		if ($tool->canBatchEdit()) {
+			$structure = $tool->getObjectStructure();
+			$batchFormatFields = $tool->getBatchUpdateFields($structure);
+			$fieldStructure = null;
+			foreach ($batchFormatFields as $field){
+				if ($field['property'] == $selectedField){
+					$fieldStructure = $field;
+					break;
+				}
+			}
+			if ($fieldStructure == null){
+				return [
+					'success' => false,
+					'message' => "Could not find the selected field to edit",
+				];
+			}else {
+				if ($batchUpdateScope == 'all') {
+					$numObjects = $tool->getNumObjects();
+					$recordsPerPage = 100;
+					$numBatches = ceil($numObjects / $recordsPerPage);
+					for ($i = 0; $i < $numBatches; $i++) {
+						$objectsForBatch = $tool->getAllObjects($i + 1, 1000);
+						foreach ($objectsForBatch as $dataObject) {
+							$dataObject->setProperty($selectedField, $newValue, $fieldStructure);
+							$dataObject->update();
+						}
+					}
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}.",
+					];
+				} else {
+					foreach ($_REQUEST['selectedObject'] as $id => $value){
+						$dataObject = $tool->getExistingObjectById($id);
+						if ($dataObject != null) {
+							$dataObject->setProperty($selectedField, $newValue, $fieldStructure);
+							$dataObject->update();
+						}
+					}
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => "Updated selected {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}.",
+					];
+				}
+			}
+		}else{
+			return [
+				'success' => false,
+				'title' => 'Error Processing Update',
+				'message' => "Sorry, you don't have permission to batch edit",
+			];
+		}
+	}
+
+	function getFilterOptions(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		$objectStructure = $tool->getObjectStructure();
+		if ($tool->canFilter($objectStructure)){
+			$availableFilters = $tool->getFilterFields($objectStructure);
+			global $interface;
+			$interface->assign('availableFilters', $availableFilters);
+			if (count($availableFilters) == 0){
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => "There are no fields left to use as filters",
+				];
+			}else{
+				$modalBody = $interface->fetch('Admin/selectFilterForm.tpl');
+				return [
+					'success' => true,
+					'title' => 'Filter by',
+					'modalBody' => $modalBody,
+					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.getNewFilterRow('{$moduleName}', '{$toolName}');\" class=\"modal-buttons btn btn-primary\">" . translate('Add Filter') . "</button>"
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => "Sorry, this form cannot be filtered",
+			];
+		}
+	}
+
+	function getNewFilterRow(){
+		$moduleName = $_REQUEST['moduleName'];
+		$toolName = $_REQUEST['toolName'];
+		$selectedFilter = $_REQUEST['selectedFilter'];
+
+		/** @noinspection PhpIncludeInspection */
+		require_once ROOT_DIR . '/services/' . $moduleName . '/' . $toolName . '.php';
+		$fullToolName = $moduleName . '_' . $toolName;
+		/** @var ObjectEditor $tool */
+		$tool = new $fullToolName();
+
+		$objectStructure = $tool->getObjectStructure();
+		if ($tool->canFilter($objectStructure)){
+			$availableFilters = $tool->getFilterFields($objectStructure);
+			if (array_key_exists($selectedFilter, $availableFilters)){
+				global $interface;
+				$interface->assign('filterField', $availableFilters[$selectedFilter]);
+				return [
+					'success' => true,
+					'filterRow' => $interface->fetch('DataObjectUtil/filterField.tpl')
+				];
+			}else{
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => "Cannot filter by the selected field",
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => "Sorry, this form cannot be filtered",
 			];
 		}
 	}

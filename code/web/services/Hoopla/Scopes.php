@@ -18,15 +18,21 @@ class Hoopla_Scopes extends ObjectEditor
 	function getPageTitle(){
 		return 'Hoopla Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new HooplaScope();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return HooplaScope::getObjectStructure();

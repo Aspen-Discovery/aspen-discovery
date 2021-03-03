@@ -643,6 +643,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$formatValues = [];
 		$formatCategoryValues = [];
 		$facetConfig = $this->getFacetConfig();
+		$formatsAreMultiSelect = false;
 		foreach ($this->filterList as $field => $filter) {
 			$fieldPrefix = "";
 			$multiSelect = false;
@@ -669,6 +670,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					$formatCategoryValues[] = $value;
 				} elseif (strpos($field, 'format') === 0) {
 					$formatValues[] = $value;
+					$formatsAreMultiSelect = $multiSelect;
 				}
 				// Special case -- allow trailing wildcards:
 				$okToAdd = false;
@@ -736,10 +738,20 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		if ($availabilityToggleValue != null && (!empty($formatCategoryValues) || !empty($formatValues))) {
 			global $solrScope;
 			//Make sure to process the more specific format first
-			foreach ($formatValues as $formatValue) {
-				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
-				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
-				$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
+			if ($formatsAreMultiSelect) {
+				$formatFilters = [];
+				foreach ($formatValues as $formatValue) {
+					$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
+					$formatFilters[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+					$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
+				}
+				$filterQuery[] = '(' . implode(' OR ', $formatFilters) . ')';
+			}else{
+				foreach ($formatValues as $formatValue) {
+					$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
+					$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+					$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
+				}
 			}
 			foreach ($formatCategoryValues as $formatCategoryValue) {
 				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
@@ -1042,6 +1054,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				//Setup the key to allow sorting alphabetically if needed.
 				$valueKey = $facet[0];
 				$okToAdd = true;
+				//Don't include empty settings since they don't work properly with Solr
+				if (strlen(trim($facet[0])) == 0){
+					$okToAdd = false;
+				}
 				if ($doInstitutionProcessing) {
 					if ($facet[0] == $currentLibrary->facetLabel) {
 						$valueKey = '1' . $valueKey;

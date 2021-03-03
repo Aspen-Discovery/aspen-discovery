@@ -5,15 +5,15 @@ class AspenUsage extends DataObject
 {
 	public $__table = 'aspen_usage';
 	public $id;
+	public $instance;
 	public $year;
 	public $month;
 	public $pageViews;
 	public $pageViewsByBots;
 	public $pageViewsByAuthenticatedUsers;
 	public $pagesWithErrors;
-	public $slowPages;
+	public $sessionsStarted;
 	public $ajaxRequests;
-	public $slowAjaxRequests;
 	public $coverViews;
 	public $genealogySearches;
 	public $groupedWorkSearches;

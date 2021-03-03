@@ -13,7 +13,7 @@
 		<div class="container-12">
 			<div class="row moreFacetPopup">
 				{foreach from=$cluster.sortedList item=thisFacet name="narrowLoop"}
-					<div>{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}{$thisFacet.display}{if $thisFacet.url !=null}</a>{/if}{if $thisFacet.count != ''}&nbsp;({$thisFacet.count|number_format}){/if}</div>
+					<div class="col-tn-12 standardFacet">{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}{$thisFacet.display}{if $thisFacet.url !=null}</a>{/if}{if $thisFacet.count != ''}&nbsp;({$thisFacet.count|number_format}){/if}</div>
 				{/foreach}
 			</div>
 		</div>

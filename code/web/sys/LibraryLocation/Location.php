@@ -238,16 +238,15 @@ class Location extends DataObject
 
 		$structure = array(
 			'locationId' => array('property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'),
-			'subdomain' => array('property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The subdomain to use while identifying this branch.  Can be left if it matches the code.', 'required' => false, 'forcesReindex' => true),
-			'code' => array('property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true, 'forcesReindex' => true),
-			'historicCode' => array('property' => 'historicCode', 'type' => 'text', 'label' => 'Historic Code', 'description' => 'A historic code that can be used in some instances as a substitute for code', 'hideInLists' => true, 'required' => false, 'forcesReindex' => false),
-			'subLocation' => array('property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code', 'description' => 'The sub location or collection used to identify this ', 'forcesReindex' => true),
-			'displayName' => array('property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40', 'forcesReindex' => true),
+			'subdomain' => array('property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The subdomain to use while identifying this branch.  Can be left if it matches the code.', 'required' => false, 'forcesReindex' => true, 'canBatchUpdate'=>false),
+			'code' => array('property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true, 'forcesReindex' => true, 'canBatchUpdate'=>false),
+			'historicCode' => array('property' => 'historicCode', 'type' => 'text', 'label' => 'Historic Code', 'description' => 'A historic code that can be used in some instances as a substitute for code', 'hideInLists' => true, 'required' => false, 'forcesReindex' => false, 'canBatchUpdate'=>false),
+			'subLocation' => array('property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code', 'description' => 'The sub location or collection used to identify this ', 'forcesReindex' => true, 'canBatchUpdate'=>false),
+			'displayName' => array('property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40', 'forcesReindex' => true, 'canBatchUpdate'=>false),
 			'theme' => array('property' => 'theme', 'type' => 'enum', 'label' => 'Theme', 'values' => $availableThemes, 'description' => 'The theme which should be used for the library', 'hideInLists' => true, 'default' => 'default'),
 			'showDisplayNameInHeader' => array('property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
-			'isMainBranch' => array('property' => 'isMainBranch', 'type' => 'checkbox', 'label' => 'Is Main Branch', 'description' => 'Is this location the main branch for it\'s library', /*'hideInLists' => false,*/
-				'default' => false),
+			'isMainBranch' => array('property' => 'isMainBranch', 'type' => 'checkbox', 'label' => 'Is Main Branch', 'description' => 'Is this location the main branch for it\'s library', 'default' => false, 'canBatchUpdate'=>false),
 			'showInLocationsAndHoursList' => array('property' => 'showInLocationsAndHoursList', 'type' => 'checkbox', 'label' => 'Show In Locations And Hours List', 'description' => 'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default' => true),
 			'address' => array('property' => 'address', 'type' => 'textarea', 'label' => 'Address', 'description' => 'The address of the branch.', 'hideInLists' => true),
 			'phone' => array('property' => 'phone', 'type' => 'text', 'label' => 'Phone Number', 'description' => 'The main phone number for the site .', 'maxLength' => '25', 'hideInLists' => true),
@@ -453,19 +452,18 @@ class Location extends DataObject
 
 	/**
 	 * @param User $patronProfile
-	 * @param int $selectedBranchId
 	 * @param bool $isLinkedUser
 	 * @return Location[]
 	 */
-	function getPickupBranches($patronProfile, $selectedBranchId = null, $isLinkedUser = false)
+	function getPickupBranches($patronProfile, $isLinkedUser = false)
 	{
 		// Note: Some calls to this function will set $patronProfile to false. (No Patron is logged in)
 		// For Example: MaterialsRequest_NewRequest
 		$homeLibraryInList = false;
 		$alternateLibraryInList = false;
+		$hasSelectedLocation = false;
 
 		//Get the library for the patron's home branch.
-		/** @var Library $librarySingleton */
 		global $librarySingleton;
 		if ($patronProfile) {
 			$homeLibrary = $librarySingleton->getLibraryForLocation($patronProfile->homeLocationId);
@@ -510,19 +508,16 @@ class Location extends DataObject
 				$tmpLocation->pickupUsers[] = $patronProfile->id;
 			}
 			if (($tmpLocation->validHoldPickupBranch == 1) || ($tmpLocation->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $tmpLocation->locationId)) {
-				if (!empty($selectedBranchId) && $tmpLocation->locationId == $selectedBranchId) {
-					$selected = 'selected';
-				} else {
-					$selected = '';
-				}
-				$this->setSelected($selected);
 				// Each location is prepended with a number to keep precedence for given locations when sorted below
 				if (isset($physicalLocation) && $physicalLocation->locationId == $tmpLocation->locationId) {
 					//If the user is in a branch, those holdings come first.
 					$locationList['1' . $tmpLocation->displayName] = $tmpLocation;
-				} else if (!empty($patronProfile) && $tmpLocation->locationId == $patronProfile->homeLocationId) {
-					//Next come the user's home branch if the user is logged in or has the home_branch cookie set.
+				} else if (!empty($patronProfile) && $tmpLocation->locationId == $patronProfile->pickupLocationId) {
+					//Next comes the user's preferred pickup branch if the user is logged in.
 					$locationList['21' . $tmpLocation->displayName] = $tmpLocation;
+				} else if (!empty($patronProfile) && $tmpLocation->locationId == $patronProfile->homeLocationId) {
+					//Next comes the user's home branch if the user is logged in or has the home_branch cookie set.
+					$locationList['22' . $tmpLocation->displayName] = $tmpLocation;
 					$homeLibraryInList = true;
 				} else if (isset($patronProfile->myLocation1Id) && $tmpLocation->locationId == $patronProfile->myLocation1Id) {
 					//Next come nearby locations for the user
@@ -557,20 +552,16 @@ class Location extends DataObject
 					foreach ($locationList as $location) {
 						if ($location->libraryId == $homeLocation->libraryId && $location->locationId == $homeLocation->locationId) {
 							$existingLocation = true;
-							if (!$isLinkedUser) {
-								$location->setSelected('selected');
-							}
 							//TODO: update sorting key as well?
 							break;
 						}
 					}
 					if (!$existingLocation) {
 						if (!$isLinkedUser) {
-							$homeLocation->setSelected('selected');
 							$locationList['1' . $homeLocation->displayName] = clone $homeLocation;
 							$homeLibraryInList = true;
 						} else {
-							$locationList['22' . $homeLocation->displayName] = clone $homeLocation;
+							$locationList['23' . $homeLocation->displayName] = clone $homeLocation;
 						}
 					}
 				}
@@ -760,7 +751,7 @@ class Location extends DataObject
 			$scopingSetting = $searchSource;
 			if ($searchSource == null) {
 				Location::$searchLocation[$searchSource] = null;
-			} else if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location') {
+			} else if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location' || $scopingSetting == 'websites' || $scopingSetting == 'lists') {
 				global $locationSingleton;
 				Location::$searchLocation[$searchSource] = $locationSingleton->getActiveLocation();
 			} else if ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped') {
@@ -1280,18 +1271,6 @@ class Location extends DataObject
 		return $this->_opacStatus;
 	}
 
-	private $_selected;
-
-	private function setSelected(string $selected)
-	{
-		$this->_selected = $selected;
-	}
-
-	public function getSelected()
-	{
-		return $this->_selected;
-	}
-
 	protected $_groupedWorkDisplaySettings = null;
 
 	/** @return GroupedWorkDisplaySetting */
@@ -1339,15 +1318,18 @@ class Location extends DataObject
 	}
 
 	/**
+	 * @param boolean $restrictByHomeLibrary whether or not only locations for the patron's home library should be returned
 	 * @return array
 	 */
-	static function getLocationList(): array
+	static function getLocationList($restrictByHomeLibrary): array
 	{
 		$location = new Location();
 		$location->orderBy('displayName');
-		if (UserAccount::userHasPermission('Administer Home Library Locations')) {
+		if ($restrictByHomeLibrary) {
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$location->libraryId = $homeLibrary->libraryId;
+			if ($homeLibrary != null) {
+				$location->libraryId = $homeLibrary->libraryId;
+			}
 		}
 		$location->find();
 		$locationList = [];

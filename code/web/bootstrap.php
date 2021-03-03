@@ -8,6 +8,7 @@ require_once ROOT_DIR . '/sys/Module.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 require_once ROOT_DIR . '/sys/SystemLogging/UsageByIPAddress.php';
 require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+require_once ROOT_DIR . '/sys/Utils/EncryptionUtils.php';
 global $aspenUsage;
 $aspenUsage = new AspenUsage();
 $aspenUsage->year = date('Y');
@@ -23,14 +24,16 @@ require_once ROOT_DIR . '/sys/ConfigArray.php';
 global $configArray;
 $configArray = readConfig();
 
+$aspenUsage->instance = $_SERVER['SERVER_NAME'];
+
 //This has to be done after reading configuration so we can get the servername
 global $usageByIPAddress;
-global $instanceName;
+global $fullServerName;
 $usageByIPAddress = new UsageByIPAddress();
 $usageByIPAddress->year = date('Y');
 $usageByIPAddress->month = date('n');
 $usageByIPAddress->ipAddress = IPAddress::getClientIP();
-$usageByIPAddress->instance = $instanceName;
+$usageByIPAddress->instance = $_SERVER['SERVER_NAME'];
 
 require_once ROOT_DIR . '/sys/Timer.php';
 global $timer;

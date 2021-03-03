@@ -7,4 +7,4 @@
 [![Placards](/manual/images/placards.png)](https://youtu.be/9j0j01zpmjk)
 
 
-![Watch on YouTube](https://youtu.be/9j0j01zpmjk)
+[Watch on YouTube](https://youtu.be/9j0j01zpmjk)

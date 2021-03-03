@@ -10,6 +10,14 @@ function getAxis360Updates(){
 			]
 		],
 
+		'axis360AddSettings' => [
+			'title' => 'Add Settings to Axis360 module',
+			'description' => 'Add Settings to Axis360 module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/Axis360/Axis360Setting.php', settingsClassName='Axis360Setting' WHERE name = 'Axis 360'"
+			]
+		],
+
 		'createAxis360SettingsAndScopes' => [
 			'title' => 'Create settings and scopes for Axis360',
 			'description' => 'Create settings and scopes for Axis360',
@@ -210,8 +218,16 @@ function getAxis360Updates(){
 					numApiErrors INT(11) NOT NULL DEFAULT 0,
 					numConnectionFailures INT(11) NOT NULL DEFAULT 0
 				) ENGINE = InnoDB",
-				"ALTER TABLE axis360_record_usage ADD INDEX (instance, year, month)",
 			),
 		),
+
+		'axis360_stats_index' =>[
+			'title' => 'Axis 360 Stats Index',
+			'description' => 'Add an index to the table for tracking how Axis 360 is used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE axis360_stats ADD INDEX (instance, year, month)",
+			),
+		]
 	];
 }

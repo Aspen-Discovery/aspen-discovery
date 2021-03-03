@@ -25,18 +25,24 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 		return 'Form Submissions';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new CustomFormSubmission();
 		$formId = $_REQUEST['formId'];
+		$this->applyFilters($object);
 		$object->formId = $formId;
-		$object->orderBy('dateSubmitted desc');
+		$object->orderBy($this->getSort());
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'dateSubmitted desc';
 	}
 
 	function getObjectStructure()

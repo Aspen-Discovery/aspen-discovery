@@ -24,15 +24,23 @@ class WebBuilder_PortalPages extends ObjectEditor
 		return 'WebBuilder Custom Pages';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new PortalPage();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'title asc';
 	}
 
 	function getObjectStructure()

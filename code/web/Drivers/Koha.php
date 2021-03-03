@@ -246,7 +246,9 @@ class Koha extends AbstractIlsDriver
 				$postVariables = $this->setPostField($postVariables, 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_dateofbirth', $library->useAllCapsWhenUpdatingProfile);
+				if (!empty($_REQUEST['borrower_dateofbirth'])){
+					$postVariables['borrower_dateofbirth'] = $this->aspenDateToKohaDate($_REQUEST['borrower_dateofbirth']);
+				}
 				$postVariables = $this->setPostField($postVariables, 'borrower_initials', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_sex', $library->useAllCapsWhenUpdatingProfile);
@@ -778,14 +780,6 @@ class Koha extends AbstractIlsDriver
 		}
 	}
 
-	function closeDatabaseConnection()
-	{
-		if ($this->dbConnection != null){
-			mysqli_close($this->dbConnection);
-			$this->dbConnection = null;
-		}
-	}
-
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -804,10 +798,8 @@ class Koha extends AbstractIlsDriver
 
 		//Cleanup any connections we have to other systems
 		if ($this->dbConnection != null) {
-			if ($this->getNumHoldsStmt != null) {
-				$this->getNumHoldsStmt->close();
-			}
 			mysqli_close($this->dbConnection);
+			$this->dbConnection = null;
 		}
 	}
 
@@ -1045,7 +1037,11 @@ class Koha extends AbstractIlsDriver
 			];
 
 			if ($cancelDate != null) {
-				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+				if ($this->getKohaVersion() >= 20.05) {
+					$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
+				}else{
+					$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+				}
 			}
 
 			$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
@@ -1106,7 +1102,7 @@ class Koha extends AbstractIlsDriver
 			$postParams = [
 				'patron_id' => $patron->username,
 				'pickup_library_id' => $pickupBranch,
-				'volume_id' => $volumeId,
+				'volume_id' => (int)$volumeId,
 				'biblio_id' => $recordId,
 			];
 			$postParams = json_encode($postParams);
@@ -1524,9 +1520,6 @@ class Koha extends AbstractIlsDriver
 		return $fines;
 	}
 
-	/** @var mysqli_stmt */
-	private $getNumHoldsStmt = null;
-
 	/**
 	 * Get Total Outstanding fines for a user.  Lifted from Koha:
 	 * C4::Accounts.pm gettotalowed method
@@ -1774,7 +1767,7 @@ class Koha extends AbstractIlsDriver
 		if ($this->opacCurlWrapper == null) {
 			$this->opacCurlWrapper = new CurlWrapper();
 			//Extend timeout when talking to Koha via HTTP
-			$this->opacCurlWrapper->timeout = 20;
+			$this->opacCurlWrapper->timeout = 60;
 		}
 		return $this->opacCurlWrapper->curlPostPage($kohaUrl, $postParams);
 	}
@@ -2781,11 +2774,9 @@ class Koha extends AbstractIlsDriver
 			$patronId = $lookupUserRow['borrowernumber'];
 			$newUser = $this->loadPatronInfoFromDB($patronId, null);
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
-				$this->closeDatabaseConnection();
 				return $newUser;
 			}
 		}
-		$this->closeDatabaseConnection();
 		return false;
 	}
 
@@ -2996,7 +2987,7 @@ class Koha extends AbstractIlsDriver
 				}
 				//Show the number of holds the patron has used.
 				$accountSummary = $this->getAccountSummary($patron, true);
-				$maxReserves = $this->getKohaSystemPreference('maxreserves');
+				$maxReserves = $this->getKohaSystemPreference('maxreserves', 50);
 				$totalHolds = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
 				$remainingHolds = $maxReserves - $totalHolds;
 				if ($remainingHolds <= 3){
@@ -3148,7 +3139,7 @@ class Koha extends AbstractIlsDriver
 		}
 
 		//Check maximum holds
-		$maxHolds = $this->getKohaSystemPreference('maxreserves');
+		$maxHolds = $this->getKohaSystemPreference('maxreserves', 50);
 		//Get total holds
 		$currentHoldsForUser = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
 		if ($currentHoldsForUser >= $maxHolds) {
@@ -3409,15 +3400,17 @@ class Koha extends AbstractIlsDriver
 		return $this->getKohaSystemPreference('Version');
 	}
 
-	private function getKohaSystemPreference(string $preferenceName)
+	private function getKohaSystemPreference(string $preferenceName, $default = '')
 	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
 		$sql = "SELECT value FROM systempreferences WHERE variable='$preferenceName';";
 		$results = mysqli_query($this->dbConnection, $sql);
-		$preference = '';
+		$preference = $default;
 		while ($curRow = $results->fetch_assoc()) {
-			$preference = $curRow['value'];
+			if ($curRow['value'] != '') {
+				$preference = $curRow['value'];
+			}
 		}
 		$results->close();
 		return $preference;

@@ -29,18 +29,26 @@ class MyAccount_MyPreferences extends MyAccount
 			if ($patronHomeLibrary == null){
 				$canUpdateContactInfo = false;
 				$showAlternateLibraryOptionsInProfile = true;
-				$showPickupLocationInProfile = true;
+				$allowPickupLocationUpdates = true;
+				$allowRememberPickupLocation = false;
+				$allowHomeLibraryUpdates = false;
 			}else{
 				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
-				$showPickupLocationInProfile = ($patronHomeLibrary->showPickupLocationInProfile == 1);
+				$allowPickupLocationUpdates = ($patronHomeLibrary->allowPickupLocationUpdates == 1);
+				$allowRememberPickupLocation = ($patronHomeLibrary->allowRememberPickupLocation == 1);
+				$allowHomeLibraryUpdates = ($patronHomeLibrary->allowHomeLibraryUpdates == 1);
 			}
 
 			$interface->assign('canUpdateContactInfo', $canUpdateContactInfo);
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
-			$interface->assign('showPickupLocationInProfile', $showPickupLocationInProfile);
+			$interface->assign('allowPickupLocationUpdates', $allowPickupLocationUpdates);
+			$interface->assign('allowRememberPickupLocation', $allowRememberPickupLocation);
+			$interface->assign('allowHomeLibraryUpdates', $allowHomeLibraryUpdates);
 
 			// Determine Pickup Locations
+			$homeLibraryLocations = $patron->getValidHomeLibraryBranches($patron->getAccountProfile()->recordSource);
+			$interface->assign('homeLibraryLocations', $homeLibraryLocations);
 			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
 			$interface->assign('pickupLocations', $pickupLocations);
 
@@ -64,8 +72,8 @@ class MyAccount_MyPreferences extends MyAccount
 				$user->updateMessage = implode('<br/>', $result['messages']);
 				$user->updateMessageIsError = !$result['success'];
 
-				if ($canUpdateContactInfo && $showPickupLocationInProfile){
-					$result2 = $user->updateHomeLibrary($_REQUEST['pickupLocation']);
+				if ($canUpdateContactInfo && $allowHomeLibraryUpdates){
+					$result2 = $user->updateHomeLibrary($_REQUEST['homeLocation']);
 					if (!empty($user->updateMessage)){
 						$user->updateMessage .= '<br/>';
 					}

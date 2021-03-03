@@ -26,15 +26,23 @@ class Translation_Languages extends ObjectEditor
 		return 'User Languages';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new Language();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'displayName asc';
 	}
 
 	function getObjectStructure()

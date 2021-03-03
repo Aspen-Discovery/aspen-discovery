@@ -462,7 +462,7 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	if ($activeSearchObject->getView()) $interface->assign('displayMode', $activeSearchObject->getView());
 
 	if ($library->enableGenealogy){
-        $interface->assign('enableOpenGenealogy', true);
+		$interface->assign('enableGenealogy', true);
 	}
 
 	if ($library->enableArchive){
@@ -688,7 +688,6 @@ try{
 
 	if (!BotChecker::isRequestFromBot()) {
 		if ($isAJAX) {
-			$aspenUsage->slowAjaxRequests++;
 			require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
 			$slowRequest = new SlowAjaxRequest();
 			$slowRequest->year = date('Y');
@@ -704,7 +703,6 @@ try{
 				$slowRequest->insert();
 			}
 		} else {
-			$aspenUsage->slowPages++;
 			require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
 			$slowPage = new SlowPage();
 			$slowPage->year = date('Y');
@@ -865,7 +863,7 @@ function loadModuleActionId(){
 	global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */
 	global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
@@ -945,8 +943,13 @@ function loadModuleActionId(){
 	try {
 		if ($checkWebBuilderAliases && array_key_exists('Web Builder', $enabledModules)) {
 			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+			//Request path will go up to any query parameters (first ?)
+			$requestPath = $requestURI;
+			if (strpos($requestPath, '?') > 0){
+				$requestPath = substr($requestPath, 0, strpos($requestPath, '?'));
+			}
 			$basicPage = new BasicPage();
-			$basicPage->urlAlias = $requestURI;
+			$basicPage->urlAlias = $requestPath;
 			if ($basicPage->find(true)) {
 				$_GET['module'] = 'WebBuilder';
 				$_GET['action'] = 'BasicPage';
@@ -957,7 +960,7 @@ function loadModuleActionId(){
 			} else {
 				require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 				$portalPage = new PortalPage();
-				$portalPage->urlAlias = $requestURI;
+				$portalPage->urlAlias = $requestPath;
 				if ($portalPage->find(true)) {
 					$_GET['module'] = 'WebBuilder';
 					$_GET['action'] = 'PortalPage';
@@ -968,7 +971,7 @@ function loadModuleActionId(){
 				} else {
 					require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
 					$form = new CustomForm();
-					$form->urlAlias = $requestURI;
+					$form->urlAlias = $requestPath;
 					if ($form->find(true)) {
 						$_GET['module'] = 'WebBuilder';
 						$_GET['action'] = 'Form';

@@ -351,7 +351,7 @@ class MillenniumCheckouts {
 			if (preg_match_all('/<tr class="patFuncEntry">(.*?)<\/tr>/s', $checkedOutTitleTable, $rowMatches, PREG_SET_ORDER)){
 				//$logger->log("Checked out titles table has " . count($rowMatches) . "rows", Logger::LOG_DEBUG);
 				//$logger->log(print_r($rowMatches, true), Logger::LOG_DEBUG);
-					foreach ($rowMatches as $i => $row) {
+				foreach ($rowMatches as $i => $row) {
 					$rowData = $row[1];
 					if (preg_match("/{$itemId}/", $rowData)){
 						//$logger->log("Found the row for this item", Logger::LOG_DEBUG);
@@ -367,7 +367,11 @@ class MillenniumCheckouts {
 							$success = false;
 							$msg = ucfirst(strtolower(trim($statusMatches[1])));
 							$title = $this->extract_title_from_row($rowData);
-							$message = "<p style=\"font-style:italic\">$title</p><p>Unable to renew: $msg.</p>";
+							if (strcasecmp($title, 'INTERLIBRARY LOAN MATERIAL') === 0){
+								$message = "<p style=\"font-style:italic\">$title</p><p>" . translate('Unable to renew interlibrary loan materials') . "</p>";
+							}else{
+								$message = "<p style=\"font-style:italic\">$title</p><p>Unable to renew: $msg.</p>";
+							}
 							// title needed for in renewSelectedItems to distinguish which item failed.
 						} elseif (preg_match('/<td.*?class="patFuncStatus".*?>.*?<em>(.*?)<\/em>.*?<\/td>/s', $rowData, $statusMatches)){
 							$success = true;
@@ -380,8 +384,7 @@ class MillenniumCheckouts {
 			}else{
 				$logger->log("Did not find any rows for the table $checkedOutTitleTable", Logger::LOG_DEBUG);
 			}
-		}
-		else{
+		} else{
 			$success = true;
 			$message = 'Your item was successfully renewed';
 		}

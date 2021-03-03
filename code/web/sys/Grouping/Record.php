@@ -125,6 +125,7 @@ class Grouping_Record
 				if ((strlen($volumeInfo->relatedItems) == 0) || (strpos($volumeInfo->relatedItems, $item->itemId) !== false)) {
 					$item->volume = $volumeInfo->displayLabel;
 					$item->volumeId = $volumeInfo->volumeId;
+					$item->volumeOrder = $volumeInfo->displayOrder;
 				}
 			}
 		}

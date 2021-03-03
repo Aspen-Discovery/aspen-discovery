@@ -110,6 +110,31 @@ function getGenealogyUpdates(){
 			]
 		],
 
+		'genealogy_person_date_update' => [
+			'title' => 'Genealogy Person date update',
+			'description' => 'Add split date information to obituaries or people if not already added',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE person ADD COLUMN birthDateDay INT NULL",
+				"ALTER TABLE person ADD COLUMN birthDateMonth INT NULL",
+				"ALTER TABLE person ADD COLUMN birthDateYear INT NULL",
+				"ALTER TABLE person ADD COLUMN deathDateDay INT NULL",
+				"ALTER TABLE person ADD COLUMN deathDateMonth INT NULL",
+				"ALTER TABLE person ADD COLUMN deathDateYear INT NULL"
+			]
+		],
+
+		'genealogy_marriage_date_update' => [
+			'title' => 'Genealogy Marriage date update',
+			'description' => 'Add split date information to marriages if not already added',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE marriage ADD COLUMN marriageDateDay INT NULL",
+				"ALTER TABLE marriage ADD COLUMN marriageDateMonth INT NULL",
+				"ALTER TABLE marriage ADD COLUMN marriageDateYear INT NULL"
+			]
+		],
+
 		'genealogy_module' => [
 			'title' => 'Create Genealogy Module',
 			'description' => 'Create Genealogy Module',

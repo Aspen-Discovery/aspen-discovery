@@ -163,7 +163,7 @@ function getGroupedWorkUpdates(){
 			'sql' => [
 				'DROP TABLE IF EXISTS grouped_work_display_title_author',
 				'CREATE TABLE IF NOT EXISTS grouped_work_display_info (
-    				id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					permanent_id CHAR(36) NOT NULL UNIQUE,
 					title VARCHAR(276),
 					author VARCHAR(50),
@@ -174,6 +174,43 @@ function getGroupedWorkUpdates(){
 					INDEX (permanent_id)
 				) ENGINE INNODB'
 			],
+		],
+
+		'author_authorities' => [
+			'title' => 'Setup author authorities',
+			'description' => 'Create tables to store author authority information',
+			'sql' => [
+				'CREATE TABLE author_authority (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					author VARCHAR(512) NOT NULL UNIQUE,
+					dateAdded INT(11)
+				)',
+				'CREATE TABLE author_authority_alternative (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					authorId INT(11),
+					alternativeAuthor VARCHAR(512) NOT NULL UNIQUE,
+					INDEX (authorId)
+				)'
+			]
+		],
+
+		'author_authorities_normalized_values' => [
+			'title' => 'Add Normalized Values to Author Authorities',
+			'description' => 'Add a normalized value for author authorities to optimize grouping',
+			'sql'=> [
+				'ALTER TABLE author_authority ADD COLUMN normalized VARCHAR(512)',
+				'ALTER TABLE author_authority_alternative ADD COLUMN normalized VARCHAR(512)',
+			]
+		],
+
+		'grouped_work_title_length' => [
+			'title' => 'Grouped Work increase title length',
+			'description' => 'Increase the length of the title field for grouped works',
+			'sql' => [
+				'ALTER TABLE grouped_work CHANGE COLUMN full_title full_title VARCHAR(750) NOT NULL',
+				'ALTER TABLE grouped_work_alternate_titles CHANGE COLUMN alternateTitle alternateTitle VARCHAR(750)',
+				'ALTER TABLE grouped_work_display_info CHANGE COLUMN title title VARCHAR(750)',
+			]
 		]
 	);
 }

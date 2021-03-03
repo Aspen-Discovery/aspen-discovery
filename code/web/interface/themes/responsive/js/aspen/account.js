@@ -1001,12 +1001,11 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		createPayPalOrder: function(finesFormId) {
+		createGenericOrder: function(finesFormId, paymentType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
-				method: "createPayPalOrder",
+				method: "create" + paymentType + "Order",
 				patronId: $(finesFormId + " input[name=patronId]").val(),
-				fineTotal: $(finesFormId + " input[name=totalToPay]").val(),
 			};
 			$(finesFormId + " .selectedFine:checked").each(
 				function() {
@@ -1033,12 +1032,28 @@ AspenDiscovery.Account = (function(){
 						AspenDiscovery.showMessage("Error", response.message);
 						return false;
 					}else{
-						orderInfo = response.orderID;
+						if(paymentType == 'PayPal') {
+							orderInfo = response.orderID;
+						} else if(paymentType == 'MSB') {
+							orderInfo = response.paymentRequestUrl;
+						}
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
-
 			return orderInfo;
+		},
+
+		createMSBOrder: function(finesFormId) {
+			$url = this.createGenericOrder(finesFormId, 'MSB');
+			if ($url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				window.location.href = $url;
+			}
+		},
+
+		createPayPalOrder: function(finesFormId) {
+			return this.createGenericOrder(finesFormId, 'PayPal');
 		},
 
 		completePayPalOrder: function(orderId, patronId) {
@@ -1057,6 +1072,7 @@ AspenDiscovery.Account = (function(){
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
+
 		updateFineTotal: function(finesFormId, userId, paymentType) {
 			var totalFineAmt = 0;
 			var totalOutstandingAmt = 0;

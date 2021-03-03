@@ -26,9 +26,11 @@ class CloudLibrary_Settings extends ObjectEditor
 		return 'Cloud Library Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage)
 	{
 		$object = new CloudLibrarySetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -37,6 +39,10 @@ class CloudLibrary_Settings extends ObjectEditor
 		return $objectList;
 	}
 
+	function getDefaultSort()
+	{
+		return 'userInterfaceUrl asc';
+	}
 	function getObjectStructure()
 	{
 		return CloudLibrarySetting::getObjectStructure();

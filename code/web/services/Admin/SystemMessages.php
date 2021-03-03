@@ -17,11 +17,14 @@ class Admin_SystemMessages extends ObjectEditor
 		return 'SystemMessages';
 	}
 	function canDelete(){
-		return UserAccount::userHasPermission('Administer All System Messages');
+		return UserAccount::userHasPermission(['Administer All System Messages','Administer Library System Messages']);
 	}
-	function getAllObjects(){
-		$systemMessage = new SystemMessage();
-		$systemMessage->orderBy('title');
+	function getAllObjects($page, $recordsPerPage){
+		$object = new SystemMessage();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$userHasExistingMessages = true;
 		if (!UserAccount::userHasPermission('Administer All System Messages')){
 			$librarySystemMessage = new SystemMessageLibrary();
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
@@ -32,15 +35,25 @@ class Admin_SystemMessages extends ObjectEditor
 				while ($librarySystemMessage->fetch()){
 					$systemMessagesForLibrary[] = $librarySystemMessage->systemMessageId;
 				}
-				$systemMessage->whereAddIn('id', $systemMessagesForLibrary, false);
+				if (count($systemMessagesForLibrary) > 0) {
+					$object->whereAddIn('id', $systemMessagesForLibrary, false);
+				}else{
+					$userHasExistingMessages = false;
+				}
 			}
 		}
-		$systemMessage->find();
 		$list = array();
-		while ($systemMessage->fetch()){
-			$list[$systemMessage->id] = clone $systemMessage;
+		if ($userHasExistingMessages) {
+			$object->find();
+			while ($object->fetch()) {
+				$list[$object->id] = clone $object;
+			}
 		}
 		return $list;
+	}
+	function getDefaultSort()
+	{
+		return 'title asc';
 	}
 	function getObjectStructure(){
 		return SystemMessage::getObjectStructure();

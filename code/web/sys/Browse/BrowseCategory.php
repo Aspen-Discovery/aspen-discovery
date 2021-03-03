@@ -70,10 +70,6 @@ class BrowseCategory extends BaseBrowsable
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveSubBrowseCategories();
-
-			//delete any cached results for browse category
-			$this->deleteCachedBrowseCategoryResults();
-
 		}
 		return $ret;
 	}
@@ -128,12 +124,6 @@ class BrowseCategory extends BaseBrowsable
 		return $ret;
 	}
 
-	public function deleteCachedBrowseCategoryResults()
-	{
-		global $memCache;
-		$keyFormat = 'browse_category_' . $this->textId;
-		$memCache->deleteKeysStartingWith($keyFormat);
-	}
 
 	public function saveSubBrowseCategories()
 	{
@@ -168,7 +158,7 @@ class BrowseCategory extends BaseBrowsable
 		unset($browseSubCategoryStructure['browseCategoryId']);
 		$browseCategorySources = BaseBrowsable::getBrowseSources();
 
-		$libraryList = Library::getLibraryList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 		$libraryList[-1] = 'No Library Selected';
 
 		return array(

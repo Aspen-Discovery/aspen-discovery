@@ -6,8 +6,49 @@ class OverDrive_APIData extends Admin_Admin
 {
 	function launch()
 	{
+		global $interface;
+		global $library;
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+		$setting = new OverDriveSetting();
+		$setting->orderBy('url');
+		$setting->find();
+		$allSettings = array();
+		while ($setting->fetch()) {
+			$allSettings[$setting->id] = clone $setting;
+		}
+		$interface->assign('allSettings', $allSettings);
+
 		$driver = new OverDriveDriver();
+
+		if (isset($_REQUEST['settingId'])){
+			$activeSetting = $allSettings[$_REQUEST['settingId']];
+		}else{
+			if ($library->overDriveScopeId > 0){
+				$activeSetting = $allSettings[$library->getOverdriveScope()->settingId];
+			}else {
+				$activeSetting = reset($allSettings);
+			}
+		}
+
+		$allScopes = $activeSetting->scopes;
+		$interface->assign('scopes', $allScopes);
+		$activeScope = null;
+		if (isset($_REQUEST['scopeId'])){
+			if (in_array($_REQUEST['scopeId'], $allScopes)){
+				$activeScope = $allScopes[$_REQUEST['scopeId']];
+			}
+		}
+		if (is_null($activeScope)){
+			if ($library->overDriveScopeId > 0 && in_array($library->overDriveScopeId, $allScopes)){
+				$activeScope = $allScopes[$library->overDriveScopeId];
+			}else{
+				$activeScope = reset($allScopes);
+			}
+		}
+
+		$driver->setSettings($activeSetting, $activeScope);
+		$interface->assign('selectedSettingId', $activeSetting->id);
 
 		$libraryInfo = $driver->getLibraryAccountInformation();
 		$contents = "<h1>Main - {$libraryInfo->name}</h1>";
@@ -34,6 +75,7 @@ class OverDrive_APIData extends Admin_Admin
 
 		if (!empty($_REQUEST['id'])) {
 			$overDriveId = $_REQUEST['id'];
+			$interface->assign('overDriveId', $overDriveId);
 			$contents .= "<h2>Metadata</h2>";
 			$contents .= "<h3>Metadata for $overDriveId</h3>";
 			$metadata = $driver->getProductMetadata($overDriveId, $productKey);
@@ -58,7 +100,7 @@ class OverDrive_APIData extends Admin_Admin
 				}
 			}
 
-			if ($advantageAccounts) {
+			if ($advantageAccounts && !empty($advantageAccounts->advantageAccounts)) {
 				foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
 					$contents .= ("<h3>Availability - {$accountInfo->name} ({$accountInfo->id})</h3>");
 					$availability = $driver->getProductAvailability($overDriveId, $accountInfo->collectionToken);
@@ -77,7 +119,6 @@ class OverDrive_APIData extends Admin_Admin
 			}
 		}
 
-		global $interface;
 		$interface->assign('overDriveAPIData', $contents);
 		$this->display('overdriveApiData.tpl', 'OverDrive API Data');
 	}

@@ -175,7 +175,6 @@ class CarlX extends AbstractIlsDriver{
 		global $logger;
 
 		//renew the item via SIP 2
-		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mysip = new sip2();
 		$mysip->hostname = $this->accountProfile->sipHost;
 		$mysip->port = $this->accountProfile->sipPort;
@@ -266,7 +265,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param array $soapRequestOptions
 	 * @return false|stdClass
 	 */
-	private function doSoapRequest($requestName, $request, $WSDL = '', $soapRequestOptions = array()) {
+	protected function doSoapRequest($requestName, $request, $WSDL = '', $soapRequestOptions = array()) {
 		if (empty($WSDL)) { // Let the patron WSDL be the assumed default WSDL when not specified.
 			if (!empty($this->patronWsdl)) {
 				$WSDL = $this->patronWsdl;
@@ -716,6 +715,11 @@ class CarlX extends AbstractIlsDriver{
 		return $result;
 	}
 
+	/**
+	 * @param User $user
+	 * @param boolean $canUpdateContactInfo
+	 * @return array
+	 */
 	public function updatePatronInfo($user, $canUpdateContactInfo) {
 		$result = [
 			'success' => false,
@@ -728,11 +732,14 @@ class CarlX extends AbstractIlsDriver{
 			}
 			// Patron Info to update.
 			$request->Patron->Email  = $_REQUEST['email'];
+			$user->email = $_REQUEST['email'];
 			if (isset($_REQUEST['phone'])) {
 				$request->Patron->Phone1 = $_REQUEST['phone'];
+				$user->phone = $_REQUEST['phone'];
 			}
 			if (isset($_REQUEST['workPhone'])){
 				$request->Patron->Phone2 = $_REQUEST['workPhone'];
+				$user->_workPhone = $_REQUEST['workPhone'];
 			}
 			if (!isset($request->Addresses)){
 				$request->Patron->Addresses = new stdClass();
@@ -743,15 +750,19 @@ class CarlX extends AbstractIlsDriver{
 			$request->Patron->Addresses->Address->Type        = 'Primary';
 			if (isset($_REQUEST['address1'])) {
 				$request->Patron->Addresses->Address->Street = $_REQUEST['address1'];
+				$user->_address1 = $_REQUEST['address1'];
 			}
 			if (isset($_REQUEST['city'])) {
 				$request->Patron->Addresses->Address->City = $_REQUEST['city'];
+				$user->_city = $_REQUEST['city'];
 			}
 			if (isset($_REQUEST['state'])) {
 				$request->Patron->Addresses->Address->State = $_REQUEST['state'];
+				$user->_state = $_REQUEST['state'];
 			}
 			if (isset($_REQUEST['zip'])) {
 				$request->Patron->Addresses->Address->PostalCode = $_REQUEST['zip'];
+				$user->_zip = $_REQUEST['zip'];;
 			}
 			if (isset($_REQUEST['emailReceiptFlag']) && ($_REQUEST['emailReceiptFlag'] == 'yes' || $_REQUEST['emailReceiptFlag'] == 'on')){
 				// if set check & on check must be combined because checkboxes/radios don't report 'offs'
@@ -773,10 +784,12 @@ class CarlX extends AbstractIlsDriver{
 			}
 			if (isset($_REQUEST['phoneType'])) {
 				$request->Patron->PhoneType = $_REQUEST['phoneType'];
+				$user->_phoneType = $_REQUEST['phoneType'];
 			}
 
 			if (isset($_REQUEST['notices'])){
 				$request->Patron->EmailNotices = $_REQUEST['notices'];
+				$user->_notices = $_REQUEST['notices'];
 			}
 
 			if (!empty($_REQUEST['pickupLocation'])) {
@@ -784,6 +797,9 @@ class CarlX extends AbstractIlsDriver{
 				if ($homeLocation->get('code', $_REQUEST['pickupLocation'])) {
 					$homeBranchCode = strtoupper($_REQUEST['pickupLocation']);
 					$request->Patron->DefaultBranch = $homeBranchCode;
+					$user->homeLocationId = $homeLocation->locationId;
+					$user->_homeLocationCode = $homeLocation->code;
+					$user->_homeLocation = $homeLocation;
 				}
 			}
 
@@ -797,6 +813,7 @@ class CarlX extends AbstractIlsDriver{
 				}else{
 					$result['success'] = true;
 					$result['messages'][] = 'Your account was updated successfully.';
+					$user->update();
 				}
 
 			} else {
@@ -1231,7 +1248,6 @@ class CarlX extends AbstractIlsDriver{
 
 	public function getFines($user, $includeMessages = false) {
 		$myFines = array();
-
 		$request = $this->getSearchbyPatronIdRequest($user);
 
 		// Fines
@@ -1248,52 +1264,102 @@ class CarlX extends AbstractIlsDriver{
 				if ($fine->Branch == 0) {
 					$fine->Branch = $fine->TransactionBranch;
 				}
-				$fine->System = $this->getFineSystem($fine->Branch);
 
+				$fine->FineAmountOutstanding = 0;
 				if ($fine->FineAmountPaid > 0) {
-					$fine->FineAmount -= $fine->FineAmountPaid;
+					$fine->FineAmountOutstanding = $fine->FineAmount - $fine->FineAmountPaid;
+				} else {
+					$fine->FineAmountOutstanding = $fine->FineAmount;
 				}
+
+				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+					$fine->Identifier = substr($fine->Identifier,9);
+				}
+				$fine->Identifier = str_replace('#', '', $fine->Identifier);
+				$fineType = $fine->TransactionCode;
+				$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+
 				$myFines[] = array(
+					'fineId' => $fine->Identifier,
+					'type' => $fineType,
 					'reason'  => $fine->FeeNotes,
 					'amount'  => $fine->FineAmount,
 					'amountVal' => $fine->FineAmount,
+					'amountOutstanding' => $fine->FineAmountOutstanding,
+					'amountOutstandingVal' => $fine->FineAmountOutstanding,
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->FineAssessedDate)),
-					'system'  => $fine->System,
 				);
 			}
 		}
 
 		// Lost Item Fees
+		if ($result && $result->LostItemsCount > 0) {
+			// TODO: Lost Items don't have the fine amount
+			$request->TransactionType = 'Lost';
+			$result = $this->doSoapRequest('getPatronTransactions', $request);
+			//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), Logger::LOG_ERROR);
 
-		// TODO: Lost Items don't have the fine amount
-		$request->TransactionType = 'Lost';
-		$result = $this->doSoapRequest('getPatronTransactions', $request);
-		//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), Logger::LOG_ERROR);
-
-		if ($result && !empty($result->LostItems->LostItem)) {
-			if (!is_array($result->LostItems->LostItem)) {
-				$result->LostItems->LostItem = array($result->LostItems->LostItem);
-			}
-			foreach($result->LostItems->LostItem as $fine) {
-				// hard coded Nashville school branch IDs
-				if ($fine->Branch == 0) {
-					$fine->Branch = $fine->TransactionBranch;
+			if ($result && !empty($result->LostItems->LostItem)) {
+				if (!is_array($result->LostItems->LostItem)) {
+					$result->LostItems->LostItem = array($result->LostItems->LostItem);
 				}
-				$fine->System = $this->getFineSystem($fine->Branch);
+				foreach($result->LostItems->LostItem as $fine) {
+					// hard coded Nashville school branch IDs
+					if ($fine->Branch == 0) {
+						$fine->Branch = $fine->TransactionBranch;
+					}
+					$fine->System = $this->getFineSystem($fine->Branch);
+					$fine->CanPayFine = $this->canPayFine($fine->System);
 
-				$myFines[] = array(
-					'reason'  => $fine->FeeNotes,
-					'amount'  => $fine->FeeAmount,
-					'amountVal'  => $fine->FeeAmount,
-					'message' => $fine->Title,
-					'date'    => date('M j, Y', strtotime($fine->TransactionDate)),
-					'system'  => $fine->System,
-				);
+					$fine->FeeAmountOutstanding = 0;
+					if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
+						$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
+					} else {
+						$fine->FeeAmountOutstanding = $fine->FeeAmount;
+					}
+
+					if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+						$fine->Identifier = substr($fine->Identifier, 9);
+					}
+
+					$fineType = $fine->TransactionCode;
+					$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+
+					$myFines[] = array(
+						'fineId' => $fine->Identifier,
+						'type' => $fineType,
+						'reason' => $fine->FeeNotes,
+						'amount' => $fine->FeeAmount,
+						'amountVal' => $fine->FeeAmount,
+						'amountOutstanding' => $fine->FeeAmountOutstanding,
+						'amountOutstandingVal' => $fine->FeeAmountOutstanding,
+						'message' => $fine->Title,
+						'date' => date('M j, Y', strtotime($fine->TransactionDate)),
+					);
+				}
+				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
+				$myLostFines = $this->getLostViaSIP($user->cat_username);
+				$myFinesIds = array_column($myFines, 'fineId');
+				foreach ($myLostFines as $myLostFine) {
+					$keys = array_keys($myFinesIds, $myLostFine['fineId']);
+					foreach ($keys as $key) {
+						// CarlX can have Processing fees and Lost fees associated with the same item id; here we target only the Lost, because Processing fees correctly report previous partial payments through the PatronAPI
+						if ($myFines[$key]['type'] == "L") {
+							$myFines[$key]['amountOutstanding'] = $myLostFine['amountOutstanding'];
+							$myFines[$key]['amountOutstandingVal'] = $myLostFine['amountOutstandingVal'];
+							break;
+						}
+					}
+				}
 			}
 		}
-
+		array_multisort(array_column($myFines, 'message', SORT_ASC), $myFines);
 		return $myFines;
+	}
+
+	public function canPayFine($system){
+		return true;
 	}
 
 	public function getFineSystem($branchId){
@@ -1406,7 +1472,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param $user
 	 * @return stdClass
 	 */
-	private function getSearchbyPatronIdRequest($user)
+	protected function getSearchbyPatronIdRequest($user)
 	{
 		$request             = new stdClass();
 		$request->SearchType = 'Patron ID';
@@ -1522,7 +1588,6 @@ class CarlX extends AbstractIlsDriver{
 		}
 		global $configArray;
 		//Place the hold via SIP 2
-		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
 		$mySip->port = $this->accountProfile->sipPort;
@@ -1644,7 +1709,6 @@ class CarlX extends AbstractIlsDriver{
 
 	public function renewCheckoutViaSIP($patron, $itemId, $useAlternateSIP = false){
 		//renew the item via SIP 2
-		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mysip = new sip2();
 		$mysip->hostname = $this->accountProfile->sipHost;
 		$mysip->port = $this->accountProfile->sipPort;
@@ -1799,6 +1863,7 @@ class CarlX extends AbstractIlsDriver{
 				left join item_v i on ( t.bid = i.bid and t.holdingbranch = i.branch)
 				left join location_v l on i.location = l.locnumber
 				where ob.branchcode = '$location'
+				and t.renew = ob.branchnumber -- ensure pickup location (t.renew) is school. field will change to t.pickupbranch in CarlX 9.6.8.0
 				and t.transcode = 'R*'
 				and i.status = 'S'
 				order by 
@@ -1831,6 +1896,7 @@ EOT;
 		// consider using oci_set_prefetch to improve performance
 		// oci_set_prefetch($stid, 1000);
 		oci_execute($stid);
+		$data = array();
 		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 			$data[] = $row;
 		}
@@ -1956,6 +2022,7 @@ EOT;
 			} else if ($showOverdueOnly == 'overdue') {
 				$statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L')";
 			}
+			/** @noinspection SqlResolve */
 			$sql = <<<EOT
 				select
 				  patronbranch.branchcode AS Home_Lib_Code
@@ -2114,4 +2181,24 @@ EOT;
 			$user->_expireClose = 1;
 		}
 	}
+
+	public function showOutstandingFines()
+	{
+		return true;
+	}
+
+	static $fineTypeTranslations = [
+		'F'		=> 'Fine',
+		'F2'	=> 'Processing',
+		'FS'	=> 'Manual',
+		'L'		=> 'Lost'
+	];
+
+	static  $fineTypeSIP2Translations = [
+		'F'		=> '04',
+		'F2'	=> '05',
+		'FS'	=> '01',
+		'L'		=> '07'
+	];
+
 }

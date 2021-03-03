@@ -458,6 +458,8 @@ class UserAccount
 	public static function login()
 	{
 		global $logger;
+		global $usageByIPAddress;
+		$usageByIPAddress->numLoginAttempts++;
 
 		$validUsers = array();
 
@@ -471,6 +473,7 @@ class UserAccount
 			if ($casUsername == false || $casUsername instanceof AspenError) {
 				//The user could not be authenticated in CAS
 				$logger->log("The user could not be logged in", Logger::LOG_NOTICE);
+				$usageByIPAddress->numFailedLoginAttempts++;
 				return new AspenError('Could not authenticate in sign on service');
 			} else {
 				$logger->log("User logged in OK CAS Username $casUsername", Logger::LOG_NOTICE);
@@ -507,6 +510,7 @@ class UserAccount
 				if ($library->preventExpiredCardLogin && $tempUser->_expired) {
 					// Create error
 					$cardExpired = new AspenError('expired_library_card');
+					$usageByIPAddress->numFailedLoginAttempts++;
 					return $cardExpired;
 				}
 
@@ -542,6 +546,7 @@ class UserAccount
 			}
 			return $primaryUser;
 		} else {
+			$usageByIPAddress->numFailedLoginAttempts++;
 			return $lastError;
 		}
 	}

@@ -15,15 +15,21 @@ class Admin_Hosting extends ObjectEditor
 	function getPageTitle(){
 		return 'Host Information';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new HostInformation();
-		$object->orderBy('host');
+		$object->orderBy($this->getDefaultSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'host asc';
 	}
 	function getObjectStructure(){
 		return HostInformation::getObjectStructure();

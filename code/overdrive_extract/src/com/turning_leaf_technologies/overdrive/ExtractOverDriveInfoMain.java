@@ -1,9 +1,11 @@
 package com.turning_leaf_technologies.overdrive;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
@@ -15,6 +17,7 @@ import org.ini4j.Ini;
 
 public class ExtractOverDriveInfoMain {
 	private static Connection dbConn;
+	private static Logger logger;
 
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
@@ -45,12 +48,11 @@ public class ExtractOverDriveInfoMain {
 			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 		}
 		String processName = "overdrive_extract";
-		Logger logger = LoggingUtil.setupLogging(serverName, processName);
+		logger = LoggingUtil.setupLogging(serverName, processName);
 
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
-		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		//Start an infinite loop to do continual indexing.  We will just kill the process as needed to restart, but
 		//otherwise it should always run
@@ -83,49 +85,75 @@ public class ExtractOverDriveInfoMain {
 				logger.error("Error deleting old log entries", e);
 			}
 
-			OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(dbConn, logger);
-			if (!logEntry.saveResults()){
-				logger.error("Could not save log entry to database, quitting");
-				return;
+			HashSet<OverDriveSetting> settings = loadSettings();
+			final int[] numChanges = {0};
+
+			try {
+				if (dbConn.isClosed()) {
+					dbConn = DriverManager.getConnection(databaseConnectionInfo);
+				}
+			} catch (SQLException e) {
+				logger.error("Could not connect to database", e);
+				System.exit(1);
 			}
 
-			ExtractOverDriveInfo extractor = new ExtractOverDriveInfo();
-			int numChanges;
-			if (extractSingleWork) {
-				numChanges = extractor.processSingleWork(singleWorkId, configIni, serverName, dbConn, logEntry);
-			}else {
-				numChanges = extractor.extractOverDriveInfo(configIni, serverName, dbConn, logEntry);
-			}
+			ExecutorService es = Executors.newCachedThreadPool();
+			for(OverDriveSetting setting : settings) {
+				boolean finalExtractSingleWork = extractSingleWork;
+				String finalSingleWorkId = singleWorkId;
+				es.execute(() -> {
+					OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(dbConn, setting, logger);
+					if (!logEntry.saveResults()) {
+						logger.error("Could not save log entry to database, quitting");
+						return;
+					}
 
-			logEntry.setFinished();
-			logger.info("Finished OverDrive extraction");
-			Date endTime = new Date();
-			long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
-			logger.info("Elapsed time " + String.format("%f2", ((float)elapsedTime / 60f)) + " minutes");
+					ExtractOverDriveInfo extractor = new ExtractOverDriveInfo(setting);
+					if (finalExtractSingleWork) {
+						numChanges[0] += extractor.processSingleWork(finalSingleWorkId, configIni, serverName, dbConn, logEntry);
+					} else {
+						numChanges[0] += extractor.extractOverDriveInfo(configIni, serverName, dbConn, logEntry);
+					}
+
+					logEntry.setFinished();
+					logger.info("Finished OverDrive extraction");
+					Date endTime = new Date();
+					long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
+					logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
+
+					extractor.close();
+				});
+			}
+			es.shutdown();
+			while (true) {
+				try {
+					boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
+					if (terminated){
+						break;
+					}
+				} catch (InterruptedException e) {
+					logger.error("Error waiting for all extracts to finish");
+				}
+			}
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
 				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				extractor.close();
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
 				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				extractor.close();
-				break;
-			}
-			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				extractor.close();
 				break;
 			}
 			if (extractSingleWork) {
-				extractor.close();
 				break;
 			}
 
-			//Clean up resources
-			extractor.close();
+			try {
+				dbConn.close();
+			} catch (SQLException e) {
+				logger.error("Error closing database connection", e);
+			}
 
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
@@ -135,7 +163,13 @@ public class ExtractOverDriveInfoMain {
 				//Based on number of changes, pause for a little while and then continue on so we are running continuously
 				try {
 					System.gc();
-					if (numChanges == 0) {
+					int maxChanges = 0;
+					for (int numChange : numChanges) {
+						if (numChange > maxChanges) {
+							maxChanges = numChange;
+						}
+					}
+					if (maxChanges == 0) {
 						Thread.sleep(1000 * 60 * 5);
 					} else {
 						Thread.sleep(1000 * 60);
@@ -145,6 +179,31 @@ public class ExtractOverDriveInfoMain {
 				}
 			}
 		}
+		try {
+			if (dbConn != null && !dbConn.isClosed()){
+				dbConn.close();
+			}
+		} catch (SQLException e) {
+			logger.error("Error closing database connection", e);
+		}
+	}
+
+	private static HashSet<OverDriveSetting> loadSettings() {
+		HashSet<OverDriveSetting> settings = new HashSet<>();
+		try {
+			PreparedStatement getSettingsStmt = dbConn.prepareStatement("SELECT * from overdrive_settings");
+			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
+			while (getSettingsRS.next()) {
+				OverDriveSetting setting = new OverDriveSetting(getSettingsRS);
+				settings.add(setting);
+			}
+		} catch (SQLException e) {
+			logger.error("Error loading settings from the database");
+		}
+		if (settings.size() == 0) {
+			logger.error("Unable to find settings for Axis 360, please add settings to the database");
+		}
+		return settings;
 	}
 
 

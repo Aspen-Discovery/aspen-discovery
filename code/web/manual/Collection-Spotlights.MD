@@ -1,4 +1,4 @@
-##Collection Spotlights
+## Collection Spotlights
 
 Collection Spotlights allow you to display your collection outside of Aspen by providing code for you to place in other websites.
 
@@ -18,6 +18,6 @@ There are two ways to create Collection Spotlights
 1. Go to the Aspen Administration menu
 2. Go to Local Catalog Enrichment
 
-[![Collection Spotlights](/manual/images/Collection-Spotlights.jpg)](https://youtu.be/kJDcaCgC0xo)
+[![Collection Spotlights](/manual/images/Collection-Spotlight.jpg)](https://youtu.be/kJDcaCgC0xo)
 
 [Watch on Youtube](https://youtu.be/kJDcaCgC0xo)

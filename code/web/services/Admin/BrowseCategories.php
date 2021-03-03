@@ -16,22 +16,29 @@ class Admin_BrowseCategories extends ObjectEditor
 	function getPageTitle(){
 		return 'Browse Categories';
 	}
-	function getAllObjects(){
-		$browseCategory = new BrowseCategory();
-		$browseCategory->orderBy('label');
+	function getAllObjects($page, $recordsPerPage){
+		$object = new BrowseCategory();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$libraryId = $library == null ? -1 : $library->libraryId;
-			$browseCategory->whereAdd("sharing = 'everyone'");
-			$browseCategory->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			$object->whereAdd("sharing = 'everyone'");
+			$object->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
 		}
-		$browseCategory->find();
+		$object->find();
 		$list = array();
-		while ($browseCategory->fetch()){
-			$list[$browseCategory->id] = clone $browseCategory;
+		while ($object->fetch()){
+			$list[$object->id] = clone $object;
 		}
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'label asc';
+	}
+
 	function getObjectStructure(){
 		return BrowseCategory::getObjectStructure();
 	}

@@ -153,6 +153,7 @@ public class IndexingUtils {
 			while (overDriveScopesRS.next()) {
 				OverDriveScope overDriveScope = new OverDriveScope();
 				overDriveScope.setId(overDriveScopesRS.getLong("id"));
+				overDriveScope.setSettingId(overDriveScopesRS.getLong("settingId"));
 				overDriveScope.setName(overDriveScopesRS.getString("name"));
 				overDriveScope.setIncludeAdult(overDriveScopesRS.getBoolean("includeAdult"));
 				overDriveScope.setIncludeTeen(overDriveScopesRS.getBoolean("includeTeen"));
@@ -176,6 +177,7 @@ public class IndexingUtils {
 			while (cloudLibraryScopesRS.next()) {
 				CloudLibraryScope cloudLibraryScope = new CloudLibraryScope();
 				cloudLibraryScope.setId(cloudLibraryScopesRS.getLong("id"));
+				cloudLibraryScope.setSettingId(cloudLibraryScopesRS.getLong("settingId"));
 				cloudLibraryScope.setName(cloudLibraryScopesRS.getString("name"));
 				cloudLibraryScope.setIncludeEBooks(cloudLibraryScopesRS.getBoolean("includeEBooks"));
 				cloudLibraryScope.setIncludeEAudiobook(cloudLibraryScopesRS.getBoolean("includeEAudiobook"));
@@ -235,6 +237,7 @@ public class IndexingUtils {
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement locationSideLoadScopesStmt = dbConn.prepareStatement("SELECT * from location_sideload_scopes WHERE locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 		ResultSet locationInformationRS = locationInformationStmt.executeQuery();
 		while (locationInformationRS.next()) {
@@ -311,7 +314,7 @@ public class IndexingUtils {
 				if (rbdigitalScopeLibrary != -1) {
 					locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
 				}
-			} else if (rbdigitalScopeLocation == -2) {
+			} else if (rbdigitalScopeLocation != -2) {
 				locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLocation));
 			}
 
@@ -321,7 +324,7 @@ public class IndexingUtils {
 				if (cloudLibraryScopeLibrary != -1) {
 					locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLibrary));
 				}
-			} else if (rbdigitalScopeLocation == -2) {
+			} else if (cloudLibraryScopeLocation != -2) {
 				locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLocation));
 			}
 
@@ -331,7 +334,7 @@ public class IndexingUtils {
 				if (axis360ScopeLibrary != -1) {
 					locationScopeInfo.setAxis360Scope(axis360Scopes.get(axis360ScopeLibrary));
 				}
-			} else if (rbdigitalScopeLocation == -2) {
+			} else if (axis360ScopeLocation != -2) {
 				locationScopeInfo.setAxis360Scope(axis360Scopes.get(axis360ScopeLocation));
 			}
 
@@ -395,6 +398,7 @@ public class IndexingUtils {
 			}
 
 			if (includeLibraryRecordsToInclude) {
+
 				libraryRecordInclusionRulesStmt.setLong(1, libraryId);
 				ResultSet libraryRecordInclusionRulesRS = libraryRecordInclusionRulesStmt.executeQuery();
 				while (libraryRecordInclusionRulesRS.next()) {
@@ -434,8 +438,6 @@ public class IndexingUtils {
 		}
 	}
 
-	private static PreparedStatement libraryRecordInclusionRulesStmt;
-
 	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, pTypes, restrictOwningBranchesAndSystems, publicListsToInclude, " +
@@ -444,7 +446,7 @@ public class IndexingUtils {
 						"FROM library ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet libraryInformationRS = libraryInformationStmt.executeQuery();
 		PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 

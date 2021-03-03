@@ -6,7 +6,7 @@
 		<div>
 			<table class="logEntryDetails table table-bordered table-striped">
 				<thead>
-					<tr><th>Id</th><th>Indexing Profile</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Total Products</th><th>Num Errors</th><th>Products Added</th><th>Products Deleted</th><th>Products Updated</th><th>Products Skipped</th><th>Notes</th></tr>
+					<tr><th>Id</th><th>Indexing Profile</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Products Regrouped</th><th>Products Changed After Grouping</th><th>Total Products</th><th>Num Errors</th><th>Products Added</th><th>Products Deleted</th><th>Products Updated</th><th>Products Skipped</th><th>Notes</th></tr>
 				</thead>
 				<tbody>
 				{foreach from=$logEntries item=logEntry}
@@ -17,6 +17,8 @@
 						<td>{$logEntry->lastUpdate|date_format:"%D %T"}</td>
 						<td>{$logEntry->endTime|date_format:"%D %T"}</td>
 						<td>{$logEntry->getElapsedTime()}</td>
+						<td>{$logEntry->numRegrouped}</td>
+						<td>{$logEntry->numChangedAfterGrouping}</td>
 						<td>{$logEntry->numProducts}</td>
 						<td>{$logEntry->numErrors}</td>
 						<td>{$logEntry->numAdded}</td>

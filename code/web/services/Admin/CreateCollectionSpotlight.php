@@ -65,6 +65,7 @@ class Admin_CreateCollectionSpotlight extends Action
 				}
 			} elseif ($source == 'list') {
 				$spotlightList->sourceListId = $sourceId;
+				$spotlightList->source = 'List';
 			}
 
 			$spotlightList->name = $spotlightName;

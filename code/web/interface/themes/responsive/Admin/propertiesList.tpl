@@ -13,14 +13,61 @@
 	</div>
 {/if}
 
-{if $canCompare || $canAddNew || !empty($customListActions)}
-<form action="" method="get" id='compare' class="form-inline">
+{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter || !empty($customListActions)}
+<form action="" method="get" id='propertiesListForm' class="form-inline">
 {/if}
+	{if $canSort && count($sortableFields) > 0}
+		<div class="row">
+			<div class="col-xs-12">
+				<label for="sort">{translate text='Sort by'}</label>
+				<select name="sort" id="sort" onchange="return AspenDiscovery.changeSort();" class="form-control form-control-sm">
+					{foreach from=$sortableFields item=field}
+						{capture assign=fieldValueAsc}{$field.property} asc{/capture}
+                        {capture assign=fieldValueDesc}{$field.property} desc{/capture}
+						<option value="{$fieldValueAsc}" {if $fieldValueAsc == $sort}selected="selected"{/if}>{$field.label} {translate text="Ascending"}</option>
+						<option value="{$fieldValueDesc}" {if $fieldValueDesc == $sort}selected="selected"{/if}>{$field.label} {translate text="Descending"}</option>
+					{/foreach}
+				</select>
+			</div>
+		</div>
+	{/if}
+	{if $canFilter}
+		<div id="filtersList" class="">
+			<div id="filters-accordion" class="panel-group">
+				<div class="panel {if count($appliedFilters) > 0}active{/if}" id="filtersPanel">
+					<a data-toggle="collapse" href="#filtersPanelBody">
+						<div class="panel-heading">
+							<div class="panel-title">
+								{translate text="Filters"}
+							</div>
+						</div>
+					</a>
+
+					<div id="filtersPanelBody" class="panel-collapse collapse {if count($appliedFilters) > 0}in{/if}">
+						<div class="panel-body">
+							<div id="activeFilters">
+								{foreach from=$appliedFilters key=filterName item=appliedFilter}
+									{include file='DataObjectUtil/filterField.tpl' filterField=$appliedFilter.field}
+								{/foreach}
+							</div>
+							<div id="filterActions">
+								<div class="row">
+									<div class="col-tn-5 col-xs-3"><button class="btn btn-default btn-sm" onclick="return AspenDiscovery.Admin.addFilterRow('{$module}', '{$toolName}');">{translate text="Add Filter"}</button></div>
+									<div class="col-tn-5 col-xs-3 col-tn-offset-2 col-xs-offset-6 text-right"><button class="btn btn-default btn-sm" onclick="$('#objectAction').val('list');$('#propertiesListForm').submit();">{translate text="Apply Filters"}</button></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<div class='adminTableRegion'>
 		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects">
 			<thead>
 				<tr>
-					{if $canCompare}
+					{if $canCompare || $canBatchUpdate}
 						<th>{translate text='Select'}</th>
 					{/if}
 					{foreach from=$structure item=property key=id}
@@ -35,7 +82,7 @@
 				{if isset($dataList) && is_array($dataList)}
 					{foreach from=$dataList item=dataItem key=id}
 					<tr class='{cycle values="odd,even"} {$dataItem->class}'>
-						{if $canCompare}
+						{if $canCompare || $canBatchUpdate}
 							<td><input type="checkbox" class="selectedObject" name="selectedObject[{$id}]" aria-label="Select Item {$id}"> </td>
 						{/if}
 						{foreach from=$structure item=property}
@@ -125,10 +172,20 @@
 		</table>
 	</div>
 
+	{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
+
 	<input type='hidden' name='objectAction' id='objectAction' value='' />
 	{if $canCompare}
 		<div class="btn-group">
 			<button type='submit' value='compare' class="btn btn-default" onclick="$('#objectAction').val('compare');return AspenDiscovery.Admin.validateCompare();">{translate text='Compare'}</button>
+		</div>
+	{/if}
+	{if $canBatchUpdate}
+		<div class="btn-group">
+			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'selected')">{translate text='Batch Update Selected'}</button>
+		</div>
+		<div class="btn-group">
+			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'all')">{translate text='Batch Update All'}</button>
 		</div>
 	{/if}
 	{if $canAddNew}
@@ -141,14 +198,14 @@
 			<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}')">{$customAction.label}</button>
 		{/foreach}
 	</div>
-{if $canCompare || $canAddNew || !empty($customListActions)}
+{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter|| !empty($customListActions)}
 </form>
 {/if}
 
-{if isset($dataList) && is_array($dataList) && count($dataList) > 5}
-<script type="text/javascript">
-	{literal}
-	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
-	{/literal}
-</script>
-{/if}
+{*{if isset($dataList) && is_array($dataList) && count($dataList) > 5}*}
+{*<script type="text/javascript">*}
+{*	{literal}*}
+{*	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });*}
+{*	{/literal}*}
+{*</script>*}
+{*{/if}*}

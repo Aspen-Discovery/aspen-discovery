@@ -238,7 +238,7 @@ class UInterface extends Smarty
 					$finePaymentType = 0;
 				}
 				$this->assign('eCommerceLink', $eCommerceLink);
-			}elseif ($finePaymentType == 2){
+			}elseif ($finePaymentType == 2 || $finePaymentType == 3){
 				$this->assign('eCommerceLink', '/MyAccount/Fines');
 			}
 			$this->assign('finePaymentType', $finePaymentType);
@@ -494,7 +494,6 @@ class UInterface extends Smarty
 		$this->assign('allowReadingHistoryDisplayInMasqueradeMode', $library->allowReadingHistoryDisplayInMasqueradeMode);
 		$this->assign('interLibraryLoanName', $library->interLibraryLoanName);
 		$this->assign('interLibraryLoanUrl', $library->interLibraryLoanUrl);
-		$this->assign('sidebarMenuButtonText', $library->getLayoutSettings()->sidebarMenuButtonText);
 		$this->assign('showGroupedHoldCopiesCount', $library->showGroupedHoldCopiesCount);
 		$this->assign('showOnOrderCounts', $library->showOnOrderCounts);
 
@@ -618,6 +617,14 @@ class UInterface extends Smarty
 		}
 		$this->assign('libraryLinks', $libraryLinks);
 		$this->assign('expandedLinkCategories', $expandedLinkCategories);
+
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables != false){
+			$this->assign('useHtmlEditorRatherThanMarkdown', $systemVariables->useHtmlEditorRatherThanMarkdown);
+		}else{
+			$this->assign('useHtmlEditorRatherThanMarkdown', 0);
+		}
 	}
 
 	/**

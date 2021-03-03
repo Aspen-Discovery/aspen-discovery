@@ -15,15 +15,21 @@ class Admin_NonGroupedRecords extends ObjectEditor
 	function getPageTitle(){
 		return 'Records to Not Group';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new NonGroupedRecord();
-		$object->orderBy('source, recordId');
+		$object->orderBy($this->getSort() . ', recordId');
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'source asc';
 	}
 	function getObjectStructure(){
 		return NonGroupedRecord::getObjectStructure();

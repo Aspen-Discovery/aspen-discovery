@@ -1,6 +1,7 @@
 @import "lib/fontawesome-all.min.css";
 @import "lib/rome.min.css";
 @import "simplemde.min.css";
+@import "lib/Chart.min.css";
 article,
 aside,
 details,
@@ -7199,10 +7200,11 @@ body > .container {
   }
 }
 .btn-editions {
-  display: inline;
+  display: inline-block;
   color: #212529;
   background-color: #f8f9fa;
   border-color: #999999;
+  margin-top: 3px;
 }
 .btn-editions:hover,
 .btn-editions:focus,
@@ -8495,12 +8497,10 @@ hr.menu {
 .dismissable-system-message-text {
   width: calc(100% - 30px);
 }
-#header-container {
+#header-wrapper {
   padding-top: 0;
-  height: 120px;
   background-color: #f2f2f2;
   margin-bottom: 0;
-  min-height: 110px;
 }
 @media (max-width: 479px) {
   #header-logo-container {
@@ -8871,6 +8871,12 @@ a.placard-link {
   flex-basis: 0;
   padding: 5px;
 }
+.previewFrame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  min-height: 50vh;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;
@@ -8916,11 +8922,6 @@ a.placard-link {
 #horizontal-search-box {
   background-color: #00a4e3;
   padding: 15px 0;
-}
-@media (max-width: 991px) {
-  #horizontal-search-box {
-    display: none;
-  }
 }
 #horizontal-search-box #searchForm .row {
   margin-left: 0;
@@ -8970,8 +8971,15 @@ a.placard-link {
     margin-top: 7px;
   }
 }
+#horizontal-search-box #lookfor-label {
+  height: 34px;
+  width: 40px;
+  text-align: center;
+}
 #horizontal-search-box #lookfor {
   height: 34px;
+  width: calc(100% - 35px);
+  display: inline-block;
 }
 #horizontal-search-box .searchSourceHorizontal,
 #horizontal-search-box .searchTypeHorizontal {
@@ -9654,6 +9662,9 @@ a.browse-thumbnail-sorted.active {
   text-align: center;
   font-weight: bold;
 }
+#library-barcode-svg {
+  max-width: 100%;
+}
 /**
  * Additional Styling related to the help system
  */
@@ -10095,7 +10106,9 @@ a.browse-thumbnail-sorted.active {
   vertical-align: top;
 }
 .facetValue {
-  padding: 0 0 0 30px;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+  margin-left: 30px;
   color: #888888;
   font-size: small;
   font-weight: bold;
@@ -10246,8 +10259,6 @@ a.browse-thumbnail-sorted.active {
   -webkit-column-gap: 35px;
   -moz-column-gap: 35px;
   column-gap: 35px;
-  padding-left: 20px;
-  text-indent: -15px;
 }
 @media (min-width: 0) {
   .moreFacetPopup {
@@ -10270,9 +10281,13 @@ a.browse-thumbnail-sorted.active {
     column-count: 2;
   }
 }
-.moreFacetPopup .checkboxFacet {
-  text-indent: -17px;
-  padding-left: 30px;
+.moreFacetPopup .checkboxFacet label {
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+.moreFacetPopup .standardFacet {
+  padding-left: 2.5em;
+  text-indent: -1em;
 }
 .highlight {
   font-weight: bolder;
@@ -11163,6 +11178,16 @@ a.browse-thumbnail-sorted.active {
 .permissionDescription {
   font-style: italic;
   font-size: 10px;
+}
+#filtersList {
+  padding: 8px 0;
+}
+#filterActions {
+  padding-top: 4px;
+}
+#activeFilters select,
+#activeFilters input {
+  width: 100%;
 }
 .staff-member {
   padding: 5px 10px;

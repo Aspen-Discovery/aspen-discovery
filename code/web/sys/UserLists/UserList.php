@@ -109,7 +109,6 @@ class UserList extends DataObject
 		$this->dateUpdated = time();
 		$result = parent::update();
 		if ($result) {
-			$this->flushUserListBrowseCategory();
 			global $memCache;
 			$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		}
@@ -158,7 +157,8 @@ class UserList extends DataObject
 				'source' => $listEntry->source,
 				'sourceId' => $listEntry->sourceId,
 				'notes' => $listEntry->notes,
-				'listEntryId' => $listEntry->id
+				'listEntryId' => $listEntry->id,
+				'listEntry' => $this->cleanListEntry(clone($listEntry)),
 			];
 			if ($sort == 'title') {
 				if ($listEntry->getRecordDriver() != null){
@@ -194,30 +194,23 @@ class UserList extends DataObject
 	}
 
 	/**
+	 * @param string $sortName How records should be sorted, if no sort is provided, will use the default for the list
 	 * @return UserListEntry[]|null
 	 */
-	function getListTitles()
+	function getListTitles($sortName = null)
 	{
 		if (isset($this->listTitles[$this->id])){
 			return $this->listTitles[$this->id];
 		}
-		$listTitles = array();
-
-		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
-		$listEntry = new UserListEntry();
-		$listEntry->listId = $this->id;
-		$listEntry->find();
-
-		while ($listEntry->fetch()){
-			$cleanedEntry = $this->cleanListEntry(clone($listEntry));
-			if ($cleanedEntry != false){
-				$listTitles[] = $cleanedEntry;
-			}
+		if ($sortName == null){
+			$sortName = $this->defaultSort;
 		}
-		$listEntry->__destruct();
-		$listEntry = null;
+		$listEntries = $this->getListEntries($sortName);
+		$this->listTitles[$this->id] = [];
+		foreach ($listEntries['listEntries'] as $listEntry){
+			$this->listTitles[$this->id][] = $listEntry['listEntry'];
+		}
 
-		$this->listTitles[$this->id] = $listTitles;
 		return $this->listTitles[$this->id];
 	}
 
@@ -530,6 +523,50 @@ class UserList extends DataObject
 	}
 
 	/**
+	 * @param int $start     position of first list item to fetch
+	 * @param int $numItems  Number of items to fetch for this result
+	 * @return array     Array of HTML to display to the user
+	 */
+	public function getBrowseRecordsRaw($start, $numItems) {
+		//Get all entries for the list
+		$listEntryInfo = $this->getListEntries();
+
+		//Trim to the number of records we want to return
+		$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);
+
+		$filteredIdsBySource = [];
+		foreach ($filteredListEntries as $listItemEntry) {
+			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)){
+				$filteredIdsBySource[$listItemEntry['source']] = [];
+			}
+			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
+		}
+
+		//Load catalog items
+		$browseRecords = [];
+		foreach ($filteredIdsBySource as $sourceType => $sourceIds){
+			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
+			if ($searchObject === false){
+				AspenError::raiseError("Unknown List Entry Source $sourceType");
+			}else{
+				$records = $searchObject->getRecords($sourceIds);
+				foreach ($records as $key => $record){
+					if ($record instanceof ListsRecordDriver){
+						$browseRecords[$key] = $record->getFields();
+					}else{
+						$browseRecords[$key] = $record;
+					}
+				}
+			}
+		}
+
+		//Properly sort items
+		ksort($browseRecords);
+
+		return $browseRecords;
+	}
+
+	/**
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results suitable for use while displaying lists
 	 *
@@ -603,19 +640,6 @@ class UserList extends DataObject
 		}
 
 		return $results;
-	}
-	private function flushUserListBrowseCategory(){
-		// Check if the list is a part of a browse category and clear the cache.
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$userListBrowseCategory = new BrowseCategory();
-		$userListBrowseCategory->sourceListId = $this->id;
-		if ($userListBrowseCategory->find()) {
-			while ($userListBrowseCategory->fetch()) {
-				$userListBrowseCategory->deleteCachedBrowseCategoryResults();
-			}
-		}
-		$userListBrowseCategory->__destruct();
-		$userListBrowseCategory = null;
 	}
 
 	public static function getUserListsForSaveForm($source, $sourceId){

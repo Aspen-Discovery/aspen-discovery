@@ -87,7 +87,7 @@ public class GroupedReindexMain {
 		if (fullReindex){
 			logEntry.addNote("Performing full reindex");
 		}
-		
+
 		//Process grouped works
 		try {
 			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, logEntry, logger);

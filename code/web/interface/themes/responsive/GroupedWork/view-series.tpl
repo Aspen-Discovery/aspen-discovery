@@ -12,7 +12,7 @@
 	{/if}
 	{if $seriesAuthors}
 	<div class="row">
-		<div class="result-label col-tn-3">Author: </div>
+		<div class="result-label col-tn-3">{translate text="Author"}</div>
 		<div class="col-tn-9 result-value notranslate">
 			{foreach from=$seriesAuthors item=author}
 				<span class="sidebarValue">{$author} </span>
@@ -26,7 +26,7 @@
 	<div class="result-head">
 		<div id="searchInfo">
 			{if !$recordCount}
-				<p>Sorry, we could not find series information for this title.</p>
+				<p>{translate text="Sorry, we could not find series information for this title."}</p>
 			{/if}
 		</div>
 	</div>

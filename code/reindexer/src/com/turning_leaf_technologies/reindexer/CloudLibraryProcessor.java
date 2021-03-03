@@ -112,6 +112,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				getAvailabilityStmt.setString(1, identifier);
 				ResultSet availabilityRS = getAvailabilityStmt.executeQuery();
 				if (availabilityRS.next()) {
+					long settingId = availabilityRS.getLong("settingId");
 					int totalCopies = availabilityRS.getInt("totalCopies");
 					itemInfo.setNumCopies(totalCopies);
 					int totalLoanCopies = availabilityRS.getInt("totalLoanCopies");
@@ -125,13 +126,15 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 						boolean okToAdd = false;
 						CloudLibraryScope cloudLibraryScope = scope.getCloudLibraryScope();
 						if (cloudLibraryScope != null) {
-							if (cloudLibraryScope.isIncludeEBooks() && formatCategory.equals("eBook")) {
-								okToAdd = true;
-							} else if (cloudLibraryScope.isIncludeEAudiobook() && primaryFormat.equals("eAudiobook")) {
-								okToAdd = true;
-							}
-							if (cloudLibraryScope.isRestrictToChildrensMaterial() && !isChildrens) {
-								okToAdd = false;
+							if (cloudLibraryScope.getSettingId() == settingId) {
+								if (cloudLibraryScope.isIncludeEBooks() && formatCategory.equals("eBook")) {
+									okToAdd = true;
+								} else if (cloudLibraryScope.isIncludeEAudiobook() && primaryFormat.equals("eAudiobook")) {
+									okToAdd = true;
+								}
+								if (cloudLibraryScope.isRestrictToChildrensMaterial() && !isChildrens) {
+									okToAdd = false;
+								}
 							}
 						}
 						if (okToAdd) {

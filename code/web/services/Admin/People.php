@@ -15,15 +15,21 @@ class Admin_People extends ObjectEditor
 	function getPageTitle(){
 		return 'People';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new Person();
-		$object->orderBy('lastName, firstName');
+		$object->orderBy($this->getSort() . ', lastName asc, firstName asc');
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
 			$objectList[$object->personId] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'lastName asc';
 	}
 	function getObjectStructure(){
 		$person = new Person();

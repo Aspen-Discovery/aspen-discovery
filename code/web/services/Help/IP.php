@@ -10,7 +10,7 @@ class Help_IP extends Action
 		$ip_address = IPAddress::getActiveIp();
 		$interface->assign('ip_address', $ip_address);
 
-		$this->display('ip.tpl', 'IP Address');
+		$this->display('ip.tpl', 'IP Address', '');
 	}
 
 	function getBreadcrumbs()

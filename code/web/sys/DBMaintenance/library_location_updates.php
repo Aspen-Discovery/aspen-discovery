@@ -1959,6 +1959,14 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+		'layout_settings_remove_sidebarMenuButtonText' => [
+			'title' => 'Layout Settings - Sidebar Menu Button Text',
+			'description' => 'Remove Sidebar Menu Button Text since it is no longer used',
+			'sql' => [
+				'ALTER TABLE layout_settings DROP COLUMN sidebarMenuButtonText'
+			]
+		],
+
 		'grouped_work_display_settings' => [
 			'title' => 'Create Grouped Work Display Settings',
 			'description' => 'Create tables to store display settings in a separate table to make administration easier',
@@ -2296,6 +2304,31 @@ function getLibraryLocationUpdates(){
 			'description' => 'Add Notes to show on library login forms',
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN loginNotes MEDIUMTEXT'
+			]
+		],
+
+		'library_allow_remember_pickup_location' => [
+			'title' => 'Library Allow Remember Pickup Location',
+			'description' => 'Add an option for whether or not users can remember their preferred pickup location',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowRememberPickupLocation TINYINT(1) DEFAULT 1'
+			]
+		],
+
+		'library_allow_home_library_updates' => [
+			'title' => 'Library - Allow Home Library Updates',
+			'description' => 'Add an option to determine whether or not the patron can update their home library',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowHomeLibraryUpdates TINYINT(1) DEFAULT 1',
+				'UPDATE library set allowHomeLibraryUpdates = allowProfileUpdates'
+			]
+		],
+
+		'library_rename_showPickupLocationInProfile' => [
+			'title' => 'Library rename showPickupLocationInProfile',
+			'description' => 'Rename showPickupLocationInProfile to allowPickupLocationUpdates TINYINT(1) DEFAULT 1',
+			'sql' => [
+				"ALTER TABLE library CHANGE COLUMN showPickupLocationInProfile allowPickupLocationUpdates TINYINT(1) DEFAULT 0"
 			]
 		]
 	);
@@ -2654,7 +2687,7 @@ function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInsp
 function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
 	global $aspen_db;
 
-	$uniqueLayoutSettingsSQL = "SELECT libraryId as id, displayName, showSidebarMenu, sidebarMenuButtonText, useHomeLinkInBreadcrumbs, useHomeLinkForLogo, homeLinkText, showLibraryHoursAndLocationsLink From library";
+	$uniqueLayoutSettingsSQL = "SELECT libraryId as id, displayName, showSidebarMenu, useHomeLinkInBreadcrumbs, useHomeLinkForLogo, homeLinkText, showLibraryHoursAndLocationsLink From library";
 
 	$uniqueLayoutSettingsRS = $aspen_db->query($uniqueLayoutSettingsSQL, PDO::FETCH_ASSOC);
 	$uniqueLayoutSettingsRow = $uniqueLayoutSettingsRS->fetch();
@@ -2663,7 +2696,6 @@ function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspectio
 		//Check to see if we already have a settings group with this information
 		$layoutSetting = new LayoutSetting();
 		$layoutSetting->showSidebarMenu = $uniqueLayoutSettingsRow['showSidebarMenu'];
-		$layoutSetting->sidebarMenuButtonText = $uniqueLayoutSettingsRow['sidebarMenuButtonText'];
 		$layoutSetting->useHomeLinkInBreadcrumbs = $uniqueLayoutSettingsRow['useHomeLinkInBreadcrumbs'];
 		$layoutSetting->useHomeLinkForLogo = $uniqueLayoutSettingsRow['useHomeLinkForLogo'];
 		$layoutSetting->homeLinkText = $uniqueLayoutSettingsRow['homeLinkText'];

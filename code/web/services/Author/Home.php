@@ -212,6 +212,13 @@ class Author_Home extends ResultsAction
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
 		$interface->assign('filterList', $searchObject->getFilterList());
 
+		// Set Show in Search Results Main Details Section options for template
+		// (needs to be set before moreDetailsOptions)
+		global $library;
+		foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
+			$interface->assign($detailOption, true);
+		}
+
 		$this->setShowCovers();
 
 		// Process Search

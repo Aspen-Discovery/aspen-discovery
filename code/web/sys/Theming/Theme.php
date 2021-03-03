@@ -306,8 +306,8 @@ class Theme extends DataObject
 
 	static function getObjectStructure()
 	{
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Themes'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Themes'));
 
 		//Load Valid Fonts
 		$validHeadingFonts = [
@@ -326,6 +326,7 @@ class Theme extends DataObject
 			'PT Sans',
 			'Raleway',
 			'Roboto',
+			'Rubik',
 			'Source Sans Pro',
 			'Ubuntu',
 		];
@@ -348,6 +349,7 @@ class Theme extends DataObject
 			'Roboto',
 			'Roboto Condensed',
 			'Roboto Slab',
+			'Rubik',
 			'Source Sans Pro',
 			'Ubuntu',
 		];
@@ -364,7 +366,7 @@ class Theme extends DataObject
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id', 'uniqueProperty' => true],
 			'themeName' => ['property' => 'themeName', 'type' => 'text', 'label' => 'Theme Name', 'description' => 'The Name of the Theme', 'maxLength' => 50, 'required' => true, 'uniqueProperty' => true],
 			'extendsTheme' => ['property' => 'extendsTheme', 'type' => 'enum', 'values' => $themesToExtend, 'label' => 'Extends Theme', 'description' => 'A theme that this overrides (leave blank if none is overridden)', 'maxLength' => 50, 'required' => false],
-			'logoName' => ['property' => 'logoName', 'type' => 'image', 'label' => 'Logo (500px x 100px max)', 'description' => 'The logo for use in the header', 'required' => false, 'maxWidth' => 500, 'maxHeight' => 100, 'hideInLists' => true],
+			'logoName' => ['property' => 'logoName', 'type' => 'image', 'label' => 'Logo (750px x 150px max) - (250 x 100px max if showing library name in header)', 'description' => 'The logo for use in the header', 'required' => false, 'maxWidth' => 750, 'maxHeight' => 150, 'hideInLists' => true],
 			'favicon' => ['property' => 'favicon', 'type' => 'image', 'label' => 'favicon (32px x 32px max)', 'description' => 'The icon for use in the tab', 'required' => false, 'maxWidth' => 32, 'maxHeight' => 32, 'hideInLists' => true],
 			//Overall page colors
 			'pageBackgroundColor' => ['property' => 'pageBackgroundColor', 'type' => 'color', 'label' => 'Page Background Color', 'description' => 'Page Background Color behind all content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'serverValidation' => 'validateColorContrast'],
@@ -545,7 +547,7 @@ class Theme extends DataObject
 					'type' => 'multiSelect',
 					'listStyle' => 'checkboxSimple',
 					'label' => 'Libraries',
-					'description' => 'Define libraries that use this browse category group',
+					'description' => 'Define libraries that use this theme',
 					'values' => $libraryList,
 				],
 
@@ -554,7 +556,7 @@ class Theme extends DataObject
 					'type' => 'multiSelect',
 					'listStyle' => 'checkboxSimple',
 					'label' => 'Locations',
-					'description' => 'Define locations that use this browse category group',
+					'description' => 'Define locations that use this theme',
 					'values' => $locationList,
 				],
 			]]
@@ -1154,7 +1156,7 @@ class Theme extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Themes'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$library = new Library();
 				$library->libraryId = $libraryId;
@@ -1179,7 +1181,7 @@ class Theme extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Themes'));
 			/**
 			 * @var int $locationId
 			 * @var Location $location

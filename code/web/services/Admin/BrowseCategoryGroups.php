@@ -19,20 +19,27 @@ class Admin_BrowseCategoryGroups extends ObjectEditor
 	function canDelete(){
 		return UserAccount::userHasPermission('Administer All Browse Categories');
 	}
-	function getAllObjects(){
-		$browseCategory = new BrowseCategoryGroup();
-		$browseCategory->orderBy('name');
+	function getAllObjects($page, $recordsPerPage){
+		$object = new BrowseCategoryGroup();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$browseCategory->id = $library->browseCategoryGroupId;
+			$object->id = $library->browseCategoryGroupId;
 		}
-		$browseCategory->find();
+		$object->find();
 		$list = array();
-		while ($browseCategory->fetch()){
-			$list[$browseCategory->id] = clone $browseCategory;
+		while ($object->fetch()){
+			$list[$object->id] = clone $object;
 		}
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'name asc';
+	}
+
 	function getObjectStructure(){
 		return BrowseCategoryGroup::getObjectStructure();
 	}

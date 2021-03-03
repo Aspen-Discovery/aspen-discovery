@@ -3,7 +3,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class Locations extends ObjectEditor
+class Admin_Locations extends ObjectEditor
 {
 
 	function getObjectType(){
@@ -15,27 +15,34 @@ class Locations extends ObjectEditor
 	function getPageTitle(){
 		return 'Locations (Branches)';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
-		$location = new Location();
-		$location->orderBy('displayName');
+		$object = new Location();
+		$object->orderBy($this->getSort());
 		if (!UserAccount::userHasPermission('Administer All Locations')){
 			if (!UserAccount::userHasPermission('Administer Home Library Locations')){
 				//Scope to just locations for the user based on home library
 				$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
-				$location->libraryId = $patronLibrary->libraryId;
+				$object->libraryId = $patronLibrary->libraryId;
 			}else{
-				$location->locationId = $user->homeLocationId;
+				$object->locationId = $user->homeLocationId;
 			}
 		}
-		$location->find();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->find();
 		$locationList = array();
-		while ($location->fetch()){
-			$locationList[$location->locationId] = clone $location;
+		while ($object->fetch()){
+			$locationList[$object->locationId] = clone $object;
 		}
 		return $locationList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'displayName asc';
 	}
 
 	function getObjectStructure(){

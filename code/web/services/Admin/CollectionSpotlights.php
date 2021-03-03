@@ -17,23 +17,30 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 	function getPageTitle(){
 		return 'Collection Spotlights';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
-		$collectionSpotlight = new CollectionSpotlight();
+		$object = new CollectionSpotlight();
 		if (!UserAccount::userHasPermission('Administer All Collection Spotlights')){
 			$patronLibrary = Library::getPatronHomeLibrary();
-			$collectionSpotlight->libraryId = $patronLibrary->libraryId;
+			$object->libraryId = $patronLibrary->libraryId;
 		}
-		$collectionSpotlight->orderBy('name');
-		$collectionSpotlight->find();
-		while ($collectionSpotlight->fetch()){
-			$list[$collectionSpotlight->id] = clone $collectionSpotlight;
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->find();
+		while ($object->fetch()){
+			$list[$object->id] = clone $object;
 		}
 
 		return $list;
 	}
-    function getObjectStructure(){
+	function getDefaultSort()
+	{
+		return 'name asc';
+	}
+
+	function getObjectStructure(){
 		return CollectionSpotlight::getObjectStructure();
 	}
 	function getPrimaryKeyColumn(){

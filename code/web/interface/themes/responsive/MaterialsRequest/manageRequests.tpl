@@ -140,7 +140,7 @@
 										{* Date Columns*}
 										<td>{$request->$column|date_format}</td>
 									{elseif $column == 'createdBy'}
-										<td>{$request->lastname}, {$request->firstname}<br>{$request->barcode}</td>
+										<td>{$request->getCreatedByLastName()}, {$request->getCreatedByFirstName()}<br>{$request->getCreatedByUserBarcode()}</td>
 
 									{elseif $column == 'emailSent' || $column == 'holdsCreated' || $column == 'illItem'}
 										{* Simple Boolean Columns *}
@@ -157,7 +157,7 @@
 									{elseif $column == 'bookmobileStop'}
 										<td>{$request->bookmobileStop}</td>
 									{elseif $column == 'assignedTo'}
-										<td>{$request->assignedTo}</td>
+										<td>{$request->getAssigneeName()}</td>
 {*
 									{elseif $column == 'id'}
 										<td>{$request->id}</td>

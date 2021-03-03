@@ -53,6 +53,9 @@ var AspenDiscovery = (function(){
 
 		changePageSize: function(){
 			var url = window.location.href;
+			if (url.match(/[&?]page=\d+/)) {
+				url = url.replace(/page=\d+/, "page=1");
+			}
 			if (url.match(/[&?]pageSize=\d+/)) {
 				url = url.replace(/pageSize=\d+/, "pageSize=" + $("#pageSize").val());
 			} else {
@@ -63,6 +66,36 @@ var AspenDiscovery = (function(){
 				}
 			}
 			window.location.href = url;
+		},
+
+		changePage: function(){
+			var url = window.location.href;
+			if (url.match(/[&?]page=\d+/)) {
+				url = url.replace(/page=\d+/, "page=" + $("#page").val());
+			} else {
+				if (url.indexOf("?", 0) > 0){
+					url = url+ "&page=" + $("#page").val();
+				}else{
+					url = url+ "?page=" + $("#page").val();
+				}
+			}
+			window.location.href = url;
+			return false;
+		},
+
+		changeSort: function(){
+			var url = window.location.href;
+			if (url.match(/[&?]sort=([A-Za-z_]|%20)+/)) {
+				url = url.replace(/sort=([A-Za-z_]|%20)+/, "sort=" + $("#sort").val());
+			} else {
+				if (url.indexOf("?", 0) > 0){
+					url = url+ "&sort=" + $("#sort").val();
+				}else{
+					url = url+ "?sort=" + $("#sort").val();
+				}
+			}
+			window.location.href = url;
+			return false;
 		},
 
 		closeLightbox: function(callback){

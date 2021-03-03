@@ -15,15 +15,21 @@ class Admin_Marriages extends ObjectEditor
 	function getPageTitle(){
 		return 'Marriages';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new Marriage();
-		$object->orderBy('marriageDate');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
 			$objectList[$object->marriageId] = clone $object;
 		}
 		return $objectList;
+	}
+	function getDefaultSort()
+	{
+		return 'marriageDate asc';
 	}
     function getObjectStructure(){
 		return Marriage::getObjectStructure();

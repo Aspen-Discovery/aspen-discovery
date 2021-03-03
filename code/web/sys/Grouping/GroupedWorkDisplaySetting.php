@@ -98,8 +98,8 @@ class GroupedWorkDisplaySetting extends DataObject
 	private $_locations;
 
 	static function getObjectStructure(){
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 
 		$facetGroups = [];
 		$facetGroup = new GroupedWorkFacetGroup();
@@ -419,7 +419,7 @@ class GroupedWorkDisplaySetting extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$library = new Library();
 				$library->libraryId = $libraryId;
@@ -444,7 +444,7 @@ class GroupedWorkDisplaySetting extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 			/**
 			 * @var int $locationId
 			 * @var Location $location

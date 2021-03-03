@@ -382,6 +382,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 								//There are several reserve statuses that we don't care about, just ignore silently.
 								return null;
 						}
+					}else if (subfield == '0'){
+						//Everything should be treated as withdrawn if this field is set
+						return "Withdrawn";
 					}
 					String status = "|" + subfield + "-" + fieldData;
 					if (!additionalStatuses.contains(status)){
@@ -479,6 +482,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String sourceType = null;
 		if (itemField.getSubfield('e') != null){
 			sourceType = itemField.getSubfield('e').getData();
+			if (sourceType.toLowerCase().equals("marcexpress")){
+				sourceType = "OverDrive";
+			}
 		}else{
 			List<DataField> urlFields = record.getDataFields("856");
 			for (DataField urlDataField : urlFields) {

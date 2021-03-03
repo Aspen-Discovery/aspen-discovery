@@ -16,9 +16,11 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 	function getPageTitle(){
 		return 'Collection Spotlight Lists';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$object = new CollectionSpotlightList();
-		$object->orderBy('weight');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$list = array();
 		while ($object->fetch()){
@@ -26,6 +28,11 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 		}
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'weight asc';
+	}
+
 	function getObjectStructure(){
 		return CollectionSpotlightList::getObjectStructure();
 	}

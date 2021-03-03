@@ -19,8 +19,11 @@ class Axis360Driver extends AbstractEContentDriver
 		return false;
 	}
 
-	private function getAxis360AccessToken() {
-		$settings = $this->getSettings();
+	private function getAxis360AccessToken(User $user = null) {
+		$settings = $this->getSettings($user);
+		if ($settings == false){
+			return false;
+		}
 		$now = time();
 		if ($this->accessToken == null || $this->accessTokenExpiration <= $now){
 			$authentication = $settings->vendorUsername . ':' . $settings->vendorPassword . ':' . $settings->libraryPrefix;
@@ -65,8 +68,11 @@ class Axis360Driver extends AbstractEContentDriver
 			return $this->checkouts[$user->id];
 		}
 		$checkouts = [];
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		$settings = $this->getSettings($user);
+		if ($settings == false){
+			return $checkouts;
+		}
+		if ($this->getAxis360AccessToken($user)){
 			$checkoutsUrl = $settings->apiUrl . "/Services/VendorAPI/availability/v3_1";
 			$params = [
 				'statusFilter' => 'CHECKOUT',
@@ -187,8 +193,12 @@ class Axis360Driver extends AbstractEContentDriver
 			'available' => array(),
 			'unavailable' => array()
 		);
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		$settings = $this->getSettings($user);
+		if ($settings == false){
+			return $holds;
+		}
+
+		if ($this->getAxis360AccessToken($user)){
 			$holdUrl = $settings->apiUrl . "/Services/VendorAPI/GetHolds/{$user->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -228,8 +238,8 @@ class Axis360Driver extends AbstractEContentDriver
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
-		if ($this->getAxis360AccessToken()) {
-			$settings = $this->getSettings();
+		if ($this->getAxis360AccessToken($patron)) {
+			$settings = $this->getSettings($patron);
 			$holdUrl = $settings->apiUrl . "/Services/VendorAPI/addToHold/v2/$recordId/" . urlencode($patron->email) . "/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -272,8 +282,8 @@ class Axis360Driver extends AbstractEContentDriver
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		if ($this->getAxis360AccessToken($patron)){
+			$settings = $this->getSettings($patron);
 			$cancelHoldUrl = $settings->apiUrl . "/Services/VendorAPI/removeHold/v2/$recordId/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -321,9 +331,9 @@ class Axis360Driver extends AbstractEContentDriver
 				'numUnavailableHolds' => 0,
 				'numHolds' => 0,
 			);
-			if ($this->getAxis360AccessToken()) {
+			if ($this->getAxis360AccessToken($patron)) {
 				require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-				$settings = $this->getSettings();
+				$settings = $this->getSettings($patron);
 				$checkoutsUrl = $settings->apiUrl . "/Services/VendorAPI/availability/v3_1";
 				$params = [
 					'patronId' => $patron->getBarcode()
@@ -373,8 +383,8 @@ class Axis360Driver extends AbstractEContentDriver
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		if ($this->getAxis360AccessToken($user)){
+			$settings = $this->getSettings($user);
 			$params = [
 				'titleId' => $titleId,
 				'patronId' => $user->getBarcode()
@@ -409,6 +419,8 @@ class Axis360Driver extends AbstractEContentDriver
 					$this->incrementStat('numCheckouts');
 					$this->trackUserUsageOfAxis360($user);
 					$this->trackRecordCheckout($titleId);
+					$user->lastReadingHistoryUpdate = 0;
+					$user->update();
 				}
 			}
 		}else{
@@ -417,11 +429,31 @@ class Axis360Driver extends AbstractEContentDriver
 		return $result;
 	}
 
-	private function getSettings(){
+	private function getSettings(User $user = null){
+		require_once ROOT_DIR . '/sys/Axis360/Axis360Scope.php';
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
-		$settings = new Axis360Setting();
-		if ($settings->find(true)) {
-			return $settings;
+		$activeLibrary = null;
+		if ($user != null){
+			$activeLibrary = $user->getHomeLibrary();
+		}
+		if ($activeLibrary == null){
+			global $library;
+			$activeLibrary = $library;
+		}
+		$scope = new Axis360Scope();
+		$scope->id = $activeLibrary->axis360ScopeId;
+		if ($activeLibrary->axis360ScopeId > 0) {
+			if ($scope->find(true)) {
+				$settings = new Axis360Setting();
+				$settings->id = $scope->settingId;
+				if ($settings->find(true)) {
+					return $settings;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
 		}else{
 			return false;
 		}
@@ -438,6 +470,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
+		$userUsage->instance = $_SERVER['SERVER_NAME'];
 
 		if ($userUsage->find(true)) {
 			$userUsage->usageCount++;
@@ -460,6 +493,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$product->axis360Id = $recordId;
 		if ($product->find(true)) {
 			$recordUsage->axis360Id = $product->axis360Id;
+			$recordUsage->instance = $_SERVER['SERVER_NAME'];
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
 			if ($recordUsage->find(true)) {
@@ -484,6 +518,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$product = new Axis360Title();
 		$product->axis360Id = $recordId;
 		if ($product->find(true)){
+			$recordUsage->instance = $_SERVER['SERVER_NAME'];
 			$recordUsage->axis360Id = $product->axis360Id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
@@ -587,8 +622,8 @@ class Axis360Driver extends AbstractEContentDriver
 	function freezeHold(User $patron, $recordId)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		if ($this->getAxis360AccessToken($patron)){
+			$settings = $this->getSettings($patron);
 			$freezeHoldUrl = $settings->apiUrl . "/Services/VendorAPI/suspendHold/v2/$recordId/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -618,8 +653,8 @@ class Axis360Driver extends AbstractEContentDriver
 	function thawHold(User $patron, $recordId)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		if ($this->getAxis360AccessToken($patron)){
+			$settings = $this->getSettings($patron);
 			$freezeHoldUrl = $settings->apiUrl . "/Services/VendorAPI/activateHold/v2/$recordId/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -648,10 +683,9 @@ class Axis360Driver extends AbstractEContentDriver
 
 	private function incrementStat(string $fieldName)
 	{
-		global $instanceName;
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
 		$axis360Stats = new Axis360Stats();
-		$axis360Stats->instance = $instanceName;
+		$axis360Stats->instance = $_SERVER['SERVER_NAME'];
 		$axis360Stats->year = date('Y');
 		$axis360Stats->month = date('n');
 		if ($axis360Stats->find(true)) {

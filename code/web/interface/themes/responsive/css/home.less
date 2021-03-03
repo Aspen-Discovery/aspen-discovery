@@ -46,9 +46,6 @@
   background-color: @home-search-top-color;
   //background: linear-gradient(to bottom, @home-search-top-color, @home-search-bottom-color);
   padding: 15px 0;
-  @media (max-width: @screen-sm-max){
-    display: none;
-  }
   #searchForm {
     .row {
       // undo margin-adjusting for this row.
@@ -96,8 +93,15 @@
     line-height: 20px;
   }
 
+  #lookfor-label {
+    height: 34px;
+    width: 40px;
+    text-align: center;
+  }
   #lookfor {
     height: 34px;
+    width: calc(100% - 35px);
+    display: inline-block;
   }
   .searchSourceHorizontal,
   .searchTypeHorizontal {

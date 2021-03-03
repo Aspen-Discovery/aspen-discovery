@@ -271,9 +271,35 @@ function getRBdigitalUpdates() {
 				"UPDATE modules set logClassPath='/sys/RBdigital/RBdigitalExportLogEntry.php', logClassName='RBdigitalExportLogEntry' WHERE name='RBdigital'",
 			]
 		],
+
+		'rbdigital_module_add_settings' => [
+			'title' => 'Add Settings to RBdigital module',
+			'description' => 'Add Settings to RBdigital module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/RBdigital/RBdigitalSetting.php', settingsClassName = 'RBdigitalSetting' WHERE name = 'Hoopla'"
+			]
+		],
+
+		'rbdigital_usage_add_instance' => [
+			'title' => 'RBdigital Usage - Instance Information',
+			'description' => 'Add Instance Information to RBdigital Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE rbdigital_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE rbdigital_record_usage DROP INDEX rbdigitalId',
+				'ALTER TABLE rbdigital_record_usage ADD UNIQUE INDEX (instance, rbdigitalId, year, month)',
+				'ALTER TABLE rbdigital_magazine_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE rbdigital_magazine_usage DROP INDEX magazineId',
+				'ALTER TABLE rbdigital_magazine_usage ADD UNIQUE INDEX (instance, magazineId, year, month)',
+				'ALTER TABLE user_rbdigital_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_rbdigital_usage DROP INDEX userId',
+				'ALTER TABLE user_rbdigital_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			]
+		],
 	);
 }
 
+/** @noinspection PhpUnused */
 function updateRbDigitalScopes(){
 	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
 	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
@@ -288,6 +314,7 @@ function updateRbDigitalScopes(){
 	}
 }
 
+/** @noinspection PhpUnused */
 function updateRbDigitalAvailability(&$update){
 	require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
 	$rbDigitalSettings = new RBdigitalSetting();

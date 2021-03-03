@@ -40,6 +40,7 @@ public class Axis360ExportMain {
 	private static PreparedStatement deleteAxis360ItemStmt;
 	private static PreparedStatement deleteAxis360AvailabilityStmt;
 	private static PreparedStatement getAllExistingAxis360ItemsStmt;
+	private static PreparedStatement getAspenIdByAxis360IdStmt;
 	private static PreparedStatement updateAxis360AvailabilityStmt;
 	private static PreparedStatement getExistingAxis360AvailabilityStmt;
 	private static PreparedStatement getRecordsToReloadStmt;
@@ -75,7 +76,6 @@ public class Axis360ExportMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
-		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 
@@ -141,11 +141,6 @@ public class Axis360ExportMain {
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
-				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
-				disconnectDatabase(aspenConn);
-				break;
-			}
-			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
 				IndexingUtils.markNightlyIndexNeeded(aspenConn, logger);
 				disconnectDatabase(aspenConn);
 				break;
@@ -220,7 +215,7 @@ public class Axis360ExportMain {
 		int numDeleted = 0;
 		try {
 			for (Axis360Title axis360Title : existingRecords.values()) {
-				if (!axis360Title.isDeleted()) {
+				if (!axis360Title.isDeleted() && !axis360Title.isProcessed()) {
 					//Remove Axis360 availability
 					deleteAxis360AvailabilityStmt.setString(1, axis360Title.getAxis360Id());
 					deleteAxis360AvailabilityStmt.setLong(2, setting.getId());
@@ -235,7 +230,7 @@ public class Axis360ExportMain {
 							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 						} else if (result.deleteWork) {
 							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+							getGroupedWorkIndexer().deleteRecord(result.permanentId);
 						}
 					}else{
 						//Reindex the work
@@ -428,7 +423,7 @@ public class Axis360ExportMain {
 							logger.debug("Updating item details");
 							metadataChanged = true;
 						}
-						existingRecords.remove(axis360Id);
+						existingTitle.setProcessed(true);
 					} else {
 						logger.debug("Adding record " + axis360Id);
 						metadataChanged = true;
@@ -461,6 +456,11 @@ public class Axis360ExportMain {
 								availabilityChanged = true;
 							}
 						} else {
+							//This happens when we find a new title.  The id is inserted below , the following should never trigger, but it's a safety check
+							if (!metadataChanged){
+								metadataChanged = true;
+								logEntry.incErrors("Did not find aspen id for axis360 id " + axis360Id + " but we thought it should exist");
+							}
 							availabilityChanged = true;
 						}
 					} else {
@@ -470,7 +470,6 @@ public class Axis360ExportMain {
 					}
 
 					String primaryAuthor = getFieldValue(itemDetails, "author");
-
 
 					if (metadataChanged || setting.doFullReload()) {
 						logEntry.incMetadataChanges();
@@ -486,6 +485,7 @@ public class Axis360ExportMain {
 						updateAxis360ItemStmt.setString(8, itemDetailsAsString);
 						updateAxis360ItemStmt.setLong(9, startTimeForLogging);
 						updateAxis360ItemStmt.setLong(10, startTimeForLogging);
+
 						int result = updateAxis360ItemStmt.executeUpdate();
 						if (result == 1) {
 							//A result of 1 indicates a new row was inserted
@@ -493,6 +493,29 @@ public class Axis360ExportMain {
 							ResultSet generatedKeys = updateAxis360ItemStmt.getGeneratedKeys();
 							if (generatedKeys.next()) {
 								aspenId = generatedKeys.getLong(1);
+								existingTitle = new Axis360Title(aspenId, axis360Id, itemChecksum, false);
+								existingTitle.setProcessed(true);
+							}else{
+								getAspenIdByAxis360IdStmt.setString(1, axis360Id);
+								ResultSet getAspenIdByAxis360IdRS = getAspenIdByAxis360IdStmt.executeQuery();
+								if (getAspenIdByAxis360IdRS.next()){
+									aspenId = getAspenIdByAxis360IdRS.getLong("id");
+								}else {
+									//This happens when a title exists within a different collection, look it up based on ID
+									logEntry.incErrors("Did not get a generated key when inserting title " + axis360Id);
+								}
+								getAspenIdByAxis360IdRS.close();
+							}
+						}else{
+							if (aspenId == -1){
+								ResultSet getAspenIdByAxis360IdRS = getAspenIdByAxis360IdStmt.executeQuery();
+								if (getAspenIdByAxis360IdRS.next()){
+									aspenId = getAspenIdByAxis360IdRS.getLong("id");
+								}else {
+									//This happens when a title exists within a different collection, look it up based on ID
+									logEntry.addNote("The existing title had metadata updated, but we did not find an existing record for it");
+								}
+								getAspenIdByAxis360IdRS.close();
 							}
 						}
 					}
@@ -501,7 +524,7 @@ public class Axis360ExportMain {
 						JSONObject availabilityInfo = itemAvailability.getJSONObject("Availability");
 						logEntry.incAvailabilityChanges();
 						if (aspenId == -1){
-							logEntry.incErrors("Did not get an id for the title prior to updating availability");
+							logEntry.incErrors("Did not get an id for the title " + axis360Id + " prior to updating availability, this implies a new title that failed to insert");
 						}else {
 							updateAxis360AvailabilityStmt.setLong(1, aspenId);
 							updateAxis360AvailabilityStmt.setLong(2, setting.getId());
@@ -647,6 +670,7 @@ public class Axis360ExportMain {
 								"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
 								"ON DUPLICATE KEY UPDATE isbn = VALUES(isbn), title = VALUES(title), subtitle = VALUES(subtitle), primaryAuthor = VALUES(primaryAuthor), formatType = VALUES(formatType), " +
 								"rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange), deleted = 0", PreparedStatement.RETURN_GENERATED_KEYS);
+				getAspenIdByAxis360IdStmt = aspenConn.prepareStatement("SELECT * from axis360_title where axis360Id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				deleteAxis360AvailabilityStmt = aspenConn.prepareStatement("DELETE FROM axis360_title_availability where titleId = ? and settingId = ?");
 				deleteAxis360ItemStmt = aspenConn.prepareStatement("UPDATE axis360_title SET deleted = 1 where id = ?");
 				getExistingAxis360AvailabilityStmt = aspenConn.prepareStatement("SELECT id, rawChecksum from axis360_title_availability WHERE titleId = ? and settingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);

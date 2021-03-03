@@ -14,16 +14,23 @@ class Admin_Variables extends ObjectEditor{
 	function getPageTitle(){
 		return 'System Variables';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$variableList = array();
 
-		$variable = new Variable();
-		$variable->orderBy('name');
-		$variable->find();
-		while ($variable->fetch()){
-			$variableList[$variable->id] = clone $variable;
+		$object = new Variable();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->find();
+		while ($object->fetch()){
+			$variableList[$object->id] = clone $object;
 		}
 		return $variableList;
+	}
+
+	function getDefaultSort()
+	{
+		return 'name asc';
 	}
 	function getObjectStructure(){
 		return Variable::getObjectStructure();
@@ -139,5 +146,15 @@ class Admin_Variables extends ObjectEditor{
 	function canView()
 	{
 		return UserAccount::userHasPermission('Administer System Variables');
+	}
+
+	function canBatchEdit()
+	{
+		return false;
+	}
+
+	function canCompare()
+	{
+		return false;
 	}
 }

@@ -14,17 +14,19 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 	function getPageTitle(){
 		return 'Claims of Authorship for Archive Materials';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage){
 		$list = array();
 
 		$object = new ClaimAuthorshipRequest();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasPermission('View Archive Authorship Claims')){
 			$homeLibrary = $user->getHomeLibrary();
 			$archiveNamespace = $homeLibrary->archiveNamespace;
 			$object->whereAdd("pid LIKE '{$archiveNamespace}:%'");
 		}
-		$object->orderBy('dateRequested desc');
+		$object->orderBy($this->getSort());
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
@@ -32,6 +34,11 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 
 		return $list;
 	}
+	function getDefaultSort()
+	{
+		return 'dateRequested desc';
+	}
+
 	function getObjectStructure(){
 		return ClaimAuthorshipRequest::getObjectStructure();
 	}

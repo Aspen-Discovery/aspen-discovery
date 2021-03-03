@@ -23,7 +23,7 @@
 						<td>{$logEntry->numDeleted}</td>
 						<td>{$logEntry->numUpdated}</td>
 						<td>{$logEntry->numSkipped}</td>
-						<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'sideload');">Show Notes</a></td>
+						<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'open_archives');">Show Notes</a></td>
 					</tr>
 				{/foreach}
 				</tbody>

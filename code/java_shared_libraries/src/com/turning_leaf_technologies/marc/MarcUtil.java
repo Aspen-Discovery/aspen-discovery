@@ -1,11 +1,15 @@
 package com.turning_leaf_technologies.marc;
 
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 import com.turning_leaf_technologies.strings.StringUtils;
+import org.marc4j.MarcPermissiveStreamReader;
+import org.marc4j.MarcStreamReader;
 import org.marc4j.MarcStreamWriter;
 import org.marc4j.marc.*;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -469,7 +473,7 @@ public class MarcUtil {
 
 	private static SimpleDateFormat oo8DateFormat = new SimpleDateFormat("yyMMdd");
 	private static SimpleDateFormat oo5DateFormat = new SimpleDateFormat("yyyyMMdd");
-	public static Long getDateAddedForRecord(Record marcRecord, String recordNumber, String source, File individualFile, Logger logger) {
+	public synchronized static Long getDateAddedForRecord(Record marcRecord, String recordNumber, String source, File individualFile, Logger logger) {
 		//Set first detection date based on the creation date of the file
 		Long timeAdded = null;
 		if (individualFile.exists()){
@@ -518,5 +522,50 @@ public class MarcUtil {
 			timeAdded = new Date().getTime() / 1000;
 		}
 		return timeAdded;
+	}
+
+	public static Record readIndividualRecord(File marcFile, BaseLogEntry logEntry){
+		if (!marcFile.exists()){
+			logEntry.incErrors("Could not find marcFile " + marcFile.getAbsolutePath());
+			return null;
+		}
+		try {
+			FileInputStream marcFileStream = new FileInputStream(marcFile);
+
+			MarcStreamReader streamReader = new MarcStreamReader(marcFileStream);
+			if (streamReader.hasNext()) {
+				Record marcRecord = streamReader.next();
+				marcFileStream.close();
+				return marcRecord;
+			} else {
+				marcFileStream.close();
+			}
+		}catch (Exception e){
+			logEntry.addNote("Could not read marc file " + marcFile.getAbsolutePath() + e.toString());
+		}
+
+		//If we got here, it didn't read successfully.  Try again using the Permissinve Reader
+		//The Permissive Reader allows reading large files.
+		return readIndividualRecordPermissive(marcFile, logEntry);
+	}
+
+	private static Record readIndividualRecordPermissive(File marcFile, BaseLogEntry logEntry){
+		try {
+			FileInputStream marcFileStream = new FileInputStream(marcFile);
+
+			//Should already be UTF-8, but allow reading large files
+			MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, false);
+			if (streamReader.hasNext()) {
+				Record marcRecord = streamReader.next();
+				marcFileStream.close();
+				return marcRecord;
+			} else {
+				marcFileStream.close();
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Could not read marc file " + marcFile.getAbsolutePath(), e);
+		}
+
+		return null;
 	}
 }

@@ -13,7 +13,8 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 	private String indexingProfile;
 	private Date startTime;
 	private Date endTime;
-	private ArrayList<String> notes = new ArrayList<>();
+	private int numRegrouped = 0;
+	private int numChangedAfterGrouping = 0;
 	private int numProducts = 0;
 	private int numErrors = 0;
 	private int numAdded = 0;
@@ -21,6 +22,8 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 	private int numUpdated = 0;
 	private int numSkipped = 0;
 	private Logger logger;
+	private StringBuilder notesText = new StringBuilder();
+	private boolean maxNoteTextLengthReached = false;
 
 	public IlsExtractLogEntry(Connection dbConn, String indexingProfile, Logger logger){
 		this.logger = logger;
@@ -28,37 +31,40 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 		this.indexingProfile = indexingProfile;
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into ils_extract_log (startTime, indexingProfile) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE ils_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE ils_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numRegrouped =?, numChangedAfterGrouping = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
+		notesText.append("<ol class='cronNotes'>");
 		this.saveResults();
 	}
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	@Override
-	public void addNote(String note) {
+	//Synchronized to prevent concurrent modification of the notes ArrayList
+	public synchronized void addNote(String note) {
+		logger.info(note);
+		if (maxNoteTextLengthReached){
+			return;
+		}
 		Date date = new Date();
-		this.notes.add(dateFormat.format(date) + " - " + note);
+		String cleanedNote = note;
+		cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
+		cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
+		//Replace multiple line breaks
+		cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br/>");
+		cleanedNote = cleanedNote.replaceAll("<meta.*?>", "");
+		cleanedNote = cleanedNote.replaceAll("<title>.*?</title>", "");
+		cleanedNote = "<li>" + dateFormat.format(date) + " - " + cleanedNote + "</li>";
+		if (notesText.length() + cleanedNote.length() < 25000){
+			notesText.append(cleanedNote);
+		}else{
+			cleanedNote = "<li>Additional Notes truncated</li>";
+			maxNoteTextLengthReached = true;
+		}
 	}
-	
+
 	private String getNotesHtml() {
-		StringBuilder notesText = new StringBuilder("<ol class='cronNotes'>");
-		for (String curNote : notes){
-			String cleanedNote = curNote;
-			cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
-			cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
-			//Replace multiple line breaks
-			cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br/>");
-			cleanedNote = cleanedNote.replaceAll("<meta.*?>", "");
-			cleanedNote = cleanedNote.replaceAll("<title>.*?</title>", "");
-			notesText.append("<li>").append(cleanedNote).append("</li>");
-		}
-		notesText.append("</ol>");
-		String returnText = notesText.toString();
-		if (returnText.length() > 25000){
-			returnText = returnText.substring(0, 25000) + " more data was truncated";
-		}
-		return returnText;
+		return notesText.toString() + "</ol>";
 	}
 	
 	private static PreparedStatement insertLogEntry;
@@ -84,6 +90,8 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 					updateLogEntry.setLong(++curCol, endTime.getTime() / 1000);
 				}
 				updateLogEntry.setString(++curCol, getNotesHtml());
+				updateLogEntry.setInt(++curCol, numRegrouped);
+				updateLogEntry.setInt(++curCol, numChangedAfterGrouping);
 				updateLogEntry.setInt(++curCol, numProducts);
 				updateLogEntry.setInt(++curCol, numErrors);
 				updateLogEntry.setInt(++curCol, numAdded);
@@ -107,14 +115,14 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 	}
 
 	public void incErrors(String note) {
-		this.addNote(note);
+		this.addNote("ERROR: " + note);
 		numErrors++;
 		this.saveResults();
 		logger.error(note);
 	}
 
 	public void incErrors(String note, Exception e){
-		this.addNote(note + " " + e.toString());
+		this.addNote("ERROR: " + note + " " + e.toString());
 		numErrors++;
 		this.saveResults();
 		logger.error(note, e);
@@ -137,6 +145,15 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 	public void incProducts(){
 		numProducts++;
 	}
+	public void incRecordsRegrouped() {
+		numRegrouped++;
+		if (numRegrouped % 1000 == 0){
+			this.saveResults();
+		}
+	}
+	public void incChangedAfterGrouping(){
+		numChangedAfterGrouping++;
+	}
 	public boolean hasErrors() {
 		return numErrors > 0;
 	}
@@ -147,5 +164,9 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 
 	public void setNumDeleted(int numDeleted) {
 		this.numDeleted = numDeleted;
+	}
+
+	public int getNumChangedAfterGrouping() {
+		return numChangedAfterGrouping;
 	}
 }

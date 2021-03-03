@@ -14,7 +14,9 @@ class Admin_Administrators extends ObjectEditor
 	function getPageTitle(){
 		return 'Administrators';
 	}
-	function getAllObjects(){
+
+	//TODO: This currently does not respect loading by page or filtering
+	function getAllObjects($page, $recordsPerPage){
 		require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 		$userRole = new UserRoles();
 		$userRole->find();
@@ -50,6 +52,15 @@ class Admin_Administrators extends ObjectEditor
 
 		return $adminList;
 	}
+	function getDefaultSort()
+	{
+		return 'id';
+	}
+	function canSort()
+	{
+		return false;
+	}
+
 	function getObjectStructure(){
 		return User::getObjectStructure();
 	}
@@ -144,5 +155,15 @@ class Admin_Administrators extends ObjectEditor
 	function canView()
 	{
 		return UserAccount::userHasPermission('Administer Users');
+	}
+
+	function canBatchEdit()
+	{
+		return false;
+	}
+
+	function canFilter($objectStructure)
+	{
+		return false;
 	}
 }

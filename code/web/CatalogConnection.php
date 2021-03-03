@@ -97,6 +97,7 @@ class CatalogConnection
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false)
 	{
 		global $offlineMode;
+		global $usageByIPAddress;
 
 		$barcodesToTest = array();
 		$barcodesToTest[$username] = $username;
@@ -290,7 +291,13 @@ class CatalogConnection
 	 */
 	public function getFines($patron, $includeMessages = false)
 	{
-		return $this->driver->getFines($patron, $includeMessages);
+		$fines = $this->driver->getFines($patron, $includeMessages);
+		foreach ($fines as &$fine){
+			if (!array_key_exists('canPayFine', $fine)){
+				$fine['canPayFine'] = true;
+			}
+		}
+		return $fines;
 	}
 
 	/**
@@ -473,7 +480,10 @@ class CatalogConnection
 
 			//Opt out within Aspen since the ILS does not seem to implement this functionality
 			$patron->trackReadingHistory = false;
-			$patron->initialReadingHistoryLoaded = false;
+
+			//Do not unmark that the initial reading history was loaded to avoid reloading if the ILS does track it.
+			//TODO: Remove everything from the ILS when available.
+			//$patron->initialReadingHistoryLoaded = false;
 			$patron->update();
 			$result['success'] = true;
 			$result['message'] = translate('You have been opted out of tracking Reading History');
@@ -488,6 +498,35 @@ class CatalogConnection
 		if ($this->driver->performsReadingHistoryUpdatesOfILS()) {
 			$this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
 		}
+		return $result;
+	}
+
+	/**
+	 * @param User $patron
+	 * @param string $title
+	 * @param string $author
+	 *
+	 * @return array
+	 */
+	function deleteReadingHistoryEntryByTitleAuthor($patron, $title, $author){
+		$numDeleted = 0;
+
+		$readingHistoryDB = new ReadingHistoryEntry();
+		$readingHistoryDB->userId = $patron->id;
+		$readingHistoryDB->title = $title;
+		$readingHistoryDB->author = $author;
+		$readingHistoryDB->find();
+		if ($readingHistoryDB->getNumResults() > 0) {
+			while ($readingHistoryDB->fetch()) {
+				$readingHistoryDB->deleted = 1;
+				$readingHistoryDB->update();
+				$numDeleted++;
+			}
+		}
+
+		$result['success'] = true;
+		$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted]);
+
 		return $result;
 	}
 
@@ -712,18 +751,19 @@ class CatalogConnection
 		$historyEntry['timesUsed'] = $readingHistoryDB->timesUsed;
 		/** @noinspection PhpUndefinedFieldInspection */
 		$historyEntry['checkedOut'] = $readingHistoryDB->checkedOut == null ? false : true;
+		$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
 		if (!$forExport) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
 
 			if ($recordDriver->isValid()) {
 				$historyEntry['recordDriver'] = $recordDriver;
-				$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
 				$historyEntry['ratingData'] = $recordDriver->getRatingData();
 				$historyEntry['linkUrl'] = $recordDriver->getLinkUrl();
 				$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('small');
+				$historyEntry['existsInCatalog'] = true;
 			} else {
-				$historyEntry['permanentId'] = '';
+				$historyEntry['existsInCatalog'] = false;
 				$historyEntry['ratingData'] = '';
 				$historyEntry['linkUrl'] = '';
 				$historyEntry['coverUrl'] = '';
@@ -738,6 +778,12 @@ class CatalogConnection
 	 */
 	public function updateReadingHistoryBasedOnCurrentCheckouts($patron)
 	{
+		//Check to see if we need to update the reading history.  Only update every 5 minutes in normal situations.
+		$curTime = time();
+		if (($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5 && !isset($_REQUEST['reload'])){
+			return;
+		}
+
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.
 		$readingHistoryDB = new ReadingHistoryEntry();
@@ -812,6 +858,10 @@ class CatalogConnection
 				}
 			}
 		}
+
+		//Set the last update time
+		$patron->lastReadingHistoryUpdate = $curTime;
+		$patron->update();
 	}
 
 	function cancelHold($patron, $recordId, $cancelId = null)

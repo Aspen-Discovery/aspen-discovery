@@ -49,6 +49,7 @@ class Grouping_Item
 	public $subLocation;
 	public $volume;
 	public $volumeId;
+	public $volumeOrder;
 	/**
 	 * @var array
 	 */

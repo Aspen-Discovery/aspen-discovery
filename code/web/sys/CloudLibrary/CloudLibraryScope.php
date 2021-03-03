@@ -5,6 +5,7 @@ class CloudLibraryScope extends DataObject
 	public $__table = 'cloud_library_scopes';
 	public $id;
 	public $name;
+	public $settingId;
 	public /** @noinspection PhpUnused */ $includeEAudiobook;
 	public /** @noinspection PhpUnused */ $includeEBooks;
 	public /** @noinspection PhpUnused */ $restrictToChildrensMaterial;
@@ -14,11 +15,20 @@ class CloudLibraryScope extends DataObject
 
 	public static function getObjectStructure()
 	{
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
+		$cloudLibrarySettings = [];
+		$cloudLibrarySetting = new CloudLibrarySetting();
+		$cloudLibrarySetting->find();
+		while ($cloudLibrarySetting->fetch()){
+			$cloudLibrarySettings[$cloudLibrarySetting->id] = (string)$cloudLibrarySetting;
+		}
+
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
 
 		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
+			'settingId' => ['property' => 'settingId', 'type' => 'enum', 'values' => $cloudLibrarySettings, 'label' => 'Setting Id'],
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
 			'includeEAudiobook' => array('property'=>'includeEAudiobook', 'type'=>'checkbox', 'label'=>'Include eAudio books', 'description'=>'Whether or not EAudiobook are included', 'default'=>1, 'forcesReindex' => true),
 			'includeEBooks' => array('property'=>'includeEBooks', 'type'=>'checkbox', 'label'=>'Include eBooks', 'description'=>'Whether or not EBooks are included', 'default'=>1, 'forcesReindex' => true),
@@ -44,6 +54,11 @@ class CloudLibraryScope extends DataObject
 				'forcesReindex' => true
 			),
 		);
+	}
+
+	/** @noinspection PhpUnused */
+	public function getEditLink(){
+		return '/CloudLibrary/Scopes?objectAction=edit&id=' . $this->id;
 	}
 
 	public function __get($name){
@@ -106,7 +121,7 @@ class CloudLibraryScope extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$library = new Library();
 				$library->libraryId = $libraryId;
@@ -131,7 +146,7 @@ class CloudLibraryScope extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
 			/**
 			 * @var int $locationId
 			 * @var Location $location
