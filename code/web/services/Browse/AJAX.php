@@ -383,7 +383,7 @@ class Browse_AJAX extends Action {
 			if (!empty($_REQUEST['subCategoryTextId'])) {
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			} else {
-				$subCategoryTextId = $response['subcategories']->textId;
+				$subCategoryTextId = $response['subcategories'][0]->textId;
 			}
 			$response['subCategoryTextId'] = $subCategoryTextId;
 
