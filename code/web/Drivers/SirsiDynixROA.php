@@ -829,7 +829,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
-		$includeFields = urlencode("holdRecordList{*,bib{title},selectedItem{call{*},itemType{*}}}");
+		$includeFields = urlencode("holdRecordList{*,bib{title,author},selectedItem{call{*},itemType{*}}}");
 		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -902,7 +902,9 @@ class SirsiDynixROA extends HorizonAPI
 					$curHold['title'] = $bibInfo->fields->title;
 					$simpleSortTitle = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
 					$curHold['sortTitle'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
-					$curHold['author'] = $bibInfo->fields->author;
+					if (isset($bibInfo->fields->author)) {
+						$curHold['author'] = $bibInfo->fields->author;
+					}
 				}
 
 				if (!isset($curHold['status']) || strcasecmp($curHold['status'], "being_held") != 0) {
