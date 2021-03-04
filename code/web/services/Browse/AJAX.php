@@ -371,6 +371,9 @@ class Browse_AJAX extends Action {
 		}
 		$response['textId'] = $textId;
 
+		$this->getBrowseCategory(); // load sub-category
+		$response['label']  = translate($this->browseCategory->label);
+
 		// Get Any Subcategories for the subcategory menu
 		$response['subcategories'] = $this->getSubCategories();
 
