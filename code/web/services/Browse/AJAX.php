@@ -375,12 +375,12 @@ class Browse_AJAX extends Action {
 		$response['subcategories'] = $this->getSubCategories();
 
 		// If this category has subcategories, get the results of a sub-category instead.
-		if (!empty($this->subCategories)) {
+		if (!empty($response['subcategories'])) {
 			// passed URL variable, or first sub-category
 			if (!empty($_REQUEST['subCategoryTextId'])) {
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			} else {
-				$subCategoryTextId = $this->subCategories[0]->textId;
+				$subCategoryTextId = $response['subcategories']->textId;
 			}
 			$response['subCategoryTextId'] = $subCategoryTextId;
 
@@ -463,9 +463,6 @@ class Browse_AJAX extends Action {
 		}
 		return $this->getBrowseCategoryResults($pageToLoad);
 	}
-
-	/** @var  BrowseCategory $subCategories[]   Browse category info for each sub-category */
-	private $subCategories;
 
 	/**
 	 * @return string
