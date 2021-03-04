@@ -811,8 +811,6 @@ class Location extends DataObject
 					//Only use the physical location regardless of where we are
 					$this->_ipLocation = clone($matchedLocation);
 					$_ipId = $subnet->id;
-				} else {
-					$logger->log("Did not find location for ip location id {$subnet->locationid}", Logger::LOG_WARNING);
 				}
 			}
 
