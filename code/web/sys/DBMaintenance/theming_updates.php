@@ -474,7 +474,15 @@ function getThemingUpdates()
 				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBorderColorDefault tinyint(1) DEFAULT 1",
 				"updateAllThemes"
 			],
-		]
+		],
+
+		'rebuildThemes21_03' => [
+			'title' => 'Rebuild Themes for 21.03',
+			'description' => 'Rebuild Themes for 21.03',
+			'sql' => [
+				"updateAllThemes"
+			]
+		],
 	];
 }
 
