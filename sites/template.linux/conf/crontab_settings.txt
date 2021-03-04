@@ -23,7 +23,7 @@
 # Indexing Tasks #
 #############
 @reboot       solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php {sitename}
-5 2 * * *     aspen   php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php {sitename}
+5 2 * * *     solr   php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php {sitename}
 7 3 * * *     aspen   php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php {sitename}
 */2 * * * *   solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php {sitename}
 */5 * * * *   aspen   php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php {sitename}
