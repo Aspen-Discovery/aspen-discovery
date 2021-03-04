@@ -371,7 +371,7 @@ class Browse_AJAX extends Action {
 		}
 		$response['textId'] = $textId;
 
-		$this->getBrowseCategory(); // load sub-category
+		$activeCategory = $this->getBrowseCategory(); // load sub-category
 		$response['label']  = translate($this->browseCategory->label);
 
 		// Get Any Subcategories for the subcategory menu
@@ -379,11 +379,17 @@ class Browse_AJAX extends Action {
 
 		// If this category has subcategories, get the results of a sub-category instead.
 		if (!empty($response['subcategories'])) {
+			$subCategories = $activeCategory->getSubCategories();
 			// passed URL variable, or first sub-category
 			if (!empty($_REQUEST['subCategoryTextId'])) {
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			} else {
-				$subCategoryTextId = $response['subcategories'][0]->textId;
+				$firstSubCategory = reset($subCategories);
+				$subCategory = new BrowseCategory();
+				$subCategory->id = $firstSubCategory->subCategoryId;
+				if ($subCategory->find(true)) {
+					$subCategoryTextId = $subCategory->textId;
+				}
 			}
 			$response['subCategoryTextId'] = $subCategoryTextId;
 
