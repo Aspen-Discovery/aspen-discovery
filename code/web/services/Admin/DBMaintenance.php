@@ -1545,13 +1545,13 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
-				'add_work_level_rating_index' => [
-					'title' => 'Add Unique Index to User Work Review',
-					'description' => 'Add a unique key to the work reviews',
-					'sql' => [
-						'ALTER TABLE user_work_review ADD UNIQUE (userId, groupedRecordPermanentId)'
-					]
-				],
+//				'add_work_level_rating_index' => [
+//					'title' => 'Add Unique Index to User Work Review',
+//					'description' => 'Add a unique key to the work reviews',
+//					'sql' => [
+//						'ALTER TABLE user_work_review ADD UNIQUE (userId, groupedRecordPermanentId)'
+//					]
+//				],
 
 				'remove_old_user_rating_table' => [
 					'title' => 'Remove user rating',
