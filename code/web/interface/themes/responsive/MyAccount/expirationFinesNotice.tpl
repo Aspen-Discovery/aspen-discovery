@@ -7,9 +7,9 @@
 					<div class="myAccountLink">
 						<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:#c62828; font-weight:bold;">
 							{if count($user->getLinkedUsers())>0}
-								{translate text="Your accounts have %1% in fines." 1=$ilsSummary.totalFines|formatCurrency inAttribute=true}
+								{translate text="Your accounts have %1% in fines." 1=$ilsSummary.totalFines|formatCurrency}
 							{else}
-								{translate text="Your account has %1% in fines." 1=$ilsSummary.totalFines|formatCurrency inAttribute=true}
+								{translate text="Your account has %1% in fines." 1=$ilsSummary.totalFines|formatCurrency}
 							{/if}
 						</a>
 					</div>
@@ -31,7 +31,7 @@
 
 			{if $showExpirationWarnings && $ilsSummary.expireClose}
 				<div class="myAccountLink">
-					<a class="alignright" title="Please contact your local library to have your library card renewed." style="color:#c62828; font-weight:bold;" onclick="alert('Please Contact your local library to have your library card renewed.')" href="#">
+					<a class="alignright" title="Please contact your local library to have your library card renewed." style="color:#c62828; font-weight:bold;" onclick="alert({translate text='Please Contact your local library to have your library card renewed.' inAttribute=true})" href="#">
 						{if $ilsSummary.expired}
 							{if $expiredMessage}
 								{$expiredMessage}

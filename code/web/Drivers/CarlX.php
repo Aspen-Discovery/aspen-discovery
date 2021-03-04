@@ -1354,7 +1354,12 @@ class CarlX extends AbstractIlsDriver{
 				}
 			}
 		}
-		array_multisort(array_column($myFines, 'message', SORT_ASC), $myFines);
+		$sorter = function($a, $b) {
+			$messageA = $a['message'];
+			$messageB = $b['message'];
+			return strcasecmp($messageA, $messageB);
+		};
+		uasort($myFines, $sorter);
 		return $myFines;
 	}
 

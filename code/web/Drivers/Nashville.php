@@ -41,12 +41,12 @@ class Nashville extends CarlX {
 			if ($allPaymentsSucceed === false) {
 				//$success = false;
 				$message = "MSB Payment CarlX update failed for Payment Reference ID $payment->id . See messages.log for details on individual items.";
-				$level = "Logger::LOG_ERROR";
+				$level = Logger::LOG_ERROR;
 				$payment->completed = 9;
 			} else {
 				//$success = true;
 				$message = "MSB payment successfully recorded in CarlX for Payment Reference ID $payment->id .";
-				$level = "Logger::LOG_INFO";
+				$level = Logger::LOG_NOTICE;
 				$payment->completed = 1;
 			}
 			$payment->update();
@@ -54,10 +54,10 @@ class Nashville extends CarlX {
 		} else {
 			$success = false;
 			$message = 'User Payment ' . $payment->id . 'failed with Invalid Patron';
-			$level = "Logger::LOG_ERROR";
+			$level = Logger::LOG_ERROR;
 		}
 		$logger->log($message, $level);
-		if ($level == "Logger::LOG_ERROR") {
+		if ($level == Logger::LOG_ERROR) {
 			if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
 				$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
 			}
@@ -93,19 +93,19 @@ class Nashville extends CarlX {
 			if (!$success) {
 				$success = false;
 				$message = "Failed to add patron note for payment in CarlX for Reference ID $paymentId .";
-				$level = "Logger::LOG_ERROR";
+				$level = Logger::LOG_ERROR;
 			} else {
 				$success = true;
 				$message = "Patron note for payment added successfully in CarlX for Reference ID $paymentId .";
-				$level = "Logger::LOG_INFO";
+				$level = Logger::LOG_NOTICE;
 			}
 		} else {
 			$success = false;
 			$message = "CarlX ILS gave no response when attempting to add patron note for payment Reference ID $paymentId .";
-			$level = "Logger::LOG_ERROR";
+			$level = Logger::LOG_ERROR;
 		}
 		$logger->log($message, $level);
-		if ($level == "Logger::LOG_ERROR") {
+		if ($level == Logger::LOG_ERROR) {
 			if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
 				$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
 			}
@@ -257,7 +257,17 @@ class Nashville extends CarlX {
 				}
 			}
 		}
-		array_multisort(array_column($myFines, 'system', SORT_ASC), array_column($myFines, 'message', SORT_ASC), $myFines);
+		$sorter = function($a, $b) {
+			$systemA = $a['system'];
+			$systemB = $b['system'];
+			if ($systemA === $systemB) {
+				$messageA = $a['message'];
+				$messageB = $b['message'];
+				return strcasecmp($messageA, $messageB);
+			}
+			return strcasecmp($systemA, $systemB);
+		};
+		uasort($myFines, $sorter);
 		return $myFines;
 	}
 
