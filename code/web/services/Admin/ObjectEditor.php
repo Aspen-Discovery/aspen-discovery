@@ -189,7 +189,7 @@ abstract class ObjectEditor extends Admin_Admin
 		if (!is_numeric($page)){
 			$page = 1;
 		}
-		$recordsPerPage = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 25;
+		$recordsPerPage = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : $this->getDefaultRecordsPerPage();
 		//Basic List
 		$allObjects = $this->getAllObjects($page, $recordsPerPage);
 
@@ -207,6 +207,7 @@ abstract class ObjectEditor extends Admin_Admin
 		if (count($allObjects) < 2){
 			$interface->assign('canCompare', false);
 		}
+		$interface->assign('showQuickFilterOnPropertiesList', $this->showQuickFilterOnPropertiesList());
 		$interface->setTemplate('../Admin/propertiesList.tpl');
 	}
 	function viewIndividualObject($structure){
@@ -632,5 +633,14 @@ abstract class ObjectEditor extends Admin_Admin
 				$batchFormatFields[$field['label']] = $field;
 			}
 		}
+	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 25;
+	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return false;
 	}
 }

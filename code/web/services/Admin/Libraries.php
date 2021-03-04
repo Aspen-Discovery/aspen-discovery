@@ -214,4 +214,13 @@ class Admin_Libraries extends ObjectEditor
 	{
 		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 250;
+	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return true;
+	}
 }
