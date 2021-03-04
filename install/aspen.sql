@@ -1656,7 +1656,7 @@ CREATE TABLE `library` (
   `payPalSandboxMode` tinyint(1) DEFAULT '1',
   `payPalClientId` varchar(80) DEFAULT NULL,
   `payPalClientSecret` varchar(80) DEFAULT NULL,
-  `msbUrl` varchar(80) DEFAULT NULL,
+
   PRIMARY KEY (`libraryId`),
   UNIQUE KEY `subdomain` (`subdomain`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;

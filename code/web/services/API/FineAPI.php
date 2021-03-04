@@ -53,10 +53,9 @@ class FineAPI extends Action
 			$msb = json_decode($json_params, true);
 			if ($msb["ResponseCode"] != "Success") {
 				// 2021 01 20: MSB reports they will only use the post back link when the operation is successful
-				// TODO: make this failure (and others) land somewhere
 				$success = false;
 				$message = 'User Payment ' . $msb["PaymentReference"] . 'failed with MSB payment ResponseCode' . $msb["ResponseCode"];
-				$level = 'Logger::LOG_ERROR';
+				$level = "Logger::LOG_ERROR";
 			} else {
 				//Retrieve the order information from Aspen db
 				require_once ROOT_DIR . '/sys/Account/UserPayment.php';
@@ -68,13 +67,13 @@ class FineAPI extends Action
 					if ($payment->completed != 0) {
 						$success = false;
 						$message = "MSB Payment has already been processed for Payment Reference ID $payment->id";
-						$level = 'Logger::LOG_ERROR';
+						$level = "Logger::LOG_ERROR";
 					} else {
 						// Ensure MSB-reported transaction amount (which does not include convenience fee) equals Aspen-expected total paid
 						if ($payment->totalPaid != $msb["TransactionAmount"]) {
 							$success = false;
 							$message = "MSB Payment does not equal Aspen expected payment for Payment Reference ID $payment->id : " . $msb['TransactionAmount'] . " != $payment->totalPaid";
-							$level = 'Logger::LOG_ERROR';
+							$level = "Logger::LOG_ERROR";
 						} else {
 							$user = new User();
 							$user->id = $payment->userId;
@@ -83,14 +82,14 @@ class FineAPI extends Action
 							} else {
 								$success = false;
 								$message = 'User Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron';
-								$level = 'Logger::LOG_ERROR';
+								$level = "Logger::LOG_ERROR";
 							}
 						}
 					}
 				} else {
 					$success = false;
 					$message = "MSB Payment not found in Aspen for Payment Reference ID $payment->id .";
-					$level = 'Logger::LOG_ERROR';
+					$level = "Logger::LOG_ERROR";
 				}
 			}
 		}
