@@ -1643,6 +1643,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					$this->statusSummary = $recordFromIndex;
 
 					$this->statusSummary->_driver = null;
+					global $timer;
+					$timer->logTime("Loaded Copy information");
 				} else {
 					$this->holdings = array();
 					$this->holdingSections = array();
@@ -1654,7 +1656,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$this->statusSummary = array();
 			}
 		}
-
 	}
 
 	public function assignCopiesInformation()
@@ -1677,6 +1678,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$interface->assign('sections', $this->holdingSections);
 
 		$interface->assign('statusSummary', $this->statusSummary);
+		global $timer;
+		$timer->logTime("Assigned copy information");
 	}
 
 	public function getCopies()

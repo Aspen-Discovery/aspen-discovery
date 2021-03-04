@@ -985,6 +985,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getIndexedSeries()
 	{
+		global $timer;
 		$seriesWithVolume = null;
 		if (isset($this->fields['series_with_volume'])) {
 			$rawSeries = $this->fields['series_with_volume'];
@@ -1005,6 +1006,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 				}
 			}
 		}
+		$timer->logTime("Loaded indexed series information");
 		return $seriesWithVolume;
 	}
 

@@ -820,6 +820,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'ip_log_timing' => [
+					'title' => 'IP Lookup timing',
+					'description' => 'Add the ability to log timing information by IP address',
+					'sql' => [
+						'ALTER TABLE ip_lookup ADD COLUMN logTimingInformation TINYINT DEFAULT 0'
+					]
+				],
+
 				'remove_merged_records' => [
 					'title' => 'Remove unused Merged Records Table',
 					'description' => 'Remove unused Merged Records Table',
