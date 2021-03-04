@@ -753,7 +753,7 @@ class sip2
 			//Whoops, we got an error
 			global $logger;
 			$lastError = socket_last_error($this->socket);
-			$logger->log("Error reading data from socket ($lastError)" . socket_strerror($lastError), Logger::LOG_ERROR);
+			$logger->log("Error reading data from socket ($lastError) " . socket_strerror($lastError), Logger::LOG_ERROR);
 		}
 
 		$this->_debugmsg("SIP2: {$result}");
