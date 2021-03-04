@@ -36,6 +36,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	public function __construct($recordData, $groupedWork = null)
 	{
 		// Call the parent's constructor...
+		global $timer;
 		if ($recordData instanceof File_MARC_Record) {
 			//Full MARC record
 			$this->marcRecord = $recordData;
@@ -67,9 +68,16 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					$this->indexingProfile = $indexingProfiles['ils'];
 				}
 			}
-			//Check if it's valid by checking if the marc record exists,
-			//but don't load for performance.
-			$this->valid = MarcLoader::marcExistsForILSId($this->getIdWithSource());
+			if ($groupedWork == null) {
+				//Check if it's valid by checking if the marc record exists,
+				//but don't load for performance.
+				$this->valid = MarcLoader::marcExistsForILSId($this->getIdWithSource());
+				$timer->logTime("Finished checking if marc file exists");
+			}else{
+				//If we are loading based on a grouped work, it is part of the index so assume that it
+				//does exits.
+				$this->valid = true;
+			}
 			//$this->getMarcRecord($this->getUniqueID());
 		} else {
 			//Array of information, this likely never happens
@@ -88,7 +96,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$this->id = $idField->getSubfield('a')->getData();
 			}
 		}
-		global $timer;
 		$timer->logTime("Base initialization of MarcRecord Driver");
 		if ($this->valid){
 			parent::__construct($groupedWork);
