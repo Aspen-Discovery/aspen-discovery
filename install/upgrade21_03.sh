@@ -27,5 +27,5 @@ apachectl restart
 
 service crond start
 
-echo "Upgrade completed, make sure that fields in the user table are encrypted and that all backgroud tasks restart"
+echo "Upgrade completed, make sure that fields in the user table are encrypted and that all background tasks restart"
 
