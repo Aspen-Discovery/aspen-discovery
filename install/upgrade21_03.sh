@@ -23,7 +23,7 @@ pkill java
 
 ./updateSitePermissions.sh $1
 
-service apachectl restart
+apachectl restart
 
 service crond start
 
