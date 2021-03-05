@@ -769,11 +769,15 @@ class SearchAPI extends Action
 					$categoryResponse['subCategories'] = [];
 					if (count($subCategories) > 0){
 						foreach ($subCategories as $subCategory){
-							$categoryResponse['subCategories'][] = [
-								'text_id' => $subCategory->textId,
-								'display_label' => $subCategory->label,
-								'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId . '&subCategory=' . $subCategory->textId
-							];
+							$temp = new BrowseCategory();
+							$temp->id = $subCategory->subCategoryId;
+							if ($temp->find(true)) {
+								$categoryResponse['subCategories'][] = [
+									'text_id' => $temp->textId,
+									'display_label' => $temp->label,
+									'link' => $configArray['Site']['url'] . '?browseCategory=' . $temp->textId . '&subCategory=' . $temp->textId
+								];
+							}
 						}
 					}
 				}
