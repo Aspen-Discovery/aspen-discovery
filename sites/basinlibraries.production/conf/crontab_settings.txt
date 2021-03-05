@@ -50,7 +50,7 @@
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-07 7 * * 0-1  aspen    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php basinlibraries.production
+15 10 * * 0-1  aspen    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php basinlibraries.production
 # update on Sundays and Mondays at 7:07
 
 ###########################
