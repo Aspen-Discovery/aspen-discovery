@@ -284,10 +284,14 @@ class MaterialsRequest extends DataObject
 	protected $_assigneeUser = null;
 	function getAssigneeUser(){
 		if ($this->_assigneeUser == null){
-			$this->_assigneeUser = new User();
-			$this->_assigneeUser->id = $this->assignedTo;
-			if (!$this->_assigneeUser->find(true)){
+			if (empty($this->assignedTo)){
 				$this->_assigneeUser = false;
+			}else {
+				$this->_assigneeUser = new User();
+				$this->_assigneeUser->id = $this->assignedTo;
+				if (!$this->_assigneeUser->find(true)) {
+					$this->_assigneeUser = false;
+				}
 			}
 		}
 		return $this->_assigneeUser;
