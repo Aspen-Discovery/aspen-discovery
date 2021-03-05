@@ -942,11 +942,11 @@ function getIndexingUpdates()
 			]
 		],
 
-		'indexing_module_add_settings' => [
+		'indexing_module_add_settings2' => [
 			'title' => 'Add Settings to Indexing module',
 			'description' => 'Add Settings to Indexing module',
 			'sql' => [
-				"UPDATE modules set settingsClassName = '/sys/Indexing/IndexingProfile.php' WHERE name in ('Koha', 'CARL.X', 'Sierra', 'Horizon', 'Symphony')"
+				"UPDATE modules set settingsClassPath = '/sys/Indexing/IndexingProfile.php', settingsClassName = 'IndexingProfile' WHERE name in ('Koha', 'CARL.X', 'Sierra', 'Horizon', 'Symphony')"
 			]
 		],
 
@@ -1008,6 +1008,14 @@ function getIndexingUpdates()
 				'UPDATE format_map_values SET formatBoost = 12 WHERE formatBoost > 10'
 			]
 		],
+
+		'create_polaris_module' => [
+			'title' => 'Create Polaris Module',
+			'description' => 'Create module for integration with Polaris',
+			'sql' => [
+				"INSERT INTO modules (name, indexName, backgroundProcess, logClassPath, logClassName, settingsClassPath, settingsClassName) VALUES ('Polaris', 'grouped_works', 'polaris_export', '/sys/ILS/IlsExtractLogEntry.php', 'IlsExtractLogEntry', '/sys/Indexing/IndexingProfile.php', 'IndexingProfile')"
+			]
+		]
 	);
 }
 
