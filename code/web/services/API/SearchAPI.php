@@ -730,8 +730,8 @@ class SearchAPI extends Action
 		global $configArray;
 
 		$includeSubCategories = false;
-		if (isset($_REQUEST['includeSubCategories']) && is_bool($_REQUEST['includeSubCategories'])){
-			$includeSubCategories = $_REQUEST['includeSubCategories'];
+		if (isset($_REQUEST['includeSubCategories'])){
+			$includeSubCategories = ($_REQUEST['includeSubCategories'] == 'true') || ($_REQUEST['includeSubCategories'] == 1);
 		}
 		//Check to see if we have an active location, will be null if we don't have a specific location
 		//based off of url, branch parameter, or IP address
