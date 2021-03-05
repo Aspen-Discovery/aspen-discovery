@@ -728,6 +728,11 @@ class SearchAPI extends Action
 		global $library;
 		global $locationSingleton;
 		global $configArray;
+
+		$includeSubCategories = false;
+		if (isset($_REQUEST['includeSubCategories']) && is_bool($_REQUEST['includeSubCategories'])){
+			$includeSubCategories = $_REQUEST['includeSubCategories'];
+		}
 		//Check to see if we have an active location, will be null if we don't have a specific location
 		//based off of url, branch parameter, or IP address
 		$activeLocation = $locationSingleton->getActiveLocation();
@@ -753,11 +758,26 @@ class SearchAPI extends Action
 			$categoryInformation->id = $curCategory->browseCategoryId;
 
 			if ($categoryInformation->find(true)){
-				$formattedCategories[] = array(
+				$categoryResponse = array(
 					'text_id' => $categoryInformation->textId,
 					'display_label' => $categoryInformation->label,
 					'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId
 				);
+
+				if ($includeSubCategories){
+					$subCategories = $categoryInformation->getSubCategories();
+					$categoryResponse['subCategories'] = [];
+					if (count($subCategories) > 0){
+						foreach ($subCategories as $subCategory){
+							$categoryResponse['subCategories'][] = [
+								'text_id' => $subCategory->textId,
+								'display_label' => $subCategory->label,
+								'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId . '&subCategory=' . $subCategory->textId
+							];
+						}
+					}
+				}
+				$formattedCategories[] = $categoryResponse;
 			}
 		}
 		return $formattedCategories;
