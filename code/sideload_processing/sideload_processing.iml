@@ -9,7 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="java_shared_libraries" />
     <orderEntry type="module" module-name="marc4j" />
-    <orderEntry type="module" module-name="record_grouping" />
     <orderEntry type="module" module-name="reindexer" />
     <orderEntry type="module-library">
       <library>

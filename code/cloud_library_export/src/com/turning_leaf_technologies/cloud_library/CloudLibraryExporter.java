@@ -298,7 +298,7 @@ public class CloudLibraryExporter {
 							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 						} else if (result.deleteWork) {
 							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+							getGroupedWorkIndexer().deleteRecord(result.permanentId);
 						}
 					}else{
 						//We need to reindex the record to make sure that the availability changes.

@@ -10,6 +10,14 @@ function getAxis360Updates(){
 			]
 		],
 
+		'axis360AddSettings' => [
+			'title' => 'Add Settings to Axis360 module',
+			'description' => 'Add Settings to Axis360 module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/Axis360/Axis360Setting.php', settingsClassName='Axis360Setting' WHERE name = 'Axis 360'"
+			]
+		],
+
 		'createAxis360SettingsAndScopes' => [
 			'title' => 'Create settings and scopes for Axis360',
 			'description' => 'Create settings and scopes for Axis360',

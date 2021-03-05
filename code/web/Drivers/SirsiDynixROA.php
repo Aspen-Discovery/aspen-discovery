@@ -7,7 +7,7 @@ class SirsiDynixROA extends HorizonAPI
 {
 	//TODO: Additional caching of sessionIds by patron
 	private static $sessionIdsForUsers = array();
-	private static $logAllAPICalls = true;
+	private static $logAllAPICalls = false;
 
 	private function staffOrPatronSessionTokenSwitch()
 	{
@@ -52,7 +52,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		global $instanceName;
@@ -68,12 +68,13 @@ class SirsiDynixROA extends HorizonAPI
 			$logger->log(print_r($headers, true), Logger::LOG_ERROR);
 			$logger->log(print_r($json, true), Logger::LOG_ERROR);
 		}
-		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
+			curl_close($ch);
 			return json_decode($json);
 		} else {
-			$logger->log('Curl problem in getWebServiceResponse', Logger::LOG_ERROR);
+			$logger->log('Curl problem in getWebServiceResponse ' . curl_error($ch), Logger::LOG_ERROR);
+			curl_close($ch);
 			return false;
 		}
 	}
@@ -399,11 +400,12 @@ class SirsiDynixROA extends HorizonAPI
 		];
 
 		$webServiceURL = $this->getWebServiceURL();
-		$includeFields = urlencode("circRecordList{overdue},blockList{owed},holdRecordList{status},privilegeExpiresDate");
+		$includeFields = urlencode("privilegeExpiresDate,circRecordList{overdue},blockList{owed},holdRecordList{status}");
 		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->username . '?includeFields=' . $includeFields;
 
 		$sessionToken = $this->getSessionToken($user);
 		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
+
 		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 			$summary['numCheckedOut'] = count($lookupMyAccountInfoResponse->fields->circRecordList);
 			foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkout) {
@@ -700,6 +702,7 @@ class SirsiDynixROA extends HorizonAPI
 	 */
 	public function getCheckouts($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'dueDate')
 	{
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
 
 		//Get the session token for the user
@@ -721,70 +724,36 @@ class SirsiDynixROA extends HorizonAPI
 
 			foreach ($patronCheckouts->fields->circRecordList as $checkout) {
 				if (empty($checkout->fields->claimsReturnedDate) && $checkout->fields->status != 'INACTIVE') { // Titles with a claims return date will not be displayed in check outs.
-					$curTitle = array();
-					$curTitle['checkoutSource'] = 'ILS';
+					$curCheckout = new Checkout();
+					$curCheckout->type = 'ils';
+					$curCheckout->source = $this->getIndexingProfile()->name;
+					$curCheckout->sourceId = $checkout->key;
+					$curCheckout->userId = $patron->id;
 
 					list($bibId) = explode(':', $checkout->key);
-					$curTitle['recordId'] = $bibId;
-					$curTitle['shortId'] = $bibId;
-					$curTitle['id'] = $bibId;
-					$curTitle['itemId'] = $checkout->fields->item->key;
+					$curCheckout->recordId = 'a' . $bibId;
+					$curCheckout->itemId = $checkout->fields->item->key;
 
-					$curTitle['dueDate'] = strtotime($checkout->fields->dueDate);
-					$curTitle['checkoutDate'] = strtotime($checkout->fields->checkOutDate);
+					$curCheckout->dueDate = strtotime($checkout->fields->dueDate);
+					$curCheckout->checkoutDate = strtotime($checkout->fields->checkOutDate);
 					// Note: there is an overdue flag
-					$curTitle['renewCount'] = $checkout->fields->renewalCount;
-					$curTitle['canRenew'] = $checkout->fields->seenRenewalsRemaining > 0;
-					$curTitle['renewIndicator'] = $checkout->fields->item->key;
+					$curCheckout->renewCount = $checkout->fields->renewalCount;
+					$curCheckout->canRenew = $checkout->fields->seenRenewalsRemaining > 0;
+					$curCheckout->renewalId = $checkout->fields->item->key;
 
-					$curTitle['format'] = 'Unknown';
-					$recordDriver = new MarcRecordDriver('a' . $bibId);
-					if ($recordDriver->isValid()) {
-						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-						$curTitle['format'] = $recordDriver->getPrimaryFormat();
-						$curTitle['title'] = $recordDriver->getTitle();
-						$curTitle['title_sort'] = $recordDriver->getSortableTitle();
-						$curTitle['author'] = $recordDriver->getPrimaryAuthor();
-						$curTitle['link'] = $recordDriver->getLinkUrl();
-						$curTitle['ratingData'] = $recordDriver->getRatingData();
-					} else {
-						// Presumably ILL Items
-						$bibInfo = $checkout->fields->item->fields->bib;
-						$curTitle['title'] = $bibInfo->fields->title;
-						$simpleSortTitle = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
-						$curTitle['title_sort'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
-						require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-						$curTitle['author'] = empty($bibInfo->fields->author) ? '' : StringUtils::removeTrailingPunctuation($bibInfo->fields->author);
-					}
-					if ($curTitle['format'] == 'Magazine' && !empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
-						$curTitle['title2'] = $checkout->fields->item->fields->call->fields->dispCallNumber;
+					// Presumably ILL Items
+					$bibInfo = $checkout->fields->item->fields->bib;
+					$curCheckout->author = $bibInfo->fields->author;
+					$curCheckout->title = $bibInfo->fields->title;
+					require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+					$curCheckout->author = empty($bibInfo->fields->author) ? '' : StringUtils::removeTrailingPunctuation($bibInfo->fields->author);
+					if (!empty($checkout->fields->item->fields->itemType->key) && ($checkout->fields->item->fields->itemType->key == 'MAGAZINE' || $checkout->fields->item->fields->itemType->key == 'PERIODICAL') && !empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
+						$curCheckout->title2 = $checkout->fields->item->fields->call->fields->dispCallNumber;
 					}
 
 					$sCount++;
-					$sortTitle = isset($curTitle['title_sort']) ? $curTitle['title_sort'] : $curTitle['title'];
-					$sortKey = $sortTitle;
-					if ($sortOption == 'title') {
-						$sortKey = $sortTitle;
-					} elseif ($sortOption == 'author') {
-						$sortKey = (isset($curTitle['author']) ? $curTitle['author'] : "Unknown") . '-' . $sortTitle;
-					} elseif ($sortOption == 'dueDate') {
-						if (isset($curTitle['dueDate'])) {
-							if (preg_match('/.*?(\\d{1,2})[-\/](\\d{1,2})[-\/](\\d{2,4}).*/', $curTitle['dueDate'], $matches)) {
-								$sortKey = $matches[3] . '-' . $matches[1] . '-' . $matches[2] . '-' . $sortTitle;
-							} else {
-								$sortKey = $curTitle['dueDate'] . '-' . $sortTitle;
-							}
-						}
-					} elseif ($sortOption == 'format') {
-						$sortKey = (isset($curTitle['format']) ? $curTitle['format'] : "Unknown") . '-' . $sortTitle;
-					} elseif ($sortOption == 'renewed') {
-						$sortKey = (isset($curTitle['renewCount']) ? $curTitle['renewCount'] : 0) . '-' . $sortTitle;
-					} elseif ($sortOption == 'holdQueueLength') {
-						$sortKey = (isset($curTitle['holdQueueLength']) ? $curTitle['holdQueueLength'] : 0) . '-' . $sortTitle;
-					}
-					$sortKey .= "_$sCount";
-					$checkedOutTitles[$sortKey] = $curTitle;
+					$sortKey = "{$curCheckout->source}_{$curCheckout->sourceId}_$sCount";
+					$checkedOutTitles[$sortKey] = $curCheckout;
 				}
 			}
 		}
@@ -803,6 +772,7 @@ class SirsiDynixROA extends HorizonAPI
 	 */
 	public function getHolds($patron)
 	{
+		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
 		$unavailableHolds = array();
 		$holds = array(
@@ -827,85 +797,69 @@ class SirsiDynixROA extends HorizonAPI
 
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
-		$includeFields = urlencode("holdRecordList{*,bib{title},selectedItem{call{*},itemType{*}}}");
+		$includeFields = urlencode("holdRecordList{*,bib{title,author},selectedItem{call{*},itemType{*}}}");
 		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach ($patronHolds->fields->holdRecordList as $hold) {
 				//Get detailed info about the hold
-				$curHold = array();
+				$curHold = new Hold();
 				$bibId = $hold->fields->bib->key;
 				$expireDate = $hold->fields->expirationDate;
 				$reactivateDate = $hold->fields->suspendEndDate;
 				$createDate = $hold->fields->placedDate;
 				$fillByDate = $hold->fields->fillByDate;
-				$curHold['id'] = $bibId;
-				$curHold['holdSource'] = 'ILS';
-				$curHold['itemId'] = empty($hold->fields->item->key) ? '' : $hold->fields->item->key;
-				$curHold['cancelId'] = $hold->key;
-				$curHold['position'] = $hold->fields->queuePosition;
-				$curHold['recordId'] = $bibId;
-				$curHold['shortId'] = $bibId;
+				$curHold->userId = $patron->id;
+				$curHold->type = 'ils';
+				$curHold->source = $this->getIndexingProfile()->name;
+				$curHold->sourceId = $bibId;
+				$curHold->itemId = empty($hold->fields->item->key) ? '' : $hold->fields->item->key;
+				$curHold->cancelId = $hold->key;
+				$curHold->position = $hold->fields->queuePosition;
+				$curHold->recordId = 'a' . $bibId;
+				$curHold->shortId = $bibId;
 				$curPickupBranch = new Location();
 				$curPickupBranch->code = $hold->fields->pickupLibrary->key;
 				if ($curPickupBranch->find(true)) {
 					$curPickupBranch->fetch();
-					$curHold['currentPickupId'] = $curPickupBranch->locationId;
-					$curHold['currentPickupName'] = $curPickupBranch->displayName;
-					$curHold['location'] = $curPickupBranch->displayName;
+					$curHold->pickupLocationId = $curPickupBranch->locationId;
+					$curHold->pickupLocationName = $curPickupBranch->displayName;
+				}else{
+					$curHold->pickupLocationName = $curPickupBranch->code;
 				}
-				$curHold['currentPickupName'] = $curHold['location'];
-				$curHold['status'] = ucfirst(strtolower($hold->fields->status));
-				$curHold['create'] = strtotime($createDate);
-				$curHold['expire'] = strtotime($expireDate);
-				$curHold['automaticCancellation'] = strtotime($fillByDate);
-				$curHold['reactivate'] = $reactivateDate;
-				$curHold['reactivateTime'] = strtotime($reactivateDate);
-				$curHold['cancelable'] = strcasecmp($curHold['status'], 'Suspended') != 0 && strcasecmp($curHold['status'], 'Expired') != 0;
-				$curHold['frozen'] = strcasecmp($curHold['status'], 'Suspended') == 0;
-				$curHold['canFreeze'] = true;
-				if (strcasecmp($curHold['status'], 'Transit') == 0 || strcasecmp($curHold['status'], 'Expired') == 0) {
-					$curHold['canFreeze'] = false;
+
+				$curHold->status = ucfirst(strtolower($hold->fields->status));
+				$curHold->createDate = strtotime($createDate);
+				$curHold->expirationDate = strtotime($expireDate);
+				$curHold->automaticCancellationDate = strtotime($fillByDate);
+				$curHold->reactivateDate = strtotime($reactivateDate);
+				$curHold->cancelable = strcasecmp($curHold->status, 'Suspended') != 0 && strcasecmp($curHold->status, 'Expired') != 0;
+				$curHold->frozen = strcasecmp($curHold->status, 'Suspended') == 0;
+				$curHold->canFreeze = true;
+				if (strcasecmp($curHold->status, 'Transit') == 0 || strcasecmp($curHold->status, 'Expired') == 0) {
+					$curHold->canFreeze = false;
 				}
-				$curHold['locationUpdateable'] = true;
-				if (strcasecmp($curHold['status'], 'Transit') == 0 || strcasecmp($curHold['status'], 'Expired') == 0) {
-					$curHold['locationUpdateable'] = false;
+				$curHold->locationUpdateable = true;
+				if (strcasecmp($curHold->status, 'Transit') == 0 || strcasecmp($curHold->status, 'Expired') == 0) {
+					$curHold->locationUpdateable = false;
 				}
 				if (isset($hold->fields->selectedItem->fields->call->fields->volumetric)) {
-					$curHold['volume'] = $hold->fields->selectedItem->fields->call->fields->volumetric;
+					$curHold->volume = $hold->fields->selectedItem->fields->call->fields->volumetric;
 				}
 
-				$recordDriver = new MarcRecordDriver('a' . $bibId);
-				if ($recordDriver->isValid()) {
-					$curHold['title'] = $recordDriver->getTitle();
-					$curHold['author'] = $recordDriver->getPrimaryAuthor();
-					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
-					$curHold['format'] = $recordDriver->getFormat();
-					$curHold['isbn'] = $recordDriver->getCleanISBN();
-					$curHold['upc'] = $recordDriver->getCleanUPC();
-					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-					$curHold['link'] = $recordDriver->getLinkUrl();
-
-					//Load rating information
-					$curHold['ratingData'] = $recordDriver->getRatingData();
-
-					if ($hold->fields->holdType == 'COPY') {
-						$curHold['title2'] = $hold->fields->selectedItem->fields->itemType->fields->description . ' - ' . $hold->fields->selectedItem->fields->call->fields->dispCallNumber;
-					}
-
-				} else {
-					// If we don't have good marc record, ask the ILS for title info
-					$bibInfo = $hold->fields->bib;
-					$curHold['title'] = $bibInfo->fields->title;
-					$simpleSortTitle = preg_replace('/^The\s|^A\s/i', '', $bibInfo->fields->title); // remove begining The or A
-					$curHold['sortTitle'] = empty($simpleSortTitle) ? $bibInfo->fields->title : $simpleSortTitle;
-					$curHold['author'] = $bibInfo->fields->author;
+				if ($hold->fields->holdType == 'COPY') {
+					$curHold->title2 = $hold->fields->selectedItem->fields->itemType->fields->description . ' - ' . $hold->fields->selectedItem->fields->call->fields->dispCallNumber;
 				}
 
-				if (!isset($curHold['status']) || strcasecmp($curHold['status'], "being_held") != 0) {
+				$bibInfo = $hold->fields->bib;
+				$curHold->title = $bibInfo->fields->title;
+				$curHold->author = $bibInfo->fields->author;
+
+				if (!isset($curHold->status) || strcasecmp($curHold->status, "being_held") != 0) {
+					$curHold->available = false;
 					$holds['unavailable'][] = $curHold;
 				} else {
+					$curHold->available = true;
 					$holds['available'][] = $curHold;
 				}
 			}

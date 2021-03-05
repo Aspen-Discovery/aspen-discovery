@@ -132,9 +132,136 @@ class Admin_DBMaintenance extends Admin_Admin
 						'ALTER TABLE modules ADD COLUMN logClassPath VARCHAR(100)',
 						'ALTER TABLE modules ADD COLUMN logClassName VARCHAR(35)',
 					]
-				]
+				],
+				'module_settings_information' => [
+					'title' => 'Settings Information for modules',
+					'description' => 'Add settings information to modules table',
+					'sql' => [
+						'ALTER TABLE modules ADD COLUMN settingsClassPath VARCHAR(100)',
+						'ALTER TABLE modules ADD COLUMN settingsClassName VARCHAR(35)',
+					]
+				],
+				'create_field_encryption_file' => [
+					'title' => 'Create field encryption file',
+					'description' => 'Setup field level encryption for specific fields (i.e. PINs, Passwords, API keys, etc)',
+					'sql' => [
+						'createKeyFile'
+					]
+				],
 			],
 			$library_location_updates,
+			[
+				'authentication_profiles' => array(
+					'title' => 'Setup Authentication Profiles',
+					'description' => 'Setup authentication profiles to store information about how to authenticate',
+					'sql' => array(
+						"CREATE TABLE IF NOT EXISTS `account_profiles` (
+						  `id` int(11) NOT NULL AUTO_INCREMENT,
+						  `name` varchar(50) NOT NULL DEFAULT 'ils',
+						  `driver` varchar(50) NOT NULL,
+						  `loginConfiguration` enum('barcode_pin','name_barcode') NOT NULL,
+						  `authenticationMethod` enum('ils','sip2','db','ldap') NOT NULL DEFAULT 'ils',
+						  `vendorOpacUrl` varchar(100) NOT NULL,
+						  `patronApiUrl` varchar(100) NOT NULL,
+						  `recordSource` varchar(50) NOT NULL,
+						  PRIMARY KEY (`id`),
+						  UNIQUE KEY `name` (`name`)
+						) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+					)
+				),
+
+				'account_profiles_1' => array(
+					'title' => 'Update Account Profiles 1',
+					'description' => 'Update Account Profiles with additional data to make integration easier',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `vendorOpacUrl` varchar(100) NOT NULL",
+						"ALTER TABLE `account_profiles` ADD `patronApiUrl` varchar(100) NOT NULL",
+						"ALTER TABLE `account_profiles` ADD `recordSource` varchar(50) NOT NULL",
+						"ALTER TABLE `account_profiles` ADD `weight` int(11) NOT NULL",
+					)
+				),
+
+				'account_profiles_2' => array(
+					'title' => 'Update Account Profiles 2',
+					'description' => 'Update Account Profiles with additional data to reduce information stored in config',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `databaseHost` varchar(100)",
+						"ALTER TABLE `account_profiles` ADD `databaseName` varchar(50)",
+						"ALTER TABLE `account_profiles` ADD `databaseUser` varchar(50)",
+						"ALTER TABLE `account_profiles` ADD `databasePassword` varchar(50)",
+						"ALTER TABLE `account_profiles` ADD `sipHost` varchar(100)",
+						"ALTER TABLE `account_profiles` ADD `sipPort` varchar(50)",
+					)
+				),
+
+				'account_profiles_3' => array(
+					'title' => 'Update Account Profiles 3',
+					'description' => 'Update Account Profiles with additional information about SIP',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `sipUser` varchar(50)",
+						"ALTER TABLE `account_profiles` ADD `sipPassword` varchar(50)",
+					)
+				),
+
+				'account_profiles_4' => array(
+					'title' => 'Update Account Profiles 4',
+					'description' => 'Add database port to connection information',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `databasePort` varchar(5)",
+					)
+				),
+
+				'account_profiles_5' => array(
+					'title' => 'Update Account Profiles 5',
+					'description' => 'Add database timezone to connection information',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `databaseTimezone` varchar(50)",
+					)
+				),
+
+				'account_profiles_oauth' => array(
+					'title' => 'Account Profiles - OAuth',
+					'description' => 'Add information for connecting to APIs with OAuth2 credentials',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `oAuthClientId` varchar(36)",
+						"ALTER TABLE `account_profiles` ADD `oAuthClientSecret` varchar(36)",
+					)
+				),
+
+				'account_profiles_ils' => array(
+					'title' => 'Account Profiles - ILS Type',
+					'description' => 'Add information for the type of ILS being used',
+					'continueOnError' => false,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `ils` varchar(20) DEFAULT 'koha'",
+						"UPDATE account_profiles set ils = lcase(driver)",
+					)
+				),
+
+				'account_profiles_api_version' => array(
+					'title' => 'Account Profiles - API Version',
+					'description' => 'Add api version for sierra',
+					'continueOnError' => false,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `apiVersion` varchar(10) DEFAULT ''",
+						"UPDATE account_profiles set apiVersion = '5' where ils = 'sierra'",
+					)
+				),
+
+				'account_profiles_admin_login_configuration' => [
+					'title' => 'Change login configuration for the admin Account Profile',
+					'description' => 'Change the login configuration for the admin Account Profile to match stored data',
+					'sql' => [
+						"UPDATE account_profiles set loginConfiguration = 'barcode_pin' WHERE name = 'admin'"
+					]
+				]
+			],
 			$user_updates,
 			$grouped_work_updates,
 			$genealogy_updates,
@@ -813,6 +940,17 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'htmlForMarkdown' => [
+					'title' => 'Add fields to use HTML with or instead of Markdown',
+					'description' => 'Add allowHtmlInMarkdownFields and useHtmlEditorRatherThanMarkdown to system variables',
+					'continueOnError' => true,
+					'sql' => [
+						"ALTER TABLE system_variables ADD COLUMN allowableHtmlTags VARCHAR(512) DEFAULT 'p|div|span|a|b|em|strong|i|ul|ol|li|br|h1|h2|h3|h4|h5|h6'",
+						"ALTER TABLE system_variables ADD COLUMN allowHtmlInMarkdownFields TINYINT(1) DEFAULT 1",
+						"ALTER TABLE system_variables ADD COLUMN useHtmlEditorRatherThanMarkdown TINYINT(1) DEFAULT 0"
+					]
+				],
+
 				'utf8_update' => array(
 					'title' => 'Update to UTF-8',
 					'description' => 'Update database to use UTF-8 encoding',
@@ -1399,6 +1537,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'add_work_level_rating_index' => [
+					'title' => 'Add Unique Index to User Work Review',
+					'description' => 'Add a unique key to the work reviews',
+					'sql' => [
+						'ALTER TABLE user_work_review ADD UNIQUE (userId, groupedRecordPermanentId)'
+					]
+				],
+
 				'remove_old_user_rating_table' => [
 					'title' => 'Remove user rating',
 					'description' => 'Remove old user rating table.',
@@ -1532,109 +1678,6 @@ class Admin_DBMaintenance extends Admin_Admin
 						"ALTER TABLE location DROP footerTemplate",
 						"ALTER TABLE location DROP homePageWidgetId",
 					),
-				),
-
-				'authentication_profiles' => array(
-					'title' => 'Setup Authentication Profiles',
-					'description' => 'Setup authentication profiles to store information about how to authenticate',
-					'sql' => array(
-						"CREATE TABLE IF NOT EXISTS `account_profiles` (
-						  `id` int(11) NOT NULL AUTO_INCREMENT,
-						  `name` varchar(50) NOT NULL DEFAULT 'ils',
-						  `driver` varchar(50) NOT NULL,
-						  `loginConfiguration` enum('barcode_pin','name_barcode') NOT NULL,
-						  `authenticationMethod` enum('ils','sip2','db','ldap') NOT NULL DEFAULT 'ils',
-						  `vendorOpacUrl` varchar(100) NOT NULL,
-						  `patronApiUrl` varchar(100) NOT NULL,
-						  `recordSource` varchar(50) NOT NULL,
-						  PRIMARY KEY (`id`),
-						  UNIQUE KEY `name` (`name`)
-						) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-					)
-				),
-
-				'account_profiles_1' => array(
-					'title' => 'Update Account Profiles 1',
-					'description' => 'Update Account Profiles with additional data to make integration easier',
-					'continueOnError' => true,
-					'sql' => array(
-						"ALTER TABLE `account_profiles` ADD `vendorOpacUrl` varchar(100) NOT NULL",
-						"ALTER TABLE `account_profiles` ADD `patronApiUrl` varchar(100) NOT NULL",
-						"ALTER TABLE `account_profiles` ADD `recordSource` varchar(50) NOT NULL",
-						"ALTER TABLE `account_profiles` ADD `weight` int(11) NOT NULL",
-					)
-				),
-
-				'account_profiles_2' => array(
-					'title' => 'Update Account Profiles 2',
-					'description' => 'Update Account Profiles with additional data to reduce information stored in config',
-					'continueOnError' => true,
-					'sql' => array(
-						"ALTER TABLE `account_profiles` ADD `databaseHost` varchar(100)",
-						"ALTER TABLE `account_profiles` ADD `databaseName` varchar(50)",
-						"ALTER TABLE `account_profiles` ADD `databaseUser` varchar(50)",
-						"ALTER TABLE `account_profiles` ADD `databasePassword` varchar(50)",
-						"ALTER TABLE `account_profiles` ADD `sipHost` varchar(100)",
-						"ALTER TABLE `account_profiles` ADD `sipPort` varchar(50)",
-					)
-				),
-
-				'account_profiles_3' => array(
-					'title' => 'Update Account Profiles 3',
-					'description' => 'Update Account Profiles with additional information about SIP',
-					'continueOnError' => true,
-					'sql' => array(
-						"ALTER TABLE `account_profiles` ADD `sipUser` varchar(50)",
-						"ALTER TABLE `account_profiles` ADD `sipPassword` varchar(50)",
-					)
-				),
-
-				'account_profiles_4' => array(
-					'title' => 'Update Account Profiles 4',
-					'description' => 'Add database port to connection information',
-					'continueOnError' => true,
-					'sql' => array(
-						"ALTER TABLE `account_profiles` ADD `databasePort` varchar(5)",
-					)
-				),
-
-				'account_profiles_5' => array(
-					'title' => 'Update Account Profiles 5',
-					'description' => 'Add database timezone to connection information',
-					'continueOnError' => true,
-					'sql' => array(
-						"ALTER TABLE `account_profiles` ADD `databaseTimezone` varchar(50)",
-					)
-				),
-
-				'account_profiles_oauth' => array(
-					'title' => 'Account Profiles - OAuth',
-					'description' => 'Add information for connecting to APIs with OAuth2 credentials',
-					'continueOnError' => true,
-					'sql' => array(
-						"ALTER TABLE `account_profiles` ADD `oAuthClientId` varchar(36)",
-						"ALTER TABLE `account_profiles` ADD `oAuthClientSecret` varchar(36)",
-					)
-				),
-
-				'account_profiles_ils' => array(
-					'title' => 'Account Profiles - ILS Type',
-					'description' => 'Add information for the type of ILS being used',
-					'continueOnError' => false,
-					'sql' => array(
-						"ALTER TABLE `account_profiles` ADD `ils` varchar(20) DEFAULT 'koha'",
-						"UPDATE account_profiles set ils = lcase(driver)",
-					)
-				),
-
-				'account_profiles_api_version' => array(
-					'title' => 'Account Profiles - API Version',
-					'description' => 'Add api version for sierra',
-					'continueOnError' => false,
-					'sql' => array(
-						"ALTER TABLE `account_profiles` ADD `apiVersion` varchar(10) DEFAULT ''",
-						"UPDATE account_profiles set apiVersion = '5' where ils = 'sierra'",
-					)
 				),
 
 				'archive_private_collections' => array(
@@ -2410,7 +2453,7 @@ class Admin_DBMaintenance extends Admin_Admin
 					'sql' => [
 						'UPDATE list_indexing_settings set runFullUpdate = 1'
 					]
-				]
+				],
 			)
 		);
 	}
@@ -2714,5 +2757,39 @@ class Admin_DBMaintenance extends Admin_Admin
 	function canView()
 	{
 		return UserAccount::userHasPermission('Run Database Maintenance');
+	}
+
+	/** @noinspection PhpUnused */
+	function createKeyFile(){
+		global $serverName;
+		$passkeyFile = ROOT_DIR . "/../../sites/$serverName/conf/passkey";
+		if (!file_exists($passkeyFile)) {
+			// Return the file path (note that all ini files are in the conf/ directory)
+			$methods = [
+				'aes-256-gcm',
+				'aes-128-gcm'
+			];
+			foreach ($methods as $cipher) {
+				if (in_array($cipher, openssl_get_cipher_methods())) {
+					//Generate a 32 character password which will encode to 64 characters in hex notation
+					$key = bin2hex(openssl_random_pseudo_bytes(32));
+					break;
+				}
+			}
+			$passkeyFhnd = fopen($passkeyFile, 'w');
+			fwrite($passkeyFhnd, $cipher . ':' . $key);
+			fclose($passkeyFhnd);
+
+			//Make sure the file is not readable by anyone except the aspen user
+			if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN'){
+				$runningOnWindows = true;
+			}else{
+				$runningOnWindows = false;
+			}
+			if (!$runningOnWindows){
+				exec('chown aspen:aspen_apache ' . $passkeyFile);
+				exec('chmod 440 ' . $passkeyFile);
+			}
+		}
 	}
 }

@@ -74,7 +74,6 @@ public class KohaExportMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
-		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 			Date startTime = new Date();
@@ -164,11 +163,6 @@ public class KohaExportMain {
 				break;
 			}
 			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				disconnectDatabase();
-				break;
-			}
-			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
 				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
 				disconnectDatabase();
 				break;
@@ -626,7 +620,11 @@ public class KohaExportMain {
 			String value = kohaValuesRS.getString(valueColumn).trim();
 			String translation = kohaValuesRS.getString(translationColumn);
 			if (existingValues.containsKey(value.toLowerCase())) {
-				translation = translation.trim();
+				if (translation == null){
+					translation = "";
+				}else {
+					translation = translation.trim();
+				}
 				if (!existingValues.get(value.toLowerCase()).equals(translation)) {
 					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
 				}
@@ -984,6 +982,16 @@ public class KohaExportMain {
 			if (singleWorkId != null){
 				changedBibIds.add(singleWorkId);
 			}else {
+				//Check to see if we should regroup all records
+				if (indexingProfile.isRegroupAllRecords()){
+					//Regrouping takes a long time and we don't need koha DB connection so close it while we regroup
+					kohaConn.close();
+					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
+					recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
+
+					KohaInstanceInformation kohaInstanceInformation = initializeKohaConnection(dbConn);
+					kohaConn = kohaInstanceInformation.kohaConnection;
+				}
 				//Get a list of bibs that have changed
 				PreparedStatement getChangedBibsFromKohaStmt;
 				if (indexingProfile.isRunFullUpdate()) {
@@ -1090,7 +1098,7 @@ public class KohaExportMain {
 						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 					} else if (result.deleteWork) {
 						//Delete the work from solr and the database
-						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+						getGroupedWorkIndexer().deleteRecord(result.permanentId);
 					}
 					numRecordsDeleted++;
 					logEntry.incDeleted();
@@ -1151,20 +1159,13 @@ public class KohaExportMain {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				if (!marcFile.exists()) {
-					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
-				} else {
-					FileInputStream marcFileStream = new FileInputStream(marcFile);
-					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
-					if (streamReader.hasNext()) {
-						Record marcRecord = streamReader.next();
-						//Regroup the record
-						String groupedWorkId = groupKohaRecord(marcRecord);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-					} else {
-						logEntry.incErrors("Could not read file " + marcFile);
-					}
+				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				if (marcRecord != null){
+					logEntry.incRecordsRegrouped();
+					//Regroup the record
+					String groupedWorkId = groupKohaRecord(marcRecord);
+					//Reindex the record
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
@@ -1281,7 +1282,7 @@ public class KohaExportMain {
 	}
 
 	private static String groupKohaRecord(Record marcRecord) {
-		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true);
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
 	}
 
 	private static MarcRecordGrouper getRecordGroupingProcessor() {

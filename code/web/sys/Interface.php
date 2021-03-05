@@ -617,6 +617,14 @@ class UInterface extends Smarty
 		}
 		$this->assign('libraryLinks', $libraryLinks);
 		$this->assign('expandedLinkCategories', $expandedLinkCategories);
+
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables != false){
+			$this->assign('useHtmlEditorRatherThanMarkdown', $systemVariables->useHtmlEditorRatherThanMarkdown);
+		}else{
+			$this->assign('useHtmlEditorRatherThanMarkdown', 0);
+		}
 	}
 
 	/**

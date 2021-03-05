@@ -398,4 +398,8 @@ abstract class IndexRecordDriver extends RecordInterface
 
 		return 'RecordDrivers/Index/combinedResult.tpl';
 	}
+
+	public function getFields(){
+		return $this->fields;
+	}
 }

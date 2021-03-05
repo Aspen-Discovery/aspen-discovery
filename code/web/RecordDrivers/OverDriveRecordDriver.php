@@ -528,6 +528,16 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 		return $this->overDriveProduct->title;
 	}
 
+	/**
+	 * Get the full title of the record.
+	 *
+	 * @return  string
+	 */
+	public function getSortableTitle()
+	{
+		return $this->overDriveProduct->title;
+	}
+
 	public function getShortTitle()
 	{
 		return $this->overDriveProduct->title;

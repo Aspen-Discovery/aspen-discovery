@@ -256,25 +256,7 @@ class CatalogConnection
 	 */
 	public function getCheckouts(User $user)
 	{
-		$transactions = $this->driver->getCheckouts($user);
-		foreach ($transactions as $key => $curTitle) {
-			$curTitle['user'] = $user->getNameAndLibraryLabel();
-			$curTitle['userId'] = $user->id;
-			$curTitle['fullId'] = $this->accountProfile->recordSource . ':' . $curTitle['id'];
-
-			if ($curTitle['dueDate']) {
-				// use the same time of day to calculate days until due, in order to avoid errors wiht rounding
-				$dueDate = strtotime('midnight', $curTitle['dueDate']);
-				$today = strtotime('midnight');
-				$daysUntilDue = ceil(($dueDate - $today) / (24 * 60 * 60));
-				$overdue = $daysUntilDue < 0;
-				$curTitle['overdue'] = $overdue;
-				$curTitle['daysUntilDue'] = $daysUntilDue;
-			}
-			//Determine if the record
-			$transactions[$key] = $curTitle;
-		}
-		return $transactions;
+		return $this->driver->getCheckouts($user);
 	}
 
 	/**
@@ -543,24 +525,7 @@ class CatalogConnection
 	 */
 	public function getHolds($user)
 	{
-		$holds = $this->driver->getHolds($user);
-		foreach ($holds as $section => $holdsForSection) {
-			foreach ($holdsForSection as $key => $curTitle) {
-				$curTitle['user'] = $user->getNameAndLibraryLabel();
-				$curTitle['userId'] = $user->id;
-				$curTitle['allowFreezeHolds'] = $user->getHomeLibrary()->allowFreezeHolds;
-				if (!isset($curTitle['sortTitle'])) {
-					$curTitle['sortTitle'] = $curTitle['title'];
-				}
-				if (isset($curTitle['canFreeze'])) {
-					//This is used in the Arlington App
-					$curTitle['freezeable'] = $curTitle['canFreeze'];
-				}
-				$holds[$section][$key] = $curTitle;
-			}
-		}
-
-		return $holds;
+		return $this->driver->getHolds($user);
 	}
 
 	/**

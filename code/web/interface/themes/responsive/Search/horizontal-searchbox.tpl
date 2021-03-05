@@ -21,17 +21,16 @@
 				<div class="{if $hiddenSearchSource}col-lg-10 col-md-10{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
 					<label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-2x"></i></label>
 					{* Main Search Term Box *}
-					<textarea class="form-control"{/strip}
+					<input type="text" class="form-control"{/strip}
 						id="lookfor"
 						name="lookfor"
 						title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
 						onfocus="$(this).select()"
 						autocomplete="off"
-						rows="1"
 						aria-labelledby="horizontal-search-label"
-						{strip}>
-						{if !empty($lookfor)}{$lookfor|escape:"html"}{/if}
-					</textarea>
+
+						{if !empty($lookfor)}value="{$lookfor|escape:"html"}"{/if}
+					{strip}>
 				</div>
 
 				{* Search Type *}

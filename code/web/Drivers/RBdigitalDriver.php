@@ -57,13 +57,14 @@ class RBdigitalDriver extends AbstractEContentDriver
 				$logger->log("Error in RBdigital {$patronCheckouts->message}", Logger::LOG_WARNING);
 			} else {
 				foreach ($patronCheckouts as $patronCheckout) {
-					$checkout = array();
-					$checkout['checkoutSource'] = 'RBdigital';
+					$checkout = new Checkout();
+					$checkout->type = 'rbdigital';
+					$checkout->source = 'rbdigital';
 
-					$checkout['id'] = $patronCheckout->transactionId;
-					$checkout['recordId'] = $patronCheckout->isbn;
-					$checkout['title'] = $patronCheckout->title;
-					$checkout['author'] = $patronCheckout->authors;
+					$checkout->sourceId = $patronCheckout->transactionId;
+					$checkout->recordId = $patronCheckout->isbn;
+					$checkout->title = $patronCheckout->title;
+					$checkout->author = $patronCheckout->authors;
 
 					$dateDue = DateTime::createFromFormat('Y-m-d', $patronCheckout->expiration);
 					if ($dateDue) {
@@ -71,41 +72,28 @@ class RBdigitalDriver extends AbstractEContentDriver
 					} else {
 						$dueTime = null;
 					}
-					$checkout['dueDate'] = $dueTime;
-					$checkout['itemId'] = $patronCheckout->isbn;
-					$checkout['canRenew'] = $patronCheckout->canRenew;
-					$checkout['hasDrm'] = $patronCheckout->hasDrm;
-					$checkout['downloadUrl'] = $patronCheckout->downloadUrl;
-					if (strlen($checkout['downloadUrl']) == 0) {
-						$checkout['output'] = $patronCheckout->output;
-					}
+					$checkout->dueDate = $dueTime;
+					$checkout->itemId = $patronCheckout->isbn;
+					$checkout->canRenew = $patronCheckout->canRenew;
+					$checkout->downloadUrl = $patronCheckout->downloadUrl;
 					$checkout['accessOnlineUrl'] = '';
 
 					if ($checkout['id'] && strlen($checkout['id']) > 0) {
 						require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
 						$recordDriver = new RBdigitalRecordDriver($checkout['recordId']);
-						if ($recordDriver->isValid()) {
-							$checkout['groupedWorkId'] = $recordDriver->getPermanentId();
-							$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-							$checkout['ratingData'] = $recordDriver->getRatingData();
-							$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-							$checkout['format'] = $recordDriver->getPrimaryFormat();
-							$checkout['author'] = $recordDriver->getPrimaryAuthor();
-							$checkout['title'] = $recordDriver->getTitle();
-							$curTitle['title_sort'] = $recordDriver->getTitle();
-							$checkout['linkUrl'] = $recordDriver->getLinkUrl();
-							$checkout['accessOnlineUrl'] = $recordDriver->getAccessOnlineLinkUrl($patron);
+						if (!$recordDriver->isValid()) {
+							$checkout->groupedWorkId = $recordDriver->getPermanentId();
+							$checkout->format = $recordDriver->getPrimaryFormat();
+							$checkout->author = $recordDriver->getPrimaryAuthor();
+							$checkout->title = $recordDriver->getTitle();
 						} else {
-							$checkout['coverUrl'] = "";
-							$checkout['groupedWorkId'] = "";
-							$checkout['format'] = $patronCheckout->mediaType;
+							$checkout->format = $patronCheckout->mediaType;
 						}
 					}
 
-					$checkout['user'] = $patron->getNameAndLibraryLabel();
-					$checkout['userId'] = $patron->id;
+					$checkout->userId = $patron->id;
 
-					$checkouts[] = $checkout;
+					$checkouts[$checkout->source . $checkout->sourceId . $checkout->userId] = $checkout;
 				}
 			}
 
@@ -119,45 +107,35 @@ class RBdigitalDriver extends AbstractEContentDriver
 			} else {
 				foreach ($patronMagazines->resultSet as $patronMagazine) {
 					$patronMagazineDetails = $patronMagazine->item;
-					$checkout = array();
-					$checkout['checkoutSource'] = 'RBdigitalMagazine';
+					$checkout = new Checkout();
+					$checkout->type = 'rbdigital';
+					$checkout->source = 'rbdigital_magazine';
 
-					$checkout['id'] = $patronMagazineDetails->issueId;
-					$checkout['recordId'] = $patronMagazineDetails->magazineId . '_' . $patronMagazineDetails->issueId;
-					$checkout['title'] = $patronMagazineDetails->title;
-					$checkout['volume'] = $patronMagazineDetails->coverDate;
-					$checkout['publisher'] = $patronMagazineDetails->publisher;
-					$checkout['canRenew'] = false;
-					$checkout['accessOnlineUrl'] = '';
+					$checkout->sourceId = $patronMagazineDetails->issueId;
+					$checkout->recordId = $patronMagazineDetails->magazineId . '_' . $patronMagazineDetails->issueId;
+					$checkout->title = $patronMagazineDetails->title;
+					$checkout->volume = $patronMagazineDetails->coverDate;
+					$checkout->author = $patronMagazineDetails->publisher;
+					$checkout->canRenew = false;
 
-					if ($checkout['id'] && strlen($checkout['id']) > 0) {
+					if ($checkout->sourceId && strlen($checkout->sourceId) > 0) {
 						require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
-						$recordDriver = new RBdigitalMagazineDriver($checkout['recordId']);
+						$recordDriver = new RBdigitalMagazineDriver($checkout->recordId);
 						if ($recordDriver->isValid()) {
-							$checkout['groupedWorkId'] = $recordDriver->getPermanentId();
-							$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-							$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-							$checkout['ratingData'] = $recordDriver->getRatingData();
-							$checkout['format'] = $recordDriver->getPrimaryFormat();
-							$checkout['title'] = $recordDriver->getTitle();
-							$curTitle['title_sort'] = $recordDriver->getTitle();
-							$checkout['linkUrl'] = $recordDriver->getLinkUrl();
-							$checkout['accessOnlineUrl'] = $recordDriver->getAccessOnlineLinkUrl($patron);
+							$checkout->groupedWorkId = $recordDriver->getPermanentId();
+							$checkout->format = $recordDriver->getPrimaryFormat();
+							$checkout->title = $recordDriver->getTitle();
 						} else {
 							if (!empty($patronMagazineDetails->images[0])) {
-								$checkout['coverUrl'] = $patronMagazineDetails->images[0]->url;
-							}else{
-								$checkout['coverUrl'] = null;
+								$checkout->coverUrl = $patronMagazineDetails->images[0]->url;
 							}
-							$checkout['groupedWorkId'] = "";
-							$checkout['format'] = 'eMagazine';
+							$checkout->format = 'eMagazine';
 						}
 					}
 
-					$checkout['user'] = $patron->getNameAndLibraryLabel();
-					$checkout['userId'] = $patron->id;
+					$checkout->userId = $patron->id;
 
-					$checkouts[] = $checkout;
+					$checkouts[$checkout->source . $checkout->sourceId . $checkout->userId] = $checkout;
 				}
 			}
 		}

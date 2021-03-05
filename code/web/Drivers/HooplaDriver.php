@@ -205,6 +205,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	 */
 	public function getCheckouts($user)
 	{
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutItems = array();
 		if ($this->hooplaEnabled) {
 			$hooplaCheckedOutTitlesURL = $this->getHooplaBasePatronURL($user);
@@ -218,39 +219,34 @@ class HooplaDriver extends AbstractEContentDriver{
 					}
 					foreach ($checkOutsResponse as $checkOut) {
 						$hooplaRecordID  = $checkOut->contentId;
-						$simpleSortTitle = preg_replace('/^The\s|^A\s/i', '', $checkOut->title); // remove beginning The or A
-
-						$currentTitle = array(
-							'checkoutSource' => 'Hoopla',
-							'user'           => $user->getNameAndLibraryLabel(),
-							'userId'         => $user->id,
-							'hooplaId'       => $checkOut->contentId,
-							'title'          => $checkOut->title,
-							'title_sort'     => empty($simpleSortTitle) ? $checkOut->title : $simpleSortTitle,
-							'author'         => isset($checkOut->author) ? $checkOut->author : null,
-							'format'         => $checkOut->kind,
-							'checkoutDate'   => $checkOut->borrowed,
-							'dueDate'        => $checkOut->due,
-							'hooplaUrl'      => $checkOut->url
-						);
+						$currentTitle = new Checkout();
+						$currentTitle->type = 'hoopla';
+						$currentTitle->source = 'hoopla';
+						$currentTitle->userId = $user->id;
+						$currentTitle->sourceId = $checkOut->contentId;
+						$currentTitle->recordId = $checkOut->contentId;
+						$currentTitle->title = $checkOut->title;
+						if (isset($checkOut->author)) {
+							$currentTitle->author = $checkOut->author;
+						}
+						$currentTitle->format = $checkOut->kind;
+						$currentTitle->checkoutDate = $checkOut->borrowed;
+						$currentTitle->dueDate = $checkOut->due;
+						$currentTitle->accessOnlineUrl = $checkOut->url;
 
 						if ($hooplaPatronStatus != null && isset($hooplaPatronStatus->borrowsRemaining)) {
-							$currentTitle['borrowsRemaining'] = $hooplaPatronStatus->borrowsRemaining;
+							$currentTitle->borrowsRemaining = $hooplaPatronStatus->borrowsRemaining;
 						}
 
 						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 						$hooplaRecordDriver = new HooplaRecordDriver($hooplaRecordID);
 						if ($hooplaRecordDriver->isValid()) {
 							// Get Record For other details
-							$currentTitle['coverUrl']      = $hooplaRecordDriver->getBookcoverUrl('medium', true);
-							$currentTitle['linkUrl']       = $hooplaRecordDriver->getLinkUrl();
-							$currentTitle['groupedWorkId'] = $hooplaRecordDriver->getGroupedWorkId();
-							$currentTitle['ratingData']    = $hooplaRecordDriver->getRatingData();
-							$currentTitle['title_sort']    = $hooplaRecordDriver->getTitle();
-							$currentTitle['author']        = $hooplaRecordDriver->getPrimaryAuthor();
-							$currentTitle['format']        = $hooplaRecordDriver->getPrimaryFormat();
+							$currentTitle->groupedWorkId = $hooplaRecordDriver->getGroupedWorkId();
+							$currentTitle->author        = $hooplaRecordDriver->getPrimaryAuthor();
+							$currentTitle->format        = $hooplaRecordDriver->getPrimaryFormat();
 						}
-						$key = $currentTitle['checkoutSource'] . $currentTitle['hooplaId']; // This matches the key naming scheme in the Overdrive Driver
+						$key = $currentTitle->source . $currentTitle->sourceId . $currentTitle->userId; // This matches the key naming scheme in the Overdrive Driver
 						$checkedOutItems[$key] = $currentTitle;
 					}
 				} else {

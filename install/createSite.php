@@ -213,24 +213,24 @@ if (!file_exists('/data/aspen-discovery/accelerated_reader')){
 }
 recursive_copy($installDir . '/data_dir_setup', $dataDir);
 if (!$runningOnWindows){
-	exec('chown -R apache:apache ' . $dataDir);
+	exec('chown -R apache:aspen_apache ' . $dataDir);
 }
 
 //Make files directory writeable
 if (!$runningOnWindows){
-	exec('chown -R apache:apache ' . $installDir . '/code/web/files');
 	exec('chmod -R 755 ' . $installDir . '/code/web/files');
-	exec('chown -R apache:apache ' . $installDir . '/code/web/fonts');
-	exec('chmod -R 755 ' . $installDir . '/code/web/fonts');
+	exec('chown -R apache:aspen_apache ' . $installDir . '/code/web/fonts');
 }
 
 //Make log directories
 $logDir = '/var/log/aspen-discovery/' . $sitename;
 if (!file_exists($logDir)){
 	mkdir($logDir, 0775, true);
-	if (!$runningOnWindows){
-		exec('chown -R apache:apache ' . $logDir);
-	}
+}
+
+//Update file permissions
+if (!$runningOnWindows){
+	exec('./updateSitePermissions.sh ' . $sitename);
 }
 
 //Link the httpd conf file

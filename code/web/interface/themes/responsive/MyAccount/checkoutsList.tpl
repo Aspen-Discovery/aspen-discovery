@@ -24,23 +24,25 @@
 
 		<div class="striped">
 			{foreach from=$transList item=checkedOutTitle name=checkedOutTitleLoop key=checkedOutKey}
-				{if $checkedOutTitle.checkoutSource == 'ILS'}
+				{if $checkedOutTitle->type == 'ils'}
 					{include file="MyAccount/ilsCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-				{elseif $checkedOutTitle.checkoutSource == 'OverDrive'}
+				{elseif $checkedOutTitle->type == 'overdrive'}
 					{include file="MyAccount/overdriveCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-				{elseif $checkedOutTitle.checkoutSource == 'Hoopla'}
+				{elseif $checkedOutTitle->type == 'hoopla'}
 					{include file="MyAccount/hooplaCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-				{elseif $checkedOutTitle.checkoutSource == 'RBdigital'}
-					{include file="MyAccount/rbdigitalCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-				{elseif $checkedOutTitle.checkoutSource == 'RBdigitalMagazine'}
-					{include file="MyAccount/rbdigitalCheckedOutMagazine.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-				{elseif $checkedOutTitle.checkoutSource == 'CloudLibrary'}
+				{elseif $checkedOutTitle->type == 'rbdigital'}
+					{if $checkedOutTitle->source == 'rbdigital'}
+						{include file="MyAccount/rbdigitalCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
+					{elseif $checkedOutTitle->source == 'rbdigital_magazine'}
+						{include file="MyAccount/rbdigitalCheckedOutMagazine.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
+					{/if}
+				{elseif $checkedOutTitle->type == 'cloud_library'}
 					{include file="MyAccount/cloudLibraryCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-				{elseif $checkedOutTitle.checkoutSource == 'Axis360'}
+				{elseif $checkedOutTitle->type == 'axis360'}
 					{include file="MyAccount/axis360CheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 				{else}
 					<div class="row">
-						{translate text="Unknown record source"} {$checkedOutTitle.checkoutSource}
+						{translate text="Unknown record source"} {$checkedOutTitle->type}
 					</div>
 				{/if}
 			{/foreach}

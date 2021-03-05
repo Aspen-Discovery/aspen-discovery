@@ -8,6 +8,7 @@ require_once ROOT_DIR . '/sys/Module.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 require_once ROOT_DIR . '/sys/SystemLogging/UsageByIPAddress.php';
 require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+require_once ROOT_DIR . '/sys/Utils/EncryptionUtils.php';
 global $aspenUsage;
 $aspenUsage = new AspenUsage();
 $aspenUsage->year = date('Y');

@@ -47,9 +47,6 @@ class MaterialsRequest extends DataObject
 	//Dynamic properties setup by joins
 	public $numRequests;
 	public $description;
-	public $userId;
-	public $firstName;
-	public $lastName;
 
 	static function getFormats(){
 		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
@@ -240,6 +237,67 @@ class MaterialsRequest extends DataObject
 					$interface->assign('error', $error->getMessage());
 				}
 			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getCreatedByFirstName(){
+		if ($this->getCreatedByUser() != false) {
+			return $this->_createdByUser->firstname;
+		}else{
+			return '';
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getCreatedByLastName(){
+		if ($this->getCreatedByUser() != false) {
+			return $this->_createdByUser->lastname;
+		}else{
+			return '';
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getCreatedByUserBarcode(){
+		if ($this->getCreatedByUser() != false) {
+			return $this->_createdByUser->getBarcode();
+		}else{
+			return '';
+		}
+	}
+
+	/** @var User */
+	protected $_createdByUser = null;
+	function getCreatedByUser(){
+		if ($this->_createdByUser == null){
+			$this->_createdByUser = new User();
+			$this->_createdByUser->id = $this->createdBy;
+			if (!$this->_createdByUser->find(true)){
+				$this->_createdByUser = false;
+			}
+		}
+		return $this->_createdByUser;
+	}
+
+	/** @var User */
+	protected $_assigneeUser = null;
+	function getAssigneeUser(){
+		if ($this->_assigneeUser == null){
+			$this->_assigneeUser = new User();
+			$this->_assigneeUser->id = $this->assignedTo;
+			if (!$this->_assigneeUser->find(true)){
+				$this->_assigneeUser = false;
+			}
+		}
+		return $this->_assigneeUser;
+	}
+
+	function getAssigneeName(){
+		if ($this->getAssigneeUser() != false) {
+			return $this->_assigneeUser->displayName;
+		}else{
+			return '';
 		}
 	}
 }

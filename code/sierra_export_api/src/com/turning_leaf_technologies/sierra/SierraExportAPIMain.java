@@ -17,6 +17,7 @@ import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
@@ -97,7 +98,6 @@ public class SierraExportAPIMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
-		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 			Date startTime = new Date();
@@ -178,8 +178,19 @@ public class SierraExportAPIMain {
 				}
 				apiBaseUrl = sierraInstanceInformation.apiBaseUrl + "/iii/sierra-api/v" + apiVersion;
 
-				//Process MARC record changes
+
 				if (!extractSingleRecord) {
+					//Check to see if we should regroup all existing records
+					try {
+						if (indexingProfile.isRegroupAllRecords()) {
+							MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
+							recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
+						}
+					}catch (Exception e){
+						logEntry.incErrors("Error regrouping all records", e);
+					}
+
+					//Load MARC record changes
 					getBibsAndItemUpdatesFromSierra(sierraInstanceInformation, dbConn, sierraConn);
 				}
 
@@ -256,11 +267,6 @@ public class SierraExportAPIMain {
 				disconnectDatabase();
 				break;
 			}
-			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				disconnectDatabase();
-				break;
-			}
 
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
@@ -302,20 +308,12 @@ public class SierraExportAPIMain {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				if (!marcFile.exists()) {
-					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
-				} else {
-					FileInputStream marcFileStream = new FileInputStream(marcFile);
-					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
-					if (streamReader.hasNext()) {
-						Record marcRecord = streamReader.next();
-						//Regroup the record
-						String groupedWorkId = groupSierraRecord(marcRecord);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-					} else {
-						logEntry.incErrors("Could not read file " + marcFile);
-					}
+				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				if (marcRecord != null){
+					//Regroup the record
+					String groupedWorkId = groupSierraRecord(marcRecord);
+					//Reindex the record
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
@@ -615,7 +613,7 @@ public class SierraExportAPIMain {
 				getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 			} else if (result.deleteWork) {
 				//Delete the work from solr and the database
-				getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+				getGroupedWorkIndexer().deleteRecord(result.permanentId);
 			}
 			logEntry.incDeleted();
 		} catch (Exception e) {
@@ -1767,7 +1765,7 @@ public class SierraExportAPIMain {
 	}
 
 	private static String groupSierraRecord(Record marcRecord) {
-		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true);
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
 	}
 
 	private static MarcRecordGrouper getRecordGroupingProcessor() {

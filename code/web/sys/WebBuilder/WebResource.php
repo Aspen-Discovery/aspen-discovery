@@ -38,9 +38,13 @@ class WebResource extends DataObject
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The name of the resource', 'size' => '40', 'maxLength'=>100),
 			'url' => array('property' => 'url', 'type' => 'url', 'label' => 'URL', 'description' => 'The url of the resource', 'size' => '40', 'maxLength'=>255),
-			'openInNewTab' => array('property' => 'openInNewTab', 'type' => 'checkbox', 'label' => 'Open In New Tab', 'description' => 'Whether or not the link should open in a new tab', 'default' => false),
-			'logo' => array('property' => 'logo', 'type' => 'image', 'label' => 'Logo', 'description' => 'An image to display for the resource', 'thumbWidth' => 200),
+			'openInNewTab' => array('property' => 'openInNewTab', 'type' => 'checkbox', 'label' => 'Open In New Tab', 'description' => 'Whether or not the link should open in a new tab', 'default' => false, 'hideInLists'=>true),
+			'logo' => array('property' => 'logo', 'type' => 'image', 'label' => 'Logo', 'description' => 'An image to display for the resource', 'thumbWidth' => 200, 'hideInLists'=>true),
 			'featured' => array('property' => 'featured', 'type' => 'checkbox', 'label' => 'Featured?', 'description' => 'Whether or not the resource is a featured resource', 'default'=>0),
+			'inLibraryUseOnly' => array('property' => 'inLibraryUseOnly', 'type' => 'checkbox', 'label' => 'In Library Use Only?', 'description' => 'Whether or not the resource can only be used in the library', 'default'=>0, 'hideInLists'=>true),
+			'requiresLibraryCard' => array('property' => 'requiresLibraryCard', 'type' => 'checkbox', 'label' => 'Requires Library Card?', 'description' => 'Whether or not the resource requires a library card to use it', 'default'=>0, 'hideInLists'=>true),
+			'teaser' => array('property' => 'teaser', 'type' => 'markdown', 'label' => 'Teaser', 'description' => 'A short description of the resource to show in lists', 'hideInLists' => true),
+			'description' => array('property' => 'description', 'type' => 'markdown', 'label' => 'Description', 'description' => 'A description of the resource', 'hideInLists' => true),
 			'audiences' => array(
 				'property' => 'audiences',
 				'type' => 'multiSelect',
@@ -48,7 +52,7 @@ class WebResource extends DataObject
 				'label' => 'Audience',
 				'description' => 'Define audiences for the page',
 				'values' => $audiencesList,
-				'hideInLists' => false
+				'hideInLists' => true
 			),
 			'categories' => array(
 				'property' => 'categories',
@@ -57,12 +61,8 @@ class WebResource extends DataObject
 				'label' => 'Categories',
 				'description' => 'Define categories for the page',
 				'values' => $categoriesList,
-				'hideInLists' => false
+				'hideInLists' => true
 			),
-			'inLibraryUseOnly' => array('property' => 'inLibraryUseOnly', 'type' => 'checkbox', 'label' => 'In Library Use Only?', 'description' => 'Whether or not the resource can only be used in the library', 'default'=>0),
-			'requiresLibraryCard' => array('property' => 'requiresLibraryCard', 'type' => 'checkbox', 'label' => 'Requires Library Card?', 'description' => 'Whether or not the resource requires a library card to use it', 'default'=>0),
-			'teaser' => array('property' => 'teaser', 'type' => 'markdown', 'label' => 'Teaser', 'description' => 'A short description of the resource to show in lists', 'hideInLists' => true),
-			'description' => array('property' => 'description', 'type' => 'markdown', 'label' => 'Description', 'description' => 'A description of the resource', 'hideInLists' => true),
 			'lastUpdate' => array('property' => 'lastUpdate', 'type' => 'timestamp', 'label' => 'Last Update', 'description' => 'When the resource was changed last', 'default' => 0),
 			'libraries' => array(
 				'property' => 'libraries',
@@ -81,6 +81,7 @@ class WebResource extends DataObject
 	{
 		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 		$parsedown = AspenParsedown::instance();
+		require_once ROOT_DIR .'/sys/SystemVariables.php';
 		$parsedown->setBreaksEnabled(true);
 		return $parsedown->parse($this->description);
 	}

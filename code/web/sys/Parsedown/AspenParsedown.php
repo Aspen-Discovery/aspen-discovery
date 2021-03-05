@@ -2,6 +2,10 @@
 
 require_once ROOT_DIR . '/sys/Parsedown/ParsedownExtra.php';
 class AspenParsedown extends ParsedownExtra{
+	public function __construct(){
+		parent::__construct();
+
+	}
 	protected function inlineImage($Excerpt) {
 		$result = parent::inlineImage($Excerpt);
 		if (!empty($result)) {
@@ -36,10 +40,15 @@ class AspenParsedown extends ParsedownExtra{
 					'extent' => strlen($Excerpt['text']),
 				);
 			}
-		}elseif (preg_match_all('/events:(.*)/i', $element['element']['attributes']['href'], $matches)){
-			require_once ROOT_DIR . '/sys/LocalEnrichment/EventsSpotlight.php';
-
 		}
 		return $element;
+	}
+
+	function parse($text){
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables != false && !empty($systemVariables->allowHtmlInMarkdownFields)){
+			$text = strip_tags($text, '<' . implode('><', explode('|', $systemVariables->allowableHtmlTags)). '>');
+		}
+		return parent::parse($text);
 	}
 }

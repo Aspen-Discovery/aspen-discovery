@@ -1,5 +1,5 @@
 <textarea name='{$propName}' id='{$propName}' {if !empty($property.rows)}rows='{$property.rows}'{/if} {if !empty($property.cols)}cols='{$property.cols}'{/if} title='{$property.description}' class='form-control {if !empty($property.required)}required{/if}' {if !empty($property.readOnly)}readonly{/if}>{$propValue|escape}</textarea>
-{if $property.type == 'html'}
+{if $property.type == 'html' || ($property.type == 'markdown' && $useHtmlEditorRatherThanMarkdown)}
 	<script type="text/javascript">
 	{literal}
 	$(document).ready(function(){

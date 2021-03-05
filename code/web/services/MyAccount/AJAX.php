@@ -1829,6 +1829,7 @@ class MyAccount_AJAX extends JSON_Action
 
 				$result['success'] = true;
 				$result['message'] = "";
+				$result['checkoutInfoLastLoaded'] = $user->getFormattedCheckoutInfoLastLoaded();
 				$result['checkouts'] = $interface->fetch('MyAccount/checkoutsList.tpl');
 			}
 		} else {
@@ -1862,7 +1863,6 @@ class MyAccount_AJAX extends JSON_Action
 			if (UserAccount::isLoggedIn() == false || empty($user)){
 				$result['message'] = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
 			}else {
-
 				$interface->assign('allowFreezeHolds', true);
 
 				$ils = $configArray['Catalog']['ils'];
@@ -1956,6 +1956,7 @@ class MyAccount_AJAX extends JSON_Action
 
 				$result['success'] = true;
 				$result['message'] = "";
+				$result['holdInfoLastLoaded'] = $user->getFormattedHoldInfoLastLoaded();
 				$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
 			}
 		} else {
@@ -2092,7 +2093,7 @@ class MyAccount_AJAX extends JSON_Action
 
 	/**
 	 * @param string $selectedSortOption
-	 * @param array $allCheckedOut
+	 * @param Checkout[] $allCheckedOut
 	 * @return array
 	 */
 	private function sortCheckouts(string $selectedSortOption, array $allCheckedOut): array
@@ -2101,37 +2102,30 @@ class MyAccount_AJAX extends JSON_Action
 		$curTransaction = 0;
 		foreach ($allCheckedOut as $i => $curTitle) {
 			$curTransaction++;
-			$sortTitle = !empty($curTitle['title_sort']) ? $curTitle['title_sort'] : (empty($curTitle['title']) ? $this::SORT_LAST_ALPHA : $curTitle['title']);
+			$sortTitle = !empty($curTitle->getSortTitle()) ? $curTitle->getSortTitle() : (empty($curTitle->getTitle()) ? $this::SORT_LAST_ALPHA : $curTitle->getTitle());
 			$sortKey = $sortTitle;
 			if ($selectedSortOption == 'title') {
 				$sortKey = $sortTitle;
 			} elseif ($selectedSortOption == 'author') {
-				$sortKey = (empty($curTitle['author']) ? $this::SORT_LAST_ALPHA : $curTitle['author']) . '-' . $sortTitle;
+				$sortKey = (empty($curTitle->getAuthor()) ? $this::SORT_LAST_ALPHA : $curTitle->getAuthor()) . '-' . $sortTitle;
 			} elseif ($selectedSortOption == 'dueDate') {
-				if (isset($curTitle['dueDate'])) {
-					if (preg_match('~.*?(\\d{1,2})[-/](\\d{1,2})[-/](\\d{2,4}).*~', $curTitle['dueDate'], $matches)) {
+				if (isset($curTitle->dueDate)) {
+					if (preg_match('~.*?(\\d{1,2})[-/](\\d{1,2})[-/](\\d{2,4}).*~', $curTitle->dueDate, $matches)) {
 						$sortKey = $matches[3] . '-' . $matches[1] . '-' . $matches[2] . '-' . $sortTitle;
 					} else {
-						$sortKey = $curTitle['dueDate'] . '-' . $sortTitle;
+						$sortKey = $curTitle->dueDate . '-' . $sortTitle;
 					}
 				}
 			} elseif ($selectedSortOption == 'format') {
-				$sortKey = ((empty($curTitle['format']) || strcasecmp($curTitle['format'], 'unknown') == 0) ? $this::SORT_LAST_ALPHA : $curTitle['format']) . '-' . $sortTitle;
+				$sortKey = ((empty($curTitle->getPrimaryFormat()) || strcasecmp($curTitle->getPrimaryFormat(), 'unknown') == 0) ? $this::SORT_LAST_ALPHA : $curTitle->getPrimaryFormat()) . '-' . $sortTitle;
 			} elseif ($selectedSortOption == 'renewed') {
-				if (isset($curTitle['renewCount']) && is_numeric($curTitle['renewCount'])) {
-					$sortKey = str_pad($curTitle['renewCount'], 3, '0', STR_PAD_LEFT) . '-' . $sortTitle;
+				if (isset($curTitle->renewCount) && is_numeric($curTitle->renewCount)) {
+					$sortKey = str_pad($curTitle->renewCount, 3, '0', STR_PAD_LEFT) . '-' . $sortTitle;
 				} else {
 					$sortKey = '***' . '-' . $sortTitle;
 				}
-			} elseif ($selectedSortOption == 'holdQueueLength') {
-				if (isset($curTitle['holdQueueLength']) && is_numeric($curTitle['holdQueueLength'])) {
-					$sortKey = str_pad($curTitle['holdQueueLength'], 3, '0', STR_PAD_LEFT) . '-' . $sortTitle;
-				} else {
-					$sortKey = '***' . '-' . $sortTitle;
-				}
-
 			} elseif ($selectedSortOption == 'libraryAccount') {
-				$sortKey = $curTitle['user'] . '-' . $sortTitle;
+				$sortKey = $curTitle->getUserName() . '-' . $sortTitle;
 			}
 			$sortKey = strtolower($sortKey);
 			$sortKey = utf8_encode($sortKey . '-' . $curTransaction);
@@ -2413,6 +2407,9 @@ class MyAccount_AJAX extends JSON_Action
 
 					} else {
 						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+						if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount
+							$finesPaid .= '|' . $fineAmount;
+						}
 					}
 
 					$purchaseUnits['items'][] = [
@@ -2617,14 +2614,19 @@ class MyAccount_AJAX extends JSON_Action
 	function createMSBOrder()
 	{
 		global $configArray;
-		list($userLibrary, $payment, $purchaseUnits) = $this->createGenericOrder('msb');
-		$baseUrl = "https://msbpay.demo.gilacorp.com/"; // TODO: create a database variable
-		$paymentRequestUrl = $baseUrl . "NashvillePublicLibrary/"; // TODO: create a database variable
-		$paymentRequestUrl .= "?ReferenceID=".$payment->id;
-		$paymentRequestUrl .= "&PaymentType=CC";
-		$paymentRequestUrl .= "&TotalAmount=".$payment->totalPaid;
-		$paymentRequestUrl .= "&PaymentRedirectUrl=".$configArray['Site']['url'] . '/MyAccount/Fines';
-		return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
+		$result = $this->createGenericOrder('msb');
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			list($userLibrary, $payment, $purchaseUnits) = $result;
+			$baseUrl = "https://msbpay.demo.gilacorp.com/"; // TODO: create a database variable
+			$paymentRequestUrl = $baseUrl . "NashvillePublicLibrary/"; // TODO: create a database variable
+			$paymentRequestUrl .= "?ReferenceID=" . $payment->id;
+			$paymentRequestUrl .= "&PaymentType=CC";
+			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;
+			$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/MyAccount/Fines';
+			return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
+		}
 	}
 
 	/** @noinspection PhpUnused */

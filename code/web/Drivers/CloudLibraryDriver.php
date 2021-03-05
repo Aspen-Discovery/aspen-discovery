@@ -46,47 +46,40 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 		if (isset($circulation->Checkouts->Item)) {
 			foreach ($circulation->Checkouts->Item as $checkoutFromCloudLibrary) {
-				$checkout = [];
-				$checkout['checkoutSource'] = 'CloudLibrary';
+				$checkout = new Checkout();
+				$checkout->type = 'cloud_library';
+				$checkout->source = 'cloud_library';
 
-				$checkout['id'] = (string)$checkoutFromCloudLibrary->ItemId;
-				$checkout['recordId'] = (string)$checkoutFromCloudLibrary->ItemId;
-				$checkout['dueDate'] = (string)$checkoutFromCloudLibrary->EventEndDateInUTC;
+				$checkout->sourceId = (string)$checkoutFromCloudLibrary->ItemId;
+				$checkout->recordId = (string)$checkoutFromCloudLibrary->ItemId;
+				$checkout->dueDate = (string)$checkoutFromCloudLibrary->EventEndDateInUTC;
 
 				try {
-					$dueDate = new DateTime($checkout['dueDate'], new DateTimeZone('UTC'));
+					$dueDate = new DateTime($checkout->dueDate, new DateTimeZone('UTC'));
 					$timeDiff = $dueDate->getTimestamp() - time();
 					//Checkouts cannot be renewed 3 days before the title is due
 					if ($timeDiff < (3*24*60*60)){
-						$checkout['canRenew'] = true;
+						$checkout->canRenew = true;
 					}else{
-						$checkout['canRenew'] = false;
+						$checkout->canRenew = false;
 					}
 				} catch (Exception $e) {
-					$checkout['canRenew'] = false;
+					$checkout->canRenew = false;
 				}
 
 				$recordDriver = new CloudLibraryRecordDriver((string)$checkoutFromCloudLibrary->ItemId);
 				if ($recordDriver->isValid()) {
-					$checkout['title'] = $recordDriver->getTitle();
-					$curTitle['title_sort'] = $recordDriver->getTitle();
-					$checkout['author'] = $recordDriver->getPrimaryAuthor();
-					$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
-					$checkout['ratingData'] = $recordDriver->getRatingData();
-					$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-					$checkout['format'] = $recordDriver->getPrimaryFormat();
-					$checkout['linkUrl'] = $recordDriver->getLinkUrl();
-					$checkout['accessOnlineUrl'] = $recordDriver->getAccessOnlineLink($user);
+					$checkout->title = $recordDriver->getTitle();
+					$checkout->author = $recordDriver->getPrimaryAuthor();
+					$checkout->groupedWorkId = $recordDriver->getGroupedWorkId();
 				} else {
-					$checkout['title'] = 'Unknown Cloud Library Title';
-					$checkout['author'] = '';
-					$checkout['format'] = 'Unknown - Cloud Library';
+					$checkout->title = 'Unknown Cloud Library Title';
+					$checkout->format = 'Unknown - Cloud Library';
 				}
 
-				$checkout['user'] = $user->getNameAndLibraryLabel();
-				$checkout['userId'] = $user->id;
+				$checkout->userId = $user->id;
 
-				$checkouts[] = $checkout;
+				$checkouts[$checkout->source . $checkout->sourceId . $checkout->userId] = $checkout;
 			}
 		}
 
@@ -135,7 +128,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings($patron);
-		$patronId = $patron->getBarcode();
+		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/checkin";
 		$requestBody =
 			"<CheckinRequest>
@@ -183,6 +176,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			return $this->holds[$user->id];
 		}
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+		require_once ROOT_DIR . '/sys/User/Hold.php';
 
 		$holds = array(
 			'available' => array(),
@@ -200,8 +194,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			foreach ($circulation->Holds->Item as $holdFromCloudLibrary) {
 				$hold = $this->loadCloudLibraryHoldInfo($user, $holdFromCloudLibrary);
 
-				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
-				$hold['position'] = (string)$holdFromCloudLibrary->Position;
+				$key = $hold->type . $hold->sourceId . $hold->userId;
+				$hold->position = (string)$holdFromCloudLibrary->Position;
 				$holds['unavailable'][$key] = $hold;
 				$index++;
 			}
@@ -211,8 +205,9 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$index = 0;
 			foreach ($circulation->Reserves->Item as $holdFromCloudLibrary) {
 				$hold = $this->loadCloudLibraryHoldInfo($user, $holdFromCloudLibrary);
+				$hold->available = true;
 
-				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
+				$key = $hold->type . $hold->sourceId . $hold->userId;
 				$holds['available'][$key] = $hold;
 				$index++;
 			}
@@ -239,7 +234,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings($patron);
-		$patronId = $patron->getBarcode();
+		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$password = $patron->getPasswordOrPin();
 		$patronEligibleForHolds = $patron->eligibleForHolds();
 		if ($patronEligibleForHolds['fineLimitReached']){
@@ -314,7 +309,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings($patron);
-		$patronId = $patron->getBarcode();
+		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/cancelhold";
 		$requestBody =
 			"<CancelHoldRequest>
@@ -391,7 +386,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
 		$settings = $this->getSettings($user);
-		$patronId = $user->getBarcode();
+		$patronId = str_replace(' ', '', $user->getBarcode());
 		$password = $user->getPasswordOrPin();
 		if (!$user->eligibleForHolds()){
 			$result['message'] = translate(['text' => 'cl_outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to use Cloud Library.']);
@@ -437,7 +432,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			global $memCache;
 			$circulationInfo = $memCache->get('cloud_library_circulation_info_' . $user->id);
 			if ($circulationInfo == false || isset($_REQUEST['reload'])) {
-				$patronId = $user->getBarcode();
+				$patronId = str_replace(' ', '', $user->getBarcode());
 				$password = $user->getPasswordOrPin();
 				$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
 				$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
@@ -580,7 +575,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if ($settings == false){
 			return false;
 		}
-		$patronId = $user->getBarcode();
+		$patronId = str_replace(' ', '', $user->getBarcode());
 		$password = $user->getPasswordOrPin();
 		$apiPath = "/cirrus/library/{$settings->libraryId}/patron/$patronId";
 		if (false){
@@ -600,33 +595,18 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	/**
 	 * @param $user
 	 * @param $holdFromCloudLibrary
-	 * @return array
+	 * @return Hold
 	 */
-	private function loadCloudLibraryHoldInfo(User $user, $holdFromCloudLibrary): array
+	private function loadCloudLibraryHoldInfo(User $user, $holdFromCloudLibrary): Hold
 	{
-		$hold = [];
-		$hold['holdSource'] = 'CloudLibrary';
+		$hold = new Hold();
+		$hold->type = 'cloud_library';
+		$hold->source = 'cloud_library';
 
-		$hold['id'] = (string)$holdFromCloudLibrary->ItemId;
-		$hold['transactionId'] = (string)$holdFromCloudLibrary->ItemId;
-
-		$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
-		if ($recordDriver->isValid()) {
-			$hold['groupedWorkId'] = $recordDriver->getPermanentId();
-			$hold['title'] = $recordDriver->getTitle();
-			$hold['sortTitle'] = $recordDriver->getTitle();
-			$hold['author'] = $recordDriver->getPrimaryAuthor();
-			$hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
-			$hold['ratingData'] = $recordDriver->getRatingData();
-			$hold['format'] = $recordDriver->getPrimaryFormat();
-			$hold['linkUrl'] = $recordDriver->getLinkUrl();
-		} else {
-			$hold['title'] = 'Unknown';
-			$hold['author'] = 'Unknown';
-		}
-
-		$hold['user'] = $user->getNameAndLibraryLabel();
-		$hold['userId'] = $user->id;
+		$hold->sourceId = (string)$holdFromCloudLibrary->ItemId;
+		$hold->recordId = (string)$holdFromCloudLibrary->ItemId;
+		$hold->createDate = strtotime($holdFromCloudLibrary->EventStartDateInUTC);
+		$hold->userId = $user->id;
 		return $hold;
 	}
 
@@ -638,7 +618,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 */
 	public function getItemStatus($itemId, $patron){
 		$settings = $this->getSettings($patron);
-		$patronId = $patron->getBarcode();
+		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/item/status/$patronId/$itemId";
 		$itemStatusInfo = $this->callCloudLibraryUrl($settings, $apiPath);
 		if ($this->curlWrapper->getResponseCode() == 200){

@@ -7200,10 +7200,11 @@ body > .container {
   }
 }
 .btn-editions {
-  display: inline;
+  display: inline-block;
   color: #212529;
   background-color: #f8f9fa;
   border-color: #999999;
+  margin-top: 3px;
 }
 .btn-editions:hover,
 .btn-editions:focus,
@@ -9663,6 +9664,12 @@ a.browse-thumbnail-sorted.active {
 }
 #library-barcode-svg {
   max-width: 100%;
+}
+.refresh-indicator {
+  font-size: 85%;
+  float: right !important;
+  margin-right: 6px;
+  margin-top: 6px;
 }
 /**
  * Additional Styling related to the help system

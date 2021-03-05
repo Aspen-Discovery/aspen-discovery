@@ -13,6 +13,7 @@ yum -y install php php-mcrypt php-gd php-curl php-mysql php-zip php-fileinfo
 yum -y install php-xml
 yum -y install bind-utils
 yum -y install php-intl
+yum -y install php-mbstring
 service httpd start
 chkconfig httpd on
 # New PHP ini file
@@ -57,5 +58,7 @@ mysql_secure_installation
 echo "Enter the timezone of the server"
 read timezone
 timedatectl set-timezone $timezone
+
+bash ./setup_aspen_users.sh
 
 

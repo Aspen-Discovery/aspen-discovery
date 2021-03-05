@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
@@ -360,7 +361,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void deleteRecord(String permanentId, @SuppressWarnings("unused") Long groupedWorkId) {
+	public void deleteRecord(String permanentId) {
 		logger.info("Clearing existing work " + permanentId + " from index");
 		try {
 			updateServer.deleteById(permanentId);
@@ -407,7 +408,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void processScheduledWorks(BaseLogEntry logEntry) {
+	public void processScheduledWorks(BaseLogEntry logEntry) {
 		//Check to see what records still need to be indexed based on a timed index
 		logEntry.addNote("Checking for additional works that need to be indexed");
 
@@ -660,7 +661,7 @@ public class GroupedWorkIndexer {
 			//Log that this record did not have primary identifiers after
 			logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
 			if (!this.clearIndex){
-				this.deleteRecord(permanentId, id);
+				this.deleteRecord(permanentId);
 			}
 
 		}

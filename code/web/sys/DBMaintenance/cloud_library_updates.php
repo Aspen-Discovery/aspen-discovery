@@ -149,6 +149,14 @@ function getCloudLibraryUpdates() {
 			]
 		],
 
+		'cloud_library_add_settings' => [
+			'title' => 'Add Settings to Cloud Library module',
+			'description' => 'Add Settings to Cloud Library module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/CloudLibrary/CloudLibrarySetting.php', settingsClassName = 'CloudLibrarySetting' WHERE name = 'Cloud Library'"
+			]
+		],
+
 		'cloud_library_increase_allowable_copies' => [
 			'title' => 'Cloud Library increase field size for copies fields',
 			'description' => 'Cloud Library increase field size for copies fields',

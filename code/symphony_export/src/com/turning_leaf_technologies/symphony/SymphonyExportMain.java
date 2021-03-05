@@ -1,14 +1,13 @@
 package com.turning_leaf_technologies.symphony;
 
-import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -58,7 +57,6 @@ public class SymphonyExportMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
-		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 			reindexStartTime = new Date();
@@ -135,11 +133,6 @@ public class SymphonyExportMain {
 				disconnectDatabase();
 				break;
 			}
-			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				disconnectDatabase();
-				break;
-			}
 
 			disconnectDatabase();
 
@@ -149,10 +142,11 @@ public class SymphonyExportMain {
 				System.exit(0);
 			}else {
 				//Pause before running the next export (longer if we didn't get any actual changes)
+				//But not too much longer since we get regular marc delta files that we want to catch as quickly as possible
 				try {
 					if (numChanges == 0 || logEntry.hasErrors()) {
 						//noinspection BusyWait
-						Thread.sleep(1000 * 60 * 5);
+						Thread.sleep(1000 * 60 * 2);
 					} else {
 						//noinspection BusyWait
 						Thread.sleep(1000 * 60);
@@ -177,20 +171,12 @@ public class SymphonyExportMain {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				if (!marcFile.exists()) {
-					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
-				} else {
-					FileInputStream marcFileStream = new FileInputStream(marcFile);
-					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
-					if (streamReader.hasNext()) {
-						Record marcRecord = streamReader.next();
-						//Regroup the record
-						String permanentId = recordGroupingProcessor.processMarcRecord(marcRecord, true);
-						//Reindex the record
-						indexer.processGroupedWork(permanentId);
-					} else {
-						logEntry.incErrors("Could not read file " + marcFile);
-					}
+				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				if (marcRecord != null) {
+					//Regroup the record
+					String permanentId = recordGroupingProcessor.processMarcRecord(marcRecord, true, null);
+					//Reindex the record
+					indexer.processGroupedWork(permanentId);
 				}
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
@@ -396,6 +382,16 @@ public class SymphonyExportMain {
 	}
 
 	private static int updateRecords(Connection dbConn){
+		//Check to see if we should regroup all existing records
+		try {
+			if (indexingProfile.isRegroupAllRecords()) {
+				MarcRecordGrouper recordGrouper = getRecordGroupingProcessor(dbConn);
+				recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(dbConn), logEntry);
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error regrouping all records", e);
+		}
+
 		//Get the last export from MARC time
 		long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
 
@@ -514,7 +510,7 @@ public class SymphonyExportMain {
 
 							BaseMarcRecordGrouper.MarcStatus marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
 							if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED);
+								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED, null);
 								if (permanentId == null){
 									//Delete the record since it is suppressed
 									deleteRecord = true;
@@ -546,7 +542,7 @@ public class SymphonyExportMain {
 								getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 							}else if (result.deleteWork){
 								//Delete the work from solr and the database
-								getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+								getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
 							}
 							logEntry.incDeleted();
 							totalChanges++;
@@ -573,7 +569,7 @@ public class SymphonyExportMain {
 					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 				}else if (result.deleteWork){
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
 				}
 				logEntry.incDeleted();
 				totalChanges++;

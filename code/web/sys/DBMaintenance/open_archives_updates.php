@@ -140,6 +140,14 @@ function getOpenArchivesUpdates()
 			]
 		],
 
+		'open_archives_module_add_settings' => [
+			'title' => 'Add Settings to Open Archives module',
+			'description' => 'Add Settings to Open Archives module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/OpenArchives/OpenArchivesCollection.php', settingsClassName = 'OpenArchivesCollection' WHERE name = 'Open Archives'"
+			]
+		],
+
 		'open_archives_scoping' => [
 			'title' => 'Open Archives scoping',
 			'description' => 'Add scoping for open archives',

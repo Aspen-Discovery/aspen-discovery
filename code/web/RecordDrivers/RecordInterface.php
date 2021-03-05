@@ -95,6 +95,9 @@ abstract class RecordInterface
 	 */
 	public abstract function getTitle();
 
+	public function getSortableTitle(){
+		return $this->getTitle();
+	}
 
 	/**
 	 * Return the unique identifier of this record within the Solr index;

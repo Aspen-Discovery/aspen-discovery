@@ -37,6 +37,9 @@
 					<li role="presentation"{if $tab=='axis360'} class="active"{/if}><a href="#axis360" aria-controls="axis360" role="tab" data-toggle="tab">{translate text="Axis 360"} <span class="badge"><span class="axis360-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 			</ul>
+			<div class="refresh-indicator small pull-right">
+				{translate text="Last Loaded <span id='accountLoadTime'>%1%</span>" 1=$profile->getFormattedCheckoutInfoLastLoaded()} <a onclick="return AspenDiscovery.Account.reloadCheckouts();" title="Refresh"><i class="fas fa-sync-alt"></i></a>
+			</div>
 
 			<!-- Tab panes -->
 			<div class="tab-content" id="checkouts">

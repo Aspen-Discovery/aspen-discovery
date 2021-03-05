@@ -15,6 +15,7 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -94,8 +95,6 @@ public class CarlXExportMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
-		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
-
 
 		while (true){
 			Date startTime = new Date();
@@ -141,6 +140,10 @@ public class CarlXExportMain {
 				}
 
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+				if (!extractSingleWork && indexingProfile.isRegroupAllRecords()) {
+					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor(dbConn);
+					recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(dbConn), logEntry);
+				}
 				if (indexingProfile.isRunFullUpdate()){
 					//Un mark that a full update needs to be done
 					PreparedStatement updateSettingsStmt = dbConn.prepareStatement("UPDATE indexing_profiles set runFullUpdate = 0 where id = ?");
@@ -205,11 +208,6 @@ public class CarlXExportMain {
 				disconnectDatabase(dbConn);
 				break;
 			}
-			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				disconnectDatabase(dbConn);
-				break;
-			}
 			if (extractSingleWork) {
 				disconnectDatabase(dbConn);
 				break;
@@ -258,20 +256,12 @@ public class CarlXExportMain {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				if (!marcFile.exists()) {
-					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
-				} else {
-					FileInputStream marcFileStream = new FileInputStream(marcFile);
-					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
-					if (streamReader.hasNext()) {
-						Record marcRecord = streamReader.next();
-						//Regroup the record
-						String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true);
-						//Reindex the record
-						getGroupedWorkIndexer(dbConn).processGroupedWork(groupedWorkId);
-					} else {
-						logEntry.incErrors("Could not read file " + marcFile);
-					}
+				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				if (marcRecord != null) {
+					//Regroup the record
+					String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null);
+					//Reindex the record
+					getGroupedWorkIndexer(dbConn).processGroupedWork(groupedWorkId);
 				}
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
@@ -358,7 +348,7 @@ public class CarlXExportMain {
 
 							BaseMarcRecordGrouper.MarcStatus marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
 							if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED);
+								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED, null);
 								if (permanentId == null){
 									//Delete the record since it is suppressed
 									deleteRecord = true;
@@ -387,7 +377,7 @@ public class CarlXExportMain {
 								getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 							}else if (result.deleteWork){
 								//Delete the work from solr and the database
-								getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+								getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
 							}
 							logEntry.incDeleted();
 							totalChanges++;
@@ -415,7 +405,7 @@ public class CarlXExportMain {
 					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 				} else if (result.deleteWork) {
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
 				}
 				logEntry.incDeleted();
 				if (logEntry.getNumDeleted() % 250 == 0) {
@@ -616,7 +606,7 @@ public class CarlXExportMain {
 					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 				} else if (result.deleteWork) {
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
 				}
 				logEntry.incDeleted();
 				totalChanges++;
@@ -1536,7 +1526,7 @@ public class CarlXExportMain {
 	}
 
 	private static String groupRecord(Connection dbConn, Record marcRecord) {
-		return getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true);
+		return getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null);
 	}
 
 	private static MarcRecordGrouper getRecordGroupingProcessor(Connection dbConn){

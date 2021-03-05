@@ -350,8 +350,8 @@ function getUserUpdates()
 			'description' => 'Add the ability to define a secondary library card for a user',
 			'sql' => [
 				"ALTER TABLE user ADD COLUMN alternateLibraryCard VARCHAR(50) DEFAULT ''",
-				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(60) DEFAULT ''",
-				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(60) DEFAULT ''",
+				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(256) DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''",
 			]
 		],
 
@@ -668,7 +668,111 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user ADD COLUMN lastReadingHistoryUpdate INT(11) DEFAULT 0'
 			]
-		]
+		],
+
+		'user_remove_college_major' => [
+			'title' => 'Remove College and Major',
+			'description' => 'Remove unused college and major fields from user table',
+			'sql' => [
+				'ALTER TABLE user DROP COLUMN college',
+				'ALTER TABLE user DROP COLUMN major',
+			]
+		],
+		'encrypt_user_table' => [
+			'title' => 'Encrypt User Table (Slow)',
+			'description' => 'Encrypt data within the user table, this can take a long time for instances with a lot of users.',
+			'sql' => [
+				//First increase field lengths
+				'ALTER TABLE user CHANGE COLUMN password password VARCHAR(256)',
+				"ALTER TABLE user CHANGE COLUMN firstname firstname VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN lastname lastname VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN email email VARCHAR(256) NOT NULL DEFAULT ''",
+				'ALTER TABLE user CHANGE COLUMN cat_username cat_username VARCHAR(256)',
+				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN displayName displayName VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN phone phone VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN overdriveEmail overdriveEmail VARCHAR(256) NOT NULL DEFAULT ''",
+				'ALTER TABLE user CHANGE COLUMN rbdigitalPassword rbdigitalPassword VARCHAR(256)',
+				"ALTER TABLE user CHANGE COLUMN alternateLibraryCardPassword alternateLibraryCardPassword VARCHAR(256) NOT NULL DEFAULT ''",
+				//Now do the actual encryption
+				'encryptUserFields'
+			]
+		],
+
+		'user_cache_holds' => [
+			'title' => 'User account cache holds',
+			'description' => 'Cache holds for a user to improve performance',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN holdInfoLastLoaded INT(11) DEFAULT 0',
+				"CREATE TABLE user_hold (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					type VARCHAR(20) NOT NULL,
+					source VARCHAR(50) NOT NULL,
+					userId INT(11) NOT NULL,
+					sourceId VARCHAR(50) NOT NULL,
+					recordId VARCHAR(50) NOT NULL,
+					shortId VARCHAR(50),
+					itemId VARCHAR(50),
+					title VARCHAR(500),
+					title2 VARCHAR(500),
+					author VARCHAR(500),
+					volume VARCHAR(50),
+					callNumber VARCHAR(50),
+					available TINYINT(1),
+					cancelable TINYINT(1),
+					cancelId VARCHAR(50),
+					locationUpdateable TINYINT(1),
+					pickupLocationId VARCHAR(50),
+					pickupLocationName VARCHAR(100),
+					status VARCHAR(50),
+					position INT(11),
+					holdQueueLength INT(11),
+					createDate INT(11),
+					availableDate INT(11),
+					expirationDate INT(11),
+					automaticCancellationDate INT(11),
+					frozen TINYINT(1),
+					canFreeze TINYINT(1),
+					reactivateDate INT(11)
+				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8"
+			]
+		],
+
+		'user_cache_checkouts' => [
+			'title' => 'User account cache checkouts',
+			'description' => 'Cache checkouts for a user to improve performance',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN checkoutInfoLastLoaded INT(11) DEFAULT 0',
+				"CREATE TABLE user_checkout (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					type VARCHAR(20) NOT NULL,
+					source VARCHAR(50) NOT NULL,
+					userId INT(11) NOT NULL,
+					sourceId VARCHAR(50) NOT NULL,
+					recordId VARCHAR(50) NOT NULL,
+					shortId VARCHAR(50),
+					itemId VARCHAR(50),
+					itemIndex VARCHAR(50),
+					renewalId VARCHAR(50),
+					barcode VARCHAR(50),
+					title VARCHAR(500),
+					title2 VARCHAR(500),
+					author VARCHAR(500),
+					callNumber VARCHAR(50),
+					volume VARCHAR(50),
+					checkoutDate INT(11),
+					dueDate INT(11),
+					renewCount INT(11),
+					canRenew TINYINT(1),
+					autoRenew TINYINT(1),
+					autoRenewError VARCHAR(500),
+					maxRenewals INT(11),
+					fine FLOAT,
+					returnClaim VARCHAR(500),
+					holdQueueLength INT(11)
+				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8"
+			]
+		],
 	);
 }
 
@@ -754,5 +858,23 @@ function fixNytUserPermissions()
 			$nytLists->searchable = 1;
 			$nytLists->update();
 		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function encryptUserFields(){
+	set_time_limit(0);
+	$user = new User();
+	$numUsers = $user->count();
+	$numBatches = (int)ceil($numUsers / 1000);
+	for ($i = 0; $i < $numBatches; $i++){
+		$user = new User();
+		$user->limit($i * 1000, 1000);
+		$user->find();
+		while ($user->fetch()){
+			//Just need to re-save to make the encryption work
+			$user->update();
+		}
+		$user->__destruct();
 	}
 }

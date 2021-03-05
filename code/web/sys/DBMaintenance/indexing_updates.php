@@ -268,6 +268,15 @@ function getIndexingUpdates()
 			)
 		),
 
+		'indexing_profile__remove_groupUnchangedFiles' => array(
+			'title' => 'Indexing Profiles - Remove Group Unchanged Files',
+			'description' => 'Remove Group Unchanged Files since it is not used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE indexing_profiles DROP COLUMN groupUnchangedFiles",
+			)
+		),
+
 		'indexing_profile_marc_record_subfield' => array(
 			'title' => 'Indexing Profiles - Marc Record Subfield',
 			'description' => 'Define the subfield for the marc record',
@@ -407,6 +416,15 @@ function getIndexingUpdates()
 			)
 		),
 
+		'ils_exportLog_num_regroups' => array(
+			'title' => 'ILS export log add regroups',
+			'description' => 'Add tracking of number of records regrouped to export log',
+			'sql' => array(
+				"ALTER TABLE ils_extract_log ADD COLUMN numChangedAfterGrouping INT(11) DEFAULT 0",
+				"ALTER TABLE ils_extract_log ADD COLUMN numRegrouped INT(11) DEFAULT 0",
+			)
+		),
+
 		'track_ils_user_usage' => array(
 			'title' => 'ILS Usage by user',
 			'description' => 'Add a table to track how often a particular user uses the ils and side loads.',
@@ -515,6 +533,14 @@ function getIndexingUpdates()
 			'description' => 'Add fields to track when the last volume export file was saved',
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN lastVolumeExportTimestamp INT(11) DEFAULT 0',
+			]
+		],
+
+		'indexing_profile_regroup_all_records' => [
+			'title' => 'Indexing Profile Add Regroup All Records',
+			'description' => 'Add the ability to regroup all records at the beginning of indexing',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN regroupAllRecords TINYINT(1) DEFAULT 0',
 			]
 		],
 
@@ -908,6 +934,14 @@ function getIndexingUpdates()
 			]
 		],
 
+		'indexing_module_add_settings' => [
+			'title' => 'Add Settings to Indexing module',
+			'description' => 'Add Settings to Indexing module',
+			'sql' => [
+				"UPDATE modules set settingsClassName = '/sys/Indexing/IndexingProfile.php' WHERE name in ('Koha', 'CARL.X', 'Sierra', 'Horizon', 'Symphony')"
+			]
+		],
+
 		'indexing_profile_determineAudienceBy' => [
 			'title' => 'Indexing Profile - determineAudienceBy',
 			'description' => 'Add the ability to control how audience is determined to Indexing Profiles',
@@ -953,7 +987,19 @@ function getIndexingUpdates()
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAuthorities INT(11) DEFAULT 0'
 			]
-		]
+		],
+
+		'indexing_simplify_format_boosting' => [
+			'title' => 'Indexing Simplify Format Boosting',
+			'description' => 'Simply Format Boosting using a dropdown rather than raw numbers',
+			'sql' => [
+				'UPDATE format_map_values SET formatBoost = 3 WHERE formatBoost > 1 and formatBoost <=4',
+				'UPDATE format_map_values SET formatBoost = 6 WHERE formatBoost > 4 and formatBoost <=7',
+				'UPDATE format_map_values SET formatBoost = 6 WHERE formatBoost > 7 and formatBoost <=8',
+				'UPDATE format_map_values SET formatBoost = 9 WHERE formatBoost > 8 and formatBoost <=10',
+				'UPDATE format_map_values SET formatBoost = 12 WHERE formatBoost > 10'
+			]
+		],
 	);
 }
 

@@ -56,6 +56,7 @@ class MyAccount_Masquerade extends MyAccount
 									);
 								}
 								$foundExistingUser = true;
+								break;
 							}else{
 								$masqueradedUser = null;
 							}

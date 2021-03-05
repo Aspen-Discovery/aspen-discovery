@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.encryption.EncryptionUtils;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import org.apache.logging.log4j.Logger;
@@ -35,8 +36,10 @@ class UserListIndexer {
 	private HashSet<Long> usersThatCanShareLists = new HashSet<>();
 	private SolrClient openArchivesServer;
 	private PreparedStatement getListDisplayNameAndAuthorStmt;
+	private final String serverName;
 
-	UserListIndexer(Ini configIni, Connection dbConn, Logger logger){
+	UserListIndexer(String serverName, Ini configIni, Connection dbConn, Logger logger){
+		this.serverName = serverName;
 		this.dbConn = dbConn;
 		this.logger = logger;
 		//Load a list of all list publishers
@@ -173,11 +176,11 @@ class UserListIndexer {
 			long created = allPublicListsRS.getLong("created");
 			userListSolr.setCreated(created);
 
-			String displayName = allPublicListsRS.getString("displayName");
+			String displayName = EncryptionUtils.decryptString(allPublicListsRS.getString("displayName"), serverName, logEntry);
 			//noinspection SpellCheckingInspection
-			String firstName = allPublicListsRS.getString("firstname");
+			String firstName = EncryptionUtils.decryptString(allPublicListsRS.getString("firstname"), serverName, logEntry);
 			//noinspection SpellCheckingInspection
-			String lastName = allPublicListsRS.getString("lastname");
+			String lastName = EncryptionUtils.decryptString(allPublicListsRS.getString("lastname"), serverName, logEntry);
 			String userName = allPublicListsRS.getString("username");
 
 			if (userName.equalsIgnoreCase("nyt_user")) {
@@ -253,7 +256,8 @@ class UserListIndexer {
 						getListDisplayNameAndAuthorStmt.setString(1, sourceId);
 						ResultSet listDisplayNameAndAuthorRS = getListDisplayNameAndAuthorStmt.executeQuery();
 						if (listDisplayNameAndAuthorRS.next()){
-							userListSolr.addListTitle("lists", sourceId, listDisplayNameAndAuthorRS.getString("title"), listDisplayNameAndAuthorRS.getString("displayName"));
+							String decryptedName = EncryptionUtils.decryptString(listDisplayNameAndAuthorRS.getString("displayName"), serverName, logEntry);
+							userListSolr.addListTitle("lists", sourceId, listDisplayNameAndAuthorRS.getString("title"), decryptedName);
 						}
 						listDisplayNameAndAuthorRS.close();
 					}else{

@@ -11,6 +11,8 @@
 
 		<span class='availableHoldsNoticePlaceHolder'></span>
 		<h1>{translate text='Titles On Hold'}</h1>
+
+
 		{* Check to see if there is data for the section *}
 		{if $libraryHoursMessage}
 			<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>
@@ -34,6 +36,9 @@
 					<li role="presentation"{if $tab=='axis360'} class="active"{/if}><a href="#axis360" aria-controls="axis360" role="tab" data-toggle="tab">{translate text="Axis 360"} <span class="badge"><span class="axis360-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 			</ul>
+			<div class="refresh-indicator small pull-right">
+				{translate text="Last Loaded <span id='accountLoadTime'>%1%</span>" 1=$profile->getFormattedHoldInfoLastLoaded()} <a onclick="return AspenDiscovery.Account.reloadHolds();" title="Refresh"><i class="fas fa-sync-alt"></i></a>
+			</div>
 
 			<!-- Tab panes -->
 			<div class="tab-content" id="holds">
@@ -49,31 +54,34 @@
 					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="List of Holds on Cloud Library Titles"><div id="cloud_libraryHoldsPlaceholder">{translate text="Loading holds from Cloud Library"}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('axis360')}
-					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="cloud_library" aria-label="List of Holds on Axis 360 Titles"><div id="axis360HoldsPlaceholder">{translate text="Loading holds from Axis 360"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="List of Holds on Axis 360 Titles"><div id="axis360HoldsPlaceholder">{translate text="Loading holds from Axis 360"}</div></div>
 				{/if}
 			</div>
 			<script type="text/javascript">
 				{literal}
-                $(document).ready(function() {
-                    $("a[href='#all']").on('show.bs.tab', function (e) {
-                        AspenDiscovery.Account.loadHolds('all');
-                    });
-                    $("a[href='#ils']").on('show.bs.tab', function (e) {
-                        AspenDiscovery.Account.loadHolds('ils');
-                    });
-                    $("a[href='#overdrive']").on('show.bs.tab', function (e) {
-                        AspenDiscovery.Account.loadHolds('overdrive');
-                    });
-                    $("a[href='#rbdigital']").on('show.bs.tab', function (e) {
-                        AspenDiscovery.Account.loadHolds('rbdigital');
-                    });
-                    $("a[href='#cloud_library']").on('show.bs.tab', function (e) {
-                        AspenDiscovery.Account.loadHolds('cloud_library');
-                    });
+				$(document).ready(function() {
+					$("a[href='#all']").on('show.bs.tab', function (e) {
+						AspenDiscovery.Account.loadHolds('all');
+					});
+					$("a[href='#ils']").on('show.bs.tab', function (e) {
+						AspenDiscovery.Account.loadHolds('ils');
+					});
+					$("a[href='#overdrive']").on('show.bs.tab', function (e) {
+						AspenDiscovery.Account.loadHolds('overdrive');
+					});
+					$("a[href='#rbdigital']").on('show.bs.tab', function (e) {
+						AspenDiscovery.Account.loadHolds('rbdigital');
+					});
+					$("a[href='#cloud_library']").on('show.bs.tab', function (e) {
+						AspenDiscovery.Account.loadHolds('cloud_library');
+					});
+					$("a[href='#axis360']").on('show.bs.tab', function (e) {
+						AspenDiscovery.Account.loadHolds('axis360');
+					});
 					{/literal}
-                    AspenDiscovery.Account.loadHolds('{$tab}');
+					AspenDiscovery.Account.loadHolds('{$tab}');
 					{literal}
-                });
+				});
 				{/literal}
 			</script>
 		{/if}

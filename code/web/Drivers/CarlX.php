@@ -265,7 +265,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param array $soapRequestOptions
 	 * @return false|stdClass
 	 */
-	private function doSoapRequest($requestName, $request, $WSDL = '', $soapRequestOptions = array()) {
+	protected function doSoapRequest($requestName, $request, $WSDL = '', $soapRequestOptions = array()) {
 		if (empty($WSDL)) { // Let the patron WSDL be the assumed default WSDL when not specified.
 			if (!empty($this->patronWsdl)) {
 				$WSDL = $this->patronWsdl;
@@ -347,6 +347,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @access public
 	 */
 	public function getHolds($user) {
+		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$holds = array(
 			'available'   => array(),
 			'unavailable' => array()
@@ -360,53 +361,33 @@ class CarlX extends AbstractIlsDriver{
 			// Available Holds
 			if ($result->HoldItemsCount > 0) {
 				foreach($result->HoldItems->HoldItem as $hold) {
-					$curHold = array();
+					$curHold = new Hold();
+					$curHold->userId = $user->id;
+					$curHold->type = 'ils';
+					$curHold->source = $this->getIndexingProfile()->name;
+					$curHold->available = true;
 					$bibId          = $hold->BID;
 					$carlID         = $this->fullCarlIDfromBID($bibId);
 					$expireDate     = isset($hold->ExpirationDate) ? $this->extractDateFromCarlXDateField($hold->ExpirationDate) : null;
 					$pickUpBranch   = $this->getBranchInformation($hold->PickUpBranch); //TODO: Use local DB; will require adding ILS branch numbers to DB or memcache (there is a getAllBranchInfo Call)
 
-					$curHold['id']                 = $bibId;
-					$curHold['holdSource']         = 'ILS';
-					$curHold['itemId']             = $hold->ItemNumber;
-					$curHold['cancelId']           = $hold->Identifier;
-					$curHold['position']           = $hold->QueuePosition;
-					$curHold['recordId']           = $carlID;
-					$curHold['shortId']            = $bibId;
-					$curHold['title']              = $hold->Title;
-					$curHold['sortTitle']          = $hold->Title;
-					$curHold['author']             = $hold->Author;
-					$curHold['location']           = empty($pickUpBranch->BranchName) ? '' : $pickUpBranch->BranchName;
-					$curHold['locationUpdateable'] = false;
-					$curHold['currentPickupName']  = empty($pickUpBranch->BranchName) ? '' : $pickUpBranch->BranchName;
-					$curHold['status']             = $this->holdStatusCodes[$hold->ItemStatus];
-					$curHold['expire']             = strtotime($expireDate); // give a time stamp  // use this for available holds
-					$curHold['reactivate']         = null;
-					$curHold['reactivateTime']     = null;
-					$curHold['frozen']             = isset($hold->Suspended) && ($hold->Suspended == true);
-					$curHold['cancelable']         = false; 
-					$curHold['canFreeze']          = false;
-
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-					$recordDriver = new MarcRecordDriver($carlID);
-					if ($recordDriver->isValid()){
-						$curHold['groupedWorkId'] = $recordDriver->getPermanentId();
-						$curHold['sortTitle']       = $recordDriver->getSortableTitle();
-						$curHold['format']          = $recordDriver->getFormat();
-						$curHold['isbn']            = $recordDriver->getCleanISBN();
-						$curHold['upc']             = $recordDriver->getCleanUPC();
-						$curHold['format_category'] = $recordDriver->getFormatCategory();
-						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
-						$curHold['link']            = $recordDriver->getLinkUrl();
-						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
-
-						if (empty($curHold['title'])){
-							$curHold['title'] = $recordDriver->getTitle();
-						}
-						if (empty($curHold['author'])){
-							$curHold['author'] = $recordDriver->getPrimaryAuthor();
-						}
-					}
+					$curHold->sourceId = $bibId;
+					$curHold->itemId = $hold->ItemNumber;
+					$curHold->cancelId = $hold->Identifier;
+					$curHold->position = $hold->QueuePosition;
+					$curHold->recordId = $carlID;
+					$curHold->shortId = $bibId;
+					$curHold->title = $hold->Title;
+					$curHold->author = $hold->Author;
+					$curHold->pickupLocationId = empty($pickUpBranch->BranchName) ? '' : $pickUpBranch->BranchName;
+					$curHold->locationUpdateable = false;
+					$curHold->pickupLocationName = empty($pickUpBranch->BranchName) ? '' : $pickUpBranch->BranchName;
+					$curHold->status = $this->holdStatusCodes[$hold->ItemStatus];
+					$curHold->expirationDate = strtotime($expireDate); // give a time stamp  // use this for available holds
+					$curHold->reactivateDate = null;
+					$curHold->frozen = isset($hold->Suspended) && ($hold->Suspended == true);
+					$curHold->cancelable = false;
+					$curHold->canFreeze = false;
 					$holds['available'][]   = $curHold;
 
 				}
@@ -415,72 +396,51 @@ class CarlX extends AbstractIlsDriver{
 			// Unavailable Holds
 			if ($result->UnavailableHoldsCount > 0) {
 				foreach($result->UnavailableHoldItems->UnavailableHoldItem as $hold) {
-					$curHold = array();
+					$curHold = new Hold();
+					$curHold->userId = $user->id;
+					$curHold->type = 'ils';
+					$curHold->source = $this->getIndexingProfile()->name;
+					$curHold->available = false;
 					$bibId          = $hold->BID;
 					$carlID         = $this->fullCarlIDfromBID($bibId);
 					$expireDate     = isset($hold->ExpirationDate) ? $this->extractDateFromCarlXDateField($hold->ExpirationDate) : null;
 					$pickUpBranch   = $this->getBranchInformation($hold->PickUpBranch);
 
-					$curHold['id']                 = $bibId;
-					$curHold['holdSource']         = 'ILS';
-					$curHold['itemId']             = $hold->ItemNumber;
-					$curHold['cancelId']           = $hold->Identifier; // James Staub declares cancelId is synonymous with holdId 20200613
+					$curHold->sourceId = $bibId;
+					$curHold->itemId = $hold->ItemNumber;
+					$curHold->cancelId = $hold->Identifier; // James Staub declares cancelId is synonymous with holdId 20200613
 					// CarlX API v1.9.6.3 does not accurately calculate hold queue position. See https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=500458
-					$curHold['position']           = $hold->QueuePosition; 
+					$curHold->position = $hold->QueuePosition;
 					//$unavailableHoldViaSIP		= $this->getUnavailableHoldViaSIP($user, $hold->Identifier); // TO DO: should absolutely be refactored to merge API and SIP2 unavailable holds arrays outside of the API UnavailableHoldItem foreach loop - adds ~ 20 seconds to load James Staub's holds (30 items across 5 linked accounts)
 					//$curHold['position']		= $unavailableHoldViaSIP['queuePosition'];
-					$curHold['recordId']           = $carlID;
-					$curHold['shortId']            = $bibId;
-					$curHold['title']              = $hold->Title;
-					$curHold['sortTitle']          = $hold->Title;
-					$curHold['author']             = $hold->Author;
-					$curHold['location']           = empty($pickUpBranch->BranchName) ? '' : $pickUpBranch->BranchName;
-					$curHold['currentPickupName']  = empty($pickUpBranch->BranchName) ? '' : $pickUpBranch->BranchName;
-					$curHold['frozen']             = $hold->Suspended;
-					$curHold['status']             = $this->holdStatusCodes[$hold->ItemStatus];
-					$curHold['automaticCancellation'] = strtotime($expireDate); // use this for unavailable holds
-					$curHold['cancelable']         = true;
+					$curHold->recordId = $carlID;
+					$curHold->shortId = $bibId;
+					$curHold->title = $hold->Title;
+					$curHold->author = $hold->Author;
+					$curHold->pickupLocationId = empty($pickUpBranch->BranchName) ? '' : $pickUpBranch->BranchName;
+					$curHold->pickupLocationName = empty($pickUpBranch->BranchName) ? '' : $pickUpBranch->BranchName;
+					$curHold->frozen = $hold->Suspended;
+					$curHold->status = $this->holdStatusCodes[$hold->ItemStatus];
+					$curHold->automaticCancellationDate = strtotime($expireDate); // use this for unavailable holds
+					$curHold->cancelable = true;
 
-					if ($curHold['frozen']){
-						$curHold['reactivate']         = $this->extractDateFromCarlXDateField($hold->SuspendedUntilDate);
-						$curHold['reactivateTime']     = strtotime($hold->SuspendedUntilDate);
-						$curHold['status']             = 'Frozen';
+					if ($curHold->frozen) {
+						$curHold->reactivateDate = strtotime($hold->SuspendedUntilDate);
+						$curHold->status = 'Frozen';
 					}
 					// CarlX [9.6.4.3] will not allow update hold (suspend hold, change pickup location) on item level hold. UnavailableHoldItem ~ /^ITEM ID: / if the hold is an item level hold.
-					if (strpos($curHold['cancelId'],'ITEM ID: ') === 0) {
-						$curHold['canFreeze'] = false;
-						$curHold['locationUpdateable'] = false;
-					} elseif (strpos($curHold['cancelId'],'BID: ') === 0) {
-						$curHold['canFreeze'] = true;
-						$curHold['locationUpdateable'] = true;
+					if (strpos($curHold->cancelId, 'ITEM ID: ') === 0) {
+						$curHold->canFreeze = false;
+						$curHold->locationUpdateable = false;
+					} elseif (strpos($curHold->cancelId, 'BID: ') === 0) {
+						$curHold->canFreeze = true;
+						$curHold->locationUpdateable = true;
 					} else { // TO DO: Evaluate whether issue level holds are suspendable
-						$curHold['canFreeze'] = false;
-						$curHold['locationUpdateable'] = false;
-					}
-
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-					$recordDriver = new MarcRecordDriver($carlID);
-					if ($recordDriver->isValid()){
-						$curHold['groupedWorkId'] = $recordDriver->getPermanentId();
-						$curHold['sortTitle']       = $recordDriver->getSortableTitle();
-						$curHold['format']          = $recordDriver->getFormat();
-						$curHold['isbn']            = $recordDriver->getCleanISBN();
-						$curHold['upc']             = $recordDriver->getCleanUPC();
-						$curHold['format_category'] = $recordDriver->getFormatCategory();
-						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
-						$curHold['link']            = $recordDriver->getLinkUrl();
-						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
-
-						if (empty($curHold['title'])){
-							$curHold['title'] = $recordDriver->getTitle();
-						}
-						if (empty($curHold['author'])){
-							$curHold['author'] = $recordDriver->getPrimaryAuthor();
-						}
+						$curHold->canFreeze = false;
+						$curHold->locationUpdateable = false;
 					}
 
 					$holds['unavailable'][] = $curHold;
-
 				}
 			}
 
@@ -593,12 +553,11 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	public function getCheckouts(User $user) {
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
 
 		//Search for the patron in the database
 		$result = $this->getPatronTransactions($user);
-		//global $logger;
-		//$logger->log("Patron Transactions\r\n" . print_r($result, true), Logger::LOG_ERROR );
 
 		$itemsToLoad = array();
 		if (!$result){
@@ -614,42 +573,33 @@ class CarlX extends AbstractIlsDriver{
 			}
 
 			foreach ($itemsToLoad as $chargeItem) {
+				$curTitle = new Checkout();
+				$curTitle->type = 'ils';
+				$curTitle->source = $this->getIndexingProfile()->name;
 				$carlID = $this->fullCarlIDfromBID($chargeItem->BID);
+				$curTitle->sourceId = $carlID;
 				$dueDate = strstr($chargeItem->DueDate, 'T', true);
-				$curTitle['checkoutSource']  = 'ILS';
-				$curTitle['recordId']        = $carlID;
-				$curTitle['shortId']         = $chargeItem->BID;
-				$curTitle['id']              = $chargeItem->BID;
-				$curTitle['barcode']         = $chargeItem->ItemNumber;   // Barcode & ItemNumber are the same for CarlX
-				$curTitle['itemId']          = $chargeItem->ItemNumber;
-				$curTitle['title']           = $chargeItem->Title;
-				$curTitle['author']          = $chargeItem->Author;
-				$curTitle['dueDate']         = strtotime($dueDate);
-				$curTitle['checkoutDate']    = strstr($chargeItem->TransactionDate, 'T', true);
-				$curTitle['renewCount']      = isset($chargeItem->RenewalCount) ? $chargeItem->RenewalCount : 0;
-				$curTitle['canRenew']        = true;
-				$curTitle['renewIndicator']  = $chargeItem->ItemNumber;
+				$curTitle->recordId = $carlID;
+				$curTitle->barcode = $chargeItem->ItemNumber;   // Barcode & ItemNumber are the same for CarlX
+				$curTitle->itemId = $chargeItem->ItemNumber;
+				$curTitle->title = $chargeItem->Title;
+				$curTitle->author = $chargeItem->Author;
+				$curTitle->dueDate = strtotime($dueDate);
+				$curTitle->checkoutDate = strstr($chargeItem->TransactionDate, 'T', true);
+				$curTitle->renewCount = isset($chargeItem->RenewalCount) ? $chargeItem->RenewalCount : 0;
+				$curTitle->canRenew = true;
+				$curTitle->renewIndicator = $chargeItem->ItemNumber;
 
-				$curTitle['format']          = 'Unknown';
+				$curTitle->format          = 'Unknown';
 				if (!empty($carlID)){
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($carlID); // This needs the $carlID
 					if ($recordDriver->isValid()){
-						$curTitle['groupedWorkId'] = $recordDriver->getPermanentId();
-						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-						$curTitle['ratingData']    = $recordDriver->getRatingData();
-						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-						$curTitle['format']        = $recordDriver->getPrimaryFormat();
-						$curTitle['title']         = $recordDriver->getTitle();
-						$curTitle['title_sort']    = $recordDriver->getSortableTitle();
-						$curTitle['author']        = $recordDriver->getPrimaryAuthor();
-						$curTitle['link']          = $recordDriver->getLinkUrl();
-					}else{
-						$curTitle['coverUrl']     = "";
+						$curTitle->groupedWorkId = $recordDriver->getPermanentId();
+						$curTitle->format = $recordDriver->getPrimaryFormat();
+						$curTitle->title = $recordDriver->getTitle();
+						$curTitle->author = $recordDriver->getPrimaryAuthor();
 					}
-				}
-				if (empty($curTitle['title_sort'])){
-					$curTitle['title_sort']  = preg_replace('/^The\s|^A\s/i', '',$curTitle['title']);
 				}
 				$checkedOutTitles[] = $curTitle;
 			}
@@ -732,6 +682,7 @@ class CarlX extends AbstractIlsDriver{
 			}
 			// Patron Info to update.
 			$request->Patron->Email  = $_REQUEST['email'];
+			$user->email = $_REQUEST['email'];
 			if (isset($_REQUEST['phone'])) {
 				$request->Patron->Phone1 = $_REQUEST['phone'];
 				$user->phone = $_REQUEST['phone'];
@@ -1247,7 +1198,6 @@ class CarlX extends AbstractIlsDriver{
 
 	public function getFines($user, $includeMessages = false) {
 		$myFines = array();
-
 		$request = $this->getSearchbyPatronIdRequest($user);
 
 		// Fines
@@ -1264,8 +1214,6 @@ class CarlX extends AbstractIlsDriver{
 				if ($fine->Branch == 0) {
 					$fine->Branch = $fine->TransactionBranch;
 				}
-				$fine->System = $this->getFineSystem($fine->Branch);
-				$fine->CanPayFine = $this->canPayFine($fine->System);
 
 				$fine->FineAmountOutstanding = 0;
 				if ($fine->FineAmountPaid > 0) {
@@ -1278,16 +1226,8 @@ class CarlX extends AbstractIlsDriver{
 					$fine->Identifier = substr($fine->Identifier,9);
 				}
 				$fine->Identifier = str_replace('#', '', $fine->Identifier);
-
-				if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes,'COLLECTION') !== false) {
-					$fineType = 'COLLECTION AGENCY';
-					$fine->FeeNotes = 'COLLECTION AGENCY';
-				} elseif ($fine->TransactionCode == 'F2') {
-					$fineType = $fine->TransactionCode;
-					$fine->FeeNotes .= ' : Processing fee';
-				} else {
-					$fineType = $fine->TransactionCode;
-				}
+				$fineType = $fine->TransactionCode;
+				$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 
 				$myFines[] = array(
 					'fineId' => $fine->Identifier,
@@ -1299,58 +1239,72 @@ class CarlX extends AbstractIlsDriver{
 					'amountOutstandingVal' => $fine->FineAmountOutstanding,
 					'message' => $fine->Title,
 					'date'    => date('M j, Y', strtotime($fine->FineAssessedDate)),
-					'system'  => $fine->System,
-					'canPayFine' => $fine->CanPayFine,
 				);
 			}
 		}
 
 		// Lost Item Fees
+		if ($result && $result->LostItemsCount > 0) {
+			// TODO: Lost Items don't have the fine amount
+			$request->TransactionType = 'Lost';
+			$result = $this->doSoapRequest('getPatronTransactions', $request);
+			//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), Logger::LOG_ERROR);
 
-		// TODO: Lost Items don't have the fine amount
-		$request->TransactionType = 'Lost';
-		$result = $this->doSoapRequest('getPatronTransactions', $request);
-		//$logger->log("Result of getPatronTransactions (Lost)\r\n" . print_r($result, true), Logger::LOG_ERROR);
-
-		if ($result && !empty($result->LostItems->LostItem)) {
-			if (!is_array($result->LostItems->LostItem)) {
-				$result->LostItems->LostItem = array($result->LostItems->LostItem);
-			}
-			foreach($result->LostItems->LostItem as $fine) {
-				// hard coded Nashville school branch IDs
-				if ($fine->Branch == 0) {
-					$fine->Branch = $fine->TransactionBranch;
+			if ($result && !empty($result->LostItems->LostItem)) {
+				if (!is_array($result->LostItems->LostItem)) {
+					$result->LostItems->LostItem = array($result->LostItems->LostItem);
 				}
-				$fine->System = $this->getFineSystem($fine->Branch);
-				$fine->CanPayFine = $this->canPayFine($fine->System);
+				foreach($result->LostItems->LostItem as $fine) {
+					// hard coded Nashville school branch IDs
+					if ($fine->Branch == 0) {
+						$fine->Branch = $fine->TransactionBranch;
+					}
+					$fine->System = $this->getFineSystem($fine->Branch);
+					$fine->CanPayFine = $this->canPayFine($fine->System);
 
-				$fine->FeeAmountOutstanding = 0;
-				if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
-					$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
-				} else {
-					$fine->FeeAmountOutstanding = $fine->FeeAmount;
+					$fine->FeeAmountOutstanding = 0;
+					if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
+						$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
+					} else {
+						$fine->FeeAmountOutstanding = $fine->FeeAmount;
+					}
+
+					if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+						$fine->Identifier = substr($fine->Identifier, 9);
+					}
+
+					$fineType = $fine->TransactionCode;
+					$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+
+					$myFines[] = array(
+						'fineId' => $fine->Identifier,
+						'type' => $fineType,
+						'reason' => $fine->FeeNotes,
+						'amount' => $fine->FeeAmount,
+						'amountVal' => $fine->FeeAmount,
+						'amountOutstanding' => $fine->FeeAmountOutstanding,
+						'amountOutstandingVal' => $fine->FeeAmountOutstanding,
+						'message' => $fine->Title,
+						'date' => date('M j, Y', strtotime($fine->TransactionDate)),
+					);
 				}
-
-				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
-					$fine->Identifier = substr($fine->Identifier,9);
+				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
+				$myLostFines = $this->getLostViaSIP($user->cat_username);
+				$myFinesIds = array_column($myFines, 'fineId');
+				foreach ($myLostFines as $myLostFine) {
+					$keys = array_keys($myFinesIds, $myLostFine['fineId']);
+					foreach ($keys as $key) {
+						// CarlX can have Processing fees and Lost fees associated with the same item id; here we target only the Lost, because Processing fees correctly report previous partial payments through the PatronAPI
+						if ($myFines[$key]['type'] == "L") {
+							$myFines[$key]['amountOutstanding'] = $myLostFine['amountOutstanding'];
+							$myFines[$key]['amountOutstandingVal'] = $myLostFine['amountOutstandingVal'];
+							break;
+						}
+					}
 				}
-
-				$myFines[] = array(
-					'fineId' => $fine->Identifier,
-					'type' => $fine->TransactionCode,
-					'reason'  => $fine->FeeNotes,
-					'amount'  => $fine->FeeAmount,
-					'amountVal'  => $fine->FeeAmount,
-					'amountOutstanding' => $fine->FeeAmountOutstanding,
-					'amountOutstandingVal' => $fine->FeeAmountOutstanding,
-					'message' => $fine->Title,
-					'date'    => date('M j, Y', strtotime($fine->TransactionDate)),
-					'system'  => $fine->System,
-					'canPayFine' => $fine->CanPayFine,
-				);
 			}
 		}
-
+		array_multisort(array_column($myFines, 'message', SORT_ASC), $myFines);
 		return $myFines;
 	}
 
@@ -1468,7 +1422,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param $user
 	 * @return stdClass
 	 */
-	private function getSearchbyPatronIdRequest($user)
+	protected function getSearchbyPatronIdRequest($user)
 	{
 		$request             = new stdClass();
 		$request->SearchType = 'Patron ID';
@@ -2180,4 +2134,19 @@ EOT;
 	{
 		return true;
 	}
+
+	static $fineTypeTranslations = [
+		'F'		=> 'Fine',
+		'F2'	=> 'Processing',
+		'FS'	=> 'Manual',
+		'L'		=> 'Lost'
+	];
+
+	static  $fineTypeSIP2Translations = [
+		'F'		=> '04',
+		'F2'	=> '05',
+		'FS'	=> '01',
+		'L'		=> '07'
+	];
+
 }

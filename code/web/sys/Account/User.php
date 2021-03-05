@@ -43,6 +43,9 @@ class User extends DataObject
 	public $alternateLibraryCardPassword;
 	public $hideResearchStarters;
 
+	public $holdInfoLastLoaded;
+	public $checkoutInfoLastLoaded;
+
 	/** @var Role[] */
 	private $_roles;
 	private $_permissions;
@@ -115,6 +118,10 @@ class User extends DataObject
 		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
 	}
 
+	function getEncryptedFieldNames(){
+		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'rbdigitalPassword', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
+	}
+
 	function getLists() {
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 
@@ -132,7 +139,7 @@ class User extends DataObject
 		return $lists;
 	}
 
-	private $catalogDriver = null;
+	protected $_catalogDriver = null;
 
 	/**
 	 * Get a connection to the catalog for the user
@@ -141,17 +148,17 @@ class User extends DataObject
 	 */
 	function getCatalogDriver()
 	{
-		if ($this->catalogDriver == null) {
+		if ($this->_catalogDriver == null) {
 			//Based off the source of the user, get the AccountProfile
 			$accountProfile = $this->getAccountProfile();
 			if ($accountProfile) {
 				$catalogDriver = trim($accountProfile->driver);
 				if (!empty($catalogDriver)) {
-					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
+					$this->_catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
 				}
 			}
 		}
-		return $this->catalogDriver;
+		return $this->_catalogDriver;
 	}
 
 	function hasIlsConnection()
@@ -168,7 +175,7 @@ class User extends DataObject
 	}
 
 	/** @var AccountProfile */
-	private $_accountProfile;
+	protected $_accountProfile;
 
 	/**
 	 * @return AccountProfile
@@ -332,7 +339,18 @@ class User extends DataObject
 				return trim($this->cat_username);
 			}
 		}
+	}
 
+	function getPasswordOrPinField(){
+		if ($this->getAccountProfile() == null) {
+			return 'cat_password';
+		}else{
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return 'cat_password';
+			} else {
+				return 'cat_username';
+			}
+		}
 	}
 
 	function saveRoles(){
@@ -511,7 +529,6 @@ class User extends DataObject
 	}
 
 	public function showRBdigitalHolds(){
-		global $enabledModules;
 		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())) {
 			$userHomeLibrary = Library::getPatronHomeLibrary($this);
 			if ($userHomeLibrary->rbdigitalScopeId > 0){
@@ -975,21 +992,28 @@ class User extends DataObject
 	 * @return array
 	 */
 	public function getCheckouts($includeLinkedUsers = true, $source = 'all'){
-		global $timer;
-		//Get checked out titles from the ILS
-		if ($source == 'all' || $source == 'ils'){
-			if ($this->hasIlsConnection()){
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
+		//Check to see if we should return cached information, we will reload it if we last fetched it more than
+		//15 minutes ago or if the refresh option is selected
+		$reloadCheckoutInformation = true;
+		if (($this->checkoutInfoLastLoaded < (time() - 15 * 60)) || isset($_REQUEST['refreshCheckouts'])){
+			$reloadCheckoutInformation = true;
+		}
+
+		$checkoutsToReturn = [];
+		if ($reloadCheckoutInformation) {
+			global $timer;
+			$allCheckedOut = [];
+			//Get checked out titles from the ILS
+			if ($this->hasIlsConnection()) {
 				$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
 				$allCheckedOut = $ilsCheckouts;
 				$timer->logTime("Loaded transactions from catalog. {$this->id}");
-			}else{
-				$allCheckedOut = [];
+				if ($source == 'all' || $source == 'ils') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $ilsCheckouts);
+				}
 			}
-		}else{
-			$allCheckedOut = [];
-		}
 
-		if ($source == 'all' || $source == 'overdrive') {
 			//Get checked out titles from OverDrive
 			//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
 			if ($this->isValidForEContentSource('overdrive')) {
@@ -998,10 +1022,11 @@ class User extends DataObject
 				$overDriveCheckedOutItems = $driver->getCheckouts($this, false);
 				$allCheckedOut = array_merge($allCheckedOut, $overDriveCheckedOutItems);
 				$timer->logTime("Loaded transactions from overdrive. {$this->id}");
+				if ($source == 'all' || $source == 'overdrive') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $overDriveCheckedOutItems);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'hoopla') {
 			//Get checked out titles from Hoopla
 			//Do not load Hoopla titles if the parent barcode (if any) is the same as the current barcode
 			if ($this->isValidForEContentSource('hoopla')) {
@@ -1010,36 +1035,65 @@ class User extends DataObject
 				$hooplaCheckedOutItems = $hooplaDriver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $hooplaCheckedOutItems);
 				$timer->logTime("Loaded transactions from hoopla. {$this->id}");
+				if ($source == 'all' || $source == 'hoopla') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $hooplaCheckedOutItems);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'rbdigital') {
 			if ($this->isValidForEContentSource('rbdigital')) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$rbdigitalDriver = new RBdigitalDriver();
 				$rbdigitalCheckedOutItems = $rbdigitalDriver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $rbdigitalCheckedOutItems);
 				$timer->logTime("Loaded transactions from rbdigital. {$this->id}");
+				if ($source == 'all' || $source == 'rbdigital') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $rbdigitalCheckedOutItems);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'cloud_library') {
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$cloudLibraryDriver = new CloudLibraryDriver();
 				$cloudLibraryCheckedOutItems = $cloudLibraryDriver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $cloudLibraryCheckedOutItems);
 				$timer->logTime("Loaded transactions from cloud_library. {$this->id}");
+				if ($source == 'all' || $source == 'cloud_library') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $cloudLibraryCheckedOutItems);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'axis360') {
 			if ($this->isValidForEContentSource('axis360')) {
 				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 				$axis360Driver = new Axis360Driver();
 				$axis360CheckedOutItems = $axis360Driver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $axis360CheckedOutItems);
 				$timer->logTime("Loaded transactions from axis 360. {$this->id}");
+				if ($source == 'all' || $source == 'axis360') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $axis360CheckedOutItems);
+				}
+			}
+
+			//Delete all existing checkouts
+//			$checkout = new Checkout();
+//			$checkout->userId = $this->id;
+//			$checkout->delete(true);
+//
+//			foreach ($allCheckedOut as $checkout){
+//				$checkout->insert();
+//			}
+//
+//			$this->checkoutInfoLastLoaded = time();
+//			$this->update();
+		}else{
+			//fetch cached checkouts
+			$checkout = new Checkout();
+			$checkout->userId = $this->id;
+			if ($source != 'all'){
+				$checkout->type = $source;
+			}
+			$checkout->find();
+			while ($checkout->fetch()){
+				$checkoutsToReturn[] = clone $checkout;
 			}
 		}
 
@@ -1047,81 +1101,133 @@ class User extends DataObject
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $linkedUser) {
-					$allCheckedOut = array_merge($allCheckedOut, $linkedUser->getCheckouts(false, $source));
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $linkedUser->getCheckouts(false, $source));
 				}
 			}
 		}
-		return $allCheckedOut;
+		return $checkoutsToReturn;
 	}
 
 	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all')
 	{
-		if ($source == 'all' || $source == 'ils') {
+		require_once ROOT_DIR . '/sys/User/Hold.php';
+		//Check to see if we should return cached information, we will reload it if we last fetched it more than
+		//15 minutes ago or if the refresh option is selected
+		$reloadHoldInformation = false;
+		if (($this->holdInfoLastLoaded < time() - 15 * 60) || isset($_REQUEST['refreshHolds'])){
+			$reloadHoldInformation = true;
+		}
+
+		$holdsToReturn = array(
+			'available' => [],
+			'unavailable' => []
+		);;
+		if ($reloadHoldInformation) {
+			//When we reload holds, we will fetch from all sources so they can be cached.
+
+			$allHolds = array(
+				'available' => [],
+				'unavailable' => []
+			);;
 			if ($this->hasIlsConnection()) {
 				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
 				if ($ilsHolds instanceof AspenError) {
 					$ilsHolds = array();
 				}
 				$allHolds = $ilsHolds;
-			} else {
-				$allHolds = [];
+				if ($source == 'all' || $source == 'ils') {
+					$holdsToReturn = $ilsHolds;
+				}
 			}
-		} else {
-			$allHolds = [];
-		}
 
-		if ($source == 'all' || $source == 'overdrive') {
 			//Get holds from OverDrive
 			if ($this->isValidForEContentSource('overdrive')) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
 				$overDriveHolds = $driver->getHolds($this);
 				$allHolds = array_merge_recursive($allHolds, $overDriveHolds);
+				if ($source == 'all' || $source == 'overdrive') {
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $overDriveHolds);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'rbdigital') {
 			//Get holds from RBdigital
 			if ($this->isValidForEContentSource('rbdigital') && $this->showRBdigitalHolds()) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
 				$rbdigitalHolds = $driver->getHolds($this);
 				$allHolds = array_merge_recursive($allHolds, $rbdigitalHolds);
+				if ($source == 'all' || $source == 'rbdigital') {
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $rbdigitalHolds);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'cloud_library') {
+
 			//Get holds from Cloud Library
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
 				$cloudLibraryHolds = $driver->getHolds($this);
 				$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
+				if ($source == 'all' || $source == 'cloud_library') {
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $cloudLibraryHolds);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'axis360') {
+
 			//Get holds from Axis 360
 			if ($this->isValidForEContentSource('axis360')) {
 				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 				$driver = new Axis360Driver();
 				$axis360Holds = $driver->getHolds($this);
 				$allHolds = array_merge_recursive($allHolds, $axis360Holds);
+				if ($source == 'all' || $source == 'axis360') {
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $axis360Holds);
+				}
+			}
+
+			//Delete all existing holds
+			$hold = new Hold();
+			$hold->userId = $this->id;
+			$hold->delete(true);
+
+			foreach ($allHolds['available'] as $holdToSave){
+				$holdToSave->insert();
+			}
+			foreach ($allHolds['unavailable'] as $holdToSave){
+				$holdToSave->insert();
+			}
+			$this->holdInfoLastLoaded = time();
+			$this->update();
+		}else{
+			//fetch cached holds
+			$hold = new Hold();
+			$hold->userId = $this->id;
+			if ($source != 'all'){
+				$hold->type = $source;
+			}
+			$hold->find();
+			while ($hold->fetch()){
+				if ($hold->available){
+					$holdsToReturn['available'][] = clone $hold;
+				}else{
+					$holdsToReturn['unavailable'][] = clone $hold;
+				}
 			}
 		}
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->getLinkedUsers() as $user) {
-					$allHolds = array_merge_recursive($allHolds, $user->getHolds(false, $unavailableSort, $availableSort, $source));
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $user->getHolds(false, $unavailableSort, $availableSort, $source));
 				}
 			}
 		}
 
 		$indexToSortBy = 'sortTitle';
 		$holdSort = function ($a, $b) use (&$indexToSortBy) {
-			$a = isset($a[$indexToSortBy]) ? $a[$indexToSortBy] : null;
-			$b = isset($b[$indexToSortBy]) ? $b[$indexToSortBy] : null;
+			$a = isset($a->$indexToSortBy) ? $a->$indexToSortBy : null;
+			$b = isset($b->$indexToSortBy) ? $b->$indexToSortBy : null;
 
 			// Put empty values (except for specified values of zero) at the bottom of the sort
 			if (modifiedEmpty($a) && modifiedEmpty($b)) {
@@ -1145,7 +1251,7 @@ class User extends DataObject
 			// This will sort numerically correctly as well
 		};
 
-		if (!empty($allHolds['available'])) {
+		if (!empty($holdsToReturn['available'])) {
 			switch ($availableSort) {
 				case 'author' :
 				case 'format' :
@@ -1162,9 +1268,9 @@ class User extends DataObject
 				default :
 					$indexToSortBy = 'expire';
 			}
-			uasort($allHolds['available'], $holdSort);
+			uasort($holdsToReturn['available'], $holdSort);
 		}
-		if (!empty($allHolds['unavailable'])) {
+		if (!empty($holdsToReturn['unavailable'])) {
 			switch ($unavailableSort) {
 				case 'author' :
 				case 'location' :
@@ -1184,10 +1290,10 @@ class User extends DataObject
 				default :
 					$indexToSortBy = 'sortTitle';
 			}
-			uasort($allHolds['unavailable'], $holdSort);
+			uasort($holdsToReturn['unavailable'], $holdSort);
 		}
 
-		return $allHolds;
+		return $holdsToReturn;
 	}
 
 	public function getMyBookings($includeLinkedUsers = true){
@@ -2276,6 +2382,30 @@ class User extends DataObject
 			}
 		}
 		return false;
+	}
+
+	protected function clearRuntimeDataVariables(){
+		if ($this->_accountProfile != null){
+			$this->_accountProfile->__destruct();
+			$this->_accountProfile = null;
+		}
+		parent::clearRuntimeDataVariables();
+	}
+
+	public function getFormattedHoldInfoLastLoaded(){
+		if ($this->holdInfoLastLoaded == 0){
+			return translate("Loading...");
+		}else{
+			return strftime("%I:%M %p", $this->holdInfoLastLoaded);
+		}
+	}
+
+	public function getFormattedCheckoutInfoLastLoaded(){
+		if ($this->checkoutInfoLastLoaded == 0){
+			return translate("Loading...");
+		}else{
+			return strftime("%I:%M %p", $this->checkoutInfoLastLoaded);
+		}
 	}
 }
 

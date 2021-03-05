@@ -110,6 +110,10 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 		return $title;
 	}
 
+	public function getSortableTitle(){
+		return $this->getTitle();
+	}
+
 	/**
 	 * The Table of Contents extracted from the record.
 	 * Returns null if no Table of Contents is available.

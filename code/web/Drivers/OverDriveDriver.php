@@ -452,8 +452,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $this->_callUrl($availabilityUrl);
 	}
 
-	private $checkouts = array();
-
 	/**
 	 * Loads information about items that the user has checked out in OverDrive
 	 *
@@ -462,9 +460,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @return array
 	 */
 	public function getCheckouts($patron, $forSummary = false){
-		if (isset($this->checkouts[$patron->id])){
-			return $this->checkouts[$patron->id];
-		}
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		global $logger;
 		if (!$this->isUserValidForOverDrive($patron)){
 			return array();
@@ -481,7 +477,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$supplementalMaterialIds = [];
 		if (isset($response->checkouts)){
 			foreach ($response->checkouts as $curTitle){
-				$checkout = array();
+				$checkout = new Checkout();
+				$checkout->type = 'overdrive';
+				$checkout->source = 'overdrive';
+				$checkout->userId = $patron->id;
 				if (isset($curTitle->links->bundledChildren)){
 					foreach ($curTitle->links->bundledChildren as $bundledChild){
 						if (preg_match('%.*/checkouts/(.*)%ix', $bundledChild->href, $matches)) {
@@ -493,8 +492,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 				if (array_key_exists($curTitle->reserveId, $supplementalMaterialIds)){
 					$parentCheckoutId = $supplementalMaterialIds[$curTitle->reserveId];
 					$parentCheckout = $checkedOutTitles['OverDrive' . $parentCheckoutId];
-					if (!isset($parentCheckout['supplementalMaterials'])) {
-						$parentCheckout['supplementalMaterials'] = [];
+					if (!isset($parentCheckout->supplementalMaterials)) {
+						$parentCheckout->supplementalMaterials = [];
 					}
 					$supplementalMaterial = [
 						'checkoutSource' => 'OverDrive',
@@ -504,72 +503,59 @@ class OverDriveDriver extends AbstractEContentDriver{
 					];
 					$supplementalMaterial = $this->loadCheckoutFormatInformation($curTitle, $supplementalMaterial);
 					if (isset($supplementalMaterial['selectedFormat']) && !empty($supplementalMaterial['selectedFormat']['format'])) {
-						$parentCheckout['supplementalMaterials'][] = $supplementalMaterial;
+						$parentCheckout->supplementalMaterials[] = $supplementalMaterial;
 					}
 					$checkedOutTitles['OverDrive' . $parentCheckoutId] = $parentCheckout;
 				}else{
 					//Load data from api
-					$checkout['checkoutSource'] = 'OverDrive';
-					$checkout['overDriveId'] = $curTitle->reserveId;
-					$checkout['expiresOn'] = $curTitle->expires;
+					$checkout->sourceId = $curTitle->reserveId;
+					$checkout->recordId = $curTitle->reserveId;
+					$checkout->dueDate = $curTitle->expires;
 					try {
 						$expirationDate = new DateTime($curTitle->expires);
-						$checkout['dueDate'] = $expirationDate->getTimestamp();
+						$checkout->dueDate = $expirationDate->getTimestamp();
 						//If the title expires in less than 3 days we should be able to renew it
 						if ($expirationDate->getTimestamp() < time() + 3 * 24 * 60 * 60){
-							$checkout['canRenew'] = true;
+							$checkout->canRenew = true;
 						}else{
-							$checkout['canRenew'] = false;
+							$checkout->canRenew = false;
 						}
 					} catch (Exception $e) {
 						$logger->log("Could not parse date for overdrive expiration " . $curTitle->expires, Logger::LOG_NOTICE);
 					}
 					try {
 						$checkOutDate = new DateTime($curTitle->checkoutDate);
-						$checkout['checkoutDate'] = $checkOutDate->getTimestamp();
+						$checkout->checkoutDate = $checkOutDate->getTimestamp();
 					} catch (Exception $e) {
 						$logger->log("Could not parse date for overdrive checkout date " . $curTitle->checkoutDate, Logger::LOG_NOTICE);
 					}
-					$checkout['overdriveRead'] = false;
+					$checkout->overdriveRead = false;
 					if (isset($curTitle->isFormatLockedIn) && $curTitle->isFormatLockedIn == 1){
-						$checkout['formatSelected'] = true;
+						$checkout->formatSelected = true;
 					}else{
-						$checkout['formatSelected'] = false;
+						$checkout->formatSelected = false;
 					}
-					$checkout['formats'] = array();
+					$checkout->formats = array();
 					if (!$forSummary){
 						$checkout = $this->loadCheckoutFormatInformation($curTitle, $checkout);
 
 						if (isset($curTitle->actions->earlyReturn)){
-							$checkout['earlyReturn']  = true;
+							$checkout->canReturnEarly = true;
 						}
 						//Figure out which eContent record this is for.
 						require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
-						$overDriveRecord = new OverDriveRecordDriver($checkout['overDriveId']);
+						$overDriveRecord = new OverDriveRecordDriver($checkout->sourceId);
 						if ($overDriveRecord->isValid()) {
-							$checkout['recordId'] = $overDriveRecord->getUniqueID();
-							$groupedWorkId = $overDriveRecord->getGroupedWorkId();
-							if ($groupedWorkId != null) {
-								$checkout['groupedWorkId'] = $overDriveRecord->getGroupedWorkId();
-							}
-							$formats = $overDriveRecord->getFormats();
-							$checkout['groupedWorkId'] = $overDriveRecord->getPermanentId();
-							$checkout['format'] = reset($formats);
-							$checkout['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
-							$checkout['ratingData'] = $overDriveRecord->getRatingData();
-							$checkout['recordUrl'] = $overDriveRecord->getLinkUrl(true);
-							$checkout['title'] = $overDriveRecord->getTitle();
-							$checkout['author'] = $overDriveRecord->getAuthor();
-							$checkout['linkUrl'] = $overDriveRecord->getLinkUrl(false);
+							$checkout->groupedWorkId = $overDriveRecord->getPermanentId();
 						}else{
 							//The title doesn't exist in the collection - this happens with Magazines right now (early 2021).
 							//Load the title information from metadata, but don't link it.
-							$overDriveMetadata = $this->getProductMetadata($checkout['overDriveId']);
+							$overDriveMetadata = $this->getProductMetadata($checkout->sourceId);
 							if ($overDriveMetadata){
-								$checkout['format'] = $overDriveMetadata->mediaType;
-								$checkout['coverUrl'] = $overDriveMetadata->images->cover150Wide->href;
-								$checkout['title'] = $overDriveMetadata->title;
-								$checkout['author'] = $overDriveMetadata->publisher;
+								$checkout->format = $overDriveMetadata->mediaType;
+								$checkout->coverUrl = $overDriveMetadata->images->cover150Wide->href;
+								$checkout->title = $overDriveMetadata->title;
+								$checkout->author = $overDriveMetadata->publisher;
 								//Magazines link to the searchable record by the parent magazine title id
 								if (!empty($overDriveMetadata->parentMagazineTitleId)){
 									require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
@@ -586,30 +572,21 @@ class OverDriveDriver extends AbstractEContentDriver{
 											$groupedWork = new GroupedWork();
 											$groupedWork->id = $groupedWorkPrimaryIdentifier->grouped_work_id;
 											if ($groupedWork->find(true)){
-												$checkout['groupedWorkId'] = $groupedWork->permanent_id;
+												$checkout->groupedWorkId = $groupedWork->permanent_id;
 												require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 												$groupedWorkDriver = new GroupedWorkDriver($groupedWork->permanent_id);
-												$checkout['ratingData'] = $groupedWorkDriver->getRatingData();
-												$checkout['recordUrl'] = $groupedWorkDriver->getLinkUrl(true);
-												$checkout['linkUrl'] = $groupedWorkDriver->getLinkUrl(false);
 											}
 										}
 									}
 								}
-
 							}
 						}
 					}
-					$checkout['user'] = $patron->getNameAndLibraryLabel();
-					$checkout['userId'] = $patron->id;
 
-					$key = $checkout['checkoutSource'] . $checkout['overDriveId'];
+					$key = $checkout->source . $checkout->sourceId . $checkout->userId;
 					$checkedOutTitles[$key] = $checkout;
 				}
 			}
-		}
-		if (!$forSummary){
-			$this->checkouts[$patron->id] = $checkedOutTitles;
 		}
 		return $checkedOutTitles;
 	}
@@ -622,6 +599,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @return array
 	 */
 	public function getHolds($user, $forSummary = false){
+		require_once ROOT_DIR . '/sys/User/Hold.php';
 		//Cache holds for the user just for this call.
 		if (isset($this->holds[$user->id])){
 			return $this->holds[$user->id];
@@ -641,57 +619,36 @@ class OverDriveDriver extends AbstractEContentDriver{
 		}
 		if (isset($response->holds)){
 			foreach ($response->holds as $curTitle){
-				$hold = array();
-				$hold['overDriveId'] = $curTitle->reserveId;
-				if (!empty($curTitle->emailAddress)){
-					$hold['notifyEmail'] = $curTitle->emailAddress;
-				}
-				$datePlaced                = strtotime($curTitle->holdPlacedDate);
+				$hold = new Hold();
+				$hold->type = 'overdrive';
+				$hold->source = 'overdrive';
+				$hold->sourceId = $curTitle->reserveId;
+				$hold->recordId = $curTitle->reserveId;
+				$datePlaced = strtotime($curTitle->holdPlacedDate);
 				if ($datePlaced) {
-					$hold['create']            = $datePlaced;
+					$hold->createDate = $datePlaced;
 				}
-				$hold['holdQueueLength']   = $curTitle->numberOfHolds;
-				$hold['holdQueuePosition'] = $curTitle->holdListPosition;
-				$hold['position']          = $curTitle->holdListPosition;  // this is so that overdrive holds can be sorted by hold position with the IlS holds
-				$hold['available']         = isset($curTitle->actions->checkout);
-				if ($hold['available']){
-					$hold['expire'] = strtotime($curTitle->holdExpires);
+				$hold->holdQueueLength   = $curTitle->numberOfHolds;
+				$hold->position          = $curTitle->holdListPosition;  // this is so that overdrive holds can be sorted by hold position with the IlS holds
+				$hold->available         = isset($curTitle->actions->checkout);
+				if ($hold->available){
+					$hold->expirationDate = strtotime($curTitle->holdExpires);
 				}else{
-					$hold['allowFreezeHolds'] = true;
-					$hold['canFreeze'] = true;
+					$hold->canFreeze = true;
 					if (isset($curTitle->holdSuspension)){
-						$hold['frozen'] = true;
-						$hold['status'] = "Frozen";
+						$hold->frozen = true;
+						$hold->status = "Frozen";
 						if ($curTitle->holdSuspension->numberOfDays > 0) {
 							$numDaysSuspended = $curTitle->holdSuspension->numberOfDays;
-							$hold['status'] .= ' until ' . DateUtils::addDays(date('m/d/Y'), $numDaysSuspended, "m/d/Y");
+							$hold->status .= ' until ' . DateUtils::addDays(date('m/d/Y'), $numDaysSuspended, "m/d/Y");
 						}
 					}
 				}
-				$hold['holdSource'] = 'OverDrive';
 
-				//Figure out which eContent record this is for.
-				require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
-				if (!$forSummary){
-					$overDriveRecord = new OverDriveRecordDriver($hold['overDriveId']);
-					$hold['groupedWorkId'] = $overDriveRecord->getPermanentId();
-					$hold['recordId'] = $overDriveRecord->getUniqueID();
-					$hold['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
-					$hold['recordUrl'] = $overDriveRecord->getAbsoluteUrl();
-					$hold['title'] = $overDriveRecord->getTitle();
-					$hold['sortTitle'] = $overDriveRecord->getTitle();
-					$hold['author'] = $overDriveRecord->getAuthor();
-					$hold['linkUrl'] = $overDriveRecord->getLinkUrl(true);
-					$hold['format'] = $overDriveRecord->getFormats();
-					$hold['ratingData'] = $overDriveRecord->getRatingData();
+				$hold->userId = $user->id;
 
-					$hold['previewActions'] = $overDriveRecord->getPreviewActions();
-				}
-				$hold['user'] = $user->getNameAndLibraryLabel();
-				$hold['userId'] = $user->id;
-
-				$key = $hold['holdSource'] . $hold['overDriveId'] . $hold['user'];
-				if ($hold['available']){
+				$key = $hold->type . $hold->sourceId . $hold->userId;
+				if ($hold->available){
 					$holds['available'][$key] = $hold;
 				}else{
 					$holds['unavailable'][$key] = $hold;
@@ -1273,28 +1230,26 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	/**
 	 * @param $curTitle
-	 * @param array $bookshelfItem
-	 * @return array
+	 * @param Checkout $bookshelfItem
+	 * @return Checkout
 	 */
-	private function loadCheckoutFormatInformation($curTitle, array $bookshelfItem): array
+	private function loadCheckoutFormatInformation($curTitle, Checkout $bookshelfItem): Checkout
 	{
-		$bookshelfItem['allowDownload'] = true;
+		$bookshelfItem->allowDownload = true;
 		if (isset($curTitle->formats)) {
 			foreach ($curTitle->formats as $id => $format) {
 				if ($format->formatType == 'ebook-overdrive' || $format->formatType == 'ebook-mediado') {
-					$bookshelfItem['overdriveRead'] = true;
+					$bookshelfItem->overdriveRead = true;
 				} else if ($format->formatType == 'audiobook-overdrive') {
-					$bookshelfItem['overdriveListen'] = true;
+					$bookshelfItem->overdriveListen = true;
 				} else if ($format->formatType == 'video-streaming') {
-					$bookshelfItem['overdriveVideo'] = true;
+					$bookshelfItem->overdriveVideo = true;
 				} else if ($format->formatType == 'magazine-overdrive') {
-					$bookshelfItem['overdriveMagazine'] = true;
-					$bookshelfItem['allowDownload'] = false;
+					$bookshelfItem->overdriveMagazine = true;
+					$bookshelfItem->allowDownload = false;
 				} else {
-					$bookshelfItem['selectedFormat'] = array(
-						'name' => $this->format_map[$format->formatType],
-						'format' => $format->formatType,
-					);
+					$bookshelfItem->selectedFormatName = $this->format_map[$format->formatType];
+					$bookshelfItem->selectedFormatValue = $format->formatType;
 				}
 				$curFormat = array();
 				$curFormat['id'] = $id;
@@ -1304,21 +1259,21 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$curFormat['downloadUrl'] = $format->links->self->href . '/downloadlink';
 				}
 				if ($format->formatType != 'magazine-overdrive' && $format->formatType != 'ebook-overdrive' && $format->formatType != 'ebook-mediado' && $format->formatType != 'audiobook-overdrive' && $format->formatType != 'video-streaming') {
-					$bookshelfItem['formats'][] = $curFormat;
+					$bookshelfItem->formats[] = $curFormat;
 				} else {
 					if (isset($curFormat['downloadUrl'])) {
 						if ($format->formatType = 'ebook-overdrive' || $format->formatType == 'ebook-mediado' || $format->formatType == 'magazine-overdrive') {
-							$bookshelfItem['overdriveReadUrl'] = $curFormat['downloadUrl'];
+							$bookshelfItem->overdriveReadUrl = $curFormat['downloadUrl'];
 						} else if ($format->formatType == 'video-streaming') {
-							$bookshelfItem['overdriveVideoUrl'] = $curFormat['downloadUrl'];
+							$bookshelfItem->overdriveVideoUrl = $curFormat['downloadUrl'];
 						} else {
-							$bookshelfItem['overdriveListenUrl'] = $curFormat['downloadUrl'];
+							$bookshelfItem->overdriveListenUrl = $curFormat['downloadUrl'];
 						}
 					}
 				}
 			}
 		}
-		if (isset($curTitle->actions->format) && empty($bookshelfItem['formatSelected'])) {
+		if (isset($curTitle->actions->format) && empty($bookshelfItem->selectedFormatValue)) {
 			//Get the options for the format which includes the valid formats
 			$formatField = null;
 			foreach ($curTitle->actions->format->fields as $curFieldIndex => $curField) {
@@ -1332,7 +1287,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$curFormat = array();
 					$curFormat['id'] = $format;
 					$curFormat['name'] = $this->format_map[$format];
-					$bookshelfItem['formats'][] = $curFormat;
+					$bookshelfItem->formats[] = $curFormat;
 				}
 				//}else{
 				//No formats found for the title, do we need to do anything special?

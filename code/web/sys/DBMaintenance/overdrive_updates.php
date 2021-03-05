@@ -319,6 +319,14 @@ function getOverDriveUpdates()
 			]
 		],
 
+		'overdrive_module_add_settings' => [
+			'title' => 'Add Settings to OverDrive module',
+			'description' => 'Add Settings to OverDrive module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/OverDrive/OverDriveSetting.php', settingsClassName = 'OverDriveSetting' WHERE name = 'OverDrive'"
+			]
+		],
+
 		'overdrive_part_count' => [
 			'title' => 'OverDrive part count',
 			'description' => 'Increase the size of the partCount field',
