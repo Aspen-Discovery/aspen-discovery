@@ -568,6 +568,20 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				suppressed = true;
 			}
 		}
+		//Suppression based on format
+		String shelfLocationCode = getSubfieldData(curItem, shelvingLocationSubfield);
+		String subLocation = getSubfieldData(curItem, subLocationSubfield);
+		String collectionCode = getSubfieldData(curItem, collectionSubfield);
+		String itemType = getSubfieldData(curItem, iTypeSubfield);
+		if (shelfLocationCode != null && formatsToSuppress.contains(shelfLocationCode.toUpperCase())){
+			suppressed = true;
+		}else if (subLocation != null && formatsToSuppress.contains(subLocation.toUpperCase())){
+			suppressed = true;
+		}else if (collectionCode != null && formatsToSuppress.contains(collectionCode.toUpperCase())){
+			suppressed = true;
+		}else if (itemType != null && formatsToSuppress.contains(itemType.toUpperCase())){
+			suppressed = true;
+		}
 		if (suppressed){
 			return true;
 		}else{

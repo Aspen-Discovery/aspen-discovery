@@ -29,57 +29,75 @@ class FineAPI extends Action
 		echo $output;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs(): array
 	{
 		return [];
 	}
 
-	function isValidJSON($str) {
+	function isValidJSON($str): bool
+	{
 		json_decode($str);
 		return json_last_error() == JSON_ERROR_NONE;
 	}
 
 	private function MSBConfirmation()
 	{
+		global $logger;
+		global $serverName;
+		require_once ROOT_DIR . '/sys/Email/Mailer.php';
+		$mailer = new Mailer();
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = new SystemVariables();
 		$json_params = file_get_contents("php://input");
 		if (strlen($json_params) > 0 && $this->isValidJSON($json_params)) {
 			$msb = json_decode($json_params, true);
 			if ($msb["ResponseCode"] != "Success") {
 				// 2021 01 20: MSB reports they will only use the post back link when the operation is successful
-				// TODO: make this failure (and others) land somewhere
-				return ['success' => false, 'message' => 'User Payment ' . $msb["PaymentReference"] . 'failed with MSB payment ResponseCode' . $msb["ResponseCode"]];
-			}
-			//Retrieve the order information from Aspen db
-			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
-			$payment = new UserPayment();
-			$payment->id = $msb["PaymentReference"];
-			if ($payment->find(true)) {
-				$payment->orderId = $msb["TransactionID"];
-				$payment->update();
-				if ($payment->completed) {
-					return ['success' => false, 'message' => 'This payment has already been processed'];
-				} else {
-					// Ensure MSB-reported transaction amount (which does not include convenience fee) equals Aspen-expected total paid
-					if ($payment->totalPaid != $msb["TransactionAmount"]) {
-						$logger->log("MSB Payment does not equal Aspen expected payment for Payment Reference ID $payment->id : " . $msb['TransactionAmount'] . " != $payment->totalPaid", Logger::LOG_ERROR);
-						$body = "MSB Payment does not equal Aspen expected payment for Payment Reference ID $payment->id : " . $msb['TransactionAmount'] . " != $payment->totalPaid";
-						require_once ROOT_DIR . '/sys/Email/Mailer.php';
-						$mailer = new Mailer();
-						$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $body);
-						return ['success' => false, 'message' => 'MSB Payment does not equal Aspen expected payment'];
-					}
-					$user = new User();
-					$user->id = $payment->userId;
-					if ($user->find(true)){
-						return $user->completeFinePayment($payment);
-					}else{
-						return ['success' => false, 'message' => 'User Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron'];
-					}
-				}
+				$success = false;
+				$message = 'User Payment ' . $msb["PaymentReference"] . 'failed with MSB payment ResponseCode' . $msb["ResponseCode"];
+				$level = Logger::LOG_ERROR;
 			} else {
-				return ['success' => false, 'message' => 'Unable to find the order you processed, please visit the library with your receipt'];
+				//Retrieve the order information from Aspen db
+				require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+				$payment = new UserPayment();
+				$payment->id = $msb["PaymentReference"];
+				if ($payment->find(true)) {
+					$payment->orderId = $msb["TransactionID"];
+					$payment->update();
+					if ($payment->completed != 0) {
+						$success = false;
+						$message = "MSB Payment has already been processed for Payment Reference ID $payment->id";
+						$level = Logger::LOG_ERROR;
+					} else {
+						// Ensure MSB-reported transaction amount (which does not include convenience fee) equals Aspen-expected total paid
+						if ($payment->totalPaid != $msb["TransactionAmount"]) {
+							$success = false;
+							$message = "MSB Payment does not equal Aspen expected payment for Payment Reference ID $payment->id : " . $msb['TransactionAmount'] . " != $payment->totalPaid";
+							$level = Logger::LOG_ERROR;
+						} else {
+							$user = new User();
+							$user->id = $payment->userId;
+							if ($user->find(true)) {
+								return $user->completeFinePayment($payment);
+							} else {
+								$success = false;
+								$message = 'User Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron';
+								$level = Logger::LOG_ERROR;
+							}
+						}
+					}
+				} else {
+					$success = false;
+					$message = "MSB Payment not found in Aspen for Payment Reference ID $payment->id .";
+					$level = Logger::LOG_ERROR;
+				}
 			}
 		}
+		$logger->log($message, $level);
+		if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
+			$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
+		}
+		return ['success' => $success, 'message' => $message];
 	}
 
 }

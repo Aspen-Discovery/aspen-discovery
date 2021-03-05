@@ -26,17 +26,15 @@ class MarcLoader{
 	 */
 	private static $loadedMarcRecords = array();
 	public static function loadMarcRecordByILSId($id, $recordType = 'marc'){
-		/** @var $indexingProfiles IndexingProfile[] */
 		global $indexingProfiles;
-		/** @var $sideLoadSettings SideLoad[] */
 		global $sideLoadSettings;
-		if (strpos($id, ':') !== false){
-            $recordInfo = explode(':', $id);
-            $recordType = $recordInfo[0];
-            $ilsId = $recordInfo[1];
-        }else{
-            $ilsId = $id;
-        }
+		if (strpos($id, ':') !== false) {
+			$recordInfo = explode(':', $id);
+			$recordType = $recordInfo[0];
+			$ilsId = $recordInfo[1];
+		} else {
+			$ilsId = $id;
+		}
 
 		if (array_key_exists($ilsId, MarcLoader::$loadedMarcRecords)){
 			return MarcLoader::$loadedMarcRecords[$ilsId];
@@ -85,6 +83,8 @@ class MarcLoader{
 		}
 		$memoryWatcher->logMemory("Loaded MARC for $id");
 		MarcLoader::$loadedMarcRecords[$id] = $marcRecord;
+		global $timer;
+		$timer->logTime("Loaded MARC record by ILS ID");
 		return $marcRecord;
 	}
 
@@ -93,9 +93,7 @@ class MarcLoader{
 	 * @return int
 	 */
 	public static function lastModificationTimeForIlsId($id){
-		/** @var $indexingProfiles IndexingProfile[] */
 		global $indexingProfiles;
-		/** @var $sideLoadSettings SideLoad[] */
 		global $sideLoadSettings;
 		if (strpos($id, ':') !== false){
 			$recordInfo = explode(':', $id);
@@ -103,7 +101,6 @@ class MarcLoader{
 			$ilsId = $recordInfo[1];
 		}else{
 			//Try to infer the indexing profile from the module
-			/** @var IndexingProfile $activeRecordProfile */
 			global $activeRecordProfile;
 			if ($activeRecordProfile){
 				$recordType = $activeRecordProfile->name;
@@ -131,7 +128,10 @@ class MarcLoader{
 		}
 		$individualName = $indexingProfile->individualMarcPath . "/{$firstChars}/{$shortId}.mrc";
 		if (isset($indexingProfile->individualMarcPath)){
-			return filemtime($individualName);
+			global $timer;
+			$modificationTime = filemtime($individualName);
+			$timer->logTime("Loaded modification time for marc record");
+			return $modificationTime;
 		}else{
 			return false;
 		}
@@ -142,9 +142,7 @@ class MarcLoader{
 	 * @return boolean
 	 */
 	public static function marcExistsForILSId($id){
-		/** @var $indexingProfiles IndexingProfile[] */
 		global $indexingProfiles;
-		/** @var $sideLoadSettings SideLoad[] */
 		global $sideLoadSettings;
 		if (strpos($id, ':') !== false){
 			$recordInfo = explode(':', $id, 2);
@@ -157,7 +155,6 @@ class MarcLoader{
 			}
 		}else{
 			//Try to infer the indexing profile from the module
-			/** @var IndexingProfile $activeRecordProfile */
 			global $activeRecordProfile;
 			if ($activeRecordProfile){
 				$recordType = $activeRecordProfile->name;
@@ -167,7 +164,6 @@ class MarcLoader{
 			$ilsId = $id;
 		}
 
-		/** @var $indexingProfiles IndexingProfile[] */
 		if (array_key_exists($recordType, $indexingProfiles)){
 			$indexingProfile = $indexingProfiles[$recordType];
 		}elseif (array_key_exists($recordType, $sideLoadSettings)){
@@ -186,7 +182,10 @@ class MarcLoader{
 		}
 		$individualName = $indexingProfile->individualMarcPath . "/{$firstChars}/{$shortId}.mrc";
 		if (isset($indexingProfile->individualMarcPath)){
-			return file_exists($individualName);
+			$fileExists = file_exists($individualName);
+			global $timer;
+			$timer->logTime('Finished checking if MARC file exists');
+			return $fileExists;
 		}else{
 			return false;
 		}

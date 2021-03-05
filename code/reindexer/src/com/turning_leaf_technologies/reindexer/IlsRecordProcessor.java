@@ -77,7 +77,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private final HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private final ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
-	private final HashSet<String> formatsToSuppress = new HashSet<>();
+	protected final HashSet<String> formatsToSuppress = new HashSet<>();
 	private final HashSet<String> statusesToSuppress = new HashSet<>();
 	private final HashSet<String> inLibraryUseOnlyFormats = new HashSet<>();
 	private final HashSet<String> inLibraryUseOnlyStatuses = new HashSet<>();
@@ -424,6 +424,19 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected void loadSystemLists(GroupedWorkSolr groupedWork, Record record) {
 		//By default, do nothing
+	}
+
+	protected String getSubfieldData(DataField dataField, char subfield){
+		if (subfield == ' '){
+			return null;
+		}else {
+			Subfield subfieldObject = dataField.getSubfield(subfield);
+			if (subfieldObject != null) {
+				return subfieldObject.getData();
+			} else {
+				return null;
+			}
+		}
 	}
 
 	protected void loadOnOrderItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){

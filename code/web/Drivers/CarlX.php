@@ -1304,7 +1304,12 @@ class CarlX extends AbstractIlsDriver{
 				}
 			}
 		}
-		array_multisort(array_column($myFines, 'message', SORT_ASC), $myFines);
+		$sorter = function($a, $b) {
+			$messageA = $a['message'];
+			$messageB = $b['message'];
+			return strcasecmp($messageA, $messageB);
+		};
+		uasort($myFines, $sorter);
 		return $myFines;
 	}
 
@@ -1813,6 +1818,7 @@ class CarlX extends AbstractIlsDriver{
 				left join item_v i on ( t.bid = i.bid and t.holdingbranch = i.branch)
 				left join location_v l on i.location = l.locnumber
 				where ob.branchcode = '$location'
+				and t.renew = ob.branchnumber -- ensure pickup location (t.renew) is school. field will change to t.pickupbranch in CarlX 9.6.8.0
 				and t.transcode = 'R*'
 				and i.status = 'S'
 				order by 
@@ -1845,6 +1851,7 @@ EOT;
 		// consider using oci_set_prefetch to improve performance
 		// oci_set_prefetch($stid, 1000);
 		oci_execute($stid);
+		$data = array();
 		while (($row = oci_fetch_array ($stid, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 			$data[] = $row;
 		}

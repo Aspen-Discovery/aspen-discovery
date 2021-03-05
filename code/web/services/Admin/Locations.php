@@ -94,4 +94,13 @@ class Admin_Locations extends ObjectEditor
 	{
 		return UserAccount::userHasPermission(['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
 	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 250;
+	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return true;
+	}
 }

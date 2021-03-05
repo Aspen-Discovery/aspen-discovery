@@ -544,6 +544,14 @@ function getIndexingUpdates()
 			]
 		],
 
+		'regroup_21_03' => [
+			'title' => 'Regroup all records for 21.03',
+			'description' => 'Regroup all records for 21.03',
+			'sql' => [
+				'UPDATE indexing_profiles set regroupAllRecords = 1'
+			]
+		],
+
 		'authorities' => [
 			'title' => 'Authority Tables',
 			'description' => 'Setup authorities in the database to reduce memory usage during indexing',

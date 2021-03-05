@@ -227,6 +227,10 @@ $logDir = '/var/log/aspen-discovery/' . $sitename;
 if (!file_exists($logDir)){
 	mkdir($logDir, 0775, true);
 }
+$logDir2 = '/var/log/aspen-discovery/' . $sitename . '/logs';
+if (!file_exists($logDir)){
+	mkdir($logDir, 0775, true);
+}
 
 //Update file permissions
 if (!$runningOnWindows){

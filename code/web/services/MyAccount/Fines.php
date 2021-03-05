@@ -41,8 +41,32 @@ class MyAccount_Fines extends MyAccount
 					$interface->assign('payPalClientId', $clientId);
 				}
 
+				// MSB payment result message
+				if ($userLibrary->finePaymentType == 3) {
+					if (!empty($_REQUEST['id'])) {
+						require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+						$payment = new UserPayment();
+						$payment->id = $_REQUEST['id'];
+						$finePaymentResult = new stdClass();
+						if ($payment->find(true)) {
+							if ($payment->completed == 1) {
+								$finePaymentResult->success = true;
+								$finePaymentResult->message = translate(['text' => 'patron_payment_success', 'defaultText' => 'Your payment was processed successfully, thank you.']);
+							} elseif ($payment->completed == 9) {
+								$finePaymentResult->success = false;
+								$finePaymentResult->message = translate(['text' => 'patron_payment_fail_1', 'defaultText' => 'Your payment was processed, but failed to update the Library system. Library staff have been alerted to this problem.']);
+							} else { // i.e., $payment->completed == 0
+								$finePaymentResult->success = false;
+								$finePaymentResult->message = translate(['text' => 'patron_payment_fail_2', 'defaultText' => 'Your payment has not completed processing.']);
+							}
+						} else {
+							$finePaymentResult->success = false;
+							$finePaymentResult->message = translate(['text' => 'patron_payment_fail_3', 'defaultText' => 'Your payment was processed, but did not match library records. Please contact the library with your receipt.']);
+						}
+						$interface->assign('finePaymentResult', $finePaymentResult);
+					}
+				}
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
-
 				$interface->assign('userFines', $fines);
 
 				$userAccountLabel = [];
@@ -82,7 +106,7 @@ class MyAccount_Fines extends MyAccount
 		$this->display('fines.tpl', 'My Fines');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs(): array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

@@ -202,10 +202,10 @@
 </form>
 {/if}
 
-{*{if isset($dataList) && is_array($dataList) && count($dataList) > 5}*}
-{*<script type="text/javascript">*}
-{*	{literal}*}
-{*	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });*}
-{*	{/literal}*}
-{*</script>*}
-{*{/if}*}
+{if $showQuickFilterOnPropertiesList && isset($dataList) && is_array($dataList) && count($dataList) > 5}
+<script type="text/javascript">
+	{literal}
+	$("#adminTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
+	{/literal}
+</script>
+{/if}

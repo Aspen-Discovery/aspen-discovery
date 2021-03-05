@@ -19,6 +19,7 @@ class WorkAPI extends Action{
 	}
 
 	function getRatingData($permanentId = null){
+		global $timer;
 		if (is_null($permanentId) && isset($_REQUEST['id'])){
 			$permanentId = $_REQUEST['id'];
 		}
@@ -81,6 +82,7 @@ class WorkAPI extends Action{
 			$ratingData['barWidth2Star'] = 0;
 			$ratingData['barWidth1Star'] = 0;
 		}
+		$timer->logTime("Loaded rating information for $permanentId");
 		return $ratingData;
 	}
 

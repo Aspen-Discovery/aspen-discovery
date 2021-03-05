@@ -59,6 +59,7 @@ echo "Enter the timezone of the server"
 read timezone
 timedatectl set-timezone $timezone
 
+cd /usr/local/aspen-discovery/install
 bash ./setup_aspen_users.sh
 
 

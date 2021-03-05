@@ -12,45 +12,56 @@ class Nashville extends CarlX {
 	public function completeFinePayment(User $patron, UserPayment $payment): array
 	{
 		global $logger;
+		global $serverName;
+		require_once ROOT_DIR . '/sys/Email/Mailer.php';
+		$mailer = new Mailer();
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables;
+
 		$accountLinesPaid = explode(',', $payment->finesPaid);
 		$user = new User();
 		$user->id = $payment->userId;
 		if ($user->find(true)) {
 			$patronId = $user->cat_username;
+			$allPaymentsSucceed = true;
+			foreach ($accountLinesPaid as $line) {
+				// MSB Payments are in the form of fineId|paymentAmount
+				list($feeId, $pmtAmount) = explode('|', $line);
+				list($feeId, $feeType) = explode('-', $feeId);
+				$feeType = CarlX::$fineTypeSIP2Translations[$feeType];
+				if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
+					$feeId = '#' . $feeId;
+				}
+				$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
+				if ($response['success'] === false) {
+					$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
+					$allPaymentsSucceed = false;
+				}
+			}
+			if ($allPaymentsSucceed === false) {
+				//$success = false;
+				$message = "MSB Payment CarlX update failed for Payment Reference ID $payment->id . See messages.log for details on individual items.";
+				$level = Logger::LOG_ERROR;
+				$payment->completed = 9;
+			} else {
+				//$success = true;
+				$message = "MSB payment successfully recorded in CarlX for Payment Reference ID $payment->id .";
+				$level = Logger::LOG_NOTICE;
+				$payment->completed = 1;
+			}
+			$payment->update();
+			$this->createPatronPaymentNote($patronId, $payment->id);
 		} else {
-			return ['success' => false, 'message' => 'User Payment ' . $payment->id . 'failed with Invalid Patron'];
-		}
-		$allPaymentsSucceed = true;
-		foreach ($accountLinesPaid as $line) {
-			// MSB Payments are in the form of fineId|paymentAmount
-			list($feeId, $pmtAmount) = explode('|', $line);
-			list($feeId, $feeType) = explode('-', $feeId);
-			$feeType = $fineTypeSIP2Translations[$feeType];
-			if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
-				$feeId = '#' . $feeId;
-			}
-			$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
-			if ($response['success'] === false) {
-				$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
-				$allPaymentsSucceed = false;
-			}
-		}
-		if ($allPaymentsSucceed === false) {
-			require_once ROOT_DIR . '/sys/Email/Mailer.php';
-			$mailer = new Mailer();
-			$variables = new SystemVariables();
-			global $serverName;
 			$success = false;
-			$message = "MSB Payment CarlX update failed.";
-			$payment->completed = 9;
-			$body = "MSB Payment CarlX update failed for Payment Reference ID $payment->id . Refer to log for more detail.";
-			$mailer->send($variables->errorEmail, "$serverName Error with MSB Payment CarlX update", $body);
-		} else {
-			$success = true;
-			$message = "MSB payment successfully recorded in CarlX.";
-			$payment->completed = 1;
+			$message = 'User Payment ' . $payment->id . 'failed with Invalid Patron';
+			$level = Logger::LOG_ERROR;
 		}
-		$payment->update();
+		$logger->log($message, $level);
+		if ($level == Logger::LOG_ERROR) {
+			if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
+				$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
+			}
+		}
 		return ['success' => $success, 'message' => $message];
 	}
 
@@ -61,6 +72,45 @@ class Nashville extends CarlX {
 			$canPayFine = true;
 		}
 		return $canPayFine;
+	}
+
+	protected function createPatronPaymentNote($patronId, $paymentId): array
+	{
+		global $logger;
+		global $serverName;
+		require_once ROOT_DIR . '/sys/Email/Mailer.php';
+		$mailer = new Mailer();
+		$systemVariables = new SystemVariables();
+		$request = new stdClass();
+		$request->Note = new stdClass();
+		$request->Note->PatronID = $patronId;
+		$request->Note->NoteType = 2;
+		$request->Note->NoteText = "Nexus Transaction Reference: $paymentId";
+		$request->Modifiers = '';
+		$result = $this->doSoapRequest('addPatronNote', $request);
+		if ($result) {
+			$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+			if (!$success) {
+				$success = false;
+				$message = "Failed to add patron note for payment in CarlX for Reference ID $paymentId .";
+				$level = Logger::LOG_ERROR;
+			} else {
+				$success = true;
+				$message = "Patron note for payment added successfully in CarlX for Reference ID $paymentId .";
+				$level = Logger::LOG_NOTICE;
+			}
+		} else {
+			$success = false;
+			$message = "CarlX ILS gave no response when attempting to add patron note for payment Reference ID $paymentId .";
+			$level = Logger::LOG_ERROR;
+		}
+		$logger->log($message, $level);
+		if ($level == Logger::LOG_ERROR) {
+			if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
+				$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
+			}
+		}
+		return ['success' => $success, 'message' => $message];
 	}
 
 	protected function feePaidViaSIP($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = ''): array
@@ -77,8 +127,10 @@ class Nashville extends CarlX {
 					// $patron = $result['variable']['AA'][0];
 					$message = empty($transId) ? $message : $transId . ": " . $message;
 				}
+				return ['success' => $success, 'message' => $message];
+			} else {
+				return ['success' => false, 'message' => ['text' => 'sip_unknown_fail', 'defaultText' => 'Unknown problem with circulation server, please try again later.']];
 			}
-			return ['success' => $success, 'message' => $message];
 		} else {
 			return ['success' => false, 'message' => ['text' => 'sip_connect_fail', 'defaultText' => 'Could not connect to circulation server, please try again later.']];
 		}
@@ -205,7 +257,17 @@ class Nashville extends CarlX {
 				}
 			}
 		}
-		array_multisort(array_column($myFines, 'message', SORT_ASC), $myFines);
+		$sorter = function($a, $b) {
+			$systemA = $a['system'];
+			$systemB = $b['system'];
+			if ($systemA === $systemB) {
+				$messageA = $a['message'];
+				$messageB = $b['message'];
+				return strcasecmp($messageA, $messageB);
+			}
+			return strcasecmp($systemA, $systemB);
+		};
+		uasort($myFines, $sorter);
 		return $myFines;
 	}
 

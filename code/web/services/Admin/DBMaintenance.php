@@ -820,6 +820,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'ip_log_timing' => [
+					'title' => 'IP Lookup timing',
+					'description' => 'Add the ability to log timing information by IP address',
+					'sql' => [
+						'ALTER TABLE ip_lookup ADD COLUMN logTimingInformation TINYINT DEFAULT 0'
+					]
+				],
+
 				'remove_merged_records' => [
 					'title' => 'Remove unused Merged Records Table',
 					'description' => 'Remove unused Merged Records Table',
@@ -1537,13 +1545,13 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
-				'add_work_level_rating_index' => [
-					'title' => 'Add Unique Index to User Work Review',
-					'description' => 'Add a unique key to the work reviews',
-					'sql' => [
-						'ALTER TABLE user_work_review ADD UNIQUE (userId, groupedRecordPermanentId)'
-					]
-				],
+//				'add_work_level_rating_index' => [
+//					'title' => 'Add Unique Index to User Work Review',
+//					'description' => 'Add a unique key to the work reviews',
+//					'sql' => [
+//						'ALTER TABLE user_work_review ADD UNIQUE (userId, groupedRecordPermanentId)'
+//					]
+//				],
 
 				'remove_old_user_rating_table' => [
 					'title' => 'Remove user rating',

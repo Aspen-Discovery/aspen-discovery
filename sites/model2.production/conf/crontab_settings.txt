@@ -30,16 +30,16 @@
 # Indexing Tasks #
 #############
 @reboot       solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php model2.production
-5 2 * * *     root    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php model2.production
-7 3 * * *     root    php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php model2.production
+5 2 * * *     solr    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php model2.production
+7 3 * * *     aspen   php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php model2.production
 */2 * * * *   solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php model2.production
-*/5 * * * *   root    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php model2.production
+*/5 * * * *   aspen   php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php model2.production
 
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-# 0 2 * * *   root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar model2.production
-0 2 * * *     root    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar model2.production nightly
+# 0 2 * * *   aspen   cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar model2.production
+0 2 * * *     aspen   cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar model2.production nightly
 
 ######################
 # MySQL Nightly Dump #
@@ -61,6 +61,6 @@
 26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 22 * * *   root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar model2.production
+00 22 * * *   aspen   cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar model2.production
 
 00 01 * * *   root    certbot renew

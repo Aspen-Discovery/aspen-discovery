@@ -853,7 +853,9 @@ class SirsiDynixROA extends HorizonAPI
 
 				$bibInfo = $hold->fields->bib;
 				$curHold->title = $bibInfo->fields->title;
-				$curHold->author = $bibInfo->fields->author;
+				if (isset($bibInfo->fields->author)) {
+					$curHold->author = $bibInfo->fields->author;
+				}
 
 				if (!isset($curHold->status) || strcasecmp($curHold->status, "being_held") != 0) {
 					$curHold->available = false;
@@ -1245,7 +1247,6 @@ class SirsiDynixROA extends HorizonAPI
 		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/unsuspendHold", $params, $sessionToken, 'POST');
 
 		if (isset($updateHoldResponse->holdRecord->key)) {
-			$thawed = translate('thawed');
 			return array(
 				'success' => true,
 				'message' => "The hold has been thawed."
@@ -1576,9 +1577,6 @@ class SirsiDynixROA extends HorizonAPI
 						$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
 						$preferredAddress = $updatePatronInfoParameters['fields']['preferredAddress'];
 
-						// Build Address Field with existing data
-						$index = 0;
-
 						// Update Address Field with new data supplied by the user
 						if (isset($_REQUEST['email'])) {
 							$this->setPatronUpdateFieldBySearch('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress);
@@ -1736,9 +1734,10 @@ class SirsiDynixROA extends HorizonAPI
 			}
 		}
 		if (!$fieldFound){
+			++$maxKey;
 			$patronAddress[] = [
 				'resource' => "/user/patron/$addressField",
-				'key' => $maxKey++,
+				'key' => $maxKey,
 				'fields' => [
 					'code' => [
 						'resource' => "/user/patron/$addressField",
