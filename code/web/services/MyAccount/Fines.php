@@ -22,9 +22,10 @@ class MyAccount_Fines extends MyAccount
 			global $offlineMode;
 			if (!$offlineMode) {
 				$currencyCode = 'USD';
-				$variables = new SystemVariables();
-				if ($variables->find(true)){
-					$currencyCode = $variables->currencyCode;
+				$systemVariables = SystemVariables::getSystemVariables();
+
+				if (!empty($systemVariables->currencyCode)) {
+					$currencyCode = $systemVariables->currencyCode;
 				}
 				$interface->assign('currencyCode', $currencyCode);
 
