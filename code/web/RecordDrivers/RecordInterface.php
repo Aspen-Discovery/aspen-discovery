@@ -52,27 +52,32 @@ abstract class RecordInterface
 		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $recordId;
 	}
 
+	protected $_linkUrl = null;
 	public function getLinkUrl($absolutePath = false)
 	{
-		global $interface;
-		if ($absolutePath) {
-			$linkUrl = $this->getAbsoluteUrl();
-		} else {
-			$linkUrl = $this->getRecordUrl();
+		if ($this->_linkUrl == null){
+			global $interface;
+			$this->_linkUrl = $this->getRecordUrl();
+
+			$extraParams = array();
+			if ($interface != null && strlen($interface->get_template_vars('searchId')) > 0) {
+				$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
+				$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
+				$extraParams[] = 'page=' . $interface->get_template_vars('page');
+				$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
+			}
+
+			if (count($extraParams) > 0) {
+				$this->_linkUrl .= '?' . implode('&', $extraParams);
+			}
 		}
 
-		$extraParams = array();
-		if ($interface != null && strlen($interface->get_template_vars('searchId')) > 0) {
-			$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
-			$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
-			$extraParams[] = 'page=' . $interface->get_template_vars('page');
-			$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
+		if ($absolutePath){
+			global $configArray;
+			return $configArray['Site']['url'] . $this->_linkUrl;
+		}else{
+			return $this->_linkUrl;
 		}
-
-		if (count($extraParams) > 0) {
-			$linkUrl .= '?' . implode('&', $extraParams);
-		}
-		return $linkUrl;
 	}
 
 	public abstract function getModule();

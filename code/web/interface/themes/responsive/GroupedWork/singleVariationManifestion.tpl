@@ -14,9 +14,9 @@
 			{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedManifestation->getStatusInformation() viewingIndividualRecord=0}
 	
 			{if $relatedManifestation->getNumRelatedRecords() == 1}
-				{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation->getItemSummary() totalCopies=$relatedManifestation->getCopies() itemSummaryId=$workId recordViewUrl=$relatedManifestation->getUrl() format=$relatedManifestation->format}
+				{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation->getItemsDisplayedByDefault() totalCopies=$relatedManifestation->getCopies() itemSummaryId=$workId recordViewUrl=$relatedManifestation->getUrl() format=$relatedManifestation->format}
 			{else}
-				{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation->getItemSummary() totalCopies=$relatedManifestation->getCopies() itemSummaryId=$workId format=$relatedManifestation->format}
+				{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation->getItemsDisplayedByDefault() totalCopies=$relatedManifestation->getCopies() itemSummaryId=$workId format=$relatedManifestation->format}
 			{/if}
 		</div>
 		<div class="col-tn-8 col-tn-offset-4 col-xs-8 col-xs-offset-4{if empty($viewingCombinedResults)} col-md-4 col-md-offset-0 col-lg-3{/if} manifestation-actions">

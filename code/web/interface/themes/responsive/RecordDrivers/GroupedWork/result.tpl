@@ -84,19 +84,19 @@
 					{/if}
 				{/if}
 
-				{if $showPublisher}
-				{if $alwaysShowSearchResultsMainDetails || $summPublisher}
-					<div class="row">
-						<div class="result-label col-tn-3">{translate text="Publisher"} </div>
-						<div class="result-value col-tn-8">
-							{if $summPublisher}
-								{$summPublisher}
-							{elseif $alwaysShowSearchResultsMainDetails}
-								{translate text="Not Supplied"}
-							{/if}
+				{if !empty($showPublisher) && showPublisher}
+					{if $alwaysShowSearchResultsMainDetails || $summPublisher}
+						<div class="row">
+							<div class="result-label col-tn-3">{translate text="Publisher"} </div>
+							<div class="result-value col-tn-8">
+								{if $summPublisher}
+									{$summPublisher}
+								{elseif $alwaysShowSearchResultsMainDetails}
+									{translate text="Not Supplied"}
+								{/if}
+							</div>
 						</div>
-					</div>
-				{/if}
+					{/if}
 				{/if}
 
 				{if $showPublicationDate}
