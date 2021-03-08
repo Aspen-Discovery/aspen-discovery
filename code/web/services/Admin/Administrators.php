@@ -166,4 +166,12 @@ class Admin_Administrators extends ObjectEditor
 	{
 		return false;
 	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return true;
+	}
+
+	protected function supportsPagination(){
+		return false;
+	}
 }

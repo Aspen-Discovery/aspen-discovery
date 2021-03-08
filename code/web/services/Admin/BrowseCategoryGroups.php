@@ -72,4 +72,13 @@ class Admin_BrowseCategoryGroups extends ObjectEditor
 	{
 		return UserAccount::userHasPermission(['Administer All Browse Categories', 'Administer Library Browse Categories']);
 	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 100;
+	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return true;
+	}
 }
