@@ -2669,7 +2669,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 				'itemId' => $item->itemId
 			);
 			if (!$forCovers) {
-				$item->setActions($recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : array());
+				$item->setActions($recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : []);
 				$itemSummaryInfo['actions'] = $item->getActions();
 			}
 
@@ -2688,9 +2688,11 @@ class GroupedWorkDriver extends IndexRecordDriver
 		} elseif ($libraryCallNumber != null) {
 			$relatedRecord->setCallNumber($libraryCallNumber);
 		}
+		$timer->logTime("Setup record items " . count($this->relatedItemsByRecordId[$relatedRecord->id]));
 		$relatedRecord->sortItemSummary();
+		$timer->logTime("Sorted Item Summary");
 		$relatedRecord->sortItemDetails();
-		$timer->logTime("Setup record items");
+		$timer->logTime("Sorted Item Details");
 		$memoryWatcher->logMemory("Setup record items");
 
 		if (!$forCovers) {

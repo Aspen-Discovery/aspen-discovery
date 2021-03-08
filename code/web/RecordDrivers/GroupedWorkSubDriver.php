@@ -379,7 +379,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 
 	public function getItemActions($itemInfo)
 	{
-		return array();
+		return [];
 	}
 
 	public function getLexileCode()
