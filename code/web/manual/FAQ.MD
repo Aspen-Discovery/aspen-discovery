@@ -11,7 +11,7 @@ Find out more here: [https://bywatersolutions.com/news/what-is-aspen-discovery](
 
 **A:** As a community, the currently goals are always in flux. However, there are four core goals of Aspen:
 Goal 1: Maximize patron usage of all library materials.
-Goal 2: Complete integration wit the uderlying ILS and E-content providers
+Goal 2: Complete integration wit the underlying ILS and E-content providers
 Goal 3: Make it easy for patrons to use.
 Goal 4: Make it easy for library administrators to customize and maintain.
 
@@ -55,7 +55,7 @@ Find out more here: [https://bywatersolutions.com/education/holds-in-aspen-part-
 
 **A:** Hold and circulation rules in Aspen Discovery are based on the rules that are established in your ILS. However, there are a few places in Aspen where holds behavior can be configured.
 
-1. You will find settings to configure the way patrons iteract with and place hold in Primary Configuration -> Library Systems -> ILS/Account Integration -> Holds.
+1. You will find settings to configure the way patrons interact with and place hold in Primary Configuration -> Library Systems -> ILS/Account Integration -> Holds.
 2. You are able to configure branches' availability in Primary Configuration -> Location -> ILS/Account Integration -> Valid Hold Pickup Branch?
 3. You have the ability to tell Aspen how many holds each patron type is allowed to place in Primary Configuration -> Patron Types.
 4. You can determine the hold type of a specific format in ILS Integration -> ILS Indexing Profile -> Format Information.
@@ -72,7 +72,7 @@ Find more about Axis 360 integration here: [https://bywatersolutions.com/educati
 
 **Q:** *Can we include our archives in Aspen Discovery?*
 
-**A:** Absolutely! Aspen Discovery is currently set up to connect to Open Archives.
+**A:** Absolutely! Aspen Discovery is currently set up to connect to Archives that support the OAI-PMH protocol for harvesting.
 
 Find out more about archives integration here: [https://bywatersolutions.com/news/archives-with-aspen-discovery](https://bywatersolutions.com/news/archives-with-aspen-discovery)
 
