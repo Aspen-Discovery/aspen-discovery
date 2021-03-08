@@ -193,15 +193,17 @@ abstract class ObjectEditor extends Admin_Admin
 		//Basic List
 		$allObjects = $this->getAllObjects($page, $recordsPerPage);
 
-		$options = [
-			'totalItems' => $numObjects,
-			'fileName'   => "/{$this->getModule()}/{$this->getToolName()}?page=%d",
-			'perPage'    => $recordsPerPage,
-			'canChangeRecordsPerPage' => true,
-			'canJumpToPage' => true
-		];
-		$pager = new Pager($options);
-		$interface->assign('pageLinks', $pager->getLinks());
+		if ($this->supportsPagination()) {
+			$options = [
+				'totalItems' => $numObjects,
+				'fileName' => "/{$this->getModule()}/{$this->getToolName()}?page=%d",
+				'perPage' => $recordsPerPage,
+				'canChangeRecordsPerPage' => true,
+				'canJumpToPage' => true
+			];
+			$pager = new Pager($options);
+			$interface->assign('pageLinks', $pager->getLinks());
+		}
 
 		$interface->assign('dataList', $allObjects);
 		if (count($allObjects) < 2){
@@ -642,5 +644,9 @@ abstract class ObjectEditor extends Admin_Admin
 
 	protected function showQuickFilterOnPropertiesList(){
 		return false;
+	}
+
+	protected function supportsPagination(){
+		return true;
 	}
 }
