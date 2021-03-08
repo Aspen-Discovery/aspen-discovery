@@ -80,38 +80,41 @@ class Grouping_Manifestation
 		return count($this->_variations);
 	}
 
+	protected $_isHideByDefault = null;
+	protected $_hasHiddenFormats = null;
 	/**
 	 * @return bool
 	 */
 	function isHideByDefault(): bool
 	{
-		if (!$this->_hideByDefault) {
-			$hideAllVariations = true;
-			foreach ($this->_variations as $variation) {
-				if (!$variation->isHideByDefault()) {
-					$hideAllVariations = false;
-					break;
-				}
-			}
-			return $hideAllVariations;
-		} else {
-			return true;
-		}
+		$this->loadHiddenInformation();
+		return $this->_isHideByDefault;
+	}
 
+	function loadHiddenInformation(){
+		if ($this->_isHideByDefault == null){
+			$this->_hasHiddenFormats = false;
+			if (!$this->_hideByDefault) {
+				$hideAllVariations = true;
+				foreach ($this->_variations as $variation) {
+					if (!$variation->isHideByDefault()) {
+						$hideAllVariations = false;
+					}else{
+						$this->_hasHiddenFormats = true;
+					}
+				}
+				$this->_isHideByDefault = $hideAllVariations;
+			} else {
+				$this->_isHideByDefault = true;
+				$this->_hasHiddenFormats = true;
+			}
+		}
 	}
 
 	function hasHiddenFormats(): bool
 	{
-		if (!$this->_hideByDefault) {
-			foreach ($this->_variations as $variation) {
-				if ($variation->isHideByDefault()) {
-					return true;
-				}
-			}
-			return false;
-		} else {
-			return true;
-		}
+		$this->loadHiddenInformation();
+		return $this->_hasHiddenFormats;
 	}
 
 	/**
@@ -307,7 +310,7 @@ class Grouping_Manifestation
 		return $firstVariation->getActions();
 	}
 
-	private $_itemSummary = null;
+	protected $_itemSummary = null;
 
 	/**
 	 * @return array
@@ -326,6 +329,22 @@ class Grouping_Manifestation
 			$timer->logTime("Got item summary for manifestation");
 		}
 		return $this->_itemSummary;
+	}
+
+	protected $_itemsDisplayedByDefault = null;
+
+	/** @noinspection PhpUnused */
+	function getItemsDisplayedByDefault(){
+		if ($this->_itemsDisplayedByDefault == null){
+			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
+			$itemsDisplayedByDefault = [];
+			foreach ($this->_variations as $variation) {
+				$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $variation->getItemsDisplayedByDefault(false));
+			}
+			ksort($itemsDisplayedByDefault);
+			$this->_itemsDisplayedByDefault = $itemsDisplayedByDefault;
+		}
+		return $this->_itemsDisplayedByDefault;
 	}
 
 	/**

@@ -33,6 +33,7 @@ class Grouping_Record
 	public $_bookable = false;
 	public $_holdable = false;
 	public $_itemSummary = [];
+	public $_itemsDisplayedByDefault = [];
 	public $_itemDetails = [];
 
 	public $source;
@@ -341,6 +342,11 @@ class Grouping_Record
 		return $this->_itemSummary;
 	}
 
+	public function getItemsDisplayedByDefault(): array
+	{
+		return $this->_itemsDisplayedByDefault;
+	}
+
 	public function hasItemSummary($itemKey): bool
 	{
 		return isset($this->_itemSummary[$itemKey]);
@@ -362,6 +368,21 @@ class Grouping_Record
 			}
 		} else {
 			$this->_itemSummary[$key] = $itemSummaryInfo;
+		}
+
+		if ($itemSummaryInfo['displayByDefault']){
+			if (isset($this->_itemsDisplayedByDefault[$key])){
+				$this->_itemsDisplayedByDefault[$key]['totalCopies'] += $itemSummaryInfo['totalCopies'];
+				$this->_itemsDisplayedByDefault[$key]['availableCopies'] += $itemSummaryInfo['availableCopies'];
+				$this->_itemsDisplayedByDefault[$key]['onOrderCopies'] += $itemSummaryInfo['onOrderCopies'];
+				$lastStatus = $this->_itemsDisplayedByDefault[$key]['status'];
+				$this->_itemsDisplayedByDefault[$key]['status'] = GroupedWorkDriver::keepBestGroupedStatus($lastStatus, $groupedStatus);
+				if ($lastStatus != $this->_itemsDisplayedByDefault[$key]['status']) {
+					$this->_itemsDisplayedByDefault[$key]['statusFull'] = $itemSummaryInfo['statusFull'];
+				}
+			}else{
+				$this->_itemsDisplayedByDefault[$key] = $itemSummaryInfo;
+			}
 		}
 	}
 

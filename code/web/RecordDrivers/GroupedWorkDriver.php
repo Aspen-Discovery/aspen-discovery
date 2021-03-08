@@ -983,31 +983,35 @@ class GroupedWorkDriver extends IndexRecordDriver
 		return "";
 	}
 
+	protected $_indexedSeries = false;
 	public function getIndexedSeries()
 	{
-		global $timer;
-		$seriesWithVolume = null;
-		if (isset($this->fields['series_with_volume'])) {
-			$rawSeries = $this->fields['series_with_volume'];
-			if (is_string($rawSeries)) {
-				$rawSeries[] = $rawSeries;
-			}
-			foreach ($rawSeries as $seriesInfo) {
-				if (strpos($seriesInfo, '|') > 0) {
-					$seriesInfoSplit = explode('|', $seriesInfo);
-					$seriesWithVolume[] = array(
-						'seriesTitle' => $seriesInfoSplit[0],
-						'volume' => $seriesInfoSplit[1]
-					);
-				} else {
-					$seriesWithVolume[] = array(
-						'seriesTitle' => $seriesInfo
-					);
+		if ($this->_indexedSeries === false) {
+			global $timer;
+			$this->_indexedSeries = null;
+			if (isset($this->fields['series_with_volume'])) {
+				$this->_indexedSeries = [];
+				$rawSeries = $this->fields['series_with_volume'];
+				if (is_string($rawSeries)) {
+					$rawSeries[] = $rawSeries;
+				}
+				foreach ($rawSeries as $seriesInfo) {
+					if (strpos($seriesInfo, '|') > 0) {
+						$seriesInfoSplit = explode('|', $seriesInfo);
+						$this->_indexedSeries[] = array(
+							'seriesTitle' => $seriesInfoSplit[0],
+							'volume' => $seriesInfoSplit[1]
+						);
+					} else {
+						$this->_indexedSeries[] = array(
+							'seriesTitle' => $seriesInfo
+						);
+					}
 				}
 			}
+			$timer->logTime("Loaded indexed series information");
 		}
-		$timer->logTime("Loaded indexed series information");
-		return $seriesWithVolume;
+		return $this->_indexedSeries;
 	}
 
 	/**
@@ -1262,21 +1266,24 @@ class GroupedWorkDriver extends IndexRecordDriver
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
+	protected $_moreInfoLink = null;
 	function getMoreInfoLinkUrl()
 	{
-		// if the grouped work consists of only 1 related item, return the record url, otherwise return the grouped-work url
-		//Rather than loading all related records which can be slow, just get the count
-		$numRelatedRecords = $this->getNumRelatedRecords();
+		if ($this->_moreInfoLink == null) {
+			// if the grouped work consists of only 1 related item, return the record url, otherwise return the grouped-work url
+			//Rather than loading all related records which can be slow, just get the count
+			$numRelatedRecords = $this->getNumRelatedRecords();
 
-		if ($numRelatedRecords == 1) {
-			//Now that we know that we need more detailed information, load the related record.
-			$relatedRecords = $this->getRelatedRecords(false);
-			$onlyRecord = reset($relatedRecords);
-			$url = $onlyRecord->getUrl();
-		} else {
-			$url = $this->getLinkUrl();
+			if ($numRelatedRecords == 1) {
+				//Now that we know that we need more detailed information, load the related record.
+				$relatedRecords = $this->getRelatedRecords(false);
+				$onlyRecord = reset($relatedRecords);
+				$this->_moreInfoLink = $onlyRecord->getUrl();
+			} else {
+				$this->_moreInfoLink = $this->getLinkUrl();
+			}
 		}
-		return $url;
+		return $this->_moreInfoLink;
 	}
 
 	public function getMpaaRating()

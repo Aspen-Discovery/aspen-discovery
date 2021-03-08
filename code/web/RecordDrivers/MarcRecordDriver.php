@@ -96,10 +96,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$this->id = $idField->getSubfield('a')->getData();
 			}
 		}
-		$timer->logTime("Base initialization of MarcRecord Driver");
 		if ($this->valid){
 			parent::__construct($groupedWork);
 		}
+		$timer->logTime("Initialization of MarcRecord Driver");
 	}
 
 	public function __destruct()
@@ -878,158 +878,164 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		return "/" . $this->getModule() . "/$recordId";
 	}
 
+	protected $_actions = null;
 	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
-		$actions = array();
-		global $interface;
-		global $library;
-		if (isset($interface)) {
-			if ($interface->getVariable('displayingSearchResults')) {
-				$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
-			} else {
-				$showHoldButton = $interface->getVariable('showHoldButton');
-			}
-
-			if ($showHoldButton && $interface->getVariable('offline')) {
-				// When in offline mode, only show the hold button if offline-login & offline-holds are allowed
-				global $configArray;
-				if (!$interface->getVariable('enableLoginWhileOffline') || !$configArray['Catalog']['enableOfflineHolds']) {
-					$showHoldButton = false;
+		if ($this->_actions == null) {
+			$this->_actions = array();
+			global $interface;
+			global $library;
+			if (isset($interface)) {
+				if ($interface->getVariable('displayingSearchResults')) {
+					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
+				} else {
+					$showHoldButton = $interface->getVariable('showHoldButton');
 				}
-			}
 
-			if ($showHoldButton && $isAvailable) {
-				$showHoldButton = !$interface->getVariable('showHoldButtonForUnavailableOnly');
-			}
-		} else {
-			$showHoldButton = false;
-		}
-
-		if ($isHoldable && $showHoldButton) {
-			$source = $this->profileType;
-			$id = $this->id;
-			if (!is_null($volumeData) && count($volumeData) > 0) {
-				//Check the items to see which volumes are holdable
-				$hasItemsWithoutVolumes = false;
-				$holdableVolumes = [];
-				foreach ($relatedRecord->getItems() as $itemDetail){
-					if ($itemDetail->holdable) {
-						if (!empty($itemDetail->volumeId)) {
-							$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = $itemDetail->volume;
-						}else{
-							$hasItemsWithoutVolumes = true;
-						}
+				if ($showHoldButton && $interface->getVariable('offline')) {
+					// When in offline mode, only show the hold button if offline-login & offline-holds are allowed
+					global $configArray;
+					if (!$interface->getVariable('enableLoginWhileOffline') || !$configArray['Catalog']['enableOfflineHolds']) {
+						$showHoldButton = false;
 					}
 				}
-				if (count($holdableVolumes) > 3 || $hasItemsWithoutVolumes){
-					//Show a dialog to enable the patron to select a volume to place a hold on
-					$actions[] = array(
-						'title' => 'Place Hold',
-						'url' => '',
-						'onclick' => "return AspenDiscovery.Record.showPlaceHoldVolumes('{$this->getModule()}', '$source', '$id');",
-						'requireLogin' => false,
-						'type' => 'ils_hold'
-					);
-				}else {
-					ksort($holdableVolumes);
-					foreach ($holdableVolumes as $volumeId => $volumeName) {
-						$actions[] = array(
-							'title' => 'Hold ' . $volumeName,
+
+				if ($showHoldButton && $isAvailable) {
+					$showHoldButton = !$interface->getVariable('showHoldButtonForUnavailableOnly');
+				}
+			} else {
+				$showHoldButton = false;
+			}
+
+			if ($isHoldable && $showHoldButton) {
+				$source = $this->profileType;
+				$id = $this->id;
+				if (!is_null($volumeData) && count($volumeData) > 0) {
+					//Check the items to see which volumes are holdable
+					$hasItemsWithoutVolumes = false;
+					$holdableVolumes = [];
+					foreach ($relatedRecord->getItems() as $itemDetail) {
+						if ($itemDetail->holdable) {
+							if (!empty($itemDetail->volumeId)) {
+								$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = $itemDetail->volume;
+							} else {
+								$hasItemsWithoutVolumes = true;
+							}
+						}
+					}
+					if (count($holdableVolumes) > 3 || $hasItemsWithoutVolumes) {
+						//Show a dialog to enable the patron to select a volume to place a hold on
+						$this->_actions[] = array(
+							'title' => 'Place Hold',
 							'url' => '',
-							'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volumeId');",
+							'onclick' => "return AspenDiscovery.Record.showPlaceHoldVolumes('{$this->getModule()}', '$source', '$id');",
 							'requireLogin' => false,
 							'type' => 'ils_hold'
 						);
+					} else {
+						ksort($holdableVolumes);
+						foreach ($holdableVolumes as $volumeId => $volumeName) {
+							$this->_actions[] = array(
+								'title' => 'Hold ' . $volumeName,
+								'url' => '',
+								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volumeId');",
+								'requireLogin' => false,
+								'type' => 'ils_hold'
+							);
+						}
 					}
+				} else {
+					$this->_actions[] = array(
+						'title' => 'Place Hold',
+						'url' => '',
+						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
+						'requireLogin' => false,
+						'type' => 'ils_hold'
+					);
 				}
-			} else {
-				$actions[] = array(
-					'title' => 'Place Hold',
+			}
+			if ($isBookable && $library->enableMaterialsBooking) {
+				$this->_actions[] = array(
+					'title' => 'Schedule Item',
 					'url' => '',
-					'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
+					'onclick' => "return AspenDiscovery.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
 					'requireLogin' => false,
-					'type' => 'ils_hold'
+					'type' => 'ils_booking'
 				);
 			}
-		}
-		if ($isBookable && $library->enableMaterialsBooking) {
-			$actions[] = array(
-				'title' => 'Schedule Item',
-				'url' => '',
-				'onclick' => "return AspenDiscovery.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
-				'requireLogin' => false,
-				'type' => 'ils_booking'
-			);
-		}
 
-		//Check to see if a PDF has been uploaded for the record
-		$uploadedPDFs = $this->getUploadedPDFs();
-		if (count($uploadedPDFs) > 0) {
-			if (count($uploadedPDFs) == 1) {
-				$recordFile = reset($uploadedPDFs);
-				$actions[] = array(
-					'title' => 'View PDF',
-					'url' => "/Files/{$recordFile->id}/ViewPDF",
+			//Check to see if a PDF has been uploaded for the record
+			$uploadedPDFs = $this->getUploadedPDFs();
+			if (count($uploadedPDFs) > 0) {
+				if (count($uploadedPDFs) == 1) {
+					$recordFile = reset($uploadedPDFs);
+					$this->_actions[] = array(
+						'title' => 'View PDF',
+						'url' => "/Files/{$recordFile->id}/ViewPDF",
+						'requireLogin' => false,
+						'type' => 'view_pdf'
+					);
+					$this->_actions[] = array(
+						'title' => 'Download PDF',
+						'url' => "/Record/{$this->getId()}/DownloadPDF?fileId={$recordFile->id}",
+						'requireLogin' => false,
+						'type' => 'download_pdf'
+					);
+				} else {
+					$this->_actions[] = array(
+						'title' => 'View PDF',
+						'url' => '',
+						'onclick' => "return AspenDiscovery.Record.selectFileToView('{$this->getId()}', 'RecordPDF');",
+						'requireLogin' => false,
+						'type' => 'view_pdf'
+					);
+					$this->_actions[] = array(
+						'title' => 'Download PDF',
+						'url' => '',
+						'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}', 'RecordPDF');",
+						'requireLogin' => false,
+						'type' => 'download_pdf'
+					);
+				}
+			}
+
+			//Check to see if a Supplemental Files have been uploaded for the record
+			$supplementalFiles = $this->getUploadedSupplementalFiles();
+			if (count($supplementalFiles) > 0) {
+				if (count($supplementalFiles) == 1) {
+					$recordFile = reset($supplementalFiles);
+					$this->_actions[] = array(
+						'title' => 'Download Supplemental File',
+						'url' => "/Record/{$this->getId()}/DownloadSupplementalFile?fileId={$recordFile->id}",
+						'requireLogin' => false,
+						'type' => 'download_supplemental_file'
+					);
+				} else {
+					$this->_actions[] = array(
+						'title' => 'Download Supplemental File',
+						'url' => '',
+						'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}', 'RecordSupplementalFile');",
+						'requireLogin' => false,
+						'type' => 'download_supplemental_file'
+					);
+				}
+			}
+
+			$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
+			if ($archiveLink != null) {
+				$this->_actions[] = array(
+					'title' => 'View Online',
+					'url' => $archiveLink,
 					'requireLogin' => false,
-					'type' => 'view_pdf'
-				);
-				$actions[] = array(
-					'title' => 'Download PDF',
-					'url' => "/Record/{$this->getId()}/DownloadPDF?fileId={$recordFile->id}",
-					'requireLogin' => false,
-					'type' => 'download_pdf'
-				);
-			} else {
-				$actions[] = array(
-					'title' => 'View PDF',
-					'url' => '',
-					'onclick' => "return AspenDiscovery.Record.selectFileToView('{$this->getId()}', 'RecordPDF');",
-					'requireLogin' => false,
-					'type' => 'view_pdf'
-				);
-				$actions[] = array(
-					'title' => 'Download PDF',
-					'url' => '',
-					'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}', 'RecordPDF');",
-					'requireLogin' => false,
-					'type' => 'download_pdf'
+					'type' => 'view_online'
 				);
 			}
+
+			global $timer;
+			$timer->logTime("Done loading actions for MarcRecordDriver");
 		}
 
-		//Check to see if a Supplemental Files have been uploaded for the record
-		$supplementalFiles = $this->getUploadedSupplementalFiles();
-		if (count($supplementalFiles) > 0) {
-			if (count($supplementalFiles) == 1) {
-				$recordFile = reset($supplementalFiles);
-				$actions[] = array(
-					'title' => 'Download Supplemental File',
-					'url' => "/Record/{$this->getId()}/DownloadSupplementalFile?fileId={$recordFile->id}",
-					'requireLogin' => false,
-					'type' => 'download_supplemental_file'
-				);
-			} else {
-				$actions[] = array(
-					'title' => 'Download Supplemental File',
-					'url' => '',
-					'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}', 'RecordSupplementalFile');",
-					'requireLogin' => false,
-					'type' => 'download_supplemental_file'
-				);
-			}
-		}
-
-		$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
-		if ($archiveLink != null){
-			$actions[] = array(
-				'title' => 'View Online',
-				'url' => $archiveLink,
-				'requireLogin' => false,
-				'type' => 'view_online'
-			);
-		}
-
-		return $actions;
+		return $this->_actions;
 	}
 
 	static $catalogDriver = null;

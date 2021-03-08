@@ -85,6 +85,7 @@ class Grouping_Variation
 	 */
 	public function getActions(): array
 	{
+		global $timer;
 		if ($this->_actions == null) {
 			if ($this->getNumRelatedRecords() == 1) {
 				$firstRecord = $this->getFirstRecord();
@@ -113,6 +114,7 @@ class Grouping_Variation
 					} else {
 						$this->_actions = $bestRecord->getActions();
 					}
+					$timer->logTime("Done checking for whether or not we should be prompting for an alternate edition");
 				} else {
 					$this->_actions = $bestRecord->getActions();
 				}
@@ -188,6 +190,8 @@ class Grouping_Variation
 					}
 				}
 			}
+			global $timer;
+			$timer->logTime("Loaded actions for variation");
 		}
 		return $this->_actions;
 
@@ -211,7 +215,7 @@ class Grouping_Variation
 		return reset($this->_records);
 	}
 
-	private $_itemSummary = null;
+	protected $_itemSummary = null;
 
 	/**
 	 * @return array
@@ -225,11 +229,25 @@ class Grouping_Variation
 			foreach ($this->_records as $record) {
 				$itemSummary = mergeItemSummary($itemSummary, $record->getItemSummary());
 			}
-			ksort($itemSummary);
 			$this->_itemSummary = $itemSummary;
 			$timer->logTime("Got item summary for variation");
 		}
+		ksort($itemSummary);
 		return $this->_itemSummary;
+	}
+
+	protected $_itemsDisplayedByDefault = null;
+	function getItemsDisplayedByDefault(){
+		if ($this->_itemsDisplayedByDefault == null){
+			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
+			$itemsDisplayedByDefault = [];
+			foreach ($this->_records as $record) {
+				$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $record->getItemsDisplayedByDefault());
+			}
+			ksort($itemsDisplayedByDefault);
+			$this->_itemsDisplayedByDefault = $itemsDisplayedByDefault;
+		}
+		return $this->_itemsDisplayedByDefault;
 	}
 
 	public function getCopies()
