@@ -1891,10 +1891,10 @@ class Smarty
             $this->_cache_info['template'][$params['smarty_include_tpl_file']] = true;
         }
 
-        global $timer;
-        if (!empty($timer)){
-            $timer->logTime('Include template ' . $params['smarty_include_tpl_file']);
-        }
+//        global $timer;
+//        if (!empty($timer)){
+//            $timer->logTime('Include template ' . $params['smarty_include_tpl_file']);
+//        }
     }
 
 
