@@ -934,7 +934,9 @@ class UserAPI extends Action
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			$renewalMessage = $user->renewAll(false);
-			return array('success' => $renewalMessage['success'], 'renewalMessage' => $renewalMessage['message']);
+			$renewalMessage['message'] = array_merge([$renewalMessage['Renewed'] . ' of ' . $renewalMessage['Total'] . ' titles were renewed'],$renewalMessage['message']);
+			$renewalMessage['renewalMessage'] = $renewalMessage['message'];
+			return $renewalMessage;
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}

@@ -917,7 +917,10 @@ class CatalogConnection
 				if ($curResult['success']) {
 					$numRenewals++;
 				} else {
-					$failure_messages[] = $curResult['message'];
+					if ($curResult['message'] == 'The item could not be renewed'){
+						require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+						$failure_messages[] = StringUtils::removeTrailingPunctuation($transaction['title']) . ' could not be renewed';
+					}
 				}
 			}
 			$renewResult['Renewed'] += $numRenewals;
