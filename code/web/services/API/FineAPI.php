@@ -53,7 +53,7 @@ class FineAPI extends Action
 			if ($msb["ResponseCode"] != "Success") {
 				// 2021 01 20: MSB reports they will only use the post back link when the operation is successful
 				$success = false;
-				$message = 'User Payment ' . $msb["PaymentReference"] . 'failed with MSB payment ResponseCode' . $msb["ResponseCode"];
+				$message = 'MSB Payment ' . $msb["PaymentReference"] . 'failed with MSB payment ResponseCode' . $msb["ResponseCode"];
 				$level = Logger::LOG_ERROR;
 			} else {
 				//Retrieve the order information from Aspen db
@@ -80,7 +80,7 @@ class FineAPI extends Action
 								return $user->completeFinePayment($payment);
 							} else {
 								$success = false;
-								$message = 'User Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron';
+								$message = 'MSB Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron';
 								$level = Logger::LOG_ERROR;
 							}
 						}
