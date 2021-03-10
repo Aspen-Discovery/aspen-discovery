@@ -48,7 +48,11 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 			statusFieldData = "On Order";
 		}else {
 			if (statusFieldData == null) {
-				statusFieldData = "ONSHELF";
+				if (hasTranslation("item_status", shelfLocationData)){
+					statusFieldData = shelfLocationData;
+				}else {
+					statusFieldData = "ONSHELF";
+				}
 			} else {
 				if (!hasTranslation("item_status", statusFieldData.toLowerCase())){
 					statusFieldData = "ONSHELF";

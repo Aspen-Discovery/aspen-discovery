@@ -767,6 +767,7 @@ class Koha extends AbstractIlsDriver
 	function __destruct()
 	{
 		$this->curlWrapper = null;
+		$this->apiCurlWrapper = null;
 
 		//Cleanup any connections we have to other systems
 		if ($this->dbConnection != null) {

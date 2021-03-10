@@ -90,18 +90,21 @@ public class NetworkUtils {
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, null,  10000, 300000, StandardCharsets.UTF_8);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, null,  10000, 300000, StandardCharsets.UTF_8, null);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, 10000, 300000, StandardCharsets.UTF_8);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, 10000, 300000, StandardCharsets.UTF_8, null);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, StandardCharsets.UTF_8);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, StandardCharsets.UTF_8, null);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout, Charset authenticationCharSet) {
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, StandardCharsets.UTF_8, null);
+	}
+	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout, Charset authenticationCharSet, HashMap<String, String> headers) {
 		WebServiceResponse retVal;
 		HttpURLConnection conn = null;
 		try {
@@ -124,6 +127,11 @@ public class NetworkUtils {
 			conn.setDoInput(true);
 			if (referer != null) {
 				conn.setRequestProperty("Referer", referer);
+			}
+			if (headers != null){
+				for (String header : headers.keySet()){
+					conn.setRequestProperty(header, headers.get(header));
+				}
 			}
 			conn.setRequestMethod("POST");
 			if (postData != null && postData.length() > 0) {
