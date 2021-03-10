@@ -1827,46 +1827,22 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 	}
 
+	protected $_uploadedPDFs = null;
 	function getUploadedPDFs()
 	{
-		$uploadedPDFs = [];
-		require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
-		require_once ROOT_DIR . '/sys/File/FileUpload.php';
-		$recordFile = new RecordFile();
-		$recordFile->type = $this->getRecordType();
-		$recordFile->identifier = $this->getUniqueID();
-		if ($recordFile->find()){
-			while ($recordFile->fetch()){
-				$fileUpload = new FileUpload();
-				$fileUpload->id = $recordFile->fileId;
-				$fileUpload->type = 'RecordPDF';
-				if ($fileUpload->find(true)){
-					$uploadedPDFs[] = $fileUpload;
-				}
-			}
+		if ($this->_uploadedPDFs == null) {
+			$this->loadUploadedFileInfo();
 		}
-		return $uploadedPDFs;
+		return $this->_uploadedPDFs;
 	}
 
+	protected $_uploadedSupplementalFiles = null;
 	function getUploadedSupplementalFiles()
 	{
-		$uploadedFiles = [];
-		require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
-		require_once ROOT_DIR . '/sys/File/FileUpload.php';
-		$recordFile = new RecordFile();
-		$recordFile->type = $this->getRecordType();
-		$recordFile->identifier = $this->getUniqueID();
-		if ($recordFile->find()){
-			while ($recordFile->fetch()){
-				$fileUpload = new FileUpload();
-				$fileUpload->id = $recordFile->fileId;
-				$fileUpload->type = 'RecordSupplementalFile';
-				if ($fileUpload->find(true)){
-					$uploadedFiles[] = $fileUpload;
-				}
-			}
+		if ($this->_uploadedSupplementalFiles == null) {
+			$this->loadUploadedFileInfo();
 		}
-		return $uploadedFiles;
+		return $this->_uploadedSupplementalFiles;
 	}
 
 	public function getCancelledIsbns()
@@ -1889,6 +1865,32 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	public function hasMarcRecord()
 	{
 		return true;
+	}
+
+	private function loadUploadedFileInfo()
+	{
+		global $timer;
+		$this->_uploadedPDFs = [];
+		$this->_uploadedSupplementalFiles = [];
+		require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+		require_once ROOT_DIR . '/sys/File/FileUpload.php';
+		$recordFile = new RecordFile();
+		$recordFile->type = $this->getRecordType();
+		$recordFile->identifier = $this->getUniqueID();
+		if ($recordFile->find()) {
+			while ($recordFile->fetch()) {
+				$fileUpload = new FileUpload();
+				$fileUpload->id = $recordFile->fileId;
+				if ($fileUpload->find(true)) {
+					if ($fileUpload->type == 'RecordPDF') {
+						$this->_uploadedPDFs[] = $fileUpload;
+					}elseif ($fileUpload->type == 'RecordSupplementalFile') {
+						$this->_uploadedSupplementalFiles[] = $fileUpload;
+					}
+				}
+			}
+		}
+		$timer->logTime("Loaded uploaded file info");
 	}
 }
 
