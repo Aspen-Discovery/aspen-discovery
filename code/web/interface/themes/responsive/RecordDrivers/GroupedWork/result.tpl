@@ -84,7 +84,7 @@
 					{/if}
 				{/if}
 
-				{if !empty($showPublisher) && showPublisher}
+				{if !empty($showPublisher) && $showPublisher}
 					{if $alwaysShowSearchResultsMainDetails || $summPublisher}
 						<div class="row">
 							<div class="result-label col-tn-3">{translate text="Publisher"} </div>
