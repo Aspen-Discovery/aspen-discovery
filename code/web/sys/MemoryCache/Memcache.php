@@ -28,24 +28,29 @@ class Memcache
 	{
 		if (array_key_exists($name, $this->vars)) {
 			return $this->vars[$name];
-		} elseif ($this->enableDbCache) {
-			try {
-				$cachedValue = new CachedValue();
-				$cachedValue->cacheKey = $name;
-				if ($cachedValue->find(true)) {
-					if ($cachedValue->expirationTime != 0 && $cachedValue->expirationTime < time()) {
-						return false;
-					} else {
-						/** @noinspection PhpUnnecessaryLocalVariableInspection */
-						$unSerializedValue = unserialize($cachedValue->value);
-						return $unSerializedValue;
+		} else{
+			if ($this->enableDbCache) {
+				try {
+					$cachedValue = new CachedValue();
+					$cachedValue->cacheKey = $name;
+					if ($cachedValue->find(true)) {
+						if ($cachedValue->expirationTime != 0 && $cachedValue->expirationTime < time()) {
+							$this->vars[$name] = false;
+							$this->vars[$name] = false;
+						} else {
+							$unSerializedValue = unserialize($cachedValue->value);
+							$this->vars[$name] = $unSerializedValue;
+						}
 					}
+				} catch (Exception $e) {
+					//Table has not been created ignore
+					$this->vars[$name] = false;
 				}
-			} catch (Exception $e) {
-				//Table has not been created ignore
+			}else{
+				$this->vars[$name] = false;
 			}
 		}
-		return false;
+		return $this->vars[$name];
 	}
 
 	public function set($name, $value, $timeout)
