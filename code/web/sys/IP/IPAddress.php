@@ -272,7 +272,7 @@ class IPAddress extends DataObject
 	static $_loadingLogQueryInfo = false;
 	public static function logAllQueries(){
 		if (IPAddress::$_logAllQueries == null) {
-			if (isset($_REQUEST['logQueries'])){
+			if (!isset($_REQUEST['logQueries'])){
 				IPAddress::$_loadingLogQueryInfo = false;
 			}else {
 				//There is a potential recursion here that we need to avoid
