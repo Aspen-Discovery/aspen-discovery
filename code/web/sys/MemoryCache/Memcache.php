@@ -26,9 +26,7 @@ class Memcache
 
 	public function get($name)
 	{
-		if (array_key_exists($name, $this->vars)) {
-			return $this->vars[$name];
-		} else{
+		if (!array_key_exists($name, $this->vars)) {
 			if ($this->enableDbCache) {
 				try {
 					$cachedValue = new CachedValue();
@@ -36,11 +34,12 @@ class Memcache
 					if ($cachedValue->find(true)) {
 						if ($cachedValue->expirationTime != 0 && $cachedValue->expirationTime < time()) {
 							$this->vars[$name] = false;
-							$this->vars[$name] = false;
 						} else {
 							$unSerializedValue = unserialize($cachedValue->value);
 							$this->vars[$name] = $unSerializedValue;
 						}
+					}else{
+						$this->vars[$name] = false;
 					}
 				} catch (Exception $e) {
 					//Table has not been created ignore
