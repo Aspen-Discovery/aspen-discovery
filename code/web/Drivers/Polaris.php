@@ -3,6 +3,9 @@
 
 class Polaris extends AbstractIlsDriver
 {
+	//Caching of sessionIds by patron for performance (also stored within memcache)
+	private static $accessKeysForUsers = array();
+
 	/** @var CurlWrapper */
 	private $apiCurlWrapper;
 
@@ -83,19 +86,71 @@ class Polaris extends AbstractIlsDriver
 		}
 
 		foreach ($barcodesToTest as $i => $barcode) {
-//			$body = "<PatronAuthenticationData>
-//				<Barcode>$username</Barcode>
-//				<Password>$password</Password>
-//			</PatronAuthenticationData>";
-//			$authenticationResponse = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/authenticator/patron', 'POST', '', $body);
+			list($userValid, $accessKey, $polarisId) = $this->loginViaWebService($username, $password);
 
-			//staff authentication
-			$body = "<AuthenticationData>
-				<Domain>MAIN</Domain>
-				<Username>$username</Username>
-				<Password>$password</Password>
-			</AuthenticationData>";
-			$authenticationResponse = $this->getWebServiceResponse('/PAPIService/REST/protected/v1/1033/100/1/authenticator/staff', 'POST', '', $body);
+			if ($userValid){
+				//Load user data
+			}
+		}
+	}
+
+	/**
+	 * @param $username
+	 * @param $password
+	 *
+	 * @return [] - index 0 (login succeeds), index 1 (accessToken), index 2 (patron id)
+	 */
+	protected function loginViaWebService($username, $password)
+	{
+		global $memCache;
+		global $library;
+		$memCacheKey = "polaris_access_token_info_{$library->libraryId}_$username";
+		$accessTokenInfo = $memCache->get($memCacheKey);
+		if ($accessTokenInfo != false) {
+			list(, $accessToken, $polarisID) = $accessTokenInfo;
+			Polaris::$accessKeysForUsers[$polarisID] = $accessToken;
+		} else {
+			$session = array(false, false, false);
+			$authenticationData = new stdClass();
+			$authenticationData->Barcode = $username;
+			$authenticationData->Password = $password;
+
+			$body = json_encode($authenticationData);
+			$authenticationResponseRaw = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/authenticator/patron', 'POST', '', $body);
+			if ($authenticationResponseRaw) {
+				$authenticationResponse = json_decode($authenticationResponseRaw);
+				if ($authenticationResponse->PAPIErrorCode == 0){
+					$accessToken = $authenticationResponse->AccessToken;
+					$patronId = $authenticationResponse->PatronID;
+					Polaris::$accessKeysForUsers[$patronId] = $accessToken;
+					$session = array(true, $accessToken, $patronId);
+					global $configArray;
+					$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
+				}else{
+					global $logger;
+					$logger->log($authenticationResponse->ErrorMessage, Logger::LOG_ERROR);
+					$logger->log(print_r($authenticationResponse, true), Logger::LOG_ERROR);
+				}
+			} else {
+				global $logger;
+				$errorMessage = 'Polaris Authentication Error: ' . $this->lastResponseCode;
+				$logger->log($errorMessage, Logger::LOG_ERROR);
+				$logger->log(print_r($authenticationResponseRaw, true), Logger::LOG_ERROR);
+			}
+		}
+		return $session;
+	}
+
+	private function getAccessToken($patron)
+	{
+		$polarisUserId = $patron->username;
+
+		//Get the session token for the user
+		if (isset(Polaris::$accessKeysForUsers[$polarisUserId])) {
+			return Polaris::$accessKeysForUsers[$polarisUserId];
+		} else {
+			list(, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			return $sessionToken;
 		}
 	}
 
@@ -145,17 +200,18 @@ class Polaris extends AbstractIlsDriver
 
 		$auth_token = "PWS {$this->accountProfile->oAuthClientId}:$signature";
 		$this->apiCurlWrapper->addCustomHeaders([
-			"Content-type: text/xml",
-			"Accept: text/xml",
+			"Content-type: application/json",
+			"Accept: application/json",
 			"PolarisDate: $date",
 			"Authorization: $auth_token"
 		], true);
 
-		/** @noinspection PhpUnusedLocalVariableInspection */
 		$response = $this->apiCurlWrapper->curlSendPage($url, $method, $body);
-		$responseCode = $this->apiCurlWrapper->getResponseCode();
+		$this->lastResponseCode = $this->apiCurlWrapper->getResponseCode();
 
 		return $response;
 	}
+
+	private $lastResponseCode;
 
 }

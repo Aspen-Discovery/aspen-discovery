@@ -7,6 +7,7 @@ import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -15,8 +16,14 @@ import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONObject;
+import org.marc4j.MarcStreamWriter;
+import org.marc4j.MarcWriter;
+import org.marc4j.MarcXmlReader;
+import org.marc4j.marc.Record;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -26,13 +33,15 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -140,6 +149,19 @@ public class PolarisExportMain {
 					logEntry.incErrors("Could not load Account Profile");
 				}
 
+				processRecordsToReload(indexingProfile, logEntry);
+
+				if (recordGroupingProcessorSingleton != null) {
+					recordGroupingProcessorSingleton.close();
+					recordGroupingProcessorSingleton = null;
+				}
+
+				if (groupedWorkIndexer != null) {
+					groupedWorkIndexer.finishIndexingFromExtract(logEntry);
+					groupedWorkIndexer.close();
+					groupedWorkIndexer = null;
+				}
+
 				logEntry.setFinished();
 
 				Date currentTime = new Date();
@@ -188,6 +210,38 @@ public class PolarisExportMain {
 		} //Infinite loop
 	}
 
+	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+		try {
+			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()) {
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
+				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
+				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				if (marcRecord != null){
+					logEntry.incRecordsRegrouped();
+					//Regroup the record
+					String groupedWorkId = groupPolarisRecord(marcRecord);
+					//Reindex the record
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+				}
+
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+				markRecordToReloadAsProcessedStmt.executeUpdate();
+				numRecordsToReloadProcessed++;
+			}
+			if (numRecordsToReloadProcessed > 0) {
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors("Error processing records to reload ", e);
+		}
+	}
+
 	private static boolean loadAccountProfile(Connection dbConn, String profileName) {
 		//Get information about the account profile for Polaris
 		try {
@@ -225,7 +279,7 @@ public class PolarisExportMain {
 
 			if (true || indexingProfile.isRunFullUpdate()){
 				//Get all bibs
-				extractAllBibs();
+				totalChanges += extractAllBibs();
 			}else{
 				//Get updated bibs
 				//Get deleted bibs
@@ -241,7 +295,8 @@ public class PolarisExportMain {
 		return totalChanges;
 	}
 
-	private static void extractAllBibs() {
+	private static int extractAllBibs() {
+		int numChanges = 0;
 		WebServiceResponse authenticationResponse = authenticateStaffUser();
 		if (authenticationResponse.isSuccess()){
 			//Get a paged list of all bibs
@@ -250,8 +305,51 @@ public class PolarisExportMain {
 			if (pagedBibs.isSuccess()){
 				try {
 					Document pagedBibsDocument = createXMLDocumentForWebServiceResponse(pagedBibs);
-					Node getBibsPagedResult = pagedBibsDocument.getFirstChild();
+					Element getBibsPagedResult = (Element)pagedBibsDocument.getFirstChild();
+					Node lastIdNode = getBibsPagedResult.getElementsByTagName("LastID").item(0);
+					String lastId = lastIdNode.getTextContent();
+					Element getBibsPagedRows = (Element)getBibsPagedResult.getElementsByTagName("GetBibsPagedRows").item(0);
+					NodeList bibsPagedRows = getBibsPagedRows.getElementsByTagName("GetBibsPagedRow");
+					for (int i = 0; i < bibsPagedRows.getLength(); i++){
+						Element bibPagedRow = (Element)bibsPagedRows.item(i);
+						String bibliographicRecordId = bibPagedRow.getElementsByTagName("BibliographicRecordID").item(0).getTextContent();
+						String displayInPAC = bibPagedRow.getElementsByTagName("IsDisplayInPAC").item(0).getTextContent();
+						if (displayInPAC.equals("true")){
+							String bibRecordXML = bibPagedRow.getElementsByTagName("BibliographicRecordXML").item(0).getTextContent();
+							bibRecordXML = URLDecoder.decode(bibRecordXML, "UTF-8");
+							MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(bibRecordXML.getBytes(StandardCharsets.UTF_8)));
+							Record marcRecord = marcXmlReader.next();
 
+							if (marcRecord != null){
+								//Save the file
+								File marcFile = indexingProfile.getFileForIlsRecord(bibliographicRecordId);
+								if (!marcFile.getParentFile().exists()) {
+									//noinspection ResultOfMethodCallIgnored
+									marcFile.getParentFile().mkdirs();
+								}
+
+								if (marcFile.exists()) {
+									logEntry.incUpdated();
+								} else {
+									logEntry.incAdded();
+								}
+								MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
+								writer.write(marcRecord);
+								writer.close();
+								//Regroup the record
+								String groupedWorkId = groupPolarisRecord(marcRecord);
+								if (groupedWorkId != null) {
+									//Reindex the record
+									getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+								}
+								numChanges++;
+							}else{
+								logEntry.incErrors("Could not read marc record for " + bibliographicRecordId);
+							}
+						}else{
+							//Delete the record from SOLR
+						}
+					}
 				} catch (Exception e) {
 					logEntry.incErrors("Unable to parse document for paged bibs response", e);
 				}
@@ -261,6 +359,7 @@ public class PolarisExportMain {
 		}else{
 			logEntry.incErrors("Could not authenticate " + authenticationResponse.getMessage());
 		}
+		return numChanges;
 	}
 
 	private static Document createXMLDocumentForWebServiceResponse(WebServiceResponse response) throws ParserConfigurationException, IOException, SAXException {
@@ -349,5 +448,23 @@ public class PolarisExportMain {
 			accessSecret = authentication.getString("AccessSecret");
 		}
 		return authenticationResponse;
+	}
+
+	private static String groupPolarisRecord(Record marcRecord) {
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+	}
+
+	private static MarcRecordGrouper getRecordGroupingProcessor() {
+		if (recordGroupingProcessorSingleton == null) {
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger);
+		}
+		return recordGroupingProcessorSingleton;
+	}
+
+	private static GroupedWorkIndexer getGroupedWorkIndexer() {
+		if (groupedWorkIndexer == null) {
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
+		}
+		return groupedWorkIndexer;
 	}
 }

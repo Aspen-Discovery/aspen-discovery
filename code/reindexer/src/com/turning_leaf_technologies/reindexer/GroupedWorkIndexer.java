@@ -204,6 +204,9 @@ public class GroupedWorkIndexer {
 						case "Symphony":
 							ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
+						case "Polaris":
+							ilsRecordProcessors.put(curType, new PolarisRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							break;
 						default:
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
 							break;

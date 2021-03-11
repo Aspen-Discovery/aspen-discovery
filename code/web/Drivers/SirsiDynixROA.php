@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/Account/User.php';
 
 class SirsiDynixROA extends HorizonAPI
 {
-	//TODO: Additional caching of sessionIds by patron
+	//Caching of sessionIds by patron for performance (also stored within memcache)
 	private static $sessionIdsForUsers = array();
 	private static $logAllAPICalls = false;
 
