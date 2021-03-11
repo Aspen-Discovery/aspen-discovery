@@ -73,6 +73,7 @@ abstract class DataObject
 		}
 
 		global $aspen_db;
+		global $timer;
 		$query = $this->getSelectQuery($aspen_db);
 		$this->__lastQuery = $query;
 		$this->__queryStmt = $aspen_db->prepare($query, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
@@ -88,7 +89,11 @@ abstract class DataObject
 		} else {
 			echo("Failed to execute " . $query);
 		}
-
+		if (IPAddress::logAllQueries()){
+			global $logger;
+			$logger->log($query, Logger::LOG_ERROR);
+		}
+		$timer->logTime($query);
 		return $this->__N > 0;
 	}
 

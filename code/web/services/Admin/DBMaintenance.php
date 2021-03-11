@@ -828,6 +828,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'ip_log_queries' => [
+					'title' => 'IP Query Logging',
+					'description' => 'Add the ability to log database queries information by IP address',
+					'sql' => [
+						'ALTER TABLE ip_lookup ADD COLUMN logAllQueries TINYINT DEFAULT 0'
+					]
+				],
+
 				'remove_merged_records' => [
 					'title' => 'Remove unused Merged Records Table',
 					'description' => 'Remove unused Merged Records Table',
