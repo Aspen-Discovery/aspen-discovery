@@ -242,7 +242,7 @@ class IPAddress extends DataObject
 
 	static $_showDebuggingInformation = null;
 	public static function showDebuggingInformation(){
-		if (IPAddress::$_showDebuggingInformation == null) {
+		if (IPAddress::$_showDebuggingInformation === null) {
 			$clientIP = IPAddress::getClientIP();
 			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
 			if (!empty($ipInfo)) {
@@ -256,7 +256,7 @@ class IPAddress extends DataObject
 
 	static $_logTimingInformation = null;
 	public static function logTimingInformation(){
-		if (IPAddress::$_logTimingInformation == null) {
+		if (IPAddress::$_logTimingInformation === null) {
 			$clientIP = IPAddress::getClientIP();
 			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
 			if (!empty($ipInfo)) {
@@ -271,7 +271,7 @@ class IPAddress extends DataObject
 	static $_logAllQueries = null;
 	static $_loadingLogQueryInfo = false;
 	public static function logAllQueries(){
-		if (IPAddress::$_logAllQueries == null) {
+		if (IPAddress::$_logAllQueries === null) {
 			if (!isset($_REQUEST['logQueries'])){
 				IPAddress::$_loadingLogQueryInfo = false;
 			}else {

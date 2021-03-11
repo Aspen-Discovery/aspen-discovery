@@ -1830,7 +1830,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	protected $_uploadedPDFs = null;
 	function getUploadedPDFs()
 	{
-		if ($this->_uploadedPDFs == null) {
+		if ($this->_uploadedPDFs === null) {
 			$this->loadUploadedFileInfo();
 		}
 		return $this->_uploadedPDFs;
@@ -1839,7 +1839,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	protected $_uploadedSupplementalFiles = null;
 	function getUploadedSupplementalFiles()
 	{
-		if ($this->_uploadedSupplementalFiles == null) {
+		if ($this->_uploadedSupplementalFiles === null) {
 			$this->loadUploadedFileInfo();
 		}
 		return $this->_uploadedSupplementalFiles;
