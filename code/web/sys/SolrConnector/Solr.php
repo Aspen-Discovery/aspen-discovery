@@ -2055,7 +2055,7 @@ abstract class Solr
 		return $fields;
 	}
 
-	private $_validFields = [];
+	private static $_validFields = [];
 	function loadValidFields()
 	{
 		global $memCache;
@@ -2064,9 +2064,7 @@ abstract class Solr
 			return array('*');
 		}
 		$key = "{$solrScope}_{$this->index}";
-		if (isset($this->_validFields[$key])){
-			return $this->_validFields[$key];
-		}else {
+		if (!isset(Solr::$_validFields[$key])){
 			//There are very large performance gains for caching this in memory since we need to do a remote call and file parse
 			$fields = $memCache->get("schema_fields_$key");
 			if (!$fields || isset($_REQUEST['reload'])) {
@@ -2090,12 +2088,12 @@ abstract class Solr
 					}
 				}
 				$memCache->set("schema_fields_$key", $fields, 24 * 60 * 60);
-				$this->_validFields[$key] = $fields;
+				Solr::$_validFields[$key] = $fields;
 			}else{
-				$this->_validFields[$key] = $fields;
+				Solr::$_validFields[$key] = $fields;
 			}
-			return $this->_validFields[$key];
 		}
+		return Solr::$_validFields[$key];
 	}
 
 	function getIndex()
