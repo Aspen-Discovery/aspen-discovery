@@ -905,20 +905,21 @@ class SearchAPI extends Action
 
 	const ITEMS_PER_PAGE = 24;
 	private function getBrowseCategoryResults($browseCategory, &$response){
-		if (isset($_REQUEST['pageToLoad']) && is_int($_REQUEST['pageToLoad'])) {
+		if (isset($_REQUEST['pageToLoad']) && is_numeric($_REQUEST['pageToLoad'])) {
 			$pageToLoad = (int) $_REQUEST['pageToLoad'];
 		}else{
 			$pageToLoad = 1;
 		}
+		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : self::ITEMS_PER_PAGE;
 		if ($browseCategory->textId == 'system_recommended_for_you') {
-			$this->getSuggestionsBrowseCategoryResults($pageToLoad, $response);
+			$this->getSuggestionsBrowseCategoryResults($pageToLoad, $pageSize, $response);
 		} else {
 			if ($browseCategory->source == 'List') {
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 				$sourceList     = new UserList();
 				$sourceList->id = $browseCategory->sourceListId;
 				if ($sourceList->find(true)) {
-					$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+					$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
 				} else {
 					$records = array();
 				}
@@ -942,7 +943,7 @@ class SearchAPI extends Action
 				$searchObject->clearFacets();
 				$searchObject->disableSpelling();
 				$searchObject->disableLogging();
-				$searchObject->setLimit(self::ITEMS_PER_PAGE);
+				$searchObject->setLimit($pageSize);
 				$searchObject->setPage($pageToLoad);
 				$searchObject->processSearch();
 
@@ -978,7 +979,7 @@ class SearchAPI extends Action
 		return [];
 	}
 
-	private function getSuggestionsBrowseCategoryResults(int $pageToLoad, &$response)
+	private function getSuggestionsBrowseCategoryResults(int $pageToLoad, int $pageSize, &$response)
 	{
 		if (!UserAccount::isLoggedIn()){
 			$response = [
@@ -991,7 +992,7 @@ class SearchAPI extends Action
 			$response['searchUrl'] = '/MyAccount/SuggestedTitles';
 
 			require_once ROOT_DIR . '/sys/Suggestions.php';
-			$suggestions = Suggestions::getSuggestions(-1, $pageToLoad,self::ITEMS_PER_PAGE);
+			$suggestions = Suggestions::getSuggestions(-1, $pageToLoad,$pageSize);
 			$records = array();
 			foreach ($suggestions as $suggestedItemId => $suggestionData) {
 				$record = $suggestionData['titleInfo'];
