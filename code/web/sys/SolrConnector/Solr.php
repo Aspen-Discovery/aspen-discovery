@@ -176,15 +176,15 @@ abstract class Solr
 		global $timer;
 		global $configArray;
 		global $logger;
-		$hostEscaped = preg_replace('[\W]', '_', $this->host);
-		if (array_key_exists($this->host, Solr::$serversPinged)) {
+		$hostEscaped = str_replace('/' . $this->index, '', $this->host);
+		$hostEscaped = preg_replace('[\W]', '_', $hostEscaped);
+		if (array_key_exists($hostEscaped, Solr::$serversPinged)) {
 			//$logger->log("Pinging solr has already been done this page load", Logger::LOG_DEBUG);
-			return Solr::$serversPinged[$this->host];
+			return Solr::$serversPinged[$hostEscaped];
 		}
 		if ($memCache) {
-
 			$pingDone = $memCache->get('solr_ping_' . $hostEscaped);
-			if ($pingDone != null) {
+			if ($pingDone !== false) {
 				//$logger->log("Not pinging solr {$this->host} because we have a cached ping $pingDone", Logger::LOG_DEBUG);
 				Solr::$serversPinged[$this->host] = $pingDone;
 				return Solr::$serversPinged[$this->host];
@@ -197,7 +197,6 @@ abstract class Solr
 		}
 
 		if ($pingDone == false) {
-
 			//$logger->log("Pinging solr server {$this->host} $hostEscaped", Logger::LOG_DEBUG);
 			// Test to see solr is online
 			$test_url = $this->host . "/admin/ping";
@@ -229,15 +228,17 @@ abstract class Solr
 					return false;
 				}
 			}
-			if ($memCache) {
+
+			//Don't cache that we are done to be sure ASpen recovers as quickly as possible.
+			if ($memCache && $pingResult === 'true') {
 				$memCache->set('solr_ping_' . $hostEscaped, $pingResult, $configArray['Caching']['solr_ping']);
 			}
-			Solr::$serversPinged[$this->host] = $pingResult;
+			Solr::$serversPinged[$hostEscaped] = $pingResult;
 			$timer->logTime('Ping Solr instance ' . $this->host);
 		} else {
-			Solr::$serversPinged[$this->host] = true;
+			Solr::$serversPinged[$hostEscaped] = true;
 		}
-		return Solr::$serversPinged[$this->host];
+		return Solr::$serversPinged[$hostEscaped];
 	}
 
 	public function setDebugging($enableDebug, $enableSolrQueryDebugging)
