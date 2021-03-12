@@ -371,4 +371,9 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	{
 		return;
 	}
+
+	public function getILSMessages(User $user)
+	{
+		return [];
+	}
 }

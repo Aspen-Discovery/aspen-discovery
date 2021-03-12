@@ -3529,4 +3529,51 @@ class Koha extends AbstractIlsDriver
 		}
 		return $result;
 	}
+
+	public function getILSMessages(User $user)
+	{
+		$messages = [];
+		$this->initDatabaseConnection();
+		//Check to see if the username is already in use
+		/** @noinspection SqlResolve */
+		$sql = "SELECT message FROM messages where borrowernumber = {$user->username} and message_type='B'";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()){
+				$messages[] = [
+					'message' => $curRow['message'],
+					'messageStyle' => 'info',
+				];
+			}
+		}
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT debarred, debarredcomment, opacnote FROM borrowers where borrowernumber = {$user->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if ($results !== false) {
+			if ($curRow = $results->fetch_assoc()){
+				if (!empty($curRow['opacnote'])){
+					$messages[] = [
+						'message' => $curRow['opacnote'],
+						'messageStyle' => 'info',
+					];
+				}
+				if ($curRow['debarred'] != null){
+					$message = '<strong>Please note:</strong> Your account has been frozen. ';
+					if (!empty($curRow['debarredcomment'])){
+						$debarredComment = str_replace('OVERDUES_PROCESS', 'Restriction added by overdues process', $curRow['debarredcomment']);
+						$message .= "Comment: " . $debarredComment . '<br/>';
+					}
+					$message .= "  <em>Usually the reason for freezing an account is overdues or damage fees. If your account shows to be clear, please contact the library.</em>";
+					$messages[] = [
+						'message' => $message,
+						'messageStyle' => 'danger',
+					];
+				}
+
+			}
+		}
+
+		return $messages;
+	}
 }

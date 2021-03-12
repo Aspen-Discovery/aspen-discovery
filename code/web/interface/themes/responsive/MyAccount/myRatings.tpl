@@ -13,6 +13,9 @@
 	{if !empty($accountMessages)}
 		{include file='systemMessages.tpl' messages=$accountMessages}
 	{/if}
+	{if !empty($ilsMessages)}
+		{include file='ilsMessages.tpl' messages=$ilsMessages}
+	{/if}
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 

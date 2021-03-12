@@ -1744,6 +1744,14 @@ class User extends DataObject
 		return $messages;
 	}
 
+	function getILSMessages(){
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->getILSMessages($this);
+		}else{
+			return false;
+		}
+	}
+
 	function disableLinkingDueToPasswordChange()
 	{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
