@@ -55,6 +55,8 @@ class Translator
 		return $words;
 	}
 
+	//Cache any translations that have already been loaded.
+	private $cachedTranslations = [];
 	/**
 	 * Translate the phrase
 	 *
@@ -76,7 +78,8 @@ class Translator
 			global $memCache;
 
 			if (!empty($activeLanguage)) {
-				$existingTranslation = $memCache->get('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase);
+				$translationKey = $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase;
+				$existingTranslation = array_key_exists($translationKey, $this->cachedTranslations) ? $this->cachedTranslations[$translationKey] : false;
 				if ($existingTranslation == false || isset($_REQUEST['reload'])) {
 					//Search for the term
 					$translationTerm = new TranslationTerm();
@@ -154,8 +157,7 @@ class Translator
 						$fullTranslation = $translation->translation;
 					}
 
-					global $configArray;
-					$memCache->set('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase, $fullTranslation, $configArray['Caching']['translation']);
+					$this->cachedTranslations[$translationKey] = $fullTranslation;
 					$returnString = $fullTranslation;
 				} else {
 					$returnString = $existingTranslation;
