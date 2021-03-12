@@ -2055,6 +2055,7 @@ abstract class Solr
 		return $fields;
 	}
 
+	private $_validFields = [];
 	function loadValidFields()
 	{
 		global $memCache;
@@ -2062,31 +2063,39 @@ abstract class Solr
 		if (isset($_REQUEST['allFields'])) {
 			return array('*');
 		}
-		//There are very large performance gains for caching this in memory since we need to do a remote call and file parse
-		$fields = $memCache->get("schema_fields_{$solrScope}_{$this->index}");
-		if (!$fields || isset($_REQUEST['reload'])) {
-			$schemaUrl = $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
-			$schema = @simplexml_load_file($schemaUrl);
-			if ($schema == null) {
-				AspenError::raiseError("Solr is not currently running");
-			}
-			$fields = array();
-			/** @noinspection PhpUndefinedFieldInspection */
-			foreach ($schema->fields->field as $field) {
-				//print_r($field);
-				if ($field['stored'] == 'true') {
-					$fields[] = (string)$field['name'];
+		$key = "{$solrScope}_{$this->index}";
+		if (isset($this->_validFields[$key])){
+			return $this->_validFields[$key];
+		}else {
+			//There are very large performance gains for caching this in memory since we need to do a remote call and file parse
+			$fields = $memCache->get("schema_fields_$key");
+			if (!$fields || isset($_REQUEST['reload'])) {
+				$schemaUrl = $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
+				$schema = @simplexml_load_file($schemaUrl);
+				if ($schema == null) {
+					AspenError::raiseError("Solr is not currently running");
 				}
-			}
-			if ($solrScope) {
+				$fields = array();
 				/** @noinspection PhpUndefinedFieldInspection */
-				foreach ($schema->fields->dynamicField as $field) {
-					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
+				foreach ($schema->fields->field as $field) {
+					//print_r($field);
+					if ($field['stored'] == 'true') {
+						$fields[] = (string)$field['name'];
+					}
 				}
+				if ($solrScope) {
+					/** @noinspection PhpUndefinedFieldInspection */
+					foreach ($schema->fields->dynamicField as $field) {
+						$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
+					}
+				}
+				$memCache->set("schema_fields_$key", $fields, 24 * 60 * 60);
+				$this->_validFields[$key] = $fields;
+			}else{
+				$this->_validFields[$key] = $fields;
 			}
-			$memCache->set("schema_fields_{$solrScope}_{$this->index}", $fields, 24 * 60 * 60);
+			return $this->_validFields[$key];
 		}
-		return $fields;
 	}
 
 	function getIndex()
