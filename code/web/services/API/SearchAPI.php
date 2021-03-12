@@ -761,7 +761,8 @@ class SearchAPI extends Action
 				$categoryResponse = array(
 					'text_id' => $categoryInformation->textId,
 					'display_label' => $categoryInformation->label,
-					'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId
+					'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
+					'source' => $categoryInformation->source,
 				);
 
 				if ($includeSubCategories){
@@ -775,7 +776,8 @@ class SearchAPI extends Action
 								$categoryResponse['subCategories'][] = [
 									'text_id' => $temp->textId,
 									'display_label' => $temp->label,
-									'link' => $configArray['Site']['url'] . '?browseCategory=' . $temp->textId . '&subCategory=' . $temp->textId
+									'link' => $configArray['Site']['url'] . '?browseCategory=' . $temp->textId . '&subCategory=' . $temp->textId,
+									'source' => $temp->source,
 								];
 							}
 						}
