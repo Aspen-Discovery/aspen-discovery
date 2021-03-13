@@ -7,6 +7,9 @@
 			{if !empty($accountMessages)}
 				{include file='systemMessages.tpl' messages=$accountMessages}
 			{/if}
+			{if !empty($ilsMessages)}
+				{include file='ilsMessages.tpl' messages=$ilsMessages}
+			{/if}
 
 			<h1>{translate text='My Account'}</h1>
 			{if $userHasCatalogConnection}

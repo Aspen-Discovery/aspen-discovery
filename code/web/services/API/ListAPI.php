@@ -32,6 +32,8 @@ class ListAPI extends Action
 
 				echo $output;
 			}
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+			APIUsage::incrementStat('ListAPI', $method);
 		} else {
 			echo json_encode(array('error' => 'invalid_method'));
 		}

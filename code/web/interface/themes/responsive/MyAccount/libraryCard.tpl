@@ -8,6 +8,9 @@
 	{if !empty($accountMessages)}
 		{include file='systemMessages.tpl' messages=$accountMessages}
 	{/if}
+	{if !empty($ilsMessages)}
+		{include file='ilsMessages.tpl' messages=$ilsMessages}
+	{/if}
 
 	<h1>{translate text="Library Card"}</h1>
 	<div class="row">

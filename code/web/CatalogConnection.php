@@ -1167,4 +1167,9 @@ class CatalogConnection
 	{
 		return $this->driver->loadContactInformation($user);
 	}
+
+	public function getILSMessages(User $user)
+	{
+		return $this->driver->getILSMessages($user);
+	}
 }

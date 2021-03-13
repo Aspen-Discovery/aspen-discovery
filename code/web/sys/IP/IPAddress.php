@@ -13,6 +13,7 @@ class IPAddress extends DataObject
 	public $allowAPIAccess;
 	public $showDebuggingInformation;
 	public $logTimingInformation;
+	public $logAllQueries;
 	public $startIpVal;
 	public $endIpVal;
 
@@ -42,6 +43,7 @@ class IPAddress extends DataObject
 			'allowAPIAccess' => array('property' => 'allowAPIAccess', 'type' => 'checkbox', 'label' => 'Allow API Access', 'description' => 'Traffic from this IP will be allowed to use Aspen APIs.', 'default' => false),
 			'showDebuggingInformation' => array('property' => 'showDebuggingInformation', 'type' => 'checkbox', 'label' => 'Show Debugging Information', 'description' => 'Traffic from this IP will have debugging information emitted for it.', 'default' => false),
 			'logTimingInformation' => array('property' => 'logTimingInformation', 'type' => 'checkbox', 'label' => 'Log Timing Information', 'description' => 'Traffic from this IP will have timing information logged for it.', 'default' => false),
+			'logAllQueries' => array('property' => 'logAllQueries', 'type' => 'checkbox', 'label' => 'Log Database Queries', 'description' => 'Traffic from this IP will have database query information logged for it.', 'default' => false),
 		);
 	}
 
@@ -240,7 +242,7 @@ class IPAddress extends DataObject
 
 	static $_showDebuggingInformation = null;
 	public static function showDebuggingInformation(){
-		if (IPAddress::$_showDebuggingInformation == null) {
+		if (IPAddress::$_showDebuggingInformation === null) {
 			$clientIP = IPAddress::getClientIP();
 			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
 			if (!empty($ipInfo)) {
@@ -254,7 +256,7 @@ class IPAddress extends DataObject
 
 	static $_logTimingInformation = null;
 	public static function logTimingInformation(){
-		if (IPAddress::$_logTimingInformation == null) {
+		if (IPAddress::$_logTimingInformation === null) {
 			$clientIP = IPAddress::getClientIP();
 			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
 			if (!empty($ipInfo)) {
@@ -264,5 +266,32 @@ class IPAddress extends DataObject
 			}
 		}
 		return IPAddress::$_logTimingInformation;
+	}
+
+	static $_logAllQueries = null;
+	static $_loadingLogQueryInfo = false;
+	public static function logAllQueries(){
+		if (IPAddress::$_logAllQueries === null) {
+			if (!isset($_REQUEST['logQueries'])){
+				IPAddress::$_loadingLogQueryInfo = false;
+			}else {
+				//There is a potential recursion here that we need to avoid
+				if (IPAddress::$_loadingLogQueryInfo) {
+					return false;
+				} else {
+					IPAddress::$_loadingLogQueryInfo = true;
+					IPAddress::$_logAllQueries = false;
+					$clientIP = IPAddress::getClientIP();
+					$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+					if (!empty($ipInfo)) {
+						IPAddress::$_logAllQueries = $ipInfo->logAllQueries;
+					} else {
+						IPAddress::$_logAllQueries = false;
+					}
+					IPAddress::$_loadingLogQueryInfo = false;
+				}
+			}
+		}
+		return IPAddress::$_logAllQueries;
 	}
 }

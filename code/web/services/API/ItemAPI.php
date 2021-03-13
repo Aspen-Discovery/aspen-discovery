@@ -48,6 +48,8 @@ class ItemAPI extends Action {
 			}else{
 				$output = json_encode(array('result'=>$this->$method()));
 			}
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+			APIUsage::incrementStat('ItemAPI', $method);
 		} else {
 			$output = json_encode(array('error'=>"invalid_method '$method'"));
 		}

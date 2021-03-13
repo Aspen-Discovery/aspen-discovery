@@ -73,6 +73,7 @@ abstract class DataObject
 		}
 
 		global $aspen_db;
+		global $timer;
 		$query = $this->getSelectQuery($aspen_db);
 		$this->__lastQuery = $query;
 		$this->__queryStmt = $aspen_db->prepare($query, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
@@ -88,7 +89,11 @@ abstract class DataObject
 		} else {
 			echo("Failed to execute " . $query);
 		}
-
+		if (IPAddress::logAllQueries()){
+			global $logger;
+			$logger->log($query, Logger::LOG_ERROR);
+		}
+		$timer->logTime($query);
 		return $this->__N > 0;
 	}
 
@@ -238,6 +243,12 @@ abstract class DataObject
 		}
 		$insertQuery .= '(' . $propertyNames . ') VALUES (' . $propertyValues . ');';
 		$response = $aspen_db->exec($insertQuery);
+		global $timer;
+		if (IPAddress::logAllQueries()){
+			global $logger;
+			$logger->log($insertQuery, Logger::LOG_ERROR);
+		}
+		$timer->logTime($insertQuery);
 		$this->{$this->__primaryKey} = $aspen_db->lastInsertId();
 		return $response;
 	}
@@ -284,6 +295,12 @@ abstract class DataObject
 		$this->__lastQuery = $updateQuery;
 		/** @noinspection PhpUnnecessaryLocalVariableInspection */
 		$response = $aspen_db->exec($updateQuery);
+		global $timer;
+		if (IPAddress::logAllQueries()){
+			global $logger;
+			$logger->log($updateQuery, Logger::LOG_ERROR);
+		}
+		$timer->logTime($updateQuery);
 		return $response;
 	}
 
@@ -310,7 +327,14 @@ abstract class DataObject
 			$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		}
 
-		return $aspen_db->exec($deleteQuery);
+		$result = $aspen_db->exec($deleteQuery);
+		global $timer;
+		if (IPAddress::logAllQueries()){
+			global $logger;
+			$logger->log($deleteQuery, Logger::LOG_ERROR);
+		}
+		$timer->logTime($deleteQuery);
+		return $result;
 	}
 
 	public function limit($start, $count){
@@ -336,17 +360,26 @@ abstract class DataObject
 		$query .= $this->__groupBy;
 		$this->__lastQuery = $query;
 		$this->__queryStmt = $aspen_db->prepare($query);
-		if ($this->__queryStmt->execute()){
-			if (!empty($this->__groupBy)){
-				return $this->__queryStmt->rowCount();
-			}else{
-				if ($this->__queryStmt->rowCount()) {
-					$data = $this->__queryStmt->fetch();
-					return $data[0];
+		try {
+			if ($this->__queryStmt->execute()) {
+				if (!empty($this->__groupBy)) {
+					return $this->__queryStmt->rowCount();
+				} else {
+					if ($this->__queryStmt->rowCount()) {
+						$data = $this->__queryStmt->fetch();
+						return $data[0];
+					}
 				}
+			} else {
+				echo("Failed to execute " . $query);
 			}
-		} else {
-			echo("Failed to execute " . $query);
+		} finally {
+			global $timer;
+			if (IPAddress::logAllQueries()){
+				global $logger;
+				$logger->log($query, Logger::LOG_ERROR);
+			}
+			$timer->logTime($query);
 		}
 
 		return 0;
@@ -372,6 +405,12 @@ abstract class DataObject
 			echo("Failed to execute " . $query);
 			$this->__lastError = $this->__queryStmt->errorInfo();
 		}
+		global $timer;
+		if (IPAddress::logAllQueries()){
+			global $logger;
+			$logger->log($query, Logger::LOG_ERROR);
+		}
+		$timer->logTime($query);
 
 		return $this->__N > 0;
 	}

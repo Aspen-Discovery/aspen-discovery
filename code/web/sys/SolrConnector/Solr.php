@@ -176,15 +176,15 @@ abstract class Solr
 		global $timer;
 		global $configArray;
 		global $logger;
-		$hostEscaped = preg_replace('[\W]', '_', $this->host);
-		if (array_key_exists($this->host, Solr::$serversPinged)) {
+		$hostEscaped = str_replace('/' . $this->index, '', $this->host);
+		$hostEscaped = preg_replace('[\W]', '_', $hostEscaped);
+		if (array_key_exists($hostEscaped, Solr::$serversPinged)) {
 			//$logger->log("Pinging solr has already been done this page load", Logger::LOG_DEBUG);
-			return Solr::$serversPinged[$this->host];
+			return Solr::$serversPinged[$hostEscaped];
 		}
 		if ($memCache) {
-
 			$pingDone = $memCache->get('solr_ping_' . $hostEscaped);
-			if ($pingDone != null) {
+			if ($pingDone !== false) {
 				//$logger->log("Not pinging solr {$this->host} because we have a cached ping $pingDone", Logger::LOG_DEBUG);
 				Solr::$serversPinged[$this->host] = $pingDone;
 				return Solr::$serversPinged[$this->host];
@@ -197,7 +197,6 @@ abstract class Solr
 		}
 
 		if ($pingDone == false) {
-
 			//$logger->log("Pinging solr server {$this->host} $hostEscaped", Logger::LOG_DEBUG);
 			// Test to see solr is online
 			$test_url = $this->host . "/admin/ping";
@@ -229,15 +228,17 @@ abstract class Solr
 					return false;
 				}
 			}
-			if ($memCache) {
+
+			//Don't cache that we are done to be sure ASpen recovers as quickly as possible.
+			if ($memCache && $pingResult === 'true') {
 				$memCache->set('solr_ping_' . $hostEscaped, $pingResult, $configArray['Caching']['solr_ping']);
 			}
-			Solr::$serversPinged[$this->host] = $pingResult;
+			Solr::$serversPinged[$hostEscaped] = $pingResult;
 			$timer->logTime('Ping Solr instance ' . $this->host);
 		} else {
-			Solr::$serversPinged[$this->host] = true;
+			Solr::$serversPinged[$hostEscaped] = true;
 		}
-		return Solr::$serversPinged[$this->host];
+		return Solr::$serversPinged[$hostEscaped];
 	}
 
 	public function setDebugging($enableDebug, $enableSolrQueryDebugging)
@@ -2054,6 +2055,7 @@ abstract class Solr
 		return $fields;
 	}
 
+	private static $_validFields = [];
 	function loadValidFields()
 	{
 		global $memCache;
@@ -2061,31 +2063,37 @@ abstract class Solr
 		if (isset($_REQUEST['allFields'])) {
 			return array('*');
 		}
-		//There are very large performance gains for caching this in memory since we need to do a remote call and file parse
-		$fields = $memCache->get("schema_fields_{$solrScope}_{$this->index}");
-		if (!$fields || isset($_REQUEST['reload'])) {
-			$schemaUrl = $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
-			$schema = @simplexml_load_file($schemaUrl);
-			if ($schema == null) {
-				AspenError::raiseError("Solr is not currently running");
-			}
-			$fields = array();
-			/** @noinspection PhpUndefinedFieldInspection */
-			foreach ($schema->fields->field as $field) {
-				//print_r($field);
-				if ($field['stored'] == 'true') {
-					$fields[] = (string)$field['name'];
+		$key = "{$solrScope}_{$this->index}";
+		if (!isset(Solr::$_validFields[$key])){
+			//There are very large performance gains for caching this in memory since we need to do a remote call and file parse
+			$fields = $memCache->get("schema_fields_$key");
+			if (!$fields || isset($_REQUEST['reload'])) {
+				$schemaUrl = $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
+				$schema = @simplexml_load_file($schemaUrl);
+				if ($schema == null) {
+					AspenError::raiseError("Solr is not currently running");
 				}
-			}
-			if ($solrScope) {
+				$fields = array();
 				/** @noinspection PhpUndefinedFieldInspection */
-				foreach ($schema->fields->dynamicField as $field) {
-					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
+				foreach ($schema->fields->field as $field) {
+					//print_r($field);
+					if ($field['stored'] == 'true') {
+						$fields[] = (string)$field['name'];
+					}
 				}
+				if ($solrScope) {
+					/** @noinspection PhpUndefinedFieldInspection */
+					foreach ($schema->fields->dynamicField as $field) {
+						$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
+					}
+				}
+				$memCache->set("schema_fields_$key", $fields, 24 * 60 * 60);
+				Solr::$_validFields[$key] = $fields;
+			}else{
+				Solr::$_validFields[$key] = $fields;
 			}
-			$memCache->set("schema_fields_{$solrScope}_{$this->index}", $fields, 24 * 60 * 60);
 		}
-		return $fields;
+		return Solr::$_validFields[$key];
 	}
 
 	function getIndex()

@@ -11,6 +11,8 @@ class WorkAPI extends Action{
 
 		if (method_exists($this, $method)) {
 			$output = json_encode(array('result'=>$this->$method()));
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+			APIUsage::incrementStat('WorkAPI', $method);
 		} else {
 			$output = json_encode(array('error'=>"invalid_method '$method'"));
 		}

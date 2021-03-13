@@ -60,7 +60,7 @@
 									{if $summSeries.fromNovelist}
 										<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}<br>
 									{else}
-										<a href="/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}<br>
+										<a href="/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}&sort=year+asc%2Ctitle+asc">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}<br>
 									{/if}
 								{/if}
 								{if $indexedSeries}
