@@ -2470,6 +2470,23 @@ class Admin_DBMaintenance extends Admin_Admin
 						'UPDATE list_indexing_settings set runFullUpdate = 1'
 					]
 				],
+
+				'api_usage_stats' => [
+					'title' => 'API Usage Stats',
+					'description' => 'Add a table to track API Usage',
+					'sql' => [
+						'CREATE TABLE api_usage (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL,
+							instance VARCHAR(100) NOT NULL,
+							module VARCHAR(30) NOT NULL, 
+							method VARCHAR(75) NOT NULL,
+							numCalls INT(11) DEFAULT 0
+						) ENGINE = InnoDB',
+						'ALTER TABLE api_usage ADD UNIQUE (year, month, module, method)'
+					]
+				]
 			)
 		);
 	}

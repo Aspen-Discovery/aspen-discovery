@@ -20,6 +20,8 @@ class SearchAPI extends Action
 			} else {
 				$jsonOutput = json_encode(array('result' => $this->$method()));
 			}
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+			APIUsage::incrementStat('SearchAPI', $method);
 		} else {
 			$jsonOutput = json_encode(array('error' => 'invalid_method'));
 		}

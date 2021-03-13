@@ -33,6 +33,8 @@ class UserAPI extends Action
 				'result' => $this->$method()
 			];
 			$output = json_encode($result);
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+			APIUsage::incrementStat('UserAPI', $method);
 		} else {
 			$output = json_encode(array('error' => 'invalid_method'));
 		}
