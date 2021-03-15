@@ -481,14 +481,14 @@ public class CarlXExportMain {
 					//Halt execution
 					logEntry.incErrors("Failed to getChangedItemsFromCarlXApi, exiting");
 					//This happens due to bad data within CARL.X and the only fix is to skip the bad record by increasing the
-					//lastUpdateOfChangedRecords and trying again. We will increase the timeout by 30 seconds at a time.
+					//lastUpdateOfChangedRecords and trying again. We will increase the timeout by 60 seconds at a time.
 					if (indexingProfile.getLastUpdateOfChangedRecords() != 0) {
 						PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
-						updateVariableStmt.setLong(1, indexingProfile.getLastUpdateOfChangedRecords() + 30);
+						updateVariableStmt.setLong(1, indexingProfile.getLastUpdateOfChangedRecords() + 60);
 						updateVariableStmt.setLong(2, indexingProfile.getId());
 						updateVariableStmt.executeUpdate();
 						updateVariableStmt.close();
-						logEntry.addNote("Increased lastUpdateOfChangedRecords by 30 seconds to skip the bad record");
+						logEntry.addNote("Increased lastUpdateOfChangedRecords by 60 seconds to skip the bad record");
 					}
 					return totalChanges;
 				} else {
@@ -724,69 +724,20 @@ public class CarlXExportMain {
 								Record currentMarcRecord = loadMarc(currentBibID);
 
 								//Check to see if we need to load items
-								if (extractSingleWork){
-									createdItems = fetchItemsForBib(currentBibID, bibsNotFound);
-								}
+								ArrayList<ItemChangeInfo> itemsForBib = fetchItemsForBib(currentBibID, bibsNotFound);
 
 								if (currentMarcRecord != null) {
-									//TODO: Make a call to GetItemInformationRequest to get a list of the items on the Bib
-									//Can also try GetHoldingsInformationRequest on CatalogAPI
-									int indexOfItem;
+									//Remove existing items from the bib, they will be replaced with the items we just loaded
 									List<VariableField> existingItemsInMarcRecord = currentMarcRecord.getVariableFields(indexingProfile.getItemTag());
 									for (VariableField itemFieldVar : existingItemsInMarcRecord) {
-										DataField currentItemFromMarcRecord = (DataField) itemFieldVar;
-										String currentItemID = currentItemFromMarcRecord.getSubfield(indexingProfile.getItemRecordNumberSubfield()).getData();
-										if (updatedItemIDs.contains(currentItemID)) {
-											// Add current Item Change Info instead
-											indexOfItem = updatedItemIDs.indexOf(currentItemID);
-											ItemChangeInfo updatedItem = itemUpdates.get(indexOfItem);
-											if (updatedItem.getBID().equals(currentBibID)) { // Double check BID in case itemIDs aren't completely unique
-												updateItemDataFieldWithChangeInfo(currentItemFromMarcRecord, updatedItem);
-												itemUpdates.remove(updatedItem); // remove Item Change Info
-												updatedItemIDs.remove(currentItemID); // remove itemId for list
-												logger.debug("  Updating Item " + currentItemID + " in " + currentBibID);
-												logger.debug(updatedItem + "\r\n" + currentItemFromMarcRecord);
-
-											} else {
-												logger.debug("  Did not update Item because BID did not match " + updatedItem.getBID() + " != " + currentBibID);
-											}
-										} else if (deletedItemIDs.contains(currentItemID)) {
-											deletedItemIDs.remove(currentItemID);
-											logger.debug("  Deleted Item " + currentItemID + " in " + currentBibID);
-											continue; // Skip adding this item into the Marc Object
-										} else if (createdItemIDs.contains(currentItemID)) {
-											// This shouldn't happen, but in case it does
-											indexOfItem = createdItemIDs.indexOf(currentItemID);
-											ItemChangeInfo createdItem = createdItems.get(indexOfItem);
-											if (createdItem.getBID().equals(currentBibID)) { // Double check BID in case itemIDs aren't completely unique
-												updateItemDataFieldWithChangeInfo(currentItemFromMarcRecord, createdItem);
-
-												createdItems.remove(createdItem); // remove Item Change Info
-												createdItemIDs.remove(currentItemID); // remove itemId for list
-												logger.debug("  Created New Item " + currentItemID + " in " + currentBibID);
-											} else {
-												logger.debug("  Did not create New Item because BID did not match " + createdItem.getBID() + " != " + currentBibID);
-											}
-										}
-										updatedMarcRecordFromAPICall.addVariableField(currentItemFromMarcRecord);
-									}
-								} else {
-									// We may lose any existing, unchanged items.
-									//TODO: Make a call to GetItemInformationRequest to get a list of the items on the Bib
-									logger.warn("Existing Marc Record for BID " + currentFullBibID + " failed to load; Writing new record with data from API");
-									for (ItemChangeInfo updatedItem : itemUpdates) {
-										if (updatedItem.getBID().equals(currentBibID)) {
-											DataField newItemRecord = new DataFieldImpl(indexingProfile.getItemTag(), ' ', ' ');
-											updateItemDataFieldWithChangeInfo(newItemRecord, updatedItem);
-											updatedMarcRecordFromAPICall.addVariableField(newItemRecord);
-										}
+										currentMarcRecord.removeVariableField(itemFieldVar);
 									}
 								}
 
-								for (ItemChangeInfo createdItem : createdItems) {
-									if (createdItem.getBID().equals(currentBibID)) {
+								for (ItemChangeInfo bibItem : itemsForBib) {
+									if (bibItem.getBID().equals(currentBibID)) {
 										DataField newItemRecord = new DataFieldImpl(indexingProfile.getItemTag(), ' ', ' ');
-										updateItemDataFieldWithChangeInfo(newItemRecord, createdItem);
+										updateItemDataFieldWithChangeInfo(newItemRecord, bibItem);
 										updatedMarcRecordFromAPICall.addVariableField(newItemRecord);
 									}
 								}
@@ -1048,7 +999,7 @@ public class CarlXExportMain {
 				"<mar:GetItemInformationRequest>\n" +
 				"<mar:ItemSearchType>BID</mar:ItemSearchType>\n" +
 				"<mar:ItemSearchTerm>" + bibId + "</mar:ItemSearchTerm>\n" +
-				"<mar:IncludeSuppressItems>true</mar:IncludeSuppressItems>\n" + // TODO: Do we want this on??
+				"<mar:IncludeSuppressItems>false</mar:IncludeSuppressItems>\n" + // TODO: Do we want this on??
 				"<mar:Modifiers>\n" +
 				"</mar:Modifiers>\n" +
 				"</mar:GetItemInformationRequest>\n" +
@@ -1220,6 +1171,8 @@ public class CarlXExportMain {
 								case "Suppress":
 									//logger.debug("Suppression for item is " + detailValue);
 									currentItem.setSuppress(detailValue);
+								case "Notes":
+									currentItem.setNotes(detailValue);
 								case "HoldsHistory": // Number of times item has gone to Hold Shelf status since counter set
 								case "InHouseCirc":
 								case "Price":
@@ -1231,7 +1184,6 @@ public class CarlXExportMain {
 								case "BranchNumber":
 								case "StatusDate": //TODO: can we use this one?
 								case "ThereAtLeastOneNote":
-								case "Notes":
 								case "EditDate":
 								case "CNLabels":
 								case "Caption":
@@ -1333,8 +1285,6 @@ public class CarlXExportMain {
 			updateItemSubfield(itemField, indexingProfile.getYearToDateCheckoutsSubfield(), changeInfo.getYearToDateCheckouts());
 		}
 
-
-
 		if (indexingProfile.getDueDateSubfield() != ' ') {
 			if (changeInfo.getDueDate() == null) {
 				if (itemField.getSubfield(indexingProfile.getDueDateSubfield()) != null) {
@@ -1375,6 +1325,10 @@ public class CarlXExportMain {
 			} else {
 				updateItemSubfield(itemField, indexingProfile.getLastCheckinDateSubfield(), changeInfo.getLastCheckinDate());
 			}
+		}
+
+		if (changeInfo.getNotes() != null && changeInfo.getNotes().length() > 0){
+			updateItemSubfield(itemField, 'n', changeInfo.getNotes());
 		}
 	}
 

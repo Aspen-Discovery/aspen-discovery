@@ -14,6 +14,7 @@ public class ItemChangeInfo {
 	private String shelvingLocation;
 	private String iType;
 	private boolean suppress;
+	private String notes;
 
 
 	String getItemId() {
@@ -134,5 +135,13 @@ public class ItemChangeInfo {
 				"shelvingLocation: " + shelvingLocation + "\r\n" +
 				"iType: " + iType + "\r\n" +
 				"suppress: " + suppress + "\r\n";
+	}
+
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}
+
+	public String getNotes() {
+		return notes;
 	}
 }
