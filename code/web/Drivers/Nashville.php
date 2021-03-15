@@ -16,7 +16,7 @@ class Nashville extends CarlX {
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 		$mailer = new Mailer();
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
-		$systemVariables = SystemVariables::getSystemVariables;
+		$systemVariables = SystemVariables::getSystemVariables();
 
 		$accountLinesPaid = explode(',', $payment->finesPaid);
 		$user = new User();
@@ -58,7 +58,7 @@ class Nashville extends CarlX {
 		}
 		$logger->log($message, $level);
 		if ($level == Logger::LOG_ERROR) {
-			if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
+			if (!empty($systemVariables->errorEmail)) {
 				$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
 			}
 		}
@@ -80,7 +80,7 @@ class Nashville extends CarlX {
 		global $serverName;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 		$mailer = new Mailer();
-		$systemVariables = new SystemVariables();
+		$systemVariables = SystemVariables::getSystemVariables();
 		$request = new stdClass();
 		$request->Note = new stdClass();
 		$request->Note->PatronID = $patronId;
@@ -106,7 +106,7 @@ class Nashville extends CarlX {
 		}
 		$logger->log($message, $level);
 		if ($level == Logger::LOG_ERROR) {
-			if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
+			if (!empty($systemVariables->errorEmail)) {
 				$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
 			}
 		}
