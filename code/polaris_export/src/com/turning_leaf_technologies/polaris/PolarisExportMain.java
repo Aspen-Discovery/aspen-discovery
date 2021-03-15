@@ -143,6 +143,10 @@ public class PolarisExportMain {
 				if (loadAccountProfile(dbConn, "polaris")){
 					indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
 
+					if (!extractSingleWork) {
+						//updateBranchInfo(dbConn, kohaConn);
+					}
+
 					//Update works that have changed since the last index
 					numChanges = updateRecords(dbConn, singleWorkId);
 				}else{

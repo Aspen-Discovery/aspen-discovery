@@ -249,7 +249,7 @@ class CurlWrapper
 			$this->headers = array_merge($this->headers, $customHeaders);
 		}
 		if (!empty($this->curl_connection)){
-			curl_setopt($this->curl_connection, CURLOPT_HEADER, $this->headers);
+			curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, $this->headers);
 		}
 	}
 
