@@ -48,15 +48,14 @@ class FineAPI extends Action
 		global $serverName;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 		$mailer = new Mailer();
-		require_once ROOT_DIR . '/sys/SystemVariables.php';
-		$systemVariables = new SystemVariables();
+		$systemVariables = SystemVariables::getSystemVariables();
 		$json_params = file_get_contents("php://input");
 		if (strlen($json_params) > 0 && $this->isValidJSON($json_params)) {
 			$msb = json_decode($json_params, true);
 			if ($msb["ResponseCode"] != "Success") {
 				// 2021 01 20: MSB reports they will only use the post back link when the operation is successful
 				$success = false;
-				$message = 'User Payment ' . $msb["PaymentReference"] . 'failed with MSB payment ResponseCode' . $msb["ResponseCode"];
+				$message = 'MSB Payment ' . $msb["PaymentReference"] . 'failed with MSB payment ResponseCode' . $msb["ResponseCode"];
 				$level = Logger::LOG_ERROR;
 			} else {
 				//Retrieve the order information from Aspen db
@@ -83,7 +82,7 @@ class FineAPI extends Action
 								return $user->completeFinePayment($payment);
 							} else {
 								$success = false;
-								$message = 'User Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron';
+								$message = 'MSB Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron';
 								$level = Logger::LOG_ERROR;
 							}
 						}
@@ -96,7 +95,7 @@ class FineAPI extends Action
 			}
 		}
 		$logger->log($message, $level);
-		if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
+		if (!empty($systemVariables->errorEmail)) {
 			$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
 		}
 		return ['success' => $success, 'message' => $message];
