@@ -547,8 +547,12 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
-		if (!$library->enableForgotPasswordLink) {
+		if ($catalog != null) {
+			$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
+			if (!$library->enableForgotPasswordLink) {
+				$interface->assign('forgotPasswordType', 'none');
+			}
+		}else{
 			$interface->assign('forgotPasswordType', 'none');
 		}
 
