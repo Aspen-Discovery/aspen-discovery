@@ -13,8 +13,10 @@ import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.net.util.Base64;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.marc4j.MarcStreamWriter;
 import org.marc4j.MarcWriter;
@@ -143,12 +145,17 @@ public class PolarisExportMain {
 				if (loadAccountProfile(dbConn, "polaris")){
 					indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
 
-					if (!extractSingleWork) {
-						//updateBranchInfo(dbConn, kohaConn);
-					}
+					WebServiceResponse authenticationResponse = authenticateStaffUser();
+					if (authenticationResponse.isSuccess()) {
+						if (!extractSingleWork) {
+							updateBranchInfo(dbConn);
+						}
 
-					//Update works that have changed since the last index
-					numChanges = updateRecords(dbConn, singleWorkId);
+						//Update works that have changed since the last index
+						numChanges = updateRecords(dbConn, singleWorkId);
+					}else{
+						logEntry.incErrors("Could not authenticate " + authenticationResponse.getMessage());
+					}
 				}else{
 					logEntry.incErrors("Could not load Account Profile");
 				}
@@ -212,6 +219,93 @@ public class PolarisExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void updateBranchInfo(Connection dbConn) {
+		try{
+			PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
+			PreparedStatement existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where ilsCode = ?");
+			PreparedStatement addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (subdomain, displayName, ilsCode, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, 1, 1)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, -1, -1)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement addAspenLocationRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO location_records_owned (locationId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '')");
+			PreparedStatement addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+			PreparedStatement addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_owned (libraryId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '') ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
+			PreparedStatement addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+			//Get a list of all libraries
+			String getOrganizationsUrl = "/PAPIService/REST/public/v1/1033/100/1/organizations/all";
+			WebServiceResponse organizationsResponse = callPolarisAPI(getOrganizationsUrl, null, "GET", "application/json", null);
+			if (organizationsResponse.isSuccess()){
+				JSONObject organizations = organizationsResponse.getJSONResponse();
+				JSONArray organizationRows = organizations.getJSONArray("OrganizationsGetRows");
+				for (int i = 0; i < organizationRows.length(); i++){
+					JSONObject organizationInfo = organizationRows.getJSONObject(i);
+					long ilsId = organizationInfo.getLong("OrganizationID");
+					String libraryDisplayName = organizationInfo.getString("DisplayName");
+					String abbreviation = organizationInfo.getString("Abbreviation");
+					int organizationCodeId = organizationInfo.getInt("OrganizationCodeID");
+					if (organizationCodeId == 2) {
+						existingAspenLibraryStmt.setLong(1, ilsId);
+						ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery();
+						long libraryId = 0;
+						if (!existingLibraryRS.next()) {
+							addAspenLibraryStmt.setString(1, abbreviation);
+							addAspenLibraryStmt.setString(2, libraryDisplayName);
+							addAspenLibraryStmt.setLong(3, ilsId);
+							addAspenLibraryStmt.executeUpdate();
+							ResultSet addAspenLibraryRS = addAspenLibraryStmt.getGeneratedKeys();
+							if (addAspenLibraryRS.next()){
+								libraryId = addAspenLibraryRS.getLong(1);
+							}
+
+							//Add records owned for the library
+							addAspenLibraryRecordsOwnedStmt.setLong(1, libraryId);
+							addAspenLibraryRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+							addAspenLibraryRecordsOwnedStmt.setString(3, abbreviation);
+							addAspenLibraryRecordsOwnedStmt.executeUpdate();
+
+							//Add records to include for the library
+							addAspenLibraryRecordsToIncludeStmt.setLong(1, libraryId);
+							addAspenLibraryRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
+							addAspenLibraryRecordsToIncludeStmt.executeUpdate();
+						}
+					}else if (organizationCodeId == 3){
+						Long parentOrganizationId = organizationInfo.getLong("ParentOrganizationID");
+						existingAspenLocationStmt.setString(1, abbreviation);
+						ResultSet existingLocationRS = existingAspenLocationStmt.executeQuery();
+						if (!existingLocationRS.next()){
+							//Get the library id for the parent
+							existingAspenLibraryStmt.setLong(1, parentOrganizationId);
+							ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery();
+							if (existingLibraryRS.next()){
+								long libraryId = existingLibraryRS.getLong("libraryId");
+
+								addAspenLocationStmt.setLong(1, libraryId);
+								addAspenLocationStmt.setString(2, StringUtils.trimTo(60, libraryDisplayName));
+								addAspenLocationStmt.setString(3, abbreviation);
+
+								addAspenLocationStmt.executeUpdate();
+								ResultSet addAspenLocationRS = addAspenLocationStmt.getGeneratedKeys();
+								if (addAspenLocationRS.next()){
+									long locationId = addAspenLocationRS.getLong(1);
+									//Add records owned for the location
+									addAspenLocationRecordsOwnedStmt.setLong(1, locationId);
+									addAspenLocationRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+									addAspenLocationRecordsOwnedStmt.setString(3, abbreviation);
+									addAspenLocationRecordsOwnedStmt.executeUpdate();
+
+									//Add records to include for the location
+									addAspenLocationRecordsToIncludeStmt.setLong(1, locationId);
+									addAspenLocationRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
+									addAspenLocationRecordsToIncludeStmt.executeUpdate();
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Error updating branch information from Polaris", e);
+		}
 	}
 
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
@@ -301,68 +395,79 @@ public class PolarisExportMain {
 
 	private static int extractAllBibs() {
 		int numChanges = 0;
-		WebServiceResponse authenticationResponse = authenticateStaffUser();
-		if (authenticationResponse.isSuccess()){
-			//Get a paged list of all bibs
-			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged";
+
+		//Get a paged list of all bibs
+		String lastId = "0";
+		boolean moreToLoad = true;
+		while (moreToLoad) {
+			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?lastID=" + lastId;
 			WebServiceResponse pagedBibs = callPolarisAPI(getBibsUrl, null, "GET", "text/xml", accessSecret);
-			if (pagedBibs.isSuccess()){
+			if (pagedBibs.isSuccess()) {
 				try {
 					Document pagedBibsDocument = createXMLDocumentForWebServiceResponse(pagedBibs);
-					Element getBibsPagedResult = (Element)pagedBibsDocument.getFirstChild();
+					Element getBibsPagedResult = (Element) pagedBibsDocument.getFirstChild();
 					Node lastIdNode = getBibsPagedResult.getElementsByTagName("LastID").item(0);
-					String lastId = lastIdNode.getTextContent();
-					Element getBibsPagedRows = (Element)getBibsPagedResult.getElementsByTagName("GetBibsPagedRows").item(0);
+					lastId = lastIdNode.getTextContent();
+					Element getBibsPagedRows = (Element) getBibsPagedResult.getElementsByTagName("GetBibsPagedRows").item(0);
 					NodeList bibsPagedRows = getBibsPagedRows.getElementsByTagName("GetBibsPagedRow");
-					for (int i = 0; i < bibsPagedRows.getLength(); i++){
-						Element bibPagedRow = (Element)bibsPagedRows.item(i);
+					if (bibsPagedRows.getLength() == 0){
+						moreToLoad = false;
+						break;
+					}
+					for (int i = 0; i < bibsPagedRows.getLength(); i++) {
+						Element bibPagedRow = (Element) bibsPagedRows.item(i);
 						String bibliographicRecordId = bibPagedRow.getElementsByTagName("BibliographicRecordID").item(0).getTextContent();
 						String displayInPAC = bibPagedRow.getElementsByTagName("IsDisplayInPAC").item(0).getTextContent();
-						if (displayInPAC.equals("true")){
-							String bibRecordXML = bibPagedRow.getElementsByTagName("BibliographicRecordXML").item(0).getTextContent();
-							bibRecordXML = URLDecoder.decode(bibRecordXML, "UTF-8");
-							MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(bibRecordXML.getBytes(StandardCharsets.UTF_8)));
-							Record marcRecord = marcXmlReader.next();
+						if (displayInPAC.equals("true")) {
+							try {
+								String bibRecordXML = bibPagedRow.getElementsByTagName("BibliographicRecordXML").item(0).getTextContent();
+								//bibRecordXML = StringEscapeUtils.unescapeXml(bibRecordXML);
+								MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(bibRecordXML.getBytes(StandardCharsets.UTF_8)));
+								Record marcRecord = marcXmlReader.next();
 
-							if (marcRecord != null){
-								//Save the file
-								File marcFile = indexingProfile.getFileForIlsRecord(bibliographicRecordId);
-								if (!marcFile.getParentFile().exists()) {
-									//noinspection ResultOfMethodCallIgnored
-									marcFile.getParentFile().mkdirs();
-								}
+								if (marcRecord != null) {
+									//Save the file
+									File marcFile = indexingProfile.getFileForIlsRecord(bibliographicRecordId);
+									if (!marcFile.getParentFile().exists()) {
+										//noinspection ResultOfMethodCallIgnored
+										marcFile.getParentFile().mkdirs();
+									}
 
-								if (marcFile.exists()) {
-									logEntry.incUpdated();
+									if (marcFile.exists()) {
+										logEntry.incUpdated();
+									} else {
+										logEntry.incAdded();
+									}
+									MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
+									writer.write(marcRecord);
+									writer.close();
+									//Regroup the record
+									String groupedWorkId = groupPolarisRecord(marcRecord);
+									if (groupedWorkId != null) {
+										//Reindex the record
+										getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+									}
+									numChanges++;
 								} else {
-									logEntry.incAdded();
+									logEntry.incErrors("Could not read marc record for " + bibliographicRecordId);
 								}
-								MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
-								writer.write(marcRecord);
-								writer.close();
-								//Regroup the record
-								String groupedWorkId = groupPolarisRecord(marcRecord);
-								if (groupedWorkId != null) {
-									//Reindex the record
-									getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-								}
-								numChanges++;
-							}else{
-								logEntry.incErrors("Could not read marc record for " + bibliographicRecordId);
+							}catch (Exception e){
+								logEntry.incErrors("Error loading marc record for bib " + bibliographicRecordId, e);
 							}
-						}else{
-							//Delete the record from SOLR
+						} else {
+							//TODO: Delete the record from SOLR
 						}
 					}
 				} catch (Exception e) {
 					logEntry.incErrors("Unable to parse document for paged bibs response", e);
+					moreToLoad = false;
 				}
-			}else{
+			} else {
 				logEntry.incErrors("Could not get bibs from " + getBibsUrl + " " + pagedBibs.getMessage());
+				moreToLoad = false;
 			}
-		}else{
-			logEntry.incErrors("Could not authenticate " + authenticationResponse.getMessage());
 		}
+
 		return numChanges;
 	}
 
@@ -378,6 +483,19 @@ public class PolarisExportMain {
 		InputSource soapResponseInputSource = new InputSource(soapResponseByteArrayInputStream);
 
 		Document doc = dBuilder.parse(soapResponseInputSource);
+		doc.getDocumentElement().normalize();
+
+		return doc;
+	}
+
+	private static Document createXMLDocumentForString(String xmlContent) throws ParserConfigurationException, IOException, SAXException {
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		dbFactory.setValidating(false);
+		dbFactory.setIgnoringElementContentWhitespace(true);
+
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
+		Document doc = dBuilder.parse(xmlContent);
 		doc.getDocumentElement().normalize();
 
 		return doc;
