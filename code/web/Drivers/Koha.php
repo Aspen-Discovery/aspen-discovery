@@ -90,7 +90,7 @@ class Koha extends AbstractIlsDriver
                 }
             } else {
                 $result['success'] = true;
-                $result['messages'][] = translate(['text' => 'Your pickup location was updated successfully.', 'defaultText' => 'Your pickup location was updated successfully.']);
+                $result['messages'][] = 'Your pickup location was updated successfully.';
             }
         }
 
