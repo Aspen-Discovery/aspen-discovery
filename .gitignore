@@ -166,3 +166,8 @@ code/web/migrations/importResults.txt
 .idea/aspen-discovery.iml
 .idea/*.xml
 .idea/dataSources/**
+sites/demo.localhost/conf/config.cron.ini
+sites/demo.localhost/conf/config.ini
+sites/demo.localhost/conf/crontab_settings.txt
+sites/demo.localhost/demo.localhost.sh
+sites/demo.localhost/httpd-demo.localhost.conf
