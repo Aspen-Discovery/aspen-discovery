@@ -90,7 +90,7 @@ class Koha extends AbstractIlsDriver
 				}
 			} else {
 				$result['success'] = true;
-				$result['messages'][] = 'Your pickup location was updated successfully.';
+				$result['messages'][] = translate(['text' => 'Your pickup location was updated successfully.', 'defaultText' => 'Your pickup location was updated successfully.']);
 			}
 		}
 
@@ -610,7 +610,7 @@ class Koha extends AbstractIlsDriver
 						$patronCategorySql = "select default_privacy from categories where categorycode = '$pType'";
 						$patronCategoryResult = mysqli_query($this->dbConnection, $patronCategorySql, MYSQLI_USE_RESULT);
 						if ($patronCategoryResult) {
-							$privacyInfo = $patronCategoryResult->fetch_assoc();
+							$privacyInfo = mysqli_fetch_assoc($patronCategoryResult);
 							if ($privacyInfo) {
 								switch ($privacyInfo['default_privacy']) {
 									case 'forever':
@@ -2786,7 +2786,7 @@ class Koha extends AbstractIlsDriver
 		/** @noinspection SqlResolve */
 		$borrowerSql = "SELECT smsalertnumber, sms_provider_id FROM borrowers where borrowernumber = {$user->username}";
 		$borrowerRS = mysqli_query($this->dbConnection, $borrowerSql);
-		if ($borrowerRow = $borrowerRS->fetch_assoc()) {
+		if ($borrowerRow = mysqli_fetch_assoc($borrowerRS)) {
 			$interface->assign('smsAlertNumber', $borrowerRow['smsalertnumber']);
 			$interface->assign('smsProviderId', $borrowerRow['sms_provider_id']);
 		}
@@ -2847,7 +2847,7 @@ class Koha extends AbstractIlsDriver
 			ON     borrower_message_transport_preferences.borrower_message_preference_id = borrower_message_preferences.borrower_message_preference_id
 			WHERE  borrower_message_preferences.borrowernumber = {$user->username}";
 		$userMessagingSettingsRS = mysqli_query($this->dbConnection, $userMessagingSettingsSql);
-		while ($userMessagingSetting = $userMessagingSettingsRS->fetch_assoc()) {
+		while ($userMessagingSetting = mysqli_fetch_assoc($userMessagingSettingsRS)) {
 			$messageType = $userMessagingSetting['message_attribute_id'];
 			if ($userMessagingSetting['wants_digest']) {
 				$messagingSettings[$messageType]['wantsDigest'] = $userMessagingSetting['wants_digest'];
@@ -3114,30 +3114,7 @@ class Koha extends AbstractIlsDriver
 
 		//Check if the patron is expired
 		if ($accountSummary['expired'] == 1) {
-			//Check the patron category as well
-			/** @noinspection SqlResolve */
-			$patronCategorySql = "select BlockExpiredPatronOpacActions from categories where categorycode = '{$patron->patronType}'";
-			$patronCategoryResult = mysqli_query($this->dbConnection, $patronCategorySql, MYSQLI_USE_RESULT);
-			$useSystemPreference = true;
-			$blockExpiredPatronOpacActions = true;
-			if ($patronCategoryResult !== false) {
-				$patronCategoryInfo = $patronCategoryResult->fetch_assoc();
-				if ($patronCategoryInfo['BlockExpiredPatronOpacActions'] == 0){
-					$blockExpiredPatronOpacActions = false;
-					$useSystemPreference = false;
-				}elseif ($patronCategoryInfo['BlockExpiredPatronOpacActions'] == 1){
-					$blockExpiredPatronOpacActions = true;
-					$useSystemPreference = false;
-				}elseif ($patronCategoryInfo['BlockExpiredPatronOpacActions'] == -1){
-					$blockExpiredPatronOpacActions = true;
-					$useSystemPreference = true;
-				}
-				$patronCategoryResult->close();
-			}
-
-			if ($useSystemPreference) {
-				$blockExpiredPatronOpacActions = $this->getKohaSystemPreference('BlockExpiredPatronOpacActions');
-			}
+			$blockExpiredPatronOpacActions = $this->getKohaSystemPreference('BlockExpiredPatronOpacActions');
 			if ($blockExpiredPatronOpacActions == 1){
 				$result['isEligible'] = false;
 				$result['expiredPatronWhoCannotPlaceHolds'] = true;
@@ -3391,17 +3368,12 @@ class Koha extends AbstractIlsDriver
 		$sql = "SELECT value FROM systempreferences WHERE variable='$preferenceName';";
 		$results = mysqli_query($this->dbConnection, $sql);
 		$preference = $default;
-		if ($results !== false) {
-			while ($curRow = $results->fetch_assoc()) {
-				if ($curRow['value'] != '') {
-					$preference = $curRow['value'];
-				}
+		while ($curRow = $results->fetch_assoc()) {
+			if ($curRow['value'] != '') {
+				$preference = $curRow['value'];
 			}
-			$results->close();
-		}else{
-			global $logger;
-			$logger->log("Error loading system preference " . mysqli_error($this->dbConnection), Logger::LOG_ERROR);
 		}
+		$results->close();
 		return $preference;
 	}
 
