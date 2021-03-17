@@ -335,7 +335,7 @@ class Library extends DataObject
 			3 => 'External Request Link'
 		];
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		if (!$catalog->hasMaterialsRequestSupport()) {
+		if ($catalog == null || !$catalog->hasMaterialsRequestSupport()) {
 			unset($materialsRequestOptions[2]);
 		}
 
