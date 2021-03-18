@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.polaris;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
+import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
@@ -13,7 +14,6 @@ import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.net.util.Base64;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
@@ -21,6 +21,8 @@ import org.json.JSONObject;
 import org.marc4j.MarcStreamWriter;
 import org.marc4j.MarcWriter;
 import org.marc4j.MarcXmlReader;
+import org.marc4j.marc.DataField;
+import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -38,7 +40,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
@@ -58,7 +59,6 @@ public class PolarisExportMain {
 	private static Connection dbConn;
 	private static String serverName;
 
-	private static Long startTimeForLogging;
 	private static IlsExtractLogEntry logEntry;
 	private static String webServiceUrl;
 	private static String clientId;
@@ -66,8 +66,6 @@ public class PolarisExportMain {
 	private static String domain;
 	private static String staffUsername;
 	private static String staffPassword;
-	private static String staffPAPIAccessID;
-	private static String staffPAPIAccessKey;
 	private static String accessToken;
 	private static String accessSecret;
 
@@ -106,7 +104,6 @@ public class PolarisExportMain {
 
 		while (true) {
 			java.util.Date startTime = new Date();
-			startTimeForLogging = startTime.getTime() / 1000;
 			logger.info(startTime.toString() + ": Starting Polaris Extract");
 
 			// Read the base INI file to get information about the server (current directory/conf/config.ini)
@@ -124,8 +121,6 @@ public class PolarisExportMain {
 				domain = ConfigUtil.cleanIniValue(configIni.get("Catalog", "domain"));
 				staffUsername = ConfigUtil.cleanIniValue(configIni.get("Catalog", "staffUsername"));
 				staffPassword = ConfigUtil.cleanIniValue(configIni.get("Catalog", "staffPassword"));
-				staffPAPIAccessID = ConfigUtil.cleanIniValue(configIni.get("Catalog", "staffPAPIAccessId"));
-				staffPAPIAccessKey = ConfigUtil.cleanIniValue(configIni.get("Catalog", "staffPAPIAccessKey"));
 				dbConn = DriverManager.getConnection(databaseConnectionInfo);
 				if (dbConn == null) {
 					logger.error("Could not establish connection to database at " + databaseConnectionInfo);
@@ -142,17 +137,18 @@ public class PolarisExportMain {
 					logger.error("Error deleting old log entries", e);
 				}
 
-				if (loadAccountProfile(dbConn, "polaris")){
+				if (loadAccountProfile(dbConn)){
 					indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
 
 					WebServiceResponse authenticationResponse = authenticateStaffUser();
 					if (authenticationResponse.isSuccess()) {
 						if (!extractSingleWork) {
 							updateBranchInfo(dbConn);
+							updateCollectionsAndShelfLocations(dbConn);
 						}
 
 						//Update works that have changed since the last index
-						numChanges = updateRecords(dbConn, singleWorkId);
+						numChanges = updateRecords(singleWorkId);
 					}else{
 						logEntry.incErrors("Could not authenticate " + authenticationResponse.getMessage());
 					}
@@ -231,6 +227,14 @@ public class PolarisExportMain {
 			PreparedStatement addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
 			PreparedStatement addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_owned (libraryId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '') ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
 			PreparedStatement addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+			PreparedStatement createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?");
+			PreparedStatement getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?");
+			PreparedStatement insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
+
+			Long locationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "location");
+			HashMap<String, String> existingLocationMapValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, locationMapId);
+
 			//Get a list of all libraries
 			String getOrganizationsUrl = "/PAPIService/REST/public/v1/1033/100/1/organizations/all";
 			WebServiceResponse organizationsResponse = callPolarisAPI(getOrganizationsUrl, null, "GET", "application/json", null);
@@ -257,19 +261,13 @@ public class PolarisExportMain {
 								libraryId = addAspenLibraryRS.getLong(1);
 							}
 
-							//Add records owned for the library
-							addAspenLibraryRecordsOwnedStmt.setLong(1, libraryId);
-							addAspenLibraryRecordsOwnedStmt.setLong(2, indexingProfile.getId());
-							addAspenLibraryRecordsOwnedStmt.setString(3, abbreviation);
-							addAspenLibraryRecordsOwnedStmt.executeUpdate();
-
 							//Add records to include for the library
 							addAspenLibraryRecordsToIncludeStmt.setLong(1, libraryId);
 							addAspenLibraryRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
 							addAspenLibraryRecordsToIncludeStmt.executeUpdate();
 						}
 					}else if (organizationCodeId == 3){
-						Long parentOrganizationId = organizationInfo.getLong("ParentOrganizationID");
+						long parentOrganizationId = organizationInfo.getLong("ParentOrganizationID");
 						existingAspenLocationStmt.setString(1, abbreviation);
 						ResultSet existingLocationRS = existingAspenLocationStmt.executeQuery();
 						if (!existingLocationRS.next()){
@@ -281,7 +279,7 @@ public class PolarisExportMain {
 
 								addAspenLocationStmt.setLong(1, libraryId);
 								addAspenLocationStmt.setString(2, StringUtils.trimTo(60, libraryDisplayName));
-								addAspenLocationStmt.setString(3, abbreviation);
+								addAspenLocationStmt.setLong(3, ilsId);
 
 								addAspenLocationStmt.executeUpdate();
 								ResultSet addAspenLocationRS = addAspenLocationStmt.getGeneratedKeys();
@@ -290,13 +288,33 @@ public class PolarisExportMain {
 									//Add records owned for the location
 									addAspenLocationRecordsOwnedStmt.setLong(1, locationId);
 									addAspenLocationRecordsOwnedStmt.setLong(2, indexingProfile.getId());
-									addAspenLocationRecordsOwnedStmt.setString(3, abbreviation);
+									addAspenLocationRecordsOwnedStmt.setLong(3, ilsId);
 									addAspenLocationRecordsOwnedStmt.executeUpdate();
+
+									//Add records owned for the library, since we have multiple locations defined by ID, we will add separate rows for each.
+									addAspenLibraryRecordsOwnedStmt.setLong(1, libraryId);
+									addAspenLibraryRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+									addAspenLibraryRecordsOwnedStmt.setLong(3, ilsId);
+									addAspenLibraryRecordsOwnedStmt.executeUpdate();
 
 									//Add records to include for the location
 									addAspenLocationRecordsToIncludeStmt.setLong(1, locationId);
 									addAspenLocationRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
 									addAspenLocationRecordsToIncludeStmt.executeUpdate();
+								}
+							}
+						}
+
+						//Add to the location map
+						if (!existingLocationMapValues.containsKey(Long.toString(ilsId))){
+							if (libraryDisplayName.length() > 0){
+								try {
+									insertTranslationStmt.setLong(1, locationMapId);
+									insertTranslationStmt.setLong(2, ilsId);
+									insertTranslationStmt.setString(3, libraryDisplayName);
+									insertTranslationStmt.executeUpdate();
+								}catch (SQLException e){
+									logEntry.addNote("Error adding location value " + ilsId + " with a translation of " + libraryDisplayName + " e");
 								}
 							}
 						}
@@ -306,6 +324,101 @@ public class PolarisExportMain {
 		} catch (Exception e) {
 			logEntry.incErrors("Error updating branch information from Polaris", e);
 		}
+	}
+
+	private static void updateCollectionsAndShelfLocations(Connection dbConn){
+		try {
+			PreparedStatement createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?");
+			PreparedStatement getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?");
+			PreparedStatement insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
+
+			//Get a list of all collections
+			Long collectionMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "collection");
+			HashMap<String, String> existingCollections = getExistingTranslationMapValues(getExistingValuesForMapStmt, collectionMapId);
+			String getCollectionsUrl = "/PAPIService/REST/public/v1/1033/100/1/collections";
+			WebServiceResponse collectionsResponse = callPolarisAPI(getCollectionsUrl, null, "GET", "application/json", null);
+			if (collectionsResponse.isSuccess()){
+				JSONObject collections = collectionsResponse.getJSONResponse();
+				JSONArray collectionRows = collections.getJSONArray("CollectionsRows");
+				for (int i = 0; i < collectionRows.length(); i++){
+					JSONObject curCollection = collectionRows.getJSONObject(i);
+					long collectionId = curCollection.getLong("ID");
+					String collectionName = curCollection.getString("Name");
+					if (!existingCollections.containsKey(Long.toString(collectionId))){
+						if (collectionName.length() > 0){
+							try {
+								insertTranslationStmt.setLong(1, collectionMapId);
+								insertTranslationStmt.setLong(2, collectionId);
+								insertTranslationStmt.setString(3, collectionName);
+								insertTranslationStmt.executeUpdate();
+							}catch (SQLException e){
+								logEntry.addNote("Error adding collection value " + collectionId + " with a translation of " + collectionName + " e");
+							}
+						}
+					}
+				}
+			}
+
+			Long shelfLocationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "shelf_location");
+			HashMap<String, String> existingShelfLocations = getExistingTranslationMapValues(getExistingValuesForMapStmt, shelfLocationMapId);
+			String getShelfLocationsUrl = "/PAPIService/REST/public/v1/1033/100/1/shelflocations";
+			WebServiceResponse shelfLocationsResponse = callPolarisAPI(getShelfLocationsUrl, null, "GET", "application/json", null);
+			if (shelfLocationsResponse.isSuccess()){
+				JSONObject shelfLocations = shelfLocationsResponse.getJSONResponse();
+				JSONArray shelfLocationRows = shelfLocations.getJSONArray("ShelfLocationsRows");
+				for (int i = 0; i < shelfLocationRows.length(); i++){
+					JSONObject curShelfLocation = shelfLocationRows.getJSONObject(i);
+					long shelfLocationId = curShelfLocation.getLong("ID");
+					String shelfLocationName = curShelfLocation.getString("Description");
+					if (!existingShelfLocations.containsKey(Long.toString(shelfLocationId))){
+						if (shelfLocationName.length() > 0){
+							try {
+								insertTranslationStmt.setLong(1, shelfLocationMapId);
+								insertTranslationStmt.setLong(2, shelfLocationId);
+								insertTranslationStmt.setString(3, shelfLocationName);
+								insertTranslationStmt.executeUpdate();
+								existingShelfLocations.put(Long.toString(shelfLocationId), shelfLocationName);
+							}catch (SQLException e){
+								logEntry.addNote("Error adding shlef location value " + shelfLocationId + " with a translation of " + shelfLocationName + " e");
+							}
+						}
+					}
+				}
+			}
+		} catch (SQLException e) {
+			logger.error("Error updating Collection information", e);
+		}
+	}
+
+	private static HashMap<String, String> getExistingTranslationMapValues(PreparedStatement getExistingValuesForMapStmt, Long translationMapId) throws SQLException {
+		HashMap<String, String> existingValues = new HashMap<>();
+		getExistingValuesForMapStmt.setLong(1, translationMapId);
+		ResultSet getExistingValuesForMapRS = getExistingValuesForMapStmt.executeQuery();
+		while (getExistingValuesForMapRS.next()) {
+			existingValues.put(getExistingValuesForMapRS.getString("value").toLowerCase(), getExistingValuesForMapRS.getString("translation"));
+		}
+		return existingValues;
+	}
+
+	private static Long getTranslationMapId(PreparedStatement createTranslationMapStmt, PreparedStatement getTranslationMapStmt, String mapName) throws SQLException {
+		Long translationMapId = null;
+		getTranslationMapStmt.setString(1, mapName);
+		getTranslationMapStmt.setLong(2, indexingProfile.getId());
+		ResultSet getTranslationMapRS = getTranslationMapStmt.executeQuery();
+		if (getTranslationMapRS.next()) {
+			translationMapId = getTranslationMapRS.getLong("id");
+		} else {
+			//Map does not exist, create it
+			createTranslationMapStmt.setString(1, mapName);
+			createTranslationMapStmt.setLong(2, indexingProfile.getId());
+			createTranslationMapStmt.executeUpdate();
+			ResultSet generatedIds = createTranslationMapStmt.getGeneratedKeys();
+			if (generatedIds.next()) {
+				translationMapId = generatedIds.getLong(1);
+			}
+		}
+		return translationMapId;
 	}
 
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
@@ -340,11 +453,11 @@ public class PolarisExportMain {
 		}
 	}
 
-	private static boolean loadAccountProfile(Connection dbConn, String profileName) {
+	private static boolean loadAccountProfile(Connection dbConn) {
 		//Get information about the account profile for Polaris
 		try {
 			PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = ?");
-			accountProfileStmt.setString(1, profileName);
+			accountProfileStmt.setString(1, "polaris");
 			ResultSet accountProfileRS = accountProfileStmt.executeQuery();
 			if (accountProfileRS.next()) {
 				webServiceUrl = accountProfileRS.getString("patronApiUrl");
@@ -359,12 +472,12 @@ public class PolarisExportMain {
 			}
 			return true;
 		} catch (Exception e){
-			logEntry.incErrors("Could not load account profile " + profileName + e);
+			logEntry.incErrors("Could not load account profile " + "polaris" + e);
 			return false;
 		}
 	}
 
-	private static int updateRecords(Connection dbConn, String singleWorkId) {
+	private static int updateRecords(String singleWorkId) {
 		int totalChanges = 0;
 
 		try {
@@ -398,8 +511,8 @@ public class PolarisExportMain {
 
 		//Get a paged list of all bibs
 		String lastId = "0";
-		boolean moreToLoad = true;
-		while (moreToLoad) {
+		MarcFactory marcFactory = MarcFactory.newInstance();
+		while (true) {
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?lastID=" + lastId;
 			WebServiceResponse pagedBibs = callPolarisAPI(getBibsUrl, null, "GET", "text/xml", accessSecret);
 			if (pagedBibs.isSuccess()) {
@@ -411,7 +524,7 @@ public class PolarisExportMain {
 					Element getBibsPagedRows = (Element) getBibsPagedResult.getElementsByTagName("GetBibsPagedRows").item(0);
 					NodeList bibsPagedRows = getBibsPagedRows.getElementsByTagName("GetBibsPagedRow");
 					if (bibsPagedRows.getLength() == 0){
-						moreToLoad = false;
+						//Stop looping looking for more records
 						break;
 					}
 					for (int i = 0; i < bibsPagedRows.getLength(); i++) {
@@ -426,28 +539,63 @@ public class PolarisExportMain {
 								Record marcRecord = marcXmlReader.next();
 
 								if (marcRecord != null) {
-									//Save the file
-									File marcFile = indexingProfile.getFileForIlsRecord(bibliographicRecordId);
-									if (!marcFile.getParentFile().exists()) {
-										//noinspection ResultOfMethodCallIgnored
-										marcFile.getParentFile().mkdirs();
-									}
+									//Get Items from the API
+									String getItemsUrl = "/PAPIService/REST/public/v1/1033/100/1/bib/" + bibliographicRecordId + "/holdings";
+									WebServiceResponse bibItemsResponse = callPolarisAPI(getItemsUrl, null, "GET", "application/json", null);
+									if (bibItemsResponse.isSuccess()){
+										//Add Items to the MARC record
+										JSONObject response = bibItemsResponse.getJSONResponse();
+										JSONArray allItems = response.getJSONArray("BibHoldingsGetRows");
+										for (int j = 0; j < allItems.length(); j++){
+											JSONObject curItem = allItems.getJSONObject(j);
+											DataField itemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
+											updateItemField(marcFactory, curItem, itemField, indexingProfile.getBarcodeSubfield(), "Barcode");
+											updateItemField(marcFactory, curItem, itemField, indexingProfile.getCallNumberSubfield(), "CallNumber");
+											updateItemField(marcFactory, curItem, itemField, indexingProfile.getLocationSubfield(), "LocationID");
+											updateItemField(marcFactory, curItem, itemField, indexingProfile.getCollectionSubfield(), "CollectionID");
+											updateItemField(marcFactory, curItem, itemField, indexingProfile.getShelvingLocationSubfield(), "ShelfLocation");
+											updateItemField(marcFactory, curItem, itemField, indexingProfile.getVolume(), "VolumeNumber");
+											updateItemField(marcFactory, curItem, itemField, indexingProfile.getITypeSubfield(), "MaterialType");
+											updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemStatusSubfield(), "CircStatus");
+											updateItemField(marcFactory, curItem, itemField, indexingProfile.getDueDateSubfield(), "DueDate");
+											updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
 
-									if (marcFile.exists()) {
-										logEntry.incUpdated();
-									} else {
-										logEntry.incAdded();
+											marcRecord.addVariableField(itemField);
+										}
+
+										//Save the file
+										File marcFile = indexingProfile.getFileForIlsRecord(bibliographicRecordId);
+										if (!marcFile.getParentFile().exists()) {
+											//noinspection ResultOfMethodCallIgnored
+											marcFile.getParentFile().mkdirs();
+										}
+
+										if (marcFile.exists()) {
+											logEntry.incUpdated();
+										} else {
+											logEntry.incAdded();
+										}
+										MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
+										writer.write(marcRecord);
+										writer.close();
+										//Regroup the record
+										String groupedWorkId = groupPolarisRecord(marcRecord);
+										if (groupedWorkId != null) {
+											//Reindex the record
+											getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+										}
+										numChanges++;
+									}else{
+										//This record has no items, suppress it
+										RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibliographicRecordId);
+										if (result.reindexWork){
+											getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+										}else if (result.deleteWork){
+											//Delete the work from solr and the database
+											getGroupedWorkIndexer().deleteRecord(result.permanentId);
+										}
+										logEntry.incDeleted();
 									}
-									MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
-									writer.write(marcRecord);
-									writer.close();
-									//Regroup the record
-									String groupedWorkId = groupPolarisRecord(marcRecord);
-									if (groupedWorkId != null) {
-										//Reindex the record
-										getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-									}
-									numChanges++;
 								} else {
 									logEntry.incErrors("Could not read marc record for " + bibliographicRecordId);
 								}
@@ -455,20 +603,48 @@ public class PolarisExportMain {
 								logEntry.incErrors("Error loading marc record for bib " + bibliographicRecordId, e);
 							}
 						} else {
-							//TODO: Delete the record from SOLR
+							RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibliographicRecordId);
+							if (result.reindexWork){
+								getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+							}else if (result.deleteWork){
+								//Delete the work from solr and the database
+								getGroupedWorkIndexer().deleteRecord(result.permanentId);
+							}
+							logEntry.incDeleted();
 						}
 					}
 				} catch (Exception e) {
 					logEntry.incErrors("Unable to parse document for paged bibs response", e);
-					moreToLoad = false;
+					break;
 				}
 			} else {
 				logEntry.incErrors("Could not get bibs from " + getBibsUrl + " " + pagedBibs.getMessage());
-				moreToLoad = false;
+				break;
 			}
 		}
 
 		return numChanges;
+	}
+
+	private static void updateItemField(MarcFactory marcFactory, JSONObject curItem, DataField itemField, char subfieldIndicator, String polarisFieldName) {
+		if (subfieldIndicator != ' ') {
+			itemField.addSubfield(marcFactory.newSubfield(subfieldIndicator, getItemFieldData(curItem, polarisFieldName)));
+		}
+	}
+
+	private static String getItemFieldData(JSONObject curItem, String fieldName) {
+		if (curItem.isNull(fieldName)){
+			return "";
+		}else{
+			Object itemValue = curItem.get(fieldName);
+			if (itemValue instanceof Integer){
+				return Integer.toString((int)itemValue);
+			}else if (itemValue instanceof String) {
+				return (String)itemValue;
+			}else{
+				return itemValue.toString();
+			}
+		}
 	}
 
 	private static Document createXMLDocumentForWebServiceResponse(WebServiceResponse response) throws ParserConfigurationException, IOException, SAXException {
@@ -487,20 +663,6 @@ public class PolarisExportMain {
 
 		return doc;
 	}
-
-	private static Document createXMLDocumentForString(String xmlContent) throws ParserConfigurationException, IOException, SAXException {
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		dbFactory.setValidating(false);
-		dbFactory.setIgnoringElementContentWhitespace(true);
-
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-
-		Document doc = dBuilder.parse(xmlContent);
-		doc.getDocumentElement().normalize();
-
-		return doc;
-	}
-
 	private static void disconnectDatabase() {
 		try {
 			//Close the connection
@@ -515,7 +677,7 @@ public class PolarisExportMain {
 	}
 
 	private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
-	private static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
+	private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
 	private static SecretKeySpec signingKey;
 	private static WebServiceResponse callPolarisAPI(String url, String postData, String method, String contentType, String accessSecret){
 		if (signingKey == null){

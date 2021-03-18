@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import org.apache.logging.log4j.Logger;
+import org.marc4j.marc.DataField;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -12,6 +13,44 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		return true;
+		return itemInfo.getStatusCode().equalsIgnoreCase("in");
+	}
+
+	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+		String location;
+		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
+		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		String collectionCode = getItemSubfieldData(collectionSubfield, itemField);
+		if (includeLocationNameInDetailedLocation) {
+			location = translateValue("location", locationCode, identifier);
+		}else{
+			location = "";
+		}
+		if (subLocationCode != null && subLocationCode.length() > 0){
+			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier);
+			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
+				if (location.length() > 0) {
+					location += " - ";
+				}
+				location += translatedSubLocation;
+			}
+		}
+		if (collectionCode != null && collectionCode.length() > 0){
+			String translatedCollection = translateValue("collection", collectionCode, identifier);
+			if (translatedCollection != null && translatedCollection.length() > 0) {
+				if (location.length() > 0) {
+					location += " - ";
+				}
+				location += translatedCollection;
+			}
+		}
+		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
+		if (shelvingLocation != null && shelvingLocation.length() > 0){
+			if (location.length() > 0){
+				location += " - ";
+			}
+			location += translateValue("shelf_location", shelvingLocation, identifier);
+		}
+		return location;
 	}
 }
