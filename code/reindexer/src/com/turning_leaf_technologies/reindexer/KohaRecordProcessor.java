@@ -164,16 +164,18 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				String shelfLocation = shelfLocationCode.toLowerCase().trim();
 				if (hasTranslation("format", shelfLocation)){
 					String translatedLocation = translateValue("format", shelfLocation, recordInfo.getRecordIdentifier());
-					if (itemCountsByItype.containsKey(shelfLocation)) {
-						itemCountsByItype.put(shelfLocation, itemCountsByItype.get(shelfLocation) + 1);
-					} else {
-						itemCountsByItype.put(shelfLocation, 1);
-					}
-					foundFormatFromShelfLocation = true;
-					itemTypeToFormat.put(shelfLocation, translatedLocation);
-					if (itemCountsByItype.get(shelfLocation) > mostUsedCount){
-						mostPopularIType = shelfLocation;
-						mostUsedCount = itemCountsByItype.get(shelfLocation);
+					if (translatedLocation.length() > 0) {
+						if (itemCountsByItype.containsKey(shelfLocation)) {
+							itemCountsByItype.put(shelfLocation, itemCountsByItype.get(shelfLocation) + 1);
+						} else {
+							itemCountsByItype.put(shelfLocation, 1);
+						}
+						foundFormatFromShelfLocation = true;
+						itemTypeToFormat.put(shelfLocation, translatedLocation);
+						if (itemCountsByItype.get(shelfLocation) > mostUsedCount) {
+							mostPopularIType = shelfLocation;
+							mostUsedCount = itemCountsByItype.get(shelfLocation);
+						}
 					}
 				}
 			}
@@ -184,16 +186,18 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				String subLocation = subLocationCode.toLowerCase().trim();
 				if (hasTranslation("format", subLocation)){
 					String translatedLocation = translateValue("format", subLocation, recordInfo.getRecordIdentifier());
-					if (itemCountsByItype.containsKey(subLocation)) {
-						itemCountsByItype.put(subLocation, itemCountsByItype.get(subLocation) + 1);
-					} else {
-						itemCountsByItype.put(subLocation, 1);
-					}
-					foundFormatFromSublocation = true;
-					itemTypeToFormat.put(subLocation, translatedLocation);
-					if (itemCountsByItype.get(subLocation) > mostUsedCount){
-						mostPopularIType = subLocation;
-						mostUsedCount = itemCountsByItype.get(subLocation);
+					if (translatedLocation.length() > 0) {
+						if (itemCountsByItype.containsKey(subLocation)) {
+							itemCountsByItype.put(subLocation, itemCountsByItype.get(subLocation) + 1);
+						} else {
+							itemCountsByItype.put(subLocation, 1);
+						}
+						foundFormatFromSublocation = true;
+						itemTypeToFormat.put(subLocation, translatedLocation);
+						if (itemCountsByItype.get(subLocation) > mostUsedCount) {
+							mostPopularIType = subLocation;
+							mostUsedCount = itemCountsByItype.get(subLocation);
+						}
 					}
 				}
 			}
@@ -204,16 +208,18 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				collectionCode = collectionCode.toLowerCase().trim();
 				if (hasTranslation("format", collectionCode)){
 					String translatedLocation = translateValue("format", collectionCode, recordInfo.getRecordIdentifier());
-					if (itemCountsByItype.containsKey(collectionCode)) {
-						itemCountsByItype.put(collectionCode, itemCountsByItype.get(collectionCode) + 1);
-					} else {
-						itemCountsByItype.put(collectionCode, 1);
-					}
-					foundFormatFromCollection = true;
-					itemTypeToFormat.put(collectionCode, translatedLocation);
-					if (itemCountsByItype.get(collectionCode) > mostUsedCount){
-						mostPopularIType = collectionCode;
-						mostUsedCount = itemCountsByItype.get(collectionCode);
+					if (translatedLocation.length() > 0) {
+						if (itemCountsByItype.containsKey(collectionCode)) {
+							itemCountsByItype.put(collectionCode, itemCountsByItype.get(collectionCode) + 1);
+						} else {
+							itemCountsByItype.put(collectionCode, 1);
+						}
+						foundFormatFromCollection = true;
+						itemTypeToFormat.put(collectionCode, translatedLocation);
+						if (itemCountsByItype.get(collectionCode) > mostUsedCount) {
+							mostPopularIType = collectionCode;
+							mostUsedCount = itemCountsByItype.get(collectionCode);
+						}
 					}
 				}
 			}
