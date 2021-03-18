@@ -444,7 +444,7 @@ public class CarlXExportMain {
 					lastCarlXExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;
 				}else{
 					//Give a one minute buffer to account for potential differences in timestamps.
-					//If the difference between server times is greater than the difference between index start time and the time a change was made in the ILS, those changes are lost because the time aspen requests is in the future for the ILS. 
+					//If the difference between server times is greater than the difference between index start time and the time a change was made in the ILS, those changes are lost because the time aspen requests is in the future for the ILS.
 					lastCarlXExtractTime -= 60;
 				}
 			}
@@ -459,14 +459,14 @@ public class CarlXExportMain {
 			String beginTimeString = timeFormat.format(lastExtractTimestamp);
 			logEntry.addNote("Updating changes since " + beginTimeString);
 
-			ArrayList<String> updatedBibs = new ArrayList<>();
-			ArrayList<String> createdBibs = new ArrayList<>();
-			ArrayList<String> deletedBibs = new ArrayList<>();
+			HashSet<String> updatedBibs = new HashSet<>();
+			HashSet<String> createdBibs = new HashSet<>();
+			HashSet<String> deletedBibs = new HashSet<>();
 			ArrayList<String> updatedItemIDs = new ArrayList<>();
 			ArrayList<String> createdItemIDs = new ArrayList<>();
 			ArrayList<String> deletedItemIDs = new ArrayList<>();
-			ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
-			ArrayList<ItemChangeInfo> createdItems = new ArrayList<>();
+			ArrayList<ItemChangeInfo> itemUpdates;
+			ArrayList<ItemChangeInfo> createdItems;
 			ArrayList<ItemChangeInfo> deletedItems;
 
 			if (singleWorkId != null){
@@ -508,7 +508,7 @@ public class CarlXExportMain {
 				} else {
 					logger.info("Fetched Item information for updated items");
 					for (ItemChangeInfo itemUpdate : itemUpdates){
-						if (!createdBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())){
+						if (!createdBibs.contains(itemUpdate.getBID())){
 							updatedBibs.add(itemUpdate.getBID());
 						}
 					}
@@ -522,7 +522,7 @@ public class CarlXExportMain {
 					} else {
 						logger.info("Fetched Item information for created items");
 						for (ItemChangeInfo itemUpdate : createdItems) {
-							if (!createdBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())) {
+							if (!createdBibs.contains(itemUpdate.getBID())) {
 								updatedBibs.add(itemUpdate.getBID());
 							}
 						}
@@ -537,7 +537,7 @@ public class CarlXExportMain {
 					} else {
 						logger.info("Fetched Item information for deleted items");
 						for (ItemChangeInfo itemUpdate : deletedItems) {
-							if (!deletedBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())) {
+							if (!deletedBibs.contains(itemUpdate.getBID())) {
 								updatedBibs.add(itemUpdate.getBID());
 							}
 						}
@@ -549,13 +549,14 @@ public class CarlXExportMain {
 			logEntry.setNumProducts(updatedBibs.size() + createdBibs.size() + deletedBibs.size());
 
 			// Update Changed Bibs
-			ArrayList<String> bibsNotFound = new ArrayList<>();
-			totalChanges = updateBibRecords(updatedBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, bibsNotFound, false, singleWorkId != null);
+			HashSet<String> bibsNotFound = new HashSet<>();
+			totalChanges = updateBibRecords(updatedBibs, bibsNotFound, false);
+			bibsNotFound.addAll(deletedBibs);
 			totalChanges += deleteBibs(dbConn, totalChanges, bibsNotFound);
 			logger.debug("Done updating Bib Records");
 			logEntry.saveResults();
 
-			if (singleWorkId != null) {
+			if (singleWorkId == null) {
 				// Now remove Any left-over deleted items.  The APIs give us the item id, but not the bib id.  We may need to
 				// look them up within Solr as long as the item id is exported as part of the MARC record
 				if (deletedItemIDs.size() > 0) {
@@ -564,17 +565,14 @@ public class CarlXExportMain {
 						//TODO: Now you *really* have to get the BID, dude.
 					}
 				}
-
-				//Process Deleted Bibs
-				totalChanges += deleteBibs(dbConn, totalChanges, deletedBibs);
 			}
 			logEntry.saveResults();
 
 			//Process New Bibs
 			if (createdBibs.size() > 0) {
 				logger.debug("There are " + createdBibs.size() + " that need to be processed");
-				bibsNotFound = new ArrayList<>();
-				totalChanges += updateBibRecords(createdBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, bibsNotFound, true, false);
+				bibsNotFound = new HashSet<>();
+				totalChanges += updateBibRecords(createdBibs, bibsNotFound, true);
 				totalChanges += deleteBibs(dbConn, totalChanges, bibsNotFound);
 			}
 			logEntry.saveResults();
@@ -601,7 +599,7 @@ public class CarlXExportMain {
 		return totalChanges;
 	}
 
-	private static int deleteBibs(Connection dbConn, int totalChanges, ArrayList<String> deletedBibs) {
+	private static int deleteBibs(Connection dbConn, int totalChanges, HashSet<String> deletedBibs) {
 		if (deletedBibs.size() > 0) {
 			logger.debug("There are " + deletedBibs.size() + " that still need to be processed.");
 			for (String deletedBibID : deletedBibs) {
@@ -657,7 +655,7 @@ public class CarlXExportMain {
 		return carlXInstanceInformation;
 	}
 
-	private static int updateBibRecords(ArrayList<String> updatedBibs, ArrayList<String> updatedItemIDs, ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs, ArrayList<ItemChangeInfo> itemUpdates, ArrayList<ItemChangeInfo> createdItems, ArrayList<String> bibsNotFound, boolean isNew, boolean extractSingleWork) {
+	private static int updateBibRecords(HashSet<String> updatedBibs, HashSet<String> bibsNotFound, boolean isNew) {
 		// Fetch new Marc Data
 		// Note: There is an Include949ItemData flag, but it hasn't been implemented by TLC yet. plb 9-15-2016
 		// Build Marc Fetching Soap Request
@@ -848,14 +846,14 @@ public class CarlXExportMain {
 		return true;
 	}
 
-	private static boolean getChangedBibsFromCarlXApi(String beginTimeString, ArrayList<String> updatedBibs, ArrayList<String> createdBibs, ArrayList<String> deletedBibs) {
+	private static boolean getChangedBibsFromCarlXApi(String beginTimeString, HashSet<String> updatedBibs, HashSet<String> createdBibs, HashSet<String> deletedBibs) {
 		// Get All Changed Marc Records //
 		String changedMarcSoapRequest = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:mar=\"http://tlcdelivers.com/cx/schemas/marcoutAPI\" xmlns:req=\"http://tlcdelivers.com/cx/schemas/request\">\n" +
 				"<soapenv:Header/>\n" +
 				"<soapenv:Body>\n" +
 				"<mar:GetChangedBibsRequest>\n" +
 				"<mar:BeginTime>"+ beginTimeString + "</mar:BeginTime>\n" +
-				"<mar:SuppressionAsUpdate>1</mar:SuppressionAsUpdate>\n" +
+				"<mar:SuppressionAsUpdate>0</mar:SuppressionAsUpdate>\n" +
 				"<mar:Modifiers/>\n" +
 				"</mar:GetChangedBibsRequest>\n" +
 				"</soapenv:Body>\n" +
@@ -884,12 +882,10 @@ public class CarlXExportMain {
 					getIDsFromNodeList(updatedBibs, updatedBibsNode.getChildNodes());
 					logger.debug("Found " + updatedBibs.size() + " updated bibs since " + beginTimeString);
 
-					// TODO: Process Created Bibs in the future.
 					// Created Bibs
 					getIDsFromNodeList(createdBibs, createdBibsNode.getChildNodes());
 					logger.debug("Found " + createdBibs.size() + " new bibs since " + beginTimeString);
 
-					// TODO: Process Deleted Bibs in the future
 					// Deleted Bibs
 					getIDsFromNodeList(deletedBibs, deletedBibsNode.getChildNodes());
 					logger.debug("Found " + deletedBibs.size() + " deleted bibs since " + beginTimeString);
@@ -994,7 +990,7 @@ public class CarlXExportMain {
 		return updatedMarcRecordFromAPICall;
 	}
 
-	private static ArrayList<ItemChangeInfo> fetchItemsForBib(String bibId, ArrayList<String> bibsNotFound) {
+	private static ArrayList<ItemChangeInfo> fetchItemsForBib(String bibId, HashSet<String> bibsNotFound) {
 		ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
 		//Set an upper limit on number of IDs for one request, and process in batches
 		String getItemInformationSoapRequest = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:mar=\"http://tlcdelivers.com/cx/schemas/marcoutAPI\" xmlns:req=\"http://tlcdelivers.com/cx/schemas/request\">\n" +
@@ -1019,7 +1015,7 @@ public class CarlXExportMain {
 		return itemUpdates;
 	}
 
-	private static ArrayList<ItemChangeInfo> fetchItemInformation(ArrayList<String> itemIDs, ArrayList<String> bibsNotFound) {
+	private static ArrayList<ItemChangeInfo> fetchItemInformation(ArrayList<String> itemIDs, HashSet<String> bibsNotFound) {
 		ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
 		hadErrors = false;
 		logger.debug("Getting item information for " + itemIDs.size() + " Item IDs");
@@ -1067,7 +1063,7 @@ public class CarlXExportMain {
 		return itemUpdates;
 	}
 
-	private static void processItemInformationRequest(ArrayList<ItemChangeInfo> itemUpdates, ArrayList<String> bibsNotFound, String getItemInformationSoapRequest) throws ParserConfigurationException, IOException, SAXException {
+	private static void processItemInformationRequest(ArrayList<ItemChangeInfo> itemUpdates, HashSet<String> bibsNotFound, String getItemInformationSoapRequest) throws ParserConfigurationException, IOException, SAXException {
 		WebServiceResponse ItemInformationSOAPResponse = NetworkUtils.postToURL(marcOutURL, getItemInformationSoapRequest, "text/xml", null, logger);
 		if (ItemInformationSOAPResponse.isSuccess()) {
 
@@ -1239,7 +1235,7 @@ public class CarlXExportMain {
 		}
 	}
 
-	private static void getIDsFromNodeList(ArrayList<String> arrayOfIds, NodeList walkThroughMe) {
+	private static void getIDsFromNodeList(HashSet<String> arrayOfIds, NodeList walkThroughMe) {
 		int l = walkThroughMe.getLength();
 		for (int i = 0; i < l; i++) {
 			arrayOfIds.add(walkThroughMe.item(i).getTextContent());
