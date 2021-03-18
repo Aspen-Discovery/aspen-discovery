@@ -444,6 +444,7 @@ public class CarlXExportMain {
 					lastCarlXExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;
 				}else{
 					//Give a one minute buffer to account for potential differences in timestamps.
+					//If the difference between server times is greater than the difference between index start time and the time a change was made in the ILS, those changes are lost because the time aspen requests is in the future for the ILS. 
 					lastCarlXExtractTime -= 60;
 				}
 			}
