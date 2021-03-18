@@ -680,8 +680,7 @@ public class CarlXExportMain {
 
 				StringBuilder getMarcRecordsSoapRequest = new StringBuilder(getMarcRecordsSoapRequestStart);
 				// Updated Bibs
-				@SuppressWarnings("unchecked")
-				ArrayList<String> updatedBibCopy = (ArrayList<String>)updatedBibs.clone();
+				ArrayList<String> updatedBibCopy = new ArrayList<>(updatedBibs);
 				int numAdded = 0;
 				for (String updatedBibID : updatedBibCopy) {
 					if (updatedBibID.length() > 0) {
@@ -1041,7 +1040,7 @@ public class CarlXExportMain {
 				getItemInformationSoapRequest = new StringBuilder(getItemInformationSoapRequestStart);
 				// Updated Items
 				@SuppressWarnings("unchecked")
-				ArrayList<String> itemsCopy = (ArrayList<String>)itemIDs.clone();
+				HashSet<String> itemsCopy = (HashSet<String>)itemIDs.clone();
 				int numAdded = 0;
 				for (String updatedItem : itemsCopy) {
 					getItemInformationSoapRequest.append("<mar:ItemSearchTerm>").append(updatedItem).append("</mar:ItemSearchTerm>\n");
