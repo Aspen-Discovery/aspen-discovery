@@ -462,9 +462,9 @@ public class CarlXExportMain {
 			HashSet<String> updatedBibs = new HashSet<>();
 			HashSet<String> createdBibs = new HashSet<>();
 			HashSet<String> deletedBibs = new HashSet<>();
-			ArrayList<String> updatedItemIDs = new ArrayList<>();
-			ArrayList<String> createdItemIDs = new ArrayList<>();
-			ArrayList<String> deletedItemIDs = new ArrayList<>();
+			HashSet<String> updatedItemIDs = new HashSet<>();
+			HashSet<String> createdItemIDs = new HashSet<>();
+			HashSet<String> deletedItemIDs = new HashSet<>();
 			ArrayList<ItemChangeInfo> itemUpdates;
 			ArrayList<ItemChangeInfo> createdItems;
 			ArrayList<ItemChangeInfo> deletedItems;
@@ -783,7 +783,7 @@ public class CarlXExportMain {
 		return numUpdates;
 	}
 
-	private static boolean getChangedItemsFromCarlXApi(String beginTimeString, ArrayList<String> updatedItemIDs, ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs){
+	private static boolean getChangedItemsFromCarlXApi(String beginTimeString, HashSet<String> updatedItemIDs, HashSet<String> createdItemIDs, HashSet<String> deletedItemIDs){
 		// Get All Changed Items //
 		String changedItemsSoapRequest = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:mar=\"http://tlcdelivers.com/cx/schemas/marcoutAPI\" xmlns:req=\"http://tlcdelivers.com/cx/schemas/request\">\n" +
 				"<soapenv:Header/>\n" +
@@ -1014,7 +1014,7 @@ public class CarlXExportMain {
 		return itemUpdates;
 	}
 
-	private static ArrayList<ItemChangeInfo> fetchItemInformation(ArrayList<String> itemIDs, HashSet<String> bibsNotFound) {
+	private static ArrayList<ItemChangeInfo> fetchItemInformation(HashSet<String> itemIDs, HashSet<String> bibsNotFound) {
 		ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
 		hadErrors = false;
 		logger.debug("Getting item information for " + itemIDs.size() + " Item IDs");
@@ -1256,7 +1256,7 @@ public class CarlXExportMain {
 		return dateForMarc;
 	}
 
-	private static void getIDsArrayListFromNodeList(NodeList walkThroughMe, ArrayList<String> idList) {
+	private static void getIDsArrayListFromNodeList(NodeList walkThroughMe, HashSet<String> idList) {
 		int l = walkThroughMe.getLength();
 		for (int i = 0; i < l; i++) {
 			String itemID = walkThroughMe.item(i).getTextContent();
