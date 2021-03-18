@@ -528,6 +528,7 @@ public class PolarisExportMain {
 						break;
 					}
 					for (int i = 0; i < bibsPagedRows.getLength(); i++) {
+						logEntry.incProducts();
 						Element bibPagedRow = (Element) bibsPagedRows.item(i);
 						String bibliographicRecordId = bibPagedRow.getElementsByTagName("BibliographicRecordID").item(0).getTextContent();
 						String displayInPAC = bibPagedRow.getElementsByTagName("IsDisplayInPAC").item(0).getTextContent();
@@ -613,6 +614,7 @@ public class PolarisExportMain {
 							logEntry.incDeleted();
 						}
 					}
+					logEntry.saveResults();
 				} catch (Exception e) {
 					logEntry.incErrors("Unable to parse document for paged bibs response", e);
 					break;
