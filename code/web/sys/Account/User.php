@@ -1074,16 +1074,16 @@ class User extends DataObject
 			}
 
 			//Delete all existing checkouts
-//			$checkout = new Checkout();
-//			$checkout->userId = $this->id;
-//			$checkout->delete(true);
-//
-//			foreach ($allCheckedOut as $checkout){
-//				$checkout->insert();
-//			}
-//
-//			$this->checkoutInfoLastLoaded = time();
-//			$this->update();
+			$checkout = new Checkout();
+			$checkout->userId = $this->id;
+			$checkout->delete(true);
+
+			foreach ($allCheckedOut as $checkout){
+				$checkout->insert();
+			}
+
+			$this->checkoutInfoLastLoaded = time();
+			$this->update();
 		}else{
 			//fetch cached checkouts
 			$checkout = new Checkout();
