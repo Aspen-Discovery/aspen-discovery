@@ -1,4 +1,5 @@
 <?php
+require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 
 /***************************************
  * Simple class to retrieve feed of NYT best sellers
@@ -12,10 +13,16 @@ class NYTApi {
 
 	const BASE_URI = 'http://api.nytimes.com/svc/books/v2/lists/';
 	protected $api_key;
+	private $nytUpdateLog;
 
 	static $allListsInfo = null;
 
-	public function __construct($key) {
+	/**
+	 * NYTApi constructor.
+	 * @param string $key
+	 * @param NYTUpdateLogEntry $nytUpdateLog
+	 */
+	public function __construct($key, $nytUpdateLog) {
 		$this->api_key = $key;
 	}
 
@@ -58,6 +65,8 @@ class NYTApi {
 		if ($list_name == 'names' && !isset(NYTApi::$allListsInfo)) {
 			NYTApi::$allListsInfo = $response;
 		}
+
+		//KK Todo: Check the response to see if it failed and if so update the log entry with the erro
 
 		// return response
 		return $response;
