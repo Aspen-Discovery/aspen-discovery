@@ -713,10 +713,11 @@ class ListAPI extends Action
 	 * Creates or updates a user defined list from information obtained from the New York Times API
 	 *
 	 * @param string $selectedList machine readable name of the new york times list
+	 * @param NYTUpdateLogEntry $nytUpdateLog
 	 * @return array
 	 * @throws Exception
 	 */
-	public function createUserListFromNYT($selectedList = null): array
+	public function createUserListFromNYT($selectedList = null, $nytUpdateLog): array
 	{
 		if ($selectedList == null) {
 			$selectedList = $_REQUEST['listToUpdate'];
@@ -744,7 +745,7 @@ class ListAPI extends Action
 
 		//Get the raw response from the API with a list of all the names
 		require_once ROOT_DIR . '/sys/NYTApi.php';
-		$nyt_api = new NYTApi($api_key);
+		$nyt_api = new NYTApi($api_key, $nytUpdateLog);
 		$availableListsRaw = $nyt_api->get_list('names');
 		//Convert into an object that can be processed
 		$availableLists = json_decode($availableListsRaw);
@@ -795,12 +796,14 @@ class ListAPI extends Action
 			$nytList->find(true);
 
 			if ($success) {
+				//KK Todo: update log that we added a list
 				$listID = $nytList->id;
 				$results = array(
 					'success' => true,
 					'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"
 				);
 			} else {
+				//KK Todo: update log that this failed
 				return array(
 					'success' => false,
 					'message' => 'Could not create list'
@@ -901,6 +904,7 @@ class ListAPI extends Action
 		}
 
 		if ($results['success']) {
+			//KK Todo: update log that we updated the list
 			$results['message'] .= "<br/> Added $numTitlesAdded Titles to the list";
 			if ($listExistsInAspen) {
 				$nytList->update(); // set a new update time on the main list when it already exists

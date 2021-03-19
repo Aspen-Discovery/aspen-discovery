@@ -1659,6 +1659,8 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				//KK Todo: create the database maintenance task to create table to hold the new york times updates
+
 				'remove_old_resource_tables' => array(
 					'title' => 'Remove old Resource Tables',
 					'description' => 'Remove old tables that were used for storing information based on resource',
