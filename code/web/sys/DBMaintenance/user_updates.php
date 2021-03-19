@@ -773,6 +773,50 @@ function getUserUpdates()
 				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8"
 			]
 		],
+
+		'user_checkout_cache_additional_fields' =>[
+			'title' => 'User Checkout Cache Add Additional Fields',
+			'description' => 'Add additional fields to for eContent',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD column allowDownload TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column overdriveRead TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column overdriveReadUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column overdriveListen TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column overdriveListenUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column overdriveVideo TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column overdriveVideoUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column formatSelected TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column selectedFormatName VARCHAR(50)',
+				'ALTER TABLE user_checkout ADD column selectedFormatValue VARCHAR(25)',
+				'ALTER TABLE user_checkout ADD column canReturnEarly TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column supplementalMaterials TEXT',
+				'ALTER TABLE user_checkout ADD column formats TEXT',
+				'ALTER TABLE user_checkout ADD column downloadUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column accessOnlineUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column transactionId VARCHAR(40)',
+				'ALTER TABLE user_checkout ADD column coverUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column format VARCHAR(50)',
+			]
+		],
+
+		'user_checkout_cache_renewal_information' =>[
+			'title' => 'User Checkout Cache renewal date',
+			'description' => 'Add renewal date to checkout cache',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN renewalDate INT(11)',
+				'ALTER TABLE user_checkout ADD COLUMN renewIndicator VARCHAR(20)',
+			],
+		],
+
+		'user_circulation_cache_grouped_work' => [
+			'title' => 'Circulation caching grouped work',
+			'description' => 'Add groupedWorkId to circulation caching information',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN groupedWorkId CHAR(36)',
+				'ALTER TABLE user_hold ADD COLUMN groupedWorkId CHAR(36)',
+			]
+		]
 	);
 }
 

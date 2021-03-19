@@ -995,7 +995,7 @@ class User extends DataObject
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		//Check to see if we should return cached information, we will reload it if we last fetched it more than
 		//15 minutes ago or if the refresh option is selected
-		$reloadCheckoutInformation = true;
+		$reloadCheckoutInformation = false;
 		if (($this->checkoutInfoLastLoaded < (time() - 15 * 60)) || isset($_REQUEST['refreshCheckouts'])){
 			$reloadCheckoutInformation = true;
 		}

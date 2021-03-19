@@ -1796,9 +1796,11 @@ class MyAccount_AJAX extends JSON_Action
 			$interface->assign('showWaitList', $showWaitList);
 
 			// Define sorting options
-			$sortOptions = array('title' => 'Title',
+			$sortOptions = array(
+				'title' => 'Title',
 				'author' => 'Author',
-				'dueDate' => 'Due Date',
+				'dueDate' => 'Due Date Asc',
+				'dueDateDesc' => 'Due Date Desc',
 				'format' => 'Format',
 			);
 			$user = UserAccount::getActiveUserObj();
@@ -2112,12 +2114,15 @@ class MyAccount_AJAX extends JSON_Action
 				$sortKey = $sortTitle;
 			} elseif ($selectedSortOption == 'author') {
 				$sortKey = (empty($curTitle->getAuthor()) ? $this::SORT_LAST_ALPHA : $curTitle->getAuthor()) . '-' . $sortTitle;
-			} elseif ($selectedSortOption == 'dueDate') {
+			} elseif ($selectedSortOption == 'dueDate' || $selectedSortOption == 'dueDateDesc') {
 				if (isset($curTitle->dueDate)) {
-					if (preg_match('~.*?(\\d{1,2})[-/](\\d{1,2})[-/](\\d{2,4}).*~', $curTitle->dueDate, $matches)) {
-						$sortKey = $matches[3] . '-' . $matches[1] . '-' . $matches[2] . '-' . $sortTitle;
-					} else {
-						$sortKey = $curTitle->dueDate . '-' . $sortTitle;
+					$sortKey = $curTitle->dueDate . '-' . $sortTitle;
+				}else{
+					//Always put things where the due date isn't set last.
+					if ($selectedSortOption == 'dueDate'){
+						$sortKey = '9999999999-' . $sortTitle;
+					}else{
+						$sortKey = '0000000000-' . $sortTitle;
 					}
 				}
 			} elseif ($selectedSortOption == 'format') {
@@ -2139,7 +2144,7 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		//Now that we have all the transactions we can sort them
-		if ($selectedSortOption == 'renewed' || $selectedSortOption == 'holdQueueLength') {
+		if ($selectedSortOption == 'renewed' || $selectedSortOption == 'holdQueueLength' || $selectedSortOption == 'dueDateDesc') {
 			krsort($allCheckedOut);
 		} else {
 			ksort($allCheckedOut);

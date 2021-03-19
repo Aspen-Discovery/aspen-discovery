@@ -383,8 +383,7 @@ class Koha extends AbstractIlsDriver
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
 			if ($dateDue) {
-				$renewalDate = $dateDue->format('D M jS');
-				$curCheckout->renewalDate = $renewalDate;
+				$curCheckout->renewalDate = $dateDue->getTimestamp();
 				$dueTime = $dateDue->getTimestamp();
 			} else {
 				$renewalDate = 'Unknown';
