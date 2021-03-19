@@ -603,7 +603,8 @@ public class CarlXExportMain {
 		if (deletedBibs.size() > 0) {
 			logger.debug("There are " + deletedBibs.size() + " that still need to be processed.");
 			for (String deletedBibID : deletedBibs) {
-				RemoveRecordFromWorkResult result = getRecordGroupingProcessor(dbConn).removeRecordFromGroupedWork(indexingProfile.getName(), deletedBibID);
+				String carlId = getFileIdForRecordNumber(deletedBibID);
+				RemoveRecordFromWorkResult result = getRecordGroupingProcessor(dbConn).removeRecordFromGroupedWork(indexingProfile.getName(), carlId);
 				if (result.reindexWork) {
 					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 				} else if (result.deleteWork) {
