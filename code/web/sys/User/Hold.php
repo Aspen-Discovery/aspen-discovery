@@ -6,9 +6,7 @@ class Hold extends CircEntry
 	public $__table = 'user_hold';
 	public $shortId;
 	public $itemId;
-	public $title;
 	public $title2;
-	public $author;
 	public $volume;
 	public $callNumber;
 	public $available;

@@ -492,7 +492,15 @@ public class OaiIndexerMain {
 										} else if (textContent.contains(" -- ")) {
 											dateRange = textContent.split(" -- ");
 										} else {
-											dateRange = new String[]{textContent};
+											textContent = textContent.trim();
+											textContent = textContent.replaceAll("ca.\\s+", "");
+											textContent = textContent.replaceAll("/", "-");
+											if (textContent.matches("\\d{2,4}(-\\d{1,2})?(-\\d{1,2})?")) {
+												dateRange = new String[]{textContent};
+											}else{
+												logEntry.addNote("Unhandled date format " + textContent + " not loading date");
+												dateRange = new String[0];
+											}
 										}
 										for (int tmpIndex = 0; tmpIndex < dateRange.length; tmpIndex++) {
 											dateRange[tmpIndex] = dateRange[tmpIndex].trim();

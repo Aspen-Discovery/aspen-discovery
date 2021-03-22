@@ -9,14 +9,14 @@ class Checkout extends CircEntry
 	public $itemIndex;
 	public $renewalId;
 	public $barcode;
-	public $title;
 	public $title2;
-	public $author;
 	public $callNumber;
 	public $volume;
 	public $checkoutDate;
 	public $dueDate;
 	public $renewCount;
+	public $renewIndicator;
+	public $renewalDate;
 	public $canRenew;
 	public $autoRenew;
 	public $autoRenewError;
@@ -85,5 +85,15 @@ class Checkout extends CircEntry
 			$this->getDaysUntilDue();
 		}
 		return $this->_overdue;
+	}
+
+	public function getFormattedRenewalDate(){
+		if (!emtpy($this->renewalDate)){
+			$dateDue = new DateTime($this->renewalDate);
+			$dateDue->setTimezone(new DateTimeZone(date_default_timezone_get()));
+			return $dateDue->format('D M jS');
+		}else{
+			return '';
+		}
 	}
 }

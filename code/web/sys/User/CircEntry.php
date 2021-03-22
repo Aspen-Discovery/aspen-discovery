@@ -10,6 +10,8 @@ abstract class CircEntry extends DataObject
 	public $sourceId;
 	public $recordId;
 	public $groupedWorkId;
+	public $title;
+	public $author;
 
 	public function getShortId(){
 		if (!empty($this->shortId)){
@@ -95,21 +97,23 @@ abstract class CircEntry extends DataObject
 	}
 
 	public function getSortTitle(){
-		$recordDriver = $this->getRecordDriver();
-		if ($recordDriver != false){
-			return $recordDriver->getSortableTitle();
-		}else{
-			return preg_replace('/^The\s|^A\s/i', '', $this->title); // remove beginning The or A
+		if (empty($this->title)) {
+			$recordDriver = $this->getRecordDriver();
+			if ($recordDriver != false) {
+				return $recordDriver->getSortableTitle();
+			}
 		}
+		return preg_replace('/^The\s|^A\s/i', '', $this->title);
 	}
 
 	public function getAuthor(){
-		$recordDriver = $this->getRecordDriver();
-		if ($recordDriver != false){
-			return $recordDriver->getAuthor();
-		}else{
-			return $this->author; // remove beginning The or A
+		if (empty($this->author)) {
+			$recordDriver = $this->getRecordDriver();
+			if ($recordDriver != false) {
+				return $recordDriver->getAuthor();
+			}
 		}
+		return $this->author;
 	}
 
 	public function getFormats(){
