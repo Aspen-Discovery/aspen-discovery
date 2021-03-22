@@ -4723,17 +4723,22 @@ var AspenDiscovery = (function(){
 			}
 
 			$('#header-menu.dropdownMenu').mouseleave(function() {
-                setTimeout(function () {
-                    $('#header-menu.dropdownMenu').slideUp('slow');
-                        menuButton.removeClass('selected');
-                        menuButtonIcon.removeClass('fa-times');
-                        menuButtonIcon.addClass('fa-bars');
-                    }, 1000);
+				setTimeout(function () {
+					$('#header-menu.dropdownMenu').slideUp('slow');
+					menuButton.removeClass('selected');
+					menuButtonIcon.removeClass('fa-times');
+					menuButtonIcon.addClass('fa-bars');
+				}, 1000);
 			})
 
+			$(document).on('touchstart', function(e) {
+				$('#header-menu.dropdownMenu').slideUp('slow');
+				menuButton.removeClass('selected');
+				menuButtonIcon.removeClass('fa-times');
+				menuButtonIcon.addClass('fa-bars');
+			})
 			return false;
 		},
-
 		closeMenu: function(){
 			var headerMenu = $('#header-menu');
 			var menuButton = $('#menuToggleButton');
@@ -4755,6 +4760,7 @@ var AspenDiscovery = (function(){
 				menuSectionHeaderIcon.removeClass('fa-caret-right');
 				menuSectionHeaderIcon.addClass('fa-caret-down');
 			}
+
 			return false;
 		},
 		toggleAccountMenu: function() {
@@ -4770,30 +4776,27 @@ var AspenDiscovery = (function(){
 				accountMenu.css('top', accountMenuButtonPosition.top + accountMenuButton.outerHeight());
 				accountMenuButton.addClass('selected');
 				accountMenu.slideDown('slow');
-
 			}
 
-            $('#account-menu.dropdownMenu').mouseleave(function() {
-            setTimeout(function () {
-                    accountMenuButton.removeClass('selected');
-                    $('#account-menu.dropdownMenu').slideUp('slow');
-                }, 1000);
+			$('#account-menu.dropdownMenu').mouseleave(function() {
+				setTimeout(function () {
+					accountMenuButton.removeClass('selected');
+					$('#account-menu.dropdownMenu').slideUp('slow');
+				}, 1000);
+			})
 
-            })
-
-
+			$(document).on('touchstart', function(e) {
+				accountMenuButton.removeClass('selected');
+				$('#account-menu.dropdownMenu').slideUp('slow');
+			})
 
 			return false;
-
-
 		},
-
 		closeAccountMenu: function(){
 			var accountMenu = $('#account-menu');
 			var accountMenuButton = $('#accountMenuToggleButton');
 			accountMenu.slideUp('slow');
 			accountMenuButton.removeClass('selected');
-			$('.overlay').removeClass('open');
 		},
 		showCustomMenu: function (menuName) {
 			this.closeMenu();
@@ -4810,6 +4813,15 @@ var AspenDiscovery = (function(){
 				customMenu.slideDown('slow');
 			}
 
+			$(customMenu).mouseleave(function() {
+				setTimeout(function () {
+					$(customMenu).slideUp('slow');
+				}, 1000)
+			})
+
+			$(document).on('touchstart', function(e) {
+				$(customMenu).slideUp('slow');
+			})
 			return false;
 		},
 		formatCurrency: function(currencyValue, elementToUpdate){
