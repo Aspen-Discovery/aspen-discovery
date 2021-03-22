@@ -45,18 +45,45 @@ AspenDiscovery.Browse = (function(){
 					$("#browse-category-carousel").jcarousel('scroll', $(this));
 				});
 
-				// Incorporate swiping gestures into the browse category selector. pascal 11-26-2014
-				var scrollFactor = 15; // swipe size per item to scroll.
-				browseCategoryCarousel.touchwipe({
-					wipeLeft: function (dx) {
-						var scrollInterval = Math.round(dx / scrollFactor); // vary scroll interval based on wipe length
-						$("#browse-category-carousel").jcarousel('scroll', '+=' + scrollInterval);
-					},
-					wipeRight: function (dx) {
-						var scrollInterval = Math.round(dx / scrollFactor); // vary scroll interval based on wipe length
-						$("#browse-category-carousel").jcarousel('scroll', '-=' + scrollInterval);
-					}
-				});
+				// attach jcarouselswipe to add nice swipe functionality
+				(function($) {
+					$(function() {
+						$('.jcarousel')
+							.jcarousel()
+							.jcarouselSwipe();
+
+						$('.jcarousel-control-prev')
+							.on('jcarouselcontrol:active', function() {
+								$(this).removeClass('inactive');
+							})
+							.on('jcarouselcontrol:inactive', function() {
+								$(this).addClass('inactive');
+							})
+							.jcarouselControl({
+								target: '-=1'
+							});
+
+						$('.jcarousel-control-next')
+							.on('jcarouselcontrol:active', function() {
+								$(this).removeClass('inactive');
+							})
+							.on('jcarouselcontrol:inactive', function() {
+								$(this).addClass('inactive');
+							})
+							.jcarouselControl({
+								target: '+=1'
+							});
+
+						$('.jcarousel-pagination')
+							.on('jcarouselpagination:active', 'a', function() {
+								$(this).addClass('active');
+							})
+							.on('jcarouselpagination:inactive', 'a', function() {
+								$(this).removeClass('active');
+							})
+							.jcarouselPagination();
+					});
+				})(jQuery);
 
 				// implements functions for libraries not using the carousel functionality
 			} else {
