@@ -11,10 +11,10 @@ if [ -z "$2" ]
     exit 1
 fi
 chown aspen:aspen /data/aspen-discovery/$1/$2
-chmod -R g+r /data/aspen-discovery/$1/$2
-chmod g+x /data/aspen-discovery/$1/$2
+chmod -R o+r /data/aspen-discovery/$1/$2/
+chmod o+x /data/aspen-discovery/$1/$2/
 
 chown -R apache:aspen_apache /data/aspen-discovery/$1/$2/marc
-chmod g+x /data/aspen-discovery/$1/$2/marc
+chmod o+x /data/aspen-discovery/$1/$2/marc
 chown -R aspen:aspen_apache /data/aspen-discovery/$1/$2/marc_recs
-chmod g+x /data/aspen-discovery/$1/$2/marc_recs
+chmod o+x /data/aspen-discovery/$1/$2/marc_recs
