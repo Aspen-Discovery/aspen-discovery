@@ -1,10 +1,11 @@
 #A list of files to merge, can comment out lines with a #
-C:\web\aspen-discovery\code\web\js\jquery-1.11.0.min.js
+/usr/local/aspen-discovery/code/web/js/jquery-1.11.0.min.js
 lib/jquery-ui-1.10.4.custom.min.js
 lib/bootstrap.min.js
 lib/bootstrap-datepicker.min.js
 lib/bootstrap-switch.min.js
 lib/jcarousel.min.js
+lib/jcarousel-swipe.js
 lib/colcade.js
 lib/jquery.tablesorter.js
 lib/jquery.tablesorter.pager.min.js
