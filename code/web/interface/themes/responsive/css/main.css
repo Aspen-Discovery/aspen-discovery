@@ -9800,9 +9800,17 @@ a.browse-thumbnail-sorted.active {
   text-align: center;
 }
 .scrollerTitleCover {
+  width: auto;
+  height: auto;
   max-width: 125px;
   max-height: 125px;
   padding: 3px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
 }
 .collectionSpotlightSelector {
   width: 100%;
@@ -9840,9 +9848,14 @@ a.browse-thumbnail-sorted.active {
 .carouselScrollerTitle {
   display: inline-block;
   text-align: center;
+  width: 100%;
+}
+.carouselScrollerTitle a {
+  display: block;
 }
 .carouselScrollerTitle .carouselScrollerTitleImage {
-  display: inline-block;
+  position: relative;
+  height: 200px;
 }
 .scrollerTitle {
   display: inline-block;
