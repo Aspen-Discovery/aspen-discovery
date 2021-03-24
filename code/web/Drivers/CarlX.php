@@ -576,6 +576,7 @@ class CarlX extends AbstractIlsDriver{
 				$curTitle = new Checkout();
 				$curTitle->type = 'ils';
 				$curTitle->source = $this->getIndexingProfile()->name;
+				$curTitle->userId = $user->id;
 				$carlID = $this->fullCarlIDfromBID($chargeItem->BID);
 				$curTitle->sourceId = $carlID;
 				$dueDate = strstr($chargeItem->DueDate, 'T', true);
@@ -1755,15 +1756,12 @@ class CarlX extends AbstractIlsDriver{
 		return false;
 	}
 
-	public function getAccountSummary(User $user)
+	public function getAccountSummary(User $user) : AccountSummary
 	{
-		$accountSummary = [
-			'numCheckedOut' => 0,
-			'numOverdue' => 0,
-			'numAvailableHolds' => 0,
-			'numUnavailableHolds' => 0,
-			'totalFines' => 0
-		];
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $user->id;
+		$summary->source = 'ils';
 
 		//Load summary information for number of holds, checkouts, etc
 		$patronSummaryRequest = new stdClass();
@@ -1774,17 +1772,17 @@ class CarlX extends AbstractIlsDriver{
 		$patronSummaryResponse = $this->doSoapRequest('getPatronTransactions', $patronSummaryRequest, $this->patronWsdl);
 
 		if (!empty($patronSummaryResponse) && is_object($patronSummaryResponse)) {
-			$accountSummary['numCheckedOut'] += $patronSummaryResponse->ChargedItemsCount;
-			$accountSummary['numCheckedOut'] += $patronSummaryResponse->OverdueItemsCount;
-			$accountSummary['numOverdue'] = $patronSummaryResponse->OverdueItemsCount;
-			$accountSummary['numAvailableHolds'] = $patronSummaryResponse->HoldItemsCount;
-			$accountSummary['numUnavailableHolds'] = $patronSummaryResponse->UnavailableHoldsCount;
+			$summary->numCheckedOut += $patronSummaryResponse->ChargedItemsCount;
+			$summary->numCheckedOut += $patronSummaryResponse->OverdueItemsCount;
+			$summary->numOverdue = $patronSummaryResponse->OverdueItemsCount;
+			$summary->numAvailableHolds = $patronSummaryResponse->HoldItemsCount;
+			$summary->numUnavailableHolds = $patronSummaryResponse->UnavailableHoldsCount;
 
 			$outstandingFines = $patronSummaryResponse->FineTotal + $patronSummaryResponse->LostItemFeeTotal;
-			$accountSummary['totalFines'] = floatval($outstandingFines);
+			$summary->totalFines = floatval($outstandingFines);
 		}
 
-		return $accountSummary;
+		return $summary;
 	}
 
 	public function showMessagingSettings()

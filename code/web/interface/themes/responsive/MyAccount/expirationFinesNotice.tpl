@@ -1,15 +1,15 @@
 {strip}
 	{* No need to calculate total fines if in offline mode*}
-	{if ($ilsSummary.totalFines > 0 && $showFines) || ($showExpirationWarnings && $ilsSummary.expireClose)}
+	{if ($ilsSummary->totalFines > 0 && $showFines) || ($showExpirationWarnings && $ilsSummary->isExpirationClose())}
 		<div id="myAccountFines">
-			{if $ilsSummary.totalFines > 0 && $showFines}
-				{if $finePaymentType && $ilsSummary.totalFines > $minimumFineAmount}
+			{if $ilsSummary->totalFines > 0 && $showFines}
+				{if $finePaymentType && $ilsSummary->totalFines > $minimumFineAmount}
 					<div class="myAccountLink">
 						<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:#c62828; font-weight:bold;">
 							{if count($user->getLinkedUsers())>0}
-								{translate text="Your accounts have %1% in fines." 1=$ilsSummary.totalFines|formatCurrency}
+								{translate text="Your accounts have %1% in fines." 1=$ilsSummary->totalFines|formatCurrency}
 							{else}
-								{translate text="Your account has %1% in fines." 1=$ilsSummary.totalFines|formatCurrency}
+								{translate text="Your account has %1% in fines." 1=$ilsSummary->totalFines|formatCurrency}
 							{/if}
 						</a>
 					</div>
@@ -21,28 +21,28 @@
 				{else}
 					<div class="myAccountLink" title="Please contact your local library to pay fines or charges." style="color:#c62828; font-weight:bold;" onclick="alert('{translate text='Please contact your local library to pay fines or charges.' inAttribute=true}')">
 						{if count($user->getLinkedUsers())>0}
-							{translate text="Your accounts have %1% in fines." 1=$ilsSummary.totalFines|formatCurrency}
+							{translate text="Your accounts have %1% in fines." 1=$ilsSummary->totalFines|formatCurrency}
 						{else}
-							{translate text="Your account has %1% in fines." 1=$ilsSummary.totalFines|formatCurrency}
+							{translate text="Your account has %1% in fines." 1=$ilsSummary->totalFines|formatCurrency}
 						{/if}
 					</div>
 				{/if}
 			{/if}
 
-			{if $showExpirationWarnings && $ilsSummary.expireClose}
+			{if $showExpirationWarnings && $ilsSummary->isExpirationClose()}
 				<div class="myAccountLink">
 					<a class="alignright" title="Please contact your local library to have your library card renewed." style="color:#c62828; font-weight:bold;" onclick="alert({translate text='Please Contact your local library to have your library card renewed.' inAttribute=true})" href="#">
-						{if $ilsSummary.expired}
+						{if $ilsSummary->isExpired()}
 							{if $expiredMessage}
 								{$expiredMessage}
 							{else}
-								{translate text="Your library card expired on %1%." 1=$ilsSummary.expires}
+								{translate text="Your library card expired on %1%." 1=$ilsSummary->isExpired()}
 							{/if}
 						{else}
 							{if $expirationNearMessage}
 								{$expirationNearMessage}
 							{else}
-								{translate text="Your library card will expire on %1%." 1=$ilsSummary.expires}
+								{translate text="Your library card will expire on %1%." 1=$ilsSummary->isExpired()}
 							{/if}
 						{/if}
 					</a>

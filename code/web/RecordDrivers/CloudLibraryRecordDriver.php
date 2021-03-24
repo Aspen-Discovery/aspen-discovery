@@ -173,25 +173,38 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
+	protected $_actions = null;
 	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
-		$actions = array();
-		if ($isAvailable){
-			$actions[] = array(
-				'title' => 'Check Out Cloud Library',
-				'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'cloud_library_checkout'
-			);
-		}else{
-			$actions[] = array(
-				'title' => 'Place Hold Cloud Library',
-				'onclick' => "return AspenDiscovery.CloudLibrary.placeHold('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'cloud_library_hold'
-			);
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			//Check to see if the title is on hold or checked out to the patron.
+			$loadDefaultActions = true;
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('cloud_library', $this->id));
+				$loadDefaultActions = count($this->_actions) == 0;
+			}
+
+			if ($loadDefaultActions) {
+				if ($isAvailable) {
+					$this->_actions[] = array(
+						'title' => 'Check Out Cloud Library',
+						'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'cloud_library_checkout'
+					);
+				} else {
+					$this->_actions[] = array(
+						'title' => 'Place Hold Cloud Library',
+						'onclick' => "return AspenDiscovery.CloudLibrary.placeHold('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'cloud_library_hold'
+					);
+				}
+			}
 		}
-		return $actions;
+		return $this->_actions;
 	}
 
 	/**

@@ -49,6 +49,24 @@
 			AspenDiscovery.Searches.getPreferredDisplayMode();
 			AspenDiscovery.Archive.getPreferredDisplayMode();
 			{/if}
+			{if $userHasCatalogConnection}
+				Globals.hasILSConnection = true;
+			{/if}
+			{if array_key_exists('Axis 360', $enabledModules)}
+				Globals.hasAxis360Connection = true;
+			{/if}
+			{if array_key_exists('Cloud Library', $enabledModules)}
+				Globals.hasCloudLibraryConnection = true;
+			{/if}
+			{if array_key_exists('Hoopla', $enabledModules)}
+				Globals.hasHooplaConnection = true;
+			{/if}
+			{if array_key_exists('RBdigital', $enabledModules)}
+				Globals.hasRBdigitalConnection = true;
+			{/if}
+			{if array_key_exists('OverDrive', $enabledModules)}
+				Globals.hasOverDriveConnection = true;
+			{/if}
 			{literal}
 		});
 		{/literal}

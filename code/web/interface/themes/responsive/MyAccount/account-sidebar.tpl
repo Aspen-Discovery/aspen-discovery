@@ -241,13 +241,17 @@
 			</div>
 		</div>
 	{/if}
-	{if $userHasCatalogConnection}
-		<script type="text/javascript">
-			AspenDiscovery.Account.loadMenuData();
-		</script>
-	{/if}
 	<script type="text/javascript">
-		AspenDiscovery.Account.loadListData();
-		AspenDiscovery.Account.loadRatingsData();
+		{literal}
+		$(document).ready(function() {
+			{/literal}
+			{if $userHasCatalogConnection}
+				AspenDiscovery.Account.loadMenuData();
+			{/if}
+			{literal}
+			AspenDiscovery.Account.loadListData();
+			AspenDiscovery.Account.loadRatingsData();
+		});
+		{/literal}
 	</script>
 {/strip}

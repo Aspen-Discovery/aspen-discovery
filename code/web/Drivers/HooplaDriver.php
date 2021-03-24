@@ -173,30 +173,42 @@ class HooplaDriver extends AbstractEContentDriver{
 	/**
 	 * @param $user User
      *
-     * @return false|stdClass
+     * @return AccountSummary
 	 */
-	public function getAccountSummary($user) {
-		if ($this->hooplaEnabled) {
-			if (isset($this->hooplaPatronStatuses[$user->id])) {
-				return $this->hooplaPatronStatuses[$user->id];
-			} else {
-				$getPatronStatusURL = $this->getHooplaBasePatronURL($user);
-				if (!empty($getPatronStatusURL)) {
-					$getPatronStatusURL         .= '/status';
-					$hooplaPatronStatusResponse = $this->getAPIResponse($getPatronStatusURL);
-					if (!empty($hooplaPatronStatusResponse) && !isset($hooplaPatronStatusResponse->message)) {
-						$this->hooplaPatronStatuses[$user->id] = $hooplaPatronStatusResponse;
-						return $hooplaPatronStatusResponse;
-					} else {
-						global $logger;
-						$hooplaErrorMessage = empty($hooplaPatronStatusResponse->message) ? '' : ' Hoopla Message :' . $hooplaPatronStatusResponse->message;
-						$logger->log('Error retrieving patron status from Hoopla. User ID : ' . $user->id . $hooplaErrorMessage, Logger::LOG_NOTICE);
-						$this->hooplaPatronStatuses[$user->id] = false; // Don't do status call again for this user
-					}
+	public function getAccountSummary(User $user) : AccountSummary{
+		list($existingId, $summary) = $user->getCachedAccountSummary('hoopla');
+
+		if ($summary === null) {
+			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+			$summary = new AccountSummary();
+			$summary->userId = $user->id;
+			$summary->source = 'hoopla';
+			$getPatronStatusURL = $this->getHooplaBasePatronURL($user);
+			if (!empty($getPatronStatusURL)) {
+				$getPatronStatusURL .= '/status';
+				$hooplaPatronStatusResponse = $this->getAPIResponse($getPatronStatusURL);
+				if (!empty($hooplaPatronStatusResponse) && !isset($hooplaPatronStatusResponse->message)) {
+					$this->hooplaPatronStatuses[$user->id] = $hooplaPatronStatusResponse;
+
+					$summary->numCheckedOut = $hooplaPatronStatusResponse->currentlyBorrowed;
+					$summary->numCheckoutsRemaining = $hooplaPatronStatusResponse->borrowsRemaining;
+				} else {
+					global $logger;
+					$hooplaErrorMessage = empty($hooplaPatronStatusResponse->message) ? '' : ' Hoopla Message :' . $hooplaPatronStatusResponse->message;
+					$logger->log('Error retrieving patron status from Hoopla. User ID : ' . $user->id . $hooplaErrorMessage, Logger::LOG_NOTICE);
+					$this->hooplaPatronStatuses[$user->id] = false; // Don't do status call again for this user
 				}
 			}
+
+			$summary->lastLoaded = time();
+			if ($existingId != null) {
+				$summary->id = $existingId;
+				$summary->update();
+			}else{
+				$summary->insert();
+			}
 		}
-		return false;
+		return $summary;
 	}
 
 	/**
@@ -214,9 +226,6 @@ class HooplaDriver extends AbstractEContentDriver{
 				$checkOutsResponse = $this->getAPIResponse($hooplaCheckedOutTitlesURL);
 				if (is_array($checkOutsResponse)) {
                     $hooplaPatronStatus = null;
-					if (count($checkOutsResponse)) { // Only get Patron status if there are checkouts
-						$hooplaPatronStatus = $this->getAccountSummary($user);
-					}
 					foreach ($checkOutsResponse as $checkOut) {
 						$hooplaRecordID  = $checkOut->contentId;
 						$currentTitle = new Checkout();
@@ -233,10 +242,6 @@ class HooplaDriver extends AbstractEContentDriver{
 						$currentTitle->checkoutDate = $checkOut->borrowed;
 						$currentTitle->dueDate = $checkOut->due;
 						$currentTitle->accessOnlineUrl = $checkOut->url;
-
-						if ($hooplaPatronStatus != null && isset($hooplaPatronStatus->borrowsRemaining)) {
-							$currentTitle->borrowsRemaining = $hooplaPatronStatus->borrowsRemaining;
-						}
 
 						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 						$hooplaRecordDriver = new HooplaRecordDriver($hooplaRecordID);

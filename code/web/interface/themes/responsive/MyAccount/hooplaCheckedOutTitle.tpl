@@ -92,9 +92,9 @@
 					</div>
 
 
-					{if isset($record->borrowsRemaining)}
+					{if isset($record->numCheckoutsRemaining)}
 						<div class="row">
-							<div class="col-tn-12">You can borrow <strong>{$record->borrowsRemaining}</strong> more Hoopla title{if $record->borrowsRemaining !=1}s{/if} this month.</div>
+							<div class="col-tn-12">You can borrow <strong>{$record->numCheckoutsRemaining}</strong> more Hoopla title{if $record->numCheckoutsRemaining !=1}s{/if} this month.</div>
 						</div>
 					{/if}
 				</div>

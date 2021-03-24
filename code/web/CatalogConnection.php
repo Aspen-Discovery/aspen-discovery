@@ -768,36 +768,25 @@ class CatalogConnection
 		//Update reading history based on current checkouts.  That way it never looks out of date
 		$checkouts = $patron->getCheckouts(false, 'all');
 		foreach ($checkouts as $checkout) {
-			$source = $checkout['checkoutSource'];
-			if ($source == 'OverDrive') {
-				$sourceId = $checkout['overDriveId'];
-			} elseif ($source == 'Hoopla') {
-				$sourceId = $checkout['hooplaId'];
-			} elseif ($source == 'ILS') {
-				$sourceId = $checkout['recordId'];
-			} elseif ($source == 'eContent') {
-				$source = $checkout['recordType'];
-				$sourceId = $checkout['id'];
-			} else {
-				$sourceId = $checkout['recordId'];
-			}
+			$source = $checkout->source;
+			$sourceId = $checkout->sourceId;
 			$key = $source . ':' . $sourceId;
 			if (array_key_exists($key, $activeHistoryTitles)) {
 				unset($activeHistoryTitles[$key]);
 			} else {
 				$historyEntryDB = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
-				if (isset($checkout['groupedWorkId'])) {
-					$historyEntryDB->groupedWorkPermanentId = $checkout['groupedWorkId'] == null ? '' : $checkout['groupedWorkId'];
+				if (!empty($checkout->groupedWorkId)) {
+					$historyEntryDB->groupedWorkPermanentId = $checkout->groupedWorkId;
 				} else {
 					$historyEntryDB->groupedWorkPermanentId = "";
 				}
 
 				$historyEntryDB->source = $source;
 				$historyEntryDB->sourceId = $sourceId;
-				$historyEntryDB->title = substr($checkout['title'], 0, 150);
-				$historyEntryDB->author = isset($checkout['author']) ? substr($checkout['author'], 0, 75) : "";
-				$historyEntryDB->format = substr($checkout['format'], 0, 50);
+				$historyEntryDB->title = substr($checkout->title, 0, 150);
+				$historyEntryDB->author = isset($checkout->author) ? substr($checkout->author, 0, 75) : "";
+				$historyEntryDB->format = substr($checkout->format, 0, 50);
 				$historyEntryDB->checkOutDate = time();
 				if (!$historyEntryDB->insert()) {
 					global $logger;
@@ -1016,9 +1005,21 @@ class CatalogConnection
 		return $this->driver->getPatronUpdateForm($user);
 	}
 
-	public function getAccountSummary($user)
+	public function getAccountSummary(User $user)
 	{
-		return $this->driver->getAccountSummary($user);
+		list($existingId, $summary) = $user->getCachedAccountSummary('ils');
+
+		if ($summary === null) {
+			$summary = $this->driver->getAccountSummary($user);
+			$summary->lastLoaded = time();
+			if ($existingId != null) {
+				$summary->id = $existingId;
+				$summary->update();
+			}else{
+				$summary->insert();
+			}
+		}
+		return $summary;
 	}
 
 	public function showMessagingSettings()

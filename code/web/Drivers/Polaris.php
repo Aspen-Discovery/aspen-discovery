@@ -25,44 +25,28 @@ class Polaris extends AbstractIlsDriver
 		$this->apiCurlWrapper = null;
 	}
 
-	public function getAccountSummary(User $user)
+	public function getAccountSummary(User $user) : AccountSummary
 	{
-		$summary = [
-			'numCheckedOut' => 0,
-			'numOverdue' => 0,
-			'numAvailableHolds' => 0,
-			'numUnavailableHolds' => 0,
-			'totalFines' => 0,
-			'expires' => '',
-			'expired' => 0,
-			'expireClose' => 0,
-		];
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $user->id;
+		$summary->source = 'ils';
 
 		$basicDataResponse = $this->getBasicDataResponse($user->getBarcode(), $user->getPasswordOrPin());
 		if ($basicDataResponse != null){
 			//TODO: Account for electronic items
-			$summary['numCheckedOut'] = $basicDataResponse->ItemsOutCount;
-			$summary['numOverdue'] = $basicDataResponse->ItemsOverdueCount;
-			$summary['numAvailableHolds'] = $basicDataResponse->HoldRequestsCurrentCount + $basicDataResponse->HoldRequestsShippedCount;
-			$summary['numUnavailableHolds'] = $basicDataResponse->HoldRequestsHeldCount;
-			$summary['totalFines'] = $basicDataResponse->ChargeBalance;
+			$summary->numCheckedOut = $basicDataResponse->ItemsOutCount;
+			$summary->numOverdue = $basicDataResponse->ItemsOverdueCount;
+			$summary->numAvailableHolds = $basicDataResponse->HoldRequestsCurrentCount + $basicDataResponse->HoldRequestsShippedCount;
+			$summary->numUnavailableHolds = $basicDataResponse->HoldRequestsHeldCount;
+			$summary->totalFines = $basicDataResponse->ChargeBalance;
 
 			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$user->getBarcode()}/circulationblocks";
 			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$user->getBarcode()]['accessToken']);
 			if ($circulateBlocksResponse && $this->lastResponseCode == 200) {
 				$circulateBlocksResponse = json_decode($circulateBlocksResponse);
 				$expireTime = $this->parsePolarisDate($circulateBlocksResponse->ExpirationDate);
-				$summary['expires'] = date('n-j-Y', $expireTime);
-				if ($summary['expires'] != null) {
-					$timeNow = time();
-					$timeToExpire = $expireTime - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						if ($timeToExpire <= 0) {
-							$summary['expired'] = 1;
-						}
-						$summary['expireClose'] = 1;
-					}
-				}
+				$summary->expirationDate = $expireTime;
 			}
 		}
 

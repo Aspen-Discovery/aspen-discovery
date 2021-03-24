@@ -831,28 +831,40 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 		return $this->groupedWorkDriver;
 	}
 
+	protected $_actions = null;
 	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
-		$actions = array();
-		if ($isAvailable) {
-			$actions[] = array(
-				'title' => 'Check Out OverDrive',
-				'onclick' => "return AspenDiscovery.OverDrive.checkOutTitle('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'overdrive_checkout'
-			);
-		} else {
-			$actions[] = array(
-				'title' => 'Place Hold OverDrive',
-				'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'overdrive_hold'
-			);
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			//Check to see if the title is on hold or checked out to the patron.
+			$loadDefaultActions = true;
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('overdrive', $this->id));
+				$loadDefaultActions = count($this->_actions) == 0;
+			}
+
+			if ($loadDefaultActions) {
+				if ($isAvailable) {
+					$this->_actions[] = array(
+						'title' => 'Check Out OverDrive',
+						'onclick' => "return AspenDiscovery.OverDrive.checkOutTitle('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'overdrive_checkout'
+					);
+				} else {
+					$this->_actions[] = array(
+						'title' => 'Place Hold OverDrive',
+						'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'overdrive_hold'
+					);
+				}
+			}
+
+			$this->_actions = array_merge($this->_actions, $this->getPreviewActions());
 		}
-
-		$actions = array_merge($actions, $this->getPreviewActions());
-
-		return $actions;
+		return $this->_actions;
 	}
 
 	function getPreviewActions(){

@@ -340,95 +340,107 @@ AspenDiscovery.Account = (function(){
 		},
 
 		loadMenuData: function (){
-			var ilsUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataIls&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 			var totalCheckouts = 0;
 			var totalHolds = 0;
-			$.getJSON(ilsUrl, function(data){
-				if (data.success) {
-					$(".ils-checkouts-placeholder").html(data.summary.numCheckedOut);
-					totalCheckouts += parseInt(data.summary.numCheckedOut);
-					$(".checkouts-placeholder").html(totalCheckouts);
-					if (data.summary.numOverdue > 0) {
-						$(".ils-overdue-placeholder").html(data.summary.numOverdue);
-						$(".ils-overdue").show();
+			if (Globals.hasILSConnection) {
+				var ilsUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataIls&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(ilsUrl, function (data) {
+					if (data.success) {
+						$(".ils-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						if (data.summary.numOverdue > 0) {
+							$(".ils-overdue-placeholder").html(data.summary.numOverdue);
+							$(".ils-overdue").show();
+						}
+						$(".ils-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+						if (data.summary.numAvailableHolds > 0) {
+							$(".ils-available-holds-placeholder").html(data.summary.numAvailableHolds);
+							$(".ils-available-holds").show();
+						}
+						$(".readingHistory-placeholder").html(data.summary.readingHistory);
+						$(".materialsRequests-placeholder").html(data.summary.materialsRequests);
+						$(".bookings-placeholder").html(data.summary.bookings);
+						$(".expirationFinesNotice-placeholder").html(data.summary.expirationFinesNotice);
 					}
-					$(".ils-holds-placeholder").html(data.summary.numHolds);
-					totalHolds += parseInt(data.summary.numHolds);
-					$(".holds-placeholder").html(totalHolds);
-					if (data.summary.numAvailableHolds > 0) {
-						$(".ils-available-holds-placeholder").html(data.summary.numAvailableHolds);
-						$(".ils-available-holds").show();
+				});
+			}
+			if (Globals.hasRBdigitalConnection) {
+				var rbdigitalUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataRBdigital&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(rbdigitalUrl, function (data) {
+					if (data.success) {
+						$(".rbdigital-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".rbdigital-holds-placeholder").html(data.summary.numUnavailableHolds);
+						totalHolds += parseInt(data.summary.numUnavailableHolds);
+						$(".holds-placeholder").html(totalHolds);
 					}
-					$(".readingHistory-placeholder").html(data.summary.readingHistory);
-					$(".materialsRequests-placeholder").html(data.summary.materialsRequests);
-					$(".bookings-placeholder").html(data.summary.bookings);
-					$(".expirationFinesNotice-placeholder").html(data.summary.expirationFinesNotice);
-				}
-			});
-			var rbdigitalUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataRBdigital&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-			$.getJSON(rbdigitalUrl, function(data){
-				if (data.success) {
-					$(".rbdigital-checkouts-placeholder").html(data.summary.numCheckedOut);
-					totalCheckouts += parseInt(data.summary.numCheckedOut);
-					$(".checkouts-placeholder").html(totalCheckouts);
-					$(".rbdigital-holds-placeholder").html(data.summary.numUnavailableHolds);
-					totalHolds += parseInt(data.summary.numUnavailableHolds);
-					$(".holds-placeholder").html(totalHolds);
-				}
-			});
-			var cloudLibraryUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataCloudLibrary&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-			$.getJSON(cloudLibraryUrl, function(data){
-				if (data.success) {
-					$(".cloud_library-checkouts-placeholder").html(data.summary.numCheckedOut);
-					totalCheckouts += parseInt(data.summary.numCheckedOut);
-					$(".checkouts-placeholder").html(totalCheckouts);
-					$(".cloud_library-holds-placeholder").html(data.summary.numHolds);
-					totalHolds += parseInt(data.summary.numHolds);
-					$(".holds-placeholder").html(totalHolds);
-					if (data.summary.numAvailableHolds > 0) {
-						$(".cloud_library-available-holds-placeholder").html(data.summary.numAvailableHolds);
-						$(".cloud_library-available-holds").show();
+				});
+			}
+			if (Globals.hasCloudLibraryConnection) {
+				var cloudLibraryUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataCloudLibrary&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(cloudLibraryUrl, function (data) {
+					if (data.success) {
+						$(".cloud_library-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".cloud_library-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+						if (data.summary.numAvailableHolds > 0) {
+							$(".cloud_library-available-holds-placeholder").html(data.summary.numAvailableHolds);
+							$(".cloud_library-available-holds").show();
+						}
 					}
-				}
-			});
-			var axis360Url = Globals.path + "/MyAccount/AJAX?method=getMenuDataAxis360&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-			$.getJSON(axis360Url, function(data){
-				if (data.success) {
-					$(".axis360-checkouts-placeholder").html(data.summary.numCheckedOut);
-					totalCheckouts += parseInt(data.summary.numCheckedOut);
-					$(".checkouts-placeholder").html(totalCheckouts);
-					$(".axis360-holds-placeholder").html(data.summary.numHolds);
-					totalHolds += parseInt(data.summary.numHolds);
-					$(".holds-placeholder").html(totalHolds);
-					if (data.summary.numAvailableHolds > 0) {
-						$(".axis360-available-holds-placeholder").html(data.summary.numAvailableHolds);
-						$(".axis360-available-holds").show();
+				});
+			}
+			if (Globals.hasAxis360Connection) {
+				var axis360Url = Globals.path + "/MyAccount/AJAX?method=getMenuDataAxis360&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(axis360Url, function (data) {
+					if (data.success) {
+						$(".axis360-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".axis360-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+						if (data.summary.numAvailableHolds > 0) {
+							$(".axis360-available-holds-placeholder").html(data.summary.numAvailableHolds);
+							$(".axis360-available-holds").show();
+						}
 					}
-				}
-			});
-			var hooplaUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataHoopla&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-			$.getJSON(hooplaUrl, function(data){
-				if (data.success) {
-					$(".hoopla-checkouts-placeholder").html(data.summary.numCheckedOut);
-					totalCheckouts += parseInt(data.summary.numCheckedOut);
-					$(".checkouts-placeholder").html(totalCheckouts);
-				}
-			});
-			var overdriveUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataOverDrive&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-			$.getJSON(overdriveUrl, function(data){
-				if (data.success) {
-					$(".overdrive-checkouts-placeholder").html(data.summary.numCheckedOut);
-					totalCheckouts += parseInt(data.summary.numCheckedOut);
-					$(".checkouts-placeholder").html(totalCheckouts);
-					$(".overdrive-holds-placeholder").html(data.summary.numHolds);
-					totalHolds += parseInt(data.summary.numHolds);
-					$(".holds-placeholder").html(totalHolds);
-					if (data.summary.numAvailableHolds > 0) {
-						$(".overdrive-available-holds-placeholder").html(data.summary.numAvailableHolds);
-						$(".overdrive-available-holds").show();
+				});
+			}
+			if (Globals.hasHooplaConnection) {
+				var hooplaUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataHoopla&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(hooplaUrl, function (data) {
+					if (data.success) {
+						$(".hoopla-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
 					}
-				}
-			});
+				});
+			}
+			if (Globals.hasOverDriveConnection) {
+				var overdriveUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataOverDrive&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(overdriveUrl, function (data) {
+					if (data.success) {
+						$(".overdrive-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".overdrive-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+						if (data.summary.numAvailableHolds > 0) {
+							$(".overdrive-available-holds-placeholder").html(data.summary.numAvailableHolds);
+							$(".overdrive-available-holds").show();
+						}
+					}
+				});
+			}
 
 			return false;
 		},

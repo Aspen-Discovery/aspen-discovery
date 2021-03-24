@@ -11,7 +11,7 @@
 								{$tmpUser->getNameAndLibraryLabel()}
 								{if !empty($hooplaUserStatuses[$userId])}
 									{assign var="hooplaPatronStatus" value=$hooplaUserStatuses[$userId]}
-									&nbsp; ({$hooplaPatronStatus->borrowsRemaining} of {$hooplaPatronStatus->borrowsAllowedPerMonth} check outs available)
+									&nbsp; ({$hooplaPatronStatus->numCheckoutsRemaining} check outs remaining this month)
 								{else}
 									&nbsp; (no Hoopla account)
 								{/if}
