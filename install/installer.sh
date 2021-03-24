@@ -60,6 +60,6 @@ read timezone
 timedatectl set-timezone $timezone
 
 cd /usr/local/aspen-discovery/install
-bash ./setup_aspen_users.sh
+bash ./setup_aspen_user.sh
 
 
