@@ -881,10 +881,32 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	protected $_actions = null;
 	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
-		if ($this->_actions == null) {
+		if ($this->_actions === null) {
 			$this->_actions = array();
 			global $interface;
 			global $library;
+
+			$user = UserAccount::getActiveUserObj();
+			if ($user) {
+				if ($user->isRecordCheckedOut($this->getIndexingProfile()->name, $this->id)) {
+					$this->_actions[] = array(
+						'title' => translate(['text' => 'Checked Out to %1%', 1 => $user->displayName]),
+						'url' => "/MyAccount/CheckedOut",
+						'requireLogin' => false,
+						'btnType' => 'btn-info'
+					);
+					$loadDefaultActions = false;
+				} elseif ($user->isRecordOnHold($this->getIndexingProfile()->name, $this->id)) {
+					$this->_actions[] = array(
+						'title' => translate(['text' => 'On Hold for %1%', 1 => $user->displayName]),
+						'url' => "/MyAccount/Holds",
+						'requireLogin' => false,
+						'btnType' => 'btn-info'
+					);
+					$loadDefaultActions = false;
+				}
+			}
+
 			if (isset($interface)) {
 				if ($interface->getVariable('displayingSearchResults')) {
 					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
