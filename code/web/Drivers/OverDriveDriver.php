@@ -502,7 +502,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 						'userId' => $patron->id,
 					];
 					$supplementalMaterial = $this->loadCheckoutFormatInformation($curTitle, $supplementalMaterial);
-					if (isset($supplementalMaterial['selectedFormat']) && !empty($supplementalMaterial['selectedFormat']['format'])) {
+					if (isset($supplementalMaterial->selectedFormatValue) && !empty($supplementalMaterial->selectedFormatValue)) {
 						$parentCheckout->supplementalMaterials[] = $supplementalMaterial;
 					}
 					$checkedOutTitles['OverDrive' . $parentCheckoutId] = $parentCheckout;
