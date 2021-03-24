@@ -246,7 +246,6 @@ if (!$siteOnWindows){
 
 //Setup solr
 if (!$siteOnWindows){
-	exec("adduser solr");
 	exec('chown -R solr:solr ' . $installDir . '/sites/default/solr-7.6.0');
 	exec('chown -R solr:solr ' . $dataDir . '/solr7');
 }
