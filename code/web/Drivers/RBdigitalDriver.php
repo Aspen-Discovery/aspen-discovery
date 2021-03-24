@@ -579,47 +579,51 @@ class RBdigitalDriver extends AbstractEContentDriver
 	}
 
 	/**
-	 * @param User $patron
+	 * @param User $user
 	 *
 	 * @return array
 	 */
-	public function getAccountSummary($patron)
+	public function getAccountSummary(User $user) : AccountSummary
 	{
-		global $memCache;
-		global $configArray;
-		global $timer;
+		list($existingId, $summary) = $user->getCachedAccountSummary('rbdigital');
 
-		if ($patron == false) {
-			return array(
-				'numCheckedOut' => 0,
-				'numAvailableHolds' => 0,
-				'numUnavailableHolds' => 0,
-			);
-		}
+		if ($summary === null) {
+			global $timer;
+			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+			$summary = new AccountSummary();
+			$summary->userId = $user->id;
+			$summary->source = 'rbdigital';
 
-		$summary = $memCache->get('rbdigital_summary_' . $patron->id);
-		if ($summary == false || isset($_REQUEST['reload'])) {
 			//Get the rbdigital id for the patron
-			$rbdigitalId = $this->getRBdigitalId($patron);
+			$rbdigitalId = $this->getRBdigitalId($user);
 
-			//Get account information from api
-			$patronSummaryUrl = $this->getConnectionSettings($patron)->webServiceURL . '/v1/tenants/' . $this->getConnectionSettings($patron)->libraryId . '/patrons/' . $rbdigitalId . '/patron-config';
+			if ($rbdigitalId !== false) {
+				//Get account information from api
+				$patronSummaryUrl = $this->getConnectionSettings($user)->webServiceURL . '/v1/tenants/' . $this->getConnectionSettings($user)->libraryId . '/patrons/' . $rbdigitalId . '/patron-config';
 
-			$responseRaw = $this->getConnectionSettings($patron)->curlWrapper->curlGetPage($patronSummaryUrl);
-			$response = json_decode($responseRaw);
+				$responseRaw = $this->getConnectionSettings($user)->curlWrapper->curlGetPage($patronSummaryUrl);
+				$response = json_decode($responseRaw);
 
-			$summary = array();
-			$summary['numCheckedOut'] = empty($response->audioBooks->checkouts) ? 0 : count($response->audioBooks->checkouts);
-			$summary['numCheckedOut'] += empty($response->magazines->checkouts) ? 0 : count($response->magazines->checkouts);
+				$summary->numCheckedOut = empty($response->audioBooks->checkouts) ? 0 : count($response->audioBooks->checkouts);
+				$summary->numCheckedOut += empty($response->magazines->checkouts) ? 0 : count($response->magazines->checkouts);
 
-			//RBdigital automatically checks holds out so nothing is available
-			$summary['numAvailableHolds'] = 0;
-			$summary['numUnavailableHolds'] = empty($response->audioBooks->holds) ? 0 : count($response->audioBooks->holds);
-
+				//RBdigital automatically checks holds out so nothing is available
+				$summary->numAvailableHolds = 0;
+				$summary->numUnavailableHolds = empty($response->audioBooks->holds) ? 0 : count($response->audioBooks->holds);
+			}else{
+				$summary->numCheckedOut = 0;
+				$summary->numAvailableHolds = 0;
+				$summary->numUnavailableHolds = 0;
+			}
+			$summary->lastLoaded = time();
+			if ($existingId != null) {
+				$summary->id = $existingId;
+				$summary->update();
+			} else {
+				$summary->insert();
+			}
 			$timer->logTime("Finished loading titles from rbdigital summary");
-			$memCache->set('rbdigital_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);
 		}
-
 		return $summary;
 	}
 

@@ -194,25 +194,38 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 		return array();
 	}
 
+	protected $_actions = null;
 	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
-		$actions = array();
-		if ($isAvailable) {
-			$actions[] = array(
-				'title' => 'Check Out Axis 360',
-				'onclick' => "return AspenDiscovery.Axis360.checkOutTitle('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'axis360_checkout'
-			);
-		} else {
-			$actions[] = array(
-				'title' => 'Place Hold Axis 360',
-				'onclick' => "return AspenDiscovery.Axis360.placeHold('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'axis360_hold'
-			);
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			//Check to see if the title is on hold or checked out to the patron.
+			$loadDefaultActions = true;
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('axis360', $this->id));
+				$loadDefaultActions = count($this->_actions) == 0;
+			}
+
+			if ($loadDefaultActions) {
+				if ($isAvailable) {
+					$this->_actions[] = array(
+						'title' => 'Check Out Axis 360',
+						'onclick' => "return AspenDiscovery.Axis360.checkOutTitle('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'axis360_checkout'
+					);
+				} else {
+					$this->_actions[] = array(
+						'title' => 'Place Hold Axis 360',
+						'onclick' => "return AspenDiscovery.Axis360.placeHold('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'axis360_hold'
+					);
+				}
+			}
 		}
-		return $actions;
+		return $this->_actions;
 	}
 
 	/**

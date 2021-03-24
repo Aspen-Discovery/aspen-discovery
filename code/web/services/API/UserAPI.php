@@ -356,11 +356,11 @@ class UserAPI extends Action
 
 			$catalogConnection = $this->getCatalogConnection();
 			$accountSummary = $catalogConnection->getAccountSummary($user);
-			$userData->numCheckedOutIls = $accountSummary['numCheckedOut'];
-			$userData->numHoldsIls = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
-			$userData->numHoldsAvailableIls =$accountSummary['numAvailableHolds'];
-			$userData->numHoldsRequestedIls = $accountSummary['numUnavailableHolds'];
-			$userData->finesVal = $accountSummary['totalFines'];
+			$userData->numCheckedOutIls = $accountSummary->numCheckedOut;
+			$userData->numHoldsIls = $accountSummary->getNumHolds();
+			$userData->numHoldsAvailableIls =$accountSummary->numAvailableHolds;
+			$userData->numHoldsRequestedIls = $accountSummary->numUnavailableHolds;
+			$userData->finesVal = $accountSummary->totalFines;
 			global $activeLanguage;
 			$currencyCode = 'USD';
 			$variables = new SystemVariables();
@@ -376,9 +376,9 @@ class UserAPI extends Action
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
 				$overDriveSummary = $driver->getAccountSummary($user);
-				$userData->numCheckedOutOverDrive = $overDriveSummary['numCheckedOut'];
-				$userData->numHoldsOverDrive = $overDriveSummary['numAvailableHolds'] + $overDriveSummary['numUnavailableHolds'];
-				$userData->numHoldsAvailableOverDrive = $overDriveSummary['numAvailableHolds'];
+				$userData->numCheckedOutOverDrive = $overDriveSummary->numCheckedOut;
+				$userData->numHoldsOverDrive = $overDriveSummary->getNumHolds();
+				$userData->numHoldsAvailableOverDrive = $overDriveSummary->numAvailableHolds;
 			}
 
 			return array('success' => true, 'profile' => $userData);

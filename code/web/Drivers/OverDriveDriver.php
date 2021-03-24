@@ -663,46 +663,30 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	/**
 	 * Returns a summary of information about the user's account in OverDrive.
-	 *
-	 * @param User $patron
-	 *
-	 * @return array
 	 */
-	public function getAccountSummary($patron){
-		global $memCache;
-		global $configArray;
-		global $timer;
+	public function getAccountSummary(User $user) : AccountSummary{
+		list($existingId, $summary) = $user->getCachedAccountSummary('overdrive');
 
-		if ($patron == false){
-			return array(
-				'numCheckedOut' => 0,
-				'numOverdue' => 0,
-				'numAvailableHolds' => 0,
-				'numUnavailableHolds' => 0,
-				'checkedOut' => array(),
-				'holds' => array()
-			);
-		}
-
-		$summary = $memCache->get('overdrive_summary_' . $patron->id);
-		if ($summary == false || isset($_REQUEST['reload'])){
-
+		if ($summary === null) {
 			//Get account information from api
+			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+			$summary = new AccountSummary();
+			$summary->userId = $user->id;
+			$summary->source = 'overdrive';
+			$checkedOutItems = $this->getCheckouts($user, true);
+			$summary->numCheckedOut = count($checkedOutItems);
 
-			//TODO: Optimize so we don't need to load all checkouts and holds
-			$summary = array();
-			$checkedOutItems = $this->getCheckouts($patron, true);
-			$summary['numCheckedOut'] = count($checkedOutItems);
+			$holds = $this->getHolds($user, true);
+			$summary->numAvailableHolds = count($holds['available']);
+			$summary->numUnavailableHolds = count($holds['unavailable']);
 
-			$holds = $this->getHolds($patron, true);
-			$summary['numAvailableHolds'] = count($holds['available']);
-			$summary['numUnavailableHolds'] = count($holds['unavailable']);
-
-			$summary['checkedOut'] = $checkedOutItems;
-			$summary['holds'] = $holds;
-
-			$timer->logTime("Finished loading titles from overdrive summary");
-			$memCache->set('overdrive_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);
+			$summary->lastLoaded = time();
+			if ($existingId != null) {
+				$summary->id = $existingId;
+				$summary->update();
+			}else{
+				$summary->insert();
+			}
 		}
 
 		return $summary;
@@ -710,8 +694,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	function placeHold($user, $overDriveId, $pickupBranch = null, $cancelDate = null)
 	{
-		global $memCache;
-
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
 		$params = array(
 			'reserveId' => $overDriveId,
@@ -752,13 +734,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 					}
 				}
 			}
+
+			$user->clearCache();
+			$user->clearCachedAccountSummaryForSource('overdrive');
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not place a hold for you on this title.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numFailedHolds');
 		}
-		$user->clearCache();
-		$memCache->delete('overdrive_summary_' . $user->id);
 
 		return $holdResult;
 	}

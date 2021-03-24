@@ -210,25 +210,38 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 		return array();
 	}
 
+	protected $_actions = null;
 	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
-		$actions = array();
-		if ($isAvailable) {
-			$actions[] = array(
-				'title' => 'Check Out RBdigital',
-				'onclick' => "return AspenDiscovery.RBdigital.checkOutTitle('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'rbdigital_checkout'
-			);
-		} else {
-			$actions[] = array(
-				'title' => 'Place Hold RBdigital',
-				'onclick' => "return AspenDiscovery.RBdigital.placeHold('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'rbdigital_hold'
-			);
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			//Check to see if the title is on hold or checked out to the patron.
+			$loadDefaultActions = true;
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('rbdigital', $this->id));
+				$loadDefaultActions = count($this->_actions) == 0;
+			}
+
+			if ($loadDefaultActions) {
+				if ($isAvailable) {
+					$this->_actions[] = array(
+						'title' => 'Check Out RBdigital',
+						'onclick' => "return AspenDiscovery.RBdigital.checkOutTitle('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'rbdigital_checkout'
+					);
+				} else {
+					$this->_actions[] = array(
+						'title' => 'Place Hold RBdigital',
+						'onclick' => "return AspenDiscovery.RBdigital.placeHold('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'rbdigital_hold'
+					);
+				}
+			}
 		}
-		return $actions;
+		return $this->_actions;
 	}
 
 	/**

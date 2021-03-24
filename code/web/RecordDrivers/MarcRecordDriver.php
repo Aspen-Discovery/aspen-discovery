@@ -886,25 +886,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			global $interface;
 			global $library;
 
-			$user = UserAccount::getActiveUserObj();
-			if ($user) {
-				if ($user->isRecordCheckedOut($this->getIndexingProfile()->name, $this->id)) {
-					$this->_actions[] = array(
-						'title' => translate(['text' => 'Checked Out to %1%', 1 => $user->displayName]),
-						'url' => "/MyAccount/CheckedOut",
-						'requireLogin' => false,
-						'btnType' => 'btn-info'
-					);
-					$loadDefaultActions = false;
-				} elseif ($user->isRecordOnHold($this->getIndexingProfile()->name, $this->id)) {
-					$this->_actions[] = array(
-						'title' => translate(['text' => 'On Hold for %1%', 1 => $user->displayName]),
-						'url' => "/MyAccount/Holds",
-						'requireLogin' => false,
-						'btnType' => 'btn-info'
-					);
-					$loadDefaultActions = false;
-				}
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions($this->getIndexingProfile()->name, $this->id));
 			}
 
 			if (isset($interface)) {
@@ -1068,7 +1052,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	protected static function getCatalogDriver()
 	{
 		if (MarcRecordDriver::$catalogDriver == null) {
-			global $configArray;
 			try {
 				require_once ROOT_DIR . '/CatalogFactory.php';
 				MarcRecordDriver::$catalogDriver = CatalogFactory::getCatalogConnectionInstance();

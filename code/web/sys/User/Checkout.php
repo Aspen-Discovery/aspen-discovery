@@ -58,7 +58,7 @@ class Checkout extends CircEntry
 
 	public function getNumericColumnNames()
 	{
-		return ['userId', 'checkoutDate', 'dueDate', 'renewCount', 'canRenew', 'autoRenew', 'maxRenewals', 'fine', 'holdQueueLength'];
+		return ['userId', 'checkoutDate', 'dueDate', 'renewCount', 'canRenew', 'autoRenew', 'maxRenewals', 'fine', 'holdQueueLength', 'allowDownload', 'overdriveRead', 'overdriveListen', 'overdriveVideo', 'overdriveMagazine', 'formatSelected', 'canReturnEarly'];
 	}
 
 	public function getDaysUntilDue(){

@@ -1031,12 +1031,12 @@ class Koha extends AbstractIlsDriver
 				$holds = $this->getHolds($patron);
 				$alreadyOnHold = false;
 				foreach($holds['available'] as $hold) {
-					if ($hold['recordId'] == $recordDriver->getId()){
+					if ($hold->recordId == $recordDriver->getId()){
 						$alreadyOnHold = true;
 					}
 				}
 				foreach($holds['unavailable'] as $hold) {
-					if ($hold['recordId'] == $recordDriver->getId()){
+					if ($hold->recordId == $recordDriver->getId()){
 						$alreadyOnHold = true;
 					}
 				}
@@ -2548,126 +2548,107 @@ class Koha extends AbstractIlsDriver
 		return $results;
 	}
 
-	public function getAccountSummary($user, $forceRefresh = false)
+	public function getAccountSummary(User $user) : AccountSummary
 	{
-		global $memCache;
 		global $timer;
-		global $configArray;
 		global $library;
 
-		$accountSummary = $memCache->get('koha_summary_' . $user->id);
-		if ($accountSummary == false || isset($_REQUEST['reload']) || $forceRefresh) {
-			$accountSummary = [
-				'numCheckedOut' => 0,
-				'numOverdue' => 0,
-				'numAvailableHolds' => 0,
-				'numUnavailableHolds' => 0,
-				'totalFines' => 0
-			];
-			$this->initDatabaseConnection();
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $user->id;
+		$summary->source = 'ils';
 
-			//Get number of items checked out
-			/** @noinspection SqlResolve */
-			$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-			$numCheckouts = 0;
-			if ($checkedOutItemsRS) {
-				$checkedOutItems = $checkedOutItemsRS->fetch_assoc();
-				$numCheckouts = $checkedOutItems['numCheckouts'];
-				$checkedOutItemsRS->close();
-			}
-			$accountSummary['numCheckedOut'] = $numCheckouts;
+		$this->initDatabaseConnection();
 
-			$now = date('Y-m-d H:i:s');
-			/** @noinspection SqlResolve */
-			$overdueItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numOverdue FROM issues WHERE date_due < \'' . $now . '\' AND borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-			$numOverdue = 0;
-			if ($overdueItemsRS) {
-				$overdueItems = $overdueItemsRS->fetch_assoc();
-				$numOverdue = $overdueItems['numOverdue'];
-				$overdueItemsRS->close();
-			}
-			$accountSummary['numOverdue'] = $numOverdue;
-			$timer->logTime("Loaded checkouts for Koha");
-
-			//Get number of available holds
-			if ($library->availableHoldDelay > 0){
-				/** @noinspection SqlResolve */
-				$holdsRS = mysqli_query($this->dbConnection, 'SELECT waitingdate, found FROM reserves WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-				if ($holdsRS) {
-					while ($curRow = $holdsRS->fetch_assoc()) {
-						if ($curRow['found'] !== 'W'){
-							$accountSummary['numUnavailableHolds']++;
-						}else{
-							$holdAvailableOn = strtotime($curRow['waitingdate']);
-							if ((time() - $holdAvailableOn) < 60 * 60 * 24 * $library->availableHoldDelay){
-								$accountSummary['numUnavailableHolds']++;
-							}else{
-								$accountSummary['numAvailableHolds']++;
-							}
-						}
-					}
-					$holdsRS->close();
-				}
-			}else{
-				/** @noinspection SqlResolve */
-				$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-				$numAvailableHolds = 0;
-				if ($availableHoldsRS) {
-					$availableHolds = $availableHoldsRS->fetch_assoc();
-					$numAvailableHolds = $availableHolds['numHolds'];
-					$availableHoldsRS->close();
-				}
-				$accountSummary['numAvailableHolds'] = $numAvailableHolds;
-				$timer->logTime("Loaded available holds for Koha");
-
-				//Get number of unavailable
-				/** @noinspection SqlResolve */
-				$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-				$numWaitingHolds = 0;
-				if ($waitingHoldsRS) {
-					$waitingHolds = $waitingHoldsRS->fetch_assoc();
-					$numWaitingHolds = $waitingHolds['numHolds'];
-					$waitingHoldsRS->close();
-				}
-				$accountSummary['numUnavailableHolds'] = $numWaitingHolds;
-			}
-			$timer->logTime("Loaded total holds for Koha");
-
-			//Get fines
-			//Load fines from database
-			$outstandingFines = $this->getOutstandingFineTotal($user);
-			$accountSummary['totalFines'] = floatval($outstandingFines);
-
-			//Get expiration information
-			/** @noinspection SqlResolve */
-			$sql = "SELECT dateexpiry from borrowers where borrowernumber = {$user->username}";
-
-			$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
-			if ($lookupUserResult) {
-				$userFromDb = $lookupUserResult->fetch_assoc();
-				$accountSummary['expires'] = $userFromDb['dateexpiry']; //TODO: format is year-month-day; millennium is month-day-year; needs converting??
-
-				$accountSummary['expired'] = 0; // default setting
-				$accountSummary['expireClose'] = 0;
-
-				if (!empty($userFromDb['dateexpiry'])) { // TODO: probably need a better check of this field
-					list ($yearExp, $monthExp, $dayExp) = explode('-', $userFromDb['dateexpiry']);
-					$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					$timeNow = time();
-					$timeToExpire = $timeExpire - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						if ($timeToExpire <= 0) {
-							$accountSummary['expired'] = 1;
-						}
-						$accountSummary['expireClose'] = 1;
-					}
-				}
-				$lookupUserResult->close();
-			}
-
-			$memCache->set('koha_summary_' . $user->id, $accountSummary, $configArray['Caching']['account_summary']);
+		//Get number of items checked out
+		/** @noinspection SqlResolve */
+		$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+		$numCheckouts = 0;
+		if ($checkedOutItemsRS) {
+			$checkedOutItems = $checkedOutItemsRS->fetch_assoc();
+			$numCheckouts = $checkedOutItems['numCheckouts'];
+			$checkedOutItemsRS->close();
 		}
-		return $accountSummary;
+		$summary->numCheckedOut = $numCheckouts;
+
+		$now = date('Y-m-d H:i:s');
+		/** @noinspection SqlResolve */
+		$overdueItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numOverdue FROM issues WHERE date_due < \'' . $now . '\' AND borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+		$numOverdue = 0;
+		if ($overdueItemsRS) {
+			$overdueItems = $overdueItemsRS->fetch_assoc();
+			$numOverdue = $overdueItems['numOverdue'];
+			$overdueItemsRS->close();
+		}
+		$summary->numOverdue = $numOverdue;
+		$timer->logTime("Loaded checkouts for Koha");
+
+		//Get number of available holds
+		if ($library->availableHoldDelay > 0){
+			/** @noinspection SqlResolve */
+			$holdsRS = mysqli_query($this->dbConnection, 'SELECT waitingdate, found FROM reserves WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+			if ($holdsRS) {
+				while ($curRow = $holdsRS->fetch_assoc()) {
+					if ($curRow['found'] !== 'W'){
+						$summary->numUnavailableHolds++;
+					}else{
+						$holdAvailableOn = strtotime($curRow['waitingdate']);
+						if ((time() - $holdAvailableOn) < 60 * 60 * 24 * $library->availableHoldDelay){
+							$summary->numUnavailableHolds++;
+						}else{
+							$summary->numAvailableHolds++;
+						}
+					}
+				}
+				$holdsRS->close();
+			}
+		}else{
+			/** @noinspection SqlResolve */
+			$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+			$numAvailableHolds = 0;
+			if ($availableHoldsRS) {
+				$availableHolds = $availableHoldsRS->fetch_assoc();
+				$numAvailableHolds = $availableHolds['numHolds'];
+				$availableHoldsRS->close();
+			}
+			$summary->numAvailableHolds = $numAvailableHolds;
+			$timer->logTime("Loaded available holds for Koha");
+
+			//Get number of unavailable
+			/** @noinspection SqlResolve */
+			$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+			$numWaitingHolds = 0;
+			if ($waitingHoldsRS) {
+				$waitingHolds = $waitingHoldsRS->fetch_assoc();
+				$numWaitingHolds = $waitingHolds['numHolds'];
+				$waitingHoldsRS->close();
+			}
+			$summary->numUnavailableHolds = $numWaitingHolds;
+		}
+		$timer->logTime("Loaded total holds for Koha");
+
+		//Get fines
+		//Load fines from database
+		$outstandingFines = $this->getOutstandingFineTotal($user);
+		$summary->totalFines = floatval($outstandingFines);
+
+		//Get expiration information
+		/** @noinspection SqlResolve */
+		$sql = "SELECT dateexpiry from borrowers where borrowernumber = {$user->username}";
+
+		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
+		if ($lookupUserResult) {
+			$userFromDb = $lookupUserResult->fetch_assoc();
+
+			if (!empty($userFromDb['dateexpiry'])) {
+				list ($yearExp, $monthExp, $dayExp) = explode('-', $userFromDb['dateexpiry']);
+				$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+				$summary->expirationDate = $timeExpire;
+			}
+			$lookupUserResult->close();
+		}
+
+		return $summary;
 	}
 
 	/**
@@ -2940,15 +2921,16 @@ class Koha extends AbstractIlsDriver
 		$hold_result['success'] = true;
 		$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 		//Find the correct hold (will be unavailable)
+		/** @var Hold $holdInfo */
 		foreach ($holds['unavailable'] as $holdInfo) {
-			if ($holdInfo['id'] == $recordId) {
-				if (isset($holdInfo['position'])) {
-					$hold_result['message'] .= translate(['text'=>"ils_hold_success_position", 'defaultText'=>"&nbsp;You are number <b>%1%</b> in the queue.", '1' => $holdInfo['position']]);
+			if ($holdInfo->sourceId == $recordId) {
+				if (isset($holdInfo->position)) {
+					$hold_result['message'] .= translate(['text'=>"ils_hold_success_position", 'defaultText'=>"&nbsp;You are number <b>%1%</b> in the queue.", '1' => $holdInfo->position]);
 				}
 				//Show the number of holds the patron has used.
 				$accountSummary = $this->getAccountSummary($patron, true);
 				$maxReserves = $this->getKohaSystemPreference('maxreserves', 50);
-				$totalHolds = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
+				$totalHolds = $accountSummary->getNumHolds();
 				$remainingHolds = $maxReserves - $totalHolds;
 				if ($remainingHolds <= 3){
 					$hold_result['message'] .= translate(['text'=>"ils_hold_success_total_remaining_holds", 'defaultText'=>"<br/>You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds]);
@@ -2959,8 +2941,7 @@ class Koha extends AbstractIlsDriver
 				break;
 			}
 		}
-		global $memCache;
-		$memCache->delete('koha_summary_' . $patron->id);
+		$patron->clearCachedAccountSummaryForSource('ils');
 		return $hold_result;
 	}
 
@@ -3088,9 +3069,9 @@ class Koha extends AbstractIlsDriver
 
 		$maxOutstanding = $this->getKohaSystemPreference('MaxOutstanding');
 
-		$accountSummary = $this->getAccountSummary($patron, true);
+		$accountSummary = $this->getAccountSummary($patron);
 		if ($maxOutstanding > 0){
-			$totalFines = $accountSummary['totalFines'];
+			$totalFines = $accountSummary->totalFines;
 			if ($totalFines > $maxOutstanding){
 				$result['isEligible'] = false;
 				$result['fineLimitReached'] = true;
@@ -3101,7 +3082,7 @@ class Koha extends AbstractIlsDriver
 		//Check maximum holds
 		$maxHolds = $this->getKohaSystemPreference('maxreserves', 50);
 		//Get total holds
-		$currentHoldsForUser = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
+		$currentHoldsForUser = $accountSummary->getNumHolds();
 		if ($currentHoldsForUser >= $maxHolds) {
 			$result['isEligible'] = false;
 			$result['maxPhysicalCheckoutsReached'] = true;
@@ -3112,7 +3093,7 @@ class Koha extends AbstractIlsDriver
 		}
 
 		//Check if the patron is expired
-		if ($accountSummary['expired'] == 1) {
+		if ($accountSummary->isExpired()) {
 			//Check the patron category as well
 			/** @noinspection SqlResolve */
 			$patronCategorySql = "select BlockExpiredPatronOpacActions from categories where categorycode = '{$patron->patronType}'";

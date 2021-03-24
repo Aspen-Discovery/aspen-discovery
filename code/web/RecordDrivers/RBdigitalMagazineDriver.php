@@ -206,25 +206,38 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		return array();
 	}
 
+	protected $_actions = null;
 	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
 	{
-		$actions = array();
-		if ($isAvailable) {
-			$actions[] = array(
-				'title' => 'Check Out RBdigital',
-				'onclick' => "return AspenDiscovery.RBdigital.checkOutMagazine('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'overdrive_magazine_checkout'
-			);
-		} else {
-			$actions[] = array(
-				'title' => 'Place Hold RBdigital',
-				'onclick' => "return AspenDiscovery.RBdigital.placeHoldMagazine('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'overdrive_magazine_hold'
-			);
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			//Check to see if the title is on hold or checked out to the patron.
+			$loadDefaultActions = true;
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('rbdigital_magazine', $this->id));
+				$loadDefaultActions = count($this->_actions) == 0;
+			}
+
+			if ($loadDefaultActions) {
+				if ($isAvailable) {
+					$this->_actions[] = array(
+						'title' => 'Check Out RBdigital',
+						'onclick' => "return AspenDiscovery.RBdigital.checkOutMagazine('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'rbdigital_magazine_checkout'
+					);
+				} else {
+					$this->_actions[] = array(
+						'title' => 'Place Hold RBdigital',
+						'onclick' => "return AspenDiscovery.RBdigital.placeHoldMagazine('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'rbdigital_magazine_hold'
+					);
+				}
+			}
 		}
-		return $actions;
+		return $this->_actions;
 	}
 
 	/**

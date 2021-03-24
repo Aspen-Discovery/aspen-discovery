@@ -1026,45 +1026,42 @@ class MyAccount_AJAX extends JSON_Action
 			$user = UserAccount::getActiveUserObj();
 			if ($user->hasIlsConnection()) {
 				$ilsSummary = $user->getCatalogDriver()->getAccountSummary($user);
-				$ilsSummary['materialsRequests'] = $user->getNumMaterialsRequests();
+				$ilsSummary->setMaterialsRequests($user->getNumMaterialsRequests());
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $linkedUser->getCatalogDriver()->getAccountSummary($linkedUser);
-						$ilsSummary['totalFines'] += $linkedUserSummary['totalFines'];
-						$ilsSummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
-						$ilsSummary['numOverdue'] += $linkedUserSummary['numOverdue'];
-						$ilsSummary['numAvailableHolds'] += $linkedUserSummary['numAvailableHolds'];
-						$ilsSummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
-						$ilsSummary['materialsRequests'] += $linkedUser->getNumMaterialsRequests();
+						$ilsSummary->totalFines += $linkedUserSummary->totalFines;
+						$ilsSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
+						$ilsSummary->numOverdue += $linkedUserSummary->numOverdue;
+						$ilsSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+						$ilsSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+						$ilsSummary->setMaterialsRequests($ilsSummary->getMaterialsRequests() + $linkedUser->getNumMaterialsRequests());
 					}
 				}
-				$ilsSummary['numHolds'] = $ilsSummary['numAvailableHolds'] + $ilsSummary['numUnavailableHolds'];
 				$timer->logTime("Loaded ILS Summary for User and linked users");
 
-				$ilsSummary['readingHistory'] = $user->getReadingHistorySize();
+				$ilsSummary->setReadingHistory($user->getReadingHistorySize());
 
 				global $library;
 				if ($library->enableMaterialsBooking) {
-					$ilsSummary['bookings'] = $user->getNumBookingsTotal();
-				} else {
-					$ilsSummary['bookings'] = '';
+					$ilsSummary->numBookings = $user->getNumBookingsTotal();
 				}
 
 				//Expiration and fines
 				$interface->assign('ilsSummary', $ilsSummary);
 				$interface->setFinesRelatedTemplateVariables();
 				if ($interface->getVariable('expiredMessage')) {
-					$interface->assign('expiredMessage', str_replace('%date%', $ilsSummary['expires'], $interface->getVariable('expiredMessage')));
+					$interface->assign('expiredMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expiredMessage')));
 				}
 				if ($interface->getVariable('expirationNearMessage')) {
-					$interface->assign('expirationNearMessage', str_replace('%date%', $ilsSummary['expires'], $interface->getVariable('expirationNearMessage')));
+					$interface->assign('expirationNearMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expirationNearMessage')));
 				}
-				$ilsSummary['expirationFinesNotice'] = $interface->fetch('MyAccount/expirationFinesNotice.tpl');
+				$ilsSummary->setExpirationFinesNotice($interface->fetch('MyAccount/expirationFinesNotice.tpl'));
 
 				$result = [
 					'success' => true,
-					'summary' => $ilsSummary
+					'summary' => $ilsSummary->toArray()
 				];
 			} else {
 				$result['message'] = 'Unknown error';
@@ -1094,15 +1091,15 @@ class MyAccount_AJAX extends JSON_Action
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						if ($linkedUser->isValidForEContentSource('rbdigital')){
 							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-							$rbdigitalSummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
-							$rbdigitalSummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+							$rbdigitalSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
+							$rbdigitalSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
 						}
 					}
 				}
 				$timer->logTime("Loaded RBdigital Summary for User and linked users");
 				$result = [
 					'success' => true,
-					'summary' => $rbdigitalSummary
+					'summary' => $rbdigitalSummary->toArray()
 				];
 			} else {
 				$result['message'] = 'Invalid for RBdigital';
@@ -1131,16 +1128,15 @@ class MyAccount_AJAX extends JSON_Action
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-						$cloudLibrarySummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
-						$cloudLibrarySummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
-						$cloudLibrarySummary['numAvailableHolds'] += $linkedUserSummary['numAvailableHolds'];
-						$cloudLibrarySummary['numHolds'] += $linkedUserSummary['numHolds'];
+						$cloudLibrarySummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
+						$cloudLibrarySummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+						$cloudLibrarySummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
 					}
 				}
 				$timer->logTime("Loaded Cloud Library Summary for User and linked users");
 				$result = [
 					'success' => true,
-					'summary' => $cloudLibrarySummary
+					'summary' => $cloudLibrarySummary->toArray()
 				];
 			} else {
 				$result['message'] = 'Unknown error';
@@ -1169,16 +1165,15 @@ class MyAccount_AJAX extends JSON_Action
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-						$axis360Summary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
-						$axis360Summary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
-						$axis360Summary['numAvailableHolds'] += $linkedUserSummary['numAvailableHolds'];
-						$axis360Summary['numHolds'] += $linkedUserSummary['numHolds'];
+						$axis360Summary->numCheckedOut += $linkedUserSummary->numCheckedOut;
+						$axis360Summary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+						$axis360Summary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
 					}
 				}
 				$timer->logTime("Loaded Axis 360 Summary for User and linked users");
 				$result = [
 					'success' => true,
-					'summary' => $axis360Summary
+					'summary' => $axis360Summary->toArray()
 				];
 			} else {
 				$result['message'] = 'Unknown error';
@@ -1202,33 +1197,22 @@ class MyAccount_AJAX extends JSON_Action
 			if ($user->isValidForEContentSource('hoopla')) {
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 				$driver = new HooplaDriver();
-				$hooplaSummaryRaw = $driver->getAccountSummary($user);
-				if ($hooplaSummaryRaw == false) {
-					$hooplaSummary = [
-						'numCheckedOut' => 0,
-						'numCheckoutsRemaining' => 0,
-					];
-				} else {
-					$hooplaSummary = [
-						'numCheckedOut' => $hooplaSummaryRaw->currentlyBorrowed,
-						'numCheckoutsRemaining' => $hooplaSummaryRaw->borrowsRemaining,
-					];
-				}
+				$hooplaSummary = $driver->getAccountSummary($user);
 
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
 						if ($linkedUserSummary != false) {
-							$hooplaSummary['numCheckedOut'] += $linkedUserSummary->currentlyBorrowed;
-							$hooplaSummary['numCheckoutsRemaining'] += $linkedUserSummary->borrowsRemaining;
+							$hooplaSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
+							$hooplaSummary->numCheckoutsRemaining += $linkedUserSummary->numCheckoutsRemaining;
 						}
 					}
 				}
 				$timer->logTime("Loaded Hoopla Summary for User and linked users");
 				$result = [
 					'success' => true,
-					'summary' => $hooplaSummary
+					'summary' => $hooplaSummary->toArray()
 				];
 			} else {
 				$result['message'] = 'Invalid for Hoopla';
@@ -1257,16 +1241,15 @@ class MyAccount_AJAX extends JSON_Action
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-						$overDriveSummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
-						$overDriveSummary['numAvailableHolds'] += $linkedUserSummary['numAvailableHolds'];
-						$overDriveSummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+						$overDriveSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
+						$overDriveSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+						$overDriveSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
 					}
 				}
-				$overDriveSummary['numHolds'] = $overDriveSummary['numAvailableHolds'] + $overDriveSummary['numUnavailableHolds'];
 				$timer->logTime("Loaded OverDrive Summary for User and linked users");
 				$result = [
 					'success' => true,
-					'summary' => $overDriveSummary
+					'summary' => $overDriveSummary->toArray()
 				];
 			} else {
 				$result['message'] = 'Invalid for OverDrive';

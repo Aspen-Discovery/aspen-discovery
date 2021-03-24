@@ -816,6 +816,54 @@ function getUserUpdates()
 				'ALTER TABLE user_checkout ADD COLUMN groupedWorkId CHAR(36)',
 				'ALTER TABLE user_hold ADD COLUMN groupedWorkId CHAR(36)',
 			]
+		],
+
+		'user_circulation_cache_overdrive_magazines' => [
+			'title' => 'Circulation caching overdrive magazines',
+			'description' => 'Add overdrive magazine to checkout caching information',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN overdriveMagazine TINYINT(1)',
+			]
+		],
+
+		'user_account_summary_cache' => [
+			'title' => 'User Account Summary caching',
+			'description' => 'Store Account Summary for users',
+			'sql' => [
+				"CREATE TABLE user_account_summary (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					source VARCHAR(50) NOT NULL,
+					userId INT(11) NOT NULL,
+					numCheckedOut INT(11) DEFAULT 0,
+					numOverdue INT(11) DEFAULT 0,
+					numAvailableHolds INT(11) DEFAULT 0,
+					numUnavailableHolds INT(11) DEFAULT 0,
+					totalFines FLOAT DEFAULT 0,
+					expirationDate INT(11) DEFAULT 0,
+					numBookings INT(11) DEFAULT 0,
+					lastLoaded INT(11)
+				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+				'ALTER TABLE user_account_summary ADD UNIQUE (source, userId)'
+			]
+		],
+
+		'user_account_summary_remaining_checkouts' => [
+			'title' => 'User Account Summary - remaining checkouts',
+			'description' => 'Add remaining checkouts to account summary for Hoopla',
+			'sql' => [
+				'ALTER TABLE user_account_summary ADD COLUMN numCheckoutsRemaining INT(11) DEFAULT 0'
+			]
+		],
+
+		'user_circulation_cache_indexes' => [
+			'title' => 'Circulation Caching indexes',
+			'description' => 'Add indexes to circulation caching tables',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD INDEX (userId, source, recordId)',
+				'ALTER TABLE user_hold ADD INDEX (userId, source, recordId)',
+				'ALTER TABLE user_checkout ADD INDEX (userId, groupedWorkId)',
+				'ALTER TABLE user_hold ADD INDEX (userId, groupedWorkId)'
+			]
 		]
 	);
 }

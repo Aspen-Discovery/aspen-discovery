@@ -279,7 +279,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			}
 
 			global $memCache;
-			$memCache->delete('cloud_library_summary_' . $patron->id);
+			$patron->clearCachedAccountSummaryForSource('cloud_library');
 			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 		}else if ($responseCode == '405'){
 			$result['message'] = translate("Bad Request placing hold.");
@@ -339,37 +339,32 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		return $result;
 	}
 
-	public function getAccountSummary($patron)
+	public function getAccountSummary(User $user) : AccountSummary
 	{
-		global $memCache;
-		global $configArray;
-		global $timer;
+		list($existingId, $summary) = $user->getCachedAccountSummary('cloud_library');
 
-		if ($patron == false){
-			return array(
-				'numCheckedOut' => 0,
-				'numAvailableHolds' => 0,
-				'numUnavailableHolds' => 0,
-			);
-		}
+		if ($summary === null) {
+			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+			$summary = new AccountSummary();
+			$summary->userId = $user->id;
+			$summary->source = 'cloud_library';
 
-		$summary = $memCache->get('cloud_library_summary_' . $patron->id);
-		if ($summary == false || isset($_REQUEST['reload'])){
 			//Get account information from api
-			$circulation = $this->getPatronCirculation($patron);
+			$circulation = $this->getPatronCirculation($user);
 
-			$summary = array();
-			$summary['numCheckedOut'] = empty($circulation->Checkouts->Item) ? 0 : count($circulation->Checkouts->Item);
+			$summary->numCheckedOut = empty($circulation->Checkouts->Item) ? 0 : count($circulation->Checkouts->Item);
 
-			//RBdigital automatically checks holds out so nothing is available
-			$summary['numAvailableHolds'] = empty($circulation->Reserves->Item) ? 0 : count($circulation->Reserves->Item);
-			$summary['numUnavailableHolds'] = empty($circulation->Holds->Item) ? 0 : count($circulation->Holds->Item);
-			$summary['numHolds'] = $summary['numAvailableHolds'] + $summary['numUnavailableHolds'];
+			$summary->numAvailableHolds = empty($circulation->Reserves->Item) ? 0 : count($circulation->Reserves->Item);
+			$summary->numUnavailableHolds = empty($circulation->Holds->Item) ? 0 : count($circulation->Holds->Item);
 
-			$timer->logTime("Finished loading titles from Cloud Library summary");
-			$memCache->set('cloud_library_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);
+			$summary->lastLoaded = time();
+			if ($existingId != null) {
+				$summary->id = $existingId;
+				$summary->update();
+			}else{
+				$summary->insert();
+			}
 		}
-
 		return $summary;
 	}
 

@@ -312,33 +312,23 @@ class Axis360Driver extends AbstractEContentDriver
 		return $result;
 	}
 
-	public function getAccountSummary($patron)
+	public function getAccountSummary(User $user) : AccountSummary
 	{
-		global $memCache;
-		global $configArray;
+		list($existingId, $summary) = $user->getCachedAccountSummary('axis360');
 
-		if ($patron == false){
-			return array(
-				'numCheckedOut' => 0,
-				'numAvailableHolds' => 0,
-				'numUnavailableHolds' => 0,
-			);
-		}
+		if ($summary === null) {
+			//Get account information from api
+			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+			$summary = new AccountSummary();
+			$summary->userId = $user->id;
+			$summary->source = 'axis360';
 
-		$summary = $memCache->get('axis360_summary_' . $patron->id);
-		if (true || $summary == false || isset($_REQUEST['reload'])){
-			$summary = array(
-				'numCheckedOut' => 0,
-				'numAvailableHolds' => 0,
-				'numUnavailableHolds' => 0,
-				'numHolds' => 0,
-			);
-			if ($this->getAxis360AccessToken($patron)) {
+			if ($this->getAxis360AccessToken($user)) {
 				require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-				$settings = $this->getSettings($patron);
+				$settings = $this->getSettings($user);
 				$checkoutsUrl = $settings->apiUrl . "/Services/VendorAPI/availability/v3_1";
 				$params = [
-					'patronId' => $patron->getBarcode()
+					'patronId' => $user->getBarcode()
 				];
 				$headers = [
 					'Authorization: ' . $this->accessToken,
@@ -350,25 +340,31 @@ class Axis360Driver extends AbstractEContentDriver
 				/** @var stdClass $xmlResults */
 				$xmlResults = simplexml_load_string($response);
 				$status = $xmlResults->status;
-				if ($status->code == '0000'){
-					foreach ($xmlResults->title as $title){
+				if ($status->code == '0000') {
+					foreach ($xmlResults->title as $title) {
 						$availability = $title->availability;
-						if ((string)$availability->isCheckedout == 'true'){
-							$summary['numCheckedOut']++;
-						}elseif ((string)$availability->isInHoldQueue == 'true'){
+						if ((string)$availability->isCheckedout == 'true') {
+							$summary->numCheckedOut++;
+						} elseif ((string)$availability->isInHoldQueue == 'true') {
 							if ((string)$availability->isReserved == 'true') {
-								$summary['numAvailableHolds']++;
-							}else{
-								$summary['numUnavailableHolds']++;
+								$summary->numAvailableHolds++;
+							} else {
+								$summary->numUnavailableHolds++;
 							}
-							$summary['numHolds']++;
 						}
 					}
-				}else{
+				} else {
 					$this->incrementStat('numApiErrors');
 				}
 			}
-			$memCache->set('axis360_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);
+
+			$summary->lastLoaded = time();
+			if ($existingId != null) {
+				$summary->id = $existingId;
+				$summary->update();
+			}else{
+				$summary->insert();
+			}
 		}
 
 		return $summary;

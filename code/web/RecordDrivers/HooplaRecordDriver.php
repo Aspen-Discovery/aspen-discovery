@@ -204,22 +204,34 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return array();
 	}
 
+	protected $_actions = null;
 	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $recordBookable, $volumeData = null){
-		$actions = array();
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			//Check to see if the title is on hold or checked out to the patron.
+			$loadDefaultActions = true;
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('hoopla', $this->id));
+				$loadDefaultActions = count($this->_actions) == 0;
+			}
 
-		/** @var Library $searchLibrary */
-		$searchLibrary = Library::getSearchLibrary();
-		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
-			$id = $this->id;
-			$title = 'Check Out Hoopla';
-			$actions[] = array(
-				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
-				'title'   => $title,
-				'type' => 'hoopla_checkout'
-			);
+			if ($loadDefaultActions) {
+				/** @var Library $searchLibrary */
+				$searchLibrary = Library::getSearchLibrary();
+				if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
+					$id = $this->id;
+					$title = 'Check Out Hoopla';
+					$this->_actions[] = array(
+						'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
+						'title' => $title,
+						'type' => 'hoopla_checkout'
+					);
+				}
+			}
 		}
 
-		return $actions;
+		return $this->_actions;
 	}
 
 	/**

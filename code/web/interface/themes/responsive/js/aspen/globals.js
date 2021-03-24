@@ -11,6 +11,12 @@ var Globals = (function () {
 		repositoryUrl: '',
 		encodedRepositoryUrl: '',
 		activeAction: '',
-		activeModule: ''
+		activeModule: '',
+		hasILSConnection: false,
+		hasAxis360Connection: false,
+		hasCloudLibraryConnection: false,
+		hasHooplaConnection: false,
+		hasOverDriveConnection: false,
+		hasRBdigitalConnection: false
 	}
 })(Globals || {});

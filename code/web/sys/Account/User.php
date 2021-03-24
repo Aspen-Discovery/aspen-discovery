@@ -906,32 +906,6 @@ class User extends DataObject
 		return $this->getHomeLibrary()->displayName;
 	}
 
-	public function getNumCheckedOutTotal($includeLinkedUsers = true) {
-		$this->updateRuntimeInformation();
-		$myCheckouts = $this->_numCheckedOutIls + $this->_numCheckedOutOverDrive + $this->_numCheckedOutHoopla + $this->_numCheckedOutRBdigital;
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->getLinkedUsers() as $user) {
-					$myCheckouts += $user->getNumCheckedOutTotal(false);
-				}
-			}
-		}
-		return $myCheckouts;
-	}
-
-	public function getNumHoldsTotal($includeLinkedUsers = true) {
-		$this->updateRuntimeInformation();
-		$myHolds = $this->_numHoldsIls + $this->_numHoldsOverDrive + $this->_numHoldsRBdigital;
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->linkedUsers as $user) {
-					$myHolds += $user->getNumHoldsTotal(false);
-				}
-			}
-		}
-		return $myHolds;
-	}
-
 	/** @noinspection PhpUnused */
 	public function getNumHoldsAvailableTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
@@ -1108,6 +1082,19 @@ class User extends DataObject
 		return $checkoutsToReturn;
 	}
 
+	public function isRecordCheckedOut($source, $recordId){
+		require_once ROOT_DIR . "/sys/User/Checkout.php";
+		$checkout = new Checkout();
+		$checkout->userId = $this->id;
+		$checkout->source = $source;
+		$checkout->recordId = $recordId;
+		if ($checkout->find(true)){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
 	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all')
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
@@ -1162,7 +1149,6 @@ class User extends DataObject
 				}
 			}
 
-
 			//Get holds from Cloud Library
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
@@ -1173,7 +1159,6 @@ class User extends DataObject
 					$holdsToReturn = array_merge_recursive($holdsToReturn, $cloudLibraryHolds);
 				}
 			}
-
 
 			//Get holds from Axis 360
 			if ($this->isValidForEContentSource('axis360')) {
@@ -1294,6 +1279,53 @@ class User extends DataObject
 		}
 
 		return $holdsToReturn;
+	}
+
+	public function isRecordOnHold($source, $recordId){
+		require_once ROOT_DIR . "/sys/User/Hold.php";
+		$hold = new Hold();
+		$hold->userId = $this->id;
+		$hold->source = $source;
+		$hold->recordId = $recordId;
+		if ($hold->find(true)){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	public function getCirculatedRecordActions($source, $recordId, $loadingLinkedUser = false)
+	{
+		$actions = [];
+		$showUserName = $loadingLinkedUser;
+//		if (!$loadingLinkedUser){
+//			$linkedUsers = $this->getLinkedUsers();
+//			if (count($linkedUsers) > 0){
+//				$showUserName = true;
+//			}
+//		}
+		if ($this->isRecordCheckedOut($source, $recordId)) {
+			$actions[] = array(
+				'title' => translate(['text' => 'Checked Out to %1%', 1 => $showUserName ? $this->displayName : 'You']),
+				'url' => "/MyAccount/CheckedOut",
+				'requireLogin' => false,
+				'btnType' => 'btn-info'
+			);
+		} elseif ($source != 'hoopla' && $this->isRecordOnHold($source, $recordId)) {
+			$actions[] = array(
+				'title' => translate(['text' => 'On Hold for %1%', 1 => $showUserName ? $this->displayName : 'You']),
+				'url' => "/MyAccount/Holds",
+				'requireLogin' => false,
+				'btnType' => 'btn-info'
+			);
+		}
+		if (!$loadingLinkedUser) {
+			$linkedUsers = $this->getLinkedUsers();
+			foreach ($linkedUsers as $linkedUser) {
+				$actions = array_merge($actions, $linkedUser->getCirculatedRecordActions($source, $recordId, true));
+			}
+		}
+		return $actions;
 	}
 
 	public function getMyBookings($includeLinkedUsers = true){
@@ -2391,6 +2423,33 @@ class User extends DataObject
 			}
 		}
 		return false;
+	}
+
+	public function getCachedAccountSummary(string $source)
+	{
+		//Check to see if we have cached summary information
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $this->id;
+		$summary->source = $source;
+		$existingId = null;
+		if ($summary->find(true)){
+			$existingId = $summary->id;
+			if (($summary->lastLoaded < (time() - 15 * 60)) || isset($_REQUEST['refreshCheckouts']) || isset($_REQUEST['refreshHolds']) || isset($_REQUEST['refreshSummary'])){
+				$summary = null;
+			}
+		}else{
+			$summary = null;
+		}
+		return [$existingId, $summary];
+	}
+
+	public function clearCachedAccountSummaryForSource(string $source){
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $this->id;
+		$summary->source = $source;
+		$summary->delete(true);
 	}
 
 	protected function clearRuntimeDataVariables(){

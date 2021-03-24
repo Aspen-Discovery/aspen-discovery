@@ -732,4 +732,19 @@ abstract class DataObject
 			$this->$fieldName = EncryptionUtils::decryptField($this->$fieldName);
 		}
 	}
+
+	public function toArray(){
+		$return = [];
+		$properties = get_object_vars($this);
+		foreach ($properties as $name => $value) {
+			if ($name[0] != '_'){
+				$return[$name] = $value;
+			}else if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
+				if ($name != '_data'){
+					$return[substr($name, 1)] = $value;
+				}
+			}
+		}
+		return $return;
+	}
 }

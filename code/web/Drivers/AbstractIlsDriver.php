@@ -217,18 +217,18 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'errors' => array('Importing Lists has not been implemented for this ILS.'));
 	}
 
-	public function getAccountSummary(User $user)
+	public function getAccountSummary(User $user) : AccountSummary
 	{
-		return [
-			'numCheckedOut' => 0,
-			'numOverdue' => 0,
-			'numAvailableHolds' => 0,
-			'numUnavailableHolds' => 0,
-			'totalFines' => 0,
-			'expires' => '',
-			'expired' => 0,
-			'expireClose' => 0,
-		];
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $user->id;
+		$summary->source = 'ils';
+		$summary->numCheckedOut = 0;
+		$summary->numOverdue = 0;
+		$summary->numAvailableHolds = 0;
+		$summary->totalFines = 0;
+		$summary->expirationDate = 0;
+		return $summary;
 	}
 
 	public function showMessagingSettings()

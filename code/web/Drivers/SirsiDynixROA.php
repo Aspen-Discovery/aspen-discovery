@@ -386,18 +386,12 @@ class SirsiDynixROA extends HorizonAPI
 		return null;
 	}
 
-	public function getAccountSummary($user, $forceRefresh = false)
+	public function getAccountSummary(User $user) : AccountSummary
 	{
-		$summary = [
-			'numCheckedOut' => 0,
-			'numOverdue' => 0,
-			'numAvailableHolds' => 0,
-			'numUnavailableHolds' => 0,
-			'totalFines' => 0,
-			'expires' => '',
-			'expired' => 0,
-			'expireClose' => 0,
-		];
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $user->id;
+		$summary->source = 'ils';
 
 		$webServiceURL = $this->getWebServiceURL();
 		$includeFields = urlencode("privilegeExpiresDate,circRecordList{overdue},blockList{owed},holdRecordList{status}");
@@ -407,10 +401,10 @@ class SirsiDynixROA extends HorizonAPI
 		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
 
 		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
-			$summary['numCheckedOut'] = count($lookupMyAccountInfoResponse->fields->circRecordList);
+			$summary->numCheckedOut = count($lookupMyAccountInfoResponse->fields->circRecordList);
 			foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkout) {
 				if ($checkout->fields->overdue) {
-					$summary['numOverdue']++;
+					$summary->numOverdue++;
 				}
 			}
 
@@ -418,9 +412,9 @@ class SirsiDynixROA extends HorizonAPI
 				foreach ($lookupMyAccountInfoResponse->fields->holdRecordList as $hold) {
 					//Get detailed info about the hold
 					if ($hold->fields->status == 'BEING_HELD') {
-						$summary['numAvailableHolds']++;
+						$summary->numAvailableHolds++;
 					} elseif ($hold->fields->status != 'EXPIRED') {
-						$summary['numUnavailableHolds']++;
+						$summary->numUnavailableHolds++;
 					}
 				}
 			}
@@ -432,21 +426,9 @@ class SirsiDynixROA extends HorizonAPI
 					$finesVal += $fineAmount;
 				}
 			}
-			$summary['totalFines'] = $finesVal;
+			$summary->totalFines = $finesVal;
 
-			$summary['expires'] = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-			if ($summary['expires'] != null) {
-				list ($yearExp, $monthExp, $dayExp) = explode("-", $summary['expires']);
-				$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-				$timeNow = time();
-				$timeToExpire = $timeExpire - $timeNow;
-				if ($timeToExpire <= 30 * 24 * 60 * 60) {
-					if ($timeToExpire <= 0) {
-						$summary['expired'] = 1;
-					}
-					$summary['expireClose'] = 1;
-				}
-			}
+			$summary->expirationDate = strtotime($lookupMyAccountInfoResponse->fields->privilegeExpiresDate);
 		}
 
 		return $summary;

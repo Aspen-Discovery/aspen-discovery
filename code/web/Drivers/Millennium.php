@@ -1575,30 +1575,22 @@ class Millennium extends AbstractIlsDriver
 		return $userValid;
 	}
 
-	public function showLinksForRecordsWithItems() {
-		return false;
-	}
-
-	public function getAccountSummary(User $user)
+	public function getAccountSummary(User $user) : AccountSummary
 	{
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $user->id;
+		$summary->source = 'ils';
+
 		$barcode = $user->getBarcode();
 		$patronDump = $this->_getPatronDump($barcode);
-		$expired = 0;
+		$expirationTime = 0;
 		$expireClose = 0;
 		$expires = '';
 		//See if expiration date is close
 		if (trim($patronDump['EXP_DATE']) != '-  -'){
-			$expires = $patronDump['EXP_DATE'];
 			list ($monthExp, $dayExp, $yearExp) = explode("-",$patronDump['EXP_DATE']);
-			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-			$timeNow = time();
-			$timeToExpire = $timeExpire - $timeNow;
-			if ($timeToExpire <= 30 * 24 * 60 * 60){
-				if ($timeToExpire <= 0){
-					$expired = 1;
-				}
-				$expireClose = 1;
-			}
+			$expirationTime = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
 		}
 		$numHoldsAvailable = 0;
 		$numHoldsRequested = 0;
@@ -1614,16 +1606,15 @@ class Millennium extends AbstractIlsDriver
 			}
 		}
 		$finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
-		return [
-			'numCheckedOut' => $patronDump['CUR_CHKOUT'],
-			'numOverdue' => 0,
-			'numAvailableHolds' => $numHoldsAvailable,
-			'numUnavailableHolds' => $numHoldsRequested,
-			'totalFines' => $finesVal,
-			'expires' => $expires,
-			'expired' => $expired,
-			'expireClose' => $expireClose,
-		];
+
+		$summary->numCheckedOut = $patronDump['CUR_CHKOUT'];
+		$summary->numOverdue = 0;
+		$summary->numAvailableHolds = $numHoldsAvailable;
+		$summary->numUnavailableHolds = $numHoldsRequested;
+		$summary->totalFines = $finesVal;
+		$summary->expirationDate = $expirationTime;
+
+		return $summary;
 	}
 
 	public function findNewUser($patronBarcode){

@@ -6,7 +6,7 @@
 		{/if}
 	{if $hooplaPatronStatus}
 		<div class="alert alert-info">
-			You have <span class="badge">{$hooplaPatronStatus->borrowsRemaining}</span> of {$hooplaPatronStatus->borrowsAllowedPerMonth} Hoopla check outs available this month. Proceed with checkout?
+			You have <span class="badge">{$hooplaPatronStatus->numCheckoutsRemaining}</span> Hoopla check outs remaining this month. Proceed with checkout?
 		</div>
 		<br>
 		<div class="form-group">
