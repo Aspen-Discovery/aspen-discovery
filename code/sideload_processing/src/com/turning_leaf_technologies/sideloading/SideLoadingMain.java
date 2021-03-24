@@ -299,7 +299,8 @@ public class SideLoadingMain {
 
 	private static void processRecordsToReload(SideLoadSettings settings, SideLoadLogEntry logEntry) {
 		try {
-			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + settings.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type=?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getRecordsToReloadStmt.setString(1, settings.getName());
 			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
 			int numRecordsToReloadProcessed = 0;
