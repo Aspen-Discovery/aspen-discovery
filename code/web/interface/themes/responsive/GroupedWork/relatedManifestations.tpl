@@ -1,10 +1,10 @@
 {strip}
 	<div class="related-manifestations">
-		<div class="row related-manifestations-header">
+{*		<div class="row related-manifestations-header">
 			<div class="col-xs-12 result-label related-manifestations-label">
 				{translate text="Choose a Format"}
 			</div>
-		</div>
+		</div>*}
 		{assign var=hasHiddenFormats value=false}
 		{foreach from=$relatedManifestations item=relatedManifestation}
 			{if $relatedManifestation->hasHiddenFormats()}

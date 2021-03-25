@@ -1,8 +1,8 @@
 {strip}
 	<h2 class="hiddenTitle" id="mobileNav">{translate text="Navigation"}</h2>
 	<div class="menu-section menu-section-left">
-		{if !empty($homeLink)}
-			<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Library Home Page' inAttribute=true}" aria-label="{translate text="Return to $homeLinkText" inAttribute=true}">
+		{if $homeBreadcrumbLink <> '/'}
+			<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text="Return to $homeLinkText" inAttribute=true}" aria-label="{translate text="Return to $homeLinkText" inAttribute=true}">
 				<i class="fas fa-home fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs"></span>
 			</a>
 		{/if}
