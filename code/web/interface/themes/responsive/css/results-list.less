@@ -160,9 +160,22 @@
 }
 
 .related-manifestation{
-  padding-top: 4px;
-  padding-bottom: 4px;
-  border-bottom: 1px dotted #d3d3d3;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border: 1px solid #c3c3c3;
+  border-radius: 8px;
+  margin-top: 1em;
+  .col-sm-12 .row {
+    padding-top: 1em;
+  }
+  .col-sm-12 > .striped-odd {
+      background: #f8f8ff;
+    padding-bottom: 1em;
+    }
+
+  .col-sm-12 > .row:nth-of-type(n+2) ~ .row:not(:last-of-type) {
+      margin-bottom: 1em !important;
+    }
 }
 .related-manifestations-header{
   border-bottom: 1px solid #d3d3d3;
@@ -179,8 +192,9 @@
   margin-bottom: 5px;
 }
 .manifestation-format{
-  font-size:13px;
+  font-size:14px;
   font-weight: bold;
+  padding-bottom: .5em;
   .btn{
     width: 100%;
   }
@@ -194,7 +208,6 @@
   display: inline-block;
   margin-bottom: 3px;
 }
-
 .related_record_status{
   font-size: 13px;
   font-weight: bold;
