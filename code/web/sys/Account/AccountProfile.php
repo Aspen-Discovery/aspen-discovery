@@ -22,6 +22,8 @@ class AccountProfile extends DataObject {
 	public $sipPort;
 	public $oAuthClientId;
 	public $oAuthClientSecret;
+	public $staffUsername;
+	public $staffPassword;
 	public /** @noinspection PhpUnused */ $apiVersion;
 	public $weight;
 
@@ -61,6 +63,12 @@ class AccountProfile extends DataObject {
 					'oAuthClientId' => array('property' => 'oAuthClientId', 'type' => 'text', 'label' => 'OAuth2 ClientId', 'maxLength' => 36, 'description' => 'The Client ID to use when making a connection to APIs', 'required' => false),
 					'oAuthClientSecret' => array('property' => 'oAuthClientSecret', 'type' => 'text', 'label' => 'OAuth2 Secret', 'maxLength' => 36, 'description' => 'The Client Secret to use when making a connection to APIs', 'required' => false),
 					'apiVersion' => array('property'=>'apiVersion', 'type'=>'text','label'=>'API Version', 'maxLength' => 10, 'description'=>'Optional description for the version of the API. Required for Sierra.')
+				),
+			),
+			'staffUser'=>array('property'=>'staffUser', 'type' => 'section', 'label' =>'Staff Account Information (optional)', 'hideInLists' => true,
+				'helpLink' => '', 'properties' => array(
+					'staffUsername' => array('property' => 'staffUsername', 'type' => 'text', 'label' => 'Staff Username', 'maxLength' => 100, 'description' => 'The Staff Username to use when performing staff actions', 'required' => false),
+					'staffPassword' => array('property' => 'staffPassword', 'type' => 'text', 'label' => 'Staff Password', 'maxLength' => 50, 'description' => 'The Staff Password to use when performing staff actions', 'required' => false),
 				),
 			),
 			'recordSource' => array('property' => 'recordSource', 'type' => 'text', 'label' => 'Record Source', 'maxLength' => 50, 'description' => 'The record source of checkouts holds, etc.  Should match the name of an Indexing Profile.', 'required' => false),
