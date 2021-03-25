@@ -13,7 +13,7 @@
 		{foreach from=$summary item="item"}
 			{if $item.displayByDefault && $numRowsShown<3}
 				<div class="itemSummary row">
-					<div class="col-xs-7">
+					<div class="col-xs-{if $item.isEContent == false}7{else}11{/if}">
 						<span class="notranslate"><strong>{$item.shelfLocation}</strong>
 							{if $item.availableCopies > 9999}
 								&nbsp;has unlimited
@@ -22,11 +22,11 @@
 							{/if}
 						</span>
 					</div>
-					<div class="col-xs-4">
 						{if $item.isEContent == false}
+					<div class="col-xs-4">
 							<span class="notranslate"><strong>{$item.callNumber}</strong></span>
-						{/if}
 					</div>
+						{/if}
 				</div>
 				{assign var=numDefaultItems value=$numDefaultItems+$item.totalCopies}
 				{assign var=numRowsShown value=$numRowsShown+1}

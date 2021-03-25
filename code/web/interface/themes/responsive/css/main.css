@@ -8855,6 +8855,13 @@ a.placard-link {
 .badge {
   background-color: #666666;
 }
+.search_tools.well.small a,
+.search_tools.well.small strong {
+  padding-right: 0.5em;
+}
+.search_tools.well.small :last-child {
+  padding-right: 0;
+}
 /* with flexbox */
 .grid {
   display: -webkit-box;
@@ -10218,9 +10225,21 @@ a.browse-thumbnail-sorted.active {
   margin-top: 3px;
 }
 .related-manifestation {
-  padding-top: 4px;
-  padding-bottom: 4px;
-  border-bottom: 1px dotted #d3d3d3;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border: 1px solid #c3c3c3;
+  border-radius: 8px;
+  margin-top: 1em;
+}
+.related-manifestation .col-sm-12 .row {
+  padding-top: 1em;
+}
+.related-manifestation .col-sm-12 > .striped-odd {
+  background: #f8f8ff;
+  padding-bottom: 1em;
+}
+.related-manifestation .col-sm-12 > .row:nth-of-type(n+2) ~ .row:not(:last-of-type) {
+  margin-bottom: 1em !important;
 }
 .related-manifestations-header {
   border-bottom: 1px solid #d3d3d3;
@@ -10236,8 +10255,9 @@ a.browse-thumbnail-sorted.active {
   margin-bottom: 5px;
 }
 .manifestation-format {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: bold;
+  padding-bottom: 0.5em;
 }
 .manifestation-format .btn {
   width: 100%;

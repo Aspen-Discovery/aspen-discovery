@@ -6,13 +6,12 @@
 		</div>
 	</div>
 	{foreach from=$relatedManifestation->getVariations() item=variation}
-		<div class="row {if $variation->isHideByDefault()}hiddenManifestation_{$summId}{/if}" {if $variation->isHideByDefault()}style="display: none"{/if}>
+		<div class="row {if $variation->isHideByDefault()}hiddenManifestation_{$summId}{else}striped-{cycle values="odd,even"}{/if}" {if $variation->isHideByDefault()}style="display: none"{/if}>
 			<div class="col-tn-4 col-xs-4{if empty($viewingCombinedResults) || !$viewingCombinedResults} col-md-3{/if} manifestation-format">
-				&nbsp;&nbsp;&nbsp;
 				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');"aria-label="View Manifestations for {translate text=$relatedManifestation->format inAttribute=true} {$variation->label} of {$summTitle}">
 					{$variation->label}
 				</a>
-				<br>&nbsp;&nbsp;&nbsp;
+				<br>
 				<a href="#" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">
 					<span class="manifestation-toggle-text btn btn-xs btn-editions" id='manifestation-toggle-text-{$workId|escapeCSS}_{$variation->format|escapeCSS}'>{if $variation->getNumRelatedRecords() == 1}{translate text='Show Edition'}{else}{translate text='Show Editions'}{/if}</span>
 				</a>
