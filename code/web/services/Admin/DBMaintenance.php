@@ -260,6 +260,15 @@ class Admin_DBMaintenance extends Admin_Admin
 					'sql' => [
 						"UPDATE account_profiles set loginConfiguration = 'barcode_pin' WHERE name = 'admin'"
 					]
+				],
+
+				'account_profiles_staff_information' => [
+					'title' => 'Add staff information to Account Profiles',
+					'description' => 'Add staff login information for performing actions where APIs need elevated permissions',
+					'sql' => [
+						'ALTER TABLE account_profiles ADD COLUMN staffUsername VARCHAR(100) default null',
+						'ALTER TABLE account_profiles ADD COLUMN staffPassword VARCHAR(50) default null'
+					]
 				]
 			],
 			$user_updates,
