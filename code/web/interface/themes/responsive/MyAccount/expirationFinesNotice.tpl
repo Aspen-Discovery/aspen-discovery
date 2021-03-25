@@ -42,7 +42,7 @@
 							{if $expirationNearMessage}
 								{$expirationNearMessage}
 							{else}
-								{translate text="Your library card will expire on %1%." 1=$ilsSummary->isExpired()}
+								{translate text="Your library card will expire on %1%." 1=$ilsSummary->expirationDate|date_format:"%D"}
 							{/if}
 						{/if}
 					</a>
