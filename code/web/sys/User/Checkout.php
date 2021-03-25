@@ -38,8 +38,9 @@ class Checkout extends CircEntry
 	public $selectedFormatName;
 	public $selectedFormatValue;
 	public $canReturnEarly;
-	public $supplementalMaterials; //This gets minified when saved and loaded
-	public $formats; //This gets minified when saved and loaded
+	public $isSupplemental;
+	public $supplementalMaterials; //This gets serialized when saved and loaded
+	public $formats; //This gets serialized when saved and loaded
 
 	//For RBdigital
 	public $downloadUrl;
@@ -58,7 +59,11 @@ class Checkout extends CircEntry
 
 	public function getNumericColumnNames()
 	{
-		return ['userId', 'checkoutDate', 'dueDate', 'renewCount', 'canRenew', 'autoRenew', 'maxRenewals', 'fine', 'holdQueueLength', 'allowDownload', 'overdriveRead', 'overdriveListen', 'overdriveVideo', 'overdriveMagazine', 'formatSelected', 'canReturnEarly'];
+		return ['userId', 'checkoutDate', 'dueDate', 'renewCount', 'canRenew', 'autoRenew', 'maxRenewals', 'fine', 'holdQueueLength', 'allowDownload', 'overdriveRead', 'overdriveListen', 'overdriveVideo', 'overdriveMagazine', 'formatSelected', 'canReturnEarly', 'isSupplemental'];
+	}
+
+	public function getSerializedFieldNames(){
+		return ['supplementalMaterials', 'formats'];
 	}
 
 	public function getDaysUntilDue(){

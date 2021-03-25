@@ -826,6 +826,14 @@ function getUserUpdates()
 			]
 		],
 
+		'user_circulation_cache_overdrive_supplemental_materials' => [
+			'title' => 'Circulation caching supplemental materials',
+			'description' => 'Add overdrive supplemental materials to checkout caching information',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN isSupplemental TINYINT(1) DEFAULT 0',
+			]
+		],
+
 		'user_account_summary_cache' => [
 			'title' => 'User Account Summary caching',
 			'description' => 'Store Account Summary for users',

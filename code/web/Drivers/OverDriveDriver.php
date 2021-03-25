@@ -491,21 +491,21 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 				if (array_key_exists($curTitle->reserveId, $supplementalMaterialIds)){
 					$parentCheckoutId = $supplementalMaterialIds[$curTitle->reserveId];
-					$parentCheckout = $checkedOutTitles['OverDrive' . $parentCheckoutId];
+					/** @var Checkout $parentCheckout */
+					$parentCheckout = $checkedOutTitles['overdrive' . $parentCheckoutId . $patron->id];
 					if (!isset($parentCheckout->supplementalMaterials)) {
 						$parentCheckout->supplementalMaterials = [];
 					}
-					$supplementalMaterial = [
-						'checkoutSource' => 'OverDrive',
-						'overDriveId' => $curTitle->reserveId,
-						'isSupplemental' => true,
-						'userId' => $patron->id,
-					];
+					$supplementalMaterial = new Checkout();
+					$supplementalMaterial->source = 'overdrive';
+					$supplementalMaterial->sourceId = $curTitle->reserveId;
+					$supplementalMaterial->recordId = $curTitle->reserveId;
+					$supplementalMaterial->userId = $patron->id;
+					$supplementalMaterial->isSupplemental = true;
 					$supplementalMaterial = $this->loadCheckoutFormatInformation($curTitle, $supplementalMaterial);
 					if (isset($supplementalMaterial->selectedFormatValue) && !empty($supplementalMaterial->selectedFormatValue)) {
 						$parentCheckout->supplementalMaterials[] = $supplementalMaterial;
 					}
-					$checkedOutTitles['OverDrive' . $parentCheckoutId] = $parentCheckout;
 				}else{
 					//Load data from api
 					$checkout->sourceId = $curTitle->reserveId;
@@ -573,8 +573,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 											$groupedWork->id = $groupedWorkPrimaryIdentifier->grouped_work_id;
 											if ($groupedWork->find(true)){
 												$checkout->groupedWorkId = $groupedWork->permanent_id;
-												require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-												$groupedWorkDriver = new GroupedWorkDriver($groupedWork->permanent_id);
 											}
 										}
 									}
