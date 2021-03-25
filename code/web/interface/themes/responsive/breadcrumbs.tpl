@@ -4,15 +4,15 @@
 	<div class="row breadcrumbs">
 		<div class="col-xs-12">
 			<ul class="breadcrumb small">
-				{if !empty($homeLink)}
+				{if $homeBreadcrumbLink <> '/'}
 					<li>
-						<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Library Home Page' inAttribute=true}" aria-label="{translate text="Return to $homeLinkText" inAttribute=true}">
-							<i class="fas fa-home"></i> {translate text="Home"}
+						<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text="Return to $homeLinkText" inAttribute=true}" aria-label="{translate text="Return to $homeLinkText" inAttribute=true}">
+							<i class="fas fa-home"></i> {translate text=$homeLinkText}
 						</a>
 					</li>
 				{/if}
 				<li>
-					{if !empty($homeLink)}
+					{if $homeBreadcrumbLink <> '/'}
 						<span class="divider">&raquo; </span>
 					{/if}
 					<a href="{if empty($homeLink)}/{else}/Search/Home{/if}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Browse the catalog' inAttribute=true}" aria-label="{translate text='Browse the catalog' inAttribute=true}">
