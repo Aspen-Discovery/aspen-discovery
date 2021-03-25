@@ -135,7 +135,7 @@
 						{/if}
 						{if !empty($record->supplementalMaterials)}
 							{foreach from=$record->supplementalMaterials item=supplement}
-								<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$supplement->recordId}', '{$supplement->selectedFormatValue}')" class="btn btn-sm btn-default btn-wrap">{translate text="Download Supplemental %1%" 1=$supplement.selectedFormat.name}</a>
+								<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$supplement->recordId}', '{$supplement->selectedFormatValue}')" class="btn btn-sm btn-default btn-wrap">{translate text="Download Supplemental %1%" 1=$supplement->selectedFormatName}</a>
 							{/foreach}
 						{/if}
 						{if $record->canRenew}

@@ -40,6 +40,10 @@ abstract class DataObject
 		return [];
 	}
 
+	function getSerializedFieldNames(){
+		return [];
+	}
+
 	function __toString(){
 		$stringProperty = $this->__primaryKey;
 		if ($this->__displayNameColumn != null){
@@ -213,6 +217,7 @@ abstract class DataObject
 
 		$numericColumns = $this->getNumericColumnNames();
 		$encryptedFields = $this->getEncryptedFieldNames();
+		$serializedFields = $this->getSerializedFieldNames();
 
 		$properties = get_object_vars($this);
 		$propertyNames = '';
@@ -234,10 +239,27 @@ abstract class DataObject
 					} else {
 						$propertyValues .= 'NULL';
 					}
-				}elseif (in_array($name, $encryptedFields)){
+				}elseif (in_array($name, $encryptedFields)) {
 					$propertyValues .= $aspen_db->quote(EncryptionUtils::encryptField($value));
+				}elseif (in_array($name, $serializedFields)) {
+					if (!empty($value) && $value !== null) {
+						$propertyValues .= $aspen_db->quote(serialize($value));
+					}else{
+						$propertyValues .= '';
+					}
 				} else {
 					$propertyValues .= $aspen_db->quote($value);
+				}
+			}elseif (is_array($value) && in_array($name, $serializedFields)){
+				if (strlen($propertyNames) != 0) {
+					$propertyNames .= ', ';
+					$propertyValues .= ', ';
+				}
+				$propertyNames .= $name;
+				if (!empty($value) && $value !== null) {
+					$propertyValues .= $aspen_db->quote(serialize($value));
+				}else{
+					$propertyValues .= '';
 				}
 			}
 		}
@@ -266,6 +288,7 @@ abstract class DataObject
 
 		$numericColumns = $this->getNumericColumnNames();
 		$encryptedFields = $this->getEncryptedFieldNames();
+		$serializedFields = $this->getSerializedFieldNames();
 
 		$properties = get_object_vars($this);
 		$updates = '';
@@ -286,14 +309,25 @@ abstract class DataObject
 					}
 				}elseif (in_array($name, $encryptedFields)){
 					$updates .= $name . ' = ' . $aspen_db->quote(EncryptionUtils::encryptField($value));
+				}elseif (in_array($name, $serializedFields)) {
+					if (!empty($value) && $value !== null) {
+						$updates .= $name . ' = ' . $aspen_db->quote(serialize($value));
+					}else{
+						$updates .= $name . ' = ' .  $aspen_db->quote('');
+					}
 				} else {
 					$updates .= $name . ' = ' . $aspen_db->quote($value);
+				}
+			}elseif (is_array($value) && in_array($name, $serializedFields)){
+				if (!empty($value) && $value !== null) {
+					$updates .= $name . ' = ' . $aspen_db->quote(serialize($value));
+				}else{
+					$updates .= $name . ' = ' .  $aspen_db->quote('');
 				}
 			}
 		}
 		$updateQuery .= ' SET ' . $updates . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		$this->__lastQuery = $updateQuery;
-		/** @noinspection PhpUnnecessaryLocalVariableInspection */
 		$response = $aspen_db->exec($updateQuery);
 		global $timer;
 		if (IPAddress::logAllQueries()){
@@ -730,6 +764,12 @@ abstract class DataObject
 		$encryptedFields = $this->getEncryptedFieldNames();
 		foreach ($encryptedFields as $fieldName){
 			$this->$fieldName = EncryptionUtils::decryptField($this->$fieldName);
+		}
+		$serializedFields = $this->getSerializedFieldNames();
+		foreach ($serializedFields as $fieldName) {
+			if (!empty($this->$fieldName) && $this->$fieldName !== null && is_string($this->$fieldName)) {
+				$this->$fieldName = unserialize($this->$fieldName);
+			}
 		}
 	}
 
