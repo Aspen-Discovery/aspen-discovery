@@ -1,5 +1,5 @@
 {strip}
-	<div class="result row" id="axis360Hold_{$record->recordId}">
+	<div class="result row axis360Hold_{$record->recordId}_{$record->userId}">
 		{* Cover column *}
 		{if $showCovers}
 		<div class="col-xs-4 col-sm-3">

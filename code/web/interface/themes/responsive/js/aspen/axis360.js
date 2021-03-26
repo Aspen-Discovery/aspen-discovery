@@ -8,7 +8,7 @@ AspenDiscovery.Axis360 = (function () {
 				success: function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
-						$("#axis360Hold_" + id).hide();
+						$(".axis360Hold_" + id + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
 						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
