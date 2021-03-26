@@ -358,8 +358,8 @@ class UserAPI extends Action
 			$accountSummary = $catalogConnection->getAccountSummary($user);
 			$userData->numCheckedOutIls = $accountSummary->numCheckedOut;
 			$userData->numHoldsIls = $accountSummary->getNumHolds();
-			$userData->numHoldsAvailableIls =$accountSummary->numAvailableHolds;
-			$userData->numHoldsRequestedIls = $accountSummary->numUnavailableHolds;
+			$userData->numHoldsAvailableIls =$accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds;
+			$userData->numHoldsRequestedIls = $accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds;
 			$userData->finesVal = $accountSummary->totalFines;
 			global $activeLanguage;
 			$currencyCode = 'USD';
@@ -493,7 +493,21 @@ class UserAPI extends Action
 			if ($user && !($user instanceof AspenError)) {
 				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
 				$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
-				return array('success' => true, 'holds' => $allHolds);
+				$holdsToReturn = [
+					'available' => [],
+					'unavailable' => [],
+				];
+				/**
+				 * @var string $key
+				 * @var Hold $hold
+				 */
+				foreach ($allHolds['available'] as $key => $hold){
+					$holdsToReturn['available'][$key] = $hold->getArrayForAPIs();
+				}
+				foreach ($allHolds['unavailable'] as $key => $hold){
+					$holdsToReturn['unavailable'][$key] = $hold->getArrayForAPIs();
+				}
+				return array('success' => true, 'holds' => $holdsToReturn);
 			} else {
 				return array('success' => false, 'message' => 'Login unsuccessful');
 			}
@@ -623,7 +637,11 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
 			$eContentCheckedOutItems = $driver->getCheckouts($user, false);
-			return array('success' => true, 'items' => $eContentCheckedOutItems['items']);
+			$items = [];
+			foreach ($eContentCheckedOutItems as $checkedOutItem){
+				$items[] = $checkedOutItem->toArray();
+			}
+			return array('success' => true, 'items' => $items);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -817,20 +835,12 @@ class UserAPI extends Action
 			if ($user && !($user instanceof AspenError)) {
 				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
 				$allCheckedOut = $user->getCheckouts(false, $source);
-				foreach ($allCheckedOut as $key => $checkout){
-					if (isset($checkout['canRenew'])){
-						/** @noinspection SpellCheckingInspection */
-						$checkout['canrenew'] = $checkout['canRenew'];
-					}
-					if (isset($checkout['itemId'])) {
-						/** @noinspection SpellCheckingInspection */
-						$checkout['itemid'] = $checkout['itemId'];
-						$checkout['renewMessage'] = '';
-					}
-					$allCheckedOut[$key] = $checkout;
+				$checkoutsList = [];
+				foreach ($allCheckedOut as $key => $checkoutObj){
+					$checkoutsList[] = $checkoutObj->getArrayForAPIs();
 				}
 
-				return array('success' => true, 'checkedOutItems' => $allCheckedOut);
+				return array('success' => true, 'checkedOutItems' => $checkoutsList);
 			} else {
 				return array('success' => false, 'message' => 'Login unsuccessful');
 			}

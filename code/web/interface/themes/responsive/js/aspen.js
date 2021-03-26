@@ -5400,7 +5400,7 @@ AspenDiscovery.Account = (function(){
 			$.getJSON(url, function(data){
 				document.body.style.cursor = "default";
 				if (data.success){
-					$('#accountLoadTime').html(data.accountLoadTime);
+					$('#accountLoadTime').html(data.checkoutInfoLastLoaded);
 					$("#" + source + "CheckoutsPlaceholder").html(data.holds);
 				}else{
 					$("#" + source + "CheckoutsPlaceholder").html(data.message);
@@ -7671,7 +7671,7 @@ AspenDiscovery.Axis360 = (function () {
 				success: function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage("Title Returned", data.message, true);
-						$("#axis360Checkout_" + recordId).hide();
+						$(".axis360Checkout_" + recordId + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
 						AspenDiscovery.showMessage("Error Returning Title", data.message, true);

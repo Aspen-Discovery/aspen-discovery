@@ -872,6 +872,14 @@ function getUserUpdates()
 				'ALTER TABLE user_checkout ADD INDEX (userId, groupedWorkId)',
 				'ALTER TABLE user_hold ADD INDEX (userId, groupedWorkId)'
 			]
+		],
+
+		'user_hold_format' => [
+			'title' => 'Add format to cached information for user holds',
+			'description' => 'Add format to cached information for user holds',
+			'sql' => [
+				'ALTER TABLE user_hold ADD COLUMN format VARCHAR(50)'
+			]
 		]
 	);
 }

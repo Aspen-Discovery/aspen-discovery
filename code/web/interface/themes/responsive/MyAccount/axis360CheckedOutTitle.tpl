@@ -1,5 +1,5 @@
 {strip}
-	<div class="result row axis360Checkout_{$record->recordId|escape}">
+	<div class="result row axis360Checkout_{$record->recordId|escape}_{$record->userId}">
 
 		{* Cover Column *}
 		{if $showCovers}

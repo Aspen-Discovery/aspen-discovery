@@ -101,4 +101,38 @@ class Checkout extends CircEntry
 			return '';
 		}
 	}
+
+	public function getArrayForAPIs(){
+		$checkout = $this->toArray();
+		if ($checkout['type'] == 'ils') {
+			$checkout['checkoutSource'] = 'ILS';
+		}elseif ($checkout['type'] == 'cloud_library') {
+			$checkout['checkoutSource'] = 'CloudLibrary';
+		}elseif ($checkout['type'] == 'axis360') {
+			$checkout['checkoutSource'] = 'Axis360';
+		}
+		$checkout['id'] = $checkout['sourceId'];
+		$checkout['ratingData'] = $this->getRatingData();
+		$checkout['coverUrl'] = $this->getCoverUrl();
+		$checkout['link'] = $this->getLinkUrl();
+		$checkout['linkUrl'] = $this->getLinkUrl();
+		$checkout['title_sort'] = $this->getSortTitle();
+		$checkout['renewalDate'] = date('D M jS', $checkout['renewalDate'] );
+		$checkout['overdue'] = $this->isOverdue();
+		$checkout['daysUntilDue'] = $this->getDaysUntilDue();
+		$checkout['dueDate'] = (int)$checkout['dueDate'];
+		$checkout['user'] = $this->getUserName();
+		$checkout['fullId'] = $checkout['source'] . ':' . $checkout['recordId'];
+		if (isset($checkout['canRenew'])){
+			/** @noinspection SpellCheckingInspection */
+			$checkout['canrenew'] = $checkout['canRenew'] == 1;
+			$checkout['canRenew'] = $checkout['canRenew'] == 1;
+		}
+		if (isset($checkout['itemId'])) {
+			/** @noinspection SpellCheckingInspection */
+			$checkout['itemid'] = $checkout['itemId'];
+			$checkout['renewMessage'] = '';
+		}
+		return $checkout;
+	}
 }

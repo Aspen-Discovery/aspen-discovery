@@ -336,14 +336,14 @@ class HooplaDriver extends AbstractEContentDriver{
 	}
 
 	/**
-     * @param User $user
+     * @param User $patron
      * @param string $titleId
 	 *
      * @return array
 	 */
-	public function checkOutTitle($user, $titleId) {
+	public function checkOutTitle($patron, $titleId) {
 		if ($this->hooplaEnabled) {
-			$checkoutURL = $this->getHooplaBasePatronURL($user);
+			$checkoutURL = $this->getHooplaBasePatronURL($patron);
 			if (!empty($checkoutURL)) {
 
 				$titleId = self::recordIDtoHooplaID($titleId);
@@ -351,7 +351,7 @@ class HooplaDriver extends AbstractEContentDriver{
 				$checkoutResponse = $this->getAPIResponse($checkoutURL, array(), 'POST');
 				if ($checkoutResponse) {
 					if (!empty($checkoutResponse->contentId)) {
-						$this->trackUserUsageOfHoopla($user);
+						$this->trackUserUsageOfHoopla($patron);
 						$this->trackRecordCheckout($titleId);
 						return array(
 							'success'   => true,
@@ -373,7 +373,7 @@ class HooplaDriver extends AbstractEContentDriver{
 						'message' => 'An error occurred checking out the Hoopla title.'
 					);
 				}
-			} elseif (!$this->getHooplaLibraryID($user)) {
+			} elseif (!$this->getHooplaLibraryID($patron)) {
 				return array(
 					'success' => false,
 					'message' => 'Your library does not have Hoopla integration enabled.'

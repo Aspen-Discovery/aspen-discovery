@@ -169,7 +169,7 @@ class Axis360_AJAX extends JSON_Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 				$driver = new Axis360Driver();
-				return $driver->returnCheckout($id);
+				return $driver->returnCheckout($patron, $id);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}

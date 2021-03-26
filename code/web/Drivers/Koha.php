@@ -340,7 +340,18 @@ class Koha extends AbstractIlsDriver
 
 			$curCheckout->recordId = $curRow['biblionumber'];
 			$curCheckout->shortId = $curRow['biblionumber'];
-			$curCheckout->title = $curRow['title'];
+
+			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
+			if ($recordDriver->isValid()){
+				$curCheckout->title = $recordDriver->getTitle();
+				$curCheckout->author = $recordDriver->getPrimaryAuthor();
+				$curCheckout->groupedWorkId = $recordDriver->getPermanentId();
+				$curCheckout->format = $recordDriver->getPrimaryFormat();
+			}else{
+				$curCheckout->title = $curRow['title'];
+				$curCheckout->author = $curRow['author'];
+			}
+
 			if (isset($curRow['itemcallnumber'])) {
 				$curCheckout->callNumber = $curRow['itemcallnumber'];
 			}
@@ -378,8 +389,6 @@ class Koha extends AbstractIlsDriver
 				}
 				$claimsReturnedResults->close();
 			}
-
-			$curCheckout->author = $curRow['author'];
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
 			if ($dateDue) {
@@ -1215,6 +1224,7 @@ class Koha extends AbstractIlsDriver
 			$bibId = $curRow['biblionumber'];
 			$curHold->sourceId = $curRow['biblionumber'];
 			$curHold->recordId = $curRow['biblionumber'];
+			$curHold->shortId = $curRow['biblionumber'];
 			$curHold->title = $curRow['title'];
 			if (isset($curRow['itemcallnumber'])) {
 				$curHold->callNumber = $curRow['itemcallnumber'];
@@ -1280,6 +1290,14 @@ class Koha extends AbstractIlsDriver
 				$curHold->locationUpdateable = true;
 			}
 			$curHold->cancelId = $curRow['reserve_id'];
+
+			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
+			if ($recordDriver->isValid()){
+				$curHold->title = $recordDriver->getTitle();
+				$curHold->author = $recordDriver->getPrimaryAuthor();
+				$curHold->groupedWorkId = $recordDriver->getPermanentId();
+				$curHold->format = $recordDriver->getPrimaryFormat();
+			}
 
 			$isAvailable = isset($curHold->status) && preg_match('/^Ready to Pickup.*/i', $curHold->status);
 			global $library;

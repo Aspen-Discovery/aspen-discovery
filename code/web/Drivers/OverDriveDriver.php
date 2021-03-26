@@ -844,18 +844,18 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * Checkout a title from OverDrive
 	 *
 	 * @param string $overDriveId
-	 * @param User $user
+	 * @param User $patron
 	 *
 	 * @return array results (success, message, noCopies)
 	 */
-	public function checkOutTitle($user, $overDriveId){
+	public function checkOutTitle($patron, $overDriveId){
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts';
 		$params = array(
 			'reserveId' => $overDriveId,
 		);
-		$response = $this->_callPatronUrl($user, $url, $params);
+		$response = $this->_callPatronUrl($patron, $url, $params);
 
 		$result = array();
 		$result['success'] = false;
@@ -865,11 +865,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if (isset($response->expires)) {
 			$result['success'] = true;
 			$result['message'] = translate(['text'=>'overdrive_checkout_success', 'defaultText'=>'Your title was checked out successfully. You may now download the title from your Account.']);
-			$this->trackUserUsageOfOverDrive($user);
+			$this->trackUserUsageOfOverDrive($patron);
 			$this->trackRecordCheckout($overDriveId);
 			$this->incrementStat('numCheckouts');
-			$user->lastReadingHistoryUpdate = 0;
-			$user->update();
+			$patron->lastReadingHistoryUpdate = 0;
+			$patron->update();
 		}else{
 			$this->incrementStat('numFailedCheckouts');
 			$result['message'] = translate('Sorry, we could not checkout this title to you.');
@@ -891,8 +891,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 		}
 
-		$memCache->delete('overdrive_summary_' . $user->id);
-		$user->clearCache();
+		$memCache->delete('overdrive_summary_' . $patron->id);
+		$patron->clearCache();
 		return $result;
 	}
 

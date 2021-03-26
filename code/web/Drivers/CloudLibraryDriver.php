@@ -71,6 +71,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$checkout->title = $recordDriver->getTitle();
 					$checkout->author = $recordDriver->getPrimaryAuthor();
 					$checkout->groupedWorkId = $recordDriver->getGroupedWorkId();
+					$checkout->format = $recordDriver->getPrimaryFormat();
+					$checkout->accessOnlineUrl = $recordDriver->getAccessOnlineLinkUrl($user);
 				} else {
 					$checkout->title = 'Unknown Cloud Library Title';
 					$checkout->format = 'Unknown - Cloud Library';
@@ -369,20 +371,20 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	}
 
 	/**
-	 * @param User $user
+	 * @param User $patron
 	 * @param string $titleId
 	 *
 	 * @param bool $fromRenew
 	 * @return array
 	 */
-	public function checkOutTitle($user, $titleId, $fromRenew = false)
+	public function checkOutTitle($patron, $titleId, $fromRenew = false)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
-		$settings = $this->getSettings($user);
-		$patronId = str_replace(' ', '', $user->getBarcode());
-		$password = $user->getPasswordOrPin();
-		if (!$user->eligibleForHolds()){
+		$settings = $this->getSettings($patron);
+		$patronId = str_replace(' ', '', $patron->getBarcode());
+		$password = $patron->getPasswordOrPin();
+		if (!$patron->eligibleForHolds()){
 			$result['message'] = translate(['text' => 'cl_outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to use Cloud Library.']);
 			return $result;
 		}
@@ -399,10 +401,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			if (isset($checkoutXml->Error)){
 				$result['message'] = $checkoutXml->Error->Message;
 			}else {
-				$this->trackUserUsageOfCloudLibrary($user);
+				$this->trackUserUsageOfCloudLibrary($patron);
 				$this->trackRecordCheckout($titleId);
-				$user->lastReadingHistoryUpdate = 0;
-				$user->update();
+				$patron->lastReadingHistoryUpdate = 0;
+				$patron->update();
 
 				$result['success'] = true;
 				if ($fromRenew){
@@ -412,8 +414,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				}
 
 				global $memCache;
-				$memCache->delete('cloud_library_summary_' . $user->id);
-				$memCache->delete('cloud_library_circulation_info_' . $user->id);
+				$memCache->delete('cloud_library_summary_' . $patron->id);
+				$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 			}
 		}
 		return $result;
@@ -601,6 +603,17 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$hold->recordId = (string)$holdFromCloudLibrary->ItemId;
 		$hold->createDate = strtotime($holdFromCloudLibrary->EventStartDateInUTC);
 		$hold->userId = $user->id;
+
+		$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
+		if ($recordDriver->isValid()) {
+			$hold->title = $recordDriver->getTitle();
+			$hold->author = $recordDriver->getPrimaryAuthor();
+			$hold->groupedWorkId = $recordDriver->getGroupedWorkId();
+			$hold->format = $recordDriver->getPrimaryFormat();
+		} else {
+			$hold->title = 'Unknown Cloud Library Title';
+			$hold->format = 'Unknown - Cloud Library';
+		}
 		return $hold;
 	}
 

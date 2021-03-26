@@ -653,7 +653,6 @@ class MillenniumHolds{
 			$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib";
 			$this->driver->curlWrapper->curlGetPage($curl_url);
 
-			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
 			if ($patronHomeBranch->defaultNotNeededAfterDays != -1){

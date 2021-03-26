@@ -139,10 +139,11 @@ class Axis360Driver extends AbstractEContentDriver
 	/**
 	 * Return a title currently checked out to the user
 	 *
+	 * @param $patron User
 	 * @param $transactionId   string
 	 * @return array
 	 */
-	public function returnCheckout($transactionId)
+	public function returnCheckout($patron, $transactionId)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		if ($this->getAxis360AccessToken()){
@@ -166,6 +167,8 @@ class Axis360Driver extends AbstractEContentDriver
 				$result['success'] = true;
 				$result['message'] = 'Your title was returned successfully';
 				$this->incrementStat('numEarlyReturns');
+				$patron->clearCachedAccountSummaryForSource('axis360');
+				$patron->forceReloadOfCheckouts();
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';
@@ -266,6 +269,8 @@ class Axis360Driver extends AbstractEContentDriver
 				$this->incrementStat('numHoldsPlaced');
 				$this->trackUserUsageOfAxis360($patron);
 				$this->trackRecordHold($recordId);
+				$patron->clearCachedAccountSummaryForSource('axis360');
+				$patron->forceReloadOfHolds();
 			}
 
 		}else{
@@ -305,6 +310,8 @@ class Axis360Driver extends AbstractEContentDriver
 				$result['success'] = true;
 				$result['message'] = 'Your hold was cancelled successfully';
 				$this->incrementStat('numHoldsCancelled');
+				$patron->clearCachedAccountSummaryForSource('axis360');
+				$patron->forceReloadOfHolds();
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';
@@ -371,21 +378,21 @@ class Axis360Driver extends AbstractEContentDriver
 	}
 
 	/**
-	 * @param User $user
+	 * @param User $patron
 	 * @param string $titleId
 	 *
 	 * @param bool $fromRenew
 	 * @return array
 	 */
-	public function checkOutTitle($user, $titleId, $fromRenew = false)
+	public function checkOutTitle($patron, $titleId, $fromRenew = false)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
-		if ($this->getAxis360AccessToken($user)){
-			$settings = $this->getSettings($user);
+		if ($this->getAxis360AccessToken($patron)){
+			$settings = $this->getSettings($patron);
 			$params = [
 				'titleId' => $titleId,
-				'patronId' => $user->getBarcode()
+				'patronId' => $patron->getBarcode()
 			];
 			$checkoutUrl = $settings->apiUrl . "/Services/VendorAPI/checkout/v2";
 			$headers = [
@@ -415,11 +422,13 @@ class Axis360Driver extends AbstractEContentDriver
 					$this->incrementStat('numRenewals');
 				}else{
 					$this->incrementStat('numCheckouts');
-					$this->trackUserUsageOfAxis360($user);
+					$this->trackUserUsageOfAxis360($patron);
 					$this->trackRecordCheckout($titleId);
-					$user->lastReadingHistoryUpdate = 0;
-					$user->update();
+					$patron->lastReadingHistoryUpdate = 0;
+					$patron->update();
 				}
+				$patron->clearCachedAccountSummaryForSource('axis360');
+				$patron->forceReloadOfCheckouts();
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';
@@ -556,6 +565,15 @@ class Axis360Driver extends AbstractEContentDriver
 			$hold->expire = strtotime($rawHold->reservedEndDate);
 		}
 
+		require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+		$axis360Record = new Axis360RecordDriver($titleId);
+		if ($axis360Record->isValid()) {
+			$hold->groupedWorkId = $axis360Record->getPermanentId();
+			$hold->title = $axis360Record->getTitle();
+			$hold->author = $axis360Record->getPrimaryAuthor();
+			$hold->format = $axis360Record->getPrimaryFormat();
+		}
+
 		$hold->userId = $user->id;
 		$key = $hold->source . $hold->sourceId . $hold->userId;
 		if ($available){
@@ -624,6 +642,7 @@ class Axis360Driver extends AbstractEContentDriver
 				$result['success'] = true;
 				$result['message'] = 'Your hold was frozen successfully';
 				$this->incrementStat('numHoldsFrozen');
+				$patron->forceReloadOfHolds();
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';
@@ -655,6 +674,7 @@ class Axis360Driver extends AbstractEContentDriver
 				$result['success'] = true;
 				$result['message'] = 'Your hold was thawed successfully';
 				$this->incrementStat('numHoldsThawed');
+				$patron->forceReloadOfHolds();
 			}
 		}else{
 			$result['message'] = 'Unable to connect to Axis 360';

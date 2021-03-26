@@ -208,7 +208,7 @@ AspenDiscovery.Axis360 = (function () {
 				success: function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage("Title Returned", data.message, true);
-						$("#axis360Checkout_" + recordId).hide();
+						$(".axis360Checkout_" + recordId + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
 						AspenDiscovery.showMessage("Error Returning Title", data.message, true);

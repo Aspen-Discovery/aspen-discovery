@@ -963,7 +963,7 @@ class User extends DataObject
 	 *
 	 * @param bool $includeLinkedUsers
 	 * @param string $source
-	 * @return array
+	 * @return Checkout[]
 	 */
 	public function getCheckouts($includeLinkedUsers = true, $source = 'all'){
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
@@ -2450,6 +2450,26 @@ class User extends DataObject
 		$summary->userId = $this->id;
 		$summary->source = $source;
 		$summary->delete(true);
+	}
+
+	public function forceReloadOfCheckouts(){
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
+		$checkout = new Checkout();
+		$checkout->userId = $this->id;
+		$checkout->delete(true);
+
+		$this->checkoutInfoLastLoaded = 0;
+		$this->update();
+	}
+
+	public function forceReloadOfHolds(){
+		require_once ROOT_DIR . '/sys/User/Hold.php';
+		$hold = new Hold();
+		$hold->userId = $this->id;
+		$hold->delete(true);
+
+		$this->holdInfoLastLoaded = 0;
+		$this->update();
 	}
 
 	protected function clearRuntimeDataVariables(){
