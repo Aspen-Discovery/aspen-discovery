@@ -900,6 +900,9 @@ class UserAPI extends Action
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user, $itemBarcode);
+			if ($renewalMessage['success']){
+				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
+			}
 			return array('success' => true, 'renewalMessage' => $renewalMessage);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -937,6 +940,9 @@ class UserAPI extends Action
 		if ($user && !($user instanceof AspenError)) {
 			$renewalMessage = $user->renewAll(false);
 			$renewalMessage['message'] = array_merge([$renewalMessage['Renewed'] . ' of ' . $renewalMessage['Total'] . ' titles were renewed'],$renewalMessage['message']);
+			for ($i = 0; $i < $renewalMessage['Renewed']; $i++){
+				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
+			}
 			$renewalMessage['renewalMessage'] = $renewalMessage['message'];
 			return $renewalMessage;
 		} else {
