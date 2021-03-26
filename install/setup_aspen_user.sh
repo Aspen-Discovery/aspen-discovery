@@ -21,8 +21,10 @@ chown -R aspen:aspen_apache /usr/local/aspen-discovery/sites/default
 chown -R solr:aspen /usr/local/aspen-discovery/sites/default/solr-7.6.0
 
 #Change file permissions so /data is owned by the aspen user
+[ -d /data/aspen-discovery ] mkdir -p /data/aspen-discovery
 chown -R aspen:aspen_apache /data/aspen-discovery
 
 #Change file permissions so /var/log/aspen-discovery is owned by the aspen user
+[ -d /var/log/aspen-discovery ] mkdir -p /var/log/aspen-discovery
 chown -R aspen:aspen /var/log/aspen-discovery
 
