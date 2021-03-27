@@ -1211,12 +1211,26 @@ class User extends DataObject
 
 		$indexToSortBy = 'sortTitle';
 		$holdSort = function ($a, $b) use (&$indexToSortBy) {
-			$a = isset($a->$indexToSortBy) ? $a->$indexToSortBy : null;
-			$b = isset($b->$indexToSortBy) ? $b->$indexToSortBy : null;
+			$titleA = $a->getSortTitle();
+			$titleB = $b->getSortTitle();
+			if ($indexToSortBy == 'sortTitle'){
+				$a = $titleA;
+				$b = $titleB;
+			}elseif ($indexToSortBy == 'user'){
+				$a = $a->getUserName();
+				$b = $b->getUserName();
+			}else {
+				$a = isset($a->$indexToSortBy) ? $a->$indexToSortBy : null;
+				$b = isset($b->$indexToSortBy) ? $b->$indexToSortBy : null;
+			}
 
 			// Put empty values (except for specified values of zero) at the bottom of the sort
 			if (modifiedEmpty($a) && modifiedEmpty($b)) {
-				return 0;
+				if ($indexToSortBy != 'sortTitle'){
+					return strnatcasecmp($titleA, $titleB);
+				}else{
+					return 0;
+				}
 			} elseif (!modifiedEmpty($a) && modifiedEmpty($b)) {
 				return -1;
 			} elseif (modifiedEmpty($a) && !modifiedEmpty($b)) {
@@ -1232,8 +1246,12 @@ class User extends DataObject
 				}
 			}
 
-			return strnatcasecmp($a, $b);
-			// This will sort numerically correctly as well
+			$ret = strnatcasecmp($a, $b);
+			if ($ret == 0 && $indexToSortBy != 'sortTitle'){
+				return strnatcasecmp($titleA, $titleB);
+			}else{
+				return $ret;
+			}
 		};
 
 		if (!empty($holdsToReturn['available'])) {
@@ -1249,16 +1267,18 @@ class User extends DataObject
 				case 'libraryAccount' :
 					$indexToSortBy = 'user';
 					break;
+				case 'location' :
+					$indexToSortBy = 'pickupLocationName';
+					break;
 				case 'expire' :
 				default :
-					$indexToSortBy = 'expire';
+					$indexToSortBy = 'expirationDate';
 			}
 			uasort($holdsToReturn['available'], $holdSort);
 		}
 		if (!empty($holdsToReturn['unavailable'])) {
 			switch ($unavailableSort) {
 				case 'author' :
-				case 'location' :
 				case 'position' :
 				case 'status' :
 				case 'format' :
@@ -1270,6 +1290,9 @@ class User extends DataObject
 					break;
 				case 'libraryAccount' :
 					$indexToSortBy = 'user';
+					break;
+				case 'location' :
+					$indexToSortBy = 'pickupLocationName';
 					break;
 				case 'title' :
 				default :
