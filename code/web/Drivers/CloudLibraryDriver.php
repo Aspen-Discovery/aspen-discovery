@@ -142,10 +142,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$result['success'] = true;
 			$result['message'] = translate("Your title was returned successfully.");
 
-			/** @var Memcache $memCache */
-			global $memCache;
-			$memCache->delete('cloud_library_summary_' . $patron->id);
-			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
+			$patron->clearCachedAccountSummaryForSource('cloud_library');
+			$patron->forceReloadOfCheckouts();
 		}else if ($responseCode == '400'){
 			$result['message'] = translate("Bad Request returning checkout.");
 			global $configArray;
@@ -280,9 +278,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				}
 			}
 
-			global $memCache;
 			$patron->clearCachedAccountSummaryForSource('cloud_library');
-			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
+			$patron->forceReloadOfHolds();
 		}else if ($responseCode == '405'){
 			$result['message'] = translate("Bad Request placing hold.");
 			global $configArray;
@@ -323,13 +320,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$result['success'] = true;
 			$result['message'] = translate("Your hold was cancelled successfully.");
 
-			/** @var Memcache $memCache */
-			global $memCache;
-			$memCache->delete('cloud_library_summary_' . $patron->id);
-			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
+			$patron->clearCachedAccountSummaryForSource('cloud_library');
+			$patron->forceReloadOfHolds();
 		}else if ($responseCode == '400'){
 			$result['message'] = translate("Bad Request cancelling hold.");
-			global $configArray;
 			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
@@ -413,9 +407,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
 				}
 
-				global $memCache;
-				$memCache->delete('cloud_library_summary_' . $patron->id);
-				$memCache->delete('cloud_library_circulation_info_' . $patron->id);
+				$patron->clearCachedAccountSummaryForSource('cloud_library');
+				$patron->forceReloadOfCheckouts();
 			}
 		}
 		return $result;
@@ -425,16 +418,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		$settings = $this->getSettings($user);
 		if ($settings != false) {
-			global $memCache;
-			$circulationInfo = $memCache->get('cloud_library_circulation_info_' . $user->id);
-			if ($circulationInfo == false || isset($_REQUEST['reload'])) {
-				$patronId = str_replace(' ', '', $user->getBarcode());
-				$password = $user->getPasswordOrPin();
-				$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
-				$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
-				global $configArray;
-				$memCache->set('cloud_library_circulation_info_' . $user->id, $circulationInfo, $configArray['Caching']['account_summary']);
-			}
+			$patronId = str_replace(' ', '', $user->getBarcode());
+			$password = $user->getPasswordOrPin();
+			$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
+			$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
 			return simplexml_load_string($circulationInfo);
 		}else{
 			return null;
