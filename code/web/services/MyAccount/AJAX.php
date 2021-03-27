@@ -1483,6 +1483,7 @@ class MyAccount_AJAX extends JSON_Action
 			->setTitle("Library Holds for " . $user->displayName)
 			->setCategory("Holds");
 
+		$hasLinkedUsers = count($user->getLinkedUsers()) > 0;
 		try {
 			$curRow = 1;
 			for ($i = 0; $i < 2; $i++) {
@@ -1494,6 +1495,9 @@ class MyAccount_AJAX extends JSON_Action
 				if (count($allHolds[$exportType]) == 0) {
 					continue;
 				}
+				$statusPosition = null;
+				$expiresPosition = null;
+				$userPosition = null;
 				if ($exportType == "available") {
 					// Add some data
 					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $curRow, 'Holds - ' . ucfirst($exportType));
@@ -1506,6 +1510,10 @@ class MyAccount_AJAX extends JSON_Action
 						->setCellValue('E' . $curRow, 'Pickup')
 						->setCellValue('F' . $curRow, 'Available')
 						->setCellValue('G' . $curRow, translate('Pickup By'));
+					if ($hasLinkedUsers){
+						$userPosition = 'H';
+						$objPHPExcel->getActiveSheet()->setCellValue('H' . $curRow, translate('User'));
+					}
 				} else {
 					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $curRow, 'Holds - ' . ucfirst($exportType));
 					$curRow += 2;
@@ -1516,86 +1524,107 @@ class MyAccount_AJAX extends JSON_Action
 						->setCellValue('E' . $curRow, 'Pickup');
 
 					if ($showPosition) {
-						$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, 'Position')
-							->setCellValue('G' . $curRow, 'Status');
+						$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, 'Position');
+						$statusPosition = 'G';
 						if ($showExpireTime) {
-							$objPHPExcel->getActiveSheet()->setCellValue('H' . $curRow, 'Expires');
+							$expiresPosition = 'H';
+							if ($hasLinkedUsers){
+								$userPosition = 'I';
+							}
+						}else{
+							if ($hasLinkedUsers){
+								$userPosition = 'H';
+							}
 						}
+
 					} else {
-						$objPHPExcel->getActiveSheet()
-							->setCellValue('F' . $curRow, 'Status');
+						$statusPosition = 'F';
 						if ($showExpireTime) {
-							$objPHPExcel->getActiveSheet()->setCellValue('G' . $curRow, 'Expires');
+							$expiresPosition = 'G';
+							if ($hasLinkedUsers){
+								$userPosition = 'H';
+							}
+						}else{
+							if ($hasLinkedUsers){
+								$userPosition = 'G';
+							}
 						}
+					}
+					$objPHPExcel->getActiveSheet()->setCellValue($statusPosition . $curRow, 'Status');
+					if ($expiresPosition != null) {
+						$objPHPExcel->getActiveSheet()->setCellValue($expiresPosition . $curRow, 'Expires');
+					}
+					if ($userPosition != null){
+						$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate('User'));
 					}
 				}
 
-
 				$curRow++;
 				//Loop Through The Report Data
+				/** @var Hold $row */
 				foreach ($allHolds[$exportType] as $row) {
-					$titleCell = preg_replace("~([/:])$~", "", $row['title']);
-					if (isset ($row['title2'])) {
-						$titleCell .= preg_replace("~([/:])$~", "", $row['title2']);
+					$titleCell = preg_replace("~([/:])$~", "", $row->title);
+					if (isset ($row->title2)) {
+						$titleCell .= preg_replace("~([/:])$~", "", $row->title2);
 					}
 
-					if (isset ($row['author'])) {
-						if (is_array($row['author'])) {
-							$authorCell = implode(', ', $row['author']);
+					if (isset ($row->author)) {
+						if (is_array($row->author)) {
+							$authorCell = implode(', ', $row->author);
 						} else {
-							$authorCell = $row['author'];
+							$authorCell = $row->author;
 						}
 						$authorCell = str_replace('&nbsp;', ' ', $authorCell);
 					} else {
 						$authorCell = '';
 					}
-					if (isset($row['format'])) {
-						if (is_array($row['format'])) {
-							$formatString = implode(', ', $row['format']);
+					if (isset($row->format)) {
+						if (is_array($row->format)) {
+							$formatString = implode(', ', $row->format);
 						} else {
-							$formatString = $row['format'];
+							$formatString = $row->format;
 						}
 					} else {
 						$formatString = '';
 					}
 
-					if (empty($row['create'])) {
+					if (empty($row->createDate)) {
 						$placedDate = '';
 					} else {
-						if (is_array($row['create'])) {
+						if (is_array($row->createDate)) {
 							$placedDate = new DateTime();
-							$placedDate->setDate($row['create']['year'], $row['create']['month'], $row['create']['day']);
+							$placedDate->setDate($row->createDate['year'], $row->createDate['month'], $row->createDate['day']);
 							$placedDate = $placedDate->format('M d, Y');
 						} else {
-							$placedDate = $this->isValidTimeStamp($row['create']) ? $row['create'] : strtotime($row['create']);
+							$placedDate = $this->isValidTimeStamp($row->createDate) ? $row->createDate : strtotime($row->createDate);
 							$placedDate = date('M d, Y', $placedDate);
 						}
 					}
 
-					if (isset($row['location'])) {
-						$locationString = $row['location'];
+					if (isset($row->pickupLocationName)) {
+						$locationString = $row->pickupLocationName;
 					} else {
 						$locationString = '';
 					}
 
-					if (empty($row['expire'])) {
+					if (empty($row->expirationDate)) {
 						$expireDate = '';
 					} else {
-						if (is_array($row['expire'])) {
+						if (is_array($row->expirationDate)) {
 							$expireDate = new DateTime();
-							$expireDate->setDate($row['expire']['year'], $row['expire']['month'], $row['expire']['day']);
+							$expireDate->setDate($row->expirationDate['year'], $row->expirationDate['month'], $row->expirationDate['day']);
 							$expireDate = $expireDate->format('M d, Y');
 						} else {
-							$expireDate = $this->isValidTimeStamp($row['expire']) ? $row['expire'] : strtotime($row['expire']);
+							$expireDate = $this->isValidTimeStamp($row->expirationDate) ? $row->expirationDate : strtotime($row->expirationDate);
 							$expireDate = date('M d, Y', $expireDate);
 						}
 					}
 
 					if ($exportType == "available") {
-						if (empty($row['availableTime'])) {
+						if (empty($row->availableDate)) {
 							$availableDate = 'Now';
 						} else {
-							$availableDate = $this->isValidTimeStamp($row['availableTime']) ? $row['availableTime'] : strtotime($row['availableTime']);
+							$availableDate = $this->isValidTimeStamp($row->availableDate) ? $row->availableDate : strtotime($row->availableDate);
 							$availableDate = date('M d, Y', $availableDate);
 						}
 						$objPHPExcel->getActiveSheet()
@@ -1606,15 +1635,18 @@ class MyAccount_AJAX extends JSON_Action
 							->setCellValue('E' . $curRow, $locationString)
 							->setCellValue('F' . $curRow, $availableDate)
 							->setCellValue('G' . $curRow, $expireDate);
+						if ($userPosition != null){
+							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate($row->getUserName()));
+						}
 					} else {
-						if (isset($row['status'])) {
-							$statusCell = $row['status'];
+						if (isset($row->status)) {
+							$statusCell = $row->status;
 						} else {
 							$statusCell = '';
 						}
 
-						if (isset($row['frozen']) && $row['frozen'] && $showDateWhenSuspending && !empty($row['reactivateTime'])) {
-							$reactivateTime = $this->isValidTimeStamp($row['reactivateTime']) ? $row['reactivateTime'] : strtotime($row['reactivateTime']);
+						if (isset($row->frozen) && $row->frozen && $showDateWhenSuspending && !empty($row->reactivateDate)) {
+							$reactivateTime = $this->isValidTimeStamp($row->reactivateDate) ? $row->reactivateDate : strtotime($row->reactivateDate);
 							$statusCell .= " until " . date('M d, Y', $reactivateTime);
 						}
 						$objPHPExcel->getActiveSheet()
@@ -1622,28 +1654,35 @@ class MyAccount_AJAX extends JSON_Action
 							->setCellValue('B' . $curRow, $authorCell)
 							->setCellValue('C' . $curRow, $formatString)
 							->setCellValue('D' . $curRow, $placedDate);
-						if (isset($row['location'])) {
-							$objPHPExcel->getActiveSheet()->setCellValue('E' . $curRow, $row['location']);
+						if (isset($row->pickupLocationName)) {
+							$objPHPExcel->getActiveSheet()->setCellValue('E' . $curRow, $row->pickupLocationName);
 						} else {
 							$objPHPExcel->getActiveSheet()->setCellValue('E' . $curRow, '');
 						}
 
+						if ($statusPosition !== null){
+							$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, $statusCell);
+						}
 						if ($showPosition) {
-							if (isset($row['position'])) {
-								$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, $row['position']);
+							if (isset($row->position)) {
+								$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, $row->position);
 							} else {
 								$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, '');
 							}
 
 							$objPHPExcel->getActiveSheet()->setCellValue('G' . $curRow, $statusCell);
-							if ($showExpireTime) {
-								$objPHPExcel->getActiveSheet()->setCellValue('H' . $curRow, $expireDate);
-							}
+
 						} else {
-							$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, $statusCell);
+
 							if ($showExpireTime) {
 								$objPHPExcel->getActiveSheet()->setCellValue('G' . $curRow, $expireDate);
 							}
+						}
+						if ($expiresPosition) {
+							$objPHPExcel->getActiveSheet()->setCellValue($expiresPosition . $curRow, $expireDate);
+						}
+						if ($userPosition != null){
+							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate($row->getUserName()));
 						}
 					}
 					$curRow++;

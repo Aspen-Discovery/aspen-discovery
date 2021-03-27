@@ -689,7 +689,7 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
 			$overDriveSummary = $driver->getAccountSummary($user);
-			return array('success' => true, 'summary' => $overDriveSummary);
+			return array('success' => true, 'summary' => $overDriveSummary->toArray());
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}

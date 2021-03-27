@@ -5468,7 +5468,7 @@ AspenDiscovery.Account = (function(){
 			$.getJSON(url, function(data){
 				document.body.style.cursor = "default";
 				if (data.success){
-					$('#accountLoadTime').html(data.accountLoadTime);
+					$('#accountLoadTime').html(data.holdInfoLastLoaded);
 					$("#" + source + "HoldsPlaceholder").html(data.holds);
 				}else{
 					$("#" + source + "HoldsPlaceholder").html(data.message);

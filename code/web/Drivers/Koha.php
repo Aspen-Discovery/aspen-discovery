@@ -1221,7 +1221,6 @@ class Koha extends AbstractIlsDriver
 			$curHold->userId = $patron->id;
 			$curHold->type = 'ils';
 			$curHold->source = $this->getIndexingProfile()->name;
-			$bibId = $curRow['biblionumber'];
 			$curHold->sourceId = $curRow['biblionumber'];
 			$curHold->recordId = $curRow['biblionumber'];
 			$curHold->shortId = $curRow['biblionumber'];
@@ -1241,11 +1240,7 @@ class Koha extends AbstractIlsDriver
 					$curHold->volume = $volumeInfo->displayLabel;
 				}
 			}
-			if (strpos($curRow['reservedate'], ':') > 0){
-				$curHold->createDate = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
-			}else{
-				$curHold->createDate = date_parse_from_format('Y-m-d', $curRow['reservedate']);
-			}
+			$curHold->createDate = strtotime($curRow['reservedate']);
 
 			if (!empty($curRow['expirationdate'])) {
 				$dateTime = date_create_from_format('Y-m-d', $curRow['expirationdate']);
@@ -1300,6 +1295,7 @@ class Koha extends AbstractIlsDriver
 			}
 
 			$isAvailable = isset($curHold->status) && preg_match('/^Ready to Pickup.*/i', $curHold->status);
+			$curHold->available = $isAvailable;
 			global $library;
 			if ($isAvailable && $library->availableHoldDelay > 0){
 				$holdAvailableOn = strtotime($curRow['waitingdate']);
