@@ -1333,6 +1333,8 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		$allCheckedOut = $this->sortCheckouts($selectedSortOption, $allCheckedOut);
 
+		$hasLinkedUsers = count($user->getLinkedUsers()) > 0;
+
 		$ils = $configArray['Catalog']['ils'];
 		$showOut = ($ils == 'Horizon');
 		$showRenewed = ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
@@ -1365,32 +1367,36 @@ class MyAccount_AJAX extends JSON_Action
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Renewed');
 			}
 			if ($showWaitList) {
-				$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, 'Wait List');
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Wait List');
+			}
+			if ($hasLinkedUsers) {
+				$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, 'User');
 			}
 
 			$a = 4;
 			//Loop Through The Report Data
+			/** @var Checkout $row */
 			foreach ($allCheckedOut as $row) {
-				$titleCell = preg_replace("~([/:])$~", "", $row['title']);
-				if (isset ($row['title2'])) {
-					$titleCell .= preg_replace("~([/:])$~", "", $row['title2']);
+				$titleCell = preg_replace("~([/:])$~", "", $row->title);
+				if (!empty($row->title2)) {
+					$titleCell .= preg_replace("~([/:])$~", "", $row->title2);
 				}
 
-				if (isset ($row['author'])) {
-					if (is_array($row['author'])) {
-						$authorCell = implode(', ', $row['author']);
+				if (isset ($row->author)) {
+					if (is_array($row->author)) {
+						$authorCell = implode(', ', $row->author);
 					} else {
-						$authorCell = $row['author'];
+						$authorCell = $row->author;
 					}
 					$authorCell = str_replace('&nbsp;', ' ', $authorCell);
 				} else {
 					$authorCell = '';
 				}
-				if (isset($row['format'])) {
-					if (is_array($row['format'])) {
-						$formatString = implode(', ', $row['format']);
+				if (isset($row->format)) {
+					if (is_array($row->format)) {
+						$formatString = implode(', ', $row->format);
 					} else {
-						$formatString = $row['format'];
+						$formatString = $row->format;
 					}
 				} else {
 					$formatString = '';
@@ -1401,23 +1407,26 @@ class MyAccount_AJAX extends JSON_Action
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $authorCell);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $formatString);
 				if ($showOut) {
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row['checkoutDate']));
+					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row->checkoutDate));
 				}
-				if (isset($row['dueDate'])) {
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row['dueDate']));
+				if (isset($row->dueDate)) {
+					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row->dueDate));
 				} else {
 					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, '');
 				}
 
 				if ($showRenewed) {
-					if (isset($row['dueDate'])) {
-						$activeSheet->setCellValueByColumnAndRow($curCol++, $a, isset($row['renewCount']) ? $row['renewCount'] : '');
+					if (isset($row->dueDate)) {
+						$activeSheet->setCellValueByColumnAndRow($curCol++, $a, isset($row->renewCount) ? $row->renewCount : '');
 					} else {
 						$activeSheet->setCellValueByColumnAndRow($curCol++, $a, '');
 					}
 				}
 				if ($showWaitList) {
-					$activeSheet->setCellValueByColumnAndRow($curCol, $a, $row['holdQueueLength']);
+					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $row->holdQueueLength);
+				}
+				if ($hasLinkedUsers) {
+					$activeSheet->setCellValueByColumnAndRow($curCol, $a, $row->getUserName());
 				}
 
 				$a++;
@@ -1429,7 +1438,7 @@ class MyAccount_AJAX extends JSON_Action
 			$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
 			$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setAutoSize(true);
 			$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setAutoSize(true);
-
+			$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
 			// Rename sheet
 			$objPHPExcel->getActiveSheet()->setTitle('Checked Out');
 
