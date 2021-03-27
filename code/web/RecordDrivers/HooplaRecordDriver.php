@@ -474,4 +474,24 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	function getHooplaCoverUrl(){
 		return $this->hooplaRawMetadata->coverImageUrl;
 	}
+
+	function getStatusSummary()
+	{
+		$relatedRecord = $this->getRelatedRecord();
+		$statusSummary = array();
+		if ($relatedRecord == null){
+			$statusSummary['status'] = "Unavailable";
+			$statusSummary['available'] = false;
+			$statusSummary['class'] = 'unavailable';
+			$statusSummary['showPlaceHold'] = false;
+			$statusSummary['showCheckout'] = false;
+		}else{
+			$statusSummary['status'] = "Available from Hoopla";
+			$statusSummary['available'] = true;
+			$statusSummary['class'] = 'available';
+			$statusSummary['showPlaceHold'] = false;
+			$statusSummary['showCheckout'] = true;
+		}
+		return $statusSummary;
+	}
 }

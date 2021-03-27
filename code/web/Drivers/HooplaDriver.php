@@ -269,7 +269,6 @@ class HooplaDriver extends AbstractEContentDriver{
 	private function getAccessToken()
 	{
 		if (empty($this->accessToken)) {
-			/** @var Memcache $memCache */
 			global $memCache;
 			$accessToken = $memCache->get(self::memCacheKey);
 			if (empty($accessToken)) {
@@ -313,7 +312,6 @@ class HooplaDriver extends AbstractEContentDriver{
 				if (!empty($json->access_token)) {
 					$this->accessToken = $json->access_token;
 
-					/** @var Memcache $memCache */
 					global $memCache;
 					global $configArray;
 					$memCache->set(self::memCacheKey, $this->accessToken, $configArray['Caching']['hoopla_api_access_token']);
@@ -353,6 +351,8 @@ class HooplaDriver extends AbstractEContentDriver{
 					if (!empty($checkoutResponse->contentId)) {
 						$this->trackUserUsageOfHoopla($patron);
 						$this->trackRecordCheckout($titleId);
+						$patron->clearCachedAccountSummaryForSource('hoopla');
+						$patron->forceReloadOfCheckouts();
 						return array(
 							'success'   => true,
 							'message'   => $checkoutResponse->message,
@@ -394,18 +394,20 @@ class HooplaDriver extends AbstractEContentDriver{
 
     /**
      * @param string $hooplaId
-     * @param User $user
+     * @param User $patron
      *
      * @return array
      */
-	public function returnCheckout($user, $hooplaId) {
+	public function returnCheckout($patron, $hooplaId) {
 		if ($this->hooplaEnabled) {
-            $returnCheckoutURL = $this->getHooplaBasePatronURL($user);
+            $returnCheckoutURL = $this->getHooplaBasePatronURL($patron);
 			if (!empty($returnCheckoutURL)) {
 				$itemId = self::recordIDtoHooplaID($hooplaId);
                 $returnCheckoutURL .= "/$itemId";
 				$result = $this->getAPIResponseReturnHooplaTitle($returnCheckoutURL);
 				if ($result) {
+					$patron->clearCachedAccountSummaryForSource('hoopla');
+					$patron->forceReloadOfCheckouts();
 					return array(
 						'success' => true,
 						'message' => 'The title was successfully returned.'
@@ -417,7 +419,7 @@ class HooplaDriver extends AbstractEContentDriver{
 					);
 				}
 
-			} elseif (!$this->getHooplaLibraryID($user)) {
+			} elseif (!$this->getHooplaLibraryID($patron)) {
 				return array(
 					'success' => false,
 					'message' => 'Your library does not have Hoopla integration enabled.'

@@ -110,6 +110,13 @@ class Checkout extends CircEntry
 			$checkout['checkoutSource'] = 'CloudLibrary';
 		}elseif ($checkout['type'] == 'axis360') {
 			$checkout['checkoutSource'] = 'Axis360';
+		}elseif ($checkout['type'] == 'hoopla') {
+			$checkout['checkoutSource'] = 'Hoopla';
+			$checkout['hooplaId'] = $checkout['sourceId'];
+			$checkout['hooplaUrl'] = $checkout['accessOnlineUrl'];
+			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+		}elseif ($checkout['type'] == 'overdrive') {
+			$checkout['checkoutSource'] = 'OverDrive';
 		}
 		$checkout['id'] = $checkout['sourceId'];
 		$checkout['ratingData'] = $this->getRatingData();
@@ -120,6 +127,7 @@ class Checkout extends CircEntry
 		$checkout['renewalDate'] = date('D M jS', $checkout['renewalDate'] );
 		$checkout['overdue'] = $this->isOverdue();
 		$checkout['daysUntilDue'] = $this->getDaysUntilDue();
+		$checkout['checkoutDate'] = (int)$checkout['checkoutDate'];
 		$checkout['dueDate'] = (int)$checkout['dueDate'];
 		$checkout['user'] = $this->getUserName();
 		$checkout['fullId'] = $checkout['source'] . ':' . $checkout['recordId'];
