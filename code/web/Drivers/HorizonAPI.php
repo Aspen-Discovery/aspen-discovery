@@ -471,7 +471,7 @@ abstract class HorizonAPI extends Horizon{
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToThawId, '', 'off');
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation) {
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) {
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToUpdateId, $newPickupLocation, 'off');
 	}
 

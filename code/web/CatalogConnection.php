@@ -833,7 +833,7 @@ class CatalogConnection
 		return $this->driver->thawHold($patron, $recordId, $itemToThawId);
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
 		return $this->driver->changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
 	}
@@ -1009,7 +1009,7 @@ class CatalogConnection
 	{
 		list($existingId, $summary) = $user->getCachedAccountSummary('ils');
 
-		if ($summary === null) {
+		if ($summary === null || isset($_REQUEST['reload'])) {
 			$summary = $this->driver->getAccountSummary($user);
 			$summary->lastLoaded = time();
 			if ($existingId != null) {

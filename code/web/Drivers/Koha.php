@@ -1034,6 +1034,8 @@ class Koha extends AbstractIlsDriver
 			if ($placeHoldResponse->title) {
 				//everything seems to be good
 				$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
 			} else {
 				$hold_result['success'] = false;
 				//See if we can get more info on why this failed.
@@ -1102,6 +1104,8 @@ class Koha extends AbstractIlsDriver
 			if ($responseCode == 201){
 				$result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
 				$result['success'] = true;
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
 			}else{
 				$result = [
 					'success' => false,
@@ -1178,6 +1182,8 @@ class Koha extends AbstractIlsDriver
 		if ($placeHoldResponse->pickup_location) {
 			//We redirected to the holds page, everything seems to be good
 			$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordId, $hold_result);
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
 		} else {
 			$hold_result['success'] = false;
 			//Look for an alert message
@@ -1270,6 +1276,7 @@ class Koha extends AbstractIlsDriver
 			if ($curRow['suspend'] == '1') {
 				$curHold->frozen = true;
 				$curHold->status = "Frozen";
+				$curHold->canFreeze = true;
 				if ($curRow['suspend_until'] != null) {
 					$curHold->status .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
@@ -1281,7 +1288,7 @@ class Koha extends AbstractIlsDriver
 				$curHold->status = "In Transit";
 			} else {
 				$curHold->status = "Pending";
-				$curHold->canFreeze = true;
+				$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
 				$curHold->locationUpdateable = true;
 			}
 			$curHold->cancelId = $curRow['reserve_id'];
@@ -1361,9 +1368,9 @@ class Koha extends AbstractIlsDriver
 					$allCancelsSucceed = false;
 				}
 			}
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
 			if ($allCancelsSucceed) {
-				global $memCache;
-				$memCache->delete('koha_summary_' . $patron->id);
 				return array(
 					'title' => $titles,
 					'success' => true,
@@ -1418,8 +1425,8 @@ class Koha extends AbstractIlsDriver
 			//We renewed the hold
 			$success = true;
 			$message = 'Your item was successfully renewed';
-			global $memCache;
-			$memCache->delete('koha_summary_' . $patron->id);
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfCheckouts();
 		} else {
 			$success = false;
 			$message = 'The item could not be renewed';
@@ -1591,6 +1598,8 @@ class Koha extends AbstractIlsDriver
 				} else {
 					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
 					$result['success'] = true;
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
 				}
 			}
 		}
@@ -1627,13 +1636,15 @@ class Koha extends AbstractIlsDriver
 			} else {
 				$result['message'] = translate(['text'=>'ils_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
 				$result['success'] = true;
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
 			}
 		}
 
 		return $result;
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
 		$result = [
 			'success' => false,
@@ -1688,6 +1699,8 @@ class Koha extends AbstractIlsDriver
 					} else {
 						$result['message'] = translate(['text'=>'ils_change_pickup_location_success', 'The pickup location of your hold was changed successfully.']);
 						$result['success'] = true;
+						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+						$patron->forceReloadOfHolds();
 					}
 				}
 			}
@@ -2337,9 +2350,9 @@ class Koha extends AbstractIlsDriver
 		return 'koha-requests.tpl';
 	}
 
-	function deleteMaterialsRequests(User $user)
+	function deleteMaterialsRequests(User $patron)
 	{
-		$this->loginToKohaOpac($user);
+		$this->loginToKohaOpac($patron);
 
 		$catalogUrl = $this->accountProfile->vendorOpacUrl;
 		$this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl');
@@ -2350,8 +2363,7 @@ class Koha extends AbstractIlsDriver
 		];
 		$this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
 
-		global $memCache;
-		$memCache->delete('koha_summary_' . $user->id);
+		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 
 		return [
 			'success' => true,
@@ -2955,7 +2967,7 @@ class Koha extends AbstractIlsDriver
 				break;
 			}
 		}
-		$patron->clearCachedAccountSummaryForSource('ils');
+		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 		return $hold_result;
 	}
 
@@ -3066,8 +3078,7 @@ class Koha extends AbstractIlsDriver
 				];
 			}
 		}
-		global $memCache;
-		$memCache->delete('koha_summary_' . $patron->id);
+		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 		return $result;
 	}
 

@@ -661,7 +661,7 @@ AspenDiscovery.Account = (function(){
 					AspenDiscovery.showMessage(data.title, data.body, data.success);
 					if (data.success){
 						var tmpRecordId = recordId.replace('.', '_').replace('~', '_');
-						var tmpHoldIdToCancel = holdIdToCancel.replace('.', '_').replace('~', '_');
+						var tmpHoldIdToCancel = holdIdToCancel.replace('.', '_').replace('~', '_').replace(' ', '_').replace(':', '_');
 						var holdClass = '.ilsHold_' + tmpRecordId + '_' + tmpHoldIdToCancel;
 						$(holdClass).hide();
 						AspenDiscovery.Account.loadMenuData();
