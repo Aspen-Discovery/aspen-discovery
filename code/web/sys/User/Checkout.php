@@ -116,7 +116,17 @@ class Checkout extends CircEntry
 			$checkout['hooplaUrl'] = $checkout['accessOnlineUrl'];
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 		}elseif ($checkout['type'] == 'overdrive') {
+			global $configArray;
 			$checkout['checkoutSource'] = 'OverDrive';
+			$checkout['overDriveId'] = $checkout['sourceId'];
+			$checkout['expiresOn'] = date(DateTime::ISO8601, $checkout['dueDate']);
+			$checkout['overdriveRead'] = $checkout['overdriveRead'] == 1;
+			$checkout['formatSelected'] = $checkout['formatSelected'] == 1;
+			$checkout['allowDownload'] = $checkout['allowDownload'] == 1;
+			$checkout['overdriveListen'] = $checkout['overdriveListen'] == 1;
+			$checkout['earlyReturn'] = $checkout['canReturnEarly'] == 1;
+			$checkout['format'] = $this->getPrimaryFormat();
+			$checkout['recordUrl'] = $configArray['Site']['url'] . $this->getLinkUrl();
 		}
 		$checkout['id'] = $checkout['sourceId'];
 		$checkout['ratingData'] = $this->getRatingData();

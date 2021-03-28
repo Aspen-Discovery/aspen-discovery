@@ -547,6 +547,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 						$overDriveRecord = new OverDriveRecordDriver($checkout->sourceId);
 						if ($overDriveRecord->isValid()) {
 							$checkout->groupedWorkId = $overDriveRecord->getPermanentId();
+							$checkout->title = $overDriveRecord->getTitle();
+							$checkout->author = $overDriveRecord->getAuthor();
+							$checkout->format = $overDriveRecord->getPrimaryFormat();
 						}else{
 							//The title doesn't exist in the collection - this happens with Magazines right now (early 2021).
 							//Load the title information from metadata, but don't link it.
@@ -644,6 +647,15 @@ class OverDriveDriver extends AbstractEContentDriver{
 				}
 
 				$hold->userId = $user->id;
+
+				require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+				$overDriveRecordDriver = new OverDriveRecordDriver($hold->recordId);
+				if ($overDriveRecordDriver->isValid()){
+					$hold->title = $overDriveRecordDriver->getTitle();
+					$hold->author = $overDriveRecordDriver->getAuthor();
+					$hold->format = $overDriveRecordDriver->getPrimaryFormat();
+					$hold->groupedWorkId = $overDriveRecordDriver->getPermanentId();
+				}
 
 				$key = $hold->type . $hold->sourceId . $hold->userId;
 				if ($hold->available){
