@@ -150,7 +150,7 @@ AspenDiscovery.Account = (function(){
 			$.getJSON(url, function(data){
 				document.body.style.cursor = "default";
 				if (data.success){
-					$('#accountLoadTime').html(data.accountLoadTime);
+					$('#accountLoadTime').html(data.checkoutInfoLastLoaded);
 					$("#" + source + "CheckoutsPlaceholder").html(data.holds);
 				}else{
 					$("#" + source + "CheckoutsPlaceholder").html(data.message);
@@ -218,7 +218,7 @@ AspenDiscovery.Account = (function(){
 			$.getJSON(url, function(data){
 				document.body.style.cursor = "default";
 				if (data.success){
-					$('#accountLoadTime').html(data.accountLoadTime);
+					$('#accountLoadTime').html(data.holdInfoLastLoaded);
 					$("#" + source + "HoldsPlaceholder").html(data.holds);
 				}else{
 					$("#" + source + "HoldsPlaceholder").html(data.message);
@@ -661,7 +661,7 @@ AspenDiscovery.Account = (function(){
 					AspenDiscovery.showMessage(data.title, data.body, data.success);
 					if (data.success){
 						var tmpRecordId = recordId.replace('.', '_').replace('~', '_');
-						var tmpHoldIdToCancel = holdIdToCancel.replace('.', '_').replace('~', '_');
+						var tmpHoldIdToCancel = holdIdToCancel.replace('.', '_').replace('~', '_').replace(' ', '_').replace(':', '_');
 						var holdClass = '.ilsHold_' + tmpRecordId + '_' + tmpHoldIdToCancel;
 						$(holdClass).hide();
 						AspenDiscovery.Account.loadMenuData();

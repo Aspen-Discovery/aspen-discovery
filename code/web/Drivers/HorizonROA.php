@@ -952,7 +952,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 			);
 		}
 	}
-	function changeHoldPickupLocation($patron, $recordId, $holdToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $holdToUpdateId, $newPickupLocation)
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {

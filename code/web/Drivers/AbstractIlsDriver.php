@@ -50,7 +50,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
 	abstract function thawHold($patron, $recordId, $itemToThawId);
 
-	abstract function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
+	abstract function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation);
 
 	abstract function updatePatronInfo($patron, $canUpdateContactInfo);
 
@@ -189,7 +189,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return 'not supported';
 	}
 
-	function deleteMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */ User $user)
+	function deleteMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */ User $patron)
 	{
 		return ['success' => false, 'message' => 'Not Implemented'];
 	}

@@ -101,4 +101,56 @@ class Checkout extends CircEntry
 			return '';
 		}
 	}
+
+	public function getArrayForAPIs(){
+		$checkout = $this->toArray();
+		if ($checkout['type'] == 'ils') {
+			$checkout['checkoutSource'] = 'ILS';
+		}elseif ($checkout['type'] == 'cloud_library') {
+			$checkout['checkoutSource'] = 'CloudLibrary';
+		}elseif ($checkout['type'] == 'axis360') {
+			$checkout['checkoutSource'] = 'Axis360';
+		}elseif ($checkout['type'] == 'hoopla') {
+			$checkout['checkoutSource'] = 'Hoopla';
+			$checkout['hooplaId'] = $checkout['sourceId'];
+			$checkout['hooplaUrl'] = $checkout['accessOnlineUrl'];
+			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+		}elseif ($checkout['type'] == 'overdrive') {
+			global $configArray;
+			$checkout['checkoutSource'] = 'OverDrive';
+			$checkout['overDriveId'] = $checkout['sourceId'];
+			$checkout['expiresOn'] = date(DateTime::ISO8601, $checkout['dueDate']);
+			$checkout['overdriveRead'] = $checkout['overdriveRead'] == 1;
+			$checkout['formatSelected'] = $checkout['formatSelected'] == 1;
+			$checkout['allowDownload'] = $checkout['allowDownload'] == 1;
+			$checkout['overdriveListen'] = $checkout['overdriveListen'] == 1;
+			$checkout['earlyReturn'] = $checkout['canReturnEarly'] == 1;
+			$checkout['format'] = $this->getPrimaryFormat();
+			$checkout['recordUrl'] = $configArray['Site']['url'] . $this->getLinkUrl();
+		}
+		$checkout['id'] = $checkout['sourceId'];
+		$checkout['ratingData'] = $this->getRatingData();
+		$checkout['coverUrl'] = $this->getCoverUrl();
+		$checkout['link'] = $this->getLinkUrl();
+		$checkout['linkUrl'] = $this->getLinkUrl();
+		$checkout['title_sort'] = $this->getSortTitle();
+		$checkout['renewalDate'] = date('D M jS', $checkout['renewalDate'] );
+		$checkout['overdue'] = $this->isOverdue();
+		$checkout['daysUntilDue'] = $this->getDaysUntilDue();
+		$checkout['checkoutDate'] = (int)$checkout['checkoutDate'];
+		$checkout['dueDate'] = (int)$checkout['dueDate'];
+		$checkout['user'] = $this->getUserName();
+		$checkout['fullId'] = $checkout['source'] . ':' . $checkout['recordId'];
+		if (isset($checkout['canRenew'])){
+			/** @noinspection SpellCheckingInspection */
+			$checkout['canrenew'] = $checkout['canRenew'] == 1;
+			$checkout['canRenew'] = $checkout['canRenew'] == 1;
+		}
+		if (isset($checkout['itemId'])) {
+			/** @noinspection SpellCheckingInspection */
+			$checkout['itemid'] = $checkout['itemId'];
+			$checkout['renewMessage'] = '';
+		}
+		return $checkout;
+	}
 }

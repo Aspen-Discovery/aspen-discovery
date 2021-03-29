@@ -5400,7 +5400,7 @@ AspenDiscovery.Account = (function(){
 			$.getJSON(url, function(data){
 				document.body.style.cursor = "default";
 				if (data.success){
-					$('#accountLoadTime').html(data.accountLoadTime);
+					$('#accountLoadTime').html(data.checkoutInfoLastLoaded);
 					$("#" + source + "CheckoutsPlaceholder").html(data.holds);
 				}else{
 					$("#" + source + "CheckoutsPlaceholder").html(data.message);
@@ -5468,7 +5468,7 @@ AspenDiscovery.Account = (function(){
 			$.getJSON(url, function(data){
 				document.body.style.cursor = "default";
 				if (data.success){
-					$('#accountLoadTime').html(data.accountLoadTime);
+					$('#accountLoadTime').html(data.holdInfoLastLoaded);
 					$("#" + source + "HoldsPlaceholder").html(data.holds);
 				}else{
 					$("#" + source + "HoldsPlaceholder").html(data.message);
@@ -5911,7 +5911,7 @@ AspenDiscovery.Account = (function(){
 					AspenDiscovery.showMessage(data.title, data.body, data.success);
 					if (data.success){
 						var tmpRecordId = recordId.replace('.', '_').replace('~', '_');
-						var tmpHoldIdToCancel = holdIdToCancel.replace('.', '_').replace('~', '_');
+						var tmpHoldIdToCancel = holdIdToCancel.replace('.', '_').replace('~', '_').replace(' ', '_').replace(':', '_');
 						var holdClass = '.ilsHold_' + tmpRecordId + '_' + tmpHoldIdToCancel;
 						$(holdClass).hide();
 						AspenDiscovery.Account.loadMenuData();
@@ -7471,7 +7471,7 @@ AspenDiscovery.Axis360 = (function () {
 				success: function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
-						$("#axis360Hold_" + id).hide();
+						$(".axis360Hold_" + id + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
 						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
@@ -7671,7 +7671,7 @@ AspenDiscovery.Axis360 = (function () {
 				success: function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage("Title Returned", data.message, true);
-						$("#axis360Checkout_" + recordId).hide();
+						$(".axis360Checkout_" + recordId + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
 						AspenDiscovery.showMessage("Error Returning Title", data.message, true);

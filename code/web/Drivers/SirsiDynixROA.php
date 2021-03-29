@@ -1100,7 +1100,7 @@ class SirsiDynixROA extends HorizonAPI
 
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $holdId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $holdId, $newPickupLocation)
 	{
 		$staffSessionToken = $this->getStaffSessionToken();
 		if (!$staffSessionToken) {

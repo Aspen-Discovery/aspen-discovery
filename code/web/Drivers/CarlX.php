@@ -236,6 +236,9 @@ class CarlX extends AbstractIlsDriver{
 					if ($renew_result['NotRenewed'] > 0){
 						$renew_result['message'] = array_merge($renew_result['message'], $result['variable']['BN']);
 					}
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
 				}else{
 					$logger->log("Invalid message returned from SIP server '$msg_result''", Logger::LOG_ERROR);
 					$renew_result['message'] = array("Invalid message returned from SIP server");
@@ -366,14 +369,14 @@ class CarlX extends AbstractIlsDriver{
 					$curHold->type = 'ils';
 					$curHold->source = $this->getIndexingProfile()->name;
 					$curHold->available = true;
-					$bibId          = $hold->BID;
+					$bibId          = trim($hold->BID);
 					$carlID         = $this->fullCarlIDfromBID($bibId);
 					$expireDate     = isset($hold->ExpirationDate) ? $this->extractDateFromCarlXDateField($hold->ExpirationDate) : null;
-					$pickUpBranch   = $this->getBranchInformation($hold->PickUpBranch); //TODO: Use local DB; will require adding ILS branch numbers to DB or memcache (there is a getAllBranchInfo Call)
+					$pickUpBranch   = $this->getBranchInformation($hold->PickUpBranch);
 
 					$curHold->sourceId = $bibId;
 					$curHold->itemId = $hold->ItemNumber;
-					$curHold->cancelId = $hold->Identifier;
+					$curHold->cancelId = trim($hold->Identifier);
 					$curHold->position = $hold->QueuePosition;
 					$curHold->recordId = $carlID;
 					$curHold->shortId = $bibId;
@@ -520,7 +523,7 @@ class CarlX extends AbstractIlsDriver{
 		return $result;
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $holdId, $newPickupLocation) {
+	function changeHoldPickupLocation(User $patron, $recordId, $holdId, $newPickupLocation) {
 		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $holdId);
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$freeze = null;
@@ -1341,8 +1344,6 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	public function getPhoneTypeList() {
-		// TODO: Store in memcache
-
 		$request             = new stdClass();
 		$request->Modifiers  = '';
 
@@ -1358,8 +1359,6 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	private function getBranchInformation($branchNumber = null, $branchCode = null) {
-//		TODO: Store in Memcache instead
-		/** @var Memcache $memCache */
 		global $memCache;
 
 		if (!empty($branchNumber)) {
@@ -1538,7 +1537,7 @@ class CarlX extends AbstractIlsDriver{
 		return false;
 	}
 
-	public function placeHoldViaSIP($patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null){
+	public function placeHoldViaSIP(User $patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null){
 		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0) {
 			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
 		}
@@ -1552,7 +1551,7 @@ class CarlX extends AbstractIlsDriver{
 		$title = '';
 		$message = 'Failed to connect to complete requested action.';
 		if ($mySip->connect()) {
-			//send selfcheck status message
+			//send self check status message
 			$in = $mySip->msgSCStatus();
 			$msg_result = $mySip->get_message($in);
 			// Make sure the response is 98 as expected
@@ -1651,6 +1650,10 @@ class CarlX extends AbstractIlsDriver{
 					if (!empty($result['variable']['AJ'][0])) {
 						$title = $result['variable']['AJ'][0];
 					}
+					if ($success){
+						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+						$patron->forceReloadOfHolds();
+					}
 				}
 			}
 		}
@@ -1663,7 +1666,7 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 
-	public function renewCheckoutViaSIP($patron, $itemId, $useAlternateSIP = false){
+	public function renewCheckoutViaSIP(User $patron, $itemId, $useAlternateSIP = false){
 		//renew the item via SIP 2
 		$mysip = new sip2();
 		$mysip->hostname = $this->accountProfile->sipHost;
@@ -1712,6 +1715,9 @@ class CarlX extends AbstractIlsDriver{
 						$title = $result['variable']['AJ'][0];
 
 						$message = empty($title) ? $message : "<p style=\"font-style:italic\">$title</p><p>$message.</p>";
+					}else{
+						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+						$patron->forceReloadOfCheckouts();
 					}
 
 
@@ -1780,6 +1786,12 @@ class CarlX extends AbstractIlsDriver{
 
 			$outstandingFines = $patronSummaryResponse->FineTotal + $patronSummaryResponse->LostItemFeeTotal;
 			$summary->totalFines = floatval($outstandingFines);
+
+			$request = $this->getSearchbyPatronIdRequest($user);
+			$patronInfoResponse = $this->doSoapRequest('getPatronInformation', $request);
+			if ($patronInfoResponse && $patronInfoResponse->Patron) {
+				$summary->expirationDate = strtotime($this->extractDateFromCarlXDateField($patronInfoResponse->Patron->ExpirationDate));
+			}
 		}
 
 		return $summary;

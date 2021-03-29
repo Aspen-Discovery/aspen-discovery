@@ -1,6 +1,6 @@
 {strip}
 	{* Overall hold *}
-	<div class="result row ilsHold_{$record->recordId|escapeCSS}_{$record->cancelId|escapeCSS}">
+	<div class="result row ilsHold_{$record->sourceId|escapeCSS}_{$record->cancelId|escapeCSS}">
 		{* Cover column *}
 		{if $showCovers}
 			<div class="col-xs-4 col-sm-3">
@@ -184,10 +184,10 @@
 								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
 								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
 							{/if}
-							{if $record->allowFreezeHolds}
+							{if $record->canFreeze}
 								{if $record->frozen}
 									<button onclick="return AspenDiscovery.Account.thawHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
-								{elseif $record->canFreeze}
+								{else}
 									<button onclick="return AspenDiscovery.Account.freezeHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
 								{/if}
 							{/if}

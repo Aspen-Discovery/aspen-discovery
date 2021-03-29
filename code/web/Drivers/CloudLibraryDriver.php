@@ -71,6 +71,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$checkout->title = $recordDriver->getTitle();
 					$checkout->author = $recordDriver->getPrimaryAuthor();
 					$checkout->groupedWorkId = $recordDriver->getGroupedWorkId();
+					$checkout->format = $recordDriver->getPrimaryFormat();
+					$checkout->accessOnlineUrl = $recordDriver->getAccessOnlineLinkUrl($user);
 				} else {
 					$checkout->title = 'Unknown Cloud Library Title';
 					$checkout->format = 'Unknown - Cloud Library';
@@ -140,10 +142,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$result['success'] = true;
 			$result['message'] = translate("Your title was returned successfully.");
 
-			/** @var Memcache $memCache */
-			global $memCache;
-			$memCache->delete('cloud_library_summary_' . $patron->id);
-			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
+			$patron->clearCachedAccountSummaryForSource('cloud_library');
+			$patron->forceReloadOfCheckouts();
 		}else if ($responseCode == '400'){
 			$result['message'] = translate("Bad Request returning checkout.");
 			global $configArray;
@@ -278,9 +278,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				}
 			}
 
-			global $memCache;
 			$patron->clearCachedAccountSummaryForSource('cloud_library');
-			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
+			$patron->forceReloadOfHolds();
 		}else if ($responseCode == '405'){
 			$result['message'] = translate("Bad Request placing hold.");
 			global $configArray;
@@ -321,13 +320,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$result['success'] = true;
 			$result['message'] = translate("Your hold was cancelled successfully.");
 
-			/** @var Memcache $memCache */
-			global $memCache;
-			$memCache->delete('cloud_library_summary_' . $patron->id);
-			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
+			$patron->clearCachedAccountSummaryForSource('cloud_library');
+			$patron->forceReloadOfHolds();
 		}else if ($responseCode == '400'){
 			$result['message'] = translate("Bad Request cancelling hold.");
-			global $configArray;
 			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
@@ -369,20 +365,20 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	}
 
 	/**
-	 * @param User $user
+	 * @param User $patron
 	 * @param string $titleId
 	 *
 	 * @param bool $fromRenew
 	 * @return array
 	 */
-	public function checkOutTitle($user, $titleId, $fromRenew = false)
+	public function checkOutTitle($patron, $titleId, $fromRenew = false)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
-		$settings = $this->getSettings($user);
-		$patronId = str_replace(' ', '', $user->getBarcode());
-		$password = $user->getPasswordOrPin();
-		if (!$user->eligibleForHolds()){
+		$settings = $this->getSettings($patron);
+		$patronId = str_replace(' ', '', $patron->getBarcode());
+		$password = $patron->getPasswordOrPin();
+		if (!$patron->eligibleForHolds()){
 			$result['message'] = translate(['text' => 'cl_outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to use Cloud Library.']);
 			return $result;
 		}
@@ -399,10 +395,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			if (isset($checkoutXml->Error)){
 				$result['message'] = $checkoutXml->Error->Message;
 			}else {
-				$this->trackUserUsageOfCloudLibrary($user);
+				$this->trackUserUsageOfCloudLibrary($patron);
 				$this->trackRecordCheckout($titleId);
-				$user->lastReadingHistoryUpdate = 0;
-				$user->update();
+				$patron->lastReadingHistoryUpdate = 0;
+				$patron->update();
 
 				$result['success'] = true;
 				if ($fromRenew){
@@ -411,9 +407,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
 				}
 
-				global $memCache;
-				$memCache->delete('cloud_library_summary_' . $user->id);
-				$memCache->delete('cloud_library_circulation_info_' . $user->id);
+				$patron->clearCachedAccountSummaryForSource('cloud_library');
+				$patron->forceReloadOfCheckouts();
 			}
 		}
 		return $result;
@@ -423,16 +418,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		$settings = $this->getSettings($user);
 		if ($settings != false) {
-			global $memCache;
-			$circulationInfo = $memCache->get('cloud_library_circulation_info_' . $user->id);
-			if ($circulationInfo == false || isset($_REQUEST['reload'])) {
-				$patronId = str_replace(' ', '', $user->getBarcode());
-				$password = $user->getPasswordOrPin();
-				$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
-				$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
-				global $configArray;
-				$memCache->set('cloud_library_circulation_info_' . $user->id, $circulationInfo, $configArray['Caching']['account_summary']);
-			}
+			$patronId = str_replace(' ', '', $user->getBarcode());
+			$password = $user->getPasswordOrPin();
+			$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
+			$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
 			return simplexml_load_string($circulationInfo);
 		}else{
 			return null;
@@ -601,6 +590,17 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$hold->recordId = (string)$holdFromCloudLibrary->ItemId;
 		$hold->createDate = strtotime($holdFromCloudLibrary->EventStartDateInUTC);
 		$hold->userId = $user->id;
+
+		$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
+		if ($recordDriver->isValid()) {
+			$hold->title = $recordDriver->getTitle();
+			$hold->author = $recordDriver->getPrimaryAuthor();
+			$hold->groupedWorkId = $recordDriver->getGroupedWorkId();
+			$hold->format = $recordDriver->getPrimaryFormat();
+		} else {
+			$hold->title = 'Unknown Cloud Library Title';
+			$hold->format = 'Unknown - Cloud Library';
+		}
 		return $hold;
 	}
 

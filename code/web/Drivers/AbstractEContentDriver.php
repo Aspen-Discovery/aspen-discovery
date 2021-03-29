@@ -8,10 +8,10 @@ abstract class AbstractEContentDriver extends AbstractDriver
 	public abstract function getAccountSummary(User $user): AccountSummary;
 
 	/**
-	 * @param User $user
+	 * @param User $patron
 	 * @param string $titleId
 	 *
 	 * @return array
 	 */
-	public abstract function checkOutTitle($user, $titleId);
+	public abstract function checkOutTitle($patron, $titleId);
 }

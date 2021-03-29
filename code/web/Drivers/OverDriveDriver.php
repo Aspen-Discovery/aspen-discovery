@@ -547,6 +547,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 						$overDriveRecord = new OverDriveRecordDriver($checkout->sourceId);
 						if ($overDriveRecord->isValid()) {
 							$checkout->groupedWorkId = $overDriveRecord->getPermanentId();
+							$checkout->title = $overDriveRecord->getTitle();
+							$checkout->author = $overDriveRecord->getAuthor();
+							$checkout->format = $overDriveRecord->getPrimaryFormat();
 						}else{
 							//The title doesn't exist in the collection - this happens with Magazines right now (early 2021).
 							//Load the title information from metadata, but don't link it.
@@ -644,6 +647,15 @@ class OverDriveDriver extends AbstractEContentDriver{
 				}
 
 				$hold->userId = $user->id;
+
+				require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+				$overDriveRecordDriver = new OverDriveRecordDriver($hold->recordId);
+				if ($overDriveRecordDriver->isValid()){
+					$hold->title = $overDriveRecordDriver->getTitle();
+					$hold->author = $overDriveRecordDriver->getAuthor();
+					$hold->format = $overDriveRecordDriver->getPrimaryFormat();
+					$hold->groupedWorkId = $overDriveRecordDriver->getPermanentId();
+				}
 
 				$key = $hold->type . $hold->sourceId . $hold->userId;
 				if ($hold->available){
@@ -744,13 +756,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $holdResult;
 	}
 
-	function freezeHold(User $user, $overDriveId, $reactivationDate)
+	function freezeHold(User $patron, $overDriveId, $reactivationDate)
 	{
-		global $memCache;
-
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
 		$params = array(
-			'emailAddress' => trim($user->overdriveEmail)
+			'emailAddress' => trim($patron->overdriveEmail)
 		);
 		if (empty($reactivationDate)){
 			$params['suspensionType'] = 'indefinite';
@@ -765,7 +775,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}
 
 		}
-		$response = $this->_callPatronUrl($user, $url, $params);
+		$response = $this->_callPatronUrl($patron, $url, $params);
 
 		$holdResult = array();
 		$holdResult['success'] = false;
@@ -775,23 +785,21 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$this->incrementStat('numHoldsFrozen');
 			$holdResult['success'] = true;
 			$holdResult['message'] = translate(['text'=>'overdrive_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+			$patron->forceReloadOfHolds();
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not freeze the hold on this title.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
-		$user->clearCache();
-		$memCache->delete('overdrive_summary_' . $user->id);
+		$patron->clearCache();
 
 		return $holdResult;
 	}
 
-	function thawHold(User $user, $overDriveId)
+	function thawHold(User $patron, $overDriveId)
 	{
-		global $memCache;
-
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
-		$response = $this->_callPatronDeleteUrl($user, $url);
+		$response = $this->_callPatronDeleteUrl($patron, $url);
 
 		$holdResult = array();
 		$holdResult['success'] = false;
@@ -801,27 +809,25 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$holdResult['success'] = true;
 			$holdResult['message'] = translate(['text'=>'overdrive_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
 			$this->incrementStat('numHoldsThawed');
+			$patron->forceReloadOfHolds();
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not thaw the hold on this title.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
-		$user->clearCache();
-		$memCache->delete('overdrive_summary_' . $user->id);
+		$patron->clearCache();
 
 		return $holdResult;
 	}
 
 	/**
-	 * @param User $user
+	 * @param User $patron
 	 * @param string $overDriveId
 	 * @return array
 	 */
-	function cancelHold($user, $overDriveId, $cancelId = null){
-		global $memCache;
-
+	function cancelHold($patron, $overDriveId, $cancelId = null){
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
-		$response = $this->_callPatronDeleteUrl($user, $url);
+		$response = $this->_callPatronDeleteUrl($patron, $url);
 
 		$cancelHoldResult = array();
 		$cancelHoldResult['success'] = false;
@@ -830,13 +836,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$cancelHoldResult['success'] = true;
 			$cancelHoldResult['message'] = translate('Your hold was cancelled successfully.');
 			$this->incrementStat('numHoldsCancelled');
+			$patron->clearCachedAccountSummaryForSource('overdrive');
+			$patron->forceReloadOfHolds();
 		}else{
 			$cancelHoldResult['message'] = translate('There was an error cancelling your hold.');
 		    if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
-		$memCache->delete('overdrive_summary_' . $user->id);
-		$user->clearCache();
+		$patron->clearCache();
 		return $cancelHoldResult;
 	}
 
@@ -844,18 +851,16 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * Checkout a title from OverDrive
 	 *
 	 * @param string $overDriveId
-	 * @param User $user
+	 * @param User $patron
 	 *
 	 * @return array results (success, message, noCopies)
 	 */
-	public function checkOutTitle($user, $overDriveId){
-		global $memCache;
-
+	public function checkOutTitle($patron, $overDriveId){
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts';
 		$params = array(
 			'reserveId' => $overDriveId,
 		);
-		$response = $this->_callPatronUrl($user, $url, $params);
+		$response = $this->_callPatronUrl($patron, $url, $params);
 
 		$result = array();
 		$result['success'] = false;
@@ -865,11 +870,13 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if (isset($response->expires)) {
 			$result['success'] = true;
 			$result['message'] = translate(['text'=>'overdrive_checkout_success', 'defaultText'=>'Your title was checked out successfully. You may now download the title from your Account.']);
-			$this->trackUserUsageOfOverDrive($user);
+			$this->trackUserUsageOfOverDrive($patron);
 			$this->trackRecordCheckout($overDriveId);
 			$this->incrementStat('numCheckouts');
-			$user->lastReadingHistoryUpdate = 0;
-			$user->update();
+			$patron->lastReadingHistoryUpdate = 0;
+			$patron->update();
+			$patron->clearCachedAccountSummaryForSource('overdrive');
+			$patron->forceReloadOfCheckouts();
 		}else{
 			$this->incrementStat('numFailedCheckouts');
 			$result['message'] = translate('Sorry, we could not checkout this title to you.');
@@ -891,21 +898,18 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 		}
 
-		$memCache->delete('overdrive_summary_' . $user->id);
-		$user->clearCache();
+		$patron->clearCache();
 		return $result;
 	}
 
     /**
      * @param $overDriveId
-     * @param User $user
+     * @param User $patron
      * @return array
      */
-	public function returnCheckout($user, $overDriveId){
-		global $memCache;
-
+	public function returnCheckout($patron, $overDriveId){
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts/' . $overDriveId;
-		$response = $this->_callPatronDeleteUrl($user, $url);
+		$response = $this->_callPatronDeleteUrl($patron, $url);
 
 		$cancelHoldResult = array();
 		$cancelHoldResult['success'] = false;
@@ -914,26 +918,26 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$cancelHoldResult['success'] = true;
 			$cancelHoldResult['message'] = translate('Your item was returned successfully.');
 			$this->incrementStat('numEarlyReturns');
+
+			$patron->clearCachedAccountSummaryForSource('overdrive');
+			$patron->forceReloadOfCheckouts();
 		}else{
 			$cancelHoldResult['message'] =translate( 'There was an error returning this item.');
 			if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
 
-		$memCache->delete('overdrive_summary_' . $user->id);
-		$user->clearCache();
+		$patron->clearCache();
 		return $cancelHoldResult;
 	}
 
-	public function selectOverDriveDownloadFormat($overDriveId, $formatId, $user){
-		global $memCache;
-
+	public function selectOverDriveDownloadFormat($overDriveId, $formatId, $patron){
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts/' . $overDriveId . '/formats';
 		$params = array(
 			'reserveId' => $overDriveId,
 			'formatType' => $formatId
 		);
-		$response = $this->_callPatronUrl($user, $url, $params);
+		$response = $this->_callPatronUrl($patron, $url, $params);
 		//print_r($response);
 
 		$result = array();
@@ -943,14 +947,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if (isset($response->linkTemplates->downloadLink)){
 			$result['success'] = true;
 			$result['message'] = translate('This format was locked in');
-			$downloadLink = $this->getDownloadLink($overDriveId, $formatId, $user);
+			$downloadLink = $this->getDownloadLink($overDriveId, $formatId, $patron);
 			$result = $downloadLink;
+			$patron->forceReloadOfCheckouts();
 		}else{
 			$result['message'] = translate('Sorry, but we could not select a format for you.');
 			if (isset($response->message)) $result['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
-		$memCache->delete('overdrive_summary_' . $user->id);
 
 		return $result;
 	}
@@ -1045,8 +1049,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 */
 	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
-		global $memCache;
-
 		//To renew, we actually just place another hold on the title.
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $recordId;
 		$params = array(
@@ -1066,13 +1068,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$holdResult['success'] = true;
 			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=>'overdrive_renew_success', 'defaultText' => 'Your title has been requested again, you are number %1% on the list.', 1=>$response->holdListPosition]) . "</p>";
 			$this->incrementStat('numRenewals');
+
+			$patron->forceReloadOfCheckouts();
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not renew this title for you.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
 		$patron->clearCache();
-		$memCache->delete('overdrive_summary_' . $patron->id);
 
 		return $holdResult;
 	}

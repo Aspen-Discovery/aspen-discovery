@@ -478,7 +478,7 @@ class Polaris extends AbstractIlsDriver
 		// TODO: Implement thawHold() method.
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
 		// TODO: Implement changeHoldPickupLocation() method.
 	}
