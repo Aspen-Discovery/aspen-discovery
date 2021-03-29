@@ -87,6 +87,7 @@ class MillenniumCheckouts {
 				$curTitle = new Checkout();
 				$curTitle->type = 'ils';
 				$curTitle->source = $indexingProfile->name;
+				$curTitle->userId = $user->id;
 				for ($i = 0; $i < sizeof($scols); $i++) {
 					$scols[$i] = str_replace("&nbsp;", " ", $scols[$i]);
 					$scols[$i] = preg_replace("/<br+?>/", " ", $scols[$i]);
@@ -162,6 +163,7 @@ class MillenniumCheckouts {
 								$curTitle->canRenew       = $patronCanRenew;
 								$curTitle->itemIndex      = $matches[1];
 								$curTitle->itemId         = $matches[3];
+								$curTitle->renewIndicator = $curTitle->itemId . '|' . $curTitle->itemIndex;
 								$curTitle->renewalId = $curTitle->itemId . '|' . $curTitle->itemIndex;
 							} else {
 								$curTitle->canRenew = false;
@@ -200,7 +202,7 @@ class MillenniumCheckouts {
 		return $checkedOutTitles;
 	}
 
-	public function renewAll($patron){
+	public function renewAll(User $patron){
 		global $logger;
 		$driver = &$this->driver;
 
@@ -280,11 +282,13 @@ class MillenniumCheckouts {
 				}
 			}
 
-		}
-		else{
+		} else{
 			$renew_result['success'] = true;
 			$renew_result['message'][] = "All items were renewed successfully.";
 		}
+
+		$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
+		$patron->forceReloadOfCheckouts();
 
 		return $renew_result;
 	}
@@ -382,6 +386,11 @@ class MillenniumCheckouts {
 		}
 
 		$timer->logTime('Finished Renew Item attempt');
+
+		if ($success){
+			$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
+			$patron->forceReloadOfCheckouts();
+		}
 
 		return array(
 			'itemId'  => $itemId,

@@ -136,6 +136,7 @@ class MillenniumHolds{
 			'currentsortorder' => 'current_pickup',
 		);
 
+		$titles = [];
 		foreach ($xNum as $tmpXnumInfo) {
 			if (strpos($tmpXnumInfo, '~') !== false){
 				list($tmpBib, $tmpXnum) = explode('~', $tmpXnumInfo);
@@ -151,15 +152,15 @@ class MillenniumHolds{
 				$canUpdate   = false;
 				if ($holdForXNum != null) {
 					if ($freezeValue == 'off') {
-						if ($holdForXNum['frozen']) {
+						if ($holdForXNum->frozen) {
 							$canUpdate = true;
 						}
 					} elseif ($freezeValue == 'on') {
-						if ($holdForXNum['frozen'] == false && $holdForXNum['canFreeze'] == true) {
+						if ($holdForXNum->frozen == false && $holdForXNum->canFreeze == true) {
 							$canUpdate = true;
 						}
 					} elseif ($freezeValue == '') {
-						if (isset($paddedLocation) && $holdForXNum['locationUpdateable']) {
+						if (isset($paddedLocation) && $holdForXNum->locationUpdateable) {
 							$canUpdate = true;
 						}
 					}
@@ -178,8 +179,8 @@ class MillenniumHolds{
 
 			$tmp_title = '';
 			foreach ($combined_holds as $hold) {
-				if ($hold['shortId'] == $tmpBib) {
-					$tmp_title = $hold['title'];
+				if ($hold->shortId == $tmpBib) {
+					$tmp_title = $hold->title;
 					break;
 				}
 			}
@@ -196,6 +197,7 @@ class MillenniumHolds{
 		$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $postVariables);
 		$holds = $this->parseHoldsPage($sResult, $patron, $indexingProfile);
 
+		/** @var Hold[] $combined_holds */
 		$combined_holds = array_merge($holds['unavailable'], $holds['available']);
 		//Finally, check to see if the update was successful.
 		if ($type == 'cancel' || $type == 'recall'){
@@ -203,11 +205,11 @@ class MillenniumHolds{
 			foreach ($xNum as $tmpXnumInfo){
 				list($tmpBib) = explode('~', $tmpXnumInfo);
 				foreach ($combined_holds as $hold) {
-					$tmpCancelId = strstr($hold['cancelId'], '~', true); // get the cancel id without the position component
-					if ($tmpBib == $hold['shortId'] || $tmpBib == $tmpCancelId) { // this hold failed (item still listed as on hold)
+					$tmpCancelId = strstr($hold->cancelId, '~', true); // get the cancel id without the position component
+					if ($tmpBib == $hold->shortId || $tmpBib == $tmpCancelId) { // this hold failed (item still listed as on hold)
 						// $tmpBib may be an item id instead of a bib id. in that case, need to check against cancel ids as well.
-						if (!empty($hold['title'])) {
-							$title = $hold['title'];
+						if (!empty($hold->title)) {
+							$title = $hold->title;
 						}else {
 							$title = (!empty($titles[$tmpBib])) ? $titles[$tmpBib] : 'an item';
 						}
@@ -230,7 +232,7 @@ class MillenniumHolds{
 				foreach ($xNum as $tmpXnumInfo) {
 					list($tmpBib) = explode('~', $tmpXnumInfo);
 					foreach ($combined_holds as $hold) {
-						if ($tmpBib == $hold['shortId']) { // this hold failed (item still on hold)
+						if ($tmpBib == $hold->shortId) { // this hold failed (item still on hold)
 							$title = (array_key_exists($tmpBib, $titles) && $titles[$tmpBib] != '') ? $titles[$tmpBib] : 'an item';
 
 							if (!empty($hold->_freezeError)) {
@@ -252,10 +254,12 @@ class MillenniumHolds{
 		}
 
 		//Make sure to clear any cached data
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete("patron_dump_{$this->driver->_getBarcode()}");
 		usleep(250); // Pause for Hold Cancels, so that sierra will have updated the canceled hold.
+
+		$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
+		$patron->forceReloadOfHolds();
 
 		// Return Results
 		$isPlural = count($xNum) > 1;
@@ -681,6 +685,10 @@ class MillenniumHolds{
 			$hold_result = $this->_getHoldResult($sResult);
 			$hold_result['title']  = $title;
 			$hold_result['bid'] = $bib1;
+			if ($hold_result['success']){
+				$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
+			}
 			return $hold_result;
 		}
 	}
@@ -782,7 +790,6 @@ class MillenniumHolds{
 			$volumeId = substr(str_replace('.j', 'j', $volumeId), 0, -1);
 			$curl_url = $this->driver->getVendorOpacUrl() . "/search/.$bib/.$bib/1,1,1,B/request~$bib&jrecnum=$volumeId";
 
-			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			$patronHomeBranch = $librarySingleton->getPatronHomeLibrary($patron);
 			if ($patronHomeBranch->defaultNotNeededAfterDays != -1){
@@ -811,14 +818,24 @@ class MillenniumHolds{
 			$hold_result = $this->_getHoldResult($sResult);
 			$hold_result['title']  = $title;
 			$hold_result['bid'] = $bib1;
+
+			if ($hold_result['success']){
+				$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
+			}
 			return $hold_result;
 		}
 	}
 
+	/**
+	 * @param [] $holds
+	 * @param string $tmpXnum
+	 * @return Hold|null
+	 */
 	private function getHoldByXNum($holds, $tmpXnum) {
 		$unavailableHolds = $holds['unavailable'];
 		foreach ($unavailableHolds as $hold){
-			if ($hold['xnum'] == $tmpXnum){
+			if (strpos($hold->cancelId, '~' . $tmpXnum) !== false){
 				return $hold;
 			}
 		}
