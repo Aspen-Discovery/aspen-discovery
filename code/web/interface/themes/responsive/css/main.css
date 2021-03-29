@@ -10226,28 +10226,30 @@ a.browse-thumbnail-sorted.active {
 .related-manifestations {
   margin-top: 3px;
 }
-.related-manifestation {
+.related-manifestation.grouped {
   padding-top: 10px;
   padding-bottom: 10px;
   border: 1px solid #c3c3c3;
   border-radius: 8px;
   margin-top: 1em;
 }
-.related-manifestation .col-sm-12 .row {
-  padding-top: 1em;
-}
-.related-manifestation .col-sm-12 > .striped-odd {
-  background: #f8f8ff;
+.related-manifestation.grouped .col-sm-12 .row.displayed {
   padding-bottom: 1em;
-}
-.related-manifestation .col-sm-12 > .row:nth-of-type(n+2) ~ .row:not(:last-of-type) {
   margin-bottom: 1em !important;
+}
+.related-manifestation.grouped .col-sm-12 .row.displayed.striped-odd {
+  background: #f8f8ff;
+  padding-top: 1em;
 }
 .related-manifestations-header {
   border-bottom: 1px solid #d3d3d3;
 }
 .related-manifestations-label {
   font-size: 10pt;
+}
+.related-manifestations a.showHidden {
+  display: block;
+  padding-top: 1em;
 }
 .manifestation-actions .btn-default {
   background-color: #088ec6;

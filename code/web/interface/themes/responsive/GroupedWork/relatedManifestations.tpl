@@ -11,7 +11,7 @@
 				{assign var=hasHiddenFormats value=true}
 			{/if}
 			{* Display the manifestation (the format being displayed) *}
-			<div class="row related-manifestation {if $relatedManifestation->isHideByDefault()}hiddenManifestation_{$summId}{/if}" {if $relatedManifestation->isHideByDefault()}style="display: none"{/if}>
+			<div class="row related-manifestation grouped{if $relatedManifestation->isHideByDefault()}hiddenManifestation_{$summId}{/if}" {if $relatedManifestation->isHideByDefault()}style="display: none"{/if}>
 				{* Display inforamtion about the format *}
 				{if $relatedManifestation->getNumVariations() == 1}
 					{include file="GroupedWork/singleVariationManifestion.tpl" workId=$workId}
@@ -29,7 +29,7 @@
 		{if $hasHiddenFormats}
 			<div class="row related-manifestation" id="formatToggle_{$workId}">
 				<div class="col-sm-12">
-					<a href="#" onclick="$('.hiddenManifestation_{$workId}').show();$('#formatToggle_{$workId}').hide();return false;">{translate text="View all Formats"}</a>
+					<a href="#" onclick="$('.hiddenManifestation_{$workId}').show();$('#formatToggle_{$workId}').hide();return false;" class="showHidden">{translate text="View all Formats"}</a>
 				</div>
 			</div>
 		{/if}

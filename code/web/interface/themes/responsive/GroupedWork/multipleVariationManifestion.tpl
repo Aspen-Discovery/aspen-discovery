@@ -6,7 +6,7 @@
 		</div>
 	</div>
 	{foreach from=$relatedManifestation->getVariations() item=variation}
-		<div class="row {if $variation->isHideByDefault()}hiddenManifestation_{$summId}{else}striped-{cycle values="odd,even"}{/if}" {if $variation->isHideByDefault()}style="display: none"{/if}>
+		<div class="row {if $variation->isHideByDefault()}hiddenManifestation_{$summId}{else} displayed striped-{cycle values="odd,even"}{/if}" {if $variation->isHideByDefault()}style="display: none"{/if}>
 			<div class="col-tn-4 col-xs-4{if empty($viewingCombinedResults) || !$viewingCombinedResults} col-md-3{/if} manifestation-format">
 				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');"aria-label="View Manifestations for {translate text=$relatedManifestation->format inAttribute=true} {$variation->label} of {$summTitle}">
 					{$variation->label}
