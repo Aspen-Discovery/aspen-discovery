@@ -12,6 +12,7 @@ class Enrichment_NYTLists extends Admin_Admin
 
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 		$nytSettings = new NewYorkTimesSetting();
+
 		if (!$nytSettings->find(true)) {
 			$interface->assign('error', 'The New York Times API is not configured properly, create settings at <a href="/Admin/NewYorkTimesSettings"></a>');
 		} else {
@@ -19,7 +20,7 @@ class Enrichment_NYTLists extends Admin_Admin
 
 			// instantiate class with api key
 			require_once ROOT_DIR . '/sys/NYTApi.php';
-			$nyt_api = new NYTApi($api_key);
+			$nyt_api = new NYTApi($api_key, $nytUpdateLog);
 
 			//Get the raw response from the API with a list of all the names
 			$availableListsRaw = $nyt_api->get_list('names');
@@ -39,7 +40,7 @@ class Enrichment_NYTLists extends Admin_Admin
 					require_once ROOT_DIR . '/services/API/ListAPI.php';
 					$listApi = new ListAPI();
 					try{
-						$results = $listApi->createUserListFromNYT($selectedList);
+						$results = $listApi->createUserListFromNYT($selectedList, $nytUpdateLog);
 						if ($results['success'] == false) {
 							$interface->assign('error', $results['message']);
 						} else {
