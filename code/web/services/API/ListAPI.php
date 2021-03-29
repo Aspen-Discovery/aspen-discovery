@@ -798,12 +798,16 @@ class ListAPI extends Action
 			if ($success) {
 				//KK Todo: update log that we added a list
 				$listID = $nytList->id;
+				global $logger;
+				$logger->log('Created list: ' . $selectedListTitle);
 				$results = array(
 					'success' => true,
 					'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"
 				);
 			} else {
 				//KK Todo: update log that this failed
+                global $logger;
+                $logger->log('Could not create list: ' . $selectedListTitle, Logger::LOG_ERROR);
 				return array(
 					'success' => false,
 					'message' => 'Could not create list'
