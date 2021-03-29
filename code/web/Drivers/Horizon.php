@@ -224,11 +224,11 @@ abstract class Horizon extends AbstractIlsDriver
 	abstract function translateFineMessageType($fineType);
 
 	/**
-	 * @param User $user The User Object to make updates to
+	 * @param User $patron The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo Permission check that updating is allowed
 	 * @return array                         Array of error messages for errors that occurred
 	 */
-	function updatePatronInfo($user, $canUpdateContactInfo)
+	function updatePatronInfo($patron, $canUpdateContactInfo)
 	{
 		$result = [
 			'success' => false,
@@ -237,7 +237,7 @@ abstract class Horizon extends AbstractIlsDriver
 		if ($canUpdateContactInfo) {
 			global $configArray;
 			//Check to make sure the patron alias is valid if provided
-			if (isset($_REQUEST['displayName']) && $_REQUEST['displayName'] != $user->displayName && strlen($_REQUEST['displayName']) > 0) {
+			if (isset($_REQUEST['displayName']) && $_REQUEST['displayName'] != $patron->displayName && strlen($_REQUEST['displayName']) > 0) {
 				//make sure the display name is less than 15 characters
 				if (strlen($_REQUEST['displayName']) > 15) {
 					$result['messages'][] = 'Sorry your display name must be 15 characters or less.';
@@ -254,7 +254,7 @@ abstract class Horizon extends AbstractIlsDriver
 					//Make sure no one else is using that
 					$userValidation = new User();
 					/** @noinspection SqlResolve */
-					$userValidation->query("SELECT * from {$userValidation->__table} WHERE id <> {$user->id} and displayName = '{$_REQUEST['displayName']}'");
+					$userValidation->query("SELECT * from {$userValidation->__table} WHERE id <> {$patron->id} and displayName = '{$_REQUEST['displayName']}'");
 					if ($userValidation->getNumResults() > 0) {
 						$result['messages'][] = 'Sorry, that name is in use or is invalid.';
 						return $result;
@@ -284,8 +284,8 @@ abstract class Horizon extends AbstractIlsDriver
 				'menu' => 'account',
 				'profile' => $configArray['Catalog']['hipProfile'],
 				'ri' => '',
-				'sec1' => $user->cat_username,
-				'sec2' => $user->cat_password,
+				'sec1' => $patron->cat_username,
+				'sec2' => $patron->cat_password,
 				'session' => $sessionId,
 			);
 			$curl_url = $this->hipUrl . "/ipac20/ipac.jsp";
@@ -311,7 +311,7 @@ abstract class Horizon extends AbstractIlsDriver
 					$result['messages'][] = $matches[1];
 				} else {
 					// Update the users email address in the Aspen Discovery database
-					$user->email = $_REQUEST['email'];
+					$patron->email = $_REQUEST['email'];
 				}
 			}
 
@@ -334,7 +334,7 @@ abstract class Horizon extends AbstractIlsDriver
 					$result['messages'][] = $matches[1];
 				} else {
 					//Update the users cat_password in the Aspen Discovery database
-					$user->cat_password = $_REQUEST['newPin'];
+					$patron->cat_password = $_REQUEST['newPin'];
 				}
 			}
 			if (isset($_REQUEST['phone'])) {
@@ -355,21 +355,21 @@ abstract class Horizon extends AbstractIlsDriver
 			}
 
 			//check to see if the user has provided an alias
-			if ((isset($_REQUEST['displayName']) && $_REQUEST['displayName'] != $user->displayName) ||
-				(isset($_REQUEST['disableRecommendations']) && $_REQUEST['disableRecommendations'] != $user->disableRecommendations) ||
-				(isset($_REQUEST['disableCoverArt']) && $_REQUEST['disableCoverArt'] != $user->disableCoverArt) ||
-				(isset($_REQUEST['bypassAutoLogout']) && $_REQUEST['bypassAutoLogout'] != $user->bypassAutoLogout)
+			if ((isset($_REQUEST['displayName']) && $_REQUEST['displayName'] != $patron->displayName) ||
+				(isset($_REQUEST['disableRecommendations']) && $_REQUEST['disableRecommendations'] != $patron->disableRecommendations) ||
+				(isset($_REQUEST['disableCoverArt']) && $_REQUEST['disableCoverArt'] != $patron->disableCoverArt) ||
+				(isset($_REQUEST['bypassAutoLogout']) && $_REQUEST['bypassAutoLogout'] != $patron->bypassAutoLogout)
 			) {
-				$user->displayName = $_REQUEST['displayName'];
-				$user->disableRecommendations = $_REQUEST['disableRecommendations'];
-				$user->disableCoverArt = $_REQUEST['disableCoverArt'];
+				$patron->displayName = $_REQUEST['displayName'];
+				$patron->disableRecommendations = $_REQUEST['disableRecommendations'];
+				$patron->disableCoverArt = $_REQUEST['disableCoverArt'];
 				if (isset($_REQUEST['bypassAutoLogout'])) {
-					$user->bypassAutoLogout = $_REQUEST['bypassAutoLogout'] == 'yes' ? 1 : 0;
+					$patron->bypassAutoLogout = $_REQUEST['bypassAutoLogout'] == 'yes' ? 1 : 0;
 				}
 			}
 
 			// update Aspen Discovery user data & clear cache of patron profile
-			$user->update();
+			$patron->update();
 			if (empty($result['messages'])){
 				$result['success'] = true;
 				$result['messages'][] = 'Your account was updated successfully.';

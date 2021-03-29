@@ -308,7 +308,7 @@ class Millennium extends AbstractIlsDriver
 		return $patronDump;
 	}
 
-	public function _curl_login($patron) {
+	public function _curl_login(User $patron) {
 		global $logger;
 		$loginResult = false;
 
@@ -591,11 +591,11 @@ class Millennium extends AbstractIlsDriver
 	}
 
 	/**
-	 * @param User $user                     The User Object to make updates to
+	 * @param User $patron                     The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo  Permission check that updating is allowed
 	 * @return array                         Array of error messages for errors that occurred
 	 */
-	public function updatePatronInfo($user, $canUpdateContactInfo){
+	public function updatePatronInfo($patron, $canUpdateContactInfo){
 		$result = [
 			'success' => false,
 			'messages' => []
@@ -603,7 +603,7 @@ class Millennium extends AbstractIlsDriver
 
 		if ($canUpdateContactInfo){
 			//Setup the call to Millennium
-			$barcode = $this->_getBarcode($user);
+			$barcode = $this->_getBarcode($patron);
 			$patronDump = $this->_getPatronDump($barcode);
 
 			//Update profile information
@@ -680,7 +680,7 @@ class Millennium extends AbstractIlsDriver
 			}
 
 			//Login to the patron's account
-			$this->_curl_login($user);
+			$this->_curl_login($patron);
 
 			//Issue a post request to update the patron information
 			$scope = $this->getMillenniumScope();
@@ -689,9 +689,9 @@ class Millennium extends AbstractIlsDriver
 
 			// Update Patron Information on success
 			if (isset($sresult) && strpos($sresult, 'Patron information updated') !== false){
-				$user->phone = $_REQUEST['phone'];
-				$user->email = $_REQUEST['email'];
-				$user->update();
+				$patron->phone = $_REQUEST['phone'];
+				$patron->email = $_REQUEST['email'];
+				$patron->update();
 				global $memCache;
 				$memCache->delete("patron_dump_$barcode"); // because the update will affect the patron dump information also clear that cache as well
 				$result['success'] = true;
@@ -1251,7 +1251,7 @@ class Millennium extends AbstractIlsDriver
 
 	}
 
-	public function _getLoginFormValues($patron){
+	public function _getLoginFormValues(User $patron){
 		$loginData = array();
 		$loginData['name'] = $patron->cat_username;
 		$loginData['code'] = $patron->cat_password;
@@ -1575,18 +1575,17 @@ class Millennium extends AbstractIlsDriver
 		return $userValid;
 	}
 
-	public function getAccountSummary(User $user) : AccountSummary
+	public function getAccountSummary(User $patron) : AccountSummary
 	{
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();
-		$summary->userId = $user->id;
+		$summary->userId = $patron->id;
 		$summary->source = 'ils';
+		$summary->resetCounters();
 
-		$barcode = $user->getBarcode();
+		$barcode = $patron->getBarcode();
 		$patronDump = $this->_getPatronDump($barcode);
 		$expirationTime = 0;
-		$expireClose = 0;
-		$expires = '';
 		//See if expiration date is close
 		if (trim($patronDump['EXP_DATE']) != '-  -'){
 			list ($monthExp, $dayExp, $yearExp) = explode("-",$patronDump['EXP_DATE']);

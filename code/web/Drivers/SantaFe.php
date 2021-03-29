@@ -11,7 +11,7 @@ class SantaFe extends Sierra{
 		return $loginData;
 	}
 
-	public function _curl_login($patron) {
+	public function _curl_login(User $patron) {
 		global $logger;
 		$loginResult = false;
 
@@ -24,8 +24,7 @@ class SantaFe extends Sierra{
 		$loginResponse = $this->curlWrapper->curlPostPage($curlUrl, $post_data);
 
 		//When a library uses IPSSO, the initial login does a redirect and requires additional parameters.
-        /** @noinspection HtmlUnknownAttribute */
-		if (preg_match('/<input type="hidden" name="lt" value="(.*?)" \/>/si', $loginResponse, $loginMatches)) {
+        if (preg_match('/<input type="hidden" name="lt" value="(.*?)" \/>/si', $loginResponse, $loginMatches)) {
 			$lt = $loginMatches[1]; //Get the lt value
 			//Login again
 			$post_data['lt']       = $lt;

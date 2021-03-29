@@ -20,6 +20,11 @@ class AccountSummary extends DataObject
 	protected $_materialsRequests;
 	protected $_readingHistory;
 
+	public function getNumericColumnNames()
+	{
+		return ['userId','numCheckedOut','numCheckoutsRemaining','numOverdue','numAvailableHolds','numUnavailableHolds','numBookings','totalFines','expirationDate','lastLoaded'];
+	}
+
 	/**
 	 * @return int
 	 */
@@ -108,5 +113,17 @@ class AccountSummary extends DataObject
 		$return['expirationFinesNotice'] = $this->_expirationFinesNotice;
 		$return['numHolds'] = $this->getNumHolds();
 		return $return;
+	}
+
+	public function resetCounters()
+	{
+		$this->numCheckedOut = 0;
+		$this->numCheckoutsRemaining = 0;
+		$this->numOverdue = 0;
+		$this->numAvailableHolds = 0;
+		$this->numUnavailableHolds = 0;
+		$this->numBookings = 0;
+		$this->totalFines = 0;
+		$this->expirationDate = 0;
 	}
 }

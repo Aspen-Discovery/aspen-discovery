@@ -164,15 +164,15 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 *
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($user)
+	public function getHolds($patron)
 	{
-		if (isset($this->holds[$user->id])){
-			return $this->holds[$user->id];
+		if (isset($this->holds[$patron->id])){
+			return $this->holds[$patron->id];
 		}
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 		require_once ROOT_DIR . '/sys/User/Hold.php';
@@ -182,16 +182,16 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			'unavailable' => array()
 		);
 
-		$settings = $this->getSettings($user);
+		$settings = $this->getSettings($patron);
 		if ($settings == false){
 			return $holds;
 		}
-		$circulation = $this->getPatronCirculation($user);
+		$circulation = $this->getPatronCirculation($patron);
 
 		if (isset($circulation->Holds->Item)) {
 			$index = 0;
 			foreach ($circulation->Holds->Item as $holdFromCloudLibrary) {
-				$hold = $this->loadCloudLibraryHoldInfo($user, $holdFromCloudLibrary);
+				$hold = $this->loadCloudLibraryHoldInfo($patron, $holdFromCloudLibrary);
 
 				$key = $hold->type . $hold->sourceId . $hold->userId;
 				$hold->position = (string)$holdFromCloudLibrary->Position;
@@ -203,7 +203,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if (isset($circulation->Reserves->Item)) {
 			$index = 0;
 			foreach ($circulation->Reserves->Item as $holdFromCloudLibrary) {
-				$hold = $this->loadCloudLibraryHoldInfo($user, $holdFromCloudLibrary);
+				$hold = $this->loadCloudLibraryHoldInfo($patron, $holdFromCloudLibrary);
 				$hold->available = true;
 
 				$key = $hold->type . $hold->sourceId . $hold->userId;
@@ -344,6 +344,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$summary = new AccountSummary();
 			$summary->userId = $user->id;
 			$summary->source = 'cloud_library';
+			$summary->resetCounters();
 
 			//Get account information from api
 			$circulation = $this->getPatronCirculation($user);

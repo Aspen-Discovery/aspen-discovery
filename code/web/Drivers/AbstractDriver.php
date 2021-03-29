@@ -11,7 +11,7 @@ abstract class AbstractDriver
 	}
 
 	public function getReadingHistory(
-		/** @noinspection PhpUnusedParameterInspection */ $user,
+		/** @noinspection PhpUnusedParameterInspection */ $patron,
 		/** @noinspection PhpUnusedParameterInspection */ $page = 1,
 		/** @noinspection PhpUnusedParameterInspection */ $recordsPerPage = -1,
 		/** @noinspection PhpUnusedParameterInspection */ $sortOption = "checkedOut")
@@ -20,7 +20,7 @@ abstract class AbstractDriver
 	}
 
 	public function doReadingHistoryAction(
-		/** @noinspection PhpUnusedParameterInspection */ $user,
+		/** @noinspection PhpUnusedParameterInspection */ $patron,
 		/** @noinspection PhpUnusedParameterInspection */ $action,
 		/** @noinspection PhpUnusedParameterInspection */ $selectedTitles)
 	{
@@ -50,7 +50,7 @@ abstract class AbstractDriver
 	 * @param $patron  User
 	 * @return mixed
 	 */
-	public abstract function renewAll($patron);
+	public abstract function renewAll(User $patron);
 
 	/**
 	 * Renew a single title currently checked out to the user
@@ -61,7 +61,7 @@ abstract class AbstractDriver
 	 * @param $itemIndex  string
 	 * @return mixed
 	 */
-	abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
+	abstract function renewCheckout(User $patron, $recordId, $itemId = null, $itemIndex = null);
 
 	public function hasHolds()
 	{
@@ -73,12 +73,12 @@ abstract class AbstractDriver
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 *
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public abstract function getHolds($user);
+	public abstract function getHolds(User $patron);
 
 	/**
 	 * Place Hold
@@ -93,7 +93,7 @@ abstract class AbstractDriver
 	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	abstract function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null);
+	abstract function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null);
 
 	/**
 	 * Cancels a hold for a patron
@@ -103,5 +103,5 @@ abstract class AbstractDriver
 	 * @param string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	abstract function cancelHold($patron, $recordId, $cancelId = null);
+	abstract function cancelHold(User $patron, $recordId, $cancelId = null);
 }

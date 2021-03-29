@@ -593,6 +593,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 			$summary = new AccountSummary();
 			$summary->userId = $user->id;
 			$summary->source = 'rbdigital';
+			$summary->resetCounters();
 
 			//Get the rbdigital id for the patron
 			$rbdigitalId = $this->getRBdigitalId($user);

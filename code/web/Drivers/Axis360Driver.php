@@ -182,29 +182,29 @@ class Axis360Driver extends AbstractEContentDriver
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 * @param bool $forSummary
 	 *
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($user, $forSummary = false)
+	public function getHolds($patron, $forSummary = false)
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
-		if (isset($this->holds[$user->id])){
-			return $this->holds[$user->id];
+		if (isset($this->holds[$patron->id])){
+			return $this->holds[$patron->id];
 		}
 		$holds = array(
 			'available' => array(),
 			'unavailable' => array()
 		);
-		$settings = $this->getSettings($user);
+		$settings = $this->getSettings($patron);
 		if ($settings == false){
 			return $holds;
 		}
 
-		if ($this->getAxis360AccessToken($user)){
-			$holdUrl = $settings->apiUrl . "/Services/VendorAPI/GetHolds/{$user->getBarcode()}";
+		if ($this->getAxis360AccessToken($patron)){
+			$holdUrl = $settings->apiUrl . "/Services/VendorAPI/GetHolds/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
 				'Library: ' . $settings->libraryPrefix,
@@ -217,7 +217,7 @@ class Axis360Driver extends AbstractEContentDriver
 			$holdsResult = $xmlResults->getHoldsResult;
 			if (!empty($holdsResult->holds)){
 				foreach ($holdsResult->holds->hold as $hold){
-					$this->loadHoldInfo($hold, $holds, $user, $forSummary);
+					$this->loadHoldInfo($hold, $holds, $patron, $forSummary);
 				}
 			}
 
@@ -329,6 +329,7 @@ class Axis360Driver extends AbstractEContentDriver
 			$summary = new AccountSummary();
 			$summary->userId = $user->id;
 			$summary->source = 'axis360';
+			$summary->resetCounters();
 
 			if ($this->getAxis360AccessToken($user)) {
 				require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';

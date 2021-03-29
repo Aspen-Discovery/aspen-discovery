@@ -44,15 +44,15 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	abstract function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null);
+	abstract function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null);
 
-	abstract function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate);
+	abstract function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate);
 
-	abstract function thawHold($patron, $recordId, $itemToThawId);
+	abstract function thawHold(User $patron, $recordId, $itemToThawId);
 
 	abstract function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation);
 
-	abstract function updatePatronInfo($patron, $canUpdateContactInfo);
+	abstract function updatePatronInfo(User $patron, $canUpdateContactInfo);
 
 	function updateHomeLibrary(User $patron, string $homeLibraryCode){
 		return [
@@ -61,7 +61,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		];
 	}
 
-	public abstract function getFines($patron, $includeMessages = false);
+	public abstract function getFines(User $patron, $includeMessages = false);
 
 	/**
 	 * @return IndexingProfile|null
@@ -155,7 +155,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return false;
 	}
 
-	function updatePin(/** @noinspection PhpUnusedParameterInspection */ User $user, string $oldPin, string $newPin)
+	function updatePin(/** @noinspection PhpUnusedParameterInspection */ User $patron, string $oldPin, string $newPin)
 	{
 		return ['success' => false, 'message' => 'Can not update PINs, this ILS does not support updating PINs'];
 	}
@@ -217,17 +217,13 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'errors' => array('Importing Lists has not been implemented for this ILS.'));
 	}
 
-	public function getAccountSummary(User $user) : AccountSummary
+	public function getAccountSummary(User $patron) : AccountSummary
 	{
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();
-		$summary->userId = $user->id;
+		$summary->userId = $patron->id;
 		$summary->source = 'ils';
-		$summary->numCheckedOut = 0;
-		$summary->numOverdue = 0;
-		$summary->numAvailableHolds = 0;
-		$summary->totalFines = 0;
-		$summary->expirationDate = 0;
+		$summary->resetCounters();
 		return $summary;
 	}
 

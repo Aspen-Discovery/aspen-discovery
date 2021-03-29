@@ -171,7 +171,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param $patron  User
 	 * @return mixed
 	 */
-	public function renewAll($patron) {
+	public function renewAll(User $patron) {
 		global $logger;
 
 		//renew the item via SIP 2
@@ -327,7 +327,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param $itemIndex  string
 	 * @return mixed
 	 */
-	public function renewCheckout($patron, $recordId, $itemId=null, $itemIndex=null) {
+	public function renewCheckout(User $patron, $recordId, $itemId=null, $itemIndex=null) {
 		// Renew Via SIP
 		return $result = $this->renewCheckoutViaSIP($patron, $itemId);
 	}
@@ -344,12 +344,12 @@ class CarlX extends AbstractIlsDriver{
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 *
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($user) {
+	public function getHolds(User $patron) {
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$holds = array(
 			'available'   => array(),
@@ -357,7 +357,7 @@ class CarlX extends AbstractIlsDriver{
 		);
 
 		//Search for the patron in the database
-		$result = $this->getPatronTransactions($user);
+		$result = $this->getPatronTransactions($patron);
 
 		if ($result && ($result->HoldItemsCount > 0 || $result->UnavailableHoldsCount > 0)) {
 
@@ -365,7 +365,7 @@ class CarlX extends AbstractIlsDriver{
 			if ($result->HoldItemsCount > 0) {
 				foreach($result->HoldItems->HoldItem as $hold) {
 					$curHold = new Hold();
-					$curHold->userId = $user->id;
+					$curHold->userId = $patron->id;
 					$curHold->type = 'ils';
 					$curHold->source = $this->getIndexingProfile()->name;
 					$curHold->available = true;
@@ -400,7 +400,7 @@ class CarlX extends AbstractIlsDriver{
 			if ($result->UnavailableHoldsCount > 0) {
 				foreach($result->UnavailableHoldItems->UnavailableHoldItem as $hold) {
 					$curHold = new Hold();
-					$curHold->userId = $user->id;
+					$curHold->userId = $patron->id;
 					$curHold->type = 'ils';
 					$curHold->source = $this->getIndexingProfile()->name;
 					$curHold->available = false;
@@ -470,7 +470,7 @@ class CarlX extends AbstractIlsDriver{
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
+	public function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null) {
 		return $this->placeHoldViaSIP($patron, $recordId, $pickupBranch, $cancelDate);
 	}
 
@@ -487,7 +487,7 @@ class CarlX extends AbstractIlsDriver{
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
+	function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		// TODO: Implement placeItemHold() method. // CarlX [9.6.4.3] does not allow item level holds via SIP2
 	}
 
@@ -499,12 +499,12 @@ class CarlX extends AbstractIlsDriver{
 	 * @param   string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId = null) {
+	function cancelHold(User $patron, $recordId, $cancelId = null) {
 		return $this->placeHoldViaSIP($patron, $cancelId, null, null, 'cancel');
 
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) {
+	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) {
 		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId);
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$pickupLocation = $unavailableHoldViaSIP['pickupLocation']; // NB branchcode not branchnumber
@@ -513,7 +513,7 @@ class CarlX extends AbstractIlsDriver{
 		return $result;
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId) {
+	function thawHold(User $patron, $recordId, $itemToThawId) {
 		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId);
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$pickupLocation = $unavailableHoldViaSIP['pickupLocation']; // NB branchcode not branchnumber
@@ -534,25 +534,6 @@ class CarlX extends AbstractIlsDriver{
 		}
 		$result = $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition, $freeze, $freezeReactivationDate);
 		return $result;
-	}
-
-	/**
-	 * Split a name into firstName, lastName, middleName.
-	 *a
-	 * Assumes the name is entered as LastName, FirstName MiddleName
-	 * @param $fullName
-	 * @return array
-	 */
-	public function splitFullName($fullName) {
-		$fullName = str_replace(",", " ", $fullName);
-		$fullName = str_replace(";", " ", $fullName);
-		$fullName = str_replace(";", "'", $fullName);
-		$fullName = preg_replace("/\\s{2,}/", " ", $fullName);
-		$nameParts = explode(' ', $fullName);
-		$lastName = strtolower($nameParts[0]);
-		$middleName = isset($nameParts[2]) ? strtolower($nameParts[2]) : '';
-		$firstName = isset($nameParts[1]) ? strtolower($nameParts[1]) : $middleName;
-		return array($fullName, $lastName, $firstName);
 	}
 
 	public function getCheckouts(User $user) {
@@ -612,8 +593,8 @@ class CarlX extends AbstractIlsDriver{
 		return $checkedOutTitles;
 	}
 
-	function updatePin(User $user, string $oldPin, string $newPin) {
-		$request = $this->getSearchbyPatronIdRequest($user);
+	function updatePin(User $patron, string $oldPin, string $newPin) {
+		$request = $this->getSearchbyPatronIdRequest($patron);
 		$request->Patron = new stdClass();
 		$request->Patron->PatronPIN = $newPin;
 		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
@@ -622,8 +603,8 @@ class CarlX extends AbstractIlsDriver{
 			if (!$success) {
 				return ['success' => false, 'message' => translate(['text' => 'update_pin_failed', 'defaultText' => 'Failed to update your PIN.'])];
 			} else {
-				$user->cat_password = $newPin;
-				$user->update();
+				$patron->cat_password = $newPin;
+				$patron->update();
 				return ['success' => true, 'message' => translate(['text'=> 'update_pin_success', 'defaultText' => 'Your PIN was updated successfully.'])];
 			}
 		} else {
@@ -670,30 +651,30 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	/**
-	 * @param User $user
+	 * @param User $patron
 	 * @param boolean $canUpdateContactInfo
 	 * @return array
 	 */
-	public function updatePatronInfo($user, $canUpdateContactInfo) {
+	public function updatePatronInfo(User $patron, $canUpdateContactInfo) {
 		$result = [
 			'success' => false,
 			'messages' => []
 		];
 		if ($canUpdateContactInfo){
-			$request = $this->getSearchbyPatronIdRequest($user);
+			$request = $this->getSearchbyPatronIdRequest($patron);
 			if (!isset($request->Patron)){
 				$request->Patron = new stdClass();
 			}
 			// Patron Info to update.
 			$request->Patron->Email  = $_REQUEST['email'];
-			$user->email = $_REQUEST['email'];
+			$patron->email = $_REQUEST['email'];
 			if (isset($_REQUEST['phone'])) {
 				$request->Patron->Phone1 = $_REQUEST['phone'];
-				$user->phone = $_REQUEST['phone'];
+				$patron->phone = $_REQUEST['phone'];
 			}
 			if (isset($_REQUEST['workPhone'])){
 				$request->Patron->Phone2 = $_REQUEST['workPhone'];
-				$user->_workPhone = $_REQUEST['workPhone'];
+				$patron->_workPhone = $_REQUEST['workPhone'];
 			}
 			if (!isset($request->Addresses)){
 				$request->Patron->Addresses = new stdClass();
@@ -704,19 +685,19 @@ class CarlX extends AbstractIlsDriver{
 			$request->Patron->Addresses->Address->Type        = 'Primary';
 			if (isset($_REQUEST['address1'])) {
 				$request->Patron->Addresses->Address->Street = $_REQUEST['address1'];
-				$user->_address1 = $_REQUEST['address1'];
+				$patron->_address1 = $_REQUEST['address1'];
 			}
 			if (isset($_REQUEST['city'])) {
 				$request->Patron->Addresses->Address->City = $_REQUEST['city'];
-				$user->_city = $_REQUEST['city'];
+				$patron->_city = $_REQUEST['city'];
 			}
 			if (isset($_REQUEST['state'])) {
 				$request->Patron->Addresses->Address->State = $_REQUEST['state'];
-				$user->_state = $_REQUEST['state'];
+				$patron->_state = $_REQUEST['state'];
 			}
 			if (isset($_REQUEST['zip'])) {
 				$request->Patron->Addresses->Address->PostalCode = $_REQUEST['zip'];
-				$user->_zip = $_REQUEST['zip'];;
+				$patron->_zip = $_REQUEST['zip'];;
 			}
 			if (isset($_REQUEST['emailReceiptFlag']) && ($_REQUEST['emailReceiptFlag'] == 'yes' || $_REQUEST['emailReceiptFlag'] == 'on')){
 				// if set check & on check must be combined because checkboxes/radios don't report 'offs'
@@ -738,12 +719,12 @@ class CarlX extends AbstractIlsDriver{
 			}
 			if (isset($_REQUEST['phoneType'])) {
 				$request->Patron->PhoneType = $_REQUEST['phoneType'];
-				$user->_phoneType = $_REQUEST['phoneType'];
+				$patron->_phoneType = $_REQUEST['phoneType'];
 			}
 
 			if (isset($_REQUEST['notices'])){
 				$request->Patron->EmailNotices = $_REQUEST['notices'];
-				$user->_notices = $_REQUEST['notices'];
+				$patron->_notices = $_REQUEST['notices'];
 			}
 
 			if (!empty($_REQUEST['pickupLocation'])) {
@@ -751,9 +732,9 @@ class CarlX extends AbstractIlsDriver{
 				if ($homeLocation->get('code', $_REQUEST['pickupLocation'])) {
 					$homeBranchCode = strtoupper($_REQUEST['pickupLocation']);
 					$request->Patron->DefaultBranch = $homeBranchCode;
-					$user->homeLocationId = $homeLocation->locationId;
-					$user->_homeLocationCode = $homeLocation->code;
-					$user->_homeLocation = $homeLocation;
+					$patron->homeLocationId = $homeLocation->locationId;
+					$patron->_homeLocationCode = $homeLocation->code;
+					$patron->_homeLocation = $homeLocation;
 				}
 			}
 
@@ -767,7 +748,7 @@ class CarlX extends AbstractIlsDriver{
 				}else{
 					$result['success'] = true;
 					$result['messages'][] = 'Your account was updated successfully.';
-					$user->update();
+					$patron->update();
 				}
 
 			} else {
@@ -1084,9 +1065,9 @@ class CarlX extends AbstractIlsDriver{
 		}
 	}
 
-	public function getReadingHistory($user, $page = 1, $recordsPerPage = -1, $sortOption = 'checkedOut') {
+	public function getReadingHistory(User $patron, $page = 1, $recordsPerPage = -1, $sortOption = 'checkedOut') {
 		$readHistoryEnabled = false;
-		$request = $this->getSearchbyPatronIdRequest($user);
+		$request = $this->getSearchbyPatronIdRequest($patron);
 		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);
 		if ($result && $result->Patron) {
 			$readHistoryEnabled = $result->Patron->LoanHistoryOptInFlag;
@@ -1113,7 +1094,7 @@ class CarlX extends AbstractIlsDriver{
 						$curTitle['recordId']     = $this->fullCarlIDfromBID($readingHistoryEntry->BID);
 						$curTitle['title']        = rtrim($readingHistoryEntry->Title, ' /');
 						$curTitle['checkout']     = $checkOutDate->format('m-d-Y'); // this format is expected by Aspen Discovery's java cron program.
-						$curTitle['borrower_num'] = $user->id;
+						$curTitle['borrower_num'] = $patron->id;
 						$curTitle['dueDate']      = null; // Not available in ChargeHistoryItems
 						$curTitle['author']       = null; // Not available in ChargeHistoryItems
 
@@ -1178,9 +1159,9 @@ class CarlX extends AbstractIlsDriver{
 		return true;
 	}
 
-	public function doReadingHistoryAction($user, $action, $selectedTitles){
+	public function doReadingHistoryAction(User $patron, $action, $selectedTitles){
 		if ($action == 'optIn' || $action == 'optOut'){
-			$request = $this->getSearchbyPatronIdRequest($user);
+			$request = $this->getSearchbyPatronIdRequest($patron);
 			if (!isset ($request->Patron)){
 				$request->Patron = new stdClass();
 			}
@@ -1200,9 +1181,9 @@ class CarlX extends AbstractIlsDriver{
 		}
 	}
 
-	public function getFines($user, $includeMessages = false) {
+	public function getFines(User $patron, $includeMessages = false) {
 		$myFines = array();
-		$request = $this->getSearchbyPatronIdRequest($user);
+		$request = $this->getSearchbyPatronIdRequest($patron);
 
 		// Fines
 		$request->TransactionType = 'Fine';
@@ -1293,7 +1274,7 @@ class CarlX extends AbstractIlsDriver{
 					);
 				}
 				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
-				$myLostFines = $this->getLostViaSIP($user->cat_username);
+				$myLostFines = $this->getLostViaSIP($patron->cat_username);
 				$myFinesIds = array_column($myFines, 'fineId');
 				foreach ($myLostFines as $myLostFine) {
 					$keys = array_keys($myFinesIds, $myLostFine['fineId']);
@@ -1336,7 +1317,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @return false|stdClass        Array of the patron's transactions on success
 	 * @access public
 	 */
-	private function getPatronTransactions($user)
+	private function getPatronTransactions(User $user)
 	{
 		$request = $this->getSearchbyPatronIdRequest($user);
 		$result = $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
@@ -1427,7 +1408,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param $user
 	 * @return stdClass
 	 */
-	protected function getSearchbyPatronIdRequest($user)
+	protected function getSearchbyPatronIdRequest(User $user)
 	{
 		$request             = new stdClass();
 		$request->SearchType = 'Patron ID';
@@ -1436,7 +1417,7 @@ class CarlX extends AbstractIlsDriver{
 		return $request;
 	}
 
-	private function getUnavailableHold($patron, $holdID) {
+	private function getUnavailableHold(User $patron, $holdID) {
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$request->TransactionType = 'UnavailableHold';
 		$result = $this->doSoapRequest('getPatronTransactions', $request);
@@ -1454,7 +1435,7 @@ class CarlX extends AbstractIlsDriver{
 		return false;
 	}
 
-	private function getUnavailableHoldViaSIP($patron, $holdId) {
+	private function getUnavailableHoldViaSIP(User $patron, $holdId) {
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$request->TransactionType = 'UnavailableHold';
 		$result = $this->doSoapRequest('getPatronTransactions', $request);
@@ -1533,8 +1514,6 @@ class CarlX extends AbstractIlsDriver{
 			'success'			=> $success,
 			'message'			=> $message
 		);
-
-		return false;
 	}
 
 	public function placeHoldViaSIP(User $patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null){
@@ -1762,17 +1741,18 @@ class CarlX extends AbstractIlsDriver{
 		return false;
 	}
 
-	public function getAccountSummary(User $user) : AccountSummary
+	public function getAccountSummary(User $patron) : AccountSummary
 	{
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();
-		$summary->userId = $user->id;
+		$summary->userId = $patron->id;
 		$summary->source = 'ils';
+		$summary->resetCounters();
 
 		//Load summary information for number of holds, checkouts, etc
 		$patronSummaryRequest = new stdClass();
 		$patronSummaryRequest->SearchType = 'Patron ID';
-		$patronSummaryRequest->SearchID  = $user->cat_username;
+		$patronSummaryRequest->SearchID  = $patron->cat_username;
 		$patronSummaryRequest->Modifiers = '';
 
 		$patronSummaryResponse = $this->doSoapRequest('getPatronTransactions', $patronSummaryRequest, $this->patronWsdl);
@@ -1787,7 +1767,7 @@ class CarlX extends AbstractIlsDriver{
 			$outstandingFines = $patronSummaryResponse->FineTotal + $patronSummaryResponse->LostItemFeeTotal;
 			$summary->totalFines = floatval($outstandingFines);
 
-			$request = $this->getSearchbyPatronIdRequest($user);
+			$request = $this->getSearchbyPatronIdRequest($patron);
 			$patronInfoResponse = $this->doSoapRequest('getPatronInformation', $request);
 			if ($patronInfoResponse && $patronInfoResponse->Patron) {
 				$summary->expirationDate = strtotime($this->extractDateFromCarlXDateField($patronInfoResponse->Patron->ExpirationDate));
@@ -1804,7 +1784,6 @@ class CarlX extends AbstractIlsDriver{
 
 	public function getHoldsReportData($location) {
 		$this->initDatabaseConnection();
-		/** @noinspection SqlResolve */
 		$sql = <<<EOT
 			with holds_vs_items as (
 				select
