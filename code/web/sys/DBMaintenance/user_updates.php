@@ -888,7 +888,17 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user CHANGE COLUMN username username VARCHAR(36) NOT NULL'
 			]
-		]
+		],
+
+		'user_circulation_cache_cover_link' => [
+			'title' => 'Circulation Caching add links',
+			'description' => 'Add caching of cover url and link url to improve performance',
+			'sql' => [
+				'ALTER TABLE user_hold ADD column coverUrl VARCHAR(255)',
+				'ALTER TABLE user_hold ADD column linkUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column linkUrl VARCHAR(255)',
+			]
+		],
 	);
 }
 

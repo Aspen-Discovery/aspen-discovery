@@ -569,10 +569,7 @@ class Axis360Driver extends AbstractEContentDriver
 		require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 		$axis360Record = new Axis360RecordDriver($titleId);
 		if ($axis360Record->isValid()) {
-			$hold->groupedWorkId = $axis360Record->getPermanentId();
-			$hold->title = $axis360Record->getTitle();
-			$hold->author = $axis360Record->getPrimaryAuthor();
-			$hold->format = $axis360Record->getPrimaryFormat();
+			$hold->updateFromRecordDriver($axis360Record);
 		}
 
 		$hold->userId = $user->id;
@@ -608,10 +605,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$axis360Record = new Axis360RecordDriver((string)$title->titleId);
 		if ($axis360Record->isValid()) {
 			$formats = $axis360Record->getFormats();
-			$checkout->groupedWorkId = $axis360Record->getPermanentId();
-			$checkout->format = reset($formats);
-			$checkout->title = $axis360Record->getTitle();
-			$checkout->author = $axis360Record->getPrimaryAuthor();
+			$checkout->updateFromRecordDriver($axis360Record);
 		}
 		$checkout->userId = $user->id;
 

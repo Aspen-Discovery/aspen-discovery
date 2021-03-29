@@ -219,6 +219,12 @@ class Polaris extends AbstractIlsDriver
 				$curHold->holdQueueLength = $holdInfo->QueueTotal;
 				$curHold->volume = $holdInfo->VolumeNumber;
 
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($curHold->recordId); // This needs the $carlID
+				if ($recordDriver->isValid()){
+					$curHold->updateFromRecordDriver($recordDriver);
+				}
+
 				$curHold->available = $isAvailable;
 				if ($curHold->available) {
 					$holds['available'][] = $curHold;

@@ -343,10 +343,7 @@ class Koha extends AbstractIlsDriver
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
 			if ($recordDriver->isValid()){
-				$curCheckout->title = $recordDriver->getTitle();
-				$curCheckout->author = $recordDriver->getPrimaryAuthor();
-				$curCheckout->groupedWorkId = $recordDriver->getPermanentId();
-				$curCheckout->format = $recordDriver->getPrimaryFormat();
+				$curCheckout->updateFromRecordDriver($recordDriver);
 			}else{
 				$curCheckout->title = $curRow['title'];
 				$curCheckout->author = $curRow['author'];
@@ -1295,10 +1292,7 @@ class Koha extends AbstractIlsDriver
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
 			if ($recordDriver->isValid()){
-				$curHold->title = $recordDriver->getTitle();
-				$curHold->author = $recordDriver->getPrimaryAuthor();
-				$curHold->groupedWorkId = $recordDriver->getPermanentId();
-				$curHold->format = $recordDriver->getPrimaryFormat();
+				$curHold->updateFromRecordDriver($recordDriver);
 			}
 
 			$isAvailable = isset($curHold->status) && preg_match('/^Ready to Pickup.*/i', $curHold->status);
