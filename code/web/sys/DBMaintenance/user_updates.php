@@ -880,6 +880,14 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER TABLE user_hold ADD COLUMN format VARCHAR(50)'
 			]
+		],
+
+		'user_username_increase_length' => [
+			'title' => 'Increase length of username field to accommodate FOLIO',
+			'description' => 'Increase length of username field to accommodate FOLIO',
+			'sql' => [
+				'ALTER TABLE user CHANGE COLUMN username username VARCHAR(36) NOT NULL'
+			]
 		]
 	);
 }
