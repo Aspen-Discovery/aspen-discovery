@@ -9739,7 +9739,7 @@ a.browse-thumbnail-sorted.active {
 .rightScrollerButton {
   display: inline-block;
   height: 135px;
-  line-height: 135px;
+  line-height: 115px;
   vertical-align: middle;
   width: 25px;
   float: left;
@@ -9985,7 +9985,7 @@ a.browse-thumbnail-sorted.active {
 }
 .mediumScroller .leftScrollerButton,
 .mediumScroller .rightScrollerButton {
-  margin-top: 85px;
+  line-height: 200px;
 }
 .mediumScroller .scrollerButtonUp,
 .mediumScroller .scrollerButtonDown {
