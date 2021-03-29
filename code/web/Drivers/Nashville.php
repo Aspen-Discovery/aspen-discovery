@@ -136,11 +136,11 @@ class Nashville extends CarlX {
 		}
 	}
 
-	public function getFines($user, $includeMessages = false): array
+	public function getFines(User $patron, $includeMessages = false): array
 	{
 		$myFines = array();
 
-		$request = $this->getSearchbyPatronIdRequest($user);
+		$request = $this->getSearchbyPatronIdRequest($patron);
 
 		// Fines
 		$request->TransactionType = 'Fine';
@@ -242,7 +242,7 @@ class Nashville extends CarlX {
 					);
 				}
 				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
-				$myLostFines = $this->getLostViaSIP($user->cat_username);
+				$myLostFines = $this->getLostViaSIP($patron->cat_username);
 				$myFinesIds = array_column($myFines, 'fineId');
 				foreach ($myLostFines as $myLostFine) {
 					$keys = array_keys($myFinesIds, $myLostFine['fineId'] . '-L');
@@ -280,7 +280,7 @@ class Nashville extends CarlX {
 		}
 	}
 
-	protected function getLostViaSIP($patron): array
+	protected function getLostViaSIP(User $patron): array
 	{
 		$mySip = $this->initSIPConnection();
 		$mySip->patron = $patron;

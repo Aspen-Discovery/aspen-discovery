@@ -25,14 +25,15 @@ class Polaris extends AbstractIlsDriver
 		$this->apiCurlWrapper = null;
 	}
 
-	public function getAccountSummary(User $user) : AccountSummary
+	public function getAccountSummary(User $patron) : AccountSummary
 	{
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();
-		$summary->userId = $user->id;
+		$summary->userId = $patron->id;
 		$summary->source = 'ils';
+		$summary->resetCounters();
 
-		$basicDataResponse = $this->getBasicDataResponse($user->getBarcode(), $user->getPasswordOrPin());
+		$basicDataResponse = $this->getBasicDataResponse($patron->getBarcode(), $patron->getPasswordOrPin());
 		if ($basicDataResponse != null){
 			//TODO: Account for electronic items
 			$summary->numCheckedOut = $basicDataResponse->ItemsOutCount;
@@ -41,8 +42,8 @@ class Polaris extends AbstractIlsDriver
 			$summary->numUnavailableHolds = $basicDataResponse->HoldRequestsHeldCount;
 			$summary->totalFines = $basicDataResponse->ChargeBalance;
 
-			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$user->getBarcode()}/circulationblocks";
-			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$user->getBarcode()]['accessToken']);
+			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/circulationblocks";
+			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$patron->getBarcode()]['accessToken']);
 			if ($circulateBlocksResponse && $this->lastResponseCode == 200) {
 				$circulateBlocksResponse = json_decode($circulateBlocksResponse);
 				$expireTime = $this->parsePolarisDate($circulateBlocksResponse->ExpirationDate);
@@ -131,7 +132,7 @@ class Polaris extends AbstractIlsDriver
 		// TODO: Implement renewCheckout() method.
 	}
 
-	public function getHolds($user)
+	public function getHolds($patron)
 	{
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
@@ -140,14 +141,14 @@ class Polaris extends AbstractIlsDriver
 			'available' => $availableHolds,
 			'unavailable' => $unavailableHolds
 		);
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$user->getBarcode()}/holdrequests/all";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($user->getBarcode(), $user->getPasswordOrPin()));
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/all";
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			$holdsList = $jsonResponse->PatronHoldRequestsGetRows;
 			foreach ($holdsList as $index => $holdInfo){
 				$curHold = new Hold();
-				$curHold->userId = $user->id;
+				$curHold->userId = $patron->id;
 				$curHold->type = 'ils';
 				$curHold->source = $this->getIndexingProfile()->name;
 				$curHold->sourceId = $holdInfo->HoldRequestID;
@@ -468,12 +469,12 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
+	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
 	{
 		// TODO: Implement freezeHold() method.
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId)
+	function thawHold(User $patron, $recordId, $itemToThawId)
 	{
 		// TODO: Implement thawHold() method.
 	}
@@ -483,12 +484,12 @@ class Polaris extends AbstractIlsDriver
 		// TODO: Implement changeHoldPickupLocation() method.
 	}
 
-	function updatePatronInfo($patron, $canUpdateContactInfo)
+	function updatePatronInfo(User $patron, $canUpdateContactInfo)
 	{
 		// TODO: Implement updatePatronInfo() method.
 	}
 
-	public function getFines($patron, $includeMessages = false)
+	public function getFines(User $patron, $includeMessages = false)
 	{
 		// TODO: Implement getFines() method.
 	}

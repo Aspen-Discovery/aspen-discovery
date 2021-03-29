@@ -2139,9 +2139,9 @@ class Koha extends AbstractIlsDriver
 		return $result;
 	}
 
-	function updatePin(User $user, string $oldPin, string $newPin)
+	function updatePin(User $patron, string $oldPin, string $newPin)
 	{
-		if ($user->cat_password != $oldPin) {
+		if ($patron->cat_password != $oldPin) {
 			return ['success' => false, 'message' => "The old PIN provided is incorrect."];
 		}
 		$result = ['success' => false, 'message' => "Unknown error updating password."];
@@ -2149,7 +2149,7 @@ class Koha extends AbstractIlsDriver
 		if ($oauthToken == false) {
 			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
 		} else {
-			$borrowerNumber = $user->username;
+			$borrowerNumber = $patron->username;
 			$result = $this->resetPinInKoha($borrowerNumber, $newPin, $oauthToken);
 		}
 		return $result;
@@ -2574,21 +2574,22 @@ class Koha extends AbstractIlsDriver
 		return $results;
 	}
 
-	public function getAccountSummary(User $user) : AccountSummary
+	public function getAccountSummary(User $patron) : AccountSummary
 	{
 		global $timer;
 		global $library;
 
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();
-		$summary->userId = $user->id;
+		$summary->userId = $patron->id;
 		$summary->source = 'ils';
+		$summary->resetCounters();
 
 		$this->initDatabaseConnection();
 
 		//Get number of items checked out
 		/** @noinspection SqlResolve */
-		$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+		$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
 		$numCheckouts = 0;
 		if ($checkedOutItemsRS) {
 			$checkedOutItems = $checkedOutItemsRS->fetch_assoc();
@@ -2599,7 +2600,7 @@ class Koha extends AbstractIlsDriver
 
 		$now = date('Y-m-d H:i:s');
 		/** @noinspection SqlResolve */
-		$overdueItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numOverdue FROM issues WHERE date_due < \'' . $now . '\' AND borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+		$overdueItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numOverdue FROM issues WHERE date_due < \'' . $now . '\' AND borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
 		$numOverdue = 0;
 		if ($overdueItemsRS) {
 			$overdueItems = $overdueItemsRS->fetch_assoc();
@@ -2612,7 +2613,7 @@ class Koha extends AbstractIlsDriver
 		//Get number of available holds
 		if ($library->availableHoldDelay > 0){
 			/** @noinspection SqlResolve */
-			$holdsRS = mysqli_query($this->dbConnection, 'SELECT waitingdate, found FROM reserves WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+			$holdsRS = mysqli_query($this->dbConnection, 'SELECT waitingdate, found FROM reserves WHERE borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
 			if ($holdsRS) {
 				while ($curRow = $holdsRS->fetch_assoc()) {
 					if ($curRow['found'] !== 'W'){
@@ -2630,7 +2631,7 @@ class Koha extends AbstractIlsDriver
 			}
 		}else{
 			/** @noinspection SqlResolve */
-			$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+			$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
 			$numAvailableHolds = 0;
 			if ($availableHoldsRS) {
 				$availableHolds = $availableHoldsRS->fetch_assoc();
@@ -2642,7 +2643,7 @@ class Koha extends AbstractIlsDriver
 
 			//Get number of unavailable
 			/** @noinspection SqlResolve */
-			$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+			$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
 			$numWaitingHolds = 0;
 			if ($waitingHoldsRS) {
 				$waitingHolds = $waitingHoldsRS->fetch_assoc();
@@ -2655,12 +2656,12 @@ class Koha extends AbstractIlsDriver
 
 		//Get fines
 		//Load fines from database
-		$outstandingFines = $this->getOutstandingFineTotal($user);
+		$outstandingFines = $this->getOutstandingFineTotal($patron);
 		$summary->totalFines = floatval($outstandingFines);
 
 		//Get expiration information
 		/** @noinspection SqlResolve */
-		$sql = "SELECT dateexpiry from borrowers where borrowernumber = {$user->username}";
+		$sql = "SELECT dateexpiry from borrowers where borrowernumber = {$patron->username}";
 
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
 		if ($lookupUserResult) {
@@ -2954,7 +2955,7 @@ class Koha extends AbstractIlsDriver
 					$hold_result['message'] .= translate(['text'=>"ils_hold_success_position", 'defaultText'=>"&nbsp;You are number <b>%1%</b> in the queue.", '1' => $holdInfo->position]);
 				}
 				//Show the number of holds the patron has used.
-				$accountSummary = $this->getAccountSummary($patron, true);
+				$accountSummary = $this->getAccountSummary($patron);
 				$maxReserves = $this->getKohaSystemPreference('maxreserves', 50);
 				$totalHolds = $accountSummary->getNumHolds();
 				$remainingHolds = $maxReserves - $totalHolds;

@@ -595,25 +595,25 @@ class OverDriveDriver extends AbstractEContentDriver{
 	private $holds = array();
 
 	/**
-	 * @param User $user
+	 * @param User $patron
 	 * @param bool $forSummary
 	 * @return array
 	 */
-	public function getHolds($user, $forSummary = false){
+	public function getHolds($patron, $forSummary = false){
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		//Cache holds for the user just for this call.
-		if (isset($this->holds[$user->id])){
-			return $this->holds[$user->id];
+		if (isset($this->holds[$patron->id])){
+			return $this->holds[$patron->id];
 		}
 		$holds = array(
 			'available' => array(),
 			'unavailable' => array()
 		);
-		if (!$this->isUserValidForOverDrive($user)){
+		if (!$this->isUserValidForOverDrive($patron)){
 			return $holds;
 		}
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds';
-		$response = $this->_callPatronUrl($user, $url);
+		$response = $this->_callPatronUrl($patron, $url);
 		if ($response == false){
 			$this->incrementStat('numApiErrors');
 			return $holds;
@@ -646,7 +646,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					}
 				}
 
-				$hold->userId = $user->id;
+				$hold->userId = $patron->id;
 
 				require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 				$overDriveRecordDriver = new OverDriveRecordDriver($hold->recordId);
@@ -666,7 +666,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}
 		}
 		if (!$forSummary){
-			$this->holds[$user->id] = $holds;
+			$this->holds[$patron->id] = $holds;
 		}
 		return $holds;
 	}
@@ -683,6 +683,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$summary = new AccountSummary();
 			$summary->userId = $user->id;
 			$summary->source = 'overdrive';
+			$summary->resetCounters();
 			$checkedOutItems = $this->getCheckouts($user, true);
 			$summary->numCheckedOut = count($checkedOutItems);
 

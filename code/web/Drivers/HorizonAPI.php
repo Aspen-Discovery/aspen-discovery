@@ -363,7 +363,7 @@ abstract class HorizonAPI extends Horizon{
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $comment = '', $type = 'request') {
+	function placeItemHold(User $patron, $recordId, $itemId, $comment = '', $type = 'request') {
 		global $configArray;
 
 		$userId = $patron->id;
@@ -459,15 +459,15 @@ abstract class HorizonAPI extends Horizon{
 		}
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null) {
+	function cancelHold(User $patron, $recordId, $cancelId = null) {
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) {
+	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) {
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToFreezeId, '', 'on');
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId) {
+	function thawHold(User $patron, $recordId, $itemToThawId) {
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToThawId, '', 'off');
 	}
 

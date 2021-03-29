@@ -183,6 +183,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			$summary = new AccountSummary();
 			$summary->userId = $user->id;
 			$summary->source = 'hoopla';
+			$summary->resetCounters();
 			$getPatronStatusURL = $this->getHooplaBasePatronURL($user);
 			if (!empty($getPatronStatusURL)) {
 				$getPatronStatusURL .= '/status';
@@ -481,12 +482,12 @@ class HooplaDriver extends AbstractEContentDriver{
      *
      * This is responsible for retrieving all holds for a specific patron.
      *
-     * @param User $user The user to load transactions for
+     * @param User $patron The user to load transactions for
      *
      * @return array        Array of the patron's holds
      * @access public
      */
-    public function getHolds($user)
+    public function getHolds($patron)
     {
         return [];
     }

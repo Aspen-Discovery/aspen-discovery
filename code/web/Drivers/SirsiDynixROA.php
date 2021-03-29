@@ -386,18 +386,19 @@ class SirsiDynixROA extends HorizonAPI
 		return null;
 	}
 
-	public function getAccountSummary(User $user) : AccountSummary
+	public function getAccountSummary(User $patron) : AccountSummary
 	{
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();
-		$summary->userId = $user->id;
+		$summary->userId = $patron->id;
 		$summary->source = 'ils';
+		$summary->resetCounters();
 
 		$webServiceURL = $this->getWebServiceURL();
 		$includeFields = urlencode("privilegeExpiresDate,circRecordList{overdue},blockList{owed},holdRecordList{status}");
-		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->username . '?includeFields=' . $includeFields;
+		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields;
 
-		$sessionToken = $this->getSessionToken($user);
+		$sessionToken = $this->getSessionToken($patron);
 		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
 
 		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
@@ -696,7 +697,6 @@ class SirsiDynixROA extends HorizonAPI
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
 		//Get a list of holds for the user
-		//$includeFields = urlencode('circRecordList{*}');
 		$includeFields = urlencode('circRecordList{*,item{bib{title,author},itemType,call{dispCallNumber}}}');
 		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 
@@ -1022,6 +1022,8 @@ class SirsiDynixROA extends HorizonAPI
 				} else {
 					$hold_result['success'] = true;
 					$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
 				}
 
 				$hold_result['title'] = $title;
@@ -1081,9 +1083,11 @@ class SirsiDynixROA extends HorizonAPI
 		$cancelHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$cancelId", null, $sessionToken, 'DELETE');
 
 		if (empty($cancelHoldResponse)) {
+			$patron->forceReloadOfHolds();
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			return array(
 				'success' => true,
-			  'message' => 'The hold was successfully canceled'
+				'message' => 'The hold was successfully canceled'
 			);
 		} else {
 			global $logger;
@@ -1147,7 +1151,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	function freezeHold($patron, $recordId, $holdToFreezeId, $dateToReactivate)
+	function freezeHold(User $patron, $recordId, $holdToFreezeId, $dateToReactivate)
 	{
 		$sessionToken = $this->getStaffSessionToken();
 		if (!$sessionToken) {
@@ -1176,6 +1180,7 @@ class SirsiDynixROA extends HorizonAPI
 		if (isset($updateHoldResponse->holdRecord->key)) {
 			$getHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$holdToFreezeId", null, $this->getSessionToken($patron));
 			if (isset($getHoldResponse->fields->status) && $getHoldResponse->fields->status == 'SUSPENDED'){
+				$patron->forceReloadOfHolds();
 				return array(
 					'success' => true,
 					'message' => "The hold has been frozen."
@@ -1229,6 +1234,7 @@ class SirsiDynixROA extends HorizonAPI
 		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/unsuspendHold", $params, $sessionToken, 'POST');
 
 		if (isset($updateHoldResponse->holdRecord->key)) {
+			$patron->forceReloadOfHolds();
 			return array(
 				'success' => true,
 				'message' => "The hold has been thawed."
@@ -1282,7 +1288,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		if (isset($circRenewResponse->circRecord->key)) {
 			// Success
-
+			$patron->forceReloadOfCheckouts();
 			return array(
 				'itemId'  => $circRenewResponse->circRecord->key,
 				'success' => true,
@@ -1537,11 +1543,11 @@ class SirsiDynixROA extends HorizonAPI
 	}
 
 	/**
-	 * @param User $user
+	 * @param User $patron
 	 * @param bool $canUpdateContactInfo
 	 * @return array
 	 */
-	function updatePatronInfo($user, $canUpdateContactInfo)
+	function updatePatronInfo($patron, $canUpdateContactInfo)
 	{
 		$result = [
 			'success' => false,
@@ -1551,7 +1557,7 @@ class SirsiDynixROA extends HorizonAPI
 			$sessionToken = $this->getStaffSessionToken();
 			if ($sessionToken) {
 				$webServiceURL = $this->getWebServiceURL();
-				if ($userID = $user->username) {
+				if ($userID = $patron->username) {
 					//To update the patron, we need to load the patron from Symphony so we only overwrite changed values.
 					$updatePatronInfoParametersClass = $this->getWebServiceResponse($this->getWebServiceURL() . '/user/patron/key/' . $userID .'?includeFields=*,preferredAddress,address1,address2,address3', null, $sessionToken );
 					if ($updatePatronInfoParametersClass) {
@@ -1562,28 +1568,28 @@ class SirsiDynixROA extends HorizonAPI
 						// Update Address Field with new data supplied by the user
 						if (isset($_REQUEST['email'])) {
 							$this->setPatronUpdateFieldBySearch('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress);
-							$user->email = $_REQUEST['email'];
+							$patron->email = $_REQUEST['email'];
 						}
 
 						if (isset($_REQUEST['phone'])) {
 							$this->setPatronUpdateFieldBySearch('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress);
-							$user->phone = $_REQUEST['phone'];
+							$patron->phone = $_REQUEST['phone'];
 						}
 
 						if (isset($_REQUEST['address1'])) {
 							$this->setPatronUpdateFieldBySearch('STREET', $_REQUEST['address1'], $updatePatronInfoParameters, $preferredAddress);
-							$user->_address1 = $_REQUEST['address1'];
+							$patron->_address1 = $_REQUEST['address1'];
 						}
 
 						if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
 							$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
-							$user->_city = $_REQUEST['city'];
-							$user->_state = $_REQUEST['state'];
+							$patron->_city = $_REQUEST['city'];
+							$patron->_state = $_REQUEST['state'];
 						}
 
 						if (isset($_REQUEST['zip'])) {
 							$this->setPatronUpdateFieldBySearch('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress);
-							$user->_zip = $_REQUEST['zip'];
+							$patron->_zip = $_REQUEST['zip'];
 						}
 
 						// Update Home Location
@@ -1609,7 +1615,7 @@ class SirsiDynixROA extends HorizonAPI
 						} else {
 							$result['success'] = true;
 							$result['messages'][] = 'Your account was updated successfully.';
-							$user->update();
+							$patron->update();
 						}
 					}else{
 						$result['messages'][] = 'Could not find the account to update.';

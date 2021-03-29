@@ -432,18 +432,18 @@ class LibrarySolution extends AbstractIlsDriver {
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user      The user to load transactions for
+	 * @param User $patron      The user to load transactions for
 	 *
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($user){
+	public function getHolds($patron){
 		$holds = array(
 			'available' => array(),
 			'unavailable' => array()
 		);
 
-		if ($this->loginPatronToLSS($user->cat_username, $user->cat_password)) {
+		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/requests/0/20/Status?_=' . time() * 1000;
@@ -511,7 +511,7 @@ class LibrarySolution extends AbstractIlsDriver {
 					$curHold['ratingData'] = $recordDriver->getRatingData();
 				}
 				$curHold['link'] = $recordDriver->getLinkUrl();
-				$curHold['user'] = $user->getNameAndLibraryLabel();
+				$curHold['user'] = $patron->getNameAndLibraryLabel();
 
 				//TODO: Determine the status of available holds
 				if (!isset($hold->status) || $hold->status == 'PE' || $hold->status == 'T'){
