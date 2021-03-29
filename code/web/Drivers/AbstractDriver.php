@@ -11,7 +11,7 @@ abstract class AbstractDriver
 	}
 
 	public function getReadingHistory(
-		/** @noinspection PhpUnusedParameterInspection */ $patron,
+		/** @noinspection PhpUnusedParameterInspection */ User $patron,
 		/** @noinspection PhpUnusedParameterInspection */ $page = 1,
 		/** @noinspection PhpUnusedParameterInspection */ $recordsPerPage = -1,
 		/** @noinspection PhpUnusedParameterInspection */ $sortOption = "checkedOut")
@@ -20,7 +20,7 @@ abstract class AbstractDriver
 	}
 
 	public function doReadingHistoryAction(
-		/** @noinspection PhpUnusedParameterInspection */ $patron,
+		/** @noinspection PhpUnusedParameterInspection */ User $patron,
 		/** @noinspection PhpUnusedParameterInspection */ $action,
 		/** @noinspection PhpUnusedParameterInspection */ $selectedTitles)
 	{
