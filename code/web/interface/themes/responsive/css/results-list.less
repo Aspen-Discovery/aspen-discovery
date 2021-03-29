@@ -158,24 +158,21 @@
 .related-manifestations{
   margin-top: 3px;
 }
-
-.related-manifestation{
+.related-manifestation.grouped {
   padding-top: 10px;
   padding-bottom: 10px;
   border: 1px solid #c3c3c3;
   border-radius: 8px;
   margin-top: 1em;
-  .col-sm-12 .row {
+
+  .col-sm-12 .row.displayed {
+    padding-bottom: 1em;
+    margin-bottom: 1em !important;
+  }
+  .col-sm-12 .row.displayed.striped-odd {
+    background: #f8f8ff;
     padding-top: 1em;
   }
-  .col-sm-12 > .striped-odd {
-      background: #f8f8ff;
-    padding-bottom: 1em;
-    }
-
-  .col-sm-12 > .row:nth-of-type(n+2) ~ .row:not(:last-of-type) {
-      margin-bottom: 1em !important;
-    }
 }
 .related-manifestations-header{
   border-bottom: 1px solid #d3d3d3;
@@ -183,6 +180,10 @@
 // Make Choose a Format Label Larger
 .related-manifestations-label {
   font-size:10pt;
+}
+.related-manifestations a.showHidden {
+  display: block;
+  padding-top:1em;
 }
 .manifestation-actions .btn-default{
   background-color: #088ec6;
