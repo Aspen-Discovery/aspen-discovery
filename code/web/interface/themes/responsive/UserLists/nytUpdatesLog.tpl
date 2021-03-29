@@ -6,7 +6,7 @@
 		<div id="exportLogContainer">
 			<table class="logEntryDetails table table-condensed table-hover">
 				<thead>
-					<tr><th>Id</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Total Lists</th><th>Num Errors</th><th>Num Added</th><th>Num Updated</th><th>Notes</th></tr>
+					<tr><th>Id</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Total Lists</th><th>Num Errors</th><th>Num Added</th><th>Num Updated</th><th>Num Skipped</th><th>Notes</th></tr>
 				</thead>
 				<tbody>
 					{foreach from=$logEntries item=logEntry}
@@ -20,6 +20,7 @@
 							<td>{$logEntry->numErrors}</td>
 							<td>{$logEntry->numAdded}</td>
 							<td>{$logEntry->numUpdated}</td>
+							<td>{$logEntry->numSkipped}</td>
 							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'nyt_updates');">Show Notes</a></td>
 						</tr>
 					{/foreach}

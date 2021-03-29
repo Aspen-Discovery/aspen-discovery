@@ -13,16 +13,14 @@ class NYTApi {
 
 	const BASE_URI = 'http://api.nytimes.com/svc/books/v2/lists/';
 	protected $api_key;
-	private $nytUpdateLog;
 
 	static $allListsInfo = null;
 
 	/**
 	 * NYTApi constructor.
 	 * @param string $key
-	 * @param NYTUpdateLogEntry $nytUpdateLog
 	 */
-	public function __construct($key, $nytUpdateLog) {
+	public function __construct($key) {
 	    $this->api_key = $key;
 	}
 
