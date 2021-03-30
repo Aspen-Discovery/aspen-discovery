@@ -63,16 +63,22 @@ class AccountSummary extends DataObject
 
 	private $_expired = null;
 	private $_expireClose = null;
-	private function loadExpirationInfo(){
-		$timeNow = time();
-		$this->_expired = 0;
-		$timeToExpire  = $this->expirationDate - $timeNow;
-		if ($timeToExpire <= 30 * 24 * 60 * 60) {
-			if ($timeToExpire <= 0) {
-				$this->_expired = 1;
+	private function loadExpirationInfo()
+	{
+		if ($this->expirationDate > 0) {
+			$timeNow = time();
+			$this->_expired = 0;
+			$timeToExpire = $this->expirationDate - $timeNow;
+			if ($timeToExpire <= 30 * 24 * 60 * 60) {
+				if ($timeToExpire <= 0) {
+					$this->_expired = 1;
+				}
+				$this->_expireClose = 1;
+			} else {
+				$this->_expireClose = 0;
 			}
-			$this->_expireClose = 1;
 		} else {
+			$this->_expired = 0;
 			$this->_expireClose = 0;
 		}
 	}
