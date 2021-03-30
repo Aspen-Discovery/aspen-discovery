@@ -17,6 +17,7 @@ class CustomFormSubmission extends DataObject
 			'libraryName' =>  array('property'=>'libraryName', 'type'=>'label', 'label'=>'Library', 'description'=>'The name of the library for the submission'),
 			'userName' =>  array('property'=>'userName', 'type'=>'label', 'label'=>'User Name', 'description'=>'The name of the user who made the submission'),
 			'dateSubmitted' => array('property' => 'dateSubmitted', 'type' => 'timestamp', 'label' => 'Date Submitted', 'description' => 'The date of the form submission'),
+			'isRead' => array('property' => 'isRead', 'type' => 'checkbox', 'label' => 'Mark as Read', 'description' => 'If the submission has been read, archive it'),
 			'submission' => array('property' => 'submission', 'type' => 'html', 'label' => 'Submission contents', 'description' => 'The information that was submitted by the user', 'hideInLists' => true),
 		];
 	}

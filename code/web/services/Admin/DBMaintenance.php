@@ -2523,6 +2523,13 @@ class Admin_DBMaintenance extends Admin_Admin
 					'sql' => [
 						'ALTER TABLE nyt_update_log ADD COLUMN numSkipped INT(11) NOT NULL DEFAULT 0'
 					]
+				],
+				'web_builder_custom_from_submission_isRead' => [
+					'title' => 'Add "Mark as Read" checkbox for custom form submissions',
+					'description' => 'Add "Mark as Read" checkbox for custom form submissions that enables filtering based on unread/read status',
+					'sql' => [
+						'ALTER TABLE web_builder_custom_from_submission ADD COLUMN isRead TINYINT(1) DEFAULT 0'
+					]
 				]
 			)
 		);
