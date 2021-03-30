@@ -94,7 +94,7 @@ class Checkout extends CircEntry
 	/** @noinspection PhpUnused */
 	public function getFormattedRenewalDate(){
 		if (!empty($this->renewalDate)){
-			$dateDue = new DateTime($this->renewalDate, date_default_timezone_get());
+			$dateDue = new DateTime($this->renewalDate, new DateTimeZone(date_default_timezone_get()));
 			return $dateDue->format('D M jS');
 		}else{
 			return '';
