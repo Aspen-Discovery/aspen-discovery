@@ -102,7 +102,7 @@ public class NetworkUtils {
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout, Charset authenticationCharSet) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, StandardCharsets.UTF_8, null);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, authenticationCharSet, null);
 	}
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout, Charset authenticationCharSet, HashMap<String, String> headers) {
 		WebServiceResponse retVal;
