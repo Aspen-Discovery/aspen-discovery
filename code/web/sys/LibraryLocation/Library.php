@@ -228,6 +228,11 @@ class Library extends DataObject
 	public $expiredMessage;
 	public $expirationNearMessage;
 	public $showOnOrderCounts;
+	
+	//Notes
+	public $showOpacNotes;
+	public $showBorrowerMessages;
+	public $showDebarmentNotes;
 
 	//EBSCO Settings
 	public $edsSettingsId;
@@ -560,6 +565,11 @@ class Library extends DataObject
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
 					'loginFormPasswordLabel'  => array('property'=>'loginFormPasswordLabel', 'type'=>'text', 'label'=>'Login Form Password Label', 'description'=>'The label to show for the password when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Library Card Number'),
 					'loginNotes' => array('property' => 'loginNotes', 'type' => 'markdown', 'label' => 'Login Notes', 'description' => 'Additional notes to display under the login fields', 'hideInLists' => true),
+				)),
+				'messagesSection' => array('property' => 'messagesSection', 'type' => 'section', 'label' => 'Messages', 'hideInLists' => true, 'helpLink' => '', 'properties' => array(
+					'showOpacNotes' => array('property'=>'showOpacNotes', 'type'=>'checkbox', 'label'=>'Show OPAC Notes', 'description'=>'Whether or not OPAC/Web Notes from the ILS should be shown', 'hideInLists' => true, 'default' => 0),
+					'showBorrowerMessages' => array('property'=>'showBorrowerMessages', 'type'=>'checkbox', 'label'=>'Show Borrower Notes', 'description'=>'Whether or not Borrower Messages from the ILS should be shown', 'hideInLists' => true, 'default' => 0),
+					'showDebarmentNotes' => array('property'=>'showDebarmentNotes', 'type'=>'checkbox', 'label'=>'Show Debarment Notes', 'description'=>'Whether or not Debarment Messages from the ILS should be shown', 'hideInLists' => true, 'default' => 0),
 				)),
 				'selfRegistrationSection' => array('property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true, 'helpLink' => '', 'properties' => array(
 					'enableSelfRegistration' => array('property'=>'enableSelfRegistration', 'type'=>'enum', 'values' => [0 => 'No Self Registration', 1 => 'ILS Based Self Registration', 2 => 'Redirect to Self Registration URL'], 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
