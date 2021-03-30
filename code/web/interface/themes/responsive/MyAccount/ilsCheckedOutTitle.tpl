@@ -113,7 +113,7 @@
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Rating'}</div>
 							<div class="result-value col-tn-8 col-lg-9">
-								{include file="GroupedWork/title-rating.tpl" id=$record->getGroupedWorkId() ratingData=$record->getRatingData() showNotInterested=false}
+								{include file="GroupedWork/title-rating.tpl" id=$record->getGroupedWorkId() summId=$record->getGroupedWorkId() ratingData=$record->getRatingData() showNotInterested=false}
 							</div>
 						</div>
 					{/if}

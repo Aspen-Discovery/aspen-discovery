@@ -726,6 +726,7 @@ class ListAPI extends Action
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 		$nytSettings = new NewYorkTimesSetting();
 		if (!$nytSettings->find(true)) {
+			$nytUpdateLog->addError("API Key missing");
 			return array(
 				'success' => false,
 				'message' => 'API Key missing'
@@ -737,6 +738,7 @@ class ListAPI extends Action
 		$nytListUser = new User();
 		$nytListUser->username = 'nyt_user';
 		if (!$nytListUser->find(true)) {
+			$nytUpdateLog->addError("NY Times user has not been created");
 			return array(
 				'success' => false,
 				'message' => 'NY Times user has not been created'
@@ -745,7 +747,7 @@ class ListAPI extends Action
 
 		//Get the raw response from the API with a list of all the names
 		require_once ROOT_DIR . '/sys/NYTApi.php';
-		$nyt_api = new NYTApi($api_key, $nytUpdateLog);
+		$nyt_api = new NYTApi($api_key);
 		$availableListsRaw = $nyt_api->get_list('names');
 		//Convert into an object that can be processed
 		$availableLists = json_decode($availableListsRaw);
@@ -763,6 +765,7 @@ class ListAPI extends Action
 			}
 		}
 		if (empty($selectedListTitleShort)) {
+			$nytUpdateLog->addError("We did not find list '{$selectedList}' in The New York Times API");
 			return array(
 				'success' => false,
 				'message' => "We did not find list '{$selectedList}' in The New York Times API"
@@ -770,8 +773,39 @@ class ListAPI extends Action
 		}
 
 		//Get a list of titles from NYT API
-		$listTitlesRaw = $nyt_api->get_list($selectedList);
-		$listTitles = json_decode($listTitlesRaw);
+		$retry = true;
+		$numTries = 0;
+		$listTitles = null;
+		while ($retry == true) {
+			$retry = false;
+			$numTries++;
+			$listTitles = null;
+			$listTitlesRaw = $nyt_api->get_list($selectedList);
+			$listTitles = json_decode($listTitlesRaw);
+			if (empty($listTitles->status) || $listTitles->status != "OK") {
+				if (!empty($listTitles->fault)) {
+					if (strpos($listTitles->fault->faultstring, 'quota violation')) {
+						$retry = ($numTries <= 3);
+						if ($retry){
+							sleep(60);
+						}else{
+							$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");
+						}
+					} else {
+						$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");
+					}
+				} else {
+					$nytUpdateLog->addError("Did not get a good response from the API");
+				}
+			}
+		}
+		
+		if ($listTitles == null){
+			return array(
+				'success' => false,
+				'message' => "Could not get a response from the API"
+			);
+		}
 
 		$lastModified = date_timestamp_get(new DateTime($listTitles->last_modified));
 		$lastModifiedDay = date("M j, Y", $lastModified);
@@ -796,18 +830,20 @@ class ListAPI extends Action
 			$nytList->find(true);
 
 			if ($success) {
-				//KK Todo: update log that we added a list
+				//Update log that we added a list
 				$listID = $nytList->id;
 				global $logger;
-				$logger->log('Created list: ' . $selectedListTitle);
+				$logger->log('Created list: ' . $selectedListTitle, Logger::LOG_NOTICE);
+				$nytUpdateLog->numAdded++;
 				$results = array(
 					'success' => true,
 					'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"
 				);
 			} else {
-				//KK Todo: update log that this failed
+				//Update log that this failed
                 global $logger;
                 $logger->log('Could not create list: ' . $selectedListTitle, Logger::LOG_ERROR);
+				$nytUpdateLog->addError('Could not create list: ' . $selectedListTitle);
 				return array(
 					'success' => false,
 					'message' => 'Could not create list'
@@ -818,12 +854,14 @@ class ListAPI extends Action
 			$listID = $nytList->id;
 			$newDescription = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
 			if ($nytList->description == $newDescription){
+				$nytUpdateLog->numSkipped++;
 				//Nothing has changed, no need to update
 				return array(
 					'success' => true,
 					'message' => "List <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a> has not changed since it was last loaded."
 				);
 			}
+			$nytUpdateLog->numUpdated++;
 			$nytList->description = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
 			$results = array(
 				'success' => true,
@@ -908,7 +946,6 @@ class ListAPI extends Action
 		}
 
 		if ($results['success']) {
-			//KK Todo: update log that we updated the list
 			$results['message'] .= "<br/> Added $numTitlesAdded Titles to the list";
 			if ($listExistsInAspen) {
 				$nytList->update(); // set a new update time on the main list when it already exists

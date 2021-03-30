@@ -516,6 +516,12 @@ class MillenniumHolds{
 				}
 			}
 
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$recordDriver = new MarcRecordDriver($curHold->recordId); // This needs the $carlID
+			if ($recordDriver->isValid()){
+				$curHold->updateFromRecordDriver($recordDriver);
+			}
+
 			//add to the appropriate array
 			if (!isset($curHold->status) || (strcasecmp($curHold->status, "ready") != 0 && strcasecmp($curHold->status, "hold being shelved") != 0)){
 				$holds['unavailable'][$curHold->source . $curHold->itemId . $curHold->cancelId . $curHold->userId] = $curHold;

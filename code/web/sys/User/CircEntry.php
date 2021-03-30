@@ -12,6 +12,8 @@ abstract class CircEntry extends DataObject
 	public $groupedWorkId;
 	public $title;
 	public $author;
+	public $coverUrl;
+	public $linkUrl;
 
 	public function getShortId(){
 		if (!empty($this->shortId)){
@@ -79,12 +81,7 @@ abstract class CircEntry extends DataObject
 	}
 
 	public function getTitle(){
-		$recordDriver = $this->getRecordDriver();
-		if ($recordDriver != false){
-			return $recordDriver->getTitle();
-		}else{
-			return $this->title;
-		}
+		return $this->title;
 	}
 
 	public function getSubtitle(){
@@ -92,7 +89,7 @@ abstract class CircEntry extends DataObject
 		if ($recordDriver != false){
 			return $recordDriver->getSubtitle();
 		}else{
-			return $this->title;
+			return '';
 		}
 	}
 
@@ -107,21 +104,19 @@ abstract class CircEntry extends DataObject
 	}
 
 	public function getAuthor(){
-		if (empty($this->author)) {
-			$recordDriver = $this->getRecordDriver();
-			if ($recordDriver != false) {
-				return $recordDriver->getAuthor();
-			}
-		}
 		return $this->author;
 	}
 
 	public function getFormats(){
-		$recordDriver = $this->getRecordDriver();
-		if ($recordDriver != false){
-			return $recordDriver->getFormats();
+		if (empty($this->format)) {
+			$recordDriver = $this->getRecordDriver();
+			if ($recordDriver != false) {
+				return $recordDriver->getFormats();
+			} else {
+				return 'Unknown';
+			}
 		}else{
-			return 'Unknown';
+			return $this->format;
 		}
 	}
 
@@ -161,31 +156,37 @@ abstract class CircEntry extends DataObject
 		}
 	}
 
-	public function getCoverUrl(){
-		$recordDriver = $this->getRecordDriver();
-		if ($recordDriver != false){
-			return $recordDriver->getBookcoverUrl('medium', true);
+	public function getCoverUrl()
+	{
+		if (empty($this->coverUrl)) {
+			$recordDriver = $this->getRecordDriver();
+			if ($recordDriver != false) {
+				return $recordDriver->getBookcoverUrl('medium', true);
+			} else {
+				return null;
+			}
 		}else{
-			return null;
+			return $this->coverUrl;
 		}
 	}
 
 	public function getLinkUrl(){
-		$recordDriver = $this->getRecordDriver();
-		if ($recordDriver != false){
-			return $recordDriver->getLinkUrl();
+		if (empty($this->linkUrl)){
+			$recordDriver = $this->getRecordDriver();
+			if ($recordDriver != false){
+				return $recordDriver->getLinkUrl();
+			}else{
+				return null;
+			}
 		}else{
-			return null;
+			return $this->linkUrl;
 		}
 	}
 
 	public function getRatingData(){
-		$recordDriver = $this->getRecordDriver();
-		if ($recordDriver != false){
-			return $recordDriver->getRatingData();
-		}else{
-			return null;
-		}
+		require_once ROOT_DIR . '/services/API/WorkAPI.php';
+		$workAPI = new WorkAPI();
+		return $workAPI->getRatingData($this->groupedWorkId);
 	}
 
 	public function getGroupedWorkId(){
@@ -230,5 +231,17 @@ abstract class CircEntry extends DataObject
 		}else{
 			return 'Unknown user';
 		}
+	}
+
+	/**
+	 * @param GroupedWorkSubDriver $recordDriver
+	 */
+	public function updateFromRecordDriver($recordDriver){
+		$this->title = $recordDriver->getTitle();
+		$this->author = $recordDriver->getPrimaryAuthor();
+		$this->groupedWorkId = $recordDriver->getPermanentId();
+		$this->format = $recordDriver->getPrimaryFormat();
+		$this->coverUrl = $recordDriver->getBookcoverUrl('medium');
+		$this->linkUrl = $recordDriver->getLinkUrl();
 	}
 }

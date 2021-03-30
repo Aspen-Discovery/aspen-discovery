@@ -391,6 +391,11 @@ class CarlX extends AbstractIlsDriver{
 					$curHold->frozen = isset($hold->Suspended) && ($hold->Suspended == true);
 					$curHold->cancelable = false;
 					$curHold->canFreeze = false;
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($carlID); // This needs the $carlID
+					if ($recordDriver->isValid()){
+						$curHold->updateFromRecordDriver($recordDriver);
+					}
 					$holds['available'][]   = $curHold;
 
 				}
@@ -441,6 +446,12 @@ class CarlX extends AbstractIlsDriver{
 					} else { // TO DO: Evaluate whether issue level holds are suspendable
 						$curHold->canFreeze = false;
 						$curHold->locationUpdateable = false;
+					}
+
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($carlID); // This needs the $carlID
+					if ($recordDriver->isValid()){
+						$curHold->updateFromRecordDriver($recordDriver);
 					}
 
 					$holds['unavailable'][] = $curHold;
@@ -580,10 +591,7 @@ class CarlX extends AbstractIlsDriver{
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($carlID); // This needs the $carlID
 					if ($recordDriver->isValid()){
-						$curTitle->groupedWorkId = $recordDriver->getPermanentId();
-						$curTitle->format = $recordDriver->getPrimaryFormat();
-						$curTitle->title = $recordDriver->getTitle();
-						$curTitle->author = $recordDriver->getPrimaryAuthor();
+						$curTitle->updateFromRecordDriver($recordDriver);
 					}
 				}
 				$checkedOutTitles[] = $curTitle;

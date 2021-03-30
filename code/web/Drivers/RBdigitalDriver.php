@@ -82,10 +82,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 						require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
 						$recordDriver = new RBdigitalRecordDriver($checkout['recordId']);
 						if (!$recordDriver->isValid()) {
-							$checkout->groupedWorkId = $recordDriver->getPermanentId();
-							$checkout->format = $recordDriver->getPrimaryFormat();
-							$checkout->author = $recordDriver->getPrimaryAuthor();
-							$checkout->title = $recordDriver->getTitle();
+							$checkout->updateFromRecordDriver($recordDriver);
 						} else {
 							$checkout->format = $patronCheckout->mediaType;
 						}
@@ -122,9 +119,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 						require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
 						$recordDriver = new RBdigitalMagazineDriver($checkout->recordId);
 						if ($recordDriver->isValid()) {
-							$checkout->groupedWorkId = $recordDriver->getPermanentId();
-							$checkout->format = $recordDriver->getPrimaryFormat();
-							$checkout->title = $recordDriver->getTitle();
+							$checkout->updateFromRecordDriver($recordDriver);
 						} else {
 							if (!empty($patronMagazineDetails->images[0])) {
 								$checkout->coverUrl = $patronMagazineDetails->images[0]->url;

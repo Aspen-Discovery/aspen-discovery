@@ -429,7 +429,11 @@ class SirsiDynixROA extends HorizonAPI
 			}
 			$summary->totalFines = $finesVal;
 
-			$summary->expirationDate = strtotime($lookupMyAccountInfoResponse->fields->privilegeExpiresDate);
+			if ($lookupMyAccountInfoResponse->fields->privilegeExpiresDate == null) {
+				$summary->expirationDate = 0;
+			}else{
+				$summary->expirationDate = strtotime($lookupMyAccountInfoResponse->fields->privilegeExpiresDate);
+			}
 		}
 
 		return $summary;
@@ -723,12 +727,17 @@ class SirsiDynixROA extends HorizonAPI
 					$curCheckout->canRenew = $checkout->fields->seenRenewalsRemaining > 0;
 					$curCheckout->renewalId = $checkout->fields->item->key;
 
-					// Presumably ILL Items
-					$bibInfo = $checkout->fields->item->fields->bib;
-					$curCheckout->author = $bibInfo->fields->author;
-					$curCheckout->title = $bibInfo->fields->title;
-					require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-					$curCheckout->author = empty($bibInfo->fields->author) ? '' : StringUtils::removeTrailingPunctuation($bibInfo->fields->author);
+					$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
+					if ($recordDriver->isValid()){
+						$curCheckout->updateFromRecordDriver($recordDriver);
+					}else{
+						// Presumably ILL Items
+						$bibInfo = $checkout->fields->item->fields->bib;
+						$curCheckout->author = $bibInfo->fields->author;
+						$curCheckout->title = $bibInfo->fields->title;
+						require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+						$curCheckout->author = empty($bibInfo->fields->author) ? '' : StringUtils::removeTrailingPunctuation($bibInfo->fields->author);
+					}
 					if (!empty($checkout->fields->item->fields->itemType->key) && ($checkout->fields->item->fields->itemType->key == 'MAGAZINE' || $checkout->fields->item->fields->itemType->key == 'PERIODICAL') && !empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
 						$curCheckout->title2 = $checkout->fields->item->fields->call->fields->dispCallNumber;
 					}
@@ -837,6 +846,12 @@ class SirsiDynixROA extends HorizonAPI
 				$curHold->title = $bibInfo->fields->title;
 				if (isset($bibInfo->fields->author)) {
 					$curHold->author = $bibInfo->fields->author;
+				}
+
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($curHold->recordId); // This needs the $carlID
+				if ($recordDriver->isValid()){
+					$curHold->updateFromRecordDriver($recordDriver);
 				}
 
 				if (!isset($curHold->status) || strcasecmp($curHold->status, "being_held") != 0) {

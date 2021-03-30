@@ -50,7 +50,6 @@ class Checkout extends CircEntry
 	public $transactionId;
 
 	//For OverDrive magazine support
-	public $coverUrl;
 	public $format;
 
 	//Calculate in realtime

@@ -20,7 +20,7 @@ class Enrichment_NYTLists extends Admin_Admin
 
 			// instantiate class with api key
 			require_once ROOT_DIR . '/sys/NYTApi.php';
-			$nyt_api = new NYTApi($api_key, $nytUpdateLog);
+			$nyt_api = new NYTApi($api_key);
 
 			//Get the raw response from the API with a list of all the names
 			$availableListsRaw = $nyt_api->get_list('names');

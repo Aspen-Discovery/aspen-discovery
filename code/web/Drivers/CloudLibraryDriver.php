@@ -68,10 +68,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 				$recordDriver = new CloudLibraryRecordDriver((string)$checkoutFromCloudLibrary->ItemId);
 				if ($recordDriver->isValid()) {
-					$checkout->title = $recordDriver->getTitle();
-					$checkout->author = $recordDriver->getPrimaryAuthor();
-					$checkout->groupedWorkId = $recordDriver->getGroupedWorkId();
-					$checkout->format = $recordDriver->getPrimaryFormat();
+					$checkout->updateFromRecordDriver($recordDriver);
 					$checkout->accessOnlineUrl = $recordDriver->getAccessOnlineLinkUrl($user);
 				} else {
 					$checkout->title = 'Unknown Cloud Library Title';
@@ -594,10 +591,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 		$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
 		if ($recordDriver->isValid()) {
-			$hold->title = $recordDriver->getTitle();
-			$hold->author = $recordDriver->getPrimaryAuthor();
-			$hold->groupedWorkId = $recordDriver->getGroupedWorkId();
-			$hold->format = $recordDriver->getPrimaryFormat();
+			$hold->updateFromRecordDriver($recordDriver);
 		} else {
 			$hold->title = 'Unknown Cloud Library Title';
 			$hold->format = 'Unknown - Cloud Library';

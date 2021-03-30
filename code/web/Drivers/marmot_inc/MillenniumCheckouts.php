@@ -185,10 +185,7 @@ class MillenniumCheckouts {
 						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 						$recordDriver = new MarcRecordDriver($this->driver->accountProfile->recordSource . ":" . $curTitle->recordId);
 						if ($recordDriver->isValid()) {
-							$curTitle->groupedWorkId = $recordDriver->getPermanentId();
-							$curTitle->author        = $recordDriver->getPrimaryAuthor();
-							//Always use title from the index since classic will show 240 rather than 245
-							$curTitle->title         = $recordDriver->getTitle();
+							$curTitle->updateFromRecordDriver($recordDriver);
 						}
 					}
 					$checkedOutTitles[] = $curTitle;

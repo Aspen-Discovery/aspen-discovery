@@ -953,4 +953,20 @@ public class GroupedWorkIndexer {
 	TreeSet<Scope> getScopes() {
 		return this.scopes;
 	}
+
+	public void deleteEmptyWorks() {
+		try {
+			//Remove any works that no longer have any primary identifiers for them.
+			PreparedStatement emptyWorksStmt = dbConn.prepareStatement("SELECT permanent_id, count(grouped_work_primary_identifiers.id) as numIdentifiers from grouped_work left join grouped_work_primary_identifiers on grouped_work_id = permanent_id group by permanent_id having numIdentifiers = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet emptyWorksRS = emptyWorksStmt.executeQuery();
+			int numEmptyWorksProcessed = 0;
+			while (emptyWorksRS.next()) {
+				this.deleteRecord(emptyWorksRS.getString("permanent_id"));
+				numEmptyWorksProcessed++;
+			}
+			logEntry.addNote("Made sure " + numEmptyWorksProcessed + " empty works do not exist within Solr.");
+		}catch (SQLException e){
+			logEntry.incErrors("Error removing empty works from solr");
+		}
+	}
 }

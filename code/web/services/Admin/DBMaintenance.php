@@ -2497,6 +2497,32 @@ class Admin_DBMaintenance extends Admin_Admin
 						) ENGINE = InnoDB',
 						'ALTER TABLE api_usage ADD UNIQUE (year, month, module, method)'
 					]
+				],
+
+				'create_nyt_update_log' => [
+					'title' => 'Create NYT Update Log',
+					'description' => 'Create a table to store logging about NYT updates',
+					'sql' => [
+						'CREATE TABLE nyt_update_log (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							startTime INT(11) NOT NULL, 
+							endTime INT(11) NULL, 
+							lastUpdate INT(11) NULL, 
+							numErrors INT(11) NOT NULL DEFAULT 0,
+							numLists INT(11) NOT NULL DEFAULT 0,
+							numAdded INT(11) NOT NULL DEFAULT 0,
+							numUpdated INT(11) NOT NULL DEFAULT 0,
+							notes TEXT
+						) ENGINE = InnoDB'
+					]
+				],
+
+				'nyt_update_log_numSkipped' => [
+					'title' => 'Add Num Skipped to NYT Update Log',
+					'description' => 'Add number of records skipped to NYT Update log',
+					'sql' => [
+						'ALTER TABLE nyt_update_log ADD COLUMN numSkipped INT(11) NOT NULL DEFAULT 0'
+					]
 				]
 			)
 		);
