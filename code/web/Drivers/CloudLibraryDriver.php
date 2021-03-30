@@ -588,6 +588,9 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$hold->recordId = (string)$holdFromCloudLibrary->ItemId;
 		$hold->createDate = strtotime($holdFromCloudLibrary->EventStartDateInUTC);
 		$hold->userId = $user->id;
+		if (isset($holdFromCloudLibrary->Position)){
+			$hold->position = (int)$holdFromCloudLibrary->Position;
+		}
 
 		$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
 		if ($recordDriver->isValid()) {
