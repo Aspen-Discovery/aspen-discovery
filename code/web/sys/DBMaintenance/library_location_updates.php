@@ -2339,6 +2339,16 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				"ALTER TABLE library CHANGE COLUMN showPickupLocationInProfile allowPickupLocationUpdates TINYINT(1) DEFAULT 0"
 			]
+		],
+
+		'library_patron_messages' => [
+			'title' => 'Library - configure patron messages',
+			'description' => 'Add the ability to configure which patron messages are shown within the account profile',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN showOpacNotes TINYINT(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN showBorrowerMessages TINYINT(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN showDebarmentNotes TINYINT(1) DEFAULT 0',
+			]
 		]
 	);
 }
