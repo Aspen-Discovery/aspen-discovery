@@ -726,6 +726,7 @@ class SirsiDynixROA extends HorizonAPI
 					$curCheckout->renewCount = $checkout->fields->renewalCount;
 					$curCheckout->canRenew = $checkout->fields->seenRenewalsRemaining > 0;
 					$curCheckout->renewalId = $checkout->fields->item->key;
+					$curCheckout->renewIndicator = $checkout->fields->item->key;
 
 					$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
 					if ($recordDriver->isValid()){
@@ -1144,6 +1145,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/changePickupLibrary", $params, $this->getSessionToken($patron), 'POST');
 		if (isset($updateHoldResponse->holdRecord->key)) {
+			$patron->forceReloadOfHolds();
 			return array(
 				'success' => true,
 				'message' => 'The pickup location has been updated.'
