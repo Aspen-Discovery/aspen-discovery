@@ -895,6 +895,7 @@ class UserAPI extends Action
 		$itemIndex = $_REQUEST['itemIndex'];
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user, $recordId, $itemBarcode, $itemIndex);
 			return array('success' => true, 'renewalMessage' => $renewalMessage);
 		} else {
@@ -911,6 +912,7 @@ class UserAPI extends Action
 		if ($user && !($user instanceof AspenError)) {
 			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user, $itemBarcode);
 			if ($renewalMessage['success']){
+				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
 			}
 			return array('success' => true, 'renewalMessage' => $renewalMessage);
