@@ -951,6 +951,7 @@ class UserAPI extends Action
 			$renewalMessage = $user->renewAll(false);
 			$renewalMessage['message'] = array_merge([$renewalMessage['Renewed'] . ' of ' . $renewalMessage['Total'] . ' titles were renewed'],$renewalMessage['message']);
 			for ($i = 0; $i < $renewalMessage['Renewed']; $i++){
+				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
 			}
 			$renewalMessage['renewalMessage'] = $renewalMessage['message'];
