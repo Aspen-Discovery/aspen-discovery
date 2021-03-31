@@ -2463,6 +2463,8 @@ class User extends DataObject
 				$summary = null;
 			}
 		}else{
+			$summary->insert();
+			$existingId = $summary->id;
 			$summary = null;
 		}
 		return [$existingId, $summary];
