@@ -969,6 +969,57 @@ class GroupedWork_AJAX extends JSON_Action
 		return $result;
 	}
 
+	function getUploadCoverFormByURL(){
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$interface->assign('id', $id);
+
+		return array(
+			'title' => 'Upload a New Cover by URL',
+			'modalBody' => $interface->fetch("GroupedWork/upload-cover-form-url.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadCoverFormByURL\").submit()'>Upload Cover</button>"
+		);
+	}
+
+	function uploadCoverByURL(){
+		$result = [
+		'success' => false,
+		'title' => 'Uploading custom cover',
+		'message' => 'Sorry your cover could not be uploaded'
+		];
+		if (isset($_POST['coverFileURL'])) {
+			$url = $_POST['coverFileURL'];
+			$filename = basename($url);
+			$uploadedFile = file_get_contents($url);
+
+			if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+				$result['message'] = "No Cover file was uploaded";
+			} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+				$result['message'] = "Error in file upload for cover " . $uploadedFile["error"];
+			}
+
+			$id = $_REQUEST['id'];
+			global $configArray;
+			$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+			$ext = pathinfo($filename, PATHINFO_EXTENSION);
+			if($ext == "jpg" or $ext == "png" or $ext == "gif" or $ext == "jpeg") {
+				$upload = file_put_contents($destFullPath, file_get_contents($url));
+				if($upload){
+					$result['success'] = true;
+				}else {
+					$result['message'] = 'Incorrect image type.  Please upload a PNG, GIF, or JPEG';
+				}
+		}else{
+			$result['message'] = 'No cover was uploaded, please try again.';
+		}
+		if ($result['success']){
+			$this->reloadCover();
+			$result['message'] = 'Your cover has been uploaded successfully';
+		}
+		return $result;
+	}
+
 	/** @noinspection PhpUnused */
 	function reloadIslandora(){
 		$id = $_REQUEST['id'];
@@ -1499,4 +1550,4 @@ class GroupedWork_AJAX extends JSON_Action
 			];
 		}
 	}
-}
+}}

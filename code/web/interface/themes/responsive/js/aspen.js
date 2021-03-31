@@ -8830,6 +8830,34 @@ AspenDiscovery.GroupedWork = (function(){
 			});
 			return false;
 		},
+
+		getUploadCoverFormByURL: function (id){
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getUploadCoverFormByURL';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		uploadCoverByURL: function (id){
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=uploadCoverByURL';
+			var uploadCoverData = new FormData($("#uploadCoverFormByURL")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: uploadCoverData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
+
 		getGroupWithForm: function(trigger, id) {
 			if (Globals.loggedIn){
 				AspenDiscovery.loadingMessage();
