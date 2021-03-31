@@ -22,24 +22,29 @@ class Record_AccessOnline extends Action
 		//Check to see if the record exists within the resources table
 		$this->recordDriver = RecordDriverFactory::initRecordDriverById($source . ':' . $this->id);
 
-		$relatedRecord = $this->recordDriver->getRelatedRecord();
-		$recordActions = $relatedRecord->getActions();
+		if ($this->recordDriver->isValid()) {
 
-		$actionIndex = $_REQUEST['index'];
-		$selectedAction = $recordActions[$actionIndex];
-		$redirectUrl = $selectedAction['redirectUrl'];
+			$relatedRecord = $this->recordDriver->getRelatedRecord();
+			$recordActions = $relatedRecord->getActions();
 
-		//Track Usage
-		global $sideLoadSettings;
-		$sideLoadId = -1;
-		foreach ($sideLoadSettings as $sideLoad){
-			if ($sideLoad->name == $this->recordDriver->getRecordType()){
-				$sideLoadId = $sideLoad->id;
+			$actionIndex = $_REQUEST['index'];
+			$selectedAction = $recordActions[$actionIndex];
+			$redirectUrl = $selectedAction['redirectUrl'];
+
+			//Track Usage
+			global $sideLoadSettings;
+			$sideLoadId = -1;
+			foreach ($sideLoadSettings as $sideLoad) {
+				if ($sideLoad->name == $this->recordDriver->getRecordType()) {
+					$sideLoadId = $sideLoad->id;
+				}
 			}
-		}
 
-		$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
-		$this->trackUserUsageOfSideLoad($sideLoadId);
+			$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
+			$this->trackUserUsageOfSideLoad($sideLoadId);
+		}else{
+			$redirectUrl = $this->recordDriver->getLinkUrl(true);
+		}
 
 		header('Location: ' . $redirectUrl);
 		die();
