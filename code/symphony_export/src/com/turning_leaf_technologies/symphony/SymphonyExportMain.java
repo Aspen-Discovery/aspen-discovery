@@ -577,7 +577,7 @@ public class SymphonyExportMain {
 		}
 
 		//Remove empty works
-		getGroupedWorkIndexer(dbConn).deleteEmptyWorks();
+		//getGroupedWorkIndexer(dbConn).deleteEmptyWorks();
 
 		try {
 			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateFromMarcExport = ? where id = ?");
