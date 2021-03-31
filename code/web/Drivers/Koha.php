@@ -2584,24 +2584,20 @@ class Koha extends AbstractIlsDriver
 		//Get number of items checked out
 		/** @noinspection SqlResolve */
 		$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
-		$numCheckouts = 0;
 		if ($checkedOutItemsRS) {
 			$checkedOutItems = $checkedOutItemsRS->fetch_assoc();
-			$numCheckouts = $checkedOutItems['numCheckouts'];
+			$summary->numCheckedOut = (int)$checkedOutItems['numCheckouts'];
 			$checkedOutItemsRS->close();
 		}
-		$summary->numCheckedOut = $numCheckouts;
 
 		$now = date('Y-m-d H:i:s');
 		/** @noinspection SqlResolve */
 		$overdueItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numOverdue FROM issues WHERE date_due < \'' . $now . '\' AND borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
-		$numOverdue = 0;
 		if ($overdueItemsRS) {
 			$overdueItems = $overdueItemsRS->fetch_assoc();
-			$numOverdue = $overdueItems['numOverdue'];
+			$summary->numOverdue = (int)$overdueItems['numOverdue'];
 			$overdueItemsRS->close();
 		}
-		$summary->numOverdue = $numOverdue;
 		$timer->logTime("Loaded checkouts for Koha");
 
 		//Get number of available holds
@@ -2626,25 +2622,21 @@ class Koha extends AbstractIlsDriver
 		}else{
 			/** @noinspection SqlResolve */
 			$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
-			$numAvailableHolds = 0;
 			if ($availableHoldsRS) {
 				$availableHolds = $availableHoldsRS->fetch_assoc();
-				$numAvailableHolds = $availableHolds['numHolds'];
+				$summary->numAvailableHolds = (int)$availableHolds['numHolds'];
 				$availableHoldsRS->close();
 			}
-			$summary->numAvailableHolds = $numAvailableHolds;
 			$timer->logTime("Loaded available holds for Koha");
 
 			//Get number of unavailable
 			/** @noinspection SqlResolve */
 			$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
-			$numWaitingHolds = 0;
 			if ($waitingHoldsRS) {
 				$waitingHolds = $waitingHoldsRS->fetch_assoc();
-				$numWaitingHolds = $waitingHolds['numHolds'];
+				$summary->numUnavailableHolds = (int)$waitingHolds['numHolds'];
 				$waitingHoldsRS->close();
 			}
-			$summary->numUnavailableHolds = $numWaitingHolds;
 		}
 		$timer->logTime("Loaded total holds for Koha");
 
@@ -2660,10 +2652,9 @@ class Koha extends AbstractIlsDriver
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
 		if ($lookupUserResult) {
 			$userFromDb = $lookupUserResult->fetch_assoc();
-
-			if (!empty($userFromDb['dateexpiry'])) {
-				list ($yearExp, $monthExp, $dayExp) = explode('-', $userFromDb['dateexpiry']);
-				$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			$dateExpiry = $userFromDb['dateexpiry'];
+			if (!empty($dateExpiry)) {
+				$timeExpire = strtotime($dateExpiry);
 				$summary->expirationDate = $timeExpire;
 			}
 			$lookupUserResult->close();
