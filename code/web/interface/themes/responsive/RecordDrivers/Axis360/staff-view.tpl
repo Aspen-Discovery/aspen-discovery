@@ -26,11 +26,11 @@
 		</div>
 	{/if}
 
-    {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
+	{include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
 	{if $axis360Extract}
-	<h3>Axis 360 Extract Information</h3>
-	<pre>
+		<h3>Axis 360 Extract Information</h3>
+		<pre>
 		{$axis360Extract|print_r}
 	</pre>
 	{/if}

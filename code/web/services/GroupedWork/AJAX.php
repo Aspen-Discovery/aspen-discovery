@@ -315,9 +315,9 @@ class GroupedWork_AJAX extends JSON_Action
 		}else{
 			$originalId = $_REQUEST['id'];
 			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return AspenDiscovery.showElementInPopup('$title', '#noResults{$index}')\">" .
-					"<img src=\"{$cover}\" class=\"scrollerTitleCover\" alt=\"{$title} Cover\"/>" .
-					"</div>";
-					$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
+				"<img src=\"{$cover}\" class=\"scrollerTitleCover\" alt=\"{$title} Cover\"/>" .
+				"</div>";
+			$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
 					<div class=\"row\">
 						<div class=\"result-label col-md-3\">Author: </div>
 						<div class=\"col-md-9 result-value notranslate\">
@@ -354,7 +354,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = !empty($_REQUEST['id']) ? $_REQUEST['id'] : $_GET['id'];
-			// TODO: request id is not always being set by index page.
+		// TODO: request id is not always being set by index page.
 		$recordDriver = new GroupedWorkDriver($id);
 		$upc = $recordDriver->getCleanUPC();
 		$isbn = $recordDriver->getCleanISBN();
@@ -659,9 +659,9 @@ class GroupedWork_AJAX extends JSON_Action
 		$relatedRecords = $recordDriver->getRelatedRecords();
 		$interface->assign('relatedRecords', $relatedRecords);
 		return array(
-				'title' => 'Share via Email',
-				'modalBody' => $interface->fetch("GroupedWork/email-form-body.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send Email</button>"
+			'title' => 'Share via Email',
+			'modalBody' => $interface->fetch("GroupedWork/email-form-body.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send Email</button>"
 		);
 	}
 
@@ -812,15 +812,15 @@ class GroupedWork_AJAX extends JSON_Action
 		$prospector = new Prospector();
 
 		$searchTerms = array(
-				array(
-						'lookfor' => $record['title_short'],
-						'index' => 'Title'
-				),
+			array(
+				'lookfor' => $record['title_short'],
+				'index' => 'Title'
+			),
 		);
 		if (isset($record['author'])){
 			$searchTerms[] = array(
-					'lookfor' => $record['author'],
-					'index' => 'Author'
+				'lookfor' => $record['author'],
+				'index' => 'Author'
 			);
 		}
 
@@ -1042,8 +1042,8 @@ class GroupedWork_AJAX extends JSON_Action
 		}
 
 		return array(
-				'success' => $sameCatalogRecordCleared,
-				'message' => $cacheMessage
+			'success' => $sameCatalogRecordCleared,
+			'message' => $cacheMessage
 		);
 	}
 

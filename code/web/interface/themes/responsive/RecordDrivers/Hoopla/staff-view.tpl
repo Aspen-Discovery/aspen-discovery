@@ -26,7 +26,7 @@
 		</div>
 	{/if}
 
-    {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
+	{include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
 	{if $hooplaExtract}
 		<h3>Hoopla Extract Information</h3>

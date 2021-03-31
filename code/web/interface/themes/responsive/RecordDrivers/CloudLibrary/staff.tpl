@@ -28,7 +28,7 @@
 			{if $loggedIn && in_array('Download MARC Records', $userPermissions)}
 				<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
 			{/if}
-            {if $loggedIn && $enableArchive && in_array('Administer Islandora Archive', $userPermissions)}
+			{if $loggedIn && $enableArchive && in_array('Administer Islandora Archive', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
 			{/if}
 		</div>
@@ -54,21 +54,20 @@
 		<h3>MARC Record</h3>
 		<table class="citation" border="0">
 			<tbody>
-				{*Output leader*}
-				<tr><th>LEADER</th><td colspan="3">{$marcRecord->getLeader()}</td></tr>
-				{foreach from=$marcRecord->getFields() item=field}
-					{if get_class($field) == "File_MARC_Control_Field"}
-						<tr><th>{$field->getTag()}</th><td colspan="3">{$field->getData()|escape|replace:' ':'&nbsp;'}</td></tr>
-					{else}
-						<tr><th>{$field->getTag()}</th><th>{$field->getIndicator(1)}</th><th>{$field->getIndicator(2)}</th><td>
-						{foreach from=$field->getSubfields() item=subfield}
-						<strong>|{$subfield->getCode()}</strong>&nbsp;{$subfield->getData()|escape}
-						{/foreach}
+			{*Output leader*}
+			<tr><th>LEADER</th><td colspan="3">{$marcRecord->getLeader()}</td></tr>
+			{foreach from=$marcRecord->getFields() item=field}
+				{if get_class($field) == "File_MARC_Control_Field"}
+					<tr><th>{$field->getTag()}</th><td colspan="3">{$field->getData()|escape|replace:' ':'&nbsp;'}</td></tr>
+				{else}
+					<tr><th>{$field->getTag()}</th><th>{$field->getIndicator(1)}</th><th>{$field->getIndicator(2)}</th><td>
+							{foreach from=$field->getSubfields() item=subfield}
+								<strong>|{$subfield->getCode()}</strong>&nbsp;{$subfield->getData()|escape}
+							{/foreach}
 						</td></tr>
-					{/if}
-				{/foreach}
+				{/if}
+			{/foreach}
 			</tbody>
 		</table>
 	</div>
 {/if}
-
