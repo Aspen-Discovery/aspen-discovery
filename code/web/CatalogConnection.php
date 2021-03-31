@@ -250,7 +250,7 @@ class CatalogConnection
 	 * by a specific patron.
 	 *
 	 * @param User $user The user to load transactions for
-	 * @return mixed            Array of the patron's transactions on success,
+	 * @return Checkout[]            Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
 	 */
@@ -867,13 +867,13 @@ class CatalogConnection
 			$numRenewals = 0;
 			$failure_messages = array();
 			foreach ($currentTransactions as $transaction) {
-				$curResult = $this->renewCheckout($patron, $transaction['recordId'], $transaction['renewIndicator'], null);
+				$curResult = $this->renewCheckout($patron, $transaction->recordId, $transaction->renewIndicator, null);
 				if ($curResult['success']) {
 					$numRenewals++;
 				} else {
 					if ($curResult['message'] == 'The item could not be renewed'){
 						require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-						$failure_messages[] = StringUtils::removeTrailingPunctuation($transaction['title']) . ' could not be renewed';
+						$failure_messages[] = StringUtils::removeTrailingPunctuation($transaction->title) . ' could not be renewed';
 					}
 				}
 			}
