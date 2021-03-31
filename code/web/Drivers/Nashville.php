@@ -280,10 +280,10 @@ class Nashville extends CarlX {
 		}
 	}
 
-	protected function getLostViaSIP(string $patron): array
+	protected function getLostViaSIP(string $patronId): array
 	{
 		$mySip = $this->initSIPConnection();
-		$mySip->patron = $patron;
+		$mySip->patron = $patronId;
 		if (!is_null($mySip)) {
 			$in = $mySip->msgPatronInformation('none');
 			$msg_result = $mySip->get_message($in);
