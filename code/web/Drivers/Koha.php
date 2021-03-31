@@ -951,7 +951,7 @@ class Koha extends AbstractIlsDriver
 		if ($allowHoldsOnCheckedOutTitles == 0) {
 			$existingCheckouts = $this->getCheckouts($patron);
 			foreach ($existingCheckouts as $checkout) {
-				if ($checkout['recordId'] == $recordId) {
+				if ($checkout->recordId == $recordId) {
 					$hold_result['message'] = 'You already have that title checked out, you cannot place a hold on it until you check it in.';
 					return $hold_result;
 				}
@@ -2647,9 +2647,8 @@ class Koha extends AbstractIlsDriver
 
 		//Get expiration information
 		/** @noinspection SqlResolve */
-		$sql = "SELECT dateexpiry from borrowers where borrowernumber = {$patron->username}";
-
-		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
+		$lookupUserQuery = "SELECT dateexpiry from borrowers where borrowernumber = {$patron->username}";
+		$lookupUserResult = mysqli_query($this->dbConnection, $lookupUserQuery, PDO::FETCH_ASSOC);
 		if ($lookupUserResult) {
 			$userFromDb = $lookupUserResult->fetch_assoc();
 			$dateExpiry = $userFromDb['dateexpiry'];
