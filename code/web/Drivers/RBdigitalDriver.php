@@ -32,7 +32,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 	 *
 	 * @param User $patron The user to load transactions for
 	 *
-	 * @return array        Array of the patron's transactions on success
+	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
 	public function getCheckouts($patron)

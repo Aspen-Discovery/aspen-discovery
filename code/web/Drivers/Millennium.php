@@ -357,7 +357,7 @@ class Millennium extends AbstractIlsDriver
 	 * by a specific patron.
 	 *
 	 * @param User $user The user to load transactions for
-	 * @return mixed        Array of the patron's transactions on success,
+	 * @return Checkout[]        Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
 	 */

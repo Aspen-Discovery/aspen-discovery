@@ -59,7 +59,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * by a specific patron.
 	 *
 	 * @param User $user The user to load transactions for
-	 * @return array        Array of the patron's transactions on success
+	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
 	public function getCheckouts(User $user)

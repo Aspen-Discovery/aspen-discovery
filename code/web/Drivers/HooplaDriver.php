@@ -214,7 +214,7 @@ class HooplaDriver extends AbstractEContentDriver{
 
 	/**
 	 * @param $user User
-	 * @return array
+	 * @return Checkout[]
 	 */
 	public function getCheckouts($user)
 	{

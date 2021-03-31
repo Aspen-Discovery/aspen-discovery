@@ -685,7 +685,7 @@ class SirsiDynixROA extends HorizonAPI
 	 * @param int $page
 	 * @param int $recordsPerPage
 	 * @param string $sortOption
-	 * @return array
+	 * @return Checkout[]
 	 */
 	public function getCheckouts($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'dueDate')
 	{

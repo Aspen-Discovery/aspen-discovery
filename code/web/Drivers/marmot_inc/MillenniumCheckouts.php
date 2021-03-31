@@ -40,7 +40,7 @@ class MillenniumCheckouts {
 	 *
 	 * @param User $user The user to load transactions for
 	 * @param IndexingProfile $indexingProfile
-	 * @return mixed        Array of the patron's transactions on success,
+	 * @return Checkout[]        Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
 	 */

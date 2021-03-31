@@ -457,7 +457,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 *
 	 * @param User $patron
 	 * @param bool $forSummary
-	 * @return array
+	 * @return Checkout[]
 	 */
 	public function getCheckouts($patron, $forSummary = false){
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
