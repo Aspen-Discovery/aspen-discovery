@@ -245,7 +245,7 @@ abstract class DataObject
 					if (!empty($value) && $value !== null) {
 						$propertyValues .= $aspen_db->quote(serialize($value));
 					}else{
-						$propertyValues .= '';
+						$propertyValues .= "''";
 					}
 				} else {
 					$propertyValues .= $aspen_db->quote($value);
@@ -259,7 +259,7 @@ abstract class DataObject
 				if (!empty($value) && $value !== null) {
 					$propertyValues .= $aspen_db->quote(serialize($value));
 				}else{
-					$propertyValues .= '';
+					$propertyValues .= "''";
 				}
 			}
 		}
