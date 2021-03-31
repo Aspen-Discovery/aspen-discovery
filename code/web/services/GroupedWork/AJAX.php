@@ -984,9 +984,9 @@ class GroupedWork_AJAX extends JSON_Action
 
 	function uploadCoverByURL(){
 		$result = [
-		'success' => false,
-		'title' => 'Uploading custom cover',
-		'message' => 'Sorry your cover could not be uploaded'
+			'success' => false,
+			'title' => 'Uploading custom cover',
+			'message' => 'Sorry your cover could not be uploaded'
 		];
 		if (isset($_POST['coverFileURL'])) {
 			$url = $_POST['coverFileURL'];
@@ -1005,11 +1005,12 @@ class GroupedWork_AJAX extends JSON_Action
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
 			if($ext == "jpg" or $ext == "png" or $ext == "gif" or $ext == "jpeg") {
 				$upload = file_put_contents($destFullPath, file_get_contents($url));
-				if($upload){
+				if ($upload) {
 					$result['success'] = true;
-				}else {
+				} else {
 					$result['message'] = 'Incorrect image type.  Please upload a PNG, GIF, or JPEG';
 				}
+			}
 		}else{
 			$result['message'] = 'No cover was uploaded, please try again.';
 		}
@@ -1550,4 +1551,4 @@ class GroupedWork_AJAX extends JSON_Action
 			];
 		}
 	}
-}}
+}
