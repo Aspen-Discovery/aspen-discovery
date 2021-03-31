@@ -897,6 +897,10 @@ class UserAPI extends Action
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user, $recordId, $itemBarcode, $itemIndex);
+			if ($renewalMessage['success']){
+				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
+			}
 			return array('success' => true, 'renewalMessage' => $renewalMessage);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
