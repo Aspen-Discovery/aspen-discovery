@@ -5,7 +5,7 @@
 				<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped Work</a>
 				<button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Cover</button>
 				{if $loggedIn && in_array('Upload Covers', $userPermissions)}
-					<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Upload Cover from Computer</button>
+					<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by from Computer"}</button>
 					<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverFormByURL('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by URL"}</button>
 				{/if}
 				<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >Reload Enrichment</button>
@@ -19,18 +19,18 @@
 					<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Group With Work</button>
 					<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">Ungroup</button>
 				{/if}
-                {if $loggedIn && $enableArchive && in_array('Administer Islandora Archive', $userPermissions)}
+				{if $loggedIn && $enableArchive && in_array('Administer Islandora Archive', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
 				{/if}
 			</div>
 		</div>
 	{/if}
 
-    {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
+	{include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
 	{if $rbdigitalExtract}
-	<h3>RBdigital Extract Information</h3>
-	<pre>
+		<h3>RBdigital Extract Information</h3>
+		<pre>
 		{$rbdigitalExtract|print_r}
 	</pre>
 	{/if}
