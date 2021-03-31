@@ -2655,7 +2655,12 @@ class Koha extends AbstractIlsDriver
 			$dateExpiry = $userFromDb['dateexpiry'];
 			if (!empty($dateExpiry)) {
 				$timeExpire = strtotime($dateExpiry);
-				$summary->expirationDate = $timeExpire;
+				if ($timeExpire !== false) {
+					$summary->expirationDate = $timeExpire;
+				}else{
+					global $logger;
+					$logger->log("Error parsing expiration date for patron $dateExpiry", Logger::LOG_ERROR);
+				}
 			}
 			$lookupUserResult->close();
 		}

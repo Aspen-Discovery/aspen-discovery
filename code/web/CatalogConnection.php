@@ -1012,12 +1012,8 @@ class CatalogConnection
 		if ($summary === null || isset($_REQUEST['reload'])) {
 			$summary = $this->driver->getAccountSummary($user);
 			$summary->lastLoaded = time();
-			if ($existingId != null) {
-				$summary->id = $existingId;
-				$summary->update();
-			}else{
-				$summary->insert();
-			}
+			$summary->id = $existingId;
+			$summary->update();
 		}
 		return $summary;
 	}
