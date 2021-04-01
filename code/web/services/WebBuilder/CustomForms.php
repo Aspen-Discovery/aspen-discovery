@@ -30,6 +30,10 @@ class WebBuilder_CustomForms extends ObjectEditor
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$userHasExistingObjects = true;
+		if (!UserAccount::userHasPermission('Administer All Custom Forms')){
+			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryCustomForm', 'formId');
+		}
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {

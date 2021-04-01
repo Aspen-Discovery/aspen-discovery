@@ -30,10 +30,16 @@ class WebBuilder_BasicPages extends ObjectEditor
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$userHasExistingObjects = true;
+		if (!UserAccount::userHasPermission('Administer All Basic Pages')){
+			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryBasicPage', 'basicPageId');
+		}
 		$object->find();
 		$objectList = array();
-		while ($object->fetch()) {
-			$objectList[$object->id] = clone $object;
+		if ($userHasExistingObjects) {
+			while ($object->fetch()) {
+				$objectList[$object->id] = clone $object;
+			}
 		}
 		return $objectList;
 	}

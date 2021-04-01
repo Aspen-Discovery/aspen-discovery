@@ -649,4 +649,24 @@ abstract class ObjectEditor extends Admin_Admin
 	protected function supportsPagination(){
 		return true;
 	}
+
+	protected function limitToObjectsForLibrary(&$object, $linkObjectType, $linkProperty){
+		$userHasExistingObjects = true;
+		$linkObject = new $linkObjectType();
+		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+		if ($library != null){
+			$linkObject->libraryId = $library->libraryId;
+			$objectsForLibrary = [];
+			$linkObject->find();
+			while ($linkObject->fetch()){
+				$objectsForLibrary[] = $linkObject->$linkProperty;
+			}
+			if (count($objectsForLibrary) > 0) {
+				$object->whereAddIn('id', $objectsForLibrary, false);
+			}else{
+				$userHasExistingObjects = false;
+			}
+		}
+		return $userHasExistingObjects;
+	}
 }

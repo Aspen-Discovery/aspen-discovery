@@ -124,34 +124,15 @@ class UserAccount
 			if (UserAccount::isLoggedIn()) {
 				UserAccount::$userPermissions = array();
 
-				$roles = UserAccount::getActiveRoles();
 				$loadDefaultPermissions = false;
 				try{
-					$permissionIds = [];
-					require_once ROOT_DIR . '/sys/Administration/Permission.php';
-					require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
-					foreach ($roles as $roleId => $roleName){
-						$rolePermissions = new RolePermissions();
-						$rolePermissions->roleId = $roleId;
-						$rolePermissions->find();
-						while ($rolePermissions->fetch()){
-							$permissionIds[$rolePermissions->permissionId] = $rolePermissions->permissionId;
-						}
-					}
-					foreach ($permissionIds as $permissionId){
-						$permission = new Permission();
-						$permission->id = $permissionId;
-						if ($permission->find(true)){
-							if (!in_array($permission->name, UserAccount::$userPermissions)){
-								UserAccount::$userPermissions[] = $permission->name;
-							}
-						}
-					}
+					UserAccount::$userPermissions = UserAccount::getActiveUserObj()->getPermissions();
 				}catch (Exception $e){
 					$loadDefaultPermissions = true;
 				}
-				if ($loadDefaultPermissions || count(UserAccount::$userPermissions) == 0){
+				if ($loadDefaultPermissions){
 					//Permission system has not been setup, load default permissions
+					$roles = UserAccount::getActiveRoles();
 					foreach ($roles as $roleId => $roleName){
 						$role = new Role();
 						$role->roleId = $roleId;

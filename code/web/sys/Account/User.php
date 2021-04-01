@@ -264,7 +264,7 @@ class User extends DataObject
 				}
 			}
 
-			//Setup masquerading as different users
+			//Setup a test role if provided
 			$testRole = '';
 			if (isset($_REQUEST['test_role'])){
 				$testRole = $_REQUEST['test_role'];
@@ -292,15 +292,16 @@ class User extends DataObject
 			}
 		}
 
-		$masqueradeMode = UserAccount::isUserMasquerading();
-		if ($masqueradeMode && !$isGuidingUser) {
-			if (is_null($this->_masqueradingRoles)) {
-				$guidingUser = UserAccount::getGuidingUserObject();
-				$guidingUserRoles = $guidingUser->getRoles(true);
-				$this->_masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
-			}
-			return $this->_masqueradingRoles;
-		}
+		//We don't want to hide which roles are shown based on the masquerade, we will need to restrict permissions.
+//		$masqueradeMode = UserAccount::isUserMasquerading();
+//		if ($masqueradeMode && !$isGuidingUser) {
+//			if (is_null($this->_masqueradingRoles)) {
+//				$guidingUser = UserAccount::getGuidingUserObject();
+//				$guidingUserRoles = $guidingUser->getRoles(true);
+//				$this->_masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
+//			}
+//			return $this->_masqueradingRoles;
+//		}
 		return $this->_roles;
 	}
 
@@ -2418,15 +2419,56 @@ class User extends DataObject
 		return $sections;
 	}
 
-	public function getPermissions(){
+	public function getPermissions($isGuidingUser = false){
 		if ($this->_permissions == null){
 			$this->_permissions = [];
 			$roles = $this->getRoles();
 			foreach ($roles as $role){
 				$this->_permissions = array_merge($this->_permissions, $role->getPermissions());
 			}
+
+			if (!$isGuidingUser) {
+				$masqueradeMode = UserAccount::isUserMasquerading();
+				if ($masqueradeMode && !$isGuidingUser) {
+					$guidingUser = UserAccount::getGuidingUserObject();
+					$guidingUserPermissions = $guidingUser->getPermissions(true);
+					$this->_permissions = $this->filterPermissionsForMasquerade($this->_permissions, $guidingUserPermissions);
+				}
+			}
 		}
 		return $this->_permissions;
+	}
+
+	/**
+	 * Filter permissions to make sure that we don't gain escalated permissions by masquerading.
+	 * But, we also don't want to have permissions the user doesn't while masquerading.
+	 *
+	 * @param string[] $userPermissions
+	 * @param string[] $guidingUserPermissions
+	 * @return array
+	 */
+	public function filterPermissionsForMasquerade($userPermissions, $guidingUserPermissions){
+		$validPermissions = [];
+		foreach ($userPermissions as $permissionName){
+			if (in_array($permissionName, $guidingUserPermissions)){
+				$validPermissions[] = $permissionName;
+			}else{
+				//Check to see if the guiding user has a permission that is more inclusive than the user we are masquerading as
+				if (strpos($permissionName, 'Administer Library') === 0){
+					$tmpPermissionName = str_replace('Administer Library', 'Administer All', $permissionName);
+					if (in_array($tmpPermissionName, $guidingUserPermissions)){
+						$validPermissions[] = $permissionName;
+					}
+				}elseif ($permissionName == 'Administer Home Location' && (in_array('Administer Home Library Locations', $guidingUserPermissions) ||in_array('Administer All Locations', $guidingUserPermissions) )){
+					$validPermissions[] = $permissionName;
+				}elseif ($permissionName == 'Administer Home Library Locations' && (in_array('Administer All Locations', $guidingUserPermissions) )){
+					$validPermissions[] = $permissionName;
+				}elseif ($permissionName == 'Administer Home Library' && (in_array('Administer All Libraries', $guidingUserPermissions) )){
+					$validPermissions[] = $permissionName;
+				}
+			}
+		}
+		return $validPermissions;
 	}
 
 	/**
