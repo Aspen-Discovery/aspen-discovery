@@ -324,7 +324,6 @@ class UserAccount
 		$userData = false;
 		if (isset($_SESSION['activeUserId'])) {
 			$activeUserId = $_SESSION['activeUserId'];
-			/** @var Memcache $memCache */
 			global $memCache;
 			global $serverName;
 
