@@ -1733,7 +1733,7 @@ class UserAPI extends Action
 		$results = array('success' => false, 'message' => 'Unknown error loading patronId');
 		if (isset($_REQUEST['username'])){
 			$user = UserAccount::getUserByBarcode($_REQUEST['username']);
-			if ($user->find(true)){
+			if ($user != false){
 				$results = array('success' => true, 'id' => $user->id, 'patronId' => $user->username, 'displayName' => $user->displayName);
 			}else{
 				$results['message'] = 'Invalid Patron';
