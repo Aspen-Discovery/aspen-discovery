@@ -2648,7 +2648,7 @@ class Koha extends AbstractIlsDriver
 		//Get expiration information
 		/** @noinspection SqlResolve */
 		$lookupUserQuery = "SELECT dateexpiry from borrowers where borrowernumber = {$patron->username}";
-		$lookupUserResult = mysqli_query($this->dbConnection, $lookupUserQuery, PDO::FETCH_ASSOC);
+		$lookupUserResult = mysqli_query($this->dbConnection, $lookupUserQuery, MYSQLI_USE_RESULT);
 		if ($lookupUserResult) {
 			$userFromDb = $lookupUserResult->fetch_assoc();
 			$dateExpiry = $userFromDb['dateexpiry'];
