@@ -899,6 +899,14 @@ function getUserUpdates()
 				'ALTER TABLE user_checkout ADD column linkUrl VARCHAR(255)',
 			]
 		],
+
+		'user_account_summary_expiration_date_extension' => [
+			'title' => 'Account Summary enlarge expiration dates',
+			'description' => 'Update Account Summary to allow expiration dates that are far in the future',
+			'sql' => [
+				'ALTER TABLE user_account_summary CHANGE COLUMN expirationDate expirationDate BIGINT DEFAULT 0',
+			]
+		]
 	);
 }
 
