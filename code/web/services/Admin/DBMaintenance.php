@@ -269,6 +269,22 @@ class Admin_DBMaintenance extends Admin_Admin
 						'ALTER TABLE account_profiles ADD COLUMN staffUsername VARCHAR(100) default null',
 						'ALTER TABLE account_profiles ADD COLUMN staffPassword VARCHAR(50) default null'
 					]
+				],
+
+				'account_profiles_workstation_id' => [
+					'title' => 'Account Profile Workstation ID',
+					'description' => 'Add Workstation ID to support Polaris',
+					'sql' => [
+						"ALTER TABLE account_profiles ADD COLUMN workstationId VARCHAR(10) default ''"
+					]
+				],
+
+				'account_profiles_domain' => [
+					'title' => 'Account Profile domain',
+					'description' => 'Add domain to support Polaris',
+					'sql' => [
+						"ALTER TABLE account_profiles ADD COLUMN domain VARCHAR(100) default ''"
+					]
 				]
 			],
 			$user_updates,

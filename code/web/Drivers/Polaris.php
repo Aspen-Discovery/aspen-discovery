@@ -220,7 +220,7 @@ class Polaris extends AbstractIlsDriver
 				$curHold->volume = $holdInfo->VolumeNumber;
 
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($curHold->recordId); // This needs the $carlID
+				$recordDriver = new MarcRecordDriver((string)$curHold->recordId);
 				if ($recordDriver->isValid()){
 					$curHold->updateFromRecordDriver($recordDriver);
 				}
@@ -244,20 +244,91 @@ class Polaris extends AbstractIlsDriver
 
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
 	{
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
-		$body = new stdClass();
-		$body->PatronID = $patron->username;
-		$body->BibID = $recordId;
-		if (!empty($itemId)){
-			$body->ItemBarcode = $itemId;
+		if (strpos($recordId, ':') !== false){
+			list(,$shortId) = explode(':', $recordId);
+		}else{
+			$shortId = $recordId;
 		}
-		$body->PickupOrgID = $pickupBranch;
-		//TODO: Volume holds
-		//TODO: Need to set the Workstation
-		$body->WorkstationID = 1;
-		$response = $this->getWebServiceResponse($polarisUrl, 'POST', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
-		if ($response && $this->lastResponseCode == 200){
 
+		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $shortId);
+		if (!$record) {
+			$title = null;
+		} else {
+			$title = $record->getTitle();
+		}
+
+		global $offlineMode;
+		if ($offlineMode) {
+			require_once ROOT_DIR . '/sys/OfflineHold.php';
+			$offlineHold                = new OfflineHold();
+			$offlineHold->bibId         = $shortId;
+			$offlineHold->patronBarcode = $patron->getBarcode();
+			$offlineHold->patronId      = $patron->id;
+			$offlineHold->timeEntered   = time();
+			$offlineHold->status        = 'Not Processed';
+			if ($offlineHold->insert()) {
+				//TODO: use bib or bid ??
+				return array(
+					'title' => $title,
+					'bib' => $shortId,
+					'success' => true,
+					'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
+			} else {
+				return array(
+					'title' => $title,
+					'bib' => $shortId,
+					'success' => false,
+					'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
+			}
+
+		} else {
+			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
+			$body = new stdClass();
+			$body->PatronID = (int)$patron->username;
+			$body->BibID = (int)$recordId;
+			if (!empty($itemId)) {
+				$body->ItemBarcode = $itemId;
+			}
+			$body->PickupOrgID = (int)$pickupBranch;
+			//TODO: Volume holds
+			//$body->VolumeNumber = '';
+			//Need to set the Workstation
+			$body->WorkstationID = (int)$this->accountProfile->workstationId;
+			//Get the ID of the staff user
+			$body->UserID = (int)$this->getStaffUserId();
+			$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
+			$response = $this->getWebServiceResponse($polarisUrl, 'POST', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+			$hold_result = array();
+			if ($response && $this->lastResponseCode == 200) {
+				$jsonResult = json_decode($response);
+				if ($jsonResult->PAPIErrorCode != 0){
+					$hold_result['success'] = false;
+					$hold_result['message'] = 'Your hold could not be placed. ';
+					if (IPAddress::showDebuggingInformation()){
+						$hold_result['message'] .= " ({$jsonResult->PAPIErrorCode})";
+					}
+				}else {
+					$hold_result['success'] = true;
+					$hold_result['message'] = translate(['text' => "ils_hold_success", 'defaultText' => "Your hold was placed successfully."]);
+					if (isset($jsonResult->QueuePosition)) {
+						$hold_result['message'] .= translate(['text'=>"ils_hold_success_position", 'defaultText'=>"&nbsp;You are number <b>%1%</b> in the queue.", '1' => $jsonResult->QueuePosition]);
+					}
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			} else {
+				$hold_result['success'] = false;
+				$hold_result['message'] = 'Your hold could not be placed. ';
+				if (IPAddress::showDebuggingInformation()){
+					$hold_result['message'] .= " (HTTP Code: {$this->lastResponseCode})";
+				}
+			}
+
+			$hold_result['title'] = $title;
+			$hold_result['bid']   = $shortId;
+
+			return $hold_result;
 		}
 	}
 
@@ -477,7 +548,46 @@ class Polaris extends AbstractIlsDriver
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
 	{
-		// TODO: Implement freezeHold() method.
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToFreezeId/inactive";
+		$body = new stdClass();
+		$body->UserID = $staffInfo['polarisId'];
+		if ($dateToReactivate == null){
+			//User didn't pick a specific date, pick a day that is 2 years from now.
+			$curTime = time();
+			$curTime += 365 * 2 * 24 * 60 * 60;
+			$formattedTime = date('Y-m-d\TH:i:s.00', $curTime);
+			$body->ActivationDate = $formattedTime;
+		}else {
+			$body->ActivationDate = $dateToReactivate;
+		}
+
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			if ($jsonResponse->PAPIErrorCode == 0) {
+				$patron->forceReloadOfHolds();
+				return array(
+					'success' => true,
+					'message' => "The hold has been frozen."
+				);
+			}else{
+				$message = "The hold could not be frozen. {$jsonResponse->ErrorMessage}";
+				return array(
+					'success' => false,
+					'message' => $message
+				);
+			}
+		}else{
+			$message = "The hold could not be frozen.";
+			if (IPAddress::showDebuggingInformation()){
+				$message .= " (HTTP Code: {$this->lastResponseCode})";
+			}
+			return array(
+				'success' => false,
+				'message' => $message
+			);
+		}
 	}
 
 	function thawHold(User $patron, $recordId, $itemToThawId)
@@ -544,6 +654,30 @@ class Polaris extends AbstractIlsDriver
 		} else {
 			return 0;
 		}
+	}
+
+	private function getStaffUserInfo()
+	{
+		if (!array_key_exists($this->accountProfile->staffUsername, Polaris::$accessTokensForUsers)) {
+			$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/authenticator/staff";
+			$authenticationData = new stdClass();
+			$authenticationData->Domain = $this->accountProfile->domain;
+			$authenticationData->Username = $this->accountProfile->staffUsername;
+			$authenticationData->Password = $this->accountProfile->staffPassword;
+
+			$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', json_encode($authenticationData));
+			if ($response) {
+				$jsonResponse = json_decode($response);
+				Polaris::$accessTokensForUsers[$this->accountProfile->staffUsername] = [
+					'accessToken' => $jsonResponse->AccessToken,
+					'accessSecret' => $jsonResponse->AccessSecret,
+					'polarisId' => $jsonResponse->PolarisUserID
+				];
+			} else {
+				Polaris::$accessTokensForUsers[$this->accountProfile->staffUsername] = false;
+			}
+		}
+		return Polaris::$accessTokensForUsers[$this->accountProfile->staffUsername];
 	}
 
 }

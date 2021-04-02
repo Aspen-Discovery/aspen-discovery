@@ -22,9 +22,11 @@ class AccountProfile extends DataObject {
 	public $sipPort;
 	public $oAuthClientId;
 	public $oAuthClientSecret;
+	public $domain;
 	public $staffUsername;
 	public $staffPassword;
 	public /** @noinspection PhpUnused */ $apiVersion;
+	public $workstationId;
 	public $weight;
 
 	private $_indexingProfile = false;
@@ -58,15 +60,17 @@ class AccountProfile extends DataObject {
 					'sipPassword' => array('property' => 'sipPassword', 'type' => 'text', 'label' => 'SIP 2 Password', 'maxLength' => 50, 'description' => 'Password to use when connecting', 'required' => false),
 				),
 			),
-			'oAuthSection'=>array('property'=>'oAuthSection', 'type' => 'section', 'label' =>'OAuth2 Information (optional)', 'hideInLists' => true,
+			'oAuthSection'=>array('property'=>'oAuthSection', 'type' => 'section', 'label' =>'API/OAuth2 Information (optional)', 'hideInLists' => true,
 				'helpLink' => '', 'properties' => array(
-					'oAuthClientId' => array('property' => 'oAuthClientId', 'type' => 'text', 'label' => 'OAuth2 ClientId', 'maxLength' => 36, 'description' => 'The Client ID to use when making a connection to APIs', 'required' => false),
-					'oAuthClientSecret' => array('property' => 'oAuthClientSecret', 'type' => 'text', 'label' => 'OAuth2 Secret', 'maxLength' => 36, 'description' => 'The Client Secret to use when making a connection to APIs', 'required' => false),
-					'apiVersion' => array('property'=>'apiVersion', 'type'=>'text','label'=>'API Version', 'maxLength' => 10, 'description'=>'Optional description for the version of the API. Required for Sierra.')
+					'oAuthClientId' => array('property' => 'oAuthClientId', 'type' => 'text', 'label' => 'API/OAuth2 ClientId', 'maxLength' => 36, 'description' => 'The Client ID to use when making a connection to APIs', 'required' => false),
+					'oAuthClientSecret' => array('property' => 'oAuthClientSecret', 'type' => 'text', 'label' => 'API/OAuth2 Secret', 'maxLength' => 36, 'description' => 'The Client Secret to use when making a connection to APIs', 'required' => false),
+					'apiVersion' => array('property'=>'apiVersion', 'type'=>'text','label'=>'API Version', 'maxLength' => 10, 'description'=>'Optional description for the version of the API. Required for Sierra.'),
+					'workstationId' => array('property'=>'workstationId', 'type'=>'text','label'=>'Workstation Id', 'maxLength' => 10, 'description'=>'Optional workstation ID for transactions. Required for Polaris.')
 				),
 			),
 			'staffUser'=>array('property'=>'staffUser', 'type' => 'section', 'label' =>'Staff Account Information (optional)', 'hideInLists' => true,
 				'helpLink' => '', 'properties' => array(
+					'domain' => array('property' => 'domain', 'type' => 'text', 'label' => 'Staff Domain', 'maxLength' => 100, 'description' => 'The domain to use when performing staff actions', 'required' => false),
 					'staffUsername' => array('property' => 'staffUsername', 'type' => 'text', 'label' => 'Staff Username', 'maxLength' => 100, 'description' => 'The Staff Username to use when performing staff actions', 'required' => false),
 					'staffPassword' => array('property' => 'staffPassword', 'type' => 'text', 'label' => 'Staff Password', 'maxLength' => 50, 'description' => 'The Staff Password to use when performing staff actions', 'required' => false),
 				),
