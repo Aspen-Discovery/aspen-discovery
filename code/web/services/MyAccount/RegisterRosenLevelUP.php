@@ -67,10 +67,11 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				$this->student_username = $user->cat_username;
 				if (!empty($user->getHomeLocation()->subdomain)) {
 					$this->student_school_code = $user->getHomeLocation()->subdomain;
+					$this->student_school_name = $user->getHomeLocation()->displayName;
 				} else {
-					$this->student_school_code = $user->getHomeLocation()->code;
+					$this->student_school_code = 0;
+					$this->student_school_name = "Library User";
 				}
-				$this->student_school_name = $user->getHomeLocation()->displayName;
 
 				if (!empty($this->rosenLevelUPSetting->lu_ptypes_k) && preg_match($this->rosenLevelUPSetting->lu_ptypes_k, $user->patronType) == 1) {
 					$this->student_grade_level = 'K';
@@ -222,7 +223,11 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$locationList[0] = "school not listed";
 		$locationList[$this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code] = $this->student_school_name;
 		$fields[] = array('property' => 'student_school', 'default' => $this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
-		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => array('K', '1', '2'), 'required' => true);
+		$studentGradeLevelsList = array();
+		$studentGradeLevelsList['K'] = 'Pre-K and K';
+		$studentGradeLevelsList['1'] = '1';
+		$studentGradeLevelsList['2'] = '2+';
+		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => $studentGradeLevelsList, 'required' => true);
 		$fields[] = array('property' => 'parent_username', 'default' => $this->parent_username, 'type' => 'text', 'label' => 'Parent Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true, 'repeat' => true);
 		$fields[] = array('property' => 'parent_first_name', 'default' => $this->parent_first_name, 'type' => 'text', 'label' => 'Parent First Name', 'maxLength' => 40, 'required' => true);
