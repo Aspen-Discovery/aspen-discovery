@@ -30,8 +30,12 @@ class WebBuilder_StaffMembers extends ObjectEditor
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		$object->find();
+		if (!UserAccount::userHasPermission('Administer All Staff Members')){
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$object->libraryId = $library->libraryId;
+		}
 		$objectList = array();
+		$object->find();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}

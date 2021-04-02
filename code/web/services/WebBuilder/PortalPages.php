@@ -30,10 +30,16 @@ class WebBuilder_PortalPages extends ObjectEditor
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		$object->find();
+		$userHasExistingObjects = true;
+		if (!UserAccount::userHasPermission('Administer All Custom Pages')){
+			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryPortalPage', 'portalPageId');
+		}
 		$objectList = array();
-		while ($object->fetch()) {
-			$objectList[$object->id] = clone $object;
+		if ($userHasExistingObjects) {
+			$object->find();
+			while ($object->fetch()) {
+				$objectList[$object->id] = clone $object;
+			}
 		}
 		return $objectList;
 	}
