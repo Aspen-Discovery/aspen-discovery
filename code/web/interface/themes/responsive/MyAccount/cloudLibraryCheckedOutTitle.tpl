@@ -92,8 +92,7 @@
 				{* Actions for Title *}
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
-						{assign var=recordDriver value=$record->getRecordDriver() }
-						{assign var=accessOnlineLink value=$recordDriver->getAccessOnlineLinkUrl($record->userId)}
+						{assign var=accessOnlineLink value=$record->accessOnlineUrl}
 						{if !empty($accessOnlineLink)}
 							<a href="{$accessOnlineLink}" target="_blank" class="btn btn-sm btn-action btn-wrap">{translate text='Open in Cloud Library'}</a>
 						{/if}
