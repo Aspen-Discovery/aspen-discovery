@@ -103,11 +103,18 @@ class Polaris extends AbstractIlsDriver
 					$curCheckout->renewCount = $itemOut->RenewalCount;
 					$curCheckout->canRenew = $itemOut->RenewalCount < $itemOut->RenewalLimit;
 					$curCheckout->renewalId = $itemOut->ItemID;
+					$curCheckout->renewIndicator = $itemOut->ItemID;
 
 					$curCheckout->title = $itemOut->Title;
 					$curCheckout->author = $itemOut->Author;
 					$curCheckout->formats = [$itemOut->FormatDescription];
 					$curCheckout->callNumber = $itemOut->CallNumber;
+
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
+					if ($recordDriver->isValid()){
+						$curCheckout->updateFromRecordDriver($recordDriver);
+					}
 
 					$sortKey = "{$curCheckout->source}_{$curCheckout->sourceId}_$index";
 					$checkedOutTitles[$sortKey] = $curCheckout;
@@ -129,7 +136,46 @@ class Polaris extends AbstractIlsDriver
 
 	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
-		// TODO: Implement renewCheckout() method.
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/itemsout/$itemId";
+		$body = new stdClass();
+		$body->Action = 'renew';
+		$body->LogonBranchID = $patron->getHomeLocationCode();
+		$body->LogonUserID = (string)$staffInfo['polarisId'];
+		$body->LogonWorkstationID = $this->accountProfile->workstationId;
+		$body->RenewData = new stdClass();
+		$body->RenewData->IgnoreOverrideErrors = false;
+
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			if ($jsonResponse->PAPIErrorCode == 0) {
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfCheckouts();
+				return array(
+					'itemId' => $itemId,
+					'success' => true,
+					'message' => "Your item was successfully renewed"
+				);
+			}else{
+				$message = "The item could not be renewed. {$jsonResponse->ErrorMessage}";
+				return array(
+					'itemId' => $itemIndex,
+					'success' => false,
+					'message' => $message
+				);
+			}
+		}else{
+			$message = "The item could not be renewed";
+			if (IPAddress::showDebuggingInformation()){
+				$message .= " (HTTP Code: {$this->lastResponseCode})";
+			}
+			return array(
+				'itemId' => $itemIndex,
+				'success' => false,
+				'message' => $message
+			);
+		}
 	}
 
 	public function getHolds($patron)
@@ -156,6 +202,7 @@ class Polaris extends AbstractIlsDriver
 				$curHold->cancelId = $holdInfo->HoldRequestID;
 				$curHold->frozen = false;
 				$curHold->locationUpdateable = true;
+				$curHold->cancelable = true;
 				$isAvailable = false;
 				switch ($holdInfo->StatusID){
 					case 1:
@@ -174,16 +221,20 @@ class Polaris extends AbstractIlsDriver
 					case 5:
 						//In Transit
 						$curHold->status = $holdInfo->StatusDescription;
+						//TODO: This can be cancelled sometimes, depending on settings, but those settings are not returned.
+						//Allow cancellation and then let Polaris decide if it works or not.
 						break;
 					case 6:
 						//Held
 						$curHold->status = $holdInfo->StatusDescription;
 						$isAvailable = true;
 						$curHold->locationUpdateable = false;
+						$curHold->cancelable = false;
 						break;
 					case 7:
 						//Not Supplied
 						$curHold->status = $holdInfo->StatusDescription;
+						$curHold->cancelable = false;
 						break;
 					case 8:
 						//Unclaimed - Don't show this one
@@ -296,9 +347,10 @@ class Polaris extends AbstractIlsDriver
 			//Need to set the Workstation
 			$body->WorkstationID = (int)$this->accountProfile->workstationId;
 			//Get the ID of the staff user
-			$body->UserID = (int)$this->getStaffUserId();
+			$staffUserInfo = $this->getStaffUserInfo();
+			$body->UserID = (int)$staffUserInfo['polarisId'];
 			$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
-			$response = $this->getWebServiceResponse($polarisUrl, 'POST', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+			$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', json_encode($body));
 			$hold_result = array();
 			if ($response && $this->lastResponseCode == 200) {
 				$jsonResult = json_decode($response);
@@ -334,7 +386,35 @@ class Polaris extends AbstractIlsDriver
 
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
-		// TODO: Implement cancelHold() method.
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$cancelId/cancelled?wsid={$this->accountProfile->workstationId}&userid={$staffInfo['polarisId']}";
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			if ($jsonResponse->PAPIErrorCode == 0) {
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
+				return array(
+					'success' => true,
+					'message' => "The hold has been cancelled."
+				);
+			}else{
+				$message = "The hold could not be cancelled. {$jsonResponse->ErrorMessage}";
+				return array(
+					'success' => false,
+					'message' => $message
+				);
+			}
+		}else{
+			$message = "The hold could not be cancelled.";
+			if (IPAddress::showDebuggingInformation()){
+				$message .= " (HTTP Code: {$this->lastResponseCode})";
+			}
+			return array(
+				'success' => false,
+				'message' => $message
+			);
+		}
 	}
 
 	public function patronLogin($username, $password, $validatedViaSSO)
@@ -592,12 +672,70 @@ class Polaris extends AbstractIlsDriver
 
 	function thawHold(User $patron, $recordId, $itemToThawId)
 	{
-		// TODO: Implement thawHold() method.
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToThawId/active";
+		$body = new stdClass();
+		$body->UserID = $staffInfo['polarisId'];
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			if ($jsonResponse->PAPIErrorCode == 0) {
+				$patron->forceReloadOfHolds();
+				return array(
+					'success' => true,
+					'message' => "The hold has been thawed."
+				);
+			}else{
+				$message = "The hold could not be thawed. {$jsonResponse->ErrorMessage}";
+				return array(
+					'success' => false,
+					'message' => $message
+				);
+			}
+		}else{
+			$message = "The hold could not be thawed.";
+			if (IPAddress::showDebuggingInformation()){
+				$message .= " (HTTP Code: {$this->lastResponseCode})";
+			}
+			return array(
+				'success' => false,
+				'message' => $message
+			);
+		}
 	}
 
 	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
-		// TODO: Implement changeHoldPickupLocation() method.
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToUpdateId/pickupbranch?wsid={$this->accountProfile->workstationId}&userid={$staffInfo['polarisId']}&pickupbranchid=$newPickupLocation";
+		$body = new stdClass();
+		$body->UserID = $staffInfo['polarisId'];
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			if ($jsonResponse->PAPIErrorCode == 0) {
+				$patron->forceReloadOfHolds();
+				return array(
+					'success' => true,
+					'message' => translate(['text'=>'ils_change_pickup_location_success', 'The pickup location of your hold was changed successfully.'])
+				);
+			}else{
+				$message = translate(['text'=>'ils_change_pickup_location_failed', 'Sorry, the pickup location of your hold could not be changed.']) . " {$jsonResponse->ErrorMessage}";;
+				return array(
+					'success' => false,
+					'message' => $message
+				);
+			}
+		}else{
+			$message = translate(['text'=>'ils_change_pickup_location_failed', 'Sorry, the pickup location of your hold could not be changed.']);
+			if (IPAddress::showDebuggingInformation()){
+				$message .= " (HTTP Code: {$this->lastResponseCode})";
+			}
+			return array(
+				'success' => false,
+				'message' => $message
+			);
+		}
 	}
 
 	function updatePatronInfo(User $patron, $canUpdateContactInfo)

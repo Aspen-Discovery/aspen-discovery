@@ -200,6 +200,9 @@ class CurlWrapper
 		} elseif ($httpMethod == 'PUT') {
 			//curl_setopt($this->curl_connection, CURLOPT_PUT, true);
 			curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, "PUT");
+			if ($body === null || $body === false) {
+				$this->addCustomHeaders(['Content-Length: 0'], false);
+			}
 		} else {
 			curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, $httpMethod);
 		}
