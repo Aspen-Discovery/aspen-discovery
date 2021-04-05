@@ -61,7 +61,7 @@ class Polaris extends AbstractIlsDriver
 	 * @return stdClass|null
 	 */
 	private function getBasicDataResponse(string $patronBarcode, string $password){
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patronBarcode}/basicdata";
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patronBarcode}/basicdata?addresses=1";
 		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patronBarcode, $password));
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
@@ -549,9 +549,19 @@ class Polaris extends AbstractIlsDriver
 				$user->displayName = '';
 			}
 			$user->phone = $patronBasicData->PhoneNumber;
+			if ($user)
 			$user->email = $patronBasicData->EmailAddress;
 
 			//TODO: Load address information
+			$addresses = $patronBasicData->PatronAddresses;
+			if (count($addresses) > 0){
+				$address = reset($addresses);
+				$user->_address1 = $address->StreetOne;
+				$user->_address2 = $address->StreetTwo;
+				$user->_city = $address->City;
+				$user->_state = $address->State;
+				$user->_zip = $address->PostalCode;
+			}
 
 			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patronBarcode}/circulationblocks";
 			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$patronBarcode]['accessToken']);
@@ -836,7 +846,18 @@ class Polaris extends AbstractIlsDriver
 			$jsonResponse = json_decode($response);
 			$finesRows = $jsonResponse->PatronAccountGetRows;
 			foreach ($finesRows as $fineRow){
-
+				$curFine = [
+					'fineId' => $fineRow->TransactionID,
+					'date' => $this->parsePolarisDate($fineRow->TransactionDate),
+					'type' => $fineRow->TransactionTypeDescription,
+					'reason' => $fineRow->FeeDescription,
+					'message' => $fineRow->Title . " " . $fineRow->Author . ' ' . $fineRow->FreeTextNote,
+					'amountVal' => $fineRow->TransactionAmount,
+					'amountOutstandingVal' => $fineRow->OutstandingAmount,
+					'amount' => $currencyFormatter->formatCurrency($fineRow->TransactionAmount, $currencyCode),
+					'amountOutstanding' => $currencyFormatter->formatCurrency($fineRow->OutstandingAmount, $currencyCode),
+				];
+				$fines[] = $curFine;
 			}
 		}
 		return $fines;
@@ -912,4 +933,8 @@ class Polaris extends AbstractIlsDriver
 		return Polaris::$accessTokensForUsers[$this->accountProfile->staffUsername];
 	}
 
+	public function findNewUser($patronBarcode){
+		//TODO: Implement findNewUser to allow masquerade
+		return false;
+	}
 }
