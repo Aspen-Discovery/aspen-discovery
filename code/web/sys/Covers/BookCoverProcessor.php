@@ -135,13 +135,6 @@ class BookCoverProcessor{
 
 			if ($this->type == 'list' && $this->getUploadedListCover($this->id)){
 				return true;
-			}elseif ($this->type != 'list'){
-				//Check to see if we have have an uploaded cover for the list
-				if ($this->loadGroupedWork()){
-					if ($this->getUploadedListCover($this->id)){
-						return true;
-					}
-				}
 			}
 
 			if ($this->type != 'grouped_work' && $this->getCoverFromMarc()) {
