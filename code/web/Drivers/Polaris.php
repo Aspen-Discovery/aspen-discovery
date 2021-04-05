@@ -76,13 +76,13 @@ class Polaris extends AbstractIlsDriver
 		return true;
 	}
 
-	public function getCheckouts(User $user)
+	public function getCheckouts(User $patron)
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
 
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$user->getBarcode()}/itemsout/all";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($user->getBarcode(), $user->getPasswordOrPin()));
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/itemsout/all";
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			$itemsOutList = $jsonResponse->PatronItemsOutGetRows;
@@ -92,7 +92,7 @@ class Polaris extends AbstractIlsDriver
 					$curCheckout->type = 'ils';
 					$curCheckout->source = $this->getIndexingProfile()->name;
 					$curCheckout->sourceId = $itemOut->ItemID;
-					$curCheckout->userId = $user->id;
+					$curCheckout->userId = $patron->id;
 
 					$curCheckout->recordId = $itemOut->BibID;
 					$curCheckout->itemId = $itemOut->ItemID;
@@ -392,7 +392,6 @@ class Polaris extends AbstractIlsDriver
 			$offlineHold->timeEntered   = time();
 			$offlineHold->status        = 'Not Processed';
 			if ($offlineHold->insert()) {
-				//TODO: use bib or bid ??
 				return array(
 					'title' => $title,
 					'bib' => $shortId,
@@ -818,7 +817,29 @@ class Polaris extends AbstractIlsDriver
 
 	public function getFines(User $patron, $includeMessages = false)
 	{
-		// TODO: Implement getFines() method.
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+
+		global $activeLanguage;
+
+		$currencyCode = 'USD';
+		$variables = new SystemVariables();
+		if ($variables->find(true)){
+			$currencyCode = $variables->currencyCode;
+		}
+
+		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/account/outstanding";
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$fines = [];
+		if ($response && $this->lastResponseCode == 200){
+			$jsonResponse = json_decode($response);
+			$finesRows = $jsonResponse->PatronAccountGetRows;
+			foreach ($finesRows as $fineRow){
+
+			}
+		}
+		return $fines;
 	}
 
 	public function getWebServiceResponse($query, $method = 'GET', $patronPassword = '', $body = false){

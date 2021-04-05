@@ -213,15 +213,15 @@ class HooplaDriver extends AbstractEContentDriver{
 	}
 
 	/**
-	 * @param $user User
+	 * @param $patron User
 	 * @return Checkout[]
 	 */
-	public function getCheckouts($user)
+	public function getCheckouts($patron)
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutItems = array();
 		if ($this->hooplaEnabled) {
-			$hooplaCheckedOutTitlesURL = $this->getHooplaBasePatronURL($user);
+			$hooplaCheckedOutTitlesURL = $this->getHooplaBasePatronURL($patron);
 			if (!empty($hooplaCheckedOutTitlesURL)) {
 				$hooplaCheckedOutTitlesURL  .= '/checkouts/current';
 				$checkOutsResponse = $this->getAPIResponse($hooplaCheckedOutTitlesURL);
@@ -232,7 +232,7 @@ class HooplaDriver extends AbstractEContentDriver{
 						$currentTitle = new Checkout();
 						$currentTitle->type = 'hoopla';
 						$currentTitle->source = 'hoopla';
-						$currentTitle->userId = $user->id;
+						$currentTitle->userId = $patron->id;
 						$currentTitle->sourceId = $checkOut->contentId;
 						$currentTitle->recordId = $checkOut->contentId;
 						$currentTitle->title = $checkOut->title;

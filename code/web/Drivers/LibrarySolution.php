@@ -279,14 +279,14 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 * @return Checkout[]        Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts($user){
+	public function getCheckouts($patron){
 		$transactions = array();
-		if ($this->loginPatronToLSS($user->cat_username, $user->cat_password)){
+		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)){
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/loans/0/20/Status?_=' . time() * 1000;

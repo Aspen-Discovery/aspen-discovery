@@ -356,15 +356,15 @@ class Millennium extends AbstractIlsDriver
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 * @return Checkout[]        Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts( $user) {
+	public function getCheckouts($patron) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
-		return $millenniumCheckouts->getCheckouts($user, $this->getIndexingProfile());
+		return $millenniumCheckouts->getCheckouts($patron, $this->getIndexingProfile());
 	}
 
 	/**

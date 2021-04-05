@@ -58,26 +58,26 @@ class Axis360Driver extends AbstractEContentDriver
 	 * This is responsible for retrieving all checkouts (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $user)
+	public function getCheckouts(User $patron)
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
-		if (isset($this->checkouts[$user->id])){
-			return $this->checkouts[$user->id];
+		if (isset($this->checkouts[$patron->id])){
+			return $this->checkouts[$patron->id];
 		}
 		$checkouts = [];
-		$settings = $this->getSettings($user);
+		$settings = $this->getSettings($patron);
 		if ($settings == false){
 			return $checkouts;
 		}
-		if ($this->getAxis360AccessToken($user)){
+		if ($this->getAxis360AccessToken($patron)){
 			$checkoutsUrl = $settings->apiUrl . "/Services/VendorAPI/availability/v3_1";
 			$params = [
 				'statusFilter' => 'CHECKOUT',
-				'patronId' => $user->getBarcode()
+				'patronId' => $patron->getBarcode()
 			];
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -91,7 +91,7 @@ class Axis360Driver extends AbstractEContentDriver
 			$status = $xmlResults->status;
 			if ($status->code == '0000'){
 				foreach ($xmlResults->title as $title){
-					$this->loadCheckoutInfo($title, $checkouts, $user);
+					$this->loadCheckoutInfo($title, $checkouts, $patron);
 				}
 			}else{
 				global $logger;
