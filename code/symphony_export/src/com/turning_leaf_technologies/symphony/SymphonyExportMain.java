@@ -493,6 +493,10 @@ public class SymphonyExportMain {
 			try {
 				FileInputStream marcFileStream = new FileInputStream(curBibFile);
 				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				//Symphony handles bib records with a large number of items by breaking the MARC export into multiple records. The records are always sequential.
+				//To solve this, we need to track which id we processed last and if the record has already been processed, we will need to append items from the new
+				//record to the old record and then reprocess it.
+				RecordIdentifier lastIdentifier = null;
 				while (catalogReader.hasNext()) {
 					logEntry.incProducts();
 					try{
@@ -507,8 +511,13 @@ public class SymphonyExportMain {
 							}
 						}else if (!recordIdentifier.isSuppressed()) {
 							String recordNumber = recordIdentifier.getIdentifier();
+							BaseMarcRecordGrouper.MarcStatus marcStatus;
+							if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)){
+								marcStatus = recordGroupingProcessor.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber, logger);
+							}else{
+								marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
+							}
 
-							BaseMarcRecordGrouper.MarcStatus marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
 							if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
 								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED, null);
 								if (permanentId == null){
@@ -536,6 +545,7 @@ public class SymphonyExportMain {
 							//Delete the record since it is suppressed
 							deleteRecord = true;
 						}
+						lastIdentifier = recordIdentifier;
 						if (deleteRecord){
 							RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
 							if (result.reindexWork){

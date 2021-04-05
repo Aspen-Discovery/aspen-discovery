@@ -541,7 +541,8 @@ public class MarcUtil {
 				marcFileStream.close();
 			}
 		}catch (Exception e){
-			logEntry.addNote("Could not read marc file " + marcFile.getAbsolutePath() + e.toString());
+			//This happens if the file has too many items. Ignore and read with permissive handler.
+			//logEntry.addNote("Could not read marc file, loading permissive " + marcFile.getAbsolutePath() + e.toString());
 		}
 
 		//If we got here, it didn't read successfully.  Try again using the Permissinve Reader

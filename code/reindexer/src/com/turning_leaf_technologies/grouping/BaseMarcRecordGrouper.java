@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	private final String recordNumberTag;
@@ -599,6 +598,33 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return marcRecordStatus;
 	}
 
+	public MarcStatus appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber, Logger logger) {
+		MarcStatus marcRecordStatus = MarcStatus.UNCHANGED;
+		//Copy the record to the individual marc path
+		if (recordNumber != null) {
+			File individualFile = indexingSettings.getFileForIlsRecord(recordNumber);
+			Record mergedRecord = MarcUtil.readIndividualRecord(individualFile, logEntry);
+
+			List<DataField> additionalItems = recordWithAdditionalItems.getDataFields(indexingSettings.getItemTag());
+			for (DataField additionalItem : additionalItems) {
+				mergedRecord.addVariableField(additionalItem);
+			}
+
+			long updatedChecksum = MarcUtil.getChecksum(recordWithAdditionalItems);
+			marcRecordStatus = MarcStatus.CHANGED;
+			try{
+				MarcUtil.outputMarcRecord(mergedRecord, individualFile, logger);
+				Long dateAdded = MarcUtil.getDateAddedForRecord(mergedRecord, recordNumber, indexingSettings.getName(), individualFile, logger);
+				updateMarcRecordChecksum(recordNumber, indexingSettings.getName(), updatedChecksum, dateAdded);
+			} catch (IOException e) {
+				logEntry.incErrors("Error writing marc", e);
+			}
+		} else {
+			logEntry.incErrors("Error did not find record number for MARC record");
+		}
+		return marcRecordStatus;
+	}
+
 	private Long getExistingChecksum(String recordNumber) {
 		IlsTitle curTitle = existingRecords.get(recordNumber);
 		if (curTitle != null) {
@@ -644,7 +670,6 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 	}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isValid() {
 		return isValid;
 	}

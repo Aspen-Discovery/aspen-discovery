@@ -549,10 +549,14 @@ class Polaris extends AbstractIlsDriver
 				$user->displayName = '';
 			}
 			$user->phone = $patronBasicData->PhoneNumber;
-			if ($user)
+			if ($user->phone == null){
+				$user->phone = $patronBasicData->PhoneNumber2;
+				if ($user->phone == null){
+					$user->phone = $patronBasicData->PhoneNumber3;
+				}
+			}
 			$user->email = $patronBasicData->EmailAddress;
 
-			//TODO: Load address information
 			$addresses = $patronBasicData->PatronAddresses;
 			if (count($addresses) > 0){
 				$address = reset($addresses);

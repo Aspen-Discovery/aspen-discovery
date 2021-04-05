@@ -1,15 +1,12 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.marc4j.MarcPermissiveStreamReader;
-import org.marc4j.MarcReader;
-import org.marc4j.MarcStreamReader;
 import org.marc4j.marc.*;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,9 +42,10 @@ abstract class MarcRecordProcessor {
 	 *
 	 * @param groupedWork the work to be updated
 	 * @param identifier the identifier to load information for
+	 * @param logEntry the log entry to store any errors
 	 */
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier){
-		Record record = loadMarcRecordFromDisk(identifier);
+	public void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
+		Record record = loadMarcRecordFromDisk(identifier, logEntry);
 
 		if (record != null){
 			try{
@@ -58,41 +56,9 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private Record loadMarcRecordFromDisk(String identifier) {
-		Record record = null;
+	private Record loadMarcRecordFromDisk(String identifier, BaseLogEntry logEntry) {
 		String individualFilename = getFileForIlsRecord(identifier);
-		try {
-			//Don't need to use a permissive reader here since we've written good individual MARCs as part of record grouping
-			//Actually we do need to since we can still get MARC records over the max length.
-			FileInputStream inputStream = new FileInputStream(individualFilename);
-			boolean usePermissiveMode = false;
-			try {
-				MarcReader marcReader = new MarcStreamReader(inputStream, "UTF8");
-				if (marcReader.hasNext()) {
-					record = marcReader.next();
-				}
-				if (record == null || record.hasErrors()) {
-					usePermissiveMode = true;
-				}
-			}catch (Exception e){
-				usePermissiveMode = true;
-			}
-			if (usePermissiveMode){
-				MarcReader marcReader = new MarcPermissiveStreamReader(inputStream, true, false, "UTF8");
-				if (marcReader.hasNext()) {
-					record = marcReader.next();
-				}
-				if (record != null && record.hasErrors()) {
-					logger.info("Errors loading MARC\r\n" + record.getErrors().toString());
-				}
-			}
-			inputStream.close();
-		}catch (FileNotFoundException fe){
-			logger.warn("Could not find MARC record at " + individualFilename + " for " + identifier);
-		} catch (Exception e) {
-			logger.error("Error reading data from ils file " + individualFilename, e);
-		}
-		return record;
+		return MarcUtil.readIndividualRecord(new File(individualFilename), logEntry);
 	}
 
 	private String getFileForIlsRecord(String recordNumber) {
@@ -424,7 +390,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
 	}
 
-	private static Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
+	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
 	private void loadLexileScore(GroupedWorkSolr groupedWork, Record record) {
 		List<DataField> targetAudiences = MarcUtil.getDataFields(record, "521");
 		for (DataField targetAudience : targetAudiences){
@@ -1420,7 +1386,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	private Pattern voxPattern = Pattern.compile(".*(vox books|vox reader|vox audio).*");
+	private final Pattern voxPattern = Pattern.compile(".*(vox books|vox reader|vox audio).*");
 	private void getFormatFromNotes(Record record, Set<String> result) {
 		// Check for formats in the 538 field
 		List<DataField> sysDetailsNotes2 = record.getDataFields("538");

@@ -837,9 +837,9 @@ public class GroupedWorkIndexer {
 				break;
 			default:
 				if (ilsRecordProcessors.containsKey(type)) {
-					ilsRecordProcessors.get(type).processRecord(groupedWork, identifier);
+					ilsRecordProcessors.get(type).processRecord(groupedWork, identifier, logEntry);
 				}else if (sideLoadProcessors.containsKey(type)){
-					sideLoadProcessors.get(type).processRecord(groupedWork, identifier);
+					sideLoadProcessors.get(type).processRecord(groupedWork, identifier, logEntry);
 				}else{
 					//This happens if a side load processor is deleted and all the related record don't get cleaned up.
 					logger.debug("Could not find a record processor for type " + type);
