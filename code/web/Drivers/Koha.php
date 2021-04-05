@@ -391,6 +391,7 @@ class Koha extends AbstractIlsDriver
 			if ($dateDue) {
 				$curCheckout->renewalDate = $dateDue->getTimestamp();
 				$dueTime = $dateDue->getTimestamp();
+				$renewalDate = date('M j, y', $curCheckout->renewalDate);
 			} else {
 				$renewalDate = 'Unknown';
 				$dueTime = null;

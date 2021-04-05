@@ -34,9 +34,9 @@ class WebBuilder_BasicPages extends ObjectEditor
 		if (!UserAccount::userHasPermission('Administer All Basic Pages')){
 			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryBasicPage', 'basicPageId');
 		}
-		$object->find();
 		$objectList = array();
 		if ($userHasExistingObjects) {
+			$object->find();
 			while ($object->fetch()) {
 				$objectList[$object->id] = clone $object;
 			}

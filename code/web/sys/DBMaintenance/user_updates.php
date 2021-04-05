@@ -899,6 +899,23 @@ function getUserUpdates()
 				'ALTER TABLE user_checkout ADD column linkUrl VARCHAR(255)',
 			]
 		],
+
+		'user_account_summary_expiration_date_extension' => [
+			'title' => 'Account Summary enlarge expiration dates',
+			'description' => 'Update Account Summary to allow expiration dates that are far in the future',
+			'sql' => [
+				'ALTER TABLE user_account_summary CHANGE COLUMN expirationDate expirationDate BIGINT DEFAULT 0',
+			]
+		],
+
+		'user_account_cache_volume_length' => [
+			'title' => 'Increase length of volume in holds and checkouts',
+			'description' => 'Increase length of volume in holds and checkouts',
+			'sql' => [
+				'ALTER TABLE user_checkout CHANGE COLUMN volume volume VARCHAR(255)',
+				'ALTER TABLE user_hold CHANGE COLUMN volume volume VARCHAR(255)'
+			]
+		]
 	);
 }
 

@@ -1044,9 +1044,7 @@ class SirsiDynixROA extends HorizonAPI
 
 				$hold_result['title'] = $title;
 				$hold_result['bid']   = $shortId;
-				//Clear the patron profile
 				return $hold_result;
-
 			}
 		}
 	}
