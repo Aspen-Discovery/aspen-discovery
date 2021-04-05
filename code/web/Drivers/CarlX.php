@@ -180,11 +180,11 @@ class CarlX extends AbstractIlsDriver{
 		$mysip->port = $this->accountProfile->sipPort;
 
 		$renew_result = array(
-				'success' => false,
-				'message' => array(),
-				'Renewed' => 0,
-				'NotRenewed' => $patron->_numCheckedOutIls,
-				'Total' => $patron->_numCheckedOutIls
+			'success' => false,
+			'message' => array(),
+			'Renewed' => 0,
+			'NotRenewed' => $patron->_numCheckedOutIls,
+			'Total' => $patron->_numCheckedOutIls
 		);
 		if ($mysip->connect()) {
 			//send selfcheck status message
@@ -547,12 +547,12 @@ class CarlX extends AbstractIlsDriver{
 		return $result;
 	}
 
-	public function getCheckouts(User $user) {
+	public function getCheckouts(User $patron) {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
 
 		//Search for the patron in the database
-		$result = $this->getPatronTransactions($user);
+		$result = $this->getPatronTransactions($patron);
 
 		$itemsToLoad = array();
 		if (!$result){
@@ -571,7 +571,7 @@ class CarlX extends AbstractIlsDriver{
 				$curTitle = new Checkout();
 				$curTitle->type = 'ils';
 				$curTitle->source = $this->getIndexingProfile()->name;
-				$curTitle->userId = $user->id;
+				$curTitle->userId = $patron->id;
 				$carlID = $this->fullCarlIDfromBID($chargeItem->BID);
 				$curTitle->sourceId = $carlID;
 				$dueDate = strstr($chargeItem->DueDate, 'T', true);

@@ -1396,7 +1396,7 @@ class Koha extends AbstractIlsDriver
 		return false;
 	}
 
-	public function renewAll($patron)
+	public function renewAll(User $patron)
 	{
 		return array(
 			'success' => false,

@@ -24,25 +24,25 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * This is responsible for retrieving all checkouts (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $user)
+	public function getCheckouts(User $patron)
 	{
-		if (isset($this->checkouts[$user->id])){
-			return $this->checkouts[$user->id];
+		if (isset($this->checkouts[$patron->id])){
+			return $this->checkouts[$patron->id];
 		}
 
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 
 		$checkouts = [];
-		$settings = $this->getSettings($user);
+		$settings = $this->getSettings($patron);
 		if ($settings == false){
 			return $checkouts;
 		}
 
-		$circulation = $this->getPatronCirculation($user);
+		$circulation = $this->getPatronCirculation($patron);
 
 		if (isset($circulation->Checkouts->Item)) {
 			foreach ($circulation->Checkouts->Item as $checkoutFromCloudLibrary) {
@@ -69,13 +69,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				$recordDriver = new CloudLibraryRecordDriver((string)$checkoutFromCloudLibrary->ItemId);
 				if ($recordDriver->isValid()) {
 					$checkout->updateFromRecordDriver($recordDriver);
-					$checkout->accessOnlineUrl = $recordDriver->getAccessOnlineLinkUrl($user);
+					$checkout->accessOnlineUrl = $recordDriver->getAccessOnlineLinkUrl($patron);
 				} else {
 					$checkout->title = 'Unknown Cloud Library Title';
 					$checkout->format = 'Unknown - Cloud Library';
 				}
 
-				$checkout->userId = $user->id;
+				$checkout->userId = $patron->id;
 
 				$checkouts[$checkout->source . $checkout->sourceId . $checkout->userId] = $checkout;
 			}
@@ -98,7 +98,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param $patron  User
 	 * @return mixed
 	 */
-	public function renewAll($patron)
+	public function renewAll(User $patron)
 	{
 		return false;
 	}
