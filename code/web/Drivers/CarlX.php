@@ -180,11 +180,11 @@ class CarlX extends AbstractIlsDriver{
 		$mysip->port = $this->accountProfile->sipPort;
 
 		$renew_result = array(
-				'success' => false,
-				'message' => array(),
-				'Renewed' => 0,
-				'NotRenewed' => $patron->_numCheckedOutIls,
-				'Total' => $patron->_numCheckedOutIls
+			'success' => false,
+			'message' => array(),
+			'Renewed' => 0,
+			'NotRenewed' => $patron->_numCheckedOutIls,
+			'Total' => $patron->_numCheckedOutIls
 		);
 		if ($mysip->connect()) {
 			//send selfcheck status message

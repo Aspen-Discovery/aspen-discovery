@@ -129,9 +129,63 @@ class Polaris extends AbstractIlsDriver
 		return true;
 	}
 
-	public function renewAll($patron)
+	public function renewAll(User $patron)
 	{
-		// TODO: Implement renewAll() method.
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/itemsout/0";
+		$body = new stdClass();
+		$body->Action = 'renew';
+		$body->LogonBranchID = $patron->getHomeLocationCode();
+		$body->LogonUserID = (string)$staffInfo['polarisId'];
+		$body->LogonWorkstationID = $this->accountProfile->workstationId;
+		$body->RenewData = new stdClass();
+		$body->RenewData->IgnoreOverrideErrors = false;
+
+		$accountSummary = $this->getAccountSummary($patron);
+
+		$renewResult = array(
+			'success' => false,
+			'message' => array(),
+			'Renewed' => 0,
+			'NotRenewed' => $accountSummary->numCheckedOut,
+			'Total' => $accountSummary->numCheckedOut
+		);
+
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			if ($jsonResponse->PAPIErrorCode == 0 || $jsonResponse->PAPIErrorCode == -3) {
+				$itemRenewResult = $jsonResponse->ItemRenewResult;
+				$renewResult['Renewed'] = count($itemRenewResult->DueDateRows);
+				$renewResult['NotRenewed'] = count($itemRenewResult->BlockRows);
+				if (count($itemRenewResult->BlockRows) > 0) {
+					$checkouts = $patron->getCheckouts(true, $this->getIndexingProfile()->name);
+					foreach ($itemRenewResult->BlockRows as $blockRow) {
+						$itemId = $blockRow->ItemRecordID;
+						$title = 'Unknown Title';
+						foreach ($checkouts as $checkout){
+							if ($checkout->itemId == $itemId){
+								$title = $checkout->title;
+							}
+						}
+						$renewResult['message'][] = $title . ':' . $blockRow->ErrorDesc;
+					}
+				}
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfCheckouts();
+				$renewResult['success'] = true;
+			}else{
+				$message = "All items could not be renewed.";
+				$renewResult['message'][] = $message;
+			}
+		}else{
+			$message = "The item could not be renewed";
+			if (IPAddress::showDebuggingInformation()){
+				$message .= " (HTTP Code: {$this->lastResponseCode})";
+			}
+			$renewResult['message'][] = $message;
+		}
+		return $renewResult;
 	}
 
 	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
@@ -150,13 +204,32 @@ class Polaris extends AbstractIlsDriver
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
-				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-				$patron->forceReloadOfCheckouts();
-				return array(
-					'itemId' => $itemId,
-					'success' => true,
-					'message' => "Your item was successfully renewed"
-				);
+				$itemRenewResult = $jsonResponse->ItemRenewResult;
+				if (isset($itemRenewResult->DueDateRows) && (count($itemRenewResult->DueDateRows) > 0)) {
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfCheckouts();
+					return array(
+						'itemId' => $itemId,
+						'success' => true,
+						'message' => "Your item was successfully renewed"
+					);
+				}else{
+					$message = '';
+					foreach ($itemRenewResult->BlockRows as $blockRow){
+						if (strlen($message) == 0){
+							$message .= '<br/>';
+						}
+						$message .= $blockRow->ErrorDesc;
+					}
+					if (strlen($message) == 0){
+						$message .= "This item could not be renewed";
+					}
+					return array(
+						'itemId' => $itemId,
+						'success' => true,
+						'message' => $message
+					);
+				}
 			}else{
 				$message = "The item could not be renewed. {$jsonResponse->ErrorMessage}";
 				return array(

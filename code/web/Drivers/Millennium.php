@@ -533,7 +533,7 @@ class Millennium extends AbstractIlsDriver
 		return true;
 	}
 
-	public function renewAll($patron){
+	public function renewAll(User $patron){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
 		return $millenniumCheckouts->renewAll($patron);

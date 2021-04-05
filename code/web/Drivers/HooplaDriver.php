@@ -458,7 +458,7 @@ class HooplaDriver extends AbstractEContentDriver{
      * @param $patron  User
      * @return mixed
      */
-    public function renewAll($patron)
+    public function renewAll(User $patron)
     {
         return false;
     }

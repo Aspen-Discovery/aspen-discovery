@@ -850,7 +850,7 @@ class CatalogConnection
 		return $this->driver->renewCheckout($patron, $recordId, $itemId, $itemIndex);
 	}
 
-	public function renewAll($patron)
+	public function renewAll(User $patron)
 	{
 		if ($this->driver->hasFastRenewAll()) {
 			return $this->driver->renewAll($patron);

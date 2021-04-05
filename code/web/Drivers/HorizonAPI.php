@@ -756,7 +756,7 @@ abstract class HorizonAPI extends Horizon{
 		return false;
 	}
 
-	public function renewAll($patron){
+	public function renewAll(User $patron){
 		return array(
 			'success' => false,
 			'message' => 'Renew All not supported directly, call through Catalog Connection',
