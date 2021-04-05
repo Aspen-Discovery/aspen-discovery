@@ -325,12 +325,25 @@ class Nashville extends CarlX {
 
 	function getSelfRegTemplate($reason): string
 	{
+		global $activeLanguage;
 		if ($reason == 'duplicate_email'){
-			return 'Emails/nashville-self-registration-denied-duplicate_email.tpl';
+			if ($activeLanguage == 'es'){
+				return 'Emails/es-nashville-self-registration-denied-duplicate_email.tpl';
+			} else { // assume en
+				return 'Emails/nashville-self-registration-denied-duplicate_email.tpl';
+			}
 		}elseif ($reason == 'duplicate_name+birthdate') {
-			return 'Emails/nashville-self-registration-denied-duplicate_name+birthdate.tpl';
+			if ($activeLanguage == 'es'){
+				return 'Emails/es-nashville-self-registration-denied-duplicate_name+birthdate.tpl';
+			} else { // assume en
+				return 'Emails/nashville-self-registration-denied-duplicate_name+birthdate.tpl';
+			}
 		}elseif ($reason == 'success') {
-			return 'Emails/nashville-self-registration.tpl';
+			if ($activeLanguage == 'es') {
+				return 'Emails/es-nashville-self-registration.tpl';
+			} else { // assume en
+				return 'Emails/nashville-self-registration.tpl';
+			}
 		}else{
 			return '';
 		}
