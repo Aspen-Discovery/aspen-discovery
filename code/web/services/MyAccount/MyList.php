@@ -7,6 +7,28 @@ class MyAccount_MyList extends MyAccount {
 		$this->requireLogin = false;
 		parent::__construct();
 	}
+
+	/** @noinspection PhpUnused */
+	function reloadCover(){
+		$listId = $_REQUEST['id'];
+		$listEntry = new UserListEntry();
+		$listEntry->listId = $listId;
+
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookCoverInfo = new BookCoverInfo();
+		$bookCoverInfo->recordType = 'list';
+		$bookCoverInfo->recordId = $listEntry->listId;
+		if ($bookCoverInfo->find(true)){
+			$bookCoverInfo->imageSource = '';
+			$bookCoverInfo->thumbnailLoaded = 0;
+			$bookCoverInfo->mediumLoaded = 0;
+			$bookCoverInfo->largeLoaded = 0;
+			$bookCoverInfo->update();
+		}
+
+		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
+	}
+
 	function launch() {
 		global $interface;
 
@@ -65,6 +87,7 @@ class MyAccount_MyList extends MyAccount {
 					}else {
 						$list->searchable = isset($_REQUEST['searchable']) && ($_REQUEST['searchable'] == 'true' || $_REQUEST['searchable'] == 'on');
 					}
+					$this->reloadCover();
 					$list->update();
 				}elseif ($actionToPerform == 'deleteList'){
 					$list->delete();
@@ -73,6 +96,7 @@ class MyAccount_MyList extends MyAccount {
 					die();
 				}elseif ($actionToPerform == 'bulkAddTitles'){
 					$notes = $this->bulkAddTitles($list);
+					$this->reloadCover();
 					$_SESSION['listNotes'] = $notes;
 				}
 			}elseif (isset($_REQUEST['myListActionItem']) && strlen($_REQUEST['myListActionItem']) > 0){
@@ -85,6 +109,7 @@ class MyAccount_MyList extends MyAccount {
 						//add back the leading . to get the full bib record
 						$list->removeListEntry($id);
 					}
+					$this->reloadCover();
 				}elseif ($actionToPerform == 'deleteAll'){
 					$list->removeAllListEntries();
 				}
@@ -92,6 +117,7 @@ class MyAccount_MyList extends MyAccount {
 			}elseif (isset($_REQUEST['delete'])) {
 				$recordToDelete = $_REQUEST['delete'];
 				$list->removeListEntry($recordToDelete);
+				$this->reloadCover();
 				$list->update();
 			}
 

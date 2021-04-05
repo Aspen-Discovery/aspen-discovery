@@ -133,6 +133,10 @@ class BookCoverProcessor{
 				}
 			}
 
+			if ($this->type == 'list' && $this->getUploadedListCover($this->id)){
+				return true;
+			}
+
 			if ($this->type != 'grouped_work' && $this->getCoverFromMarc()) {
 				return true;
 			}
@@ -1376,11 +1380,16 @@ class BookCoverProcessor{
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$userList = new UserList();
 		$userList->id = $id;
+
 		if ($userList->find(true)) {
-			$title = $userList->title;
-			$listTitles = $userList->getListTitles();
-			$coverBuilder->getCover($title, $listTitles, $this->cacheFile);
-			return $this->processImageURL('default', $this->cacheFile, false);
+			if ($this->getUploadedListCover($id)){
+				return true;
+			} else  {
+				$title = $userList->title;
+				$listTitles = $userList->getListTitles();
+				$coverBuilder->getCover($title, $listTitles, $this->cacheFile);
+				return $this->processImageURL('default', $this->cacheFile, false);
+			}
 		} else {
 			return false;
 		}
@@ -1424,6 +1433,15 @@ class BookCoverProcessor{
 		} else {
 			return false;
 		}
+	}
+
+	private function getUploadedListCover($id)
+	{
+		$uploadedImage = $this->bookCoverPath . '/original/' . $id . '.png';
+		if (file_exists($uploadedImage)){
+			return $this->processImageURL('upload', $uploadedImage);
+		}
+		return false;
 	}
 
 	private function getUploadedGroupedWorkCover($permanentId)

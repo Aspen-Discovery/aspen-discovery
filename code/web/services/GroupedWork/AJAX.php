@@ -969,6 +969,7 @@ class GroupedWork_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getUploadCoverFormByURL(){
 		global $interface;
 
@@ -982,6 +983,7 @@ class GroupedWork_AJAX extends JSON_Action
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	function uploadCoverByURL(){
 		$result = [
 			'success' => false,

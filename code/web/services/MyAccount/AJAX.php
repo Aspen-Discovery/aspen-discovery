@@ -2822,4 +2822,146 @@ class MyAccount_AJAX extends JSON_Action
 
 		return $result;
 	}
+
+	/** @noinspection PhpUnused */
+	function reloadCover(){
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+		$listId = htmlspecialchars($_GET["id"]);
+		$listEntry = new UserListEntry();
+		$listEntry->listId = $listId;
+
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookCoverInfo = new BookCoverInfo();
+		$bookCoverInfo->recordType = 'list';
+		$bookCoverInfo->recordId = $listEntry->listId;
+		if ($bookCoverInfo->find(true)){
+			$bookCoverInfo->imageSource = '';
+			$bookCoverInfo->thumbnailLoaded = 0;
+			$bookCoverInfo->mediumLoaded = 0;
+			$bookCoverInfo->largeLoaded = 0;
+			$bookCoverInfo->update();
+		}
+
+		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
+	}
+
+	/** @noinspection PhpUnused */
+	function getUploadListCoverForm(){
+		global $interface;
+
+		$id = htmlspecialchars($_GET["id"]);
+		$interface->assign('id', $id);
+
+		return array(
+			'title' => 'Upload a New List Cover',
+			'modalBody' => $interface->fetch("Lists/upload-cover-form.tpl"),
+			'modalButtons' => "<bustton class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>Upload Cover</bustton>"
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function uploadListCover(){
+		$result = [
+			'success' => false,
+			'title' => 'Uploading custom list cover',
+			'message' => 'Sorry your cover could not be uploaded'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))){
+			if (isset($_FILES['coverFile'])) {
+				$uploadedFile = $_FILES['coverFile'];
+				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+					$result['message'] = "No Cover file was uploaded";
+				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+					$result['message'] =  "Error in file upload for cover " . $uploadedFile["error"];
+				} else {
+					$id = htmlspecialchars($_GET["id"]);
+					global $configArray;
+					$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+					$fileType = $uploadedFile["type"];
+					if ($fileType == 'image/png'){
+						if (copy($uploadedFile["tmp_name"], $destFullPath)){
+							$result['success'] = true;
+						}
+					}elseif ($fileType == 'image/gif'){
+						$imageResource = @imagecreatefromgif($uploadedFile["tmp_name"]);
+						if (!$imageResource){
+							$result['message'] = 'Unable to process this image, please try processing in an image editor and reloading';
+						}else if (@imagepng( $imageResource, $destFullPath, 9)){
+							$result['success'] = true;
+						}
+					}elseif ($fileType == 'image/jpg' || $fileType == 'image/jpeg'){
+						$imageResource = @imagecreatefromjpeg($uploadedFile["tmp_name"]);
+						if (!$imageResource){
+							$result['message'] = 'Unable to process this image, please try processing in an image editor and reloading';
+						}else if (@imagepng( $imageResource, $destFullPath, 9)){
+							$result['success'] = true;
+						}
+					}else{
+						$result['message'] = 'Incorrect image type.  Please upload a PNG, GIF, or JPEG';
+					}
+				}
+			} else {
+				$result['message'] = 'No cover was uploaded, please try again.';
+			}
+		}
+		if ($result['success']){
+			$this->reloadCover();
+			$result['message'] = 'Your cover has been uploaded successfully';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getUploadListCoverFormByURL(){
+		global $interface;
+
+		$id = htmlspecialchars($_GET["id"]);
+		$interface->assign('id', $id);
+
+		return array(
+			'title' => 'Upload a New List Cover by URL',
+			'modalBody' => $interface->fetch("Lists/upload-cover-form-url.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverFormByURL\").submit()'>Upload Cover</button>"
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function uploadListCoverByURL(){
+		$result = [
+			'success' => false,
+			'title' => 'Uploading custom list cover',
+			'message' => 'Sorry your cover could not be uploaded'
+		];
+		if (isset($_POST['coverFileURL'])) {
+			$url = $_POST['coverFileURL'];
+			$filename = basename($url);
+			$uploadedFile = file_get_contents($url);
+
+			if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+				$result['message'] = "No Cover file was uploaded";
+			} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+				$result['message'] = "Error in file upload for cover " . $uploadedFile["error"];
+			}
+
+			$id = htmlspecialchars($_GET["id"]);
+			global $configArray;
+			$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+			$ext = pathinfo($filename, PATHINFO_EXTENSION);
+			if($ext == "jpg" or $ext == "png" or $ext == "gif" or $ext == "jpeg") {
+				$upload = file_put_contents($destFullPath, file_get_contents($url));
+				if ($upload) {
+					$result['success'] = true;
+				} else {
+					$result['message'] = 'Incorrect image type.  Please upload a PNG, GIF, or JPEG';
+				}
+			}
+		}else{
+			$result['message'] = 'No cover was uploaded, please try again.';
+		}
+		if ($result['success']){
+			$this->reloadCover();
+			$result['message'] = 'Your cover has been uploaded successfully';
+		}
+		return $result;
+	}
 }
