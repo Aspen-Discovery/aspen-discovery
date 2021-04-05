@@ -47,6 +47,15 @@
 										</div>
 									</div>
 								{/if}
+								{if in_array('Upload Covers', $userPermissions)}
+									<div class="form-group" id="searchableRow" {if $userList->public == 0}style="display: none"{/if}>
+										<label for="searchable" class="col-sm-3 control-label">{translate text="Upload custom list cover"}</label>
+										<div class="col-sm-9">
+											<button onclick="return AspenDiscovery.Lists.getUploadListCoverForm({$userList->id})" class="btn btn-sm btn-default">{translate text="Upload List Cover from Computer"}</button>
+											<button onclick="return AspenDiscovery.Lists.getUploadListCoverFormByURL('{$userList->id}')" class="btn btn-sm btn-default">{translate text="Upload List Cover by URL"}</button>
+										</div>
+									</div>
+								{/if}
 							</div>
 							<script type="text/javascript">{literal}
 								$(document).ready(function(){
