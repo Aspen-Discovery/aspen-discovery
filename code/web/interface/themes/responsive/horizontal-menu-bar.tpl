@@ -1,13 +1,13 @@
 {strip}
 	<h2 class="hiddenTitle" id="mobileNav">{translate text="Navigation"}</h2>
 	<div class="menu-section menu-section-left">
-		{if !empty($homeLink)}
+		{if $homeBreadcrumbLink ne '/'}
 			<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text="Return to $homeLinkText" inAttribute=true}" aria-label="{translate text="Return to $homeLinkText" inAttribute=true}">
 				<i class="fas fa-home fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs"></span>
 			</a>
 		{/if}
-		<a href="{if empty($homeLink)}/{else}/Search/Home{/if}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Browse the Catalog' inAttribute=true}" aria-label="{translate text='Browse the Catalog' inAttribute=true}">
-			<i class="fas {if empty($homeLink)}fa-home{else}fa-book-open{/if} fa-lg"></i>{if !empty($homeLink)}<span class="menu-bar-label visible-inline-block-lg">{translate text='Browse'}</span>{/if}
+		<a href="{if $homeBreadcrumbLink eq '/'}/{else}/Search/Home{/if}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Browse the Catalog' inAttribute=true}" aria-label="{translate text='Browse the Catalog' inAttribute=true}">
+			<i class="fas {if $homeBreadcrumbLink eq '/'}fa-home{else}fa-book-open{/if} fa-lg"></i>{if $homeBreadcrumbLink ne '/'}<span class="menu-bar-label visible-inline-block-lg">{translate text='Browse'}</span>{/if}
 		</a>
 		{foreach from=$libraryLinks key=categoryName item=menuCategory}
 			{assign var=topCategory value=$menuCategory|@reset}
