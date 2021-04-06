@@ -326,7 +326,6 @@ class Nashville extends CarlX {
 	function getSelfRegTemplate($reason): string
 	{
 		global $activeLanguage;
-		var_dump($activeLanguage);
 		if ($reason == 'duplicate_email'){
 			if ($activeLanguage->code == 'es'){
 				return 'Emails/es-nashville-self-registration-denied-duplicate_email.tpl';
