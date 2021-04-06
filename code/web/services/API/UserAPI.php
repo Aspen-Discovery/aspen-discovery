@@ -360,7 +360,7 @@ class UserAPI extends Action
 			$userData->numHoldsIls =(int) $accountSummary->getNumHolds();
 			$userData->numHoldsAvailableIls = (int)($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
 			$userData->numHoldsRequestedIls =(int)($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
-			$userData->finesVal = $accountSummary->totalFines;
+			$userData->finesVal = (float)$accountSummary->totalFines;
 			global $activeLanguage;
 			$currencyCode = 'USD';
 			$variables = new SystemVariables();
