@@ -6,6 +6,7 @@ class WebBuilder_ResourcesList extends Action
 
 	function launch()
 	{
+		global $library;
 		//Get all the resources.
 		$resourcesByCategory = [];
 		$featuredResources = [];
@@ -13,15 +14,18 @@ class WebBuilder_ResourcesList extends Action
 		$resource->orderBy('name');
 		$resource->find();
 		while ($resource->fetch()){
-			$clonedResource = clone $resource;
-			if ($resource->featured){
-				$featuredResources[] = $clonedResource;
-			}
-			foreach ($clonedResource->getCategories() as $category){
-				if (!array_key_exists($category->name, $resourcesByCategory)){
-					$resourcesByCategory[$category->name] = [];
+			//Limit based on the library
+			if (array_key_exists($library->libraryId, $resource->getLibraries())){
+				$clonedResource = clone $resource;
+				if ($clonedResource->featured) {
+					$featuredResources[] = $clonedResource;
 				}
-				$resourcesByCategory[$category->name][] = $clonedResource;
+				foreach ($clonedResource->getCategories() as $category) {
+					if (!array_key_exists($category->name, $resourcesByCategory)) {
+						$resourcesByCategory[$category->name] = [];
+					}
+					$resourcesByCategory[$category->name][] = $clonedResource;
+				}
 			}
 		}
 		ksort($resourcesByCategory);
