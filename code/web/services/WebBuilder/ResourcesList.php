@@ -10,22 +10,24 @@ class WebBuilder_ResourcesList extends Action
 		//Get all the resources.
 		$resourcesByCategory = [];
 		$featuredResources = [];
+
 		$resource = new WebResource();
 		$resource->orderBy('name');
+		//Limit based on the library
+		$libraryWebResource = new LibraryWebResource();
+		$libraryWebResource->libraryId = $library->libraryId;
+		$resource->joinAdd($libraryWebResource, 'INNER', 'libraryWebResource', 'id', 'webResourceId');
 		$resource->find();
 		while ($resource->fetch()){
-			//Limit based on the library
 			$clonedResource = clone $resource;
-			if (array_key_exists($library->libraryId, $clonedResource->getLibraries())){
-				if ($clonedResource->featured) {
-					$featuredResources[] = $clonedResource;
+			if ($resource->featured) {
+				$featuredResources[] = $clonedResource;
+			}
+			foreach ($resource->getCategories() as $category) {
+				if (!array_key_exists($category->name, $resourcesByCategory)) {
+					$resourcesByCategory[$category->name] = [];
 				}
-				foreach ($clonedResource->getCategories() as $category) {
-					if (!array_key_exists($category->name, $resourcesByCategory)) {
-						$resourcesByCategory[$category->name] = [];
-					}
-					$resourcesByCategory[$category->name][] = $clonedResource;
-				}
+				$resourcesByCategory[$category->name][] = $clonedResource;
 			}
 		}
 		ksort($resourcesByCategory);

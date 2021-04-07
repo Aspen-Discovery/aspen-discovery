@@ -515,7 +515,7 @@ abstract class DataObject
 	 */
 	public function getSelectQuery(PDO $aspen_db): string
 	{
-		$selectClause = '*';
+		$selectClause = $this->__table . '.*';
 		if (count($this->__additionalSelects) > 0) {
 			$selectClause = implode($this->__additionalSelects, ',');
 			if ($this->__selectAllColumns) {

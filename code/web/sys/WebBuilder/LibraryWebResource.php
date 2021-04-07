@@ -6,4 +6,9 @@ class LibraryWebResource extends DataObject
 	public $id;
 	public $libraryId;
 	public $webResourceId;
+
+	public function getNumericColumnNames()
+	{
+		return ['id', 'libraryId', 'webResourceId'];
+	}
 }

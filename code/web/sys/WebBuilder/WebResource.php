@@ -20,13 +20,13 @@ class WebResource extends DataObject
 	public $description;
 	public $lastUpdate;
 
-	private $_libraries;
-	private $_audiences;
-	private $_categories;
+	protected $_libraries;
+	protected $_audiences;
+	protected $_categories;
 
 	public function getNumericColumnNames()
 	{
-		return ['openInNewTab', 'featured', 'requiresLibraryCard', 'inLibraryUseOnly', 'lastUpdate'];
+		return ['id', 'openInNewTab', 'featured', 'requiresLibraryCard', 'inLibraryUseOnly', 'lastUpdate'];
 	}
 
 	static function getObjectStructure()
