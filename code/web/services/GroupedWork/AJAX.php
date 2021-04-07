@@ -1553,4 +1553,53 @@ class GroupedWork_AJAX extends JSON_Action
 			];
 		}
 	}
+
+	/** @noinspection PhpUnused */
+	function getPreviewRelatedCover(){
+		global $interface;
+
+		$groupedWorkId = $_REQUEST['id'];
+		$recordId = $_REQUEST['recordId'];
+		$recordType= $_REQUEST['recordType'];
+		$interface->assign('groupedWorkId', $groupedWorkId);
+		$interface->assign('recordId', $recordId);
+		$interface->assign('recordType', $recordType);
+
+		return array(
+			'title' => 'Preview Related Cover',
+			'modalBody' => $interface->fetch("GroupedWork/previewRelatedCover.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#previewRelatedCover\").submit()'>Use Cover</button>"
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function previewRelatedCover(){
+		$result = [
+			'success' => false,
+			'title' => 'Previewing cover from related work',
+			'message' => 'Sorry the cover could not be attached'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))){
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$groupedWorkId = $_REQUEST['id'];
+			$recordId = $_REQUEST['recordId'];
+			$recordType = $_REQUEST['recordType'];
+			$groupedWork->permanent_id = $groupedWorkId;
+
+			if ($groupedWork->find(true)) {
+				$groupedWork->referenceCover = $recordType . '_' . $recordId;
+				$groupedWork->update();
+				$result['success'] = true;
+			}
+		}
+		if ($result['success']){
+			$this->reloadCover();
+			$result['message'] = 'Your cover has been uploaded successfully';
+		}
+		return $result;
+	}
+
+
+
 }

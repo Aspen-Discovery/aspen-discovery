@@ -8868,8 +8868,8 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		getPreviewRelatedCover: function (recordId,groupedWorkId){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=previewRelatedCover&recordId=' + recordId;
+		getPreviewRelatedCover: function (recordId,groupedWorkId,recordType){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=getPreviewRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
 			$.getJSON(url, function (data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
@@ -8877,8 +8877,8 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		previewRelatedCover: function (recordId,groupedWorkId){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=previewRelatedCover&recordId=' + recordId;
+		previewRelatedCover: function (recordId,groupedWorkId,recordType){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=previewRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
 			var uploadCoverData = new FormData($("#previewRelatedCover")[0]);
 			$.ajax({
 				url: url,

@@ -1123,6 +1123,11 @@ class BookCoverProcessor{
 			if ($this->getUploadedGroupedWorkCover($this->groupedWork->getPermanentId())){
 				return true;
 			}
+
+			if ($this->getReferencedGroupedWorkCover($this->groupedWork->getPermanentId())){
+				return true;
+			}
+
 			//Have not found a grouped work based on isbn or upc, check based on related records
 			$relatedRecords = $this->groupedWork->getRelatedRecords(true);
 			global $sideLoadSettings;
@@ -1451,6 +1456,28 @@ class BookCoverProcessor{
 			return $this->processImageURL('upload', $uploadedImage);
 		}
 		return false;
+	}
+
+	private function getReferencedGroupedWorkCover($permanentId)
+	{
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $permanentId;
+		if ($groupedWork->find(true)) {
+			$referenceId = $groupedWork->referenceCover;
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			// find the recordType for the referenced cover
+
+			$recordType = $referenceId->bookCoverInfo->recordType;
+			$recordType = 'hoopla';
+
+			$referencedCoverURL = $this->bookCoverPath . '/medium/' . $referenceId . '.png';
+			if (file_exists($referencedCoverURL)) {
+				return $this->processImageURL('reference', $referencedCoverURL);
+			} else {
+				return false;
+			}
+		}
 	}
 
 	private function getEbscoEdsCover($id)

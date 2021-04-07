@@ -53,10 +53,10 @@
 	<h4>Grouped Records</h4>
 	<table class="table-striped table table-condensed notranslate">
 		<thead>
-		<tr><th>Type</th><th>Identifier</th></tr>
+		<tr><th>Type</th><th>Identifier</th><th>Use Cover for Grouped Work</th></tr>
 		</thead>
 		{foreach from=$primaryIdentifiers item="groupedRecord"}
-			<tr><td>{$groupedRecord->type}</td><td>{$groupedRecord->identifier}</td></tr>
+			<tr><td>{$groupedRecord->type}</td><td>{$groupedRecord->identifier}</td><td><button onclick="return AspenDiscovery.GroupedWork.getPreviewRelatedCover('{$groupedRecord->identifier}', '{$recordDriver->getPermanentId()}', '{$groupedRecord->type}')" class="btn btn-sm btn-default">{translate text="Preview Cover"}</button></td></tr>
 		{/foreach}
 	</table>
 {/if}

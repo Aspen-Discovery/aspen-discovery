@@ -8,6 +8,7 @@ class GroupedWork extends DataObject {
 	public $author;
 	public $grouping_category;
 	public $date_updated;
+	public $referenceCover;
 
 	/**
 	 * @param bool $updatePrimaryIdentifiers Updating primrary identifiers will force regrouping and is a bit slower
