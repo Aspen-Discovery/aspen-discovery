@@ -418,6 +418,33 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
+		getPreviewRelatedCover: function (recordId,groupedWorkId,recordType){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=getPreviewRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		previewRelatedCover: function (recordId,groupedWorkId,recordType){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=previewRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
+			var uploadCoverData = new FormData($("#previewRelatedCover")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: uploadCoverData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
+
 		getGroupWithForm: function(trigger, id) {
 			if (Globals.loggedIn){
 				AspenDiscovery.loadingMessage();

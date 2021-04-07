@@ -1123,6 +1123,11 @@ class BookCoverProcessor{
 			if ($this->getUploadedGroupedWorkCover($this->groupedWork->getPermanentId())){
 				return true;
 			}
+
+			if ($this->getReferencedGroupedWorkCover($this->groupedWork->getPermanentId())){
+				return true;
+			}
+
 			//Have not found a grouped work based on isbn or upc, check based on related records
 			$relatedRecords = $this->groupedWork->getRelatedRecords(true);
 			global $sideLoadSettings;
@@ -1451,6 +1456,34 @@ class BookCoverProcessor{
 			return $this->processImageURL('upload', $uploadedImage);
 		}
 		return false;
+	}
+
+	private function getReferencedGroupedWorkCover($permanentId)
+	{
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $permanentId;
+		if ($groupedWork->find(true)) {
+			$referenceId = $groupedWork->referenceCover;
+			require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+			$recordDriver = RecordDriverFactory::initRecordDriverById($referenceId);
+			if ($recordDriver && $recordDriver->isValid()){
+				$referencedCover = str_replace(':','_',$referenceId);
+
+				$referencedCoverURL_lg = $this->bookCoverPath . '/large/' . $referencedCover . '.png';
+				$referencedCoverURL_md = $this->bookCoverPath . '/medium/' . $referencedCover . '.png';
+
+				if (file_exists($referencedCoverURL_lg)){
+					return $this->processImageURL('reference', $referencedCoverURL_lg);
+				} elseif (file_exists($referencedCoverURL_md)) {
+					return $this->processImageURL('reference', $referencedCoverURL_md);
+				} else {
+					return false;
+				}
+
+			} return false;
+
+		}
 	}
 
 	private function getEbscoEdsCover($id)
