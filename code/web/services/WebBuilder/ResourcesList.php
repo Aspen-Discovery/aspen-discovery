@@ -15,8 +15,8 @@ class WebBuilder_ResourcesList extends Action
 		$resource->find();
 		while ($resource->fetch()){
 			//Limit based on the library
-			if (array_key_exists($library->libraryId, $resource->getLibraries())){
-				$clonedResource = clone $resource;
+			$clonedResource = clone $resource;
+			if (array_key_exists($library->libraryId, $clonedResource->getLibraries())){
 				if ($clonedResource->featured) {
 					$featuredResources[] = $clonedResource;
 				}
