@@ -3088,7 +3088,7 @@ class Koha extends AbstractIlsDriver
 		$accountSummary = $this->getAccountSummary($patron);
 		if ($maxOutstanding > 0){
 			$totalFines = $accountSummary->totalFines;
-			if ($totalFines > $maxOutstanding){
+			if ($totalFines > (float)$maxOutstanding){
 				$result['isEligible'] = false;
 				$result['fineLimitReached'] = true;
 				$result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
