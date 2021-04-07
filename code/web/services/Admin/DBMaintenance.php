@@ -1902,6 +1902,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				),
 
+				'add_referencecover_groupedwork' => array(
+					'title' => 'Add reference cover column to grouped work table',
+					'description' => 'Allows staff to reference a related work cover for the grouped work cover',
+					'sql' => array(
+						"ALTER TABLE `grouped_work` ADD `referenceCover` VARCHAR(50)"
+					),
+				),
+
 				'sendgrid_settings' => array(
 					'title' => 'SendGrid Settings',
 					'description' => 'Add settings to handle SendGrid configuration',
@@ -2545,6 +2553,20 @@ class Admin_DBMaintenance extends Admin_Admin
 					'description' => 'Add "Mark as Read" checkbox for custom form submissions that enables filtering based on unread/read status',
 					'sql' => [
 						'ALTER TABLE web_builder_custom_from_submission ADD COLUMN isRead TINYINT(1) DEFAULT 0'
+					]
+				],
+				'add_useHomeLink_to_layout_settings' => [
+					'title' => 'Add useHomeLink to Layout Settings',
+					'description' => 'Add useHomeLink dropdown to Layout Settings to better define the usage of homeLink',
+					'sql' => [
+						'ALTER TABLE layout_settings ADD COLUMN useHomeLink VARCHAR(75) NOT NULL'
+					]
+				],
+				'add_showBookIcon_to_layout_settings' => [
+					'title' => 'Add showBookIcon to Layout Settings',
+					'description' => 'Add showBookIcon to allow changing between the book and home icon for catalog home',
+					'sql' => [
+						'ALTER TABLE layout_settings ADD COLUMN showBookIcon TINYINT(1) DEFAULT 0'
 					]
 				]
 			)

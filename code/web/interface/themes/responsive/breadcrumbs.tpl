@@ -4,7 +4,7 @@
 	<div class="row breadcrumbs">
 		<div class="col-xs-12">
 			<ul class="breadcrumb small">
-				{if $homeBreadcrumbLink ne '/'}
+				{if $useHomeLink == '1' || $useHomeLink == '3'}
 					<li>
 						<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text="Return to $homeLinkText" inAttribute=true}" aria-label="{translate text="Return to $homeLinkText" inAttribute=true}">
 							<i class="fas fa-home"></i> {translate text=$homeLinkText}
@@ -12,11 +12,11 @@
 					</li>
 				{/if}
 				<li>
-					{if $homeBreadcrumbLink ne '/'}
+					{if $useHomeLink == '1' || $useHomeLink == '3'}
 						<span class="divider">&raquo; </span>
 					{/if}
-					<a href="{if $homeBreadcrumbLink ne '/'}/{else}/Search/Home{/if}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Browse the catalog' inAttribute=true}" aria-label="{translate text='Browse the catalog' inAttribute=true}">
-						<i class="fas {if $homeBreadcrumbLink ne '/'}fa-book-open{else}fa-home{/if}"></i>{if $homeBreadcrumbLink ne '/'} {translate text="Browse"}{else} {translate text="Home"}{/if}
+					<a href="{if $useHomeLink == '0' || $useHomeLink == '2'}/{else}/Search/Home{/if}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Browse the catalog' inAttribute=true}" aria-label="{translate text='Browse the catalog' inAttribute=true}">
+						<i class="fas {if ($useHomeLink == '1' || $useHomeLink == '3') || ($showBookIcon == '1' && ($useHomeLink == '0' || $useHomeLink == '2'))}fa-book-open{else}fa-home{/if}"></i>{if $useHomeLink == '1' || $useHomeLink == '3'} {translate text="Browse"}{else} {translate text="Home"}{/if}
 					</a>
 				</li>
 				{* <li><a href="{$homeBreadcrumbLink}" id="home-breadcrumb"><i class="fas fa-home fa"></i> {translate text=$homeLinkText}</a></li> *}

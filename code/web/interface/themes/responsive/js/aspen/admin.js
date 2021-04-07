@@ -297,6 +297,16 @@ AspenDiscovery.Admin = (function(){
 				}
 			}
 		},
+		updateLayoutSettingsFields: function () {
+			var useHomeLink = $('#useHomeLinkSelect').val();
+			if ((useHomeLink === '0') || useHomeLink === '2') {
+				$("#propertyRowshowBookIcon").show();
+				$("#propertyRowhomeLinkText").hide();
+			}else{
+				$("#propertyRowshowBookIcon").hide();
+				$("#propertyRowhomeLinkText").show();
+			}
+		},
 		showCreateRoleForm: function(){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getCreateRoleForm', true);
 			return false;

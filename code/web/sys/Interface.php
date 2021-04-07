@@ -407,7 +407,8 @@ class UInterface extends Smarty
 		$location = $locationSingleton->getActiveLocation();
 		$this->assign('logoLink', '');
 		$this->assign('logoAlt', 'Return to Catalog Home');
-		if ($library->getLayoutSettings()->useHomeLinkForLogo){
+		$useHomeLink = $library->getLayoutSettings()->useHomeLink;
+		if ($useHomeLink == '2' || $useHomeLink == '3'){
 			if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
 				$this->assign('logoAlt', 'Library Home Page');
 				$this->assign('logoLink', $location->homeLink);

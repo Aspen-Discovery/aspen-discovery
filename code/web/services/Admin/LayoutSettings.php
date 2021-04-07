@@ -49,6 +49,11 @@ class Admin_LayoutSettings extends ObjectEditor
 		return 'id';
 	}
 
+	function getInitializationJs()
+	{
+		return 'return AspenDiscovery.Admin.updateLayoutSettingsFields();';
+	}
+
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
