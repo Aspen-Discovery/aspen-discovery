@@ -1465,18 +1465,24 @@ class BookCoverProcessor{
 		$groupedWork->permanent_id = $permanentId;
 		if ($groupedWork->find(true)) {
 			$referenceId = $groupedWork->referenceCover;
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			// find the recordType for the referenced cover
+			require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+			$recordDriver = RecordDriverFactory::initRecordDriverById($referenceId);
+			if ($recordDriver && $recordDriver->isValid()){
+				$referencedCover = str_replace(':','_',$referenceId);
 
-			$recordType = $referenceId->bookCoverInfo->recordType;
-			$recordType = 'hoopla';
+				$referencedCoverURL_lg = $this->bookCoverPath . '/large/' . $referencedCover . '.png';
+				$referencedCoverURL_md = $this->bookCoverPath . '/medium/' . $referencedCover . '.png';
 
-			$referencedCoverURL = $this->bookCoverPath . '/medium/' . $referenceId . '.png';
-			if (file_exists($referencedCoverURL)) {
-				return $this->processImageURL('reference', $referencedCoverURL);
-			} else {
-				return false;
-			}
+				if (file_exists($referencedCoverURL_lg)){
+					return $this->processImageURL('reference', $referencedCoverURL_lg);
+				} elseif (file_exists($referencedCoverURL_md)) {
+					return $this->processImageURL('reference', $referencedCoverURL_md);
+				} else {
+					return false;
+				}
+
+			} return false;
+
 		}
 	}
 

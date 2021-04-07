@@ -1588,7 +1588,7 @@ class GroupedWork_AJAX extends JSON_Action
 			$groupedWork->permanent_id = $groupedWorkId;
 
 			if ($groupedWork->find(true)) {
-				$groupedWork->referenceCover = $recordType . '_' . $recordId;
+				$groupedWork->referenceCover = $recordType . ':' . $recordId;
 				$groupedWork->update();
 				$result['success'] = true;
 			}
