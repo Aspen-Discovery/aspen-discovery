@@ -228,8 +228,8 @@ if (!file_exists($logDir)){
 	mkdir($logDir, 0775, true);
 }
 $logDir2 = '/var/log/aspen-discovery/' . $sitename . '/logs';
-if (!file_exists($logDir)){
-	mkdir($logDir, 0775, true);
+if (!file_exists($logDir2)){
+	mkdir($logDir2, 0775, true);
 }
 
 //Update file permissions
