@@ -1474,9 +1474,9 @@ class BookCoverProcessor{
 				$referencedCoverURL_md = $this->bookCoverPath . '/medium/' . $referencedCover . '.png';
 
 				if (file_exists($referencedCoverURL_lg)){
-					return $this->processImageURL('reference', $referencedCoverURL_lg);
+					return $this->processImageURL('reference ' . $referenceId, $referencedCoverURL_lg);
 				} elseif (file_exists($referencedCoverURL_md)) {
-					return $this->processImageURL('reference', $referencedCoverURL_md);
+					return $this->processImageURL('reference ' . $referenceId, $referencedCoverURL_md);
 				} else {
 					return false;
 				}

@@ -1566,18 +1566,18 @@ class GroupedWork_AJAX extends JSON_Action
 		$interface->assign('recordType', $recordType);
 
 		return array(
-			'title' => 'Preview Related Cover',
+			'title' => 'Previewing Related Cover',
 			'modalBody' => $interface->fetch("GroupedWork/previewRelatedCover.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#previewRelatedCover\").submit()'>Use Cover</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.setRelatedCover(\"{$recordId}\",\"{$groupedWorkId}\",\"{$recordType}\")'>Use Cover</button>"
 		);
 	}
 
 	/** @noinspection PhpUnused */
-	function previewRelatedCover(){
+	function setRelatedCover(){
 		$result = [
 			'success' => false,
 			'title' => 'Previewing cover from related work',
-			'message' => 'Sorry the cover could not be attached'
+			'message' => 'Sorry the cover could not be set'
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -1595,11 +1595,28 @@ class GroupedWork_AJAX extends JSON_Action
 		}
 		if ($result['success']){
 			$this->reloadCover();
-			$result['message'] = 'Your cover has been uploaded successfully';
+			$result['message'] = 'Your cover has been set successfully';
 		}
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
+	function clearRelatedCover(){
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+		$id = $_REQUEST['id'];
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $id;
+		if ($groupedWork->find(true)){
+			$groupedWork->referenceCover = '';
+			$groupedWork->update();
+			$this->reloadCover();
+
+			return array('success' => true, 'message' => 'The cover has been reset');
+		}else{
+			return array('success' => false, 'message' => 'Unable to reset the cover');
+		}
+	}
 
 
 }
