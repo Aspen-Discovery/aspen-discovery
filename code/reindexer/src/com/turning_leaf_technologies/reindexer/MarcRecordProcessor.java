@@ -337,7 +337,7 @@ abstract class MarcRecordProcessor {
 
 		List<DataField> seriesFields = MarcUtil.getDataFields(record, "830");
 		for (DataField seriesField : seriesFields){
-			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "anp","")).toString();
+			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "anp"," ")).toString();
 			//Remove anything in parenthesis since it's normally just the format
 			series = series.replaceAll("\\s+\\(.*?\\)", "");
 			//Remove the word series at the end since this gets cataloged inconsistently
