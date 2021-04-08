@@ -1194,10 +1194,17 @@ class User extends DataObject
 			}
 			$hold->find();
 			while ($hold->fetch()){
-				if ($hold->available){
-					$holdsToReturn['available'][] = clone $hold;
+				$key = $hold->source;
+				if (!empty($hold->cancelId)){
+					$key .= $hold->cancelId;
 				}else{
-					$holdsToReturn['unavailable'][] = clone $hold;
+					$key .= $hold->sourceId;
+				}
+				$key .= $hold->userId;
+				if ($hold->available){
+					$holdsToReturn['available'][$key] = clone $hold;
+				}else{
+					$holdsToReturn['unavailable'][$key] = clone $hold;
 				}
 			}
 		}
