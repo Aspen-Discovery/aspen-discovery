@@ -2349,6 +2349,17 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library ADD COLUMN showBorrowerMessages TINYINT(1) DEFAULT 0',
 				'ALTER TABLE library ADD COLUMN showDebarmentNotes TINYINT(1) DEFAULT 0',
 			]
+		],
+
+		'library_propay_settings' => [
+			'title' => 'Library - add settings for ProPay integration',
+			'description' => 'Add settings to enable ProPay payments and update Symphony',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN proPayAccountNumber VARCHAR(10)',
+				'ALTER TABLE library ADD COLUMN proPayAgencyCode VARCHAR(4)',
+				'ALTER TABLE library ADD COLUMN symphonyPaymentType VARCHAR(8)',
+				'ALTER TABLE library ADD COLUMN symphonyPaymentPolicy VARCHAR(8)',
+			]
 		]
 	);
 }

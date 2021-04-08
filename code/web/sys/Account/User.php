@@ -2563,6 +2563,24 @@ class User extends DataObject
 			return strftime("%I:%M %p", $this->checkoutInfoLastLoaded);
 		}
 	}
+
+	public function getDisplayName(){
+		if (empty($this->displayName)) {
+			if ($this->firstname == '') {
+				$this->displayName = $this->lastname;
+			} else {
+				// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
+				$homeLibrary = $this->getHomeLibrary();
+				if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')) {
+					$this->displayName = substr($this->firstname, 0, 1) . '. ' . $this->lastname;
+				} else {
+					$this->displayName = $this->firstname . ' ' . substr($this->lastname, 0, 1) . '.';
+				}
+			}
+			$this->update();
+		}
+		return $this->displayName;
+	}
 }
 
 function modifiedEmpty($var) {

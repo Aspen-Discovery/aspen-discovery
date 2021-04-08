@@ -95,6 +95,10 @@ class Library extends DataObject
 	public $payPalClientId;
 	public $payPalClientSecret;
 	public $msbUrl;
+	public $proPayAccountNumber;
+	public $proPayAgencyCode;
+	public $symphonyPaymentType;
+	public $symphonyPaymentPolicy;
 
 	public /** @noinspection PhpUnused */ $repeatSearchOption;
 	public /** @noinspection PhpUnused */ $repeatInOnlineCollection;
@@ -211,7 +215,7 @@ class Library extends DataObject
 
 	public $maxFinesToAllowAccountUpdates;
 
-	protected $patronNameDisplayStyle; //Needs to be protected so __get and __set are called
+	public $patronNameDisplayStyle;
 	private $_patronNameDisplayStyleChanged = false; //Track changes so we can clear values for existing patrons
 	public $alwaysShowSearchResultsMainDetails;
 	public /** @noinspection PhpUnused */ $casHost;
@@ -592,19 +596,22 @@ class Library extends DataObject
 				)),
 			)),
 
-			'ecommerceSection' => array('property'=>'ecommerceSection', 'type' => 'section', 'label' =>'Fines/e-commerce', 'hideInLists' => true,
-					'helpLink'=>'', 'properties' => array(
-				'finePaymentType'          => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 2 => 'PayPal', 3 => 'MSB'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
-				'finesToPay'               => array('property'=>'finesToPay', 'type'=>'enum', 'label'=>'Which fines should be paid', 'values' => array(0 => 'All Fines', 1 => 'Selected Fines', 2 => 'Partial payment of selected fines'), 'description'=>'The fines that should be paid', 'hideInLists' => true,),
-				'finePaymentOrder'         => array('property'=>'finePaymentOrder', 'type'=>'text', 'label'=>'Fine Payment Order by type (separated with pipes)', 'description'=>'The order fines should be paid in separated by pipes', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
-				'payFinesLink'             => array('property'=>'payFinesLink', 'type'=>'text', 'label'=>'Pay Fines Link', 'description'=>'The link to pay fines.  Leave as default to link to classic (should have eCommerce link enabled)', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
-				'payFinesLinkText'         => array('property'=>'payFinesLinkText', 'type'=>'text', 'label'=>'Pay Fines Link Text', 'description'=>'The text when linking to pay fines.', 'hideInLists' => true, 'default' => 'Click to Pay Fines Online', 'size' => 80),
-				'minimumFineAmount'        => array('property'=>'minimumFineAmount', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Minimum Fine Amount', 'description'=>'The minimum fine amount to display the e-commerce link', 'hideInLists' => true,),
+			'ecommerceSection' => array('property'=>'ecommerceSection', 'type' => 'section', 'label' =>'Fines/e-commerce', 'hideInLists' => true, 'helpLink'=>'', 'properties' => array(
+				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 2 => 'PayPal', 3 => 'MSB'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
+				'finesToPay' => array('property'=>'finesToPay', 'type'=>'enum', 'label'=>'Which fines should be paid', 'values' => array(0 => 'All Fines', 1 => 'Selected Fines', 2 => 'Partial payment of selected fines'), 'description'=>'The fines that should be paid', 'hideInLists' => true,),
+				'finePaymentOrder' => array('property'=>'finePaymentOrder', 'type'=>'text', 'label'=>'Fine Payment Order by type (separated with pipes)', 'description'=>'The order fines should be paid in separated by pipes', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
+				'payFinesLink' => array('property'=>'payFinesLink', 'type'=>'text', 'label'=>'Pay Fines Link', 'description'=>'The link to pay fines.  Leave as default to link to classic (should have eCommerce link enabled)', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
+				'payFinesLinkText' => array('property'=>'payFinesLinkText', 'type'=>'text', 'label'=>'Pay Fines Link Text', 'description'=>'The text when linking to pay fines.', 'hideInLists' => true, 'default' => 'Click to Pay Fines Online', 'size' => 80),
+				'minimumFineAmount' => array('property'=>'minimumFineAmount', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Minimum Fine Amount', 'description'=>'The minimum fine amount to display the e-commerce link', 'hideInLists' => true,),
 				'showRefreshAccountButton' => array('property'=>'showRefreshAccountButton', 'type'=>'checkbox', 'label'=>'Show Refresh Account Button', 'description'=>'Whether or not a Show Refresh Account button is displayed in a pop-up when a user clicks the E-Commerce Link', 'hideInLists' => true, 'default' => true),
-				'payPalSandboxMode'        => array('property'=>'payPalSandboxMode', 'type'=>'checkbox', 'label'=>'Use PayPal Sandbox', 'description'=>'Whether or not users to use PayPal in Sandbox mode', 'hideInLists' => true,),
-				'payPalClientId'           => array('property'=>'payPalClientId', 'type'=>'text', 'label'=>'PayPal ClientID', 'description'=>'The Client ID to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
-				'payPalClientSecret'       => array('property'=>'payPalClientSecret', 'type'=>'storedPassword', 'label'=>'PayPal Client Secret', 'description'=>'The Client Secret to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
-				'msbUrl'					=> array('property'=>'msbUrl', 'type'=>'text', 'label'=>'MSB URL', 'description'=>'The MSB payment form URL and path (but NOT the query or parameters)', 'hideInLists' => true, 'default'=>'', 'size'=>80),
+				'payPalSandboxMode' => array('property'=>'payPalSandboxMode', 'type'=>'checkbox', 'label'=>'Use PayPal Sandbox', 'description'=>'Whether or not users to use PayPal in Sandbox mode', 'hideInLists' => true,),
+				'payPalClientId' => array('property'=>'payPalClientId', 'type'=>'text', 'label'=>'PayPal ClientID', 'description'=>'The Client ID to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
+				'payPalClientSecret' => array('property'=>'payPalClientSecret', 'type'=>'storedPassword', 'label'=>'PayPal Client Secret', 'description'=>'The Client Secret to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
+				'msbUrl' => array('property'=>'msbUrl', 'type'=>'text', 'label'=>'MSB URL', 'description'=>'The MSB payment form URL and path (but NOT the query or parameters)', 'hideInLists' => true, 'default'=>'', 'size'=>80),
+				'proPayAccountNumber' => array('property'=>'proPayAccountNumber', 'type'=>'storedPassword', 'label'=>'ProPay Account Number', 'description'=>'The Account Number to use when making ProPay payments.', 'hideInLists' => true, 'default' => '', 'maxLength' => 10),
+				'proPayAgencyCode' => array('property'=>'proPayAgencyCode', 'type'=>'text', 'label'=>'ProPay Agency Code', 'description'=>'The Agency Code to use when making ProPay payments.', 'hideInLists' => true, 'default' => '', 'maxLength' => 4),
+				'symphonyPaymentType' => array('property'=>'symphonyPaymentType', 'type'=>'text', 'label'=>'Symphony Payment Type', 'description'=>'Payment type to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
+				'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 			)),
 
 			//Grouped Work Display
@@ -1260,8 +1267,6 @@ class Library extends DataObject
 				}
 				return $this->combinedResultSections;
 			}
-		} elseif ($name == 'patronNameDisplayStyle') {
-			return $this->patronNameDisplayStyle;
 		} else {
 			return $this->_data[$name];
 		}
@@ -1300,13 +1305,6 @@ class Library extends DataObject
 		}elseif ($name == 'combinedResultSections') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->combinedResultSections = $value;
-		}elseif ($name == 'patronNameDisplayStyle'){
-			if ($this->patronNameDisplayStyle != $value){
-				$this->patronNameDisplayStyle = $value;
-				if (!$this->__fetchingFromDB) {
-					$this->_patronNameDisplayStyleChanged = true;
-				}
-			}
 		}else{
 			$this->_data[$name] = $value;
 		}
@@ -1357,6 +1355,22 @@ class Library extends DataObject
 		}
 
 		return $ret;
+	}
+
+	/**
+	 * @param string $propertyName
+	 * @param $newValue
+	 * @param array|null $propertyStructure
+	 *
+	 * @return boolean true if the property changed, or false if it did not
+	 * @noinspection PhpUnused
+	 */
+	public function setProperty($propertyName, $newValue, $propertyStructure){
+		$propertyChanged = parent::setProperty($propertyName, $newValue, $propertyStructure);
+		if ($propertyName == 'patronNameDisplayStyle' && $propertyChanged){
+			$this->_patronNameDisplayStyleChanged = true;
+		}
+		return $propertyChanged;
 	}
 
 	/**
