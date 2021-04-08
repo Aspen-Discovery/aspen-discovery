@@ -184,12 +184,7 @@ class UserAccount
 	{
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
-			if (strlen(UserAccount::$primaryUserObjectFromDB->displayName)) {
-				return UserAccount::$primaryUserObjectFromDB->displayName;
-			} else {
-				return UserAccount::$primaryUserObjectFromDB->firstname . ' ' . UserAccount::$primaryUserObjectFromDB->lastname;
-			}
-
+			return UserAccount::$primaryUserObjectFromDB->getDisplayName();
 		}
 		return '';
 	}

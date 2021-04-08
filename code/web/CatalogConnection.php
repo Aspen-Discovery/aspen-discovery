@@ -152,21 +152,6 @@ class CatalogConnection
 		}
 
 		if ($user && !($user instanceof AspenError)) {
-			if ($user->displayName == '') {
-				if ($user->firstname == '') {
-					$user->displayName = $user->lastname;
-				} else {
-					// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
-					$homeLibrary = $user->getHomeLibrary();
-					if ($homeLibrary == null || ($homeLibrary->__get('patronNameDisplayStyle') == 'firstinitial_lastname')) {
-						// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
-						$user->displayName = substr($user->firstname, 0, 1) . '. ' . $user->lastname;
-					} elseif ($homeLibrary->__get('patronNameDisplayStyle') == 'lastinitial_firstname') {
-						$user->displayName = $user->firstname . ' ' . substr($user->lastname, 0, 1) . '.';
-					}
-				}
-				$user->update();
-			}
 			if ($parentAccount) $user->setParentUser($parentAccount); // only set when the parent account is passed.
 
 			//Record stats to show the user logged in

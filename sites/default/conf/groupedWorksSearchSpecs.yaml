@@ -253,8 +253,12 @@ SeriesProper:
     - series_proper:
       - [localized_callnumber, 2400]
       - [onephrase, 500]
+    - series2:
+      - [onephrase, 750]
+      - [exact, 250]
     - series:
-      - [exact, 1000]
+      - [onephrase, 1000]
+      - [exact, 400]
 
 # This is proving slow based of the number of things we are searching.
 # Try reorganizing to match things better and ensure that we don't look at similar fields multiple times.
