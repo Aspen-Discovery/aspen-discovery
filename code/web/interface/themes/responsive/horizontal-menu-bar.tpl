@@ -7,7 +7,7 @@
 			</a>
 		{/if}
 		<a href="{if $useHomeLink == '1' || $useHomeLink == '3'}/{else}/Search/Home{/if}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Browse the Catalog' inAttribute=true}" aria-label="{translate text='Browse the Catalog' inAttribute=true}">
-			<i class="fas {if ($useHomeLink == '1' || $useHomeLink == '3') || ($showBookIcon == '1' && ($useHomeLink == '0' || $useHomeLink == '2'))}fa-book-open{else}fa-home{/if} fa-lg"></i>{if $useHomeLink == '1' || $useHomeLink == '3'}<span class="menu-bar-label visible-inline-block-lg">{$browseLinkText}</span>{else}{/if}
+			<i class="fas {if ($useHomeLink == '1' || $useHomeLink == '3') || ($showBookIcon == '1' && ($useHomeLink == '0' || $useHomeLink == '2'))}fa-book-open{else}fa-home{/if} fa-lg"></i>{if $useHomeLink == '1' || $useHomeLink == '3'}<span class="menu-bar-label visible-inline-block-lg">{translate text='Browse'}</span>{else}{/if}
 		</a>
 		{foreach from=$libraryLinks key=categoryName item=menuCategory}
 			{assign var=topCategory value=$menuCategory|@reset}
