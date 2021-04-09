@@ -60,7 +60,9 @@ class WebBuilderIndexer {
 			PreparedStatement getLibrarySubdomainsStmt = aspenConn.prepareStatement("SELECT libraryId, subdomain from library");
 			ResultSet getLibrarySubdomainsRS = getLibrarySubdomainsStmt.executeQuery();
 			while (getLibrarySubdomainsRS.next()){
-				librarySubdomains.put(getLibrarySubdomainsRS.getLong("libraryId"), getLibrarySubdomainsRS.getString("subdomain"));
+				String scopeName = getLibrarySubdomainsRS.getString("subdomain");
+				scopeName = scopeName.replaceAll("[^a-zA-Z0-9_]", "");
+				librarySubdomains.put(getLibrarySubdomainsRS.getLong("libraryId"), scopeName);
 			}
 			getLibrarySubdomainsRS.close();
 			getLibrarySubdomainsStmt.close();
