@@ -151,4 +151,28 @@ class Checkout extends CircEntry
 		}
 		return $checkout;
 	}
+
+	private function performPreSaveChecks(){
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		if (strlen($this->title) > 500){
+			$this->title = StringUtils::trimStringToLengthAtWordBoundary($this->title, 500, true);
+		}
+		if (strlen($this->title2) > 500){
+			$this->title2 = StringUtils::trimStringToLengthAtWordBoundary($this->title2, 500, true);
+		}
+		if (strlen($this->author) > 500){
+			$this->author = StringUtils::trimStringToLengthAtWordBoundary($this->author, 500, true);
+		}
+	}
+	public function insert()
+	{
+		$this->performPreSaveChecks();
+		return parent::insert();
+	}
+
+	public function update()
+	{
+		$this->performPreSaveChecks();
+		return parent::update();
+	}
 }
