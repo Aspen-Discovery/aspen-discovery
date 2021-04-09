@@ -9,10 +9,10 @@ chown root:root /usr/local/aspen-discovery/sites/$1/httpd-$1.conf
 chown root:root /usr/local/aspen-discovery/sites/$1/conf/crontab_settings.txt
 chmod 0644 /usr/local/aspen-discovery/sites/$1/conf/crontab_settings.txt
 chown aspen:aspen /usr/local/aspen-discovery/sites/$1/$1.sh
-if [ -d "/usr/local/aspen-discovery/sites/$1/conf/log4j" ]; then
+if [ -f "/usr/local/aspen-discovery/sites/$1/conf/log4j" ]; then
   chown aspen:aspen /usr/local/aspen-discovery/sites/$1/conf/log4j*
 fi
-if [ -d "/usr/local/aspen-discovery/sites/$1/conf/passkey" ]; then
+if [ -f "/usr/local/aspen-discovery/sites/$1/conf/passkey" ]; then
   chown aspen:aspen_apache /usr/local/aspen-discovery/sites/$1/conf/passkey
 fi
 chown aspen:aspen_apache /usr/local/aspen-discovery/sites/$1/conf/config*
