@@ -7,6 +7,9 @@ class StringUtils
 		if (strlen($string) < $maxLength) {
 			return $string;
 		} else {
+			if ($addEllipsis){
+				$maxLength -= 3;
+			}
 			$lastDelimiter = strrpos(substr($string, 0, $maxLength), ' ');
 			$string = substr($string, 0, $lastDelimiter);
 			if ($addEllipsis) {
