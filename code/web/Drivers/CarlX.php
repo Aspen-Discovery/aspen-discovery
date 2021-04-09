@@ -1815,7 +1815,7 @@ class CarlX extends AbstractIlsDriver{
 				left join item_v i on ( t.bid = i.bid and t.holdingbranch = i.branch)
 				left join location_v l on i.location = l.locnumber
 				where ob.branchcode = '$location'
-				and t.renew = ob.branchnumber -- ensure pickup location (t.renew) is school. field will change to t.pickupbranch in CarlX 9.6.8.0
+				and t.pickupbranch = ob.branchnumber -- pickup branch field changed from t.renew to t.pickupbranch in CarlX 9.6.8.0
 				and t.transcode = 'R*'
 				and i.status = 'S'
 				order by 

@@ -524,8 +524,10 @@ class MillenniumHolds{
 
 			//add to the appropriate array
 			if (!isset($curHold->status) || (strcasecmp($curHold->status, "ready") != 0 && strcasecmp($curHold->status, "hold being shelved") != 0)){
+				$curHold->available = false;
 				$holds['unavailable'][$curHold->source . $curHold->itemId . $curHold->cancelId . $curHold->userId] = $curHold;
 			}else{
+				$curHold->available = true;
 				$holds['available'][$curHold->source . $curHold->itemId . $curHold->cancelId . $curHold->userId] = $curHold;
 			}
 
