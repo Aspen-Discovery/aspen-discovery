@@ -2566,6 +2566,7 @@ class Admin_DBMaintenance extends Admin_Admin
 					'title' => 'Update useHomeLink to TINYINT type',
 					'description' => 'Update useHomeLink to TINYINT type',
 					'sql' => [
+						"UPDATE layout_settings set useHomeLink = 0 where useHomeLink = 0",
 						'ALTER TABLE layout_settings MODIFY COLUMN useHomeLink TINYINT(1) DEFAULT 0'
 					]
 				],
