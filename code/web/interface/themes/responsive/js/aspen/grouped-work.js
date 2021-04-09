@@ -427,21 +427,22 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		previewRelatedCover: function (recordId,groupedWorkId,recordType){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=previewRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
-			var uploadCoverData = new FormData($("#previewRelatedCover")[0]);
-			$.ajax({
-				url: url,
-				type: 'POST',
-				data: uploadCoverData,
-				dataType: 'json',
-				success: function(data) {
-					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
-				},
-				async: false,
-				contentType: false,
-				processData: false
-			});
+		setRelatedCover: function (recordId,groupedWorkId,recordType){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=setRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		clearRelatedCover: function (id){
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=clearRelatedCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessage("Success", data.message, true, false);
+					setTimeout("AspenDiscovery.closeLightbox();", 3000);
+				}
+			);
 			return false;
 		},
 
