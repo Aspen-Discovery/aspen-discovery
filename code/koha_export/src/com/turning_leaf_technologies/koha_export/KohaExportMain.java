@@ -585,7 +585,7 @@ public class KohaExportMain {
 		String authorizedValueType = null;
 		if (subfield == '8'){
 			authorizedValueType = "CCODE";
-		}else if (indexingProfile.getSubLocationSubfield() == 'c'){
+		}else if (subfield == 'c'){
 			authorizedValueType = "LOC";
 		}
 		return authorizedValueType;
