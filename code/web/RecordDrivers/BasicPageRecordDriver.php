@@ -78,7 +78,7 @@ class BasicPageRecordDriver extends IndexRecordDriver
 		} else {
 			$bookCoverUrl = '';
 		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=webpage";
+		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=BasicPage";
 
 		return $bookCoverUrl;
 	}

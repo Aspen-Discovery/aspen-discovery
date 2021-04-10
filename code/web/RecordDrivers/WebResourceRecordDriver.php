@@ -82,9 +82,11 @@ class WebResourceRecordDriver extends IndexRecordDriver
 		$webResource = new WebResource();
 		$webResource->id = str_replace('WebResource:', '', $this->getUniqueID());
 		if ($webResource->find(true)) {
-			return '/files/thumbnail/' . $webResource->logo;
+			if (!empty($webResource->logo)) {
+				return '/files/thumbnail/' . $webResource->logo;
+			}
 		}
-
+		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=WebResource";
 		return $bookCoverUrl;
 	}
 
