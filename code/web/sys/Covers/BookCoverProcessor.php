@@ -1490,10 +1490,9 @@ class BookCoverProcessor{
 				} else {
 					return false;
 				}
-
-			} return false;
-
+			}
 		}
+		return false;
 	}
 
 	private function getEbscoEdsCover($id)

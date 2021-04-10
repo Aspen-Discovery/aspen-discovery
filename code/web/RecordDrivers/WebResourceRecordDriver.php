@@ -80,7 +80,7 @@ class WebResourceRecordDriver extends IndexRecordDriver
 		}
 		require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
 		$webResource = new WebResource();
-		$webResource->id = $this->getUniqueID();
+		$webResource->id = str_replace('WebResource', '', $this->getUniqueID());
 		if ($webResource->find(true)) {
 			return '/files/thumbnail/' . $webResource->logo;
 		}
