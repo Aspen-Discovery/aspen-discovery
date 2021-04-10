@@ -110,7 +110,7 @@ class WebBuilderIndexer {
 				SolrInputDocument solrDocument = new SolrInputDocument();
 				//Load basic information
 				String id = getResourcesRS.getString("id");
-				solrDocument.addField("id", id);
+				solrDocument.addField("id", "WebResource:" + id);
 				solrDocument.addField("recordtype", "WebResource");
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");
@@ -174,7 +174,7 @@ class WebBuilderIndexer {
 				SolrInputDocument solrDocument = new SolrInputDocument();
 				//Load basic information
 				String id = getBasicPagesRS.getString("id");
-				solrDocument.addField("id", id);
+				solrDocument.addField("id", "BasicPage:" + id);
 				solrDocument.addField("recordtype", "BasicPage");
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");
