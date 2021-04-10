@@ -356,7 +356,7 @@ abstract class Solr
 		}
 		$this->pingServer();
 		// Query String Parameters
-		$options = array('q' => "id:\"$id\"");
+		$options = array('q' => "id:$id");
 		$options['fl'] = $fieldsToReturn;
 
 		global $timer;
