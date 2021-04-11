@@ -488,7 +488,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String sourceType = null;
 		if (itemField.getSubfield('e') != null){
 			sourceType = itemField.getSubfield('e').getData();
-			if (sourceType.toLowerCase().equals("marcexpress")){
+			if (sourceType.equalsIgnoreCase("marcexpress")){
 				sourceType = "OverDrive";
 			}
 		}else{
