@@ -24,7 +24,7 @@ while ($library->fetch()){
 	if ($addGroupedWorks && $library->generateSitemap) {
 		$subdomain = $library->subdomain;
 		global $solrScope;
-		$solrScope = $subdomain;
+		$solrScope = preg_replace('/[^a-zA-Z0-9_]/', '', $subdomain);
 
 		if (empty($library->baseUrl)){
 			$baseUrl = $configArray['Site']['url'];
