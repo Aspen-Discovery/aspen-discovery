@@ -3,7 +3,6 @@ package com.turning_leaf_technologies.polaris;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
@@ -44,7 +43,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -561,9 +559,10 @@ public class PolarisExportMain {
 	private static int extractDeletedBibs(long lastExtractTime) {
 		int numChanges = 0;
 		String lastId = "0";
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
+		String deleteDate = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
+		logEntry.addNote("Checking for deleted records since " + deleteDate);
 		while (true) {
-			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
-			String deleteDate = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/deleted/paged?lastID=" + lastId + "&deletedate=" + URLEncoder.encode(deleteDate) + "&nrecs=100";
 			WebServiceResponse pagedBibs = callPolarisAPI(getBibsUrl, null, "GET", "text/xml", accessSecret);
 			if (pagedBibs.isSuccess()) {
@@ -610,12 +609,17 @@ public class PolarisExportMain {
 		//Get a paged list of all bibs
 		String lastId = "0";
 		MarcFactory marcFactory = MarcFactory.newInstance();
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
+		String formattedLastExtractTime = "";
+		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
+			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
+			logEntry.addNote("Looking for changed records since " + formattedLastExtractTime);
+		}
 		while (true) {
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?lastID=" + lastId;
 			if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
-				DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
-				getBibsUrl += "&startdatecreated" + dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
-				getBibsUrl += "&startdatemodified" + dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
+				getBibsUrl += "&startdatecreated" + formattedLastExtractTime;
+				getBibsUrl += "&startdatemodified" + formattedLastExtractTime;
 			}
 			WebServiceResponse pagedBibs = callPolarisAPI(getBibsUrl, null, "GET", "text/xml", accessSecret);
 			if (pagedBibs.isSuccess()) {
