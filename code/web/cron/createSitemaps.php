@@ -52,6 +52,7 @@ while ($library->fetch()){
 			$searchObject->clearFacets();
 
 			$numSitemaps = (int)ceil($numResults / $recordsPerSitemap);
+			echo(date('H:i:s') . "   Found a total of $numResults results in the collection\r\n");
 
 			//Now do searches in batch and create the sitemap files
 			for ($curSitemap = 1; $curSitemap <= $numSitemaps; $curSitemap++) {
@@ -83,6 +84,12 @@ while ($library->fetch()){
 				fclose($sitemapFhnd);
 				gc_collect_cycles();
 			}
+		}elseif ($result instanceof AspenError){
+			echo(date('H:i:s') . "   Result was an error $result\r\n");
+		}elseif (!$result['error']){
+			echo(date('H:i:s') . "   Result had error {$result['error']}\r\n");
+		}else{
+			echo(date('H:i:s') . "   No results found\r\n");
 		}
 		gc_collect_cycles();
 		$searchObject = null;
