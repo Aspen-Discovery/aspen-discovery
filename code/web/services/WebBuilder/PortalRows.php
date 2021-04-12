@@ -4,6 +4,11 @@ require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 
 class WebBuilder_PortalRows extends ObjectEditor
 {
+	function getInitializationJs()
+	{
+		return 'return AspenDiscovery.Admin.updateMakeRowAccordion();';
+	}
+
 	function getObjectType()
 	{
 		return 'PortalRow';
