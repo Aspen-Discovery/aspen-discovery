@@ -2601,6 +2601,13 @@ class Admin_DBMaintenance extends Admin_Admin
 					'sql' => [
 						'ALTER TABLE layout_settings ADD COLUMN showBookIcon TINYINT(1) DEFAULT 0'
 					]
+				],
+				'add_makeAccordion_to_portalRow' => [
+					'title' => 'Add makeAccordion to web_builder_portal_row',
+					'description' => 'Add option to make web builder row accordion style with content',
+					'sql' => [
+						'ALTER TABLE web_builder_portal_row ADD COLUMN makeAccordion TINYINT(1) DEFAULT 0'
+					]
 				]
 			)
 		);

@@ -6,7 +6,7 @@ AspenDiscovery.WebBuilder = (function () {
 		getPortalCellValuesForSource: function () {
 			var portalCellId = $("#id").val();
 			var sourceType = $("#sourceTypeSelect").val();
-			if (sourceType === 'markdown') {
+			if (sourceType === 'markdown' || sourceType === 'accordion') {
 				$('#propertyRowmarkdown').show();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").hide();

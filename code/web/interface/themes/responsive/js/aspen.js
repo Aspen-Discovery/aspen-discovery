@@ -6831,10 +6831,20 @@ AspenDiscovery.Admin = (function(){
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
+		},
+
+		updateMakeRowAccordion: function() {
+			var makeRowAccordion = $('#makeAccordion');
+			$(makeRowAccordion).click(function() {
+				if(makeRowAccordion.is(":checked")){
+					$("#rowTitle").attr('required',"true");
+				}else{
+					$("#rowTitle").removeAttr('required');
+				}
+			});
 		}
 	};
 }(AspenDiscovery.Admin || {}));
-
 AspenDiscovery.Archive = (function(){
 	var date = new Date();
 	date.setTime(date.getTime() + (1 /*days*/ * 24 * 60 * 60 * 1000));
@@ -11743,7 +11753,7 @@ AspenDiscovery.WebBuilder = (function () {
 		getPortalCellValuesForSource: function () {
 			var portalCellId = $("#id").val();
 			var sourceType = $("#sourceTypeSelect").val();
-			if (sourceType === 'markdown') {
+			if (sourceType === 'markdown' || sourceType === 'accordion') {
 				$('#propertyRowmarkdown').show();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").hide();
