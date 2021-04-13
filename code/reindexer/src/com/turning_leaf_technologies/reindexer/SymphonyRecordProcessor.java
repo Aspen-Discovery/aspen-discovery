@@ -44,6 +44,9 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
 		String statusFieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		String shelfLocationData = getItemSubfieldData(shelvingLocationSubfield, itemField);
+		if (shelfLocationData != null){
+			shelfLocationData = shelfLocationData.toLowerCase();
+		}
 		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")){
 			statusFieldData = "On Order";
 		}else {

@@ -351,6 +351,7 @@ class IndexingProfile extends DataObject
 				if ($this->id) { // When this is a new Indexing Profile, there are no maps yet.
 					$statusMap = new StatusMapValue();
 					$statusMap->indexingProfileId = $this->id;
+					$statusMap->orderBy('value');
 					$statusMap->find();
 					while ($statusMap->fetch()) {
 						$this->_statusMap[$statusMap->id] = clone($statusMap);
