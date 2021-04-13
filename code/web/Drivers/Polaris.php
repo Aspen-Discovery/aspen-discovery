@@ -1,5 +1,12 @@
 <?php
 
+//TODO: Update patron info
+//TODO: Load reading history from Polaris
+//TODO: Load lists from Polaris
+//TODO: Cancel all holds
+//TODO: Freeze all holds
+//TODO: Self Register
+//TODO: Update PIN
 
 class Polaris extends AbstractIlsDriver
 {
