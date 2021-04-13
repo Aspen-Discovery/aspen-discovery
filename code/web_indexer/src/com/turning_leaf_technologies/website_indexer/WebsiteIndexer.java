@@ -177,7 +177,7 @@ class WebsiteIndexer {
 		}
 
 		try {
-			solrUpdateServer.commit(false, false, true);
+			solrUpdateServer.commit(true, true, false);
 		} catch (Exception e) {
 			logEntry.incErrors("Error in final commit ", e);
 		}
@@ -352,7 +352,7 @@ class WebsiteIndexer {
 
 							//Add to the solr index
 							SolrInputDocument solrDocument = new SolrInputDocument();
-							solrDocument.addField("id", page.getId());
+							solrDocument.addField("id", "WebPage:" + page.getId());
 							solrDocument.addField("recordtype", "WebPage");
 							solrDocument.addField("website_name", websiteName);
 							solrDocument.addField("search_category", searchCategory);

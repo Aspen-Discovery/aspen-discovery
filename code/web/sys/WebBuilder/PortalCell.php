@@ -41,6 +41,7 @@ class PortalCell extends DataObject
 			'markdown' => 'Text/Images',
 			'basic_page' => 'Basic Page',
 			'basic_page_teaser' => 'Basic Page Teaser',
+			'accordion' => 'Accordion',
 			'collection_spotlight' => 'Collection Spotlight',
 			'custom_form' => 'Form',
 			'image' => 'Image',
@@ -144,6 +145,14 @@ class PortalCell extends DataObject
 				}
 				$contents .= "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\" alt='{$imageUpload->title}'>";
 			}
+		} elseif ($this->sourceType == 'accordion'){
+			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+			$parsedown = AspenParsedown::instance();
+			$parsedown->setBreaksEnabled(true);
+			$interface->assign('title', $this->title);
+			$interface->assign('id',$this->portalRowId);
+			$interface->assign('contents', $parsedown->parse($this->markdown));
+			$contents .= $interface->fetch('WebBuilder/accordion.tpl');
 		}
 		if (empty($contents)) {
 			return 'Could not load contents for the cell';

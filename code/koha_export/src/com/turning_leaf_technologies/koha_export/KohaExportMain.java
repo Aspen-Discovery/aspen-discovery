@@ -585,7 +585,7 @@ public class KohaExportMain {
 		String authorizedValueType = null;
 		if (subfield == '8'){
 			authorizedValueType = "CCODE";
-		}else if (indexingProfile.getSubLocationSubfield() == 'c'){
+		}else if (subfield == 'c'){
 			authorizedValueType = "LOC";
 		}
 		return authorizedValueType;
@@ -1193,7 +1193,7 @@ public class KohaExportMain {
 			//Create a new record from data in the database (faster and more reliable than using ILSDI or OAI export)
 			getBaseMarcRecordStmt.setString(1, curBibId);
 			ResultSet baseMarcRecordRS = getBaseMarcRecordStmt.executeQuery();
-			while (baseMarcRecordRS.next()) {
+			if (baseMarcRecordRS.next()) {
 				String marcXML = baseMarcRecordRS.getString("metadata");
 				marcXML = StringUtils.stripNonValidXMLCharacters(marcXML);
 				MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(marcXML.getBytes(StandardCharsets.UTF_8)));
@@ -1260,6 +1260,16 @@ public class KohaExportMain {
 					//Reindex the record
 					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
+			}else{
+				//The record does not exist anymore
+				RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), curBibId);
+				if (result.reindexWork){
+					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+				}else if (result.deleteWork){
+					//Delete the work from solr and the database
+					getGroupedWorkIndexer().deleteRecord(result.permanentId);
+				}
+				logEntry.incDeleted();
 			}
 
 		} catch (Exception e) {

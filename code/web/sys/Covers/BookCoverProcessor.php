@@ -61,7 +61,7 @@ class BookCoverProcessor{
 			if ($this->getLibraryCalendarCover($this->id)) {
 				return true;
 			}
-		} elseif ($this->type == 'webpage') {
+		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource') {
 			if ($this->getWebPageCover($this->id)) {
 				return true;
 			}
@@ -1428,11 +1428,21 @@ class BookCoverProcessor{
 		//Build a cover based on the title of the page
 		require_once ROOT_DIR . '/sys/Covers/WebPageCoverBuilder.php';
 		$coverBuilder = new WebPageCoverBuilder();
-		require_once ROOT_DIR . '/RecordDrivers/WebsitePageRecordDriver.php';
 
-		$webPageDriver = new WebsitePageRecordDriver($id);
-		if ($webPageDriver->isValid()) {
-			$title = $webPageDriver->getTitle();
+		$recordDriver = null;
+		if ($this->type == 'WebPage'){
+			require_once ROOT_DIR . '/RecordDrivers/WebsitePageRecordDriver.php';
+			$recordDriver = new WebsitePageRecordDriver($this->type . ':' . $id);
+		}elseif ($this->type == 'BasicPage'){
+			require_once ROOT_DIR . '/RecordDrivers/BasicPageRecordDriver.php';
+			$recordDriver = new BasicPageRecordDriver($this->type . ':' . $id);
+		}elseif ($this->type == 'WebResource') {
+			require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
+			$recordDriver = new WebResourceRecordDriver($this->type . ':' . $id);
+		}
+
+		if ($recordDriver != null && $recordDriver->isValid()) {
+			$title = $recordDriver->getTitle();
 			$coverBuilder->getCover($title, $this->cacheFile);
 			return $this->processImageURL('default_webpage', $this->cacheFile, false);
 		} else {
@@ -1474,16 +1484,15 @@ class BookCoverProcessor{
 				$referencedCoverURL_md = $this->bookCoverPath . '/medium/' . $referencedCover . '.png';
 
 				if (file_exists($referencedCoverURL_lg)){
-					return $this->processImageURL('reference', $referencedCoverURL_lg);
+					return $this->processImageURL('reference ' . $referenceId, $referencedCoverURL_lg);
 				} elseif (file_exists($referencedCoverURL_md)) {
-					return $this->processImageURL('reference', $referencedCoverURL_md);
+					return $this->processImageURL('reference ' . $referenceId, $referencedCoverURL_md);
 				} else {
 					return false;
 				}
-
-			} return false;
-
+			}
 		}
+		return false;
 	}
 
 	private function getEbscoEdsCover($id)

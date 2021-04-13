@@ -1125,7 +1125,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 			if (callNumber != null) {
-
 				if (volume != null && volume.length() > 0 && !callNumber.toString().endsWith(volume)){
 					if (callNumber.length() > 0 && callNumber.charAt(callNumber.length() - 1) != ' '){
 						callNumber.append(" ");
@@ -1138,6 +1137,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				itemInfo.setCallNumber(volume.trim());
 				itemInfo.setSortableCallNumber(volume.trim());
 			}
+		}else{
+			String callNumber = itemInfo.getCallNumber();
+			if (volume != null && volume.length() > 0 && !callNumber.endsWith(volume)){
+				if (callNumber.length() > 0 && callNumber.charAt(callNumber.length() - 1) != ' '){
+					callNumber += " ";
+				}
+				callNumber += volume;
+			}
+			itemInfo.setCallNumber(callNumber.trim());
+			itemInfo.setSortableCallNumber(callNumber.trim());
 		}
 	}
 

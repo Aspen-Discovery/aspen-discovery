@@ -716,8 +716,7 @@ public class CarlXExportMain {
 								String currentBibID = updatedBibCopy.get(i - 1);
 								bibsNotFound.remove(currentBibID);
 								String currentFullBibID = getFileIdForRecordNumber(currentBibID);
-								//logger.debug("Updating " + currentFullBibID);
-								//logger.debug("Response from CARL.X\r\n" + marcRecordSOAPResponse.getMessage());
+
 								Node marcRecordNode = marcRecordInfo.item(i);
 
 								// Build Marc Object from the API data
@@ -1121,18 +1120,6 @@ public class CarlXExportMain {
 									currentItem.setShelvingLocation(detailValue);
 									break;
 								case "StatusCode":
-									/*// Set itemIdentifier for logging with info that we know at this point.
-									String itemIdentifier;
-									// Use code below if we every turn on switch fullReindex (logs missing translation values)
-									if (currentItem.getBID().isEmpty()) {
-										itemIdentifier = currentItem.getItemId().isEmpty() ? "a Carl-X Item" : " for item ID " + currentItem.getItemId();
-									} else {
-										itemIdentifier = currentItem.getItemId().isEmpty() ? currentItem.getBID() + " for an unknown Carl-X Item" : currentItem.getBID() + " for item ID " + currentItem.getItemId();
-									}
-									String statusCode = translateValue("status_codes", detailValue, itemIdentifier);
-									if (statusCode.equals("U")) {
-										logger.warn("Unknown status " + detailValue);
-									}*/
 									currentItem.setStatus(detailValue);
 									break;
 								case "DueDate":
@@ -1463,7 +1450,6 @@ public class CarlXExportMain {
 			}catch (Exception e){
 				logger.warn("error committing hold updates rolling back", e);
 				dbConn.rollback(startOfHolds);
-				startOfHolds = null;
 			}
 
 		} catch (Exception e) {

@@ -127,8 +127,19 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 
 	public function getRecordDriverForResult($current)
 	{
-		require_once ROOT_DIR . '/RecordDrivers/WebsitePageRecordDriver.php';
-		return new WebsitePageRecordDriver($current);
+		if ($current['recordtype'] == 'WebPage') {
+			require_once ROOT_DIR . '/RecordDrivers/WebsitePageRecordDriver.php';
+			return new WebsitePageRecordDriver($current);
+		}elseif ($current['recordtype'] == 'WebResource'){
+			require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
+			return new WebResourceRecordDriver($current);
+		}elseif ($current['recordtype'] == 'BasicPage'){
+			require_once ROOT_DIR . '/RecordDrivers/BasicPageRecordDriver.php';
+			return new BasicPageRecordDriver($current);
+		}else{
+			AspenError::raiseError("Unknown type of Website result {$current['recordtype']}");
+		}
+		return null;
 	}
 
 	public function getSearchesFile()

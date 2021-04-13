@@ -24,7 +24,7 @@ while ($library->fetch()){
 	if ($addGroupedWorks && $library->generateSitemap) {
 		$subdomain = $library->subdomain;
 		global $solrScope;
-		$solrScope = $subdomain;
+		$solrScope = preg_replace('/[^a-zA-Z0-9_]/', '', $subdomain);
 
 		if (empty($library->baseUrl)){
 			$baseUrl = $configArray['Site']['url'];
@@ -52,6 +52,7 @@ while ($library->fetch()){
 			$searchObject->clearFacets();
 
 			$numSitemaps = (int)ceil($numResults / $recordsPerSitemap);
+			echo(date('H:i:s') . "   Found a total of $numResults results in the collection\r\n");
 
 			//Now do searches in batch and create the sitemap files
 			for ($curSitemap = 1; $curSitemap <= $numSitemaps; $curSitemap++) {
@@ -83,6 +84,12 @@ while ($library->fetch()){
 				fclose($sitemapFhnd);
 				gc_collect_cycles();
 			}
+		}elseif ($result instanceof AspenError){
+			echo(date('H:i:s') . "   Result was an error $result\r\n");
+		}elseif (!$result['error']){
+			echo(date('H:i:s') . "   Result had error {$result['error']}\r\n");
+		}else{
+			echo(date('H:i:s') . "   No results found\r\n");
 		}
 		gc_collect_cycles();
 		$searchObject = null;

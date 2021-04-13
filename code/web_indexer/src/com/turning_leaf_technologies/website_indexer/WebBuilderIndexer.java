@@ -60,7 +60,9 @@ class WebBuilderIndexer {
 			PreparedStatement getLibrarySubdomainsStmt = aspenConn.prepareStatement("SELECT libraryId, subdomain from library");
 			ResultSet getLibrarySubdomainsRS = getLibrarySubdomainsStmt.executeQuery();
 			while (getLibrarySubdomainsRS.next()){
-				librarySubdomains.put(getLibrarySubdomainsRS.getLong("libraryId"), getLibrarySubdomainsRS.getString("subdomain"));
+				String scopeName = getLibrarySubdomainsRS.getString("subdomain");
+				scopeName = scopeName.replaceAll("[^a-zA-Z0-9_]", "");
+				librarySubdomains.put(getLibrarySubdomainsRS.getLong("libraryId"), scopeName);
 			}
 			getLibrarySubdomainsRS.close();
 			getLibrarySubdomainsStmt.close();
@@ -108,7 +110,7 @@ class WebBuilderIndexer {
 				SolrInputDocument solrDocument = new SolrInputDocument();
 				//Load basic information
 				String id = getResourcesRS.getString("id");
-				solrDocument.addField("id", id);
+				solrDocument.addField("id", "WebResource:" + id);
 				solrDocument.addField("recordtype", "WebResource");
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");
@@ -172,7 +174,7 @@ class WebBuilderIndexer {
 				SolrInputDocument solrDocument = new SolrInputDocument();
 				//Load basic information
 				String id = getBasicPagesRS.getString("id");
-				solrDocument.addField("id", id);
+				solrDocument.addField("id", "BasicPage:" + id);
 				solrDocument.addField("recordtype", "BasicPage");
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");

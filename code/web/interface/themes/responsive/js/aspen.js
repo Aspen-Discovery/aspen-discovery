@@ -6831,10 +6831,20 @@ AspenDiscovery.Admin = (function(){
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
+		},
+
+		updateMakeRowAccordion: function() {
+			var makeRowAccordion = $('#makeAccordion');
+			$(makeRowAccordion).click(function() {
+				if(makeRowAccordion.is(":checked")){
+					$("#rowTitle").attr('required',"true");
+				}else{
+					$("#rowTitle").removeAttr('required');
+				}
+			});
 		}
 	};
 }(AspenDiscovery.Admin || {}));
-
 AspenDiscovery.Archive = (function(){
 	var date = new Date();
 	date.setTime(date.getTime() + (1 /*days*/ * 24 * 60 * 60 * 1000));
@@ -8877,21 +8887,22 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		previewRelatedCover: function (recordId,groupedWorkId,recordType){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=previewRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
-			var uploadCoverData = new FormData($("#previewRelatedCover")[0]);
-			$.ajax({
-				url: url,
-				type: 'POST',
-				data: uploadCoverData,
-				dataType: 'json',
-				success: function(data) {
-					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
-				},
-				async: false,
-				contentType: false,
-				processData: false
-			});
+		setRelatedCover: function (recordId,groupedWorkId,recordType){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=setRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		clearRelatedCover: function (id){
+			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=clearRelatedCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessage("Success", data.message, true, false);
+					setTimeout("AspenDiscovery.closeLightbox();", 3000);
+				}
+			);
 			return false;
 		},
 
@@ -11742,7 +11753,7 @@ AspenDiscovery.WebBuilder = (function () {
 		getPortalCellValuesForSource: function () {
 			var portalCellId = $("#id").val();
 			var sourceType = $("#sourceTypeSelect").val();
-			if (sourceType === 'markdown') {
+			if (sourceType === 'markdown' || sourceType === 'accordion') {
 				$('#propertyRowmarkdown').show();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").hide();

@@ -344,6 +344,17 @@ AspenDiscovery.Admin = (function(){
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
+		},
+
+		updateMakeRowAccordion: function() {
+			var makeRowAccordion = $('#makeAccordion');
+			$(makeRowAccordion).click(function() {
+				if(makeRowAccordion.is(":checked")){
+					$("#rowTitle").attr('required',"true");
+				}else{
+					$("#rowTitle").removeAttr('required');
+				}
+			});
 		}
 	};
 }(AspenDiscovery.Admin || {}));

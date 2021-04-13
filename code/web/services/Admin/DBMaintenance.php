@@ -2562,11 +2562,51 @@ class Admin_DBMaintenance extends Admin_Admin
 						'ALTER TABLE layout_settings ADD COLUMN useHomeLink VARCHAR(75) NOT NULL'
 					]
 				],
+				'update_useHomeLink_tinyint' => [
+					'title' => 'Update useHomeLink to TINYINT type',
+					'description' => 'Update useHomeLink to TINYINT type',
+					'sql' => [
+						"UPDATE layout_settings set useHomeLink = 0 where useHomeLink = ''",
+						'ALTER TABLE layout_settings MODIFY COLUMN useHomeLink TINYINT(1) DEFAULT 0'
+					]
+				],
+				'add_browseLinkText_to_layout_settings' => [
+					'title' => 'Add browseLinkText to Layout Settings',
+					'description' => 'Add browseLinkText dropdown to Layout Settings to allow custom text for catalog home link',
+					'sql' => [
+						'ALTER TABLE layout_settings ADD COLUMN browseLinkText VARCHAR(30) DEFAULT "Browse"'
+					]
+				],
+				'update_useHomeLink' => [
+					'title' => 'Update useHomeLink based on previous preferences',
+					'description' => 'Updates the value of useHomeLink based on the combination of previous preferences',
+					'sql' => [
+						'UPDATE layout_settings SET useHomeLink="0" WHERE useHomeLinkForLogo="0" AND useHomeLinkInBreadcrumbs="0"',
+						'UPDATE layout_settings SET useHomeLink="1" WHERE useHomeLinkForLogo="0" AND useHomeLinkInBreadcrumbs="1"',
+						'UPDATE layout_settings SET useHomeLink="2" WHERE useHomeLinkForLogo="1" AND useHomeLinkInBreadcrumbs="0"',
+						'UPDATE layout_settings SET useHomeLink="3" WHERE useHomeLinkForLogo="1" AND useHomeLinkInBreadcrumbs="1"',
+					]
+				],
+				'remove_old_homeLink' => [
+					'title' => 'Remove useHomeLinkForLogo and useHomeLinkInBreadcrumbs columns',
+					'description' => 'Remove useHomeLinkForLogo and useHomeLinkInBreadcrumbs columns',
+					'sql' => [
+						'ALTER TABLE layout_settings DROP COLUMN useHomeLinkInBreadcrumbs',
+						'ALTER TABLE layout_settings DROP COLUMN useHomeLinkForLogo'
+					]
+				],
 				'add_showBookIcon_to_layout_settings' => [
 					'title' => 'Add showBookIcon to Layout Settings',
 					'description' => 'Add showBookIcon to allow changing between the book and home icon for catalog home',
 					'sql' => [
 						'ALTER TABLE layout_settings ADD COLUMN showBookIcon TINYINT(1) DEFAULT 0'
+					]
+				],
+				'add_makeAccordion_to_portalRow' => [
+					'title' => 'Add makeAccordion to web_builder_portal_row',
+					'description' => 'Add option to make web builder row accordion style with content',
+					'sql' => [
+						'ALTER TABLE web_builder_portal_row ADD COLUMN makeAccordion TINYINT(1) DEFAULT 0'
 					]
 				]
 			)

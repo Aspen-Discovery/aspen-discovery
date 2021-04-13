@@ -6,6 +6,7 @@ class PortalRow extends DataObject
 	public $__table = 'web_builder_portal_row';
 	public $weight;
 	public $id;
+	public $makeAccordion;
 	public $portalPageId;
 	public /** @noinspection PhpUnused */ $rowTitle;
 
@@ -18,6 +19,7 @@ class PortalRow extends DataObject
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.', 'required'=> true),
 			'portalPageId' => array('property'=>'portalPageId', 'type'=>'label', 'label'=>'Portal Page', 'description'=>'The parent page'),
+			'makeAccordion' => array('property' => 'makeAccordion', 'type' => 'checkbox', 'label' => 'Make row accordion (Row Title is required to use)', 'description' => 'Make the entire row contents an accordion box', 'onchange'=>'return AspenDiscovery.Admin.updateMakeRowAccordion();'),
 			'rowTitle' => array('property' => 'rowTitle', 'type' => 'text', 'label' => 'Row Title', 'description' => 'The title of the row (blank for none)', 'size' => '40', 'maxLength'=>100),
 
 			'cells' => [
