@@ -8,6 +8,7 @@ fi
 chown root:root /usr/local/aspen-discovery/sites/$1/httpd-$1.conf
 chown root:root /usr/local/aspen-discovery/sites/$1/conf/crontab_settings.txt
 chmod 0644 /usr/local/aspen-discovery/sites/$1/conf/crontab_settings.txt
+chown aspen:aspen_apache /usr/local/aspen-discovery/sites/$1/conf
 chown aspen:aspen /usr/local/aspen-discovery/sites/$1/$1.sh
 if [ -f "/usr/local/aspen-discovery/sites/$1/conf/log4j" ]; then
   chown aspen:aspen /usr/local/aspen-discovery/sites/$1/conf/log4j*
