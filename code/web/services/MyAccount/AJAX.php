@@ -2986,7 +2986,7 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		if ($userCanEdit){
-			if (strpos($_SERVER['REQUEST_URI'], "selected")){
+			if (isset($_REQUEST['selected'])){
 				$itemsToRemove = $_REQUEST['selected'];
 				foreach ($itemsToRemove as $listEntryId => $selected){
 					$list->removeListEntry($listEntryId);
