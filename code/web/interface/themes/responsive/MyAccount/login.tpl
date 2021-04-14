@@ -21,7 +21,7 @@
 				</p>
 			</div>
 		{else}
-			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
+			<form method="post" action="MyAccount/Home" id="loginForm" class="form-horizontal">
 				<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 				<div id="loginFormFields">
 					<div id="loginUsernameRow" class="form-group">

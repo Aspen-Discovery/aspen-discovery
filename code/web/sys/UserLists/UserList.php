@@ -116,6 +116,7 @@ class UserList extends DataObject
 		return $result;
 	}
 	function delete($useWhere = false){
+		//TODO: Delete all list entries for the list?
 		$this->deleted = 1;
 		$this->dateUpdated = time();
 		$ret = parent::update();

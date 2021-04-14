@@ -1,6 +1,11 @@
 {strip}
 <div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
 	<div class="row">
+		{if $listEditAllowed}
+			<div class="selectTitle col-xs-12 col-sm-1">
+				<input type="checkbox" name="selected[{$listEntryId}]" class="titleSelect" id="selected{$listEntryId}">
+			</div>
+		{/if}
 		{if $showCovers}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1 && !empty($bookCoverUrlMedium)}
@@ -11,7 +16,7 @@
 			</div>
 		{/if}
 
-		<div class="{if !$showCovers}col-xs-10 col-sm-10 col-md-10 col-lg-11{else}col-xs-7 col-sm-7 col-md-7 col-lg-8{/if}">
+		<div class="{if !$showCovers}col-xs-9 col-sm-9 col-md-9 col-lg-10{elseif $listEditAllowed}col-xs-6 col-sm-6 col-md-6 col-lg-7{else}col-xs-6 col-sm-6 col-md-6 col-lg-8{/if}">
 			<div class="row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;

@@ -99,22 +99,7 @@ class MyAccount_MyList extends MyAccount {
 					$this->reloadCover();
 					$_SESSION['listNotes'] = $notes;
 				}
-			}elseif (isset($_REQUEST['myListActionItem']) && strlen($_REQUEST['myListActionItem']) > 0){
-				$actionToPerform = $_REQUEST['myListActionItem'];
-
-				if ($actionToPerform == 'deleteMarked'){
-					//get a list of all titles that were selected
-					$itemsToRemove = $_REQUEST['selected'];
-					foreach ($itemsToRemove as $id => $selected){
-						//add back the leading . to get the full bib record
-						$list->removeListEntry($id);
-					}
-					$this->reloadCover();
-				}elseif ($actionToPerform == 'deleteAll'){
-					$list->removeAllListEntries();
-				}
-				$list->update();
-			}elseif (isset($_REQUEST['delete'])) {
+			} elseif (isset($_REQUEST['delete'])) {
 				$recordToDelete = $_REQUEST['delete'];
 				$list->removeListEntry($recordToDelete);
 				$this->reloadCover();

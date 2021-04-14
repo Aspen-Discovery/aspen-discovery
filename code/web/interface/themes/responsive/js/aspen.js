@@ -5738,6 +5738,18 @@ AspenDiscovery.Account = (function(){
 						params.showCovers = showCovers
 					}
 				}
+				var module = Globals.activeModule;
+				var action = Globals.activeAction;
+
+				if ((module == "WebBuilder") && ((action == "Form") || (action == "BasicPage") || (action == "PortalPage"))){
+					var referer = "MyAccount/Home";
+				} else if ((module == "Search") && (action == "Home")) {
+					var referer = "MyAccount/Home";
+				}
+				else {
+					var referer = window.location;
+				}
+
 				loginErrorElem.hide();
 				loadingElem.show();
 				// noinspection JSUnresolvedFunction
@@ -5759,6 +5771,7 @@ AspenDiscovery.Account = (function(){
 							AspenDiscovery.Account.ajaxCallback();
 							AspenDiscovery.Account.ajaxCallback = null;
 						}
+						window.location.replace(referer);
 					} else {
 						loginErrorElem.text(response.result.message).show();
 					}
@@ -6481,6 +6494,25 @@ AspenDiscovery.Account = (function(){
 					}
 				}).fail(AspenDiscovery.ajaxFail);
 			}
+			return false;
+		},
+		deleteAll: function(id){
+			if (confirm("Are you sure you want to delete all items in this list?")){
+				var url = Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id;
+				$.getJSON(url, function(data){
+					location.reload();
+				});
+			}
+			return false;
+		},
+		deleteSelected: function(id){
+			var selectedTitles = AspenDiscovery.getSelectedTitles();
+			if (selectedTitles) {
+				if (confirm("Are you sure you want to delete the selected items from this list?")){
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&' + selectedTitles, function (data) {
+						location.reload();
+					})
+				}}
 			return false;
 		},
 	};

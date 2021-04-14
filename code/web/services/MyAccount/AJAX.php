@@ -2964,4 +2964,46 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		return $result;
 	}
+
+	/** @noinspection PhpUnused */
+	function deleteListItems(){
+		$result = [
+			'success' => false,
+			'message' => 'Something went wrong.'
+		];
+
+		$listId = htmlspecialchars($_GET["id"]);
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+		$list = new UserList();
+		$list->id = $listId;
+
+		//Perform an action on the list, but verify that the user has permission to do so.
+		$userCanEdit = false;
+		$userObj = UserAccount::getActiveUserObj();
+		if ($userObj != false){
+			$userCanEdit = $userObj->canEditList($list);
+		}
+
+		if ($userCanEdit){
+			if (isset($_REQUEST['selected'])){
+				$itemsToRemove = $_REQUEST['selected'];
+				foreach ($itemsToRemove as $listEntryId => $selected){
+					$list->removeListEntry($listEntryId);
+				}
+				$result['success'] = true;
+				$result['message'] = 'Selected items removed from the list successfully';
+			}else {
+				$list->find(true);
+				$list->removeAllListEntries();
+				$result['success'] = true;
+				$result['message'] = 'All items removed from the list successfully';
+			}
+			$list->update();
+			$this->reloadCover();
+			$result['success'] = true;
+			$result['message'] = 'Items removed from the list successfully';
+		}
+		return $result;
+	}
 }
