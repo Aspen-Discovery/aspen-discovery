@@ -915,6 +915,14 @@ function getUserUpdates()
 				'ALTER TABLE user_checkout CHANGE COLUMN volume volume VARCHAR(255)',
 				'ALTER TABLE user_hold CHANGE COLUMN volume volume VARCHAR(255)'
 			]
+		],
+
+		'user_reading_history_dates_in_past' => [
+			'title' => 'Expand Reading History Check In Date',
+			'description' => 'Update Reading History to allow check in dates prior to 1970',
+			'sql' => [
+				'ALTER table user_reading_history_work change column checkInDate checkInDate BIGINT NULL;'
+			]
 		]
 	);
 }
