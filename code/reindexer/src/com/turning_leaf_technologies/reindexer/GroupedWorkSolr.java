@@ -516,7 +516,7 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 					if (curItem.isEContent() || curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
 						Long daysSinceAdded;
-						if (curItem.isOrderItem() || (curItem.getStatusCode() != null && curItem.getStatusCode().equals("On Order"))) {
+						if (curItem.isOrderItem() || (curItem.getStatusCode() != null && (curItem.getStatusCode().equals("On Order") || curItem.getStatusCode().equals("Coming Soon")))) {
 							daysSinceAdded = -1L;
 						} else {
 							//Date Added To Catalog needs to be the earliest date added for the catalog.
