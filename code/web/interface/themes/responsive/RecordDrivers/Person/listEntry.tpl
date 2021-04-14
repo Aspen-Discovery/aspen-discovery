@@ -14,8 +14,8 @@
 		{/if}
 
 
-		<div class="{if !$showCovers}col-xs-9 col-sm-9 col-md-9 col-lg-10{else}col-xs-6 col-sm-6 col-md-6 col-lg-7{/if}">
-			<div class="row">
+		<div class="{if !$showCovers}col-xs-9 col-sm-9 col-md-9 col-lg-10{elseif $listEditAllowed}col-xs-6 col-sm-6 col-md-6 col-lg-7{else}col-xs-6 col-sm-6 col-md-6 col-lg-8{/if}">
+		<div class="row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 
