@@ -2985,7 +2985,7 @@ class MyAccount_AJAX extends JSON_Action
 			$userCanEdit = $userObj->canEditList($list);
 		}
 
-		if ($userCanEdit && (isset($_REQUEST['listAction']) && strlen($_REQUEST['listAction']) > 0)){
+		if ($userCanEdit){
 			$actionToPerform = $_REQUEST['listAction'];
 
 			if ($actionToPerform == 'deleteMarked'){
