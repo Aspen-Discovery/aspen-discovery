@@ -504,6 +504,7 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 			$interface->assign('homeBreadcrumbLink', '/');
 		}
 		$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
+		$interface->assign('browseLinkText', $library->getLayoutSettings()->browseLinkText);
 		$interface->assign('useHomeLink', $library->getLayoutSettings()->useHomeLink);
 		$interface->assign('showBookIcon', $library->getLayoutSettings()->showBookIcon);
 	}
