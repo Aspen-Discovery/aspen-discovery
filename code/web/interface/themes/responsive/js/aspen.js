@@ -5738,10 +5738,15 @@ AspenDiscovery.Account = (function(){
 						params.showCovers = showCovers
 					}
 				}
+				var module = Globals.activeModule;
+				var action = Globals.activeAction;
 
-				if((window.location.href.indexOf('Search/Home') > 0) || (window.location.href.indexOf('WebBuilder') > 0) || (window.location.href.indexOf('?browseCategory') > 0)) {
+				if ((module == "WebBuilder") && ((action == "Form") || (action == "BasicPage") || (action == "PortalPage"))){
 					var referer = "MyAccount/Home";
-				} else {
+				} else if ((module == "Search") && (action == "Home")) {
+					var referer = "MyAccount/Home";
+				}
+				else {
 					var referer = window.location;
 				}
 
