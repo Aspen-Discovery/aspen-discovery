@@ -2969,7 +2969,7 @@ class MyAccount_AJAX extends JSON_Action
 	function deleteListItems(){
 		$result = [
 			'success' => false,
-			'message' => 'This is borked'
+			'message' => 'Something went wrong.'
 		];
 
 		$listId = htmlspecialchars($_GET["id"]);
@@ -2986,22 +2986,18 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		if ($userCanEdit){
-			$actionToPerform = $_REQUEST['listAction'];
-
-			if ($actionToPerform == 'deleteMarked'){
+			if (strpos($_SERVER['REQUEST_URI'], "selected")){
 				$itemsToRemove = $_REQUEST['selected'];
 				foreach ($itemsToRemove as $listEntryId => $selected){
 					$list->removeListEntry($listEntryId);
 				}
 				$result['success'] = true;
 				$result['message'] = 'Selected items removed from the list successfully';
-			}elseif ($actionToPerform == 'deleteAll'){
+			}else {
 				$list->find(true);
 				$list->removeAllListEntries();
 				$result['success'] = true;
 				$result['message'] = 'All items removed from the list successfully';
-			} else {
-				$result['message'] = 'Something went wrong.';
 			}
 			$list->update();
 			$this->reloadCover();

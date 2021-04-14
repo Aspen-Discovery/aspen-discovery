@@ -488,6 +488,13 @@ AspenDiscovery.Account = (function(){
 						params.showCovers = showCovers
 					}
 				}
+
+				if((window.location.href.indexOf('Search/Home') > 0) || (window.location.href.indexOf('WebBuilder') > 0) || (window.location.href.indexOf('?browseCategory') > 0)) {
+					var referer = "MyAccount/Home";
+				} else {
+					var referer = window.location;
+				}
+
 				loginErrorElem.hide();
 				loadingElem.show();
 				// noinspection JSUnresolvedFunction
@@ -509,6 +516,7 @@ AspenDiscovery.Account = (function(){
 							AspenDiscovery.Account.ajaxCallback();
 							AspenDiscovery.Account.ajaxCallback = null;
 						}
+						window.location.replace(referer);
 					} else {
 						loginErrorElem.text(response.result.message).show();
 					}
@@ -1235,7 +1243,7 @@ AspenDiscovery.Account = (function(){
 		},
 		deleteAll: function(id){
 			if (confirm("Are you sure you want to delete all items in this list?")){
-				var url = Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&listAction=deleteAll';
+				var url = Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id;
 				$.getJSON(url, function(data){
 					location.reload();
 				});
@@ -1246,7 +1254,7 @@ AspenDiscovery.Account = (function(){
 			var selectedTitles = AspenDiscovery.getSelectedTitles();
 			if (selectedTitles) {
 				if (confirm("Are you sure you want to delete the selected items from this list?")){
-					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&listAction=deleteMarked&' + selectedTitles, function (data) {
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&' + selectedTitles, function (data) {
 						location.reload();
 					})
 				}}
