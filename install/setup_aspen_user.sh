@@ -8,6 +8,7 @@ for ID in $(cat /etc/passwd | grep /home | cut -d ':' -f1); do (usermod -a -G as
 groupadd aspen_apache
 #Add apache to the aspen_apache group
 usermod -a -G aspen_apache apache
+usermod -a -G aspen_apache aspen
 adduser solr
 usermod -a -G aspen solr
 
