@@ -25,16 +25,6 @@ class MyAccount_Login extends Action
 		$followupAction = isset($_REQUEST['followupAction']) ?  strip_tags($_REQUEST['followupAction']) : $action;
 		$followupModule = isset($_REQUEST['followupModule']) ?  strip_tags($_REQUEST['followupModule']) : $module;
 
-		if (($module == "WebBuilder") && (($action == "Form") || ($action == "BasicPage") || ($action == "PortalPage"))){
-			$referer = "MyAccount/Home";
-		} else if (($module == "Search") && ($action == "Home")) {
-			$referer = "MyAccount/Home";
-		}
-		else {
-			$referer = $_SERVER['HTTP_REFERER'];
-		}
-		$interface->assign('loginReferer', $referer);
-
 		// Don't go to the trouble if we're just logging in to the Home action
 		if (!($followupAction == 'Home' && $followupModule == 'MyAccount')) {
 			$interface->assign('followupModule', $followupModule);

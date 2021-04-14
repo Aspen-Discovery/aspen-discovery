@@ -491,7 +491,7 @@ AspenDiscovery.Account = (function(){
 				var module = Globals.activeModule;
 				var action = Globals.activeAction;
 
-				if ((module == "WebBuilder") && ((action == "Form") || (action == "BasicPage") || (action == "PortalPage"))){
+				if ((module == "WebBuilder") && ((action == "BasicPage") || (action == "PortalPage"))){
 					var referer = "MyAccount/Home";
 				} else if ((module == "Search") && (action == "Home")) {
 					var referer = "MyAccount/Home";
