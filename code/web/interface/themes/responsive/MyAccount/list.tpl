@@ -152,6 +152,12 @@
 					</div>
 				{/foreach}
 			</div>
+			<div class="btn-group">
+				{if $listEditAllowed}
+					<button onclick="return AspenDiscovery.Account.deleteSelected({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Items"}</button>
+					<button onclick="return AspenDiscovery.Account.deleteAll({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete All Items"}</button>
+				{/if}
+			</div>
 			{if $userSort}
 				<script type="text/javascript">
 					{literal}

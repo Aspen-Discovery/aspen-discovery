@@ -105,16 +105,17 @@ class MyAccount_MyList extends MyAccount {
 				if ($actionToPerform == 'deleteMarked'){
 					//get a list of all titles that were selected
 					$itemsToRemove = $_REQUEST['selected'];
-					foreach ($itemsToRemove as $id => $selected){
+					foreach ($itemsToRemove as $listEntryId => $selected){
 						//add back the leading . to get the full bib record
-						$list->removeListEntry($id);
+						$list->removeListEntry($listEntryId);
 					}
 					$this->reloadCover();
 				}elseif ($actionToPerform == 'deleteAll'){
 					$list->removeAllListEntries();
+					$this->reloadCover();
 				}
 				$list->update();
-			}elseif (isset($_REQUEST['delete'])) {
+			} elseif (isset($_REQUEST['delete'])) {
 				$recordToDelete = $_REQUEST['delete'];
 				$list->removeListEntry($recordToDelete);
 				$this->reloadCover();

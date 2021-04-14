@@ -1233,5 +1233,24 @@ AspenDiscovery.Account = (function(){
 			}
 			return false;
 		},
+		deleteAll: function(id){
+			if (confirm("Are you sure you want to delete all items in this list?")){
+				var url = Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&listAction=deleteAll';
+				$.getJSON(url, function(data){
+					location.reload();
+				});
+			}
+			return false;
+		},
+		deleteSelected: function(id){
+			var selectedTitles = AspenDiscovery.getSelectedTitles();
+			if (selectedTitles) {
+				if (confirm("Are you sure you want to delete the selected items from this list?")){
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&listAction=deleteMarked&' + selectedTitles, function (data) {
+						location.reload();
+					})
+				}}
+			return false;
+		},
 	};
 }(AspenDiscovery.Account || {}));
