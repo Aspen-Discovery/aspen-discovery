@@ -11,6 +11,7 @@ fi
 # git pull origin 21.05.00
 
 chown -R aspen:aspen_apache /usr/local/aspen-discovery/code/web/sitemaps
+usermod -a -G aspen_apache aspen
 
 service crond stop
 echo "Run database maintenance, and then press return when done"

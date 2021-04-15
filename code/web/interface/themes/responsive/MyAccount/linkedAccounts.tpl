@@ -13,8 +13,6 @@
 				{include file='ilsMessages.tpl' messages=$ilsMessages}
 			{/if}
 
-			<span class='availableHoldsNoticePlaceHolder'></span>
-
 			<h1>{translate text='Linked Accounts'}</h1>
 			{if $offline}
 				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>

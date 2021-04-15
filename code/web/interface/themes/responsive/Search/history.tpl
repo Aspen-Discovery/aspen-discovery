@@ -6,8 +6,6 @@
 			</div>
 		{/if}
 
-		<span class='availableHoldsNoticePlaceHolder'></span>
-
 		{if !$noHistory}
 			{if $saved}
 				<h1>{translate text="history_saved_searches"}</h1>

@@ -11,8 +11,6 @@
 		{include file='ilsMessages.tpl' messages=$ilsMessages}
 	{/if}
 
-	<span class='availableHoldsNoticePlaceHolder'></span>
-
 	<h1>{translate text='My Materials Requests'}</h1>
 	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>

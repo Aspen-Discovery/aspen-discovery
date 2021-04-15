@@ -12,7 +12,6 @@
 			{include file='ilsMessages.tpl' messages=$ilsMessages}
 		{/if}
 
-		<span class='availableHoldsNoticePlaceHolder'></span>
 		<h1>{translate text='Checked Out Titles'}</h1>
 		{if $libraryHoursMessage}
 			<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>

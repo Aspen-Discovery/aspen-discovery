@@ -9,8 +9,6 @@
 			{include file='systemMessages.tpl' messages=$accountMessages}
 		{/if}
 
-		<span class='availableHoldsNoticePlaceHolder'></span>
-
 		<h1 class="myAccountTitle">{translate text='Recommended for you'}</h1>
 
 		{if count($resourceList) > 0}
