@@ -23,6 +23,7 @@ class PortalCell extends DataObject
 	public $sourceId;
 	public $markdown;
 	public $sourceInfo;
+	public $frameHeight;
 
 	static function getObjectStructure() {
 		$verticalAlignmentOptions = [
@@ -45,6 +46,7 @@ class PortalCell extends DataObject
 			'collection_spotlight' => 'Collection Spotlight',
 			'custom_form' => 'Form',
 			'image' => 'Image',
+			'iframe' => 'iFrame',
 			'vimeo_video' => 'Vimeo Video',
 			'youtube_video' => 'YouTube Video',
 		];
@@ -66,6 +68,7 @@ class PortalCell extends DataObject
 			'sourceId' => ['property'=>'sourceId', 'type'=>'enum', 'values'=>[], 'label'=>'Source Id', 'description'=>'Source for the content of cell'],
 			'markdown' => ['property' => 'markdown', 'type' => 'markdown', 'label' => 'Contents', 'description' => 'Contents of the cell'],
 			'sourceInfo' => ['property' => 'sourceInfo', 'type' => 'text', 'label' => 'Source Info', 'description' => 'Additional information for the source'],
+			'frameHeight' => ['property' => 'frameHeight', 'type' => 'integer', 'label' => 'Height for iFrame', 'description'=> 'Set the height for the iFrame in pixels'],
 		];
 	}
 
@@ -153,6 +156,12 @@ class PortalCell extends DataObject
 			$interface->assign('id',$this->portalRowId);
 			$interface->assign('contents', $parsedown->parse($this->markdown));
 			$contents .= $interface->fetch('WebBuilder/accordion.tpl');
+		} elseif ($this->sourceType == 'iframe') {
+			$sourceInfo = $this->sourceInfo;
+			$frameHeight = $this->frameHeight;
+			$interface->assign('sourceURL', $sourceInfo);
+			$interface->assign('frameHeight', $frameHeight);
+			$contents .= $interface->fetch('WebBuilder/iframe.tpl');
 		}
 		if (empty($contents)) {
 			return 'Could not load contents for the cell';

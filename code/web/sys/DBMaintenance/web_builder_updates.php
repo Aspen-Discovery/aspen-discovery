@@ -443,6 +443,14 @@ function getWebBuilderUpdates(){
 				'ALTER TABLE web_builder_portal_page DROP COLUMN showSidebar',
 				'ALTER TABLE web_builder_basic_page DROP COLUMN showSidebar',
 			]
+		],
+
+		'web_builder_add_frameHeight'=>[
+			'title' => 'Web Builder add frame height for iframe cell type',
+			'description' => 'Add frameHeight for iframes from Web Builder Pages',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_cell ADD COLUMN frameHeight INT DEFAULT 0',
+			]
 		]
 
 	];

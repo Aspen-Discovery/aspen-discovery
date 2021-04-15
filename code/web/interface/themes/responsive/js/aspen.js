@@ -11789,14 +11789,22 @@ AspenDiscovery.WebBuilder = (function () {
 				$('#propertyRowmarkdown').show();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").hide();
+				$('#propertyRowframeHeight').hide();
 			}else if (sourceType === 'youtube_video' || sourceType === 'vimeo_video') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
 				$("#propertyRowsourceId").hide();
+				$('#propertyRowframeHeight').hide();
+			}else if (sourceType === 'iframe') {
+				$('#propertyRowmarkdown').hide();
+				$('#propertyRowsourceInfo').show();
+				$("#propertyRowsourceId").hide();
+				$('#propertyRowframeHeight').show();
 			}else{
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").show();
+				$('#propertyRowframeHeight').hide();
 				var url = Globals.path + '/WebBuilder/AJAX?method=getPortalCellValuesForSource&portalCellId=' + portalCellId + '&sourceType=' + sourceType;
 				$.getJSON(url, function(data){
 					if (data.success === true){
