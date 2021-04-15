@@ -1015,6 +1015,14 @@ function getIndexingUpdates()
 			'sql' => [
 				"INSERT INTO modules (name, indexName, backgroundProcess, logClassPath, logClassName, settingsClassPath, settingsClassName) VALUES ('Polaris', 'grouped_works', 'polaris_export', '/sys/ILS/IlsExtractLogEntry.php', 'IlsExtractLogEntry', '/sys/Indexing/IndexingProfile.php', 'IndexingProfile')"
 			]
+		],
+
+		'indexing_profile__full_export_record_threshold' => [
+			'title' => 'Indexing Profile - Full Export Record Threshold',
+			'description' => 'Add a threshold for to ensure that the maximum id within a full export is equal or greater than the threshold before processing',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN fullMarcExportRecordIdThreshold INT DEFAULT 0'
+			]
 		]
 	);
 }

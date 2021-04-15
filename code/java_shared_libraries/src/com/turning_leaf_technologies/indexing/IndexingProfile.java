@@ -40,6 +40,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private boolean doAutomaticEcontentSuppression;
 	private char format;
 	private long lastUpdateFromMarcExport;
+	private long fullMarcExportRecordIdThreshold;
 	private long lastVolumeExportTimestamp;
 	private boolean checkRecordForLargePrint;
 	private char subLocationSubfield;
@@ -147,6 +148,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
 				indexingProfile.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
 				indexingProfile.setLastUpdateFromMarcExport(indexingProfileRS.getLong("lastUpdateFromMarcExport"));
+				indexingProfile.setFullMarcExportRecordIdThreshold(indexingProfileRS.getLong("fullMarcExportRecordIdThreshold"));
 				indexingProfile.setLastVolumeExportTimestamp(indexingProfileRS.getLong("lastVolumeExportTimestamp"));
 				indexingProfile.setLastUpdateOfAuthorities(indexingProfileRS.getLong("lastUpdateOfAuthorities"));
 
@@ -509,5 +511,12 @@ public class IndexingProfile extends BaseIndexingSettings {
 		}catch (Exception e){
 			logEntry.incErrors("Could not clear regroup all records", e);
 		}
+	}
+	public long getFullMarcExportRecordIdThreshold() {
+		return fullMarcExportRecordIdThreshold;
+	}
+
+	public void setFullMarcExportRecordIdThreshold(long fullMarcExportRecordIdThreshold) {
+		this.fullMarcExportRecordIdThreshold = fullMarcExportRecordIdThreshold;
 	}
 }

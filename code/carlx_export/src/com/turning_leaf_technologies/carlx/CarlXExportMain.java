@@ -325,6 +325,40 @@ public class CarlXExportMain {
 			return totalChanges;
 		}
 
+		//Validate that the FullMarcExportRecordIdThreshold has been met.
+		long maxIdInExport = 0;
+		for (File curBibFile : exportedMarcFiles) {
+			int numRecordsRead = 0;
+			String lastRecordProcessed = "";
+			try {
+				FileInputStream marcFileStream = new FileInputStream(curBibFile);
+				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				while (catalogReader.hasNext()) {
+					numRecordsRead++;
+					Record curBib = catalogReader.next();
+					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+					if (recordIdentifier != null) {
+						String recordNumber = recordIdentifier.getIdentifier();
+						lastRecordProcessed = recordNumber;
+						recordNumber = recordNumber.replaceAll("[^\\d]", "");
+						long recordNumberDigits = Long.parseLong(recordNumber);
+						if (recordNumberDigits > maxIdInExport){
+							maxIdInExport = recordNumberDigits;
+						}
+					}
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Error loading CARL.X bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
+				return totalChanges;
+			}
+		}
+
+		if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()){
+			logEntry.incErrors("Full MARC export appears to be truncated, MAX Record ID in the export was " + maxIdInExport + " expected to be greater than or equal to " + indexingProfile.getFullMarcExportRecordIdThreshold());
+			return totalChanges;
+		}
+
 		for (File curBibFile : exportedMarcFiles) {
 			int numRecordsRead = 0;
 			String lastRecordProcessed = "";
@@ -416,9 +450,10 @@ public class CarlXExportMain {
 		logEntry.addNote("Finished deleting records that no longer exist");
 
 		try {
-			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateFromMarcExport = ? where id = ?");
+			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateFromMarcExport = ?, fullMarcExportRecordIdThreshold = ? where id = ?");
 			updateMarcExportStmt.setLong(1, latestMarcExport);
-			updateMarcExportStmt.setLong(2, indexingProfile.getId());
+			updateMarcExportStmt.setLong(2, maxIdInExport);
+			updateMarcExportStmt.setLong(3, indexingProfile.getId());
 			updateMarcExportStmt.executeUpdate();
 		}catch (Exception e){
 			logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
@@ -696,84 +731,91 @@ public class CarlXExportMain {
 				}
 				getMarcRecordsSoapRequest.append(getMarcRecordsSoapRequestEnd);
 
-				//logger.debug("Getting MARC record details " + getMarcRecordsSoapRequest);
-				WebServiceResponse marcRecordSOAPResponse = NetworkUtils.postToURL(marcOutURL, getMarcRecordsSoapRequest.toString(), "text/xml", null, logger);
-				if (marcRecordSOAPResponse.isSuccess()) {
-					// Parse Response
-					Document doc = createXMLDocumentForSoapResponse(marcRecordSOAPResponse);
-					logger.debug("MARC record response " + doc.toString());
-					Node soapEnvelopeNode = doc.getFirstChild();
-					Node soapBodyNode = soapEnvelopeNode.getLastChild();
-					Node getMarcRecordsResponseNode = soapBodyNode.getFirstChild();
-					NodeList marcRecordInfo = getMarcRecordsResponseNode.getChildNodes();
-					Node marcRecordsResponseStatus = getMarcRecordsResponseNode.getFirstChild().getFirstChild();
-					String responseStatusCode = marcRecordsResponseStatus.getFirstChild().getTextContent();
+				int numTries = 0;
+				boolean successfulResponse = false;
+				while (numTries < 3 && !successfulResponse) {
+					numTries++;
 
-					if (responseStatusCode.equals("0")) { // Successful response
-						int l = marcRecordInfo.getLength();
-						for (int i = 1; i < l; i++) { // (skip first node because it is the response status)
-							try {
-								String currentBibID = updatedBibCopy.get(i - 1);
-								bibsNotFound.remove(currentBibID);
-								String currentFullBibID = getFileIdForRecordNumber(currentBibID);
+					//logger.debug("Getting MARC record details " + getMarcRecordsSoapRequest);
+					WebServiceResponse marcRecordSOAPResponse = NetworkUtils.postToURL(marcOutURL, getMarcRecordsSoapRequest.toString(), "text/xml", null, logger);
+					if (marcRecordSOAPResponse.isSuccess()) {
+						successfulResponse = true;
+						// Parse Response
+						Document doc = createXMLDocumentForSoapResponse(marcRecordSOAPResponse);
+						logger.debug("MARC record response " + doc.toString());
+						Node soapEnvelopeNode = doc.getFirstChild();
+						Node soapBodyNode = soapEnvelopeNode.getLastChild();
+						Node getMarcRecordsResponseNode = soapBodyNode.getFirstChild();
+						NodeList marcRecordInfo = getMarcRecordsResponseNode.getChildNodes();
+						Node marcRecordsResponseStatus = getMarcRecordsResponseNode.getFirstChild().getFirstChild();
+						String responseStatusCode = marcRecordsResponseStatus.getFirstChild().getTextContent();
 
-								Node marcRecordNode = marcRecordInfo.item(i);
+						if (responseStatusCode.equals("0")) { // Successful response
+							int l = marcRecordInfo.getLength();
+							for (int i = 1; i < l; i++) { // (skip first node because it is the response status)
+								try {
+									String currentBibID = updatedBibCopy.get(i - 1);
+									bibsNotFound.remove(currentBibID);
+									String currentFullBibID = getFileIdForRecordNumber(currentBibID);
 
-								// Build Marc Object from the API data
-								Record updatedMarcRecordFromAPICall = buildMarcRecordFromAPIResponse(marcRecordNode, currentBibID);
+									Node marcRecordNode = marcRecordInfo.item(i);
 
-								Record currentMarcRecord = loadMarc(currentBibID);
+									// Build Marc Object from the API data
+									Record updatedMarcRecordFromAPICall = buildMarcRecordFromAPIResponse(marcRecordNode, currentBibID);
 
-								//Check to see if we need to load items
-								ArrayList<ItemChangeInfo> itemsForBib = fetchItemsForBib(currentBibID, bibsNotFound);
+									Record currentMarcRecord = loadMarc(currentBibID);
 
-								if (currentMarcRecord != null) {
-									//Remove existing items from the bib, they will be replaced with the items we just loaded
-									List<VariableField> existingItemsInMarcRecord = currentMarcRecord.getVariableFields(indexingProfile.getItemTag());
-									for (VariableField itemFieldVar : existingItemsInMarcRecord) {
-										currentMarcRecord.removeVariableField(itemFieldVar);
+									//Check to see if we need to load items
+									ArrayList<ItemChangeInfo> itemsForBib = fetchItemsForBib(currentBibID, bibsNotFound);
+
+									if (currentMarcRecord != null) {
+										//Remove existing items from the bib, they will be replaced with the items we just loaded
+										List<VariableField> existingItemsInMarcRecord = currentMarcRecord.getVariableFields(indexingProfile.getItemTag());
+										for (VariableField itemFieldVar : existingItemsInMarcRecord) {
+											currentMarcRecord.removeVariableField(itemFieldVar);
+										}
 									}
-								}
 
-								for (ItemChangeInfo bibItem : itemsForBib) {
-									if (bibItem.getBID().equals(currentBibID)) {
-										DataField newItemRecord = new DataFieldImpl(indexingProfile.getItemTag(), ' ', ' ');
-										updateItemDataFieldWithChangeInfo(newItemRecord, bibItem);
-										updatedMarcRecordFromAPICall.addVariableField(newItemRecord);
+									for (ItemChangeInfo bibItem : itemsForBib) {
+										if (bibItem.getBID().equals(currentBibID)) {
+											DataField newItemRecord = new DataFieldImpl(indexingProfile.getItemTag(), ' ', ' ');
+											updateItemDataFieldWithChangeInfo(newItemRecord, bibItem);
+											updatedMarcRecordFromAPICall.addVariableField(newItemRecord);
+										}
 									}
+
+									// Save Marc Record to File
+									saveMarc(updatedMarcRecordFromAPICall, currentFullBibID);
+
+									String permanentId = groupRecord(dbConn, updatedMarcRecordFromAPICall);
+									getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
+
+									if (isNew) {
+										logEntry.incAdded();
+									} else {
+										logEntry.incUpdated();
+									}
+
+									numUpdates++;
+									if (numUpdates % 100 == 0) {
+										logEntry.saveResults();
+									}
+								} catch (Exception e) {
+									logEntry.incErrors("Error processing bib", e);
 								}
-
-								// Save Marc Record to File
-								saveMarc(updatedMarcRecordFromAPICall, currentFullBibID);
-
-								String permanentId = groupRecord(dbConn, updatedMarcRecordFromAPICall);
-								getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
-
-								if (isNew){
-									logEntry.incAdded();
-								}else {
-									logEntry.incUpdated();
-								}
-
-								numUpdates++;
-								if (numUpdates % 100 == 0){
-									logEntry.saveResults();
-								}
-							}catch (Exception e){
-								logEntry.incErrors("Error processing bib", e);
+							}
+						} else {
+							String shortErrorMessage = marcRecordsResponseStatus.getChildNodes().item(2).getTextContent();
+							//This is what happens when a record is deleted
+							if (!shortErrorMessage.equalsIgnoreCase("No matching records found")) {
+								logEntry.incErrors("Error Response for API call for getting Marc Records : " + shortErrorMessage);
 							}
 						}
 					} else {
-						String shortErrorMessage = marcRecordsResponseStatus.getChildNodes().item(2).getTextContent();
-						//This is what happens when a record is deleted
-						if (!shortErrorMessage.equalsIgnoreCase("No matching records found")) {
-							logEntry.incErrors("Error Response for API call for getting Marc Records : " + shortErrorMessage);
+						if (numTries == 3) {
+							logEntry.incErrors("API call for getting Marc Records Failed: " + marcRecordSOAPResponse.getResponseCode() + marcRecordSOAPResponse.getMessage());
+							hadErrors = true;
 						}
-					}
-				}else{
-					if (marcRecordSOAPResponse.getResponseCode() != 500){
-						logEntry.incErrors("API call for getting Marc Records Failed: " + marcRecordSOAPResponse.getResponseCode() + marcRecordSOAPResponse.getMessage());
-						hadErrors = true;
 					}
 				}
 			} catch (Exception e) {

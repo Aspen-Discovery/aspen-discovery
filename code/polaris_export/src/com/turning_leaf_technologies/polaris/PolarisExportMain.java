@@ -758,8 +758,10 @@ public class PolarisExportMain {
 						doneLoading = true;
 					}
 				} else {
-					logEntry.incErrors("Could not get bibs from " + getBibsUrl + " " + pagedBibs.getResponseCode() + " " + pagedBibs.getMessage());
-					doneLoading = true;
+					if (numTries == 3) {
+						logEntry.incErrors("Could not get bibs from " + getBibsUrl + " " + pagedBibs.getResponseCode() + " " + pagedBibs.getMessage());
+						doneLoading = true;
+					}
 				}
 			}
 		}
