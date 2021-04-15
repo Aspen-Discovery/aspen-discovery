@@ -12,7 +12,6 @@
 			{include file='ilsMessages.tpl' messages=$ilsMessages}
 		{/if}
 
-		<span class='availableHoldsNoticePlaceHolder'></span>
 		<div class="bookingSectionBody">
 			{if $libraryHoursMessage}
 				<div class='libraryHours alert alert-success'>{$libraryHoursMessage}</div>

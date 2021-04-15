@@ -11,8 +11,6 @@
 		{include file='ilsMessages.tpl' messages=$ilsMessages}
 	{/if}
 
-	<span class='availableHoldsNoticePlaceHolder'></span>
-
 	<h1>{translate text='Messaging Settings'}</h1>
 
 	{* MDN 7/26/2019 Do not allow access for linked users *}

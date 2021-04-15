@@ -17,8 +17,6 @@
 		{include file='ilsMessages.tpl' messages=$ilsMessages}
 	{/if}
 
-	<span class='availableHoldsNoticePlaceHolder'></span>
-
 	<div class="resultHead">
 		<h1>{translate text='Titles You Rated'}</h1>
 

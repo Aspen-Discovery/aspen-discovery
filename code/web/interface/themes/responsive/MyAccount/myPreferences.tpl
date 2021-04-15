@@ -13,8 +13,6 @@
 				{include file='ilsMessages.tpl' messages=$ilsMessages}
 			{/if}
 
-			<span class='availableHoldsNoticePlaceHolder'></span>
-
 			<h1>{translate text='My Preferences'}</h1>
 			{if !empty($profileUpdateErrors)}
 				{foreach from=$profileUpdateErrors item=errorMsg}
