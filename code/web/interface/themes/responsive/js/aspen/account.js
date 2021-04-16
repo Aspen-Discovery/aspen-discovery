@@ -1265,5 +1265,30 @@ AspenDiscovery.Account = (function(){
 				}}
 			return false;
 		},
+		getEditListForm: function(listEntryId, listId) {
+			var url = Globals.path + "/MyAccount/AJAX?method=getEditListForm&listEntryId=" + listEntryId + "&listId=" + listId;
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+		editListItem: function (){
+			var url = Globals.path + '/MyAccount/AJAX?method=editListItem';
+			var newData = new FormData($("#listEntryEditForm")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: newData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
 	};
 }(AspenDiscovery.Account || {}));
