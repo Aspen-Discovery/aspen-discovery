@@ -1297,7 +1297,6 @@ class Koha extends AbstractIlsDriver
 			}
 
 			$isAvailable = isset($curHold->status) && preg_match('/^Ready to Pickup.*/i', $curHold->status);
-			$curHold->available = $isAvailable;
 			global $library;
 			if ($isAvailable && $library->availableHoldDelay > 0){
 				$holdAvailableOn = strtotime($curRow['waitingdate']);
@@ -1306,6 +1305,7 @@ class Koha extends AbstractIlsDriver
 					$curHold->status = 'In transit';
 				}
 			}
+			$curHold->available = $isAvailable;
 			if (!$isAvailable) {
 				$holds['unavailable'][$curHold->source . $curHold->cancelId. $curHold->userId] = $curHold;
 			} else {
@@ -2738,7 +2738,10 @@ class Koha extends AbstractIlsDriver
 		return false;
 	}
 
-	public function showMessagingSettings()
+	/**
+	 * @return bool
+	 */
+	public function showMessagingSettings() : bool
 	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
@@ -2753,7 +2756,11 @@ class Koha extends AbstractIlsDriver
 		return $allowed;
 	}
 
-	public function getMessagingSettingsTemplate(User $user)
+	/**
+	 * @param User $patron
+	 * @return string
+	 */
+	public function getMessagingSettingsTemplate(User $patron) : ?string
 	{
 		global $interface;
 		$this->initDatabaseConnection();
@@ -2781,7 +2788,7 @@ class Koha extends AbstractIlsDriver
 		}
 
 		/** @noinspection SqlResolve */
-		$borrowerSql = "SELECT smsalertnumber, sms_provider_id FROM borrowers where borrowernumber = {$user->username}";
+		$borrowerSql = "SELECT smsalertnumber, sms_provider_id FROM borrowers where borrowernumber = {$patron->username}";
 		$borrowerRS = mysqli_query($this->dbConnection, $borrowerSql);
 		if ($borrowerRow = $borrowerRS->fetch_assoc()) {
 			$interface->assign('smsAlertNumber', $borrowerRow['smsalertnumber']);
@@ -2842,7 +2849,7 @@ class Koha extends AbstractIlsDriver
 			FROM   borrower_message_preferences
 			LEFT JOIN borrower_message_transport_preferences
 			ON     borrower_message_transport_preferences.borrower_message_preference_id = borrower_message_preferences.borrower_message_preference_id
-			WHERE  borrower_message_preferences.borrowernumber = {$user->username}";
+			WHERE  borrower_message_preferences.borrowernumber = {$patron->username}";
 		$userMessagingSettingsRS = mysqli_query($this->dbConnection, $userMessagingSettingsSql);
 		while ($userMessagingSetting = $userMessagingSettingsRS->fetch_assoc()) {
 			$messageType = $userMessagingSetting['message_attribute_id'];
@@ -2864,7 +2871,7 @@ class Koha extends AbstractIlsDriver
 		}
 		$interface->assign('validNoticeDays', $validNoticeDays);
 
-		$library = $user->getHomeLibrary();
+		$library = $patron->getHomeLibrary();
 		if ($library->allowProfileUpdates){
 			$interface->assign('canSave', true);
 		}else{
@@ -2874,9 +2881,9 @@ class Koha extends AbstractIlsDriver
 		return 'kohaMessagingSettings.tpl';
 	}
 
-	public function processMessagingSettingsForm(User $user)
+	public function processMessagingSettingsForm(User $patron) : array
 	{
-		$result = $this->loginToKohaOpac($user);
+		$result = $this->loginToKohaOpac($patron);
 		if (!$result['success']) {
 			return $result;
 		} else {
