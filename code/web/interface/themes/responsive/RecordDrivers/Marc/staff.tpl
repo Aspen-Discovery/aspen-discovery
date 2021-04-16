@@ -22,10 +22,10 @@
 			{/if}
 			<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >{translate text="Reload Enrichment"}</button>
 			{if $staffClientUrl}
-				<a href="{$staffClientUrl}" class="btn btn-sm btn-info">{translate text="View in Staff Client"}</a>
+				<a href="{$staffClientUrl}" class="btn btn-sm btn-info" target="_blank">{translate text="View in Staff Client"}</a>
 			{/if}
 			{if $classicUrl && $loggedIn && in_array('View ILS records in native OPAC', $userPermissions)}
-				<a href="{$classicUrl}" class="btn btn-sm btn-info">{translate text="View in Native OPAC"}</a>
+				<a href="{$classicUrl}" class="btn btn-sm btn-info" target="_blank">{translate text="View in Native OPAC"}</a>
 			{/if}
 			{if $loggedIn && in_array('Force Reindexing of Records', $userPermissions)}
 				<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex"}</button>
