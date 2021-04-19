@@ -695,12 +695,13 @@ public class CarlXExportMain {
 		// Fetch new Marc Data
 		// Note: There is an Include949ItemData flag, but it hasn't been implemented by TLC yet. plb 9-15-2016
 		// Build Marc Fetching Soap Request
-		if (updatedBibs.size() > 100){
-			logger.warn("There are more than 100 bibs that need updates " + updatedBibs.size());
-		}
 		int numUpdates = 0;
+		//This should be more than 1, but CARL.X will throw 500 errors occasionally so we need to isolate individual
+		//bib records so we don't have records get deleted if another bib in a batch is incorrect.
+		int getMARCRecordsRequestBatchSize = 1;
 		while (updatedBibs.size() > 0) {
 			logger.debug("Getting data for " + updatedBibs.size() + " updated bibs");
+			HashSet<String> bibsInBatch = new HashSet<>();
 			try {
 				String getMarcRecordsSoapRequestStart = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:mar=\"http://tlcdelivers.com/cx/schemas/marcoutAPI\" xmlns:req=\"http://tlcdelivers.com/cx/schemas/request\">\n" +
 						"<soapenv:Header/>\n" +
@@ -725,7 +726,8 @@ public class CarlXExportMain {
 					}
 					updatedBibs.remove(updatedBibID);
 					bibsNotFound.add(updatedBibID);
-					if (numAdded >= 100){
+					bibsInBatch.add(updatedBibID);
+					if (numAdded >= getMARCRecordsRequestBatchSize){
 						break;
 					}
 				}
@@ -813,8 +815,18 @@ public class CarlXExportMain {
 						}
 					} else {
 						if (numTries == 3) {
-							logEntry.incErrors("API call for getting Marc Records Failed: " + marcRecordSOAPResponse.getResponseCode() + marcRecordSOAPResponse.getMessage());
-							hadErrors = true;
+							//Make sure not to delete records if we get an error because bibs are malformed
+							bibsNotFound.removeAll(bibsInBatch);
+							//Log the error
+							if (marcRecordSOAPResponse.getResponseCode() == 500){
+								logEntry.addNote("API call for getting Marc Records Failed code: " + marcRecordSOAPResponse.getResponseCode() + " request: " + getMarcRecordsSoapRequest + " response: " + marcRecordSOAPResponse.getMessage());
+							}else {
+								logEntry.incErrors("API call for getting Marc Records Failed code: " + marcRecordSOAPResponse.getResponseCode() + " request: " + getMarcRecordsSoapRequest + " response: " + marcRecordSOAPResponse.getMessage());
+								hadErrors = true;
+							}
+						}else{
+							//Wait for a second and then retry.
+							Thread.sleep(1000);
 						}
 					}
 				}
