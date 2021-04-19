@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\interface\themes\responsive\MyAccount\symphonyMessagingSettings.tpl">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>
