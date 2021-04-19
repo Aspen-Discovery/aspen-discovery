@@ -164,7 +164,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				String shelfLocation = shelfLocationCode.toLowerCase().trim();
 				if (hasTranslation("format", shelfLocation)){
 					String translatedLocation = translateValue("format", shelfLocation, recordInfo.getRecordIdentifier());
-					if (translatedLocation.length() > 0) {
+					if (translatedLocation != null && translatedLocation.length() > 0) {
 						if (itemCountsByItype.containsKey(shelfLocation)) {
 							itemCountsByItype.put(shelfLocation, itemCountsByItype.get(shelfLocation) + 1);
 						} else {
@@ -186,7 +186,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				String subLocation = subLocationCode.toLowerCase().trim();
 				if (hasTranslation("format", subLocation)){
 					String translatedLocation = translateValue("format", subLocation, recordInfo.getRecordIdentifier());
-					if (translatedLocation.length() > 0) {
+					if (translatedLocation != null && translatedLocation.length() > 0) {
 						if (itemCountsByItype.containsKey(subLocation)) {
 							itemCountsByItype.put(subLocation, itemCountsByItype.get(subLocation) + 1);
 						} else {
@@ -208,7 +208,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				collectionCode = collectionCode.toLowerCase().trim();
 				if (hasTranslation("format", collectionCode)){
 					String translatedLocation = translateValue("format", collectionCode, recordInfo.getRecordIdentifier());
-					if (translatedLocation.length() > 0) {
+					if (translatedLocation != null && translatedLocation.length() > 0) {
 						if (itemCountsByItype.containsKey(collectionCode)) {
 							itemCountsByItype.put(collectionCode, itemCountsByItype.get(collectionCode) + 1);
 						} else {
