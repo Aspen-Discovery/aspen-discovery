@@ -109,7 +109,7 @@ public class PolarisExportMain {
 		while (true) {
 			java.util.Date startTime = new Date();
 			logger.info(startTime.toString() + ": Starting Polaris Extract");
-			long startTimeForLogging = startTime.getTime();
+			long startTimeForLogging = startTime.getTime() / 1000;
 
 			// Read the base INI file to get information about the server (current directory/conf/config.ini)
 			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -632,8 +632,8 @@ public class PolarisExportMain {
 			//Polaris has an include items field, but it does not seem to contain all information we need for Aspen.
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?lastID=" + lastId;
 			if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
-				getBibsUrl += "&startdatecreated" + formattedLastExtractTime;
-				getBibsUrl += "&startdatemodified" + formattedLastExtractTime;
+				getBibsUrl += "&startdatecreated=" + formattedLastExtractTime;
+				getBibsUrl += "&startdatemodified=" + formattedLastExtractTime;
 			}
 			int numTries = 0;
 			boolean successfulResponse = false;
