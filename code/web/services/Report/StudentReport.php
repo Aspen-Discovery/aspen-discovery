@@ -58,7 +58,7 @@ class Report_StudentReport extends Admin_Admin {
 		$user = UserAccount::getLoggedInUser();
 		$location = new Location();
 		$location->orderBy('code');
-		if (UserAccount::userHasPermission('View Location Student Reports')){
+		if (!UserAccount::userHasPermission('View All Student Reports')){
 			//Scope to just locations for the user based on home branch
 			$location->locationId = $user->homeLocationId;
 		}
