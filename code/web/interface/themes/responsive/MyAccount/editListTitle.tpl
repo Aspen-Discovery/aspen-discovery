@@ -22,7 +22,7 @@
 				<label for="listCopy" class="col-sm-3">{translate text='Copy to List'}: </label>
 				<div class="col-sm-9">
 					<select class="form-control" name="copyTo">
-						<option value="null">Do not copy</option>
+						<option value="null"></option>
 						{foreach from=$lists item="list" key="resultIndex"}
 						<option value="{$list->id}">{$list->title}</option>
 						{/foreach}
@@ -34,7 +34,7 @@
 				<label for="listMove" class="col-sm-3">{translate text='Move to List'}: </label>
 				<div class="col-sm-9">
 					<select class="form-control" name="moveTo">
-						<option value="null">Do not move</option>
+						<option value="null"></option>
 						{foreach from=$lists item="list" key="resultIndex"}
 							<option value="{$list->id}">{$list->title}</option>
 						{/foreach}
