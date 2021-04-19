@@ -4781,6 +4781,16 @@ var AspenDiscovery = (function(){
 			}
 			return selectedTitles;
 		},
+		getSelectedLists: function(){
+			var selectedLists = $("input.listSelect:checked ").map(function() {
+				return $(this).attr('name') + "=" + $(this).val();
+			}).get().join("&");
+			if (selectedLists.length === 0){
+				var ret = confirm('No lists selected');
+			}
+			return selectedLists;
+		},
+
 
 		pwdToText: function(fieldId){
 			var elem = document.getElementById(fieldId);
@@ -6163,7 +6173,18 @@ AspenDiscovery.Account = (function(){
 
 			return queryString;
 		},
+		getSelectedLists: function(promptForSelectAll){
+			if (promptForSelectAll === undefined){
+				promptForSelectAll = true;
+			}
+			var selectedLists = $("input.listSelect:checked ");
+			// noinspection UnnecessaryLocalVariableJS
+			var queryString = selectedLists.map(function() {
+				return $(this).attr('name') + "=" + $(this).val();
+			}).get().join("&");
 
+			return queryString;
+		},
 		saveSearch: function(searchId){
 			if (!Globals.loggedIn){
 				AspenDiscovery.Account.ajaxLogin(null, function(){
@@ -6515,6 +6536,16 @@ AspenDiscovery.Account = (function(){
 				}}
 			return false;
 		},
+		deleteSelectedLists: function(id){
+			var selectedLists = AspenDiscovery.getSelectedLists();
+			if (selectedLists) {
+				if (confirm("Are you sure you want to delete the selected lists?")){
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteList&id=' + id + '&' + selectedLists, function (data) {
+						location.reload();
+					})
+				}}
+			return false;
+		},
 		getEditListForm: function(listEntryId, listId) {
 			var url = Globals.path + "/MyAccount/AJAX?method=getEditListForm&listEntryId=" + listEntryId + "&listId=" + listId;
 			$.getJSON(url, function (data){
@@ -6523,7 +6554,7 @@ AspenDiscovery.Account = (function(){
 			);
 			return false;
 		},
-		editListItem: function (id){
+		editListItem: function (){
 			var url = Globals.path + '/MyAccount/AJAX?method=editListItem';
 			var newData = new FormData($("#listEntryEditForm")[0]);
 			$.ajax({

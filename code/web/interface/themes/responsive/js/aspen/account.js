@@ -913,7 +913,18 @@ AspenDiscovery.Account = (function(){
 
 			return queryString;
 		},
+		getSelectedLists: function(promptForSelectAll){
+			if (promptForSelectAll === undefined){
+				promptForSelectAll = true;
+			}
+			var selectedLists = $("input.listSelect:checked ");
+			// noinspection UnnecessaryLocalVariableJS
+			var queryString = selectedLists.map(function() {
+				return $(this).attr('name') + "=" + $(this).val();
+			}).get().join("&");
 
+			return queryString;
+		},
 		saveSearch: function(searchId){
 			if (!Globals.loggedIn){
 				AspenDiscovery.Account.ajaxLogin(null, function(){
@@ -1260,6 +1271,16 @@ AspenDiscovery.Account = (function(){
 			if (selectedTitles) {
 				if (confirm("Are you sure you want to delete the selected items from this list?")){
 					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&' + selectedTitles, function (data) {
+						location.reload();
+					})
+				}}
+			return false;
+		},
+		deleteSelectedLists: function(id){
+			var selectedLists = AspenDiscovery.getSelectedLists();
+			if (selectedLists) {
+				if (confirm("Are you sure you want to delete the selected lists?")){
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteList&id=' + id + '&' + selectedLists, function (data) {
 						location.reload();
 					})
 				}}
