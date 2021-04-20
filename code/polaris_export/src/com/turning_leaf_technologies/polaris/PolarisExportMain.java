@@ -855,6 +855,7 @@ public class PolarisExportMain {
 			JSONArray itemInfoRows = getItemResponse.getJSONResponse().getJSONArray("ItemGetRows");
 			if (itemInfoRows.length() > 0){
 				JSONObject itemInfo = itemInfoRows.getJSONObject(0);
+				//TODO: Check the creation date and modification date to be sure the item really has been deleted.
 				bibForItem = Long.toString(itemInfo.getLong("BibliographicRecordID"));
 			}
 		}

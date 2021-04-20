@@ -85,6 +85,7 @@ class IndexingProfile extends DataObject
 	public $runFullUpdate;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
+	public $lastChangeProcessed;
 	public $fullMarcExportRecordIdThreshold;
 	public /** @noinspection PhpUnused */ $lastUpdateFromMarcExport;
 	public /** @noinspection PhpUnused */$lastVolumeExportTimestamp;
@@ -233,6 +234,7 @@ class IndexingProfile extends DataObject
 			'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0),
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when all records were loaded from the API', 'default' => 0),
+			'lastChangeProcessed' => array('property' => 'lastChangeProcessed', 'type' => 'integer', 'label' => 'Last Change Processed', 'description' => 'The index of the last change that was processed. Can be used for resuming API extracts if errors are generated.  (Koha only)', 'default' => 0),
 			'fullMarcExportRecordIdThreshold' => array('property' => 'fullMarcExportRecordIdThreshold', 'type' => 'integer', 'label' => 'Full MARC Export Record Id Threshold', 'description' => 'When indexing a full MARC export, verify that the maximum MARC record id in the export is at least this value', 'default' => 0),
 			'lastUpdateFromMarcExport' => array('property' => 'lastUpdateFromMarcExport', 'type' => 'timestamp', 'label' => 'Last Update from MARC Export', 'description' => 'The timestamp when all records were loaded from a MARC export', 'default' => 0),
 			'lastVolumeExportTimestamp' => array('property' => 'lastVolumeExportTimestamp', 'type' => 'timestamp', 'label' => 'Last Volume Export Timestamp (Symphony Only)', 'description' => 'The timestamp of the last volume export file used', 'default' => 0),
