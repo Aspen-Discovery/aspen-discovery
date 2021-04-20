@@ -48,6 +48,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 
 //TODO: Load dates closed
@@ -635,138 +636,229 @@ public class PolarisExportMain {
 				getBibsUrl += "&startdatecreated=" + formattedLastExtractTime;
 				getBibsUrl += "&startdatemodified=" + formattedLastExtractTime;
 			}
+			ProcessBibRequestResponse response = processGetBibsRequest(getBibsUrl, marcFactory);
+			numChanges += response.numChanges;
+			lastId = response.lastId;
+			doneLoading = response.doneLoading;
+		}
+
+		//If we are doing a continuous index, get a list of any items that have been updated or changed
+		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
+			HashSet<String> bibsToUpdate = new HashSet<>();
 			int numTries = 0;
-			boolean successfulResponse = false;
-			while (numTries < 3 && !successfulResponse){
-				numTries++;
-				WebServiceResponse pagedBibs = callPolarisAPI(getBibsUrl, null, "GET", "text/xml", accessSecret);
-				if (pagedBibs.isSuccess()) {
+			doneLoading = false;
+			lastId = "0";
+			DateTimeFormatter itemDateFormatter = DateTimeFormatter.ofPattern("M/d/yyyy", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
+			String formattedLastItemExtractTime = itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
+			while (!doneLoading) {
+				String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + URLEncoder.encode(formattedLastItemExtractTime) + "&lastid=" + lastId + "&nrecs=100";
+				WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
+				if (pagedItems.isSuccess()) {
 					try {
-						successfulResponse = true;
-						Document pagedBibsDocument = createXMLDocumentForWebServiceResponse(pagedBibs);
-						Element getBibsPagedResult = (Element) pagedBibsDocument.getFirstChild();
-						Node lastIdNode = getBibsPagedResult.getElementsByTagName("LastID").item(0);
-						lastId = lastIdNode.getTextContent();
-						Element getBibsPagedRows = (Element) getBibsPagedResult.getElementsByTagName("GetBibsPagedRows").item(0);
-						NodeList bibsPagedRows = getBibsPagedRows.getElementsByTagName("GetBibsPagedRow");
-						if (bibsPagedRows.getLength() == 0){
-							//Stop looping looking for more records
+						JSONObject response = pagedItems.getJSONResponse();
+						JSONArray allItems = response.getJSONArray("ItemIDListRows");
+						if (allItems.length() == 0){
 							doneLoading = true;
-						}
-						for (int i = 0; i < bibsPagedRows.getLength(); i++) {
-							logEntry.incProducts();
-							Element bibPagedRow = (Element) bibsPagedRows.item(i);
-							String bibliographicRecordId = bibPagedRow.getElementsByTagName("BibliographicRecordID").item(0).getTextContent();
-							String displayInPAC = bibPagedRow.getElementsByTagName("IsDisplayInPAC").item(0).getTextContent();
-							if (displayInPAC.equals("true")) {
-								try {
-									String bibRecordXML = bibPagedRow.getElementsByTagName("BibliographicRecordXML").item(0).getTextContent();
-									//bibRecordXML = StringEscapeUtils.unescapeXml(bibRecordXML);
-									MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(bibRecordXML.getBytes(StandardCharsets.UTF_8)));
-									Record marcRecord = marcXmlReader.next();
-
-									if (marcRecord != null) {
-										//Get Items from the API
-										int getItemsTries = 0;
-										boolean gotItems = false;
-										String getItemsUrl = "/PAPIService/REST/public/v1/1033/100/1/bib/" + bibliographicRecordId + "/holdings";
-										while (!gotItems && getItemsTries < 3) {
-											getItemsTries++;
-											WebServiceResponse bibItemsResponse = callPolarisAPI(getItemsUrl, null, "GET", "application/json", null);
-											try {
-												if (bibItemsResponse.isSuccess()) {
-													//Add Items to the MARC record
-													JSONObject response = bibItemsResponse.getJSONResponse();
-													JSONArray allItems = response.getJSONArray("BibHoldingsGetRows");
-													for (int j = 0; j < allItems.length(); j++) {
-														JSONObject curItem = allItems.getJSONObject(j);
-														DataField itemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
-														updateItemField(marcFactory, curItem, itemField, indexingProfile.getBarcodeSubfield(), "Barcode");
-														updateItemField(marcFactory, curItem, itemField, indexingProfile.getCallNumberSubfield(), "CallNumber");
-														updateItemField(marcFactory, curItem, itemField, indexingProfile.getLocationSubfield(), "LocationID");
-														updateItemField(marcFactory, curItem, itemField, indexingProfile.getCollectionSubfield(), "CollectionID");
-														updateItemField(marcFactory, curItem, itemField, indexingProfile.getShelvingLocationSubfield(), "ShelfLocation");
-														updateItemField(marcFactory, curItem, itemField, indexingProfile.getVolume(), "VolumeNumber");
-														updateItemField(marcFactory, curItem, itemField, indexingProfile.getITypeSubfield(), "MaterialType");
-														updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemStatusSubfield(), "CircStatus");
-														updateItemField(marcFactory, curItem, itemField, indexingProfile.getDueDateSubfield(), "DueDate");
-														updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
-
-														marcRecord.addVariableField(itemField);
-													}
-
-													//Save the file
-													File marcFile = indexingProfile.getFileForIlsRecord(bibliographicRecordId);
-													if (!marcFile.getParentFile().exists()) {
-														//noinspection ResultOfMethodCallIgnored
-														marcFile.getParentFile().mkdirs();
-													}
-
-													if (marcFile.exists()) {
-														logEntry.incUpdated();
-													} else {
-														logEntry.incAdded();
-													}
-													MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
-													writer.write(marcRecord);
-													writer.close();
-													//Regroup the record
-													String groupedWorkId = groupPolarisRecord(marcRecord);
-													if (groupedWorkId != null) {
-														//Reindex the record
-														getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-													}
-													numChanges++;
-													gotItems = true;
-												} else {
-													//This record has no items, suppress it
-													RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibliographicRecordId);
-													if (result.reindexWork) {
-														getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-													} else if (result.deleteWork) {
-														//Delete the work from solr and the database
-														getGroupedWorkIndexer().deleteRecord(result.permanentId);
-													}
-													logEntry.incDeleted();
-												}
-											} catch (Exception e) {
-												if (getItemsTries == 3) {
-													logEntry.incErrors("Error loading items for bib " + bibliographicRecordId, e);
-												}
-											}
-										}
-									} else {
-										logEntry.incErrors("Could not read marc record for " + bibliographicRecordId);
-									}
-								}catch (Exception e){
-									logEntry.incErrors("Error loading marc record for bib " + bibliographicRecordId, e);
+						}else {
+							for (int i = 0; i < allItems.length(); i++) {
+								JSONObject curItem = allItems.getJSONObject(i);
+								long itemId = curItem.getLong("ItemRecordID");
+								lastId = Long.toString(itemId);
+								//Figure out the bib record based on the item id.
+								String bibForItem = getBibIdForItemId(itemId);
+								if (bibForItem != null) {
+									bibsToUpdate.add(bibForItem);
 								}
-							} else {
-								RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibliographicRecordId);
-								if (result.reindexWork){
-									getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-								}else if (result.deleteWork){
-									//Delete the work from solr and the database
-									getGroupedWorkIndexer().deleteRecord(result.permanentId);
-								}
-								logEntry.incDeleted();
 							}
 						}
-						logEntry.saveResults();
 					} catch (Exception e) {
-						logEntry.incErrors("Unable to parse document for paged bibs response", e);
+						logEntry.incErrors("Unable to parse document for paged items response", e);
 						doneLoading = true;
 					}
 				} else {
-					if (numTries == 3) {
-						logEntry.incErrors("Could not get bibs from " + getBibsUrl + " " + pagedBibs.getResponseCode() + " " + pagedBibs.getMessage());
-						doneLoading = true;
-					}
+					logEntry.incErrors("Could not get items from " + getItemsUrl + " " + pagedItems.getResponseCode() + " " + pagedItems.getMessage());
+					doneLoading = true;
 				}
+			}
+
+			//TODO: Get a list of items that have been deleted and update those MARC records too
+
+			//Now that we have a list of all bibs that need to be updated based on item changes, reindex the bib
+			for(String bibNumber: bibsToUpdate){
+				numChanges += updateBibFromPolaris(bibNumber, marcFactory);
 			}
 		}
 
 		return numChanges;
+	}
+
+	private static int updateBibFromPolaris(String bibNumber, MarcFactory marcFactory) {
+		//Get the bib record
+		String getBibUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML?bibids=" + bibNumber;
+		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory);
+		return response.numChanges;
+	}
+
+	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory){
+		ProcessBibRequestResponse response = new ProcessBibRequestResponse();
+		if (marcFactory == null){
+			marcFactory = MarcFactory.newInstance();
+		}
+		int numTries = 0;
+		boolean successfulResponse = false;
+		while (numTries < 3 && !successfulResponse) {
+			numTries++;
+			WebServiceResponse getBibsResponse = callPolarisAPI(getBibsRequestUrl, null, "GET", "text/xml", accessSecret);
+			if (getBibsResponse.isSuccess()) {
+				try {
+					successfulResponse = true;
+					Document getBibsDocument = createXMLDocumentForWebServiceResponse(getBibsResponse);
+					Element getBibsPagedResult = (Element) getBibsDocument.getFirstChild();
+					NodeList lastIdNodes = getBibsPagedResult.getElementsByTagName("LastID");
+					if (lastIdNodes.getLength() > 0) {
+						Node lastIdNode = getBibsPagedResult.getElementsByTagName("LastID").item(0);
+						response.lastId = lastIdNode.getTextContent();
+					}else{
+						response.doneLoading = true;
+					}
+					Element getBibsPagedRows = (Element) getBibsPagedResult.getElementsByTagName("GetBibsPagedRows").item(0);
+					NodeList bibsPagedRows;
+					if (getBibsPagedRows != null) {
+						bibsPagedRows = getBibsPagedRows.getElementsByTagName("GetBibsPagedRow");
+					}else{
+						getBibsPagedRows = (Element) getBibsPagedResult.getElementsByTagName("GetBibsByIDRows").item(0);
+						bibsPagedRows = getBibsPagedRows.getElementsByTagName("GetBibsByIDRow");
+					}
+					if (bibsPagedRows.getLength() == 0){
+						//Stop looping looking for more records
+						response.doneLoading = true;
+					}
+					for (int i = 0; i < bibsPagedRows.getLength(); i++) {
+						logEntry.incProducts();
+						Element bibPagedRow = (Element) bibsPagedRows.item(i);
+						String bibliographicRecordId = bibPagedRow.getElementsByTagName("BibliographicRecordID").item(0).getTextContent();
+						String displayInPAC = bibPagedRow.getElementsByTagName("IsDisplayInPAC").item(0).getTextContent();
+						if (displayInPAC.equals("true")) {
+							try {
+								String bibRecordXML = bibPagedRow.getElementsByTagName("BibliographicRecordXML").item(0).getTextContent();
+								//bibRecordXML = StringEscapeUtils.unescapeXml(bibRecordXML);
+								MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(bibRecordXML.getBytes(StandardCharsets.UTF_8)));
+								Record marcRecord = marcXmlReader.next();
+
+								if (marcRecord != null) {
+									//Get Items from the API
+									int getItemsTries = 0;
+									boolean gotItems = false;
+									String getItemsUrl = "/PAPIService/REST/public/v1/1033/100/1/bib/" + bibliographicRecordId + "/holdings";
+									while (!gotItems && getItemsTries < 3) {
+										getItemsTries++;
+										WebServiceResponse bibItemsResponse = callPolarisAPI(getItemsUrl, null, "GET", "application/json", null);
+										try {
+											if (bibItemsResponse.isSuccess()) {
+												//Add Items to the MARC record
+												JSONObject bibItemsResponseJSON = bibItemsResponse.getJSONResponse();
+												JSONArray allItems = bibItemsResponseJSON.getJSONArray("BibHoldingsGetRows");
+												for (int j = 0; j < allItems.length(); j++) {
+													JSONObject curItem = allItems.getJSONObject(j);
+													DataField itemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getBarcodeSubfield(), "Barcode");
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getCallNumberSubfield(), "CallNumber");
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getLocationSubfield(), "LocationID");
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getCollectionSubfield(), "CollectionID");
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getShelvingLocationSubfield(), "ShelfLocation");
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getVolume(), "VolumeNumber");
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getITypeSubfield(), "MaterialType");
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemStatusSubfield(), "CircStatus");
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getDueDateSubfield(), "DueDate");
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
+
+													marcRecord.addVariableField(itemField);
+												}
+
+												//Save the file
+												File marcFile = indexingProfile.getFileForIlsRecord(bibliographicRecordId);
+												if (!marcFile.getParentFile().exists()) {
+													//noinspection ResultOfMethodCallIgnored
+													marcFile.getParentFile().mkdirs();
+												}
+
+												if (marcFile.exists()) {
+													logEntry.incUpdated();
+												} else {
+													logEntry.incAdded();
+												}
+												MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
+												writer.write(marcRecord);
+												writer.close();
+												//Regroup the record
+												String groupedWorkId = groupPolarisRecord(marcRecord);
+												if (groupedWorkId != null) {
+													//Reindex the record
+													getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+												}
+												response.numChanges++;
+												gotItems = true;
+											} else {
+												//This record has no items, suppress it
+												RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibliographicRecordId);
+												if (result.reindexWork) {
+													getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+												} else if (result.deleteWork) {
+													//Delete the work from solr and the database
+													getGroupedWorkIndexer().deleteRecord(result.permanentId);
+												}
+												logEntry.incDeleted();
+											}
+										} catch (Exception e) {
+											if (getItemsTries == 3) {
+												logEntry.incErrors("Error loading items for bib " + bibliographicRecordId, e);
+											}
+										}
+									}
+								} else {
+									logEntry.incErrors("Could not read marc record for " + bibliographicRecordId);
+								}
+							}catch (Exception e){
+								logEntry.incErrors("Error loading marc record for bib " + bibliographicRecordId, e);
+							}
+						} else {
+							RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibliographicRecordId);
+							if (result.reindexWork){
+								getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+							}else if (result.deleteWork){
+								//Delete the work from solr and the database
+								getGroupedWorkIndexer().deleteRecord(result.permanentId);
+							}
+							logEntry.incDeleted();
+						}
+					}
+					logEntry.saveResults();
+				} catch (Exception e) {
+					logEntry.incErrors("Unable to parse document for paged bibs response", e);
+					response.doneLoading = true;
+				}
+			} else {
+				if (numTries == 3) {
+					logEntry.incErrors("Could not get bibs from " + getBibsRequestUrl + " " + getBibsResponse.getResponseCode() + " " + getBibsResponse.getMessage());
+					response.doneLoading = true;
+				}
+			}
+		}
+		return response;
+	}
+
+	private static String getBibIdForItemId(long itemId) {
+		String bibForItem = null;
+		String getItemUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/item/" + itemId;
+		WebServiceResponse getItemResponse = callPolarisAPI(getItemUrl, null, "GET", "application/json", accessSecret);
+		if (getItemResponse.isSuccess()){
+			JSONArray itemInfoRows = getItemResponse.getJSONResponse().getJSONArray("ItemGetRows");
+			if (itemInfoRows.length() > 0){
+				JSONObject itemInfo = itemInfoRows.getJSONObject(0);
+				bibForItem = Long.toString(itemInfo.getLong("BibliographicRecordID"));
+			}
+		}
+		return bibForItem;
 	}
 
 	private static void updateItemField(MarcFactory marcFactory, JSONObject curItem, DataField itemField, char subfieldIndicator, String polarisFieldName) {
@@ -893,5 +985,11 @@ public class PolarisExportMain {
 			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
 		}
 		return groupedWorkIndexer;
+	}
+
+	private static class ProcessBibRequestResponse{
+		String lastId;
+		boolean doneLoading = false;
+		int numChanges = 0;
 	}
 }
