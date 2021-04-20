@@ -22,6 +22,24 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN'){
 	$runningOnWindows = false;
 }
 
+$linuxArray = ['centos', 'debian'];
+
+$centos = [
+    'wwwUser' => 'apache',
+    'service' => 'httpd',
+    'mysqlConf' => '/etc/my.cnf',
+	'permissions' => 'updateSitePermissions.sh',
+	'apacheDir' => '/etc/httpd/conf.d'
+];
+
+$debian = [
+    'wwwUser' => 'www-data',
+    'service' => 'apache2',
+    'mysqlConf' => '/etc/mysql/mariadb.cnf',
+	'permissions' => 'updateSitePermissions_debian.sh',
+	'apacheDir' => '/etc/apache2/sites-available'
+];
+
 $installDir = '/usr/local/aspen-discovery';
 if ($runningOnWindows){
 	$installDir = 'c:/web/aspen-discovery';
@@ -65,6 +83,13 @@ if (empty($siteOnWindows) || ($siteOnWindows != 'Y' && $siteOnWindows != 'y')){
 	$siteOnWindows = false;
 }else{
 	$siteOnWindows = true;
+}
+
+if (!$siteOnWindows) {
+    $linuxOS = '';
+    while (empty($linuxOS) || !in_array($linuxOS, $linuxArray)) {
+        $linuxOS = readline("Enter the name of your Linux OS (i.e. ".implode (" / ", $linuxArray)." ) > ");
+    }
 }
 
 $variables['solrPort'] = readline("Which port should solr run on (8080)? ");
@@ -189,7 +214,7 @@ echo("Loading default database\r\n");
 exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} < $installDir/install/aspen.sql");
 
 //Connect to the database
-$aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host=127.0.0.1",$variables['aspenDBUser'],$variables['aspenDBPwd']);
+$aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host=localhost",$variables['aspenDBUser'],$variables['aspenDBPwd']);
 $updateUserStmt = $aspen_db->prepare("UPDATE user set cat_password=" . $aspen_db->quote($variables['aspenAdminPwd']) . ", password=" . $aspen_db->quote($variables['aspenAdminPwd']) . " where cat_username = 'aspen_admin'");
 $updateUserStmt->execute();
 
@@ -213,13 +238,23 @@ if (!file_exists('/data/aspen-discovery/accelerated_reader')){
 }
 recursive_copy($installDir . '/data_dir_setup', $dataDir);
 if (!$runningOnWindows){
-	exec('chown -R apache:aspen_apache ' . $dataDir);
+	exec('chown -R ' . $$linuxOS['wwwUser'] . ':aspen_apache ' . $dataDir);
 }
 
 //Make files directory writeable
 if (!$runningOnWindows){
 	exec('chmod -R 755 ' . $installDir . '/code/web/files');
-	exec('chown -R apache:aspen_apache ' . $installDir . '/code/web/fonts');
+	exec('chown -R ' . $$linuxOS['wwwUser'] . ':aspen_apache ' . $installDir . '/code/web/fonts');
+}
+
+//update conf directory permissions
+if (!$runningOnWindows) {
+	exec('chown aspen:aspen_apache /usr/local/aspen-discovery/sites/' . $sitename . '/conf');
+}
+
+//update marc_recs directory permissions
+if (!$runningOnWindows) {
+	exec('chown -R aspen:aspen_apache /data/aspen-discovery/' . $sitename . '/ils/');
 }
 
 //Make log directories
@@ -234,14 +269,17 @@ if (!file_exists($logDir2)){
 
 //Update file permissions
 if (!$runningOnWindows){
-	exec('./updateSitePermissions.sh ' . $sitename);
+	exec('./'.$$linuxOS['permissions'] . ' ' . $sitename);
 }
 
 //Link the httpd conf file
 if (!$siteOnWindows){
-	symlink($siteDir . "/httpd-{$sitename}.conf", "/etc/httpd/conf.d/httpd-{$sitename}.conf");
+	symlink($siteDir . "/httpd-{$sitename}.conf", $$linuxOS['apacheDir'] . "/httpd-{$sitename}.conf");
+	if ($linuxOS == 'debian') {
+		exec("a2ensite httpd-{$sitename}");
+	}
 	//Restart apache
-	exec("systemctl restart httpd");
+	exec("systemctl restart " . $$linuxOS['service']);
 }
 
 //Setup solr
@@ -263,7 +301,11 @@ if ($siteOnWindows){
 }
 
 //Update my.cnf for backups
-replaceVariables("/etc/my.cnf", $variables);
+if ($siteOnWindows){
+    replaceVariables("/etc/my.cnf", $variables);
+} else {
+    replaceVariables($$linuxOS['mysqlConf'], $variables);
+}
 
 echo("\r\n");
 echo("\r\n");
@@ -334,3 +376,5 @@ function execInBackground($cmd) {
 		exec($cmd . " > /dev/null &");
 	}
 }
+
+?>
