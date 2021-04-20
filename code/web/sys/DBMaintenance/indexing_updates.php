@@ -1025,11 +1025,11 @@ function getIndexingUpdates()
 			]
 		],
 
-		'indexing_profile_lastRecordIdProcessed' => [
-			'title' => 'Indexing Profile - Last Record ID processed',
+		'indexing_profile_lastChangeProcessed' => [
+			'title' => 'Indexing Profile - Last Change processed',
 			'description' => 'Add tracking for the last record id processed so we can resume extracts that have errors',
 			'sql' => [
-				"ALTER TABLE indexing_profiles ADD COLUMN lastRecordIdProcessed INT DEFAULT 0"
+				"ALTER TABLE indexing_profiles ADD COLUMN lastChangeProcessed INT DEFAULT 0"
 			]
 		],
 	);
