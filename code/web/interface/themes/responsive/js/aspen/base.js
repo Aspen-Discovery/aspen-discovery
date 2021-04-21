@@ -273,6 +273,16 @@ var AspenDiscovery = (function(){
 			}
 			return selectedTitles;
 		},
+		getSelectedLists: function(){
+			var selectedLists = $("input.listSelect:checked ").map(function() {
+				return $(this).attr('name') + "=" + $(this).val();
+			}).get().join("&");
+			if (selectedLists.length === 0){
+				var ret = confirm('No lists selected');
+			}
+			return selectedLists;
+		},
+
 
 		pwdToText: function(fieldId){
 			var elem = document.getElementById(fieldId);

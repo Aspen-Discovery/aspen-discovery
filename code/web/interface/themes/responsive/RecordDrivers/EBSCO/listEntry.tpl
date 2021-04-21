@@ -4,6 +4,9 @@
 		{if $listEditAllowed}
 			<div class="selectTitle col-xs-12 col-sm-1">
 				<input type="checkbox" name="selected[{$listEntryId}]" class="titleSelect" id="selected{$listEntryId}">
+				{if $userSort}
+					<i class="fas fa-arrows-alt" style="display: block; margin-top:.5em; font-size: 21px"></i>
+				{/if}
 			</div>
 		{/if}
 		{if $showCovers}

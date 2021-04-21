@@ -2855,7 +2855,7 @@ class MyAccount_AJAX extends JSON_Action
 		return array(
 			'title' => 'Upload a New List Cover',
 			'modalBody' => $interface->fetch("Lists/upload-cover-form.tpl"),
-			'modalButtons' => "<bustton class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>Upload Cover</bustton>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>Upload Cover</button>"
 		);
 	}
 
@@ -2991,11 +2991,13 @@ class MyAccount_AJAX extends JSON_Action
 				foreach ($itemsToRemove as $listEntryId => $selected){
 					$list->removeListEntry($listEntryId);
 				}
+				$this->reloadCover();
 				$result['success'] = true;
 				$result['message'] = 'Selected items removed from the list successfully';
 			}else {
 				$list->find(true);
 				$list->removeAllListEntries();
+				$this->reloadCover();
 				$result['success'] = true;
 				$result['message'] = 'All items removed from the list successfully';
 			}
@@ -3004,6 +3006,204 @@ class MyAccount_AJAX extends JSON_Action
 			$result['success'] = true;
 			$result['message'] = 'Items removed from the list successfully';
 		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function deleteList(){
+		$result = [
+			'success' => false,
+			'message' => 'Something went wrong.'
+		];
+
+		//$listId = htmlspecialchars($_GET["id"]);
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+
+			if (isset($_REQUEST['selected'])){
+					$itemsToRemove = $_REQUEST['selected'];
+					foreach ($itemsToRemove as $listId => $selected) {
+						$list = new UserList();
+						$list->id = $listId;
+
+						//Perform an action on the list, but verify that the user has permission to do so.
+						$userCanEdit = false;
+						$userObj = UserAccount::getActiveUserObj();
+						if ($userObj != false){
+							$userCanEdit = $userObj->canEditList($list);
+						}
+						if ($userCanEdit) {
+							$list->find();
+							$list->delete();
+							$result['success'] = true;
+							$result['message'] = 'Selected lists deleted successfully';
+						} else {
+							$result['success'] = false;
+						}
+					}
+			}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getEditListForm()
+	{
+		global $interface;
+
+		if (isset($_REQUEST['listId']) && isset($_REQUEST['listEntryId'])) {
+			$listId = $_REQUEST['listId'];
+			$listEntry =  $_REQUEST['listEntryId'];
+
+			$interface->assign('listId', $listId);
+			$interface->assign('listEntry', $listEntry);
+
+			if (is_array($listId)){
+				$listId = array_pop($listId);
+			}
+			if (!empty($listId) && is_numeric($listId)) {
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+				$userList     = new UserList();
+				$userList->id = $listId;
+
+				$userLists    = new UserList();
+				$userLists->user_id = UserAccount::getActiveUserId();
+				$userLists->whereAdd('deleted = 0');
+				$userLists->orderBy('title');
+				$userLists->find();
+				$lists = [];
+				while ($userLists->fetch()){
+					$lists[] = clone $userLists;
+				}
+
+				$interface->assign('lists', $lists);
+
+				if ($userList->find(true)) {
+					$userObj = UserAccount::getActiveUserObj();
+					if ($userObj){
+						$this->listId = $userList->id;
+						$this->listTitle = $userList->title;
+						$userCanEdit = $userObj->canEditList($userList);
+						if ($userCanEdit){
+							if (isset($_POST['submit'])) {
+								$this->saveChanges();
+
+								// After changes are saved, send the user back to an appropriate page;
+								// either the list they were viewing when they started editing, or the
+								// overall favorites list.
+								if (isset($listId)) {
+									$nextAction = 'MyList/' . $listId;
+								} else {
+									$nextAction = 'Home';
+								}
+								header('Location: /MyAccount/' . $nextAction);
+								exit();
+							}
+
+							$interface->assign('list', $userList);
+
+							$listEntryId = $_REQUEST['listEntryId'];
+							if (!empty($listEntryId)) {
+
+								// Retrieve saved information about record
+								require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+								$userListEntry = new UserListEntry();
+								$userListEntry->id = $listEntryId;
+								if ($userListEntry->find(true)) {
+									$interface->assign('listEntry', $userListEntry);
+									$interface->assign('recordDriver', $userListEntry->getRecordDriver());
+								}
+							}
+						}
+					}
+				}
+			}
+
+			return array(
+				'title' => 'Edit List Item',
+				'modalBody' => $interface->fetch('MyAccount/editListTitle.tpl'),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#listEntryEditForm\").submit()'>Save</button>",
+			);
+		} else {
+			return [
+				'success' => false,
+				'message' => 'You must provide the id of the list to email'
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function editListItem()
+	{
+		$result = [
+			'success' => false,
+			'title' => 'Updating list entry',
+			'message' => 'Sorry your list entry could not be updated'
+		];
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+
+		$userListEntry = new UserListEntry();
+		$userListEntry->id = $_REQUEST['listEntry'];
+		$currentLoc = $_REQUEST['listId'];
+		$position = $_REQUEST['position'];
+
+		$moveTo = $_REQUEST['moveTo'];
+		$copyTo = $_REQUEST['copyTo'];
+
+		$list = new UserList();
+		$list->id = $currentLoc;
+
+		if ($userListEntry->find(true)) {
+
+			$userListEntry->notes = strip_tags($_REQUEST['notes']);
+			$userListEntry->update();
+
+			if(($position != $userListEntry->weight) && ($position != '')) {
+				$userListEntry->weight = $_REQUEST['position'];
+				$userListEntry->update();
+				$result['success'] = true;
+			}
+			if(($moveTo != $currentLoc) && ($moveTo != 'null')) {
+				// check to make sure item isn't on new list?
+
+				$userListEntry->listId = $moveTo;
+				$userListEntry->update();
+
+				$moveToList = new UserList();
+				$moveToList->id = $moveTo;
+				$moveToList->update();
+
+				$result['success'] = true;
+			}
+			if(($copyTo != $currentLoc) && ($copyTo != 'null')) {
+				// check to make sure item isn't on new list?
+
+				$copyUserListEntry = new UserListEntry();
+				$copyUserListEntry->listId = $copyTo;
+				$copyUserListEntry->sourceId = $userListEntry->sourceId;
+				$copyUserListEntry->notes = $userListEntry->notes;
+				$copyUserListEntry->weight = $userListEntry->weight;
+				$copyUserListEntry->source = $userListEntry->source;
+				$copyUserListEntry->dateAdded = time();
+				$copyUserListEntry->update();
+
+				$copyToList = new UserList();
+				$copyToList->id = $copyTo;
+				$copyToList->update();
+
+				$result['success'] = true;
+			}
+			$list->update();
+			$result['success'] = true;
+		} else {
+			$result['success'] = false;
+		}
+
+		if ($result['success']){
+			$result['message'] = 'List item updated successfully';
+		}
+
 		return $result;
 	}
 }
