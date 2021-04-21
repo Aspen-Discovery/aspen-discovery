@@ -3,15 +3,15 @@
 
 	<form enctype="multipart/form-data" method="post" id="listEntryEditForm" action="/MyAccount/AJAX" class="form-horizontal">
 		<input type="hidden" name="listEntry" value="{$listEntry}">
-		<input type="hidden" name="listId" value="{$list}">
-		{if $list->defaultSort != 'custom'}<input type="hidden" name="position" value="{if !empty($listEntry->weight)}{$listEntry->weight}{else}0{/if}">{/if}
+		<input type="hidden" name="listId" value="{$listId}">
+		{if $listId->defaultSort != 'custom'}<input type="hidden" name="position" value="{if !empty($listEntry->weight)}{$listEntry->weight}{else}0{/if}">{/if}
 		<div>
 			<div class="form-group">
 				<label for="listName" class="col-sm-3">{translate text='List'}: </label>
 				<div class="col-sm-9">{$list->title}</div>
 			</div>
 
-			{if $list->defaultSort == 'custom'}
+			{if $listId->defaultSort == 'custom'}
 			<div class="form-group">
 				<label for="listPosition" class="col-sm-3">{translate text='Position'}: </label>
 				<div class="col-sm-9"><input type="number" class="form-control" value="{$listEntry->weight}" name="position"></div>
@@ -24,7 +24,9 @@
 					<select class="form-control" name="copyTo">
 						<option value="null"></option>
 						{foreach from=$lists item="list" key="resultIndex"}
-						<option value="{$list->id}">{$list->title}</option>
+							{if $list->id != $listId}
+								<option value="{$list->id}">{$list->title}</option>
+							{/if}
 						{/foreach}
 					</select>
 				</div>
@@ -36,11 +38,14 @@
 					<select class="form-control" name="moveTo">
 						<option value="null"></option>
 						{foreach from=$lists item="list" key="resultIndex"}
-							<option value="{$list->id}">{$list->title}</option>
+							{if ($list->id != $listId)}
+								<option value="{$list->id}">{$list->title}</option>
+							{/if}
 						{/foreach}
 					</select>
 				</div>
 			</div>
+
 
 			<div class="form-group">
 				<label for="listNotes" class="col-sm-3">{translate text='Notes'}: </label>

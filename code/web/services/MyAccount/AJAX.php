@@ -3050,11 +3050,12 @@ class MyAccount_AJAX extends JSON_Action
 	function getEditListForm()
 	{
 		global $interface;
+
 		if (isset($_REQUEST['listId']) && isset($_REQUEST['listEntryId'])) {
 			$listId = $_REQUEST['listId'];
 			$listEntry =  $_REQUEST['listEntryId'];
 
-			$interface->assign('list', $listId);
+			$interface->assign('listId', $listId);
 			$interface->assign('listEntry', $listEntry);
 
 			if (is_array($listId)){
@@ -3067,13 +3068,14 @@ class MyAccount_AJAX extends JSON_Action
 
 				$userLists    = new UserList();
 				$userLists->user_id = UserAccount::getActiveUserId();
-				$userLists->deleted = "0";
+				$userLists->whereAdd('deleted = 0');
 				$userLists->orderBy('title');
 				$userLists->find();
 				$lists = [];
 				while ($userLists->fetch()){
 					$lists[] = clone $userLists;
 				}
+
 				$interface->assign('lists', $lists);
 
 				if ($userList->find(true)) {
@@ -3138,8 +3140,9 @@ class MyAccount_AJAX extends JSON_Action
 			'title' => 'Updating list entry',
 			'message' => 'Sorry your list entry could not be updated'
 		];
-
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+
 		$userListEntry = new UserListEntry();
 		$userListEntry->id = $_REQUEST['listEntry'];
 		$currentLoc = $_REQUEST['listId'];
@@ -3147,6 +3150,9 @@ class MyAccount_AJAX extends JSON_Action
 
 		$moveTo = $_REQUEST['moveTo'];
 		$copyTo = $_REQUEST['copyTo'];
+
+		$list = new UserList();
+		$list->id = $currentLoc;
 
 		if ($userListEntry->find(true)) {
 
@@ -3163,6 +3169,11 @@ class MyAccount_AJAX extends JSON_Action
 
 				$userListEntry->listId = $moveTo;
 				$userListEntry->update();
+
+				$moveToList = new UserList();
+				$moveToList->id = $moveTo;
+				$moveToList->update();
+
 				$result['success'] = true;
 			}
 			if(($copyTo != $currentLoc) && ($copyTo != 'null')) {
@@ -3176,8 +3187,14 @@ class MyAccount_AJAX extends JSON_Action
 				$copyUserListEntry->source = $userListEntry->source;
 				$copyUserListEntry->dateAdded = time();
 				$copyUserListEntry->update();
+
+				$copyToList = new UserList();
+				$copyToList->id = $copyTo;
+				$copyToList->update();
+
 				$result['success'] = true;
 			}
+			$list->update();
 			$result['success'] = true;
 		} else {
 			$result['success'] = false;
