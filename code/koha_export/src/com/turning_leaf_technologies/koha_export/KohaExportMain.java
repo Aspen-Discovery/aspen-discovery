@@ -1068,16 +1068,28 @@ public class KohaExportMain {
 			logEntry.setNumProducts(changedBibIds.size());
 			logEntry.saveResults();
 			int numProcessed = 0;
+			if (indexingProfile.getLastChangeProcessed() > 0){
+				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
+			}
 			for (String curBibId : changedBibIds) {
-				//Update the marc record
-				updateBibRecord(curBibId);
+				if (numProcessed >= indexingProfile.getLastChangeProcessed()) {
+					//Update the marc record
+					updateBibRecord(curBibId);
+					indexingProfile.setLastChangeProcessed(numProcessed);
+				}else{
+					logEntry.incSkipped();
+				}
 
 				numProcessed++;
 				if (numProcessed % 250 == 0) {
 					logEntry.saveResults();
+					indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 				}
 			}
-			logger.info("Updated " + changedBibIds.size() + " records");
+			indexingProfile.setLastChangeProcessed(0);
+			indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
+			logEntry.addNote("Updated " + changedBibIds.size() + " records");
+			logEntry.saveResults();
 
 			//Process any bibs that have been deleted
 			int numRecordsDeleted = 0;
@@ -1103,8 +1115,8 @@ public class KohaExportMain {
 					numRecordsDeleted++;
 					logEntry.incDeleted();
 				}
+				logEntry.addNote("Deleted " + numRecordsDeleted + " records");
 				logEntry.saveResults();
-				logger.info("Deleted " + numRecordsDeleted + " records");
 			}
 
 			processRecordsToReload(indexingProfile, logEntry);
@@ -1174,6 +1186,7 @@ public class KohaExportMain {
 			}
 			if (numRecordsToReloadProcessed > 0) {
 				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				logEntry.saveResults();
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){

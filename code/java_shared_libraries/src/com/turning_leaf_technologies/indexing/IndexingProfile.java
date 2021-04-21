@@ -47,6 +47,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private int determineAudienceBy;
 	private char audienceSubfield;
 	private long lastUpdateOfAuthorities;
+	private long lastChangeProcessed;
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
 		this.filenamesToInclude = filenamesToInclude;
@@ -151,6 +152,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setFullMarcExportRecordIdThreshold(indexingProfileRS.getLong("fullMarcExportRecordIdThreshold"));
 				indexingProfile.setLastVolumeExportTimestamp(indexingProfileRS.getLong("lastVolumeExportTimestamp"));
 				indexingProfile.setLastUpdateOfAuthorities(indexingProfileRS.getLong("lastUpdateOfAuthorities"));
+				indexingProfile.setLastChangeProcessed(indexingProfileRS.getLong("lastChangeProcessed"));
 
 				indexingProfile.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
 				indexingProfile.setRegroupAllRecords(indexingProfileRS.getBoolean("regroupAllRecords"));
@@ -518,5 +520,23 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public void setFullMarcExportRecordIdThreshold(long fullMarcExportRecordIdThreshold) {
 		this.fullMarcExportRecordIdThreshold = fullMarcExportRecordIdThreshold;
+	}
+
+	public long getLastChangeProcessed() {
+		return lastChangeProcessed;
+	}
+
+	public void setLastChangeProcessed(long lastChangeProcessed) {
+		this.lastChangeProcessed = lastChangeProcessed;
+	}
+	public void updateLastChangeProcessed(Connection dbConn, BaseLogEntry logEntry) {
+		try {
+			PreparedStatement updateLastChangeProcessedId = dbConn.prepareStatement("UPDATE indexing_profiles set lastChangeProcessed = ? where id =?");
+			updateLastChangeProcessedId.setLong(1, lastChangeProcessed);
+			updateLastChangeProcessedId.setLong(2, id);
+			updateLastChangeProcessedId.executeUpdate();
+		}catch (Exception e){
+			logEntry.incErrors("Could not set last record processed", e);
+		}
 	}
 }

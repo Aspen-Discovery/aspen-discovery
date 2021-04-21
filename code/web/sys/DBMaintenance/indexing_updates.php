@@ -1023,7 +1023,15 @@ function getIndexingUpdates()
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN fullMarcExportRecordIdThreshold INT DEFAULT 0'
 			]
-		]
+		],
+
+		'indexing_profile_lastChangeProcessed' => [
+			'title' => 'Indexing Profile - Last Change processed',
+			'description' => 'Add tracking for the last record id processed so we can resume extracts that have errors',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN lastChangeProcessed INT DEFAULT 0"
+			]
+		],
 	);
 }
 
