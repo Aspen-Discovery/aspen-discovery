@@ -5,13 +5,6 @@
 			{translate text="You have not created any lists yet."}
 		</div>
 	{else}
-		<div class="row">
-			<div class="col-xs-12">
-				<div class="btn-group">
-					<button onclick="return AspenDiscovery.Account.deleteSelectedLists({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists"}</button>
-				</div>
-			</div>
-		</div>
 		{foreach from=$lists item="list" key="resultIndex"}
 			<div class="row">
 
