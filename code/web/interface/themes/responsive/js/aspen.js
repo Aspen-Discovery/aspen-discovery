@@ -6930,6 +6930,19 @@ AspenDiscovery.Admin = (function(){
 					$("#rowTitle").removeAttr('required');
 				}
 			});
+		},
+
+		updateMakeCellAccordion: function() {
+			var makeCellAccordion = $('#makeCellAccordion');
+			$(makeCellAccordion).click(function() {
+				if(makeCellAccordion.is(":checked")){
+					console.log(makeCellAccordion);
+					$("#title").attr('required',"true");
+				}else{
+					console.log(makeCellAccordion);
+					$("#title").removeAttr('required');
+				}
+			});
 		}
 	};
 }(AspenDiscovery.Admin || {}));
@@ -11841,7 +11854,7 @@ AspenDiscovery.WebBuilder = (function () {
 		getPortalCellValuesForSource: function () {
 			var portalCellId = $("#id").val();
 			var sourceType = $("#sourceTypeSelect").val();
-			if (sourceType === 'markdown' || sourceType === 'accordion') {
+			if (sourceType === 'markdown') {
 				$('#propertyRowmarkdown').show();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").hide();

@@ -355,6 +355,19 @@ AspenDiscovery.Admin = (function(){
 					$("#rowTitle").removeAttr('required');
 				}
 			});
+		},
+
+		updateMakeCellAccordion: function() {
+			var makeCellAccordion = $('#makeCellAccordion');
+			$(makeCellAccordion).click(function() {
+				if(makeCellAccordion.is(":checked")){
+					console.log(makeCellAccordion);
+					$("#title").attr('required',"true");
+				}else{
+					console.log(makeCellAccordion);
+					$("#title").removeAttr('required');
+				}
+			});
 		}
 	};
 }(AspenDiscovery.Admin || {}));

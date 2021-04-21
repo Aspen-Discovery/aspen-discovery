@@ -451,7 +451,15 @@ function getWebBuilderUpdates(){
 			'sql' => [
 				'ALTER TABLE web_builder_portal_cell ADD COLUMN frameHeight INT DEFAULT 0',
 			]
-		]
+		],
+
+		'web_builder_add_cell_makeCellAccordion'=>[
+			'title' => 'Web Builder add makeCellAccordion for cell layout options',
+			'description' => 'Add makeCellAccordion for layout settings in a cell for Web Builder Pages',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_cell ADD COLUMN makeCellAccordion TINYINT NOT NULL DEFAULT 0',
+			]
+		],
 
 	];
 }

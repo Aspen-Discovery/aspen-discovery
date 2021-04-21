@@ -30,6 +30,7 @@ abstract class ObjectEditor extends Admin_Admin
 		$interface->assign('objectType', $this->getObjectType());
 		$interface->assign('toolName', $this->getToolName());
 		$interface->assign('initializationJs', $this->getInitializationJs());
+		$interface->assign('initializationAdditionalJs', $this->getInitializationAdditionalJs());
 
 		//Define the structure of the object.
 		$interface->assign('structure', $structure);

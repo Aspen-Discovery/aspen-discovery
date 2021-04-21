@@ -24,6 +24,7 @@ class PortalCell extends DataObject
 	public $markdown;
 	public $sourceInfo;
 	public $frameHeight;
+	public $makeCellAccordion;
 
 	static function getObjectStructure() {
 		$verticalAlignmentOptions = [
@@ -42,7 +43,6 @@ class PortalCell extends DataObject
 			'markdown' => 'Text/Images',
 			'basic_page' => 'Basic Page',
 			'basic_page_teaser' => 'Basic Page Teaser',
-			'accordion' => 'Accordion',
 			'collection_spotlight' => 'Collection Spotlight',
 			'custom_form' => 'Form',
 			'image' => 'Image',
@@ -63,6 +63,7 @@ class PortalCell extends DataObject
 				'widthLg' => ['property'=>'widthLg', 'type'=>'integer', 'label'=>'Column Width Large Size', 'description'=>'The width of the column when viewed at Large size', 'min'=>1, 'max'=>'12', 'default'=>12],
 				'verticalAlignment' => ['property'=>'verticalAlignment', 'type'=>'enum', 'values'=>$verticalAlignmentOptions, 'label'=>'Vertical Alignment', 'description'=>'Vertical alignment of the cell', 'default'=>'stretch'],
 				'horizontalJustification' => ['property'=>'horizontalJustification', 'type'=>'enum', 'values'=>$horizontalJustificationOptions, 'label'=>'Horizontal Justification', 'description'=>'Horizontal Justification of the cell', 'default'=>'start'],
+				'makeCellAccordion' => ['property' => 'makeCellAccordion', 'type' => 'checkbox', 'label' => 'Make cell accordion (Title is required to use)', 'description' => 'Make the entire cell contents an accordion box', 'onchange'=>'return AspenDiscovery.Admin.updateMakeCellAccordion();'],
 			]],
 			'sourceType' => ['property'=>'sourceType', 'type'=>'enum', 'values'=>$sourceOptions, 'label'=>'Source Type', 'description'=>'Source type for the content of cell', 'onchange' => 'return AspenDiscovery.WebBuilder.getPortalCellValuesForSource();'],
 			'sourceId' => ['property'=>'sourceId', 'type'=>'enum', 'values'=>[], 'label'=>'Source Id', 'description'=>'Source for the content of cell'],
@@ -76,8 +77,18 @@ class PortalCell extends DataObject
 		global $interface;
 		global $configArray;
 		$contents = '';
-		if (!empty($this->title)){
+		if (!empty($this->title) && $this->makeCellAccordion != '1'){
 			$contents .= "<h2>{$this->title}</h2>";
+		}
+		if ($this->makeCellAccordion == '1') {
+			$contents .= "<div class='panel customAccordionCell' id='Cell-$this->id-Panel'>";
+			$contents .= "<a data-toggle='collapse' href='#Cell-$this->id-PanelBody'>";
+			$contents .= "<div class='panel-heading'>";
+			$contents .= "<div class='panel-title'>";
+			$contents .= "$this->title";
+			$contents .= "</div></div></a>";
+			$contents .= "<div id='Cell-$this->id-PanelBody' class='panel-collapse collapse'>";
+			$contents .= "<div class='panel-body'>";
 		}
 		if ($this->sourceType == 'markdown') {
 			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
@@ -148,20 +159,15 @@ class PortalCell extends DataObject
 				}
 				$contents .= "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\" alt='{$imageUpload->title}'>";
 			}
-		} elseif ($this->sourceType == 'accordion'){
-			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
-			$parsedown = AspenParsedown::instance();
-			$parsedown->setBreaksEnabled(true);
-			$interface->assign('title', $this->title);
-			$interface->assign('id',$this->portalRowId);
-			$interface->assign('contents', $parsedown->parse($this->markdown));
-			$contents .= $interface->fetch('WebBuilder/accordion.tpl');
 		} elseif ($this->sourceType == 'iframe') {
 			$sourceInfo = $this->sourceInfo;
 			$frameHeight = $this->frameHeight;
 			$interface->assign('sourceURL', $sourceInfo);
 			$interface->assign('frameHeight', $frameHeight);
 			$contents .= $interface->fetch('WebBuilder/iframe.tpl');
+		}
+		if ($this->makeCellAccordion == '1') {
+			$contents .= "</div></div></div>";
 		}
 		if (empty($contents)) {
 			return 'Could not load contents for the cell';

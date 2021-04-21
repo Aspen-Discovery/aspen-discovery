@@ -91,6 +91,11 @@ class WebBuilder_PortalCells extends ObjectEditor
 		return 'AspenDiscovery.WebBuilder.getPortalCellValuesForSource()';
 	}
 
+	function getInitializationAdditionalJs()
+	{
+		return 'return AspenDiscovery.Admin.updateMakeCellAccordion();';
+	}
+
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];
