@@ -92,6 +92,7 @@ public class PolarisExportMain {
 			if (args.length > 1) {
 				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")) {
 					extractSingleWork = true;
+				}
 			}
 		}
 		if (extractSingleWork) {
