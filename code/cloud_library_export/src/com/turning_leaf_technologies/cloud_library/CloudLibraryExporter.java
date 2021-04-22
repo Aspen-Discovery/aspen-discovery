@@ -457,4 +457,8 @@ public class CloudLibraryExporter {
 		headers.put("3mcl-APIVersion", "3.0");
 		return NetworkUtils.getURL(bookUrl, logger, headers);
 	}
+
+	public long getSettingsId() {
+		return settingsId;
+	}
 }

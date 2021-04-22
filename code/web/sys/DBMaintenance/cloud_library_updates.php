@@ -212,5 +212,14 @@ function getCloudLibraryUpdates() {
 				'ALTER table cloud_library_export_log ADD column settingId INT(11)'
 			)
 		),
+
+		'cloud_library_cleanup_availability_with_settings' => [
+			'title' => 'Cloud Library - Cleanup Availablity Tables',
+			'description' => 'Cleanup null settings in cloud library availability table and reindex',
+			'sql' => [
+				'DELETE FROM cloud_library_availability where settingId IS NULL',
+				'UPDATE cloud_library_settings set runFullUpdate = 1'
+			]
+		]
 	);
 }

@@ -305,7 +305,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	{
 		$relatedRecord = $this->getRelatedRecord();
 		$statusSummary = array();
-		if ($relatedRecord->getAvailableCopies() > 0){
+		if ($relatedRecord != null && $relatedRecord->getAvailableCopies() > 0){
 			$statusSummary['status'] = "Available from Cloud Library";
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';

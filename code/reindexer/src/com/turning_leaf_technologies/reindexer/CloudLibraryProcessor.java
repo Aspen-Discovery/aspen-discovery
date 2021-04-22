@@ -111,8 +111,12 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 
 				getAvailabilityStmt.setString(1, identifier);
 				ResultSet availabilityRS = getAvailabilityStmt.executeQuery();
-				if (availabilityRS.next()) {
+				while (availabilityRS.next()) {
 					long settingId = availabilityRS.getLong("settingId");
+					//Ignore any settings that are null
+					if (availabilityRS.wasNull()){
+						continue;
+					}
 					int totalCopies = availabilityRS.getInt("totalCopies");
 					itemInfo.setNumCopies(totalCopies);
 					int totalLoanCopies = availabilityRS.getInt("totalLoanCopies");
