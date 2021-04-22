@@ -5740,6 +5740,7 @@ AspenDiscovery.Account = (function(){
 				var rememberMe = $("#rememberMe").prop('checked');
 				var loginErrorElem = $('#loginError');
 				var loadingElem = $('#loading');
+				var multiStep = $('#multiStep').val();
 				var url = Globals.path + "/AJAX/JSON?method=loginUser";
 				var params = {username: username, password: password, rememberMe: rememberMe};
 				if (!Globals.opac && AspenDiscovery.hasLocalStorage()){
@@ -5755,8 +5756,7 @@ AspenDiscovery.Account = (function(){
 					var referer = "MyAccount/Home";
 				} else if ((module == "Search") && (action == "Home")) {
 					var referer = "MyAccount/Home";
-				}
-				else {
+				} else {
 					var referer = window.location;
 				}
 
@@ -5781,7 +5781,9 @@ AspenDiscovery.Account = (function(){
 							AspenDiscovery.Account.ajaxCallback();
 							AspenDiscovery.Account.ajaxCallback = null;
 						}
-						window.location.replace(referer);
+						if (multiStep !== 'true') {
+							window.location.replace(referer);
+						}
 					} else {
 						loginErrorElem.text(response.result.message).show();
 					}
