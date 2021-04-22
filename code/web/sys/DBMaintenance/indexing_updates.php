@@ -825,6 +825,15 @@ function getIndexingUpdates()
 			]
 		],
 
+		'sideload_scope_url_match_and_rewrite_embiggening' => [
+			'title' => 'Increases the number of characters allowed in Side Load Scopes URL Match and Replacement fields',
+			'description' => 'Update scopes to allow limitation by MARC tag and perform URL rewriting',
+			'sql' => [
+				"ALTER TABLE sideload_scopes CHANGE COLUMN urlToMatch urlToMatch VARCHAR(255)",
+				"ALTER TABLE sideload_scopes CHANGE COLUMN urlReplacement urlReplacement VARCHAR(255)"
+			]
+		],
+
 		'sideload_files' => [
 			'title' => 'Side Loads track indexed files',
 			'description' => 'Add a table to track which files were have been indexed for a sideload',
