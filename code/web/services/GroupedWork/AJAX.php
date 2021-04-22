@@ -1577,7 +1577,7 @@ class GroupedWork_AJAX extends JSON_Action
 		$result = [
 			'success' => false,
 			'title' => 'Previewing cover from related work',
-			'message' => 'Sorry the cover could not be set'
+			'message' => 'Sorry the cover could not be set.'
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -1589,8 +1589,13 @@ class GroupedWork_AJAX extends JSON_Action
 
 			if ($groupedWork->find(true)) {
 				$groupedWork->referenceCover = $recordType . ':' . $recordId;
-				$groupedWork->update();
-				$result['success'] = true;
+				if ($groupedWork->update()) {
+					$result['success'] = true;
+				}else{
+					$result['message'] .= " Could not update the related cover.";
+				}
+			}else{
+				$result['message'] .= " Could not find the work to update.";
 			}
 		}
 		if ($result['success']){

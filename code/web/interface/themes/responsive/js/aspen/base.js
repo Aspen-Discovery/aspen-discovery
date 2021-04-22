@@ -346,16 +346,19 @@ var AspenDiscovery = (function(){
 			$(".modal-body").html(body);
 			$('.modal-buttons').html('');
 			var modalDialog = $("#modalDialog");
-			modalDialog.removeClass('image-popup')
+			modalDialog.removeClass('image-popup');
 			modalDialog.modal('show');
 			if (autoClose) {
 				setTimeout(function(){
-					if (refreshAfterClose) location.reload(true);
-					else AspenDiscovery.closeLightbox();
+					if (refreshAfterClose) {
+						window.location = window.location;
+					} else {
+						AspenDiscovery.closeLightbox();
+					}
 				}, autoClose > 1 ? autoClose : 3000);
 			}else if (refreshAfterClose) {
 				modalDialog.on('hide.bs.modal', function(){
-					location.reload(true)
+					window.location = window.location;
 				})
 			}
 		},

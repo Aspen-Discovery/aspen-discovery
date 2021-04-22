@@ -429,20 +429,18 @@ AspenDiscovery.GroupedWork = (function(){
 
 		setRelatedCover: function (recordId,groupedWorkId,recordType){
 			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=setRelatedCover&recordId=' + recordId + '&recordType=' + recordType;
+			AspenDiscovery.closeLightbox();
 			$.getJSON(url, function (data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}
-			);
+				AspenDiscovery.showMessage(data.title, data.message, true, false);
+			});
 			return false;
 		},
 
 		clearRelatedCover: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=clearRelatedCover';
 			$.getJSON(url, function (data){
-					AspenDiscovery.showMessage("Success", data.message, true, false);
-					setTimeout("AspenDiscovery.closeLightbox();", 3000);
-				}
-			);
+				AspenDiscovery.showMessage("Success", data.message, true, true);
+			});
 			return false;
 		},
 

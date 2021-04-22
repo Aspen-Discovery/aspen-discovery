@@ -56,8 +56,13 @@
 		<tr><th>Type</th><th>Identifier</th><th>Use Cover for Grouped Work</th></tr>
 		</thead>
 		{foreach from=$primaryIdentifiers item="groupedRecord"}
-			<tr><td>{$groupedRecord->type}</td><td>{$groupedRecord->identifier}</td><td><button onclick="return AspenDiscovery.GroupedWork.getPreviewRelatedCover('{$groupedRecord->identifier}', '{$recordDriver->getPermanentId()}', '{$groupedRecord->type}')" class="btn btn-sm {if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}btn-info{else}btn-default{/if}">{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}{translate text="Using this Cover"}{else}{translate text="Preview Cover"}{/if}</button>{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true} <button onclick="return AspenDiscovery.GroupedWork.clearRelatedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-warning">{translate text="Reset"}</button>{/if}
-				</td></tr>
+			<tr>
+				<td>{$groupedRecord->type}</td>
+				<td>{$groupedRecord->identifier}</td>
+				<td><button onclick="return AspenDiscovery.GroupedWork.getPreviewRelatedCover('{$groupedRecord->identifier}', '{$recordDriver->getPermanentId()}', '{$groupedRecord->type}')" class="btn btn-sm {if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}btn-info{else}btn-default{/if}">
+					{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}{translate text="Using this Cover"}{else}{translate text="Preview Cover"}{/if}</button>{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true} <button onclick="return AspenDiscovery.GroupedWork.clearRelatedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-warning">{translate text="Reset"}</button>{/if}
+				</td>
+			</tr>
 		{/foreach}
 	</table>
 {/if}
