@@ -15,12 +15,12 @@
 	{* Include correct all javascript *}
 	{if $ie8}
 		{* include to give responsive capability to ie8 browsers, but only on successful detection of those browsers. For that reason, don't include in aspen.min.js *}
-		<script src="/interface/themes/responsive/js/lib/respond.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/lib/respond.min.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
 	{/if}
 
 	{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 	{* Code is minified using uglify.js *}
-	<script src="/interface/themes/responsive/js/aspen.js?v={$gitBranch|urlencode}"></script>
+	<script src="/interface/themes/responsive/js/aspen.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
 
 	{/strip}
 	<script type="text/javascript">
@@ -74,9 +74,9 @@
 
 	{if $includeAutoLogoutCode == true}
 		{if $debugJs}
-			<script type="text/javascript" src="/interface/themes/responsive/js/aspen/autoLogout.js?v={$gitBranch|urlencode}"></script>
+			<script type="text/javascript" src="/interface/themes/responsive/js/aspen/autoLogout.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
 		{else}
-			<script type="text/javascript" src="/interface/themes/responsive/js/aspen/autoLogout.min.js?v={$gitBranch|urlencode}"></script>
+			<script type="text/javascript" src="/interface/themes/responsive/js/aspen/autoLogout.min.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
 		{/if}
 	{/if}
 {/strip}

@@ -30,9 +30,10 @@ if (isset($_REQUEST['test_role'])){
 $interface = new UInterface();
 $timer->logTime('Create interface');
 
-//Set footer information
 global $locationSingleton;
 getGitBranch();
+//Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
+$interface->assign('cssJsCacheCounter', 1);
 
 $interface->loadDisplayOptions();
 $timer->logTime('Loaded display options within interface');
@@ -790,7 +791,7 @@ function getGitBranch(){
 		$stringFromFile = file('../../.git/HEAD', FILE_USE_INCLUDE_PATH);
 		$stringFromFile = $stringFromFile[0]; //get the string from the array
 		$explodedString = explode("/", $stringFromFile); //separate out by the "/" in the string
-		$branchName = $explodedString[2]; //get the one that is always the branch name
+		$branchName = trim($explodedString[2]); //get the one that is always the branch name
 	}else{
 		if (file_exists('../../.git/FETCH_HEAD')) {
 			$stringFromFile = file('../../.git/FETCH_HEAD', FILE_USE_INCLUDE_PATH);

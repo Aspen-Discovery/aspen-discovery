@@ -42,5 +42,5 @@ function smarty_function_css($params, &$smarty)
 
 	// We found the file -- build the link tag:
 	$media = isset($params['media']) ? " media=\"{$params['media']}\"" : '';
-	return "<link rel=\"stylesheet\" type=\"text/css\"{$media} href=\"{$css}?v=" . urlencode($interface->getVariable('gitBranch')) . "\" />";
+	return "<link rel=\"stylesheet\" type=\"text/css\"{$media} href=\"{$css}?v=" . urlencode($interface->getVariable('gitBranch')) . '.' . urlencode($interface->getVariable('cssJsCacheCounter')) ."\" />";
 }
