@@ -163,7 +163,7 @@
 					{literal}
 					$(function(){
 						$('#UserList').sortable({
-							handle: 'i.fas.fa-arrows-alt',
+							handle: 'i.fas.fa-arrows-alt-v',
 							start: function(e,ui){
 								$(ui.item).find('.related-manifestations').fadeOut()
 							},
