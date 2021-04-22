@@ -11,7 +11,7 @@
 				<div class="col-sm-9">{$list->title}</div>
 			</div>
 
-			{if $listId->defaultSort == 'custom'}
+			{if $list->defaultSort == 'custom'}
 			<div class="form-group">
 				<label for="listPosition" class="col-sm-3">{translate text='Position'}: </label>
 				<div class="col-sm-9"><input type="number" class="form-control" value="{$listEntry->weight}" name="position"></div>

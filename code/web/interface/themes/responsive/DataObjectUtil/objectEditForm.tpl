@@ -72,6 +72,9 @@
 			{if !empty($initializationJs)}
 				{$initializationJs}
 			{/if}
+			{if !empty($initializationAdditionalJs)}
+			{$initializationAdditionalJs}
+			{/if}
 			{literal}
 
 			$(window).bind('beforeunload', function(e){
