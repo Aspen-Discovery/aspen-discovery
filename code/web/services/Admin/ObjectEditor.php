@@ -402,6 +402,9 @@ abstract class ObjectEditor extends Admin_Admin
 	function getInitializationJs(){
 		return '';
 	}
+	function getInitializationAdditionalJs(){
+		return '';
+	}
 
 	function compareObjects($structure)
 	{
