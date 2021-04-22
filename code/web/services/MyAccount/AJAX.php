@@ -3005,6 +3005,8 @@ class MyAccount_AJAX extends JSON_Action
 			$this->reloadCover();
 			$result['success'] = true;
 			$result['message'] = 'Items removed from the list successfully';
+		}else{
+			$result['message'] = "Sorry, you don't have permissions to edit this list.";
 		}
 		return $result;
 	}
