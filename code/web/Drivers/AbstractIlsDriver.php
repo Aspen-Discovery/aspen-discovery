@@ -227,21 +227,29 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return $summary;
 	}
 
-	public function showMessagingSettings()
+	/**
+	 * @return bool
+	 */
+	public function showMessagingSettings() : bool
 	{
 		return false;
 	}
 
-	public function getMessagingSettingsTemplate(User $user)
+	/**
+	 * @param User $patron
+	 * @return string|null
+	 */
+	public function getMessagingSettingsTemplate(User $patron) : ?string
 	{
 		return null;
 	}
 
-	public function processMessagingSettingsForm(User $user)
+	public function processMessagingSettingsForm(User $patron) : array
 	{
-		return array(
+		return [
 			'success' => false,
-			'errors' => array('Notification Settings are not implemented for this ILS'));
+			'message' => 'Notification Settings are not implemented for this ILS'
+		];
 	}
 
 	public function bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime)

@@ -1003,7 +1003,10 @@ class CatalogConnection
 		return $summary;
 	}
 
-	public function showMessagingSettings()
+	/**
+	 * @return bool
+	 */
+	public function showMessagingSettings() : bool
 	{
 		if ($this->driver == null) {
 			return false;
@@ -1011,12 +1014,16 @@ class CatalogConnection
 		return $this->driver->showMessagingSettings();
 	}
 
-	public function getMessagingSettingsTemplate(User $user)
+	/**
+	 * @param User $user
+	 * @return string
+	 */
+	public function getMessagingSettingsTemplate(User $user) : ?string
 	{
 		return $this->driver->getMessagingSettingsTemplate($user);
 	}
 
-	public function processMessagingSettingsForm(User $user)
+	public function processMessagingSettingsForm(User $user) : array
 	{
 		return $this->driver->processMessagingSettingsForm($user);
 	}

@@ -1785,7 +1785,10 @@ class CarlX extends AbstractIlsDriver{
 		return $summary;
 	}
 
-	public function showMessagingSettings()
+	/**
+	 * @return bool
+	 */
+	public function showMessagingSettings() : bool
 	{
 		return false;
 	}

@@ -1726,7 +1726,7 @@ class SirsiDynixROA extends HorizonAPI
 		$patronAddress = &$updatePatronInfoParameters['fields'][$addressField];
 		$fieldFound = false;
 		$maxKey = 0;
-		foreach ($patronAddress as $fieldIndex => &$field){
+		foreach ($patronAddress as &$field){
 			if ($field['key'] > $maxKey){
 				$maxKey = $field['key'];
 			}
@@ -1936,5 +1936,176 @@ class SirsiDynixROA extends HorizonAPI
 		$user->_notices = '-';
 		$user->_noticePreferenceLabel = 'Email';
 		$user->_web_note = '';
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function showMessagingSettings(): bool
+	{
+		return true;
+	}
+
+	/**
+	 * @param User $patron
+	 * @return string
+	 */
+	public function getMessagingSettingsTemplate(User $patron) : ?string
+	{
+		global $interface;
+		$webServiceURL = $this->getWebServiceURL();
+		$staffSessionToken = $this->getStaffSessionToken();
+		if (!empty($staffSessionToken)) {
+			$defaultCountryCode = '';
+			$getCountryCodesResponse = $this->getWebServiceResponse($webServiceURL . '/policy/countryCode/simpleQuery?key=*', null, $staffSessionToken);
+			$countryCodes = [];
+			foreach ($getCountryCodesResponse as $countryCodeInfo){
+				//This gets flipped later
+				$countryCodes[$countryCodeInfo->fields->translatedDescription] = $countryCodeInfo->key;
+				if ($countryCodeInfo->fields->isDefault) {
+					$defaultCountryCode = $countryCodeInfo->key;
+				}
+			}
+			ksort($countryCodes);
+			$countryCodes = array_flip($countryCodes);
+			$interface->assign('countryCodes', $countryCodes);
+			$phoneList = [];
+			//Create default phone numbers
+			for ($i = 1; $i <= 5; $i++) {
+				$phoneList[$i] = [
+					'enabled' => false,
+					'key' => '',
+					'label' => '',
+					'countryCode' => $defaultCountryCode,
+					'number' => '',
+					'billNotices' => false,
+					'overdueNotices' => false,
+					'holdPickupNotices' => false,
+					'manualMessages' => false,
+					'generalAnnouncements' => false
+				];
+			}
+
+			//Get a list of phone numbers for the patron from the APIs.
+			$includeFields = urlencode("phoneList{*}");
+			$getPhoneListResponse = $this->getWebServiceResponse($webServiceURL . "/user/patron/key/{$patron->username}?includeFields=$includeFields", null, $staffSessionToken);
+
+			if ($getPhoneListResponse != null){
+				foreach ($getPhoneListResponse->fields->phoneList as $index => $phoneInfo){
+					$phoneList[$index + 1 ] = [
+						'enabled' => true,
+						'key' => $phoneInfo->key,
+						'label' => $phoneInfo->fields->label,
+						'countryCode' => $phoneInfo->fields->countryCode->key,
+						'number' => $phoneInfo->fields->number,
+						'billNotices' => $phoneInfo->fields->bills,
+						'overdueNotices' => $phoneInfo->fields->overdues,
+						'holdPickupNotices' => $phoneInfo->fields->holds,
+						'manualMessages' => $phoneInfo->fields->manual,
+						'generalAnnouncements' => $phoneInfo->fields->general
+					];
+				}
+			}
+			$interface->assign('phoneList', $phoneList);
+			$interface->assign('numActivePhoneNumbers', 1);
+
+			//Get a list of valid country codes
+		}else{
+			$interface->assign('error', 'Could not load messaging settings.');
+		}
+
+		$library = $patron->getHomeLibrary();
+		if ($library->allowProfileUpdates){
+			$interface->assign('canSave', true);
+		}else{
+			$interface->assign('canSave', false);
+		}
+
+		return 'symphonyMessagingSettings.tpl';
+	}
+
+	public function processMessagingSettingsForm(User $patron) : array
+	{
+		$result = array(
+			'success' => false,
+			'message' => 'Unknown error processing messaging settings.');
+		$staffSessionToken = $this->getStaffSessionToken();
+		$includeFields = urlencode("phoneList{*}");
+		$webServiceURL = $this->getWebServiceURL();
+		$getPhoneListResponse = $this->getWebServiceResponse($webServiceURL . "/user/patron/key/{$patron->username}?includeFields=$includeFields", null, $staffSessionToken);
+
+		for ($i = 1; $i <=5; $i++){
+			$deletePhoneKey = $_REQUEST['phoneNumberDeleted'][$i] == true;
+			if (empty($_REQUEST['phoneNumber'][$i]) && empty($_REQUEST['phoneNumber'][$i])){
+				$deletePhoneKey = true;
+			}
+			$phoneKey = $_REQUEST['phoneNumberKey'][$i];
+			if ($deletePhoneKey){
+				if (!empty($phoneKey)) {
+					foreach ($getPhoneListResponse->fields->phoneList as $index => $phoneInfo) {
+						if ($phoneInfo->key == $phoneKey) {
+							unset ($getPhoneListResponse->fields->phoneList[$index]);
+							break;
+						}
+					}
+				}
+			}else{
+				$phoneToModify = null;
+				$phoneIndexToModify = -1;
+				if (!empty($phoneKey)) {
+					foreach ($getPhoneListResponse->fields->phoneList as $index => $phoneInfo) {
+						if ($phoneInfo->key == $phoneKey) {
+							$phoneToModify = $phoneInfo;
+							$phoneIndexToModify = $index;
+							break;
+						}
+					}
+				}
+				if ($phoneToModify == null) {
+					$phoneToModify = new stdClass();
+					$phoneToModify->resource = '/user/patron/phone';
+					$phoneToModify->fields = new stdClass();
+				}
+				$phoneToModify->fields->patron = new stdClass();
+				$phoneToModify->fields->patron->resource = "/user/patron";
+				$phoneToModify->fields->patron->key = $patron->username;
+				$phoneToModify->fields->label = $_REQUEST['phoneLabel'][$i];
+				$phoneToModify->fields->countryCode = new stdClass();
+				$phoneToModify->fields->countryCode->resource = '/policy/countryCode';
+				$phoneToModify->fields->countryCode->key = $_REQUEST['countryCode'][$i];
+				$phoneToModify->fields->number = $_REQUEST['phoneNumber'][$i];
+				$phoneToModify->fields->bills = isset($_REQUEST['billNotices'][$i]) && ($_REQUEST['billNotices'][$i] == 'on');
+				$phoneToModify->fields->general = isset($_REQUEST['generalAnnouncements'][$i]) && ($_REQUEST['generalAnnouncements'][$i] == 'on');
+				$phoneToModify->fields->holds = isset($_REQUEST['holdPickupNotices'][$i]) && ($_REQUEST['holdPickupNotices'][$i] == 'on');
+				$phoneToModify->fields->manual = isset($_REQUEST['manualMessages'][$i]) && ($_REQUEST['manualMessages'][$i] == 'on');
+				$phoneToModify->fields->overdues = isset($_REQUEST['overdueNotices'][$i]) && ($_REQUEST['overdueNotices'][$i] == 'on');
+
+				if ($phoneIndexToModify == -1){
+					$getPhoneListResponse->fields->phoneList[] = $phoneToModify;
+				}else{
+					$getPhoneListResponse->fields->phoneList[$phoneIndexToModify] = $phoneToModify;
+				}
+			}
+		}
+		//Compact the array
+		$getPhoneListResponse->fields->phoneList = array_values($getPhoneListResponse->fields->phoneList);
+
+		$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username .'?includeFields=' . $includeFields, $getPhoneListResponse, $staffSessionToken, 'PUT');
+		if (isset($updateAccountInfoResponse->messageList)) {
+			$result['message'] = '';
+			foreach ($updateAccountInfoResponse->messageList as $message) {
+				if (strlen($result['message']) > 0){
+					$result['message'] .= '<br/>';
+				}
+				$result['message'] = $message->message;
+			}
+			if (strlen($result['message']) == 0){
+				$result['message'] = 'Unknown error processing messaging settings.';
+			}
+		} else {
+			$result['success'] = true;
+			$result['message'] = 'Your account was updated successfully.';
+		}
+		return $result;
 	}
 }
