@@ -178,7 +178,7 @@
 									var originalOrder = $(this).data('order');
 									var change = currentOrder+firstItemOnPage-originalOrder;
 									var newOrder = originalOrder+change;
-									if (change !== 0) updates.push({'id':id, 'newOrder':newOrder});
+									updates.push({'id':id, 'newOrder':newOrder});
 								});
 								$.getJSON('/MyAccount/AJAX',
 									{
