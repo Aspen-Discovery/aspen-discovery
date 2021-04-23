@@ -49,7 +49,7 @@
 			</form>
 			<br/>
 		{else}
-			<div class="alert alert-warning">There are no {translate text='materials request'}s that meet your criteria.</div>
+			<div class="alert alert-warning">{translate text='There are no materials requests that meet your criteria.'}</div>
 		{/if}
 		<div id="createNewMaterialsRequest"><a href="/MaterialsRequest/NewRequestIls?patronId={$patronId}" class="btn btn-primary btn-sm">{translate text='Submit a New Materials Request'}</a></div>
 	{/if}

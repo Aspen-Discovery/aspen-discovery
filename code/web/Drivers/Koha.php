@@ -2325,7 +2325,7 @@ class Koha extends AbstractIlsDriver
 			$request['suggestedOn'] = $curRow['suggesteddate'];
 			$request['note'] = $curRow['note'];
 			$request['managedBy'] = $managedByStr;
-			$request['status'] = ucwords(strtolower($curRow['STATUS']));
+			$request['status'] = translate(ucwords(strtolower($curRow['STATUS'])));
 			if (!empty($curRow['reason'])) {
 				$request['status'] .= ' (' . $curRow['reason'] . ')';
 			}
