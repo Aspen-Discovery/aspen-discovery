@@ -923,6 +923,15 @@ function getUserUpdates()
 			'sql' => [
 				'ALTER table user_reading_history_work change column checkInDate checkInDate BIGINT NULL;'
 			]
+		],
+
+		'user_circulation_cache_callnumber_length' => [
+			'title' => 'Expand call number length in circulation caches',
+			'description' => 'Update circulation caches to increase length of call number fields',
+			'sql' => [
+				'ALTER TABLE user_checkout change column callNumber callNumber VARCHAR(100)',
+				'ALTER TABLE user_hold change column callNumber callNumber VARCHAR(100)',
+			]
 		]
 	);
 }
