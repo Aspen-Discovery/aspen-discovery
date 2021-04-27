@@ -23,12 +23,12 @@ if (!file_exists($exportPath)){
 	$invalidRecords = []; //An array containing any records that no longer exist and therefore are not imported.
 
 	$startTime = time();
-//	if (file_exists($exportPath . "ratings.csv")) {
-//		importRatings($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
-//	}
-//	if (file_exists($exportPath . "patronshelves.csv")) {
-//		importPatronShelves($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
-//	}
+	if (file_exists($exportPath . "ratings.csv")) {
+		importRatings($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
+	}
+	if (file_exists($exportPath . "patronshelves.csv")) {
+		importPatronShelves($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
+	}
 	if (file_exists($exportPath . "stafflist.csv")) {
 		importStaffLists($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
 	}
