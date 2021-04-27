@@ -23,12 +23,12 @@ if (!file_exists($exportPath)){
 	$invalidRecords = []; //An array containing any records that no longer exist and therefore are not imported.
 
 	$startTime = time();
-	if (file_exists($exportPath . "ratings.csv")) {
-		importRatings($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
-	}
-	if (file_exists($exportPath . "patronshelves.csv")) {
-		importPatronShelves($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
-	}
+//	if (file_exists($exportPath . "ratings.csv")) {
+//		importRatings($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
+//	}
+//	if (file_exists($exportPath . "patronshelves.csv")) {
+//		importPatronShelves($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
+//	}
 	if (file_exists($exportPath . "stafflist.csv")) {
 		importStaffLists($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
 	}
@@ -222,9 +222,13 @@ function importStaffLists($startTime, $exportPath, &$existingUsers, &$missingUse
 	$usersWithSearchPermissions = [];
 	//Read the headers
 	fgetcsv($staffListfHnd);
-	while ($patronListRow = fgetcsv($staffListfHnd)) {
+	while ($patronListRow = fgetcsv($staffListfHnd, 0, ',', '"', '"')) {
 		$numImports++;
 
+		if (sizeof($patronListRow) != 11){
+			//We got a bad export, likely
+			continue;
+		}
 		//Figure out the user for the list
 		$userBarcode = $patronListRow[0];
 		$listId = $patronListRow[1];
