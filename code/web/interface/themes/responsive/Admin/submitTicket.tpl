@@ -128,6 +128,9 @@
 					<input type="checkbox" name=component[]"  value="User Lists" id="User Lists"><label for="User Lists">User Lists</label>
 				</div>
 				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
+					<input type="checkbox" name=component[]"  value="Web Builder" id="Web Builder"><label for="Web Builder">Web Builder</label>
+				</div>
+				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
 					<input type="checkbox" name=component[]"  value="Website Indexing" id="Website Indexing"><label for="Website Indexing">Website Indexing</label>
 				</div>
 			</div>
