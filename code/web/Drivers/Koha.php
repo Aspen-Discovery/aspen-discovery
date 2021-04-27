@@ -1423,8 +1423,40 @@ class Koha extends AbstractIlsDriver
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfCheckouts();
 		} else {
+			$error = $renewResponse->error;
 			$success = false;
-			$message = 'The item could not be renewed';
+			$message = 'The item could not be renewed: ';
+			if($error == "too_many") {
+				$message .= 'Renewed the maximum number of times';
+			} elseif ($error == "no_item") {
+				$message .= 'No matching item could be found';
+			} elseif ($error == "too_soon") {
+				$message .= 'Cannot be renewed yet';
+			} elseif ($error == "no_checkout") {
+				$message .= 'Item is not checked out';
+			} elseif ($error == "auto_too_soon") {
+				$message .= 'Scheduled for automatic renewal and cannot be renewed yet';
+			} elseif ($error == "auto_too_late") {
+				$message .= 'Scheduled for automatic renewal and cannot be renewed any more';
+			} elseif ($error == "auto_account_expired") {
+				$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron\'s account has expired';
+			} elseif ($error == "auto_renew") {
+				$message .= 'Scheduled for automatic renewal';
+			}  elseif ($error == "auto_too_much_oweing") {
+				$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges';
+			}  elseif ($error == "on_reserve") {
+				$message .= 'On hold for another patron';
+			}  elseif ($error == "patron_restricted") {
+				$message .= 'Patron is currently restricted';
+			}  elseif ($error == "item_denied_renewal") {
+				$message .= 'Item is not allowed renewal';
+			}  elseif ($error == "onsite_checkout") {
+				$message .= 'Item is an onsite checkout';
+			}  elseif ($error == "has_fine") {
+				$message .= 'Item has an outstanding fine';
+			}  else {
+				$message = 'The item could not be renewed';
+			}
 		}
 
 		return array(
