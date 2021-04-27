@@ -15,6 +15,7 @@ class UserList extends DataObject
 	public $deleted;
 	public $dateUpdated;
 	public $defaultSort;
+	public $importedFrom;
 
 	public static function getSourceListsForBrowsingAndCarousels()
 	{

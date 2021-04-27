@@ -725,25 +725,11 @@ class UserAccount
 	{
 		require_once ROOT_DIR . '/CatalogFactory.php';
 		$driversToTest = self::getAccountProfiles();
-		foreach ($driversToTest as $driverName => $driverData) {
+		foreach ($driversToTest as $driverData) {
 			$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($driverData['driver'], $driverData['accountProfile']);
 			if ($catalogConnectionInstance != null && !is_null($catalogConnectionInstance->driver) && method_exists($catalogConnectionInstance->driver, 'findNewUser')) {
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);
 				if (!empty($tmpUser) && !($tmpUser instanceof AspenError)) {
-					if ($tmpUser->displayName == '') {
-						if ($tmpUser->firstname == '') {
-							$tmpUser->displayName = $tmpUser->lastname;
-						} else {
-							$homeLibrary = $tmpUser->getHomeLibrary();
-							if ($homeLibrary == null || ($homeLibrary->__get('patronNameDisplayStyle') == 'firstinitial_lastname')) {
-								// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
-								$tmpUser->displayName = substr($tmpUser->firstname, 0, 1) . '. ' . $tmpUser->lastname;
-							} elseif ($homeLibrary->__get('patronNameDisplayStyle') == 'lastinitial_firstname') {
-								$tmpUser->displayName = $tmpUser->firstname . ' ' . substr($tmpUser->lastname, 0, 1) . '.';
-							}
-						}
-						$tmpUser->update();
-					}
 					return $tmpUser;
 				}
 			}

@@ -329,6 +329,15 @@ function getUserUpdates()
 			]
 		],
 
+		'user_list_import_information' => [
+			'title' => 'User List Import Information',
+			'description' => 'Add information about where list information was imported from',
+			'sql' => [
+				'ALTER TABLE user_list ADD COLUMN importedFrom VARCHAR(20)',
+				'ALTER TABLE user_list_entry ADD COLUMN importedFrom VARCHAR(20)',
+			]
+		],
+
 		'user_last_list_used' => [
 			'title' => 'User Last Used List',
 			'description' => 'Store the last list the user edited',

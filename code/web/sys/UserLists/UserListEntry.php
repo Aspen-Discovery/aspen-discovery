@@ -10,6 +10,7 @@ class UserListEntry extends DataObject{
 	public $notes;                           // blob(65535)  blob
 	public $dateAdded;                       // timestamp(19)  not_null unsigned zerofill binary timestamp
 	public $weight;                          //Where to position the entry in the overall list
+	public $importedFrom;
 
 	/**
 	 * @param bool $updateBrowseCategories
