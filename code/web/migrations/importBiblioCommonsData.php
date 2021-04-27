@@ -210,7 +210,7 @@ function importPatronShelves($startTime, $exportPath, &$existingUsers, &$missing
 
 function importStaffLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validRecords, &$invalidRecords)
 {
-	echo("Starting to import ratings and reviews\n");
+	echo("Starting to import staff lists\n");
 
 	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 	require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
