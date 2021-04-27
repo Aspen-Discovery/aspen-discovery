@@ -470,6 +470,7 @@ public class SymphonyExportMain {
 			return totalChanges;
 		}
 
+		//Make sure that none of the files are still changing
 		for (File curBibFile : exportedMarcFiles) {
 			//Make sure the file is not currently changing.
 			boolean isFileChanging = true;
@@ -480,16 +481,63 @@ public class SymphonyExportMain {
 				} catch (InterruptedException e) {
 					logEntry.incErrors("Error checking if a file is still changing", e);
 				}
-				if (lastSizeCheck == curBibFile.length()){
+				if (lastSizeCheck == curBibFile.length()) {
 					isFileChanging = false;
-				}else{
+				} else {
 					lastSizeCheck = curBibFile.length();
 				}
 			}
+		}
+
+		//Validate that the FullMarcExportRecordIdThreshold has been met if we are running a full export.
+		long maxIdInExport = 0;
+		if (hasFullExportFile){
+			logEntry.addNote("Validating that full export is the correct size");
+			logEntry.saveResults();
+			for (File curBibFile : exportedMarcFiles) {
+				int numRecordsRead = 0;
+				String lastRecordProcessed = "";
+				try {
+					FileInputStream marcFileStream = new FileInputStream(curBibFile);
+					MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+					while (catalogReader.hasNext()) {
+						numRecordsRead++;
+						Record curBib = catalogReader.next();
+						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+						if (recordIdentifier != null) {
+							String recordNumber = recordIdentifier.getIdentifier();
+							lastRecordProcessed = recordNumber;
+							recordNumber = recordNumber.replaceAll("[^\\d]", "");
+							long recordNumberDigits = Long.parseLong(recordNumber);
+							if (recordNumberDigits > maxIdInExport) {
+								maxIdInExport = recordNumberDigits;
+							}
+						}
+					}
+				} catch (Exception e) {
+					logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+					logEntry.addNote("Not processing MARC export due to error reading MARC files.");
+					return totalChanges;
+				}
+			}
+
+			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()){
+				logEntry.incErrors("Full MARC export appears to be truncated, MAX Record ID in the export was " + maxIdInExport + " expected to be greater than or equal to " + indexingProfile.getFullMarcExportRecordIdThreshold());
+				return totalChanges;
+			}else{
+				logEntry.addNote("The full export is the correct size.");
+				logEntry.saveResults();
+			}
+		}
+
+		for (File curBibFile : exportedMarcFiles) {
 			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
 
-			int numRecordsRead = 0;
 			String lastRecordProcessed = "";
+			if (hasFullExportFile && indexingProfile.getLastChangeProcessed() > 0){
+				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
+			}
+			int numRecordsRead = 0;
 			try {
 				FileInputStream marcFileStream = new FileInputStream(curBibFile);
 				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
@@ -501,71 +549,84 @@ public class SymphonyExportMain {
 					logEntry.incProducts();
 					try{
 						Record curBib = catalogReader.next();
-						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
-						boolean deleteRecord = false;
-						if (recordIdentifier == null) {
-							//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
-							String controlNumber = curBib.getControlNumber();
-							if (controlNumber == null) {
-								logger.warn("Bib did not have control number or identifier");
-							}
-						}else if (!recordIdentifier.isSuppressed()) {
-							String recordNumber = recordIdentifier.getIdentifier();
-							BaseMarcRecordGrouper.MarcStatus marcStatus;
-							if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)){
-								marcStatus = recordGroupingProcessor.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber, logger);
-							}else{
-								marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
-							}
-
-							if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED, null);
-								if (permanentId == null){
-									//Delete the record since it is suppressed
-									deleteRecord = true;
-								}else {
-									if (marcStatus == BaseMarcRecordGrouper.MarcStatus.NEW){
-										logEntry.incAdded();
-									}else {
-										logEntry.incUpdated();
-									}
-									getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
-									totalChanges++;
+						numRecordsRead++;
+						if (hasFullExportFile && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+							logEntry.incSkipped();
+						}else {
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+							boolean deleteRecord = false;
+							if (recordIdentifier == null) {
+								//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+								String controlNumber = curBib.getControlNumber();
+								if (controlNumber == null) {
+									logger.warn("Bib did not have control number or identifier");
 								}
-							}else{
-								logEntry.incSkipped();
+							} else if (!recordIdentifier.isSuppressed()) {
+								String recordNumber = recordIdentifier.getIdentifier();
+								BaseMarcRecordGrouper.MarcStatus marcStatus;
+								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
+									marcStatus = recordGroupingProcessor.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber, logger);
+								} else {
+									marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
+								}
+
+								if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
+									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED, null);
+									if (permanentId == null) {
+										//Delete the record since it is suppressed
+										deleteRecord = true;
+									} else {
+										if (marcStatus == BaseMarcRecordGrouper.MarcStatus.NEW) {
+											logEntry.incAdded();
+										} else {
+											logEntry.incUpdated();
+										}
+										getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
+										totalChanges++;
+									}
+								} else {
+									logEntry.incSkipped();
+								}
+								if (totalChanges % 5000 == 0) {
+									getGroupedWorkIndexer(dbConn).commitChanges();
+								}
+								//Mark that the record was processed
+								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
+								lastRecordProcessed = recordNumber;
+							} else {
+								//Delete the record since it is suppressed
+								deleteRecord = true;
 							}
-							if (totalChanges % 5000 == 0) {
-								getGroupedWorkIndexer(dbConn).commitChanges();
+							lastIdentifier = recordIdentifier;
+							indexingProfile.setLastChangeProcessed(numRecordsRead);
+							if (deleteRecord) {
+								RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
+								if (result.reindexWork) {
+									getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
+								} else if (result.deleteWork) {
+									//Delete the work from solr and the database
+									getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
+								}
+								logEntry.incDeleted();
+								totalChanges++;
 							}
-							//Mark that the record was processed
-							recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
-							lastRecordProcessed = recordNumber;
-						}else{
-							//Delete the record since it is suppressed
-							deleteRecord = true;
-						}
-						lastIdentifier = recordIdentifier;
-						if (deleteRecord){
-							RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
-							if (result.reindexWork){
-								getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
-							}else if (result.deleteWork){
-								//Delete the work from solr and the database
-								getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
-							}
-							logEntry.incDeleted();
-							totalChanges++;
 						}
 					}catch (MarcException me){
 						logEntry.incErrors("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
 					}
-					numRecordsRead++;
 					if (numRecordsRead % 250 == 0) {
 						logEntry.saveResults();
+						indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 					}
 				}
 				marcFileStream.close();
+
+				if (hasFullExportFile){
+					indexingProfile.setLastChangeProcessed(0);
+					indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
+					logEntry.addNote("Updated " + numRecordsRead + " records");
+					logEntry.saveResults();
+				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 			}
@@ -584,10 +645,16 @@ public class SymphonyExportMain {
 				logEntry.incDeleted();
 				totalChanges++;
 			}
-		}
 
-		//Remove empty works
-		//getGroupedWorkIndexer(dbConn).deleteEmptyWorks();
+			try {
+				PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set fullMarcExportRecordIdThreshold = ? where id = ?");
+				updateMarcExportStmt.setLong(1, maxIdInExport);
+				updateMarcExportStmt.setLong(2, indexingProfile.getId());
+				updateMarcExportStmt.executeUpdate();
+			}catch (Exception e){
+				logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
+			}
+		}
 
 		try {
 			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateFromMarcExport = ? where id = ?");

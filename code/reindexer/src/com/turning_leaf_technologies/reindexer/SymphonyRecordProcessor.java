@@ -68,7 +68,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
 		boolean available = false;
-		if (itemInfo.getStatusCode().equals("ONSHELF")) {
+		if (itemInfo.getStatusCode().equals("ONSHELF") || itemInfo.getStatusCode().equals("DISPLAY")) {
 			available = true;
 		}
 		return available;
