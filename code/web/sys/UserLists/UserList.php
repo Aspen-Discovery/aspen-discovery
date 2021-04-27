@@ -20,6 +20,7 @@ class UserList extends DataObject
 	{
 		$userLists = new UserList();
 		$userLists->public = 1;
+		$userLists->deleted = 0;
 		$userLists->orderBy('title asc');
 		$userLists->find();
 		$sourceLists = array();
