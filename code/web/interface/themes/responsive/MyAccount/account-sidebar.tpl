@@ -16,7 +16,7 @@
 					{* With SidebarMenu on, we should always keep the MyAccount Panel open. *}
 
 					{* Clickable header for my account section *}
-					<a data-toggle="collapse" href="#myAccountPanel" aria-label="{translate text="My Account Menu"}">
+					<a data-toggle="collapse" href="#myAccountPanel" aria-label="{translate text="My Account Menu" inAttribute="true"}">
 						<div class="panel-heading">
 							<div class="panel-title">
 								{*MY ACCOUNT*}

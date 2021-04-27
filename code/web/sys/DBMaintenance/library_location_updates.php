@@ -2161,6 +2161,14 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+		'increaseLengthOfShowInMainDetails' => [
+			'title' => 'Increase Length of Show In Main Details',
+			'description' => 'Increase Length of Show In Main Details for display settings',
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings change showInMainDetails showInMainDetails VARCHAR(500)'
+			]
+		],
+
 		'selfRegistrationLocationRestrictions' => [
 			'title' => 'Self Registration Location Restrictions',
 			'description' => 'Setup restrictions for valid locations for self registration',
