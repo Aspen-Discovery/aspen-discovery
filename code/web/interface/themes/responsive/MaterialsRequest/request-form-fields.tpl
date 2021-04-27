@@ -8,7 +8,7 @@
 			{if $formField->fieldType == 'format'}
 				{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 				<div class="row form-group">
-					<label class="control-label col-sm-3" for="format">{translate text=$formField->fieldLabel}: <span class="requiredIndicator">*</span></label>
+					<label class="control-label col-sm-3" for="format">{translate text=$formField->fieldLabel} <span class="requiredIndicator">*</span></label>
 					<div class="request_detail_field_value col-sm-9">
 
 						<select name="format" class="required form-control" id="format" onchange="AspenDiscovery.MaterialsRequest.setFieldVisibility();">
@@ -121,7 +121,7 @@
 
 				{if !$new && $useWorldCat}
 					<div class="form-group">
-						<label for="suggestIdentifiers" class="control-label col-sm-3">{translate text='WorldCat Look up'}:</label>
+						<label for="suggestIdentifiers" class="control-label col-sm-3">{translate text='WorldCat Look up'}</label>
 						<div class="col-sm-9">
 							<input type="button" id="suggestIdentifiers" value="Find exact match" onclick="return AspenDiscovery.MaterialsRequest.getWorldCatIdentifiers();" class="btn btn-primary">
 						</div>
