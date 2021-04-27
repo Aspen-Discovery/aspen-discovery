@@ -11,6 +11,7 @@ class UserWorkReview extends DataObject
 	public $rating;
 	public $review;
 	public $dateRated;
+	public $importedFrom;
 
 	private $_displayName;
 
