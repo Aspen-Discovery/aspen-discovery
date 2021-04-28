@@ -69,6 +69,7 @@ class PortalCell extends DataObject
 			'sourceId' => ['property'=>'sourceId', 'type'=>'enum', 'values'=>[], 'label'=>'Source Id', 'description'=>'Source for the content of cell'],
 			'markdown' => ['property' => 'markdown', 'type' => 'markdown', 'label' => 'Contents', 'description' => 'Contents of the cell'],
 			'sourceInfo' => ['property' => 'sourceInfo', 'type' => 'text', 'label' => 'Source Info', 'description' => 'Additional information for the source'],
+			'imageURL' => ['property' => 'imageURL', 'type' => 'text', 'label' => 'URL to link image to', 'description' => 'URL to link image to'],
 			'frameHeight' => ['property' => 'frameHeight', 'type' => 'integer', 'label' => 'Height for iFrame', 'description'=> 'Set the height for the iFrame in pixels'],
 		];
 	}
@@ -146,6 +147,7 @@ class PortalCell extends DataObject
 			require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 			$imageUpload = new ImageUpload();
 			$imageUpload->id = $this->sourceId;
+			$imageLinkURL = $this->imageURL;
 			if ($imageUpload->find(true)) {
 				$size = '';
 				if ($this->widthMd <= 2) {
@@ -157,7 +159,11 @@ class PortalCell extends DataObject
 				}else{
 					$size .= '&size=x-large';
 				}
-				$contents .= "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\" alt='{$imageUpload->title}'>";
+				if (!empty($this->imageURL)) {
+					$contents .= "<a href='{$imageLinkURL}'><img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' alt='{$imageUpload->title}'></a>";
+				} else {
+					$contents .= "<img src='/WebBuilder/ViewImage?id={$imageUpload->id}{$size}' class='img-responsive' onclick=\"AspenDiscovery.WebBuilder.showImageInPopup('{$imageUpload->title}', '{$imageUpload->id}')\" alt='{$imageUpload->title}'>";
+				}
 			}
 		} elseif ($this->sourceType == 'iframe') {
 			$sourceInfo = $this->sourceInfo;

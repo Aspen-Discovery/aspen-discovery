@@ -159,6 +159,26 @@ body {
   }
 }
 
+#UserList .selectTitle,
+#UserList .text-right,
+#UserList span.btn-editions{
+  @media print{
+    display: none;
+  }
+}
+
+#UserList .result .row .col-xs-6.col-sm-6.col-md-6.col-lg-7{
+  @media print{
+    width: 75%
+  }
+}
+
+.module_MyAccount.action_MyList .alert{
+  @media print{
+    display: none;
+  }
+}
+
 .btn-editions{
   display:inline-block;
   color: #212529;

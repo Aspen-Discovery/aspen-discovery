@@ -7199,6 +7199,23 @@ body > .container {
     display: none;
   }
 }
+@media print {
+  #UserList .selectTitle,
+  #UserList .text-right,
+  #UserList span.btn-editions {
+    display: none;
+  }
+}
+@media print {
+  #UserList .result .row .col-xs-6.col-sm-6.col-md-6.col-lg-7 {
+    width: 75%;
+  }
+}
+@media print {
+  .module_MyAccount.action_MyList .alert {
+    display: none;
+  }
+}
 .btn-editions {
   display: inline-block;
   color: #212529;
