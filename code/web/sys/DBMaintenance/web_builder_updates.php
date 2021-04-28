@@ -461,5 +461,12 @@ function getWebBuilderUpdates(){
 			]
 		],
 
+		'web_builder_add_cell_imageURL'=>[
+			'title' => 'Add Image URL to Web Builder custom page options',
+			'description' => 'Add Image URL field to add links to image Web Builder cell types',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_cell ADD COLUMN imageURL VARCHAR(255)',
+			]
+		]
 	];
 }
