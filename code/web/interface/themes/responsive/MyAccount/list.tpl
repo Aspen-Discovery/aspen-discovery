@@ -1,4 +1,5 @@
 {strip}
+
 	<div class="row">
 		<div class="col-xs-12">
 			<form action="/MyAccount/MyList/{$userList->id}" id="myListFormHead">
@@ -16,8 +17,20 @@
 					{if $userList->deleted == 1}
 						<p class="alert alert-danger">{translate text='Sorry, this list has been deleted.'}</p>
 					{else}
+						<div class="row">
+							<div class="col-md-4">
+								<p class="text-muted">
+									<small>Created: {$dateCreated}</small>
+								</p>
+							</div>
+							<div class="col-md-4">
+								<p class="text-muted">
+									<small>Last updated: {$dateUpdated}</small>
+								</p>
+							</div>
+						</div>
 						{if $userList->getCleanDescription()}<div class="listDescription text-left" id="listDescription">{$userList->getCleanDescription()}</div>{/if}
-						{if $allowEdit}
+					{if $allowEdit}
 							<div id="listEditControls" style="display:none" class="collapse">
 								<div class="form-group">
 									<label for="listTitleEdit" class="control-label">{translate text="Title"}</label>

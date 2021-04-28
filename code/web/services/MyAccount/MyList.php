@@ -115,6 +115,14 @@ class MyAccount_MyList extends MyAccount {
 		$interface->assign('userList', $list);
 		$interface->assign('listSelected', $list->id);
 
+		// Retrieve and format dates to send to template
+		$dateCreated = $list->created;
+		$dateUpdated = $list->dateUpdated;
+		$dateCreated = date("F j, Y, g:i a", $dateCreated);
+		$dateUpdated = date("F j, Y, g:i a", $dateUpdated);
+		$interface->assign('dateCreated', $dateCreated);
+		$interface->assign('dateUpdated', $dateUpdated);
+
 		// Create a handler for displaying favorites and use it to assign
 		// appropriate template variables:
 		$interface->assign('allowEdit', $userCanEdit);
