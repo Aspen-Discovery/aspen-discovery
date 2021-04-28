@@ -150,7 +150,7 @@ public class PolarisExportMain {
 					if (authenticationResponse.isSuccess()) {
 						if (!extractSingleWork) {
 							updateBranchInfo(dbConn);
-							updateCollectionsAndShelfLocations(dbConn);
+							updateTranslationMaps(dbConn);
 						}
 
 						//Update works that have changed since the last index
@@ -352,7 +352,7 @@ public class PolarisExportMain {
 		}
 	}
 
-	private static void updateCollectionsAndShelfLocations(Connection dbConn){
+	private static void updateTranslationMaps(Connection dbConn){
 		try {
 			PreparedStatement createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
 			PreparedStatement getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?");
@@ -410,10 +410,66 @@ public class PolarisExportMain {
 							}
 						}
 					}
+					//For shelf locations, we also get the text version so pull that too
+					if (shelfLocationName.length() > 0){
+						if (!existingShelfLocations.containsKey(shelfLocationName.toLowerCase())){
+							try {
+								insertTranslationStmt.setLong(1, shelfLocationMapId);
+								insertTranslationStmt.setString(2, shelfLocationName.toLowerCase());
+								insertTranslationStmt.setString(3, shelfLocationName);
+								insertTranslationStmt.executeUpdate();
+								existingShelfLocations.put(shelfLocationName, shelfLocationName);
+							}catch (SQLException e){
+								logEntry.addNote("Error adding shelf location value " + shelfLocationName + " with a translation of " + shelfLocationName + " e");
+							}
+						}
+					}
+				}
+			}
+
+			Long iTypeMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "itype");
+			HashMap<String, String> existingITypes = getExistingTranslationMapValues(getExistingValuesForMapStmt, iTypeMapId);
+			String getMaterialTypesUrl = "/PAPIService/REST/public/v1/1033/100/1/materialtypes";
+			WebServiceResponse materialTypesResponse = callPolarisAPI(getMaterialTypesUrl, null, "GET", "application/json", null);
+			if (materialTypesResponse.isSuccess()){
+				JSONObject materialTypes = materialTypesResponse.getJSONResponse();
+				JSONArray materialTypeRows = materialTypes.getJSONArray("MaterialTypesRows");
+				for (int i = 0; i < materialTypeRows.length(); i++){
+					JSONObject curMaterialType = materialTypeRows.getJSONObject(i);
+					long materialTypeId = curMaterialType.getLong("MaterialTypeID");
+					String materialTypeName = curMaterialType.getString("Description");
+					if (!existingITypes.containsKey(Long.toString(materialTypeId))){
+						if (materialTypeName.length() > 0){
+							try {
+								insertTranslationStmt.setLong(1, iTypeMapId);
+								insertTranslationStmt.setLong(2, materialTypeId);
+								insertTranslationStmt.setString(3, materialTypeName);
+								insertTranslationStmt.executeUpdate();
+								existingITypes.put(Long.toString(materialTypeId), materialTypeName);
+							}catch (SQLException e){
+								logEntry.addNote("Error adding iType value " + materialTypeId + " with a translation of " + materialTypeName + " e");
+							}
+						}
+					}
+
+					//For material types, we also get the text version so pull that too
+					if (materialTypeName.length() > 0){
+						if (!existingITypes.containsKey(materialTypeName.toLowerCase())){
+							try {
+								insertTranslationStmt.setLong(1, iTypeMapId);
+								insertTranslationStmt.setString(2, materialTypeName.toLowerCase());
+								insertTranslationStmt.setString(3, materialTypeName);
+								insertTranslationStmt.executeUpdate();
+								existingITypes.put(materialTypeName, materialTypeName);
+							}catch (SQLException e){
+								logEntry.addNote("Error adding iType value " + materialTypeName + " with a translation of " + materialTypeName + " e");
+							}
+						}
+					}
 				}
 			}
 		} catch (SQLException e) {
-			logger.error("Error updating Collection information", e);
+			logger.error("Error updating translation map information", e);
 		}
 	}
 
@@ -907,7 +963,7 @@ public class PolarisExportMain {
 				dbConn = null;
 			}
 		} catch (Exception e) {
-			System.out.println("Error closing aspen connection: " + e.toString());
+			System.out.println("Error closing aspen connection: " + e);
 			e.printStackTrace();
 		}
 	}
