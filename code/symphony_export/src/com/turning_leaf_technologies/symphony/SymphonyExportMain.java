@@ -551,6 +551,10 @@ public class SymphonyExportMain {
 						Record curBib = catalogReader.next();
 						numRecordsRead++;
 						if (hasFullExportFile && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+							if (recordIdentifier != null) {
+								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
+							}
 							logEntry.incSkipped();
 						}else {
 							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
