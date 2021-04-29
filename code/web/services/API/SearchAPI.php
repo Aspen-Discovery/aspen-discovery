@@ -96,7 +96,7 @@ class SearchAPI extends Action
 			}
 		}
 
-		//Check free disk space
+	/*	//Check free disk space
 		if (is_dir('/data')) {
 			$freeSpace = disk_free_space('/data');
 			$this->addServerStat($serverStats, 'Data Disk Space', StringUtils::formatBytes($freeSpace));
@@ -178,7 +178,7 @@ class SearchAPI extends Action
 			}else{
 				$this->addCheck($checks, 'Wait Time', self::STATUS_CRITICAL, "Wait time not found in $topInfo");
 			}
-		}
+		}*/
 
 		//Check nightly index
 		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
@@ -249,13 +249,18 @@ class SearchAPI extends Action
 					// Check to make sure there is web builder content to actually index
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 					require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+					require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
 					$portalPage = new PortalPage();
 					$basicPage = new BasicPage();
+					$webResource = new WebResource();
 					$portalPage->find();
 					$basicPage->find();
+					$webResource->find();
 					if ($portalPage->fetch()) {
 						$checkEntriesInLast24Hours = true;
 					} else if ($basicPage->fetch()){
+						$checkEntriesInLast24Hours = true;
+					} else if ($webResource->fetch()) {
 						$checkEntriesInLast24Hours = true;
 					} else {
 						$checkEntriesInLast24Hours = false;
