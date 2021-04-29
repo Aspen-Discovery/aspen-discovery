@@ -245,6 +245,23 @@ class SearchAPI extends Action
 				if ($aspenModule->name == 'Open Archives'){
 					$checkEntriesInLast24Hours = false;
 				}
+				if ($aspenModule->name == 'Web Builder'){
+					// Check to make sure there is web builder content to actually index
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+					require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+					$portalPage = new PortalPage();
+					$basicPage = new BasicPage();
+					$portalPage->find();
+					$basicPage->find();
+					if ($portalPage->fetch()) {
+						$checkEntriesInLast24Hours = true;
+					} else if ($basicPage->fetch()){
+						$checkEntriesInLast24Hours = true;
+					} else {
+						$checkEntriesInLast24Hours = false;
+					}
+
+				}
 				if ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)){
 					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
 				}else{
