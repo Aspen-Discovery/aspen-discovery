@@ -638,6 +638,7 @@ public class SymphonyExportMain {
 
 		//Loop through remaining records and delete them
 		if (hasFullExportFile) {
+			logEntry.addNote("Deleting " + recordGroupingProcessor.getExistingRecords() + " records that were not contained in the export");
 			for (String identifier : recordGroupingProcessor.getExistingRecords().keySet()) {
 				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), identifier);
 				if (result.reindexWork){
@@ -648,7 +649,11 @@ public class SymphonyExportMain {
 				}
 				logEntry.incDeleted();
 				totalChanges++;
+				if (logEntry.getNumDeleted() % 250 == 0){
+					logEntry.saveResults();
+				}
 			}
+			logEntry.saveResults();
 
 			try {
 				PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set fullMarcExportRecordIdThreshold = ? where id = ?");
