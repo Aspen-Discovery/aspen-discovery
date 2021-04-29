@@ -684,10 +684,18 @@ public class PolarisExportMain {
 			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
 			logEntry.addNote("Looking for changed records since " + formattedLastExtractTime);
 		}
+		//Get the highest bib from Polaris
+		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
+		long maxBibId = -1;
+		if (maxBibResponse.isSuccess()){
+			maxBibId = maxBibResponse.getJSONResponse().getJSONArray("BibIDListRows").getJSONObject(0).getLong("BibliographicRecordID");
+		}
+
 		boolean doneLoading = false;
 		while (!doneLoading) {
 			//Polaris has an include items field, but it does not seem to contain all information we need for Aspen.
-			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?lastID=" + lastId;
+			long lastIdForThisBatch = Long.parseLong(lastId);
+			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?nrecs=100&lastID=" + lastId;
 			if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
 				getBibsUrl += "&startdatecreated=" + formattedLastExtractTime;
 				getBibsUrl += "&startdatemodified=" + formattedLastExtractTime;
@@ -696,6 +704,12 @@ public class PolarisExportMain {
 			numChanges += response.numChanges;
 			lastId = response.lastId;
 			doneLoading = response.doneLoading;
+			if (indexingProfile.isRunFullUpdate() && doneLoading){
+				if (Long.parseLong(lastId) <= lastIdForThisBatch && Long.parseLong(lastId) <= maxBibId){
+					lastId = Long.toString(lastIdForThisBatch + 100);
+					doneLoading = false;
+				}
+			}
 		}
 
 		//If we are doing a continuous index, get a list of any items that have been updated or changed
@@ -707,6 +721,8 @@ public class PolarisExportMain {
 			DateTimeFormatter itemDateFormatter = DateTimeFormatter.ofPattern("M/d/yyyy", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
 			String formattedLastItemExtractTime = itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
 			while (!doneLoading) {
+				logEntry.addNote("Getting a list of all items that have been updated");
+				logEntry.saveResults();
 				String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + URLEncoder.encode(formattedLastItemExtractTime) + "&lastid=" + lastId + "&nrecs=100";
 				WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
 				if (pagedItems.isSuccess()) {
@@ -913,7 +929,11 @@ public class PolarisExportMain {
 				JSONObject itemInfo = itemInfoRows.getJSONObject(0);
 				//TODO: Check the creation date and modification date to be sure the item really has been deleted.
 				bibForItem = Long.toString(itemInfo.getLong("BibliographicRecordID"));
+			}else{
+				logEntry.incErrors("Failed to get bib id for item id, could not find the item.");
 			}
+		}else{
+			logEntry.incErrors("Failed to get bib id for item id, response was not successful.");
 		}
 		return bibForItem;
 	}
@@ -1003,7 +1023,7 @@ public class PolarisExportMain {
 		if (method.equals("GET")) {
 			return NetworkUtils.getURL(fullUrl, logger, headers);
 		}else{
-			return NetworkUtils.postToURL(fullUrl, postData, contentType, null, logger, null, 10000, 300000, StandardCharsets.UTF_8, headers);
+			return NetworkUtils.postToURL(fullUrl, postData, contentType, null, logger, null, 10000, 60000, StandardCharsets.UTF_8, headers);
 		}
 	}
 
