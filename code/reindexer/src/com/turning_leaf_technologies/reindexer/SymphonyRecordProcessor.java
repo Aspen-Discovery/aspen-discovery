@@ -60,8 +60,8 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 				}
 			} else {
 				if (!hasTranslation("item_status", statusFieldData.toLowerCase())){
-					if (shelfLocationData.equalsIgnoreCase(statusFieldData)) {
-						statusFieldData = "Checked OUt";
+					if (!shelfLocationData.equalsIgnoreCase(statusFieldData)) {
+						statusFieldData = "Checked Out";
 					}else {
 						statusFieldData = "ONSHELF";
 					}

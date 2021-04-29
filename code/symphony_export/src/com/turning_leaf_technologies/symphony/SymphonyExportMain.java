@@ -519,6 +519,8 @@ public class SymphonyExportMain {
 					logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 					return totalChanges;
 				}
+				logEntry.addNote("Full export " + exportedMarcFiles.toString() + " contain " + numRecordsRead + " records.");
+				logEntry.saveResults();
 			}
 
 			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()){
@@ -638,7 +640,7 @@ public class SymphonyExportMain {
 
 		//Loop through remaining records and delete them
 		if (hasFullExportFile) {
-			logEntry.addNote("Deleting " + recordGroupingProcessor.getExistingRecords() + " records that were not contained in the export");
+			logEntry.addNote("Deleting " + recordGroupingProcessor.getExistingRecords().size() + " records that were not contained in the export");
 			for (String identifier : recordGroupingProcessor.getExistingRecords().keySet()) {
 				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), identifier);
 				if (result.reindexWork){
