@@ -96,7 +96,7 @@ class SearchAPI extends Action
 			}
 		}
 
-		//Check free disk space
+/*		//Check free disk space
 		if (is_dir('/data')) {
 			$freeSpace = disk_free_space('/data');
 			$this->addServerStat($serverStats, 'Data Disk Space', StringUtils::formatBytes($freeSpace));
@@ -178,7 +178,7 @@ class SearchAPI extends Action
 			}else{
 				$this->addCheck($checks, 'Wait Time', self::STATUS_CRITICAL, "Wait time not found in $topInfo");
 			}
-		}
+		}*/
 
 		//Check nightly index
 		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
@@ -256,11 +256,11 @@ class SearchAPI extends Action
 					$portalPage->find();
 					$basicPage->find();
 					$webResource->find();
-					if ($portalPage->fetch()) {
+					if ($portalPage->getNumResults() > 0) {
 						$checkEntriesInLast24Hours = true;
-					} else if ($basicPage->fetch()){
+					} else if ($basicPage->getNumResults() > 0){
 						$checkEntriesInLast24Hours = true;
-					} else if ($webResource->fetch()) {
+					} else if ($webResource->getNumResults() > 0) {
 						$checkEntriesInLast24Hours = true;
 					} else {
 						$checkEntriesInLast24Hours = false;

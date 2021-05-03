@@ -20,12 +20,12 @@
 						<div class="row">
 							<div class="col-md-4">
 								<p class="text-muted">
-									<small>Created: {$dateCreated}</small>
+									<small>{translate text='Created on'}  {$dateCreated}</small>
 								</p>
 							</div>
 							<div class="col-md-4">
 								<p class="text-muted">
-									<small>Last updated: {$dateUpdated}</small>
+									<small>{translate text='Last Updated'}  {$dateUpdated}</small>
 								</p>
 							</div>
 						</div>
