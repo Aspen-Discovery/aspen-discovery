@@ -555,6 +555,14 @@ function getUserUpdates()
 			]
 		],
 
+		'ptype_descriptions' => [
+			'title' => 'PType descriptions',
+			'description' => 'Add the ability to define descriptions for patron types',
+			'sql' => [
+				"ALTER TABLE ptype ADD COLUMN description VARCHAR(100) DEFAULT ''"
+			]
+		],
+
 		'oai_website_permissions' => [
 			'title' => 'Fix permissions for OAI and Website Indexing',
 			'description' => 'Fix permissions for OAI and Website Indexing',

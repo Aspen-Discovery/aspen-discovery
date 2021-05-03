@@ -52,7 +52,6 @@ import java.util.HashSet;
 import java.util.Locale;
 
 //TODO: Load dates closed
-//TODO: Load itype
 
 public class PolarisExportMain {
 	private static Logger logger;
@@ -150,6 +149,7 @@ public class PolarisExportMain {
 					if (authenticationResponse.isSuccess()) {
 						if (!extractSingleWork) {
 							updateBranchInfo(dbConn);
+							updatePatronCodes(dbConn);
 							updateTranslationMaps(dbConn);
 						}
 
@@ -349,6 +349,39 @@ public class PolarisExportMain {
 			}
 		} catch (Exception e) {
 			logEntry.incErrors("Error updating branch information from Polaris", e);
+		}
+	}
+
+	private static void updatePatronCodes(Connection dbConn){
+		try{
+			PreparedStatement existingPTypeStmt = dbConn.prepareStatement("SELECT * from ptype");
+			ResultSet existingPTypesRS = existingPTypeStmt.executeQuery();
+			HashSet<Long> existingPTypes = new HashSet<>();
+			while (existingPTypesRS.next()){
+				existingPTypes.add(existingPTypesRS.getLong("pType"));
+			}
+			existingPTypesRS.close();
+			existingPTypeStmt.close();
+			PreparedStatement addPTypeStmt = dbConn.prepareStatement("INSERT INTO ptype (pType, description) VALUES (?, ?)");
+			//Get a list of all libraries
+			String getPatronCodesUrl = "/PAPIService/REST/public/v1/1033/100/1/patroncodes";
+			WebServiceResponse patronCodesResponse = callPolarisAPI(getPatronCodesUrl, null, "GET", "application/json", null);
+			if (patronCodesResponse.isSuccess()){
+				JSONObject patronCodes = patronCodesResponse.getJSONResponse();
+				JSONArray patronCodeRows = patronCodes.getJSONArray("PatronCodesRows");
+				for (int i = 0; i < patronCodeRows.length(); i++){
+					JSONObject curPatronType = patronCodeRows.getJSONObject(i);
+					long patronCodeId = curPatronType.getLong("PatronCodeID");
+					if (!existingPTypes.contains(patronCodeId)){
+						addPTypeStmt.setLong(1, patronCodeId);
+						addPTypeStmt.setString(2, curPatronType.getString("Description"));
+						addPTypeStmt.executeUpdate();
+					}
+				}
+			}
+			addPTypeStmt.close();
+		} catch (Exception e) {
+			logEntry.incErrors("Error updating patron codes from Polaris", e);
 		}
 	}
 
