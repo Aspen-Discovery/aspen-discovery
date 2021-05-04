@@ -115,12 +115,11 @@ class Browse_AJAX extends Action {
 				$userList = new UserList();
 				$userList->listId = $listId;
 				$userList->deleted = "0";
-				$userList->find();
-				// Make a new userList and find it
-				// Assign sort from userList to browseCategory
-				$browseCategory->sourceListId = $listId;
-				$browseCategory->source = 'List';
-				$browseCategory->defaultSort = $userList->defaultSort;
+				if ($userList->find(true)) {
+					$browseCategory->sourceListId = $listId;
+					$browseCategory->source = 'List';
+				}
+
 			}
 
 			$browseCategory->label = $categoryName;
