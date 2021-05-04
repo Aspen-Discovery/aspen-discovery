@@ -5,6 +5,29 @@
 			{translate text="You have not created any lists yet."}
 		</div>
 	{else}
+		<div class="row">
+				<select id="results-sort" name="sort" aria-label="{translate text='Sort'}" onchange="document.location.href = this.options[this.selectedIndex].value;" class="input-medium">
+					<option value="?sortBy=title"{if $sortedBy == "title"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Title'}</option>
+					<option value="?sortBy=created"{if $sortedBy == "created"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Most Recently Created'}</option>
+					<option value="?sortBy=dateUpdated"{if $sortedBy == "dateUpdated"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Most Recently Updated'}</option>
+				</select>
+
+			<div id="selected-browse-label">
+				<div class="btn-group" id="hideSearchCoversSwitch"{if $displayMode != 'list'} style="display: none;"{/if}>
+					<label for="hideCovers" class="checkbox{* control-label*}"> {translate text='Hide Covers'}
+						<input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}>
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="btn-group">
+					<button onclick="return AspenDiscovery.Account.deleteSelectedLists({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists"}</button>
+				</div>
+			</div>
+		</div>
+
 		{foreach from=$lists item="list" key="resultIndex"}
 			<div class="row">
 
@@ -12,13 +35,13 @@
 						<input type="checkbox" name="selected[{$list->id}]" class="listSelect" id="selected{$list->id}">
 					</div>
 
+				{if $showCovers == true}
 				<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
-					{if $disableCoverArt != 1}
 						<a href="/MyAccount/MyList/{$list->id}" class="alignleft listResultImage" aria-hidden="true">
 							<img src="/bookcover.php?type=list&amp;id={$list->id}&amp;size=medium" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
 						</a>
-					{/if}
 				</div>
+				{/if}
 
 				<div class="{if !$showCovers}col-xs-11{else}col-xs-8 col-sm-8 col-md-8 col-lg-9{/if}">{* May turn out to be more than one situation to consider here *}
 					{* Title Row *}
@@ -56,8 +79,8 @@
 					<div class="row">
 
 						<div class="col-xs-12">
-							<p class="text-muted"><small>Created: {$list->created|date_format:"%B %e, %Y %l:%M %p"}<br>
-							Last Updated: {$list->dateUpdated|date_format:"%B %e, %Y %l:%M %p"}</small></p>
+							<p class="text-muted"><small>{translate text='Created on'} {$list->created|date_format:"%B %e, %Y %l:%M %p"}<br>
+									{translate text='Last Updated'} {$list->dateUpdated|date_format:"%B %e, %Y %l:%M %p"}</small></p>
 						</div>
 					</div>
 
@@ -68,12 +91,5 @@
 				</div>
 			</div>
 		{/foreach}
-		<div class="row">
-			<div class="col-xs-12">
-				<div class="btn-group">
-					<button onclick="return AspenDiscovery.Account.deleteSelectedLists({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists"}</button>
-				</div>
-			</div>
-		</div>
 	{/if}
 {/strip}
