@@ -7,9 +7,9 @@
 	{else}
 		<div class="row">
 				<select id="results-sort" name="sort" aria-label="{translate text='Sort'}" onchange="document.location.href = this.options[this.selectedIndex].value;" class="input-medium">
-					<option value="?sortBy=title"{if $sortedBy == "title"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Title'}</option>
-					<option value="?sortBy=created"{if $sortedBy == "created"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Most Recently Created'}</option>
-					<option value="?sortBy=dateUpdated"{if $sortedBy == "dateUpdated"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Most Recently Updated'}</option>
+					<option value="?sort=title"{if $sortedBy == "title"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Title'}</option>
+					<option value="?sort=created"{if $sortedBy == "created"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Most Recently Created'}</option>
+					<option value="?sort=dateUpdated"{if $sortedBy == "dateUpdated"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Most Recently Updated'}</option>
 				</select>
 
 			<div id="selected-browse-label">
@@ -91,5 +91,7 @@
 				</div>
 			</div>
 		{/foreach}
+
+		{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
 	{/if}
 {/strip}
