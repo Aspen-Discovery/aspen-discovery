@@ -42,7 +42,6 @@ class Grouping_Record
 	/** @var Grouping_Item[] */
 	private $_items;
 
-	private $_displayByDefault = true;
 	/** @var  IlsVolumeInfo[] */
 	private $_volumeData;
 
@@ -99,9 +98,6 @@ class Grouping_Record
 				$this->_statusInformation->setAvailable(true);
 			}
 			$this->_statusInformation->addAvailableCopies($item->numCopies);
-		}
-		if ($item->isDisplayByDefault()) {
-			$this->_displayByDefault = true;
 		}
 
 		if (!$item->inLibraryUseOnly) {

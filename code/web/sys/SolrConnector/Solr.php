@@ -1198,10 +1198,10 @@ abstract class Solr
 				$fieldName = preg_replace('/{!tag=\d+}/', '', $fieldName);
 				if (!in_array($fieldName, $validFields)) {
 					//Special handling for availability_by_format
-					if (preg_match("/^availability_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
+					if (preg_match("/availability_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
 						//This is a valid field
 						$validFilters[$id] = $filterTerm;
-					} elseif (preg_match("/^available_at_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
+					} elseif (preg_match("/available_at_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
 						//This is a valid field
 						$validFilters[$id] = $filterTerm;
 					} else {
