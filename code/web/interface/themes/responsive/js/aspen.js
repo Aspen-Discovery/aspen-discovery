@@ -5539,7 +5539,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		 loadReadingHistory: function(selectedUser, sort, page, showCovers, filter){
+		loadReadingHistory: function(selectedUser, sort, page, showCovers, filter){
 			var url = Globals.path + "/MyAccount/AJAX?method=getReadingHistory&patronId=" + selectedUser;
 			if (sort !== undefined){
 				url += "&sort=" + sort;
@@ -5570,45 +5570,6 @@ AspenDiscovery.Account = (function(){
 			}
 			if (document.location.href ){
 				var label = 'Reading History page ' . page;
-				history.pushState(stateObj, label, newUrl);
-			}
-			document.body.style.cursor = "wait";
-			// noinspection JSUnresolvedFunction
-			$.getJSON(url, function(data){
-				document.body.style.cursor = "default";
-				if (data.success){
-					$("#readingHistoryListPlaceholder").html(data.readingHistory);
-				}else{
-					$("#readingHistoryListPlaceholder").html(data.message);
-				}
-			}).fail(AspenDiscovery.ajaxFail);
-			return false;
-		},
-
-
-		loadListofLists: function(sort, page, showCovers){
-			var url = Globals.path + "/MyAccount/AJAX?method=getReadingHistory&patronId=" + selectedUser;
-			if (sort !== undefined){
-				url += "&sort=" + sort;
-			}
-			if (page !== undefined){
-				url += "&page=" + page;
-			}else{
-				page = 1;
-			}
-			if (showCovers !== undefined){
-				url += "&showCovers=" + showCovers;
-			}
-			var stateObj = {
-				page: 'Lists',
-				pageNumber: page,
-				sort: sort,
-				showCovers: showCovers,
-			};
-			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'selectedUser', selectedUser);
-			newUrl = AspenDiscovery.buildUrl(newUrl, 'page', page);
-			if (document.location.href ){
-				var label = 'List page ' . page;
 				history.pushState(stateObj, label, newUrl);
 			}
 			document.body.style.cursor = "wait";
