@@ -67,7 +67,10 @@ class Record_AJAX extends Action
 				$interface->assign('volume', $_REQUEST['volume']);
 			}
 
-			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $locations)){
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$marcRecord = new MarcRecordDriver($id);
+
+			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations)){
 				return array(
 					'holdFormBypassed' => false,
 					'title' => 'Unable to place hold',
@@ -76,8 +79,6 @@ class Record_AJAX extends Action
 				);
 			}
 
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-			$marcRecord = new MarcRecordDriver($id);
 			$title = rtrim($marcRecord->getTitle(), ' /');
 			$interface->assign('id', $marcRecord->getId());
 
@@ -251,9 +252,10 @@ class Record_AJAX extends Action
 
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			$marcRecord = new MarcRecordDriver($id);
+			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 			$interface->assign('id', $marcRecord->getId());
 
-			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $locations)){
+			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations)){
 				return array(
 					'holdFormBypassed' => false,
 					'title' => 'Unable to place hold',
@@ -262,7 +264,6 @@ class Record_AJAX extends Action
 				);
 			}
 
-			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 			$numItemsWithVolumes = 0;
 			$numItemsWithoutVolumes = 0;
 			foreach ($relatedRecord->getItems() as $item){
@@ -926,7 +927,14 @@ class Record_AJAX extends Action
 		return $result;
 	}
 
-	function setupHoldForm($recordSource, &$rememberHoldPickupLocation, &$locations){
+	/**
+	 * @param string $recordSource
+	 * @param bool $rememberHoldPickupLocation
+	 * @param MarcRecordDriver $marcRecord
+	 * @param Location[] $locations
+	 * @return bool
+	 */
+	function setupHoldForm($recordSource, &$rememberHoldPickupLocation, $marcRecord, &$locations){
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 		if ($user->getCatalogDriver() == null) {
@@ -963,6 +971,40 @@ class Record_AJAX extends Action
 				}
 			}
 		}
+
+		//Check to see if the record must be picked up at the holding branch
+		$mustPickupAtHoldingBranch = true;
+		$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+		$format = $marcRecord->getPrimaryFormat();
+		global $indexingProfiles;
+		$indexingProfile = $indexingProfiles[$relatedRecord->source];
+		$formatMap = $indexingProfile->formatMap;
+		/** @var FormatMapValue $formatMapValue */
+		foreach ($formatMap as $formatMapValue) {
+			if (strcasecmp($formatMapValue->format, $format) === 0) {
+				if (!$formatMapValue->mustPickupAtHoldingBranch){
+					$mustPickupAtHoldingBranch = false;
+					break;
+				}
+			}
+		}
+
+		//If we have to pickup at the holding branch, filter the list of available pickup locations to
+		//only include locations where the item is
+		if ($mustPickupAtHoldingBranch){
+			$itemLocations = [];
+			$items = $relatedRecord->getItems();
+			foreach ($items as $item){
+				$itemLocations[$item->locationCode] = $item->locationCode;
+			}
+
+			foreach($locations as $locationKey => $location){
+				if (!in_array($location->code, $itemLocations)){
+					unset($locations[$locationKey]);
+				}
+			}
+		}
+		$interface->assign('mustPickupAtHoldingBranch', $mustPickupAtHoldingBranch);
 
 		global $library;
 		if (!$multipleAccountPickupLocations && $library->allowRememberPickupLocation) {
