@@ -22,7 +22,11 @@
 				</div>
 
 				<p class="alert alert-info">
-					{translate text="hold_explanation" defaultText="Holds allow you to request that a title be delivered to your home library."}&nbsp;
+					{if $mustPickupAtHoldingBranch}
+						{translate text="hold_explanation_pickup_at_holding_branch" defaultText="Holds allow you to request that a title be put aside for you to pick up at the library."}&nbsp;
+					{else}
+						{translate text="hold_explanation" defaultText="Holds allow you to request that a title be delivered to your home library."}&nbsp;
+					{/if}
 					{if $showDetailedHoldNoticeInformation && $profile->_noticePreferenceLabel == 'Mail' && !$treatPrintNoticesAsPhoneNotices}
 						{translate text="hold_notice_mail" defaultText="Once the title arrives at your library you will be mailed a notification informing you that the title is ready for you."}&nbsp;
 					{elseif $showDetailedHoldNoticeInformation && ($profile->_noticePreferenceLabel == 'Telephone' || ($profile->_noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices))}
@@ -32,7 +36,11 @@
 					{else}
 						{translate text="hold_notice_generic" defaultText="Once the title arrives at your library you will receive a notification informing you that the title is ready for you."}&nbsp;
 					{/if}
-					{translate text="hold_pickup_timing_message" defaultText="You will then have 7 days to pick up the title from your home library."}&nbsp;
+					{if $mustPickupAtHoldingBranch}
+						{translate text="hold_pickup_timing_message_pickup_at_holding_branch" defaultText="You will then have 7 days to pick up the title at the library."}&nbsp;
+					{else}
+						{translate text="hold_pickup_timing_message" defaultText="You will then have 7 days to pick up the title from your home library."}&nbsp;
+					{/if}
 				</p>
 
 				<div id="holdOptions">

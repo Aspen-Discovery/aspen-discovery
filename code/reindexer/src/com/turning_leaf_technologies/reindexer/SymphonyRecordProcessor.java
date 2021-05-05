@@ -46,6 +46,8 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		String shelfLocationData = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelfLocationData != null){
 			shelfLocationData = shelfLocationData.toLowerCase();
+		}else{
+			shelfLocationData = "";
 		}
 		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")){
 			statusFieldData = "On Order";
@@ -58,7 +60,11 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 				}
 			} else {
 				if (!hasTranslation("item_status", statusFieldData.toLowerCase())){
-					statusFieldData = "ONSHELF";
+					if (!shelfLocationData.equalsIgnoreCase(statusFieldData)) {
+						statusFieldData = "Checked Out";
+					}else {
+						statusFieldData = "ONSHELF";
+					}
 				}
 			}
 		}
@@ -68,7 +74,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
 		boolean available = false;
-		if (itemInfo.getStatusCode().equals("ONSHELF")) {
+		if (itemInfo.getStatusCode().equals("ONSHELF") || itemInfo.getStatusCode().startsWith("DISP") || itemInfo.getStatusCode().equals("STAFFPICKS")) {
 			available = true;
 		}
 		return available;

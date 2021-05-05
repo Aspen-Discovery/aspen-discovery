@@ -114,8 +114,8 @@ class Grouping_Item
 		$this->libraryOwned = $scopingDetails[9] == 'true';
 		$this->holdablePTypes = isset($scopingDetails[10]) ? $scopingDetails[10] : '';
 		$this->bookablePTypes = isset($scopingDetails[11]) ? $scopingDetails[11] : '';
-		$this->locationCode = isset($curItem[15]) ? $itemDetails[15] : '';
-		$this->subLocation = isset($curItem[16]) ? $itemDetails[16] : '';
+		$this->locationCode = isset($itemDetails[15]) ? $itemDetails[15] : '';
+		$this->subLocation = isset($itemDetails[16]) ? $itemDetails[16] : '';
 		if (strlen($this->holdablePTypes) > 0 && $this->holdablePTypes != '999') {
 			$this->holdablePTypes = explode(',', $this->holdablePTypes);
 			$matchingPTypes = array_intersect($this->holdablePTypes, $activePTypes);

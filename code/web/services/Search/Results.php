@@ -180,7 +180,6 @@ class Search_Results extends ResultsAction {
 			$searchObject->setLimit(24); // a set of 24 covers looks better in display
 		}
 
-
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
 

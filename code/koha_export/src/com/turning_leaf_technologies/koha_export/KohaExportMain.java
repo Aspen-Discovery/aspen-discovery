@@ -462,6 +462,7 @@ public class KohaExportMain {
 		ResultSet accountProfileRS = accountProfileStmt.executeQuery();
 		KohaInstanceInformation kohaInstanceInformation = null;
 		if (accountProfileRS.next()) {
+			String kohaConnectionJDBC = "";
 			try {
 				String host = accountProfileRS.getString("databaseHost");
 				String port = accountProfileRS.getString("databasePort");
@@ -473,7 +474,7 @@ public class KohaExportMain {
 				String password = accountProfileRS.getString("databasePassword");
 				String timezone = accountProfileRS.getString("databaseTimezone");
 
-				String kohaConnectionJDBC = "jdbc:mysql://" +
+				kohaConnectionJDBC = "jdbc:mysql://" +
 						host + ":" + port +
 						"/" + databaseName +
 						"?user=" + user +
@@ -488,9 +489,12 @@ public class KohaExportMain {
 					kohaInstanceInformation = new KohaInstanceInformation();
 					kohaInstanceInformation.kohaConnection = kohaConn;
 					kohaInstanceInformation.indexingProfileName = accountProfileRS.getString("recordSource");
+				}else{
+					logger.debug("Connection string " + kohaConnectionJDBC);
 				}
 			} catch (Exception e) {
 				logger.error("Error connecting to koha database ", e);
+				logger.debug("Connection string " + kohaConnectionJDBC);
 			}
 		} else {
 			logger.error("Could not find an account profile for Koha stopping");

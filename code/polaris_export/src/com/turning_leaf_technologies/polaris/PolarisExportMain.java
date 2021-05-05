@@ -52,7 +52,6 @@ import java.util.HashSet;
 import java.util.Locale;
 
 //TODO: Load dates closed
-//TODO: Load itype
 
 public class PolarisExportMain {
 	private static Logger logger;
@@ -150,7 +149,8 @@ public class PolarisExportMain {
 					if (authenticationResponse.isSuccess()) {
 						if (!extractSingleWork) {
 							updateBranchInfo(dbConn);
-							updateCollectionsAndShelfLocations(dbConn);
+							updatePatronCodes(dbConn);
+							updateTranslationMaps(dbConn);
 						}
 
 						//Update works that have changed since the last index
@@ -352,7 +352,40 @@ public class PolarisExportMain {
 		}
 	}
 
-	private static void updateCollectionsAndShelfLocations(Connection dbConn){
+	private static void updatePatronCodes(Connection dbConn){
+		try{
+			PreparedStatement existingPTypeStmt = dbConn.prepareStatement("SELECT * from ptype");
+			ResultSet existingPTypesRS = existingPTypeStmt.executeQuery();
+			HashSet<Long> existingPTypes = new HashSet<>();
+			while (existingPTypesRS.next()){
+				existingPTypes.add(existingPTypesRS.getLong("pType"));
+			}
+			existingPTypesRS.close();
+			existingPTypeStmt.close();
+			PreparedStatement addPTypeStmt = dbConn.prepareStatement("INSERT INTO ptype (pType, description) VALUES (?, ?)");
+			//Get a list of all libraries
+			String getPatronCodesUrl = "/PAPIService/REST/public/v1/1033/100/1/patroncodes";
+			WebServiceResponse patronCodesResponse = callPolarisAPI(getPatronCodesUrl, null, "GET", "application/json", null);
+			if (patronCodesResponse.isSuccess()){
+				JSONObject patronCodes = patronCodesResponse.getJSONResponse();
+				JSONArray patronCodeRows = patronCodes.getJSONArray("PatronCodesRows");
+				for (int i = 0; i < patronCodeRows.length(); i++){
+					JSONObject curPatronType = patronCodeRows.getJSONObject(i);
+					long patronCodeId = curPatronType.getLong("PatronCodeID");
+					if (!existingPTypes.contains(patronCodeId)){
+						addPTypeStmt.setLong(1, patronCodeId);
+						addPTypeStmt.setString(2, curPatronType.getString("Description"));
+						addPTypeStmt.executeUpdate();
+					}
+				}
+			}
+			addPTypeStmt.close();
+		} catch (Exception e) {
+			logEntry.incErrors("Error updating patron codes from Polaris", e);
+		}
+	}
+
+	private static void updateTranslationMaps(Connection dbConn){
 		try {
 			PreparedStatement createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
 			PreparedStatement getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?");
@@ -410,10 +443,66 @@ public class PolarisExportMain {
 							}
 						}
 					}
+					//For shelf locations, we also get the text version so pull that too
+					if (shelfLocationName.length() > 0){
+						if (!existingShelfLocations.containsKey(shelfLocationName.toLowerCase())){
+							try {
+								insertTranslationStmt.setLong(1, shelfLocationMapId);
+								insertTranslationStmt.setString(2, shelfLocationName.toLowerCase());
+								insertTranslationStmt.setString(3, shelfLocationName);
+								insertTranslationStmt.executeUpdate();
+								existingShelfLocations.put(shelfLocationName, shelfLocationName);
+							}catch (SQLException e){
+								logEntry.addNote("Error adding shelf location value " + shelfLocationName + " with a translation of " + shelfLocationName + " e");
+							}
+						}
+					}
+				}
+			}
+
+			Long iTypeMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "itype");
+			HashMap<String, String> existingITypes = getExistingTranslationMapValues(getExistingValuesForMapStmt, iTypeMapId);
+			String getMaterialTypesUrl = "/PAPIService/REST/public/v1/1033/100/1/materialtypes";
+			WebServiceResponse materialTypesResponse = callPolarisAPI(getMaterialTypesUrl, null, "GET", "application/json", null);
+			if (materialTypesResponse.isSuccess()){
+				JSONObject materialTypes = materialTypesResponse.getJSONResponse();
+				JSONArray materialTypeRows = materialTypes.getJSONArray("MaterialTypesRows");
+				for (int i = 0; i < materialTypeRows.length(); i++){
+					JSONObject curMaterialType = materialTypeRows.getJSONObject(i);
+					long materialTypeId = curMaterialType.getLong("MaterialTypeID");
+					String materialTypeName = curMaterialType.getString("Description");
+					if (!existingITypes.containsKey(Long.toString(materialTypeId))){
+						if (materialTypeName.length() > 0){
+							try {
+								insertTranslationStmt.setLong(1, iTypeMapId);
+								insertTranslationStmt.setLong(2, materialTypeId);
+								insertTranslationStmt.setString(3, materialTypeName);
+								insertTranslationStmt.executeUpdate();
+								existingITypes.put(Long.toString(materialTypeId), materialTypeName);
+							}catch (SQLException e){
+								logEntry.addNote("Error adding iType value " + materialTypeId + " with a translation of " + materialTypeName + " e");
+							}
+						}
+					}
+
+					//For material types, we also get the text version so pull that too
+					if (materialTypeName.length() > 0){
+						if (!existingITypes.containsKey(materialTypeName.toLowerCase())){
+							try {
+								insertTranslationStmt.setLong(1, iTypeMapId);
+								insertTranslationStmt.setString(2, materialTypeName.toLowerCase());
+								insertTranslationStmt.setString(3, materialTypeName);
+								insertTranslationStmt.executeUpdate();
+								existingITypes.put(materialTypeName, materialTypeName);
+							}catch (SQLException e){
+								logEntry.addNote("Error adding iType value " + materialTypeName + " with a translation of " + materialTypeName + " e");
+							}
+						}
+					}
 				}
 			}
 		} catch (SQLException e) {
-			logger.error("Error updating Collection information", e);
+			logger.error("Error updating translation map information", e);
 		}
 	}
 
@@ -628,10 +717,18 @@ public class PolarisExportMain {
 			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
 			logEntry.addNote("Looking for changed records since " + formattedLastExtractTime);
 		}
+		//Get the highest bib from Polaris
+		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
+		long maxBibId = -1;
+		if (maxBibResponse.isSuccess()){
+			maxBibId = maxBibResponse.getJSONResponse().getJSONArray("BibIDListRows").getJSONObject(0).getLong("BibliographicRecordID");
+		}
+
 		boolean doneLoading = false;
 		while (!doneLoading) {
 			//Polaris has an include items field, but it does not seem to contain all information we need for Aspen.
-			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?lastID=" + lastId;
+			long lastIdForThisBatch = Long.parseLong(lastId);
+			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?nrecs=100&lastID=" + lastId;
 			if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
 				getBibsUrl += "&startdatecreated=" + formattedLastExtractTime;
 				getBibsUrl += "&startdatemodified=" + formattedLastExtractTime;
@@ -640,6 +737,12 @@ public class PolarisExportMain {
 			numChanges += response.numChanges;
 			lastId = response.lastId;
 			doneLoading = response.doneLoading;
+			if (indexingProfile.isRunFullUpdate() && doneLoading){
+				if (Long.parseLong(lastId) <= lastIdForThisBatch && Long.parseLong(lastId) <= maxBibId){
+					lastId = Long.toString(lastIdForThisBatch + 100);
+					doneLoading = false;
+				}
+			}
 		}
 
 		//If we are doing a continuous index, get a list of any items that have been updated or changed
@@ -651,6 +754,8 @@ public class PolarisExportMain {
 			DateTimeFormatter itemDateFormatter = DateTimeFormatter.ofPattern("M/d/yyyy", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
 			String formattedLastItemExtractTime = itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
 			while (!doneLoading) {
+				logEntry.addNote("Getting a list of all items that have been updated");
+				logEntry.saveResults();
 				String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + URLEncoder.encode(formattedLastItemExtractTime) + "&lastid=" + lastId + "&nrecs=100";
 				WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
 				if (pagedItems.isSuccess()) {
@@ -857,7 +962,11 @@ public class PolarisExportMain {
 				JSONObject itemInfo = itemInfoRows.getJSONObject(0);
 				//TODO: Check the creation date and modification date to be sure the item really has been deleted.
 				bibForItem = Long.toString(itemInfo.getLong("BibliographicRecordID"));
+			}else{
+				logEntry.incErrors("Failed to get bib id for item id, could not find the item.");
 			}
+		}else{
+			logEntry.incErrors("Failed to get bib id for item id, response was not successful.");
 		}
 		return bibForItem;
 	}
@@ -907,7 +1016,7 @@ public class PolarisExportMain {
 				dbConn = null;
 			}
 		} catch (Exception e) {
-			System.out.println("Error closing aspen connection: " + e.toString());
+			System.out.println("Error closing aspen connection: " + e);
 			e.printStackTrace();
 		}
 	}
@@ -947,7 +1056,7 @@ public class PolarisExportMain {
 		if (method.equals("GET")) {
 			return NetworkUtils.getURL(fullUrl, logger, headers);
 		}else{
-			return NetworkUtils.postToURL(fullUrl, postData, contentType, null, logger, null, 10000, 300000, StandardCharsets.UTF_8, headers);
+			return NetworkUtils.postToURL(fullUrl, postData, contentType, null, logger, null, 10000, 60000, StandardCharsets.UTF_8, headers);
 		}
 	}
 

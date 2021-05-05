@@ -679,6 +679,14 @@ function getIndexingUpdates()
 			],
 		],
 
+		'format_mustPickupAtHoldingBranch' => [
+			'title' => 'Format table - mustPickupAtHoldingBranch',
+			'description' => 'Allow holds to be forced to be picked up at the holding branch by format',
+			'sql' => [
+				'ALTER TABLE format_map_values ADD COLUMN mustPickupAtHoldingBranch TINYINT(1) DEFAULT 0'
+			]
+		],
+
 		'sideloads' => [
 			'title' => 'Sideload setup',
 			'description' => 'Setup sideloads table to store information about how to index eContent from MARC record uploads',
