@@ -1251,6 +1251,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			'label' => 'More Details',
 			'body' => $interface->fetch('GroupedWork/view-title-details.tpl'),
 		);
+		$this->loadSubjects();
 		$moreDetailsOptions['subjects'] = array(
 			'label' => 'Subjects',
 			'body' => $interface->fetch('GroupedWork/view-subjects.tpl'),
@@ -1921,10 +1922,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 		return isset($this->fields[$fieldName]) ? $this->fields[$fieldName] : null;
 	}
 
-	public function getSubjects()
+	public function loadSubjects()
 	{
-		global $library,
-		       $interface;
+		global $library;
+		global $interface;
 
 		$subjects = array();
 		$otherSubjects = array();
