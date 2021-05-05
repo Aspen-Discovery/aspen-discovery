@@ -67,6 +67,7 @@ class Translation_Translations extends Admin_Admin
 		$interface->assign('recordsPerPage', $pageSize);
 		$interface->assign('page', $page);
 		$translation->limit(($page - 1) * $pageSize, $pageSize);
+		$translation->selectAdd('term.*');
 
 		$allTerms = [];
 		$translation->find();
