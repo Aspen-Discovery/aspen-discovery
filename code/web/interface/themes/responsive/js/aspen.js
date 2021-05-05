@@ -6870,11 +6870,7 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowspecifiedFormatCategory").hide();
 				$("#propertyRowspecifiedFormatBoost").hide();
 				$("#propertyRowformatMap").show();
-				if (formatSource === 'item'){
-					$("#propertyRowcheckRecordForLargePrint").show();
-				}else{
-					$("#propertyRowcheckRecordForLargePrint").hide();
-				}
+				$("#propertyRowcheckRecordForLargePrint").show();
 			}
 		},
 		updateLayoutSettingsFields: function () {
