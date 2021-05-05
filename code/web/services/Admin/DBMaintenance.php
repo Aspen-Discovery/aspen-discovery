@@ -2608,6 +2608,13 @@ class Admin_DBMaintenance extends Admin_Admin
 					'sql' => [
 						'ALTER TABLE web_builder_portal_row ADD COLUMN makeAccordion TINYINT(1) DEFAULT 0'
 					]
+				],
+				'extend_placard_link' => [
+					'title' => 'Allow for longer links for placards',
+					'description' => 'Extend the placard link column to 500 characters',
+					'sql' => [
+						'ALTER TABLE placards MODIFY link VARCHAR(500);'
+					]
 				]
 			)
 		);
