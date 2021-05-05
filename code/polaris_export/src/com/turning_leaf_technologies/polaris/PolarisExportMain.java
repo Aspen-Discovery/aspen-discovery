@@ -294,7 +294,7 @@ public class PolarisExportMain {
 						}
 					}else if (organizationCodeId == 3){
 						long parentOrganizationId = organizationInfo.getLong("ParentOrganizationID");
-						existingAspenLocationStmt.setString(1, abbreviation);
+						existingAspenLocationStmt.setLong(1, ilsId);
 						ResultSet existingLocationRS = existingAspenLocationStmt.executeQuery();
 						if (!existingLocationRS.next()){
 							//Get the library id for the parent
