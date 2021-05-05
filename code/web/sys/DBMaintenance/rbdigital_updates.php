@@ -272,11 +272,11 @@ function getRBdigitalUpdates() {
 			]
 		],
 
-		'rbdigital_module_add_settings' => [
+		'rbdigital_module_add_settings2' => [
 			'title' => 'Add Settings to RBdigital module',
 			'description' => 'Add Settings to RBdigital module',
 			'sql' => [
-				"UPDATE modules set settingsClassPath = '/sys/RBdigital/RBdigitalSetting.php', settingsClassName = 'RBdigitalSetting' WHERE name = 'Hoopla'"
+				"UPDATE modules set settingsClassPath = '/sys/RBdigital/RBdigitalSetting.php', settingsClassName = 'RBdigitalSetting' WHERE name = 'RBdigital'"
 			]
 		],
 

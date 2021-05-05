@@ -188,7 +188,7 @@ function getHooplaUpdates()
 			]
 		],
 
-		'hoopla_add_settings' => [
+		'hoopla_add_settings_2' => [
 			'title' => 'Add Settings to Hoopla module',
 			'description' => 'Add Settings to Hoopla module',
 			'sql' => [
