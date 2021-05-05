@@ -517,4 +517,102 @@ class WebBuilder_AJAX extends JSON_Action
 		return $result;
 
 	}
+
+	/** @noinspection PhpUnused */
+	function getHoursAndLocations(){
+		//Get a list of locations for the current library
+		global $library;
+		$tmpLocation = new Location();
+		$tmpLocation->libraryId = $library->libraryId;
+		$tmpLocation->showInLocationsAndHoursList = 1;
+		$tmpLocation->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
+		$libraryLocations = array();
+		$tmpLocation->find();
+		if ($tmpLocation->getNumResults() == 0){
+			//Get all locations
+			$tmpLocation = new Location();
+			$tmpLocation->showInLocationsAndHoursList = 1;
+			$tmpLocation->orderBy('displayName');
+			$tmpLocation->find();
+		}
+
+		$locationsToProcess = [];
+		while ($tmpLocation->fetch()){
+			$locationsToProcess[] = clone $tmpLocation;
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+		$googleSettings = new GoogleApiSetting();
+		if ($googleSettings->find(true)){
+			$mapsKey = $googleSettings->googleMapsKey;
+		}else{
+			$mapsKey = null;
+		}
+		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+		$parsedown = AspenParsedown::instance();
+		$parsedown->setBreaksEnabled(true);
+		foreach ($locationsToProcess as $locationToProcess){
+			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $locationToProcess->address));
+			$hours = $locationToProcess->getHours();
+			foreach ($hours as $key => $hourObj){
+				if (!$hourObj->closed){
+					$hourString = $hourObj->open;
+					list($hour, $minutes) = explode(':', $hourString);
+					if ($hour < 12){
+						if ($hour == 0) {
+							$hour += 12;
+						}
+						$hourObj->open = +$hour.":$minutes AM"; // remove leading zeros in the hour
+					}elseif ($hour == 12 && $minutes == '00'){
+						$hourObj->open = 'Noon';
+					}elseif ($hour == 24 && $minutes == '00'){
+						$hourObj->open = 'Midnight';
+					}else{
+						if ($hour != 12) {
+							$hour -= 12;
+						}
+						$hourObj->open = "$hour:$minutes PM";
+					}
+					$hourString = $hourObj->close;
+					list($hour, $minutes) = explode(':', $hourString);
+					if ($hour < 12){
+						if ($hour == 0) {
+							$hour += 12;
+						}
+						$hourObj->close = "$hour:$minutes AM";
+					}elseif ($hour == 12 && $minutes == '00'){
+						$hourObj->close = 'Noon';
+					}elseif ($hour == 24 && $minutes == '00'){
+						$hourObj->close = 'Midnight';
+					}else{
+						if ($hour != 12) {
+							$hour -= 12;
+						}
+						$hourObj->close = "$hour:$minutes PM";
+					}
+				}
+				$hours[$key] = $hourObj;
+			}
+			$libraryLocation = [
+				'id' => $locationToProcess->locationId,
+				'name' => $locationToProcess->displayName,
+				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $locationToProcess->address),
+				'phone' => $locationToProcess->phone,
+				'tty' => $locationToProcess->tty,
+				//'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
+				'hours' => $hours,
+				'hasValidHours' => $locationToProcess->hasValidHours(),
+				'description' => $parsedown->parse($locationToProcess->description)
+			];
+
+			if (!empty($mapsKey)){
+				$libraryLocation['map_link'] = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m&key=$mapsKey";
+			}
+			$libraryLocations[$locationToProcess->locationId] = $libraryLocation;
+		}
+
+		global $interface;
+		$interface->assign('libraryLocations', $libraryLocations);
+		return $interface->fetch('WebBuilder/libraryHoursAndLocations.tpl');
+	}
 }

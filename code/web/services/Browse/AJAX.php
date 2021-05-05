@@ -110,9 +110,16 @@ class Browse_AJAX extends Action {
 					);
 				}
 			}else{
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 				$listId = $_REQUEST['listId'];
-				$browseCategory->sourceListId = $listId;
-				$browseCategory->source = 'List';
+				$userList = new UserList();
+				$userList->listId = $listId;
+				$userList->deleted = "0";
+				if ($userList->find(true)) {
+					$browseCategory->sourceListId = $listId;
+					$browseCategory->source = 'List';
+				}
+
 			}
 
 			$browseCategory->label = $categoryName;

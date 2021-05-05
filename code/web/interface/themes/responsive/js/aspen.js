@@ -11877,6 +11877,12 @@ AspenDiscovery.WebBuilder = (function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').show();
 				$('#propertyRowimageURL').hide();
+			}else if (sourceType === 'hours_locations') {
+				$('#propertyRowmarkdown').hide();
+				$('#propertyRowsourceInfo').hide();
+				$("#propertyRowsourceId").hide();
+				$('#propertyRowframeHeight').hide();
+				$('#propertyRowimageURL').hide();
 			}else {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
