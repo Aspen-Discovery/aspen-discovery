@@ -2374,6 +2374,9 @@ class Koha extends AbstractIlsDriver
 		global $interface;
 		$interface->assign('allRequests', $allRequests);
 
+		global $library;
+		$interface->assign('allowDeletingILSRequests', $library->allowDeletingILSRequests);
+
 		return 'koha-requests.tpl';
 	}
 

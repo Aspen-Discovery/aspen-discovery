@@ -130,6 +130,7 @@ class Library extends DataObject
 	public $holdDisclaimer;
 	public $availableHoldDelay;
 	public $enableMaterialsRequest;
+	public $allowDeletingILSRequests;
 	public $externalMaterialsRequestUrl;
 	public /** @noinspection PhpUnused */ $eContentLinkRules;
 	public /** @noinspection PhpUnused */ $includeNovelistEnrichment;
@@ -691,11 +692,12 @@ class Library extends DataObject
 			'materialsRequestSection'=> array('property'=>'materialsRequestSection', 'type' => 'section', 'label' =>'Materials Request', 'hideInLists' => true,
 					'helpLink'=>'',
 					'properties' => array(
-				'enableMaterialsRequest'      => array('property'=>'enableMaterialsRequest', 'type'=>'enum', 'values'=>$materialsRequestOptions, 'label'=>'Materials Request System', 'description'=>'Materials Request functionality so patrons can request items not in the catalog.', 'hideInLists' => true, 'onchange' => 'return AspenDiscovery.Admin.updateMaterialsRequestFields();', 'default'=>0),
+				'enableMaterialsRequest' => array('property'=>'enableMaterialsRequest', 'type'=>'enum', 'values'=>$materialsRequestOptions, 'label'=>'Materials Request System', 'description'=>'Materials Request functionality so patrons can request items not in the catalog.', 'hideInLists' => true, 'onchange' => 'return AspenDiscovery.Admin.updateMaterialsRequestFields();', 'default'=>0),
+				'allowDeletingILSRequests' => array('property'=>'allowDeletingILSRequests', 'type'=>'checkbox', 'label'=>'Allow Deleting ILS Materials Requests', 'description'=>'Whether or not Materials Requests made in the ILS can be deleted.', 'hideInLists' => true, 'onchange' => 'return AspenDiscovery.Admin.updateMaterialsRequestFields();', 'default' => 1),
 				'externalMaterialsRequestUrl' => array('property'=>'externalMaterialsRequestUrl', 'type'=>'text', 'label'=>'External Materials Request URL', 'description'=>'A link to an external Materials Request System to be used instead of the built in Aspen Discovery system', 'hideInList' => true),
-				'maxRequestsPerYear'          => array('property'=>'maxRequestsPerYear', 'type'=>'integer', 'label'=>'Max Requests Per Year', 'description'=>'The maximum number of requests that a user can make within a year', 'hideInLists' => true, 'default' => 60),
-				'maxOpenRequests'             => array('property'=>'maxOpenRequests', 'type'=>'integer', 'label'=>'Max Open Requests', 'description'=>'The maximum number of requests that a user can have open at one time', 'hideInLists' => true, 'default' => 5),
-				'newMaterialsRequestSummary'  => array('property'=>'newMaterialsRequestSummary', 'type'=>'html', 'label'=>'New Request Summary', 'description'=>'Text displayed at the top of Materials Request form to give users important information about the request they submit', 'size'=>'40', 'maxLength' =>'512', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><script>', 'hideInLists' => true),
+				'maxRequestsPerYear' => array('property'=>'maxRequestsPerYear', 'type'=>'integer', 'label'=>'Max Requests Per Year', 'description'=>'The maximum number of requests that a user can make within a year', 'hideInLists' => true, 'default' => 60),
+				'maxOpenRequests' => array('property'=>'maxOpenRequests', 'type'=>'integer', 'label'=>'Max Open Requests', 'description'=>'The maximum number of requests that a user can have open at one time', 'hideInLists' => true, 'default' => 5),
+				'newMaterialsRequestSummary' => array('property'=>'newMaterialsRequestSummary', 'type'=>'html', 'label'=>'New Request Summary', 'description'=>'Text displayed at the top of Materials Request form to give users important information about the request they submit', 'size'=>'40', 'maxLength' =>'512', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><script>', 'hideInLists' => true),
 				'materialsRequestDaysToPreserve' => array('property' => 'materialsRequestDaysToPreserve', 'type'=>'integer', 'label'=>'Delete Closed Requests Older than (days)', 'description' => 'The number of days to preserve closed requests.  Requests will be preserved for a minimum of 366 days.  We suggest preserving for at least 395 days.  Setting to a value of 0 will preserve all requests', 'hideInLists' => true, 'default' => 396),
 
 				'materialsRequestFieldsToDisplay' => array(

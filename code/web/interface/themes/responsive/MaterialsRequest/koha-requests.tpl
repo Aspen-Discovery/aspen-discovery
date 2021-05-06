@@ -24,7 +24,9 @@
 				<table id="requestedMaterials" class="table table-striped table-condensed tablesorter">
 					<thead>
 						<tr>
+							{if $allowDeletingILSRequests}
 							<th>&nbsp;</th>
+							{/if}
 							<th>{translate text="Summary"}</th>
 							<th>{translate text="Suggested On"}</th>
 							<th>{translate text="Note"}</th>
@@ -34,9 +36,11 @@
 					<tbody>
 						{foreach from=$allRequests item=request}
 							<tr>
+								{if $allowDeletingILSRequests}
 								<td>
 									<input type="checkbox" name="delete_field" value="{$request.id}" title="{translate text="Select Request" inAttribute=true}" aria-label="{translate text="Select Request" inAttribute=true}"/>
 								</td>
+								{/if}
 								<td>{$request.summary}</td>
 								<td>{$request.suggestedOn}</td>
 								<td>{$request.note}</td>
@@ -45,7 +49,9 @@
 						{/foreach}
 					</tbody>
 				</table>
+				{if $allowDeletingILSRequests}
 				<button type="submit" class="btn btn-sm btn-danger" name="submit">{translate text="Delete Selected"}</button>
+				{/if}
 			</form>
 			<br/>
 		{else}

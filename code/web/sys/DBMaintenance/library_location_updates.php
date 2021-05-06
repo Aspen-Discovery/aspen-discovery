@@ -2368,6 +2368,14 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library ADD COLUMN symphonyPaymentType VARCHAR(8)',
 				'ALTER TABLE library ADD COLUMN symphonyPaymentPolicy VARCHAR(8)',
 			]
+		],
+
+		'library_allowDeletingILSRequests' => [
+			'title' => 'Library - Allow deleting ILS Requests',
+			'description' => 'Add a toggle to determine if the user should be able to delete requests from the ILS',
+			'sql' => [
+				'ALTER TABLE library ADD column allowDeletingILSRequests TINYINT(1) DEFAULT 1'
+			]
 		]
 	);
 }
