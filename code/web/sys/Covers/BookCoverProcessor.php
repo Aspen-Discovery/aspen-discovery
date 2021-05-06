@@ -1193,6 +1193,15 @@ class BookCoverProcessor{
 								}
 							}
 						}
+						$issns = $driver->getISSNs();
+						if ($issns){
+							foreach ($issns as $issn){
+								$this->issn = $issn;
+								if ($this->getCoverFromProvider()){
+									return true;
+								}
+							}
+						}
 						$upcs = $driver->getCleanUPCs();
 						$this->isn = null;
 						if ($upcs){

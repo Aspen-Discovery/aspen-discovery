@@ -21,6 +21,7 @@ chown -R aspen:aspen_apache /data/aspen-discovery/$1/covers
 chmod -R g+w /data/aspen-discovery/$1/covers
 chown -R aspen:aspen_apache /data/aspen-discovery/$1/uploads
 chmod -R g+w /data/aspen-discovery/$1/uploads
+chown -R aspen:aspen_apache /data/aspen-discovery/$1/ils
 chown -R solr:aspen /data/aspen-discovery/$1/solr7
 chown -R root:root /data/aspen-discovery/$1/sql_backup
 chown apache:aspen_apache /var/log/aspen-discovery/$1/*
