@@ -129,7 +129,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error uploading image'
 		];
 		if (UserAccount::isLoggedIn()){
-			if (UserAccount::userHasPermission('Administer All Web Resources')){
+			if (UserAccount::userHasPermission('Administer All Web Content')){
 				if (! empty($_FILES)) {
 					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 					$structure = ImageUpload::getObjectStructure();
