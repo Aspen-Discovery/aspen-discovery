@@ -107,7 +107,6 @@ class WebBuilder_AJAX extends JSON_Action
 		}
 
 		$portalCellId = $_REQUEST['portalCellId'];
-		$portalCell = null;
 		$result['selected'] = '-1';
 		if (!empty($portalCellId)){
 			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
@@ -184,7 +183,7 @@ class WebBuilder_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function getUploadImageForm(){
 		global $interface;
-		$results = [
+		$result = [
 			'success' => false,
 			'message' => 'Unknown error getting upload form'
 		];
@@ -192,7 +191,7 @@ class WebBuilder_AJAX extends JSON_Action
 			if (UserAccount::userHasPermission('Administer All Web Resources')) {
 				$editorName = strip_tags($_REQUEST['editorName']);
 				$interface->assign('editorName', $editorName);
-				$results = array(
+				$result = array(
 					'success' => true,
 					'title' => 'Upload an Image',
 					'modalBody' => $interface->fetch('WebBuilder/uploadImage.tpl'),
@@ -205,7 +204,7 @@ class WebBuilder_AJAX extends JSON_Action
 			$result['message'] = 'You must be logged in to upload an image';
 		}
 
-		return $results;
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
