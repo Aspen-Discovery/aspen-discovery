@@ -27,28 +27,31 @@
 				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-5 text-right" id="connect-with-us-info">
-				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink}
+				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink || $tiktokLink}
 					<span id="connect-with-us-label" class="large">CONNECT WITH US</span>
 					{if $twitterLink}
-						<a href="{$twitterLink}" class="connect-icon" target="_blank"><img alt='{translate text="Follow us on Twitter" inAttribute=true}' src="{img filename='twitter.png'}" class="img-rounded"></a>
+						<a href="{$twitterLink}" class="connect-icon" target="_blank"><i class='fab fa-twitter fa-lg' alt='{translate text="Follow us on Twitter" inAttribute=true}'></i></a>
 					{/if}
 					{if $facebookLink}
-						<a href="{$facebookLink}" class="connect-icon" target="_blank"><img alt='{translate text="Like us on Facebook" inAttribute=true}' src="{img filename='facebook.png'}" class="img-rounded"></a>
+						<a href="{$facebookLink}" class="connect-icon" target="_blank"><i class='fab fa-facebook fa-lg' alt='{translate text="Like us on Facebook" inAttribute=true}'></i></a>
 					{/if}
 					{if $youtubeLink}
-						<a href="{$youtubeLink}" class="connect-icon" target="_blank"><img alt='{translate text="Subscribe to our YouTube Account" inAttribute=true}' src="{img filename='youtube.png'}" class="img-rounded"></a>
+						<a href="{$youtubeLink}" class="connect-icon" target="_blank"><i class='fab fa-youtube fa-lg' alt='{translate text="Subscribe to our YouTube Channel" inAttribute=true}'></i></a>
 					{/if}
 					{if $instagramLink}
-						<a href="{$instagramLink}" class="connect-icon" target="_blank"><img alt='{translate text="Follow us on Instagram" inAttribute=true}' src="{img filename='instagram.png'}" class="img-rounded"></a>
+						<a href="{$instagramLink}" class="connect-icon" target="_blank"><i class='fab fa-instagram fa-lg' alt='{translate text="Follow us on Instagram" inAttribute=true}'></i></a>
 					{/if}
 					{if $pinterestLink}
-						<a href="{$pinterestLink}" class="connect-icon"><img alt='{translate text="Follow us on Pinterest" inAttribute=true}'  src="{img filename='pinterest.png'}" class="img-rounded"></a>
+						<a href="{$pinterestLink}" class="connect-icon" target="_blank"><i class='fab fa-pinterest fa-lg' alt='{translate text="Follow us on Pinterest" inAttribute=true}'></i></a>
 					{/if}
 					{if $goodreadsLink}
-						<a href="{$goodreadsLink}" class="connect-icon" target="_blank"><img alt='{translate text="Follow us on GoodReads" inAttribute=true}' src="{img filename='goodreads.png'}" class="img-rounded"></a>
+						<a href="{$goodreadsLink}" class="connect-icon" target="_blank"><i class='fab fa-goodreads fa-lg' alt='{translate text="Follow us on Goodreads" inAttribute=true}'></i></a>
+					{/if}
+					{if $tiktokLink}
+						<a href="{$tiktokLink}" class="connect-icon" target="_blank"><i class='fab fa-tiktok fa-lg' alt='{translate text="Follow us on TikTok" inAttribute=true}'></i></a>
 					{/if}
 					{if !empty($generalContactLink)}
-						<a href="{$generalContactLink}" class="connect-icon" target="_blank"><img alt='{translate text="Contact Us" inAttribute=true}' src="{img filename='email-contact.png'}" class="img-rounded"></a>
+						<a href="{$generalContactLink}" class="connect-icon" target="_blank"><i class='fas fa-envelope-open fa-lg' alt='{translate text="Contact Us" inAttribute=true}'></i></a>
 					{/if}
 				{/if}
 			</div>

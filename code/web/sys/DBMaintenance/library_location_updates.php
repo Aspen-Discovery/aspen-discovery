@@ -2376,6 +2376,14 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				'ALTER TABLE library ADD column allowDeletingILSRequests TINYINT(1) DEFAULT 1'
 			]
+		],
+
+		'library_tiktok_link' => [
+			'title' => 'Add TikTok to library contact links',
+			'description' => 'Add TikTok to library contact links',
+			'sql' => [
+				"ALTER TABLE library ADD tiktokLink VARCHAR(255) DEFAULT ''",
+			]
 		]
 	);
 }
