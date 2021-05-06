@@ -1467,12 +1467,12 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			} else {
 				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
 			}
-			global $solrScope;
 			foreach ($facets as &$facet) {
 				//Adjust facet name for local scoping
 				$facet->facetName = $this->getScopedFieldName($facet->facetName);
 
-				if ($this->isAdvanced()) {
+				global $action;
+				if ($action == 'Advanced') {
 					if ($facet->showInAdvancedSearch == 1) {
 						$facetConfig[$facet->facetName] = $facet;
 					}
