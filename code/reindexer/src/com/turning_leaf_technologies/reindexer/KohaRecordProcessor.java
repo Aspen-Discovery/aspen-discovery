@@ -333,6 +333,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			String fieldData = itemField.getSubfield(subfield).getData();
 			if (!fieldData.equals("0")) {
 				if (fieldData.equals("1")) {
+					if (subfield == '7' && notForLoanStatuses.containsKey(fieldData)){
+						return notForLoanStatuses.get(fieldData);
+					}
 					return defaultStatus;
 				}else{
 					if (subfield == 'q'){
