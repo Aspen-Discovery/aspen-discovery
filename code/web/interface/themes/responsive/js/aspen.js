@@ -9227,6 +9227,15 @@ AspenDiscovery.GroupedWork = (function(){
 			window.location = Globals.path + '/Files/' + selectedFile + '/ViewPDF';
 			return false;
 		},
+
+		getLargeCover: function (groupedWorkId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=getLargeCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
 	};
 }(AspenDiscovery.GroupedWork || {}));
 AspenDiscovery.Lists = (function(){
