@@ -2269,6 +2269,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					],
 				],
 
+				'syndetics_unbound' => [
+					'title' => 'Syndetics Unbound',
+					'description' => 'Add Syndetics Unbound Support',
+					'sql' => [
+						'ALTER TABLE syndetics_settings ADD COLUMN syndeticsUnbound TINYINT(1) DEFAULT 0'
+					]
+				],
+
 				'google_api_settings' => [
 					'title' => 'Google API settings',
 					'description' => 'Add the ability to store Google API settings in the DB rather than config file',
