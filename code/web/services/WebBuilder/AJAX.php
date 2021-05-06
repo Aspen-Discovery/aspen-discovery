@@ -188,7 +188,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error getting upload form'
 		];
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission('Administer All Web Resources')) {
+			if (UserAccount::userHasPermission('Administer All Web Content')) {
 				$editorName = strip_tags($_REQUEST['editorName']);
 				$interface->assign('editorName', $editorName);
 				$result = array(
