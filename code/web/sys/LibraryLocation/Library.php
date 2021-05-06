@@ -164,6 +164,7 @@ class Library extends DataObject
 	public $instagramLink;
 	public $pinterestLink;
 	public $goodreadsLink;
+	public $tiktoklink;
 	public $generalContactLink;
 
 	public $allowPinReset;
@@ -496,6 +497,7 @@ class Library extends DataObject
 				'instagramLink' => array('property'=>'instagramLink', 'type'=>'text', 'label'=>'Instagram Link Url', 'description'=>'The url to Instagram (leave blank if the library does not have a Instagram account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'pinterestLink' => array('property'=>'pinterestLink', 'type'=>'text', 'label'=>'Pinterest Link Url', 'description'=>'The url to Pinterest (leave blank if the library does not have a Pinterest account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'goodreadsLink' => array('property'=>'goodreadsLink', 'type'=>'text', 'label'=>'GoodReads Link Url', 'description'=>'The url to GoodReads (leave blank if the library does not have a GoodReads account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
+				'tiktokLink' => array('property'=>'tiktokLink', 'type'=>'text', 'label'=>'TikTok Link Url', 'description'=>'The url to TikTok (leave blank if the library does not have a TikTok account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'generalContactLink' => array('property'=>'generalContactLink', 'type'=>'text', 'label'=>'General Contact Link Url', 'description'=>'The url to a General Contact Page, i.e web form or mailto link', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 			)),
 
