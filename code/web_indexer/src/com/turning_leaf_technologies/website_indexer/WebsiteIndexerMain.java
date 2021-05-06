@@ -107,12 +107,17 @@ public class WebsiteIndexerMain {
 						ResultSet locationsForSettingsRS = getLocationsForSettingsStmt.executeQuery();
 						while (locationsForSettingsRS.next()){
 							String subLocation = locationsForSettingsRS.getString("subLocation");
+							String scopeName;
 							if (!locationsForSettingsRS.wasNull() && subLocation.length() > 0){
-								scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
+								scopeName = subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
 							}else {
 								String code = locationsForSettingsRS.getString("code");
-								scopesToInclude.add(code.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
+								scopeName = code.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
 							}
+							if (scopesToInclude.contains(scopeName)){
+								scopeName += "loc";
+							}
+							scopesToInclude.add(scopeName);
 						}
 
 						WebsiteIndexLogEntry logEntry = createDbLogEntry(websiteName, startTime, aspenConn);

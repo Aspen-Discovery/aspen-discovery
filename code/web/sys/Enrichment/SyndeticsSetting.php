@@ -6,6 +6,7 @@ class SyndeticsSetting extends DataObject
 	public $__table = 'syndetics_settings';    // table name
 	public $id;
 	public $syndeticsKey;
+	public $syndeticsUnbound;
 	public $hasSummary;
 	public $hasAvSummary;
 	public $hasAvProfile;
@@ -25,6 +26,7 @@ class SyndeticsSetting extends DataObject
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'syndeticsKey' => array('property' => 'syndeticsKey', 'type' => 'text', 'label' => 'Syndetics Key', 'description' => 'The Key for the subscription'),
+			'syndeticsUnbound' => array('property' => 'syndeticsUnbound', 'type' => 'checkbox', 'label' => 'Syndetics Unbound', 'description' => 'Check this option if this is a Syndetics Unbound Subscription', 'default' => 0),
 			'hasSummary' => array('property' => 'hasSummary', 'type' => 'checkbox', 'label' => 'Has Summary', 'description' => 'Whether or not the summary is available in the subscription', 'default' => 1),
 			'hasAvSummary' => array('property' => 'hasAvSummary', 'type' => 'checkbox', 'label' => 'Has Audio Visual Summary', 'description' => 'Whether or not the summary is available in the subscription'),
 			'hasAvProfile' => array('property' => 'hasAvProfile', 'type' => 'checkbox', 'label' => 'Has Audio Visual Profile', 'description' => 'Whether or not the summary is available in the subscription'),

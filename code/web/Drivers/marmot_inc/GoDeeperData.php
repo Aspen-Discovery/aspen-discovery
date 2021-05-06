@@ -5,7 +5,6 @@ require_once ROOT_DIR . '/sys/Syndetics/SyndeticsData.php';
 class GoDeeperData{
 	static function getGoDeeperOptions($isbn, $upc){
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $timer;
 		if (is_array($upc)){
@@ -17,86 +16,86 @@ class GoDeeperData{
 			return $validEnrichmentTypes;
 		}
 
-		$goDeeperOptions = $memCache->get("go_deeper_options_{$isbn}_{$upc}");
+		$goDeeperOptions = $memCache->get("go_deeper_options_{$isbn}_$upc");
 		if (!$goDeeperOptions || isset($_REQUEST['reload'])){
 
 			// Use Syndetics Go-Deeper Data.
 			require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
 			$syndeticsSettings = new SyndeticsSetting();
 			if ($syndeticsSettings->find(true)){
-				try{
-					if ($syndeticsSettings->hasSummary || $syndeticsSettings->hasAvSummary || $syndeticsSettings->hasToc || $syndeticsSettings->hasExcerpt || $syndeticsSettings->hasFictionProfile || $syndeticsSettings->hasAuthorNotes || $syndeticsSettings->hasVideoClip){
-						$clientKey = $syndeticsSettings->syndeticsKey;
-						$requestUrl = "http://syndetics.com/index.aspx?isbn=$isbn/INDEX.XML&client=$clientKey&type=xw10&upc=$upc";
+				if (!$syndeticsSettings->syndeticsUnbound){
+					try {
+						if ($syndeticsSettings->hasSummary || $syndeticsSettings->hasAvSummary || $syndeticsSettings->hasToc || $syndeticsSettings->hasExcerpt || $syndeticsSettings->hasFictionProfile || $syndeticsSettings->hasAuthorNotes || $syndeticsSettings->hasVideoClip) {
+							$clientKey = $syndeticsSettings->syndeticsKey;
+							$requestUrl = "http://syndetics.com/index.aspx?isbn=$isbn/INDEX.XML&client=$clientKey&type=xw10&upc=$upc";
 
-						//Get the XML from the service
-						$ctx = stream_context_create(array(
-							'http' => array(
-								'timeout' => 5
-							)
-						));
-						$response = @file_get_contents($requestUrl, 0, $ctx);
-						$timer->logTime("Got options from syndetics");
-						//echo($response);
+							//Get the XML from the service
+							$ctx = stream_context_create(array(
+								'http' => array(
+									'timeout' => 5
+								)
+							));
+							$response = @file_get_contents($requestUrl, 0, $ctx);
+							$timer->logTime("Got options from syndetics");
+							//echo($response);
 
-						//Parse the XML
-						if (preg_match('/<!DOCTYPE\\sHTML.*/', $response)) {
-							//The ISBN was not found in syndetics (we got an error message)
-						} else {
-							//Got a valid response
-							$data = new SimpleXMLElement($response);
+							//Parse the XML
+							if (!preg_match('/<!DOCTYPE\\sHTML.*/', $response)) {
+								//Got a valid response
+								$data = new SimpleXMLElement($response);
 
-							$validEnrichmentTypes = array();
-							if (isset($data)){
-								if ($syndeticsSettings->hasSummary && isset($data->SUMMARY)){
-									$validEnrichmentTypes['summary'] = 'Summary';
-									if (!isset($defaultOption)) $defaultOption = 'summary';
-								}
-								if ($syndeticsSettings->hasAvSummary && isset($data->AVSUMMARY)){
-									//AV Summary is weird since it combines both summary and table of contents for movies and music
-									$avSummary = GoDeeperData::getAVSummary($syndeticsSettings, $isbn, $upc);
-									if (isset($avSummary['summary'])){
+								$validEnrichmentTypes = array();
+								if (isset($data)) {
+									if ($syndeticsSettings->hasSummary && isset($data->SUMMARY)) {
 										$validEnrichmentTypes['summary'] = 'Summary';
 										if (!isset($defaultOption)) $defaultOption = 'summary';
 									}
-									if (isset($avSummary['trackListing'])){
+									if ($syndeticsSettings->hasAvSummary && isset($data->AVSUMMARY)) {
+										//AV Summary is weird since it combines both summary and table of contents for movies and music
+										$avSummary = GoDeeperData::getAVSummary($syndeticsSettings, $isbn, $upc);
+										if (isset($avSummary['summary'])) {
+											$validEnrichmentTypes['summary'] = 'Summary';
+											if (!isset($defaultOption)) $defaultOption = 'summary';
+										}
+										if (isset($avSummary['trackListing'])) {
+											$validEnrichmentTypes['tableOfContents'] = 'Table of Contents';
+											if (!isset($defaultOption)) $defaultOption = 'tableOfContents';
+										}
+									}
+									if ($syndeticsSettings->hasAvProfile && isset($data->AVPROFILE)) {
+										//Profile has similar bands and tags for music.  Not sure how to best use this
+										$validEnrichmentTypes['avProfile'] = 'Profile';
+									}
+									if ($syndeticsSettings->hasToc && isset($data->TOC)) {
 										$validEnrichmentTypes['tableOfContents'] = 'Table of Contents';
 										if (!isset($defaultOption)) $defaultOption = 'tableOfContents';
 									}
-								}
-								if ($syndeticsSettings->hasAvProfile && isset($data->AVPROFILE)){
-									//Profile has similar bands and tags for music.  Not sure how to best use this
-									$validEnrichmentTypes['avProfile'] = 'Profile';
-								}
-								if ($syndeticsSettings->hasToc && isset($data->TOC)){
-									$validEnrichmentTypes['tableOfContents'] = 'Table of Contents';
-									if (!isset($defaultOption)) $defaultOption = 'tableOfContents';
-								}
-								if ($syndeticsSettings->hasExcerpt && isset($data->DBCHAPTER)){
-									$validEnrichmentTypes['excerpt'] = 'Excerpt';
-									if (!isset($defaultOption)) $defaultOption = 'excerpt';
-								}
-								if ($syndeticsSettings->hasFictionProfile && isset($data->FICTION)){
-									$validEnrichmentTypes['fictionProfile'] = 'Character Information';
-									if (!isset($defaultOption)) $defaultOption = 'fictionProfile';
-								}
-								if ($syndeticsSettings->hasAuthorNotes && isset($data->ANOTES)){
-									$validEnrichmentTypes['authorNotes'] = 'Author Notes';
-									if (!isset($defaultOption)) $defaultOption = 'authorNotes';
-								}
-								if ($syndeticsSettings->hasVideoClip && isset($data->VIDEOCLIP)){
-									//Profile has similar bands and tags for music.  Not sure how to best use this
-									$validEnrichmentTypes['videoClip'] = 'Video Clip';
-									if (!isset($defaultOption)) $defaultOption = 'videoClip';
+									if ($syndeticsSettings->hasExcerpt && isset($data->DBCHAPTER)) {
+										$validEnrichmentTypes['excerpt'] = 'Excerpt';
+										if (!isset($defaultOption)) $defaultOption = 'excerpt';
+									}
+									if ($syndeticsSettings->hasFictionProfile && isset($data->FICTION)) {
+										$validEnrichmentTypes['fictionProfile'] = 'Character Information';
+										if (!isset($defaultOption)) $defaultOption = 'fictionProfile';
+									}
+									if ($syndeticsSettings->hasAuthorNotes && isset($data->ANOTES)) {
+										$validEnrichmentTypes['authorNotes'] = 'Author Notes';
+										if (!isset($defaultOption)) $defaultOption = 'authorNotes';
+									}
+									if ($syndeticsSettings->hasVideoClip && isset($data->VIDEOCLIP)) {
+										//Profile has similar bands and tags for music.  Not sure how to best use this
+										$validEnrichmentTypes['videoClip'] = 'Video Clip';
+										if (!isset($defaultOption)) $defaultOption = 'videoClip';
+									}
 								}
 							}
 						}
-					}
-				}catch (Exception $e) {
-					global $logger;
-					$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
-					if (isset($response)){
-						$logger->log($response, Logger::LOG_NOTICE);
+					} catch (Exception $e) {
+						global $logger;
+						$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
+						if (isset($response)) {
+							$logger->log($response, Logger::LOG_NOTICE);
+						}
 					}
 				}
 				$timer->logTime("Finished processing Syndetics options");
@@ -133,7 +132,7 @@ class GoDeeperData{
 			if (count($validEnrichmentTypes) > 0 && isset($defaultOption)){
 				$goDeeperOptions['defaultOption'] = $defaultOption;
 			}
-			$memCache->set("go_deeper_options_{$isbn}_{$upc}", $goDeeperOptions, $configArray['Caching']['go_deeper_options']);
+			$memCache->set("go_deeper_options_{$isbn}_$upc", $goDeeperOptions, $configArray['Caching']['go_deeper_options']);
 		}
 
 		return $goDeeperOptions;
@@ -153,7 +152,7 @@ class GoDeeperData{
 			$params = array(
 				'userID'   => $contentCafeSettings->contentCafeId,
 				'password' => $contentCafeSettings->pwd,
-				'key'      => $isbn ? $isbn : $upc,
+				'key'      => $isbn ?: $upc,
 				'content'  => $field,
 			);
 
@@ -180,7 +179,7 @@ class GoDeeperData{
 		$summaryData = array();
 		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
 		$syndeticsSettings = new SyndeticsSetting();
-		if ($syndeticsSettings->find(true)){
+		if ($syndeticsSettings->find(true) && ($syndeticsSettings->syndeticsUnbound == false)){
 			$summaryData = self::getSyndeticsSummary($syndeticsSettings, $workId, $isbn, $upc);
 		}
 		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
@@ -197,7 +196,7 @@ class GoDeeperData{
 	 * @param string $upc
 	 * @return array|bool|mixed
 	 */
-	private static function getContentCafeSummary($settings, $isbn, $upc) {
+	private static function getContentCafeSummary(ContentCafeSetting $settings, $isbn, $upc) {
 		global $configArray;
 		global $memCache;
 		$memCacheKey = "contentcafe_summary_{$isbn}_{$upc}";
@@ -240,7 +239,6 @@ class GoDeeperData{
 		global $configArray;
 
 		if ($settings->hasSummary){
-			/** @var Memcache $memCache */
 			global $memCache;
 			$key = "syndetics_summary_{$isbn}_{$upc}";
 			$summaryData = $memCache->get($key);
@@ -283,7 +281,6 @@ class GoDeeperData{
 							$summaryData = array();
 							if (isset($data)){
 								if (isset($data->VarFlds->VarDFlds->Notes->Fld520->a)){
-									/** @noinspection PhpUndefinedFieldInspection */
 									$summaryData['summary'] = (string)$data->VarFlds->VarDFlds->Notes->Fld520->a;
 								}
 							}
@@ -412,9 +409,7 @@ class GoDeeperData{
 
 					if (isset($data)){
 						if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld970)){
-							/** @noinspection PhpUndefinedFieldInspection */
 							foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld970 as $field){
-								/** @noinspection PhpUndefinedFieldInspection */
 								$tocData[] = array(
 		                            'label' => (string)$field->l,
 		                            'title' => (string)$field->t,
@@ -474,9 +469,7 @@ class GoDeeperData{
 				if (isset($data)){
 					//Load characters
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld920)){
-						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld920 as $field){
-							/** @noinspection PhpUndefinedFieldInspection */
 							$fictionData['characters'][] = array(
 	                            'name' => (string)$field->b,
 	                            'gender' => (string)$field->c,
@@ -489,43 +482,33 @@ class GoDeeperData{
 					}
 					//Load subjects
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld950)){
-						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld950 as $field){
-							/** @noinspection PhpUndefinedFieldInspection */
 							$fictionData['topics'][] = (string)$field->a;
 						}
 					}
 					//Load settings
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld951)){
-						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld951 as $field){
 							if (isset($field->c)){
-								/** @noinspection PhpUndefinedFieldInspection */
 								$fictionData['settings'][] = (string)$field->a . ' -- ' . (string)$field->c;
 							}else{
-								/** @noinspection PhpUndefinedFieldInspection */
 								$fictionData['settings'][] = (string)$field->a;
 							}
 						}
 					}
 					//Load additional settings
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld952)){
-						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld952 as $field){
 							if (isset($field->c)){
-								/** @noinspection PhpUndefinedFieldInspection */
 								$fictionData['settings'][] = (string)$field->a . ' -- ' . (string)$field->c;
 							}else{
-								/** @noinspection PhpUndefinedFieldInspection */
 								$fictionData['settings'][] = (string)$field->a;
 							}
 						}
 					}
 					//Load genres
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld955)){
-						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld955 as $field){
-							/** @noinspection PhpUndefinedFieldInspection */
 							$genre = (string)$field->a;
 							$subGenres = array();
 							if (isset($field->b)){
@@ -541,9 +524,7 @@ class GoDeeperData{
 					}
 					//Load awards
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld985)){
-						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld985 as $field){
-							/** @noinspection PhpUndefinedFieldInspection */
 							$fictionData['awards'][] = array(
 	                            'name' => (string)$field->a,
 	                            'year' => (string)$field->y,
@@ -621,7 +602,6 @@ class GoDeeperData{
 				$summaryData = array();
 				if (isset($data)){
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld980->a)){
-						/** @noinspection PhpUndefinedFieldInspection */
 						$summaryData['summary'] = (string)$data->VarFlds->VarDFlds->SSIFlds->Fld980->a;
 					}
 				}
@@ -670,7 +650,6 @@ class GoDeeperData{
 				$excerptData = array();
 				if (isset($data)){
 					if (isset($data->VarFlds->VarDFlds->Notes->Fld520)){
-						/** @noinspection PhpUndefinedFieldInspection */
 						$excerptData['excerpt'] = (string)$data->VarFlds->VarDFlds->Notes->Fld520;
 						$excerptData['excerpt'] = '<p>' . str_replace(chr( 194 ) . chr( 160 ), '</p><p>', $excerptData['excerpt']) . '</p>';
 					}
@@ -744,11 +723,9 @@ class GoDeeperData{
 				$summaryData = array();
 				if (isset($data)){
 					if (isset($data->VarFlds->VarDFlds->VideoLink)){
-						/** @noinspection PhpUndefinedFieldInspection */
 						$summaryData['videoClip'] = (string)$data->VarFlds->VarDFlds->VideoLink;
 					}
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld997)){
-						/** @noinspection PhpUndefinedFieldInspection */
 						$summaryData['source'] = (string)$data->VarFlds->VarDFlds->SSIFlds->Fld997;
 					}
 				}
@@ -800,13 +777,10 @@ class GoDeeperData{
 
 					if (isset($data)){
 						if (isset($data->VarFlds->VarDFlds->Notes->Fld520->a)){
-							/** @noinspection PhpUndefinedFieldInspection */
 							$avSummaryData['summary'] = (string)$data->VarFlds->VarDFlds->Notes->Fld520->a;
 						}
 						if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld970)){
-							/** @noinspection PhpUndefinedFieldInspection */
 							foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld970 as $field){
-								/** @noinspection PhpUndefinedFieldInspection */
 								$avSummaryData['trackListing'][] = array(
 									'number' => (string)$field->l,
 									'name' => (string)$field->t,

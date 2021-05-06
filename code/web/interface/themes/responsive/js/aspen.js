@@ -6678,6 +6678,7 @@ AspenDiscovery.Admin = (function(){
 
 		updateMaterialsRequestFields: function(){
 			var materialRequestType = $("#enableMaterialsRequestSelect option:selected").val();
+			$("#propertyRowallowDeletingILSRequests").hide();
 			if (materialRequestType === "0" || materialRequestType === "2"){
 				$("#propertyRowexternalMaterialsRequestUrl").hide();
 				$("#propertyRowmaxRequestsPerYear").hide();
@@ -6685,7 +6686,10 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowmaterialsRequestDaysToPreserve").hide();
 				$("#propertyRowmaterialsRequestFieldsToDisplay").hide();
 				$("#propertyRowmaterialsRequestFormats").hide();
-				$("#propertyRowmaterialsRequestFormFields").hide()
+				$("#propertyRowmaterialsRequestFormFields").hide();
+				if (materialRequestType === "2"){
+					$("#propertyRowallowDeletingILSRequests").show();
+				}
 			}else if (materialRequestType === "1"){
 				$("#propertyRowexternalMaterialsRequestUrl").hide();
 				$("#propertyRowmaxRequestsPerYear").show();

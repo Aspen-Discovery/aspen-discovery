@@ -250,7 +250,7 @@ class GroupedWork_AJAX extends JSON_Action
 			$searchObject->init();
 			/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 			$searchObject->disableScoping();
-			$user = UserAccount::getActiveUserObj();
+			UserAccount::getActiveUserObj();
 			/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 			$similar = $searchObject->getMoreLikeThis($id, false, false, 3);
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
@@ -258,7 +258,7 @@ class GroupedWork_AJAX extends JSON_Action
 			// to force it to be an array or things will not display correctly.
 			if (isset($similar) && count($similar['response']['docs']) > 0) {
 				$youMightAlsoLikeTitles = array();
-				foreach ($similar['response']['docs'] as $key => $similarTitle){
+				foreach ($similar['response']['docs'] as $similarTitle){
 					$similarTitleDriver = new GroupedWorkDriver($similarTitle);
 					$youMightAlsoLikeTitles[] = $similarTitleDriver;
 				}
@@ -1294,10 +1294,10 @@ class GroupedWork_AJAX extends JSON_Action
 					'message' => "Successfully deleted the alternate title"
 				];
 			}else{
-				$results['message'] = "Could not find the alternate title to delete";
+				$result['message'] = "Could not find the alternate title to delete";
 			}
 		}else{
-			$results['message'] = "You do not have the correct permissions for this operation";
+			$result['message'] = "You do not have the correct permissions for this operation";
 		}
 		return $result;
 	}

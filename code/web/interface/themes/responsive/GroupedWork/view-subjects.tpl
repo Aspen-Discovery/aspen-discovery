@@ -1,7 +1,5 @@
 {strip}
-	{$recordDriver->getSubjects()}
 	{* Loads & assigned the template variables *}
-
 	{if (($showLCSubjects || $showBisacSubjects) && !($showFastAddSubjects || $showOtherSubjects))}
 		{*If only lc subjects or bisac subjects are chosen for display (but not the others), display those specific subjects *}
 
