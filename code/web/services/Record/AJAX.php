@@ -999,7 +999,7 @@ class Record_AJAX extends Action
 			}
 
 			foreach($locations as $locationKey => $location){
-				if (!in_array($location->code, $itemLocations)){
+				if (is_object($location) && !in_array($location->code, $itemLocations)){
 					unset($locations[$locationKey]);
 				}
 			}
