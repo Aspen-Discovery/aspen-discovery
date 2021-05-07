@@ -1623,5 +1623,19 @@ class GroupedWork_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
+	function getLargeCover(){
+		global $interface;
+
+		$groupedWorkId = $_REQUEST['id'];
+		$interface->assign('groupedWorkId', $groupedWorkId);
+
+		return array(
+			'title' => 'Cover Image',
+			'modalBody' => $interface->fetch("GroupedWork/largeCover.tpl"),
+			'modalButtons' => ""
+		);
+	}
+
 
 }
