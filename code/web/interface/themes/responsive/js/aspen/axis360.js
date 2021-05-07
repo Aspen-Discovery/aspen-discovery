@@ -267,6 +267,15 @@ AspenDiscovery.Axis360 = (function () {
 					AspenDiscovery.showMessage("Error", data.message);
 				}
 			}).error(AspenDiscovery.ajaxFail);
-		}
+		},
+
+		getLargeCover: function (id){
+			var url = Globals.path + '/Axis360/' + id + '/AJAX?method=getLargeCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
 	}
 }(AspenDiscovery.Axis360 || {}));

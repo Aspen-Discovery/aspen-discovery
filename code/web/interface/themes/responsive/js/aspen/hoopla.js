@@ -63,7 +63,16 @@ AspenDiscovery.Hoopla = (function(){
 				}, false);
 			}
 			return false;
-		}
+		},
+
+		getLargeCover: function (id){
+			var url = Globals.path + '/Hoopla/' + id + '/AJAX?method=getLargeCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
 
 	}
 }(AspenDiscovery.Hoopla || {}));
