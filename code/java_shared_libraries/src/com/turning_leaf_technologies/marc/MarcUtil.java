@@ -532,7 +532,7 @@ public class MarcUtil {
 				marcFileStream.close();
 				return marcRecord;
 			}catch (MarcException me){
-				//Could not read the marc record, there likely was not a record in the file, but ignore and use the permissive read. 
+				//Could not read the marc record, there likely was not a record in the file, but ignore and use the permissive read.
 			}
 			marcFileStream.close();
 		}catch (FileNotFoundException fne){

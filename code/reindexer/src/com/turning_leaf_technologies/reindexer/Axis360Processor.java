@@ -179,6 +179,7 @@ class Axis360Processor {
 						}
 					}
 				}
+				availabilityRS.close();
 				axis360Record.addItem(itemInfo);
 
 			}

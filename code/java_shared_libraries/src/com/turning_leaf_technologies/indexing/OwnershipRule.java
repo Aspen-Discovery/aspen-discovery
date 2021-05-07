@@ -37,11 +37,12 @@ class OwnershipRule {
 
 	private final HashMap<String, Boolean> ownershipResults = new HashMap<>();
 	boolean isItemOwned(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
-		boolean isOwned = false;
+		Boolean isOwned = false;
 		if (this.recordType.equals(recordType)){
 			String key = locationCode + "-" + subLocationCode;
-			if (ownershipResults.containsKey(key)){
-				return ownershipResults.get(key);
+			isOwned = ownershipResults.get(key);
+			if (isOwned != null){
+				return isOwned;
 			}
 
 			if (locationCode == null ){
