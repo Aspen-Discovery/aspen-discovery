@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.marc;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 import com.turning_leaf_technologies.strings.StringUtils;
+import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcStreamReader;
 import org.marc4j.MarcStreamWriter;
@@ -526,13 +527,14 @@ public class MarcUtil {
 			FileInputStream marcFileStream = new FileInputStream(marcFile);
 
 			MarcStreamReader streamReader = new MarcStreamReader(marcFileStream);
-			if (streamReader.hasNext()) {
+			try{
 				Record marcRecord = streamReader.next();
 				marcFileStream.close();
 				return marcRecord;
-			} else {
-				marcFileStream.close();
+			}catch (MarcException me){
+				//Could not read the marc record, there likely was not a record in the file, but ignore and use the permissive read. 
 			}
+			marcFileStream.close();
 		}catch (FileNotFoundException fne){
 			logEntry.incErrors("Could not find marcFile " + marcFile.getAbsolutePath());
 			return null;
