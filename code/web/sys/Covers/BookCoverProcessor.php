@@ -1176,61 +1176,60 @@ class BookCoverProcessor{
 					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}
+				}
+				$driver = $relatedRecord->_driver;
+				//First check to see if there is a specific record defined in an 856 etc.
+				/** @noinspection PhpPossiblePolymorphicInvocationInspection */
+				if ($driver->hasMarcRecord() && $this->getCoverFromMarc($driver->getMarcRecord())){
+					return true;
 				}else{
-					$driver = $relatedRecord->_driver;
-					//First check to see if there is a specific record defined in an 856 etc.
-					/** @noinspection PhpPossiblePolymorphicInvocationInspection */
-					if ($driver->hasMarcRecord() && $this->getCoverFromMarc($driver->getMarcRecord())){
-						return true;
-					}else{
-						//Finally, check the isbns if we don't have an override
-						$isbns = $driver->getCleanISBNs();
-						if ($isbns){
-							foreach ($isbns as $isbn){
-								$this->isn = $isbn;
+					//Finally, check the isbns if we don't have an override
+					$isbns = $driver->getCleanISBNs();
+					if ($isbns){
+						foreach ($isbns as $isbn){
+							$this->isn = $isbn;
+							if ($this->getCoverFromProvider()){
+								return true;
+							}
+						}
+					}
+					$issns = $driver->getISSNs();
+					if ($issns){
+						foreach ($issns as $issn){
+							$this->issn = $issn;
+							if ($this->getCoverFromProvider()){
+								return true;
+							}
+						}
+					}
+					$upcs = $driver->getCleanUPCs();
+					$this->isn = null;
+					if ($upcs){
+						foreach ($upcs as $upc){
+							$this->upc = ltrim($upc, '0');
+							if ($this->getCoverFromProvider()){
+								return true;
+							}
+							//If we tried trimming the leading zeroes, also try without.
+							if ($this->upc !== $upc){
+								$this->upc = $upc;
 								if ($this->getCoverFromProvider()){
 									return true;
 								}
 							}
 						}
-						$issns = $driver->getISSNs();
-						if ($issns){
-							foreach ($issns as $issn){
-								$this->issn = $issn;
-								if ($this->getCoverFromProvider()){
-									return true;
-								}
-							}
-						}
-						$upcs = $driver->getCleanUPCs();
-						$this->isn = null;
-						if ($upcs){
-							foreach ($upcs as $upc){
-								$this->upc = ltrim($upc, '0');
-								if ($this->getCoverFromProvider()){
-									return true;
-								}
-								//If we tried trimming the leading zeroes, also try without.
-								if ($this->upc !== $upc){
-									$this->upc = $upc;
-									if ($this->getCoverFromProvider()){
-										return true;
-									}
-								}
-							}
-						}
+					}
 
-						require_once ROOT_DIR . '/sys/SystemVariables.php';
-						$systemVariables = new SystemVariables();
-						if ($systemVariables->find(true) && $systemVariables->loadCoversFrom020z) {
-							if (empty($isbns) && empty($upcs)) {
-								//Look for an 020$z if we didn't get anything else
-								$isbns = $driver->getCancelledIsbns();
-								foreach ($isbns as $isbn) {
-									$this->isn = $isbn;
-									if ($this->getCoverFromProvider()) {
-										return true;
-									}
+					require_once ROOT_DIR . '/sys/SystemVariables.php';
+					$systemVariables = new SystemVariables();
+					if ($systemVariables->find(true) && $systemVariables->loadCoversFrom020z) {
+						if (empty($isbns) && empty($upcs)) {
+							//Look for an 020$z if we didn't get anything else
+							$isbns = $driver->getCancelledIsbns();
+							foreach ($isbns as $isbn) {
+								$this->isn = $isbn;
+								if ($this->getCoverFromProvider()) {
+									return true;
 								}
 							}
 						}
