@@ -8,10 +8,7 @@ import org.marc4j.MarcStreamReader;
 import org.marc4j.MarcStreamWriter;
 import org.marc4j.marc.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -525,10 +522,6 @@ public class MarcUtil {
 	}
 
 	public static Record readIndividualRecord(File marcFile, BaseLogEntry logEntry){
-		if (!marcFile.exists()){
-			logEntry.incErrors("Could not find marcFile " + marcFile.getAbsolutePath());
-			return null;
-		}
 		try {
 			FileInputStream marcFileStream = new FileInputStream(marcFile);
 
@@ -540,6 +533,9 @@ public class MarcUtil {
 			} else {
 				marcFileStream.close();
 			}
+		}catch (FileNotFoundException fne){
+			logEntry.incErrors("Could not find marcFile " + marcFile.getAbsolutePath());
+			return null;
 		}catch (Exception e){
 			//This happens if the file has too many items. Ignore and read with permissive handler.
 			//logEntry.addNote("Could not read marc file, loading permissive " + marcFile.getAbsolutePath() + e.toString());
