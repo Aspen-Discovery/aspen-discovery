@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
@@ -15,6 +16,7 @@ public class ItemInfo{
 	private String subLocation;
 	private String subLocationCode;
 	private String format;
+	private String trimmedFormat;
 	private String subFormat;
 	private String formatCategory;
 	private int numCopies = 1;
@@ -26,8 +28,10 @@ public class ItemInfo{
 	private String sortableCallNumber;
 	private Date dateAdded;
 	private String IType;
+	private String trimmedIType;
 	private String ITypeCode;
 	private String eContentSource;
+	private String trimmedEContentSource;
 	private String eContentFilename;
 	private String eContentUrl;
 	private String statusCode;
@@ -134,6 +138,7 @@ public class ItemInfo{
 
 	public void setFormat(String format) {
 		this.format = format;
+		this.trimmedFormat = StringUtils.trimTrailingPunctuation(format);
 	}
 
 	void setSubFormats(String subFormats){
@@ -228,8 +233,17 @@ public class ItemInfo{
 		}
 	}
 
+	String getTrimmedIType(){
+		if (this.trimmedIType != null){
+			return trimmedIType;
+		}else {
+			return trimmedFormat;
+		}
+	}
+
 	void setIType(String IType) {
 		this.IType = IType;
+		this.trimmedIType = StringUtils.trimTrailingPunctuation(IType);
 	}
 
 	@SuppressWarnings("SpellCheckingInspection")
@@ -237,9 +251,14 @@ public class ItemInfo{
 		return eContentSource;
 	}
 
+	String getTrimmedEContentSource(){
+		return trimmedEContentSource;
+	}
+
 	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentSource(String eContentSource) {
 		this.eContentSource = eContentSource;
+		this.trimmedEContentSource = StringUtils.trimTrailingPunctuation(eContentSource);
 	}
 
 	String getCallNumber() {

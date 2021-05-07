@@ -553,7 +553,7 @@ public class GroupedWorkSolr implements Cloneable {
 						updateMaxValueField(doc, "lib_boost_" + curScopeName, 1);
 					}
 
-					addUniqueFieldValue(doc, "itype_" + curScopeName, StringUtils.trimTrailingPunctuation(curItem.getIType()));
+					addUniqueFieldValue(doc, "itype_" + curScopeName, curItem.getTrimmedIType());
 					if (curItem.isEContent()) {
 						addUniqueFieldValue(doc, "econtent_source_" + curScopeName, StringUtils.trimTrailingPunctuation(curItem.geteContentSource()));
 					}
