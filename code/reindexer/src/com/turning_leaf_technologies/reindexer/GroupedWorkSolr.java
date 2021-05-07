@@ -1752,26 +1752,6 @@ public class GroupedWorkSolr implements Cloneable {
 		this.relatedRecords.remove(recordInfo.getFullIdentifier());
 	}
 
-	void updateIndexingStats(TreeMap<String, ScopedIndexingStats> indexingStats) {
-		//Update total works
-		for (Scope scope : groupedWorkIndexer.getScopes()) {
-			HashSet<RecordInfo> relatedRecordsForScope = new HashSet<>();
-			HashSet<ItemInfo> relatedItems = new HashSet<>();
-			loadRelatedRecordsAndItemsForScope(scope, relatedRecordsForScope, relatedItems);
-			if (relatedRecordsForScope.size() > 0) {
-				ScopedIndexingStats stats = indexingStats.get(scope.getScopeName());
-				stats.numTotalWorks++;
-				if (isLocallyOwned(relatedItems, scope) || isLibraryOwned(relatedItems, scope)) {
-					stats.numLocalWorks++;
-				}
-			}
-		}
-		//Update stats based on individual record processor
-		for (RecordInfo curRecord : relatedRecords.values()) {
-			curRecord.updateIndexingStats(indexingStats);
-		}
-	}
-
 	int getNumRecords() {
 		return this.relatedRecords.size();
 	}

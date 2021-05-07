@@ -286,48 +286,6 @@ public class RecordInfo {
 		this.formatCategories.add(translatedFormatCategory);
 	}
 
-	void updateIndexingStats(TreeMap<String, ScopedIndexingStats> indexingStats) {
-		for (ScopedIndexingStats scopedStats : indexingStats.values()){
-			String recordProcessor = this.subSource == null ? this.source : this.subSource;
-			RecordProcessorIndexingStats stats = scopedStats.recordProcessorIndexingStats.get(recordProcessor.toLowerCase());
-			if (stats == null) {
-				continue;
-			}
-			HashSet<ItemInfo> itemsForScope = getRelatedItemsForScope(scopedStats.getScopeName());
-			if (itemsForScope.size() > 0) {
-				stats.numRecordsTotal++;
-				boolean recordLocallyOwned = false;
-				for (ItemInfo curItem : itemsForScope){
-					//Check the type (physical, eContent, on order)
-					boolean locallyOwned = curItem.isLocallyOwned(scopedStats.getScopeName())
-							|| curItem.isLibraryOwned(scopedStats.getScopeName());
-					if (locallyOwned){
-						recordLocallyOwned = true;
-					}
-					if (curItem.isEContent()){
-						stats.numEContentTotal += curItem.getNumCopies();
-						if (locallyOwned){
-							stats.numEContentOwned += curItem.getNumCopies();
-						}
-					}else if (curItem.isOrderItem()){
-						stats.numOrderItemsTotal += curItem.getNumCopies();
-						if (locallyOwned){
-							stats.numOrderItemsOwned += curItem.getNumCopies();
-						}
-					}else{
-						stats.numPhysicalItemsTotal += curItem.getNumCopies();
-						if (locallyOwned){
-							stats.numPhysicalItemsOwned += curItem.getNumCopies();
-						}
-					}
-				}
-				if (recordLocallyOwned){
-					stats.numRecordsOwned++;
-				}
-			}
-		}
-	}
-
 	boolean hasItemFormats() {
 		for (ItemInfo curItem : relatedItems){
 			if (curItem.getFormat() != null){

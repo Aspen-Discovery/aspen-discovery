@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
@@ -220,16 +219,22 @@ public class GroupedWorkIndexer {
 							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, dbConn, getSideLoadSettingsRS, logger, fullReindex));
 						} else {
 							logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
+							getSideLoadSettings.close();
+							getIndexingProfile.close();
 							okToIndex = false;
 							return;
 						}
 					}else{
 						logEntry.addNote("Could not find indexing profile or side load settings for type " + curType);
 					}
+					getSideLoadSettingsRS.close();
 				}
+				indexingProfileRS.close();
 			}
-
-			setupIndexingStats();
+			uniqueIdentifiersRS.close();
+			uniqueIdentifiersStmt.close();
+			getIndexingProfile.close();
+			getSideLoadSettings.close();
 
 		}catch (Exception e){
 			logEntry.incErrors("Error loading record processors for ILS records", e);
@@ -293,22 +298,11 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	private void setupIndexingStats() {
-		ArrayList<String> recordProcessorNames = new ArrayList<>(ilsRecordProcessors.keySet());
-		recordProcessorNames.add("overdrive");
-
-		for (Scope curScope : scopes){
-			ScopedIndexingStats scopedIndexingStats = new ScopedIndexingStats(curScope.getScopeName(), recordProcessorNames);
-			indexingStats.put(curScope.getScopeName(), scopedIndexingStats);
-		}
-	}
-
 	boolean isOkToIndex(){
 		return okToIndex;
 	}
 
 	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
-	private final TreeMap<String, ScopedIndexingStats> indexingStats = new TreeMap<>();
 
 	private void loadLexileData(String lexileExportPath) {
 		String[] lexileFields = new String[0];
@@ -435,7 +429,7 @@ public class GroupedWorkIndexer {
 				logEntry.addNote("Processed " + numWorksProcessed + " works that were scheduled for indexing");
 			}
 		}catch (Exception e){
-			logEntry.addNote("Error updating scheduled works " + e.toString());
+			logEntry.addNote("Error updating scheduled works " + e);
 		}
 	}
 
@@ -504,6 +498,7 @@ public class GroupedWorkIndexer {
 			ResultSet numWorksToIndexRS = getNumWorksToIndex.executeQuery();
 			numWorksToIndexRS.next();
 			long numWorksToIndex = numWorksToIndexRS.getLong(1);
+			numWorksToIndexRS.close();
 			logEntry.addNote("Starting to process " + numWorksToIndex + " grouped works");
 
 			ResultSet groupedWorks = getAllGroupedWorks.executeQuery();
@@ -542,6 +537,9 @@ public class GroupedWorkIndexer {
 					setLastUpdatedTime.executeUpdate();
 				}
 			}
+			groupedWorks.close();
+			setLastUpdatedTime.close();
+
 		} catch (SQLException e) {
 			logEntry.incErrors("Unexpected SQL error", e);
 		}
@@ -557,6 +555,7 @@ public class GroupedWorkIndexer {
 				String grouping_category = getGroupedWorkInfoRS.getString("grouping_category");
 				processGroupedWork(id, permanentId, grouping_category);
 			}
+			getGroupedWorkInfoRS.close();
 			totalRecordsHandled++;
 			if (totalRecordsHandled % 25 == 0) {
 				updateServer.commit(false, false, true);
@@ -612,9 +611,6 @@ public class GroupedWorkIndexer {
 			if (removeRedundantHooplaRecords) {
 				groupedWork.removeRedundantHooplaRecords();
 			}
-
-			//Add a grouped work to any scopes that are relevant
-			groupedWork.updateIndexingStats(indexingStats);
 
 			//Load local enrichment for the work
 			loadLocalEnrichment(groupedWork);
@@ -707,7 +703,9 @@ public class GroupedWorkIndexer {
 						groupedWork.setAcceleratedReaderInterestLevel(arBookInfoRS.getString("interestLevel"));
 						break;
 					}
+					arBookInfoRS.close();
 				}
+				arBookIdRS.close();
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading accelerated reader information", e);
@@ -808,6 +806,7 @@ public class GroupedWorkIndexer {
 					}
 				}
 			}
+			displayInfoRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Unable to load display info", e);
 		}
