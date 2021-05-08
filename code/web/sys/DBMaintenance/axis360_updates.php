@@ -116,6 +116,16 @@ function getAxis360Updates(){
 			]
 		],
 
+		'axis360_availability_indexes' => [
+			'title' => 'Update Axis 360 Availability Indexes',
+			'description' => 'Update indexes for axis 360 availability',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER table axis360_title_availability DROP INDEX titleId_2',
+				'ALTER table axis360_title_availability ADD INDEX titleId2(titleId)',
+			]
+		],
+
 		'axis360_add_response_info_to_availability' => [
 			'title' => 'Axis 360 Availability Response Info',
 			'description' => 'Add additional response information to Axis 360 Availability',
