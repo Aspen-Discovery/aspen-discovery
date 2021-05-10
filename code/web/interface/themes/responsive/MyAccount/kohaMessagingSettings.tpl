@@ -38,7 +38,7 @@
 				<th>{translate text="Phone"}</th>
 				{/if}
 				<th>{translate text="Email"}</th>
-				<th>{translate text="Digests only"} <i id="info_digests" data-toggle="tooltip" title="" data-placement="right" class="fa fa-info-circle" data-original-title="{translate text="You can ask for a digest to reduce the number of messages. Messages will be saved and sent as a single message."}"></i></th>
+				<th>{translate text="Digests only"} <i id="info_digests" data-toggle="tooltip" title="" data-placement="right" class="fa fa-info-circle" data-original-title="{translate text="You can ask for a digest to reduce the number of messages. Messages will be saved and sent as a single message." inAttribute="true"}"></i></th>
 				{if $canSave}
 				<!-- <th>RSS</th> --><th>{translate text="Do not notify"}</th>
 				{/if}
