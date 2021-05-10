@@ -352,4 +352,19 @@ class RBdigital_AJAX extends JSON_Action
 		}
 		return $result;
 	}
+
+	/** @noinspection PhpUnused */
+	function getLargeCover()
+	{
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$interface->assign('id', $id);
+
+		return array(
+			'title' => 'Cover Image',
+			'modalBody' => $interface->fetch("RBdigital/largeCover.tpl"),
+			'modalButtons' => ""
+		);
+	}
 }

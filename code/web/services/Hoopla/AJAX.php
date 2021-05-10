@@ -182,6 +182,21 @@ class Hoopla_AJAX extends Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
+	function getLargeCover()
+	{
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$interface->assign('id', $id);
+
+		return array(
+			'title' => 'Cover Image',
+			'modalBody' => $interface->fetch("Hoopla/largeCover.tpl"),
+			'modalButtons' => ""
+		);
+	}
+
 	function getBreadcrumbs()
 	{
 		return [];

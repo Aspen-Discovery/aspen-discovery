@@ -354,6 +354,15 @@ AspenDiscovery.OverDrive = (function(){
 					AspenDiscovery.showMessage('Error', data.message);
 				}
 			});
-		}
+		},
+
+		getLargeCover: function (id){
+			var url = Globals.path + '/OverDrive/' + id + '/AJAX?method=getLargeCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
 	}
 }(AspenDiscovery.OverDrive || {}));
