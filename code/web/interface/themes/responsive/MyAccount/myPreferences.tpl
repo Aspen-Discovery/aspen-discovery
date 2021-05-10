@@ -35,7 +35,7 @@
 							<div class="col-xs-4"><label for="username">{translate text="editable_username_label" defaultText="Username"}</label></div>
 							<div class="col-xs-8">
 								<input type="text" name="username" id="username" value="{$editableUsername|escape}" size="25" minlength="6" maxlength="25" class="form-control">
-								<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
+								<a href="#" onclick="$('#usernameHelp').toggle()">{translate text="What is this?"}</a>
 								<div id="usernameHelp" style="display:none">
 									{translate text="editable_username_help" defaultText="A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “My Preferences” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters)."}
 								</div>
@@ -78,7 +78,7 @@
 								{if $edit == true}
 									<input type="checkbox" class="form-control" name="noPromptForUserReviews" id="noPromptForUserReviews" {if $profile->noPromptForUserReviews==1}checked='checked'{/if} data-switch="">
 								{else}
-									{if $profile->noPromptForUserReviews==0}No{else}Yes{/if}
+									{if $profile->noPromptForUserReviews==0}{translate text="No"}{else}{translate text="Yes"}{/if}
 								{/if}
 								<p class="help-block alert alert-warning">
 									{translate text="rating_setting_explanation" defaultText="When you rate an item by clicking on the stars, you will be asked to review that item also. Setting this option to <strong>&quot;on&QUOT;</strong> lets us know you don't want to give reviews after you have rated an item by clicking its stars."}
@@ -94,7 +94,7 @@
 								{if $edit == true}
 									<input type="checkbox" class="form-control" name="hideResearchStarters" id="hideResearchStarters" {if $profile->hideResearchStarters==1}checked='checked'{/if} data-switch="">
 								{else}
-									{if $profile->hideResearchStarters==0}No{else}Yes{/if}
+									{if $profile->hideResearchStarters==0}{translate text="No"}{else}{translate text="Yes"}{/if}
 								{/if}
 							</div>
 						</div>

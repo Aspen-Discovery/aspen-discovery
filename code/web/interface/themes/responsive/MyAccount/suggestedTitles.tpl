@@ -24,7 +24,7 @@
 					{$suggestion}
 				</div>
 				{foreachelse}
-				<div class="alert alert-info">You have not rated any titles.  Please rate some titles so we can display suggestions for you. </div>
+				<div class="alert alert-info">{translate text='You have not rated any titles.  Please rate some titles so we can display suggestions for you.'} </div>
 			{/foreach}
 		</div>
 	</div>
