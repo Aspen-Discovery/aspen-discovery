@@ -397,6 +397,15 @@ AspenDiscovery.RBdigital = (function () {
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
 			});
-		}
+		},
+
+		getLargeCover: function (id){
+			var url = Globals.path + '/RBdigital/' + id + '/AJAX?method=getLargeCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
 	}
 }(AspenDiscovery.RBdigital || {}));
