@@ -115,10 +115,9 @@ class Browse_AJAX extends Action {
 				$userList = new UserList();
 				$userList->listId = $listId;
 				$userList->deleted = "0";
-				if ($userList->find(true)) {
-					$browseCategory->sourceListId = $listId;
-					$browseCategory->source = 'List';
-				}
+				$userList->find();
+				$browseCategory->sourceListId = $listId;
+				$browseCategory->source = 'List';
 
 			}
 
