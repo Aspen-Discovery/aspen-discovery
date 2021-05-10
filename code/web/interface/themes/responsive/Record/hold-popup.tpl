@@ -24,7 +24,7 @@
 				<p class="alert alert-info">
 					{if $mustPickupAtHoldingBranch}
 						{translate text="hold_explanation_pickup_at_holding_branch" defaultText="Holds allow you to request that a title be put aside for you to pick up at the library."}&nbsp;
-					{else}vc                               po.,
+					{else}
 						{translate text="hold_explanation" defaultText="Holds allow you to request that a title be delivered to your home library."}&nbsp;
 					{/if}
 					{if $showDetailedHoldNoticeInformation && $profile->_noticePreferenceLabel == 'Mail' && !$treatPrintNoticesAsPhoneNotices}

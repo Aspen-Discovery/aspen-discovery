@@ -22,7 +22,7 @@
 			</div>
 		{else}
 			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
-				<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both {$usernameLabel} and {$passwordLabel}."}</div>
+				<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel}</div>
 				<div id="loginFormFields">
 					<div id="loginUsernameRow" class="form-group">
 						<label for="username" class="control-label col-xs-12 col-sm-4">{translate text="{$usernameLabel}"} </label>
