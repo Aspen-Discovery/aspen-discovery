@@ -28,7 +28,7 @@
 			</div>
 			<div class="col-tn-12 col-sm-5 text-right" id="connect-with-us-info">
 				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink || $tiktokLink}
-					<span id="connect-with-us-label" class="large">CONNECT WITH US</span>
+					<span id="connect-with-us-label" class="large">{translate text='CONNECT WITH US'}</span>
 					{if $twitterLink}
 						<a href="{$twitterLink}" class="connect-icon" target="_blank"><i class='fab fa-twitter fa-lg' alt='{translate text="Follow us on Twitter" inAttribute=true}'></i></a>
 					{/if}

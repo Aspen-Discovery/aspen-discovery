@@ -59,7 +59,7 @@
 					</tbody>
 				</table>
 			{else}
-				You have not rated any titles yet.
+			{translate text="You have not rated any titles yet."}
 			{/if}
 
 			{if $notInterested}

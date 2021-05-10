@@ -5,22 +5,22 @@
 	</div>
 	<div class="modal-body">
 		<p class="alert alert-danger" id="loginError" style="display: none"></p>
-		<p class="alert alert-danger" id="cookiesError" style="display: none">It appears that you do not have cookies enabled on this computer. Cookies are required to access account information.</p>
+		<p class="alert alert-danger" id="cookiesError" style="display: none">{translate text="It appears that you do not have cookies enabled on this computer.  Cookies are required to access account information."}</p>
 		<p class="alert alert-info" id="loading" style="display: none">
-			Logging you in now. Please wait.
+			{translate text="Logging you in now. Please wait."}
 		</p>
 		{if $offline && !$enableLoginWhileOffline}
 			<div class="alert alert-warning">
 				<p>
-					The Library’s accounts system is down. Tech support is working to assess and fix the problem as quickly as possible.
+					{translate text="The Library’s accounts system is down. Tech support is working to assess and fix the problem as quickly as possible."}
 				</p>
 				<p>
-					Thank you for your patience and understanding.
+					{translate text="Thank you for your patience and understanding."}
 				</p>
 			</div>
 		{else}
 			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return AspenDiscovery.Account.processAjaxLogin()">
-				<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
+				<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both {$usernameLabel} and {$passwordLabel}."}</div>
 				<div id="loginUsernameRow" class="form-group">
 					<label for="username" class="control-label col-xs-12 col-sm-4">{translate text=$usernameLabel}</label>
 					<div class="col-xs-12 col-sm-8">
@@ -55,7 +55,7 @@
 				{if !(empty($loginNotes))}
 					<div id="loginNotes" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-							{$loginNotes}
+							{translate text=$loginNotes}
 						</div>
 					</div>
 				{/if}

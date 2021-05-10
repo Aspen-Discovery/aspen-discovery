@@ -30,17 +30,17 @@
 			<thead>
 			<tr>
 				<th>&nbsp;</th>
-				<th>Days in advance</th>
+				<th>{translate text="Days in advance"}</th>
 				{if $enableSmsMessaging}
-				<th>SMS</th>
+				<th>{translate text="SMS"}</th>
 				{/if}
 				{if $enablePhoneMessaging}
-				<th>Phone</th>
+				<th>{translate text="Phone"}</th>
 				{/if}
-				<th>Email</th>
-				<th>Digests only <i id="info_digests" data-toggle="tooltip" title="" data-placement="right" class="fa fa-info-circle" data-original-title="You can ask for a digest to reduce the number of messages. Messages will be saved and sent as a single message."></i></th>
+				<th>{translate text="Email"}</th>
+				<th>{translate text="Digests only"} <i id="info_digests" data-toggle="tooltip" title="" data-placement="right" class="fa fa-info-circle" data-original-title="{translate text="You can ask for a digest to reduce the number of messages. Messages will be saved and sent as a single message."}"></i></th>
 				{if $canSave}
-				<!-- <th>RSS</th> --><th>Do not notify</th>
+				<!-- <th>RSS</th> --><th>{translate text="Do not notify"}</th>
 				{/if}
 			</tr>
 			</thead>
@@ -50,7 +50,7 @@
 				{assign var=messageTypeId value=$messageType.message_attribute_id}
 				<tr id="messageType{$messageTypeId}Row">
 					<td>
-						{$messageType.label}
+						{translate text=$messageType.label}
 					</td>
 					<td>
 						{if ($messageType.takes_days)}
@@ -129,33 +129,33 @@
 		{if $enableSmsMessaging}
 			<div class="row form-group" id="smsNoticeRow">
 				<div class="col-md-3">
-				<label class="control-label">Notice</label>
+				<label class="control-label">{translate text="Notice"}</label>
 				</div>
 				<div class="col-md-9">
-					Some charges for text messages may be incurred when using this service. Please check with your mobile service provider if you have questions.
+					{translate text="Some charges for text messages may be incurred when using this service. Please check with your mobile service provider if you have questions."}
 				</div>
 			</div>
 			<div class="row form-group" id="smsNumberRow">
 				<div class="col-md-3">
-					<label for="SMSnumber" class="control-label">SMS number</label>
+					<label for="SMSnumber" class="control-label">{translate text="SMS number"}</label>
 				</div>
 				<div class="col-md-9">
 					<input type="text" id="SMSnumber" name="SMSnumber" value="{$smsAlertNumber}" class="form-control" {if !$canSave}readonly{/if}>
-					<i>Please enter numbers only. <b>(123) 456-7890</b> would be entered as <b>1234567890</b>.</i>
+					<i>{translate text="Please enter numbers only. <b>(123) 456-7890</b> would be entered as <b>1234567890</b>."}</i>
 				</div>
 			</div>
 			<div class="row form-group" id="smsProviderRow">
 				<div class="col-md-3">
-					<label for="sms_provider_id" class="control-label">SMS provider</label>
+					<label for="sms_provider_id" class="control-label">{translate text="SMS provider"}</label>
 				</div>
 				<div class="col-md-9">
 					<select id="sms_provider_id" name="sms_provider_id" class="form-control" {if !$canSave}readonly{/if}>
-						<option value="">Unknown</option>
+						<option value="">{translate text="Unknown"}</option>
 						{foreach from=$smsProviders item=provider key=id}
 						<option value="{$id}" {if $smsProviderId==$id}selected="selected"{/if}>{$provider}</option>
 						{/foreach}
 					</select>
-					<i>Please contact a library staff member if you are unsure of your mobile service provider, or you do not see your provider in this list.</i>
+					<i>{translate text="Please contact a library staff member if you are unsure of your mobile service provider, or you do not see your provider in this list."}</i>
 				</div>
 			</div>
 		{/if}

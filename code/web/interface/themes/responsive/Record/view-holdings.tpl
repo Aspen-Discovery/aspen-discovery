@@ -1,6 +1,6 @@
 {strip}
 {if $offline}
-	<div class="alert alert-warning">The circulation system is currently offline.  Holdings information is based on information from before the system went offline.</div>
+	<div class="alert alert-warning">{translate text="The circulation system is currently offline.  Holdings information is based on information from before the system went offline."}</div>
 {/if}
 {* ils check & last checkin date *}
 {if ($ils == 'Sierra' || $ils == 'Millennium')}
@@ -32,7 +32,7 @@
 
 							{include file="Record/copiesTableRow.tpl"}
 							{if $smarty.foreach.tableLoop.iteration == 5 && count($section.holdings) > 5}
-								<a onclick="$(this).remove();$('.hiddenCopy').show()" role="button" style="cursor: pointer;">Show All Copies</a>
+								<a onclick="$(this).remove();$('.hiddenCopy').show()" role="button" style="cursor: pointer;">{translate text="Show All Copies"}</a>
 							{/if}
 						{/foreach}
 						</div>

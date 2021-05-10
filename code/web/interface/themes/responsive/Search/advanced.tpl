@@ -117,7 +117,7 @@
 									<div class="panel-body">
 
 										<div class="alert alert-info">
-											The filters below are optional. Only set the filters needed to narrow your search.
+											{translate text="The filters below are optional. Only set the filters needed to narrow your search."}
 										</div>
 
 										{*//TODO Is this in use?? *}
@@ -164,41 +164,41 @@
 																<div class="col-xs-12">
 																	{assign var=thisyear value=$smarty.now|date_format:"%Y"}
 																	{translate text="Published in the last"}<br/>
-																	<a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-1}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>year</a>
-																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-5}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>5&nbsp;years</a>
-																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-10}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>10&nbsp;years</a>
+																	<a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-1}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="year"}</a>
+																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-5}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="5 years"}</a>
+																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-10}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="10 years"}</a>
 																</div>`
 															</div>
 														{elseif $facetInfo.facetName == "lexile_score"}
 															<div class="row">
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="lexile_scorefrom" class="yearboxlabel">From </label>
+																	<label for="lexile_scorefrom" class="yearboxlabel">{translate text="From"} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scorefrom" id="lexile_scorefrom" value="" aria-label="Lexile Score From">
 																</div>
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="lexile_scoreto" class="yearboxlabel">To </label>
+																	<label for="lexile_scoreto" class="yearboxlabel">{translate text="To"} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scoreto" id="lexile_scoreto" value="" aria-label="Lexile Score To">
 																</div>
 															</div>
 														{elseif $facetInfo.facetName == "accelerated_reader_point_value"}
 															<div class="row">
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="accelerated_reader_point_valuefrom" class="yearboxlabel">From </label>
+																	<label for="accelerated_reader_point_valuefrom" class="yearboxlabel">{translate text="From"} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_point_valuefrom" id="accelerated_reader_point_valuefrom" value="" aria-label="Accelerated Reader Points From">
 																</div>
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="accelerated_reader_point_valueto" class="yearboxlabel">To </label>
+																	<label for="accelerated_reader_point_valueto" class="yearboxlabel">{translate text="To"} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_point_valueto" id="accelerated_reader_point_valueto" value="" aria-label="Accelerated Reader Points To">
 																</div>
 															</div>
                                                         {elseif $facetInfo.facetName == "accelerated_reader_reading_level"}
 															<div class="row">
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="accelerated_reader_reading_levelfrom" class="yearboxlabel">From </label>
+																	<label for="accelerated_reader_reading_levelfrom" class="yearboxlabel">{translate text="From"} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelfrom" id="accelerated_reader_reading_levelfrom" value="" aria-label="Accelerated Reader Level From">
 																</div>
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="accelerated_reader_reading_levelto" class="yearboxlabel">To </label>
+																	<label for="accelerated_reader_reading_levelto" class="yearboxlabel">{translate text="To"} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelto" id="accelerated_reader_reading_levelto" value="" aria-label="Accelerated Reader Level To">
 																</div>
 															</div>

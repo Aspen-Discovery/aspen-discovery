@@ -2,11 +2,11 @@
 	<div class="facet-form">
 		<div class="form-group">
 			<label for="{$title}yearfrom" class='yearboxlabel sr-only control-label'>{$cluster.label} {translate text="from"}</label>
-			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="from" name="{$title}yearfrom" id="{$title}yearfrom" value="" />
+			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="{translate text="from" inAttribute=true}" name="{$title}yearfrom" id="{$title}yearfrom" value="" />
 		</div>
 		<div class="form-group">
 			<label for="{$title}yearto" class='yearboxlabel sr-only control-label'>{$cluster.label} {translate text="to"}</label>
-			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="to" name="{$title}yearto" id="{$title}yearto" value="" />
+			<input type="text" size="4" maxlength="4" class="yearbox form-control" placeholder="{translate text="to" inAttribute=true}" name="{$title}yearto" id="{$title}yearto" value="" />
 		</div>
 
 		{* To make sure that applying this filter does not remove existing filters we need to copy the get variables as hidden variables *}
@@ -22,7 +22,7 @@
 				<input type="hidden" name="{$paramName}" value="{$parmValue|escape}" />
 			{/if}
 		{/foreach}
-		<input type="submit" value="Go" class="goButton btn btn-sm btn-primary" />
+		<input type="submit" value="{translate text="Go" inAttribute=true}" class="goButton btn btn-sm btn-primary" />
 
 		{if $title == 'publishDate' || $title == 'publishDateSort'}
 			<div id='yearDefaultLinks'>
