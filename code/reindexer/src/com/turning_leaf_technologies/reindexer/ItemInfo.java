@@ -317,38 +317,6 @@ public class ItemInfo{
 		return scopingInfo.containsKey(scopeName);
 	}
 
-	boolean isLocallyOwned(Scope scope) {
-		ScopingInfo scopeData = scopingInfo.get(scope.getScopeName());
-		if (scopeData != null){
-			return scopeData.isLocallyOwned();
-		}
-		return false;
-	}
-
-	boolean isLibraryOwned(Scope scope) {
-		ScopingInfo scopeData = scopingInfo.get(scope.getScopeName());
-		if (scopeData != null){
-			return scopeData.isLibraryOwned();
-		}
-		return false;
-	}
-
-	boolean isLocallyOwned(String scopeName) {
-		ScopingInfo scopeData = scopingInfo.get(scopeName);
-		if (scopeData != null){
-			return scopeData.isLocallyOwned();
-		}
-		return false;
-	}
-
-	boolean isLibraryOwned(String scopeName) {
-		ScopingInfo scopeData = scopingInfo.get(scopeName);
-		if (scopeData != null){
-			return scopeData.isLibraryOwned();
-		}
-		return false;
-	}
-
 	String getShelfLocationCode() {
 		return shelfLocationCode;
 	}

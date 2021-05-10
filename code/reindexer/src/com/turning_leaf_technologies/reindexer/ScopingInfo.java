@@ -78,23 +78,27 @@ class ScopingInfo{
 		this.libraryOwned = libraryOwned;
 	}
 
+	String scopingDetails = null;
 	String getScopingDetails(){
-		String itemIdentifier = item.getItemIdentifier();
-		if (itemIdentifier == null) itemIdentifier = "";
-		return item.getFullRecordIdentifier() + "|" +
-				itemIdentifier + "|" +
-				groupedStatus + "|" +
-				status + "|" +
-				locallyOwned + "|" +
-				available + "|" +
-				holdable + "|" +
-				bookable + "|" +
-				inLibraryUseOnly + "|" +
-				libraryOwned + "|" +
-				Util.getCleanDetailValue(holdablePTypes) + "|" +
-				Util.getCleanDetailValue(bookablePTypes) + "|" +
-				Util.getCleanDetailValue(localUrl) + "|"
-				;
+		if (scopingDetails == null) {
+			String itemIdentifier = item.getItemIdentifier();
+			if (itemIdentifier == null) itemIdentifier = "";
+			scopingDetails = item.getFullRecordIdentifier() + "|" +
+					itemIdentifier + "|" +
+					groupedStatus + "|" +
+					status + "|" +
+					locallyOwned + "|" +
+					available + "|" +
+					holdable + "|" +
+					bookable + "|" +
+					inLibraryUseOnly + "|" +
+					libraryOwned + "|" +
+					Util.getCleanDetailValue(holdablePTypes) + "|" +
+					Util.getCleanDetailValue(bookablePTypes) + "|" +
+					Util.getCleanDetailValue(localUrl) + "|"
+					;
+		}
+		return scopingDetails;
 	}
 
 	void setLocalUrl(String localUrl) {

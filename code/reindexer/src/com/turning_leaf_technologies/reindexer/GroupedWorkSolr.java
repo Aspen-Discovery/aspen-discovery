@@ -469,6 +469,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private void addScopedFieldsToDocument(SolrInputDocument doc, BaseLogEntry logEntry) {
 		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
 		//have a lot of scopes and a lot of items & records.
+		HashMap <String, HashSet<String>> multiValuedScopedFields = new HashMap<>();
 		int numScopesForWork = 0;
 		for (RecordInfo curRecord : relatedRecords.values()) {
 			doc.addField("record_details", curRecord.getDetails());
@@ -479,16 +480,16 @@ public class GroupedWorkSolr implements Cloneable {
 				for (String curScopeName : scopingNames) {
 					numScopesForWork++;
 					ScopingInfo curScope = curScopingInfo.get(curScopeName);
-					doc.addField("scoping_details_" + curScopeName, curScope.getScopingDetails());
+					setScopedField(multiValuedScopedFields, "scoping_details_" + curScopeName, curScope.getScopingDetails());
 					//if we do that, we don't need to filter within PHP
-					addUniqueFieldValue(doc, "scope_has_related_records", curScopeName);
+					setScopedField(multiValuedScopedFields, "scope_has_related_records", curScopeName);
 					HashSet<String> formats = new HashSet<>();
 					if (curItem.getFormat() != null) {
 						formats.add(curItem.getFormat());
 					} else {
 						formats = curRecord.getFormats();
 					}
-					addUniqueFieldValues(doc, "format_" + curScopeName, formats);
+					setScopedField(multiValuedScopedFields, "format_" + curScopeName, formats);
 					HashSet<String> formatCategories = new HashSet<>();
 					if (curItem.getFormatCategory() != null) {
 						formatCategories.add(curItem.getFormatCategory());
@@ -503,16 +504,16 @@ public class GroupedWorkSolr implements Cloneable {
 						formatCategories.add("Books");
 						formatCategories.add("Audio Books");
 					}
-					addUniqueFieldValues(doc, "format_category_" + curScopeName, formatCategories);
+					setScopedField(multiValuedScopedFields,  "format_category_" + curScopeName, formatCategories);
 
 					//Setup ownership & availability toggle values
-					setupAvailabilityToggleAndOwnershipForItemWithinScope(doc, curRecord, curItem, curScopeName, curScope);
+					setupAvailabilityToggleAndOwnershipForItemWithinScope(curRecord, curItem, curScopeName, curScope, multiValuedScopedFields);
 
 					Scope curScopeDetails = curScope.getScope();
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
-						addUniqueFieldValue(doc, "collection_" + curScopeName, curItem.getCollection());
-						addUniqueFieldValue(doc, "detailed_location_" + curScopeName, curItem.getDetailedLocation());
-						addUniqueFieldValue(doc, "shelf_location_" + curScopeName, curItem.getShelfLocation());
+						setScopedField(multiValuedScopedFields, "collection_" + curScopeName, curItem.getCollection());
+						setScopedField(multiValuedScopedFields, "detailed_location_" + curScopeName, curItem.getDetailedLocation());
+						setScopedField(multiValuedScopedFields, "shelf_location_" + curScopeName, curItem.getShelfLocation());
 					}
 					if (curItem.isEContent() || curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
 						Long daysSinceAdded;
@@ -553,17 +554,22 @@ public class GroupedWorkSolr implements Cloneable {
 						updateMaxValueField(doc, "lib_boost_" + curScopeName, 1);
 					}
 
-					addUniqueFieldValue(doc, "itype_" + curScopeName, curItem.getTrimmedIType());
+					setScopedField(multiValuedScopedFields, "itype_" + curScopeName, curItem.getTrimmedIType());
 					if (curItem.isEContent()) {
-						addUniqueFieldValue(doc, "econtent_source_" + curScopeName, StringUtils.trimTrailingPunctuation(curItem.geteContentSource()));
+						setScopedField(multiValuedScopedFields, "econtent_source_" + curScopeName, StringUtils.trimTrailingPunctuation(curItem.geteContentSource()));
 					}
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || !curScopeDetails.isRestrictOwningLibraryAndLocationFacets()) {
-						addUniqueFieldValue(doc, "local_callnumber_" + curScopeName, curItem.getCallNumber());
+						setScopedField(multiValuedScopedFields, "local_callnumber_" + curScopeName, curItem.getCallNumber());
 						setSingleValuedFieldValue(doc, "callnumber_sort_" + curScopeName, curItem.getSortableCallNumber());
 					}
 				}
 			}
 		}
+		//Set the scoped fields in the document now that they have been collected
+		for(String fieldName : multiValuedScopedFields.keySet()){
+			doc.addField(fieldName, multiValuedScopedFields.get(fieldName));
+		}
+
 		logger.info("Work " + id + " processed " + numScopesForWork + " scopes");
 
 		//Now that we know the latest number of days added for each scope, we can set the time since added facet
@@ -576,11 +582,21 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
-	private void setupAvailabilityToggleAndOwnershipForItemWithinScope(SolrInputDocument doc, RecordInfo curRecord, ItemInfo curItem, String curScopeName, ScopingInfo curScope) {
+	private void setScopedField(HashMap<String, HashSet<String>> scopedFields, String fieldName, String newValues) {
+		HashSet<String> fieldValues = scopedFields.computeIfAbsent(fieldName, k -> new HashSet<>());
+		fieldValues.add(newValues);
+	}
+	private void setScopedField(HashMap<String, HashSet<String>> scopedFields, String fieldName, HashSet<String> newValues) {
+		HashSet<String> fieldValues = scopedFields.computeIfAbsent(fieldName, k -> new HashSet<>());
+		fieldValues.addAll(newValues);
+	}
+
+	private void setupAvailabilityToggleAndOwnershipForItemWithinScope(RecordInfo curRecord, ItemInfo curItem, String curScopeName, ScopingInfo curScope, HashMap<String, HashSet<String>> multiValuedScopedFields) {
 		boolean addLocationOwnership = false;
 		boolean addLibraryOwnership = false;
 		HashSet<String> availabilityToggleValues = new HashSet<>();
-		Scope curScopeDetails = curScope.getScope();availabilityToggleValues.add("global");
+		Scope curScopeDetails = curScope.getScope();
+		availabilityToggleValues.add("global");
 
 		if (curItem.isEContent()){
 			//If the item is eContent, we will count it as part of the collection since it will be available.
@@ -636,19 +652,19 @@ public class GroupedWorkSolr implements Cloneable {
 			}
 
 			//Save values for this scope
-			addUniqueFieldValue(doc, "owning_location_" + curScopeName, owningLocationValue);
+			setScopedField(multiValuedScopedFields, "owning_location_" + curScopeName, owningLocationValue);
 
 			if (curScope.isAvailable()) {
-				addAvailableAtValues(doc, curRecord, curScopeName, owningLocationValue);
+				addAvailableAtValues(curRecord, curScopeName, owningLocationValue, multiValuedScopedFields);
 			}
 
 			if (curScopeDetails.isLocationScope()) {
 				//Also add the location to the system
 				if (curScopeDetails.getLibraryScope() != null && !curScopeDetails.getLibraryScope().getScopeName().equals(curScopeName)) {
-					addUniqueFieldValue(doc, "owning_location_" + curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue);
-					addAvailabilityToggleValues(doc, curRecord, curScopeDetails.getLibraryScope().getScopeName(), availabilityToggleValues);
+					setScopedField(multiValuedScopedFields,"owning_location_" + curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue);
+					addAvailabilityToggleValues(curRecord, curScopeDetails.getLibraryScope().getScopeName(), availabilityToggleValues, multiValuedScopedFields);
 					if (curScope.isAvailable()) {
-						addAvailableAtValues(doc, curRecord, curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue);
+						addAvailableAtValues(curRecord, curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue, multiValuedScopedFields);
 					}
 				}
 
@@ -662,11 +678,11 @@ public class GroupedWorkSolr implements Cloneable {
 								Scope otherScopeDetails = otherScope.getScope();
 								if (otherScopeDetails.isLocationScope() && otherScopeDetails.getLibraryScope() != null && curScopeDetails.getLibraryScope().equals(otherScopeDetails.getLibraryScope())) {
 									if (!otherScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
-										addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
+										addAvailabilityToggleValues(curRecord, otherScopeName, availabilityToggleValues, multiValuedScopedFields);
 									}
-									addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationValue);
+									setScopedField(multiValuedScopedFields, "owning_location_" + otherScopeName, owningLocationValue);
 									if (curScope.isAvailable()) {
-										addAvailableAtValues(doc, curRecord, otherScopeName, owningLocationValue);
+										addAvailableAtValues(curRecord, otherScopeName, owningLocationValue, multiValuedScopedFields);
 									}
 								}
 							}
@@ -681,10 +697,10 @@ public class GroupedWorkSolr implements Cloneable {
 						Scope otherScopeDetails = otherScope.getScope();
 						if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityFor().length() > 0) {
 							if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curScopeName).matches()) {
-								addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
-								addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationValue);
+								addAvailabilityToggleValues(curRecord, otherScopeName, availabilityToggleValues, multiValuedScopedFields);
+								setScopedField(multiValuedScopedFields, "owning_location_" + otherScopeName, owningLocationValue);
 								if (curScope.isAvailable()) {
-									addAvailableAtValues(doc, curRecord, otherScopeName, owningLocationValue);
+									addAvailableAtValues(curRecord, otherScopeName, owningLocationValue, multiValuedScopedFields);
 								}
 							}
 						}
@@ -698,11 +714,11 @@ public class GroupedWorkSolr implements Cloneable {
 				ScopingInfo scopeToShowAll = curScopingInfo.get(scopeToShowAllName);
 				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()) {
 					if (!scopeToShowAll.getScope().getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
-						addAvailabilityToggleValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), availabilityToggleValues);
+						addAvailabilityToggleValues(curRecord, scopeToShowAll.getScope().getScopeName(), availabilityToggleValues, multiValuedScopedFields);
 					}
-					addUniqueFieldValue(doc, "owning_location_" + scopeToShowAll.getScope().getScopeName(), owningLocationValue);
+					setScopedField(multiValuedScopedFields, "owning_location_" + scopeToShowAll.getScope().getScopeName(), owningLocationValue);
 					if (curScope.isAvailable()) {
-						addAvailableAtValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), owningLocationValue);
+						addAvailableAtValues(curRecord, scopeToShowAll.getScope().getScopeName(), owningLocationValue, multiValuedScopedFields);
 					}
 				}
 			}
@@ -719,37 +735,37 @@ public class GroupedWorkSolr implements Cloneable {
 					owningLibraryValue = curScopeDetails.getLibraryScope().getFacetLabel();
 				}
 			}
-			addUniqueFieldValue(doc, "owning_library_" + curScopeName, owningLibraryValue);
+			setScopedField(multiValuedScopedFields, "owning_library_" + curScopeName, owningLibraryValue);
 			for (Scope locationScope : curScopeDetails.getLocationScopes()) {
-				addUniqueFieldValue(doc, "owning_library_" + locationScope.getScopeName(), owningLibraryValue);
+				setScopedField(multiValuedScopedFields, "owning_library_" + locationScope.getScopeName(), owningLibraryValue);
 			}
 			//finally add to any scopes where we show all owning libraries
 			for (String scopeToShowAllName : curScopingInfo.keySet()) {
 				ScopingInfo scopeToShowAll = curScopingInfo.get(scopeToShowAllName);
 				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()) {
-					addUniqueFieldValue(doc, "owning_library_" + scopeToShowAll.getScope().getScopeName(), owningLibraryValue);
+					setScopedField(multiValuedScopedFields, "owning_library_" + scopeToShowAll.getScope().getScopeName(), owningLibraryValue);
 				}
 			}
 		}
 		//Make sure we always add availability toggles to this scope even if they are blank
-		addAvailabilityToggleValues(doc, curRecord, curScopeName, availabilityToggleValues);
+		addAvailabilityToggleValues(curRecord, curScopeName, availabilityToggleValues, multiValuedScopedFields);
 	}
 
-	private void addAvailableAtValues(SolrInputDocument doc, RecordInfo curRecord, String curScopeName, String owningLocationValue) {
-		addUniqueFieldValue(doc, "available_at_" + curScopeName, owningLocationValue);
+	private void addAvailableAtValues(RecordInfo curRecord, String curScopeName, String owningLocationValue, HashMap<String, HashSet<String>> multiValuedScopedFields) {
+		setScopedField(multiValuedScopedFields, "available_at_" + curScopeName, owningLocationValue);
 		for (String format : curRecord.getAllSolrFieldEscapedFormats()) {
-			addUniqueFieldValue(doc, "available_at_by_format_" + curScopeName + "_" + format, owningLocationValue);
+			setScopedField(multiValuedScopedFields, "available_at_by_format_" + curScopeName + "_" + format, owningLocationValue);
 		}
 		for (String formatCategory : curRecord.getAllSolrFieldEscapedFormatCategories()) {
-			addUniqueFieldValue(doc, "available_at_by_format_" + curScopeName + "_" + formatCategory, owningLocationValue);
+			setScopedField(multiValuedScopedFields, "available_at_by_format_" + curScopeName + "_" + formatCategory, owningLocationValue);
 		}
 	}
 
-	private void addAvailabilityToggleValues(SolrInputDocument doc, RecordInfo curRecord, String curScopeName, HashSet<String> availabilityToggleValues) {
-		addUniqueFieldValues(doc, "availability_toggle_" + curScopeName, availabilityToggleValues);
+	private void addAvailabilityToggleValues(RecordInfo curRecord, String curScopeName, HashSet<String> availabilityToggleValues, HashMap<String, HashSet<String>> multiValuedScopedFields) {
+		setScopedField(multiValuedScopedFields, "availability_toggle_" + curScopeName, availabilityToggleValues);
 		HashSet<String> allFormats = curRecord.getAllSolrFieldEscapedFormats();
 		for (String format : allFormats) {
-			addUniqueFieldValues(doc, "availability_by_format_" + curScopeName + "_" + format, availabilityToggleValues);
+			setScopedField(multiValuedScopedFields, "availability_by_format_" + curScopeName + "_" + format, availabilityToggleValues);
 		}
 		HashSet<String> allFormatCategories = curRecord.getAllSolrFieldEscapedFormatCategories();
 		if (allFormats.contains("eaudiobook")) {
@@ -760,7 +776,7 @@ public class GroupedWorkSolr implements Cloneable {
 			allFormatCategories.add("audio_books");
 		}
 		for (String formatCategory : allFormatCategories) {
-			addUniqueFieldValues(doc, "availability_by_format_" + curScopeName + "_" + formatCategory, availabilityToggleValues);
+			setScopedField(multiValuedScopedFields, "availability_by_format_" + curScopeName + "_" + formatCategory, availabilityToggleValues);
 		}
 	}
 
@@ -796,57 +812,6 @@ public class GroupedWorkSolr implements Cloneable {
 		} else {
 			if ((Integer) curValue < value) {
 				doc.setField(fieldName, value);
-			}
-		}
-	}
-
-	private void addUniqueFieldValue(SolrInputDocument doc, String fieldName, String value) {
-		if (value == null || value.length() == 0) return;
-		Collection<Object> fieldValues = doc.getFieldValues(fieldName);
-		if (fieldValues == null) {
-			doc.addField(fieldName, value);
-		} else if (!fieldValues.contains(value)) {
-			fieldValues.add(value);
-			doc.setField(fieldName, fieldValues);
-		}
-	}
-
-	private void addUniqueFieldValues(SolrInputDocument doc, String fieldName, Collection<String> values) {
-		if (values.size() == 0) return;
-		for (String value : values) {
-			addUniqueFieldValue(doc, fieldName, value);
-		}
-	}
-
-	private boolean isLocallyOwned(HashSet<ItemInfo> scopedItems, Scope scope) {
-		for (ItemInfo curItem : scopedItems) {
-			if (curItem.isLocallyOwned(scope)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean isLibraryOwned(HashSet<ItemInfo> scopedItems, Scope scope) {
-		for (ItemInfo curItem : scopedItems) {
-			if (curItem.isLibraryOwned(scope)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private void loadRelatedRecordsAndItemsForScope(Scope curScope, HashSet<RecordInfo> scopedRecords, HashSet<ItemInfo> scopedItems) {
-		for (RecordInfo curRecord : relatedRecords.values()) {
-			boolean recordIsValid = false;
-			for (ItemInfo curItem : curRecord.getRelatedItems()) {
-				if (curItem.isValidForScope(curScope)) {
-					scopedItems.add(curItem);
-					recordIsValid = true;
-				}
-			}
-			if (recordIsValid) {
-				scopedRecords.add(curRecord);
 			}
 		}
 	}

@@ -82,14 +82,9 @@ public class Scope implements Comparable<Scope>{
 	 * @return                  Whether or not the item is included within the scope
 	 */
 	public InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
-//		if (locationCode == null){
-//			//No location code, skip this item
-//			return new InclusionResult(false, econtentUrl);
-//		}
-
 		for(OwnershipRule curRule: ownershipRules){
 			if (curRule.isItemOwned(recordType, locationCode, subLocationCode)){
-				return new InclusionResult(true, econtentUrl);
+				return new InclusionResult(true, true, econtentUrl);
 			}
 		}
 
@@ -98,12 +93,12 @@ public class Scope implements Comparable<Scope>{
 				if (econtentUrl != null) {
 					econtentUrl = curRule.getLocalUrl(econtentUrl);
 				}
-				return new InclusionResult(true, econtentUrl);
+				return new InclusionResult(true, false, econtentUrl);
 			}
 		}
 
 		//If we got this far, it isn't included
-		return new InclusionResult(false, econtentUrl);
+		return new InclusionResult(false, false, econtentUrl);
 	}
 
 	/**
@@ -307,10 +302,12 @@ public class Scope implements Comparable<Scope>{
 	public static class InclusionResult{
 		public boolean isIncluded;
 		public String localUrl;
+		public boolean isOwned;
 
-		InclusionResult(boolean isIncluded, String localUrl) {
+		InclusionResult(boolean isIncluded, boolean isOwned, String localUrl) {
 			this.isIncluded = isIncluded;
 			this.localUrl = localUrl;
+			this.isOwned = isOwned;
 		}
 	}
 }
