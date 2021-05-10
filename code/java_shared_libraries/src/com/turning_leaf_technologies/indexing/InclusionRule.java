@@ -17,9 +17,11 @@ class InclusionRule {
 	private final Pattern subLocationCodePattern;
 	private Pattern subLocationsToExcludePattern = null;
 	private final Pattern iTypePattern;
-	private boolean matchAllAudiences = false;
+	private boolean matchAlliTypes = false;
 	private final Pattern audiencePattern;
+	private boolean matchAllAudiences = false;
 	private final Pattern formatPattern;
+	private boolean matchAllFormats = false;
 	private final boolean includeHoldableOnly;
 	private final boolean includeItemsOnOrder;
 	private final boolean includeEContent;
@@ -55,6 +57,7 @@ class InclusionRule {
 
 		if (iType == null || iType.length() == 0){
 			iType = ".*";
+			matchAlliTypes = true;
 		}
 		this.iTypePattern = Pattern.compile(iType, Pattern.CASE_INSENSITIVE);
 
@@ -66,6 +69,7 @@ class InclusionRule {
 
 		if (format == null || format.length() == 0){
 			format = ".*";
+			matchAllFormats = true;
 		}
 		this.formatPattern = Pattern.compile(format, Pattern.CASE_INSENSITIVE);
 
@@ -121,18 +125,30 @@ class InclusionRule {
 			iTypeCache = new HashMap<>();
 			subLocationCodeIncludeCache.put(subLocationCode, iTypeCache);
 		}
+
+		if (matchAlliTypes){
+			iType = "any";
+		}
 		HashMap<String, HashMap<String, Boolean>> audiencesCache = iTypeCache.get(iType);
 		if (audiencesCache == null){
 			hasCachedValue = false;
 			audiencesCache = new HashMap<>();
 			iTypeCache.put(iType, audiencesCache);
 		}
-		String audiencesKey = audiences.toString();
+		String audiencesKey;
+		if (matchAllAudiences) {
+			audiencesKey = "any";
+		}else{
+			audiencesKey = audiences.toString();
+		}
 		HashMap<String, Boolean> formatCache = audiencesCache.get(audiencesKey);
 		if (formatCache == null){
 			hasCachedValue = false;
 			formatCache = new HashMap<>();
 			audiencesCache.put(audiencesKey, formatCache);
+		}
+		if (matchAllFormats){
+			format = "any";
 		}
 		Boolean cachedInclusion = formatCache.get(format);
 		if (cachedInclusion == null){
@@ -144,11 +160,11 @@ class InclusionRule {
 		if (!hasCachedValue){
 			if (locationCodePattern.matcher(locationCode).lookingAt() &&
 					(subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt()) &&
-					(format == null || formatPattern.matcher(format).lookingAt())
+					(matchAllFormats || format == null || formatPattern.matcher(format).lookingAt())
 					){
 
 				//We got a match based on location check formats iTypes etc
-				if (iType != null && !iTypePattern.matcher(iType).lookingAt()){
+				if (!matchAlliTypes && iType != null && !iTypePattern.matcher(iType).lookingAt()){
 					isIncluded =  false;
 				}else{
 					boolean audienceMatched = false;

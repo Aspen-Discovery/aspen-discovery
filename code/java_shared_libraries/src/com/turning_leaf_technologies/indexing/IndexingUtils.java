@@ -219,6 +219,22 @@ public class IndexingUtils {
 	}
 
 	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+		//To minimize the amount of data in the index, only load locations that have more than one location within the library.
+		PreparedStatement librariesWithMoreThanOneLocationStmt = dbConn.prepareStatement("select libraryId, count(*) as numLocations from location group by libraryId having numLocations > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		ResultSet librariesWithMoreThanOneLocation = librariesWithMoreThanOneLocationStmt.executeQuery();
+		String librariesToFetch = new String();
+		while (librariesWithMoreThanOneLocation.next()){
+			if (librariesToFetch.length() > 0){
+				librariesToFetch += ",";
+			}
+			librariesToFetch += librariesWithMoreThanOneLocation.getString("libraryId");
+		}
+		librariesWithMoreThanOneLocation.close();
+		librariesWithMoreThanOneLocationStmt.close();
+		if (librariesToFetch.length() == 0){
+			return;
+		}
+
 		PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
 						"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 						"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
@@ -229,7 +245,7 @@ public class IndexingUtils {
 						"library.rbdigitalScopeId as rbdigitalScopeLibrary, location.rbdigitalScopeId as rbdigitalScopeLocation, " +
 						"library.cloudLibraryScopeId as cloudLibraryScopeLibrary, location.cloudLibraryScopeId as cloudLibraryScopeLocation, " +
 						"library.axis360ScopeId as axis360ScopeLibrary, location.axis360ScopeId as axis360ScopeLocation " +
-						"FROM location INNER JOIN library on library.libraryId = location.libraryId ORDER BY code ASC",
+						"FROM location INNER JOIN library on library.libraryId = location.libraryId WHERE location.libraryId IN (" + librariesToFetch + ") ORDER BY code ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement locationOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.name FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);

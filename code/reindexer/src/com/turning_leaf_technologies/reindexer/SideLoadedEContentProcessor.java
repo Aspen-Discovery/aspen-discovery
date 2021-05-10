@@ -35,7 +35,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			treatUnknownLanguageAs = sideLoadSettingsRS.getString("treatUnknownLanguageAs");
 			treatUndeterminedLanguageAs = sideLoadSettingsRS.getString("treatUndeterminedLanguageAs");
 
-			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
 			logger.error("Error setting up side load processor");
 		}
@@ -207,7 +207,8 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 
 	private void loadDateAdded(String identifier, ItemInfo itemInfo) {
 		try {
-			getDateAddedStmt.setString(1, identifier);
+			getDateAddedStmt.setString(1, profileType);
+			getDateAddedStmt.setString(2, identifier);
 			ResultSet getDateAddedRS = getDateAddedStmt.executeQuery();
 			if (getDateAddedRS.next()) {
 				long timeAdded = getDateAddedRS.getLong(1);

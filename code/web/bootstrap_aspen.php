@@ -91,7 +91,7 @@ function loadSearchInformation(){
 			$isGlobalScope = true;
 		}
 	}
-	if ($searchLocation){
+	if ($searchLocation && $searchLibrary->getNumLocationsForLibrary() > 1){
 		if ($searchLibrary && strtolower($searchLocation->code) == $solrScope){
 			$solrScope .= 'loc';
 		}else{

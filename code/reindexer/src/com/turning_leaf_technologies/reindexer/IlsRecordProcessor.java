@@ -949,13 +949,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					scopingInfo.setLocalUrl(result.localUrl);
 				}
 				if (curScope.isLocationScope()) {
-					scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(profileType, itemLocation, itemSublocation));
+					scopingInfo.setLocallyOwned(result.isOwned);
 					if (curScope.getLibraryScope() != null) {
 						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(profileType, itemLocation, itemSublocation));
 					}
 				}
 				if (curScope.isLibraryScope()) {
-					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(profileType, itemLocation, itemSublocation));
+					scopingInfo.setLibraryOwned(result.isOwned);
 				}
 			}
 		}

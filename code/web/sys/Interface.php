@@ -327,6 +327,7 @@ class UInterface extends Smarty
 
 	function loadDisplayOptions(){
 		global $library;
+		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		global $configArray;
 
@@ -335,7 +336,13 @@ class UInterface extends Smarty
 
 		try {
 			$theme = new Theme();
-			$theme->id = $library->theme;
+			//Check to see if we are at a location and if we are if there is a theme applied to it
+			$location = $locationSingleton->getActiveLocation();
+			if (isset($location) && $location->theme != -1){
+				$theme->id = $location->theme;
+			}else {
+				$theme->id = $library->theme;
+			}
 			if ($theme->find(true)) {
 				$allAppliedThemes = $theme->getAllAppliedThemes();
 				$primaryTheme = $theme;

@@ -1094,6 +1094,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'reindexLog_unique_index' => [
+					'title' => 'Reindex Log Unique Index',
+					'description' => 'Add a unique index to the reindex log',
+					'sql' => [
+						'ALTER TABLE reindex_log ADD UNIQUE id(id)',
+					]
+				],
+
 				'cronLog' => array(
 					'title' => 'Cron Log table',
 					'description' => 'Create Cron Log table to track reindexing.',
