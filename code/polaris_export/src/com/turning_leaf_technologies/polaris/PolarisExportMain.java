@@ -651,7 +651,7 @@ public class PolarisExportMain {
 	private static int extractDeletedBibs(long lastExtractTime) throws UnsupportedEncodingException {
 		int numChanges = 0;
 		String lastId = "0";
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 		String deleteDate = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
 		logEntry.addNote("Checking for deleted records since " + deleteDate);
 		boolean doneLoading = false;
@@ -712,7 +712,7 @@ public class PolarisExportMain {
 		//Get a paged list of all bibs
 		String lastId = "0";
 		MarcFactory marcFactory = MarcFactory.newInstance();
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 		String formattedLastExtractTime = "";
 		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
 			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
@@ -750,47 +750,36 @@ public class PolarisExportMain {
 		//If we are doing a continuous index, get a list of any items that have been updated or changed
 		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
 			HashSet<String> bibsToUpdate = new HashSet<>();
-			doneLoading = false;
-			lastId = "0";
-			DateTimeFormatter itemDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
+			DateTimeFormatter itemDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 			String formattedLastItemExtractTime = URLEncoder.encode(itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), "UTF-8");
 			logEntry.addNote("Getting a list of all items that have been updated");
 			logEntry.saveResults();
-			while (!doneLoading) {
-				//String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + formattedLastItemExtractTime + "&lastid=" + lastId + "&nrecs=100";
-				String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated?updatedate=" + formattedLastItemExtractTime;
-				WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
-				if (pagedItems.isSuccess()) {
-					try {
-						JSONObject response = pagedItems.getJSONResponse();
-						JSONArray allItems = response.getJSONArray("ItemIDListRows");
-						if (allItems.length() == 0){
-							doneLoading = true;
-						}else {
-							for (int i = 0; i < allItems.length(); i++) {
-								JSONObject curItem = allItems.getJSONObject(i);
-								long itemId = curItem.getLong("ItemRecordID");
-								lastId = Long.toString(itemId);
-								//Figure out the bib record based on the item id.
-								String bibForItem = getBibIdForItemId(itemId);
-								if (bibForItem != null) {
-									if (!bibsToUpdate.contains(bibForItem)) {
-										logEntry.incProducts();
-										bibsToUpdate.add(bibForItem);
-										if (logEntry.getNumProducts() % 250 == 0){
-											logEntry.saveResults();
-										}
-									}
+			//String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + formattedLastItemExtractTime + "&lastid=" + lastId + "&nrecs=100";
+			String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated?updatedate=" + formattedLastItemExtractTime;
+			WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
+			if (pagedItems.isSuccess()) {
+				try {
+					JSONObject response = pagedItems.getJSONResponse();
+					JSONArray allItems = response.getJSONArray("ItemIDListRows");
+					logEntry.addNote("There were " + allItems.length() + " items that have changed");
+					logEntry.saveResults();
+					for (int i = 0; i < allItems.length(); i++) {
+						JSONObject curItem = allItems.getJSONObject(i);
+						long itemId = curItem.getLong("ItemRecordID");
+						//Figure out the bib record based on the item id.
+						String bibForItem = getBibIdForItemId(itemId);
+						if (bibForItem != null) {
+							if (!bibsToUpdate.contains(bibForItem)) {
+								logEntry.incProducts();
+								bibsToUpdate.add(bibForItem);
+								if (logEntry.getNumProducts() % 250 == 0){
+									logEntry.saveResults();
 								}
 							}
 						}
-					} catch (Exception e) {
-						logEntry.incErrors("Unable to parse document for paged items response", e);
-						doneLoading = true;
 					}
-				} else {
-					logEntry.incErrors("Could not get items from " + getItemsUrl + " " + pagedItems.getResponseCode() + " " + pagedItems.getMessage());
-					doneLoading = true;
+				} catch (Exception e) {
+					logEntry.incErrors("Unable to parse document for paged items response", e);
 				}
 			}
 			logEntry.addNote("There are " + bibsToUpdate.size() + " records to be updated based on changes to the items.");
@@ -984,10 +973,11 @@ public class PolarisExportMain {
 				JSONObject itemInfo = itemInfoRows.getJSONObject(0);
 				bibForItem = Long.toString(itemInfo.getLong("BibliographicRecordID"));
 			}else{
-				logEntry.incErrors("Failed to get bib id for item id, could not find the item.");
+				logEntry.incErrors("Failed to get bib id for item id" + itemId + ", could not find the item.");
+				logEntry.addNote(getItemResponse.getMessage());
 			}
 		}else{
-			logEntry.incErrors("Failed to get bib id for item id, response was not successful.");
+			logEntry.incErrors("Failed to get bib id for item id" + itemId + ", response was not successful.");
 		}
 		return bibForItem;
 	}

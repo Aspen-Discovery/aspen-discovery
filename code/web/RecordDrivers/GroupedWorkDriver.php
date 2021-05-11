@@ -2784,7 +2784,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 					'driver' => $similarTitleDriver,
 					'url' => $similarTitleDriver->getLinkUrl(),
 					'title' => $similarTitleDriver->getTitle(),
-					'coverUrl' => $similarTitleDriver->getBookcoverUrl('medium'),
+					'coverUrl' => $similarTitleDriver->getBookcoverUrl('medium', true),
 					'formatCategories' => $formatCategoryInfo,
 				];
 			}

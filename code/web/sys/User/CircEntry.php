@@ -241,7 +241,7 @@ abstract class CircEntry extends DataObject
 		$this->author = $recordDriver->getPrimaryAuthor();
 		$this->groupedWorkId = $recordDriver->getPermanentId();
 		$this->format = $recordDriver->getPrimaryFormat();
-		$this->coverUrl = $recordDriver->getBookcoverUrl('medium');
+		$this->coverUrl = $recordDriver->getBookcoverUrl('medium', true);
 		$this->linkUrl = $recordDriver->getLinkUrl();
 	}
 }
