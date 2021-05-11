@@ -22,7 +22,7 @@
 			<div class="form-group">
 				<label for="addToList-list" class="col-sm-3">{translate text='Choose a List'}</label>
 				<div class="col-sm-9">
-					<select name="list" id="addToList-list">
+					<select name="list" id="addToList-list" class="form-control form-control-sm">
 						{foreach from=$nonContainingLists item="list"}
 							<option value="{$list.id}" {if $list.selected}selected{/if}>{$list.title|escape:"html"}</option>
 						{foreachelse}
