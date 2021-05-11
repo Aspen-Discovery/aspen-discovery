@@ -761,23 +761,19 @@ public class PolarisExportMain {
 				try {
 					JSONObject response = pagedItems.getJSONResponse();
 					JSONArray allItems = response.getJSONArray("ItemIDListRows");
-					if (allItems.length() == 0){
-						doneLoading = true;
-					}else {
-						logEntry.addNote("There were " + allItems.length() + " items that have changed");
-						logEntry.saveResults();
-						for (int i = 0; i < allItems.length(); i++) {
-							JSONObject curItem = allItems.getJSONObject(i);
-							long itemId = curItem.getLong("ItemRecordID");
-							//Figure out the bib record based on the item id.
-							String bibForItem = getBibIdForItemId(itemId);
-							if (bibForItem != null) {
-								if (!bibsToUpdate.contains(bibForItem)) {
-									logEntry.incProducts();
-									bibsToUpdate.add(bibForItem);
-									if (logEntry.getNumProducts() % 250 == 0){
-										logEntry.saveResults();
-									}
+					logEntry.addNote("There were " + allItems.length() + " items that have changed");
+					logEntry.saveResults();
+					for (int i = 0; i < allItems.length(); i++) {
+						JSONObject curItem = allItems.getJSONObject(i);
+						long itemId = curItem.getLong("ItemRecordID");
+						//Figure out the bib record based on the item id.
+						String bibForItem = getBibIdForItemId(itemId);
+						if (bibForItem != null) {
+							if (!bibsToUpdate.contains(bibForItem)) {
+								logEntry.incProducts();
+								bibsToUpdate.add(bibForItem);
+								if (logEntry.getNumProducts() % 250 == 0){
+									logEntry.saveResults();
 								}
 							}
 						}
