@@ -757,7 +757,8 @@ public class PolarisExportMain {
 			logEntry.addNote("Getting a list of all items that have been updated");
 			logEntry.saveResults();
 			while (!doneLoading) {
-				String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + formattedLastItemExtractTime + "&lastid=" + lastId + "&nrecs=100";
+				//String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + formattedLastItemExtractTime + "&lastid=" + lastId + "&nrecs=100";
+				String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated?updatedate=" + formattedLastItemExtractTime;
 				WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
 				if (pagedItems.isSuccess()) {
 					try {
