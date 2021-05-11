@@ -44,8 +44,7 @@ AspenDiscovery.Account = (function(){
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params,function (data) {
 				if (data.success) {
-					AspenDiscovery.showMessage("Added Successfully", data.message, true, false);
-					AspenDiscovery.Account.loadListData();
+					AspenDiscovery.showMessage("Added Successfully", data.message, true, true);
 				} else {
 					AspenDiscovery.showMessage("Error", data.message);
 				}

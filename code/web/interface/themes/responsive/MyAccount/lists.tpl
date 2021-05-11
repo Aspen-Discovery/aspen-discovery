@@ -22,8 +22,11 @@
 		</div>
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="btn-group">
-					<button onclick="return AspenDiscovery.Account.deleteSelectedLists({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists"}</button>
+				<div class="btn-toolbar">
+					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm('{$source|escape:"url"}', '{$sourceId|escape:"url"}')">{translate text="Create a New List"}</button>
+					{if count($lists) > 0}
+						<button onclick="return AspenDiscovery.Account.deleteSelectedLists({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists"}</button>
+					{/if}
 				</div>
 			</div>
 		</div>

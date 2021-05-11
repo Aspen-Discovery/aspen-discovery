@@ -4,21 +4,32 @@ require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 class ListsRecordDriver extends IndexRecordDriver
 {
 	private $listObject;
+	private $valid = true;
 	public function __construct($record)
 	{
 		// Call the parent's constructor...
 		if (is_string($record)) {
 			/** @var SearchObject_ListsSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Lists');
-			$fields = $searchObject->getRecord($record);
-			parent::__construct($fields);
+			disableErrorHandler();
+			try {
+				$fields = $searchObject->getRecord($record);
+				if ($fields == null) {
+					$this->valid = false;
+				}else {
+					parent::__construct($fields);
+				}
+			}catch (Exception $e){
+				$this->valid = false;
+			}
+			enableErrorHandler();
 		}else {
 			parent::__construct($record);
 		}
 	}
 
 	public function isValid(){
-		return true;
+		return $this->valid;
 	}
 
 	function getBookcoverUrl($size = 'small', $absolutePath = false)
