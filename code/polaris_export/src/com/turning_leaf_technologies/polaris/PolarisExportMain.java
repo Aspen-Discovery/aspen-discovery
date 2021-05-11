@@ -973,10 +973,11 @@ public class PolarisExportMain {
 				JSONObject itemInfo = itemInfoRows.getJSONObject(0);
 				bibForItem = Long.toString(itemInfo.getLong("BibliographicRecordID"));
 			}else{
-				logEntry.incErrors("Failed to get bib id for item id, could not find the item.");
+				logEntry.incErrors("Failed to get bib id for item id" + itemId + ", could not find the item.");
+				logEntry.addNote(getItemResponse.getMessage());
 			}
 		}else{
-			logEntry.incErrors("Failed to get bib id for item id, response was not successful.");
+			logEntry.incErrors("Failed to get bib id for item id" + itemId + ", response was not successful.");
 		}
 		return bibForItem;
 	}
