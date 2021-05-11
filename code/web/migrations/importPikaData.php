@@ -22,11 +22,11 @@ if (!file_exists($exportPath)){
 }else{
 
 	//Make sure we have all the right files
-	//validateFileExists($exportPath, "users.csv");
-	//validateFileExists($exportPath, "userRoles.csv");
-	//validateFileExists($exportPath, "staffSettings.csv");
-	//validateFileExists($exportPath, "saved_searches.csv");
-	//validateFileExists($exportPath, "materials_request.csv");
+	validateFileExists($exportPath, "users.csv");
+	validateFileExists($exportPath, "userRoles.csv");
+	validateFileExists($exportPath, "staffSettings.csv");
+	validateFileExists($exportPath, "saved_searches.csv");
+	validateFileExists($exportPath, "materials_request.csv");
 	validateFileExists($exportPath, "patronLists.csv");
 	validateFileExists($exportPath, "patronListEntries.csv");
 	validateFileExists($exportPath, "patronRatingsAndReviews.csv");
