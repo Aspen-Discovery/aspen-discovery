@@ -651,7 +651,7 @@ public class PolarisExportMain {
 	private static int extractDeletedBibs(long lastExtractTime) throws UnsupportedEncodingException {
 		int numChanges = 0;
 		String lastId = "0";
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 		String deleteDate = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
 		logEntry.addNote("Checking for deleted records since " + deleteDate);
 		boolean doneLoading = false;
@@ -712,7 +712,7 @@ public class PolarisExportMain {
 		//Get a paged list of all bibs
 		String lastId = "0";
 		MarcFactory marcFactory = MarcFactory.newInstance();
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 		String formattedLastExtractTime = "";
 		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
 			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
@@ -752,7 +752,7 @@ public class PolarisExportMain {
 			HashSet<String> bibsToUpdate = new HashSet<>();
 			doneLoading = false;
 			lastId = "0";
-			DateTimeFormatter itemDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
+			DateTimeFormatter itemDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 			String formattedLastItemExtractTime = URLEncoder.encode(itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), "UTF-8");
 			logEntry.addNote("Getting a list of all items that have been updated");
 			logEntry.saveResults();
@@ -767,6 +767,8 @@ public class PolarisExportMain {
 						if (allItems.length() == 0){
 							doneLoading = true;
 						}else {
+							logEntry.addNote("There were " + allItems.length() + " items that have changed");
+							logEntry.saveResults();
 							for (int i = 0; i < allItems.length(); i++) {
 								JSONObject curItem = allItems.getJSONObject(i);
 								long itemId = curItem.getLong("ItemRecordID");
