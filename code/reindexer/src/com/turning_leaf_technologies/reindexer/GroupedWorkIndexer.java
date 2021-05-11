@@ -67,6 +67,12 @@ public class GroupedWorkIndexer {
 	private PreparedStatement markScheduledWorkProcessedStmt;
 	private PreparedStatement addScheduledWorkStmt;
 
+//	private PreparedStatement removeRecordForWorkStmt;
+//	private PreparedStatement removeItemsForRecordStmt;
+//	private PreparedStatement removeScopesForItemsStmt;
+//	private PreparedStatement addRecordsForWorkStmt;
+//	private PreparedStatement addItemsForRecordStmt;
+//	private PreparedStatement addScopesForItemsStmt;
 
 	//private static PreparedStatement deleteGroupedWorkStmt;
 
@@ -108,6 +114,10 @@ public class GroupedWorkIndexer {
 			getScheduledWorkStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and permanent_id = ? and indexAfter = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
+
+//			removeRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records where groupedWorkId = ? AND source = ? and subSource = ? and recordIdentifier = ? SET deleted = 1, dateDeleted = ?");
+//			removeItemsForRecordStmt = dbConn.prepareStatement("DELETE from grouped_work_record_items where groupedWorkId = ?");
+//			removeScopesForItemsStmt = dbConn.prepareStatement("DELETE from grouped_work_record_item_scopes where groupedWorkId = ?");
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -951,6 +961,10 @@ public class GroupedWorkIndexer {
 
 	TreeSet<Scope> getScopes() {
 		return this.scopes;
+	}
+
+	private void addRecordsItemsAndScopesToDatabase(BaseLogEntry logEntry){
+
 	}
 
 }

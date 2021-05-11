@@ -142,6 +142,9 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 	public void setNumProducts(int size) {
 		numProducts = size;
 	}
+	public int getNumProducts(){
+		return numProducts;
+	}
 	public void incProducts(){
 		numProducts++;
 	}
