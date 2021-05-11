@@ -16,7 +16,7 @@ class Lists extends MyAccount
 		} else {
 			$sort = 'title';
 		}
-		if (($sort == 'dateCreated') || ($sort == 'created')) {
+		if (($sort == 'dateCreated') || ($sort == 'created') || ($sort == 'dateUpdated')) {
 			$order = ' DESC';
 		} else {
 			$order = ' ASC';

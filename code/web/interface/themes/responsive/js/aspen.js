@@ -6574,7 +6574,7 @@ AspenDiscovery.Account = (function(){
 				processData: false
 			});
 			return false;
-		},
+		}
 	};
 }(AspenDiscovery.Account || {}));
 AspenDiscovery.Admin = (function(){
