@@ -746,7 +746,7 @@ class CatalogConnection
 			$historyEntry = [];
 			$historyEntry['source'] = $readingHistoryDB->source;
 			$historyEntry['id'] = $readingHistoryDB->sourceId;
-			$key = $historyEntry['source'] . ':' . $historyEntry['id'];
+			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['id']);
 			$activeHistoryTitles[$key] = $historyEntry;
 		}
 
@@ -755,7 +755,7 @@ class CatalogConnection
 		foreach ($checkouts as $checkout) {
 			$source = $checkout->source;
 			$sourceId = $checkout->sourceId;
-			$key = $source . ':' . $sourceId;
+			$key = strtolower($source . ':' . $sourceId);
 			if (array_key_exists($key, $activeHistoryTitles)) {
 				unset($activeHistoryTitles[$key]);
 			} else {
