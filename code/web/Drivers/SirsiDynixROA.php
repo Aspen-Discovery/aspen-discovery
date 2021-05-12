@@ -2108,4 +2108,83 @@ class SirsiDynixROA extends HorizonAPI
 		}
 		return $result;
 	}
+
+	public function hasNativeReadingHistory()
+	{
+		return true;
+	}
+
+	/**
+	 * @param User $patron
+	 * @param int $page
+	 * @param int $recordsPerPage
+	 * @param string $sortOption
+	 * @return array
+	 * @throws Exception
+	 */
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
+	{
+		//Get reading history information
+		$historyActive = false;
+		$readingHistoryTitles = [];
+		$staffSessionToken = $this->getStaffSessionToken();
+		if (!empty($staffSessionToken)) {
+			$webServiceURL = $this->getWebServiceURL();
+			$includeFields = urlEncode("keepCircHistory,circHistoryRecordList{*,bib{title,author}}");
+			$getCircHistoryUrl = $webServiceURL . '/user/patron/barcode/' . $patron->getBarcode() . '?includeFields=' . $includeFields;
+			$getCircHistoryResponse = $this->getWebServiceResponse($getCircHistoryUrl, null, $staffSessionToken);
+			if ($getCircHistoryResponse && !isset($getCircHistoryResponse->messageList)) {
+				$keepCircHistory = $getCircHistoryResponse->fields->keepCircHistory;
+				if ($keepCircHistory == 'ALLCHARGES'){
+					$historyActive = true;
+				}elseif ($keepCircHistory == 'NOHISTORY'){
+					$historyActive = false;
+				}elseif ($keepCircHistory == 'CIRCRULE') {
+					$historyActive = !empty($getCircHistoryResponse->fields->circRecordList);
+				}else{
+					global $logger;
+					$logger->log('Unknown keepCircHistory value: ' . $keepCircHistory, Logger::LOG_DEBUG);
+				}
+				if ($historyActive){
+					$readingHistoryTitles = array();
+					foreach ( $getCircHistoryResponse->fields->circHistoryRecordList as $circEntry){
+						$historyEntry = array();
+						$bibId = 'a' . $circEntry->fields->bib->key;
+						$historyEntry['id'] = $bibId;
+						$historyEntry['shortId'] = $bibId;
+						$historyEntry['recordId'] = $bibId;
+						$historyEntry['ratingData'] = null;
+						$historyEntry['permanentId'] = null;
+						$historyEntry['linkUrl'] = null;
+						$historyEntry['coverUrl'] = null;
+						if (!empty($historyEntry['recordId'])) {
+							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+							$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
+							if ($recordDriver->isValid()) {
+								$historyEntry['ratingData'] = $recordDriver->getRatingData();
+								$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+								$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+								$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+								$historyEntry['format'] = $recordDriver->getFormats();
+								$historyEntry['title'] = $recordDriver->getTitle();
+								$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
+							}else{
+								//No point keeping this since we don't know what the title is?
+								$historyEntry['title'] = $circEntry->fields->bib->fields->title;
+								$historyEntry['author'] = $circEntry->fields->itemType->key;
+								$historyEntry['format'] = $circEntry->fields->bib->fields->author;
+							}
+							$recordDriver = null;
+						}else{
+							continue;
+						}
+						$historyEntry['checkout'] = strtotime($circEntry->fields->checkOutDate);
+						$historyEntry['checkin'] = strtotime($circEntry->fields->checkInDate);
+						$readingHistoryTitles[] = $historyEntry;
+					}
+				}
+			}
+		}
+		return array('historyActive' => $historyActive, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
+	}
 }
