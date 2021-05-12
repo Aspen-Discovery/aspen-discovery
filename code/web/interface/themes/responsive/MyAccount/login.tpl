@@ -25,13 +25,13 @@
 				<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel}</div>
 				<div id="loginFormFields">
 					<div id="loginUsernameRow" class="form-group">
-						<label for="username" class="control-label col-xs-12 col-sm-4">{translate text="{$usernameLabel}"} </label>
+						<label for="username" class="control-label col-xs-12 col-sm-4">{translate text="$usernameLabel"} </label>
 						<div class="col-xs-12 col-sm-8">
 							<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control" maxlength="60">
 						</div>
 					</div>
 					<div id="loginPasswordRow" class="form-group">
-						<label for="password" class="control-label col-xs-12 col-sm-4">{translate text="{$passwordLabel}"} </label>
+						<label for="password" class="control-label col-xs-12 col-sm-4">{translate text="$passwordLabel"} </label>
 						<div class="col-xs-12 col-sm-8">
 							<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control" maxlength="60">
 							{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
