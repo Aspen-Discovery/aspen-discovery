@@ -102,6 +102,21 @@ class WebBuilder_AJAX extends JSON_Action
 				'values' => $list
 			];
 			break;
+		case 'web_resource':
+			require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+			$list = [];
+			$list['-1'] = 'Select a web resource';
+			$object = new WebResource();
+			$object->orderBy('name');
+			$object->find();
+			while ($object->fetch()) {
+				$list[$object->id] = $object->name;
+			}
+			$result = [
+				'success' => true,
+				'values' => $list
+			];
+			break;
 		default:
 			$result['message'] = 'Unhandled Source Type ' . $sourceType;
 		}

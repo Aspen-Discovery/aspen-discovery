@@ -50,6 +50,7 @@ class PortalCell extends DataObject
 			'vimeo_video' => 'Vimeo Video',
 			'youtube_video' => 'YouTube Video',
 			'hours_locations' => 'Library Hours and Locations',
+			'web_resource' => 'Web Resource',
 		];
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
@@ -172,6 +173,21 @@ class PortalCell extends DataObject
 			$interface->assign('sourceURL', $sourceInfo);
 			$interface->assign('frameHeight', $frameHeight);
 			$contents .= $interface->fetch('WebBuilder/iframe.tpl');
+		} elseif ($this->sourceType == 'web_resource') {
+			require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+			$webResource = new WebResource();
+			$webResource->id = $this->sourceId;
+			if ($webResource->find(true)){
+				require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
+				$resourceDriver = new WebResourceRecordDriver('WebResource:' . $webResource->id);
+				$interface->assign('description', $webResource->getFormattedDescription());
+				$interface->assign('title', $webResource->name);
+				$interface->assign('url', $webResource->url);
+				$interface->assign('logo', $resourceDriver->getBookcoverUrl('large'));
+
+				$contents .= $interface->fetch('WebBuilder/resource.tpl');
+			}
+
 		} elseif ($this->sourceType == 'hours_locations') {
 			global $library;
 			$tmpLocation = new Location();
