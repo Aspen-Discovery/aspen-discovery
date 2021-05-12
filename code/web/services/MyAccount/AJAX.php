@@ -2977,12 +2977,15 @@ class MyAccount_AJAX extends JSON_Action
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$list = new UserList();
 		$list->id = $listId;
-
-		//Perform an action on the list, but verify that the user has permission to do so.
-		$userCanEdit = false;
-		$userObj = UserAccount::getActiveUserObj();
-		if ($userObj != false){
-			$userCanEdit = $userObj->canEditList($list);
+		if($list->find(true)){
+			//Perform an action on the list, but verify that the user has permission to do so.
+			$userCanEdit = false;
+			$userObj = UserAccount::getActiveUserObj();
+			if ($userObj != false){
+				$userCanEdit = $userObj->canEditList($list);
+			}
+		} else{
+			$result['message'] = "Sorry, that list wasn't found.";
 		}
 
 		if ($userCanEdit){
