@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.cron.reading_history;
 
 import com.turning_leaf_technologies.cron.CronProcessLogEntry;
+import com.turning_leaf_technologies.encryption.EncryptionUtils;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;

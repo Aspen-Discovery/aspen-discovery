@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.cron.reading_history;
 import com.turning_leaf_technologies.cron.CronLogEntry;
 import com.turning_leaf_technologies.cron.CronProcessLogEntry;
 import com.turning_leaf_technologies.cron.IProcessHandler;
+import com.turning_leaf_technologies.encryption.EncryptionUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
@@ -35,7 +36,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		// Connect to the MySQL database
 		int numSkipped = 0;
 		int numAlreadyUpToDate = 0;
-		long startTime = (long)(new Date().getTime() / 1000);
+		long startTime = new Date().getTime() / 1000;
 		try {
 			//Get the number of patrons to update
 			PreparedStatement getNumUsersStmt = dbConn.prepareStatement("SELECT count(*) as numUsers FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -61,7 +62,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 
 					// For each patron
 					String cat_username = userResults.getString("cat_username");
-					String cat_password = userResults.getString("cat_password");
+					String cat_password = EncryptionUtils.decryptString(userResults.getString("cat_password"), servername, processLog);
 
 					if (cat_password == null || cat_password.length() == 0) {
 						numSkipped++;
