@@ -17,8 +17,8 @@ cd /usr/local/aspen-discovery
 git pull origin $2
 
 cd /usr/local/aspen-discovery/install
-if [ -f "/usr/local/aspen-discovery/install/$2.sh" ]; then
-  exec /usr/local/aspen-discovery/install/$2.sh
+if [ -f "/usr/local/aspen-discovery/install/upgrade_$2.sh" ]; then
+  exec /usr/local/aspen-discovery/install/upgrade_$2.sh
 fi
 
 echo "Run database maintenance, and then press return when done"
@@ -28,7 +28,7 @@ read waitOver
 pkill java
 sudo service mysqld restart
 apachectl restart
-cd data_dir_setup
+cd /usr/local/aspen-discovery/data_dir_setup
 ./update_solr_files.sh $1
 
 service crond start
