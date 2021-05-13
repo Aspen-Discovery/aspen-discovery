@@ -509,7 +509,7 @@ public class KohaExportMain {
 			try {
 				Connection kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
 
-				getBaseMarcRecordStmt = kohaConn.prepareStatement("SELECT * from biblio_metadata where biblionumber = ?");
+				getBaseMarcRecordStmt = kohaConn.prepareStatement("SELECT metadata from biblio_metadata where biblionumber = ?");
 				getBibItemsStmt = kohaConn.prepareStatement("SELECT * from items where biblionumber = ?");
 
 				return kohaConn;
@@ -1219,63 +1219,68 @@ public class KohaExportMain {
 				Record marcRecord = marcXmlReader.next();
 
 				//Add the item information
-				getBibItemsStmt.setString(1, curBibId);
-				ResultSet bibItemsRS = getBibItemsStmt.executeQuery();
-				while (bibItemsRS.next()) {
-					DataField itemField = marcFactory.newDataField("952", ' ', ' ');
+				try {
+					getBibItemsStmt.setString(1, curBibId);
+					ResultSet bibItemsRS = getBibItemsStmt.executeQuery();
+					while (bibItemsRS.next()) {
+						DataField itemField = marcFactory.newDataField("952", ' ', ' ');
 
-					addSubfield(itemField, 'p', bibItemsRS.getString("barcode"));
-					addSubfield(itemField, 'e', bibItemsRS.getString("booksellerid"));
-					addSubfield(itemField, '8', bibItemsRS.getString("ccode"));
-					addSubfield(itemField, '6', bibItemsRS.getString("cn_sort"));
-					addSubfield(itemField, '2', bibItemsRS.getString("cn_source"));
-					addSubfield(itemField, 'f', bibItemsRS.getString("coded_location_qualifier"));
-					addSubfield(itemField, 't', bibItemsRS.getString("copynumber"));
-					addSubfield(itemField, '4', bibItemsRS.getString("damaged"));
-					addSubfield(itemField, 'd', bibItemsRS.getString("dateaccessioned"));
-					addSubfield(itemField, 's', bibItemsRS.getString("datelastborrowed"));
-					addSubfield(itemField, 'r', bibItemsRS.getString("datelastseen"));
-					addSubfield(itemField, 'h', bibItemsRS.getString("enumchron"));
-					addSubfield(itemField, 'b', bibItemsRS.getString("holdingbranch"));
-					addSubfield(itemField, 'a', bibItemsRS.getString("homebranch"));
-					addSubfield(itemField, 'l', bibItemsRS.getString("issues"));
-					addSubfield(itemField, 'o', bibItemsRS.getString("itemcallnumber"));
-					addSubfield(itemField, '1', bibItemsRS.getString("itemlost"));
-					addSubfield(itemField, 'z', bibItemsRS.getString("itemnotes"));
-					//addSubfield(itemField, 'x', bibItemsRS.getString("itemnotes_nonpublic"));
-					addSubfield(itemField, '9', bibItemsRS.getString("itemnumber"));
-					addSubfield(itemField, 'y', bibItemsRS.getString("itype"));
-					addSubfield(itemField, 'c', bibItemsRS.getString("location"));
-					addSubfield(itemField, '3', bibItemsRS.getString("materials"));
-					addSubfield(itemField, '7', bibItemsRS.getString("notforloan"));
-					addSubfield(itemField, 'q', bibItemsRS.getString("onloan"));
-					addSubfield(itemField, 'g', bibItemsRS.getString("price"));
-					addSubfield(itemField, 'm', bibItemsRS.getString("renewals"));
-					addSubfield(itemField, 'v', bibItemsRS.getString("replacementprice"));
-					addSubfield(itemField, 'w', bibItemsRS.getString("replacementpricedate"));
-					addSubfield(itemField, 'n', bibItemsRS.getString("renewals"));
-					addSubfield(itemField, '5', bibItemsRS.getString("restricted"));
-					addSubfield(itemField, 'j', bibItemsRS.getString("stack"));
-					addSubfield(itemField, 'i', bibItemsRS.getString("stocknumber"));
-					addSubfield(itemField, 'u', bibItemsRS.getString("uri"));
-					addSubfield(itemField, '0', bibItemsRS.getString("withdrawn"));
-					marcRecord.addVariableField(itemField);
-				}
+						addSubfield(itemField, 'p', bibItemsRS.getString("barcode"));
+						addSubfield(itemField, 'e', bibItemsRS.getString("booksellerid"));
+						addSubfield(itemField, '8', bibItemsRS.getString("ccode"));
+						addSubfield(itemField, '6', bibItemsRS.getString("cn_sort"));
+						addSubfield(itemField, '2', bibItemsRS.getString("cn_source"));
+						addSubfield(itemField, 'f', bibItemsRS.getString("coded_location_qualifier"));
+						addSubfield(itemField, 't', bibItemsRS.getString("copynumber"));
+						addSubfield(itemField, '4', bibItemsRS.getString("damaged"));
+						addSubfield(itemField, 'd', bibItemsRS.getString("dateaccessioned"));
+						addSubfield(itemField, 's', bibItemsRS.getString("datelastborrowed"));
+						addSubfield(itemField, 'r', bibItemsRS.getString("datelastseen"));
+						addSubfield(itemField, 'h', bibItemsRS.getString("enumchron"));
+						addSubfield(itemField, 'b', bibItemsRS.getString("holdingbranch"));
+						addSubfield(itemField, 'a', bibItemsRS.getString("homebranch"));
+						addSubfield(itemField, 'l', bibItemsRS.getString("issues"));
+						addSubfield(itemField, 'o', bibItemsRS.getString("itemcallnumber"));
+						addSubfield(itemField, '1', bibItemsRS.getString("itemlost"));
+						addSubfield(itemField, 'z', bibItemsRS.getString("itemnotes"));
+						//addSubfield(itemField, 'x', bibItemsRS.getString("itemnotes_nonpublic"));
+						addSubfield(itemField, '9', bibItemsRS.getString("itemnumber"));
+						addSubfield(itemField, 'y', bibItemsRS.getString("itype"));
+						addSubfield(itemField, 'c', bibItemsRS.getString("location"));
+						addSubfield(itemField, '3', bibItemsRS.getString("materials"));
+						addSubfield(itemField, '7', bibItemsRS.getString("notforloan"));
+						addSubfield(itemField, 'q', bibItemsRS.getString("onloan"));
+						addSubfield(itemField, 'g', bibItemsRS.getString("price"));
+						addSubfield(itemField, 'm', bibItemsRS.getString("renewals"));
+						addSubfield(itemField, 'v', bibItemsRS.getString("replacementprice"));
+						addSubfield(itemField, 'w', bibItemsRS.getString("replacementpricedate"));
+						addSubfield(itemField, 'n', bibItemsRS.getString("renewals"));
+						addSubfield(itemField, '5', bibItemsRS.getString("restricted"));
+						addSubfield(itemField, 'j', bibItemsRS.getString("stack"));
+						addSubfield(itemField, 'i', bibItemsRS.getString("stocknumber"));
+						addSubfield(itemField, 'u', bibItemsRS.getString("uri"));
+						addSubfield(itemField, '0', bibItemsRS.getString("withdrawn"));
+						marcRecord.addVariableField(itemField);
+					}
 
-				if (marcFile.exists()) {
-					logEntry.incUpdated();
-				} else {
-					logEntry.incAdded();
-				}
-				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
-				writer.write(marcRecord);
-				writer.close();
+					if (marcFile.exists()) {
+						logEntry.incUpdated();
+					} else {
+						logEntry.incAdded();
+					}
+					MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
+					writer.write(marcRecord);
+					writer.close();
 
-				//Regroup the record
-				String groupedWorkId = groupKohaRecord(marcRecord);
-				if (groupedWorkId != null) {
-					//Reindex the record
-					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					//Regroup the record
+					String groupedWorkId = groupKohaRecord(marcRecord);
+					if (groupedWorkId != null) {
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					}
+				}catch (SQLException sqe){
+					logEntry.incErrors("Error getting items for bib " + curBibId, sqe);
+					logEntry.incSkipped();
 				}
 			}else{
 				//The record does not exist anymore
