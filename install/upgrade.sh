@@ -29,7 +29,7 @@ pkill java
 sudo service mysqld restart
 apachectl restart
 cd /usr/local/aspen-discovery/data_dir_setup
-./update_solr_files.sh $1
+/usr/local/aspen-discovery/data_dir_setup/update_solr_files.sh $1
 
 service crond start
 
