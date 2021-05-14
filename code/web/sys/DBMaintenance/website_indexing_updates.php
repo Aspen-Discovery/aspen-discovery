@@ -177,5 +177,12 @@ function getWebsiteIndexingUpdates()
 			]
 		],
 
+		'web_indexer_url_length' => [
+			'title' => 'Web Indexer - increase URL length',
+			'description' => 'Increase the URL within a page so that pages with longer URLs can be indexed properly',
+			'sql' => [
+				'ALTER TABLE website_pages CHANGE url url VARCHAR(600)',
+			]
+		]
 	);
 }

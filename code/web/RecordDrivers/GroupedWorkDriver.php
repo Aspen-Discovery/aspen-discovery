@@ -2748,6 +2748,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			return [];
 		}
 		//Load Similar titles (from Solr)
+		global $configArray;
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		/** @var SearchObject_GroupedWorkSearcher $db */
 		$searchObject = SearchObjectFactory::initSearchObject();
@@ -2768,14 +2769,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$formatCategoryInfo[$relatedManifestation->formatCategory] = [
 							'formatCategory' => $relatedManifestation->formatCategory,
 							'available' => true,
-							'image' => strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_available.png"
+							'image' => $configArray['Site']['url'] . strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_available.png"
 						];
 					}else{
 						if (!array_key_exists($relatedManifestation->formatCategory, $formatCategoryInfo)){
 							$formatCategoryInfo[$relatedManifestation->formatCategory] = [
 								'formatCategory' => $relatedManifestation->formatCategory,
 								'available' => false,
-								'image' => strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_small.png",
+								'image' => $configArray['Site']['url'] . strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_small.png",
 							];
 						}
 					}
