@@ -10741,6 +10741,7 @@ a.browse-thumbnail-sorted.active {
 .exploreMoreBar {
   border: solid 1px #00a4e3;
   margin: 10px 5px 15px;
+  background: rgba(0, 164, 227, 0.05);
 }
 .exploreMoreBar .exploreMoreBarLabel {
   color: #FFF;
@@ -10800,11 +10801,13 @@ a.browse-thumbnail-sorted.active {
   padding-left: 10px;
   padding-right: 10px;
   height: 100%;
+  border: 0px !important;
 }
 .exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option .thumbnail {
   border: 0 solid white;
   position: relative;
   display: block;
+  background-color: transparent !important;
 }
 .exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option .thumbnail a img {
   height: 125px;
