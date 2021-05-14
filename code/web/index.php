@@ -494,21 +494,20 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	}
 
 	if (($action =="Home" && $module=="Search") || $action == "AJAX" || $action == "JSON"){
-		$interface->assign('showTopSearchBox', 0);
 		$interface->assign('showBreadcrumbs', 0);
 	}else{
-		$interface->assign('showTopSearchBox', 1);
 		$interface->assign('showBreadcrumbs', 1);
 		if ($library->getLayoutSettings()->useHomeLinkInBreadcrumbs && !empty($library->homeLink)){
 			$interface->assign('homeBreadcrumbLink', $library->homeLink);
 		}else{
 			$interface->assign('homeBreadcrumbLink', '/');
 		}
-		$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
-		$interface->assign('browseLinkText', $library->getLayoutSettings()->browseLinkText);
-		$interface->assign('useHomeLink', $library->getLayoutSettings()->useHomeLink);
-		$interface->assign('showBookIcon', $library->getLayoutSettings()->showBookIcon);
 	}
+
+	$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
+	$interface->assign('browseLinkText', $library->getLayoutSettings()->browseLinkText);
+	$interface->assign('useHomeLink', $library->getLayoutSettings()->useHomeLink);
+	$interface->assign('showBookIcon', $library->getLayoutSettings()->showBookIcon);
 }
 
 //Load page level system messages
