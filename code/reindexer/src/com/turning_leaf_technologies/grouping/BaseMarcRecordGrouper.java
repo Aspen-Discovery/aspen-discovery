@@ -592,6 +592,13 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 					updateMarcRecordChecksum(recordNumber, indexingSettings.getName(), checksum, dateAdded);
 				}
 			}
+			//Verify the record has been grouped
+			if (marcRecordStatus == MarcStatus.UNCHANGED) {
+				String existingWorkId = getPermanentIdForRecord(indexingSettings.getName(), recordNumber);
+				if (existingWorkId == null){
+					marcRecordStatus = MarcStatus.CHANGED;
+				}
+			}
 		} else {
 			logEntry.incErrors("Error did not find record number for MARC record");
 		}
