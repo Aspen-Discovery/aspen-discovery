@@ -62,6 +62,7 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $totalRenewals;
 	public $iType;
 	public /** @noinspection PhpUnused */ $nonHoldableITypes;
+	public $noteSubfield;
 	public $dueDate;
 	public $dueDateFormat;
 	public $dateCreated;
@@ -178,6 +179,7 @@ class IndexingProfile extends DataObject
 				'format' => array('property' => 'format', 'type' => 'text', 'label' => 'Format', 'maxLength' => 1, 'description' => 'The subfield to use when determining format based on item information', 'forcesReindex' => true),
 				'eContentDescriptor' => array('property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield to indicate that the item should be processed as eContent and how to process it', 'forcesReindex' => true),
 				'doAutomaticEcontentSuppression' => array('property' => 'doAutomaticEcontentSuppression', 'type' => 'checkbox', 'label' => 'Do Automatic eContent Suppression', 'description' => 'Whether or not eContent suppression for overdrive and hoopla records is done automatically', 'default' => false, 'forcesReindex' => true),
+				'noteSubfield' => array('property' => 'noteSubfield', 'type' => 'text', 'label' => 'Note', 'maxLength' => 1, 'description' => 'The subfield to use when loading notes for an item', 'forcesReindex' => true),
 			]],
 
 			'formatSection' => ['property' => 'formatMappingSection', 'type' => 'section', 'label' => 'Format Information', 'hideInLists' => true, 'properties' => [

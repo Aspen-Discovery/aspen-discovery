@@ -5,29 +5,34 @@
  xs-3 : 25%       (1/4)
  xs-2 : 16.6667% (1/6)
  *}
-	<div class="row{if $hiddenCopy} hiddenCopy{/if}"{if $hiddenCopy} style="display: none"{/if}>
+	<tr class="{if $hiddenCopy} hiddenCopy{/if}"{if $hiddenCopy} style="display: none"{/if}>
 		{if $showVolume}
-			<div class="col-tn-2">
+			<td>
 				{if $holding.volume}
 					<span title="Volume">{$holding.volume}</span>
 				{/if}
-			</div>
+			</td>
 		{/if}
-		<div class="col-tn-{if $showLastCheckIn && $showVolume}3{elseif $showLastCheckIn || $showVolume}4{else}5{/if}">
+		<td>
 			<strong>
 				{$holding.shelfLocation|escape}
 				{if $holding.locationLink} (<a href='{$holding.locationLink}' target="_blank">Map</a>){/if}
 			</strong>
-		</div>
-		<div class="holdingsCallNumber col-tn-{if $showLastCheckIn || $showVolume}3{else}4{/if}">
+		</td>
+		<td class="holdingsCallNumber">
 			{$holding.callNumber|escape}
 			{if $holding.link}
 				{foreach from=$holding.link item=link}
 					<a href='{$link.link}' target="_blank">{$link.linkText}</a><br>
 				{/foreach}
 			{/if}
-		</div>
-		<div class="col-tn-{if $showLastCheckIn && $showVolume}2{elseif $showLastCheckIn || $showVolume}3{else}3{/if}">
+		</td>
+		{if $hasNote}
+			<td>
+				{$holding.note}
+			</td>
+		{/if}
+		<td >
 			{if $holding.reserve == "Y"}
 				{translate text="On Reserve - Ask at Circulation Desk"}
 			{else}
@@ -36,17 +41,22 @@
 					{$holding.statusFull|translate}{if $holding.holdable == 0 && $showHoldButton} <label class='notHoldable' title='{$holding.nonHoldableReason}'>(Not Holdable)</label>{/if}
 				</span>
 			{/if}
-		</div>
+		</td>
+		{if $hasDueDate}
+			<td>
+				{$holding.dueDate|date_format:"%B %e, %Y"}
+			</td>
+		{/if}
 		{if $showLastCheckIn}
-			<div class="col-tn-2">
+			<td>
 				{if $holding.lastCheckinDate && $holding.available}
 					{* for debugging: *}
 					{*{$holding.lastCheckinDate}<br>*}
 					{*{$holding.lastCheckinDate|date_format}<br>*}
 
-					<span title="Last Check-in Date">{$holding.lastCheckinDate|date_format}</span>
+					<span title="Last Check-in Date">{$holding.lastCheckinDate|date_format:"%B %e, %Y"}</span>
 				{/if}
-			</div>
+			</td>
 		{/if}
-	</div>
+	</tr>
 {/strip}

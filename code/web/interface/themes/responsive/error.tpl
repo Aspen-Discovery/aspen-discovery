@@ -11,8 +11,6 @@
 	{if $debug}
 		<h4>{translate text="Debug Information"}</h4>
 		<p>{translate text="Backtrace"}:</p>
-		{foreach from=$error->getRawBacktrace() item=trace}
-			[{$trace.line}] {$trace.file}<br />
-		{/foreach}
+		{$error->backtrace}
 	{/if}
 </div>

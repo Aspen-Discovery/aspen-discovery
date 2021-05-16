@@ -652,7 +652,12 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")){
 		try {
 			$service->launch();
 		}catch (Error $e){
-			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+			$backtrace[] = [
+				'file' => $e->getFile(),
+				'line' => $e->getLine(),
+			];
+			$backtrace = array_merge($backtrace, $e->getTrace());
+			AspenError::raiseError(new AspenError($e->getMessage(), $backtrace));
 		}catch (Exception $e){
 			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
 		}

@@ -22,21 +22,22 @@
 		{/if}
 
 				<div id="holdings-section-{$section.name|replace:' ':'_'}" class="accordion-body {if count($sections) > 1}collapse {if $section.sectionId <=5}in{/if}{/if}">
-					<div class="accordion-inner">
-						<div class="striped">
-						{include file="Record/copiesTableHeader.tpl"}
-						{foreach from=$section.holdings item=holding name=tableLoop}
-							{if $smarty.foreach.tableLoop.iteration > 5}
-								{assign var=hiddenCopy value=true}
-							{/if}
+					<div class="accordion-inner ">
+						<table class="table table-striped">
+                            {assign var=hiddenCopy value=false}
+							{include file="Record/copiesTableHeader.tpl"}
+							{foreach from=$section.holdings item=holding name=tableLoop}
+								{if $smarty.foreach.tableLoop.iteration > 5}
+									{assign var=hiddenCopy value=true}
+								{/if}
 
-							{include file="Record/copiesTableRow.tpl"}
-							{if $smarty.foreach.tableLoop.iteration == 5 && count($section.holdings) > 5}
-								<a onclick="$(this).remove();$('.hiddenCopy').show()" role="button" style="cursor: pointer;">{translate text="Show All Copies"}</a>
-							{/if}
-						{/foreach}
-						</div>
+								{include file="Record/copiesTableRow.tpl"}
+							{/foreach}
+						</table>
 					</div>
+					{if count($section.holdings) > 5}
+						<a onclick="$(this).remove();$('.hiddenCopy').show()" role="button" class="btn btn-default btn-sm" style="cursor: pointer;">{translate text="Show All Copies"}</a>
+					{/if}
 				</div>
 
 		{if strlen($section.name) > 0 && count($sections) > 1}

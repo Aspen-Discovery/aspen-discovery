@@ -1049,6 +1049,7 @@ function getIndexingUpdates()
 				"ALTER TABLE indexing_profiles ADD COLUMN lastChangeProcessed INT DEFAULT 0"
 			]
 		],
+
 	);
 }
 
