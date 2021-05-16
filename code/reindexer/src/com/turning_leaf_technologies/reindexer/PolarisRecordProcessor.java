@@ -13,7 +13,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		return itemInfo.getStatusCode().equalsIgnoreCase("in");
+		return itemInfo.getStatusCode().equalsIgnoreCase("in") || this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier()).equals("On Shelf");
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
