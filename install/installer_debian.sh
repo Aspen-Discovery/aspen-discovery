@@ -57,7 +57,7 @@ read timezone
 timedatectl set-timezone $timezone
 
 #Create aspen MySQL superuser
-read -p "Please enter the username for the Aspen MySQL superuser : " username
+read -p "Please enter the username for the Aspen MySQL superuser (can't be root) : " username
 read -p "Please enter the password for the Aspen MySQL superuser ($username) : " password
 query="GRANT ALL PRIVILEGES ON *.* TO $username@'localhost' IDENTIFIED BY '$password'";
 mysql -e "$query"
