@@ -1072,11 +1072,11 @@ public class KohaExportMain {
 			logEntry.setNumProducts(changedBibIds.size());
 			logEntry.saveResults();
 			int numProcessed = 0;
-			if (indexingProfile.getLastChangeProcessed() > 0){
+			if (singleWorkId == null && indexingProfile.getLastChangeProcessed() > 0){
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
 			}
 			for (String curBibId : changedBibIds) {
-				if (numProcessed >= indexingProfile.getLastChangeProcessed()) {
+				if ((singleWorkId != null) || (numProcessed >= indexingProfile.getLastChangeProcessed())) {
 					//Update the marc record
 					updateBibRecord(curBibId);
 					indexingProfile.setLastChangeProcessed(numProcessed);
