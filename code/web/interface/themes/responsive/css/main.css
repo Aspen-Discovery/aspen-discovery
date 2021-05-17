@@ -8518,6 +8518,7 @@ hr.menu {
   padding-top: 0;
   background-color: #f2f2f2;
   margin-bottom: 0;
+  padding-bottom: 1em;
 }
 @media (max-width: 479px) {
   #header-logo-container {
@@ -8620,6 +8621,7 @@ hr.menu {
 #footer-container {
   border-top: 8px solid #088ec6;
   padding-top: 3px;
+  margin-bottom: 1em;
 }
 @media screen and (max-width: 767px) {
   #footer-container {
