@@ -1644,18 +1644,47 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					//Divide the items into sections and create the status summary
 					$this->holdings = $recordFromIndex->getItemDetails();
 					$this->holdingSections = array();
-					foreach ($this->holdings as $copyInfo) {
+					$indexingProfile = $this->getIndexingProfile();
+					$itemsFromMarc = [];
+					if (!empty($indexingProfile->noteSubfield) || !empty($indexingProfile->dueDate)){
+						//Get items from the marc record
+						$itemFields = $this->getMarcRecord()->getFields($indexingProfile->itemTag);
+						/** @var File_MARC_Data_Field $field */
+						foreach ($itemFields as $field){
+							$itemsFromMarc[$field->getSubfield($indexingProfile->itemRecordNumber)->getData()] = $field;
+						}
+					}
+					foreach ($this->holdings as &$copyInfo) {
 						$sectionName = $copyInfo['sectionId'];
 						if (!array_key_exists($sectionName, $this->holdingSections)) {
 							$this->holdingSections[$sectionName] = array(
-									'name' => $copyInfo['section'],
-									'sectionId' => $copyInfo['sectionId'],
-									'holdings' => array(),
+								'name' => $copyInfo['section'],
+								'sectionId' => $copyInfo['sectionId'],
+								'holdings' => array(),
 							);
+						}
+						if (!empty($indexingProfile->noteSubfield)){
+							//Get the item for the
+							$itemField = $itemsFromMarc[$copyInfo['itemId']];
+							$copyInfo['note'] = '';
+							$noteSubfield = $itemField->getSubfield($indexingProfile->noteSubfield);
+							if ($noteSubfield != null){
+								$copyInfo['note'] = $noteSubfield->getData();
+							}
+						}
+						if (!empty($indexingProfile->dueDate)){
+							//Get the item for the
+							$itemField = $itemsFromMarc[$copyInfo['itemId']];
+							$copyInfo['dueDate'] = '';
+							$dueDateSubfield = $itemField->getSubfield($indexingProfile->dueDate);
+							if ($dueDateSubfield != null){
+								$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+							}
 						}
 						if ($copyInfo['shelfLocation'] != '') {
 							$this->holdingSections[$sectionName]['holdings'][] = $copyInfo;
 						}
+
 					}
 
 					$this->statusSummary = $recordFromIndex;
@@ -1682,6 +1711,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		global $interface;
 		$hasLastCheckinData = false;
 		$hasVolume = false;
+		$hasNote = false;
+		$hasDueDate = false;
 		foreach ($this->holdings as $holding) {
 			if ($holding['lastCheckinDate']) {
 				$hasLastCheckinData = true;
@@ -1689,9 +1720,17 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			if ($holding['volume']) {
 				$hasVolume = true;
 			}
+			if (!empty($holding['note'])) {
+				$hasNote = true;
+			}
+			if (!empty($holding['dueDate'])) {
+				$hasDueDate = true;
+			}
 		}
 		$interface->assign('hasLastCheckinData', $hasLastCheckinData);
 		$interface->assign('hasVolume', $hasVolume);
+		$interface->assign('hasNote', $hasNote);
+		$interface->assign('hasDueDate', $hasDueDate);
 		$interface->assign('holdings', $this->holdings);
 		$interface->assign('sections', $this->holdingSections);
 

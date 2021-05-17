@@ -510,7 +510,7 @@ public class KohaExportMain {
 				Connection kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
 
 				getBaseMarcRecordStmt = kohaConn.prepareStatement("SELECT metadata from biblio_metadata where biblionumber = ?");
-				getBibItemsStmt = kohaConn.prepareStatement("SELECT * from items where biblionumber = ?");
+				getBibItemsStmt = kohaConn.prepareStatement("select items.*, issues.date_due from items left join issues on items.itemnumber = issues.itemnumber where biblionumber = ?;");
 
 				return kohaConn;
 			} catch (Exception e) {
@@ -1072,11 +1072,11 @@ public class KohaExportMain {
 			logEntry.setNumProducts(changedBibIds.size());
 			logEntry.saveResults();
 			int numProcessed = 0;
-			if (indexingProfile.getLastChangeProcessed() > 0){
+			if (singleWorkId == null && indexingProfile.getLastChangeProcessed() > 0){
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
 			}
 			for (String curBibId : changedBibIds) {
-				if (numProcessed >= indexingProfile.getLastChangeProcessed()) {
+				if ((singleWorkId != null) || (numProcessed >= indexingProfile.getLastChangeProcessed())) {
 					//Update the marc record
 					updateBibRecord(curBibId);
 					indexingProfile.setLastChangeProcessed(numProcessed);
@@ -1225,41 +1225,42 @@ public class KohaExportMain {
 					while (bibItemsRS.next()) {
 						DataField itemField = marcFactory.newDataField("952", ' ', ' ');
 
-						addSubfield(itemField, 'p', bibItemsRS.getString("barcode"));
-						addSubfield(itemField, 'e', bibItemsRS.getString("booksellerid"));
-						addSubfield(itemField, '8', bibItemsRS.getString("ccode"));
-						addSubfield(itemField, '6', bibItemsRS.getString("cn_sort"));
-						addSubfield(itemField, '2', bibItemsRS.getString("cn_source"));
-						addSubfield(itemField, 'f', bibItemsRS.getString("coded_location_qualifier"));
-						addSubfield(itemField, 't', bibItemsRS.getString("copynumber"));
-						addSubfield(itemField, '4', bibItemsRS.getString("damaged"));
-						addSubfield(itemField, 'd', bibItemsRS.getString("dateaccessioned"));
-						addSubfield(itemField, 's', bibItemsRS.getString("datelastborrowed"));
-						addSubfield(itemField, 'r', bibItemsRS.getString("datelastseen"));
-						addSubfield(itemField, 'h', bibItemsRS.getString("enumchron"));
-						addSubfield(itemField, 'b', bibItemsRS.getString("holdingbranch"));
-						addSubfield(itemField, 'a', bibItemsRS.getString("homebranch"));
-						addSubfield(itemField, 'l', bibItemsRS.getString("issues"));
-						addSubfield(itemField, 'o', bibItemsRS.getString("itemcallnumber"));
-						addSubfield(itemField, '1', bibItemsRS.getString("itemlost"));
-						addSubfield(itemField, 'z', bibItemsRS.getString("itemnotes"));
 						//addSubfield(itemField, 'x', bibItemsRS.getString("itemnotes_nonpublic"));
-						addSubfield(itemField, '9', bibItemsRS.getString("itemnumber"));
-						addSubfield(itemField, 'y', bibItemsRS.getString("itype"));
-						addSubfield(itemField, 'c', bibItemsRS.getString("location"));
+						addSubfield(itemField, '0', bibItemsRS.getString("withdrawn"));
+						addSubfield(itemField, '1', bibItemsRS.getString("itemlost"));
+						addSubfield(itemField, '2', bibItemsRS.getString("cn_source"));
 						addSubfield(itemField, '3', bibItemsRS.getString("materials"));
+						addSubfield(itemField, '4', bibItemsRS.getString("damaged"));
+						addSubfield(itemField, '5', bibItemsRS.getString("restricted"));
+						addSubfield(itemField, '6', bibItemsRS.getString("cn_sort"));
 						addSubfield(itemField, '7', bibItemsRS.getString("notforloan"));
-						addSubfield(itemField, 'q', bibItemsRS.getString("onloan"));
+						addSubfield(itemField, '8', bibItemsRS.getString("ccode"));
+						addSubfield(itemField, '9', bibItemsRS.getString("itemnumber"));
+						addSubfield(itemField, 'a', bibItemsRS.getString("homebranch"));
+						addSubfield(itemField, 'b', bibItemsRS.getString("holdingbranch"));
+						addSubfield(itemField, 'c', bibItemsRS.getString("location"));
+						addSubfield(itemField, 'd', bibItemsRS.getString("dateaccessioned"));
+						addSubfield(itemField, 'e', bibItemsRS.getString("booksellerid"));
+						addSubfield(itemField, 'f', bibItemsRS.getString("coded_location_qualifier"));
 						addSubfield(itemField, 'g', bibItemsRS.getString("price"));
+						addSubfield(itemField, 'h', bibItemsRS.getString("enumchron"));
+						addSubfield(itemField, 'i', bibItemsRS.getString("stocknumber"));
+						addSubfield(itemField, 'j', bibItemsRS.getString("stack"));
+						addSubfield(itemField, 'k', bibItemsRS.getString("date_due")); //This is non standard added by Aspen
+						addSubfield(itemField, 'l', bibItemsRS.getString("issues"));
 						addSubfield(itemField, 'm', bibItemsRS.getString("renewals"));
+						addSubfield(itemField, 'n', bibItemsRS.getString("renewals"));
+						addSubfield(itemField, 'o', bibItemsRS.getString("itemcallnumber"));
+						addSubfield(itemField, 'p', bibItemsRS.getString("barcode"));
+						addSubfield(itemField, 'q', bibItemsRS.getString("onloan"));
+						addSubfield(itemField, 'r', bibItemsRS.getString("datelastseen"));
+						addSubfield(itemField, 's', bibItemsRS.getString("datelastborrowed"));
+						addSubfield(itemField, 't', bibItemsRS.getString("copynumber"));
+						addSubfield(itemField, 'u', bibItemsRS.getString("uri"));
 						addSubfield(itemField, 'v', bibItemsRS.getString("replacementprice"));
 						addSubfield(itemField, 'w', bibItemsRS.getString("replacementpricedate"));
-						addSubfield(itemField, 'n', bibItemsRS.getString("renewals"));
-						addSubfield(itemField, '5', bibItemsRS.getString("restricted"));
-						addSubfield(itemField, 'j', bibItemsRS.getString("stack"));
-						addSubfield(itemField, 'i', bibItemsRS.getString("stocknumber"));
-						addSubfield(itemField, 'u', bibItemsRS.getString("uri"));
-						addSubfield(itemField, '0', bibItemsRS.getString("withdrawn"));
+						addSubfield(itemField, 'y', bibItemsRS.getString("itype"));
+						addSubfield(itemField, 'z', bibItemsRS.getString("itemnotes"));
 						marcRecord.addVariableField(itemField);
 					}
 

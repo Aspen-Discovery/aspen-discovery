@@ -880,7 +880,7 @@ public class PolarisExportMain {
 													updateItemField(marcFactory, curItem, itemField, indexingProfile.getBarcodeSubfield(), "Barcode");
 													updateItemField(marcFactory, curItem, itemField, indexingProfile.getCallNumberSubfield(), "CallNumber");
 													updateItemField(marcFactory, curItem, itemField, indexingProfile.getLocationSubfield(), "LocationID");
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getCollectionSubfield(), "CollectionID");
+													updateItemField(marcFactory, curItem, itemField, indexingProfile.getCollectionSubfield(), "CollectionName");
 													updateItemField(marcFactory, curItem, itemField, indexingProfile.getShelvingLocationSubfield(), "ShelfLocation");
 													updateItemField(marcFactory, curItem, itemField, indexingProfile.getVolume(), "VolumeNumber");
 													updateItemField(marcFactory, curItem, itemField, indexingProfile.getITypeSubfield(), "MaterialType");
