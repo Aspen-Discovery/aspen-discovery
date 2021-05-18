@@ -92,7 +92,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
-		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/IlsRequests', 'My Materials Requests');
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/MyRequests', 'My Materials Requests');
 		return $breadcrumbs;
 	}
 }
