@@ -25,18 +25,11 @@ class SubBrowseCategories extends DataObject {
 
 		$browseCategories = new BrowseCategory();
 		$browseCategories->orderBy('label');
-		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$libraryId = $library == null ? -1 : $library->libraryId;
-			$browseCategories->whereAdd("sharing = 'everyone'");
-			$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
-			$browseCategories->find();
-
-			while ($browseCategories->fetch()){
-				$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
-			}
-
+		$browseCategories->find();
+		while ($browseCategories->fetch()){
+			$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
 		}
+
 		return $browseCategoryList;
 	}
 
