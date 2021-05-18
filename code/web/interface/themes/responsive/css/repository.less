@@ -87,6 +87,7 @@
 .exploreMoreBar {
   border: solid @explore-more-bar-border-width @explore-more-bar-label-bg-color;
   margin: 10px 5px 15px; // matches padding of a .result div
+  background: fade(@explore-more-bar-label-bg-color, 5%);
 
   .exploreMoreBarLabel {
     color: @menu-bar-color;
@@ -122,7 +123,6 @@
     &+.exploreMoreContainer{
       padding-left: @explore-more-bar-label-width; // move carousel container to left of the label
       margin: 16px auto; // center the carousel.
-
     }
   }
 
@@ -151,6 +151,7 @@
         padding-left: 10px;
         padding-right: 10px;
         height: 100%;
+        border: 0px !important;
 
         .thumbnail {
           a {
@@ -161,6 +162,7 @@
           border: 0 solid white;
           position: relative;
           display: block;
+          background-color: transparent !important;
 
           .explore-more-image {
             width: 100%;
