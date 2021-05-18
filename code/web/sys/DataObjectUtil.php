@@ -267,7 +267,7 @@ class DataObjectUtil
 				}else if (isset($_FILES[$propertyName]["error"]) && $_FILES[$propertyName]["error"] > 0){
 					//return an error to the browser
 					$logger->log("Error in file upload for $propertyName", Logger::LOG_ERROR);
-				}else if (in_array($_FILES[$propertyName]["type"], array('image/gif', 'image/jpeg', 'image/png'))){
+				}else if (in_array($_FILES[$propertyName]["type"], array('image/gif', 'image/jpeg', 'image/png', 'image/svg+xml'))){
 					$logger->log("Processing uploaded file for $propertyName", Logger::LOG_DEBUG);
 					//Copy the full image to the files directory
 					//Filename is the name of the object + the original filename
