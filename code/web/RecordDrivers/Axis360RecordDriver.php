@@ -276,7 +276,13 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 */
 	function getFormats()
 	{
-		return ['eBook'];
+		if ($this->axis360RawMetadata->formatType == 'eBook') {
+			return ['eBook'];
+		}else if ($this->axis360RawMetadata->formatType == 'eAudiobook') {
+			return ['eAudiobook'];
+		}else {
+			return ['Unknown'];
+		}
 	}
 
 	/**
@@ -286,7 +292,13 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 */
 	function getFormatCategory()
 	{
-		return ['eBook'];
+		if ($this->axis360RawMetadata->formatType == 'eBook') {
+			return ['eBook'];
+		}else if ($this->axis360RawMetadata->formatType == 'eAudiobook') {
+			return ['Audio Books'];
+		}else {
+			return ['Unknown'];
+		}
 	}
 
 	public function getLanguage()
