@@ -416,9 +416,6 @@ class UInterface extends Smarty
 		$this->assign('logoAlt', 'Return to Catalog Home');
 		$useHomeLink = $library->getLayoutSettings()->useHomeLink;
 		if ($useHomeLink == '2' || $useHomeLink == '3'){
-			if ((isset($location) && $location->homeLink == 'default')){
-				$this->assign('logoLink', '/');
-			}
 			if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
 				$this->assign('logoAlt', 'Library Home Page');
 				$this->assign('logoLink', $location->homeLink);
@@ -432,8 +429,6 @@ class UInterface extends Smarty
 			$this->assign('homeLink', $location->homeLink);
 		}elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
 			$this->assign('homeLink', $library->homeLink);
-		}elseif ($library->homeLink == 'default') {
-			$this->assign('homeLink', '/');
 		}
 
 		//Load JavaScript Snippets
