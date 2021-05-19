@@ -18,7 +18,15 @@ function getUpdates21_07_00()
 			'sql' => [
 				"UPDATE indexing_profiles SET dueDate = 'k' WHERE catalogDriver = 'Koha'"
 			]
-		]
+		],
+		'browse_categories_add_startDate_endDate' => [
+			'title' => 'Add startDate and endDate to Browse Categories',
+			'description' => 'Add startDate and endDate to Browse Categories',
+			'sql' => [
+				"ALTER TABLE browse_category ADD COLUMN startDate INT(11) DEFAULT 0",
+				"ALTER TABLE browse_category ADD COLUMN endDate INT(11) DEFAULT 0",
+			]
+		],
 	];
 }
 
