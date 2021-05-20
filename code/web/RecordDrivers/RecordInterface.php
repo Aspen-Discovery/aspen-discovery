@@ -126,7 +126,7 @@ abstract class RecordInterface
 		$moreDetailsOptions = array();
 		$moreDetailsOptions['description'] = array(
 			'label' => 'Description',
-			'body' => '<div id="descriptionPlaceholder">Loading Description...</div>',
+			'body' => '<div id="descriptionPlaceholder">'. translate('Loading Description...') . '</div>',
 			'hideByDefault' => false,
 			'openByDefault' => true
 		);
