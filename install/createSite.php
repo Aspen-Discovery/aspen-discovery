@@ -25,17 +25,17 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN'){
 $linuxArray = ['centos', 'debian'];
 
 $centos = [
-    'wwwUser' => 'apache',
-    'service' => 'httpd',
-    'mysqlConf' => '/etc/my.cnf',
+	'wwwUser' => 'apache',
+	'service' => 'httpd',
+	'mysqlConf' => '/etc/my.cnf',
 	'permissions' => 'updateSitePermissions.sh',
 	'apacheDir' => '/etc/httpd/conf.d'
 ];
 
 $debian = [
-    'wwwUser' => 'www-data',
-    'service' => 'apache2',
-    'mysqlConf' => '/etc/mysql/mariadb.cnf',
+	'wwwUser' => 'www-data',
+	'service' => 'apache2',
+	'mysqlConf' => '/etc/mysql/mariadb.cnf',
 	'permissions' => 'updateSitePermissions_debian.sh',
 	'apacheDir' => '/etc/apache2/sites-available'
 ];
@@ -86,10 +86,10 @@ if (empty($siteOnWindows) || ($siteOnWindows != 'Y' && $siteOnWindows != 'y')){
 }
 
 if (!$siteOnWindows) {
-    $linuxOS = '';
-    while (empty($linuxOS) || !in_array($linuxOS, $linuxArray)) {
-        $linuxOS = readline("Enter the name of your Linux OS (i.e. ".implode (" / ", $linuxArray)." ) > ");
-    }
+	$linuxOS = '';
+	while (empty($linuxOS) || !in_array($linuxOS, $linuxArray)) {
+		$linuxOS = readline("Enter the name of your Linux OS (i.e. ".implode (" / ", $linuxArray)." ) > ");
+	}
 }
 
 $variables['solrPort'] = readline("Which port should solr run on (8080)? ");
@@ -302,9 +302,9 @@ if ($siteOnWindows){
 
 //Update my.cnf for backups
 if ($siteOnWindows){
-    replaceVariables("/etc/my.cnf", $variables);
+	replaceVariables("/etc/my.cnf", $variables);
 } else {
-    replaceVariables($$linuxOS['mysqlConf'], $variables);
+	replaceVariables($$linuxOS['mysqlConf'], $variables);
 }
 
 echo("\r\n");
