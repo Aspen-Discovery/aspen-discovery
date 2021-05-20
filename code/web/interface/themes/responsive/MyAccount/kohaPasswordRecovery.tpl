@@ -27,7 +27,7 @@
 				</div>
 				<div class="form-group">
 					<div class="col-xs-8 col-xs-offset-4">
-						<input id="passwordRecoverySubmit" name="submit" class="btn btn-primary" type="submit" value="Reset My Password">
+						<input id="passwordRecoverySubmit" name="submit" class="btn btn-primary" type="submit" value="{translate text='Reset My Password' inAttribute=true}">
 					</div>
 				</div>
 			</form>

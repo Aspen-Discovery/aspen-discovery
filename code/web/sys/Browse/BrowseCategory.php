@@ -16,6 +16,9 @@ class BrowseCategory extends BaseBrowsable
 	public $label; //A label for the browse category to be shown in the browse category listing
 	public $description; //A description of the browse category
 
+	public $startDate;
+	public $endDate;
+
 	public $numTimesShown;
 	public $numTitlesClickedOn;
 
@@ -169,6 +172,8 @@ class BrowseCategory extends BaseBrowsable
 			'sharing' => array('property'=>'sharing', 'type'=>'enum', 'values' => array('library' => 'My Home Library', 'everyone' => 'Everyone'), 'label'=>'Share With', 'description'=>'Who the category should be shared with', 'default' =>'library'),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
 			'description' => array('property' => 'description', 'type' => 'html', 'label' => 'Description', 'description' => 'A description of the category.', 'hideInLists' => true),
+			'startDate' => array('property'=>'startDate', 'type'=>'timestamp','label'=>'Start Date to Show', 'description'=> 'The first date the category should be shown, leave blank to always show', 'unsetLabel'=>'No start date'),
+			'endDate' => array('property'=>'endDate', 'type'=>'timestamp','label'=>'End Date to Show', 'description'=> 'The end date the category should be shown, leave blank to always show', 'unsetLabel'=>'No end date'),
 
 			// Define oneToMany interface for choosing and arranging sub-categories
 			'subBrowseCategories' => array(
@@ -240,5 +245,16 @@ class BrowseCategory extends BaseBrowsable
 		}
 
 		return $validationResults;
+	}
+
+	public function isValidForDisplay(){
+		$curTime = time();
+		if ($this->startDate != 0 && $this->startDate > $curTime){
+			return false;
+		}
+		if ($this->endDate != 0 && $this->endDate < $curTime){
+			return false;
+		}
+		return true;
 	}
 }

@@ -952,7 +952,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					}
 				} else {
 					$this->_actions[] = array(
-						'title' => 'Place Hold',
+						'title' => translate('Place Hold'),
 						'url' => '',
 						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
 						'requireLogin' => false,

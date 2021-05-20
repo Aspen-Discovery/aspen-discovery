@@ -545,7 +545,7 @@ class ExploreMore {
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
 								'usageCount' => 1,
-								'openInNewWindow' => false
+								'openInNewWindow' => true
 							);
 						}
 

@@ -123,7 +123,7 @@ class RBdigital_AJAX extends JSON_Action
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
 					'prompts' => $interface->fetch('RBdigital/ajax-hold-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return AspenDiscovery.RBdigital.processHoldPrompts();">'
+					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="'. translate('Place Hold') .'" onclick="return AspenDiscovery.RBdigital.processHoldPrompts();">'
 			);
 		} elseif (count($usersWithRBdigitalAccess) == 1) {
 			return array(

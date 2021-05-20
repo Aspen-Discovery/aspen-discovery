@@ -74,7 +74,10 @@ class Search_Home extends Action {
 					continue;
 				}
 
-				$browseCategories[] = clone($browseCategory);
+				if($browseCategory->isValidForDisplay()) {
+					$browseCategories[] = clone($browseCategory);
+				}
+
 				if (
 					($specifiedCategory && $_REQUEST['browseCategory'] == $browseCategory->textId) // A category has been selected through URL parameter
 					|| (!$specifiedCategory && $index == $first) // Or default to selecting the first browse category
@@ -97,7 +100,11 @@ class Search_Home extends Action {
 				}
 
 //				$browseCategory->getSubCategories(); // add subcategory information to the object
-				$browseCategories[] = clone($browseCategory);
+
+				if($browseCategory->isValidForDisplay()){
+					$browseCategories[] = clone($browseCategory);
+				}
+
 				if ($specifiedCategory && $_REQUEST['browseCategory'] == $browseCategory->textId) {
 					$this->assignBrowseCategoryInformation($browseCategory, $specifiedSubCategory);
 				}
