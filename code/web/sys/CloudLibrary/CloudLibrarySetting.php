@@ -51,7 +51,7 @@ class CloudLibrarySetting extends DataObject
 
 	public function __toString()
 	{
-		return $this->userInterfaceUrl;
+		return $this->libraryId . " - " . $this->userInterfaceUrl;
 	}
 
 	public function update()

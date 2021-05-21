@@ -128,17 +128,15 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					}
 					for (Scope scope : indexer.getScopes()) {
 						boolean okToAdd = false;
-						CloudLibraryScope cloudLibraryScope = scope.getCloudLibraryScope();
+						CloudLibraryScope cloudLibraryScope = scope.getCloudLibraryScope(settingId);
 						if (cloudLibraryScope != null) {
-							if (cloudLibraryScope.getSettingId() == settingId) {
-								if (cloudLibraryScope.isIncludeEBooks() && formatCategory.equals("eBook")) {
-									okToAdd = true;
-								} else if (cloudLibraryScope.isIncludeEAudiobook() && primaryFormat.equals("eAudiobook")) {
-									okToAdd = true;
-								}
-								if (cloudLibraryScope.isRestrictToChildrensMaterial() && !isChildrens) {
-									okToAdd = false;
-								}
+							if (cloudLibraryScope.isIncludeEBooks() && formatCategory.equals("eBook")) {
+								okToAdd = true;
+							} else if (cloudLibraryScope.isIncludeEAudiobook() && primaryFormat.equals("eAudiobook")) {
+								okToAdd = true;
+							}
+							if (cloudLibraryScope.isRestrictToChildrensMaterial() && !isChildrens) {
+								okToAdd = false;
 							}
 						}
 						if (okToAdd) {

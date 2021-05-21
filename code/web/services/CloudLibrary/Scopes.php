@@ -57,6 +57,88 @@ class CloudLibrary_Scopes extends ObjectEditor
 		return '';
 	}
 
+	/** @noinspection PhpUnused */
+	function addToAllLibraries(){
+		$scopeId = $_REQUEST['id'];
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->id = $scopeId;
+		if ($cloudLibraryScope->find(true)){
+			$existingLibrariesCloudLibraryScopes = $cloudLibraryScope->getLibraries();
+			$library = new Library();
+			$library->find();
+			while ($library->fetch()){
+				$alreadyAdded = false;
+				foreach($existingLibrariesCloudLibraryScopes as $libraryCloudLibraryScope){
+					if ($libraryCloudLibraryScope->libraryId == $library->libraryId){
+						$alreadyAdded = true;
+					}
+				}
+				if (!$alreadyAdded){
+					$newLibraryCloudLibraryScope = new LibraryCloudLibraryScope();
+					$newLibraryCloudLibraryScope->libraryId = $library->libraryId;
+					$newLibraryCloudLibraryScope->scopeId = $scopeId;
+					$existingLibrariesCloudLibraryScopes[] = $newLibraryCloudLibraryScope;
+				}
+			}
+			$cloudLibraryScope->setLibraries($existingLibrariesCloudLibraryScopes);
+			$cloudLibraryScope->update();
+		}
+		header("Location: /CloudLibrary/Scopes?objectAction=edit&id=" . $scopeId);
+	}
+
+	/** @noinspection PhpUnused */
+	function clearLibraries()
+	{
+		$scopeId = $_REQUEST['id'];
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->id = $scopeId;
+		if ($cloudLibraryScope->find(true)){
+			$cloudLibraryScope->clearLibraries();
+		}
+		header("Location: /CloudLibrary/Scopes?objectAction=edit&id=" . $scopeId);
+	}
+
+	/** @noinspection PhpUnused */
+	function addToAllLocations(){
+		$scopeId = $_REQUEST['id'];
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->id = $scopeId;
+		if ($cloudLibraryScope->find(true)){
+			$existingLocationCloudLibraryScopes = $cloudLibraryScope->getLocations();
+			$location = new Location();
+			$location->find();
+			while ($location->fetch()){
+				$alreadyAdded = false;
+				foreach($existingLocationCloudLibraryScopes as $locationCloudLibraryScope){
+					if ($locationCloudLibraryScope->locationId == $location->locationId){
+						$alreadyAdded = true;
+					}
+				}
+				if (!$alreadyAdded){
+					$newLocationCloudLibraryScope = new LocationCloudLibraryScope();
+					$newLocationCloudLibraryScope->locationId = $location->locationId;
+					$newLocationCloudLibraryScope->scopeId = $scopeId;
+					$existingLocationCloudLibraryScopes[] = $newLocationCloudLibraryScope;
+				}
+			}
+			$cloudLibraryScope->setLocations($existingLocationCloudLibraryScopes);
+			$cloudLibraryScope->update();
+		}
+		header("Location: /CloudLibrary/Scopes?objectAction=edit&id=" . $scopeId);
+	}
+
+	/** @noinspection PhpUnused */
+	function clearLocations()
+	{
+		$scopeId = $_REQUEST['id'];
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->id = $scopeId;
+		if ($cloudLibraryScope->find(true)){
+			$cloudLibraryScope->clearLocations();
+		}
+		header("Location: /CloudLibrary/Scopes?objectAction=edit&id=" . $scopeId);
+	}
+
 	function getBreadcrumbs()
 	{
 		$breadcrumbs = [];

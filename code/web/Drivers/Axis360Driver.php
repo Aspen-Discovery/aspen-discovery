@@ -604,7 +604,6 @@ class Axis360Driver extends AbstractEContentDriver
 
 		$axis360Record = new Axis360RecordDriver((string)$title->titleId);
 		if ($axis360Record->isValid()) {
-			$formats = $axis360Record->getFormats();
 			$checkout->updateFromRecordDriver($axis360Record);
 		}
 		$checkout->userId = $user->id;

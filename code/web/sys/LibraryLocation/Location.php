@@ -17,6 +17,7 @@ if (file_exists(ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php')) {
 if (file_exists(ROOT_DIR . '/sys/Indexing/LocationSideLoadScope.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LocationSideLoadScope.php';
 }
+require_once ROOT_DIR . '/sys/CloudLibrary/LocationCloudLibraryScope.php';
 
 class Location extends DataObject
 {
@@ -53,7 +54,6 @@ class Location extends DataObject
 	public /** @noinspection PhpUnused */ $overDriveScopeId;
 	public /** @noinspection PhpUnused */ $hooplaScopeId;
 	public /** @noinspection PhpUnused */ $rbdigitalScopeId;
-	public /** @noinspection PhpUnused */ $cloudLibraryScopeId;
 	public /** @noinspection PhpUnused */ $axis360ScopeId;
 	public $showHoldButton;
 	public $repeatSearchOption;
@@ -90,6 +90,7 @@ class Location extends DataObject
 	private $_recordsToInclude;
 	private $_sideLoadScopes;
 	private $_combinedResultSections;
+	private $_cloudLibraryScopes;
 
 	function getNumericColumnNames()
 	{
@@ -128,6 +129,9 @@ class Location extends DataObject
 
 		// get the structure for the location's hours
 		$hoursStructure = LocationHours::getObjectStructure();
+
+		$cloudLibraryScopeStructure = LocationCloudLibraryScope::getObjectStructure();
+		unset($cloudLibraryScopeStructure['locationId']);
 
 		// we don't want to make the locationId property editable
 		// because it is associated with this location only
@@ -223,17 +227,6 @@ class Location extends DataObject
 		$rbdigitalScopes[-1] = 'Use Library Setting';
 		while ($rbdigitalScope->fetch()) {
 			$rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name;
-		}
-
-		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
-		$cloudLibraryScope = new CloudLibraryScope();
-		$cloudLibraryScope->orderBy('name');
-		$cloudLibraryScopes = [];
-		$cloudLibraryScope->find();
-		$cloudLibraryScopes[-2] = 'None';
-		$cloudLibraryScopes[-1] = 'Use Library Setting';
-		while ($cloudLibraryScope->fetch()) {
-			$cloudLibraryScopes[$cloudLibraryScope->id] = $cloudLibraryScope->name;
 		}
 
 		$structure = array(
@@ -341,7 +334,18 @@ class Location extends DataObject
 			)),
 			
 			'cloudLibrarySection' => array('property' => 'cloudLibrarySection', 'type' => 'section', 'label' => 'Cloud Library', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
-				'cloudLibraryScopeId' => array('property' => 'cloudLibraryScopeId', 'type' => 'enum', 'values' => $cloudLibraryScopes, 'label' => 'Cloud Library Scope', 'description' => 'The Cloud Library scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
+				'cloudLibraryScopes' => [
+					'property' => 'cloudLibraryScopes',
+					'type' => 'oneToMany',
+					'keyThis' => 'locationId',
+					'keyOther' => 'locationId',
+					'subObjectType' => 'LocationCloudLibraryScope',
+					'structure' => $cloudLibraryScopeStructure,
+					'label' => 'Cloud Library Scopes',
+					'description' => 'The scopes that apply to this location',
+					'sortable' => false,
+					'storeDb' => true
+				],
 			)),
 
 			'hooplaSection' => array('property' => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
@@ -917,6 +921,18 @@ class Location extends DataObject
 				}
 				return $this->_combinedResultSections;
 			}
+		} elseif ($name == 'cloudLibraryScopes') {
+			if (!isset($this->_cloudLibraryScopes) && $this->locationId) {
+				$this->_combinedResultSections = array();
+				$cloudLibraryScope = new LocationCloudLibraryScope();
+				$cloudLibraryScope->locationId = $this->locationId;
+				if ($cloudLibraryScope->find()) {
+					while ($cloudLibraryScope->fetch()) {
+						$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
+					}
+				}
+				return $this->_cloudLibraryScopes;
+			}
 		} else {
 			return $this->_data[$name];
 		}
@@ -937,6 +953,8 @@ class Location extends DataObject
 			$this->_sideLoadScopes = $value;
 		} elseif ($name == 'combinedResultSections') {
 			$this->_combinedResultSections = $value;
+		} elseif ($name == 'cloudLibraryScopes') {
+			$this->_cloudLibraryScopes = $value;
 		} else {
 			$this->_data[$name] = $value;
 		}
@@ -957,6 +975,7 @@ class Location extends DataObject
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
 			$this->saveCombinedResultSections();
+			$this->saveCloudLibraryScopes();
 		}
 		return $ret;
 	}
@@ -976,6 +995,7 @@ class Location extends DataObject
 			$this->saveRecordsToInclude();
 			$this->saveSideLoadScopes();
 			$this->saveCombinedResultSections();
+			$this->saveCloudLibraryScopes();
 		}
 		return $ret;
 	}
@@ -1001,6 +1021,14 @@ class Location extends DataObject
 		if (isset ($this->_hours) && is_array($this->_hours)) {
 			$this->saveOneToManyOptions($this->_hours, 'locationId');
 			unset($this->_hours);
+		}
+	}
+
+	public function saveCloudLibraryScopes()
+	{
+		if (isset ($this->_cloudLibraryScopes) && is_array($this->_cloudLibraryScopes)) {
+			$this->saveOneToManyOptions($this->_cloudLibraryScopes, 'locationId');
+			unset($this->_cloudLibraryScopes);
 		}
 	}
 

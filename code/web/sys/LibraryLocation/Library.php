@@ -30,6 +30,9 @@ if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormats.php')) {
 if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormFields.php')) {
 	require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
 }
+if (file_exists(ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php')) {
+	require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
+}
 
 class Library extends DataObject
 {
@@ -109,7 +112,6 @@ class Library extends DataObject
 	public $hooplaLibraryID;
 	public /** @noinspection PhpUnused */ $hooplaScopeId;
 	public /** @noinspection PhpUnused */ $rbdigitalScopeId;
-	public /** @noinspection PhpUnused */ $cloudLibraryScopeId;
 	public /** @noinspection PhpUnused */ $axis360ScopeId;
 	public /** @noinspection PhpUnused */ $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
@@ -268,6 +270,8 @@ class Library extends DataObject
 
 	//Web Builder
 	public $enableWebBuilder;
+
+	private $_cloudLibraryScopes;
 
 	static $archiveRequestFormFieldOptions = array('Hidden', 'Optional', 'Required');
 
@@ -439,15 +443,8 @@ class Library extends DataObject
 			$rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name . ' ' . $rbdigitalSetting->userInterfaceUrl;
 		}
 
-		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
-		$cloudLibraryScope = new CloudLibraryScope();
-		$cloudLibraryScope->orderBy('name');
-		$cloudLibraryScopes = [];
-		$cloudLibraryScope->find();
-		$cloudLibraryScopes[-1] = 'none';
-		while ($cloudLibraryScope->fetch()){
-			$cloudLibraryScopes[$cloudLibraryScope->id] = $cloudLibraryScope->name;
-		}
+		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure();
+		unset($cloudLibraryScopeStructure['libraryId']);
 
 		$barcodeTypes = [
 			'none' => 'Do not show the barcode',
@@ -784,7 +781,21 @@ class Library extends DataObject
 				'axis360ScopeId'        => array('property'=>'axis360ScopeId', 'type'=>'enum','values'=>$axis360Scopes, 'label'=>'Axis 360 Scope', 'description'=>'The Axis 360 scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
 			)),
 			'cloudLibrarySection' => array('property'=>'cloudLibrarySection', 'type' => 'section', 'label' =>'Cloud Library', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
-				'cloudLibraryScopeId'        => array('property'=>'cloudLibraryScopeId', 'type'=>'enum','values'=>$cloudLibraryScopes,  'label'=>'Cloud Library Scope', 'description'=>'The Cloud Library scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
+				'cloudLibraryScopes' => [
+					'property' => 'cloudLibraryScopes',
+					'type' => 'oneToMany',
+					'keyThis' => 'libraryId',
+					'keyOther' => 'libraryId',
+					'subObjectType' => 'LibraryCloudLibraryScope',
+					'structure' => $cloudLibraryScopeStructure,
+					'label' => 'Cloud Library Scopes',
+					'description' => 'The scopes that apply to this library',
+					'sortable' => false,
+					'storeDb' => true,
+					'allowEdit' => true,
+					'canEdit' => true,
+					'forcesReindex' => true
+				],
 			)),
 			'hooplaSection' => array('property' => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => array(
 				'hooplaLibraryID' => array('property' => 'hooplaLibraryID', 'type' => 'integer', 'label' => 'Hoopla Library ID', 'description' => 'The ID Number Hoopla uses for this library', 'hideInLists' => true, 'forcesReindex' => true),
@@ -1271,6 +1282,18 @@ class Library extends DataObject
 				}
 				return $this->combinedResultSections;
 			}
+		} elseif ($name == 'cloudLibraryScopes') {
+			if (!isset($this->_cloudLibraryScopes) && $this->libraryId) {
+				$this->_cloudLibraryScopes = array();
+				$cloudLibraryScope = new LibraryCloudLibraryScope();
+				$cloudLibraryScope->libraryId = $this->libraryId;
+				if ($cloudLibraryScope->find()) {
+					while ($cloudLibraryScope->fetch()) {
+						$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
+					}
+				}
+				return $this->_cloudLibraryScopes;
+			}
 		} else {
 			return $this->_data[$name];
 		}
@@ -1309,6 +1332,8 @@ class Library extends DataObject
 		}elseif ($name == 'combinedResultSections') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->combinedResultSections = $value;
+		} elseif ($name == 'cloudLibraryScopes') {
+			$this->_cloudLibraryScopes = $value;
 		}else{
 			$this->_data[$name] = $value;
 		}
@@ -1342,6 +1367,7 @@ class Library extends DataObject
 			$this->saveArchiveMoreDetailsOptions();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
+			$this->saveCloudLibraryScopes();
 		}
 		if ($this->_patronNameDisplayStyleChanged){
 			$libraryLocations = new Location();
@@ -1396,6 +1422,7 @@ class Library extends DataObject
 			$this->saveLibraryLinks();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
+			$this->saveCloudLibraryScopes();
 		}
 		return $ret;
 	}
@@ -1470,6 +1497,14 @@ class Library extends DataObject
 		if (isset ($this->_exploreMoreBar) && is_array($this->_exploreMoreBar)){
 			$this->saveOneToManyOptions($this->_exploreMoreBar, 'libraryId');
 			unset($this->_exploreMoreBar);
+		}
+	}
+
+	public function saveCloudLibraryScopes()
+	{
+		if (isset ($this->_cloudLibraryScopes) && is_array($this->_cloudLibraryScopes)) {
+			$this->saveOneToManyOptions($this->_cloudLibraryScopes, 'libraryId');
+			unset($this->_cloudLibraryScopes);
 		}
 	}
 

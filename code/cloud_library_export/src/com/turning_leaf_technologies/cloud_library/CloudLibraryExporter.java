@@ -33,15 +33,10 @@ public class CloudLibraryExporter {
 	private final Ini configIni;
 	private final Logger logger;
 	private final Connection aspenConn;
-	private final long settingsId;
+
 	private final Long startTimeForLogging;
-	private final String baseUrl;
-	private final String accountId;
-	private final String accountKey;
-	private final String libraryId;
-	private final boolean doFullReload;
-	private long lastExtractTime;
-	private final long lastExtractTimeAll;
+	private final CloudLibrarySettings settings;
+
 	private CloudLibraryExtractLogEntry logEntry;
 
 	//SQL Statements
@@ -57,55 +52,48 @@ public class CloudLibraryExporter {
 	//Existing records
 	private static HashMap<String, CloudLibraryTitle> existingRecords = new HashMap<>();
 
-	public CloudLibraryExporter(String serverName, Ini configIni, ResultSet getSettingsRS, Logger logger, Connection aspenConn) throws SQLException {
+	public CloudLibraryExporter(String serverName, Ini configIni, CloudLibrarySettings settings, Logger logger, Connection aspenConn) throws SQLException {
 		this.serverName = serverName;
 		this.configIni = configIni;
 		this.logger = logger;
 		this.aspenConn = aspenConn;
-
-		settingsId = getSettingsRS.getLong("id");
+		this.settings = settings;
 
 		Date startTime = new Date();
 		startTimeForLogging = startTime.getTime() / 1000;
-		baseUrl = getSettingsRS.getString("apiUrl");
-		accountId = getSettingsRS.getString("accountId");
-		accountKey = getSettingsRS.getString("accountKey");
-		libraryId = getSettingsRS.getString("libraryId");
 
-		doFullReload = getSettingsRS.getBoolean("runFullUpdate");
-		lastExtractTime = getSettingsRS.getLong("lastUpdateOfChangedRecords");
-		lastExtractTimeAll = getSettingsRS.getLong("lastUpdateOfAllRecords");
 
 		deleteCloudLibraryItemStmt = aspenConn.prepareStatement("UPDATE cloud_library_title SET deleted = 1 where id = ?");
 		deleteCloudLibraryAvailabilityStmt = aspenConn.prepareStatement("DELETE FROM cloud_library_availability where id = ?");
 		cloudLibraryTitleHasAvailabilityStmt = aspenConn.prepareStatement("SELECT count(*) as numAvailability FROM cloud_library_availability where id = ?");
 		getAllExistingCloudLibraryItemsStmt = aspenConn.prepareStatement("SELECT cloud_library_title.id, cloud_library_title.cloudLibraryId, cloud_library_title.rawChecksum, deleted, cloud_library_availability.id as availabilityId from cloud_library_title left join cloud_library_availability on cloud_library_availability.cloudLibraryId = cloud_library_title.cloudLibraryId where settingId = ?");
 
-		createDbLogEntry(settingsId, startTime, aspenConn);
+		createDbLogEntry(startTime, aspenConn);
 	}
 
 	public int extractRecords(){
 		int numChanges = 0;
 		String startDate = "2000-01-01";
-		if (!doFullReload) {
-			lastExtractTime = Math.max(lastExtractTime, lastExtractTimeAll);
+		if (!settings.isDoFullReload()) {
+			long lastExtractTime = Math.max(settings.getLastExtractTime(), settings.getLastExtractTimeAll());
 
+			//noinspection SpellCheckingInspection
 			SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 			startDate = dateFormatter.format(new Date(lastExtractTime * 1000));
 		}
 
 		//Get a list of all existing records in the database
-		loadExistingTitles(settingsId);
+		loadExistingTitles(settings.getSettingsId());
 
-		CloudLibraryMarcHandler handler = new CloudLibraryMarcHandler(this, settingsId, existingRecords, doFullReload, startTimeForLogging, aspenConn, getRecordGroupingProcessor(), getGroupedWorkIndexer(), logEntry, logger);
+		CloudLibraryMarcHandler handler = new CloudLibraryMarcHandler(this, settings.getSettingsId(), existingRecords, settings.isDoFullReload(), startTimeForLogging, aspenConn, getRecordGroupingProcessor(), getGroupedWorkIndexer(), logEntry, logger);
 
 		int curOffset = 1;
 		boolean moreRecords = true;
 		while (moreRecords) {
 			moreRecords = false;
 			//Get a list of eBooks and eAudiobooks to process
-			String apiPath = "/cirrus/library/" + libraryId + "/data/marc?offset=" + curOffset + "&limit=50&startdate=" + startDate;
+			String apiPath = "/cirrus/library/" + settings.getLibraryId() + "/data/marc?offset=" + curOffset + "&limit=50&startdate=" + startDate;
 
 			//noinspection ConstantConditions
 			for (int curTry = 1; curTry <= 4; curTry++) {
@@ -144,7 +132,7 @@ public class CloudLibraryExporter {
 						logEntry.saveResults();
 					} catch (SAXException | ParserConfigurationException | IOException e) {
 						logger.error("Error parsing response", e);
-						logEntry.addNote("Error parsing response: " + e.toString());
+						logEntry.addNote("Error parsing response: " + e);
 					}
 					break;
 				}
@@ -152,9 +140,10 @@ public class CloudLibraryExporter {
 		}
 
 		//Handle events to determine status changes when the bibs don't change.
-		if (!doFullReload) {
-			String eventsApiPath = "/cirrus/library/" + libraryId + "/data/cloudevents?startdate=" + startDate;
-			CloudLibraryEventHandler eventHandler = new CloudLibraryEventHandler(this, doFullReload, startTimeForLogging, aspenConn, getRecordGroupingProcessor(), getGroupedWorkIndexer(), logEntry, logger);
+		if (!settings.isDoFullReload()) {
+			//noinspection SpellCheckingInspection
+			String eventsApiPath = "/cirrus/library/" + settings.getLibraryId() + "/data/cloudevents?startdate=" + startDate;
+			CloudLibraryEventHandler eventHandler = new CloudLibraryEventHandler(this, settings.isDoFullReload(), startTimeForLogging, aspenConn, getRecordGroupingProcessor(), getGroupedWorkIndexer(), logEntry, logger);
 			//noinspection ConstantConditions
 			for (int curTry = 1; curTry <= 4; curTry++) {
 				WebServiceResponse response = callCloudLibrary(eventsApiPath);
@@ -189,21 +178,21 @@ public class CloudLibraryExporter {
 						logEntry.saveResults();
 					} catch (SAXException | ParserConfigurationException | IOException e) {
 						logger.error("Error parsing response", e);
-						logEntry.addNote("Error parsing response: " + e.toString());
+						logEntry.addNote("Error parsing response: " + e);
 					}
 					break;
 				}
 			}
 		}
 
-		if (doFullReload && !logEntry.hasErrors()) {
+		if (settings.isDoFullReload() && !logEntry.hasErrors()) {
 			try {
 				//Un mark that a full update needs to be done
 				PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE cloud_library_settings set runFullUpdate = 0 where id = ?");
-				updateSettingsStmt.setLong(1, settingsId);
+				updateSettingsStmt.setLong(1, settings.getSettingsId());
 				updateSettingsStmt.executeUpdate();
-			}catch (Exception sqle){
-				logEntry.incErrors("Could not update cloud library settings to disable run full update", sqle);
+			}catch (Exception e){
+				logEntry.incErrors("Could not update cloud library settings to disable run full update", e);
 			}
 
 			//Mark any records that no longer exist in search results as deleted, but only if we are doing a full update
@@ -213,16 +202,16 @@ public class CloudLibraryExporter {
 		//Update the last time we ran the update in settings.  This is always done since Cloud Library has some expected errors.
 		PreparedStatement updateExtractTime;
 		String columnToUpdate = "lastUpdateOfChangedRecords";
-		if (doFullReload) {
+		if (settings.isDoFullReload()) {
 			columnToUpdate = "lastUpdateOfAllRecords";
 		}
 		try {
 			updateExtractTime = aspenConn.prepareStatement("UPDATE cloud_library_settings set " + columnToUpdate + " = ? WHERE id = ?");
 			updateExtractTime.setLong(1, startTimeForLogging);
-			updateExtractTime.setLong(2, settingsId);
+			updateExtractTime.setLong(2, settings.getSettingsId());
 			updateExtractTime.executeUpdate();
-		}catch (Exception sqle){
-			logEntry.incErrors("Could not update cloud library settings to set last update time", sqle);
+		}catch (Exception e){
+			logEntry.incErrors("Could not update cloud library settings to set last update time", e);
 		}
 
 		logger.info("Updated or added " + numChanges + " records");
@@ -246,7 +235,7 @@ public class CloudLibraryExporter {
 			logger.error("There were errors during the export!");
 		}
 
-		logger.info("Finished " + new Date().toString());
+		logger.info("Finished " + new Date());
 		long endTime = new Date().getTime();
 		long elapsedTime = (endTime / 1000) - startTimeForLogging;
 		logger.info("Elapsed Minutes " + (elapsedTime / 60));
@@ -256,7 +245,7 @@ public class CloudLibraryExporter {
 		return numChanges;
 	}
 
-	private void createDbLogEntry(long settingsId, Date startTime, Connection aspenConn) {
+	private void createDbLogEntry(Date startTime, Connection aspenConn) {
 		//Remove log entries older than 45 days
 		long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
 		try {
@@ -267,7 +256,7 @@ public class CloudLibraryExporter {
 		}
 
 		//Start a log entry
-		logEntry = new CloudLibraryExtractLogEntry(aspenConn, settingsId, logger);
+		logEntry = new CloudLibraryExtractLogEntry(aspenConn, settings.getSettingsId(), logger);
 	}
 
 	private int deleteItems() {
@@ -300,7 +289,7 @@ public class CloudLibraryExporter {
 							//Delete the work from solr and the database
 							getGroupedWorkIndexer().deleteRecord(result.permanentId);
 						}
-					}else{
+					//}else{
 						//We need to reindex the record to make sure that the availability changes.
 					}
 
@@ -314,7 +303,7 @@ public class CloudLibraryExporter {
 			}
 		} catch (SQLException e) {
 			logger.error("Error deleting items", e);
-			logEntry.addNote("Error deleting items " + e.toString());
+			logEntry.addNote("Error deleting items " + e);
 		}
 		return numDeleted;
 	}
@@ -337,7 +326,7 @@ public class CloudLibraryExporter {
 			}
 		} catch (SQLException e) {
 			logger.error("Error loading existing titles", e);
-			logEntry.addNote("Error loading existing titles" + e.toString());
+			logEntry.addNote("Error loading existing titles" + e);
 			System.exit(-1);
 		}
 	}
@@ -381,7 +370,7 @@ public class CloudLibraryExporter {
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
-			logEntry.incErrors("Error processing records to reload " + e.toString());
+			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
 
@@ -401,7 +390,7 @@ public class CloudLibraryExporter {
 
 	CloudLibraryAvailability loadAvailabilityForRecord(String cloudLibraryId) {
 		CloudLibraryAvailability availability = new CloudLibraryAvailability();
-		String apiPath = "/cirrus/library/" + libraryId + "/item/summary/" + cloudLibraryId;
+		String apiPath = "/cirrus/library/" + settings.getLibraryId() + "/item/summary/" + cloudLibraryId;
 
 		WebServiceResponse response = callCloudLibrary(apiPath);
 		if (response == null) {
@@ -423,7 +412,7 @@ public class CloudLibraryExporter {
 				saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
 			} catch (SAXException | ParserConfigurationException | IOException e) {
 				logger.error("Error parsing response", e);
-				logEntry.addNote("Error parsing response: " + e.toString());
+				logEntry.addNote("Error parsing response: " + e);
 			}
 		}
 
@@ -431,7 +420,7 @@ public class CloudLibraryExporter {
 	}
 
 	private WebServiceResponse callCloudLibrary(String apiPath) {
-		String bookUrl = baseUrl + apiPath;
+		String bookUrl = settings.getBaseUrl() + apiPath;
 		HashMap<String, String> headers = new HashMap<>();
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
 		dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -441,7 +430,7 @@ public class CloudLibraryExporter {
 		String signature;
 		try {
 			javax.crypto.Mac mac = javax.crypto.Mac.getInstance("hmacSHA256");
-			mac.init(new javax.crypto.spec.SecretKeySpec(accountKey.getBytes(), "HmacSHA1"));
+			mac.init(new javax.crypto.spec.SecretKeySpec(settings.getAccountKey().getBytes(), "HmacSHA1"));
 			mac.update(dataToSign.getBytes());
 			signature = Base64.getEncoder().encodeToString(mac.doFinal());
 		} catch (NoSuchAlgorithmException noSuchAlgorithmException) {
@@ -453,12 +442,13 @@ public class CloudLibraryExporter {
 		}
 
 		headers.put("3mcl-Datetime", formattedDate);
-		headers.put("3mcl-Authorization", "3MCLAUTH " + accountId + ":" + signature);
+		headers.put("3mcl-Authorization", "3MCLAUTH " + settings.getAccountId() + ":" + signature);
 		headers.put("3mcl-APIVersion", "3.0");
 		return NetworkUtils.getURL(bookUrl, logger, headers);
 	}
 
-	public long getSettingsId() {
-		return settingsId;
+	@SuppressWarnings("unused")
+	public long getSettingsId(){
+		return settings.getSettingsId();
 	}
 }

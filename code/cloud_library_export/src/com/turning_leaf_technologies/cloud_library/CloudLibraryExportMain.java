@@ -12,6 +12,9 @@ import org.ini4j.Ini;
 
 import java.sql.*;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class CloudLibraryExportMain {
 	private static Logger logger;
@@ -42,7 +45,7 @@ public class CloudLibraryExportMain {
 
 		while (true) {
 			Date startTime = new Date();
-			logger.info("Starting " + processName + ": " + startTime.toString());
+			logger.info("Starting " + processName + ": " + startTime);
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
 			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -89,25 +92,45 @@ public class CloudLibraryExportMain {
 	}
 
 	private static int extractCloudLibraryData() {
-		int numChanges = 0;
-
+		final int[] numChanges = {0};
+		//Process each setting in order.
+		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
 		try {
 			PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * from cloud_library_settings");
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
 			int numSettings = 0;
 			while (getSettingsRS.next()) {
+				CloudLibrarySettings settings = new CloudLibrarySettings(getSettingsRS);
 				numSettings++;
-				CloudLibraryExporter exporter = new CloudLibraryExporter(serverName, configIni, getSettingsRS, logger, aspenConn);
-				numChanges += exporter.extractRecords();
+				CloudLibraryExporter exporter = new CloudLibraryExporter(serverName, configIni, settings, logger, aspenConn);
+				es.execute(() -> {
+					try {
+						numChanges[0] += exporter.extractRecords();
+					}catch (Exception e){
+						logger.error("Error setting up cloud library exporter", e);
+					}
+				});
 			}
 			if (numSettings == 0) {
 				logger.error("Unable to find settings for CloudLibrary, please add settings to the database");
 			}
 		} catch (SQLException e) {
-			logger.error("Error loading settings from the database");
+			logger.error("Error loading settings from the database", e);
 		}
 
-		return numChanges;
+		es.shutdown();
+		while (true) {
+			try {
+				boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
+				if (terminated){
+					break;
+				}
+			} catch (InterruptedException e) {
+				logger.error("Error waiting for all extracts to finish");
+			}
+		}
+
+		return numChanges[0];
 	}
 
 	private static void disconnectDatabase(Connection aspenConn) {

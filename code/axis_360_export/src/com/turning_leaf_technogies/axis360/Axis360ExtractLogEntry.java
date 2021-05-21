@@ -65,8 +65,8 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 		return returnText;
 	}
 
-	private static PreparedStatement insertLogEntry;
-	private static PreparedStatement updateLogEntry;
+	private PreparedStatement insertLogEntry;
+	private PreparedStatement updateLogEntry;
 	public boolean saveResults() {
 		try {
 			if (logEntryId == null){

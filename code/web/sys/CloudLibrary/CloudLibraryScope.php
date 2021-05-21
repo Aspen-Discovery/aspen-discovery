@@ -1,5 +1,6 @@
 <?php
-
+require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
+require_once ROOT_DIR . '/sys/CloudLibrary/LocationCloudLibraryScope.php';
 class CloudLibraryScope extends DataObject
 {
 	public $__table = 'cloud_library_scopes';
@@ -23,8 +24,11 @@ class CloudLibraryScope extends DataObject
 			$cloudLibrarySettings[$cloudLibrarySetting->id] = (string)$cloudLibrarySetting;
 		}
 
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
+		$libraryCloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure();
+		unset($libraryCloudLibraryScopeStructure['scopeId']);
+
+		$locationCloudLibraryScopeStructure = LocationCloudLibraryScope::getObjectStructure();
+		unset($locationCloudLibraryScopeStructure['scopeId']);
 
 		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
@@ -36,21 +40,56 @@ class CloudLibraryScope extends DataObject
 
 			'libraries' => array(
 				'property' => 'libraries',
-				'type' => 'multiSelect',
-				'listStyle' => 'checkboxSimple',
+				'type' => 'oneToMany',
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use this scope',
-				'values' => $libraryList,
-				'forcesReindex' => true
+				'helpLink' => '',
+				'keyThis' => 'id',
+				'keyOther' => 'scopeId',
+				'subObjectType' => 'LibraryCloudLibraryScope',
+				'structure' => $libraryCloudLibraryScopeStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'additionalOneToManyActions' => array(
+					array(
+						'text' => 'Apply To All Libraries',
+						'url' => '/CloudLibrary/Scopes?id=$id&amp;objectAction=addToAllLibraries',
+					),
+					array(
+						'text' => 'Clear Libraries',
+						'url' => '/CloudLibrary/Scopes?id=$id&amp;objectAction=clearLibraries',
+						'class' => 'btn-warning',
+					),
+				)
 			),
 
 			'locations' => array(
 				'property' => 'locations',
-				'type' => 'multiSelect',
-				'listStyle' => 'checkboxSimple',
+				'type' => 'oneToMany',
 				'label' => 'Locations',
 				'description' => 'Define locations that use this scope',
-				'values' => $locationList,
+				'helpLink' => '',
+				'keyThis' => 'id',
+				'keyOther' => 'sideLoadScopeId',
+				'subObjectType' => 'LocationCloudLibraryScope',
+				'structure' => $locationCloudLibraryScopeStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'additionalOneToManyActions' => array(
+					array(
+						'text' => 'Apply To All Locations',
+						'url' => '/CloudLibrary/Scopes?id=$id&amp;objectAction=addToAllLocations',
+					),
+					array(
+						'text' => 'Clear Locations',
+						'url' => '/CloudLibrary/Scopes?id=$id&amp;objectAction=clearLocations',
+						'class' => 'btn-warning',
+					),
+				),
 				'forcesReindex' => true
 			),
 		);
@@ -61,26 +100,31 @@ class CloudLibraryScope extends DataObject
 		return '/CloudLibrary/Scopes?objectAction=edit&id=' . $this->id;
 	}
 
+	public function __toString()
+	{
+		return $this->getSetting() . " - " . $this->name;
+	}
+
 	public function __get($name){
 		if ($name == "libraries") {
 			if (!isset($this->_libraries) && $this->id){
 				$this->_libraries = [];
-				$obj = new Library();
-				$obj->cloudLibraryScopeId = $this->id;
+				$obj = new LibraryCloudLibraryScope();
+				$obj->scopeId = $this->id;
 				$obj->find();
 				while($obj->fetch()){
-					$this->_libraries[$obj->libraryId] = $obj->libraryId;
+					$this->_libraries[$obj->id] = clone($obj);
 				}
 			}
 			return $this->_libraries;
 		} elseif ($name == "locations") {
 			if (!isset($this->_locations) && $this->id){
 				$this->_locations = [];
-				$obj = new Location();
-				$obj->cloudLibraryScopeId = $this->id;
+				$obj = new LocationCloudLibraryScope();
+				$obj->scopeId = $this->id;
 				$obj->find();
 				while($obj->fetch()){
-					$this->_locations[$obj->locationId] = $obj->locationId;
+					$this->_locations[$obj->id] = clone($obj);
 				}
 			}
 			return $this->_locations;
@@ -121,61 +165,14 @@ class CloudLibraryScope extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
-			foreach ($libraryList as $libraryId => $displayName){
-				$library = new Library();
-				$library->libraryId = $libraryId;
-				$library->find(true);
-				if (in_array($libraryId, $this->_libraries)){
-					//We want to apply the scope to this library
-					if ($library->cloudLibraryScopeId != $this->id){
-						$library->cloudLibraryScopeId = $this->id;
-						$library->update();
-					}
-				}else{
-					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->cloudLibraryScopeId == $this->id){
-						$library->cloudLibraryScopeId = -1;
-						$library->update();
-					}
-				}
-			}
+			$this->saveOneToManyOptions($this->_libraries, 'scopeId');
 			unset($this->_libraries);
 		}
 	}
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
-			/**
-			 * @var int $locationId
-			 * @var Location $location
-			 */
-			foreach ($locationList as $locationId => $displayName){
-				$location = new Location();
-				$location->locationId = $locationId;
-				$location->find(true);
-				if (in_array($locationId, $this->_locations)){
-					//We want to apply the scope to this library
-					if ($location->cloudLibraryScopeId != $this->id){
-						$location->cloudLibraryScopeId = $this->id;
-						$location->update();
-					}
-				}else{
-					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($location->cloudLibraryScopeId == $this->id){
-						$library = new Library();
-						$library->libraryId = $location->libraryId;
-						$library->find(true);
-						if ($library->cloudLibraryScopeId != -1){
-							$location->cloudLibraryScopeId = -1;
-						}else{
-							$location->cloudLibraryScopeId = -2;
-						}
-						$location->update();
-					}
-				}
-			}
+			$this->saveOneToManyOptions($this->_locations, 'scopeId');
 			unset($this->_locations);
 		}
 	}
@@ -185,7 +182,7 @@ class CloudLibraryScope extends DataObject
 	 */
 	public function getLibraries()
 	{
-		return $this->_libraries;
+		return $this->__get('libraries');
 	}
 
 	/** @return Location[]
@@ -193,7 +190,7 @@ class CloudLibraryScope extends DataObject
 	 */
 	public function getLocations()
 	{
-		return $this->_locations;
+		return $this->__get('locations');
 	}
 
 	/** @noinspection PhpUnused */
@@ -210,13 +207,25 @@ class CloudLibraryScope extends DataObject
 
 	/** @noinspection PhpUnused */
 	public function clearLibraries(){
-		$this->clearOneToManyOptions('Library', 'cloudLibraryScopeId');
+		$this->clearOneToManyOptions('LibraryCloudLibraryScope', 'scopeId');
 		unset($this->_libraries);
 	}
 
 	/** @noinspection PhpUnused */
 	public function clearLocations(){
-		$this->clearOneToManyOptions('Location', 'cloudLibraryScopeId');
+		$this->clearOneToManyOptions('LocationCloudLibraryScope', 'scopeId');
 		unset($this->_locations);
+	}
+
+	private function getSetting()
+	{
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
+		$setting = new CloudLibrarySetting();
+		$setting->id = $this->settingId;
+		if ($setting->find(true)){
+			return $setting;
+		}else{
+			return null;
+		}
 	}
 }

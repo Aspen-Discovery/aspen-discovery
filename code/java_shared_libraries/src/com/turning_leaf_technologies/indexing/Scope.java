@@ -39,7 +39,7 @@ public class Scope implements Comparable<Scope>{
 	private OverDriveScope overDriveScope;
 	private HooplaScope hooplaScope;
 	private RbdigitalScope rbdigitalScope;
-	private CloudLibraryScope cloudLibraryScope;
+	private final HashMap<Long, CloudLibraryScope> cloudLibraryScopes = new HashMap<>();
 	private Axis360Scope axis360Scope;
 
 	private final HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<>();
@@ -267,12 +267,12 @@ public class Scope implements Comparable<Scope>{
         return rbdigitalScope;
     }
 
-	void setCloudLibraryScope(CloudLibraryScope cloudLibraryScope) {
-		this.cloudLibraryScope = cloudLibraryScope;
+	void addCloudLibraryScope(CloudLibraryScope cloudLibraryScope) {
+		this.cloudLibraryScopes.put(cloudLibraryScope.getSettingId(), cloudLibraryScope);
 	}
 
-	public CloudLibraryScope getCloudLibraryScope() {
-		return cloudLibraryScope;
+	public CloudLibraryScope getCloudLibraryScope(long settingId) {
+		return cloudLibraryScopes.get(settingId);
 	}
 
 	void addSideLoadScope(SideLoadScope scope){

@@ -1,5 +1,6 @@
 <?php
-function getUpdates21_07_00()
+/** @noinspection PhpUnused */
+function getUpdates21_07_00() : array
 {
 	return [
 		'indexing_profiles_add_notes_subfield' => [
@@ -26,6 +27,30 @@ function getUpdates21_07_00()
 				"ALTER TABLE browse_category ADD COLUMN startDate INT(11) DEFAULT 0",
 				"ALTER TABLE browse_category ADD COLUMN endDate INT(11) DEFAULT 0",
 			]
+		],
+		'cloud_library_multiple_scopes' => [
+			'title' => 'Cloud Library Multiple Scopes',
+			'description' => 'Allow multiple scopes to be provided for locations and libraries',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE library_cloud_library_scope (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					scopeId INT NOT NULL,
+					libraryId INT NOT NULL,
+					unique (libraryId, scopeId)
+				) ENGINE InnoDB',
+				'CREATE TABLE location_cloud_library_scope (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					scopeId INT NOT NULL,
+					locationId INT NOT NULL,
+					unique (locationId, scopeId)
+				) ENGINE InnoDB',
+				'INSERT INTO library_cloud_library_scope (scopeId, libraryId) SELECT cloudLibraryScopeId, libraryId from library where cloudLibraryScopeId != -1',
+				'INSERT INTO location_cloud_library_scope (scopeId, locationId) SELECT cloudLibraryScopeId, locationId from location where cloudLibraryScopeId > 0',
+				'INSERT INTO location_cloud_library_scope (scopeId, locationId) SELECT library.cloudLibraryScopeId, locationId from location inner join library on location.libraryId = library.libraryId where location.cloudLibraryScopeId = -1 and library.cloudLibraryScopeId != -1',
+				'ALTER TABLE library DROP COLUMN cloudLibraryScopeId',
+				'ALTER TABLE location DROP COLUMN cloudLibraryScopeId'
+			],
 		],
 	];
 }

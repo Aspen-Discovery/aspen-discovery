@@ -520,7 +520,7 @@ class User extends DataObject
 				} elseif ($source == 'rbdigital') {
 					return array_key_exists('RBdigital', $enabledModules) && ($userHomeLibrary->rbdigitalScopeId > 0);
 				} elseif ($source == 'cloud_library') {
-					return array_key_exists('Cloud Library', $enabledModules) && ($userHomeLibrary->cloudLibraryScopeId > 0);
+					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
 				} elseif ($source == 'axis360') {
 					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				}
@@ -2269,10 +2269,10 @@ class User extends DataObject
 		}else{
 			$sections['ils_integration']->addAction($translationMapsAction, 'Administer Translation Maps');
 		}
-		if ($configArray['Catalog']['ils'] == 'Millennium' || $configArray['Catalog']['ils'] == 'Sierra'){
-			$sections['ils_integration']->addAction(new AdminAction('Loan Rules', 'View and load loan rules used by the ILS to determine if an patron is eligible to use materials.', '/ILS/LoanRules'), 'Administer Loan Rules');
-			$sections['ils_integration']->addAction(new AdminAction('Loan Rule Determiners', 'View and load loan rule determiners used by the ILS to determine if an patron is eligible to use materials.', '/ILS/LoanRuleDeterminers'), 'Administer Loan Rules');
-		}
+//		if ($configArray['Catalog']['ils'] == 'Millennium' || $configArray['Catalog']['ils'] == 'Sierra'){
+//			$sections['ils_integration']->addAction(new AdminAction('Loan Rules', 'View and load loan rules used by the ILS to determine if an patron is eligible to use materials.', '/ILS/LoanRules'), 'Administer Loan Rules');
+//			$sections['ils_integration']->addAction(new AdminAction('Loan Rule Determiners', 'View and load loan rule determiners used by the ILS to determine if an patron is eligible to use materials.', '/ILS/LoanRuleDeterminers'), 'Administer Loan Rules');
+//		}
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
 		$sections['ils_integration']->addAction(new AdminAction('Offline Holds Report', 'View a report of holds that were submitted while the ILS was offline.', '/Circa/OfflineHoldsReport'), 'View Offline Holds Report');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
