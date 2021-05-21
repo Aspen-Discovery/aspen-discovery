@@ -262,7 +262,7 @@ class Browse_AJAX extends Action {
 				} else {
 					$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
 					$defaultFilterInfo  = $browseCategory->defaultFilter;
-					$defaultFilters     = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
+					$defaultFilters     = preg_split('/[\r\n]+/', $defaultFilterInfo);
 					foreach ($defaultFilters as $filter) {
 						$searchObject->addFilter(trim($filter));
 					}
