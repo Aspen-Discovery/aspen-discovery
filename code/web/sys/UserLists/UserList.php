@@ -494,7 +494,7 @@ class UserList extends DataObject
 	 */
 	public function getBrowseRecords($start, $numItems) {
 		//Get all entries for the list
-		$listEntryInfo = $this->getListEntries();
+		$listEntryInfo = $this->getListEntries($this->defaultSort);
 
 		//Trim to the number of records we want to return
 		$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);
