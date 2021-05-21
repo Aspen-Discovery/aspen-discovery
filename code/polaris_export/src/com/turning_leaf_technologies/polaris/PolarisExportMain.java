@@ -718,6 +718,10 @@ public class PolarisExportMain {
 			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
 			logEntry.addNote("Looking for changed records since " + formattedLastExtractTime);
 		}
+		if (indexingProfile.isRunFullUpdate() && indexingProfile.getLastChangeProcessed() > 0){
+			lastId = Long.toString(indexingProfile.getLastChangeProcessed());
+			logEntry.addNote("Starting processing at bib " + lastId);
+		}
 		formattedLastExtractTime = URLEncoder.encode(formattedLastExtractTime, "UTF-8");
 		//Get the highest bib from Polaris
 		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
@@ -738,6 +742,10 @@ public class PolarisExportMain {
 			ProcessBibRequestResponse response = processGetBibsRequest(getBibsUrl, marcFactory, lastExtractTime, true);
 			numChanges += response.numChanges;
 			lastId = response.lastId;
+			if (indexingProfile.isRunFullUpdate()) {
+				indexingProfile.setLastChangeProcessed(Long.parseLong(lastId));
+				indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
+			}
 			doneLoading = response.doneLoading;
 			if (indexingProfile.isRunFullUpdate() && doneLoading){
 				if (Long.parseLong(lastId) <= lastIdForThisBatch && Long.parseLong(lastId) <= maxBibId){
@@ -746,6 +754,8 @@ public class PolarisExportMain {
 				}
 			}
 		}
+		indexingProfile.setLastChangeProcessed(0);
+		indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 
 		//If we are doing a continuous index, get a list of any items that have been updated or changed
 		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
@@ -804,6 +814,7 @@ public class PolarisExportMain {
 	}
 
 	static SimpleDateFormat polarisDateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	static SimpleDateFormat dateCreatedFormatter = new SimpleDateFormat("yyyy-MM-dd");
 	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog){
 		ProcessBibRequestResponse response = new ProcessBibRequestResponse();
 		if (marcFactory == null){
@@ -865,30 +876,39 @@ public class PolarisExportMain {
 									//Get Items from the API
 									int getItemsTries = 0;
 									boolean gotItems = false;
-									String getItemsUrl = "/PAPIService/REST/public/v1/1033/100/1/bib/" + bibliographicRecordId + "/holdings";
+									String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/bibid/" + bibliographicRecordId;
 									while (!gotItems && getItemsTries < 3) {
 										getItemsTries++;
-										WebServiceResponse bibItemsResponse = callPolarisAPI(getItemsUrl, null, "GET", "application/json", null);
+										WebServiceResponse bibItemsResponse = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
 										try {
 											if (bibItemsResponse.isSuccess()) {
 												//Add Items to the MARC record
 												JSONObject bibItemsResponseJSON = bibItemsResponse.getJSONResponse();
-												JSONArray allItems = bibItemsResponseJSON.getJSONArray("BibHoldingsGetRows");
+												JSONArray allItems = bibItemsResponseJSON.getJSONArray("ItemGetRows");
 												for (int j = 0; j < allItems.length(); j++) {
 													JSONObject curItem = allItems.getJSONObject(j);
-													DataField itemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getBarcodeSubfield(), "Barcode");
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getCallNumberSubfield(), "CallNumber");
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getLocationSubfield(), "LocationID");
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getCollectionSubfield(), "CollectionName");
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getShelvingLocationSubfield(), "ShelfLocation");
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getVolume(), "VolumeNumber");
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getITypeSubfield(), "MaterialType");
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemStatusSubfield(), "CircStatus");
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getDueDateSubfield(), "DueDate");
-													updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
+													if (curItem.getBoolean("IsDisplayInPAC")) {
+														DataField itemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
+														updateItemField(marcFactory, curItem, itemField, indexingProfile.getBarcodeSubfield(), "Barcode");
+														updateItemField(marcFactory, curItem, itemField, indexingProfile.getCallNumberSubfield(), "CallNumber");
+														updateItemField(marcFactory, curItem, itemField, indexingProfile.getLocationSubfield(), "LocationID");
+														updateItemField(marcFactory, curItem, itemField, indexingProfile.getCollectionSubfield(), "CollectionName");
+														updateItemField(marcFactory, curItem, itemField, indexingProfile.getShelvingLocationSubfield(), "ShelfLocation");
+														updateItemField(marcFactory, curItem, itemField, indexingProfile.getVolume(), "VolumeNumber");
+														updateItemField(marcFactory, curItem, itemField, indexingProfile.getITypeSubfield(), "MaterialType");
+														updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemStatusSubfield(), "CircStatus");
+														updateItemField(marcFactory, curItem, itemField, indexingProfile.getDueDateSubfield(), "DueDate");
+														updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
+														if (indexingProfile.getDateCreatedSubfield() != ' ') {
+															String dateCreated = getItemFieldData(curItem, "FirstAvailableDate");
+															if (dateCreated.length() > 0) {
+																Date dateCreatedTime = new Date(Long.parseLong(dateCreated.substring(dateCreated.indexOf('(') + 1, dateCreated.indexOf('-'))));
+																itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), dateCreatedFormatter.format(dateCreatedTime)));
+															}
+														}
 
-													marcRecord.addVariableField(itemField);
+														marcRecord.addVariableField(itemField);
+													}
 												}
 
 												//Save the file

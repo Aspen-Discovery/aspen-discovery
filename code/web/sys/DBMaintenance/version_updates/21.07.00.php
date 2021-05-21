@@ -52,6 +52,15 @@ function getUpdates21_07_00() : array
 				'ALTER TABLE location DROP COLUMN cloudLibraryScopeId'
 			],
 		],
+		'indexing_profiles_date_created_polaris' => [
+			'title' => 'Indexing Profile set date created for Polaris',
+			'description' => 'Add Date Created Subfield to Indexing Profile for Polaris',
+			'continueOnError' => true,
+			'sql' => [
+				"UPDATE indexing_profiles SET dateCreated = 'e' WHERE indexingClass = 'Polaris'",
+				"UPDATE indexing_profiles SET dateCreatedFormat = 'yyyy-MM-dd' WHERE indexingClass = 'Polaris'",
+			]
+		],
 	];
 }
 
