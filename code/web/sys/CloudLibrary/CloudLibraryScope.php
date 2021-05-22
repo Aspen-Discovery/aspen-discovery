@@ -217,7 +217,7 @@ class CloudLibraryScope extends DataObject
 		unset($this->_locations);
 	}
 
-	private function getSetting()
+	public function getSetting()
 	{
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
 		$setting = new CloudLibrarySetting();

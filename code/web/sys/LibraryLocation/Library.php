@@ -1491,7 +1491,7 @@ class Library extends DataObject
 	}
 
 	/**
-	 * @return CloudLibraryScope[]
+	 * @return LibraryCloudLibraryScope[]
 	 */
 	public function getCloudLibraryScopes() : ?array
 	{

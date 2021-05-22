@@ -443,11 +443,11 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}
 		$scopes = $activeLibrary->getCloudLibraryScopes();
 		if (count($scopes) > 0){
-			foreach ($scopes as $scope){
-				$settings = new CloudLibrarySetting();
-				$settings->id = $scope->settingId;
-				if ($settings->find(true)) {
-					return $settings;
+			foreach ($scopes as $libraryScope){
+				$scope = new CloudLibraryScope();
+				$scope->id = $libraryScope->scopeId;
+				if ($scope->find(true)) {
+					return $scope->getSetting();
 				}
 			}
 		}
