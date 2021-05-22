@@ -41,7 +41,7 @@ class UserAPI extends Action
 		echo $output;
 	}
 
-	function getCatalogConnection()
+	private function getCatalogConnection() : CatalogConnection
 	{
 		if ($this->catalog == null) {
 			// Connect to Catalog
@@ -73,7 +73,7 @@ class UserAPI extends Action
 	 *
 	 * @access private
 	 */
-	function isLoggedIn()
+	function isLoggedIn(): bool
 	{
 		global $logger;
 		$logger->log("UserAPI/isLoggedIn session: " . session_id(), Logger::LOG_DEBUG);
@@ -102,7 +102,7 @@ class UserAPI extends Action
 	 *
 	 * @access private
 	 */
-	function login()
+	function login() : array
 	{
 		global $logger;
 		$logger->log("Starting UserAPI/login session: " . session_id(), Logger::LOG_DEBUG);
@@ -149,7 +149,7 @@ class UserAPI extends Action
 	 *
 	 * @access private
 	 */
-	function logout()
+	function logout() : bool
 	{
 		global $logger;
 		$logger->log("UserAPI/logout session: " . session_id(), Logger::LOG_DEBUG);
@@ -210,7 +210,7 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 */
-	function validateAccount()
+	function validateAccount() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
@@ -330,7 +330,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronProfile()
+	function getPatronProfile() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
@@ -358,8 +358,8 @@ class UserAPI extends Action
 			$accountSummary = $catalogConnection->getAccountSummary($user);
 			$userData->numCheckedOutIls = (int)$accountSummary->numCheckedOut;
 			$userData->numHoldsIls =(int) $accountSummary->getNumHolds();
-			$userData->numHoldsAvailableIls = (int)($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
-			$userData->numHoldsRequestedIls =(int)($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
+			$userData->numHoldsAvailableIls = ($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
+			$userData->numHoldsRequestedIls = ($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
 			$userData->finesVal = (float)$accountSummary->totalFines;
 			global $activeLanguage;
 			$currencyCode = 'USD';
@@ -483,7 +483,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronHolds()
+	function getPatronHolds() : array
 	{
 		global $offlineMode;
 		if ($offlineMode) {
@@ -491,7 +491,7 @@ class UserAPI extends Action
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
-				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
+				$source = $_REQUEST['source'] ?? 'all';
 				$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
 				$holdsToReturn = [
 					'available' => [],
@@ -577,7 +577,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronHoldsOverDrive()
+	function getPatronHoldsOverDrive() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
@@ -629,14 +629,14 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronCheckedOutItemsOverDrive()
+	function getPatronCheckedOutItemsOverDrive() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
-			$eContentCheckedOutItems = $driver->getCheckouts($user, false);
+			$eContentCheckedOutItems = $driver->getCheckouts($user);
 			$items = [];
 			foreach ($eContentCheckedOutItems as $checkedOutItem){
 				$items[] = $checkedOutItem->toArray();
@@ -681,7 +681,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronOverDriveSummary()
+	function getPatronOverDriveSummary() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
@@ -731,9 +731,9 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronFines()
+	function getPatronFines() : array
 	{
-		$includeMessages = isset($_REQUEST['includeMessages']) ? $_REQUEST['includeMessages'] : false;
+		$includeMessages = $_REQUEST['includeMessages'] ?? false;
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$fines = $this->getCatalogConnection()->getFines($user, $includeMessages);
@@ -767,7 +767,7 @@ class UserAPI extends Action
 	 * @return array
 	 * @noinspection PhpUnused
 	 */
-	function getOverDriveLendingOptions()
+	function getOverDriveLendingOptions() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
@@ -825,7 +825,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronCheckedOutItems()
+	function getPatronCheckedOutItems() : array
 	{
 		global $offlineMode;
 		if ($offlineMode) {
@@ -833,10 +833,10 @@ class UserAPI extends Action
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
-				$source = isset($_REQUEST['source']) ? $_REQUEST['source'] : 'all';
+				$source = $_REQUEST['source'] ?? 'all';
 				$allCheckedOut = $user->getCheckouts(false, $source);
 				$checkoutsList = [];
-				foreach ($allCheckedOut as $key => $checkoutObj){
+				foreach ($allCheckedOut as $checkoutObj){
 					$checkoutsList[] = $checkoutObj->getArrayForAPIs();
 				}
 
@@ -887,7 +887,7 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 */
-	function renewCheckout()
+	function renewCheckout() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$recordId = $_REQUEST['recordId'];
@@ -908,7 +908,7 @@ class UserAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function renewItem()
+	function renewItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$itemBarcode = $_REQUEST['itemBarcode'];
@@ -949,12 +949,12 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 */
-	function renewAll()
+	function renewAll() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			$renewalMessage = $user->renewAll(false);
+			$renewalMessage = $user->renewAll();
 			$renewalMessage['message'] = array_merge([$renewalMessage['Renewed'] . ' of ' . $renewalMessage['Total'] . ' titles were renewed'],$renewalMessage['message']);
 			for ($i = 0; $i < $renewalMessage['Renewed']; $i++){
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -1007,7 +1007,7 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 */
-	function placeHold()
+	function placeHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$bibId = $_REQUEST['bibId'];
@@ -1049,7 +1049,7 @@ class UserAPI extends Action
 		}
 	}
 
-	function placeItemHold()
+	function placeItemHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$bibId = $_REQUEST['bibId'];
@@ -1074,7 +1074,6 @@ class UserAPI extends Action
 				if ($recordDriver->isValid()) {
 					require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 					$volumeDataDB = new IlsVolumeInfo();
-					$volumeDataDB = new IlsVolumeInfo();
 					$volumeDataDB->recordId = $recordDriver->getIdWithSource();
 					if ($volumeDataDB->find(true)){
 						return array('success' => false, 'message' => translate(['text' => 'You must place a volume hold on this title.']));
@@ -1091,7 +1090,7 @@ class UserAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function changeHoldPickUpLocation()
+	function changeHoldPickUpLocation() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$holdId = $_REQUEST['holdId'];
@@ -1104,6 +1103,23 @@ class UserAPI extends Action
 			}
 			$holdMessage = $patron->changeHoldPickUpLocation($holdId, $newLocation);
 			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getValidPickupLocations() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patron = UserAccount::validateAccount($username, $password);
+		if ($patron && !($patron instanceof AspenError)) {
+			if ($patron->hasIlsConnection()){
+				$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+				return array('success' => true, 'pickupLocations' => $pickupLocations);
+			}else{
+				return array('success' => false, 'message' => 'Patron is not connected to an ILS.');
+			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -1144,7 +1160,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function placeOverDriveHold()
+	function placeOverDriveHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		if (isset($_REQUEST['overDriveId'])) {
@@ -1196,7 +1212,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function cancelOverDriveHold()
+	function cancelOverDriveHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
@@ -1243,7 +1259,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function checkoutOverDriveItem()
+	function checkoutOverDriveItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
@@ -1302,7 +1318,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function cancelHold()
+	function cancelHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
@@ -1359,7 +1375,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function freezeHold()
+	function freezeHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
@@ -1369,7 +1385,7 @@ class UserAPI extends Action
 			} else {
 				$recordId = $_REQUEST['recordId'];
 				$holdId = $_REQUEST['holdId'];
-				$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : null;
+				$reactivationDate = $_REQUEST['reactivationDate'] ?? null;
 				return $user->freezeHold($recordId, $holdId, $reactivationDate);
 			}
 		} else {
@@ -1411,7 +1427,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function activateHold()
+	function activateHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
@@ -1486,7 +1502,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function getPatronReadingHistory()
+	function getPatronReadingHistory() : array
 	{
 		global $offlineMode;
 		if ($offlineMode) {
@@ -1505,7 +1521,7 @@ class UserAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function updatePatronReadingHistory()
+	function updatePatronReadingHistory() : array
 	{
 		global $offlineMode;
 		if ($offlineMode) {
@@ -1550,7 +1566,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function optIntoReadingHistory()
+	function optIntoReadingHistory() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
@@ -1588,7 +1604,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function optOutOfReadingHistory()
+	function optOutOfReadingHistory() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
@@ -1626,7 +1642,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function deleteAllFromReadingHistory()
+	function deleteAllFromReadingHistory() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
@@ -1665,7 +1681,7 @@ class UserAPI extends Action
 	 *
 	 * @noinspection PhpUnused
 	 */
-	function deleteSelectedFromReadingHistory()
+	function deleteSelectedFromReadingHistory() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$selectedTitles = $_REQUEST['selected'];
@@ -1682,7 +1698,7 @@ class UserAPI extends Action
 	 * @return array
 	 * @noinspection PhpUnused
 	 */
-	private function loadUsernameAndPassword()
+	private function loadUsernameAndPassword() : array
 	{
 		if (isset($_REQUEST['username'])) {
 			$username = $_REQUEST['username'];
@@ -1704,7 +1720,8 @@ class UserAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getBarcodeForPatron(){
+	function getBarcodeForPatron() : array
+	{
 		$results = array('success' => false, 'message' => 'Unknown error loading barcode');
 		if (isset($_REQUEST['patronId'])){
 			$user = new User();
@@ -1729,7 +1746,8 @@ class UserAPI extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getUserByBarcode(){
+	function getUserByBarcode() : array
+	{
 		$results = array('success' => false, 'message' => 'Unknown error loading patronId');
 		if (isset($_REQUEST['username'])){
 			$user = UserAccount::getUserByBarcode($_REQUEST['username']);
@@ -1745,7 +1763,7 @@ class UserAPI extends Action
 	}
 
 	/**
-	 * @return bool|false|User
+	 * @return bool|User
 	 */
 	protected function getUserForApiCall()
 	{
@@ -1768,7 +1786,7 @@ class UserAPI extends Action
 		return $user;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

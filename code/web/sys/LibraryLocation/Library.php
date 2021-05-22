@@ -1818,5 +1818,70 @@ class Library extends DataObject
 		return $this->_materialsRequestFormats;
 	}
 
+	/**
+	 * @return Location[]
+	 */
+	public function getLocations() : array
+	{
+		$locations = [];
+		$location = new Location();
+		$location->orderBy('isMainBranch desc');
+		$location->orderBy('displayName');
+		$location->libraryId = $this->libraryId;
+		$location->find();
+		while ($location->fetch()){
+			$locations[$location->locationId] = clone($location);
+		}
+		return $locations;
+	}
+
+	public function getApiInfo() : array
+	{
+		global $configArray;
+		$apiInfo = [
+			'libraryId' => $this->libraryId,
+			'isDefault' => $this->isDefault,
+			'baseUrl' => $this->baseUrl,
+			'displayName' => $this->displayName,
+			'homeLink' => $this->homeLink,
+			'twitterLink' => $this->twitterLink,
+			'facebookLink' => $this->facebookLink,
+			'youtubeLink' => $this->youtubeLink,
+			'instagramLink' => $this->instagramLink,
+			'pinterestLink' => $this->pinterestLink,
+			'goodreadsLink' => $this->goodreadsLink,
+			'tiktoklink' => $this->tiktoklink,
+			'generalContactLink' => $this->generalContactLink,
+		];
+		if (empty($this->baseUrl)){
+			$apiInfo['baseUrl'] = $configArray['Site']['url'];
+		}
+		$activeTheme = new Theme();
+		$activeTheme->id = $this->theme;
+		if ($activeTheme->find(true)){
+			$activeTheme->applyDefaults();
+			if ($activeTheme->logoName) {
+				$apiInfo['logo'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->logoName;
+			}
+			$apiInfo['primaryBackgroundColor'] = $activeTheme->primaryBackgroundColor;
+			$apiInfo['primaryForegroundColor'] = $activeTheme->primaryForegroundColor;
+			$apiInfo['secondaryBackgroundColor'] = $activeTheme->secondaryBackgroundColor;
+			$apiInfo['secondaryForegroundColor'] = $activeTheme->secondaryForegroundColor;
+			$apiInfo['tertiaryBackgroundColor'] = $activeTheme->tertiaryBackgroundColor;
+			$apiInfo['tertiaryForegroundColor'] = $activeTheme->tertiaryForegroundColor;
+		}
+		$locations = $this->getLocations();
+		$apiInfo['locations'] = [];
+		foreach ($locations as $location){
+			$apiInfo['locations'][$location->locationId] = [
+				'id' => $location->locationId,
+				'displayName' => $location->displayName,
+				'isMainBranch' => (bool)$location->isMainBranch,
+				'showInLocationsAndHoursList' => (bool)$location->showInLocationsAndHoursList
+			];
+		}
+		return $apiInfo;
+	}
+
 
 }

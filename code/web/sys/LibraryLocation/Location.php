@@ -465,7 +465,6 @@ class Location extends DataObject
 		// For Example: MaterialsRequest_NewRequest
 		$homeLibraryInList = false;
 		$alternateLibraryInList = false;
-		$hasSelectedLocation = false;
 
 		//Get the library for the patron's home branch.
 		global $librarySingleton;
@@ -792,7 +791,6 @@ class Location extends DataObject
 		global $timer;
 		global $memCache;
 		global $configArray;
-		global $logger;
 		//Check the current IP address to see if we are in a branch
 		$activeIp = IPAddress::getActiveIp();
 		$this->_ipLocation = $memCache->get('location_for_ip_' . $activeIp);
@@ -843,7 +841,11 @@ class Location extends DataObject
 		return $this->sublocationCode;
 	}
 
-	function getLocationsFacetsForLibrary($libraryId)
+	/**
+	 * @param $libraryId
+	 * @return string[]
+	 */
+	function getLocationsFacetsForLibrary($libraryId) : array
 	{
 		$location = new Location();
 		$location->libraryId = $libraryId;
@@ -1032,7 +1034,7 @@ class Location extends DataObject
 		}
 	}
 
-	public static function getLibraryHours($locationId, $timeToCheck)
+	public static function getLibraryHours($locationId, $timeToCheck) : ?array
 	{
 		$location = new Location();
 		$location->locationId = $locationId;
@@ -1165,7 +1167,7 @@ class Location extends DataObject
 		return $libraryHoursMessage;
 	}
 
-	public static function getOpenHoursMessage($hours)
+	public static function getOpenHoursMessage($hours) : string
 	{
 		$formattedMessage = '';
 		for ($i = 0; $i < sizeof($hours); $i++) {
@@ -1229,7 +1231,7 @@ class Location extends DataObject
 	}
 
 	/** @return LocationHours[] */
-	function getHours()
+	function getHours() : array
 	{
 		if (!isset($this->_hours)) {
 			$this->_hours = array();
@@ -1246,7 +1248,7 @@ class Location extends DataObject
 		return $this->_hours;
 	}
 
-	public function hasValidHours()
+	public function hasValidHours() : bool
 	{
 		$hours = new LocationHours();
 		$hours->locationId = $this->locationId;
@@ -1270,7 +1272,7 @@ class Location extends DataObject
 	 * - Finally check to see if we have an active location based on the IP address.  If we do, use that to determine if this is an opac station
 	 * @return bool
 	 */
-	public function getOpacStatus()
+	public function getOpacStatus() : bool
 	{
 		if (is_null($this->_opacStatus)) {
 			if (isset($_GET['opac'])) {
@@ -1300,7 +1302,7 @@ class Location extends DataObject
 	protected $_groupedWorkDisplaySettings = null;
 
 	/** @return GroupedWorkDisplaySetting */
-	public function getGroupedWorkDisplaySettings()
+	public function getGroupedWorkDisplaySettings() : GroupedWorkDisplaySetting
 	{
 		if ($this->_groupedWorkDisplaySettings == null) {
 			try {
@@ -1320,14 +1322,14 @@ class Location extends DataObject
 		return $this->_groupedWorkDisplaySettings;
 	}
 
-	function getEditLink()
+	function getEditLink() : string
 	{
 		return '/Admin/Locations?objectAction=edit&id=' . $this->libraryId;
 	}
 
 	protected $_parentLibrary = null;
 	/** @return Library */
-	public function getParentLibrary()
+	public function getParentLibrary() : Library
 	{
 		if ($this->_parentLibrary == null){
 			$this->_parentLibrary = new Library();
@@ -1347,7 +1349,7 @@ class Location extends DataObject
 	 * @param boolean $restrictByHomeLibrary whether or not only locations for the patron's home library should be returned
 	 * @return array
 	 */
-	static function getLocationList($restrictByHomeLibrary): array
+	static function getLocationList(bool $restrictByHomeLibrary): array
 	{
 		$location = new Location();
 		$location->orderBy('displayName');
@@ -1369,8 +1371,10 @@ class Location extends DataObject
 
 	/**
 	 * @return BrowseCategoryGroup|null
+	 * @noinspection PhpUnused
 	 */
-	public function getBrowseCategoryGroup(){
+	public function getBrowseCategoryGroup(): ?BrowseCategoryGroup
+	{
 		if ($this->_browseCategoryGroup == null){
 			if ($this->browseCategoryGroupId == -1){
 				$this->_browseCategoryGroup = $this->getParentLibrary()->getBrowseCategoryGroup();
@@ -1384,5 +1388,33 @@ class Location extends DataObject
 			}
 		}
 		return $this->_browseCategoryGroup;
+	}
+
+	public function getApiInfo() : array
+	{
+		$apiInfo = [
+			'locationId' => $this->locationId,
+			'isMainBranch' => (bool)$this->isMainBranch,
+			'displayName' => $this->displayName,
+			'address' => $this->address,
+			'phone' => $this->phone,
+			'tty' => $this->tty,
+			'description' => $this->description,
+			'homeLink' => $this->homeLink,
+			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
+			'hours' => []
+		];
+		$hours = $this->getHours();
+		foreach ($hours as $hour){
+			$apiInfo['hours'][] = [
+				'day' => (int)$hour->day,
+				'dayName' => LocationHours::$dayNames[$hour->day],
+				'isClosed' => (bool)$hour->closed,
+				'open' => $hour->open,
+				'close' => $hour->close,
+				'notes' => $hour->notes
+			];
+		}
+		return $apiInfo;
 	}
 }
