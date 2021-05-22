@@ -46,6 +46,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //TODO: Load dates closed
 //TODO: Process a single record
@@ -815,6 +817,7 @@ public class PolarisExportMain {
 
 	static SimpleDateFormat polarisDateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	static SimpleDateFormat dateCreatedFormatter = new SimpleDateFormat("yyyy-MM-dd");
+	static Pattern polarisDatePattern = Pattern.compile("/Date\\((-?\\d+)(-\\d{4})\\)/");
 	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog){
 		ProcessBibRequestResponse response = new ProcessBibRequestResponse();
 		if (marcFactory == null){
@@ -902,8 +905,11 @@ public class PolarisExportMain {
 														if (indexingProfile.getDateCreatedSubfield() != ' ') {
 															String dateCreated = getItemFieldData(curItem, "FirstAvailableDate");
 															if (dateCreated.length() > 0) {
-																Date dateCreatedTime = new Date(Long.parseLong(dateCreated.substring(dateCreated.indexOf('(') + 1, dateCreated.indexOf('-'))));
-																itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), dateCreatedFormatter.format(dateCreatedTime)));
+																Matcher dateCreatedMatcher = polarisDatePattern.matcher(dateCreated);
+																if (dateCreatedMatcher.matches()){
+																	Date dateCreatedTime = new Date(Long.parseLong(dateCreatedMatcher.group(1)));
+																	itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), dateCreatedFormatter.format(dateCreatedTime)));
+																}
 															}
 														}
 
