@@ -1283,17 +1283,7 @@ class Library extends DataObject
 				return $this->combinedResultSections;
 			}
 		} elseif ($name == 'cloudLibraryScopes') {
-			if (!isset($this->_cloudLibraryScopes) && $this->libraryId) {
-				$this->_cloudLibraryScopes = array();
-				$cloudLibraryScope = new LibraryCloudLibraryScope();
-				$cloudLibraryScope->libraryId = $this->libraryId;
-				if ($cloudLibraryScope->find()) {
-					while ($cloudLibraryScope->fetch()) {
-						$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
-					}
-				}
-				return $this->_cloudLibraryScopes;
-			}
+			return $this->getCloudLibraryScopes();
 		} else {
 			return $this->_data[$name];
 		}
@@ -1497,6 +1487,24 @@ class Library extends DataObject
 		if (isset ($this->_exploreMoreBar) && is_array($this->_exploreMoreBar)){
 			$this->saveOneToManyOptions($this->_exploreMoreBar, 'libraryId');
 			unset($this->_exploreMoreBar);
+		}
+	}
+
+	/**
+	 * @return CloudLibraryScope[]
+	 */
+	public function getCloudLibraryScopes() : array
+	{
+		if (!isset($this->_cloudLibraryScopes) && $this->libraryId) {
+			$this->_cloudLibraryScopes = array();
+			$cloudLibraryScope = new LibraryCloudLibraryScope();
+			$cloudLibraryScope->libraryId = $this->libraryId;
+			if ($cloudLibraryScope->find()) {
+				while ($cloudLibraryScope->fetch()) {
+					$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
+				}
+			}
+			return $this->_cloudLibraryScopes;
 		}
 	}
 

@@ -426,6 +426,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}
 	}
 
+	/**
+	 * @param User|null $user
+	 * @return CloudLibrarySetting|false
+	 */
 	private function getSettings(User $user = null){
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
@@ -437,23 +441,17 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			global $library;
 			$activeLibrary = $library;
 		}
-		$scope = new CloudLibraryScope();
-		$scope->id = $activeLibrary->cloudLibraryScopeId;
-		if ($activeLibrary->cloudLibraryScopeId > 0){
-			if ($scope->find(true)) {
+		$scopes = $activeLibrary->getCloudLibraryScopes();
+		if (count($scopes) > 0){
+			foreach ($scopes as $scope){
 				$settings = new CloudLibrarySetting();
 				$settings->id = $scope->settingId;
 				if ($settings->find(true)) {
 					return $settings;
-				} else {
-					return false;
 				}
-			}else{
-				return false;
 			}
-		}else {
-			return false;
 		}
+		return false;
 	}
 
 	private function callCloudLibraryUrl(CloudLibrarySetting $settings, string $apiPath, $method = 'GET', $requestBody = null)
