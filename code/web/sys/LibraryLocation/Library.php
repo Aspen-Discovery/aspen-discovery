@@ -1493,7 +1493,7 @@ class Library extends DataObject
 	/**
 	 * @return CloudLibraryScope[]
 	 */
-	public function getCloudLibraryScopes() : array
+	public function getCloudLibraryScopes() : ?array
 	{
 		if (!isset($this->_cloudLibraryScopes) && $this->libraryId) {
 			$this->_cloudLibraryScopes = array();
@@ -1504,8 +1504,8 @@ class Library extends DataObject
 					$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
 				}
 			}
-			return $this->_cloudLibraryScopes;
 		}
+		return $this->_cloudLibraryScopes;
 	}
 
 	public function saveCloudLibraryScopes()
