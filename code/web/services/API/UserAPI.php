@@ -1115,7 +1115,13 @@ class UserAPI extends Action
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
 			if ($patron->hasIlsConnection()){
-				$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+				$tmpPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+				$pickupLocations = [];
+				foreach ($tmpPickupLocations as $pickupLocation){
+					if (!is_string($pickupLocation)) {
+						$pickupLocations[] = $pickupLocation->toArray();
+					}
+				}
 				return array('success' => true, 'pickupLocations' => $pickupLocations);
 			}else{
 				return array('success' => false, 'message' => 'Patron is not connected to an ILS.');
