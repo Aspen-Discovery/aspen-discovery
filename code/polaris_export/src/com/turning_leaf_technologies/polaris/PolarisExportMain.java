@@ -178,11 +178,13 @@ public class PolarisExportMain {
 
 				try {
 					if (indexingProfile.isRunFullUpdate()) {
-						PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
-						updateVariableStmt.setLong(1, startTimeForLogging);
-						updateVariableStmt.setLong(2, indexingProfile.getId());
-						updateVariableStmt.executeUpdate();
-						updateVariableStmt.close();
+						if (!logEntry.hasErrors()) {
+							PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
+							updateVariableStmt.setLong(1, startTimeForLogging);
+							updateVariableStmt.setLong(2, indexingProfile.getId());
+							updateVariableStmt.executeUpdate();
+							updateVariableStmt.close();
+						}
 					} else {
 						if (!logEntry.hasErrors()) {
 							PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
