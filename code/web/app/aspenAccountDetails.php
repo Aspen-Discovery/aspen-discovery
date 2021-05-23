@@ -1,8 +1,9 @@
 <?php
 # ****************************************************************************************************************************
-# * Last Edit: April 8, 2021
+# * Last Edit: May 3, 2021
 # * - displays the account information for the user
 # *
+# * 05-03-21: altered how the location information is grabbed from the site - CZ
 # * 04-08-21: Base Version - CZ
 # ****************************************************************************************************************************
 
@@ -15,7 +16,9 @@ include_once 'config.php';
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
 $library = $_GET['library'];
-$urlPath = urlPath($library);
+$locationInfo = urlPath($library);
+$urlPath      = $locationInfo[0];
+$shortname    = $locationInfo[1];
 
 # ****************************************************************************************************************************
 # * Prep the patron information for checking - dummy out something just in case

@@ -1,8 +1,9 @@
 <?php
 # ****************************************************************************************************************************
-# * Last Edit: April 8, 2021
+# * Last Edit: May 3, 2021
 # * - Shows discover functionality based on parameters
 # *
+# * 05-03-21: added shortname to handle json returns - CZ
 # * 04-08-21: base version - CZ
 # ****************************************************************************************************************************
 
@@ -14,8 +15,10 @@ include_once 'config.php';
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$library = $_GET['library'];
-$urlPath = urlPath($library);
+$library      = $_GET['library'];
+$locationInfo = urlPath($library);
+$urlPath      = $locationInfo[0];
+$shortname    = $locationInfo[1];
 
 # ****************************************************************************************************************************
 # * give the number of results to return from the search - needed to accomodate for the culling of Hoopla and Kanopy
@@ -49,9 +52,9 @@ foreach($jsonData['result']['records'] as $item) {
 # * collection code may be empty - need to dummy it out just in case
 # ****************************************************************************************************************************
   $ccode       = '';
-  if (isset($item['collection_main'][0])) { $ccode = $item['collection_main'][0]; }
+  if (isset($item['collection_' . $shortname][0])) { $ccode = $item['collection_' . $shortname][0]; }
 
-  $format      = $item['format_main'][0];
+  $format      = $item['format_' . $shortname][0];
   $iconName    = $urlPath . "/bookcover.php?id=" . $item['id'] . "&size=medium&type=grouped_work";
   $id          = $item['id'];
   
