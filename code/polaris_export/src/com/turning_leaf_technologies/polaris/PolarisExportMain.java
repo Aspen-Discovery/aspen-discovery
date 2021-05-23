@@ -724,6 +724,7 @@ public class PolarisExportMain {
 		}
 		if (indexingProfile.isRunFullUpdate() && indexingProfile.getLastChangeProcessed() > 0){
 			lastId = Long.toString(indexingProfile.getLastChangeProcessed());
+			logEntry.incSkipped(indexingProfile.getLastChangeProcessed());
 			logEntry.addNote("Starting processing at bib " + lastId);
 		}
 		formattedLastExtractTime = URLEncoder.encode(formattedLastExtractTime, "UTF-8");

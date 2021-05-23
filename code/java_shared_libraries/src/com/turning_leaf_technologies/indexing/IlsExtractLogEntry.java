@@ -139,6 +139,9 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 	public void incSkipped(){
 		numSkipped++;
 	}
+	public void incSkipped(long numSkipped){
+		this.numSkipped += numSkipped;
+	}
 	public void setNumProducts(int size) {
 		numProducts = size;
 	}
