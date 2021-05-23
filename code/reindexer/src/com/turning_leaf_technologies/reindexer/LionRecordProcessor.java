@@ -75,7 +75,7 @@ class LionRecordProcessor extends IIIRecordProcessor {
 				}
 			}
 		}
-		return false;
+		return super.isBibSuppressed(record);
 	}
 
 	@Override

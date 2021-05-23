@@ -120,21 +120,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 			}
 		}
 
-		String bibFormat = MarcUtil.getFirstFieldVal(record, "998e");
-		if (bibFormat != null){
-			bibFormat = bibFormat.trim();
-		}else{
-			return false;
-		}
-		boolean isEContentBibFormat = bibFormat.equals("3") || bibFormat.equals("t") || bibFormat.equals("m") || bibFormat.equals("w") || bibFormat.equals("u");
-		String url = MarcUtil.getFirstFieldVal(record, "856u");
-		boolean has856 = url != null;
-		if (isEContentBibFormat && has856){
-			//Suppress if the url is an overdrive or hoopla url
-			return url.contains("lib.overdrive") || url.contains("hoopla");
-		}
-
-		return false;
+		return super.isBibSuppressed(record);
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {

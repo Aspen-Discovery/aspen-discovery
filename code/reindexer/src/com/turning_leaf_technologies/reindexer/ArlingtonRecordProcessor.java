@@ -251,7 +251,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 				}
 			}
 		}
-		return false;
+		return super.isBibSuppressed(record);
 	}
 
 	private static Pattern suppressedICode2Pattern = Pattern.compile("^([chnpy46v])$");

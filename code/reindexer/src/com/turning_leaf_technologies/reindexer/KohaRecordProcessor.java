@@ -627,16 +627,15 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected boolean isBibSuppressed(Record record) {
-		boolean isSuppressed = false;
 		DataField field942 = record.getDataField("942");
 		if (field942 != null){
 			Subfield subfieldN = field942.getSubfield('n');
 			if (subfieldN != null && subfieldN.getData().equals("1")){
-				isSuppressed = true;
+				return true;
 			}
 		}
 
-		return isSuppressed;
+		return super.isBibSuppressed(record);
 	}
 
 	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){

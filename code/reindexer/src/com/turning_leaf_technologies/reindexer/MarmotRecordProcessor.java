@@ -77,7 +77,7 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 				}
 			}
 		}
-		return false;
+		return super.isBibSuppressed(record);
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {

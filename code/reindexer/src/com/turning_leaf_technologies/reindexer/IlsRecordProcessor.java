@@ -418,7 +418,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return numPrintItems;
 	}
 
+	static Pattern eContentUrlPattern = Pattern.compile("overdrive\\.com|contentreserve\\.com|hoopla|yourcloudlibrary|axis360\\.baker-taylor\\.com", Pattern.CASE_INSENSITIVE);
+	//Suppress all marc records for eContent that can be loaded via API
 	protected boolean isBibSuppressed(Record record) {
+		Set<String> urls = MarcUtil.getFieldList(record, "856u");
+		for (String url : urls){
+			//Suppress if the url is an overdrive or hoopla url
+			if (eContentUrlPattern.matcher(url).find()){
+				return true;
+			};
+		}
 		return false;
 	}
 
