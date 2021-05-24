@@ -47,7 +47,7 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
 		return array(
 			'title' => 'Add as Browse Category to Home Page',
-			'modalBody' => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
+			'modalBody' => $interface->fetch('Browse/newBrowseCategoryForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
 		);
 	}
