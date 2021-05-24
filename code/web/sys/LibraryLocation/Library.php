@@ -69,6 +69,7 @@ class Library extends DataObject
 
 	//Account integration settings
 	public $ilsCode;
+	public $workstationId;
 	public $allowProfileUpdates;   //tinyint(4)
 	public $allowHomeLibraryUpdates;
 	public $allowUsernameUpdates;
@@ -501,19 +502,20 @@ class Library extends DataObject
 			// ILS/Account Integration //
 			'ilsSection' => array('property'=>'ilsSection', 'type' => 'section', 'label' =>'ILS/Account Integration', 'hideInLists' => true,
 					'helpLink'=>'', 'properties' => array(
-				'ilsCode'                              => array('property'=>'ilsCode', 'type'=>'text', 'label'=>'ILS Code', 'description'=>'The location code that all items for this location start with.', 'size'=>'4', 'hideInLists' => false, 'forcesReindex' => true),
-				'scope'                                => array('property'=>'scope', 'type'=>'text', 'label'=>'Scope', 'description'=>'The scope for the system in Millennium to refine holdings for the user.', 'size'=>'4', 'hideInLists' => true,'default'=>0, 'forcesReindex' => true),
-				'useScope'                             => array('property'=>'useScope', 'type'=>'checkbox', 'label'=>'Use Scope', 'description'=>'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true,),
-				'showExpirationWarnings'               => array('property'=>'showExpirationWarnings', 'type'=>'checkbox', 'label'=>'Show Expiration Warnings', 'description'=>'Whether or not the user should be shown expiration warnings if their card is nearly expired.', 'hideInLists' => true, 'default' => 1),
-				'expirationNearMessage'                => array('property'=>'expirationNearMessage', 'type'=>'text', 'label'=>'Expiration Near Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => ''),
-				'expiredMessage'                       => array('property'=>'expiredMessage', 'type'=>'text', 'label'=>'Expired Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account has expired', 'hideInLists' => true, 'default' => ''),
-				'showWhileYouWait'                     => array('property'=>'showWhileYouWait', 'type'=>'checkbox', 'label'=>'Show While You Wait', 'description'=>'Whether or not the user should be shown suggestions of other titles they might like.', 'hideInLists' => true, 'default' => 1),
-				'enableMaterialsBooking'               => array('property'=>'enableMaterialsBooking', 'type'=>'checkbox', 'label'=>'Enable Materials Booking', 'description'=>'Check to enable integration of Sierra\'s Materials Booking module.', 'hideInLists' => true, 'default' => 0),
-				'allowLinkedAccounts'                  => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Aspen Discovery account.', 'hideInLists' => true, 'default' => 1),
+				'ilsCode' => array('property'=>'ilsCode', 'type'=>'text', 'label'=>'ILS Code', 'description'=>'The location code that all items for this location start with.', 'size'=>'4', 'hideInLists' => false, 'forcesReindex' => true),
+				'workstationId' => array('property'=>'workstationId', 'type'=>'text','label'=>'Workstation Id (Polaris)', 'maxLength' => 10, 'description'=>'Optional workstation ID for transactions. If different than main workstation ID set for the account profile.'),
+				'scope' => array('property'=>'scope', 'type'=>'text', 'label'=>'Scope', 'description'=>'The scope for the system in Millennium to refine holdings for the user.', 'size'=>'4', 'hideInLists' => true,'default'=>0, 'forcesReindex' => true),
+				'useScope' => array('property'=>'useScope', 'type'=>'checkbox', 'label'=>'Use Scope', 'description'=>'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true,),
+				'showExpirationWarnings' => array('property'=>'showExpirationWarnings', 'type'=>'checkbox', 'label'=>'Show Expiration Warnings', 'description'=>'Whether or not the user should be shown expiration warnings if their card is nearly expired.', 'hideInLists' => true, 'default' => 1),
+				'expirationNearMessage' => array('property'=>'expirationNearMessage', 'type'=>'text', 'label'=>'Expiration Near Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => ''),
+				'expiredMessage' => array('property'=>'expiredMessage', 'type'=>'text', 'label'=>'Expired Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account has expired', 'hideInLists' => true, 'default' => ''),
+				'showWhileYouWait' => array('property'=>'showWhileYouWait', 'type'=>'checkbox', 'label'=>'Show While You Wait', 'description'=>'Whether or not the user should be shown suggestions of other titles they might like.', 'hideInLists' => true, 'default' => 1),
+				'enableMaterialsBooking' => array('property'=>'enableMaterialsBooking', 'type'=>'checkbox', 'label'=>'Enable Materials Booking', 'description'=>'Check to enable integration of Sierra\'s Materials Booking module.', 'hideInLists' => true, 'default' => 0),
+				'allowLinkedAccounts' => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Aspen Discovery account.', 'hideInLists' => true, 'default' => 1),
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, Holds and Bookings pages.', 'hideInLists' => true, 'default'=>true),
-				'enableCourseReserves'                 => array('property'=>'enableCourseReserves', 'type'=>'checkbox', 'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,),
-				'pTypesSection'                        => array('property' => 'pTypesSectionSection', 'type' => 'section', 'label' => 'P-Types', 'hideInLists' => true, 'helpLink'=>'','properties' => array(
-					'pTypes'       => array('property'=>'pTypes', 'type'=>'text', 'label'=>'P-Types', 'description'=>'A list of pTypes that are valid for the library.  Separate multiple pTypes with commas.', 'forcesReindex' => true),
+				'enableCourseReserves' => array('property'=>'enableCourseReserves', 'type'=>'checkbox', 'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,),
+				'pTypesSection' => array('property' => 'pTypesSectionSection', 'type' => 'section', 'label' => 'P-Types', 'hideInLists' => true, 'helpLink'=>'','properties' => array(
+					'pTypes' => array('property'=>'pTypes', 'type'=>'text', 'label'=>'P-Types', 'description'=>'A list of pTypes that are valid for the library.  Separate multiple pTypes with commas.', 'forcesReindex' => true),
 					'defaultPType' => array('property'=>'defaultPType', 'type'=>'text', 'label'=>'Default P-Type', 'description'=>'The P-Type to use when accessing a subdomain if the patron is not logged in.','default'=>-1, 'forcesReindex' => true),
 				)),
 				'barcodeSection' => array('property' => 'barcodeSection', 'type' => 'section', 'label' => 'Barcode', 'hideInLists' => true, 'helpLink' => '', 'properties' => array(

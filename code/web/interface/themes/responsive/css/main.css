@@ -9835,6 +9835,16 @@ a.browse-thumbnail-sorted.active {
 }
 .horizontalCarouselSpotlightWrapper .scrollerTitleCover {
   position: absolute;
+  width: 125px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.moreLikeThisWrapper li.carouselTitleWrapper {
+  width: 140px !important;
+}
+.moreLikeThisWrapper .scrollerTitleCover {
   top: 0;
   bottom: 0;
   left: 0;
@@ -9845,7 +9855,9 @@ a.browse-thumbnail-sorted.active {
   text-align: right;
 }
 .horizontalCarouselSpotlightWrapper .jcarousel-control-prev,
-.horizontalCarouselSpotlightWrapper .jcarousel-control-next {
+.moreLikeThisWrapper .jcarousel-control-prev,
+.horizontalCarouselSpotlightWrapper .jcarousel-control-next,
+.moreLikeThisWrapper .jcarousel-control-next {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9856,18 +9868,26 @@ a.browse-thumbnail-sorted.active {
   box-shadow: none;
 }
 .horizontalCarouselSpotlightWrapper .jcarousel-control-prev:focus,
-.horizontalCarouselSpotlightWrapper .jcarousel-control-next:focus {
+.moreLikeThisWrapper .jcarousel-control-prev:focus,
+.horizontalCarouselSpotlightWrapper .jcarousel-control-next:focus,
+.moreLikeThisWrapper .jcarousel-control-next:focus {
   text-decoration: none;
   outline: none;
 }
 .horizontalCarouselSpotlightWrapper .jcarousel-control-prev:hover,
-.horizontalCarouselSpotlightWrapper .jcarousel-control-next:hover {
+.moreLikeThisWrapper .jcarousel-control-prev:hover,
+.horizontalCarouselSpotlightWrapper .jcarousel-control-next:hover,
+.moreLikeThisWrapper .jcarousel-control-next:hover {
   text-decoration: none;
 }
 .horizontalCarouselSpotlightWrapper .jcarousel-pagination a,
+.moreLikeThisWrapper .jcarousel-pagination a,
 .horizontalCarouselSpotlightWrapper .jcarousel-pagination a:hover,
+.moreLikeThisWrapper .jcarousel-pagination a:hover,
 .horizontalCarouselSpotlightWrapper .jcarousel-pagination a:active,
-.horizontalCarouselSpotlightWrapper .jcarousel-pagination a:visited {
+.moreLikeThisWrapper .jcarousel-pagination a:active,
+.horizontalCarouselSpotlightWrapper .jcarousel-pagination a:visited,
+.moreLikeThisWrapper .jcarousel-pagination a:visited {
   outline: none;
 }
 .jcarousel li.carouselTitleWrapper {

@@ -144,7 +144,7 @@ class Polaris extends AbstractIlsDriver
 		$body->Action = 'renew';
 		$body->LogonBranchID = $patron->getHomeLocationCode();
 		$body->LogonUserID = (string)$staffInfo['polarisId'];
-		$body->LogonWorkstationID = $this->accountProfile->workstationId;
+		$body->LogonWorkstationID = $this->getWorkstationID($patron);
 		$body->RenewData = new stdClass();
 		$body->RenewData->IgnoreOverrideErrors = false;
 
@@ -203,7 +203,7 @@ class Polaris extends AbstractIlsDriver
 		$body->Action = 'renew';
 		$body->LogonBranchID = $patron->getHomeLocationCode();
 		$body->LogonUserID = (string)$staffInfo['polarisId'];
-		$body->LogonWorkstationID = $this->accountProfile->workstationId;
+		$body->LogonWorkstationID = $this->getWorkstationID($patron);
 		$body->RenewData = new stdClass();
 		$body->RenewData->IgnoreOverrideErrors = false;
 
@@ -424,7 +424,7 @@ class Polaris extends AbstractIlsDriver
 			//TODO: Volume holds
 			//$body->VolumeNumber = '';
 			//Need to set the Workstation
-			$body->WorkstationID = (int)$this->accountProfile->workstationId;
+			$body->WorkstationID = $this->getWorkstationID($patron);
 			//Get the ID of the staff user
 			$staffUserInfo = $this->getStaffUserInfo();
 			$body->UserID = (int)$staffUserInfo['polarisId'];
@@ -466,7 +466,7 @@ class Polaris extends AbstractIlsDriver
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 		$staffInfo = $this->getStaffUserInfo();
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$cancelId/cancelled?wsid={$this->accountProfile->workstationId}&userid={$staffInfo['polarisId']}";
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$cancelId/cancelled?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}";
 		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
@@ -800,7 +800,7 @@ class Polaris extends AbstractIlsDriver
 	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
 		$staffInfo = $this->getStaffUserInfo();
-		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToUpdateId/pickupbranch?wsid={$this->accountProfile->workstationId}&userid={$staffInfo['polarisId']}&pickupbranchid=$newPickupLocation";
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToUpdateId/pickupbranch?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}&pickupbranchid=$newPickupLocation";
 		$body = new stdClass();
 		$body->UserID = $staffInfo['polarisId'];
 		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
@@ -947,5 +947,16 @@ class Polaris extends AbstractIlsDriver
 	public function findNewUser($patronBarcode){
 		//TODO: Implement findNewUser to allow masquerade
 		return false;
+	}
+
+	private function getWorkstationID(User $patron) : int
+	{
+		$homeLibrary = $patron->getHomeLibrary();
+		if (empty($homeLibrary->workstationId)){
+			return (int)$this->accountProfile->workstationId;
+		}else{
+			return (int)$homeLibrary->workstationId;
+		}
+
 	}
 }
