@@ -12,6 +12,9 @@ class Browse_AJAX extends Action {
 		$method = $_REQUEST['method'];
 		$allowed_methods = array(
 			'getAddBrowseCategoryForm',
+			'getUpdateBrowseCategoryForm',
+			'getNewBrowseCategoryForm',
+			'updateBrowseCategory',
 			'createBrowseCategory',
 			'getMoreBrowseResults',
 			'getBrowseCategoryInfo',
@@ -31,6 +34,48 @@ class Browse_AJAX extends Action {
 	function getAddBrowseCategoryForm(){
 		global $interface;
 
+		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
+
+		return array(
+			'title' => 'Add as Browse Category to Home Page',
+			'modalBody' => $interface->fetch('Browse/addBrowseCategory.tpl'),
+			'modalButtons' => ""
+		);
+	}
+	/** @noinspection PhpUnused */
+	function getUpdateBrowseCategoryForm(){
+		global $interface;
+
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+
+		$browseCategories = new BrowseCategory();
+		$browseCategories->orderBy('label');
+		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$libraryId = $library == null ? -1 : $library->libraryId;
+			$browseCategories->whereAdd("sharing = 'everyone'");
+			$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			$browseCategories->find();
+			$browseCategoryList = [];
+			while ($browseCategories->fetch()){
+				$browseCategoryList[] = clone $browseCategories;
+			}
+
+			$interface->assign('browseCategories', $browseCategoryList);
+		}
+
+		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
+		return array(
+			'title' => 'Update Existing Browse Category',
+			'modalBody' => $interface->fetch('Browse/updateBrowseCategoryForm.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#updateBrowseCategory\").submit();'>Update Category</button>"
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function getNewBrowseCategoryForm(){
+		global $interface;
+
 		// Select List Creation using Object Editor functions
 		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
 		$temp = SubBrowseCategories::getObjectStructure();
@@ -44,10 +89,60 @@ class Browse_AJAX extends Action {
 		// Display Page
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
 		return array(
-			'title' => 'Add as Browse Category to Home Page',
-			'modalBody' => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
+			'title' => 'Add as New Browse Category',
+			'modalBody' => $interface->fetch('Browse/newBrowseCategoryForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
 		);
+	}
+
+	/** @noinspection PhpUnused */
+	function updateBrowseCategory(){
+		global $library;
+		$textId = isset($_REQUEST['categoryName']) ? $_REQUEST['categoryName'] : '';
+
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		$browseCategory = new BrowseCategory();
+		$browseCategory->textId = $textId;
+		if ($browseCategory->find(true)){
+			if (isset($_REQUEST['searchId']) && strlen($_REQUEST['searchId']) > 0){
+				$searchId = $_REQUEST['searchId'];
+
+				/** @var SearchObject_GroupedWorkSearcher $searchObj */
+				$searchObj = SearchObjectFactory::initSearchObject();
+				$searchObj->init();
+				$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
+
+				if (!$browseCategory->updateFromSearch($searchObj)){
+					return array(
+						'success' => false,
+						'message' => "Sorry, this search is too complex to create a category from."
+					);
+				}
+			}else{
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+				$listId = $_REQUEST['listId'];
+				$userList = new UserList();
+				$userList->id = $listId;
+				$userList->deleted = "0";
+				if ($userList->find(true)) {
+					$browseCategory->sourceListId = $listId;
+					$browseCategory->source = 'List';
+				}
+
+			}
+
+			//update the category
+			if (!$browseCategory->update()){
+				return array(
+					'success' => false,
+					'message' => "There was an error updating the category."
+				);
+			}
+
+			return array(
+				'success' => true
+			);
+		}
 	}
 
 	/** @noinspection PhpUnused */
@@ -124,7 +219,7 @@ class Browse_AJAX extends Action {
 
 			$browseCategory->label = $categoryName;
 			$browseCategory->userId = UserAccount::getActiveUserId();
-			$browseCategory->sharing = 'everyone';
+			$browseCategory->sharing = 'library';
 			$browseCategory->description = '';
 
 			//setup and add the category
@@ -141,7 +236,7 @@ class Browse_AJAX extends Action {
 				if (!$subCategory->insert()){
 					return array(
 						'success' => false,
-						'message' => "There was an error saving the category as a sub-category.  Please contact Marmot."
+						'message' => "There was an error saving the category as a sub-category."
 					);
 				}
 
