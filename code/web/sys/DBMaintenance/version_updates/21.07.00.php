@@ -61,6 +61,13 @@ function getUpdates21_07_00() : array
 				"UPDATE indexing_profiles SET dateCreatedFormat = 'yyyy-MM-dd' WHERE indexingClass = 'Polaris'",
 			]
 		],
+		'library_workstation_id_polaris' => [
+			'title' => 'Library - Workstation ID',
+			'description' => 'Allow Workstation ID to defined at the library level',
+			'sql' => [
+				"ALTER TABLE library ADD column workstationId VARCHAR(10) DEFAULT ''"
+			]
+		]
 	];
 }
 

@@ -65,7 +65,7 @@ class AccountProfile extends DataObject {
 					'oAuthClientId' => array('property' => 'oAuthClientId', 'type' => 'text', 'label' => 'API/OAuth2 ClientId', 'maxLength' => 36, 'description' => 'The Client ID to use when making a connection to APIs', 'required' => false),
 					'oAuthClientSecret' => array('property' => 'oAuthClientSecret', 'type' => 'text', 'label' => 'API/OAuth2 Secret', 'maxLength' => 36, 'description' => 'The Client Secret to use when making a connection to APIs', 'required' => false),
 					'apiVersion' => array('property'=>'apiVersion', 'type'=>'text','label'=>'API Version', 'maxLength' => 10, 'description'=>'Optional description for the version of the API. Required for Sierra.'),
-					'workstationId' => array('property'=>'workstationId', 'type'=>'text','label'=>'Workstation Id', 'maxLength' => 10, 'description'=>'Optional workstation ID for transactions. Required for Polaris.')
+					'workstationId' => array('property'=>'workstationId', 'type'=>'text','label'=>'Workstation Id (Polaris)', 'maxLength' => 10, 'description'=>'Optional workstation ID for transactions, overrides workstation ID in account profile.')
 				),
 			),
 			'staffUser'=>array('property'=>'staffUser', 'type' => 'section', 'label' =>'Staff Account Information (optional)', 'hideInLists' => true,
