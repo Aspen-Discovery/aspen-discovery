@@ -9,7 +9,7 @@
 			{/if}
 			<input type="hidden" name="method" value="updateBrowseCategory">
 			<div class="form-group">
-				<label for="update-browse-categorySelect" class="control-label">Select a browse category: </label>
+				<label for="update-browse-categorySelect" class="control-label">{translate text="Select a browse category"}</label>
 				<select class="form-control" name="updateBrowseCategorySelect" id="updateBrowseCategorySelect">
 					<option value="null"></option>
 					{foreach from=$browseCategories item="browseCategory" key="resultIndex"}
