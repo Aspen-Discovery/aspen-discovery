@@ -102,10 +102,24 @@ AspenDiscovery.GroupedWork = (function(){
 				try{
 					var seriesData = data.seriesInfo;
 					if (seriesData && seriesData.titles.length > 0) {
-						seriesScroller = new TitleScroller('titleScrollerSeries', 'Series', 'seriesList');
+						//Create an unordered list for display
+						var html = '<ul>';
+
+						$.each(seriesData.titles, function() {
+							html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
+						});
+
+						html += '</ul>';
+
+						var carouselElement = $('#seriesCarousel');
+						carouselElement.html(html);
+						var jCarousel = carouselElement.jcarousel({wrap:null});
+
+						// Reload carousel
+						jCarousel.jcarousel('reload');
+						jCarousel.jcarousel('scroll', seriesData.currentIndex)
+						$('.seriesLoadingNote').hide();
 						$('#seriesInfo').show();
-						seriesScroller.loadTitlesFromJsonData(seriesData);
-						$('#seriesPanel').show();
 					}else{
 						$('#seriesPanel').hide();
 					}
