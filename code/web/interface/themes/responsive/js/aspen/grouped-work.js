@@ -177,9 +177,21 @@ AspenDiscovery.GroupedWork = (function(){
 				try{
 					var similarTitleData = data.similarTitles;
 					if (similarTitleData && similarTitleData.titles.length > 0) {
-						morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
-						$('#moreLikeThisInfo').show();
-						morelikethisScroller.loadTitlesFromJsonData(similarTitleData);
+						//Create an unordered list for display
+						var html = '<ul>';
+
+						$.each(similarTitleData.titles, function() {
+							html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
+						});
+
+						html += '</ul>';
+
+						var carouselElement = $('#moreLikeThisCarousel');
+						carouselElement.html(html);
+						var jCarousel = carouselElement.jcarousel();
+
+						// Reload carousel
+						jCarousel.jcarousel('reload');
 					}else{
 						$('#moreLikeThisPanel').hide();
 					}
