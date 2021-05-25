@@ -1992,12 +1992,15 @@ class User extends DataObject
 		return $this->getCatalogDriver()->updateAutoRenewal($this, $allowAutoRenewal);
 	}
 
-	public function getNotInterestedTitles(){
+	public function getNotInterestedTitles($sinceTime = 0){
 		global $timer;
 		$notInterestedTitles = [];
 		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
 		$notInterested = new NotInterested();
 		$notInterested->userId = $this->id;
+		if ($sinceTime > 0){
+			$notInterested->whereAdd("dateMarked >= $sinceTime" );
+		}
 		$notInterested->find();
 		while ($notInterested->fetch()){
 			$notInterestedTitles[$notInterested->groupedRecordPermanentId] = $notInterested->groupedRecordPermanentId;
