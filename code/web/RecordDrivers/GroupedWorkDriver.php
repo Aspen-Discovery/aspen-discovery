@@ -2769,14 +2769,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$formatCategoryInfo[$relatedManifestation->formatCategory] = [
 							'formatCategory' => $relatedManifestation->formatCategory,
 							'available' => true,
-							'image' => $configArray['Site']['url'] . '/' . strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_available.png"
+							'image' => $configArray['Site']['url'] . '/interface/themes/responsive/images/' . strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_available.png"
 						];
 					}else{
 						if (!array_key_exists($relatedManifestation->formatCategory, $formatCategoryInfo)){
 							$formatCategoryInfo[$relatedManifestation->formatCategory] = [
 								'formatCategory' => $relatedManifestation->formatCategory,
 								'available' => false,
-								'image' => $configArray['Site']['url'] . '/' . strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_small.png",
+								'image' => $configArray['Site']['url'] . '/interface/themes/responsive/images/' . strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_small.png",
 							];
 						}
 					}
