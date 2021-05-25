@@ -9841,10 +9841,12 @@ a.browse-thumbnail-sorted.active {
   left: 0;
   right: 0;
 }
-.moreLikeThisWrapper li.carouselTitleWrapper {
+.moreLikeThisWrapper li.carouselTitleWrapper,
+.seriesWrapper li.carouselTitleWrapper {
   width: 140px !important;
 }
-.moreLikeThisWrapper .scrollerTitleCover {
+.moreLikeThisWrapper .scrollerTitleCover,
+.seriesWrapper .scrollerTitleCover {
   top: 0;
   bottom: 0;
   left: 0;
@@ -9856,8 +9858,10 @@ a.browse-thumbnail-sorted.active {
 }
 .horizontalCarouselSpotlightWrapper .jcarousel-control-prev,
 .moreLikeThisWrapper .jcarousel-control-prev,
+.seriesWrapper .jcarousel-control-prev,
 .horizontalCarouselSpotlightWrapper .jcarousel-control-next,
-.moreLikeThisWrapper .jcarousel-control-next {
+.moreLikeThisWrapper .jcarousel-control-next,
+.seriesWrapper .jcarousel-control-next {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9869,25 +9873,33 @@ a.browse-thumbnail-sorted.active {
 }
 .horizontalCarouselSpotlightWrapper .jcarousel-control-prev:focus,
 .moreLikeThisWrapper .jcarousel-control-prev:focus,
+.seriesWrapper .jcarousel-control-prev:focus,
 .horizontalCarouselSpotlightWrapper .jcarousel-control-next:focus,
-.moreLikeThisWrapper .jcarousel-control-next:focus {
+.moreLikeThisWrapper .jcarousel-control-next:focus,
+.seriesWrapper .jcarousel-control-next:focus {
   text-decoration: none;
   outline: none;
 }
 .horizontalCarouselSpotlightWrapper .jcarousel-control-prev:hover,
 .moreLikeThisWrapper .jcarousel-control-prev:hover,
+.seriesWrapper .jcarousel-control-prev:hover,
 .horizontalCarouselSpotlightWrapper .jcarousel-control-next:hover,
-.moreLikeThisWrapper .jcarousel-control-next:hover {
+.moreLikeThisWrapper .jcarousel-control-next:hover,
+.seriesWrapper .jcarousel-control-next:hover {
   text-decoration: none;
 }
 .horizontalCarouselSpotlightWrapper .jcarousel-pagination a,
 .moreLikeThisWrapper .jcarousel-pagination a,
+.seriesWrapper .jcarousel-pagination a,
 .horizontalCarouselSpotlightWrapper .jcarousel-pagination a:hover,
 .moreLikeThisWrapper .jcarousel-pagination a:hover,
+.seriesWrapper .jcarousel-pagination a:hover,
 .horizontalCarouselSpotlightWrapper .jcarousel-pagination a:active,
 .moreLikeThisWrapper .jcarousel-pagination a:active,
+.seriesWrapper .jcarousel-pagination a:active,
 .horizontalCarouselSpotlightWrapper .jcarousel-pagination a:visited,
-.moreLikeThisWrapper .jcarousel-pagination a:visited {
+.moreLikeThisWrapper .jcarousel-pagination a:visited,
+.seriesWrapper .jcarousel-pagination a:visited {
   outline: none;
 }
 .jcarousel li.carouselTitleWrapper {

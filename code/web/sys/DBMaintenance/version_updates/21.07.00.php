@@ -67,7 +67,14 @@ function getUpdates21_07_00() : array
 			'sql' => [
 				"ALTER TABLE library ADD column workstationId VARCHAR(10) DEFAULT ''"
 			]
-		]
+		],
+		'regroup_21_07' => [
+			'title' => 'Regroup all records for 21.07',
+			'description' => 'Regroup all records for 21.07',
+			'sql' => [
+				'UPDATE indexing_profiles set regroupAllRecords = 1'
+			]
+		],
 	];
 }
 
