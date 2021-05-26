@@ -165,9 +165,6 @@ abstract class RecordInterface
 				'hideByDefault' => false
 			);
 		}
-		//Check to see if we have syndetics unbound
-		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
-		$syndeticsSettings = new SyndeticsSetting();
 		if ($hasSyndeticsUnbound) {
 			$moreDetailsOptions['syndeticsUnbound'] = array(
 				'label' => 'Syndetics Unbound',
@@ -313,7 +310,7 @@ abstract class RecordInterface
 			'formats' => 'open',
 			'copies' => 'open',
 			'moreLikeThis' => 'open',
-			'syndeticsUnbound' => 'closed',
+			'syndeticsUnbound' => 'open',
 			'otherEditions' => 'closed',
 			'prospector' => 'closed',
 			'links' => 'closed',
