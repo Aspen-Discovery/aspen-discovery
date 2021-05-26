@@ -1371,6 +1371,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$fieldsToReturn .= ',format_' . $solrScope;
 				$fieldsToReturn .= ',format_category_' . $solrScope;
 				$fieldsToReturn .= ',collection_' . $solrScope;
+				$fieldsToReturn .= ',local_days_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_time_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_callnumber_' . $solrScope;
 				$fieldsToReturn .= ',detailed_location_' . $solrScope;
