@@ -123,6 +123,17 @@ abstract class RecordInterface
 		global $interface;
 		global $configArray;
 		global $timer;
+		$hasSyndeticsUnbound = false;
+		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
+		$syndeticsSettings = new SyndeticsSetting();
+		if ($syndeticsSettings->find(true)) {
+			if ($syndeticsSettings->syndeticsUnbound) {
+				$interface->assign('unboundAccountNumber', $syndeticsSettings->unboundAccountNumber);
+				$hasSyndeticsUnbound = true;
+			}
+		}
+		$interface->assign('hasSyndeticsUnbound');
+
 		$moreDetailsOptions = array();
 		$moreDetailsOptions['description'] = array(
 			'label' => 'Description',
@@ -154,6 +165,17 @@ abstract class RecordInterface
 				'hideByDefault' => false
 			);
 		}
+		//Check to see if we have syndetics unbound
+		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
+		$syndeticsSettings = new SyndeticsSetting();
+		if ($hasSyndeticsUnbound) {
+			$moreDetailsOptions['syndeticsUnbound'] = array(
+				'label' => 'Syndetics Unbound',
+				'body' => $interface->fetch('GroupedWork/syndeticsUnbound.tpl'),
+				'hideByDefault' => false
+			);
+		}
+
 		$moreDetailsOptions['tableOfContents'] = array(
 			'label' => 'Table of Contents',
 			'body' => $interface->fetch('GroupedWork/tableOfContents.tpl'),
@@ -231,10 +253,8 @@ abstract class RecordInterface
 				$moreDetailsFilters[$option->source] = $option->collapseByDefault ? 'closed' : 'open';
 			}
 		}
-		/** @noinspection PhpUndefinedFieldInspection */
 		if ($activeLocation && count($activeLocation->getGroupedWorkDisplaySettings()->getMoreDetailsOptions()) > 0) {
 			$useDefault = false;
-			/** @noinspection PhpUndefinedFieldInspection */
 			/** @var LocationMoreDetails $option */
 			foreach ($activeLocation->getGroupedWorkDisplaySettings()->getMoreDetailsOptions() as $option) {
 				$moreDetailsFilters[$option->source] = $option->collapseByDefault ? 'closed' : 'open';
@@ -272,6 +292,7 @@ abstract class RecordInterface
 			'authornotes' => 'Author Notes (Syndetics/ContentCafe)',
 			'subjects' => 'Subjects',
 			'moreDetails' => 'More Details',
+			'syndeticsUnbound' => 'Syndetics Unbound',
 			'similarSeries' => 'Similar Series From NoveList',
 			'similarTitles' => 'Similar Titles From NoveList',
 			'similarAuthors' => 'Similar Authors From NoveList',
@@ -292,6 +313,7 @@ abstract class RecordInterface
 			'formats' => 'open',
 			'copies' => 'open',
 			'moreLikeThis' => 'open',
+			'syndeticsUnbound' => 'closed',
 			'otherEditions' => 'closed',
 			'prospector' => 'closed',
 			'links' => 'closed',
