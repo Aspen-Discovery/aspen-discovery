@@ -72,7 +72,7 @@
 												<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">{translate text='More Series...'}</a>
 												<div id="moreSeries_{$summId}" style="display:none">
 											{/if}
-											<a href="/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} {translate text=volume} {$seriesItem.volume}{/if}<br>
+											<a href="/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22&sort=year+asc%2Ctitle+asc">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} {translate text=volume} {$seriesItem.volume}{/if}<br>
 										{/if}
 									{/foreach}
 									{if $numSeriesShown >= 4}
