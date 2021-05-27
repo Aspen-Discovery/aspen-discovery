@@ -53,16 +53,21 @@ class Browse_AJAX extends Action {
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$libraryId = $library == null ? -1 : $library->libraryId;
-			$browseCategories->whereAdd("sharing = 'everyone'");
 			$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
 			$browseCategories->find();
 			$browseCategoryList = [];
 			while ($browseCategories->fetch()){
 				$browseCategoryList[] = clone $browseCategories;
 			}
-
-			$interface->assign('browseCategories', $browseCategoryList);
+		} else if(UserAccount::userHasPermission('Administer All Browse Categories')) {
+			$browseCategories->find();
+			$browseCategoryList = [];
+			while ($browseCategories->fetch()) {
+				$browseCategoryList[] = clone $browseCategories;
+			}
 		}
+
+		$interface->assign('browseCategories', $browseCategoryList);
 
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
 		return array(
