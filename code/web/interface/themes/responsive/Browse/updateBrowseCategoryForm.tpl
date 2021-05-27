@@ -13,7 +13,7 @@
 				<select class="form-control" name="updateBrowseCategorySelect" id="updateBrowseCategorySelect">
 					<option value="null"></option>
 					{foreach from=$browseCategories item="browseCategory" key="resultIndex"}
-							<option value="{$browseCategory->textId}">{$browseCategory->label}</option>
+							<option value="{$browseCategory->textId}">{$browseCategory->label} ({$browseCategory->textId})</option>
 					{/foreach}
 				</select>
 			</div>

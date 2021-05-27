@@ -7,7 +7,7 @@
 	</div>
 
 	<div>
-		<button href="#" onclick="return AspenDiscovery.Browse.getUpdateBrowseCategoryForm('{$searchId}')">{translate text="Update Existing"}</button> <button href="#" onclick="return AspenDiscovery.Browse.getNewBrowseCategoryForm('{$searchId}')">{translate text="Create New"}</button>
+		<button href="#" class="btn btn-default" onclick="return AspenDiscovery.Browse.getUpdateBrowseCategoryForm('{$searchId}')">{translate text="Update Existing"}</button> <button href="#" class="btn btn-default" onclick="return AspenDiscovery.Browse.getNewBrowseCategoryForm('{$searchId}')">{translate text="Create New"}</button>
 	</div>
 </div>
 {/strip}
