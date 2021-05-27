@@ -25,7 +25,7 @@
 				</div>
 			</div>
 			<div class="form-group" id="replaceExistingRadios" style="display: none">
-			<label for="replaceExisting" class="col-sm-4">{translate text="Replace Existing Spotlight?"}</label>
+			<label for="replaceExisting" class="col-sm-4">{translate text="Replace Existing Spotlight / Tab?"}</label>
 			<div class="col-sm-8">
 				<div class="checkbox">
 					<input type="checkbox" name="replaceExisting" id="replaceExisting" value="replaceExisting" onchange="return AspenDiscovery.CollectionSpotlights.updateSpotlightFields();"> {translate text="Yes, replace existing spotlight with current search"}
@@ -34,7 +34,7 @@
 			</div>
 		{if count($existingCollectionSpotlightLists) > 1}
 			<div class="form-group" id="existingSpotlightName" style="display: none">
-				<label for="spotlightName" class="col-sm-4">{translate text="Select a Spotlight/Tab to Replace"}</label>
+				<label for="spotlightName" class="col-sm-4">{translate text="Select a Spotlight / Tab to Replace"}</label>
 				<div class="col-sm-8">
 					<select id="collectionSpotlightListId" name="collectionSpotlightListId" class="form-control">
 						<option value="-1.0">Select a Spotlight</option>
