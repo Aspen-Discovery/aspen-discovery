@@ -75,6 +75,78 @@ function getUpdates21_07_00() : array
 				'UPDATE indexing_profiles set regroupAllRecords = 1'
 			]
 		],
+		'syndetics_unbound_account_number' => [
+			'title' => 'Syndetics Unbound Account Number',
+			'description' => 'Add Syndetics Unbound Account Number ',
+			'sql' => [
+				'ALTER TABLE syndetics_settings ADD COLUMN unboundAccountNumber INT DEFAULT NULL'
+			]
+		],
+//		'store_grouped_work_records_items_scopes' => [
+//			'title' => 'Grouped Work Records, Items, Scopes',
+//			'description' => 'Store more information about grouped works within the database for easier access',
+//			'sql' => [
+//				"CREATE TABLE indexed_format (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					format VARCHAR(255)
+//				) ENGINE INNODB",
+//				"CREATE TABLE indexed_format_category (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					format_category VARCHAR(255)
+//				) ENGINE INNODB",
+//				"CREATE TABLE indexed_language (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					language VARCHAR(255)
+//				) ENGINE INNODB",
+//				"CREATE TABLE indexed_editions (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					language VARCHAR(255)
+//				) ENGINE INNODB",
+//				"CREATE TABLE indexed_publishers (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					publisher VARCHAR(255)
+//				) ENGINE INNODB",
+//				"CREATE TABLE indexed_publication_dates (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					publicationDate VARCHAR(255)
+//				) ENGINE INNODB",
+//				"CREATE TABLE indexed_physical_descriptions (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					physicalDescription VARCHAR(255)
+//				) ENGINE INNODB",
+//				"CREATE TABLE grouped_work_records (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					grouped_work_id int(11) NOT NULL,
+//					source VARCHAR(50),
+//					subSource VARCHAR(50),
+//					recordIdentifier VARCHAR(50),
+//					formatBoost INT(11),
+//					editionId INT(11),
+//					primaryLanguageId INT(11),
+//					publisherId INT(11),
+//					publicationDateId INT(11),
+//					physicalDescriptionId INT(11),
+//					INDEX(grouped_work_id),
+//					UNIQUE INDEX(source, subSource, recordIdentifier)
+//				)  ENGINE INNODB",
+//				"CREATE TABLE grouped_work_record_formats (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					grouped_work_record_id INT(11) NOT NULL,
+//					format_id INT(11) NOT NULL,
+//					INDEX (grouped_work_record_id)
+//				) ENGINE INNODB",
+//				"CREATE TABLE grouped_work_record_format_categories (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					grouped_work_record_id INT(11) NOT NULL,
+//					format_category_id INT(11) NOT NULL,
+//					INDEX (grouped_work_record_id)
+//				) ENGINE INNODB",
+//				"CREATE TABLE grouped_work_record_items (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					grouped_work_record_id INT(11) NOT NULL,
+//				) ENGINE INNODB"
+//			]
+//		]
 	];
 }
 
