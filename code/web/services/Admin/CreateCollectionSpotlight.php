@@ -8,6 +8,12 @@ require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 class Admin_CreateCollectionSpotlight extends Action
 {
+	/** @noinspection PhpUnused */
+	function getInitializationJs()
+	{
+		return 'return AspenDiscovery.CollectionSpotlights.updateSpotlightFields();';
+	}
+	
 	function launch()
 	{
 		$user = UserAccount::getLoggedInUser();

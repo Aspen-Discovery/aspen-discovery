@@ -64,6 +64,7 @@ AspenDiscovery.CollectionSpotlights = (function(){
 						document.querySelector('#collectionSpotlightListId option[value="'+option_values+'"]').hidden = true;
 					}
 				}
+				document.getElementById("collectionSpotlightListId").value = "-1.0";
 			});
 
 		},

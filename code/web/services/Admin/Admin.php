@@ -47,4 +47,5 @@ abstract class Admin_Admin extends Action {
 	}
 
 	abstract function getActiveAdminSection() : string;
+
 }
