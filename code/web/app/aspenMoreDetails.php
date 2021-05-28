@@ -20,9 +20,9 @@ $todayHours = $hours[$weekDay];
 # *********************************************************************************************************************************************
 # * Links for the More Page - unique key is needed to prevent a warning in iOS
 # *********************************************************************************************************************************************
-$pageLink[] = array('key' => 0, 'title' => "Program Calendar", 'subtitle' => "Programs, Events and Services.", 'path' => "WhatsOn");
+//$pageLink[] = array('key' => 0, 'title' => "Program Calendar", 'subtitle' => "Programs, Events and Services.", 'path' => "WhatsOn");
 $pageLink[] = array('key' => 1, 'title' => "Contact Us", 'subtitle' => "We're just a click away.", 'path' => "ContactUs");
-$pageLink[] = array('key' => 2, 'title' => "News", 'subtitle' => "Stay up to date on important Library News.", 'path' => "News");
+//$pageLink[] = array('key' => 2, 'title' => "News", 'subtitle' => "Stay up to date on important Library News.", 'path' => "News");
 $pageLink[] = array('key' => 3, 'title' => "About", 'subtitle' => "Version 1.5.0", 'path' => "null");
 
 # *********************************************************************************************************************************************
