@@ -167,7 +167,7 @@ class Library extends DataObject
 	public $instagramLink;
 	public $pinterestLink;
 	public $goodreadsLink;
-	public $tiktoklink;
+	public $tiktokLink;
 	public $generalContactLink;
 
 	public $allowPinReset;
@@ -1860,7 +1860,7 @@ class Library extends DataObject
 			'instagramLink' => $this->instagramLink,
 			'pinterestLink' => $this->pinterestLink,
 			'goodreadsLink' => $this->goodreadsLink,
-			'tiktoklink' => $this->tiktoklink,
+			'tiktokLink' => $this->tiktokLink,
 			'generalContactLink' => $this->generalContactLink,
 		];
 		if (empty($this->baseUrl)){
