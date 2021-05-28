@@ -37,7 +37,7 @@
 				<label for="spotlightName" class="col-sm-4">{translate text="Select a Spotlight / Tab to Replace"}</label>
 				<div class="col-sm-8">
 					<select id="collectionSpotlightListId" name="collectionSpotlightListId" class="form-control">
-						<option value="-1.0">Select a Spotlight</option>
+						<option value="-1.0" disabled>Select a Spotlight</option>
 						{foreach from=$existingCollectionSpotlightLists item="spotlight" key="id"}
 							<option value="{$spotlight->collectionSpotlightId}.{$spotlight->id}">{$spotlight->name}</option>
 						{/foreach}
