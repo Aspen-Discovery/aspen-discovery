@@ -1038,7 +1038,6 @@ class Koha extends AbstractIlsDriver
 				$error = $placeHoldResponse->code;
 				$hold_result['success'] = false;
 				$message = 'The item could not be placed on hold: ';
-
 				if($error == "damaged") {
 					$message .= 'Item damaged';
 				} elseif ($error == "ageRestricted") {
@@ -1065,6 +1064,8 @@ class Koha extends AbstractIlsDriver
 					$message .= 'No reserves are allowed on this item';
 				} elseif ($error == "libraryNotPickupLocation") {
 					$message .= 'Library is not a pickup location';
+				} else {
+					$message = 'The item could not be placed on hold';
 				}
 				$hold_result['message'] = translate($message);
 			}
