@@ -41,4 +41,10 @@ abstract class Admin_Admin extends Action {
 	abstract function canView();
 
 	abstract function getActiveAdminSection();
+
+	/** @noinspection PhpUnused */
+	function getInitializationJs()
+	{
+		return 'return AspenDiscovery.CollectionSpotlights.updateSpotlightFields();';
+	}
 }
