@@ -17,12 +17,12 @@ class IPAddress extends DataObject
 	public $startIpVal;
 	public $endIpVal;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['isOpac', 'blockAccess', 'allowAPIAccess', 'startIpVal', 'endIpVal'];
 	}
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		//Look lookup information for display in the user interface
 		$location = new Location();
 		$location->orderBy('displayName');

@@ -10,7 +10,7 @@ class AuthorAuthority extends DataObject
 	public $dateAdded;
 	private $_alternatives;
 
-	public static function getObjectStructure(){
+	public static function getObjectStructure() : array{
 		$alternativesStructure = AuthorAuthorityAlternative::getObjectStructure();
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],

@@ -10,7 +10,7 @@ class Holiday extends DataObject
 	public $name;                  // varchar(100)
 
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		$library = new Library();
 		$library->orderBy('displayName');
 		$library->find();

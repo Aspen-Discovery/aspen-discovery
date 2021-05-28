@@ -20,7 +20,7 @@ class AccountSummary extends DataObject
 	protected $_materialsRequests;
 	protected $_readingHistory;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['userId','numCheckedOut','numCheckoutsRemaining','numOverdue','numAvailableHolds','numUnavailableHolds','numBookings','totalFines','expirationDate','lastLoaded'];
 	}

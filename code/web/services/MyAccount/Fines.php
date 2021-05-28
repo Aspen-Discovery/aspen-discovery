@@ -107,7 +107,7 @@ class MyAccount_Fines extends MyAccount
 		$this->display('fines.tpl', 'My Fines');
 	}
 
-	function getBreadcrumbs(): array
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

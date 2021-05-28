@@ -17,12 +17,12 @@ class CustomForm extends DataObject
 	/** @var CustomFormField[] */
 	private $_formFields;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['requireLogin'];
 	}
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$formFieldStructure = CustomFormField::getObjectStructure();
 		unset ($formFieldStructure['weight']);

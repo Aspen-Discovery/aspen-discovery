@@ -4,27 +4,27 @@ require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 
 class WebBuilder_PortalCells extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'PortalCell';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'PortalCells';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'WebBuilder Portal Cells';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new PortalCell();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -37,37 +37,37 @@ class WebBuilder_PortalCells extends ObjectEditor
 		return $objectList;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'weight asc';
 	}
 
-	function canSort()
+	function canSort() : bool
 	{
 		return false;
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return PortalCell::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
@@ -86,7 +86,7 @@ class WebBuilder_PortalCells extends ObjectEditor
 		}
 	}
 
-	function getInitializationJs()
+	function getInitializationJs() : string
 	{
 		return 'AspenDiscovery.WebBuilder.getPortalCellValuesForSource()';
 	}
@@ -96,7 +96,7 @@ class WebBuilder_PortalCells extends ObjectEditor
 		return 'return AspenDiscovery.Admin.updateMakeCellAccordion();';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -108,12 +108,12 @@ class WebBuilder_PortalCells extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

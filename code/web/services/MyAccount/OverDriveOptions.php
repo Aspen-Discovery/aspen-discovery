@@ -66,7 +66,7 @@ class MyAccount_OverDriveOptions extends MyAccount
 		$this->display('overDriveOptions.tpl', 'Account Settings');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

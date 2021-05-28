@@ -28,7 +28,7 @@ class EmailPin extends Action{
 		}
 	}
 
-	public function getBreadcrumbs()
+	public function getBreadcrumbs() : array
 	{
 		return [];
 	}

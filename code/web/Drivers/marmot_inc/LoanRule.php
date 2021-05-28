@@ -14,12 +14,12 @@ class LoanRule extends DataObject
 	public $homePickup;
 	public $shippable;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['holdable', 'bookable', 'homePickup', 'shippable'];
 	}
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$structure = array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the p-type within the database', 'hideInLists' => true),
 			'loanRuleId' => array('property'=>'loanRuleId', 'type'=>'integer', 'label'=>'Loan Rule Id', 'description'=>'The id of the loan rule', 'hideInLists' => false),

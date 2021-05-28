@@ -18,7 +18,7 @@ abstract class FacetSetting extends DataObject {
 	public $useMoreFacetPopup;
 	public $translate;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['weight', 'showAsDropDown', 'multiSelect', 'canLock', 'showAboveResults', 'showInResults', 'showInAdvancedSearch', 'translate'];
 	}

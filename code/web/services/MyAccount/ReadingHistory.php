@@ -69,7 +69,7 @@ class ReadingHistory extends MyAccount
 		$this->display('readingHistory.tpl', 'Reading History');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

@@ -20,7 +20,7 @@ class OpenArchivesCollection extends DataObject
 	public $_libraries;
 	public $_locations;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Open Archives'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer Open Archives'));

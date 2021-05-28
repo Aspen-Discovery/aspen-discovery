@@ -612,7 +612,7 @@ class Browse_AJAX extends Action {
 		return $searchAPI->getActiveBrowseCategories();
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

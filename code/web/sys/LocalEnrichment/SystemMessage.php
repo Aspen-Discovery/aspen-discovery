@@ -18,7 +18,7 @@ class SystemMessage extends DataObject
 	private $_locations;
 	private $_preFormattedMessage;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All System Messages'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));
 		return [
@@ -51,7 +51,7 @@ class SystemMessage extends DataObject
 		];
 	}
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return['showOn', 'startDate', 'endDate', 'dismissable'];
 	}

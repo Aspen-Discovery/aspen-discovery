@@ -13,12 +13,12 @@ class LoanRuleDeterminer extends DataObject
 	public $loanRuleId;
 	public $active;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['rowNumber','loanRuleId','active'];
 	}
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$structure = array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the p-type within the database', 'hideInLists' => true),
 			'rowNumber' => array('property'=>'rowNumber', 'type'=>'integer', 'label'=>'Row Number', 'description'=>'The row number of the determiner', 'hideInLists' => false),

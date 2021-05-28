@@ -10,7 +10,7 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	/**
 	 * The class name of the object which is being edited
 	 */
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'BlockPatronAccountLink';
 	}
@@ -18,7 +18,7 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	/**
 	 * The page name of the tool (typically the plural of the object)
 	 */
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'BlockPatronAccountLinks';
 	}
@@ -26,7 +26,7 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	/**
 	 * The title of the page to be displayed
 	 */
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Block Patron Account Links';
 	}
@@ -34,7 +34,7 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	/**
 	 * Load all objects into an array keyed by the primary key
 	 */
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new BlockPatronAccountLink();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -47,12 +47,12 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 		return $objectList;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'id';
 	}
 
-	function canSort()
+	function canSort() : bool
 	{
 		return false;
 	}
@@ -61,7 +61,7 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
 	 */
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return BlockPatronAccountLink::getObjectStructure();
 	}
@@ -69,7 +69,7 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	/**
 	 * The name of the column which defines this as unique
 	 */
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
@@ -77,12 +77,12 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 	/**
 	 * The id of the column which serves to join other columns
 	 */
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 //		return '<p>To block a patron from viewing the information of another patron by linking accounts:</p>
 //		<br>
 // 		<ul>
@@ -98,7 +98,7 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 //		</p>';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -107,12 +107,12 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Block Patron Account Linking');
 	}

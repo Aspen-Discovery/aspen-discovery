@@ -9,7 +9,7 @@ class GroupedWorkFacetGroup extends DataObject
 
 	public $_facets;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		$facetSettingStructure = GroupedWorkFacet::getObjectStructure();
 		unset($facetSettingStructure['weight']);
 		unset($facetSettingStructure['facetGroupId']);

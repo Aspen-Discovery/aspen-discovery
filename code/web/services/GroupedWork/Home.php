@@ -70,7 +70,7 @@ class GroupedWork_Home extends Action{
 		$this->display('full-record.tpl', $this->recordDriver->getTitle(),'', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->lastSearch)){

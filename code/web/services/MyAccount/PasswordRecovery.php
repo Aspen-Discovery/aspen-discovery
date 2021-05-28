@@ -21,7 +21,7 @@ class PasswordRecovery extends Action
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		global $interface;
 		$breadcrumbs = [];

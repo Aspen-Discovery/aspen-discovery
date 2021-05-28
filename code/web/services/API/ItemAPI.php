@@ -512,7 +512,7 @@ class ItemAPI extends Action {
 		return $record;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

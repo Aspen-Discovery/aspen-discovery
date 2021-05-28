@@ -27,7 +27,7 @@ abstract class GroupedWorkSubRecordHomeAction extends Action
 
 	abstract function loadRecordDriver($id);
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->lastSearch)){

@@ -281,7 +281,7 @@ class Library extends DataObject
 		'list'  => 'List',
 	);
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		// get the structure for the library system's holidays
 		$holidaysStructure = Holiday::getObjectStructure();
 
@@ -1387,7 +1387,7 @@ class Library extends DataObject
 	 * @return boolean true if the property changed, or false if it did not
 	 * @noinspection PhpUnused
 	 */
-	public function setProperty($propertyName, $newValue, $propertyStructure){
+	public function setProperty($propertyName, $newValue, $propertyStructure) : bool {
 		$propertyChanged = parent::setProperty($propertyName, $newValue, $propertyStructure);
 		if ($propertyName == 'patronNameDisplayStyle' && $propertyChanged){
 			$this->_patronNameDisplayStyleChanged = true;

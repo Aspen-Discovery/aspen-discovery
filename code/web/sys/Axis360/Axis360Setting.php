@@ -16,7 +16,7 @@ class Axis360Setting extends DataObject
 
 	private $_scopes;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$axis360ScopeStructure = Axis360Scope::getObjectStructure();
 		unset($axis360ScopeStructure['settingId']);

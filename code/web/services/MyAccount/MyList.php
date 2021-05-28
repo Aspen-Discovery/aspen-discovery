@@ -300,7 +300,7 @@ class MyAccount_MyList extends MyAccount {
 		return $notes;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

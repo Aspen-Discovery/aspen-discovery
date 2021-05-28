@@ -13,7 +13,7 @@ class MaterialsRequestStatus extends DataObject {
 	public $isPatronCancel;
 	public $libraryId;
 
-    static function getObjectStructure(){
+    static function getObjectStructure() : array {
 		$library = new Library();
 		$library->orderBy('displayName');
 		$homeLibrary = Library::getPatronHomeLibrary();

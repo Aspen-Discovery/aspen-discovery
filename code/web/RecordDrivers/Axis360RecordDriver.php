@@ -54,7 +54,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 		}
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'Axis360';
 	}

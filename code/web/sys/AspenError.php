@@ -67,7 +67,7 @@ class AspenError extends DataObject
 		}
 	}
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),

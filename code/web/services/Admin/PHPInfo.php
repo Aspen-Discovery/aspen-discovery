@@ -45,7 +45,7 @@ h2 {font-size: 125%;}
 		$this->display('adminInfo.tpl', 'PHP Information');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -54,12 +54,12 @@ h2 {font-size: 125%;}
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_reports';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View System Reports');
 	}

@@ -36,27 +36,27 @@ class ILS_IndexingProfiles extends ObjectEditor
 		}
 	}
 
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'IndexingProfile';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return "ILS";
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'IndexingProfiles';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'ILS Indexing Information';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$list = array();
 
@@ -71,22 +71,22 @@ class ILS_IndexingProfiles extends ObjectEditor
 
 		return $list;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return IndexingProfile::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
@@ -101,12 +101,12 @@ class ILS_IndexingProfiles extends ObjectEditor
 		return true;
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		$actions = array();
 		if ($existingObject && $existingObject->id != '') {
@@ -119,12 +119,12 @@ class ILS_IndexingProfiles extends ObjectEditor
 		return $actions;
 	}
 
-	function getInitializationJs()
+	function getInitializationJs() : string
 	{
 		return 'return AspenDiscovery.Admin.updateIndexingProfileFields();';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -133,12 +133,12 @@ class ILS_IndexingProfiles extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'ils_integration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Indexing Profiles');
 	}

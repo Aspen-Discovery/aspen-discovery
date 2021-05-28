@@ -122,7 +122,7 @@ class Union_Search extends ResultsAction {
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return $this->searchResultsAction->getBreadcrumbs();
 	}

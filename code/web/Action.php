@@ -77,5 +77,5 @@ abstract class Action
 		die();
 	}
 
-	abstract function getBreadcrumbs();
+	abstract function getBreadcrumbs() : array;
 }

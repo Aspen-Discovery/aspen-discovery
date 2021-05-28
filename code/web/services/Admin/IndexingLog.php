@@ -63,7 +63,7 @@ abstract class Admin_IndexingLog extends Admin_Admin
 		$logEntry->whereAdd('numErrors > 0');
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['View System Reports','View Indexing Logs']);
 	}

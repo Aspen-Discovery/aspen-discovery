@@ -6,16 +6,16 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 class Admin_ErrorReport extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'AspenError';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'ErrorReport';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Errors';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new AspenError();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -28,16 +28,16 @@ class Admin_ErrorReport extends ObjectEditor
 		return $objectList;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'timestamp desc';
 	}
 
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return AspenError::getObjectStructure();
 	}
 
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function canAddNew(){
@@ -47,12 +47,12 @@ class Admin_ErrorReport extends ObjectEditor
 		return true;
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -61,12 +61,12 @@ class Admin_ErrorReport extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_reports';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View System Reports');
 	}

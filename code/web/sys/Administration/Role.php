@@ -11,7 +11,7 @@ class Role extends DataObject
 	public $description;
 	private $_permissions;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$permissionsList = [];
 		return [
@@ -118,6 +118,7 @@ class Role extends DataObject
 				'Administer OverDrive',
 				'Administer Patron Types',
 				'Administer RBdigital',
+				'Administer Amazon SES',
 				'Administer SendGrid',
 				'Administer Side Loads',
 				'Administer System Variables',

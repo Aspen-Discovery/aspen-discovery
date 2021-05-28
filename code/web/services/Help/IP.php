@@ -13,7 +13,7 @@ class Help_IP extends Action
 		$this->display('ip.tpl', 'IP Address', '');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'IP Address');

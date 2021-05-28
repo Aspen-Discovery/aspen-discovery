@@ -27,7 +27,7 @@ class WebBuilder_WebResource extends Action{
 		$this->display('webResource.tpl', $this->webResource->name, '', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');

@@ -37,7 +37,7 @@ class NovelistData extends DataObject{
 	protected $_similarSeries;
 
 	public $__table = 'novelist_data';
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
     {
         return ['hasNovelistData','groupedRecordHasISBN'];
     }

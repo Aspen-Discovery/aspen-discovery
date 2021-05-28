@@ -13,7 +13,7 @@ class PType extends DataObject
 	public $restrictMasquerade;
 	public $isStaff;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$roles = [];
 		$roles[-1] = 'None';

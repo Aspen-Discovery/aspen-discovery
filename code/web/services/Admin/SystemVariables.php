@@ -5,16 +5,16 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
 class Admin_SystemVariables extends ObjectEditor{
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'SystemVariables';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'SystemVariables';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'System Variables';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$variableList = array();
 
 		$variable = new SystemVariables();
@@ -25,22 +25,22 @@ class Admin_SystemVariables extends ObjectEditor{
 		}
 		return $variableList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'id asc';
 	}
-	function canSort()
+	function canSort() : bool
 	{
 		return false;
 	}
 
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return SystemVariables::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'name';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function canAddNew(){
@@ -50,7 +50,7 @@ class Admin_SystemVariables extends ObjectEditor{
 		return false;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -59,12 +59,12 @@ class Admin_SystemVariables extends ObjectEditor{
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_admin';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer System Variables');
 	}

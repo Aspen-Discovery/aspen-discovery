@@ -24,7 +24,7 @@ class MyAccount_Holds extends MyAccount{
 		$this->display('holds.tpl', 'My Holds');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

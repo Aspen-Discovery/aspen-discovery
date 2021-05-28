@@ -83,7 +83,7 @@ class Admin_ArchiveUsage extends Admin_Admin{
 		$this->display('archiveUsage.tpl', 'Archive Usage By Library');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -92,12 +92,12 @@ class Admin_ArchiveUsage extends Admin_Admin{
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'islandora_archive';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View Archive Material Requests');
 	}

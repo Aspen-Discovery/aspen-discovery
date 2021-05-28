@@ -4,27 +4,27 @@ require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 
 class WebBuilder_Images extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'ImageUpload';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'Images';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Uploaded Images';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new ImageUpload();
 		$object->type = 'web_builder_image';
@@ -38,7 +38,7 @@ class WebBuilder_Images extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'title asc';
 	}
@@ -48,19 +48,19 @@ class WebBuilder_Images extends ObjectEditor
 		return parent::updateFromUI($object, $structure);
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		$objectStructure = ImageUpload::getObjectStructure();
 		unset($objectStructure['type']);
 		return $objectStructure;
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
@@ -69,7 +69,7 @@ class WebBuilder_Images extends ObjectEditor
 	 * @param FileUpload $existingObject
 	 * @return array
 	 */
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		$objectActions = [];
 		if (!empty($existingObject) && !empty($existingObject->id)){
@@ -81,12 +81,12 @@ class WebBuilder_Images extends ObjectEditor
 		return $objectActions;
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -95,12 +95,12 @@ class WebBuilder_Images extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Web Content']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

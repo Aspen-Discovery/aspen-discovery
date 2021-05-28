@@ -12,7 +12,7 @@ class Language extends DataObject
 	public $facetValue;
 	public $displayToTranslatorsOnly;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		return [
 			'id' => array('property'=>'id', 'type'=>'hidden', 'label'=>'Id', 'description'=>'The unique id'),
 			'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
@@ -25,7 +25,7 @@ class Language extends DataObject
 		];
 	}
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['id', 'weight'];
 	}

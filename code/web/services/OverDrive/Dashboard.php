@@ -113,7 +113,7 @@ class OverDrive_Dashboard extends Admin_Dashboard
 		return [$usage->recordsUsed, ($usage->totalCheckouts == null ? 0 : $usage->totalCheckouts), ($usage->totalHolds == null ? 0 : $usage->totalHolds)];
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -122,12 +122,12 @@ class OverDrive_Dashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'overdrive';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}

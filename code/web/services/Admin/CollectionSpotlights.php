@@ -8,16 +8,16 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 class Admin_CollectionSpotlights extends ObjectEditor {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'CollectionSpotlight';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'CollectionSpotlights';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Collection Spotlights';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$list = array();
 
 		$object = new CollectionSpotlight();
@@ -35,18 +35,18 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 
 		return $list;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
 
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return CollectionSpotlight::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function canAddNew(){
@@ -158,7 +158,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		$this->display($interface->getTemplate(), 'Collection Spotlights');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -167,12 +167,12 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'local_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Collection Spotlights','Administer Library Collection Spotlights']);
 	}

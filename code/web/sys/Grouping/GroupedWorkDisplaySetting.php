@@ -97,7 +97,7 @@ class GroupedWorkDisplaySetting extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 
@@ -230,7 +230,7 @@ class GroupedWorkDisplaySetting extends DataObject
 	 *
 	 * @see DB/DB_DataObject::fetch()
 	 */
-	public function fetch(){
+	public function fetch() {
 		$return = parent::fetch();
 		if ($return) {
 			if (isset($this->showInSearchResultsMainDetails) && is_string($this->showInSearchResultsMainDetails) && !empty($this->showInSearchResultsMainDetails)) {

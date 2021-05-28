@@ -109,7 +109,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		parent::__destruct();
 	}
 
-	public function getModule(){
+	public function getModule() : string{
 		return isset($this->indexingProfile) ? $this->indexingProfile->recordUrlComponent : 'Record';
 	}
 

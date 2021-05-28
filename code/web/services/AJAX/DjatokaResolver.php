@@ -36,7 +36,7 @@ class DjatokaResolver extends Action{
 		echo($response);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

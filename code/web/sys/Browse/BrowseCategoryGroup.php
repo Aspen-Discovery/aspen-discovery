@@ -17,7 +17,7 @@ class BrowseCategoryGroup extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure(){
+	public static function getObjectStructure() : array{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 		

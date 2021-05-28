@@ -35,7 +35,7 @@ class OpenSearch extends Action {
 		$interface->display('Search/opensearch-describe.tpl');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

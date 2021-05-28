@@ -31,7 +31,7 @@ class FineAPI extends Action
 		echo $output;
 	}
 
-	function getBreadcrumbs(): array
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

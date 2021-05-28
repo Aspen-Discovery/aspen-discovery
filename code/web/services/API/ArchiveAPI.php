@@ -264,7 +264,7 @@ class API_ArchiveAPI extends Action {
 		return $recordsByLibrary;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

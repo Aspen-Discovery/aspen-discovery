@@ -20,7 +20,7 @@ class Placard extends DataObject
 	private $_locations;
 	//TODO: add additional triggers
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$placardTriggerStructure = PlacardTrigger::getObjectStructure();
 		unset($placardTriggerStructure['placardId']);
 

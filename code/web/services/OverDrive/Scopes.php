@@ -6,27 +6,27 @@ require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
 
 class OverDrive_Scopes extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'OverDriveScope';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'Scopes';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'OverDrive';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'OverDrive Scopes';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new OverDriveScope();
 		$object->orderBy($this->getSort());
@@ -39,37 +39,37 @@ class OverDrive_Scopes extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return OverDriveScope::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -78,12 +78,12 @@ class OverDrive_Scopes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'overdrive';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer OverDrive');
 	}

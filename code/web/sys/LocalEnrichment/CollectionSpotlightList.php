@@ -13,7 +13,7 @@ class CollectionSpotlightList extends BaseBrowsable
 
 	public $weight;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		// Get All User Lists
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';

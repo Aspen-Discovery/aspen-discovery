@@ -98,7 +98,7 @@ class IndexingProfile extends DataObject
 	private $_statusMap;
 	private $_formatMap;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$translationMapStructure = TranslationMap::getObjectStructure();
 		unset($translationMapStructure['indexingProfileId']);

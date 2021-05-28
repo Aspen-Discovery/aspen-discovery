@@ -144,11 +144,13 @@ class Admin_DBMaintenance extends Admin_Admin
 		$versionUpdates = scandir(ROOT_DIR . '/sys/DBMaintenance/version_updates', SCANDIR_SORT_ASCENDING );
 		foreach ($versionUpdates as $updateFile){
 			if (is_file(ROOT_DIR . '/sys/DBMaintenance/version_updates/' . $updateFile)){
-				include_once ROOT_DIR . "/sys/DBMaintenance/version_updates/$updateFile";
-				$version = substr($updateFile, 0, strrpos($updateFile, '.'));
-				$updateFunction = 'getUpdates' . str_replace('.', '_', $version);
-				$updates = $updateFunction();
-				$baseUpdates = array_merge($baseUpdates, $updates);
+				if (StringUtils::endsWith($updateFile, '.php')) {
+					include_once ROOT_DIR . "/sys/DBMaintenance/version_updates/$updateFile";
+					$version = substr($updateFile, 0, strrpos($updateFile, '.'));
+					$updateFunction = 'getUpdates' . str_replace('.', '_', $version);
+					$updates = $updateFunction();
+					$baseUpdates = array_merge($baseUpdates, $updates);
+				}
 			}
 		}
 
@@ -437,7 +439,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -446,12 +448,12 @@ class Admin_DBMaintenance extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_admin';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Run Database Maintenance');
 	}

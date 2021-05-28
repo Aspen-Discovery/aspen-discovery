@@ -6,16 +6,16 @@ require_once ROOT_DIR . '/sys/Genealogy/Marriage.php';
 
 class Admin_Marriages extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Marriage';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Marriages';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Marriages';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new Marriage();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -27,17 +27,17 @@ class Admin_Marriages extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'marriageDate asc';
 	}
-    function getObjectStructure(){
+    function getObjectStructure() : array {
 		return Marriage::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return array('personId', 'spouseName', 'date');
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'marriageId';
 	}
 
@@ -52,7 +52,7 @@ class Admin_Marriages extends ObjectEditor
 		return false;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->activeObject) && $this->activeObject instanceof Marriage){
@@ -72,12 +72,12 @@ class Admin_Marriages extends ObjectEditor
 		parent::display($mainContentTemplate, $pageTitle, '', false);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return '';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer Genealogy']);
 	}

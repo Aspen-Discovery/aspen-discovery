@@ -40,16 +40,16 @@ class LoanRules extends ObjectEditor
 		}
 		parent::launch();
 	}
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'LoanRule';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'LoanRules';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Loan Rules';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new LoanRule();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -61,17 +61,17 @@ class LoanRules extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'loanRuleId asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return LoanRule::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'loanRuleId';
 	}
 	function customListActions(){
@@ -90,7 +90,7 @@ class LoanRules extends ObjectEditor
 		return false;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -99,12 +99,12 @@ class LoanRules extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'ils_integration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Loan Rules');
 	}

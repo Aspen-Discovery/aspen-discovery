@@ -253,7 +253,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$interface->assign('dataSeries', $dataSeries);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
@@ -261,12 +261,12 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'materials_request';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View Materials Requests Reports');
 	}

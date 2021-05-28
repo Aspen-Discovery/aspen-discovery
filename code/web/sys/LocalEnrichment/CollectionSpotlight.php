@@ -38,7 +38,7 @@ class CollectionSpotlight extends DataObject
 	/** @var  CollectionSpotlightList[] */
 	private $_lists = null;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['id'];
 	}
@@ -54,7 +54,7 @@ class CollectionSpotlight extends DataObject
 		return CollectionSpotlight::$_displayTypes[$typeName];
 	}
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		//Load Libraries for lookup values
 		$libraryList = array();

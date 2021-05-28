@@ -36,7 +36,7 @@ class CiteList extends Action {
 		$this->display('listCitations.tpl', $pageTitle, 'Search/home-sidebar.tpl', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

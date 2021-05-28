@@ -21,7 +21,7 @@ class ImageUpload extends DataObject
 	static $largeSize = 600;
 	static $mediumSize = 400;
 	static $smallSize = 200;
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		global $serverName;
 		return [

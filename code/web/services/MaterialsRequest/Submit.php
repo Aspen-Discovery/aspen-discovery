@@ -176,7 +176,7 @@ class MaterialsRequest_Submit extends Action
 		$this->display('submission-result.tpl', 'Submission Result');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

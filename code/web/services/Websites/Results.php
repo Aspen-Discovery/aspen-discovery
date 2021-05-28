@@ -177,7 +177,7 @@ class Websites_Results extends ResultsAction
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Web Page Search Results', $sidebar);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return parent::getResultsBreadcrumbs('Website Search');
 	}

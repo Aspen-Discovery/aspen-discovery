@@ -92,7 +92,7 @@ class Location extends DataObject
 	private $_combinedResultSections;
 	private $_cloudLibraryScopes;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['scope', 'isMainBranch', 'showInLocationsAndHoursList', 'validHoldPickupBranch', 'useScope', 'restrictSearchByLocation', 'showHoldButton',
 			'repeatInOnlineCollection', 'repeatInProspector', 'repeatInWorldCat', 'showEmailThis', 'showShareOnExternalSites', 'showFavorites',
@@ -100,7 +100,7 @@ class Location extends DataObject
 			'enableCombinedResults', 'defaultToCombinedResults', 'useLibraryCombinedResultsSettings'];
 	}
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		//Load Libraries for lookup values
 		$library = new Library();

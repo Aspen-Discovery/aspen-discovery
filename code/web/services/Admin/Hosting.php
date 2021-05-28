@@ -6,16 +6,16 @@ require_once ROOT_DIR . '/sys/LibraryLocation/HostInformation.php';
 
 class Admin_Hosting extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'HostInformation';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Hosting';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Host Information';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new HostInformation();
 		$object->orderBy($this->getDefaultSort());
 		$this->applyFilters($object);
@@ -27,24 +27,24 @@ class Admin_Hosting extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'host asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return HostInformation::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -53,12 +53,12 @@ class Admin_Hosting extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Host Information');
 	}

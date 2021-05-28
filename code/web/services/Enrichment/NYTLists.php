@@ -72,7 +72,7 @@ class Enrichment_NYTLists extends Admin_Admin
 		$this->display('nytLists.tpl', 'Lists from New York Times');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -81,12 +81,12 @@ class Enrichment_NYTLists extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'third_party_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View New York Times Lists');
 	}

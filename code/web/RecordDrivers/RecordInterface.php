@@ -80,7 +80,7 @@ abstract class RecordInterface
 		}
 	}
 
-	public abstract function getModule();
+	public abstract function getModule() : string;
 
 
 	/**

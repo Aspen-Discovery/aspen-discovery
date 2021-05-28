@@ -32,7 +32,7 @@ class MyAccount_Bookings extends MyAccount {
 		$this->display('bookings.tpl', 'My Scheduled Items');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

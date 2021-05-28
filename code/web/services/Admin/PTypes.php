@@ -7,16 +7,16 @@ require_once ROOT_DIR . '/sys/Account/PType.php';
 class Admin_PTypes extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'PType';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'PTypes';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Patron Types';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$libraryList = array();
 
 		$object = new PType();
@@ -30,21 +30,21 @@ class Admin_PTypes extends ObjectEditor
 
 		return $libraryList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'pType asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return PType::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'pType';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -53,12 +53,12 @@ class Admin_PTypes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Patron Types');
 	}

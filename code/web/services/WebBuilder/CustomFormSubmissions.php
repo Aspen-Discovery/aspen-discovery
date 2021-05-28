@@ -5,27 +5,27 @@ require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmission.php';
 
 class WebBuilder_CustomFormSubmissions extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'CustomFormSubmission';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'CustomFormSubmissions';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Form Submissions';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new CustomFormSubmission();
 		$formId = $_REQUEST['formId'];
@@ -40,22 +40,22 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'dateSubmitted desc';
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return CustomFormSubmission::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
@@ -64,7 +64,7 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 		return false;
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof CustomFormSubmission && !empty($existingObject->id)){
@@ -80,12 +80,12 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 		return $objectActions;
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -97,12 +97,12 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Custom Forms', 'Administer Library Custom Forms']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

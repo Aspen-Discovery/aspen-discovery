@@ -14,12 +14,12 @@ class LocationHours extends DataObject
 
 	public static $dayNames = array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday');
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['locationId', 'day', 'closed'];
 	}
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$location = new Location();
 		$location->orderBy('displayName');
 		$location->find();

@@ -74,7 +74,7 @@ class Search_Advanced extends Search_AdvancedBase {
 
 		$this->display('advanced.tpl', 'Advanced Search', '');
 	}
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Catalog Advanced Search');

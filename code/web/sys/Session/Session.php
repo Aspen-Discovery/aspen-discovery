@@ -15,7 +15,7 @@ class Session extends DataObject
 	public $created;
 	public $remember_me;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['remember_me', 'last_used'];
 	}

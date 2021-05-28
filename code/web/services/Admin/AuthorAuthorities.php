@@ -5,16 +5,16 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
 class Admin_AuthorAuthorities extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'AuthorAuthority';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'AuthorAuthorities';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Author Authorities';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new AuthorAuthority();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -27,25 +27,25 @@ class Admin_AuthorAuthorities extends ObjectEditor
 		return $objectList;
 	}
 
-	function getDefaultSort(){
+	function getDefaultSort() : string{
 		return 'author asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return AuthorAuthority::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getInstructions(){
+	function getInstructions() : string{
 //		global $interface;
 //		return $interface->fetch('Admin/ungrouping_work_instructions.tpl');
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -54,12 +54,12 @@ class Admin_AuthorAuthorities extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'cataloging';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Manually Group and Ungroup Works');
 	}

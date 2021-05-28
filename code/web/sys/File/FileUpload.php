@@ -8,7 +8,7 @@ class FileUpload extends DataObject
 	public $fullPath;
 	public $type;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),

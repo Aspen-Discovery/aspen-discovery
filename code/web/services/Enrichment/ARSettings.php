@@ -6,27 +6,27 @@ require_once ROOT_DIR . '/sys/RenaissanceLearning/ARSetting.php';
 
 class Enrichment_ARSettings extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'ARSetting';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'ARSettings';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'Enrichment';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Accelerated Reader Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new ARSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -39,37 +39,37 @@ class Enrichment_ARSettings extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'id asc';
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return ARSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '/Admin/HelpManual?page=Accelerated-Reader';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -78,12 +78,12 @@ class Enrichment_ARSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'third_party_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Third Party Enrichment API Keys');
 	}

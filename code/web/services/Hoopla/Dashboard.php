@@ -93,7 +93,7 @@ class Hoopla_Dashboard extends Admin_Dashboard
 		return [$usage->recordsUsed, (($usage->totalCheckouts != null) ? $usage->totalCheckouts : 0)];
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -102,12 +102,12 @@ class Hoopla_Dashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'hoopla';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}

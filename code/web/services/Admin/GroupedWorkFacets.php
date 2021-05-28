@@ -5,16 +5,16 @@ require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacetGroup.php';
 
 class Admin_GroupedWorkFacets extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'GroupedWorkFacetGroup';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'GroupedWorkFacets';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Grouped Work Facets';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new GroupedWorkFacetGroup();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -33,26 +33,26 @@ class Admin_GroupedWorkFacets extends ObjectEditor
 		}
 		return $list;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return GroupedWorkFacetGroup::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		//return 'For more information on themes see TBD';
 		return '/Admin/HelpManual?page=Grouped-Work-Facets';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -61,12 +61,12 @@ class Admin_GroupedWorkFacets extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'cataloging';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Grouped Work Facets','Administer Library Grouped Work Facets']);
 	}

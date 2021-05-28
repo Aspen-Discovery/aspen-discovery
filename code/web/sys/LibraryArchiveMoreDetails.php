@@ -39,7 +39,7 @@ class LibraryArchiveMoreDetails extends DataObject{
 		'staffView' => 'Staff View',
 	);
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');

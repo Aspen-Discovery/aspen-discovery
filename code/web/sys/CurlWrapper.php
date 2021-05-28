@@ -248,7 +248,7 @@ class CurlWrapper
 	 * @param string[] $customHeaders
 	 * @param bool $overrideExisting
 	 */
-	function addCustomHeaders($customHeaders, $overrideExisting)
+	function addCustomHeaders(array $customHeaders, bool $overrideExisting)
 	{
 		if ($overrideExisting) {
 			$this->headers = $customHeaders;

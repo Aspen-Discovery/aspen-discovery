@@ -15,7 +15,7 @@ class RBdigitalSetting extends DataObject
 
 	private $_scopes;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$rbdigitalScopeStructure = RBdigitalScope::getObjectStructure();
 		unset($rbdigitalScopeStructure['settingId']);

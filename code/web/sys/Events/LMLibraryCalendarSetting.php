@@ -17,7 +17,7 @@ class LMLibraryCalendarSetting extends DataObject
 
 	private $_libraries;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Library Calendar Settings'));
 

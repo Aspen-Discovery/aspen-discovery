@@ -6,27 +6,27 @@ require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 
 class Enrichment_RecaptchaSettings extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'RecaptchaSetting';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'RecaptchaSettings';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'Enrichment';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'reCAPTCHA Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new RecaptchaSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -40,36 +40,36 @@ class Enrichment_RecaptchaSettings extends ObjectEditor
 		return $objectList;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'id asc';
 	}
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return RecaptchaSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -78,12 +78,12 @@ class Enrichment_RecaptchaSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'third_party_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Third Party Enrichment API Keys');
 	}

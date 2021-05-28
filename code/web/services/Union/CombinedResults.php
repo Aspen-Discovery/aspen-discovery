@@ -33,7 +33,7 @@ class Union_CombinedResults extends Action{
 		$this->display('combined-results.tpl', $combinedResultsName, '');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb(null, 'Combined Search Results');

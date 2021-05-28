@@ -92,7 +92,7 @@ class MyAccount_SelectInterface extends Action{
 		$this->display('selectInterface.tpl', 'Select Library Catalog', '');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

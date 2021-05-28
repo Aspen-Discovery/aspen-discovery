@@ -11,7 +11,7 @@ class Permission extends DataObject
 	public $requiredModule;
 	public $description;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the permission within the database'),

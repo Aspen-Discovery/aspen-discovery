@@ -12,7 +12,7 @@ class JavaScriptSnippet extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All JavaScript Snippets'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All JavaScript Snippets'));

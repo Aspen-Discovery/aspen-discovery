@@ -15,7 +15,7 @@ class LayoutSetting extends DataObject
 	public $useHomeLink;
 	public $showBookIcon;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The Name of the Settings', 'maxLength' => 50, 'required' => true),

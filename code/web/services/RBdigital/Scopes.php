@@ -6,19 +6,19 @@ require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
 
 class RBdigital_Scopes extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'RBdigitalScope';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Scopes';
 	}
-	function getModule(){
+	function getModule() : string{
 		return 'RBdigital';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'RBdigital Scopes';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new RBdigitalScope();
 		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -30,28 +30,28 @@ class RBdigital_Scopes extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return RBdigitalScope::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		return [];
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -63,12 +63,12 @@ class RBdigital_Scopes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'rbdigital';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer RBdigital');
 	}

@@ -128,7 +128,7 @@ class MyAccount_ContactInformation extends MyAccount
 		$this->display('contactInformation.tpl', 'Contact Information');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

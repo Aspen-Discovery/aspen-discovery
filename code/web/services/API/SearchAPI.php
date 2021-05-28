@@ -1000,7 +1000,7 @@ class SearchAPI extends Action
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

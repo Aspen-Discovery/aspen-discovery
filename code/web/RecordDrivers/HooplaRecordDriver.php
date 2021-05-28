@@ -56,7 +56,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		}
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'Hoopla';
 	}

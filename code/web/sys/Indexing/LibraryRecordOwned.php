@@ -5,7 +5,7 @@ class LibraryRecordOwned extends RecordOwned{
 	public $__table = 'library_records_owned';    // table name
 	public $libraryId;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Libraries')){

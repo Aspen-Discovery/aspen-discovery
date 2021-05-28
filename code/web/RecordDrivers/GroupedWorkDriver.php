@@ -1231,7 +1231,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 	}
 
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'GroupedWork';
 	}

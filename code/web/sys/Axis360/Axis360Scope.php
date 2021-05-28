@@ -11,7 +11,7 @@ class Axis360Scope extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$axis360Settings = [];
 		$axis360Setting = new Axis360Setting();

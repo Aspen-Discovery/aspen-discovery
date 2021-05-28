@@ -6,16 +6,16 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 class Admin_Locations extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Location';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Locations';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Locations (Branches)';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
@@ -40,23 +40,23 @@ class Admin_Locations extends ObjectEditor
 		return $locationList;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'displayName asc';
 	}
 
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return Location::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'code';
 	}
 
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'locationId';
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		$objectActions = array();
 		if ($existingObject != null && $existingObject instanceof Location){
 			$objectActions[] = array(
@@ -69,11 +69,11 @@ class Admin_Locations extends ObjectEditor
 		return $objectActions;
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '/Admin/HelpManual?page=Library-Systems-Locations';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -85,12 +85,12 @@ class Admin_Locations extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
 	}

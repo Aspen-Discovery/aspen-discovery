@@ -107,7 +107,7 @@ class BlockPatronAccountLink extends DataObject
 		return ($configArray['Catalog']['barcodeProperty'] == 'cat_username') ? 'cat_username' : 'cat_password';
 	}
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		return [
 			[

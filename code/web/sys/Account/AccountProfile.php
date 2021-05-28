@@ -31,7 +31,7 @@ class AccountProfile extends DataObject {
 
 	private $_indexingProfile = false;
 
-	static function getObjectStructure() {
+	static function getObjectStructure() : array {
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),

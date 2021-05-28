@@ -16,7 +16,7 @@ class CloudLibrarySetting extends DataObject
 
 	private $_scopes;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$cloudLibraryScopeStructure = CloudLibraryScope::getObjectStructure();
 		unset($cloudLibraryScopeStructure['settingId']);

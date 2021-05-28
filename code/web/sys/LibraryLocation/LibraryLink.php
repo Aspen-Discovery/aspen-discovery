@@ -16,12 +16,12 @@ class LibraryLink extends DataObject{
 	public $published;
 	public /** @noinspection PhpUnused */ $openInNewTab;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['openInNewTab', 'published', 'showExpanded', 'alwaysShowIconInTopMenu', 'showInTopMenu', 'showToLoggedInUsersOnly', 'weight'];
 	}
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');

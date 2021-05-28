@@ -6,16 +6,16 @@ require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
 class Admin_People extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Person';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'People';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'People';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new Person();
 		$object->orderBy($this->getSort() . ', lastName asc, firstName asc');
 		$this->applyFilters($object);
@@ -27,18 +27,18 @@ class Admin_People extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'lastName asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		$person = new Person();
 		return $person->getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return array('lastName', 'firstName', 'middleName', 'birthDate');
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'personId';
 	}
 	function getRedirectLocation($objectAction, $curObject){
@@ -55,7 +55,7 @@ class Admin_People extends ObjectEditor
 	function showReturnToList(){
 		return false;
 	}
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Person');
@@ -67,12 +67,12 @@ class Admin_People extends ObjectEditor
 		parent::display($mainContentTemplate, $pageTitle, '', false);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return '';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer Genealogy']);
 	}

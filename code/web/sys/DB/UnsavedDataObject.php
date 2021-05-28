@@ -7,7 +7,7 @@ class UnsavedDataObject extends DataObject
 		return $this->_data[$name];
 	}
 
-	public function setProperty($propertyName, $newValue, $propertyStructure){
+	public function setProperty($propertyName, $newValue, $propertyStructure) : bool {
 		$this->__set($propertyName, $newValue);
 	}
 

@@ -47,7 +47,7 @@ class SideLoad extends DataObject
 
 	private $_scopes;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$translationMapStructure = TranslationMap::getObjectStructure();
 		unset($translationMapStructure['indexingProfileId']);

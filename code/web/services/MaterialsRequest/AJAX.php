@@ -647,7 +647,7 @@ class MaterialsRequest_AJAX extends Action{
 		return $result;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

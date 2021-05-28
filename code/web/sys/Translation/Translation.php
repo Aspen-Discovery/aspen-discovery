@@ -11,7 +11,7 @@ class Translation extends DataObject
 	public $translated;
 	public $needsReview;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['termId', 'languageId', 'translated', 'needsReview'];
 	}

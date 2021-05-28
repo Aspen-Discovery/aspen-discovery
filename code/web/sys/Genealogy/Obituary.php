@@ -23,7 +23,7 @@ class Obituary extends DataObject {
 		return $this->source . ' ' . $this->sourcePage . ' ' . $this->date;
 	}
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return [
 			'dateDay',
@@ -32,7 +32,7 @@ class Obituary extends DataObject {
 		];
 	}
 
-	static function getObjectStructure() {
+	static function getObjectStructure() : array {
 		return array(
 			array('property' => 'obituaryId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the obituary in the database', 'storeDb' => true),
 			array('property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this obituary is for', 'storeDb' => true),

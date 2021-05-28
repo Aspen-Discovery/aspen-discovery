@@ -304,7 +304,7 @@ class Theme extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Themes'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Themes'));

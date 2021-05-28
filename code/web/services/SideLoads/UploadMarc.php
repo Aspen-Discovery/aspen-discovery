@@ -77,7 +77,7 @@ class SideLoads_UploadMarc extends Admin_Admin
 		$this->display('uploadMarc.tpl', 'Upload MARC File');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -90,12 +90,12 @@ class SideLoads_UploadMarc extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'side_loads';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Side Loads');
 	}

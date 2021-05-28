@@ -45,7 +45,7 @@ class LibraryCard extends MyAccount
 		$this->display('libraryCard.tpl','Library Card');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

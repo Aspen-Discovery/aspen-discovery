@@ -5,16 +5,16 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
 class Admin_Variables extends ObjectEditor{
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Variable';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Variables';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'System Variables';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$variableList = array();
 
 		$object = new Variable();
@@ -28,17 +28,17 @@ class Admin_Variables extends ObjectEditor{
 		return $variableList;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return Variable::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'name';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function canAddNew(){
@@ -52,7 +52,7 @@ class Admin_Variables extends ObjectEditor{
 	 * @param DataObject $existingObject
 	 * @return array
 	 */
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		$actions = array();
 		if ($existingObject && $existingObject->getPrimaryKeyValue() != ''){
 			$actions[] = array(
@@ -129,7 +129,7 @@ class Admin_Variables extends ObjectEditor{
 		parent::editObject($objectAction, $structure);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -138,12 +138,12 @@ class Admin_Variables extends ObjectEditor{
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_admin';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer System Variables');
 	}

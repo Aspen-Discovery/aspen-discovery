@@ -5,16 +5,16 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Archive/ArchiveRequest.php';
 class Admin_ArchiveRequests extends ObjectEditor {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'ArchiveRequest';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'ArchiveRequests';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Requests for Copies of Archive Materials';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$list = array();
 
 		$object = new ArchiveRequest();
@@ -34,18 +34,18 @@ class Admin_ArchiveRequests extends ObjectEditor {
 
 		return $list;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'dateRequested desc';
 	}
 
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return ArchiveRequest::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function canAddNew(){
@@ -55,7 +55,7 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		return UserAccount::userHasPermission('View Archive Material Requests');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -64,12 +64,12 @@ class Admin_ArchiveRequests extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'islandora_archive';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View Archive Material Requests');
 	}

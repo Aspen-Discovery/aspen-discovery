@@ -66,7 +66,7 @@ class ViewPDF extends Action
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if ($this->recordDriver != null) {

@@ -1054,7 +1054,7 @@ class Record_AJAX extends Action
 
 		return true;
 	}
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

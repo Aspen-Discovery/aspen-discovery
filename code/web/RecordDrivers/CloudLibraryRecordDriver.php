@@ -80,7 +80,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		return $url;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'CloudLibrary';
 	}

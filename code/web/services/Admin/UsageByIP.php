@@ -51,7 +51,7 @@ class Admin_UsageByIP extends Admin_Dashboard
 		$this->display('usage_by_ip.tpl', 'Aspen Usage By IP');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -60,12 +60,12 @@ class Admin_UsageByIP extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_reports';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View System Reports');
 	}

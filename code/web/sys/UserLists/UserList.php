@@ -35,7 +35,7 @@ class UserList extends DataObject
 		return $sourceLists;
 	}
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['user_id', 'public', 'deleted', 'searchable'];
 	}
@@ -50,7 +50,7 @@ class UserList extends DataObject
 	);
 
 
-    static function getObjectStructure(){
+    static function getObjectStructure() : array {
 		return array(
 			'id' => array(
 				'property'=>'id',

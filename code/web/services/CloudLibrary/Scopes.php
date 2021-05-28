@@ -6,19 +6,19 @@ require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
 
 class CloudLibrary_Scopes extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'CloudLibraryScope';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Scopes';
 	}
-	function getModule(){
+	function getModule() : string{
 		return 'CloudLibrary';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Cloud Library Scopes';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new CloudLibraryScope();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -30,17 +30,17 @@ class CloudLibrary_Scopes extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return CloudLibraryScope::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function canAddNew(){
@@ -49,11 +49,11 @@ class CloudLibrary_Scopes extends ObjectEditor
 	function canDelete(){
 		return true;
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		return [];
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
@@ -139,7 +139,7 @@ class CloudLibrary_Scopes extends ObjectEditor
 		header("Location: /CloudLibrary/Scopes?objectAction=edit&id=" . $scopeId);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -148,12 +148,12 @@ class CloudLibrary_Scopes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'cloud_library';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Cloud Library');
 	}

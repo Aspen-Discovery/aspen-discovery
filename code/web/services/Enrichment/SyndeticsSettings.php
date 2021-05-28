@@ -6,27 +6,27 @@ require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
 
 class Enrichment_SyndeticsSettings extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'SyndeticsSetting';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'SyndeticsSettings';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'Enrichment';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Syndetics Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new SyndeticsSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -39,37 +39,37 @@ class Enrichment_SyndeticsSettings extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'id asc';
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return SyndeticsSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -78,12 +78,12 @@ class Enrichment_SyndeticsSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'third_party_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Third Party Enrichment API Keys');
 	}

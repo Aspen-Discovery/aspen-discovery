@@ -10,7 +10,7 @@ class ClaimAuthorshipRequest extends DataObject{
 	public $pid;
 	public $dateRequested;
 
-	public static function getObjectStructure(){
+	public static function getObjectStructure() : array{
 		return array(
 				array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'Name', 'maxLength' => 100, 'required' => true),
 				array('property'=>'phone', 'type'=>'text', 'label'=>'Phone', 'description'=>'Phone', 'maxLength' => 20, 'required' => true),
