@@ -53,7 +53,7 @@ class Admin_Themes extends ObjectEditor
 		return '';
 	}
 
-	function getExistingObjectById($id){
+	function getExistingObjectById($id) : ?DataObject {
 		$existingObject = parent::getExistingObjectById($id);
 		if ($existingObject != null && $existingObject instanceof Theme){
 			$existingObject->applyDefaults();

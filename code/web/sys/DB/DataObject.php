@@ -32,19 +32,32 @@ abstract class DataObject
 
 	protected $_data = [];
 
-	function getNumericColumnNames(){
+	/**
+	 * @return string[]
+	 */
+	function getNumericColumnNames() : array
+	{
 		return [];
 	}
 
-	function getEncryptedFieldNames(){
+	/**
+	 * @return string[]
+	 */
+	function getEncryptedFieldNames() : array
+	{
 		return [];
 	}
 
-	function getSerializedFieldNames(){
+	/**
+	 * @return string[]
+	 */
+	function getSerializedFieldNames() : array
+	{
 		return [];
 	}
 
-	function __toString(){
+	function __toString()
+	{
 		$stringProperty = $this->__primaryKey;
 		if ($this->__displayNameColumn != null){
 			$stringProperty = $this->__displayNameColumn;
@@ -56,15 +69,21 @@ abstract class DataObject
 		}
 	}
 
-	function getPrimaryKeyValue(){
+	function getPrimaryKeyValue()
+	{
 		$primaryKeyProperty = $this->__primaryKey;
 		return $this->$primaryKeyProperty;
 	}
 
-	function getPrimaryKey(){
+	/**
+	 * @return string
+	 * @noinspection PhpUnused
+	 */
+	function getPrimaryKey() : string{
 		return $this->__primaryKey;
 	}
-	public function find($fetchFirst = false){
+
+	public function find($fetchFirst = false) : bool {
 		if (!isset($this->__table)) {
 			echo("Table not defined for class " . self::class);
 			die();
@@ -101,7 +120,11 @@ abstract class DataObject
 		return $this->__N > 0;
 	}
 
-	public function fetch(){
+	/**
+	 * @return DataObject|false|null
+	 */
+	public function fetch()
+	{
 		$this->__fetchingFromDB = true;
 		if ($this->__queryStmt == null){
 			return null;
@@ -127,9 +150,10 @@ abstract class DataObject
 	 * Retrieves an associated array if both fieldName and fieldValue are provided
 	 * @param null $fieldName
 	 * @param null $fieldValue
-	 * @return array
+	 * @return DataObject[]
 	 */
-	public function fetchAll($fieldName = null, $fieldValue = null){
+	public function fetchAll($fieldName = null, $fieldValue = null) : array
+	{
 		$this->__fetchingFromDB = true;
 		$results = array();
 		if ($this->find() > 0) {
@@ -151,7 +175,11 @@ abstract class DataObject
 		return $results;
 	}
 
-	public function orderBy($fieldsToOrder){
+	/**
+	 * @param string[]|string $fieldsToOrder
+	 */
+	public function orderBy($fieldsToOrder)
+	{
 		if ($fieldsToOrder == null) {
 			$this->__orderBy = null;
 		}else {
@@ -166,7 +194,11 @@ abstract class DataObject
 		}
 	}
 
-	public function groupBy($fieldsToGroup){
+	/**
+	 * @param string[]|string $fieldsToGroup
+	 */
+	public function groupBy($fieldsToGroup)
+	{
 		if ($fieldsToGroup == null) {
 			$this->__groupBy = null;
 		}else {
@@ -181,7 +213,11 @@ abstract class DataObject
 		}
 	}
 
-	public function whereAdd($cond = false, $logic = 'AND'){
+	/**
+	 * @param string|bool $cond
+	 * @param string $logic
+	 */
+	public function whereAdd($cond = false, string $logic = 'AND'){
 		if ($cond == false) {
 			$this->__where = null;
 		}else {
@@ -242,7 +278,7 @@ abstract class DataObject
 				}elseif (in_array($name, $encryptedFields)) {
 					$propertyValues .= $aspen_db->quote(EncryptionUtils::encryptField($value));
 				}elseif (in_array($name, $serializedFields)) {
-					if (!empty($value) && $value !== null) {
+					if (!empty($value)) {
 						$propertyValues .= $aspen_db->quote(serialize($value));
 					}else{
 						$propertyValues .= "''";
@@ -256,7 +292,7 @@ abstract class DataObject
 					$propertyValues .= ', ';
 				}
 				$propertyNames .= $name;
-				if (!empty($value) && $value !== null) {
+				if (!empty($value)) {
 					$propertyValues .= $aspen_db->quote(serialize($value));
 				}else{
 					$propertyValues .= "''";
@@ -310,7 +346,7 @@ abstract class DataObject
 				}elseif (in_array($name, $encryptedFields)){
 					$updates .= $name . ' = ' . $aspen_db->quote(EncryptionUtils::encryptField($value));
 				}elseif (in_array($name, $serializedFields)) {
-					if (!empty($value) && $value !== null) {
+					if (!empty($value)) {
 						$updates .= $name . ' = ' . $aspen_db->quote(serialize($value));
 					}else{
 						$updates .= $name . ' = ' .  $aspen_db->quote('');
@@ -319,7 +355,7 @@ abstract class DataObject
 					$updates .= $name . ' = ' . $aspen_db->quote($value);
 				}
 			}elseif (is_array($value) && in_array($name, $serializedFields)){
-				if (!empty($value) && $value !== null) {
+				if (!empty($value)) {
 					$updates .= $name . ' = ' . $aspen_db->quote(serialize($value));
 				}else{
 					$updates .= $name . ' = ' .  $aspen_db->quote('');
@@ -338,7 +374,8 @@ abstract class DataObject
 		return $response;
 	}
 
-	public function get($columnName, $value = null){
+	public function get($columnName, $value = null) : bool
+	{
 		if ($value == null) {
 			$value = $columnName;
 			$columnName = $this->__primaryKey;
@@ -419,7 +456,8 @@ abstract class DataObject
 		return 0;
 	}
 
-	public function query($query){
+	public function query($query) : bool
+	{
 		if (!isset($this->__table)) {
 			echo("Table not defined for class " . self::class);
 			die();
@@ -506,7 +544,7 @@ abstract class DataObject
 		$joinObject = $join['object'];
 		$subQuery = $joinObject->getSelectQuery($aspen_db);
 
-		return " {$join['joinType']}  JOIN ({$subQuery}) AS {$join['alias']} ON {$this->__table}.{$join['mainTableField']} = {$join['alias']}.{$join['joinedTableField']} ";
+		return " {$join['joinType']}  JOIN ($subQuery) AS {$join['alias']} ON $this->__table.{$join['mainTableField']} = {$join['alias']}.{$join['joinedTableField']} ";
 	}
 
 	/**
@@ -649,7 +687,6 @@ abstract class DataObject
 	public function __clone()
 	{
 		$className = get_class($this);
-		/** @var DataObject $clone */
 		$clone = new $className;
 		$properties = get_object_vars($this);
 		foreach ($properties as $name => $value){
@@ -677,12 +714,12 @@ abstract class DataObject
 	/**
 	 * @return integer
 	 */
-	public function getNumResults()
+	public function getNumResults() : int
 	{
 		return $this->__N;
 	}
 
-	public function copy(array $propertiesToChange, $saveCopy)
+	public function copy(array $propertiesToChange, $saveCopy) : DataObject
 	{
 		$newObject = clone $this;
 		$newObject->__primaryKey = null;
@@ -695,7 +732,8 @@ abstract class DataObject
 		return $newObject;
 	}
 
-	public function isEqualTo(DataObject $other){
+	public function isEqualTo(DataObject $other) : bool
+	{
 		$properties = get_object_vars($this);
 		$equal = true;
 		foreach ($properties as $name => $value){
@@ -717,7 +755,8 @@ abstract class DataObject
 	 * @return boolean true if the property changed, or false if it did not
 	 * @noinspection PhpUnused
 	 */
-	public function setProperty($propertyName, $newValue, $propertyStructure){
+	public function setProperty(string $propertyName, $newValue, ?array $propertyStructure) : bool
+	{
 		$propertyChanged = $this->$propertyName != $newValue || (is_null($this->$propertyName) && !is_null($newValue));
 		if ($propertyChanged) {
 			$oldValue = $this->$propertyName;
@@ -733,25 +772,27 @@ abstract class DataObject
 				require_once ROOT_DIR . '/sys/SystemVariables.php';
 				SystemVariables::forceNightlyIndex();
 			}
-			//Add the change to the history
-			require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
-			$history = new DataObjectHistory();
-			$history->objectType = get_class($this);
-			$primaryKey = $this->__primaryKey;
-			if (!empty($this->$primaryKey)) {
-				if (strlen($oldValue) >= 65535){
-					$oldValue = 'Too long to track history';
+			//Add the change to the history unless tracking the history is off (passwords)
+			if ($propertyStructure['type'] != 'password' && $propertyStructure['type'] != 'storedPassword') {
+				require_once ROOT_DIR . '/sys/DB/DataObjectHistory.php';
+				$history = new DataObjectHistory();
+				$history->objectType = get_class($this);
+				$primaryKey = $this->__primaryKey;
+				if (!empty($this->$primaryKey)) {
+					if (strlen($oldValue) >= 65535) {
+						$oldValue = 'Too long to track history';
+					}
+					if (strlen($newValue) >= 65535) {
+						$newValue = 'Too long to track history';
+					}
+					$history->objectId = $this->$primaryKey;
+					$history->oldValue = $oldValue;
+					$history->propertyName = $propertyName;
+					$history->newValue = $newValue;
+					$history->changedBy = UserAccount::getActiveUserId();
+					$history->changeDate = time();
+					$history->insert();
 				}
-				if (strlen($newValue) >= 65535){
-					$newValue = 'Too long to track history';
-				}
- 				$history->objectId = $this->$primaryKey;
-				$history->oldValue = $oldValue;
-				$history->propertyName = $propertyName;
-				$history->newValue = $newValue;
-				$history->changedBy = UserAccount::getActiveUserId();
-				$history->changeDate = time();
-				$history->insert();
 			}
 
 			return true;
@@ -773,7 +814,8 @@ abstract class DataObject
 		}
 	}
 
-	public function toArray(){
+	public function toArray() : array
+	{
 		$return = [];
 		$properties = get_object_vars($this);
 		foreach ($properties as $name => $value) {

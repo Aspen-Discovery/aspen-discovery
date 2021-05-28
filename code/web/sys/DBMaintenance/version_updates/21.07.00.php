@@ -82,71 +82,31 @@ function getUpdates21_07_00() : array
 				'ALTER TABLE syndetics_settings ADD COLUMN unboundAccountNumber INT DEFAULT NULL'
 			]
 		],
-//		'store_grouped_work_records_items_scopes' => [
-//			'title' => 'Grouped Work Records, Items, Scopes',
-//			'description' => 'Store more information about grouped works within the database for easier access',
-//			'sql' => [
-//				"CREATE TABLE indexed_format (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					format VARCHAR(255)
-//				) ENGINE INNODB",
-//				"CREATE TABLE indexed_format_category (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					format_category VARCHAR(255)
-//				) ENGINE INNODB",
-//				"CREATE TABLE indexed_language (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					language VARCHAR(255)
-//				) ENGINE INNODB",
-//				"CREATE TABLE indexed_editions (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					language VARCHAR(255)
-//				) ENGINE INNODB",
-//				"CREATE TABLE indexed_publishers (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					publisher VARCHAR(255)
-//				) ENGINE INNODB",
-//				"CREATE TABLE indexed_publication_dates (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					publicationDate VARCHAR(255)
-//				) ENGINE INNODB",
-//				"CREATE TABLE indexed_physical_descriptions (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					physicalDescription VARCHAR(255)
-//				) ENGINE INNODB",
-//				"CREATE TABLE grouped_work_records (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					grouped_work_id int(11) NOT NULL,
-//					source VARCHAR(50),
-//					subSource VARCHAR(50),
-//					recordIdentifier VARCHAR(50),
-//					formatBoost INT(11),
-//					editionId INT(11),
-//					primaryLanguageId INT(11),
-//					publisherId INT(11),
-//					publicationDateId INT(11),
-//					physicalDescriptionId INT(11),
-//					INDEX(grouped_work_id),
-//					UNIQUE INDEX(source, subSource, recordIdentifier)
-//				)  ENGINE INNODB",
-//				"CREATE TABLE grouped_work_record_formats (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					grouped_work_record_id INT(11) NOT NULL,
-//					format_id INT(11) NOT NULL,
-//					INDEX (grouped_work_record_id)
-//				) ENGINE INNODB",
-//				"CREATE TABLE grouped_work_record_format_categories (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					grouped_work_record_id INT(11) NOT NULL,
-//					format_category_id INT(11) NOT NULL,
-//					INDEX (grouped_work_record_id)
-//				) ENGINE INNODB",
-//				"CREATE TABLE grouped_work_record_items (
-//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//					grouped_work_record_id INT(11) NOT NULL,
-//				) ENGINE INNODB"
-//			]
-//		]
+		'amazon_ses' => [
+			'title' => 'Add Amazon SES information',
+			'description' => 'Add the ability to send email via Amazon SES',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE amazon_ses_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					fromAddress VARCHAR(255),
+					accessKeyId VARCHAR(50),
+					accessKeySecret VARCHAR(256),
+					singleMailConfigSet VARCHAR(50),
+					bulkMailConfigSet VARCHAR(50),
+					region VARCHAR(20)
+				) ENGINE INNODB',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('System Administration', 'Administer Amazon SES', '', 29, 'Controls if the user can change Amazon SES settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Amazon SES'))",
+			]
+		],
+		'increase_showInSearchResultsMainDetails_length' => [
+			'title' => 'increase showInSearchResultsMainDetails length',
+			'description' => 'Increase the column length for showInSearchResultsMainDetails',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings CHANGE COLUMN showInSearchResultsMainDetails showInSearchResultsMainDetails VARCHAR(512) NULL DEFAULT 'a:5:{i:0;s:10:\"showSeries\";i:1;s:13:\"showPublisher\";i:2;s:19:\"showPublicationDate\";i:3;s:13:\"showLanguages\";i:4;s:10:\"showArInfo\";}'",
+			]
+		]
 	];
 }
 

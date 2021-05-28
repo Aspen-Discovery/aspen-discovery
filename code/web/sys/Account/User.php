@@ -113,12 +113,12 @@ class User extends DataObject
 	public $_comingDueNotice;
 	public $_phoneType;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
 	}
 
-	function getEncryptedFieldNames(){
+	function getEncryptedFieldNames() : array {
 		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'rbdigitalPassword', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
 	}
 
@@ -229,7 +229,7 @@ class User extends DataObject
 		$this->saveRoles();
 	}
 
-	function getRoles($isGuidingUser = false){
+	function getRoles(){
 		if (is_null($this->_roles)){
 			$this->_roles = array();
 			//Load roles for the user from the user
@@ -292,16 +292,6 @@ class User extends DataObject
 			}
 		}
 
-		//We don't want to hide which roles are shown based on the masquerade, we will need to restrict permissions.
-//		$masqueradeMode = UserAccount::isUserMasquerading();
-//		if ($masqueradeMode && !$isGuidingUser) {
-//			if (is_null($this->_masqueradingRoles)) {
-//				$guidingUser = UserAccount::getGuidingUserObject();
-//				$guidingUserRoles = $guidingUser->getRoles(true);
-//				$this->_masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
-//			}
-//			return $this->_masqueradingRoles;
-//		}
 		return $this->_roles;
 	}
 
@@ -672,7 +662,7 @@ class User extends DataObject
 		return in_array($roleName, $myRoles);
 	}
 
-    static function getObjectStructure(){
+    static function getObjectStructure() : array {
 		//Lookup available roles in the system
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$roleList = Role::getLookup();
@@ -2159,6 +2149,7 @@ class User extends DataObject
 		$sections['system_admin']->addAction(new AdminAction('Administration Users', 'Define who should have administration privileges.', '/Admin/Administrators'), 'Administer Users');
 		$sections['system_admin']->addAction(new AdminAction('Permissions', 'Define who what each role in the system can do.', '/Admin/Permissions'), 'Administer Permissions');
 		$sections['system_admin']->addAction(new AdminAction('DB Maintenance', 'Update the database when new versions of Aspen Discovery are released.', '/Admin/DBMaintenance'), 'Run Database Maintenance');
+		$sections['system_admin']->addAction(new AdminAction('Amazon SES Settings', 'Settings to allow Aspen Discovery to send emails via Amazon SES.', '/Admin/AmazonSesSettings'), 'Administer Amazon SES');
 		$sections['system_admin']->addAction(new AdminAction('Send Grid Settings', 'Settings to allow Aspen Discovery to send emails via SendGrid.', '/Admin/SendGridSettings'), 'Administer SendGrid');
 		$sections['system_admin']->addAction(new AdminAction('Variables', 'Variables set by the Aspen Discovery itself as part of background processes.', '/Admin/Variables'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('System Variables', 'Settings for Aspen Discovery that apply to all libraries on this installation.', '/Admin/SystemVariables'), 'Administer System Variables');
