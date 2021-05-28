@@ -1035,26 +1035,38 @@ class Koha extends AbstractIlsDriver
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
 			} else {
+				$error = $placeHoldResponse->code;
 				$hold_result['success'] = false;
-				//See if we can get more info on why this failed.
-				$holds = $this->getHolds($patron);
-				$alreadyOnHold = false;
-				foreach($holds['available'] as $hold) {
-					if ($hold->recordId == $recordDriver->getId()){
-						$alreadyOnHold = true;
-					}
+				$message = 'The item could not be placed on hold: ';
+
+				if($error == "damaged") {
+					$message .= 'Item damaged';
+				} elseif ($error == "ageRestricted") {
+					$message .= 'Age restricted';
+				} elseif ($error == "tooManyHoldsForThisRecord") {
+					$message .= 'Exceeded max holds per record';
+				} elseif ($error == "tooManyReservesToday") {
+					$message .= 'Exceeded hold limit for patron';
+				} elseif ($error == "tooManyReserves") {
+					$message .= 'Too many holds';
+				} elseif ($error == "notReservable") {
+					$message .= 'Not holdable';
+				} elseif ($error == "cannotReserveFromOtherBranches") {
+					$message .= 'Patron is from different library';
+				} elseif ($error == "branchNotInHoldGroup") {
+					$message .= 'Cannot place hold from patron\'s library';
+				} elseif ($error == "itemAlreadyOnHold") {
+					$message .= 'Patron already has hold for this item';
+				} elseif ($error == "cannotBeTransferred") {
+					$message .= 'Cannot be transferred to pickup library';
+				} elseif ($error == "pickupNotInHoldGroup") {
+					$message .= 'Only pickup locations within the same hold group are allowed';
+				} elseif ($error == "noReservesAllowed") {
+					$message .= 'No reserves are allowed on this item';
+				} elseif ($error == "libraryNotPickupLocation") {
+					$message .= 'Library is not a pickup location';
 				}
-				foreach($holds['unavailable'] as $hold) {
-					if ($hold->recordId == $recordDriver->getId()){
-						$alreadyOnHold = true;
-					}
-				}
-				//Look for an alert message
-				if ($alreadyOnHold){
-					$hold_result['message'] = translate(['text'=>'ils_title_already_on_hold', 'defaultText'=>'Your hold could not be placed, you already have this title on hold.']);
-				}else {
-					$hold_result['message'] = translate(['text'=>'koha_hold_failed', 'defaultText'=>'Your hold could not be placed. %1%', '1'=> $placeHoldResponse->code]);
-				}
+				$hold_result['message'] = translate($message);
 			}
 			return $hold_result;
 		}
