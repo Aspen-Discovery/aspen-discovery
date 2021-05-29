@@ -23,11 +23,11 @@ class Admin_Locations extends ObjectEditor
 		$object->orderBy($this->getSort());
 		if (!UserAccount::userHasPermission('Administer All Locations')){
 			if (!UserAccount::userHasPermission('Administer Home Library Locations')){
+				$object->locationId = $user->homeLocationId;
+			}else{
 				//Scope to just locations for the user based on home library
 				$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
 				$object->libraryId = $patronLibrary->libraryId;
-			}else{
-				$object->locationId = $user->homeLocationId;
 			}
 		}
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
