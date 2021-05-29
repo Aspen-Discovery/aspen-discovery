@@ -106,6 +106,13 @@ function getUpdates21_07_00() : array
 			'sql' => [
 				"ALTER TABLE grouped_work_display_settings CHANGE COLUMN showInSearchResultsMainDetails showInSearchResultsMainDetails VARCHAR(512) NULL DEFAULT 'a:5:{i:0;s:10:\"showSeries\";i:1;s:13:\"showPublisher\";i:2;s:19:\"showPublicationDate\";i:3;s:13:\"showLanguages\";i:4;s:10:\"showArInfo\";}'",
 			]
+		],
+		'21_07_00_full_extract_for_koha' => [
+			'title' => 'Regroup all records for 21.07',
+			'description' => 'Regroup all records for 21.07',
+			'sql' => [
+				"UPDATE indexing_profiles set runFullUpdate = 1 where indexingClass = 'Koha'"
+			]
 		]
 	];
 }
