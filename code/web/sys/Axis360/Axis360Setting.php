@@ -36,7 +36,6 @@ class Axis360Setting extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Scopes',
 				'description' => 'Define scopes for the settings',
-				'helpLink' => '',
 				'keyThis' => 'id',
 				'keyOther' => 'settingId',
 				'subObjectType' => 'Axis360Scope',

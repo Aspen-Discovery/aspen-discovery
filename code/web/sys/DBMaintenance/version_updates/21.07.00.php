@@ -114,7 +114,7 @@ function getUpdates21_07_00() : array
 				"UPDATE indexing_profiles set runFullUpdate = 1 where indexingClass = 'Koha'"
 			]
 		],
-		'upload_list_cover_permissions' =>[
+		'upload_list_cover_permissions' => [
 			'title' => 'Additional Permission to Upload List Covers',
 			'description' => 'Additional Permission to Upload List Covers',
 			'continueOnError' => true,
@@ -124,6 +124,82 @@ function getUpdates21_07_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name = 'cataloging'), (SELECT id from permissions where name='Upload List Covers'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name = 'superCataloger'), (SELECT id from permissions where name='Upload List Covers'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name = 'listPublisher'), (SELECT id from permissions where name='Upload List Covers'))",
+			]
+		],
+		'remove_library_themeName' => [
+			'title' => 'Remove Library Theme Name',
+			'description' => 'Remove unused library theme name',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE library drop column themeName",
+			]
+		],
+		'library_field_level_permissions' => [
+			'title' => 'Library Field Level Permissions',
+			'description' => 'Add permissions to control access to fields within the library configuration',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Domain Settings', '', 1, 'Configure Library fields related to URLs and base configuration to access Aspen.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Theme Configuration', '', 3, 'Configure Library fields related to how theme display is configured for the library.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Contact Settings', '', 6, 'Configure Library fields related to contact information for the library.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library ILS Connection', '', 9, 'Configure Library fields related to how Aspen connects to the ILS and settings that depend on how the ILS is configured.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library ILS Options', '', 12, 'Configure Library fields related to how Aspen interacts with the ILS.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Self Registration', '', 15, 'Configure Library fields related to how Self Registration is configured in Aspen.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library eCommerce Options', '', 18, 'Configure Library fields related to how eCommerce is configured in Aspen.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Catalog Options', '', 21, 'Configure Library fields related to how Catalog results and searching is configured in Aspen.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Browse Category Options', '', 24, 'Configure Library fields related to how browse categories are configured in Aspen.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Materials Request Options', '', 27, 'Configure Library fields related to how materials request is configured in Aspen.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library ILL Options', '', 30, 'Configure Library fields related to how ill is configured in Aspen.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Records included in Catalog', '', 33, 'Configure Library fields related to what materials (physical and eContent) are included in the Aspen Catalog.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Genealogy Content', '', 36, 'Configure Library fields related to genealogy content.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Islandora Archive Options', '', 39, 'Configure Library fields related to Islandora based archive.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Open Archive Options', '', 42, 'Configure Library fields related to open archives content.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Web Builder Options', '', 45, 'Configure Library fields related to web builder content.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library EDS Options', '', 48, 'Configure Library fields related to EDS content.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Holidays', '', 51, 'Configure Library holidays.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration - Library Fields', 'Library Menu', '', 42, 'Configure Library menu.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Domain Settings'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Theme Configuration'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Contact Settings'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library ILS Connection'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library ILS Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Self Registration'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library eCommerce Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Catalog Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Browse Category Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library ILL Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Records included in Catalog'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Genealogy Content'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Islandora Archive Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Web Builder Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library EDS Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Holidays'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Menu'))",
+
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Theme Configuration'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Contact Settings'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library ILS Connection'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library ILS Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Self Registration'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library eCommerce Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Catalog Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Browse Category Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library ILL Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Records included in Catalog'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Genealogy Content'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Islandora Archive Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Web Builder Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library EDS Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Holidays'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Menu'))",
+
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryManager'), (SELECT id from permissions where name='Library Contact Settings'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryManager'), (SELECT id from permissions where name='Library ILS Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryManager'), (SELECT id from permissions where name='Library Catalog Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryManager'), (SELECT id from permissions where name='Library Browse Category Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryManager'), (SELECT id from permissions where name='Library Holidays'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryManager'), (SELECT id from permissions where name='Library Menu'))",
+
 			]
 		]
 	];

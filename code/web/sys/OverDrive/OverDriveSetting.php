@@ -41,7 +41,6 @@ class OverDriveSetting extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Scopes',
 				'description' => 'Define scopes for the settings',
-				'helpLink' => '',
 				'keyThis' => 'id',
 				'keyOther' => 'settingId',
 				'subObjectType' => 'OverDriveScope',
