@@ -39,6 +39,8 @@ class ExternalEContent_Home extends GroupedWorkSubRecordHomeAction{
 			$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 
+			$groupedWork->loadReadingHistoryIndicator();
+
 			//Get Related Records to make sure we initialize items
 			$recordInfo = $this->recordDriver->getGroupedWorkDriver()->getRelatedRecord($this->recordDriver->getIdWithSource());
 			if ($recordInfo == null){

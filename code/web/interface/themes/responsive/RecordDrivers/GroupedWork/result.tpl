@@ -197,6 +197,8 @@
 
 				{include file="GroupedWork/relatedLists.tpl"}
 
+				{include file="GroupedWork/readingHistoryIndicator.tpl"}
+
 				{* Short Mobile Entry for Formats when there aren't hidden formats *}
 				<div class="row visible-xs">
 

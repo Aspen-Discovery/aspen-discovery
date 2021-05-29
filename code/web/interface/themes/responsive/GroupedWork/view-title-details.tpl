@@ -98,4 +98,6 @@
 	{/if}
 
 	{include file="GroupedWork/relatedLists.tpl"}
+
+	{include file="GroupedWork/readingHistoryIndicator.tpl"}
 {/strip}

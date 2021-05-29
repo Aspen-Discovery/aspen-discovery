@@ -121,6 +121,8 @@
 
 				{include file="GroupedWork/relatedLists.tpl"}
 
+				{include file="GroupedWork/readingHistoryIndicator.tpl"}
+
 				{include file="GroupedWork/relatedManifestations.tpl" relatedManifestations=$recordDriver->getRelatedManifestations() workId=$recordDriver->getPermanentId()}
 
 				<div class="row">

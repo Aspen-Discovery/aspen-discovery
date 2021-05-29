@@ -47,6 +47,8 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 			$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 
+			$groupedWork->loadReadingHistoryIndicator();
+
 			//Load information for display in the template rather than processing specific fields in the template
 			$marcField = $marcRecord->getField('245');
 			$recordTitle = $this->getSubfieldData($marcField, 'a');

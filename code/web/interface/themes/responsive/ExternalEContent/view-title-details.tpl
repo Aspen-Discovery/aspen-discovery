@@ -78,6 +78,8 @@
 
 	{include file="GroupedWork/relatedLists.tpl"}
 
+	{include file="GroupedWork/readingHistoryIndicator.tpl"}
+
 	<div class="row">
 		<div class="result-label col-sm-3">{translate text='Status'}</div>
 		<div class="col-sm-9 result-value result-value-bold statusValue here" id="statusValue">Available Online</div>

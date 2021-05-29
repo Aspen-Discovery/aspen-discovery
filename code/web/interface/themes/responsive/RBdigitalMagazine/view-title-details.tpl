@@ -21,6 +21,8 @@
 	
 	{include file="GroupedWork/relatedLists.tpl"}
 
+	{include file="GroupedWork/readingHistoryIndicator.tpl"}
+
 	<div class="row">
 		<div class="result-label col-md-3">{translate text='Status'}</div>
 		<div class="col-md-9 result-value result-value-bold statusValue {$holdingsSummary.class}" id="statusValue">{$holdingsSummary.status|escape}</div>

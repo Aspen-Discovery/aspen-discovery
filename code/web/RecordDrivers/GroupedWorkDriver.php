@@ -1638,6 +1638,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->getPermanentId());
 		$interface->assign('appearsOnLists', $appearsOnLists);
 
+		$this->loadReadingHistoryIndicator();
+
 		$summPublisher = null;
 		$summPubDate = null;
 		$summPhysicalDesc = null;
@@ -2743,6 +2745,26 @@ class GroupedWorkDriver extends IndexRecordDriver
 			return $whileYouWaitTitles;
 		}else{
 			return [];
+		}
+	}
+
+	public function loadReadingHistoryIndicator(): void
+	{
+		global $interface;
+		$interface->assign('inReadingHistory', false);
+		if (UserAccount::isLoggedIn()) {
+			require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+			$readingHistoryEntry = new ReadingHistoryEntry();
+			$readingHistoryEntry->userId = UserAccount::getActiveUserId();
+			$readingHistoryEntry->deleted = 0;
+			$readingHistoryEntry->groupedWorkPermanentId = $this->getPermanentId();
+			$readingHistoryEntry->groupBy('groupedWorkPermanentId');
+			$readingHistoryEntry->selectAdd();
+			$readingHistoryEntry->selectAdd('MAX(checkOutDate) as checkOutDate');
+			if ($readingHistoryEntry->find(true)) {
+				$interface->assign('inReadingHistory', true);
+				$interface->assign('lastCheckedOut', $readingHistoryEntry->checkOutDate);
+			}
 		}
 	}
 }
