@@ -24,6 +24,14 @@ class Suggestions{
 		//Load all titles the user has marked as not being interested in for the past hour in case indexing is not caught up
 		$notInterestedTitles = $user->getNotInterestedTitles(time() - 60 * 60);
 
+		$holds = $user->getHolds(false);
+		foreach ($holds['available'] as $hold){
+			$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+		}
+		foreach ($holds['unavailable'] as $hold){
+			$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+		}
+
 		//Load all titles the user has rated.  Need to load all so we don't recommend things they already rated
 		$allRatedTitles = array();
 		$allLikedRatedTitles = array();
