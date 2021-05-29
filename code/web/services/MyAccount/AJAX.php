@@ -2853,9 +2853,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Upload a New List Cover',
+			'title' => translate('Upload a New List Cover'),
 			'modalBody' => $interface->fetch("Lists/upload-cover-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>Upload Cover</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>" . translate("Upload Cover") . "</button>"
 		);
 	}
 
@@ -2866,7 +2866,7 @@ class MyAccount_AJAX extends JSON_Action
 			'title' => 'Uploading custom list cover',
 			'message' => 'Sorry your cover could not be uploaded'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload List Covers'))){
 			if (isset($_FILES['coverFile'])) {
 				$uploadedFile = $_FILES['coverFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
@@ -2919,9 +2919,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Upload a New List Cover by URL',
+			'title' => translate('Upload a New List Cover by URL'),
 			'modalBody' => $interface->fetch("Lists/upload-cover-form-url.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverFormByURL\").submit()'>Upload Cover</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverFormByURL\").submit()'>" . translate("Upload Cover") . "</button>"
 		);
 	}
 

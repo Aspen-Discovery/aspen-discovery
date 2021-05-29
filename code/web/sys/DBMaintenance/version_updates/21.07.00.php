@@ -113,6 +113,18 @@ function getUpdates21_07_00() : array
 			'sql' => [
 				"UPDATE indexing_profiles set runFullUpdate = 1 where indexingClass = 'Koha'"
 			]
+		],
+		'upload_list_cover_permissions' =>[
+			'title' => 'Additional Permission to Upload List Covers',
+			'description' => 'Additional Permission to Upload List Covers',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('User Lists', 'Upload List Covers', '', 1, 'Allows users to upload covers for a list.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Upload List Covers'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name = 'cataloging'), (SELECT id from permissions where name='Upload List Covers'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name = 'superCataloger'), (SELECT id from permissions where name='Upload List Covers'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name = 'listPublisher'), (SELECT id from permissions where name='Upload List Covers'))",
+			]
 		]
 	];
 }
