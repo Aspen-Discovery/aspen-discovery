@@ -58,9 +58,9 @@
 							<div class="result-value col-tn-8">
 								{if $summSeries}
 									{if $summSeries.fromNovelist}
-										<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}<br>
+										<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} <strong>{translate text=volume} {$summSeries.volume}</strong>{/if}<br>
 									{else}
-										<a href="/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}&sort=year+asc%2Ctitle+asc">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}<br>
+										<a href="/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}&sort=year+asc%2Ctitle+asc">{$summSeries.seriesTitle}</a>{if $summSeries.volume}<strong> {translate text="volume %1%" 1=$summSeries.volume}</strong>{/if}<br>
 									{/if}
 								{/if}
 								{if $indexedSeries}
@@ -72,7 +72,7 @@
 												<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">{translate text='More Series...'}</a>
 												<div id="moreSeries_{$summId}" style="display:none">
 											{/if}
-											<a href="/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22&sort=year+asc%2Ctitle+asc">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} {translate text=volume} {$seriesItem.volume}{/if}<br>
+											<a href="/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22&sort=year+asc%2Ctitle+asc">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume}<strong> {translate text="volume %1%" 1=$seriesItem.volume}</strong>{/if}<br>
 										{/if}
 									{/foreach}
 									{if $numSeriesShown >= 4}

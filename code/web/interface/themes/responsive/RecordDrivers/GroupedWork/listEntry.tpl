@@ -49,7 +49,7 @@
 				<div class="series{$summISBN} row">
 					<div class="result-label col-xs-3">{translate text="Series"} </div>
 					<div class="result-value col-xs-9">
-						<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
+						<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume}<strong> {translate text="volume %1%" 1=$summSeries.volume}</strong>{/if}
 					</div>
 				</div>
 			{/if}
