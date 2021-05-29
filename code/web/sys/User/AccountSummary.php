@@ -111,7 +111,7 @@ class AccountSummary extends DataObject
 		return $this->_expirationFinesNotice;
 	}
 
-	public function toArray(){
+	public function toArray() : array{
 		$return = parent::toArray();
 		$return['expires'] = date('M j, Y', $this->expirationDate);
 		$return['expired'] = $this->isExpired();
