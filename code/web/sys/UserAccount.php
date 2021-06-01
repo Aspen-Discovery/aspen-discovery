@@ -419,8 +419,6 @@ class UserAccount
 			$showCovers = ($_REQUEST['showCovers'] == 'on' || $_REQUEST['showCovers'] == 'true');
 			$_SESSION['showCovers'] = $showCovers;
 		}
-
-		session_write_close();
 	}
 
 	/**
@@ -679,9 +677,8 @@ class UserAccount
 			$interface->assign('loggedIn', false);
 
 			global $logger;
-			$logger->log('Finished updating session as part of softLogout, preparing to write', Logger::LOG_DEBUG);
-			$logger->log($_SESSION, Logger::LOG_DEBUG);
-			session_write_close();
+			$logger->log('Finished updating session as part of softLogout, will write on shutdown', Logger::LOG_DEBUG);
+			$logger->log(print_r($_SESSION, true), Logger::LOG_DEBUG);
 		}
 	}
 
