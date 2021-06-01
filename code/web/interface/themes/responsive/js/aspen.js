@@ -9482,6 +9482,30 @@ AspenDiscovery.Lists = (function(){
 			});
 			return false;
 		},
+
+		changeWeight: function(listEntryId, direction) {
+			var url = Globals.path + '/MyAccount/AJAX';
+			var params = {
+				method: 'updateWeight',
+				listEntryId: listEntryId,
+				direction: direction
+			};
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					var entry1 = $(listEntryId);
+					var entry2 = $(data.swappedWithId);
+					if (direction === 'up'){
+						entry2.before(entry1);
+					}else{
+						entry1.before(entry2);
+					}
+					location.reload();
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
+		},
 	};
 }(AspenDiscovery.Lists || {}));
 AspenDiscovery.CollectionSpotlights = (function(){

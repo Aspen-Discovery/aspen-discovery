@@ -146,13 +146,6 @@
 						</select>
 						<label for="hideCovers" class="control-label checkbox pull-right"> {translate text='Hide Covers'} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 					</form>
-
-					{if $allowEdit && $userSort}
-						<div class="alert alert-info alert-dismissible" role="alert">
-							<button type="button" class="close" data-dismiss="alert" aria-label="{translate text='Close' inAttribute=true}"><span aria-hidden="true">&times;</span>{translate text='Close'}</button>
-							<strong>Drag-and-Drop!</strong> Just drag the list items into the order you like.
-						</div>
-					{/if}
 				</div>
 			</div>
 
