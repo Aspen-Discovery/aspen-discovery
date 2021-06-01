@@ -143,7 +143,7 @@ class UserList extends DataObject
 		$listEntry->listId = $this->id;
 
 		//Sort the list appropriately
-		if (!empty($sort) && $sort != 'title') $listEntry->orderBy(UserList::getSortOptions()[$sort]);
+		if (!empty($sort)) $listEntry->orderBy(UserList::getSortOptions()[$sort]);
 
 		// These conditions retrieve list items with a valid groupedWorkId or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
@@ -159,36 +159,16 @@ class UserList extends DataObject
 			$tmpListEntry = [
 				'source' => $listEntry->source,
 				'sourceId' => $listEntry->sourceId,
+				'title' => $listEntry->title,
 				'notes' => $listEntry->notes,
 				'listEntryId' => $listEntry->id,
 				'listEntry' => $this->cleanListEntry(clone($listEntry)),
 			];
-			if ($sort == 'title') {
-				if ($listEntry->getRecordDriver() != null){
-					$tmpListEntry['title'] = strtolower($listEntry->getRecordDriver()->getSortableTitle());
-				}else{
-					if ($tmpListEntry['source'] == 'GroupedWork'){
-						require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-						$groupedWork = new GroupedWork();
-						$groupedWork->permanent_id = $tmpListEntry['sourceId'];
-						if ($groupedWork->find(true)){
-							$tmpListEntry['title'] = $groupedWork->full_title;
-						}else{
-							$tmpListEntry['title'] = 'Unknown title';
-						}
-					}else {
-						$tmpListEntry['title'] = 'Unknown title';
-					}
-				}
-			}
+
 			$listEntries[] = $tmpListEntry;
 		}
 		$listEntry->__destruct();
 		$listEntry = null;
-
-		if ($sort == 'title') {
-			usort($listEntries, 'compareListEntryTitles');
-		}
 
 		return [
 			'listEntries' => $listEntries,
@@ -726,8 +706,4 @@ class UserList extends DataObject
 		ksort($userLists);
 		return $userLists;
 	}
-}
-
-function compareListEntryTitles($listEntry1, $listEntry2){
-	return strcasecmp($listEntry1['title'], $listEntry2['title']);
 }

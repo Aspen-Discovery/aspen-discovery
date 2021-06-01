@@ -202,7 +202,20 @@ function getUpdates21_07_00() : array
 
 			]
 		],
-
+		'add_title_user_list_entry' => [
+			'title' => 'Add title column to user list entries',
+			'description' => 'Add title column to user list entries',
+			'sql' => [
+				"ALTER TABLE user_list_entry ADD column title VARCHAR(50) DEFAULT ''",
+			]
+		],
+		'add_titles_to_user_list_entry' => [
+			'title' => 'Add titles to user list entries',
+			'description' => 'Populate existing user list entries with titles',
+			'sql' => [
+				"UPDATE user_list_entry SET user_list_entry.title=(SELECT LEFT(grouped_work.full_title, 50) FROM grouped_work WHERE grouped_work.permanent_id = user_list_entry.sourceId)",
+			]
+		],
 		'location_field_level_permissions' => [
 			'title' => 'Location Field Level Permissions',
 			'description' => 'Add permissions to control access to fields within the location configuration',
