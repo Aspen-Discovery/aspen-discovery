@@ -678,6 +678,9 @@ class UserAccount
 			global $interface;
 			$interface->assign('loggedIn', false);
 
+			global $logger;
+			$logger->log('Finished updating session as part of softLogout, preparing to write', Logger::LOG_DEBUG);
+			$logger->log($_SESSION, Logger::LOG_DEBUG);
 			session_write_close();
 		}
 	}
