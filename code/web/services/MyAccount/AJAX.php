@@ -2795,6 +2795,13 @@ class MyAccount_AJAX extends JSON_Action
 						$userListEntry->source = $source;
 						$userListEntry->sourceId = $sourceId;
 
+						require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+						$groupedWork = new GroupedWork();
+						$groupedWork->permanent_id = $userListEntry->sourceId;
+						if ($groupedWork->find(true)) {
+							$userListEntry->title = substr($groupedWork->full_title, 0, 50);
+						}
+
 						$existingEntry = false;
 						if ($userListEntry->find(true)) {
 							$existingEntry = true;
@@ -3209,6 +3216,66 @@ class MyAccount_AJAX extends JSON_Action
 			$result['message'] = 'List item updated successfully';
 		}
 
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function updateWeight() {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error moving list entry'
+		];
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getLoggedInUser();
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$list = new UserList();
+			$list->user_id = $user;
+			if ($list->find(true) && $user->canEditList($list)) {
+				if (isset($_REQUEST['listEntryId'])) {
+					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+					$listEntry = new UserListEntry();
+					$listEntry->id = $_REQUEST['listEntryId'];
+					if ($listEntry->find(true)){
+						//Figure out new weights for list entries
+						$direction = $_REQUEST['direction'];
+						$oldWeight = $listEntry->weight;
+						if ($direction == 'up'){
+							$newWeight = $oldWeight - 1;
+						}else{
+							$newWeight = $oldWeight + 1;
+						}
+
+						$entryToSwap = new UserListEntry();
+						$entryToSwap->listId = $listEntry->listId;
+						$entryToSwap->weight = $newWeight;
+						if ($entryToSwap->find(true)) {
+							$listEntry->weight = $newWeight;
+							$listEntry->update();
+							$entryToSwap->weight = $oldWeight;
+							$entryToSwap->update();
+
+							$result['success'] = true;
+							$result['message'] = 'The list entry was moved successfully';
+							$result['swappedWithId'] = $entryToSwap->id;
+						}else{
+							if ($direction == 'up'){
+								$result['message'] = 'List entry is already at the top';
+							}else{
+								$result['message'] = 'List entry is already at the bottom';
+							}
+						}
+					}else{
+						$result['message'] = 'Unable to find that list entry';
+					}
+				}else{
+					$result['message'] = 'No list entry id was provided';
+				}
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to move a list entry';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to move a list entry';
+		}
 		return $result;
 	}
 }
