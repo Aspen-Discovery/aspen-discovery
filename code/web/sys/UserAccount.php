@@ -677,6 +677,8 @@ class UserAccount
 
 			global $interface;
 			$interface->assign('loggedIn', false);
+
+			session_write_close();
 		}
 	}
 

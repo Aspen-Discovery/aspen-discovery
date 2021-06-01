@@ -40,7 +40,7 @@ class Logger
 				return;
 			}
 		}catch (PDOException $e){
-			//Logging is too early, ignore at least for now. 
+			//Logging is too early, ignore at least for now.
 		}
 		if ($level == self::LOG_ERROR && !$this->logErrors) {
 			return;
