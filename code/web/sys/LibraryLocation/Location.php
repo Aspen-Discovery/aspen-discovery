@@ -1395,6 +1395,7 @@ class Location extends DataObject
 
 	public function getApiInfo() : array
 	{
+		$parentLibrary = $this->getParentLibrary();
 		$apiInfo = [
 			'locationId' => $this->locationId,
 			'isMainBranch' => (bool)$this->isMainBranch,
@@ -1403,7 +1404,7 @@ class Location extends DataObject
 			'phone' => $this->phone,
 			'tty' => $this->tty,
 			'description' => $this->description,
-			'homeLink' => $this->homeLink,
+			'homeLink' => empty($this->homeLink) ? ($parentLibrary == null ? '' : $parentLibrary->homeLink) : $this->homeLink,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
 			'hours' => []
 		];
