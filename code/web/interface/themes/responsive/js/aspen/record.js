@@ -144,11 +144,14 @@ AspenDiscovery.Record = (function(){
 					if (data.needsItemLevelHold){
 						$('.modal-body').html(data.message);
 					}else{
-						AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, autoLogOut);
+						AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, data.autologout);
+						if (data.autologout){
+							Globals.loggedIn = false;
+						}
 						AspenDiscovery.Account.loadMenuData();
 					}
 				}else{
-					AspenDiscovery.showMessage('Hold Failed', data.message, false, autoLogOut);
+					AspenDiscovery.showMessage('Hold Failed', data.message, false, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},

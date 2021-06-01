@@ -536,7 +536,7 @@ class Record_AJAX extends Action
 								require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
 								MyAccount_Masquerade::endMasquerade();
 							} else {
-								UserAccount::logout();
+								UserAccount::softLogout();
 							}
 							$results['autologout'] = true;
 							$alreadyLoggedOut = true;
@@ -557,7 +557,7 @@ class Record_AJAX extends Action
 					require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
 					MyAccount_Masquerade::endMasquerade();
 				} else {
-					UserAccount::logout();
+					UserAccount::softLogout();
 				}
 				$results['autologout'] = true;
 			}
