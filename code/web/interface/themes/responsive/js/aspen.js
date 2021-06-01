@@ -11070,10 +11070,9 @@ AspenDiscovery.Record = (function(){
 						$('.modal-body').html(data.message);
 					}else{
 						AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, data.autologout);
-						if (data.autologout){
-							Globals.loggedIn = false;
+						if (!data.autologout){
+							AspenDiscovery.Account.loadMenuData();
 						}
-						AspenDiscovery.Account.loadMenuData();
 					}
 				}else{
 					AspenDiscovery.showMessage('Hold Failed', data.message, false, false);
