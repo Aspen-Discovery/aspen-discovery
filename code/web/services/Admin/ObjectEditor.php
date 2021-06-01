@@ -18,6 +18,7 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 
 		$structure = $this->getObjectStructure();
+		$structure = $this->applyPermissionsToObjectStructure($structure);
 		$interface->assign('canAddNew', $this->canAddNew());
 		$interface->assign('canCopy', $this->canCopy());
 		$interface->assign('canCompare', $this->canCompare());
@@ -534,10 +535,6 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 	}
 
-	public function hasHistory(){
-		return true;
-	}
-
 	public function getBatchUpdateFields($structure){
 		$batchFormatFields = [];
 		foreach ($structure as $fieldName => $field){
@@ -674,5 +671,36 @@ abstract class ObjectEditor extends Admin_Admin
 			}
 		}
 		return $userHasExistingObjects;
+	}
+
+	private function applyPermissionsToObjectStructure(array $structure)
+	{
+		foreach ($structure as $key => &$property){
+			if ($property['type'] == 'section'){
+				$property['properties'] = $this->applyPermissionsToObjectStructure($property['properties']);
+				if (array_key_exists('permissions', $property)) {
+					if (!UserAccount::userHasPermission($property['permissions'])){
+						unset($structure[$key]);
+					}
+				}
+				if (count($property['properties']) == 0){
+					unset($structure[$key]);
+				}
+			}else{
+				if (array_key_exists('permissions', $property)){
+					//Verify the correct permission exists for the user
+					if (!UserAccount::userHasPermission($property['permissions'])){
+						unset($structure[$key]);
+					}
+				}
+				if (array_key_exists('editPermissions', $property)){
+					//Verify the correct permission exists for the user
+					if (!UserAccount::userHasPermission($property['editPermissions'])){
+						$property['type'] = 'label';
+					}
+				}
+			}
+		}
+		return $structure;
 	}
 }
