@@ -138,6 +138,7 @@ class UserList extends DataObject
 	 * @return array      of list entries
 	 */
 	function getListEntries($sort = null){
+		global $interface;
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
@@ -188,6 +189,8 @@ class UserList extends DataObject
 		}
 		$listEntry->__destruct();
 		$listEntry = null;
+
+		$interface->assign('listEntryCount', $entryPosition);
 
 		return [
 			'listEntries' => $listEntries,
