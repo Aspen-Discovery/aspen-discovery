@@ -495,8 +495,12 @@ class Browse_AJAX extends Action {
 				$firstSubCategory = reset($subCategories);
 				$subCategory = new BrowseCategory();
 				$subCategory->id = $firstSubCategory->subCategoryId;
-				if ($subCategory->find(true)) {
-					$subCategoryTextId = $subCategory->textId;
+				//Get the first sub category that is valid for display
+				while ($subCategory->find(true)) {
+					if ($subCategory->isValidForDisplay()){
+						$subCategoryTextId = $subCategory->textId;
+						break;
+					}
 				}
 			}
 			$response['subCategoryTextId'] = $subCategoryTextId;
