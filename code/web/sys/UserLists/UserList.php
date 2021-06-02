@@ -142,6 +142,9 @@ class UserList extends DataObject
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
 
+		$count = 0;
+		$weight = 1;
+
 		//Sort the list appropriately
 		if (!empty($sort)) $listEntry->orderBy(UserList::getSortOptions()[$sort]);
 
@@ -163,7 +166,17 @@ class UserList extends DataObject
 				'notes' => $listEntry->notes,
 				'listEntryId' => $listEntry->id,
 				'listEntry' => $this->cleanListEntry(clone($listEntry)),
+				'weight' => $listEntry->weight,
 			];
+
+			if($listEntry->weight === '0'){
+				$count++;
+			}
+
+			if($count > 1) {
+				$listEntry->weight = $weight++;
+				$listEntry->update();
+			}
 
 			$listEntries[] = $tmpListEntry;
 		}
