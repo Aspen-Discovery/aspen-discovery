@@ -96,14 +96,4 @@ class UserListEntry extends DataObject{
 		}
 		return $this->_entries;
 	}
-
-	/** @noinspection PhpUnused */
-	public function isLastListEntry(){
-		$obj = new UserListEntry();
-		$obj->listId = $this->listId;
-		if ($obj->find(true)){
-			return count($obj->getUserListEntries()) -1 == $this->weight;
-		}
-		return false;
-	}
 }

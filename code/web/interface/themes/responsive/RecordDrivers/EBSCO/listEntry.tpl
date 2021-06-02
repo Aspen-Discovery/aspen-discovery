@@ -4,9 +4,6 @@
 		{if $listEditAllowed}
 			<div class="selectTitle col-xs-12 col-sm-1">
 				<input type="checkbox" name="selected[{$listEntryId}]" class="titleSelect" id="selected{$listEntryId}">
-				{if $userSort}
-					<i class="fas fa-arrows-alt-v" style="display: block; margin-top:.5em; font-size: 21px"></i>
-				{/if}
 			</div>
 		{/if}
 		{if $showCovers}
@@ -110,9 +107,11 @@
 		<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
 			{if $listEditAllowed}
 				<div class="btn-group-vertical" role="group">
+					{if $userSort && $resultIndex != '1'}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'up');" title="{translate text="Move Up"}">&#x25B2;</span>{/if}
 					<a href="/MyAccount/Edit?listEntryId={$listEntryId|escape:"url"}{if !is_null($listSelected)}&amp;listId={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit'}</a>
 					{* Use a different delete URL if we're removing from a specific list or the overall favorites: *}
 					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$listEntryId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-default">{translate text='Delete'}</a>
+					{if $userSort && ($listEntryCount != $listEntryPosition)}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'down');" title="{translate text="Move Down"}">&#x25BC;</span>{/if}
 				</div>
 
 			{/if}
