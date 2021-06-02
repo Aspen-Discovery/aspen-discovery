@@ -2771,6 +2771,7 @@ class MyAccount_AJAX extends JSON_Action
 				$userList->insert();
 			}else{
 				$userList->id = $listId;
+				$totalRecords = $userList->numValidListItems();
 				if (!$userList->find(true)){
 					$result['success'] = false;
 					$result['message'] = 'Sorry, we could not find that list in the system.';
@@ -2794,6 +2795,7 @@ class MyAccount_AJAX extends JSON_Action
 					}else {
 						$userListEntry->source = $source;
 						$userListEntry->sourceId = $sourceId;
+						$userListEntry->weight = $totalRecords++;
 
 						require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 						$groupedWork = new GroupedWork();

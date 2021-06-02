@@ -82,4 +82,28 @@ class UserListEntry extends DataObject{
 			return null;
 		}
 	}
+
+	public function getUserListEntries() {
+		if (!isset($this->_entries) && $this->id){
+			$this->_entries = [];
+			$obj = new UserListEntry();
+			$obj->listId = $this->listId;
+			$obj->orderBy('weight ASC');
+			$obj->find();
+			while($obj->fetch()){
+				$this->_entries[$obj->listId] = clone $obj;
+			}
+		}
+		return $this->_entries;
+	}
+
+	/** @noinspection PhpUnused */
+	public function isLastListEntry(){
+		$obj = new UserListEntry();
+		$obj->listId = $this->listId;
+		if ($obj->find(true)){
+			return count($obj->getUserListEntries()) -1 == $this->weight;
+		}
+		return false;
+	}
 }
