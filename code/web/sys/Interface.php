@@ -485,6 +485,7 @@ class UInterface extends Smarty
 		$this->assign('instagramLink', $library->instagramLink);
 		$this->assign('pinterestLink', $library->pinterestLink);
 		$this->assign('goodreadsLink', $library->goodreadsLink);
+		$this->assign('tiktokLink', $library->tiktokLink);
 		$this->assign('generalContactLink', $library->generalContactLink);
 		$this->assign('showLoginButton', $library->showLoginButton);
 		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
