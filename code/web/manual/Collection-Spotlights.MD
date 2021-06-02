@@ -27,6 +27,10 @@ Collection Spotlights allow you to display your collection on a custom Web Build
 
 1. Navigate to **Aspen Administration**.
 2. Scroll to the **Local Catalog Enrichment** module and click **Collection Spotlights**.
+- `View` allows you to view current settings and code for embedding into websites outside of Aspen.
+- `Edit` lets you to change spotlight name, description, and other display settings. 
+- `Preview` allows you see how your collection spotlight will appear on a website.
+- `Delete` will permanently remove the collection spotlight. Be sure to remove or edit any embed code you may have on another site featuring the collection spotlight you wish to delete.
 
 ### To embed a collection spotlight on another website:
 
