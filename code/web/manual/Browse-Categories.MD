@@ -43,6 +43,31 @@ In addition to browse categories, you can also create nested sub-browse categori
 
 2. Click **Create Category**. Your sub-category will now appear underneath the selected browse catergory displayed on your home landing page.
 
+### :new: Updating an Existing Browse Category
+
+In addition to creating new browse categories, you can also choose to update an existing browse category.
+
+1. Follow the same steps above for creating a browse category. After clicking **Add to Browse**, select **Update Existing**.
+
+![Update Existing](/manual/images/BrowseCategory_Update-Existing.jpg)
+
+2. You can now select the existing browse category you would like to update.
+
+![Update Existing](/manual/images/BrowseCategory_Update-Existing-2.jpg)
+
+3. Click **Update Category**. Your browse category will now display with your changes.
+
+### :new: Adding Start and End Dates
+
+If you want a browse category to only display temporarily -- for example, holidays or current events -- you can specify a start and end date for your browse category. Your browse category will only be visible from the main landing page during the date range specified.
+
+![Add Start and End Dates](/manual/images/BrowseCategory_Start-End-Dates.jpg)
+
+Start/end dates can be added by editing an existing browse category.
+
+**Note:** If you no longer want a browse category after its end date, you can delete the category from Aspen Administration -> Local Catalog Enrichment -> Browse Categories.
+
+
 ## Learn More
 
 Check out this tutorial to learn how to create browse categories and how to organize your view of those browse categories on the home page: [https://bywatersolutions.com/education/creating-browse-categories-in-aspen-discovery](https://bywatersolutions.com/education/creating-browse-categories-in-aspen-discovery)
