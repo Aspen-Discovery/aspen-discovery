@@ -1184,6 +1184,7 @@ abstract class Solr
 		}
 		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
+		$facetInfoForFieldKey = [];
 		if ($filter != null && $scopingFilters != null) {
 			if (!is_array($filter)) {
 				$filter = array($filter);
@@ -1288,7 +1289,7 @@ abstract class Solr
 				$options['facet.field'] = null;
 			}
 
-			unset($facet['field']);
+			//unset($facet['field']);
 			$options['facet.sort'] = (isset($facet['sort'])) ? $facet['sort'] : 'count';
 			unset($facet['sort']);
 			if (isset($facet['offset'])) {
@@ -1321,10 +1322,17 @@ abstract class Solr
 		//Check to see if there are filters we want to show all values for
 		if (isset($filters) && is_array($filters)) {
 			foreach ($filters as $key => $value) {
+				if (is_numeric($key)) {
+					$facetName = substr($value, 0, strpos($value, ':'));
+				} else {
+					$facetName = $key;
+				}
+				$facetName = str_replace("_$solrScope", "", $facetName);
+
 				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0) {
 					$filters[$key] = '{!tag=avail}' . $value;
-				}elseif (isset($facet['field'][$key])) {
-					$facetSetting = $facet['field'][$key];
+				}elseif (isset($facet['field'][$facetName])) {
+					$facetSetting = $facet['field'][$facetName];
 					if ($facetSetting instanceof FacetSetting) {
 						if ($facetSetting->multiSelect) {
 							$facetKey = empty($facetSetting->id) ? $facetSetting->facetName : $facetSetting->id;
