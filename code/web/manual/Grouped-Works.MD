@@ -4,7 +4,7 @@ Grouped works are grouped together based on a normalized author value and title 
 
 **Aspen normalizes Authors by doing the following:**
 
-- Remove brackets ([ ] or < >) from author names
+- Remove brackets (`[ ]` or `< >`) from author names
 - Strip apostrophes, spaces, and white space from author names
 - Remove anything after "presents," "presentation," or "distributed"
 - If the author name ends in "md," strip that from the author name	
