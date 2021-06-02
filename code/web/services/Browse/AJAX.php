@@ -156,6 +156,8 @@ class Browse_AJAX extends Action {
 		global $library;
 		global $locationSingleton;
 		$searchLocation = $locationSingleton->getSearchLocation();
+		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+		$libraryId = $library == null ? -1 : $library->libraryId;
 		$categoryName = isset($_REQUEST['categoryName']) ? $_REQUEST['categoryName'] : '';
 		// value of zero means nothing was selected.
 		$addAsSubCategoryOf = isset($_REQUEST['addAsSubCategoryOf']) && !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;
@@ -226,6 +228,7 @@ class Browse_AJAX extends Action {
 			$browseCategory->label = $categoryName;
 			$browseCategory->userId = UserAccount::getActiveUserId();
 			$browseCategory->sharing = 'library';
+			$browseCategory->libraryId = $libraryId;
 			$browseCategory->description = '';
 
 			//setup and add the category
