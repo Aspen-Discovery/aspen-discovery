@@ -17,7 +17,7 @@ Collection Spotlights allow you to display your collection on a custom Web Build
 
 ![Create Spotlight](/manual/images/CollectionSpotlights_Create-Spotlight.jpg)
 
-### Update an Existing Collection Spotlight
+### :new: Update an Existing Collection Spotlight
 
 1. Follow the same steps above for creating a collection spotlight. After clicking **Create Spotlight**, you will be able to click a checkbox indicating you wish to replace an existing spotlight or spotlight tab.
 
