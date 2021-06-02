@@ -142,8 +142,9 @@ class UserList extends DataObject
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
 
-		$count = 0;
-		$weight = 1;
+		$entryPosition = 0;
+		$zeroCount = 0;
+		$nullCount = 0;
 
 		//Sort the list appropriately
 		if (!empty($sort)) $listEntry->orderBy(UserList::getSortOptions()[$sort]);
@@ -155,6 +156,7 @@ class UserList extends DataObject
 		$idsBySource = [];
 		$listEntry->find();
 		while ($listEntry->fetch()){
+			$entryPosition++;
 			if (!array_key_exists($listEntry->source, $idsBySource)){
 				$idsBySource[$listEntry->source] = [];
 			}
@@ -170,11 +172,15 @@ class UserList extends DataObject
 			];
 
 			if($listEntry->weight === '0'){
-				$count++;
+				$zeroCount++;
 			}
 
-			if($count > 1) {
-				$listEntry->weight = $weight++;
+			if (empty($listEntry->weight)){
+				$nullCount++;
+			}
+
+			if(($zeroCount >= 1) || ($nullCount >= 1)) {
+				$listEntry->weight = $entryPosition;
 				$listEntry->update();
 			}
 
