@@ -142,6 +142,9 @@ class UserList extends DataObject
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
 
+		$count = 0;
+		$weight = 1;
+
 		//Sort the list appropriately
 		if (!empty($sort)) $listEntry->orderBy(UserList::getSortOptions()[$sort]);
 
@@ -163,7 +166,17 @@ class UserList extends DataObject
 				'notes' => $listEntry->notes,
 				'listEntryId' => $listEntry->id,
 				'listEntry' => $this->cleanListEntry(clone($listEntry)),
+				'weight' => $listEntry->weight,
 			];
+
+			if($listEntry->weight === '0'){
+				$count++;
+			}
+
+			if($count > 1) {
+				$listEntry->weight = $weight++;
+				$listEntry->update();
+			}
 
 			$listEntries[] = $tmpListEntry;
 		}
@@ -253,6 +266,29 @@ class UserList extends DataObject
 			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 			$listEntry = new UserListEntry();
 			$listEntry->id = $listEntryToRemove;
+
+			// update weights
+			if($listEntry->find(true)){
+				$userLists = new UserListEntry();
+				$userLists->listId = $listEntry->listId;
+				$userLists->find();
+				$entries = [];
+				while ($userLists->fetch()){
+					$entries[] = clone $userLists;
+				}
+
+				$entryIndex = $listEntry->weight;
+				foreach ($entries as $entry){
+					$weight = $entry->weight;
+					if($weight > $entryIndex) {
+						$weight--;
+						$entry->weight = $weight;
+						$entry->update();
+					}
+				}
+
+			}
+
 			$listEntry->delete(true);
 		}
 
