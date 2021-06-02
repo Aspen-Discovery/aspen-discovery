@@ -43,6 +43,20 @@ In addition to browse categories, you can also create nested sub-browse categori
 
 2. Click **Create Category**. Your sub-category will now appear underneath the selected browse catergory displayed on your home landing page.
 
+### Updating an Existing Browse Category
+
+In addition to creating new browse categories, you can also choose to update an existing browse category.
+
+1. Follow the same steps above for creating a browse category. After clicking **Add to Browse**, select **Update Existing**.
+
+![Update Existing](/manual/images/BrowseCategory_Update-Existing.jpg)
+
+2. You can now select the existing browse category you would like to update.
+
+![Update Existing](/manual/images/BrowseCategory_Update-Existing-2.jpg)
+
+3. Click **Update Category**. Your browse category will now display with your changes.
+
 ## Learn More
 
 Check out this tutorial to learn how to create browse categories and how to organize your view of those browse categories on the home page: [https://bywatersolutions.com/education/creating-browse-categories-in-aspen-discovery](https://bywatersolutions.com/education/creating-browse-categories-in-aspen-discovery)
