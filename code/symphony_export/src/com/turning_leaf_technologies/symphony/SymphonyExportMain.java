@@ -402,6 +402,7 @@ public class SymphonyExportMain {
 		File latestFile = null;
 		long latestMarcFile = 0;
 		boolean hasFullExportFile = false;
+		File fullExportFile = null;
 		if (exportedMarcFiles != null && exportedMarcFiles.length > 0){
 			for (File exportedMarcFile : exportedMarcFiles) {
 				//Remove any files that are older than the last time we processed files.
@@ -421,6 +422,7 @@ public class SymphonyExportMain {
 		if (latestFile != null) {
 			filesToProcess.add(latestFile);
 			hasFullExportFile = true;
+			fullExportFile = latestFile;
 		}
 
 		//Get a list of marc deltas since the last marc record
@@ -443,7 +445,7 @@ public class SymphonyExportMain {
 		if (filesToProcess.size() > 0){
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
-			return updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, dbConn);
+			return updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
 		}else{
 			//TODO: See if we can get more runtime info from SirsiDynix APIs;
 			return 0;
@@ -457,10 +459,11 @@ public class SymphonyExportMain {
 	 *
 	 * @param exportedMarcFiles - An array of files to process
 	 * @param hasFullExportFile - Whether or not we are including a full export.  We will only delete records if we have a full export.
+	 * @param fullExportFile
 	 * @param dbConn            - Connection to the Aspen database
 	 * @return - total number of changes that were found
 	 */
-	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, Connection dbConn) {
+	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, File fullExportFile, Connection dbConn) {
 		int totalChanges = 0;
 		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor(dbConn);
 		if (!recordGroupingProcessor.isValid()){
@@ -494,38 +497,39 @@ public class SymphonyExportMain {
 		if (hasFullExportFile){
 			logEntry.addNote("Validating that full export is the correct size");
 			logEntry.saveResults();
-			for (File curBibFile : exportedMarcFiles) {
-				int numRecordsRead = 0;
-				String lastRecordProcessed = "";
-				try {
-					FileInputStream marcFileStream = new FileInputStream(curBibFile);
-					MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
-					while (catalogReader.hasNext()) {
-						numRecordsRead++;
-						Record curBib = catalogReader.next();
-						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
-						if (recordIdentifier != null) {
-							String recordNumber = recordIdentifier.getIdentifier();
-							lastRecordProcessed = recordNumber;
-							recordNumber = recordNumber.replaceAll("[^\\d]", "");
-							long recordNumberDigits = Long.parseLong(recordNumber);
-							if (recordNumberDigits > maxIdInExport) {
-								maxIdInExport = recordNumberDigits;
-							}
+
+			int numRecordsRead = 0;
+			String lastRecordProcessed = "";
+			try {
+				FileInputStream marcFileStream = new FileInputStream(fullExportFile);
+				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				while (catalogReader.hasNext()) {
+					numRecordsRead++;
+					Record curBib = catalogReader.next();
+					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+					if (recordIdentifier != null) {
+						String recordNumber = recordIdentifier.getIdentifier();
+						lastRecordProcessed = recordNumber;
+						recordNumber = recordNumber.replaceAll("[^\\d]", "");
+						long recordNumberDigits = Long.parseLong(recordNumber);
+						if (recordNumberDigits > maxIdInExport) {
+							maxIdInExport = recordNumberDigits;
 						}
 					}
-				} catch (Exception e) {
-					logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
-					logEntry.addNote("Not processing MARC export due to error reading MARC files.");
-					return totalChanges;
 				}
-				logEntry.addNote("Full export " + exportedMarcFiles.toString() + " contain " + numRecordsRead + " records.");
-				logEntry.saveResults();
+			} catch (Exception e) {
+				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
+				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
+				return totalChanges;
 			}
+			logEntry.addNote("Full export " + fullExportFile + " contains " + numRecordsRead + " records.");
+			logEntry.saveResults();
 
 			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()){
 				logEntry.incErrors("Full MARC export appears to be truncated, MAX Record ID in the export was " + maxIdInExport + " expected to be greater than or equal to " + indexingProfile.getFullMarcExportRecordIdThreshold());
-				return totalChanges;
+				logEntry.addNote("Not processing the full export");
+				exportedMarcFiles.remove(fullExportFile);
+				hasFullExportFile = false;
 			}else{
 				logEntry.addNote("The full export is the correct size.");
 				logEntry.saveResults();
@@ -536,7 +540,7 @@ public class SymphonyExportMain {
 			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
 
 			String lastRecordProcessed = "";
-			if (hasFullExportFile && indexingProfile.getLastChangeProcessed() > 0){
+			if (hasFullExportFile && curBibFile.equals(fullExportFile) && indexingProfile.getLastChangeProcessed() > 0){
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
 			}
 			int numRecordsRead = 0;
@@ -552,7 +556,7 @@ public class SymphonyExportMain {
 					try{
 						Record curBib = catalogReader.next();
 						numRecordsRead++;
-						if (hasFullExportFile && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+						if (hasFullExportFile && curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
 							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
 							if (recordIdentifier != null) {
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());

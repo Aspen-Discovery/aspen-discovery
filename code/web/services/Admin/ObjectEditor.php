@@ -432,6 +432,7 @@ abstract class ObjectEditor extends Admin_Admin
 				$interface->assign('error', 'Could not load object from the database');
 			}else{
 				$properties = [];
+				$structure = $this->applyPermissionsToObjectStructure($structure);
 				$properties = $this->compareObjectProperties($structure, $object1, $object2, $properties, '');
 				$interface->assign('properties', $properties);
 			}
@@ -537,7 +538,8 @@ abstract class ObjectEditor extends Admin_Admin
 
 	public function getBatchUpdateFields($structure){
 		$batchFormatFields = [];
-		foreach ($structure as $fieldName => $field){
+		$structure = $this->applyPermissionsToObjectStructure($structure);
+		foreach ($structure as $field){
 			$this->addFieldToBatchUpdateFieldsArray($batchFormatFields, $field);
 		}
 		ksort($batchFormatFields);
@@ -546,6 +548,7 @@ abstract class ObjectEditor extends Admin_Admin
 
 	public function getSortableFields($structure){
 		$sortFields = [];
+		$structure = $this->applyPermissionsToObjectStructure($structure);
 		foreach ($structure as $fieldName => $field){
 			$this->addFieldToSortableFieldsArray($sortFields, $field);
 		}
@@ -568,6 +571,7 @@ abstract class ObjectEditor extends Admin_Admin
 
 	public function getFilterFields($structure){
 		$sortFields = [];
+		$structure = $this->applyPermissionsToObjectStructure($structure);
 		foreach ($structure as $fieldName => $field){
 			$this->addFieldToFilterFieldsArray($sortFields, $field);
 		}
