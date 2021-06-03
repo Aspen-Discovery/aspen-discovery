@@ -29,11 +29,6 @@ class SantaFeRecordProcessor extends IIIRecordProcessor {
 		return available;
 	}
 
-	@Override
-	protected boolean loanRulesAreBasedOnCheckoutLocation() {
-		return false;
-	}
-
 	protected boolean isBibSuppressed(Record record) {
 		DataField field907 = record.getDataField("907");
 		if (field907 != null){

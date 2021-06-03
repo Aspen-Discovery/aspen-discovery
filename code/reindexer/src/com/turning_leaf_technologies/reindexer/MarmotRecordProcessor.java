@@ -158,11 +158,6 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 			logger.warn("Did not get a iType for external eContent " + econtentRecord.getFullIdentifier());
 		}
 	}
-
-	protected boolean loanRulesAreBasedOnCheckoutLocation(){
-		return false;
-	}
-
 	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
 		return itemInfo.getStatusCode().equals("o") || itemInfo.getStatusCode().equals("h") || itemInfo.getStatusCode().equals("u");
 	}

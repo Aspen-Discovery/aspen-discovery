@@ -257,6 +257,15 @@ function getUpdates21_07_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'locationManager'), (SELECT id from permissions where name='Location Browse Category Options'))",
 			]
 		], //location_field_level_permissions
+		'remove_loan_rules' => [
+			'title' => 'Remove Loan Rules and Loan Rule Determiners',
+			'description' => 'Remove unused Loan Rules and Loan Rule Determiners',
+			'continueOnError' => true,
+			'sql' => [
+				"DROP TABLE loan_rules",
+				"DROP TABLE loan_rule_determiners",
+			]
+		], //remove_loan_rules
 	];
 }
 

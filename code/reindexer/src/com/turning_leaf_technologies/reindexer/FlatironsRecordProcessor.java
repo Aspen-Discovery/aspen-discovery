@@ -213,10 +213,6 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 		}
 	}
 
-	protected boolean loanRulesAreBasedOnCheckoutLocation(){
-		return false;
-	}
-
 	private class IsRecordEContent {
 		private Record record;
 		private String url;

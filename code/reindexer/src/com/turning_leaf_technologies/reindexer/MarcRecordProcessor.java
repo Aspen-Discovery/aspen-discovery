@@ -1195,6 +1195,9 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("Book") && printFormats.contains("LargePrint")){
 			printFormats.remove("Book");
 		}
+		if (printFormats.contains("Book") && printFormats.contains("Atlas")){
+			printFormats.remove("Book");
+		}
 		if (printFormats.contains("Book") && printFormats.contains("Manuscript")){
 			printFormats.remove("Book");
 		}
