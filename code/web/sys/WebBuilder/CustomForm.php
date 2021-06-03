@@ -202,7 +202,11 @@ class CustomForm extends DataObject
 		$interface->assign('submitUrl', '/WebBuilder/SubmitForm?id=' . $this->id);
 		$interface->assign('structure', $structure);
 		$interface->assign('saveButtonText', 'Submit');
-		$interface->assign('objectAction', $_GET['objectAction']);
+		if (isset($_GET['objectAction'])){
+			$interface->assign('objectAction', $_GET['objectAction']);
+		} else {
+			$interface->assign('objectAction', '');
+		}
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 }
