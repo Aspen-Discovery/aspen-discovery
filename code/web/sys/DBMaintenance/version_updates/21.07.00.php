@@ -266,6 +266,13 @@ function getUpdates21_07_00() : array
 				"DROP TABLE loan_rule_determiners",
 			]
 		], //remove_loan_rules
+		'populate_list_entry_titles' => [
+			'title' => 'Populate List Entry Titles',
+			'description' => 'Update existing list entries with the title of the item',
+			'sql' => [
+				'populateListEntryTitles'
+			]
+		],
 	];
 }
 
