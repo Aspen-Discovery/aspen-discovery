@@ -1357,7 +1357,9 @@ abstract class MarcRecordProcessor {
 			for (Subfield subfield : subFields) {
 				if (subfield.getCode() != 'e') {
 					String physicalDescriptionData = subfield.getData().toLowerCase();
-					if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
+					if (physicalDescriptionData.contains("atlas")) {
+						result.add("Atlas");
+					} else if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 						result.add("LargePrint");
 					} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 						//Check to see if this is a combo pack.
