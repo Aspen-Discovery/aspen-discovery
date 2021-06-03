@@ -205,7 +205,7 @@ class CustomForm extends DataObject
 		if (isset($_GET['objectAction'])){
 			$interface->assign('objectAction', $_GET['objectAction']);
 		} else {
-			$interface->assign('objectAction', 'none');
+			$interface->assign('objectAction', '');
 		}
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
