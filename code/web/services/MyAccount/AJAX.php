@@ -3204,9 +3204,40 @@ class MyAccount_AJAX extends JSON_Action
 			$userListEntry->update();
 
 			if(($position != $userListEntry->weight) && ($position != '')) {
-				$userListEntry->weight = $_REQUEST['position'];
-				$userListEntry->update();
-				$result['success'] = true;
+				$newPosition = $_REQUEST['position'];
+				$currentPosition = $userListEntry->weight;
+
+				$desiredPosition = new UserListEntry();
+				$desiredPosition->listId = $_REQUEST['listId'];
+				$desiredPosition->weight = $newPosition;
+				if ($desiredPosition->find(true)){
+					$entriesToSwap = new UserListEntry();
+					$entriesToSwap->listId = $_REQUEST['listId'];
+					$entriesToSwap->find();
+					while ($entriesToSwap->fetch()){
+						if($newPosition > $currentPosition){
+							// move up
+							if ($entriesToSwap->weight < $newPosition) {
+								$entriesToSwap->weight = $entriesToSwap->weight - 1;
+								$entriesToSwap->update();
+							}
+						}
+						if($newPosition < $currentPosition){
+							// move down
+							if ($entriesToSwap->weight > $newPosition) {
+								$entriesToSwap->weight = $entriesToSwap->weight + 1;
+								$entriesToSwap->update();
+							}
+						}
+					}
+					$desiredPosition->weight = $newPosition - 1;
+					$desiredPosition->update();
+
+					$userListEntry->weight = $newPosition;
+					$userListEntry->update();
+
+					$result['success'] = true;
+				}
 			}
 			if(($moveTo != $currentLoc) && ($moveTo != 'null')) {
 				// check to make sure item isn't on new list?

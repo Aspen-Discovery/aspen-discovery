@@ -266,6 +266,61 @@ function getUpdates21_07_00() : array
 				"DROP TABLE loan_rule_determiners",
 			]
 		], //remove_loan_rules
+		'populate_list_entry_titles' => [
+			'title' => 'Populate List Entry Titles',
+			'description' => 'Update existing list entries with the title of the item',
+			'sql' => [
+				'populateListEntryTitles'
+			]
+		],
 	];
+}
+
+function populateListEntryTitles() {
+	require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+	$userListEntries = new UserListEntry();
+	$userListEntries->find();
+	$allUserListEntries = [];
+	while($userListEntries->fetch()) {
+		$allUserListEntries[] = clone $userListEntries;
+	}
+
+	foreach ($allUserListEntries as $index => $userListEntry) {
+		if ((is_null($userListEntry->title)) || ($userListEntry->title == '')){
+			if ($userListEntry->source == 'Lists') {
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+				$list = new UserList();
+				$list->id = $userListEntry->sourceId;
+				if ($list->find(true)) {
+					$userListEntry->title = substr($list->title, 0, 50);
+					$userListEntry->update();
+				}
+			} elseif ($userListEntry->source == 'OpenArchives') {
+				require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
+				$recordDriver = new OpenArchivesRecordDriver($userListEntry->sourceId);
+				if ($recordDriver->isValid()) {
+					$title = $recordDriver->getTitle();
+					$userListEntry->title = substr($title, 0, 50);
+					$userListEntry->update();
+				}
+			} elseif ($userListEntry->source == 'Genealogy') {
+				require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+				$person = new Person();
+				$person->personId = $userListEntry->sourceId;
+				if ($person->find(true)) {
+					$userListEntry->title = substr($person->firstName . $person->middleName . $person->lastName, 0, 50);
+					$userListEntry->update();
+				}
+			} elseif ($userListEntry->source == 'EbscoEds') {
+				require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+				$recordDriver = new EbscoRecordDriver($userListEntry->sourceId);
+				if ($recordDriver->isValid()) {
+					$title = $recordDriver->getTitle();
+					$userListEntry->title = substr($title, 0, 50);
+					$userListEntry->update();
+				}
+			}
+		}
+	}
 }
 
