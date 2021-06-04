@@ -911,9 +911,14 @@ class ExtractOverDriveInfo {
 						}
 					} else {
 						if (tries == 2) {
-							logEntry.incErrors("Could not load product batch: response code " + productBatchInfoResponse.getResponseCode() + " - " + productBatchInfoResponse.getMessage());
-							logEntry.addNote(batchUrl);
-							errorsWhileLoadingProducts = true;
+    						if (productBatchInfoResponse.getResponseCode() == 500) {
+    							logEntry.incErrors("Could not load product batch: response code " + productBatchInfoResponse.getResponseCode() + " - " + productBatchInfoResponse.getMessage());
+    							logEntry.addNote(batchUrl);
+	    					else {
+    							logEntry.incErrors("Could not load product batch: response code " + productBatchInfoResponse.getResponseCode() + " - " + productBatchInfoResponse.getMessage());
+    							logEntry.addNote(batchUrl);
+	    						errorsWhileLoadingProducts = true;
+	    					}
 						}else{
 							//Give OverDrive a few seconds to sort itself out.
 							try {
