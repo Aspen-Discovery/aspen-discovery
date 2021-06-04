@@ -277,6 +277,7 @@ function getUpdates21_07_00() : array
 }
 
 function populateListEntryTitles() {
+	ini_set('memory_limit','2G');
 	require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 	$userListEntries = new UserListEntry();
 	$userListEntries->find();
