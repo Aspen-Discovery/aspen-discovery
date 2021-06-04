@@ -10,7 +10,7 @@ class WebsitePage extends DataObject
 	public $url;
 	public $deleted;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['id', 'deleted'];
 	}

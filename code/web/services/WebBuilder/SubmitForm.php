@@ -91,7 +91,7 @@ class WebBuilder_SubmitForm extends Action
 		$this->display('customFormResults.tpl', $this->form->title, '', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');

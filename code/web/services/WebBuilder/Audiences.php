@@ -4,27 +4,27 @@ require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderAudience.php';
 
 class WebBuilder_Audiences extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'WebBuilderAudience';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'Audiences';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Audiences';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new WebBuilderAudience();
 		$object->orderBy($this->getSort());
@@ -37,37 +37,37 @@ class WebBuilder_Audiences extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return WebBuilderAudience::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -76,12 +76,12 @@ class WebBuilder_Audiences extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Web Categories']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

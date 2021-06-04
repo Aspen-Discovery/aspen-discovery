@@ -44,6 +44,8 @@ class RBdigitalMagazine_Home extends GroupedWorkSubRecordHomeAction{
 			$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 
+			$groupedWork->loadReadingHistoryIndicator();
+
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;

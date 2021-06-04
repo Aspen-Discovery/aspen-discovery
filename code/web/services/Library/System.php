@@ -45,7 +45,7 @@ class Library_System extends Action{
 		$this->display('system.tpl', $librarySystem->displayName);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

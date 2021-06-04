@@ -109,7 +109,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		parent::__destruct();
 	}
 
-	public function getModule(){
+	public function getModule() : string{
 		return isset($this->indexingProfile) ? $this->indexingProfile->recordUrlComponent : 'Record';
 	}
 
@@ -1650,8 +1650,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						//Get items from the marc record
 						$itemFields = $this->getMarcRecord()->getFields($indexingProfile->itemTag);
 						/** @var File_MARC_Data_Field $field */
-						foreach ($itemFields as $field){
-							$itemsFromMarc[$field->getSubfield($indexingProfile->itemRecordNumber)->getData()] = $field;
+						foreach ($itemFields as $field) {
+							$itemRecordNumberField = $field->getSubfield($indexingProfile->itemRecordNumber);
+							if ($itemRecordNumberField !== false) {
+								$itemsFromMarc[$itemRecordNumberField->getData()] = $field;
+							}
 						}
 					}
 					foreach ($this->holdings as &$copyInfo) {
@@ -1667,18 +1670,22 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 							//Get the item for the
 							$itemField = $itemsFromMarc[$copyInfo['itemId']];
 							$copyInfo['note'] = '';
-							$noteSubfield = $itemField->getSubfield($indexingProfile->noteSubfield);
-							if ($noteSubfield != null){
-								$copyInfo['note'] = $noteSubfield->getData();
+							if (!empty($itemField)) {
+								$noteSubfield = $itemField->getSubfield($indexingProfile->noteSubfield);
+								if (!empty($noteSubfield)) {
+									$copyInfo['note'] = $noteSubfield->getData();
+								}
 							}
 						}
 						if (!empty($indexingProfile->dueDate)){
 							//Get the item for the
 							$itemField = $itemsFromMarc[$copyInfo['itemId']];
 							$copyInfo['dueDate'] = '';
-							$dueDateSubfield = $itemField->getSubfield($indexingProfile->dueDate);
-							if ($dueDateSubfield != null){
-								$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+							if (!empty($itemField)) {
+								$dueDateSubfield = $itemField->getSubfield($indexingProfile->dueDate);
+								if (!empty($dueDateSubfield)) {
+									$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+								}
 							}
 						}
 						if ($copyInfo['shelfLocation'] != '') {

@@ -223,12 +223,10 @@ class Translator
 			if (isset($_REQUEST['startTranslationMode'])){
 				@session_start();
 				$_SESSION['translationMode'] = 'on';
-				session_write_close();
 				$translationModeActive = true;
 			}elseif (isset($_REQUEST['stopTranslationMode'])){
 				@session_start();
 				$_SESSION['translationMode'] = 'off';
-				session_write_close();
 				$translationModeActive = false;
 			}elseif (isset($_SESSION['translationMode'])){
 				$translationModeActive = ($_SESSION['translationMode'] == 'on');

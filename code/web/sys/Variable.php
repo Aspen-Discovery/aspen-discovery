@@ -6,7 +6,7 @@ class Variable extends DataObject {
 	public $name;
 	public $value;
 
-	static function getObjectStructure() {
+	static function getObjectStructure() : array {
 		$structure = array(
 				'id' => array(
 						'property' => 'id',

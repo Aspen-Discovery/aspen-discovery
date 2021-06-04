@@ -98,7 +98,7 @@ class EbscoRecordDriver extends RecordInterface
 		return $this->recordData->PLink;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'EBSCO';
 	}

@@ -43,27 +43,27 @@ class SideLoads_SideLoads extends ObjectEditor
 		}
 	}
 
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'SideLoad';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return "SideLoads";
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'SideLoads';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Side Loaded eContent Collections';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$list = array();
 
@@ -79,32 +79,32 @@ class SideLoads_SideLoads extends ObjectEditor
 		return $list;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return SideLoad::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '/Admin/HelpManual?page=Side-Loaded-eContent';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		$actions = array();
 		if ($existingObject && $existingObject->id != '') {
@@ -121,7 +121,7 @@ class SideLoads_SideLoads extends ObjectEditor
 		return $actions;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -130,12 +130,12 @@ class SideLoads_SideLoads extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'side_loads';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Side Loads');
 	}

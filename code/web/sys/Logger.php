@@ -24,24 +24,23 @@ class Logger
 		$this->logAlerts = true;
 		$this->logErrors = true;
 
-		if (!$configArray['Site']['isProduction']) {
-			$this->logNotices = true;
-			$this->logDebugs = true;
-			$this->logWarnings = true;
-		}
 		$this->logFilePath = '/var/log/' . $configArray['System']['applicationName'] . '/' . $serverName . '/messages.log';
 	}
 
 	public function log($msg, $level)
 	{
-		if ($level == self::LOG_DEBUG && !$this->logDebugs) {
-			return;
-		}
-		if ($level == self::LOG_NOTICE && !$this->logNotices) {
-			return;
-		}
-		if ($level == self::LOG_WARNING && !$this->logWarnings) {
-			return;
+		try {
+			if ($level == self::LOG_DEBUG && !IPAddress::showDebuggingInformation()) {
+				return;
+			}
+			if ($level == self::LOG_NOTICE && !IPAddress::showDebuggingInformation()) {
+				return;
+			}
+			if ($level == self::LOG_WARNING && !IPAddress::showDebuggingInformation()) {
+				return;
+			}
+		}catch (PDOException $e){
+			//Logging is too early, ignore at least for now.
 		}
 		if ($level == self::LOG_ERROR && !$this->logErrors) {
 			return;

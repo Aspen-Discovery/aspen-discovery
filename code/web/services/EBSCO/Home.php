@@ -28,7 +28,7 @@ class EBSCO_Home extends Action{
 		$this->display('full-record.tpl', $this->recordDriver->getTitle(), 'Search/home-sidebar.tpl', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->lastSearch)){

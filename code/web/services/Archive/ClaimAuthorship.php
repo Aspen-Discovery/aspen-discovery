@@ -148,7 +148,7 @@ class Archive_ClaimAuthorship extends Action{
 		return $newObject;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->requestedObject)){

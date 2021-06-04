@@ -9,7 +9,7 @@ class PlacardTrigger extends DataObject
 	public $triggerWord;
 	public $exactMatch;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		return [
 			'id' => ['property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the sub-category row within the database'],
 			'triggerWord'    => ['property'=>'triggerWord', 'type'=>'text', 'label'=>'Trigger word', 'description'=>'The trigger used to cause the placard to display', 'maxLength' => 100, 'required' => true],

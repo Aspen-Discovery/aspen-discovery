@@ -78,7 +78,7 @@ class MyAccount_Login extends Action
 		$this->display('../MyAccount/login.tpl', 'Login', '');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Login');

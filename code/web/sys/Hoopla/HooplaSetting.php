@@ -17,7 +17,7 @@ class HooplaSetting extends DataObject
 
 	private $_scopes;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$hooplaScopeStructure = HooplaScope::getObjectStructure();
 		unset($hooplaScopeStructure['settingId']);
@@ -38,7 +38,6 @@ class HooplaSetting extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Scopes',
 				'description' => 'Define scopes for the settings',
-				'helpLink' => '',
 				'keyThis' => 'id',
 				'keyOther' => 'settingId',
 				'subObjectType' => 'HooplaScope',

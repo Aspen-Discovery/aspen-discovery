@@ -17,7 +17,7 @@ class CustomFormField extends DataObject
 	public static $fieldTypeNames = [0 => 'Text Field', 1=>'Text Area', 2=>'Checkbox', '3' => 'Select List', '4' => 'Date', '5' => 'Email address', '6' => 'URL'];
 	public static $fieldTypes = [0 => 'text', 1=>'textarea', 2=>'checkbox', '3' => 'enum', '4' => 'date', '5' => 'email', '6' => 'url'];
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),

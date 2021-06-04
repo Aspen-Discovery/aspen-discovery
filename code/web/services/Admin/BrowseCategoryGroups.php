@@ -7,19 +7,19 @@ require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 class Admin_BrowseCategoryGroups extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'BrowseCategoryGroup';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'BrowseCategoryGroups';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Browse Category Groups';
 	}
 	function canDelete(){
 		return UserAccount::userHasPermission('Administer All Browse Categories');
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new BrowseCategoryGroup();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -35,26 +35,26 @@ class Admin_BrowseCategoryGroups extends ObjectEditor
 		}
 		return $list;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
 
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return BrowseCategoryGroup::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -63,12 +63,12 @@ class Admin_BrowseCategoryGroups extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'local_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Browse Categories', 'Administer Library Browse Categories']);
 	}

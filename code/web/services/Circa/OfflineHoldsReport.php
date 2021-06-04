@@ -72,7 +72,7 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 		$this->display('offlineHoldsReport.tpl', 'Offline Holds Report');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -81,12 +81,12 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'ils_integration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View Offline Holds Report');
 	}

@@ -528,7 +528,7 @@ abstract class Archive_Object extends Action {
 		return $displayMode;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->lastSearch)){

@@ -17,7 +17,7 @@ class MaterialsRequestFormats extends DataObject
 	);
 
 
-	static function getObjectStructure() {
+	static function getObjectStructure() : array {
 		$structure = array(
 			'id'            => array('property' => 'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'weight'        => array('property' => 'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
@@ -197,10 +197,10 @@ class MaterialsRequestFormats extends DataObject
 		return array($formatAuthorLabels, $specialFieldFormats);
 	}
 
-	public function fetch(){
+	public function fetch() {
 		$return = parent::fetch();
 		if ($return) {
-				$this->specialFields = empty($this->specialFields) ? null : explode(',', $this->specialFields);
+			$this->specialFields = empty($this->specialFields) ? null : explode(',', $this->specialFields);
 		}
 		return $return;
 	}

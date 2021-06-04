@@ -8,7 +8,7 @@ class NovelistSetting extends DataObject
 	public $profile;
 	public $pwd;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),

@@ -30,6 +30,53 @@ AspenDiscovery.CollectionSpotlights = (function(){
 					AspenDiscovery.showMessage("Error", data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
-		}
+		},
+		updateSpotlightFields: function () {
+			var collectionSpotlightId = $('#collectionSpotlightId').val();
+			if (collectionSpotlightId > '0') {
+				$("#replaceExistingRadios").show();
+			}else{
+				$("#replaceExistingRadios").hide();
+				$("#newSpotlightName").show();
+			}
+
+			document.getElementById('collectionSpotlightId').addEventListener('change', function() {
+				document.getElementById("replaceExisting").checked = false;
+				$("#existingSpotlightName").hide();
+			});
+
+			var listCount = 0;
+
+			Array.from(document.querySelector("#collectionSpotlightListId").options).forEach(function(option_element) {
+				var collectionSpotlightId = $('#collectionSpotlightId').val();
+				var option_values = option_element.value;
+				var option_value = option_values.split(".");
+				var spotlightId = option_value[0];
+				listCount++;
+
+				if(spotlightId == collectionSpotlightId) {
+					document.querySelector('#collectionSpotlightListId option[value="'+option_values+'"]').hidden = false;
+				} else {
+					if(spotlightId == '-1') {
+						document.querySelector('#collectionSpotlightListId option[value="'+option_values+'"]').hidden = false;
+						listCount--;
+					} else {
+						document.querySelector('#collectionSpotlightListId option[value="'+option_values+'"]').hidden = true;
+						listCount--;
+					}
+				}
+
+				var replaceExisting = $('#replaceExisting');
+				$(replaceExisting).click(function() {
+					if((replaceExisting.is(":checked")) && (listCount != 1)){
+						$("#existingSpotlightName").show();
+					}else{
+						$("#existingSpotlightName").hide();
+					}
+				});
+				document.getElementById("collectionSpotlightListId").value = "-1.0";
+			});
+
+		},
 	};
 }(AspenDiscovery.CollectionSpotlights || {}));

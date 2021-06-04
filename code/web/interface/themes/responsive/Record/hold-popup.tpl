@@ -89,7 +89,7 @@
 						</div>
 
 						<div id="userOption" class="form-group"{if !$multipleUsers} style="display: none"{/if}>{* display if there are multiple accounts *}
-							<label for="user" class="control-label">{translate text="Place hold for the chosen location using account"}: </label>
+							<label for="user" class="control-label">{translate text="Place hold for the chosen location using account"}</label>
 							<div class="controls">
 								<select name="user" id="user" class="form-control">
 									{* Built by jQuery below *}
@@ -149,7 +149,7 @@
 
 					{if $showHoldCancelDate == 1}
 						<div id="cancelHoldDate" class="form-group">
-							<label class="control-label" for="cancelDate">{translate text="Automatically cancel this hold if not filled by"}:</label>
+							<label class="control-label" for="cancelDate">{translate text="Automatically cancel this hold if not filled by"}</label>
 							<div class="input-group input-append date controls" id="cancelDatePicker">
 								{* data-provide attribute loads the datepicker through bootstrap data api *}
 								<input type="text" name="cancelDate" id="cancelDate" placeholder="mm/dd/yyyy" class="form-control" size="10"

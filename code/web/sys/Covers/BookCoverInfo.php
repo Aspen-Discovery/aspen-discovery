@@ -18,7 +18,7 @@ class BookCoverInfo extends DataObject
 	public $largeLoaded;
 	public $uploadedImage;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['sourceWidth', 'sourceHeight', 'thumbnailLoaded', 'mediumLoaded', 'largeLoaded', 'uploadedImage'];
 	}

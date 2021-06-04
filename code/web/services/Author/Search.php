@@ -74,7 +74,7 @@ class Author_Search extends ResultsAction
 		$this->display('list.tpl', 'Author Browse');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return parent::getResultsBreadcrumbs('Author Search');
 	}

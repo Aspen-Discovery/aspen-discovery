@@ -25,7 +25,7 @@ class WebBuilder_BasicPage extends Action{
 		$this->display('basicPage.tpl', $this->basicPage->title, '', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');

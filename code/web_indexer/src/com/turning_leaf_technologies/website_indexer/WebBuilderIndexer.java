@@ -61,7 +61,7 @@ class WebBuilderIndexer {
 			ResultSet getLibrarySubdomainsRS = getLibrarySubdomainsStmt.executeQuery();
 			while (getLibrarySubdomainsRS.next()){
 				String scopeName = getLibrarySubdomainsRS.getString("subdomain");
-				scopeName = scopeName.replaceAll("[^a-zA-Z0-9_]", "");
+				scopeName = scopeName.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
 				librarySubdomains.put(getLibrarySubdomainsRS.getLong("libraryId"), scopeName);
 			}
 			getLibrarySubdomainsRS.close();

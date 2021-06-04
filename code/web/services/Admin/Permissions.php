@@ -55,7 +55,7 @@ class Admin_Permissions extends Admin_Admin
 
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -65,12 +65,12 @@ class Admin_Permissions extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Permissions');
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_admin';
 	}

@@ -5,19 +5,19 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
 class OpenArchives_Collections extends ObjectEditor {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'OpenArchivesCollection';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Collections';
 	}
-    function getModule(){
+    function getModule() : string{
         return 'OpenArchives';
     }
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Open Archives collections to include';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$list = array();
 
 		$object = new OpenArchivesCollection();
@@ -31,21 +31,21 @@ class OpenArchives_Collections extends ObjectEditor {
 
 		return $list;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return OpenArchivesCollection::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -54,12 +54,12 @@ class OpenArchives_Collections extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'open_archives';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Open Archives');
 	}

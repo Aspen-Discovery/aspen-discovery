@@ -1371,6 +1371,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$fieldsToReturn .= ',format_' . $solrScope;
 				$fieldsToReturn .= ',format_category_' . $solrScope;
 				$fieldsToReturn .= ',collection_' . $solrScope;
+				$fieldsToReturn .= ',local_days_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_time_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_callnumber_' . $solrScope;
 				$fieldsToReturn .= ',detailed_location_' . $solrScope;
@@ -1445,11 +1446,12 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @param array[] $ids
 	 * @param int $page
 	 * @param int $limit
+	 * @param string[] $notInterestedTitles
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $page = 1, $limit = 25)
+	function getMoreLikeThese($ids, $page = 1, $limit = 25, $notInterestedTitles = [])
 	{
-		return $this->indexEngine->getMoreLikeThese($ids, $this->getFieldsToReturn(), $page, $limit);
+		return $this->indexEngine->getMoreLikeThese($ids, $this->getFieldsToReturn(), $page, $limit, $notInterestedTitles);
 	}
 
 	/**

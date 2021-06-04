@@ -6,16 +6,16 @@ require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
 class Admin_Obituaries extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Obituary';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Obituaries';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Obituaries';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new Obituary();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -27,17 +27,17 @@ class Admin_Obituaries extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'date asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return Obituary::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return array('personId', 'source', 'date');
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'obituaryId';
 	}
 	function getRedirectLocation($objectAction, $curObject){
@@ -51,7 +51,7 @@ class Admin_Obituaries extends ObjectEditor
 		return false;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->activeObject) && $this->activeObject instanceof Obituary){
@@ -71,12 +71,12 @@ class Admin_Obituaries extends ObjectEditor
 		parent::display($mainContentTemplate, $pageTitle, '', false);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return '';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer Genealogy']);
 	}

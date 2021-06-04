@@ -15,7 +15,7 @@ class SystemVariables extends DataObject
 	public $allowHtmlInMarkdownFields;
 	public $useHtmlEditorRatherThanMarkdown;
 
-	static function getObjectStructure() {
+	static function getObjectStructure() : array {
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'errorEmail' => array('property' => 'errorEmail', 'type' => 'text', 'label' => 'Error Email Address', 'description' => 'Email Address to send errors to', 'maxLength' => 128),

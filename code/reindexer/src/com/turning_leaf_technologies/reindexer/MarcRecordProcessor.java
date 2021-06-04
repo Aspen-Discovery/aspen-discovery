@@ -1059,7 +1059,7 @@ abstract class MarcRecordProcessor {
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
-		if (printFormats.size() == 0 || printFormats.contains("MusicRecording")) {
+		if (printFormats.size() == 0 || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
@@ -1193,6 +1193,9 @@ abstract class MarcRecordProcessor {
 		}
 
 		if (printFormats.contains("Book") && printFormats.contains("LargePrint")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("Book") && printFormats.contains("Atlas")){
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("Book") && printFormats.contains("Manuscript")){
@@ -1354,7 +1357,9 @@ abstract class MarcRecordProcessor {
 			for (Subfield subfield : subFields) {
 				if (subfield.getCode() != 'e') {
 					String physicalDescriptionData = subfield.getData().toLowerCase();
-					if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
+					if (physicalDescriptionData.contains("atlas")) {
+						result.add("Atlas");
+					} else if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
 						result.add("LargePrint");
 					} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 						//Check to see if this is a combo pack.

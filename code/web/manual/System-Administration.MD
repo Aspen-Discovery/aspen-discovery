@@ -12,6 +12,8 @@ The Administration Users section is where you will give permissions to users wit
 Permissions are the levels of use that is available to either administraton users or certain staff or volunteer types. In this section, you are able to customize roles by giving them almost any level of access to Aspen. Here, you are able to edit exsisting roles or create new roles.
 #### DB Maintainance
 In the Database Maintenance section, you can run updates when a new version of Aspen has been released.
+#### Amazon SES Settings
+Amazon SES allows Aspen to send e-mails using Amazon's SES platform.
 #### SendGrid Settings
 SendGrid allows Aspen to send e-mails through Aspen including tickets to ByWater Solutions. This is where you are able to customize your SendGrib settings.
 #### Variables

@@ -26,7 +26,7 @@ class PortalCell extends DataObject
 	public $frameHeight;
 	public $makeCellAccordion;
 
-	static function getObjectStructure() {
+	static function getObjectStructure() : array {
 		$verticalAlignmentOptions = [
 			'flex-start' => 'Top of Row',
 			'flex-end' => 'Bottom of Row',

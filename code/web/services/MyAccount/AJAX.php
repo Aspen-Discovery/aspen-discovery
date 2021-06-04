@@ -47,7 +47,7 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
 		return array(
 			'title' => 'Add as Browse Category to Home Page',
-			'modalBody' => $interface->fetch('Browse/addBrowseCategoryForm.tpl'),
+			'modalBody' => $interface->fetch('Browse/newBrowseCategoryForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
 		);
 	}
@@ -2771,6 +2771,7 @@ class MyAccount_AJAX extends JSON_Action
 				$userList->insert();
 			}else{
 				$userList->id = $listId;
+				$totalRecords = $userList->numValidListItems();
 				if (!$userList->find(true)){
 					$result['success'] = false;
 					$result['message'] = 'Sorry, we could not find that list in the system.';
@@ -2794,6 +2795,44 @@ class MyAccount_AJAX extends JSON_Action
 					}else {
 						$userListEntry->source = $source;
 						$userListEntry->sourceId = $sourceId;
+						$userListEntry->weight = $totalRecords++;
+
+						if($userListEntry->source == 'GroupedWork') {
+							require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+							$groupedWork = new GroupedWork();
+							$groupedWork->permanent_id = $userListEntry->sourceId;
+								if ($groupedWork->find(true)) {
+									$userListEntry->title = substr($groupedWork->full_title, 0, 50);
+								}
+						}elseif($userListEntry->source == 'Lists') {
+							require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+							$list = new UserList();
+							$list->id  = $userListEntry->sourceId;
+								if ($list->find(true)) {
+									$userListEntry->title = substr($list->title, 0, 50);
+								}
+						}elseif($userListEntry->source == 'OpenArchives') {
+							require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
+							$recordDriver = new OpenArchivesRecordDriver($userListEntry->sourceId);
+								if ($recordDriver->isValid()){
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+						}elseif($userListEntry->source == 'Genealogy') {
+							require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+							$person = new Person();
+							$person->personId = $userListEntry->sourceId;
+								if ($person->find(true)) {
+									$userListEntry->title = substr($person->firstName . $person->middleName . $person->lastName, 0, 50);
+								}
+						}elseif($userListEntry->source == 'EbscoEds') {
+							require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+							$recordDriver = new EbscoRecordDriver($userListEntry->sourceId);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+						}
 
 						$existingEntry = false;
 						if ($userListEntry->find(true)) {
@@ -2853,9 +2892,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Upload a New List Cover',
+			'title' => translate('Upload a New List Cover'),
 			'modalBody' => $interface->fetch("Lists/upload-cover-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>Upload Cover</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>" . translate("Upload Cover") . "</button>"
 		);
 	}
 
@@ -2866,7 +2905,7 @@ class MyAccount_AJAX extends JSON_Action
 			'title' => 'Uploading custom list cover',
 			'message' => 'Sorry your cover could not be uploaded'
 		];
-		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))){
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload List Covers'))){
 			if (isset($_FILES['coverFile'])) {
 				$uploadedFile = $_FILES['coverFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
@@ -2919,9 +2958,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Upload a New List Cover by URL',
+			'title' => translate('Upload a New List Cover by URL'),
 			'modalBody' => $interface->fetch("Lists/upload-cover-form-url.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverFormByURL\").submit()'>Upload Cover</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverFormByURL\").submit()'>" . translate("Upload Cover") . "</button>"
 		);
 	}
 
@@ -3165,9 +3204,40 @@ class MyAccount_AJAX extends JSON_Action
 			$userListEntry->update();
 
 			if(($position != $userListEntry->weight) && ($position != '')) {
-				$userListEntry->weight = $_REQUEST['position'];
-				$userListEntry->update();
-				$result['success'] = true;
+				$newPosition = $_REQUEST['position'];
+				$currentPosition = $userListEntry->weight;
+
+				$desiredPosition = new UserListEntry();
+				$desiredPosition->listId = $_REQUEST['listId'];
+				$desiredPosition->weight = $newPosition;
+				if ($desiredPosition->find(true)){
+					$entriesToSwap = new UserListEntry();
+					$entriesToSwap->listId = $_REQUEST['listId'];
+					$entriesToSwap->find();
+					while ($entriesToSwap->fetch()){
+						if($newPosition > $currentPosition){
+							// move up
+							if ($entriesToSwap->weight < $newPosition) {
+								$entriesToSwap->weight = $entriesToSwap->weight - 1;
+								$entriesToSwap->update();
+							}
+						}
+						if($newPosition < $currentPosition){
+							// move down
+							if ($entriesToSwap->weight > $newPosition) {
+								$entriesToSwap->weight = $entriesToSwap->weight + 1;
+								$entriesToSwap->update();
+							}
+						}
+					}
+					$desiredPosition->weight = $newPosition - 1;
+					$desiredPosition->update();
+
+					$userListEntry->weight = $newPosition;
+					$userListEntry->update();
+
+					$result['success'] = true;
+				}
 			}
 			if(($moveTo != $currentLoc) && ($moveTo != 'null')) {
 				// check to make sure item isn't on new list?
@@ -3209,6 +3279,66 @@ class MyAccount_AJAX extends JSON_Action
 			$result['message'] = 'List item updated successfully';
 		}
 
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function updateWeight() {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error moving list entry'
+		];
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getLoggedInUser();
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$list = new UserList();
+			$list->user_id = $user;
+			if ($list->find(true) && $user->canEditList($list)) {
+				if (isset($_REQUEST['listEntryId'])) {
+					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+					$listEntry = new UserListEntry();
+					$listEntry->id = $_REQUEST['listEntryId'];
+					if ($listEntry->find(true)){
+						//Figure out new weights for list entries
+						$direction = $_REQUEST['direction'];
+						$oldWeight = $listEntry->weight;
+						if ($direction == 'up'){
+							$newWeight = $oldWeight - 1;
+						}else{
+							$newWeight = $oldWeight + 1;
+						}
+
+						$entryToSwap = new UserListEntry();
+						$entryToSwap->listId = $listEntry->listId;
+						$entryToSwap->weight = $newWeight;
+						if ($entryToSwap->find(true)) {
+							$listEntry->weight = $newWeight;
+							$listEntry->update();
+							$entryToSwap->weight = $oldWeight;
+							$entryToSwap->update();
+
+							$result['success'] = true;
+							$result['message'] = 'The list entry was moved successfully';
+							$result['swappedWithId'] = $entryToSwap->id;
+						}else{
+							if ($direction == 'up'){
+								$result['message'] = 'List entry is already at the top';
+							}else{
+								$result['message'] = 'List entry is already at the bottom';
+							}
+						}
+					}else{
+						$result['message'] = 'Unable to find that list entry';
+					}
+				}else{
+					$result['message'] = 'No list entry id was provided';
+				}
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to move a list entry';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to move a list entry';
+		}
 		return $result;
 	}
 }

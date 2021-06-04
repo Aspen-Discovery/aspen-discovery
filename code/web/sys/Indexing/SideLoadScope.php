@@ -20,7 +20,7 @@ class SideLoadScope extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$validSideLoads = [];
 		$sideLoad = new SideLoad();
@@ -52,7 +52,6 @@ class SideLoadScope extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use this scope',
-				'helpLink' => '',
 				'keyThis' => 'id',
 				'keyOther' => 'sideLoadScopeId',
 				'subObjectType' => 'LibrarySideLoadScope',
@@ -79,7 +78,6 @@ class SideLoadScope extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Locations',
 				'description' => 'Define locations that use this scope',
-				'helpLink' => '',
 				'keyThis' => 'id',
 				'keyOther' => 'sideLoadScopeId',
 				'subObjectType' => 'LocationSideLoadScope',

@@ -7,21 +7,21 @@ require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 class MaterialsRequest_ManageStatuses extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'MaterialsRequestStatus';
 	}
-	function getModule()
+	function getModule() : string
 	{
 		return 'MaterialsRequest';
 	}
 
-	function getToolName(){
+	function getToolName() : string{
 		return 'ManageStatuses';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Materials Request Statuses';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new MaterialsRequestStatus();
 
 		$homeLibrary = Library::getPatronHomeLibrary();
@@ -40,22 +40,22 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'isDefault desc';
 	}
-	function canSort()
+	function canSort() : bool
 	{
 		return false;
 	}
 
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return MaterialsRequestStatus::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'description';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function customListActions(){
@@ -87,7 +87,7 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		header("Location: /MaterialsRequest/ManageStatuses");
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
@@ -95,12 +95,12 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'materials_request';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Materials Requests');
 	}

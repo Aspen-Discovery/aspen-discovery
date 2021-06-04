@@ -233,7 +233,7 @@ class AnodeAPI extends Action
 		return $result;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

@@ -1,9 +1,10 @@
 <?php
 # ****************************************************************************************************************************
-# * Last Edit: April 8, 2021
+# * Last Edit: May 3, 2021
 # * - basic searching funcitonality, but formats the data appropriately to be sent back
 # * 
-# * 04-08-20: base version - CZ
+# * 05-03-21: needed to include shortname for location - CZ
+# * 04-08-21: base version - CZ
 # ****************************************************************************************************************************
 
 # ****************************************************************************************************************************
@@ -22,8 +23,10 @@ include_once 'config.php';
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$library = $_GET['library'];
-$urlPath = urlPath($library);
+$library      = $_GET['library'];
+$locationInfo = urlPath($library);
+$urlPath      = $locationInfo[0];
+$shortname    = $locationInfo[1];
 
 # ****************************************************************************************************************************
 # * give the number of results to return from the search - needed to accomodate for the culling of Hoopla and Kanopy
@@ -58,10 +61,10 @@ if (! empty($jsonData['result']['recordSet'])) {
 # * collection code may be empty - need to dummy it out just in case
 # ****************************************************************************************************************************
     $ccode       = '';
-    if (isset($item['collection_main'][0])) { $ccode = $item['collection_main'][0]; }
+    if (isset($item['collection_' . $shortname][0])) { $ccode = $item['collection_' . $shortname][0]; }
     
 	$format      = '';
-	if (isset($item['format_main'][0])) { $format      = $item['format_main'][0]; }
+	if (isset($item['format_' . $shortname][0])) { $format      = $item['format_' . $shortname][0]; }
     $iconName    = $urlPath . "/bookcover.php?id=" . $item['id'] . "&size=medium&type=grouped_work";
     $id          = $item['id'];
   

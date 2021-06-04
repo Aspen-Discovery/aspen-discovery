@@ -56,12 +56,12 @@ class Checkout extends CircEntry
 	public $_overdue = null;
 	public $_daysUntilDue = null;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['userId', 'checkoutDate', 'dueDate', 'renewCount', 'canRenew', 'autoRenew', 'maxRenewals', 'fine', 'holdQueueLength', 'allowDownload', 'overdriveRead', 'overdriveListen', 'overdriveVideo', 'overdriveMagazine', 'formatSelected', 'canReturnEarly', 'isSupplemental'];
 	}
 
-	public function getSerializedFieldNames(){
+	public function getSerializedFieldNames() : array{
 		return ['supplementalMaterials', 'formats'];
 	}
 

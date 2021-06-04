@@ -36,7 +36,7 @@
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
-			<analyzer type="index">
+			<analyzer type="query">
 				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
 				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
 				-->

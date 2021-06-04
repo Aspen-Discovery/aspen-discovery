@@ -166,7 +166,7 @@ class Novelist3{
 				foreach ($isbns as $isbn) {
 					$isbnParam .= "&ISBN={$isbn}";
 				}
-				$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile={$novelistSettings->profile}&password={$novelistSettings->pwd}&ClientIdentifier=test{$isbnParam}&version=2.6&tmpstmp=" . time();
+				$requestUrl = "https://novselect.ebscohost.com/Data/ContentByQuery?profile={$novelistSettings->profile}&password={$novelistSettings->pwd}&ClientIdentifier=test{$isbnParam}&version=2.6&tmpstmp=" . time();
 
 				//echo($requestUrl);
 				try{

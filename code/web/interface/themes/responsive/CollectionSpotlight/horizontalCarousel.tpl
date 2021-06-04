@@ -11,11 +11,11 @@
 {/if}
 <div class="jcarousel-wrapper horizontalCarouselSpotlightWrapper">
 	<div class="jcarousel horizontalCarouselSpotlight {if $collectionSpotlight->coverSize == 'medium'}mediumScroller{/if}" id="collectionSpotlightCarousel{$list->id}">
-		<div class="loading">Loading carousel items...</div>
+		<div class="loading">{translate text="Loading carousel items..."}</div>
 	</div>
 
-	<a href="#" class="jcarousel-control-prev" aria-label="Previous Item"><i class="fas fa-caret-left"></i></a>
-	<a href="#" class="jcarousel-control-next" aria-label="Next Item"><i class="fas fa-caret-right"></i></a>
+	<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Item" inAttribute=true}"><i class="fas fa-caret-left"></i></a>
+	<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Item" inAttribute=true}"><i class="fas fa-caret-right"></i></a>
 </div>
 <script type="text/javascript">
 	$(document).ready(function(){ldelim}

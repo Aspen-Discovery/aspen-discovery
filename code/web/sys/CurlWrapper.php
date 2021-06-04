@@ -5,6 +5,7 @@ class CurlWrapper
 
 	private $cookieJar;
 	private $headers = [];
+	private $options = [];
 	public $curl_connection; // need access in order to check for curl errors.
 	public $connectTimeout = 2;
 	public $timeout = 10;
@@ -88,6 +89,9 @@ class CurlWrapper
 				$default_curl_options[CURLOPT_VERBOSE] = true;
 			}
 
+			if (!empty($this->options)){
+				$default_curl_options = array_merge($default_curl_options, $this->options);
+			}
 			if ($curl_options) {
 				$default_curl_options = array_merge($default_curl_options, $curl_options);
 			}
@@ -244,7 +248,7 @@ class CurlWrapper
 	 * @param string[] $customHeaders
 	 * @param bool $overrideExisting
 	 */
-	function addCustomHeaders($customHeaders, $overrideExisting)
+	function addCustomHeaders(array $customHeaders, bool $overrideExisting)
 	{
 		if ($overrideExisting) {
 			$this->headers = $customHeaders;
@@ -253,6 +257,13 @@ class CurlWrapper
 		}
 		if (!empty($this->curl_connection)){
 			curl_setopt($this->curl_connection, CURLOPT_HTTPHEADER, $this->headers);
+		}
+	}
+
+	function setOption($curlOption, $value){
+		$this->options[$curlOption] = $value;
+		if (!empty($this->curl_connection)){
+			curl_setopt($this->curl_connection, $curlOption, $value);
 		}
 	}
 

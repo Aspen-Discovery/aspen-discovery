@@ -35,7 +35,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 				location += translatedSubLocation;
 			}
 		}
-		if (collectionCode != null && collectionCode.length() > 0){
+		if (collectionCode != null && collectionCode.length() > 0 && !collectionCode.equals(subLocationCode)){
 			String translatedCollection = translateValue("collection", collectionCode, identifier);
 			if (translatedCollection != null && translatedCollection.length() > 0) {
 				if (location.length() > 0) {

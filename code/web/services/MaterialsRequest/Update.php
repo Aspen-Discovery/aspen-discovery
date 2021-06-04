@@ -133,7 +133,7 @@ class MaterialsRequest_Update extends Action {
 		$this->display('update-result.tpl', 'Update Result');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');

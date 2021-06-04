@@ -47,7 +47,7 @@ class SideLoad extends DataObject
 
 	private $_scopes;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$translationMapStructure = TranslationMap::getObjectStructure();
 		unset($translationMapStructure['indexingProfileId']);
@@ -114,7 +114,6 @@ class SideLoad extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Scopes',
 				'description' => 'Define scopes for the sideload',
-				'helpLink' => '',
 				'keyThis' => 'id',
 				'keyOther' => 'sideLoadId',
 				'subObjectType' => 'SideLoadScope',

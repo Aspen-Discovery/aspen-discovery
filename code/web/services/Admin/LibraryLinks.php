@@ -7,16 +7,16 @@ require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLink.php';
 class Admin_LibraryLinks extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'LibraryLink';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'LibraryLinks';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Library Links';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
@@ -39,23 +39,23 @@ class Admin_LibraryLinks extends ObjectEditor
 		}
 		return $list;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'weight asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		$structure = LibraryLink::getObjectStructure();
 		unset ($structure['weight']);
 		return $structure;
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -67,12 +67,12 @@ class Admin_LibraryLinks extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}

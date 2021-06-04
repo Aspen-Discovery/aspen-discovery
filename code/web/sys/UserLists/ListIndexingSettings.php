@@ -9,7 +9,7 @@ class ListIndexingSettings extends DataObject
 	public $lastUpdateOfChangedLists;
 	public $lastUpdateOfAllLists;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),

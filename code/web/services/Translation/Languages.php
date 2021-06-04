@@ -6,27 +6,27 @@ require_once ROOT_DIR . '/sys/Translation/Language.php';
 
 class Translation_Languages extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'Language';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'Languages';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'Translation';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'User Languages';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new Language();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -40,37 +40,37 @@ class Translation_Languages extends ObjectEditor
 		return $objectList;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'displayName asc';
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return Language::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -79,12 +79,12 @@ class Translation_Languages extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'translations';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Languages');
 	}

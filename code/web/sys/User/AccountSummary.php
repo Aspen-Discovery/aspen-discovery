@@ -20,7 +20,7 @@ class AccountSummary extends DataObject
 	protected $_materialsRequests;
 	protected $_readingHistory;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['userId','numCheckedOut','numCheckoutsRemaining','numOverdue','numAvailableHolds','numUnavailableHolds','numBookings','totalFines','expirationDate','lastLoaded'];
 	}
@@ -111,7 +111,7 @@ class AccountSummary extends DataObject
 		return $this->_expirationFinesNotice;
 	}
 
-	public function toArray(){
+	public function toArray() : array{
 		$return = parent::toArray();
 		$return['expires'] = date('M j, Y', $this->expirationDate);
 		$return['expired'] = $this->isExpired();

@@ -26,7 +26,7 @@ class AspenUsage extends DataObject
 	public $blockedRequests;
 	public $blockedApiRequests;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return [
 			'pageViews',

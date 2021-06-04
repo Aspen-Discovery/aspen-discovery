@@ -11,7 +11,7 @@ class CustomFormSubmission extends DataObject
 	public $dateSubmitted;
 	public $submission;
 
-	public function getObjectStructure(){
+	public function getObjectStructure() : array {
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'libraryName' =>  array('property'=>'libraryName', 'type'=>'label', 'label'=>'Library', 'description'=>'The name of the library for the submission'),

@@ -67,7 +67,7 @@ class Person extends SolrDataObject
 		return 'genealogy';
 	}
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return [
 			'birthDateDay',
@@ -181,7 +181,7 @@ class Person extends SolrDataObject
 		return $return;
 	}
 
-    static function getObjectStructure(){
+    static function getObjectStructure() : array{
 		$structure = array(
 			array('property'=>'id', 'type'=>'method', 'methodName'=>'solrId', 'storeDb' => false, 'storeSolr' => true, 'hideInLists'=>true),
 			array('property'=>'recordtype', 'type'=>'method', 'methodName'=>'recordtype', 'storeDb' => false, 'storeSolr' => true, 'hideInLists'=>true),

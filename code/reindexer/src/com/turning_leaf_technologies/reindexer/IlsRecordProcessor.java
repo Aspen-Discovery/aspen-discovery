@@ -933,7 +933,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String itemSublocation = itemInfo.getSubLocationCode();
 
 		HoldabilityInformation isHoldableUnscoped = isItemHoldableUnscoped(itemInfo);
-		BookabilityInformation isBookableUnscoped = isItemBookableUnscoped();
 		String originalUrl = itemInfo.geteContentUrl();
 		String primaryFormat = recordInfo.getPrimaryFormat();
 		for (Scope curScope : indexer.getScopes()) {
@@ -942,13 +941,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, primaryFormat, isHoldable.isHoldable(), false, false, record, originalUrl);
 			if (result.isIncluded){
-				BookabilityInformation isBookable = isItemBookable(itemInfo, curScope, isBookableUnscoped);
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 				scopingInfo.setAvailable(available);
 				scopingInfo.setHoldable(isHoldable.isHoldable());
 				scopingInfo.setHoldablePTypes(isHoldable.getHoldablePTypes());
-				scopingInfo.setBookable(isBookable.isBookable());
-				scopingInfo.setBookablePTypes(isBookable.getBookablePTypes());
+				scopingInfo.setBookable(false);
+				scopingInfo.setBookablePTypes("");
 
 				scopingInfo.setInLibraryUseOnly(determineLibraryUseOnly(itemInfo, curScope));
 
@@ -1207,14 +1205,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected HoldabilityInformation isItemHoldable(ItemInfo itemInfo, Scope curScope, HoldabilityInformation isHoldableUnscoped){
 		return isHoldableUnscoped;
-	}
-
-	private BookabilityInformation isItemBookableUnscoped(){
-		return new BookabilityInformation(false, new HashSet<>());
-	}
-
-	protected BookabilityInformation isItemBookable(ItemInfo itemInfo, Scope curScope, BookabilityInformation isBookableUnscoped) {
-		return isBookableUnscoped;
 	}
 
 	String getShelfLocationForItem(DataField itemField, String identifier) {

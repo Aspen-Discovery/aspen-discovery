@@ -179,7 +179,7 @@ class Person_Home extends Action
 	}
 
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->lastSearch)){

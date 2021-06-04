@@ -16,7 +16,7 @@ class MyAccount_Home extends MyAccount{
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'My Account');

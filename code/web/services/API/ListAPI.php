@@ -955,7 +955,7 @@ class ListAPI extends Action
 		return $results;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

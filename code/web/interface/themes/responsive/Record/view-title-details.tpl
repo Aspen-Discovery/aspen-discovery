@@ -146,6 +146,8 @@
 
 	{include file="GroupedWork/relatedLists.tpl"}
 
+	{include file="GroupedWork/readingHistoryIndicator.tpl"}
+
 	{* Detailed status information *}
 	<div class="row">
 		<div class="result-label col-tn-3">{translate text='Status'}</div>

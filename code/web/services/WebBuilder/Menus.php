@@ -4,27 +4,27 @@ require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderMenu.php';
 
 class WebBuilder_Menus extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'WebBuilderMenu';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'Menus';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'WebBuilder Menus';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		global $library;
 		$object = new WebBuilderMenu();
@@ -50,42 +50,42 @@ class WebBuilder_Menus extends ObjectEditor
 		return $objectList;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'weight asc';
 	}
 
-	function canSort()
+	function canSort() : bool
 	{
 		return false;
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return WebBuilderMenu::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -94,12 +94,12 @@ class WebBuilder_Menus extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Menus', 'Administer Library Menus']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

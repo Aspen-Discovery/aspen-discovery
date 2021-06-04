@@ -14,7 +14,7 @@ class Module extends DataObject
 	public $settingsClassPath;
 	public $settingsClassName;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The name of the module', 'canBatchUpdate'=>false),

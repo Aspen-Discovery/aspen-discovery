@@ -102,7 +102,7 @@ class History extends Action {
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (UserAccount::isLoggedIn()){

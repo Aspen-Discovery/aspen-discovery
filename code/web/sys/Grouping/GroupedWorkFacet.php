@@ -4,7 +4,7 @@ class GroupedWorkFacet extends FacetSetting {
 	public $__table = 'grouped_work_facet';
 	public $facetGroupId;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		$numericColumns = parent::getNumericColumnNames();
 		$numericColumns[] = 'facetGroupId';

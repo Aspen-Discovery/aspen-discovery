@@ -21,8 +21,16 @@ class Suggestions{
 			}
 		}
 
-		//Load all titles the user is not interested in
-		$notInterestedTitles = $user->getNotInterestedTitles();
+		//Load all titles the user has marked as not being interested in for the past hour in case indexing is not caught up
+		$notInterestedTitles = $user->getNotInterestedTitles(time() - 60 * 60);
+
+		$holds = $user->getHolds(false);
+		foreach ($holds['available'] as $hold){
+			$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+		}
+		foreach ($holds['unavailable'] as $hold){
+			$notInterestedTitles[$hold->groupedWorkId] = $hold->groupedWorkId;
+		}
 
 		//Load all titles the user has rated.  Need to load all so we don't recommend things they already rated
 		$allRatedTitles = array();
@@ -63,12 +71,12 @@ class Suggestions{
 					}else{
 						$titleLimit = 3;
 					}
-					$suggestions = self::getMoreLikeTheseSuggestions(1, $titleLimit, $searchObject, [$allLikedRatedTitles[$i]], $allRatedTitles, $suggestions);
+					$suggestions = self::getMoreLikeTheseSuggestions(1, $titleLimit, $searchObject, [$allLikedRatedTitles[$i]], $notInterestedTitles, $suggestions);
 				}
 			}
 
 			//$db->debug = true;
-			$suggestions = self::getMoreLikeTheseSuggestions($page, $limit - count($suggestions), $searchObject, $allLikedRatedTitles, $allRatedTitles, $suggestions);
+			$suggestions = self::getMoreLikeTheseSuggestions($page, $limit - count($suggestions), $searchObject, $allLikedRatedTitles, $notInterestedTitles, $suggestions);
 			$timer->logTime("Loaded recommendations based on metadata");
 		}
 
@@ -80,14 +88,14 @@ class Suggestions{
 	 * @param $page
 	 * @param $limit
 	 * @param SearchObject_GroupedWorkSearcher $searchObject
-	 * @param array $titlesToBaseRecommendationsOn
-	 * @param array $allRatedTitles
+	 * @param string[] $titlesToBaseRecommendationsOn
+	 * @param string[] $notInterestedTitles
 	 * @param array $suggestions
 	 * @return array
 	 */
-	private static function getMoreLikeTheseSuggestions($page, $limit, SearchObject_GroupedWorkSearcher $searchObject, array $titlesToBaseRecommendationsOn, array $allRatedTitles, array $suggestions): array
+	private static function getMoreLikeTheseSuggestions($page, $limit, SearchObject_GroupedWorkSearcher $searchObject, array $titlesToBaseRecommendationsOn, array $notInterestedTitles, array $suggestions): array
 	{
-		$moreLikeTheseSuggestions = $searchObject->getMoreLikeThese($titlesToBaseRecommendationsOn, $page, $limit);
+		$moreLikeTheseSuggestions = $searchObject->getMoreLikeThese($titlesToBaseRecommendationsOn, $page, $limit, $notInterestedTitles);
 		if (isset($moreLikeTheseSuggestions['response']['docs'])) {
 			foreach ($moreLikeTheseSuggestions['response']['docs'] as $suggestion) {
 				$suggestions[$suggestion['id']] = array(

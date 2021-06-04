@@ -38,7 +38,7 @@ class WebBuilder_ResourcesList extends Action
 		$this->display('resourcesList.tpl', 'Research & Learn', '');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');

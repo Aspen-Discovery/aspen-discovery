@@ -1231,7 +1231,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 	}
 
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'GroupedWork';
 	}
@@ -1638,6 +1638,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->getPermanentId());
 		$interface->assign('appearsOnLists', $appearsOnLists);
 
+		$this->loadReadingHistoryIndicator();
+
 		$summPublisher = null;
 		$summPubDate = null;
 		$summPhysicalDesc = null;
@@ -2009,55 +2011,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 		return isset($this->fields['subtitle_display']) ?
 			$this->fields['subtitle_display'] : '';
-	}
-
-	public function getSuggestionEntry()
-	{
-		global $interface;
-		global $timer;
-
-		$id = $this->getUniqueID();
-		$timer->logTime("Starting to load search result for grouped work $id");
-		$interface->assign('summId', $id);
-		if (substr($id, 0, 1) == '.') {
-			$interface->assign('summShortId', substr($id, 1));
-		} else {
-			$interface->assign('summShortId', $id);
-		}
-
-		$interface->assign('summUrl', $this->getLinkUrl());
-		$interface->assign('summTitle', $this->getShortTitle());
-		$interface->assign('summSubTitle', $this->getSubtitle());
-		$interface->assign('summAuthor', $this->getPrimaryAuthor());
-		$isbn = $this->getCleanISBN();
-		$interface->assign('summISBN', $isbn);
-		$interface->assign('summFormats', $this->getFormats());
-
-		$interface->assign('numRelatedRecords', $this->getNumRelatedRecords());
-
-		$relatedManifestations = $this->getRelatedManifestations();
-		$interface->assign('relatedManifestations', $relatedManifestations);
-
-		//Get Rating
-		$interface->assign('summRating', $this->getRatingData());
-
-		//Description
-		$interface->assign('summDescription', $this->getDescriptionFast());
-		$timer->logTime('Finished Loading Description');
-		if ($this->hasCachedSeries()) {
-			$interface->assign('ajaxSeries', false);
-			$interface->assign('summSeries', $this->getSeries());
-		} else {
-			$interface->assign('ajaxSeries', true);
-		}
-		$timer->logTime('Finished Loading Series');
-
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		$interface->assign('recordDriver', $this);
-
-		return 'RecordDrivers/GroupedWork/suggestionEntry.tpl';
 	}
 
 	public function getTitle($useHighlighting = false)
@@ -2769,14 +2722,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$formatCategoryInfo[$relatedManifestation->formatCategory] = [
 							'formatCategory' => $relatedManifestation->formatCategory,
 							'available' => true,
-							'image' => $configArray['Site']['url'] . strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_available.png"
+							'image' => $configArray['Site']['url'] . '/interface/themes/responsive/images/' . strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_available.png"
 						];
 					}else{
 						if (!array_key_exists($relatedManifestation->formatCategory, $formatCategoryInfo)){
 							$formatCategoryInfo[$relatedManifestation->formatCategory] = [
 								'formatCategory' => $relatedManifestation->formatCategory,
 								'available' => false,
-								'image' => $configArray['Site']['url'] . strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_small.png",
+								'image' => $configArray['Site']['url'] . '/interface/themes/responsive/images/' . strtolower(str_replace(' ', '', $relatedManifestation->formatCategory)) . "_small.png",
 							];
 						}
 					}
@@ -2792,6 +2745,26 @@ class GroupedWorkDriver extends IndexRecordDriver
 			return $whileYouWaitTitles;
 		}else{
 			return [];
+		}
+	}
+
+	public function loadReadingHistoryIndicator(): void
+	{
+		global $interface;
+		$interface->assign('inReadingHistory', false);
+		if (UserAccount::isLoggedIn()) {
+			require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+			$readingHistoryEntry = new ReadingHistoryEntry();
+			$readingHistoryEntry->userId = UserAccount::getActiveUserId();
+			$readingHistoryEntry->deleted = 0;
+			$readingHistoryEntry->groupedWorkPermanentId = $this->getPermanentId();
+			$readingHistoryEntry->groupBy('groupedWorkPermanentId');
+			$readingHistoryEntry->selectAdd();
+			$readingHistoryEntry->selectAdd('MAX(checkOutDate) as checkOutDate');
+			if ($readingHistoryEntry->find(true)) {
+				$interface->assign('inReadingHistory', true);
+				$interface->assign('lastCheckedOut', $readingHistoryEntry->checkOutDate);
+			}
 		}
 	}
 }

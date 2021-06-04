@@ -6,27 +6,27 @@ require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
 
 class CloudLibrary_Settings extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'CloudLibrarySetting';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'Settings';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'CloudLibrary';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Cloud Library Settings';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new CloudLibrarySetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -39,36 +39,36 @@ class CloudLibrary_Settings extends ObjectEditor
 		return $objectList;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'userInterfaceUrl asc';
 	}
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return CloudLibrarySetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -77,12 +77,12 @@ class CloudLibrary_Settings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'cloud_library';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Cloud Library');
 	}

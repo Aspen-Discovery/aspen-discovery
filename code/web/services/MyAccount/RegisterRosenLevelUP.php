@@ -389,7 +389,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		return $uploadResponse;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

@@ -41,10 +41,6 @@ class LionRecordProcessor extends IIIRecordProcessor {
 		return available;
 	}
 
-	protected boolean loanRulesAreBasedOnCheckoutLocation(){
-		return false;
-	}
-
 	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
 		return itemInfo.getStatusCode().equals("o");
 	}

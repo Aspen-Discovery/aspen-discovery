@@ -26,7 +26,7 @@ class Admin_ArchiveSubjects extends Admin_Admin{
 		$this->display('archiveSubjects.tpl', 'Archive Subjects');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -35,12 +35,12 @@ class Admin_ArchiveSubjects extends Admin_Admin{
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'islandora_archive';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Islandora Archive');
 	}

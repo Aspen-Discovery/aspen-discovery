@@ -532,7 +532,7 @@ class Search_Results extends ResultsAction {
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return parent::getResultsBreadcrumbs('Catalog Search');
 	}

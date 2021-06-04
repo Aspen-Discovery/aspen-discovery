@@ -65,7 +65,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 		return 'overdrive:' . $this->id;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'OverDrive';
 	}

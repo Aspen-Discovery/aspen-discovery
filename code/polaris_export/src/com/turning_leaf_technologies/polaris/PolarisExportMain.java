@@ -736,9 +736,13 @@ public class PolarisExportMain {
 		}
 
 		boolean doneLoading = false;
+		long highestIdProcessed = 0;
 		while (!doneLoading) {
 			//Polaris has an include items field, but it does not seem to contain all information we need for Aspen.
 			long lastIdForThisBatch = Long.parseLong(lastId);
+			if (lastIdForThisBatch > highestIdProcessed){
+				highestIdProcessed = lastIdForThisBatch;
+			}
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?nrecs=100&lastID=" + lastId;
 			if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
 				getBibsUrl += "&startdatecreated=" + formattedLastExtractTime;
@@ -746,17 +750,20 @@ public class PolarisExportMain {
 			}
 			ProcessBibRequestResponse response = processGetBibsRequest(getBibsUrl, marcFactory, lastExtractTime, true);
 			numChanges += response.numChanges;
-			lastId = response.lastId;
+			//Polaris has an issue where if there are more than 100 suppressed titles, it will return 0 as the lastId.  We need to account for that
+			long lastIdLong = Long.parseLong(response.lastId);
+			if (lastIdLong == 0){
+				highestIdProcessed = lastIdForThisBatch + 100;
+			}else if (lastIdLong > highestIdProcessed){
+				highestIdProcessed = lastIdLong;
+			}
+			lastId = Long.toString(highestIdProcessed);
 			if (indexingProfile.isRunFullUpdate()) {
-				indexingProfile.setLastChangeProcessed(Long.parseLong(lastId));
+				indexingProfile.setLastChangeProcessed(highestIdProcessed);
 				indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 			}
-			doneLoading = response.doneLoading;
-			if (indexingProfile.isRunFullUpdate() && doneLoading){
-				if (Long.parseLong(lastId) <= lastIdForThisBatch && Long.parseLong(lastId) <= maxBibId){
-					lastId = Long.toString(lastIdForThisBatch + 100);
-					doneLoading = false;
-				}
+			if (highestIdProcessed >= maxBibId){
+				doneLoading = true;
 			}
 		}
 		indexingProfile.setLastChangeProcessed(0);

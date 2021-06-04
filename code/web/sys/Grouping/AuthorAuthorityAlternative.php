@@ -9,7 +9,7 @@ class AuthorAuthorityAlternative extends DataObject
 	public /** @noinspection PhpUnused */ $alternativeAuthor;
 	public $normalized;
 
-	public static function getObjectStructure(){
+	public static function getObjectStructure() : array{
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],
 			'alternativeAuthor' => ['property' => 'alternativeAuthor', 'type' => 'text', 'label' => 'Alternative Name', 'description' => 'Another name for the author'],

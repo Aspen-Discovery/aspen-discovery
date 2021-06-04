@@ -103,7 +103,7 @@ class CloudLibrary_Dashboard extends Admin_Dashboard
 		];
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -112,12 +112,12 @@ class CloudLibrary_Dashboard extends Admin_Dashboard
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'cloud_library';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}

@@ -35,7 +35,7 @@ class UserList extends DataObject
 		return $sourceLists;
 	}
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['user_id', 'public', 'deleted', 'searchable'];
 	}
@@ -50,7 +50,7 @@ class UserList extends DataObject
 	);
 
 
-    static function getObjectStructure(){
+    static function getObjectStructure() : array {
 		return array(
 			'id' => array(
 				'property'=>'id',
@@ -138,12 +138,17 @@ class UserList extends DataObject
 	 * @return array      of list entries
 	 */
 	function getListEntries($sort = null){
+		global $interface;
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
 
+		$entryPosition = 0;
+		$zeroCount = 0;
+		$nullCount = 0;
+
 		//Sort the list appropriately
-		if (!empty($sort) && $sort != 'title') $listEntry->orderBy(UserList::getSortOptions()[$sort]);
+		if (!empty($sort)) $listEntry->orderBy(UserList::getSortOptions()[$sort]);
 
 		// These conditions retrieve list items with a valid groupedWorkId or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
@@ -152,6 +157,7 @@ class UserList extends DataObject
 		$idsBySource = [];
 		$listEntry->find();
 		while ($listEntry->fetch()){
+			$entryPosition++;
 			if (!array_key_exists($listEntry->source, $idsBySource)){
 				$idsBySource[$listEntry->source] = [];
 			}
@@ -159,36 +165,32 @@ class UserList extends DataObject
 			$tmpListEntry = [
 				'source' => $listEntry->source,
 				'sourceId' => $listEntry->sourceId,
+				'title' => $listEntry->title,
 				'notes' => $listEntry->notes,
 				'listEntryId' => $listEntry->id,
 				'listEntry' => $this->cleanListEntry(clone($listEntry)),
+				'weight' => $listEntry->weight,
 			];
-			if ($sort == 'title') {
-				if ($listEntry->getRecordDriver() != null){
-					$tmpListEntry['title'] = strtolower($listEntry->getRecordDriver()->getSortableTitle());
-				}else{
-					if ($tmpListEntry['source'] == 'GroupedWork'){
-						require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-						$groupedWork = new GroupedWork();
-						$groupedWork->permanent_id = $tmpListEntry['sourceId'];
-						if ($groupedWork->find(true)){
-							$tmpListEntry['title'] = $groupedWork->full_title;
-						}else{
-							$tmpListEntry['title'] = 'Unknown title';
-						}
-					}else {
-						$tmpListEntry['title'] = 'Unknown title';
-					}
-				}
+
+			if($listEntry->weight === '0'){
+				$zeroCount++;
 			}
+
+			if (empty($listEntry->weight)){
+				$nullCount++;
+			}
+
+			if(($zeroCount >= 1) || ($nullCount >= 1)) {
+				$listEntry->weight = $entryPosition;
+				$listEntry->update();
+			}
+
 			$listEntries[] = $tmpListEntry;
 		}
 		$listEntry->__destruct();
 		$listEntry = null;
 
-		if ($sort == 'title') {
-			usort($listEntries, 'compareListEntryTitles');
-		}
+		$interface->assign('listEntryCount', $entryPosition);
 
 		return [
 			'listEntries' => $listEntries,
@@ -273,6 +275,29 @@ class UserList extends DataObject
 			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 			$listEntry = new UserListEntry();
 			$listEntry->id = $listEntryToRemove;
+
+			// update weights
+			if($listEntry->find(true)){
+				$userLists = new UserListEntry();
+				$userLists->listId = $listEntry->listId;
+				$userLists->find();
+				$entries = [];
+				while ($userLists->fetch()){
+					$entries[] = clone $userLists;
+				}
+
+				$entryIndex = $listEntry->weight;
+				foreach ($entries as $entry){
+					$weight = $entry->weight;
+					if($weight > $entryIndex) {
+						$weight--;
+						$entry->weight = $weight;
+						$entry->update();
+					}
+				}
+
+			}
+
 			$listEntry->delete(true);
 		}
 
@@ -726,8 +751,4 @@ class UserList extends DataObject
 		ksort($userLists);
 		return $userLists;
 	}
-}
-
-function compareListEntryTitles($listEntry1, $listEntry2){
-	return strcasecmp($listEntry1['title'], $listEntry2['title']);
 }

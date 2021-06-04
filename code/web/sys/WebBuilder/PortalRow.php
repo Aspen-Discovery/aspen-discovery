@@ -12,7 +12,7 @@ class PortalRow extends DataObject
 
 	private $_cells;
 
-	static function getObjectStructure() {
+	static function getObjectStructure() : array {
 		$portalCellStructure = PortalCell::getObjectStructure();
 
 		return [

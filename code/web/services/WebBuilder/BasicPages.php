@@ -4,27 +4,27 @@ require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
 
 class WebBuilder_BasicPages extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'BasicPage';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'BasicPages';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Basic WebBuilder Pages';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new BasicPage();
 		$object->orderBy($this->getSort());
@@ -43,26 +43,26 @@ class WebBuilder_BasicPages extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'title asc';
 	}
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return BasicPage::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof BasicPage && !empty($existingObject->id)){
@@ -74,12 +74,12 @@ class WebBuilder_BasicPages extends ObjectEditor
 		return $objectActions;
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -88,12 +88,12 @@ class WebBuilder_BasicPages extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Basic Pages', 'Administer Library Basic Pages']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

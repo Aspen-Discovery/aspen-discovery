@@ -6,22 +6,22 @@ require_once ROOT_DIR . '/sys/Redwood/UserContribution.php';
 
 class Admin_RedwoodUserContributions extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'UserContribution';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'RedwoodUserContributions';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Submit Material to the Archive';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$list = array();
 
@@ -37,22 +37,22 @@ class Admin_RedwoodUserContributions extends ObjectEditor
 		return $list;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'dateContributed desc';
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return UserContribution::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
@@ -62,7 +62,7 @@ class Admin_RedwoodUserContributions extends ObjectEditor
 		return false;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}
@@ -72,12 +72,12 @@ class Admin_RedwoodUserContributions extends ObjectEditor
 		parent::display($mainContentTemplate, $pageTitle, '', false);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return '';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return true;
 	}

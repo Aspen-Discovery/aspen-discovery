@@ -91,7 +91,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 		return $bookCoverUrl;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'WebPage';
 	}

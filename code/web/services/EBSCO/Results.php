@@ -120,7 +120,7 @@ class EBSCO_Results extends ResultsAction {
 		$this->display($summary['resultTotal'] > 0 ? 'list.tpl' : 'list-none.tpl', $pageTitle, $sidebar, false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return parent::getResultsBreadcrumbs('Articles & Databases');
 	}

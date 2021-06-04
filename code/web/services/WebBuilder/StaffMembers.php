@@ -4,27 +4,27 @@ require_once ROOT_DIR . '/sys/WebBuilder/StaffMember.php';
 
 class WebBuilder_StaffMembers extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'StaffMember';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'StaffMembers';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Staff Members';
 	}
 
-	function getAllObjects($page, $recordsPerPage)
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new StaffMember();
 		$object->orderBy($this->getSort());
@@ -42,37 +42,37 @@ class WebBuilder_StaffMembers extends ObjectEditor
 		return $objectList;
 	}
 
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return StaffMember::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -81,12 +81,12 @@ class WebBuilder_StaffMembers extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Staff Members', 'Administer Library Staff Members']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

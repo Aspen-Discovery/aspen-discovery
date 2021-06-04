@@ -395,7 +395,7 @@ class AJAX_JSON extends Action {
 		];
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

@@ -8,7 +8,7 @@ class LibrarySideLoadScope extends DataObject
 	public $libraryId;
 	public $sideLoadScopeId;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Libraries')){

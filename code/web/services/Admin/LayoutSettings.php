@@ -7,19 +7,19 @@ require_once ROOT_DIR . '/sys/Theming/LayoutSetting.php';
 class Admin_LayoutSettings extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'LayoutSetting';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'LayoutSettings';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Layout Settings';
 	}
 	function canDelete(){
 		return UserAccount::userHasPermission('Administer All Layout Settings');
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new LayoutSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -35,26 +35,26 @@ class Admin_LayoutSettings extends ObjectEditor
 		}
 		return $list;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return LayoutSetting::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getInitializationJs()
+	function getInitializationJs() : string
 	{
 		return 'return AspenDiscovery.Admin.updateLayoutSettingsFields();';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -63,12 +63,12 @@ class Admin_LayoutSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'theme_and_layout';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Layout Settings','Administer Library Layout Settings']);
 	}

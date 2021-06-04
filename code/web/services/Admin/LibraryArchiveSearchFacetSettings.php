@@ -6,16 +6,16 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 class Admin_LibraryArchiveSearchFacetSettings extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'LibraryArchiveSearchFacetSetting';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'LibraryArchiveSearchFacetSettings';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Library Archive Search Facets';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$facetsList = array();
 		$object = new LibraryArchiveSearchFacetSetting();
 		if (isset($_REQUEST['libraryId'])){
@@ -32,20 +32,20 @@ class Admin_LibraryArchiveSearchFacetSettings extends ObjectEditor
 
 		return $facetsList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'weight asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return LibraryArchiveSearchFacetSetting::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		$objectActions = array();
 		if (isset($existingObject) && $existingObject != null){
 			$objectActions[] = array(
@@ -56,7 +56,7 @@ class Admin_LibraryArchiveSearchFacetSettings extends ObjectEditor
 		return $objectActions;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -68,12 +68,12 @@ class Admin_LibraryArchiveSearchFacetSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}

@@ -11,7 +11,7 @@ class Role extends DataObject
 	public $description;
 	private $_permissions;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$permissionsList = [];
 		return [
@@ -118,6 +118,7 @@ class Role extends DataObject
 				'Administer OverDrive',
 				'Administer Patron Types',
 				'Administer RBdigital',
+				'Administer Amazon SES',
 				'Administer SendGrid',
 				'Administer Side Loads',
 				'Administer System Variables',
@@ -138,6 +139,7 @@ class Role extends DataObject
 				'Submit Ticket',
 				'Translate Aspen',
 				'Upload Covers',
+				'Upload List Covers',
 				'Upload PDFs',
 				'Upload Supplemental Files',
 				'View Archive Authorship Claims',
@@ -212,6 +214,7 @@ class Role extends DataObject
 				'Manually Group and Ungroup Works',
 				'Set Grouped Work Display Information',
 				'Upload Covers',
+				'Upload List Covers',
 				'Upload PDFs',
 				'Upload Supplemental Files',
 				'View Dashboards',
@@ -226,6 +229,7 @@ class Role extends DataObject
 				'Force Reindexing of Records',
 				'Manually Group and Ungroup Works',
 				'Upload Covers',
+				'Upload List Covers',
 				'Upload PDFs',
 				'Upload Supplemental Files',
 				'View ILS records in native OPAC',

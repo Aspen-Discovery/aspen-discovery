@@ -14,7 +14,7 @@ class CloudLibraryScope extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
 		$cloudLibrarySettings = [];
@@ -43,7 +43,6 @@ class CloudLibraryScope extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use this scope',
-				'helpLink' => '',
 				'keyThis' => 'id',
 				'keyOther' => 'scopeId',
 				'subObjectType' => 'LibraryCloudLibraryScope',
@@ -70,7 +69,6 @@ class CloudLibraryScope extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Locations',
 				'description' => 'Define locations that use this scope',
-				'helpLink' => '',
 				'keyThis' => 'id',
 				'keyOther' => 'sideLoadScopeId',
 				'subObjectType' => 'LocationCloudLibraryScope',

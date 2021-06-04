@@ -81,7 +81,7 @@ class Archive_RelatedEntities extends Action {
 		$this->display('relatedEntities.tpl', $pageTitle, 'Search/results-sidebar.tpl');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Archive/Home', 'Local Digital Archive');

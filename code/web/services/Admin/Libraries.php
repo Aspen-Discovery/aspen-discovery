@@ -5,16 +5,16 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
 class Admin_Libraries extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Library';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Libraries';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Library Systems';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$libraryList = array();
 
 		$user = UserAccount::getLoggedInUser();
@@ -35,21 +35,21 @@ class Admin_Libraries extends ObjectEditor
 
 		return $libraryList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'subdomain asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		$objectStructure = Library::getObjectStructure();
 		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			unset($objectStructure['isDefault']);
 		}
 		return $objectStructure;
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'subdomain';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'libraryId';
 	}
 	function canAddNew(){
@@ -58,7 +58,7 @@ class Admin_Libraries extends ObjectEditor
 	function canDelete(){
 		return UserAccount::userHasPermission('Administer All Libraries');
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		return [];
 	}
 
@@ -188,15 +188,15 @@ class Admin_Libraries extends ObjectEditor
 		die();
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '/Admin/HelpManual?page=Library-Systems';
 	}
 
-	function getInitializationJs(){
+	function getInitializationJs() : string {
 		return 'return AspenDiscovery.Admin.updateMaterialsRequestFields();';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -205,12 +205,12 @@ class Admin_Libraries extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}

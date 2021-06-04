@@ -31,7 +31,7 @@ class AccountProfile extends DataObject {
 
 	private $_indexingProfile = false;
 
-	static function getObjectStructure() {
+	static function getObjectStructure() : array {
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
@@ -42,8 +42,7 @@ class AccountProfile extends DataObject {
 			'authenticationMethod' => array('property' => 'authenticationMethod', 'type' => 'enum', 'label' => 'Authentication Method', 'values' => array('ils' => 'ILS','sip2' => 'SIP 2','db' => 'Database') , 'description' => 'The method of authentication to use', 'required' => true),
 			'vendorOpacUrl' => array('property' => 'vendorOpacUrl', 'type' => 'url', 'label' => 'Vendor OPAC Url', 'maxLength' => 100, 'description' => 'A link to the url for the vendor opac', 'required' => false),
 			'patronApiUrl' => array('property' => 'patronApiUrl', 'type' => 'url', 'label' => 'Webservice/Patron API Url', 'maxLength' => 100, 'description' => 'A link to the patron api for the vendor opac if any', 'required' => false),
-			'databaseSection'=>array('property'=>'databaseSection', 'type' => 'section', 'label' =>'Database Information (optional)', 'hideInLists' => true,
-				'helpLink' => '', 'properties' => array(
+			'databaseSection'=>array('property'=>'databaseSection', 'type' => 'section', 'label' =>'Database Information (optional)', 'hideInLists' => true, 'properties' => array(
 					'databaseHost' => array('property' => 'databaseHost', 'type' => 'text', 'label' => 'Database Host', 'maxLength' => 100, 'description' => 'Optional URL where the database is located', 'required' => false),
 					'databasePort' => array('property' => 'databasePort', 'type' => 'text', 'label' => 'Database Port', 'maxLength' => 5, 'description' => 'The port to use when connecting to the database', 'required' => false),
 					'databaseName' => array('property' => 'databaseName', 'type' => 'text', 'label' => 'Database Schema Name', 'maxLength' => 50, 'description' => 'Name of the schema to connect to within the database', 'required' => false),
@@ -52,24 +51,21 @@ class AccountProfile extends DataObject {
 					'databaseTimezone' => array('property' => 'databaseTimezone', 'type' => 'text', 'label' => 'Database Timezone', 'maxLength' => 50, 'description' => 'Timezone to use when connecting', 'required' => false),
 				),
 			),
-			'sip2Section'=>array('property'=>'sip2Section', 'type' => 'section', 'label' =>'SIP 2 Information (optional)', 'hideInLists' => true,
-				'helpLink' => '', 'properties' => array(
+			'sip2Section'=>array('property'=>'sip2Section', 'type' => 'section', 'label' =>'SIP 2 Information (optional)', 'hideInLists' => true, 'properties' => array(
 					'sipHost' => array('property' => 'sipHost', 'type' => 'text', 'label' => 'SIP 2 Host', 'maxLength' => 100, 'description' => 'The host for SIP 2 connections', 'required' => false),
 					'sipPort' => array('property' => 'sipPort', 'type' => 'text', 'label' => 'SIP 2 Port', 'maxLength' => 50, 'description' => 'Port to use when connecting', 'required' => false),
 					'sipUser' => array('property' => 'sipUser', 'type' => 'text', 'label' => 'SIP 2 User', 'maxLength' => 50, 'description' => 'Username to use when connecting', 'required' => false),
 					'sipPassword' => array('property' => 'sipPassword', 'type' => 'text', 'label' => 'SIP 2 Password', 'maxLength' => 50, 'description' => 'Password to use when connecting', 'required' => false),
 				),
 			),
-			'oAuthSection'=>array('property'=>'oAuthSection', 'type' => 'section', 'label' =>'API/OAuth2 Information (optional)', 'hideInLists' => true,
-				'helpLink' => '', 'properties' => array(
+			'oAuthSection'=>array('property'=>'oAuthSection', 'type' => 'section', 'label' =>'API/OAuth2 Information (optional)', 'hideInLists' => true, 'properties' => array(
 					'oAuthClientId' => array('property' => 'oAuthClientId', 'type' => 'text', 'label' => 'API/OAuth2 ClientId', 'maxLength' => 36, 'description' => 'The Client ID to use when making a connection to APIs', 'required' => false),
 					'oAuthClientSecret' => array('property' => 'oAuthClientSecret', 'type' => 'text', 'label' => 'API/OAuth2 Secret', 'maxLength' => 36, 'description' => 'The Client Secret to use when making a connection to APIs', 'required' => false),
 					'apiVersion' => array('property'=>'apiVersion', 'type'=>'text','label'=>'API Version', 'maxLength' => 10, 'description'=>'Optional description for the version of the API. Required for Sierra.'),
-					'workstationId' => array('property'=>'workstationId', 'type'=>'text','label'=>'Workstation Id', 'maxLength' => 10, 'description'=>'Optional workstation ID for transactions. Required for Polaris.')
+					'workstationId' => array('property'=>'workstationId', 'type'=>'text','label'=>'Workstation Id (Polaris)', 'maxLength' => 10, 'description'=>'Optional workstation ID for transactions, overrides workstation ID in account profile.')
 				),
 			),
-			'staffUser'=>array('property'=>'staffUser', 'type' => 'section', 'label' =>'Staff Account Information (optional)', 'hideInLists' => true,
-				'helpLink' => '', 'properties' => array(
+			'staffUser'=>array('property'=>'staffUser', 'type' => 'section', 'label' =>'Staff Account Information (optional)', 'hideInLists' => true, 'properties' => array(
 					'domain' => array('property' => 'domain', 'type' => 'text', 'label' => 'Staff Domain', 'maxLength' => 100, 'description' => 'The domain to use when performing staff actions', 'required' => false),
 					'staffUsername' => array('property' => 'staffUsername', 'type' => 'text', 'label' => 'Staff Username', 'maxLength' => 100, 'description' => 'The Staff Username to use when performing staff actions', 'required' => false),
 					'staffPassword' => array('property' => 'staffPassword', 'type' => 'text', 'label' => 'Staff Password', 'maxLength' => 50, 'description' => 'The Staff Password to use when performing staff actions', 'required' => false),

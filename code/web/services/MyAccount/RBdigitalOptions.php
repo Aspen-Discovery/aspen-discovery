@@ -41,7 +41,7 @@ class MyAccount_RBdigitalOptions extends MyAccount
 		$this->display('rbdigitalOptions.tpl', 'RBdigital Options');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

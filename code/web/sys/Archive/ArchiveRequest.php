@@ -18,7 +18,7 @@ class ArchiveRequest extends DataObject{
 	public $pid;
 	public $dateRequested;
 
-	public static function getObjectStructure(){
+	public static function getObjectStructure() : array{
 		$structure = array(
 				array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'Name', 'maxLength' => 100, 'required' => true),
 				array('property'=>'address', 'type'=>'text', 'label'=>'Address', 'description'=>'Address', 'maxLength' => 200, 'required' => false),

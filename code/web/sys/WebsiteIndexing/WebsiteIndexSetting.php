@@ -20,12 +20,12 @@ class WebsiteIndexSetting extends DataObject
 	public $_libraries;
 	public $_locations;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['lastIndexed', 'deleted'];
 	}
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Website Indexing Settings'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer Website Indexing Settings'));

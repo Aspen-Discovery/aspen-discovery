@@ -8,12 +8,12 @@ class LocationCloudLibraryScope extends DataObject
 	public $scopeId;
 	public $locationId;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['locationId', 'scopeId'];
 	}
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
 		$cloudLibraryScope = new CloudLibraryScope();

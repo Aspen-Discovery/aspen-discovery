@@ -74,7 +74,7 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		return $this->rbdigitalIssue->imageUrl;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'RBdigitalMagazine';
 	}

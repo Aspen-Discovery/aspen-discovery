@@ -116,20 +116,20 @@ class ILS_TranslationMaps extends ObjectEditor {
 		}
 		parent::launch();
 	}
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'TranslationMap';
 	}
-    function getModule()
+    function getModule() : string
     {
         return "ILS";
     }
-	function getToolName(){
+	function getToolName() : string{
 		return 'TranslationMaps';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Translation Maps';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$list = array();
 
 		$object = new TranslationMap();
@@ -143,17 +143,17 @@ class ILS_TranslationMaps extends ObjectEditor {
 
 		return $list;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'name asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return TranslationMap::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function canAddNew(){
@@ -167,7 +167,7 @@ class ILS_TranslationMaps extends ObjectEditor {
 	 * @param TranslationMap $existingObject
 	 * @return array
 	 */
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		$actions = array();
 		if ($existingObject && $existingObject->id != ''){
 			$actions[] = array(
@@ -187,7 +187,7 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return $actions;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -199,12 +199,12 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'ils_integration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Translation Maps');
 	}

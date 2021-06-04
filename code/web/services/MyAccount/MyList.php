@@ -247,6 +247,7 @@ class MyAccount_MyList extends MyAccount {
 	}
 
 	function bulkAddTitles($list){
+		$totalRecords = $list->numValidListItems();
 		$numAdded = 0;
 		$notes = array();
 		$titlesToAdd = $_REQUEST['titlesToAdd'];
@@ -271,6 +272,15 @@ class MyAccount_MyList extends MyAccount {
 					$userListEntry->listId = $list->id;
 					$userListEntry->source = 'GroupedWork';
 					$userListEntry->sourceId = $id;
+					$userListEntry->weight = $totalRecords++;
+
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+					$groupedWork = new GroupedWork();
+					$groupedWork->permanent_id = $userListEntry->sourceId;
+					if ($groupedWork->find(true)) {
+						$userListEntry->title = substr($groupedWork->full_title, 0, 50);
+					}
+					
 					$existingEntry = false;
 					if ($userListEntry->find(true)) {
 						$existingEntry = true;
@@ -300,7 +310,7 @@ class MyAccount_MyList extends MyAccount {
 		return $notes;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

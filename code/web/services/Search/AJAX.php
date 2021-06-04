@@ -486,7 +486,7 @@ class AJAX extends Action {
 		return $response;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

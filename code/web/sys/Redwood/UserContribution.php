@@ -20,7 +20,7 @@ class UserContribution extends DataObject
     public $requireShareAlike;
     public $dateContributed;
 
-    public static function getObjectStructure(){
+    public static function getObjectStructure() : array{
         $structure = array(
             array('property'=>'title', 'type'=>'text', 'label'=>'Title', 'description'=>'Title of the file', 'maxLength' => 255, 'required' => true),
             array('property'=>'creator', 'type'=>'text', 'label'=>'Creator', 'description'=>'Creator of the file', 'maxLength' => 255),

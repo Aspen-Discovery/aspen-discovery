@@ -37,7 +37,7 @@ class LinkedAccounts extends MyAccount
 		$this->display('linkedAccounts.tpl', 'Linked Accounts');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

@@ -18,7 +18,7 @@ class OverDriveSetting extends DataObject
 
 	public $_scopes;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$overdriveScopeStructure = OverDriveScope::getObjectStructure();
 		unset($overdriveScopeStructure['settingId']);
@@ -41,7 +41,6 @@ class OverDriveSetting extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Scopes',
 				'description' => 'Define scopes for the settings',
-				'helpLink' => '',
 				'keyThis' => 'id',
 				'keyOther' => 'settingId',
 				'subObjectType' => 'OverDriveScope',

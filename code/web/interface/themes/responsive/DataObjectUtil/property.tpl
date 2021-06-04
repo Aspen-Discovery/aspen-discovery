@@ -239,7 +239,7 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if !empty($property.readOnly)}readonly{/if}> {$property.label}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}required{/if} {if !empty($property.readOnly)}readonly{/if}> {$property.label}
 				</label>
 			</div>
 

@@ -24,7 +24,7 @@ class RecordToInclude extends DataObject{
 
 	public $weight;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$indexingProfiles = array();
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 		$indexingProfile = new IndexingProfile();

@@ -211,13 +211,14 @@ class GroupedWorksSolrConnector extends Solr
 	 *
 	 * @access    public
 	 *
-	 * @param array[] $ids
+	 * @param string[] $ids
 	 * @param string $fieldsToReturn
 	 * @param int $page
 	 * @param int $limit
+	 * @param string[] $notInterestedIds - An array of ids the patron is not interested in.  Can just load the last hour or so since they are also indexed.
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $fieldsToReturn, $page = 1, $limit = 25)
+	function getMoreLikeThese($ids, $fieldsToReturn, $page = 1, $limit = 25, $notInterestedIds = [])
 	{
 		// Query String Parameters
 		$idString = '';
@@ -240,10 +241,10 @@ class GroupedWorksSolrConnector extends Solr
 			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
 			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
-//		if (count($notInterestedIds) > 0) {
-//			$notInterestedString = implode(' OR ', $notInterestedIds);
-//			$options['fq'][] = "-id:($notInterestedString)";
-//		}
+		if (count($notInterestedIds) > 0) {
+			$notInterestedString = implode(' OR ', $notInterestedIds);
+			$options['fq'][] = "-id:($notInterestedString)";
+		}
 		$options['fq'][] = "-id:($idString)";
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;

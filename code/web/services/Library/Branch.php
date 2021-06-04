@@ -96,7 +96,7 @@ class Branch extends Action{
 		$this->display('branch.tpl', $location->displayName,'Search/home-sidebar.tpl', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->activeLocation)){

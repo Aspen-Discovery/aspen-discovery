@@ -24,12 +24,12 @@ class WebResource extends DataObject
 	protected $_audiences;
 	protected $_categories;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['id', 'openInNewTab', 'featured', 'requiresLibraryCard', 'inLibraryUseOnly', 'lastUpdate'];
 	}
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Web Resources'));
 		$audiencesList = WebBuilderAudience::getAudiences();

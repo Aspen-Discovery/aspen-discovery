@@ -6,19 +6,19 @@ require_once ROOT_DIR . '/sys/Theming/Theme.php';
 
 class Admin_Themes extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Theme';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Themes';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Themes';
 	}
 	function canDelete(){
 		return UserAccount::userHasPermission('Administer All Themes');
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new Theme();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -34,26 +34,26 @@ class Admin_Themes extends ObjectEditor
 		}
 		return $list;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'themeName asc';
 	}
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return Theme::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		//return 'For more information on themes see TBD';
 		return '';
 	}
 
-	function getExistingObjectById($id){
+	function getExistingObjectById($id) : ?DataObject {
 		$existingObject = parent::getExistingObjectById($id);
 		if ($existingObject != null && $existingObject instanceof Theme){
 			$existingObject->applyDefaults();
@@ -61,7 +61,7 @@ class Admin_Themes extends ObjectEditor
 		return $existingObject;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -82,12 +82,12 @@ class Admin_Themes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'theme_and_layout';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Themes','Administer Library Themes']);
 	}

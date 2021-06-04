@@ -168,7 +168,7 @@ class Archive_Home extends Action{
 		return $relatedProjects;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Local Digital Archive');

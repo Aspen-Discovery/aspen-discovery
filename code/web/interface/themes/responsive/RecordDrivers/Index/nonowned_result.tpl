@@ -13,7 +13,7 @@
 					<span class="result-title notranslate">
 					{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 					{if $record.volume}
-						, {$record.series} {$record.volume}&nbsp;
+						, {$record.series}{if $record.volume}<strong> {translate text="volume %1%" 1=$record.volume}</strong>{/if}&nbsp;
 					{/if}
 					</span>
 				</div>

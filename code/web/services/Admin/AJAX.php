@@ -166,6 +166,14 @@ class Admin_AJAX extends JSON_Action
 		}
 		$collectionSpotlight->orderBy('name');
 		$existingCollectionSpotlights = $collectionSpotlight->fetchAll('id', 'name');
+
+		$spotlightList = new CollectionSpotlightList();
+		$spotlightList->find();
+		while ($spotlightList->fetch()){
+			$existingCollectionSpotlightLists[] = clone $spotlightList;
+		}
+
+		$interface->assign('existingCollectionSpotlightLists', $existingCollectionSpotlightLists);
 		$interface->assign('existingCollectionSpotlights', $existingCollectionSpotlights);
 		return array(
 			'title' => 'Create a Spotlight',

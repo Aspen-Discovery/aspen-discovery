@@ -11,7 +11,13 @@ class WebBuilder_WebResource extends Action{
 
 		require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
 		require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
-		$resourceDriver = new WebResourceRecordDriver('WebResource:' . $id);
+		disableErrorHandler();
+		try {
+			$resourceDriver = new WebResourceRecordDriver('WebResource:' . $id);
+		}catch (Exception $e) {
+			//Resource has not been indexed yet
+		}
+		enableErrorHandler();
 		$this->webResource = new WebResource();
 		$this->webResource->id = $id;
 		if (!$this->webResource->find(true)){
@@ -22,12 +28,14 @@ class WebBuilder_WebResource extends Action{
 		$interface->assign('description', $this->webResource->getFormattedDescription());
 		$interface->assign('title', $this->webResource->name);
 		$interface->assign('webResource', $this->webResource);
-		$interface->assign('logo', $resourceDriver->getBookcoverUrl('large'));
+		if ($resourceDriver->isValid()) {
+			$interface->assign('logo', $resourceDriver->getBookcoverUrl('large'));
+		}
 
 		$this->display('webResource.tpl', $this->webResource->name, '', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');

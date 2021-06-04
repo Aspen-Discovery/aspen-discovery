@@ -25,7 +25,7 @@ class WebBuilder_PortalPage extends Action
 		$this->display('portalPage.tpl', $this->page->title, '', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');

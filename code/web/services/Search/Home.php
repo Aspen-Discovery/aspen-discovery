@@ -67,22 +67,23 @@ class Search_Home extends Action {
 				$browseCategory         = new BrowseCategory();
 				$browseCategory->id = $localBrowseCategory->browseCategoryId;
 				$browseCategory->find(true);
+				if($browseCategory->isValidForDisplay()){
+					// Only Show the Recommended for You browse category if the user is logged in and has rated titles
+					if (($browseCategory->textId == 'system_recommended_for_you' && (!$user || !$user->hasRatings()))) {
+						unset($localBrowseCategories[$index]);
+						continue;
+					}
 
-				// Only Show the Recommended for You browse category if the user is logged in and has rated titles
-				if (($browseCategory->textId == 'system_recommended_for_you' && (!$user || !$user->hasRatings()))) {
-					unset($localBrowseCategories[$index]);
-					continue;
-				}
+					if ($browseCategory->isValidForDisplay()) {
+						$browseCategories[] = clone($browseCategory);
+					}
 
-				if($browseCategory->isValidForDisplay()) {
-					$browseCategories[] = clone($browseCategory);
-				}
-
-				if (
-					($specifiedCategory && $_REQUEST['browseCategory'] == $browseCategory->textId) // A category has been selected through URL parameter
-					|| (!$specifiedCategory && $index == $first) // Or default to selecting the first browse category
-				) {
-					$this->assignBrowseCategoryInformation($browseCategory, $specifiedSubCategory);
+					if (
+						($specifiedCategory && $_REQUEST['browseCategory'] == $browseCategory->textId) // A category has been selected through URL parameter
+						|| (!$specifiedCategory && $index == $first) // Or default to selecting the first browse category
+					) {
+						$this->assignBrowseCategoryInformation($browseCategory, $specifiedSubCategory);
+					}
 				}
 			}
 		} else { // get All BrowseCategories
@@ -145,7 +146,7 @@ class Search_Home extends Action {
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

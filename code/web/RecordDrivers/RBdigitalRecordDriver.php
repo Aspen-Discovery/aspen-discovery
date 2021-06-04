@@ -71,7 +71,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 		return null;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'RBdigital';
 	}

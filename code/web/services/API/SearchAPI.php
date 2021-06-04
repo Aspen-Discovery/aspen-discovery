@@ -781,33 +781,37 @@ class SearchAPI extends Action
 			$categoryInformation = new BrowseCategory();
 			$categoryInformation->id = $curCategory->browseCategoryId;
 
-			if ($categoryInformation->find(true)){
-				$categoryResponse = array(
-					'text_id' => $categoryInformation->textId,
-					'display_label' => $categoryInformation->label,
-					'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
-					'source' => $categoryInformation->source,
-				);
+			if ($categoryInformation->find(true)) {
+				if ($categoryInformation->isValidForDisplay()){
+					$categoryResponse = array(
+						'text_id' => $categoryInformation->textId,
+						'display_label' => $categoryInformation->label,
+						'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
+						'source' => $categoryInformation->source,
+					);
 
-				if ($includeSubCategories){
-					$subCategories = $categoryInformation->getSubCategories();
-					$categoryResponse['subCategories'] = [];
-					if (count($subCategories) > 0){
-						foreach ($subCategories as $subCategory){
-							$temp = new BrowseCategory();
-							$temp->id = $subCategory->subCategoryId;
-							if ($temp->find(true)) {
-								$categoryResponse['subCategories'][] = [
-									'text_id' => $temp->textId,
-									'display_label' => $temp->label,
-									'link' => $configArray['Site']['url'] . '?browseCategory=' . $temp->textId . '&subCategory=' . $temp->textId,
-									'source' => $temp->source,
-								];
+					if ($includeSubCategories) {
+						$subCategories = $categoryInformation->getSubCategories();
+						$categoryResponse['subCategories'] = [];
+						if (count($subCategories) > 0) {
+							foreach ($subCategories as $subCategory) {
+								$temp = new BrowseCategory();
+								$temp->id = $subCategory->subCategoryId;
+								if ($temp->find(true)) {
+									if ($temp->isValidForDisplay()) {
+										$categoryResponse['subCategories'][] = [
+											'text_id' => $temp->textId,
+											'display_label' => $temp->label,
+											'link' => $configArray['Site']['url'] . '?browseCategory=' . $temp->textId . '&subCategory=' . $temp->textId,
+											'source' => $temp->source,
+										];
+									}
+								}
 							}
 						}
 					}
+					$formattedCategories[] = $categoryResponse;
 				}
-				$formattedCategories[] = $categoryResponse;
 			}
 		}
 		return $formattedCategories;
@@ -825,7 +829,9 @@ class SearchAPI extends Action
 					$temp = new BrowseCategory();
 					$temp->id = $subCategory->subCategoryId;
 					if ($temp->find(true)) {
-						$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
+						if ($temp->isValidForDisplay()) {
+							$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
+						}
 					}else{
 						global $logger;
 						$logger->log("Did not find subcategory with id {$subCategory->subCategoryId}", Logger::LOG_WARNING);
@@ -922,7 +928,7 @@ class SearchAPI extends Action
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 		$browseCategory = new BrowseCategory();
 		$browseCategory->textId = $textId;
-		if ($browseCategory->find(true)) {
+		if ($browseCategory->find(true) && $browseCategory->isValidForDisplay()) {
 			return $browseCategory;
 		}else{
 			return null;
@@ -1000,7 +1006,7 @@ class SearchAPI extends Action
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

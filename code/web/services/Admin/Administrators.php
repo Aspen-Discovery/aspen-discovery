@@ -5,18 +5,18 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
 class Admin_Administrators extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'User';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Administrators';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Administrators';
 	}
 
 	//TODO: This currently does not respect loading by page or filtering
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 		$userRole = new UserRoles();
 		$userRole->find();
@@ -52,22 +52,22 @@ class Admin_Administrators extends ObjectEditor
 
 		return $adminList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'id';
 	}
-	function canSort()
+	function canSort() : bool
 	{
 		return false;
 	}
 
-	function getObjectStructure(){
+	function getObjectStructure() : array {
 		return User::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'cat_password';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function canAddNew(){
@@ -134,11 +134,11 @@ class Admin_Administrators extends ObjectEditor
 		}
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -147,12 +147,12 @@ class Admin_Administrators extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_admin';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Users');
 	}

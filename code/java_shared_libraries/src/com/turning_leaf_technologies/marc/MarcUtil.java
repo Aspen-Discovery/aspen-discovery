@@ -536,7 +536,7 @@ public class MarcUtil {
 			}
 			marcFileStream.close();
 		}catch (FileNotFoundException fne){
-			logEntry.incErrors("Could not find marcFile " + marcFile.getAbsolutePath());
+			logEntry.addNote("Could not find marcFile " + marcFile.getAbsolutePath());
 			return null;
 		}catch (Exception e){
 			//This happens if the file has too many items. Ignore and read with permissive handler.

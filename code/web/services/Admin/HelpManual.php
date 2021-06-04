@@ -35,7 +35,7 @@ class Admin_HelpManual extends Action
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
@@ -46,12 +46,12 @@ class Admin_HelpManual extends Action
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'aspen_help';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return true;
 	}

@@ -17,7 +17,7 @@ class RBdigitalMagazine_AJAX extends Action
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

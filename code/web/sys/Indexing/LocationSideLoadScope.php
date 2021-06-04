@@ -8,7 +8,7 @@ class LocationSideLoadScope extends DataObject
 	public $locationId;
 	public $sideLoadScopeId;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$sideLoadScopes = array();
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadScope.php';
 		$sideLoadScope = new SideLoadScope();

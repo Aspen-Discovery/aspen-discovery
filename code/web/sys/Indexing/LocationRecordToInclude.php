@@ -5,7 +5,7 @@ class LocationRecordToInclude extends RecordToInclude{
 	public $__table = 'location_records_to_include';    // table name
 	public $locationId;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$location = new Location();
 		$location->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Locations')){

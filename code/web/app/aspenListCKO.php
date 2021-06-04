@@ -1,8 +1,9 @@
 <?php
 # ****************************************************************************************************************************
-# * Last Edit: April 8, 2021
+# * Last Edit: May 3, 2021
 # * - list the checkouts for the user
 # *
+# * 05-03-21: altered how the location information is pulled - CZ
 # * 04-08-21: base version - CZ
 # ****************************************************************************************************************************
 
@@ -14,8 +15,10 @@ include_once 'config.php';
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$library = $_GET['library'];
-$urlPath = urlPath($library);
+$library      = $_GET['library'];
+$locationInfo = urlPath($library);
+$urlPath      = $locationInfo[0];
+$shortname    = $locationInfo[1];
 
 # ****************************************************************************************************************************
 # * Prep the patron information for checking - dummy out something just in case

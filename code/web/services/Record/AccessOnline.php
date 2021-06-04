@@ -92,7 +92,7 @@ class Record_AccessOnline extends Action
 		}
 	}
 
-	public function getBreadcrumbs()
+	public function getBreadcrumbs() : array
 	{
 		return [];
 	}

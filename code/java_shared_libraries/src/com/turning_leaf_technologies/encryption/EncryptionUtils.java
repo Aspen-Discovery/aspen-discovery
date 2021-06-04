@@ -45,7 +45,7 @@ public class EncryptionUtils {
 		if (key == null){
 			return stringToDecrypt;
 		}else{
-			if (stringToDecrypt.length() > 4 && stringToDecrypt.startsWith("AEF~")){
+			if (stringToDecrypt != null && stringToDecrypt.length() > 4 && stringToDecrypt.startsWith("AEF~")){
 				InputStream cipherInputStream = null;
 				try {
 					Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");

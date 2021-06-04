@@ -242,7 +242,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 	}
 
 
-	public function getModule() {
+	public function getModule() : string {
 		return 'Archive';
 	}
 

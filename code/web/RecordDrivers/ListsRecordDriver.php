@@ -161,7 +161,7 @@ class ListsRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/List/listEntry.tpl';
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'MyAccount/MyList';
 	}

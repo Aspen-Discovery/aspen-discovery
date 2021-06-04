@@ -30,7 +30,7 @@ class Hold extends CircEntry
 	//Try to get rid of
 	public $_freezeError;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['userId', 'available', 'cancelable', 'locationUpdateable', 'position', 'holdQueueLength', 'createDate', 'availableDate', 'expirationDate', 'automaticCancellationDate', 'frozen', 'canFreeze', 'reactivateDate'];
 	}

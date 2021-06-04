@@ -10,7 +10,7 @@ class HostInformation extends DataObject
 	public $locationId;
 	public $defaultPath;
 
-	public static function getObjectStructure(){
+	public static function getObjectStructure() : array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Host Information'));
 		$locationList = [-1, 'Default, no location specified'];
 		$locationList = array_merge($locationList, Location::getLocationList(!UserAccount::userHasPermission('Administer Host Information')));

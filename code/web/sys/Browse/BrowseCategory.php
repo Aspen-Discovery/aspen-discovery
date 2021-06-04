@@ -24,7 +24,7 @@ class BrowseCategory extends BaseBrowsable
 
 	private $_subBrowseCategories;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['id', 'sourceListId', 'userId'];
 	}
@@ -149,7 +149,7 @@ class BrowseCategory extends BaseBrowsable
 		}
 	}
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		// Get All User Lists
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';

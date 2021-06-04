@@ -97,7 +97,7 @@ class GroupedWorkDisplaySetting extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Grouped Work Display Settings'));
 
@@ -144,8 +144,7 @@ class GroupedWorkDisplaySetting extends DataObject
 			],
 
 			// Catalog Enrichment //
-			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'renderAsHeading' => true, 'hideInLists' => true,
-				'helpLink' => '', 'properties' => [
+			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'renderAsHeading' => true, 'hideInLists' => true, 'properties' => [
 					'showStandardReviews'      => array('property'=>'showStandardReviews', 'type'=>'checkbox', 'label'=>'Show Standard Reviews', 'description'=>'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.', 'hideInLists' => true, 'default' => 1),
 					'showGoodReadsReviews'     => array('property'=>'showGoodReadsReviews', 'type'=>'checkbox', 'label'=>'Show GoodReads Reviews', 'description'=>'Whether or not reviews from GoodReads are displayed on the full record page.', 'hideInLists' => true, 'default'=>true),
 					'preferSyndeticsSummary'   => array('property'=>'preferSyndeticsSummary', 'type'=>'checkbox', 'label'=>'Prefer Syndetics/Content Cafe Description', 'description'=>'Whether or not the Description loaded from an enrichment service should be preferred over the Description in the Marc Record.', 'hideInLists' => true, 'default' => 1),
@@ -230,7 +229,7 @@ class GroupedWorkDisplaySetting extends DataObject
 	 *
 	 * @see DB/DB_DataObject::fetch()
 	 */
-	public function fetch(){
+	public function fetch() {
 		$return = parent::fetch();
 		if ($return) {
 			if (isset($this->showInSearchResultsMainDetails) && is_string($this->showInSearchResultsMainDetails) && !empty($this->showInSearchResultsMainDetails)) {

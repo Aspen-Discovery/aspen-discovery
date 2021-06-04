@@ -46,7 +46,7 @@ class MaterialsRequestFormFields extends DataObject
 	);
 
 
-	static function getObjectStructure() {
+	static function getObjectStructure() : array {
 		$structure = array(
 			'id'            => array('property' => 'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 //			'libraryId'     => array(), // hidden value or internally updated.

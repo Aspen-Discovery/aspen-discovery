@@ -60,7 +60,7 @@ class WebBuilder_DownloadPDF extends Action{
 
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

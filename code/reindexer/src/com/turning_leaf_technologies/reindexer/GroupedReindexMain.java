@@ -220,7 +220,7 @@ public class GroupedReindexMain {
 				long lastFetched = arSettingsRS.getLong("lastFetched");
 				//Update if we have never updated or if we last updated more than a week ago
 				//If we are updating, update the settings table right away so multiple processors don't update at the same time
-				if (lastFetched < ((new java.util.Date().getTime() / 1000) - (7 * 24 * 60 * 60))){
+				if (lastFetched < ((new java.util.Date().getTime() / 1000) - (7 * 23 * 60 * 60))){
 					logEntry.addNote("Updating Accelerated Reader Data");
 					logEntry.saveResults();
 

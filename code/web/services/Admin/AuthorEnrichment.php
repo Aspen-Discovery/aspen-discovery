@@ -6,16 +6,16 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
 class Admin_AuthorEnrichment extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'AuthorEnrichment';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'AuthorEnrichment';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Author Enrichment';
 	}
-	function getAllObjects($page, $recordsPerPage){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new AuthorEnrichment();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
@@ -27,25 +27,25 @@ class Admin_AuthorEnrichment extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getDefaultSort()
+	function getDefaultSort() : string
 	{
 		return 'authorName asc';
 	}
 
-	function getObjectStructure(){
+	function getObjectStructure() : array{
 		return AuthorEnrichment::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getInstructions(){
+	function getInstructions() : string{
 		return '/Admin/HelpManual?page=Wikipedia';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -54,12 +54,12 @@ class Admin_AuthorEnrichment extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'third_party_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Wikipedia Integration');
 	}

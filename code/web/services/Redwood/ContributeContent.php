@@ -89,7 +89,7 @@ class Redwood_ContributeContent extends Action{
 		return $newObject;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}
