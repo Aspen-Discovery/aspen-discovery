@@ -156,7 +156,9 @@
 							</div>
 						</li>
 					{else}
+						{if $showLoginButton}
 						<li><a href="/MyAccount/Home" onclick="{if !empty($isLoginPage)}$('#username').focus();return false{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}">{translate text="Sign In"}</a></li>
+						{/if}
 					{/if}
 				</ul>
 			</div>
