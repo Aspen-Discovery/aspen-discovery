@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { ActivityIndicator, Alert, FlatList, Image, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import ModalSelector from 'react-native-modal-selector';
+import ModalSelector from 'react-native-modal-selector-searchable';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Avatar, ListItem } from "react-native-elements"
 import ViewMoreText from 'react-native-view-more-text';

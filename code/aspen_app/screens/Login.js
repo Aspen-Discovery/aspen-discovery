@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ModalSelector from 'react-native-modal-selector';
+import ModalSelector from 'react-native-modal-selector-searchable';
 import Stylesheet from './Stylesheet';
 
 export default class Login extends Component {
@@ -31,14 +31,22 @@ export default class Login extends Component {
     const data = [
       { key: 0, section: true, label: 'Select your Library' },
       { key: 'https://aspen-test.bywatersolutions.com|test', label: 'ByWater Test' },
-      { key: 'https://libcat.arlingtonva.us|arlingtonva', label: 'Arlington Public Library, Virginia' }
+      { key: 'https://discover.ajaxlibrary.ca|main', label: 'AJAX Public Library, Ontario' },
+      { key: 'https://libcat.arlingtonva.us|arlington', label: 'Arlington Public Library, Virginia' },
+      { key: 'https://catalog.duchesnecountylibrary.org|duchesne', label: 'Duchesne County Library, Utah' },
+      { key: 'https://catalog.jcls.org|jacksoncounty', label: 'Jackson County, Oregon' },
+      { key: 'https://catalog.library.nashville.org|nashville', label: 'Nashville Public Library, Tennessee' },
+      { key: 'https://discover.salinapubliclibrary.org|salinaks', label: 'Salina Public Library, Kansas' },
+      { key: 'https://catalog.uintahlibrary.org|uintah', label: 'Uintah County Library, Utah' },
+      { key: 'https://catalog.wasatchlibrary.org|wasatch', label: 'Wasatch County Library, Utah' },
     ];
 
     return (
       <View>
+        <Text>This is the login screen</Text>
         <ModalSelector
           data = {data}
-          initValue = "Select your Public Library"
+          initValue = "Select your Library"
           supportedOrientations = {['landscape']}
           animationType = 'fade'
           accessible = {true}
@@ -48,7 +56,7 @@ export default class Login extends Component {
           <TextInput
             style={ Stylesheet.modalSelector }
             editable = {false}
-            placeholder = "Select your Public Library"
+            placeholder = "Select your Library"
             value = {this.state.pickUpLabel} />
         </ModalSelector>
       </View>

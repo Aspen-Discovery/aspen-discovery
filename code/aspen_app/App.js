@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAppContainer, createSwitchNavigator } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
@@ -176,7 +176,10 @@ class AuthLoadingScreen extends Component {
   render() {
     return(
       <View style={ Stylesheet.activityIndicator }>
-        <ActivityIndicator size='large' color='#2F373A' />
+        <>
+          <Text>Setting up the auth screen</Text>
+            <ActivityIndicator size='large' color='#2F373A' />
+        </>
       </View>
     )
   }
@@ -194,6 +197,6 @@ export default createAppContainer(createSwitchNavigator(
     Auth: LoginNavigator,
   },
   {
-    initialRouteName: 'App',
+    initialRouteName: 'AuthLoading',
   }
 ));

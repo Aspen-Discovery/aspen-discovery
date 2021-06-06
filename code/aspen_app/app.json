@@ -1,13 +1,14 @@
 {
   "expo": {
-    "name": "Aspen Mobile App",
-    "slug": "APL",
+    "name": "Aspen Discovery Mobile App",
+    "slug": "aspen_discovery_mobile",
     "privacy": "public",
     "platforms": [
       "ios",
-      "android"
+      "android",
+      "web"
     ],
-    "version": "1.5.0",
+    "version": "21.08.0",
     "orientation": "portrait",
     "icon": "./assets/aspenNoTransparency.png",
     "splash": {
@@ -22,15 +23,20 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "org.aspendiscovery.mobile",
       "supportsTablet": true,
-      "bundleIdentifier": "ca.ajaxlibrary.aplApp",
       "icon": "./assets/aspenLogo.png"
     },
     "android": {
-      "package": "ca.ajaxlibrary.aplApp",
-      "versionCode": 8,
-      "permissions": [],
+      "package": "org.aspendiscovery.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/aspenLogo.png",
+        "backgroundColor": "#FFFFFF"
+      },
       "icon": "./assets/aspenLogo.png"
+    },
+    "web": {
+      "favicon": "./assets/aspenLogo.png"
     }
   }
 }

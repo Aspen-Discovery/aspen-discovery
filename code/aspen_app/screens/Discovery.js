@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ActivityIndicator, FlatList, Image, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Text, TouchableWithoutFeedback, View } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Chevron } from 'react-native-shapes';
@@ -113,8 +113,12 @@ export default class Discovery extends Component {
   render() {
     if (this.state.isLoading) {
       return (
+
         <View style={ Stylesheet.activityIndicator }>
-          <ActivityIndicator size='large' color='#272362' />
+          <>
+            <Text>Loading titles</Text>
+            <ActivityIndicator size='large' color='#272362' />
+          </>
         </View>
       );
     }
