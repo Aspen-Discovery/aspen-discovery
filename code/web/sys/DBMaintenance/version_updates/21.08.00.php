@@ -1,6 +1,6 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates21_07_00() : array
+function getUpdates21_08_00() : array
 {
 	return [
 		
