@@ -8,7 +8,7 @@ function getUpdates21_08_00() : array
 			'description' => 'Fix library archive permission',
 			'continueOnError' => true,
 			'sql' => [
-				"ALTER TABLE permissions set name = 'Library Archive Options' where name = 'Library Open Archive Options'",
+				"UPDATE permissions set name = 'Library Archive Options' where name = 'Library Open Archive Options'",
 			]
 		], //upload_list_cover_permissions
 	];
