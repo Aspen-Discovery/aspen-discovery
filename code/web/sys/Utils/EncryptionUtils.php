@@ -56,7 +56,7 @@ class EncryptionUtils
 				$passkeyFile = ROOT_DIR . "/../../sites/$serverName/conf/passkey";
 				if (file_exists($passkeyFile)) {
 					$passkeyFhnd = fopen($passkeyFile, 'r');
-					$key = fgets($passkeyFhnd);
+					$key = trim(fgets($passkeyFhnd));
 					fclose($passkeyFhnd);
 					if ($key != false) {
 						$memCache->set('encryption_key_' . $serverName, $key, 86400);
