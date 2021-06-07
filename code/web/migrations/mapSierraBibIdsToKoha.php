@@ -17,7 +17,7 @@ if (!file_exists($exportPath)){
 }else{
 	$bibMap = $exportPath . 'bib_map.csv';
 	if (!file_exists($bibMap)){
-		echo("Could not find patron id map " . $bibMap);
+		echo("Could not find bib id map " . $bibMap);
 	}else{
 		//Set the username field for all rows to old- value
 		global $aspen_db;
