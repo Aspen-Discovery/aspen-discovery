@@ -358,8 +358,8 @@ class UserAPI extends Action
 			$accountSummary = $catalogConnection->getAccountSummary($user);
 			$userData->numCheckedOutIls = (int)$accountSummary->numCheckedOut;
 			$userData->numHoldsIls =(int) $accountSummary->getNumHolds();
-			$userData->numHoldsAvailableIls = ($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
-			$userData->numHoldsRequestedIls = ($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
+			$userData->numHoldsAvailableIls = (int) ($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
+			$userData->numHoldsRequestedIls = (int) ($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
 			$userData->finesVal = (float)$accountSummary->totalFines;
 			global $activeLanguage;
 			$currencyCode = 'USD';
