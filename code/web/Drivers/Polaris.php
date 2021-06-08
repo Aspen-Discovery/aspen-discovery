@@ -45,8 +45,8 @@ class Polaris extends AbstractIlsDriver
 			//TODO: Account for electronic items
 			$summary->numCheckedOut = $basicDataResponse->ItemsOutCount;
 			$summary->numOverdue = $basicDataResponse->ItemsOverdueCount;
-			$summary->numAvailableHolds = $basicDataResponse->HoldRequestsCurrentCount + $basicDataResponse->HoldRequestsShippedCount;
-			$summary->numUnavailableHolds = $basicDataResponse->HoldRequestsHeldCount;
+			$summary->numAvailableHolds =  $basicDataResponse->HoldRequestsHeldCount;
+			$summary->numUnavailableHolds = $basicDataResponse->HoldRequestsCurrentCount + $basicDataResponse->HoldRequestsShippedCount;
 			$summary->totalFines = $basicDataResponse->ChargeBalance;
 
 			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/circulationblocks";
