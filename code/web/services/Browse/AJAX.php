@@ -54,7 +54,12 @@ class Browse_AJAX extends Action {
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$libraryId = $library == null ? -1 : $library->libraryId;
 			$browseCategories->whereAdd("sharing = 'everyone'");
-			$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			if ($libraryId == -1) {
+				//For Aspen admin, show all categories
+				$browseCategories->whereAdd("sharing = 'library'", 'OR');
+			}else{
+				$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			}
 			$browseCategories->find();
 			$browseCategoryList = [];
 			while ($browseCategories->fetch()){
@@ -156,8 +161,8 @@ class Browse_AJAX extends Action {
 		global $library;
 		global $locationSingleton;
 		$searchLocation = $locationSingleton->getSearchLocation();
-		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-		$libraryId = $library == null ? -1 : $library->libraryId;
+		$patronHomeLibrary = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+		$libraryId = $patronHomeLibrary == null ? -1 : $patronHomeLibrary->libraryId;
 		$categoryName = isset($_REQUEST['categoryName']) ? $_REQUEST['categoryName'] : '';
 		// value of zero means nothing was selected.
 		$addAsSubCategoryOf = isset($_REQUEST['addAsSubCategoryOf']) && !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;
@@ -184,8 +189,8 @@ class Browse_AJAX extends Action {
 		if (!$textIdPrefixed){
 			if ($searchLocation) {
 				$textId = $searchLocation->code . '_' . $textId;
-			} elseif ($library) {
-				$textId = $library->subdomain . '_' . $textId;
+			} elseif ($patronHomeLibrary) {
+				$textId = $patronHomeLibrary->subdomain . '_' . $textId;
 			}
 		}
 
@@ -227,7 +232,11 @@ class Browse_AJAX extends Action {
 
 			$browseCategory->label = $categoryName;
 			$browseCategory->userId = UserAccount::getActiveUserId();
-			$browseCategory->sharing = 'library';
+			if ($patronHomeLibrary == null) {
+				$browseCategory->sharing = 'everyone';
+			}else{
+				$browseCategory->sharing = 'library';
+			}
 			$browseCategory->libraryId = $libraryId;
 			$browseCategory->description = '';
 
@@ -254,6 +263,7 @@ class Browse_AJAX extends Action {
 			if ($searchLocation != null){
 				$activeBrowseCategoryGroup = $searchLocation->getBrowseCategoryGroup();
 			}else{
+				//Always add to the active location
 				$activeBrowseCategoryGroup = $library->getBrowseCategoryGroup();
 			}
 
