@@ -26,7 +26,7 @@ public class EncryptionUtils {
 					BufferedReader reader = new BufferedReader(new FileReader(passKeyFile));
 					String key = reader.readLine().trim();
 					String[] keyParts = key.split(":");
-					encryptionKey.put(serverName, new EncryptionKey(keyParts[0], keyParts[1], logEntry));
+					encryptionKey.put(serverName, new EncryptionKey(keyParts[0].trim(), keyParts[1].trim(), logEntry));
 					reader.close();
 				} catch (IOException e) {
 					logEntry.incErrors("Could not read encryption key", e);
