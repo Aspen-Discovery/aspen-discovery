@@ -24,7 +24,7 @@ public class EncryptionUtils {
 			if (passKeyFile.exists()){
 				try {
 					BufferedReader reader = new BufferedReader(new FileReader(passKeyFile));
-					String key = reader.readLine();
+					String key = reader.readLine().trim();
 					String[] keyParts = key.split(":");
 					encryptionKey.put(serverName, new EncryptionKey(keyParts[0], keyParts[1], logEntry));
 					reader.close();
