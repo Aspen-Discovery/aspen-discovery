@@ -31,6 +31,9 @@ apachectl restart
 cd /usr/local/aspen-discovery/data_dir_setup
 /usr/local/aspen-discovery/data_dir_setup/update_solr_files.sh $1
 
+cd /usr/local/aspen-discovery
+git gc
+
 service crond start
 
 echo "Upgrade completed."
