@@ -7,6 +7,8 @@ class Translation_ImportTranslations extends Admin_Admin
 	function launch(){
 		global $interface;
 		if (isset($_REQUEST['submit'])){
+			//Make sure we don't time out while loading translations
+			set_time_limit(-1);
 			$overrideExistingTranslations = isset($_REQUEST['overwriteExisting']);
 
 			$languagesToImport = [];
