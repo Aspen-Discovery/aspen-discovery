@@ -62,6 +62,9 @@ class GroupedWorkDisplaySetting extends DataObject
 	public $showOtherSubjects;
 	public $showInMainDetails;
 
+	//Item details
+	public $showItemDueDates;
+
 	private $_moreDetailsOptions;
 
 	// Use this to set which details will be shown in the the Main Details section of the record in the search results.
@@ -160,14 +163,14 @@ class GroupedWorkDisplaySetting extends DataObject
 			// Full Record Display //
 			'fullRecordSection' => array('property'=>'fullRecordSection', 'type' => 'section', 'label' =>'Full Record Display', 'renderAsHeading' => true, 'hideInLists' => true,
 				'helpLink'=>'', 'properties' => array(
-					'show856LinksAsTab'        => array('property'=>'show856LinksAsTab',        'type'=>'checkbox', 'label'=>'Show 856 Links in their own section',             'description'=>'Whether or not 856 links will be shown in their own tab or on the same tab as holdings.', 'hideInLists' => true, 'default' => 1),
-					'showCheckInGrid'          => array('property'=>'showCheckInGrid',          'type'=>'checkbox', 'label'=>'Show Check-in Grid',                'description'=>'Whether or not the check-in grid is shown for periodicals.', 'default' => 1, 'hideInLists' => true,),
-					'showStaffView'            => array('property'=>'showStaffView',            'type'=>'checkbox', 'label'=>'Show Staff View',                   'description'=>'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default'=>true),
-					'showLCSubjects'           => array('property'=>'showLCSubjects',           'type'=>'checkbox', 'label'=>'Show Library of Congress Subjects', 'description'=>'Whether or not standard (LC) subjects are displayed in full record view.', 'hideInLists' => true, 'default'=>true),
-					'showBisacSubjects'        => array('property'=>'showBisacSubjects',        'type'=>'checkbox', 'label'=>'Show Bisac Subjects',               'description'=>'Whether or not Bisac subjects are displayed in full record view.', 'hideInLists' => true, 'default'=>true),
-					'showFastAddSubjects'      => array('property'=>'showFastAddSubjects',      'type'=>'checkbox', 'label'=>'Show OCLC Fast Subjects',           'description'=>'Whether or not OCLC Fast Add subjects are displayed in full record view.', 'hideInLists' => true, 'default'=>true),
-					'showOtherSubjects'        => array('property'=>'showOtherSubjects',        'type'=>'checkbox', 'label'=>'Show Other Subjects',               'description'=>'Whether or other subjects from the MARC are displayed in full record view.', 'hideInLists' => true, 'default'=>true),
-
+					'show856LinksAsTab' => array('property'=>'show856LinksAsTab', 'type'=>'checkbox', 'label'=>'Show 856 Links in their own section', 'description'=>'Whether or not 856 links will be shown in their own tab or on the same tab as holdings.', 'hideInLists' => true, 'default' => 1),
+					'showCheckInGrid' => array('property'=>'showCheckInGrid', 'type'=>'checkbox', 'label'=>'Show Check-in Grid', 'description'=>'Whether or not the check-in grid is shown for periodicals.', 'default' => 1, 'hideInLists' => true,),
+					'showStaffView' => array('property'=>'showStaffView', 'type'=>'checkbox', 'label'=>'Show Staff View', 'description'=>'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default'=>true),
+					'showLCSubjects' => array('property'=>'showLCSubjects', 'type'=>'checkbox', 'label'=>'Show Library of Congress Subjects', 'description'=>'Whether or not standard (LC) subjects are displayed in full record view.', 'hideInLists' => true, 'default'=>true),
+					'showBisacSubjects' => array('property'=>'showBisacSubjects', 'type'=>'checkbox', 'label'=>'Show Bisac Subjects', 'description'=>'Whether or not Bisac subjects are displayed in full record view.', 'hideInLists' => true, 'default'=>true),
+					'showFastAddSubjects' => array('property'=>'showFastAddSubjects', 'type'=>'checkbox', 'label'=>'Show OCLC Fast Subjects', 'description'=>'Whether or not OCLC Fast Add subjects are displayed in full record view.', 'hideInLists' => true, 'default'=>true),
+					'showOtherSubjects' => array('property'=>'showOtherSubjects', 'type'=>'checkbox', 'label'=>'Show Other Subjects', 'description'=>'Whether or not other subjects from the MARC are displayed in full record view.', 'hideInLists' => true, 'default'=>true),
+					'showItemDueDates' => array('property'=>'showItemDueDates', 'type'=>'checkbox', 'label'=>'Show Item Due Dates', 'description'=>'Whether or not due dates for items are shown within the copy details.', 'hideInLists' => true, 'default'=>true),
 					'showInMainDetails' => array('property' => 'showInMainDetails', 'type' => 'multiSelect', 'label'=>'Which details to show in the main/top details section : ', 'description'=> 'Selected details will be shown in the top/main section of the full record view. Details not selected are moved to the More Details accordion.',
 						'listStyle' => 'checkboxSimple',
 						'values' => self::$showInMainDetailsOptions,

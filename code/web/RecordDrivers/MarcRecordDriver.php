@@ -1258,6 +1258,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$links = $this->getLinks();
 		$interface->assign('links', $links);
 		$interface->assign('show856LinksAsTab', $library->getGroupedWorkDisplaySettings()->show856LinksAsTab);
+		$interface->assign('showItemDueDates', $library->getGroupedWorkDisplaySettings()->showItemDueDates);
 
 		if ($library->getGroupedWorkDisplaySettings()->show856LinksAsTab && count($links) > 0) {
 			$moreDetailsOptions['links'] = array(
