@@ -461,6 +461,13 @@ class Library extends DataObject
 			"MSI" => "MSI",
 		];
 
+		$validSelfRegistrationOptions = [0 => 'No Self Registration', 1 => 'ILS Based Self Registration', 2 => 'Redirect to Self Registration URL'];
+		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+		$quipuECardSettings = new QuipuECardSetting();
+		if ($quipuECardSettings->find(true)){
+			$validSelfRegistrationOptions[3] = 'Quipu eCARD';
+		}
+
 		/** @noinspection HtmlRequiredAltAttribute */
 		/** @noinspection RequiredAttributes */
 		$structure = array(
@@ -573,7 +580,7 @@ class Library extends DataObject
 					'showDebarmentNotes' => array('property'=>'showDebarmentNotes', 'type'=>'checkbox', 'label'=>'Show Debarment Notes', 'description'=>'Whether or not Debarment Messages from the ILS should be shown', 'hideInLists' => true, 'default' => 0),
 				)),
 				'selfRegistrationSection' => array('property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true, 'permissions' => ['Library Self Registration'], 'properties' => array(
-					'enableSelfRegistration' => array('property'=>'enableSelfRegistration', 'type'=>'enum', 'values' => [0 => 'No Self Registration', 1 => 'ILS Based Self Registration', 2 => 'Redirect to Self Registration URL'], 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
+					'enableSelfRegistration' => array('property'=>'enableSelfRegistration', 'type'=>'enum', 'values' => $validSelfRegistrationOptions, 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
 					'selfRegistrationLocationRestrictions' => ['property' => 'selfRegistrationLocationRestrictions', 'type' => 'enum', 'values' => [0 => 'No Restrictions', 1 => 'All Library Locations', 2 => 'All Hold Pickup Locations', 3 => 'Pickup Locations for the library'], 'label' => 'Valid Registration Locations', 'description' => 'Indicates which locations are valid pickup locations', 'hideInLists' => true],
 					'selfRegistrationPasswordNotes' => array('property'=>'selfRegistrationPasswordNotes', 'type'=>'text', 'label'=>'Self Registration Password Notes', 'description'=>'Notes to be displayed when setting the password for self registration', 'hideInLists' => true, 'default' => ''),
 					'promptForBirthDateInSelfReg' => array('property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description'=>'Whether or not to prompt for birth date when self registering'),
