@@ -12,6 +12,7 @@ export default class Discovery extends Component {
       browseCat: {},
       data: {},
       isLoading: true,
+      hasError: false,
       limiter: '',
     };
   }
@@ -42,6 +43,11 @@ export default class Discovery extends Component {
       })
       .catch(error => {
         console.log("get data error from:" + url + " error:" + error);
+        this.setState({
+          error: "get data error from:" + url + " error:" + error,
+          isLoading: false,
+          hasError: true
+        });
       });
   }
 
@@ -66,6 +72,11 @@ export default class Discovery extends Component {
       })
       .catch(error => {
         console.log("get data error from:" + url + " error:" + error);
+        this.setState({
+          error: "get data error from:" + url + " error:" + error,
+          isLoading: false,
+          hasError: true
+        });
       });
   }
 
@@ -116,9 +127,15 @@ export default class Discovery extends Component {
 
         <View style={ Stylesheet.activityIndicator }>
           <>
-            <Text>Loading titles</Text>
+            <Text>Loading titles for {this.state.limiter} category from {this.state.pathLibrary}.</Text>
             <ActivityIndicator size='large' color='#272362' />
           </>
+        </View>
+      );
+    }else if (this.state.hasError) {
+      return (
+        <View>
+          <Text>{this.state.error}.</Text>
         </View>
       );
     }
