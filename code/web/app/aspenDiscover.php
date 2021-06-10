@@ -100,4 +100,3 @@ foreach($jsonData['result']['records'] as $item) {
 # ****************************************************************************************************************************
 header('Content-Type: application/json');
 echo json_encode($searchResults);
-?>
