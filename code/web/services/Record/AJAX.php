@@ -979,14 +979,19 @@ class Record_AJAX extends Action
 		global $indexingProfiles;
 		$indexingProfile = $indexingProfiles[$relatedRecord->source];
 		$formatMap = $indexingProfile->formatMap;
+		$formatFound = false;
 		/** @var FormatMapValue $formatMapValue */
 		foreach ($formatMap as $formatMapValue) {
 			if (strcasecmp($formatMapValue->format, $format) === 0) {
+				$formatFound = true;
 				if (!$formatMapValue->mustPickupAtHoldingBranch){
 					$mustPickupAtHoldingBranch = false;
 					break;
 				}
 			}
+		}
+		if (!$formatFound){
+			$mustPickupAtHoldingBranch = false;
 		}
 
 		//If we have to pickup at the holding branch, filter the list of available pickup locations to
