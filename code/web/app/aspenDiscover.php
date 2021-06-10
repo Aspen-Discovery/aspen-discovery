@@ -29,7 +29,32 @@ $searchLimit = 100;
 # * grab the parameters needed and clean it up ... need to default it to something too if there is nothing there
 # ****************************************************************************************************************************
 $browseCat = $_GET['limiter'];
-if (empty($browseCat)) { $browseCat = 'main_new_this_week'; }
+if (empty($browseCat)) {
+	//Get the first available browse category
+	$browseCategories = $urlPath . '/API/SearchAPI?method=getActiveBrowseCategories&includeSubCategories=true';
+	$jsonBrowseCat    = json_decode(file_get_contents($browseCategories), true);
+	$firstBrowseCategory = null;
+	foreach($jsonBrowseCat['result'] as $obj){
+		if (strcmp($obj['source'], 'List') == 0) { continue; }
+		if (count($obj['subCategories']) > 0) {
+			foreach($obj['subCategories'] as $subCats){
+				if (strcmp($subCats['source'], 'List') == 0) { continue; }
+				$browseCatList['Items'][] = array('title' => $subCats['display_label'], 'reference' => $subCats['text_id']);
+				if (empty($browseCat)){
+					$browseCat = $subCats['text_id'];
+				}
+			}
+		} else {
+			$browseCatList['Items'][] = array('title' => $obj['display_label'], 'reference' => $obj['text_id']);
+			if (empty($browseCat)){
+				$browseCat = $obj['text_id'];
+			}
+		}
+		if (!empty($browseCat)){
+			break;
+		}
+	}
+}
 
 # ****************************************************************************************************************************
 # * search link to the catalogue
