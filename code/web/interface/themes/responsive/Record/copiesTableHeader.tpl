@@ -26,7 +26,7 @@
 		<th>
 			<strong><u>{translate text="Status"}</u></strong>
 		</th>
-		{if $hasDueDate}
+		{if $hasDueDate && $showItemDueDates}
 			<th>
 				<strong><u>{translate text="Due Date"}</u></strong>
 			</th>
