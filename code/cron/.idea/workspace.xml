@@ -129,7 +129,7 @@
       <recent name="com.turning_leaf_technologies.oai" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Koha Export">
+  <component name="RunManager" selected="Application.Polaris Export">
     <configuration name="Axis 360 Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technogies.axis360.Axis360ExportMain" />
       <module name="axis_360_export" />

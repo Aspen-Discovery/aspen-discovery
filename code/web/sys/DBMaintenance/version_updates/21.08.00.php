@@ -3,15 +3,18 @@
 function getUpdates21_08_00() : array
 {
 	return [
-		'library_archive_permission' => [
-			'title' => 'Fix Library Archive Permission name',
-			'description' => 'Fix library archive permission',
+		'quipu_ecard_settings' => [
+			'title' => 'Quipu eCARD Settings',
+			'description' => 'Add the ability to define settings for Quipu eCARD integration',
 			'continueOnError' => true,
 			'sql' => [
-				"UPDATE permissions set name = 'Library Archive Options' where name = 'Library Open Archive Options'",
-				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Archive Options'))",
-				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Archive Options'))",
+				"CREATE TABLE quipu_ecard_setting (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					server VARCHAR(50) NOT NULL, 
+					clientId INT(11) NOT NULL
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
 			]
-		], //upload_list_cover_permissions
+		], //quipu_ecard_settings
+
 	];
 }
