@@ -175,3 +175,5 @@ sites/demo.localhost/conf/config.ini
 sites/demo.localhost/conf/crontab_settings.txt
 sites/demo.localhost/demo.localhost.sh
 sites/demo.localhost/httpd-demo.localhost.conf
+code/web/.idea/watcherTasks.xml
+code/web/.idea/workspace.xml
