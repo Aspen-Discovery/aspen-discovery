@@ -29,21 +29,33 @@ export default class Login extends Component {
   showLocationPulldown = () => {
  
     const data = [
-      { key: 0, section: true, label: 'Select your Library' },
-      { key: 'https://aspen-test.bywatersolutions.com|test', label: 'ByWater Test' },
-      { key: 'https://discover.ajaxlibrary.ca|main', label: 'AJAX Public Library, Ontario' },
-      { key: 'https://libcat.arlingtonva.us|arlington', label: 'Arlington Public Library, Virginia' },
-      { key: 'https://catalog.duchesnecountylibrary.org|duchesne', label: 'Duchesne County Library, Utah' },
-      { key: 'https://catalog.jcls.org|jacksoncounty', label: 'Jackson County, Oregon' },
-      { key: 'https://catalog.library.nashville.org|nashville', label: 'Nashville Public Library, Tennessee' },
-      { key: 'https://discover.salinapubliclibrary.org|salinaks', label: 'Salina Public Library, Kansas' },
-      { key: 'https://catalog.uintahlibrary.org|uintah', label: 'Uintah County Library, Utah' },
-      { key: 'https://catalog.wasatchlibrary.org|wasatch', label: 'Wasatch County Library, Utah' },
+        { key: 0, section: true, label: 'Select your Library' },
+        { key: 'https://aspen-test.bywatersolutions.com|test', label: 'ByWater Test' },
+        { key: 'https://discover.ajaxlibrary.ca|ajax', label: 'AJAX Public Library, Ontario' },
+        { key: 'https://discovery.arcadialibrary.org|arcadia', label: 'Arlington Public Library, Virginia' },
+        { key: 'https://libcat.arlingtonva.us|arlingtonva', label: 'Arlington Public Library, Virginia' },
+        { key: 'https://discovery.benbrooklibrary.org|benbrook', label: 'Benbrook Public Library, Texas'},
+        { key: 'https://pathfinder.catalog.ckls.org|ckls', label: 'Central Kansas Library System, Kansas'},
+        { key: 'https://catalog.aspencat.info|clic', label: 'Colorado Library Consortium, Colorado'},
+        { key: 'https://ccfls.org|crawfordcounty', label: 'Crawford County Federated Library System, Pennsylvania'},
+        { key: 'https://catalog.dubcolib.org|dubuque', label: 'Dubuque County Library District, Iowa'},
+        { key: 'https://catalog.duchesnecountylibrary.org|duchesne', label: 'Duchesne County Library, Utah' },
+        { key: 'https://catalog.flagstaffpubliclibrary.org|flagstaff', label: 'Flagstaff City-Coconino County Public Library, Arizona'},
+        { key: 'https://catalog.jcls.org|jacksoncounty', label: 'Jackson County, Oregon' },
+        { key: 'https://catalog.library.nashville.org|nashville', label: 'Nashville Public Library, Tennessee' },
+        { key: 'https://catalog.pueblolibrary.org|pueblo', label: 'Pueblo City County Library, Colorado'},
+        { key: 'https://discovery.roundrocktexas.gov|roundrock', label: 'Round Rock Public Library, Texas'},
+        { key: 'https://discover.salinapubliclibrary.org|salinaks', label: 'Salina Public Library, Kansas' },
+        { key: 'https://catalog.santafelibrary.org|santafe', label: 'Santa Fe Public Library, New Mexico'},
+        { key: 'https://catalogbeta.swanlibraries.net|swan', label: 'SWAN Library Services, Illinois'},
+        { key: 'https://catalog.uintahlibrary.org|uintah', label: 'Uintah County Library, Utah' },
+        { key: 'https://vokal-aspen.bywatersolutions.com|vokal', label: 'Vermont Organization of Koha Automated Libraries, Vermont'},
+        { key: 'https://catalog.wasatchlibrary.org|wasatch', label: 'Wasatch County Library, Utah' },
+        { key: 'https://catalog.washoecountylibrary.us|washoe', label: 'Washoe County Library System, Nevada'},
     ];
 
     return (
       <View>
-        <Text>This is the login screen</Text>
         <ModalSelector
           data = {data}
           initValue = "Select your Library"

@@ -72,7 +72,7 @@ class EncryptionUtils
 					EncryptionUtils::$_key = false;
 				}
 			}else{
-				list($cipher, $key) = explode(':', $cachedKey, 2);
+				list($cipher, $key) = explode(':', trim($cachedKey), 2);
 				EncryptionUtils::$_key = [
 					'cipher' => $cipher,
 					'key' => hex2bin($key)

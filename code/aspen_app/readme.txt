@@ -9,21 +9,21 @@ To setup for development
 3) Setup install Expo CLI - see: https://docs.expo.io/get-started/installation/
 4) Register and login to Expo - expo login 
 5) Install dependencies with the following commands
-expo install @react-native-async-storage/async-storage (done)
-expo install @react-navigation/native (done)
-expo install react-navigation (done)
+expo install @react-native-async-storage/async-storage
+expo install @react-navigation/native
+expo install react-navigation
 expo install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
-expo install react-navigation-stack (done)
-expo install react-navigation-tabs (done)
-expo install react-native-vector-icons (done)
-expo install react-native-picker-select (done)
+expo install react-navigation-stack
+expo install react-navigation-tabs
+expo install react-native-vector-icons
+expo install react-native-picker-select
 expo install react-native-modal-selector-searchable
 expo install @react-native-picker/picker
-expo install react-native-shapes (done)
-expo install react-native-barcode-expo (done)
-expo install react-native-elements (done)
-expo install react-native-view-more-text (done)
-expo install react-native-screens (done)
+expo install react-native-shapes
+expo install react-native-barcode-expo
+expo install react-native-elements
+expo install react-native-view-more-text
+expo install react-native-screens
 npm i https://github.com/peacechen/react-native-modal-selector --save
 npm audit fix
 
