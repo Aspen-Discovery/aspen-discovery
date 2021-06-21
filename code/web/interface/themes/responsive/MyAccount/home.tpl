@@ -22,10 +22,13 @@
 						{translate text='You currently have'}
 						<ul>
 							<li><strong><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles <a href="/MyAccount/CheckedOut">checked out</a></li>
-							<li><strong><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles on <a href="/MyAccount/Holds">hold</a></li>
+							<li><strong><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles on <a href="/MyAccount/Holds">hold</a>
+							<ul class="ils-available-holds" style="display: none">
+								<li><strong><span class="ils-available-holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> ready for pickup</li>
+							</ul>
+							</li>
 						</ul>
 						{* TODO: Show an alert if any titles are expired or are going to expire *}
-						{* TODO: Show an alert if any titles ready for pickup *}
 					{/if}
 				</div>
 			{/if}
