@@ -690,6 +690,46 @@ AspenDiscovery.Account = (function(){
 			return false
 		},
 
+		cancelHoldSelectedTitles: function(patronId, recordId, holdIdToCancel){
+
+			if (Globals.loggedIn) {
+				var selectedTitles = AspenDiscovery.getSelectedTitles();
+				if (selectedTitles) {
+					if (confirm('Cancel holds on selected items?')) {
+						AspenDiscovery.loadingMessage();
+						// noinspection JSUnresolvedFunction
+						$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHoldSelectedItems&" + selectedTitles, function (data) {
+							var reload = data.success || data.holdsCanceled > 0;
+							AspenDiscovery.showMessage(data.title, data.modalBody, data.success, reload);
+						}).fail(AspenDiscovery.ajaxFail);
+					}
+				}
+			} else {
+				this.ajaxLogin(null, this.cancelHoldSelectedTitles, true);
+				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
+			}
+			return false
+		},
+
+		cancelHoldAll: function(){
+			if (Globals.loggedIn) {
+				if (confirm('Cancel all holds?')) {
+					AspenDiscovery.loadingMessage();
+					// noinspection JSUnresolvedFunction
+					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelAllHolds", function (data) {
+						var reload = data.success || data.holdsCanceled > 0;
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success, reload);
+					}).fail(AspenDiscovery.ajaxFail);
+				}
+			} else {
+				this.ajaxLogin(null, function () {
+					AspenDiscovery.Account.cancelHoldAll()
+				}, false);
+			}
+
+			return false
+		},
+
 		cancelBooking: function(patronId, cancelId){
 			if (confirm("Are you sure you want to cancel this scheduled item?")){
 				if (Globals.loggedIn) {
@@ -896,6 +936,83 @@ AspenDiscovery.Account = (function(){
 					AspenDiscovery.showMessage("Error", data.message);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		updateHoldSelectedTitles: function() {
+
+		},
+
+		freezeHoldSelected: function(patronId, recordId, holdId, caller) {
+			if (Globals.loggedIn) {
+				var selectedTitles = AspenDiscovery.getSelectedTitles();
+				var popUpBoxTitle = $(caller).text() || "Freezing Hold"; // freezing terminology can be customized, so grab text from click button: caller
+				if (selectedTitles) {
+					if (confirm('Freeze selected holds?')) {
+						AspenDiscovery.loadingMessage();
+						AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
+						// noinspection JSUnresolvedFunction
+						$.getJSON(Globals.path + "/MyAccount/AJAX?method=freezeHoldSelectedItems&" + selectedTitles, function (data) {
+							if (data.success) {
+								AspenDiscovery.showMessage("Success", data.message, true, true);
+							} else {
+								AspenDiscovery.showMessage("Error", data.message);
+							}
+						}).fail(AspenDiscovery.ajaxFail);
+					}
+				}
+			} else {
+				this.ajaxLogin(null, this.freezeHoldSelected, true);
+				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
+			}
+			return false
+		},
+
+		thawHoldSelected: function(patronId, recordId, holdId, caller) {
+			if (Globals.loggedIn) {
+				var selectedTitles = AspenDiscovery.getSelectedTitles();
+				var popUpBoxTitle = $(caller).text() || "Thawing Hold";
+				if (selectedTitles) {
+					if (confirm('Thaw selected holds?')) {
+						AspenDiscovery.loadingMessage();
+						AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
+						// noinspection JSUnresolvedFunction
+						$.getJSON(Globals.path + "/MyAccount/AJAX?method=thawHoldSelectedItems&" + selectedTitles, function (data) {
+							if (data.success) {
+								AspenDiscovery.showMessage("Success", data.message, true, true);
+							} else {
+								AspenDiscovery.showMessage("Error", data.message);
+							}
+						}).fail(AspenDiscovery.ajaxFail);
+					}
+				}
+			} else {
+				this.ajaxLogin(null, this.thawHoldSelected, true);
+				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
+			}
+			return false
+		},
+
+		updateHoldAll: function(patronId, caller) {
+			if (Globals.loggedIn) {
+				var patronId = patronId;
+				var popUpBoxTitle = $(caller).text() || "Modifying Holds";
+				if (confirm('Modify all holds?')) {
+					AspenDiscovery.loadingMessage();
+					AspenDiscovery.showMessage(popUpBoxTitle, "Updating your holds.  This may take a minute.");
+					// noinspection JSUnresolvedFunction
+					$.getJSON(Globals.path + "/MyAccount/AJAX?method=updateHoldAll&patronId=" + patronId, function (data) {
+						if (data.success) {
+							AspenDiscovery.showMessage("Success", data.message, true, true);
+						} else {
+							AspenDiscovery.showMessage("Error", data.message);
+						}
+					}).fail(AspenDiscovery.ajaxFail);
+				}
+			} else {
+				this.ajaxLogin(null, this.updateHoldAll, true);
+				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
+			}
+			return false
 		},
 
 		getSelectedTitles: function(promptForSelectAll){
