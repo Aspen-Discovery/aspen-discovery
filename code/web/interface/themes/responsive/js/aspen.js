@@ -6255,15 +6255,15 @@ AspenDiscovery.Account = (function(){
 			return false
 		},
 
-		updateHoldAll: function(patronId, caller) {
+		updateHoldAll: function(userId, caller) {
 			if (Globals.loggedIn) {
-				var patronId = patronId;
+				var userId = userId;
 				var popUpBoxTitle = $(caller).text() || "Modifying Holds";
 				if (confirm('Modify all holds?')) {
 					AspenDiscovery.loadingMessage();
 					AspenDiscovery.showMessage(popUpBoxTitle, "Updating your holds.  This may take a minute.");
 					// noinspection JSUnresolvedFunction
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=updateHoldAll&patronId=" + patronId, function (data) {
+					$.getJSON(Globals.path + "/MyAccount/AJAX?method=updateHoldAll&patronId=" + userId, function (data) {
 						if (data.success) {
 							AspenDiscovery.showMessage("Success", data.message, true, true);
 						} else {

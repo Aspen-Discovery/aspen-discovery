@@ -2371,7 +2371,7 @@ class MyAccount_AJAX extends JSON_Action
 					}
 				}
 				$interface->assign('notification_method', strtolower($notification_method));
-				$interface->assign('profile', $user->id);
+				$interface->assign('userId', $user->id);
 
 				$result['success'] = true;
 				$result['message'] = "";
