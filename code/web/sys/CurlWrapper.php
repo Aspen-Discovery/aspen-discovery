@@ -191,7 +191,12 @@ class CurlWrapper
 			CURLOPT_POSTFIELDS => $post_string,
 		));
 
-		return curl_exec($this->curl_connection);
+		$return = curl_exec($this->curl_connection);
+		if (!$return) { // log curl error
+			global $logger;
+			$logger->log("curl post error for $url: " . curl_error($this->curl_connection), Logger::LOG_ERROR);
+		}
+		return $return;
 	}
 
 	public function curlSendPage(string $url, string $httpMethod, $body = null)

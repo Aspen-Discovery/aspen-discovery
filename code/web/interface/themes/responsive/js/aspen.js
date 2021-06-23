@@ -6265,7 +6265,7 @@ AspenDiscovery.Account = (function(){
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=updateHoldAll&patronId=" + userId, function (data) {
 						if (data.success) {
 							AspenDiscovery.Account.reloadHolds();
-							AspenDiscovery.showMessage("Success", data.message, true, true);
+							AspenDiscovery.showMessage("Success", data.message, true, false);
 						} else {
 							AspenDiscovery.showMessage("Error", data.message);
 						}

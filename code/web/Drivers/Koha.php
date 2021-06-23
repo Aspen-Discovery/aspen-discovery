@@ -1629,6 +1629,12 @@ class Koha extends AbstractIlsDriver
 			], true);
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			if (!$response) {
+				if ($this->apiCurlWrapper->getResponseCode() != 204) {
+					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+					$result['success'] = true;
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
 				return $result;
 			} else {
 				$hold_response = json_decode($response, false);
