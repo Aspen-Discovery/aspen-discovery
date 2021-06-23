@@ -260,12 +260,12 @@ class MyAccount_AJAX extends JSON_Action
 		if (!UserAccount::isLoggedIn()) {
 			$result['message'] = 'You must be logged in to cancel a hold.  Please close this dialog and login again.';
 		} else {
-			$failure_messages = array();
-			$cancelHoldResults = array();
+			$success = 0;
 			$user = UserAccount::getLoggedInUser();
 			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
 			$allUnavailableHolds = $allHolds['unavailable'];
 			if(isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
+				$total = count($_REQUEST['selected']);
 				foreach($_REQUEST['selected'] as $selected => $ignore) {
 					@list($patronId, $recordId, $cancelId) = explode('|', $selected);
 					$patronOwningHold = $user->getUserReferredTo($patronId);
@@ -279,66 +279,52 @@ class MyAccount_AJAX extends JSON_Action
 							if($key->sourceId == $recordId) {
 								$holdType = $key->source;
 								break;
-							} else {
-								$failure_messages[] = 'Hold not found';
 							}
 						}
 						if ($holdType == 'ils') {
 							$tmpResult = $user->cancelHold($recordId, $cancelId);
+							if($tmpResult['success']){$success++;}
 						} else if ($holdType == 'axis360') {
 							require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 							$driver = new Axis360Driver();
 							$tmpResult = $driver->cancelHold($user, $recordId);
+							if($tmpResult['success']){$success++;}
 						} else if ($holdType == 'overdrive') {
 							require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 							$driver = new OverDriveDriver();
 							$tmpResult = $driver->cancelHold($user, $recordId);
-						} else if ($holdType == 'hoopla') {
-							$failure_messages[] = "Hoopla doesn't allow patrons to cancel holds";
+							if($tmpResult['success']){$success++;}
 						} else if ($holdType == 'cloud_library') {
 							require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 							$driver = new CloudLibraryDriver();
 							$tmpResult = $driver->cancelHold($user, $recordId);
-						} else {
-							$failure_messages[] = $tmpResult['message'];
+							if($tmpResult['success']){$success++;}
 						}
 
-						if (!$tmpResult['success']) {
-							$failure_messages[] = $tmpResult['message'];
-						}
-
+						$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were canceled.</div>';
+						$tmpResult['message'] = $message;
 					}
 				}
 			} else {
-				$failure_messages[] = 'No holds were selected to canceled';
+				$tmpResult['message'] = 'No holds were selected to canceled';
 			}
 		}
 
-		$cancelHoldResults['Total'] = count($_REQUEST['selected']);
-		$cancelHoldResults['NotCanceled'] = count($failure_messages);
-		$cancelHoldResults['Canceled'] = $cancelHoldResults['Total'] - $cancelHoldResults['NotCanceled'];
-
-		global $interface;
-		$interface->assign('cancelResults', $cancelHoldResults );
-
-		return array(
-			'title' => translate('Cancel Selected Items'),
-			'body' => $interface->fetch('MyAccount/cancelHolds.tpl'),
-			'success' => translate($cancelHoldResults['success'])
-		);
+		return $tmpResult;
 	}
 
 	function cancelAllHolds()
 	{
-		$cancelHoldResults = array(
+		$tmpResult = array(
 			'success' => false,
 			'message' => array('Unable to cancel all holds'),
 		);
 		$user = UserAccount::getLoggedInUser();
 		if ($user) {
-			$failure_messages = array();
 			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
 			$allUnavailableHolds = $allHolds['unavailable'];
+			$total = count($allUnavailableHolds);
+			$success = 0;
 
 			foreach ($allUnavailableHolds as $hold) {
 				// cancel each hold
@@ -347,44 +333,33 @@ class MyAccount_AJAX extends JSON_Action
 				$holdType = $hold->source;
 				if ($holdType == 'ils') {
 					$tmpResult = $user->cancelHold($recordId, $cancelId);
+					if($tmpResult['success']){$success++;}
 				} else if ($holdType == 'axis360') {
 					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 					$driver = new Axis360Driver();
 					$tmpResult = $driver->cancelHold($user, $recordId);
+					if($tmpResult['success']){$success++;}
 				} else if ($holdType == 'overdrive') {
 					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 					$driver = new OverDriveDriver();
 					$tmpResult = $driver->cancelHold($user, $recordId);
-				} else if ($holdType == 'hoopla') {
-					$failure_messages[] = "Hoopla doesn't allow patrons to cancel holds";
+					if($tmpResult['success']){$success++;}
 				} else if ($holdType == 'cloud_library') {
 					require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 					$driver = new CloudLibraryDriver();
 					$tmpResult = $driver->cancelHold($user, $recordId);
-				} else {
-					$failure_messages[] = $tmpResult['message'];
+					if($tmpResult['success']){$success++;}
 				}
 
-				if (!$tmpResult['success']) {
-					$failure_messages[] = $tmpResult['message'];
-				}
+				$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were canceled.</div>';
+				$tmpResult['message'] = $message;
+
 			}
 		} else {
-			$cancelHoldResults['message'] = array('You must be logged in to cancel holds');
+			$tmpResult['message'] = 'You must be logged in to cancel holds';
 		}
 
-		$cancelHoldResults['Total'] = count($allUnavailableHolds);
-		$cancelHoldResults['NotCanceled'] = count($failure_messages);
-		$cancelHoldResults['Canceled'] = $cancelHoldResults['Total'] - $cancelHoldResults['NotCanceled'];
-
-		global $interface;
-		$interface->assign('cancelResults', $cancelHoldResults);
-		return array(
-			'title' => translate('Cancel All Items'),
-			'body' => $interface->fetch('MyAccount/cancelHolds.tpl'),
-			'success' => $cancelHoldResults['success'],
-			'renewed' => $cancelHoldResults['Canceled']
-		);
+		return $tmpResult;
 	}
 
 	/** @noinspection PhpUnused */
