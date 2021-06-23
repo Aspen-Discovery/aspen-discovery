@@ -1047,31 +1047,7 @@ AspenDiscovery.Account = (function(){
 			}
 			return false;
 		},
-
-		updateHoldAll: function(userId, caller) {
-			if (Globals.loggedIn) {
-				var userId = userId;
-				var popUpBoxTitle = $(caller).text() || "Modifying Holds";
-				if (confirm('Modify all holds?')) {
-					AspenDiscovery.loadingMessage();
-					AspenDiscovery.showMessage(popUpBoxTitle, "Updating your holds.  This may take a minute.");
-					// noinspection JSUnresolvedFunction
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=updateHoldAll&patronId=" + userId, function (data) {
-						if (data.success) {
-							AspenDiscovery.Account.reloadHolds();
-							AspenDiscovery.showMessage("Success", data.message, true, false);
-						} else {
-							AspenDiscovery.showMessage("Error", data.message);
-						}
-					}).fail(AspenDiscovery.ajaxFail);
-				}
-			} else {
-				this.ajaxLogin(null, this.updateHoldAll, true);
-				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
-			}
-			return false
-		},
-
+		
 		getSelectedTitles: function(promptForSelectAll){
 			if (promptForSelectAll === undefined){
 				promptForSelectAll = true;
