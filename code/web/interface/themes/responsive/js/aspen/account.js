@@ -908,6 +908,7 @@ AspenDiscovery.Account = (function(){
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function(data){
 					if (data.success) {
+						AspenDiscovery.Account.reloadHolds();
 						AspenDiscovery.showMessage("Success", data.message, true, true);
 					} else {
 						AspenDiscovery.showMessage("Error", data.message);
@@ -938,10 +939,6 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		updateHoldSelectedTitles: function() {
-
-		},
-
 		freezeHoldSelected: function(patronId, recordId, holdId, caller) {
 			if (Globals.loggedIn) {
 				var selectedTitles = AspenDiscovery.getSelectedTitles();
@@ -953,6 +950,7 @@ AspenDiscovery.Account = (function(){
 						// noinspection JSUnresolvedFunction
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=freezeHoldSelectedItems&" + selectedTitles, function (data) {
 							if (data.success) {
+								AspenDiscovery.Account.reloadHolds();
 								AspenDiscovery.showMessage("Success", data.message, true, true);
 							} else {
 								AspenDiscovery.showMessage("Error", data.message);
@@ -978,6 +976,7 @@ AspenDiscovery.Account = (function(){
 						// noinspection JSUnresolvedFunction
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=thawHoldSelectedItems&" + selectedTitles, function (data) {
 							if (data.success) {
+								AspenDiscovery.Account.reloadHolds();
 								AspenDiscovery.showMessage("Success", data.message, true, true);
 							} else {
 								AspenDiscovery.showMessage("Error", data.message);
@@ -1002,6 +1001,7 @@ AspenDiscovery.Account = (function(){
 					// noinspection JSUnresolvedFunction
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=updateHoldAll&patronId=" + userId, function (data) {
 						if (data.success) {
+							AspenDiscovery.Account.reloadHolds();
 							AspenDiscovery.showMessage("Success", data.message, true, true);
 						} else {
 							AspenDiscovery.showMessage("Error", data.message);
@@ -1100,6 +1100,7 @@ AspenDiscovery.Account = (function(){
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function(data){
 				if (data.success) {
+					AspenDiscovery.Account.reloadHolds();
 					AspenDiscovery.showMessage("Success", data.message, true, true);
 				} else {
 					AspenDiscovery.showMessage("Error", data.message);
