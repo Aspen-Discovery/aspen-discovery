@@ -242,6 +242,11 @@ class CurlWrapper
 		return $this->headers;
 	}
 
+	function getHeaderSize()
+	{
+		return curl_getinfo($this->curl_connection, CURLINFO_HEADER_SIZE);
+	}
+
 	public function setupDebugging()
 	{
 		$result1 = curl_setopt($this->curl_connection, CURLOPT_HEADER, true);
