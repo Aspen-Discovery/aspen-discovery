@@ -551,90 +551,16 @@ class MyAccount_AJAX extends JSON_Action
 
 	function freezeHoldAll() {
 		$user = UserAccount::getLoggedInUser();
-		$tmpResult = array( // set default response
-			'success' => false,
-			'message' => 'Error modifying hold.'
-		);
-
 		if (!$user) {
 			$tmpResult['message'] = 'You must be logged in to modify a hold.  Please close this dialog and login again.';
 		} elseif (!empty($_REQUEST['patronId'])) {
-			$patronOwningHold = $user->getUserReferredTo($_REQUEST['patronId']);
-			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
-			$allUnavailableHolds = $allHolds['unavailable'];
-			$success = 0;
-			$failed = 0;
-			$total = count($allHolds['unavailable']);
-
-			if ($total >= 1) {
-				foreach ($allUnavailableHolds as $hold) {
-					$frozen = $hold->frozen;
-					$canFreeze = $hold->canFreeze;
-					$recordId = $hold->sourceId;
-					$holdId = $hold->cancelId;
-					$holdType = $hold->source;
-
-					if ($frozen == 0 && $canFreeze == 1) {
-						if ($holdType == 'ils') {
-							$tmpResult = $user->freezeHold($recordId, $holdId, false);
-							if ($tmpResult['success']) {
-								$success++;
-							}
-						} else if ($holdType == 'axis360') {
-							require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-							$driver = new Axis360Driver();
-							$tmpResult = $driver->freezeHold($user, $recordId);
-							if ($tmpResult['success']) {
-								$success++;
-							}
-						} else if ($holdType == 'overdrive') {
-							require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-							$driver = new OverDriveDriver();
-							$tmpResult = $driver->freezeHold($user, $recordId);
-							if ($tmpResult['success']) {
-								$success++;
-							}
-						} else if ($holdType == 'cloud_library') {
-							require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-							$driver = new CloudLibraryDriver();
-							$tmpResult = $driver->freezeHold($user, $recordId);
-							if ($tmpResult['success']) {
-								$success++;
-							}
-						} else {
-							$failed++;
-							$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
-						}
-
-					} else if ($canFreeze == 0) {
-						$failed++;
-					} else {
-						$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
-					}
-				}
-			} else {
-				$tmpResult['message'] = 'No holds available to freeze.';
-			}
-
-			if ($success >= 1 ){
-				$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
-
-				if ($failed >= 1) {
-					$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to freeze.</div>';
-				}
-
-				$tmpResult['message'] = $message;
-			} else {
-				$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
-			}
-
+			$tmpResult = $user->freezeAllHolds();
 		} else {
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
 			$logger->log('Modifying Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
 			$tmpResult['message'] = 'No Patron was specified.';
 		}
-
 		return $tmpResult;
 	}
 
@@ -750,74 +676,11 @@ class MyAccount_AJAX extends JSON_Action
 
 	function thawHoldAll() {
 		$user = UserAccount::getLoggedInUser();
-		$tmpResult = array( // set default response
-			'success' => false,
-			'message' => 'Error modifying hold.'
-		);
 
 		if (!$user) {
 			$tmpResult['message'] = 'You must be logged in to modify a hold.  Please close this dialog and login again.';
 		} elseif (!empty($_REQUEST['patronId'])) {
-			$patronOwningHold = $user->getUserReferredTo($_REQUEST['patronId']);
-			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
-			$allUnavailableHolds = $allHolds['unavailable'];
-			$success = 0;
-			$failed = 0;
-			$total = count($allHolds['unavailable']);
-
-			if ($total >= 1) {
-				foreach ($allUnavailableHolds as $hold) {
-					$frozen = $hold->frozen;
-					$canFreeze = $hold->canFreeze;
-					$recordId = $hold->sourceId;
-					$holdId = $hold->cancelId;
-					$holdType = $hold->source;
-
-					if ($frozen == 1 && $canFreeze == 1) {
-						if ($holdType == 'ils') {
-							$tmpResult = $user->thawHold($recordId, $holdId);
-							if($tmpResult['success']){$success++;}
-						} else if ($holdType == 'axis360') {
-							require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-							$driver = new Axis360Driver();
-							$tmpResult = $driver->thawHold($user, $recordId);
-							if($tmpResult['success']){$success++;}
-						} else if ($holdType == 'overdrive') {
-							require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-							$driver = new OverDriveDriver();
-							$tmpResult = $driver->thawHold($user, $recordId);
-							if($tmpResult['success']){$success++;}
-						} else if ($holdType == 'cloud_library') {
-							require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-							$driver = new CloudLibraryDriver();
-							$tmpResult = $driver->thawHold($user, $recordId);
-							if($tmpResult['success']){$success++;}
-						} else {
-							$failed++;
-							$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
-						}
-
-					} else if ($canFreeze == 0) {
-						$failed++;
-					} else if ($frozen == 1) {
-						$failed++;
-					}
-				}
-			} else {
-				$tmpResult['message'] = 'No holds available to thaw.';
-			}
-
-			if ($success >= 1 ){
-				$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
-
-				if ($failed >= 1) {
-					$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to thaw.</div>';
-				}
-
-				$tmpResult['message'] = $message;
-			} else {
-				$tmpResult['message'] = '<div class="alert alert-warning">All holds already thawed</div>';
-			}
+			$tmpResult = $user->thawAllHolds();
 
 		} else {
 			// We aren't getting all the expected data, so make a log entry & tell user.
@@ -825,105 +688,6 @@ class MyAccount_AJAX extends JSON_Action
 			$logger->log('Modifying Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
 			$tmpResult['message'] = 'No Patron was specified.';
 		}
-
-		return $tmpResult;
-	}
-
-	function updateHoldAll() {
-		$user = UserAccount::getLoggedInUser();
-		$result = array( // set default response
-			'success' => false,
-			'message' => 'Error modifying hold.'
-		);
-
-		if (!$user) {
-			$result['message'] = 'You must be logged in to modify a hold.  Please close this dialog and login again.';
-		} elseif (!empty($_REQUEST['patronId'])) {
-			$patronOwningHold = $user->getUserReferredTo($_REQUEST['patronId']);
-			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
-			$allUnavailableHolds = $allHolds['unavailable'];
-			$successThaw = 0;
-			$successFreeze = 0;
-			$failed = 0;
-			$countFreeze = 0;
-			$countThaw = 0;
-			$total = count($allHolds['unavailable']);
-
-			foreach ($allUnavailableHolds as $hold) {
-				$frozen = $hold->frozen;
-				$canFreeze = $hold->canFreeze;
-				$recordId = $hold->sourceId;
-				$holdId = $hold->cancelId;
-				$holdType = $hold->source;
-
-				if ($frozen == 1 && $canFreeze == 1) {
-					$countThaw++;
-					if ($holdType == 'ils') {
-						$tmpResult = $user->thawHold($recordId, $holdId);
-						if($tmpResult['success']){$successThaw++;}else{$failed++;}
-					} else if ($holdType == 'axis360') {
-						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-						$driver = new Axis360Driver();
-						$tmpResult = $driver->thawHold($user, $recordId);
-						if($tmpResult['success']){$successThaw++;}else{$failed++;}
-					} else if ($holdType == 'overdrive') {
-						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-						$driver = new OverDriveDriver();
-						$tmpResult = $driver->thawHold($user, $recordId);
-						if($tmpResult['success']){$successThaw++;}else{$failed++;}
-					} else if ($holdType == 'cloud_library') {
-						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-						$driver = new CloudLibraryDriver();
-						$tmpResult = $driver->thawHold($user, $recordId);
-						if($tmpResult['success']){$successThaw++;}else{$failed++;}
-					} else {
-						$failed++;
-					}
-				} else if ($frozen == 0 && $canFreeze == 1) {
-					$countFreeze++;
-					if ($holdType == 'ils') {
-						$tmpResult = $user->freezeHold($recordId, $holdId, false);
-						if($tmpResult['success']){$successFreeze++;}else{$failed++;}
-					} else if ($holdType == 'axis360') {
-						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
-						$driver = new Axis360Driver();
-						$tmpResult = $driver->freezeHold($user, $recordId);
-						if($tmpResult['success']){$successFreeze++;}else{$failed++;}
-					} else if ($holdType == 'overdrive') {
-						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-						$driver = new OverDriveDriver();
-						$tmpResult = $driver->freezeHold($user, $recordId);
-						if($tmpResult['success']){$successFreeze++;}else{$failed++;}
-					} else if ($holdType == 'cloud_library') {
-						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-						$driver = new CloudLibraryDriver();
-						$tmpResult = $driver->freezeHold($user, $recordId);
-						if($tmpResult['success']){$successFreeze++;}else{$failed++;}
-					} else {
-						$failed++;
-					}
-
-				} else if ($canFreeze == 0) {
-					$failed++;
-				} else {
-					$result['message'] = 'Sorry, hold can not be modified.';
-				}
-			}
-
-		} else {
-			// We aren't getting all the expected data, so make a log entry & tell user.
-			global $logger;
-			$logger->log('Modifying Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = 'No Patron was specified.';
-		}
-
-		$message =  '<div class="alert alert-success">Out of '. $total .' holds, ' . $successThaw . ' thawed and ' . $successFreeze . ' are now frozen.</div>';
-
-		if ($failed >= 1) {
-			$message .= '<div class="alert alert-warning">'. $failed .' holds failed to update.</div>';
-		}
-
-		$tmpResult['message'] = $message;
 
 		return $tmpResult;
 	}

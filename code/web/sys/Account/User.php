@@ -1636,6 +1636,153 @@ class User extends DataObject
 		return $result;
 	}
 
+	function freezeAllHolds() {
+		$user = UserAccount::getLoggedInUser();
+		$tmpResult = array( // set default response
+			'success' => false,
+			'message' => 'Error modifying hold.'
+		);
+
+		$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+		$allUnavailableHolds = $allHolds['unavailable'];
+		$success = 0;
+		$failed = 0;
+		$total = count($allHolds['unavailable']);
+
+		if ($total >= 1) {
+			foreach ($allUnavailableHolds as $hold) {
+				$frozen = $hold->frozen;
+				$canFreeze = $hold->canFreeze;
+				$recordId = $hold->sourceId;
+				$holdId = $hold->cancelId;
+				$holdType = $hold->source;
+
+				if ($frozen == 0 && $canFreeze == 1) {
+					if ($holdType == 'ils') {
+						$tmpResult = $user->freezeHold($recordId, $holdId, false);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else if ($holdType == 'axis360') {
+						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+						$driver = new Axis360Driver();
+						$tmpResult = $driver->freezeHold($user, $recordId);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else if ($holdType == 'overdrive') {
+						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+						$driver = new OverDriveDriver();
+						$tmpResult = $driver->freezeHold($user, $recordId);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else if ($holdType == 'cloud_library') {
+						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+						$driver = new CloudLibraryDriver();
+						$tmpResult = $driver->freezeHold($user, $recordId);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else {
+						$failed++;
+						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+					}
+
+				} else if ($canFreeze == 0) {
+					$failed++;
+				} else {
+					$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+				}
+			}
+		} else {
+			$tmpResult['message'] = 'No holds available to freeze.';
+		}
+
+		if ($success >= 1) {
+			$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
+
+			if ($failed >= 1) {
+				$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to freeze.</div>';
+			}
+
+			$tmpResult['message'] = $message;
+		} else {
+			$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+		}
+
+		return $tmpResult;
+	}
+	function thawAllHolds(){
+		$user = UserAccount::getLoggedInUser();
+		$tmpResult = array( // set default response
+			'success' => false,
+			'message' => 'Error modifying hold.'
+		);
+
+		$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+		$allUnavailableHolds = $allHolds['unavailable'];
+		$success = 0;
+		$failed = 0;
+		$total = count($allHolds['unavailable']);
+
+		if ($total >= 1) {
+			foreach ($allUnavailableHolds as $hold) {
+				$frozen = $hold->frozen;
+				$canFreeze = $hold->canFreeze;
+				$recordId = $hold->sourceId;
+				$holdId = $hold->cancelId;
+				$holdType = $hold->source;
+
+				if ($frozen == 1 && $canFreeze == 1) {
+					if ($holdType == 'ils') {
+						$tmpResult = $user->thawHold($recordId, $holdId);
+						if($tmpResult['success']){$success++;}
+					} else if ($holdType == 'axis360') {
+						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+						$driver = new Axis360Driver();
+						$tmpResult = $driver->thawHold($user, $recordId);
+						if($tmpResult['success']){$success++;}
+					} else if ($holdType == 'overdrive') {
+						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+						$driver = new OverDriveDriver();
+						$tmpResult = $driver->thawHold($user, $recordId);
+						if($tmpResult['success']){$success++;}
+					} else if ($holdType == 'cloud_library') {
+						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+						$driver = new CloudLibraryDriver();
+						$tmpResult = $driver->thawHold($user, $recordId);
+						if($tmpResult['success']){$success++;}
+					} else {
+						$failed++;
+						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+					}
+
+				} else if ($canFreeze == 0) {
+					$failed++;
+				} else if ($frozen == 1) {
+					$failed++;
+				}
+
+				if ($success >= 1 ){
+					$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
+
+					if ($failed >= 1) {
+						$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to thaw.</div>';
+					}
+
+					$tmpResult['message'] = $message;
+				} else {
+					$tmpResult['message'] = '<div class="alert alert-warning">All holds already thawed</div>';
+				}
+			}
+		} else {
+			$tmpResult['message'] = 'No holds available to thaw.';
+		}
+
+		return $tmpResult;
+	}
+
 	function thawHold($recordId, $holdId){
 		$result = $this->getCatalogDriver()->thawHold($this, $recordId, $holdId);
 		$this->clearCache();
