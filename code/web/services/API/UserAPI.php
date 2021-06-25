@@ -1399,6 +1399,16 @@ class UserAPI extends Action
 		}
 	}
 
+	function freezeAllHolds() {
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			return $user->freezeAllHolds();
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
 	/**
 	 * Activates a hold that was previously suspended within the ILS.  Only unavailable holds can be activated.
 	 * Note:  Horizon implements suspending and activating holds as a toggle.  If a hold is suspended, it will be activated
@@ -1445,6 +1455,16 @@ class UserAPI extends Action
 				$holdId = $_REQUEST['holdId'];
 				return $user->thawHold($recordId, $holdId);
 			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function activateAllHolds() {
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			return $user->thawAllHolds();
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
