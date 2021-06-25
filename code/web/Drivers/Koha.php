@@ -1441,20 +1441,46 @@ class Koha extends AbstractIlsDriver
 
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username} AND issues.itemnumber = {$itemId} limit 1";
+		$renewResults = mysqli_query($this->dbConnection, $renewSql);
+		$maxRenewals = 0;
+
 		$params = [
 			'service' => 'RenewLoan',
 			'patron_id' => $patron->username,
 			'item_id' => $itemId,
 		];
 
+		require_once ROOT_DIR . '/sys/User/Checkout.php';;
 		$renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
 		$renewResponse = $this->getXMLWebServiceResponse($renewURL);
 
 		//Parse the result
 		if (isset($renewResponse->success) && ($renewResponse->success == 1)) {
+
+			while ($curRow = mysqli_fetch_assoc($renewResults)) {
+				$patronType = $patron->patronType;
+				$itemType = $curRow['itype'];
+				$checkoutBranch = $curRow['branchcode'];
+				$renewCount = $curRow['renewals'] + 1;
+				/** @noinspection SqlResolve */
+				$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+				$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+				if ($issuingRulesRS !== false) {
+					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+						$maxRenewals = $issuingRulesRow['rule_value'];
+					}
+				}
+				$issuingRulesRS->close();
+			} $renewResults->close();
+
+			$renewsRemaining = ($maxRenewals - $renewCount);
 			//We renewed the hold
 			$success = true;
-			$message = 'Your item was successfully renewed';
+			$message = 'Your item was successfully renewed.';
+			$message .= ' ' . $renewsRemaining . ' renewals remaining.';
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfCheckouts();
 		} else {
