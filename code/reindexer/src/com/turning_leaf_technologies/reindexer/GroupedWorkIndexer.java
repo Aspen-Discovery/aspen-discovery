@@ -1832,8 +1832,7 @@ public class GroupedWorkIndexer {
 		disabledAutoCommitCounter--;
 		if (disabledAutoCommitCounter == 0){
 			try{
-				dbConn.setAutoCommit(false);
-				dbConn.commit();
+				dbConn.setAutoCommit(true);
 			} catch (SQLException throwables) {
 				logEntry.incErrors("Error enabling auto commit", throwables);
 			}
