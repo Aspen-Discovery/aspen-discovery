@@ -552,6 +552,7 @@ class Polaris extends AbstractIlsDriver
 				$user->lastname = isset($lastName) ? $lastName : '';
 				$forceDisplayNameUpdate = true;
 			}
+			$user->_fullname = $user->firstname . " " . $user->lastname;
 			if ($forceDisplayNameUpdate) {
 				$user->displayName = '';
 			}
@@ -872,6 +873,11 @@ class Polaris extends AbstractIlsDriver
 			}
 		}
 		return $fines;
+	}
+
+	function showOutstandingFines()
+	{
+		return true;
 	}
 
 	public function getWebServiceResponse($query, $method = 'GET', $patronPassword = '', $body = false){
