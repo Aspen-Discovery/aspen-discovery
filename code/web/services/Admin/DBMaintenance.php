@@ -239,9 +239,9 @@ class Admin_DBMaintenance extends Admin_Admin
 				if (!isset($update['status'])) {
 					$update['status'] = '';
 				}
-				$update['status'] .= 'Warning: ' . $e;
+				$update['status'] .= 'Warning: ' . $e . '<br/>' . $sql;
 			} else {
-				$update['status'] = 'Update failed ' . $e;
+				$update['status'] = 'Update failed: ' . $e . '<br/>' . $sql;
 				$updateOk = false;
 			}
 		}

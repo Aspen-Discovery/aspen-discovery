@@ -330,7 +330,7 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier, String format) {
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format) {
 		loadTitles(groupedWork, record, format);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
@@ -532,7 +532,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
 			String leader = record.getLeader().toString();
@@ -585,7 +585,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addTargetAudiencesFull(indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier));
 	}
 
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//First get the literary Forms from the 008.  These need translation
 		LinkedHashSet<String> literaryForms = new LinkedHashSet<>();
 		try {
@@ -1066,7 +1066,7 @@ abstract class MarcRecordProcessor {
 			if (printFormats.size() > 1){
 				logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just 007");
 			}
-			if (printFormats.size() == 0) {
+			if (printFormats.size() == 0 || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
 					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader");
@@ -1192,6 +1192,13 @@ abstract class MarcRecordProcessor {
 			printFormats.add("SoundDisc");
 		}
 
+		if (printFormats.contains("Book") && printFormats.contains("Serial")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("BookClubKit") && printFormats.contains("LargePrint")){
+			printFormats.clear();
+			printFormats.add("BookClubKitLarge");
+		}
 		if (printFormats.contains("Book") && printFormats.contains("LargePrint")){
 			printFormats.remove("Book");
 		}
@@ -1349,7 +1356,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	Pattern audioDiscPattern = Pattern.compile(".*\\b(sound|audio|compact) discs?\\b.*");
+	Pattern audioDiscPattern = Pattern.compile(".*\\b(cd|cds|(sound|audio|compact) discs?)\\b.*");
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, "300");
 		for (DataField field : physicalDescriptions) {
@@ -1378,9 +1385,22 @@ abstract class MarcRecordProcessor {
 					} else if (physicalDescriptionData.contains("mp3")) {
 						result.add("MP3Disc");
 					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches()) {
-						result.add("SoundDisc");
-					} else if (subfield.getCode() == 'a' && physicalDescriptionData.matches("^\\d+\\s+(p\\.|pages)[\\s\\W]*$")){
-						result.add("Book");
+						//Check to see if there is a subfield e.  If so, this could be a combined format
+						Subfield subfieldE = field.getSubfield('e');
+						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("book")){
+							result.add("CD+Book");
+						}else{
+							result.add("SoundDisc");
+						}
+					} else if (subfield.getCode() == 'a' && physicalDescriptionData.matches("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$")){
+						Subfield subfieldE = field.getSubfield('e');
+						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("dvd")){
+							result.add("Book+DVD");
+						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd")){
+							result.add("Book+CD");
+						}else{
+							result.add("Book");
+						}
 					}
 					//Since this is fairly generic, only use it if we have no other formats yet
 					if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {

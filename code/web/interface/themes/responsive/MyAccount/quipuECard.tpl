@@ -7,7 +7,7 @@
 		<script>loadQGeCARD({$eCardSettings->clientId})</script>
 
 		<!-- The following <div> tag should be placed on the web page where you the library would like the registration form to display -->
-		<div id="eCARD" data-language="{$activeLanguage->code}" data-branchid=""></div>
+		<div id="eCARD" data-language="{$userLang->code}" data-branchid=""></div>
 	{else}
 		{translate text="eCARD functionality is not properly configured."}
 	{/if}

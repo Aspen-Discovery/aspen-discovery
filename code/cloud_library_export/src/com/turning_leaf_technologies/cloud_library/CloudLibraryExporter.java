@@ -107,7 +107,7 @@ public class CloudLibraryExporter {
 						break;
 					} else {
 						if (curTry == 4) {
-							logEntry.incErrors("Error " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
+							logEntry.incErrors("Error (after 3 tries) " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
 							logEntry.addNote(response.getMessage());
 							break;
 						} else {

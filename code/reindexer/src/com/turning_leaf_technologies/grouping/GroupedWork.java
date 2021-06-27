@@ -131,6 +131,7 @@ class GroupedWork implements Cloneable {
 
 		groupingTitle = normalizeDiacritics(groupingTitle);
 		groupingTitle = StringUtils.makeValueSortable(groupingTitle);
+
 		//Remove any bracketed parts of the title
 		groupingTitle = removeBracketedPartOfTitle(groupingTitle);
 

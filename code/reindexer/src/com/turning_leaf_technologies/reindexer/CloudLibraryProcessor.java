@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -75,7 +76,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
 				if (reader.hasNext()) {
 					Record marcRecord = reader.next();
-					updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new HashSet<>(), identifier, primaryFormat);
+					updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new ArrayList<>(), identifier, primaryFormat);
 
 					//Special processing for ILS Records
 					String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(marcRecord, "520a"));
@@ -93,6 +94,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				}
 
 				ItemInfo itemInfo = new ItemInfo();
+				itemInfo.setItemIdentifier(identifier); //Make sure we have an item identifier
 				itemInfo.setFormat(primaryFormat);
 				itemInfo.setFormatCategory(formatCategory);
 				itemInfo.seteContentSource("Cloud Library");

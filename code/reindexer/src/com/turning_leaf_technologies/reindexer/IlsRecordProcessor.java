@@ -932,21 +932,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String itemLocation = itemInfo.getLocationCode();
 		String itemSublocation = itemInfo.getSubLocationCode();
 
-		HoldabilityInformation isHoldableUnscoped = isItemHoldableUnscoped(itemInfo);
+		boolean isHoldableUnscoped = isItemHoldableUnscoped(itemInfo);
 		String originalUrl = itemInfo.geteContentUrl();
 		String primaryFormat = recordInfo.getPrimaryFormat();
 		for (Scope curScope : indexer.getScopes()) {
 			//Check to see if the record is holdable for this scope
-			HoldabilityInformation isHoldable = isItemHoldable(itemInfo, curScope, isHoldableUnscoped);
+			boolean isHoldable = isItemHoldable(itemInfo, curScope, isHoldableUnscoped);
 
-			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, primaryFormat, isHoldable.isHoldable(), false, false, record, originalUrl);
+			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, primaryFormat, isHoldable, false, false, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 				scopingInfo.setAvailable(available);
-				scopingInfo.setHoldable(isHoldable.isHoldable());
-				scopingInfo.setHoldablePTypes(isHoldable.getHoldablePTypes());
-				scopingInfo.setBookable(false);
-				scopingInfo.setBookablePTypes("");
+				scopingInfo.setHoldable(isHoldable);
 
 				scopingInfo.setInLibraryUseOnly(determineLibraryUseOnly(itemInfo, curScope));
 
@@ -1165,14 +1162,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private final HashMap<String, Boolean> locationsThatHaveHoldabilityChecked = new HashMap<>();
 	private final HashMap<String, Boolean> statusesThatHaveHoldabilityChecked = new HashMap<>();
 
-	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
+	protected boolean isItemHoldableUnscoped(ItemInfo itemInfo){
 		String itemItypeCode =  itemInfo.getITypeCode();
 		if (nonHoldableITypes != null && itemItypeCode != null && itemItypeCode.length() > 0){
 			if (!iTypesThatHaveHoldabilityChecked.containsKey(itemItypeCode)){
 				iTypesThatHaveHoldabilityChecked.put(itemItypeCode, !nonHoldableITypes.matcher(itemItypeCode).matches());
 			}
 			if (!iTypesThatHaveHoldabilityChecked.get(itemItypeCode)){
-				return new HoldabilityInformation(false, new HashSet<>());
+				return false;
 			}
 		}
 		String itemLocationCode =  itemInfo.getLocationCode();
@@ -1181,7 +1178,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				locationsThatHaveHoldabilityChecked.put(itemLocationCode, !nonHoldableLocations.matcher(itemLocationCode).matches());
 			}
 			if (!locationsThatHaveHoldabilityChecked.get(itemLocationCode)){
-				return new HoldabilityInformation(false, new HashSet<>());
+				return false;
 			}
 		}
 		String itemStatusCode = itemInfo.getStatusCode();
@@ -1190,7 +1187,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				statusesThatHaveHoldabilityChecked.put(itemStatusCode, !nonHoldableStatuses.matcher(itemStatusCode).matches());
 			}
 			if (!statusesThatHaveHoldabilityChecked.get(itemStatusCode)){
-				return new HoldabilityInformation(false, new HashSet<>());
+				return false;
 			}
 		}
 		String format = itemInfo.getFormat();
@@ -1198,12 +1195,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			format = itemInfo.getRecordInfo().getPrimaryFormat();
 		}
 		if (nonHoldableFormats.contains(format.toUpperCase())){
-			return new HoldabilityInformation(false, new HashSet<>());
+			return false;
 		}
-		return new HoldabilityInformation(true, new HashSet<>());
+		return true;
 	}
 
-	protected HoldabilityInformation isItemHoldable(ItemInfo itemInfo, Scope curScope, HoldabilityInformation isHoldableUnscoped){
+	protected boolean isItemHoldable(ItemInfo itemInfo, Scope curScope, boolean isHoldableUnscoped){
 		return isHoldableUnscoped;
 	}
 
@@ -1502,7 +1499,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return translatedValues;
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		if (determineAudienceBy == 0) {
 			super.loadTargetAudiences(groupedWork, record, printItems, identifier);
 		}else{

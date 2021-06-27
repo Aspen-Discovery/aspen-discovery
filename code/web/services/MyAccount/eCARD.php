@@ -6,6 +6,7 @@ class eCARD extends Action
 	public function launch()
 	{
 		global $interface;
+
 		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
 		$quipuECardSettings = new QuipuECardSetting();
 		if ($quipuECardSettings->find(true)){
@@ -13,6 +14,7 @@ class eCARD extends Action
 		}else{
 			$interface->assign('eCardSettings', null);
 		}
+
 
 		$this->display('quipuECard.tpl', 'Register for a Library Card', '');
 	}

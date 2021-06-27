@@ -98,7 +98,11 @@ public class ItemInfo{
 	}
 
 	String getItemIdentifier() {
-		return itemIdentifier;
+		if (itemIdentifier == null || itemIdentifier.length() == 0) {
+			return recordInfo.getRecordIdentifier() + "-" + recordInfo.getRelatedItems().indexOf(this);
+		}else {
+			return itemIdentifier;
+		}
 	}
 
 	void setItemIdentifier(String itemIdentifier) {
@@ -412,5 +416,9 @@ public class ItemInfo{
 			ScopingInfo clonedScope = addScope(curScopingInfo.getScope());
 			clonedScope.copyFrom(curScopingInfo);
 		}
+	}
+
+	public String getDetailedStatus() {
+		return detailedStatus;
 	}
 }

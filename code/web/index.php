@@ -72,6 +72,7 @@ try {
 
 global $library;
 global $offlineMode;
+global $configArray;
 
 $interface->assign('islandoraEnabled', $configArray['Islandora']['enabled']);
 
@@ -948,6 +949,7 @@ function loadModuleActionId(){
 	}
 
 	global $enabledModules;
+	global $library;
 	try {
 		if ($checkWebBuilderAliases && array_key_exists('Web Builder', $enabledModules)) {
 			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
@@ -958,6 +960,9 @@ function loadModuleActionId(){
 			}
 			$basicPage = new BasicPage();
 			$basicPage->urlAlias = $requestPath;
+			$basicPageLibrary = new LibraryBasicPage();
+			$basicPageLibrary->libraryId = $library->libraryId;
+			$basicPage->joinAdd($basicPageLibrary, 'INNER', 'libraryFilter', 'id', 'basicPageId');
 			if ($basicPage->find(true)) {
 				$_GET['module'] = 'WebBuilder';
 				$_GET['action'] = 'BasicPage';
@@ -969,6 +974,9 @@ function loadModuleActionId(){
 				require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 				$portalPage = new PortalPage();
 				$portalPage->urlAlias = $requestPath;
+				$portalPageLibrary = new LibraryPortalPage();
+				$portalPageLibrary->libraryId = $library->libraryId;
+				$portalPage->joinAdd($portalPageLibrary, 'INNER', 'libraryFilter', 'id', 'portalPageId');
 				if ($portalPage->find(true)) {
 					$_GET['module'] = 'WebBuilder';
 					$_GET['action'] = 'PortalPage';
@@ -980,6 +988,9 @@ function loadModuleActionId(){
 					require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
 					$form = new CustomForm();
 					$form->urlAlias = $requestPath;
+					$customFormLibrary = new LibraryCustomForm();
+					$customFormLibrary->libraryId = $library->libraryId;
+					$form->joinAdd($customFormLibrary, 'INNER', 'libraryFilter', 'id', 'formId');
 					if ($form->find(true)) {
 						$_GET['module'] = 'WebBuilder';
 						$_GET['action'] = 'Form';

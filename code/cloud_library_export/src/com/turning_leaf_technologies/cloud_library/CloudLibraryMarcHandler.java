@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 
 import com.turning_leaf_technologies.strings.StringUtils;
@@ -289,9 +290,11 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		}
 	}
 
+	Pattern wordsInParensPattern = Pattern.compile("\\(.*?\\)", Pattern.CASE_INSENSITIVE);
 	private String groupCloudLibraryRecord(String title, String subtitle, String author, String format, String cloudLibraryId) {
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
-
+		//Cloud library puts awards within parentheses, we need to remove all of those.
+		title = wordsInParensPattern.matcher(title).replaceAll("");
 		return recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, format, true);
 	}
 

@@ -945,7 +945,6 @@ class Koha extends AbstractIlsDriver
 			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
 			return $hold_result;
 		}
-		$marcRecord = $recordDriver->getMarcRecord();
 
 		//Check to see if the patron already has that record checked out
 		$allowHoldsOnCheckedOutTitles = $this->getKohaSystemPreference('AllowHoldsOnPatronsPossessions');
@@ -959,118 +958,45 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 
-		//Check to see if the title requires item level holds
-		/** @var File_MARC_Data_Field[] $holdTypeFields */
-		$itemLevelHoldAllowed = false;
-		$itemLevelHoldOnly = false;
-		$indexingProfile = $this->getIndexingProfile();
-		$holdTypeFields = $marcRecord->getFields($indexingProfile->itemTag);
-		foreach ($holdTypeFields as $holdTypeField) {
-			if ($holdTypeField->getSubfield('r') != null) {
-				if ($holdTypeField->getSubfield('r')->getData() == 'itemtitle') {
-					$itemLevelHoldAllowed = true;
-				} else if ($holdTypeField->getSubfield('r')->getData() == 'item') {
-					$itemLevelHoldAllowed = true;
-					$itemLevelHoldOnly = true;
-				}
+		//Just a regular bib level hold
+		$hold_result['title'] = $recordDriver->getTitle();
+
+		global $active_ip;
+		$holdParams = [
+			'service' => 'HoldTitle',
+			'patron_id' => $patron->username,
+			'bib_id' => $recordDriver->getId(),
+			'request_location' => $active_ip,
+			'pickup_location' => $pickupBranch
+		];
+
+		if ($cancelDate != null) {
+			if ($this->getKohaVersion() >= 20.05) {
+				$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
+			}else{
+				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}
 		}
 
-		//Get the items the user can place a hold on
-		if ($itemLevelHoldAllowed) {
-			//Need to prompt for an item level hold
-			$items = array();
-			if (!$itemLevelHoldOnly) {
-				//Add a first title returned
-				$items[-1] = array(
-					'itemNumber' => -1,
-					'location' => 'Next available copy',
-					'callNumber' => '',
-					'status' => '',
-				);
-			}
+		$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
+		$placeHoldResponse = $this->getXMLWebServiceResponse($placeHoldURL);
 
-			$hold_result['title'] = $recordDriver->getTitle();
-			$hold_result['items'] = $items;
-			if (count($items) > 0) {
-				$message = 'This title allows item level holds, please select an item to place a hold on.';
-			} else {
-				if (!isset($message)) {
-					$message = 'There are no holdable items for this title.';
-				}
-			}
-			$hold_result['success'] = false;
-			$hold_result['message'] = $message;
-			return $hold_result;
+		//If the hold is successful we go back to the account page and can see
+
+		$hold_result['id'] = $recordId;
+		if ($placeHoldResponse->title) {
+			//everything seems to be good
+			$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
 		} else {
-			//Just a regular bib level hold
-			$hold_result['title'] = $recordDriver->getTitle();
-
-			global $active_ip;
-			$holdParams = [
-				'service' => 'HoldTitle',
-				'patron_id' => $patron->username,
-				'bib_id' => $recordDriver->getId(),
-				'request_location' => $active_ip,
-				'pickup_location' => $pickupBranch
-			];
-
-			if ($cancelDate != null) {
-				if ($this->getKohaVersion() >= 20.05) {
-					$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
-				}else{
-					$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
-				}
-			}
-
-			$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
-			$placeHoldResponse = $this->getXMLWebServiceResponse($placeHoldURL);
-
-			//If the hold is successful we go back to the account page and can see
-
-			$hold_result['id'] = $recordId;
-			if ($placeHoldResponse->title) {
-				//everything seems to be good
-				$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
-				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-				$patron->forceReloadOfHolds();
-			} else {
-				$error = $placeHoldResponse->code;
-				$hold_result['success'] = false;
-				$message = 'The item could not be placed on hold: ';
-				if($error == "damaged") {
-					$message .= 'Item damaged';
-				} elseif ($error == "ageRestricted") {
-					$message .= 'Age restricted';
-				} elseif ($error == "tooManyHoldsForThisRecord") {
-					$message .= 'Exceeded max holds per record';
-				} elseif ($error == "tooManyReservesToday") {
-					$message .= 'Exceeded hold limit for patron';
-				} elseif ($error == "tooManyReserves") {
-					$message .= 'Too many holds';
-				} elseif ($error == "notReservable") {
-					$message .= 'Not holdable';
-				} elseif ($error == "cannotReserveFromOtherBranches") {
-					$message .= 'Patron is from different library';
-				} elseif ($error == "branchNotInHoldGroup") {
-					$message .= 'Cannot place hold from patron\'s library';
-				} elseif ($error == "itemAlreadyOnHold") {
-					$message .= 'Patron already has hold for this item';
-				} elseif ($error == "cannotBeTransferred") {
-					$message .= 'Cannot be transferred to pickup library';
-				} elseif ($error == "pickupNotInHoldGroup") {
-					$message .= 'Only pickup locations within the same hold group are allowed';
-				} elseif ($error == "noReservesAllowed") {
-					$message .= 'No reserves are allowed on this item';
-				} elseif ($error == "libraryNotPickupLocation") {
-					$message .= 'Library is not a pickup location';
-				} else {
-					$message = 'The item could not be placed on hold';
-				}
-				$hold_result['message'] = translate($message);
-			}
-			return $hold_result;
+			$error = $placeHoldResponse->code;
+			$hold_result['success'] = false;
+			$message = 'The item could not be placed on hold: ';
+			$message = $this->getHoldErrorMessage($error, $message);
+			$hold_result['message'] = translate($message);
 		}
+		return $hold_result;
 	}
 
 
@@ -1184,7 +1110,11 @@ class Koha extends AbstractIlsDriver
 			'pickup_location' => $pickupBranch
 		];
 		if ($cancelDate != null) {
-			$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+			if ($this->getKohaVersion() >= 20.05) {
+				$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
+			}else{
+				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+			}
 		}
 
 		$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
@@ -1198,7 +1128,10 @@ class Koha extends AbstractIlsDriver
 		} else {
 			$hold_result['success'] = false;
 			//Look for an alert message
-			$hold_result['message'] = 'Your hold could not be placed. ' . $placeHoldResponse->code;
+			$error = $placeHoldResponse->code;
+			$message = 'The item could not be placed on hold: ';
+			$message = $this->getHoldErrorMessage($error, $message);
+			$hold_result['message'] = translate($message);
 		}
 		return $hold_result;
 	}
@@ -3626,5 +3559,44 @@ class Koha extends AbstractIlsDriver
 		}
 
 		return $messages;
+	}
+
+	/**
+	 * @param SimpleXMLElement $error
+	 * @param string $message
+	 * @return string
+	 */
+	protected function getHoldErrorMessage(SimpleXMLElement $error, string $message): string
+	{
+		if ($error == "damaged") {
+			$message .= 'Item damaged';
+		} elseif ($error == "ageRestricted") {
+			$message .= 'Age restricted';
+		} elseif ($error == "tooManyHoldsForThisRecord") {
+			$message .= 'Exceeded max holds per record';
+		} elseif ($error == "tooManyReservesToday") {
+			$message .= 'Exceeded hold limit for patron';
+		} elseif ($error == "tooManyReserves") {
+			$message .= 'Too many holds';
+		} elseif ($error == "notReservable") {
+			$message .= 'Not holdable';
+		} elseif ($error == "cannotReserveFromOtherBranches") {
+			$message .= 'Patron is from different library';
+		} elseif ($error == "branchNotInHoldGroup") {
+			$message .= 'Cannot place hold from patron\'s library';
+		} elseif ($error == "itemAlreadyOnHold") {
+			$message .= 'Patron already has hold for this item';
+		} elseif ($error == "cannotBeTransferred") {
+			$message .= 'Cannot be transferred to pickup library';
+		} elseif ($error == "pickupNotInHoldGroup") {
+			$message .= 'Only pickup locations within the same hold group are allowed';
+		} elseif ($error == "noReservesAllowed") {
+			$message .= 'No reserves are allowed on this item';
+		} elseif ($error == "libraryNotPickupLocation") {
+			$message .= 'Library is not a pickup location';
+		} else {
+			$message = "The item could not be placed on hold ($error)";
+		}
+		return $message;
 	}
 }

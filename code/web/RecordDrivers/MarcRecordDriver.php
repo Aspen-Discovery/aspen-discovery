@@ -849,21 +849,26 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	function getFormat()
 	{
 		//Rather than loading formats here, let's leverage the work we did at index time
-		$recordDetails = $this->getGroupedWorkDriver()->getSolrField('record_details');
-		if ($recordDetails) {
-			if (!is_array($recordDetails)) {
-				$recordDetails = array($recordDetails);
-			}
-			foreach ($recordDetails as $recordDetailRaw) {
-				$recordDetail = explode('|', $recordDetailRaw);
-				if ($recordDetail[0] == $this->getIdWithSource()) {
-					return array($recordDetail[1]);
-				}
-			}
-			//We did not find a record for this in the index.  It's probably been deleted.
-			return array('Unknown');
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if ($relatedRecord != null){
+			return array($relatedRecord->format);
 		} else {
-			return array('Unknown');
+			$recordDetails = $this->getGroupedWorkDriver()->getSolrField('record_details');
+			if ($recordDetails) {
+				if (!is_array($recordDetails)) {
+					$recordDetails = array($recordDetails);
+				}
+				foreach ($recordDetails as $recordDetailRaw) {
+					$recordDetail = explode('|', $recordDetailRaw);
+					if ($recordDetail[0] == $this->getIdWithSource()) {
+						return array($recordDetail[1]);
+					}
+				}
+				//We did not find a record for this in the index.  It's probably been deleted.
+				return array('Unknown');
+			} else {
+				return array('Unknown');
+			}
 		}
 	}
 
