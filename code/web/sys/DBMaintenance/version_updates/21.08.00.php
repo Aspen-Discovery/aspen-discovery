@@ -215,16 +215,18 @@ function getUpdates21_08_00() : array
 					username VARCHAR(50),
 					password VARCHAR(256)
 				) ENGINE INNODB',
-				'CREATE TABLE IF NOT EXISTS library_comprise_setting (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					compriseId INT NOT NULL,
-					libraryId INT NOT NULL,
-					unique (libraryId, compriseId)
-				) ENGINE INNODB',
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer Comprise', '', 10, 'Controls if the user can change Comprise settings. <em>This has potential security and cost implications.</em>')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Comprise'))",
 			]
 		], //comprise_settings
+		'comprise_link_to_library' => [
+			'title' => 'Link Comprise to library',
+			'description' => 'Link comprise settings to the library',
+			'sql' => [
+				"DROP TABLE if exists library_comprise_setting",
+				"ALTER TABLE library ADD COLUMN compriseSettingId INT(11) DEFAULT -1"
+			]
+		], //comprise_link_to_library
 		'force_reload_of_cloud_library_21_08' => [
 			'title' => 'Force reload of Cloud Library',
 			'description' => 'Force Cloud Library to be reloaded for 21.08',

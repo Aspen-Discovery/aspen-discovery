@@ -33,7 +33,7 @@
 						<table id="finesTable{$smarty.foreach.fineTable.index}" class="fines-table table table-striped">
 							<thead>
 							<tr>
-								{if ($finePaymentType == 2 || $finePaymentType == 3) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+								{if ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
 									<th><input type="checkbox" checked name="selectAllFines{$userId}" id="selectAllFines{$userId}" aria-label="Select all fines" onclick="$('#fines{$userId} .selectedFine').prop('checked', $('#selectAllFines{$userId}').prop('checked'));AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"></th>
 								{/if}
 								{if $showDate}
@@ -58,11 +58,11 @@
 							<tbody>
 								{foreach from=$fines item=fine}
 									<tr>
-										{if ($finePaymentType == 2 || $finePaymentType == 3) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount && $fine.canPayFine !== false}
+										{if ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount && $fine.canPayFine !== false}
 											<td>
 												<input type="checkbox" checked class="selectedFine" name="selectedFine[{$fine.fineId}]" aria-label="Pay Fine {$fine.reason|escapeCSS}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}')" data-fine_id="{$fine.fineId}" data-fine_amt="{$fine.amountVal}" data-outstanding_amt="{if $showOutstanding}{$fine.amountOutstandingVal}{else}0{/if}">
 											</td>
-										{elseif ($finePaymentType == 2 || $finePaymentType == 3) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+										{elseif ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
 											<td></td>
 									    {/if}
 										{if $showDate}
@@ -107,7 +107,7 @@
 							</tbody>
 							<tfoot>
 								<tr class="info">
-									{if ($finePaymentType == 2 || $finePaymentType == 3) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+									{if ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
 										<td></td>
 									{/if}
 									<th>{translate text="Total"}</th>
@@ -134,17 +134,16 @@
 									<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online"}{/if}</div>
 								</a>
 							{/if}
-						{elseif $finePaymentType == 2}
+						{elseif $finePaymentType >= 2}
 							{if $fineTotalsVal.$userId > $minimumFineAmount}
 								{* We are doing an actual payment of fines online *}
-								{include file="MyAccount/paypalPayments.tpl"}
-							{else}
-								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency}</p>
-							{/if}
-						{elseif $finePaymentType == 3}
-							{if $fineTotalsVal.$userId > $minimumFineAmount}
-								{* We are doing an actual payment of fines online *}
-								{include file="MyAccount/msbPayments.tpl"}
+								{if $finePaymentType == 2}
+									{include file="MyAccount/paypalPayments.tpl"}
+								{elseif $finePaymentType == 3}
+									{include file="MyAccount/msbPayments.tpl"}
+								{elseif $finePaymentType == 4}
+									{include file="MyAccount/comprisePayments.tpl"}
+								{/if}
 							{else}
 								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency}</p>
 							{/if}
