@@ -403,33 +403,55 @@ class Koha extends AbstractIlsDriver
 
 			$curCheckout->canRenew = !$curRow['auto_renew'] && $opacRenewalAllowed;
 			$curCheckout->autoRenew = $curRow['auto_renew'];
-			$autoRenewError = $curRow['auto_renew_error'];
 
-			if ($autoRenewError) {
-				if ($autoRenewError == 'on_reserve') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
-				} elseif ($autoRenewError == 'too_many') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
-				} elseif ($autoRenewError == 'auto_account_expired') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_auto_account_expired', 'defaultText' => 'Cannot auto renew, your account has expired']);
-				} elseif ($autoRenewError == 'auto_too_soon') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_auto', 'defaultText' => 'If eligible, this item wil renew on<br/>%1%', '1' => $renewalDate]);
+			if ($curCheckout->autoRenew == 1){
+				$autoRenewError = $curRow['auto_renew_error'];
+				if ($autoRenewError == 'null') {
+					$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_auto', 'defaultText' => 'If eligible, this item will renew on<br/>%1%', '1' => $renewalDate]);
 				}
 			}
-			$curCheckout->autoRenewError = $autoRenewError;
+
+			//Get the number of holds on current checkout, if any
+			$holdsSql = "SELECT *  FROM biblio b  LEFT JOIN reserves h ON (b.biblionumber=h.biblionumber) WHERE b.biblionumber = {$curRow['biblionumber']} GROUP BY b.biblionumber HAVING count(h.reservedate) >= 1";
+			$holdsResults = mysqli_query($this->dbConnection, $holdsSql);
+			$holdsCount = $holdsResults->num_rows;
+			if ($holdsCount >= 1 && $curCheckout->autoRenew == 1) {
+				$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
+			}
 
 			//Get the max renewals by figuring out what rule the checkout was issued under
 			$patronType = $patron->patronType;
 			$itemType = $curRow['itype'];
 			$checkoutBranch = $curRow['branchcode'];
 			/** @noinspection SqlResolve */
-			$issuingRulesSql = "SELECT renewalsallowed FROM issuingrules where categorycode IN ('{$patronType}', '*') and itemtype IN('{$itemType}', '*') and branchcode IN ('{$checkoutBranch}', '*') order by branchcode desc, categorycode desc, itemtype desc limit 1";
+			$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 			$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
 			if ($issuingRulesRS !== false) {
 				if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
-					$curCheckout->maxRenewals = $issuingRulesRow['renewalsallowed'];
+					$curCheckout->maxRenewals = $issuingRulesRow['rule_value'];
+
+					if ($curCheckout->autoRenew == 1) {
+						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+								$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
+						}
+					}
 				}
 				$issuingRulesRS->close();
+			}
+
+			//Get the patron expiration date to check for active card
+			if ($curCheckout->autoRenew == 1){
+				$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = {$patron->username}";
+				$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
+
+				if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
+					$expirationDate = strtotime($patronExpirationRow['dateexpiry']);
+					$today = date("Y-m-d");
+
+					if ($expirationDate < $today) {
+						$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_auto_account_expired', 'defaultText' => 'Cannot auto renew, your account has expired']);
+					}
+				}
 			}
 
 			$checkouts[$curCheckout->source . $curCheckout->sourceId . $curCheckout->userId] = $curCheckout;
@@ -1562,6 +1584,12 @@ class Koha extends AbstractIlsDriver
 			], true);
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			if (!$response) {
+				if ($this->apiCurlWrapper->getResponseCode() != 204) {
+					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+					$result['success'] = true;
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
 				return $result;
 			} else {
 				$hold_response = json_decode($response, false);

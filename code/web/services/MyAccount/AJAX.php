@@ -250,6 +250,118 @@ class MyAccount_AJAX extends JSON_Action
 		);
 	}
 
+	function cancelHoldSelectedItems()
+	{
+		$result = array(
+			'success' => false,
+			'message' => 'Error cancelling hold.'
+		);
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['message'] = 'You must be logged in to cancel a hold.  Please close this dialog and login again.';
+		} else {
+			$success = 0;
+			$user = UserAccount::getLoggedInUser();
+			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+			$allUnavailableHolds = $allHolds['unavailable'];
+			if(isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
+				$total = count($_REQUEST['selected']);
+				foreach($_REQUEST['selected'] as $selected => $ignore) {
+					@list($patronId, $recordId, $cancelId) = explode('|', $selected);
+					$patronOwningHold = $user->getUserReferredTo($patronId);
+					if ($patronOwningHold == false) {
+						$tmpResult = array(
+							'success' => false,
+							'message' => 'Sorry, it looks like you don\'t have access to that patron.'
+						);
+					} else {
+						foreach ($allUnavailableHolds as $key) {
+							if($key->sourceId == $recordId) {
+								$holdType = $key->source;
+								break;
+							}
+						}
+						if ($holdType == 'ils') {
+							$tmpResult = $user->cancelHold($recordId, $cancelId);
+							if($tmpResult['success']){$success++;}
+						} else if ($holdType == 'axis360') {
+							require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+							$driver = new Axis360Driver();
+							$tmpResult = $driver->cancelHold($user, $recordId);
+							if($tmpResult['success']){$success++;}
+						} else if ($holdType == 'overdrive') {
+							require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+							$driver = new OverDriveDriver();
+							$tmpResult = $driver->cancelHold($user, $recordId);
+							if($tmpResult['success']){$success++;}
+						} else if ($holdType == 'cloud_library') {
+							require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+							$driver = new CloudLibraryDriver();
+							$tmpResult = $driver->cancelHold($user, $recordId);
+							if($tmpResult['success']){$success++;}
+						}
+
+						$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were canceled.</div>';
+						$tmpResult['message'] = $message;
+					}
+				}
+			} else {
+				$tmpResult['message'] = 'No holds were selected to canceled';
+			}
+		}
+
+		return $tmpResult;
+	}
+
+	function cancelAllHolds()
+	{
+		$tmpResult = array(
+			'success' => false,
+			'message' => array('Unable to cancel all holds'),
+		);
+		$user = UserAccount::getLoggedInUser();
+		if ($user) {
+			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+			$allUnavailableHolds = $allHolds['unavailable'];
+			$total = count($allUnavailableHolds);
+			$success = 0;
+
+			foreach ($allUnavailableHolds as $hold) {
+				// cancel each hold
+				$recordId = $hold->sourceId;
+				$cancelId = $hold->cancelId;
+				$holdType = $hold->source;
+				if ($holdType == 'ils') {
+					$tmpResult = $user->cancelHold($recordId, $cancelId);
+					if($tmpResult['success']){$success++;}
+				} else if ($holdType == 'axis360') {
+					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+					$driver = new Axis360Driver();
+					$tmpResult = $driver->cancelHold($user, $recordId);
+					if($tmpResult['success']){$success++;}
+				} else if ($holdType == 'overdrive') {
+					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+					$driver = new OverDriveDriver();
+					$tmpResult = $driver->cancelHold($user, $recordId);
+					if($tmpResult['success']){$success++;}
+				} else if ($holdType == 'cloud_library') {
+					require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+					$driver = new CloudLibraryDriver();
+					$tmpResult = $driver->cancelHold($user, $recordId);
+					if($tmpResult['success']){$success++;}
+				}
+
+				$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were canceled.</div>';
+				$tmpResult['message'] = $message;
+
+			}
+		} else {
+			$tmpResult['message'] = 'You must be logged in to cancel holds';
+		}
+
+		return $tmpResult;
+	}
+
 	/** @noinspection PhpUnused */
 	function cancelBooking()
 	{
@@ -363,6 +475,95 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	function freezeHoldSelectedItems() {
+		$tmpResult = array( // set default response
+			'success' => false,
+			'message' => 'Error freezing hold.'
+		);
+
+		if (!UserAccount::isLoggedIn()) {
+			$tmpResult['message'] = 'You must be logged in to freeze a hold.  Please close this dialog and login again.';
+		} else {
+			$user = UserAccount::getLoggedInUser();
+			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+			$allUnavailableHolds = $allHolds['unavailable'];
+			$success = 0;
+			$failed = 0;
+			if(isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
+				$total = count($_REQUEST['selected']);
+				foreach($_REQUEST['selected'] as $selected => $ignore) {
+					@list($patronId, $recordId, $holdId) = explode('|', $selected);
+					$patronOwningHold = $user->getUserReferredTo($patronId);
+					if ($patronOwningHold == false) {
+						$tmpResult = array(
+							'success' => false,
+							'message' => 'Sorry, it looks like you don\'t have access to that patron.'
+						);
+					} else {
+						foreach ($allUnavailableHolds as $key) {
+							if($key->sourceId == $recordId) {
+								$holdType = $key->source;
+								$frozen = $key->frozen;
+								$canFreeze = $key->canFreeze;
+								break;
+							}
+						}
+						if($frozen != 1 && $canFreeze == 1){
+							if ($holdType == 'ils') {
+								$tmpResult = $user->freezeHold($recordId, $holdId, false);
+								if($tmpResult['success']){$success++;}else{$failed++;}
+							} else if ($holdType == 'axis360') {
+								require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+								$driver = new Axis360Driver();
+								$tmpResult = $driver->freezeHold($user, $recordId);
+								if($tmpResult['success']){$success++;}else{$failed++;}
+							} else if ($holdType == 'overdrive') {
+								require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+								$driver = new OverDriveDriver();
+								$tmpResult = $driver->freezeHold($user, $recordId);
+								if($tmpResult['success']){$success++;}else{$failed++;}
+							} else if ($holdType == 'cloud_library') {
+								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+								$driver = new CloudLibraryDriver();
+								$tmpResult = $driver->freezeHold($user, $recordId);
+								if($tmpResult['success']){$success++;}else{$failed++;}
+							} else {
+								$failed++;
+							}
+						} else if ($canFreeze == 0){
+							$failed++;
+						} else if ($frozen == 1) {
+							$failed++;
+						}
+
+						$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
+						$tmpResult['message'] = $message;
+
+					}
+				}
+			} else {
+				$tmpResult['message'] = 'No holds were selected to freeze';
+			}
+		}
+
+		return $tmpResult;
+	}
+
+	function freezeHoldAll() {
+		$user = UserAccount::getLoggedInUser();
+		if (!$user) {
+			$tmpResult['message'] = 'You must be logged in to modify a hold.  Please close this dialog and login again.';
+		} elseif (!empty($_REQUEST['patronId'])) {
+			$tmpResult = $user->freezeAllHolds();
+		} else {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Modifying Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$tmpResult['message'] = 'No Patron was specified.';
+		}
+		return $tmpResult;
+	}
+
 	function thawHold()
 	{
 		$user = UserAccount::getLoggedInUser();
@@ -400,6 +601,95 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		return $result;
+	}
+
+	function thawHoldSelectedItems() {
+		$result = array( // set default response
+			'success' => false,
+			'message' => 'Error thawing hold.'
+		);
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['message'] = 'You must be logged in to thaw a hold.  Please close this dialog and login again.';
+		} else {
+			$failure_messages = array();
+			$success = 0;
+			$failed = 0;
+			$user = UserAccount::getLoggedInUser();
+			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+			$allUnavailableHolds = $allHolds['unavailable'];
+			if(isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
+				$total = count($_REQUEST['selected']);
+				foreach($_REQUEST['selected'] as $selected => $ignore) {
+					@list($patronId, $recordId, $holdId) = explode('|', $selected);
+					$patronOwningHold = $user->getUserReferredTo($patronId);
+					if ($patronOwningHold == false) {
+						$tmpResult = array(
+							'success' => false,
+							'message' => 'Sorry, it looks like you don\'t have access to that patron.'
+						);
+					} else {
+						foreach ($allUnavailableHolds as $key) {
+							if($key->sourceId == $recordId) {
+								$holdType = $key->source;
+								$frozen = $key->frozen;
+								$canFreeze = $key->canFreeze;
+								break;
+							}
+						}
+						if($frozen != 0 && $canFreeze == 1) {
+							if ($holdType == 'ils') {
+								$tmpResult = $user->thawHold($recordId, $holdId);
+								if($tmpResult['success']){$success++;}else{$failed++;}
+							} else if ($holdType == 'axis360') {
+								require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+								$driver = new Axis360Driver();
+								$tmpResult = $driver->thawHold($user, $recordId);
+								if($tmpResult['success']){$success++;}else{$failed++;}
+							} else if ($holdType == 'overdrive') {
+								require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+								$driver = new OverDriveDriver();
+								$tmpResult = $driver->thawHold($user, $recordId);
+								if($tmpResult['success']){$success++;}else{$failed++;}
+							} else if ($holdType == 'cloud_library') {
+								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+								$driver = new CloudLibraryDriver();
+								$tmpResult = $driver->thawHold($user, $recordId);
+								if($tmpResult['success']){$success++;}else{$failed++;}
+							} else {
+								$failed++;
+							}
+						}
+
+						$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
+						$tmpResult['message'] = $message;
+
+					}
+				}
+			} else {
+				$tmpResult['message'] = 'No holds were selected to thaw';
+			}
+		}
+
+		return $tmpResult;
+	}
+
+	function thawHoldAll() {
+		$user = UserAccount::getLoggedInUser();
+
+		if (!$user) {
+			$tmpResult['message'] = 'You must be logged in to modify a hold.  Please close this dialog and login again.';
+		} elseif (!empty($_REQUEST['patronId'])) {
+			$tmpResult = $user->thawAllHolds();
+
+		} else {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Modifying Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$tmpResult['message'] = 'No Patron was specified.';
+		}
+
+		return $tmpResult;
 	}
 
 	/** @noinspection PhpUnused */
@@ -1990,6 +2280,7 @@ class MyAccount_AJAX extends JSON_Action
 					}
 				}
 				$interface->assign('notification_method', strtolower($notification_method));
+				$interface->assign('userId', $user->id);
 
 				$result['success'] = true;
 				$result['message'] = "";
