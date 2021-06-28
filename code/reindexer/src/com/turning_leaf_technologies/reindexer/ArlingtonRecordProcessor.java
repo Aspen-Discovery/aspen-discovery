@@ -35,7 +35,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 	}
 
 	@Override
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//For Arlington we can load the literary forms based off of the location code:
 		// ??f?? = Fiction
 		// ??n?? = Non-Fiction

@@ -3,18 +3,16 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.indexing.Scope;
 
 class ScopingInfo{
-	private ItemInfo item;
+	private final ItemInfo item;
 	private final Scope scope;
 	private String status;
 	private String groupedStatus;
 	private boolean available;
 	private boolean holdable;
 	private boolean locallyOwned;
-	private boolean bookable;
+	private boolean bookable = false;
 	private boolean inLibraryUseOnly;
 	private boolean libraryOwned;
-	private String holdablePTypes;
-	private String bookablePTypes;
 	private String localUrl;
 
 	ScopingInfo(Scope scope, ItemInfo item){
@@ -24,14 +22,6 @@ class ScopingInfo{
 
 	public void setStatus(String status) {
 		this.status = status;
-	}
-
-	void setHoldablePTypes(String holdablePTypes) {
-		this.holdablePTypes = holdablePTypes;
-	}
-
-	void setBookablePTypes(String bookablePTypes) {
-		this.bookablePTypes = bookablePTypes;
 	}
 
 	void setGroupedStatus(String groupedStatus) {
@@ -62,10 +52,6 @@ class ScopingInfo{
 		return scope;
 	}
 
-	void setBookable(boolean bookable) {
-		this.bookable = bookable;
-	}
-
 	void setInLibraryUseOnly(boolean inLibraryUseOnly) {
 		this.inLibraryUseOnly = inLibraryUseOnly;
 	}
@@ -93,8 +79,8 @@ class ScopingInfo{
 					bookable + "|" +
 					inLibraryUseOnly + "|" +
 					libraryOwned + "|" +
-					Util.getCleanDetailValue(holdablePTypes) + "|" +
-					Util.getCleanDetailValue(bookablePTypes) + "|" +
+					"|" + //holdable PTypes (removed)
+					"|" + //bookable PTypes (removed)
 					Util.getCleanDetailValue(localUrl) + "|"
 					;
 		}
@@ -114,8 +100,26 @@ class ScopingInfo{
 		this.bookable = scopingInfo.bookable;
 		this.inLibraryUseOnly = scopingInfo.inLibraryUseOnly;
 		this.libraryOwned = scopingInfo.libraryOwned;
-		this.holdablePTypes = scopingInfo.holdablePTypes;
-		this.bookablePTypes = scopingInfo.bookablePTypes;
 		this.localUrl = scopingInfo.localUrl;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public String getGroupedStatus() {
+		return groupedStatus;
+	}
+
+	public boolean isHoldable() {
+		return holdable;
+	}
+
+	public boolean isInLibraryUseOnly() {
+		return inLibraryUseOnly;
+	}
+
+	public String getLocalUrl() {
+		return localUrl;
 	}
 }

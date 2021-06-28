@@ -83,6 +83,58 @@ class Polaris extends AbstractIlsDriver
 		return true;
 	}
 
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
+	{
+		//Get preferences for the barcode
+		$readingHistoryEnabled = false;
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/preferences";
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		if ($response && $this->lastResponseCode == 200){
+			$jsonResponse = json_decode($response);
+			$readingHistoryEnabled = $jsonResponse->PatronPreferences->ReadingListEnabled;
+		}
+
+		if ($readingHistoryEnabled) {
+			$readingHistoryTitles = array();
+			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/readinghistory?rowsperpage=5&page=0";
+			$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+			if ($response && $this->lastResponseCode == 200) {
+				$jsonResponse = json_decode($response);
+				$readingHistoryList = $jsonResponse->PatronReadingHistoryGetRows;
+				foreach ($readingHistoryList as $readingHistoryItem) {
+					$checkOutDate = $this->parsePolarisDate($readingHistoryItem->CheckOutDate);
+					$curTitle = array();
+					$curTitle['id'] = $readingHistoryItem->BibID;
+					$curTitle['shortId'] = $readingHistoryItem->BibID;
+					$curTitle['recordId'] = $readingHistoryItem->BibID;
+					$curTitle['title'] = $readingHistoryItem->Title;
+					$curTitle['author'] = $readingHistoryItem->Author;
+					$curTitle['format'] = $readingHistoryItem->FormatDescription;
+					$curTitle['checkout'] = $checkOutDate;
+					$curTitle['checkin'] = null; //Polaris doesn't indicate when things are checked in
+					$curTitle['ratingData'] = null;
+					$curTitle['permanentId'] = null;
+					$curTitle['linkUrl'] = null;
+					$curTitle['coverUrl'] = null;
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $curTitle['recordId']);
+					if ($recordDriver->isValid()) {
+						$curTitle['ratingData'] = $recordDriver->getRatingData();
+						$curTitle['permanentId'] = $recordDriver->getPermanentId();
+						$curTitle['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+						$curTitle['format'] = $recordDriver->getFormats();
+						$curTitle['author'] = $recordDriver->getPrimaryAuthor();
+					}
+					$recordDriver = null;
+					$readingHistoryTitles[] = $curTitle;
+				}
+			}
+		}
+
+		return array('historyActive' => $readingHistoryEnabled, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
+	}
+
 	public function getCheckouts(User $patron)
 	{
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
@@ -552,6 +604,7 @@ class Polaris extends AbstractIlsDriver
 				$user->lastname = isset($lastName) ? $lastName : '';
 				$forceDisplayNameUpdate = true;
 			}
+			$user->_fullname = $user->firstname . " " . $user->lastname;
 			if ($forceDisplayNameUpdate) {
 				$user->displayName = '';
 			}
@@ -651,6 +704,15 @@ class Polaris extends AbstractIlsDriver
 			if ($userExistsInDB) {
 				$user->update();
 			} else {
+				//New user check to see if they have reading history
+				//Get preferences for the barcode
+				$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$user->getBarcode()}/preferences";
+				$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($user->getBarcode(), $user->getPasswordOrPin()));
+				if ($response && $this->lastResponseCode == 200){
+					$jsonResponse = json_decode($response);
+					$user->trackReadingHistory = $jsonResponse->PatronPreferences->ReadingListEnabled;
+				}
+
 				$user->created = date('Y-m-d');
 				$user->insert();
 			}
@@ -872,6 +934,11 @@ class Polaris extends AbstractIlsDriver
 			}
 		}
 		return $fines;
+	}
+
+	function showOutstandingFines()
+	{
+		return true;
 	}
 
 	public function getWebServiceResponse($query, $method = 'GET', $patronPassword = '', $body = false){

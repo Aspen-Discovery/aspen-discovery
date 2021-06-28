@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 
 class HooplaProcessor {
@@ -159,8 +160,6 @@ class HooplaProcessor {
 
 				JSONArray genres = rawResponse.getJSONArray("genres");
 				HashSet<String> genresToAdd = new HashSet<>();
-//				HashMap<String, Integer> literaryForm = new HashMap<>();
-//				HashMap<String, Integer> literaryFormFull = new HashMap<>();
 				HashSet<String> topicsToAdd = new HashSet<>();
 				for (int i = 0; i < genres.length(); i++) {
 					String genre = genres.getString(i);
@@ -173,20 +172,24 @@ class HooplaProcessor {
 				groupedWork.addTopicFacet(topicsToAdd);
 				groupedWork.addTopic(topicsToAdd);
 
-//				boolean isFiction = productRS.getBoolean("isFiction");
-//				if (!isFiction){
-//					Util.addToMapWithCount(literaryForm, "Non Fiction");
-//					Util.addToMapWithCount(literaryFormFull, "Non Fiction");
-//				}else{
-//					Util.addToMapWithCount(literaryForm, "Fiction");
-//					Util.addToMapWithCount(literaryFormFull, "Fiction");
-//				}
-//				if (literaryForm.size() > 0){
-//					groupedWork.addLiteraryForms(literaryForm);
-//				}
-//				if (literaryFormFull.size() > 0){
-//					groupedWork.addLiteraryFormsFull(literaryFormFull);
-//				}
+				HashMap<String, Integer> literaryForm = new HashMap<>();
+				HashMap<String, Integer> literaryFormFull = new HashMap<>();
+				if (rawResponse.has("fiction")){
+					if (rawResponse.getBoolean("fiction") == true){
+						Util.addToMapWithCount(literaryForm, "Fiction");
+						Util.addToMapWithCount(literaryFormFull, "Fiction");
+					}else{
+						Util.addToMapWithCount(literaryForm, "Non Fiction");
+						Util.addToMapWithCount(literaryFormFull, "Non Fiction");
+					}
+				}
+				if (literaryForm.size() > 0){
+					groupedWork.addLiteraryForms(literaryForm);
+				}
+				if (literaryFormFull.size() > 0){
+					groupedWork.addLiteraryFormsFull(literaryFormFull);
+				}
+
 				String publisher = rawResponse.getString("publisher");
 				groupedWork.addPublisher(publisher);
 				//publication date

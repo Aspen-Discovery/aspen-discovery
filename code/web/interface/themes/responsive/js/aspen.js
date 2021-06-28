@@ -6537,6 +6537,8 @@ AspenDiscovery.Account = (function(){
 							orderInfo = response.orderID;
 						} else if(paymentType == 'MSB') {
 							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType == 'Comprise') {
+							orderInfo = response.paymentRequestUrl;
 						}
 					}
 				}
@@ -6545,16 +6547,26 @@ AspenDiscovery.Account = (function(){
 		},
 
 		createMSBOrder: function(finesFormId) {
-			$url = this.createGenericOrder(finesFormId, 'MSB');
-			if ($url === false) {
+			var url = this.createGenericOrder(finesFormId, 'MSB');
+			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
-				window.location.href = $url;
+				window.location.href = url;
 			}
 		},
 
 		createPayPalOrder: function(finesFormId) {
 			return this.createGenericOrder(finesFormId, 'PayPal');
+		},
+
+		createCompriseOrder: function(finesFormId) {
+			var url = this.createGenericOrder(finesFormId, 'Comprise');
+			if (url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				$(finesFormId).attr('action', url).submit();
+				return true;
+			}
 		},
 
 		completePayPalOrder: function(orderId, patronId) {

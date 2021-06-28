@@ -2839,7 +2839,7 @@ class MyAccount_AJAX extends JSON_Action
 			$paymentId = $payment->insert();
 			$purchaseUnits['custom_id'] = $paymentId;
 
-			return [$userLibrary, $payment, $purchaseUnits];
+			return [$userLibrary, $payment, $purchaseUnits, $patron];
 		}
 	}
 
@@ -2956,6 +2956,37 @@ class MyAccount_AJAX extends JSON_Action
 			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;
 			$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id;
 			return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
+		}
+	}
+
+	function createCompriseOrder() {
+		global $configArray;
+		$result = $this->createGenericOrder('comprise');
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			/** @var Library $userLibrary */
+			/** @var User $patron */
+			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			require_once ROOT_DIR . '/sys/ECommerce/CompriseSetting.php';
+			$compriseSettings = new CompriseSetting();
+			$compriseSettings->id = $userLibrary->compriseSettingId;
+			if ($compriseSettings->find(true)) {
+				$paymentRequestUrl = 'https://smartpayapi.comprisesmartterminal.com/smartpayapi/websmartpay.dll?GetCreditForm';
+				$paymentRequestUrl .= "&CustomerID=" . $compriseSettings->customerId;
+				$paymentRequestUrl .= "&PatronID=" . $patron->getBarcode();
+				$paymentRequestUrl .= '&UserName=' . urlencode($compriseSettings->username);
+				$paymentRequestUrl .= '&Password=' . urlencode($compriseSettings->password);
+				$paymentRequestUrl .= '&Amount=' . $payment->totalPaid;
+				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id);
+				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/Fines');
+				$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
+				$paymentRequestUrl .= '&INVNUM=' . $payment->id;
+
+				return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
+			}else{
+				return ['success' => false, 'message' => 'Comprise was not properly configured'];
+			}
 		}
 	}
 

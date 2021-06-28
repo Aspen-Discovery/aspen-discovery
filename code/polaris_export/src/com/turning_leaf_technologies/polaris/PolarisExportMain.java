@@ -752,9 +752,8 @@ public class PolarisExportMain {
 			numChanges += response.numChanges;
 			//Polaris has an issue where if there are more than 100 suppressed titles, it will return 0 as the lastId.  We need to account for that
 			long lastIdLong = Long.parseLong(response.lastId);
-			if (lastIdLong == 0){
-				highestIdProcessed = lastIdForThisBatch + 100;
-			}else if (lastIdLong > highestIdProcessed){
+			//MDN this seems to be normal if nothing has changed since the last extract.
+			if (lastIdLong == 0 || lastIdLong > highestIdProcessed){
 				highestIdProcessed = lastIdLong;
 			}
 			lastId = Long.toString(highestIdProcessed);

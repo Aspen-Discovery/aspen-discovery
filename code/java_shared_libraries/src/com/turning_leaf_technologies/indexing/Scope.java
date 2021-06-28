@@ -9,6 +9,8 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 public class Scope implements Comparable<Scope>{
+	private long id;
+
 	private String scopeName;
 	private String facetLabel;
 
@@ -43,6 +45,14 @@ public class Scope implements Comparable<Scope>{
 	private Axis360Scope axis360Scope;
 
 	private final HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<>();
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
 
 	public String getScopeName() {
 		return scopeName;

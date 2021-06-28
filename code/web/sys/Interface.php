@@ -238,7 +238,7 @@ class UInterface extends Smarty
 					$finePaymentType = 0;
 				}
 				$this->assign('eCommerceLink', $eCommerceLink);
-			}elseif ($finePaymentType == 2 || $finePaymentType == 3){
+			}elseif ($finePaymentType >= 2){
 				$this->assign('eCommerceLink', '/MyAccount/Fines');
 			}
 			$this->assign('finePaymentType', $finePaymentType);

@@ -2403,6 +2403,9 @@ class User extends DataObject
 		$sections['third_party_enrichment']->addAction(new AdminAction('Syndetics Settings', 'Define settings for Syndetics integration.', '/Enrichment/SyndeticsSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Wikipedia Integration', 'Modify which Wikipedia content is displayed for authors.', '/Admin/AuthorEnrichment'), 'Administer Wikipedia Integration');
 
+		$sections['ecommerce'] = new AdminSection('eCommerce Settings');
+		$sections['ecommerce']->addAction(new AdminAction('Comprise Settings', 'Define Settings for Comprise SMARTPAY.', '/Admin/CompriseSettings'), 'Administer Comprise');
+
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
 		$indexingProfileAction = new AdminAction('Indexing Profiles', 'Define how records from the ILS are loaded into Aspen Discovery.', '/ILS/IndexingProfiles');
 		$translationMapsAction = new AdminAction('Translation Maps', 'Define how field values are mapped between the ILS and Aspen Discovery.', '/ILS/TranslationMaps');
