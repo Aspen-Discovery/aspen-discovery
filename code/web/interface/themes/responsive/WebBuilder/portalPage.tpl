@@ -23,6 +23,6 @@
 			{/foreach}
 				{if $row->makeAccordion == '1'}</div>{/if}
 		</div>
-	{/foreach}
 		{if $row->makeAccordion == '1'}</div>{/if}
+	{/foreach}
 </div>
