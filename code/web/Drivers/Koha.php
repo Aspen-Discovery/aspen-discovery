@@ -1424,7 +1424,7 @@ class Koha extends AbstractIlsDriver
 			//We renewed the hold
 			$success = true;
 			$message = 'Your item was successfully renewed.';
-			$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals .' renewals remaining.';
+			$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfCheckouts();
 		} else {
