@@ -2417,9 +2417,9 @@ class GroupedWorkDriver extends IndexRecordDriver
 				if (!empty($groupedWork->permanent_id) && $groupedWork->find(true)) {
 					global $aspen_db;
 					//Load manifestation and variation information
-					$variationQuery = "SELECT grouped_work_variation.id, indexed_language.language, indexed_econtentsource.eContentSource, indexed_format.format, indexed_format_category.formatCategory FROM grouped_work_variation 
+					$variationQuery = "SELECT grouped_work_variation.id, indexed_language.language, indexed_eContentSource.eContentSource, indexed_format.format, indexed_format_category.formatCategory FROM grouped_work_variation 
 									  LEFT JOIN indexed_language on primaryLanguageId = indexed_language.id
-									  LEFT JOIN indexed_econtentsource on eContentSourceId = indexed_econtentsource.id
+									  LEFT JOIN indexed_eContentSource on eContentSourceId = indexed_eContentSource.id
 									  LEFT JOIN indexed_format on formatId = indexed_format.id
 									  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
 									  where grouped_work_variation.id IN (SELECT DISTINCT grouped_work_record_items.groupedWorkVariationId
@@ -2442,12 +2442,12 @@ class GroupedWorkDriver extends IndexRecordDriver
 					}
 
 					//Load record information
-					$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationdate.publicationDate, indexed_physicaldescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
+					$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
 								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
-								  LEFT JOIN indexed_publicationdate ON publicationDateId = indexed_publicationdate.id
-								  LEFT JOIN indexed_physicaldescription ON physicalDescriptionId = indexed_physicaldescription.id
+								  LEFT JOIN indexed_publicationDate ON publicationDateId = indexed_publicationDate.id
+								  LEFT JOIN indexed_physicalDescription ON physicalDescriptionId = indexed_physicalDescription.id
 								  LEFT JOIN indexed_format on formatId = indexed_format.id
 								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
 								  LEFT JOIN indexed_language on languageId = indexed_language.id
@@ -2475,13 +2475,13 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 					//Load item/scope information
 					$scopeQuery = "SELECT grouped_work_record_scope.groupedWorkItemId, scopeId, available, holdable, inLibraryUseOnly, locallyOwned, libraryOwned, localUrl, groupedStatusTbl.status as groupedStatus, statusTbl.status as status, 
-								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_callnumber.callNumber, indexed_shelfLocation.shelfLocation, numCopies, isOrderItem, dateAdded, 
+								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_callNumber.callNumber, indexed_shelfLocation.shelfLocation, numCopies, isOrderItem, dateAdded, 
        							  indexed_locationCode.locationCode, indexed_subLocationCode.subLocationCode, lastCheckInDate
 								  FROM grouped_work_record_scope 
 								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id 
 								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id 
 								  LEFT JOIN grouped_work_record_items ON groupedWorkItemId = grouped_work_record_items.id
-								  LEFT JOIN indexed_callnumber ON callNumberId = indexed_callnumber.id
+								  LEFT JOIN indexed_callNumber ON callNumberId = indexed_callNumber.id
 								  LEFT JOIN indexed_shelfLocation ON shelfLocationId = indexed_shelfLocation.id
 								  LEFT JOIN indexed_locationCode on locationCodeId = indexed_locationCode.id
 								  LEFT JOIN indexed_subLocationCode on subLocationCodeId = indexed_subLocationCode.id
