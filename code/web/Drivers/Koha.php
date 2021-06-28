@@ -401,8 +401,19 @@ class Koha extends AbstractIlsDriver
 			$curCheckout->renewIndicator = $curRow['itemnumber'];
 			$curCheckout->renewCount = $curRow['renewals'];
 
-			$curCheckout->canRenew = !$curRow['auto_renew'] && $opacRenewalAllowed;
-			$curCheckout->autoRenew = $curRow['auto_renew'];
+			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = {$patron->username}";
+			$renewPrefResults = mysqli_query($this->dbConnection, $renewPrefSql);
+			if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
+				$renewPref = $renewPrefRow['autorenew_checkouts'];
+
+				if ($renewPref == 0) {
+					$curCheckout->autoRenew = "0";
+				} else {
+					$curCheckout->autoRenew = $curRow['auto_renew'];
+				}
+			}
+
+			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
 
 			if ($curCheckout->autoRenew == 1){
 				$autoRenewError = $curRow['auto_renew_error'];
