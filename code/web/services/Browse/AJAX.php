@@ -162,10 +162,7 @@ class Browse_AJAX extends Action {
 		global $locationSingleton;
 		$searchLocation = $locationSingleton->getSearchLocation();
 		$patronHomeLibrary = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-		$libraryId = $patronHomeLibrary == null ? -1 : $patronHomeLibrary->libraryId;
-		if ($libraryId == -1) {
-			$libraryId = $library->libraryId;
-		}
+		$libraryId = $patronHomeLibrary == null ? $library->libraryId : $patronHomeLibrary->libraryId;
 		$categoryName = isset($_REQUEST['categoryName']) ? $_REQUEST['categoryName'] : '';
 		// value of zero means nothing was selected.
 		$addAsSubCategoryOf = isset($_REQUEST['addAsSubCategoryOf']) && !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;
