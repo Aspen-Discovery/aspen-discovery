@@ -492,13 +492,22 @@ class Polaris extends AbstractIlsDriver
 						$hold_result['message'] .= " ({$jsonResult->PAPIErrorCode})";
 					}
 				}else {
-					$hold_result['success'] = true;
-					$hold_result['message'] = translate(['text' => "ils_hold_success", 'defaultText' => "Your hold was placed successfully."]);
-					if (isset($jsonResult->QueuePosition)) {
-						$hold_result['message'] .= translate(['text'=>"ils_hold_success_position", 'defaultText'=>"&nbsp;You are number <b>%1%</b> in the queue.", '1' => $jsonResult->QueuePosition]);
+					if ($jsonResult->StatusType == 1) {
+						$hold_result['success'] = false;
+						$hold_result['message'] = translate('Your hold could not be placed. ' . $jsonResult->Message);
+					}else if ($jsonResult->StatusType == 2) {
+						$hold_result['success'] = true;
+						$hold_result['message'] = translate(['text' => "ils_hold_success", 'defaultText' => "Your hold was placed successfully."]);
+						if (isset($jsonResult->QueuePosition)) {
+							$hold_result['message'] .= translate(['text' => "ils_hold_success_position", 'defaultText' => "&nbsp;You are number <b>%1%</b> in the queue.", '1' => $jsonResult->QueuePosition]);
+						}
+						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+						$patron->forceReloadOfHolds();
+					}else if ($jsonResult->StatusType == 3) {
+						$hold_result['success'] = false;
+						$hold_result['confirmationNeeded'] = true;
+						$hold_result['message'] = translate($jsonResult->Message);
 					}
-					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-					$patron->forceReloadOfHolds();
 				}
 			} else {
 				$hold_result['success'] = false;
