@@ -154,7 +154,11 @@ class DataObjectUtil
 				if ($object instanceof UnsavedDataObject && $property['type'] == 'enum'){
 					$object->setProperty($propertyName, $property['values'][$_REQUEST[$propertyName]], $property);
 				}else{
-					$object->setProperty($propertyName, strip_tags(trim($_REQUEST[$propertyName])), $property);
+					$newValue = strip_tags(trim($_REQUEST[$propertyName]));
+					if ($newValue != null) {
+						$newValue = preg_replace('/[^[:print:]\r\n]/', '', $newValue);
+					}
+					$object->setProperty($propertyName, $newValue, $property);
 				}
 			} else {
 				$object->setProperty($propertyName, "", $property);
