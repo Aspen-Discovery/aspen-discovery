@@ -162,7 +162,7 @@ class Browse_AJAX extends Action {
 		global $locationSingleton;
 		$searchLocation = $locationSingleton->getSearchLocation();
 		$patronHomeLibrary = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-		$libraryId = $patronHomeLibrary == null ? -1 : $patronHomeLibrary->libraryId;
+		$libraryId = $patronHomeLibrary == null ? $library->libraryId : $patronHomeLibrary->libraryId;
 		$categoryName = isset($_REQUEST['categoryName']) ? $_REQUEST['categoryName'] : '';
 		// value of zero means nothing was selected.
 		$addAsSubCategoryOf = isset($_REQUEST['addAsSubCategoryOf']) && !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;
@@ -244,7 +244,7 @@ class Browse_AJAX extends Action {
 			if (!$browseCategory->insert()){
 				return array(
 					'success' => false,
-					'message' => "There was an error saving the category.  Please contact Marmot."
+					'message' => "There was an error saving the category. "
 				);
 			}elseif ($addAsSubCategoryOf) {
 				$id = $browseCategory->id; // get from above insertion operation
