@@ -200,7 +200,11 @@
 									{translate text='koha_auto_renew_auto' defaultText='If eligible, this item will renew on<br/>%1%' 1=$record->getFormattedRenewalDate()}
 								{/if}
 							{else}
-								{translate text="Sorry, this title cannot be renewed"}
+								{if !empty($record->renewError)}
+									{$record->renewError}
+								{else}
+									{translate text="Sorry, this title cannot be renewed"}
+								{/if}
 							{/if}
 						{/if}
 					</div>

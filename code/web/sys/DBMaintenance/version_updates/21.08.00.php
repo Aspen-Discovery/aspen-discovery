@@ -242,5 +242,12 @@ function getUpdates21_08_00() : array
 				"ALTER TABLE indexed_physicalDescription CHANGE COLUMN physicalDescription physicalDescription VARCHAR(1000) collate utf8_bin UNIQUE ",
 			]
 		], //indexed_information_length
+		'renew_error' => [
+			'title' => 'Add renew error on user checkouts',
+			'description' => 'Displays users without auto renew why their hold is not renewable',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN renewError VARCHAR(500)'
+			]
+		],//store_renew_error_for_checkouts
 	];
 }
