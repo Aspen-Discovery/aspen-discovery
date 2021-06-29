@@ -51,9 +51,11 @@
 		<br/>
 
 		<div class="btn-group">
-			{if $source=='all' || $source=='ils' || $source=='rbdigital'}
-				<a href="#" onclick="AspenDiscovery.Account.renewSelectedTitles()" class="btn btn-sm btn-default">{translate text="Renew Selected Items"}</a>
-				<a href="#" onclick="AspenDiscovery.Account.renewAll()" class="btn btn-sm btn-default">{translate text="Renew All"}</a>
+			{if $renewableCheckouts >= 1}
+				{if $source=='all' || $source=='ils' || $source=='rbdigital'}
+					<a href="#" onclick="AspenDiscovery.Account.renewSelectedTitles()" class="btn btn-sm btn-default">{translate text="Renew Selected Items"}</a>
+					<a href="#" onclick="AspenDiscovery.Account.renewAll()" class="btn btn-sm btn-default">{translate text="Renew All"}</a>
+				{/if}
 			{/if}
 			<a class="btn btn-sm btn-default" id="exportToExcel" onclick="return AspenDiscovery.Account.exportCheckouts('{$source}', $('#accountSort_{$source} option:selected').val());">{translate text="Export to Excel"}</a>
 		</div>

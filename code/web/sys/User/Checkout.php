@@ -18,6 +18,7 @@ class Checkout extends CircEntry
 	public $renewIndicator;
 	public $renewalDate;
 	public $canRenew;
+	public $renewError;
 	public $autoRenew;
 	public $autoRenewError;
 	public $maxRenewals;
@@ -58,7 +59,7 @@ class Checkout extends CircEntry
 
 	public function getNumericColumnNames() : array
 	{
-		return ['userId', 'checkoutDate', 'dueDate', 'renewCount', 'canRenew', 'autoRenew', 'maxRenewals', 'fine', 'holdQueueLength', 'allowDownload', 'overdriveRead', 'overdriveListen', 'overdriveVideo', 'overdriveMagazine', 'formatSelected', 'canReturnEarly', 'isSupplemental'];
+		return ['userId', 'checkoutDate', 'dueDate', 'renewCount', 'autoRenew', 'maxRenewals', 'fine', 'holdQueueLength', 'allowDownload', 'overdriveRead', 'overdriveListen', 'overdriveVideo', 'overdriveMagazine', 'formatSelected', 'canReturnEarly', 'isSupplemental'];
 	}
 
 	public function getSerializedFieldNames() : array{

@@ -2093,6 +2093,8 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		global $interface;
 
+		$renewableCheckouts = 0;
+
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error',
@@ -2145,6 +2147,13 @@ class MyAccount_AJAX extends JSON_Action
 				// Get My Transactions
 				$allCheckedOut = $user->getCheckouts(true, $source);
 
+				foreach ($allCheckedOut as $checkout) {
+					if ($checkout->canRenew == 1) {
+						$renewableCheckouts++;
+					}
+				}
+
+				$interface->assign('renewableCheckouts', $renewableCheckouts);
 				$selectedSortOption = $this->setSort('sort', 'checkout');
 				if ($selectedSortOption == null || !array_key_exists($selectedSortOption, $sortOptions)) {
 					$selectedSortOption = 'dueDate';
