@@ -323,7 +323,6 @@ class Koha extends AbstractIlsDriver
 
 		//Get checkouts by screen scraping
 		$checkouts = array();
-		$renewableCheckouts = 0;
 
 		$this->initDatabaseConnection();
 
