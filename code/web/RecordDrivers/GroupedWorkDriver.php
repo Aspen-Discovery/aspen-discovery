@@ -346,6 +346,28 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 	}
 
+	/**
+	 * @param Grouping_Record $a
+	 * @param Grouping_Record $b
+	 * @return int
+	 */
+	function compareRelatedManifestations($a, $b)
+	{
+		//First sort by format
+		$format1 = $a->format;
+		$format2 = $b->format;
+		$formatComparison = strcasecmp($format1, $format2);
+		//Make sure that book is the very first format always
+		if ($formatComparison != 0) {
+			if ($format1 == 'Book') {
+				return -1;
+			} elseif ($format2 == 'Book') {
+				return 1;
+			}
+		}
+		return $formatComparison;
+	}
+
 	public function getAcceleratedReaderData()
 	{
 		$hasArData = false;
@@ -1509,6 +1531,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 				$this->_relatedManifestations[$key] = $manifestation;
 			}
+
+			uasort($this->_relatedManifestations, array($this, "compareRelatedManifestations"));
 			$timer->logTime("Finished loading related manifestations");
 			$memoryWatcher->logMemory("Finished loading related manifestations");
 		}
