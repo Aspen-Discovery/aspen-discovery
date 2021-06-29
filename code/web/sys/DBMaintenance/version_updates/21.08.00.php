@@ -64,7 +64,7 @@ function getUpdates21_08_00() : array
 				) ENGINE INNODB",
 				"CREATE TABLE indexed_edition (
 					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					edition VARCHAR(255) collate utf8_bin UNIQUE 
+					edition VARCHAR(255) collate utf8_bin UNIQUE
 				) ENGINE INNODB",
 				"CREATE TABLE indexed_publisher (
 					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -234,5 +234,13 @@ function getUpdates21_08_00() : array
 				"UPDATE cloud_library_settings set runFullUpdate = 1",
 			]
 		], //force_reload_of_cloud_library_21_08
+		'indexed_information_length' => [
+			'title' => 'Indexed Information Lengths',
+			'description' => 'Increase the length of some indexed information',
+			'sql' => [
+				"ALTER TABLE indexed_edition CHANGE COLUMN edition edition VARCHAR(1000) collate utf8_bin UNIQUE ",
+				"ALTER TABLE indexed_physicalDescription CHANGE COLUMN physicalDescription physicalDescription VARCHAR(1000) collate utf8_bin UNIQUE ",
+			]
+		], //indexed_information_length
 	];
 }
