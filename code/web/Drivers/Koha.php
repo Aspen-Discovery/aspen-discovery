@@ -323,6 +323,7 @@ class Koha extends AbstractIlsDriver
 
 		//Get checkouts by screen scraping
 		$checkouts = array();
+		$renewableCheckouts = 0;
 
 		$this->initDatabaseConnection();
 
@@ -428,6 +429,9 @@ class Koha extends AbstractIlsDriver
 			$holdsCount = $holdsResults->num_rows;
 			if ($holdsCount >= 1 && $curCheckout->autoRenew == 1) {
 				$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
+			} else if ($holdsCount >= 1 && $curCheckout->canRenew == 1 && $curCheckout->autoRenew == 0) {
+				$curCheckout->canRenew = "0";
+				$curCheckout->renewError = "On hold for another user";
 			}
 
 			//Get the max renewals by figuring out what rule the checkout was issued under
@@ -445,6 +449,9 @@ class Koha extends AbstractIlsDriver
 						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
 								$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
 						}
+					} else if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+						$curCheckout->canRenew = "0";
+						$curCheckout->renewError = "Renewed too many times";
 					}
 				}
 				$issuingRulesRS->close();

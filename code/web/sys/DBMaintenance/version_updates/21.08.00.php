@@ -234,5 +234,12 @@ function getUpdates21_08_00() : array
 				"UPDATE cloud_library_settings set runFullUpdate = 1",
 			]
 		], //force_reload_of_cloud_library_21_08
+		'renew_error' => [
+			'title' => 'Add renew error on user checkouts',
+			'description' => 'Displays users without auto renew why their hold is not renewable',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN renewError VARCHAR(500)'
+			]
+		],//store_renew_error_for_checkouts
 	];
 }
