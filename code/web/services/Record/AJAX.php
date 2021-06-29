@@ -275,7 +275,7 @@ class Record_AJAX extends Action
 			}
 
 			$interface->assign('hasItemsWithoutVolumes', $numItemsWithoutVolumes > 0);
-			$interface->assign('majorityOfItemsHaveVolumes', $numItemsWithVolumes >= 1);
+			$interface->assign('majorityOfItemsHaveVolumes', $numItemsWithVolumes > $numItemsWithoutVolumes);
 
 			//Get a list of volumes for the record
 			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
