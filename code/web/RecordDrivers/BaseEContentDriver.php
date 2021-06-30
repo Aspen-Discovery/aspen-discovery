@@ -69,6 +69,7 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 					'title' => $title,
 					'requireLogin' => false,
 					'alt' => $alt,
+					'target' => '_blank',
 				);
 				$i++;
 			}
