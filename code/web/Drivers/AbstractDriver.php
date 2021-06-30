@@ -10,19 +10,12 @@ abstract class AbstractDriver
 		return false;
 	}
 
-	public function getReadingHistory(
-		/** @noinspection PhpUnusedParameterInspection */ User $patron,
-		/** @noinspection PhpUnusedParameterInspection */ $page = 1,
-		/** @noinspection PhpUnusedParameterInspection */ $recordsPerPage = -1,
-		/** @noinspection PhpUnusedParameterInspection */ $sortOption = "checkedOut")
+	public function getReadingHistory(User $patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
 	{
 		return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
 	}
 
-	public function doReadingHistoryAction(
-		/** @noinspection PhpUnusedParameterInspection */ User $patron,
-		/** @noinspection PhpUnusedParameterInspection */ $action,
-		/** @noinspection PhpUnusedParameterInspection */ $selectedTitles)
+	public function doReadingHistoryAction(User $patron, $action, $selectedTitles)
 	{
 		return;
 	}
@@ -104,4 +97,5 @@ abstract class AbstractDriver
 	 * @return  array
 	 */
 	abstract function cancelHold(User $patron, $recordId, $cancelId = null);
+
 }

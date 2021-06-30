@@ -41,7 +41,7 @@ class Record_AJAX extends Action
 		$marcData = MarcLoader::loadMarcRecordByILSId($id);
 		header('Content-Description: File Transfer');
 		header('Content-Type: application/octet-stream');
-		header("Content-Disposition: attachment; filename={$id}.mrc");
+		header("Content-Disposition: attachment; filename=$id.mrc");
 		header('Content-Transfer-Encoding: binary');
 		header('Expires: 0');
 		header('Cache-Control: must-revalidate');
@@ -129,12 +129,12 @@ class Record_AJAX extends Action
 					$shortId = $id;
 				}
 				if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
-					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->_homeLocationCode, null);
+					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->_homeLocationCode);
 				} else {
 					if (isset($_REQUEST['volume'])) {
 						$results = $user->placeVolumeHold($shortId, $_REQUEST['volume'], $user->_homeLocationCode);
 					} else {
-						$results = $user->placeHold($id, $user->_homeLocationCode, null);
+						$results = $user->placeHold($id, $user->_homeLocationCode);
 					}
 				}
 				$results['holdFormBypassed'] = true;
@@ -207,7 +207,7 @@ class Record_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getPlaceHoldEditionsForm()
+	function getPlaceHoldEditionsForm() : array
 	{
 		global $interface;
 		if (UserAccount::isLoggedIn()) {
@@ -242,7 +242,7 @@ class Record_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getPlaceHoldVolumesForm()
+	function getPlaceHoldVolumesForm() : array
 	{
 		global $interface;
 		if (UserAccount::isLoggedIn()) {
@@ -309,7 +309,7 @@ class Record_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getBookMaterialForm($errorMessage = null)
+	function getBookMaterialForm($errorMessage = null) : array
 	{
 		global $interface;
 		if (UserAccount::isLoggedIn()) {
@@ -378,13 +378,12 @@ class Record_AJAX extends Action
 		}
 	}
 
-	function placeHold()
+	function placeHold() : array
 	{
 		global $interface;
 		$recordId = $_REQUEST['id'];
 		if (strpos($recordId, ':') > 0) {
-			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($source, $shortId) = explode(':', $recordId, 2);
+			list(, $shortId) = explode(':', $recordId, 2);
 		} else {
 			$shortId = $recordId;
 		}
@@ -482,6 +481,7 @@ class Record_AJAX extends Action
 						$interface->assign('message', $return['message']);
 						$interface->assign('success', $return['success']);
 
+						$confirmationNeeded = false;
 						if ($return['success']){
 							//Only update remember hold pickup location and the preferred pickup location if the  hold is successful
 							if (isset($_REQUEST['rememberHoldPickupLocation']) && ($_REQUEST['rememberHoldPickupLocation'] == 'true' || $_REQUEST['rememberHoldPickupLocation'] == 'on')){
@@ -497,7 +497,10 @@ class Record_AJAX extends Action
 									$patron->update();
 								}
 							}
+						}else if (isset($return['confirmationNeeded']) && $return['confirmationNeeded']){
+							$confirmationNeeded = true;
 						}
+						$interface->assign('confirmationNeeded', $confirmationNeeded);
 
 						$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
 						// set update permission based on active library's settings. Or allow by default.
@@ -528,9 +531,13 @@ class Record_AJAX extends Action
 						$results = array(
 							'success' => $return['success'],
 							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
-							'title' => isset($return['title']) ? $return['title'] : '',
+							'title' => $return['title'] ?? '',
+							'confirmationNeeded' => $confirmationNeeded,
 						);
-						if (isset($_REQUEST['autologout'])) {
+						if ($confirmationNeeded){
+							$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate('Yes, Place Hold') . '</a>';
+						}
+						if (isset($_REQUEST['autologout']) && $return['success']) {
 							$masqueradeMode = UserAccount::isUserMasquerading();
 							if ($masqueradeMode) {
 								require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
@@ -572,7 +579,63 @@ class Record_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getUploadPDFForm(){
+	function confirmHold() : array
+	{
+		$user = UserAccount::getLoggedInUser();
+		if ($user) {
+			global $interface;
+			$recordId = $_REQUEST['id'];
+			if (strpos($recordId, ':') > 0) {
+				list(, $shortId) = explode(':', $recordId, 2);
+			} else {
+				$shortId = $recordId;
+			}
+			$confirmationId = $_REQUEST['confirmationId'];
+			$return = $user->confirmHold($recordId, $confirmationId);
+			$confirmationNeeded = false;
+			if (isset($return['confirmationNeeded']) && $return['confirmationNeeded']){
+				$confirmationNeeded = true;
+			}
+			$interface->assign('confirmationNeeded', $confirmationNeeded);
+
+			//Get the grouped work for the record
+			global $library;
+			if ($library->showWhileYouWait && !isset($_REQUEST['autologout'])) {
+				$recordDriver = RecordDriverFactory::initRecordDriverById($recordId);
+				if ($recordDriver->isValid()) {
+					$groupedWorkId = $recordDriver->getPermanentId();
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$groupedWorkDriver = new GroupedWorkDriver($groupedWorkId);
+					$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
+
+					$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+				}
+			}else{
+				$interface->assign('whileYouWaitTitles', []);
+			}
+
+			$interface->assign('message', $return['message']);
+			$results = array(
+				'success' => $return['success'],
+				'message' => $interface->fetch('Record/hold-success-popup.tpl'),
+				'title' => $return['title'] ?? '',
+				'confirmationNeeded' => $confirmationNeeded,
+			);
+			if ($confirmationNeeded){
+				$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate('Yes, Place Hold') . '</a>';
+			}
+		} else {
+			$results = array(
+				'title' => 'Please login',
+				'message' => "You must be logged in.  Please close this dialog and login before placing your hold.",
+				'success' => false
+			);
+		}
+		return $results;
+	}
+
+		/** @noinspection PhpUnused */
+	function getUploadPDFForm() : array {
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -593,7 +656,7 @@ class Record_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getUploadSupplementalFileForm(){
+	function getUploadSupplementalFileForm() : array {
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -614,7 +677,7 @@ class Record_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function uploadPDF(){
+	function uploadPDF() : array {
 		$result = [
 			'success' => false,
 			'title' => 'Uploading PDF',
@@ -691,7 +754,7 @@ class Record_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function uploadSupplementalFile(){
+	function uploadSupplementalFile() : array {
 		$result = [
 			'success' => false,
 			'title' => 'Uploading Supplemental File',
@@ -779,7 +842,8 @@ class Record_AJAX extends Action
 		return $result;
 	}
 
-	function deleteUploadedFile(){
+	/** @noinspection PhpUnused */
+	function deleteUploadedFile() : array {
 		$result = [
 			'success' => false,
 			'title' => 'Deleting Uploaded File',
@@ -826,7 +890,7 @@ class Record_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function showSelectDownloadForm(){
+	function showSelectDownloadForm() : array {
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -864,12 +928,12 @@ class Record_AJAX extends Action
 		return [
 			'title' => 'Select File to download',
 			'modalBody' => $interface->fetch("Record/select-download-file-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadFile\").submit()'>{$buttonTitle}</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadFile\").submit()'>$buttonTitle</button>"
 		];
 	}
 
 	/** @noinspection PhpUnused */
-	function showSelectFileToViewForm(){
+	function showSelectFileToViewForm() : array {
 		global $interface;
 
 		$id = $_REQUEST['id'];
@@ -903,11 +967,11 @@ class Record_AJAX extends Action
 		return [
 			'title' => 'Select PDF to View',
 			'modalBody' => $interface->fetch("Record/select-view-file-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewFile\").submit()'>{$buttonTitle}</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewFile\").submit()'>$buttonTitle</button>"
 		];
 	}
 
-	function getStaffView(){
+	function getStaffView() : array {
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error loading staff view'
@@ -934,7 +998,7 @@ class Record_AJAX extends Action
 	 * @param Location[] $locations
 	 * @return bool
 	 */
-	function setupHoldForm($recordSource, &$rememberHoldPickupLocation, $marcRecord, &$locations){
+	function setupHoldForm($recordSource, &$rememberHoldPickupLocation, $marcRecord, &$locations) : bool {
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 		if ($user->getCatalogDriver() == null) {
@@ -1091,7 +1155,7 @@ class Record_AJAX extends Action
 			'success' => true,
 			'needsItemLevelHold' => true,
 			'message' => $interface->fetch('Record/item-hold-popup.tpl'),
-			'title' => isset($return['title']) ? $return['title'] : '',
+			'title' => $return['title'] ?? '',
 			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>"
 		);
 	}

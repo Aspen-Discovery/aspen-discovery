@@ -1503,6 +1503,14 @@ class User extends DataObject
 		return $result;
 	}
 
+	function confirmHold($recordId, $confirmationId) {
+		$result = $this->getCatalogDriver()->confirmHold($this, $recordId, $confirmationId);
+		if ($result['success']){
+			$this->clearCache();
+		}
+		return $result;
+	}
+
 	function bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime){
 		$result = $this->getCatalogDriver()->bookMaterial($this, $recordId, $startDate, $startTime, $endDate, $endTime);
 		if ($result['success']){
