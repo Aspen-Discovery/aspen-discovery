@@ -1278,7 +1278,7 @@ public class GroupedWorkIndexer {
 					}
 				}
 			} catch (SQLException e) {
-				logEntry.incErrors("Error getting edition id", e);
+				logEntry.incErrors("Error getting edition id for edition (" + edition.length() + "): " + edition, e);
 				id = -1L;
 			}
 			editionIds.put(edition, id);
@@ -1355,6 +1355,9 @@ public class GroupedWorkIndexer {
 		if (physicalDescription == null){
 			return -1;
 		}
+		if (physicalDescription.length() > 1000) {
+			physicalDescription = physicalDescription.substring(0, 1000);
+		}
 		Long id = physicalDescriptionIds.get(physicalDescription);
 		if (id == null){
 			try {
@@ -1374,7 +1377,7 @@ public class GroupedWorkIndexer {
 					}
 				}
 			} catch (SQLException e) {
-				logEntry.incErrors("Error getting physicalDescription id", e);
+				logEntry.incErrors("Error getting physicalDescription id (" + physicalDescription.length() + "):" + physicalDescription, e);
 				id = -1L;
 			}
 			physicalDescriptionIds.put(physicalDescription, id);
@@ -1678,7 +1681,7 @@ public class GroupedWorkIndexer {
 			addItemForRecordStmt.setLong(1, recordId);
 			addItemForRecordStmt.setLong(2, variationId);
 			addItemForRecordStmt.setString(3, itemInfo.getItemIdentifier());
-			addItemForRecordStmt.setLong(4, this.getShelfLocationId(itemInfo.getShelfLocation()));
+			addItemForRecordStmt.setLong(4, this.getShelfLocationId(itemInfo.getDetailedLocation()));
 			addItemForRecordStmt.setLong(5, this.getCallNumberId(itemInfo.getCallNumber()));
 			addItemForRecordStmt.setLong(6, this.getCallNumberId(itemInfo.getSortableCallNumber()));
 			addItemForRecordStmt.setLong(7, itemInfo.getNumCopies());
