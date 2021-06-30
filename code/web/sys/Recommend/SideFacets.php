@@ -303,6 +303,7 @@ class SideFacets implements RecommendationInterface
 
 		$sideFacets[$facetKey]['locked'] = array_key_exists($facetKey, $lockedFacets);
 		$sideFacets[$facetKey]['canLock'] = $facetSetting->canLock;
+		$sideFacets[$facetKey]['displayNamePlural'] = empty($facetSetting->displayNamePlural) ? $facetSetting->displayName : $facetSetting->displayNamePlural;
 		return $sideFacets;
 	}
 }
