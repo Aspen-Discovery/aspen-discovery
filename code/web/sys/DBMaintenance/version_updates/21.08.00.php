@@ -248,7 +248,7 @@ function getUpdates21_08_00() : array
 			'sql' => [
 				'ALTER TABLE user_checkout ADD COLUMN renewError VARCHAR(500)'
 			]
-		],//store_renew_error_for_checkouts
+		],//renew_error
 		'hold_request_confirmations' => [
 			'title' => 'Hold Request Confirmations',
 			'description' => 'Create a table to store confirmation info for hold requests',
@@ -261,5 +261,44 @@ function getUpdates21_08_00() : array
 				) ENGINE INNODB'
 			]
 		], //hold_request_confirmations
+		'plural_grouped_work_facet' => [
+			'title' => 'Add plural version of grouped work facet column',
+			'description' => 'Store the plural version of grouped work facet display names',
+			'sql' => [
+				'ALTER TABLE grouped_work_facet ADD COLUMN displayNamePlural VARCHAR(50)'
+			]
+		],//plural_grouped_work_facet
+		'create_plural_grouped_work_facets' => [
+			'title' => 'Create plural versions of grouped work facets',
+			'description' => 'Create the plural versions of existing grouped work facet display names',
+			'sql' => [
+				'UPDATE grouped_work_facet SET displayNamePlural="Format Categories" WHERE displayName="Format Category"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Available?" WHERE displayName="Available?"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Fiction / Non-Fiction" WHERE displayName="Fiction / Non-Fiction"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Readling Levels" WHERE displayName="Reading Level"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Available Now At" WHERE displayName="Available Now At"',
+				'UPDATE grouped_work_facet SET displayNamePlural="eContent Collections" WHERE displayName="eContent Collection"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Formats" WHERE displayName="Format"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Authors" WHERE displayName="Author"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Series" WHERE displayName="Series"',
+				'UPDATE grouped_work_facet SET displayNamePlural="AR Interest Levels" WHERE displayName="AR Interest Level"',
+				'UPDATE grouped_work_facet SET displayNamePlural="AR Reading Levels" WHERE displayName="AR Reading Level"',
+				'UPDATE grouped_work_facet SET displayNamePlural="AR Point Values" WHERE displayName="AR Point Value"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Subjects" WHERE displayName="Subject"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Added in the Last" WHERE displayName="Added in the Last"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Awards" WHERE displayName="Awards"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Item Types" WHERE displayName="Item Type"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Languages" WHERE displayName="Language"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Movie Ratings" WHERE displayName="Movie Rating"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Publication Dates" WHERE displayName="Publication Date"',
+				'UPDATE grouped_work_facet SET displayNamePlural="User Ratings" WHERE displayName="User Rating"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Regions" WHERE displayName="Region"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Eras" WHERE displayName="Era"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Genres" WHERE displayName="Genre"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Shelf Locations" WHERE displayName="Shelf Location"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Owning Libraries" WHERE displayName="Owning Library"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Literary Forms" WHERE displayName="Literary Form"'
+			]
+		],//create_plural_grouped_work_facets
 	];
 }
