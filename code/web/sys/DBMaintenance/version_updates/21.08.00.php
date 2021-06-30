@@ -248,7 +248,7 @@ function getUpdates21_08_00() : array
 			'sql' => [
 				'ALTER TABLE user_checkout ADD COLUMN renewError VARCHAR(500)'
 			]
-		],//renew_error
+		],//store_renew_error_for_checkouts
 		'hold_request_confirmations' => [
 			'title' => 'Hold Request Confirmations',
 			'description' => 'Create a table to store confirmation info for hold requests',
