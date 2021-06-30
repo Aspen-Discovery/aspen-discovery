@@ -482,46 +482,57 @@ class Polaris extends AbstractIlsDriver
 			$body->UserID = (int)$staffUserInfo['polarisId'];
 			$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
 			$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', json_encode($body));
-			$hold_result = array();
-			if ($response && $this->lastResponseCode == 200) {
-				$jsonResult = json_decode($response);
-				if ($jsonResult->PAPIErrorCode != 0){
-					$hold_result['success'] = false;
-					$hold_result['message'] = 'Your hold could not be placed. ';
-					if (IPAddress::showDebuggingInformation()){
-						$hold_result['message'] .= " ({$jsonResult->PAPIErrorCode})";
-					}
-				}else {
-					if ($jsonResult->StatusType == 1) {
-						$hold_result['success'] = false;
-						$hold_result['message'] = translate('Your hold could not be placed. ' . $jsonResult->Message);
-					}else if ($jsonResult->StatusType == 2) {
-						$hold_result['success'] = true;
-						$hold_result['message'] = translate(['text' => "ils_hold_success", 'defaultText' => "Your hold was placed successfully."]);
-						if (isset($jsonResult->QueuePosition)) {
-							$hold_result['message'] .= translate(['text' => "ils_hold_success_position", 'defaultText' => "&nbsp;You are number <b>%1%</b> in the queue.", '1' => $jsonResult->QueuePosition]);
-						}
-						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-						$patron->forceReloadOfHolds();
-					}else if ($jsonResult->StatusType == 3) {
-						$hold_result['success'] = false;
-						$hold_result['confirmationNeeded'] = true;
-						$hold_result['message'] = translate($jsonResult->Message);
-					}
-				}
-			} else {
-				$hold_result['success'] = false;
-				$hold_result['message'] = 'Your hold could not be placed. ';
-				if (IPAddress::showDebuggingInformation()){
-					$hold_result['message'] .= " (HTTP Code: {$this->lastResponseCode})";
-				}
-			}
+			$hold_result = $this->processHoldRequestResponse($response, $patron);
 
 			$hold_result['title'] = $title;
 			$hold_result['bid']   = $shortId;
 
 			return $hold_result;
 		}
+	}
+
+	public function confirmHold(User $patron, $recordId, $confirmationId)
+	{
+		if (strpos($recordId, ':') !== false){
+			list(,$shortId) = explode(':', $recordId);
+		}else{
+			$shortId = $recordId;
+		}
+
+		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $shortId);
+		if (!$record) {
+			$title = null;
+		} else {
+			$title = $record->getTitle();
+		}
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error confirming the hold'
+		];
+		require_once ROOT_DIR . '/sys/ILS/HoldRequestConfirmation.php';
+		$holdRequestConfirmation = new HoldRequestConfirmation();
+		$holdRequestConfirmation->id = $confirmationId;
+		if ($holdRequestConfirmation->find(true)){
+			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest/" . $holdRequestConfirmation->requestId;
+			$confirmationInfo = json_decode($holdRequestConfirmation->additionalParams);
+			$body = new stdClass();
+			$body->TxnGroupQualifier = $confirmationInfo->groupQualifier;
+			$body->TxnQualifier = $confirmationInfo->qualifier;
+			$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
+			$body->Answer = 1;
+			$body->State = $confirmationInfo->state;
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', '', json_encode($body));
+
+			$result = $this->processHoldRequestResponse($response, $patron);
+
+			$result['title'] = $title;
+			$result['bid']   = $shortId;
+
+		}else{
+			$result['message'] = 'Could not find information about the hold to be confirmed, it may have been confirmed already';
+		}
+		return $result;
 	}
 
 	function cancelHold($patron, $recordId, $cancelId = null)
@@ -1034,5 +1045,62 @@ class Polaris extends AbstractIlsDriver
 			return (int)$homeLibrary->workstationId;
 		}
 
+	}
+
+	/**
+	 * @param $response
+	 * @param User $patron
+	 * @return array
+	 */
+	private function processHoldRequestResponse($response, User $patron): array
+	{
+		$hold_result = array();
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResult = json_decode($response);
+			if ($jsonResult->PAPIErrorCode != 0) {
+				$hold_result['success'] = false;
+				$hold_result['message'] = 'Your hold could not be placed. ';
+				if (IPAddress::showDebuggingInformation()) {
+					$hold_result['message'] .= " ({$jsonResult->PAPIErrorCode})";
+				}
+			} else {
+				if ($jsonResult->StatusType == 1) {
+					$hold_result['success'] = false;
+					$hold_result['message'] = translate('Your hold could not be placed. ' . $jsonResult->Message);
+				} else if ($jsonResult->StatusType == 2) {
+					$hold_result['success'] = true;
+					$hold_result['message'] = translate(['text' => "ils_hold_success", 'defaultText' => "Your hold was placed successfully."]);
+					if (isset($jsonResult->QueuePosition)) {
+						$hold_result['message'] .= translate(['text' => "ils_hold_success_position", 'defaultText' => "&nbsp;You are number <b>%1%</b> in the queue.", '1' => $jsonResult->QueuePosition]);
+					}
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				} else if ($jsonResult->StatusType == 3) {
+					$hold_result['success'] = false;
+					$hold_result['confirmationNeeded'] = true;
+					require_once ROOT_DIR . '/sys/ILS/HoldRequestConfirmation.php';
+					$holdRequestConfirmation = new HoldRequestConfirmation();
+					$holdRequestConfirmation->userId = $patron->id;
+					$holdRequestConfirmation->requestId = $jsonResult->RequestGUID;
+					$holdRequestConfirmation->additionalParams = json_encode([
+						'requestId' => $jsonResult->RequestGUID,
+						'groupQualifier' => $jsonResult->TxnGroupQualifer,
+						'qualifier' => $jsonResult->TxnQualifier,
+						'state' => $jsonResult->StatusValue
+					]);
+					$holdRequestConfirmation->insert();
+					$hold_result['confirmationId'] = $holdRequestConfirmation->id;
+
+					$hold_result['message'] = translate($jsonResult->Message);
+				}
+			}
+		} else {
+			$hold_result['success'] = false;
+			$hold_result['message'] = 'Your hold could not be placed. ';
+			if (IPAddress::showDebuggingInformation()) {
+				$hold_result['message'] .= " (HTTP Code: {$this->lastResponseCode})";
+			}
+		}
+		return $hold_result;
 	}
 }

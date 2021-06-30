@@ -1161,4 +1161,9 @@ class CatalogConnection
 	{
 		return $this->driver->getILSMessages($user);
 	}
+
+	public function confirmHold(User $user, $recordId, $confirmationId)
+	{
+		return $this->driver->confirmHold($user, $recordId, $confirmationId);
+	}
 }

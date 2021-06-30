@@ -155,7 +155,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return false;
 	}
 
-	function updatePin(/** @noinspection PhpUnusedParameterInspection */ User $patron, string $oldPin, string $newPin)
+	function updatePin(User $patron, string $oldPin, string $newPin)
 	{
 		return ['success' => false, 'message' => 'Can not update PINs, this ILS does not support updating PINs'];
 	}
@@ -174,22 +174,22 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * @param User $user
 	 * @return string[]
 	 */
-	function processMaterialsRequestForm(/** @noinspection PhpUnusedParameterInspection */ $user)
+	function processMaterialsRequestForm(User $user)
 	{
 		return ['success' => false, 'message' => 'Not Implemented'];
 	}
 
-	function getMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */ User $user)
+	function getMaterialsRequests(User $user)
 	{
 		return [];
 	}
 
-	function getMaterialsRequestsPage(/** @noinspection PhpUnusedParameterInspection */ User $user)
+	function getMaterialsRequestsPage(User $user)
 	{
 		return 'not supported';
 	}
 
-	function deleteMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */ User $patron)
+	function deleteMaterialsRequests(User $patron)
 	{
 		return ['success' => false, 'message' => 'Not Implemented'];
 	}
@@ -200,7 +200,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * @param User $user
 	 * @return string|null
 	 */
-	function getPatronUpdateForm(/** @noinspection PhpUnusedParameterInspection */ User $user)
+	function getPatronUpdateForm(User $user)
 	{
 		return null;
 	}
@@ -362,7 +362,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return null;
 	}
 
-	public function getStudentReportData($location,$showOverdueOnly,$date) {
+	public function getStudentReportData($location, $showOverdueOnly, $date) {
 		return null;
 	}
 
@@ -379,5 +379,13 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public function getILSMessages(User $user)
 	{
 		return [];
+	}
+
+
+	public function confirmHold(User $patron, $recordId, $confirmationId) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
 	}
 }

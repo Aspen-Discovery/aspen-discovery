@@ -249,5 +249,17 @@ function getUpdates21_08_00() : array
 				'ALTER TABLE user_checkout ADD COLUMN renewError VARCHAR(500)'
 			]
 		],//store_renew_error_for_checkouts
+		'hold_request_confirmations' => [
+			'title' => 'Hold Request Confirmations',
+			'description' => 'Create a table to store confirmation info for hold requests',
+			'sql' => [
+				'CREATE TABLE hold_request_confirmation (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					userId INT(11) NOT NULL,
+					requestId VARCHAR(36) NOT NULL,
+					additionalParams TEXT
+				) ENGINE INNODB'
+			]
+		], //hold_request_confirmations
 	];
 }
