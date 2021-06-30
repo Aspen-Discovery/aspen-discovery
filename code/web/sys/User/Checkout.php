@@ -59,7 +59,7 @@ class Checkout extends CircEntry
 
 	public function getNumericColumnNames() : array
 	{
-		return ['userId', 'checkoutDate', 'dueDate', 'renewCount', 'autoRenew', 'maxRenewals', 'fine', 'holdQueueLength', 'allowDownload', 'overdriveRead', 'overdriveListen', 'overdriveVideo', 'overdriveMagazine', 'formatSelected', 'canReturnEarly', 'isSupplemental'];
+		return ['userId', 'canRenew', 'checkoutDate', 'dueDate', 'renewCount', 'autoRenew', 'maxRenewals', 'fine', 'holdQueueLength', 'allowDownload', 'overdriveRead', 'overdriveListen', 'overdriveVideo', 'overdriveMagazine', 'formatSelected', 'canReturnEarly', 'isSupplemental'];
 	}
 
 	public function getSerializedFieldNames() : array{
