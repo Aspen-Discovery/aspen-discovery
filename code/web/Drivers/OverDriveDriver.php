@@ -511,6 +511,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$checkout->sourceId = $curTitle->reserveId;
 					$checkout->recordId = $curTitle->reserveId;
 					$checkout->dueDate = $curTitle->expires;
+					$checkout->canRenew = false;
 					try {
 						$expirationDate = new DateTime($curTitle->expires);
 						$checkout->dueDate = $expirationDate->getTimestamp();
