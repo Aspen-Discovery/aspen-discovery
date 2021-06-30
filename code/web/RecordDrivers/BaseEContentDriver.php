@@ -35,7 +35,11 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 	}
 
 	public function getItemActions($itemInfo){
-		return $this->createActionsFromUrls($itemInfo['relatedUrls']);
+		if ($itemInfo instanceof Grouping_Item){
+			return $this->createActionsFromUrls($itemInfo->getRelatedUrls());
+		}else{
+			return $this->createActionsFromUrls($itemInfo['relatedUrls']);
+		}
 	}
 
 	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null){

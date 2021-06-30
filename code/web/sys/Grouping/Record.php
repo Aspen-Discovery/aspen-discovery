@@ -478,14 +478,16 @@ class Grouping_Record
 	public function getActions(): array
 	{
 		if ($this->_allActions == null) {
+			$actionsToReturn = $this->_actions;
 			if (empty($this->_actions) && $this->_driver != null){
+				foreach ($this->_items as $item) {
+					$item->setActions($this->_driver->getItemActions($item));
+					$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+				}
 				//TODO: Add volume information
 				$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), $this->isBookable(), []));
 			}
-			$actionsToReturn = $this->_actions;
-			foreach ($this->_items as $item) {
-				$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
-			}
+
 			$this->_allActions = $actionsToReturn;
 		}
 
