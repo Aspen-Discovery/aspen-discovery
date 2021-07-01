@@ -97,6 +97,7 @@ class Grouping_Record
 
 	function addItem(Grouping_Item $item)
 	{
+		$item->setRecord($this);
 		$this->_items[] = $item;
 		//Update the record with information from the item and from scoping.
 		if ($item->isEContent) {
@@ -604,5 +605,10 @@ class Grouping_Record
 	public function getItems()
 	{
 		return $this->_items;
+	}
+
+	public function getVolumeData()
+	{
+		return $this->_volumeData;
 	}
 }

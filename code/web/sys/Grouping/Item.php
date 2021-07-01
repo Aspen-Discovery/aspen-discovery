@@ -3,6 +3,8 @@
 class Grouping_Item
 {
 	public $id;
+	/** @var Grouping_Record */
+	private $_record;
 	public $recordId;
 	public $shelfLocation;
 	public $callNumber;
@@ -183,8 +185,8 @@ class Grouping_Item
 
 	public function getSummaryKey() : string
 	{
-		//TODO: Get the volume info
-		$key = $this->shelfLocation . ':' . $this->callNumber;
+		$key = str_pad($this->volumeOrder, 10, '0', STR_PAD_LEFT);
+		$key .= $this->shelfLocation . ':' . $this->callNumber;
 		if ($this->locallyOwned) {
 			$key = '1 ' . $key;
 		} elseif ($this->libraryOwned) {
@@ -216,7 +218,6 @@ class Grouping_Item
 			$sectionId = 6;
 		}
 
-		//TODO: Get volume information
 		$itemSummaryInfo = array(
 			'description' => $description,
 			'shelfLocation' => $this->shelfLocation,
@@ -238,13 +239,19 @@ class Grouping_Item
 			'section' => $section,
 			'relatedUrls' => $this->getRelatedUrls(),
 			'lastCheckinDate' => !empty($this->lastCheckInDate) ? date_format($this->lastCheckInDate, 'M j, Y') : '',
-			'volume' => '', //$volume,
-			'volumeId' => '', //$volumeId,
+			'volume' => $this->volume,
+			'volumeId' => $this->volumeId,
 			'isEContent' => $this->isEContent,
 			'locationCode' => $this->locationCode,
 			'subLocation' => $this->subLocation,
-			'itemId' => $this->itemId
+			'itemId' => $this->itemId,
+			'actions' => $this->getActions()
 		);
 		return $itemSummaryInfo;
+	}
+
+	public function setRecord(Grouping_Record $record)
+	{
+		$this->_record = $record;
 	}
 }
