@@ -39,6 +39,7 @@ public class ItemInfo{
 	private String dueDate;
 	private String collection;
 	private Date lastCheckinDate;
+	private String volumeField;
 	private RecordInfo recordInfo;
 
 	private final HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
@@ -420,5 +421,13 @@ public class ItemInfo{
 
 	public String getDetailedStatus() {
 		return detailedStatus;
+	}
+
+	public void setVolumeField(String volumeField) {
+		this.volumeField = volumeField;
+	}
+
+	public String getVolumeField() {
+		return this.volumeField;
 	}
 }

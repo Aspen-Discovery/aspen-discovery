@@ -803,6 +803,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
 		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), recordInfo.getRecordIdentifier()));
 
+		itemInfo.setVolumeField(getItemSubfieldData(volumeSubfield, itemField));
+
 		double itemPopularity = getItemPopularity(itemField);
 		groupedWork.addPopularity(itemPopularity);
 

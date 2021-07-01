@@ -2289,6 +2289,13 @@ class User extends DataObject
 		}
 	}
 
+	public function treatVolumeHoldsAsItemHolds() {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->treatVolumeHoldsAsItemHolds();
+		}
+		return false;
+	}
+
 	public function getAdminActions(){
 		require_once ROOT_DIR . '/sys/AdminSection.php';
 		global $library;

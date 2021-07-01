@@ -896,6 +896,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions($this->getIndexingProfile()->name, $this->id));
 			}
 
+			$treatVolumeHoldsAsItemHolds = $this->getCatalogDriver()->treatVolumeHoldsAsItemHolds();
+
 			if (isset($interface)) {
 				if ($interface->getVariable('displayingSearchResults')) {
 					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
@@ -924,7 +926,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				if ($volumeData == null) {
 					$volumeData = $relatedRecord->getVolumeData();
 				}
-				if (!is_null($volumeData) && count($volumeData) > 0) {
+				if (!is_null($volumeData) && count($volumeData) > 0 && !$treatVolumeHoldsAsItemHolds) {
 					//Check the items to see which volumes are holdable
 					$hasItemsWithoutVolumes = false;
 					$holdableVolumes = [];
@@ -1052,17 +1054,24 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		return $this->_actions;
 	}
 
-	static $catalogDriver = null;
+	private $catalogDriver = null;
 
 	/**
 	 * @return AbstractIlsDriver
 	 */
-	protected static function getCatalogDriver()
+	public function getCatalogDriver()
 	{
-		if (MarcRecordDriver::$catalogDriver == null) {
+		if ($this->catalogDriver == null) {
 			try {
+				$indexingProfile = $this->getIndexingProfile();
+				$accountProfileForSource = new AccountProfile();
+				$accountProfileForSource->recordSource = $indexingProfile->name;
 				require_once ROOT_DIR . '/CatalogFactory.php';
-				MarcRecordDriver::$catalogDriver = CatalogFactory::getCatalogConnectionInstance();
+				if ($accountProfileForSource->find(true)){
+					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($accountProfileForSource->driver, $accountProfileForSource);
+				}else {
+					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance();
+				}
 			} catch (PDOException $e) {
 				// What should we do with this error?
 				if (IPAddress::showDebuggingInformation()) {
@@ -1073,7 +1082,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				return null;
 			}
 		}
-		return MarcRecordDriver::$catalogDriver->driver;
+		return $this->catalogDriver->driver;
 	}
 
 	/**
@@ -1951,6 +1960,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			}
 		}
 		$timer->logTime("Loaded uploaded file info");
+	}
+
+	/**
+	 * @return Grouping_Record|null
+	 */
+	public function getRelatedRecord() {
+		return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
 	}
 }
 

@@ -203,7 +203,14 @@ class Grouping_Item
 	{
 		global $library;
 
-		$description = $this->shelfLocation . ':' . $this->callNumber;
+		if (!empty($this->volume)) {
+			$description = $this->volume . " ";
+		}else{
+			$description = '';
+		}
+		$description .= $this->shelfLocation . ": " . $this->callNumber;
+
+		$description .= ' - ' . $this->status;
 		$section = 'Other Locations';
 		if ($this->locallyOwned) {
 			$sectionId = 1;

@@ -100,6 +100,17 @@ class Record_AJAX extends Action
 						break;
 					}
 				}
+
+				//Check to see if we need to override this to an item hold because there are volumes being handled with an item level hold
+				if ($holdType == 'bib') {
+					$relatedRecord = $marcRecord->getRelatedRecord();
+					if (count($relatedRecord->getVolumeData()) > 0){
+						$catalogDriver = $marcRecord->getCatalogDriver();
+						if ($catalogDriver->treatVolumeHoldsAsItemHolds()){
+							$holdType = 'item';
+						}
+					}
+				}
 			}
 
 			$interface->assign('items', $items);

@@ -471,10 +471,19 @@ class Polaris extends AbstractIlsDriver
 			$body->BibID = (int)$recordId;
 			if (!empty($itemId)) {
 				$body->ItemBarcode = $itemId;
+
+				//Check to see if we also have a volume
+				$relatedRecord = $record->getRelatedRecord();
+				foreach ($relatedRecord->getItems() as $item){
+					if ($item->itemId == $itemId){
+						if (!empty($item->volume)) {
+							$body->VolumeNumber = $item->volume;
+						}
+						break;
+					}
+				}
 			}
 			$body->PickupOrgID = (int)$pickupBranch;
-			//TODO: Volume holds
-			//$body->VolumeNumber = '';
 			//Need to set the Workstation
 			$body->WorkstationID = $this->getWorkstationID($patron);
 			//Get the ID of the staff user
@@ -489,6 +498,45 @@ class Polaris extends AbstractIlsDriver
 
 			return $hold_result;
 		}
+	}
+
+	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	{
+		if (strpos($recordId, ':') !== false){
+			list(,$shortId) = explode(':', $recordId);
+		}else{
+			$shortId = $recordId;
+		}
+
+		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $shortId);
+		if (!$record) {
+			$title = null;
+		} else {
+			$title = $record->getTitle();
+		}
+
+		//Get
+
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
+		$body = new stdClass();
+		$body->PatronID = (int)$patron->username;
+		$body->BibID = (int)$recordId;
+		$body->PickupOrgID = (int)$pickupBranch;
+		$body->VolumeNumber = $volumeId;
+		//Need to set the Workstation
+		$body->WorkstationID = $this->getWorkstationID($patron);
+		//Get the ID of the staff user
+		$staffUserInfo = $this->getStaffUserInfo();
+		$body->UserID = (int)$staffUserInfo['polarisId'];
+		$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
+		$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', json_encode($body));
+		$hold_result = $this->processHoldRequestResponse($response, $patron);
+
+		$hold_result['title'] = $title;
+		$hold_result['bid']   = $shortId;
+
+		return $hold_result;
 	}
 
 	public function confirmHold(User $patron, $recordId, $confirmationId)
@@ -1102,5 +1150,9 @@ class Polaris extends AbstractIlsDriver
 			}
 		}
 		return $hold_result;
+	}
+
+	public function treatVolumeHoldsAsItemHolds() {
+		return true;
 	}
 }
