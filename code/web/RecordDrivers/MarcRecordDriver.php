@@ -921,6 +921,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			if ($isHoldable && $showHoldButton) {
 				$source = $this->profileType;
 				$id = $this->id;
+				if ($volumeData == null) {
+					$volumeData = $relatedRecord->getVolumeData();
+				}
 				if (!is_null($volumeData) && count($volumeData) > 0) {
 					//Check the items to see which volumes are holdable
 					$hasItemsWithoutVolumes = false;
