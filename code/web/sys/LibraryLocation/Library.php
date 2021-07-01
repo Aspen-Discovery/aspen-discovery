@@ -281,6 +281,12 @@ class Library extends DataObject
 		'list'  => 'List',
 	);
 
+	public function getNumericColumnNames() : array {
+		return [
+			'compriseSettingId'
+		];
+	}
+
 	static function getObjectStructure() : array {
 		// get the structure for the library system's holidays
 		$holidaysStructure = Holiday::getObjectStructure();
@@ -391,6 +397,7 @@ class Library extends DataObject
 		$compriseSetting->orderBy('customerName');
 		$compriseSettings = [];
 		$compriseSetting->find();
+		$compriseSettings[-1] = 'none';
 		while ($compriseSetting->fetch()){
 			$compriseSettings[$compriseSetting->id] = $compriseSetting->customerName;
 		}
