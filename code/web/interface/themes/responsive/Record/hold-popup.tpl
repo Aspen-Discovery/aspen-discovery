@@ -47,13 +47,13 @@
 					{assign var="onlyOnePickupLocation" value=false}
 					{if count($pickupLocations) == 1}
 						{foreach from=$pickupLocations item=firstLocation}
-							{if !is_string($firstLocation) && ($firstLocation->code == $user->getHomeLocationCode())}
+							{if !is_string($firstLocation) && ($firstLocation->code == $user->getPickupLocationCode())}
 								{assign var="onlyOnePickupLocation" value=true}
 							{/if}
 						{/foreach}
 					{/if}
 					{if ($rememberHoldPickupLocation && $allowRememberPickupLocation) || $onlyOnePickupLocation }
-						<input type="hidden" name="pickupBranch" id="pickupBranch" value="{$user->getHomeLocationCode()}">
+						<input type="hidden" name="pickupBranch" id="pickupBranch" value="{$user->getPickupLocationCode()}">
 						{if ($rememberHoldPickupLocation && $allowRememberPickupLocation)}
 							<input type="hidden" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation" value="true">
 						{else}
