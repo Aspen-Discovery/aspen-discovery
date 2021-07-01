@@ -2205,6 +2205,27 @@ class User extends DataObject
 		return $this->getHomeLocation()->code;
 	}
 
+	function getPickupLocationCode(){
+		if ($this->rememberHoldPickupLocation){
+			if ($this->pickupLocationId != $this->homeLocationId) {
+				$pickupBranch = $this->pickupLocationId;
+				$locationLookup = new Location();
+				$locationLookup->locationId = $pickupBranch;
+				if ($locationLookup->find(true)) {
+					$pickupBranch = $locationLookup->code;
+				} else {
+					$pickupBranch = $this->getHomeLocation()->code;
+				}
+			} else {
+				$pickupBranch = $this->getHomeLocation()->code;
+			}
+		} else {
+			$pickupBranch = $this->getHomeLocation()->code;
+		}
+
+		return $pickupBranch;
+	}
+
 	/**
 	 * @param string $pickupBranch
 	 * @return bool
