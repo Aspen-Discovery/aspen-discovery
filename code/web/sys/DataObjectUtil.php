@@ -156,7 +156,7 @@ class DataObjectUtil
 				}else{
 					$newValue = strip_tags(trim($_REQUEST[$propertyName]));
 					if ($newValue != null) {
-						$newValue = preg_replace('/[^[:print:]\r\n]/', '', $newValue);
+						$newValue = preg_replace('/[^\p{L}\p{M}\p{Z}\p{N}\p{P}\p{S}]/', '', $newValue);
 					}
 					$object->setProperty($propertyName, $newValue, $property);
 				}
