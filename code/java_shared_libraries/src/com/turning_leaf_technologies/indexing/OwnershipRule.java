@@ -11,6 +11,7 @@ class OwnershipRule {
 	private final boolean matchAllLocations;
 	private final Pattern locationCodePattern;
 	private Pattern locationsToExcludePattern = null;
+	private final boolean matchAllSubLocations;
 	private final Pattern subLocationCodePattern;
 	private Pattern subLocationsToExcludePattern = null;
 
@@ -25,6 +26,7 @@ class OwnershipRule {
 		if (subLocationCode.length() == 0){
 			subLocationCode = ".*";
 		}
+		this.matchAllSubLocations = subLocationCode.equals(".*");
 		this.subLocationCodePattern = Pattern.compile(subLocationCode, Pattern.CASE_INSENSITIVE);
 
 		if (locationsToExclude.length() > 0){
@@ -47,12 +49,12 @@ class OwnershipRule {
 
 			if (locationCode == null ){
 				if (matchAllLocations) {
-					isOwned = (subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+					isOwned =  (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
 				}else{
 					isOwned = false;
 				}
 			}else{
-				isOwned = locationCodePattern.matcher(locationCode).lookingAt() && (subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+				isOwned = locationCodePattern.matcher(locationCode).lookingAt() && (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
 			}
 			//Make sure that we are not excluding the result
 			if (isOwned && locationCode != null && locationsToExcludePattern != null) {

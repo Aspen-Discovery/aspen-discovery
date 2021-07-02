@@ -68,19 +68,23 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 				int numVolumes = 0;
 				for (String volume : volumesForRecord.keySet()) {
 					VolumeInfo volumeInfo = volumesForRecord.get(volume);
-					if (existingVolumes.containsKey(volume)) {
-						updateVolumeStmt.setString(1, volumeInfo.volumeIdentifier);
-						updateVolumeStmt.setString(2, volumeInfo.getRelatedItemsAsString());
-						updateVolumeStmt.setLong(3, ++numVolumes);
-						updateVolumeStmt.setLong(4, existingVolumes.get(volume));
-						existingVolumes.remove(volume);
-					} else {
-						addVolumeStmt.setString(1, recordInfo.getFullIdentifier());
-						addVolumeStmt.setString(2, volumeInfo.volume);
-						addVolumeStmt.setString(3, volumeInfo.volumeIdentifier);
-						addVolumeStmt.setString(4, volumeInfo.getRelatedItemsAsString());
-						addVolumeStmt.setLong(5, ++numVolumes);
-						addVolumeStmt.executeUpdate();
+					try {
+						if (existingVolumes.containsKey(volume)) {
+							updateVolumeStmt.setString(1, volumeInfo.volumeIdentifier);
+							updateVolumeStmt.setString(2, volumeInfo.getRelatedItemsAsString());
+							updateVolumeStmt.setLong(3, ++numVolumes);
+							updateVolumeStmt.setLong(4, existingVolumes.get(volume));
+							existingVolumes.remove(volume);
+						} else {
+							addVolumeStmt.setString(1, recordInfo.getFullIdentifier());
+							addVolumeStmt.setString(2, volumeInfo.volume);
+							addVolumeStmt.setString(3, volumeInfo.volumeIdentifier);
+							addVolumeStmt.setString(4, volumeInfo.getRelatedItemsAsString());
+							addVolumeStmt.setLong(5, ++numVolumes);
+							addVolumeStmt.executeUpdate();
+						}
+					}catch (Exception e){
+						logger.error("Error updating volume for record " + recordInfo.getFullIdentifier() + " (" + volume.length() + ") " + volume , e);
 					}
 				}
 				for (String volume : existingVolumes.keySet()) {
@@ -89,7 +93,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 				}
 			}
 		}catch (Exception e){
-			logger.error("Error updating volumes for record", e);
+			logger.error("Error updating volumes for record ", e);
 		}
 		indexer.enableAutoCommit();
 	}
