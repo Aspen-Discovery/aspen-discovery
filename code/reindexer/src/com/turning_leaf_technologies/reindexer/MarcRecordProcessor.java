@@ -1255,6 +1255,9 @@ abstract class MarcRecordProcessor {
 			printFormats.remove("Blu-ray");
 			printFormats.remove("Blu-ray/DVD");
 			printFormats.remove("DVD");
+			printFormats.remove("CD+Book");
+			printFormats.remove("Book+CD");
+			printFormats.remove("Book+DVD");
 		}
 	}
 
