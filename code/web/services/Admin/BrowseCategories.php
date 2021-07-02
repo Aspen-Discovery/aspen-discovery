@@ -84,4 +84,28 @@ class Admin_BrowseCategories extends ObjectEditor
 	protected function showQuickFilterOnPropertiesList(){
 		return true;
 	}
+
+	function getNumObjects(): int
+	{
+		if ($this->_numObjects == null){
+			if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
+				/** @var DataObject $object */
+				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+				$libraryId = $library == null ? -1 : $library->libraryId;
+				$objectType = $this->getObjectType();
+				$object = new $objectType();
+				$object->whereAdd("sharing = 'everyone'");
+				$object->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+				$this->applyFilters($object);
+				$this->_numObjects = $object->count();
+			} else if (UserAccount::userHasPermission('Administer All Browse Categories')) {
+				/** @var DataObject $object */
+				$objectType = $this->getObjectType();
+				$object = new $objectType();
+				$this->applyFilters($object);
+				$this->_numObjects = $object->count();
+			}
+		}
+		return $this->_numObjects;
+	}
 }
