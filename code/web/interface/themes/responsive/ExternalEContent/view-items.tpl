@@ -12,7 +12,7 @@
 		<div class="eContentHoldingActions">
 			{* Options for the user to view online or download *}
 			{foreach from=$item.actions item=link}
-				<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.target}target="{$link.target}"{/if} {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action" target="_top">{$link.title}</a>&nbsp;
+				<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.target}target="{$link.target}"{/if} {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action">{if $curAction.target == "_blank"}<i class="fas fa-external-link-alt"></i> {/if}{$link.title}</a>&nbsp;
 			{/foreach}
 		</div>
 	</div>

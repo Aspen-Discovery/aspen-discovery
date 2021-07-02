@@ -505,25 +505,28 @@ class Browse_AJAX extends Action {
 			if (!empty($_REQUEST['subCategoryTextId'])) {
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			} else {
-				$firstSubCategory = reset($subCategories);
-				$subCategory = new BrowseCategory();
-				$subCategory->id = $firstSubCategory->subCategoryId;
-				//Get the first sub category that is valid for display
-				while ($subCategory->find(true)) {
-					if ($subCategory->isValidForDisplay()){
-						$subCategoryTextId = $subCategory->textId;
-						break;
+				foreach ($subCategories as $subCategoryId) {
+					$subCategory = new BrowseCategory();
+					$subCategory->id = $subCategoryId->subCategoryId;
+					//Get the first sub category that is valid for display
+					if ($subCategory->find(true)) {
+						if ($subCategory->isValidForDisplay()){
+							$subCategoryTextId = $subCategory->textId;
+							break;
+						}
 					}
 				}
 			}
-			$response['subCategoryTextId'] = $subCategoryTextId;
+			if (!empty($subCategoryTextId)) {
+				$response['subCategoryTextId'] = $subCategoryTextId;
 
-			// Set the main category label before we fetch the sub-categories main results
-			$response['label']  = translate($this->browseCategory->label);
+				// Set the main category label before we fetch the sub-categories main results
+				$response['label']  = translate($this->browseCategory->label);
 
-			// Reset Main Category with SubCategory to fetch main results
-			$this->setTextId($subCategoryTextId);
-			$this->getBrowseCategory(true); // load sub-category
+				// Reset Main Category with SubCategory to fetch main results
+				$this->setTextId($subCategoryTextId);
+				$this->getBrowseCategory(true); // load sub-category
+			}
 		}
 
 		// Get the Browse Results for the Selected Category
