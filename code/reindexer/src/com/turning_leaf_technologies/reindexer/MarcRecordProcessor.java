@@ -1258,6 +1258,7 @@ abstract class MarcRecordProcessor {
 			printFormats.remove("CD+Book");
 			printFormats.remove("Book+CD");
 			printFormats.remove("Book+DVD");
+			printFormats.remove("SoundDisc");
 		}
 	}
 
