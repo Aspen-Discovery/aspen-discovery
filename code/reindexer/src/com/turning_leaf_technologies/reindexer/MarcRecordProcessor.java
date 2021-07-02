@@ -1115,6 +1115,11 @@ abstract class MarcRecordProcessor {
 			printFormats.add("Archival Materials");
 			return;
 		}
+		if (printFormats.contains("Library Of Things")){
+			printFormats.clear();
+			printFormats.add("Library Of Things");
+			return;
+		}
 		if (printFormats.contains("SoundCassette") && printFormats.contains("MusicRecording")){
 			printFormats.clear();
 			printFormats.add("MusicCassette");
@@ -1579,6 +1584,8 @@ abstract class MarcRecordProcessor {
 						String subfieldData = subfield.getData().toLowerCase();
 						if (subfieldData.contains("large type")) {
 							result.add("LargePrint");
+						}else if (subfieldData.contains("library of things")){
+							result.add("LibraryOfThings");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("graphic novel")) {
