@@ -2200,6 +2200,9 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public static function keepBestGroupedStatus($groupedStatus, $groupedStatus1)
 	{
+		if ($groupedStatus == $groupedStatus1){
+			return $groupedStatus;
+		}
 		if (isset(GroupedWorkDriver::$statusRankings[$groupedStatus])) {
 			$ranking1 = GroupedWorkDriver::$statusRankings[$groupedStatus];
 		} else {

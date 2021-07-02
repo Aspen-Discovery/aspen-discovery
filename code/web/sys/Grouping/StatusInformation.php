@@ -60,31 +60,7 @@ class Grouping_StatusInformation
 		}
 		$this->_onOrderCopies += $statusInformation->getOnOrderCopies();
 
-		$statusRankings = array(
-			'currently unavailable' => 1,
-			'on order' => 2,
-			'coming soon' => 3,
-			'in processing' => 3.5,
-			'checked out' => 4,
-			'library use only' => 5,
-			'available online' => 6,
-			'in transit' => 6.5,
-			'on shelf' => 7
-		);
-		if ($statusInformation->getGroupedStatus() != '') {
-			$groupedStatus = $this->_groupedStatus;
-
-			//Check to see if we have a better status here
-			if (array_key_exists(strtolower($statusInformation->getGroupedStatus()), $statusRankings)) {
-				if ($groupedStatus == '') {
-					$groupedStatus = $statusInformation->getGroupedStatus();
-					//Check to see if we are getting a better status
-				} elseif ($statusRankings[strtolower($statusInformation->getGroupedStatus())] > $statusRankings[strtolower($groupedStatus)]) {
-					$groupedStatus = $statusInformation->getGroupedStatus();
-				}
-				$this->_groupedStatus = $groupedStatus;
-			}
-		}
+		$this->_groupedStatus = GroupedWorkDriver::keepBestGroupedStatus($this->_groupedStatus, $statusInformation->getGroupedStatus());
 
 		$this->_copies += $statusInformation->getCopies();
 		$this->_availableCopies += $statusInformation->getAvailableCopies();
@@ -349,5 +325,4 @@ class Grouping_StatusInformation
 	public function isEContent(){
 		return $this->_isEcontent;
 	}
-
 }

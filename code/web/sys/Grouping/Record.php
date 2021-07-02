@@ -129,6 +129,25 @@ class Grouping_Record
 		} else {
 			$this->addCopies($item->numCopies);
 		}
+		$searchLocation = Location::getSearchLocation();
+		if ($searchLocation != null){
+			if ($item->locallyOwned) {
+				$this->_statusInformation->addLocalCopies($item->numCopies);
+				if ($item->available){
+					$this->_statusInformation->addLocalCopies($item->numCopies);
+					$this->_statusInformation->setAvailableHere(true);
+				}
+			}
+		}else{
+			if ($item->libraryOwned) {
+				$this->_statusInformation->addLocalCopies($item->numCopies);
+				if ($item->available){
+					$this->_statusInformation->addAvailableCopies($item->numCopies);
+					$this->_statusInformation->setAvailableLocally(true);
+				}
+			}
+		}
+
 		$this->_statusInformation->setGroupedStatus(GroupedWorkDriver::keepBestGroupedStatus($this->getStatusInformation()->getGroupedStatus(), $item->groupedStatus));
 
 		if (!empty($this->_volumeData)){
