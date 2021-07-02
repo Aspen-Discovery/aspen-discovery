@@ -29,6 +29,9 @@ class BrowseCategory extends BaseBrowsable
 		return ['id', 'sourceListId', 'userId'];
 	}
 
+	/*
+	returns both valid and invalid categories
+	*/
 	public function getSubCategories()
 	{
 		if (!isset($this->_subBrowseCategories) && $this->id) {
