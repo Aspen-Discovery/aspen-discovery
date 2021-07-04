@@ -300,5 +300,12 @@ function getUpdates21_08_00() : array
 				'UPDATE grouped_work_facet SET displayNamePlural="Literary Forms" WHERE displayName="Literary Form"'
 			]
 		],//create_plural_grouped_work_facets
+		'treat_unknown_audience_as' => [
+			'title' => 'Indexing Profile Treat Unknown Audience As',
+			'description' => 'Add the ability to modify how unknown audiences are handled',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN treatUnknownAudienceAs VARCHAR(10) DEFAULT 'Unknown'"
+			]
+		], //treat_unknown_audience_as
 	];
 }

@@ -533,6 +533,10 @@ abstract class MarcRecordProcessor {
 	}
 
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+		loadTargetAudiences(groupedWork, record, printItems, identifier, "Unknown");
+	}
+
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
 			String leader = record.getLeader().toString();
@@ -566,23 +570,33 @@ abstract class MarcRecordProcessor {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
 				} else if (targetAudiences.size() == 0) {
-					targetAudiences.add("Unknown");
+					targetAudiences.add(unknownAudienceLabel);
 				}
 			} else {
-				targetAudiences.add("Unknown");
+				targetAudiences.add(unknownAudienceLabel);
 			}
 		} catch (Exception e) {
 			// leader not long enough to get target audience
 			logger.debug("ERROR in getTargetAudience ", e);
-			targetAudiences.add("Unknown");
+			targetAudiences.add(unknownAudienceLabel);
 		}
 
 		if (targetAudiences.size() == 0) {
-			targetAudiences.add("Unknown");
+			targetAudiences.add(unknownAudienceLabel);
 		}
 
-		groupedWork.addTargetAudiences(indexer.translateSystemCollection("target_audience", targetAudiences, identifier));
-		groupedWork.addTargetAudiencesFull(indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier));
+		LinkedHashSet<String> translatedAudiences = indexer.translateSystemCollection("target_audience", targetAudiences, identifier);
+		if (!unknownAudienceLabel.equals("Unknown") && translatedAudiences.contains("Unknown")){
+			translatedAudiences.remove("Unknown");
+			translatedAudiences.add(unknownAudienceLabel);
+		}
+		groupedWork.addTargetAudiences(translatedAudiences);
+		LinkedHashSet<String> translatedAudiencesFull = indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier);
+		if (!unknownAudienceLabel.equals("Unknown") && translatedAudiencesFull.contains("Unknown")){
+			translatedAudiencesFull.remove("Unknown");
+			translatedAudiencesFull.add(unknownAudienceLabel);
+		}
+		groupedWork.addTargetAudiencesFull(translatedAudiencesFull);
 	}
 
 	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
