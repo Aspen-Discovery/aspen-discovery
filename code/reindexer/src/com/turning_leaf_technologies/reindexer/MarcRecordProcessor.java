@@ -1115,9 +1115,9 @@ abstract class MarcRecordProcessor {
 			printFormats.add("Archival Materials");
 			return;
 		}
-		if (printFormats.contains("Library Of Things")){
+		if (printFormats.contains("LibraryOfThings")){
 			printFormats.clear();
-			printFormats.add("Library Of Things");
+			printFormats.add("LibraryOfThings");
 			return;
 		}
 		if (printFormats.contains("SoundCassette") && printFormats.contains("MusicRecording")){
