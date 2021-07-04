@@ -32,7 +32,7 @@ class Grouping_Record
 	public $_bookable = false;
 	public $_holdable = false;
 	public $_itemSummary = [];
-	public $_itemsDisplayedByDefault = [];
+	public $_itemsDisplayedByDefault = null;
 	public $_itemDetails = [];
 
 	public $source;
@@ -383,6 +383,10 @@ class Grouping_Record
 
 	public function getItemsDisplayedByDefault(): array
 	{
+		if ($this->_itemsDisplayedByDefault == null) {
+			//Make sure everything gets initialized
+			$this->getItemDetails();
+		}
 		return $this->_itemsDisplayedByDefault;
 	}
 
@@ -409,6 +413,9 @@ class Grouping_Record
 			$this->_itemSummary[$key] = $itemSummaryInfo;
 		}
 
+		if ($this->_itemsDisplayedByDefault == null) {
+			$this->_itemsDisplayedByDefault = [];
+		}
 		if ($itemSummaryInfo['displayByDefault']){
 			if (isset($this->_itemsDisplayedByDefault[$key])){
 				$this->_itemsDisplayedByDefault[$key]['totalCopies'] += $itemSummaryInfo['totalCopies'];
