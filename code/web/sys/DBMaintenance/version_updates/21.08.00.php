@@ -307,5 +307,19 @@ function getUpdates21_08_00() : array
 				"ALTER TABLE indexing_profiles ADD COLUMN treatUnknownAudienceAs VARCHAR(10) DEFAULT 'Unknown'"
 			]
 		], //treat_unknown_audience_as
+		'force_reload_of_overdrive_21_08' => [
+			'title' => 'Force reload of OverDrive',
+			'description' => 'Force OverDrive to be reloaded for 21.08',
+			'sql' => [
+				"UPDATE overdrive_settings set runFullUpdate = 1",
+			]
+		], //force_reload_of_overdrive_21_08
+		'force_reload_of_hoopla_21_08' => [
+			'title' => 'Force reload of Hoopla',
+			'description' => 'Force Hoopla to be reloaded for 21.08',
+			'sql' => [
+				"UPDATE hoopla_settings set runFullUpdate = 1",
+			]
+		], //force_reload_of_hoopla_21_08
 	];
 }
