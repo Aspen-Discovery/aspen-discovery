@@ -69,6 +69,7 @@ public class GroupedWorkIndexer {
 
 	private PreparedStatement getExistingScopesStmt;
 	private PreparedStatement addScopeStmt;
+	private PreparedStatement updateScopeStmt;
 	private PreparedStatement removeScopeStmt;
 
 	private PreparedStatement getExistingRecordsForWorkStmt;
@@ -170,6 +171,7 @@ public class GroupedWorkIndexer {
 
 			getExistingScopesStmt = dbConn.prepareStatement("SELECT * from scope", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addScopeStmt = dbConn.prepareStatement("INSERT INTO scope (name, isLibraryScope, isLocationScope) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			updateScopeStmt = dbConn.prepareStatement("UPDATE scope set isLibraryScope = ?, isLocationScope = ? WHERE id = ?");
 			removeScopeStmt = dbConn.prepareStatement("DELETE FROM scope where id = ?");
 			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY " +
@@ -251,19 +253,23 @@ public class GroupedWorkIndexer {
 				logger.info("Loaded " + scopes.size() + " scopes");
 			}
 
-			HashMap<String, Long> existingScopes = this.getExistingScopes();
+			HashMap<String, ExistingScopeInfo> existingScopes = this.getExistingScopes();
 			for (Scope scope : scopes){
-				String scopeKey = scope.getScopeName() + scope.isLibraryScope() + scope.isLocationScope();
-				if (existingScopes.containsKey(scopeKey)){
-					scope.setId(existingScopes.get(scopeKey));
+				String scopeKey = scope.getScopeName();
+				ExistingScopeInfo scopeInfo = existingScopes.get(scopeKey);
+				if (scopeInfo != null){
+					scope.setId(scopeInfo.id);
+					if (scopeInfo.isLocationScope != scope.isLocationScope() || scopeInfo.isLibraryScope != scope.isLibraryScope()){
+						this.updateScope(scope);
+					}
 					existingScopes.remove(scopeKey);
 				}else {
 					Long scopeId = this.saveScope(scope);
 					scope.setId(scopeId);
 				}
 			}
-			for (Long scopeId : existingScopes.values()){
-				this.removeScope(scopeId);
+			for (ExistingScopeInfo scope : existingScopes.values()){
+				this.removeScope(scope.id);
 			}
 		}catch (Exception e) {
 			logEntry.incErrors("Error loading scopes", e);
@@ -1690,19 +1696,20 @@ public class GroupedWorkIndexer {
 			if (itemInfo.getDateAdded() == null) {
 				addItemForRecordStmt.setNull(10, Types.BIGINT);
 			}else{
-				addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime());
+				addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime() / 1000);
 			}
 			addItemForRecordStmt.setLong(11, this.getLocationCodeId(itemInfo.getLocationCode()));
 			addItemForRecordStmt.setLong(12, this.getSubLocationCodeId(itemInfo.getSubLocationCode()));
 			if (itemInfo.getLastCheckinDate() ==  null){
 				addItemForRecordStmt.setNull(13, Types.INTEGER);
 			}else {
-				addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate() == null ? null : itemInfo.getLastCheckinDate().getTime() / 1000);
+				addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
 			}
 			addItemForRecordStmt.executeUpdate();
 			ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
 			if (addItemForWorkRS.next()){
 				itemId = addItemForWorkRS.getLong(1);
+				existingItems.put(itemInfo.getItemIdentifier(), itemId);
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error saving grouped work item", e);
@@ -1777,6 +1784,17 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	void updateScope(Scope scope) {
+		try {
+			updateScopeStmt.setBoolean(1, scope.isLibraryScope());
+			updateScopeStmt.setBoolean(2, scope.isLocationScope());
+			updateScopeStmt.setLong(3, scope.getId());
+			updateScopeStmt.executeUpdate();
+		} catch (SQLException e) {
+			logEntry.incErrors("Error updating scope", e);
+		}
+	}
+
 	Long saveScope(Scope scope) {
 		long scopeId = -1;
 		try {
@@ -1795,13 +1813,17 @@ public class GroupedWorkIndexer {
 		return scopeId;
 	}
 
-	HashMap<String, Long> getExistingScopes() {
-		HashMap<String, Long> existingScopes = new HashMap<>();
+	HashMap<String, ExistingScopeInfo> getExistingScopes() {
+		HashMap<String, ExistingScopeInfo> existingScopes = new HashMap<>();
 		try {
 			ResultSet getExistingScopesRS = getExistingScopesStmt.executeQuery();
 			while (getExistingScopesRS.next()){
-				String key = getExistingScopesRS.getString("name") + getExistingScopesRS.getBoolean("isLibraryScope") + getExistingScopesRS.getBoolean("isLocationScope");
-				existingScopes.put(key, getExistingScopesRS.getLong("id"));
+				ExistingScopeInfo scopeInfo = new ExistingScopeInfo();
+				scopeInfo.id = getExistingScopesRS.getLong("id");
+				scopeInfo.scopeName = getExistingScopesRS.getString("name");
+				scopeInfo.isLibraryScope = getExistingScopesRS.getBoolean("isLibraryScope");
+				scopeInfo.isLocationScope = getExistingScopesRS.getBoolean("isLocationScope");
+				existingScopes.put(scopeInfo.scopeName, scopeInfo);
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing scopes", e);
