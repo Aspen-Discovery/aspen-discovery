@@ -311,11 +311,11 @@ class HooplaProcessor {
 			}
 			productRS.close();
 		}catch (NullPointerException e) {
-			logEntry.incErrors("Null pointer exception processing Hoopla record ", e);
+			logEntry.incErrors("Null pointer exception processing Hoopla record " + identifier + " grouped work " + groupedWork.getId(), e);
 		} catch (JSONException e) {
-			logEntry.incErrors("Error parsing raw data for Hoopla", e);
+			logEntry.incErrors("Error parsing raw data for Hoopla record " + identifier, e);
 		} catch (SQLException e) {
-			logEntry.incErrors("Error loading information from Database for Hoopla title", e);
+			logEntry.incErrors("Error loading information from Database for Hoopla title " + identifier, e);
 		}
 	}
 

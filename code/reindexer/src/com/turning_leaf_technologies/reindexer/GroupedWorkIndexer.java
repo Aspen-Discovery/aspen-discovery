@@ -692,7 +692,7 @@ public class GroupedWorkIndexer {
 				updateServer.commit(false, false, true);
 			}
 		} catch (Exception e) {
-			logEntry.incErrors("Error indexing grouped work by id", e);
+			logEntry.incErrors("Error indexing grouped work " + permanentId + " by id", e);
 		}
 
 	}
