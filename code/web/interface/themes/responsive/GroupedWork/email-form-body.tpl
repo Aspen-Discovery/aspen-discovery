@@ -29,7 +29,7 @@
 	<div class="form-group">
 		<label for="from" class="col-sm-3">{translate text='From'}:</label>
 		<div class="col-sm-9">
-			<input type="email" name="from" id="from" size="40" class="email form-control">
+			<input type="text" name="from" id="from" size="40" maxlength="100" class="form-control">
 		</div>
 	</div>
 	<div class="form-group">

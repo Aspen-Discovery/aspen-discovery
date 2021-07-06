@@ -1030,7 +1030,7 @@ class MyAccount_AJAX extends JSON_Action
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) { // validly formatted List Id
 			$listId = $_REQUEST['listId'];
 			$to = $_REQUEST['to'];
-			$from = $_REQUEST['from'];
+			$from = isset($_REQUEST['from']) ? $_REQUEST['from'] : '';
 			$message = $_REQUEST['message'];
 
 			//Load the list
@@ -1051,13 +1051,14 @@ class MyAccount_AJAX extends JSON_Action
 					$interface->assign('list', $list);
 
 					if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)) {
+						$interface->assign('from', $from);
 						$interface->assign('message', $message);
 						$body = $interface->fetch('Emails/my-list.tpl');
 
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = $list->title;
-						$emailResult = $mail->send($to, $subject, $body, $from);
+						$emailResult = $mail->send($to, $subject, $body);
 
 						if ($emailResult === true) {
 							$result = array(

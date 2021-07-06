@@ -382,6 +382,11 @@ class EbscoRecordDriver extends RecordInterface
 		return $this->recordData->Header->DbLabel;
 	}
 
+	public function getPrimaryAuthor()
+	{
+		return $this->getAuthor();
+	}
+
 	public function getAuthor()
 	{
 		if (!empty($this->recordData->Items)) {

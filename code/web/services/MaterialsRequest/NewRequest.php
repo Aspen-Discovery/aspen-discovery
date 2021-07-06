@@ -26,11 +26,13 @@ class MaterialsRequest_NewRequest extends Action
 
 			$pickupLocations = array();
 			foreach ($locations as $curLocation) {
-				$pickupLocations[] = array(
-					'id' => $curLocation->locationId,
-					'displayName' => $curLocation->displayName,
-					'selected' => is_object($curLocation) ? ($curLocation->locationId == $user->pickupLocationId ? 'selected' : '') : '',
-				);
+				if (is_object($curLocation)) {
+					$pickupLocations[] = array(
+						'id' => $curLocation->locationId,
+						'displayName' => $curLocation->displayName,
+						'selected' => is_object($curLocation) ? ($curLocation->locationId == $user->pickupLocationId ? 'selected' : '') : '',
+					);
+				}
 			}
 			$interface->assign('pickupLocations', $pickupLocations);
 

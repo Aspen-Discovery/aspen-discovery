@@ -69,7 +69,7 @@ class Archive_RequestCopy extends Action{
 							require_once ROOT_DIR . '/sys/Email/Mailer.php';
 							$mail = new Mailer();
 							$subject = 'New Request for Copies of Archive Content';
-							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $subject, $body, $newObject->email);
+							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $subject, $body);
 
 							if ($emailResult === true){
 								$result = array(

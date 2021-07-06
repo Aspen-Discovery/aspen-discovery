@@ -70,7 +70,7 @@ class Archive_ClaimAuthorship extends Action{
 							require_once ROOT_DIR . '/sys/Email/Mailer.php';
 							$mail = new Mailer();
 							$subject = 'New Authorship Claim for Archive Content';
-							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $subject, $body, $newObject->email);
+							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $subject, $body);
 
 							if ($emailResult === true){
 								$result = array(
