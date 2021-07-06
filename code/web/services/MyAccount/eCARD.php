@@ -14,7 +14,8 @@ class eCARD extends Action
 		}else{
 			$interface->assign('eCardSettings', null);
 		}
-
+		global $library;
+		$interface->assign('selfRegistrationFormMessage', $library->selfRegistrationFormMessage);
 
 		$this->display('quipuECard.tpl', 'Register for a Library Card', '');
 	}
