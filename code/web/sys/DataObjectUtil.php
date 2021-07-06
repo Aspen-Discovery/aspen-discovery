@@ -473,11 +473,19 @@ class DataObjectUtil
 			}
 		}else if ($property['type'] == 'password'){
 			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])){
-				$object->setProperty($propertyName, md5($_REQUEST[$propertyName]), $property);
+				$newValue = strip_tags(trim($_REQUEST[$propertyName]));
+				if ($newValue != null) {
+					$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
+				}
+				$object->setProperty($propertyName, md5($newValue), $property);
 			}
 		}else if ($property['type'] == 'storedPassword'){
 			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])){
-				$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
+				$newValue = strip_tags(trim($_REQUEST[$propertyName]));
+				if ($newValue != null) {
+					$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
+				}
+				$object->setProperty($propertyName, $newValue, $property);
 			}
 		}else if ($property['type'] == 'oneToMany'){
 			//Check for deleted associations

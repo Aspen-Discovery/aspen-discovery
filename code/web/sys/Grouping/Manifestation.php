@@ -341,7 +341,7 @@ class Grouping_Manifestation
 			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
 			$itemsDisplayedByDefault = [];
 			foreach ($this->_variations as $variation) {
-				$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $variation->getItemsDisplayedByDefault(false));
+				$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $variation->getItemsDisplayedByDefault());
 			}
 			ksort($itemsDisplayedByDefault);
 			$this->_itemsDisplayedByDefault = $itemsDisplayedByDefault;

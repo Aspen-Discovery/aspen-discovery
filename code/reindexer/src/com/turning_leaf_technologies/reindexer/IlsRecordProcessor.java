@@ -64,6 +64,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private int determineAudienceBy;
 	private char audienceSubfield;
+	private String treatUnknownAudienceAs;
 
 	//Fields for loading order information
 	private String orderTag;
@@ -203,6 +204,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			determineAudienceBy = indexingProfileRS.getInt("determineAudienceBy");
 			audienceSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "audienceSubfield");
+			treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
 
 			//loadAvailableItemBarcodes(marcRecordPath, logger);
 			loadHoldsByIdentifier(dbConn, logger);
@@ -1503,7 +1505,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		if (determineAudienceBy == 0) {
-			super.loadTargetAudiences(groupedWork, record, printItems, identifier);
+			super.loadTargetAudiences(groupedWork, record, printItems, identifier, treatUnknownAudienceAs);
 		}else{
 			HashSet<String> targetAudiences = new HashSet<>();
 			if (determineAudienceBy == 1) {
@@ -1532,6 +1534,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			}
 			HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier);
+
+			if (!treatUnknownAudienceAs.equals("Unknown") && translatedAudiences.contains("Unknown")) {
+				translatedAudiences.remove("Unknown");
+				translatedAudiences.add(treatUnknownAudienceAs);
+			}
 			if (translatedAudiences.size() == 0){
 				translatedAudiences.add("Other");
 			}

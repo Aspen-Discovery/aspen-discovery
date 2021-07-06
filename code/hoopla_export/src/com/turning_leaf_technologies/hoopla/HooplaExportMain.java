@@ -482,7 +482,15 @@ public class HooplaExportMain {
 
 	private static String groupRecord(JSONObject itemDetails, long hooplaId) throws JSONException {
 		//Perform record grouping on the record
-		String title = itemDetails.getString("title");
+		String title;
+		String subTitle;
+		if (itemDetails.has("titleTitle")){
+			title = itemDetails.getString("titleTitle");
+			subTitle = itemDetails.getString("title");
+		}else {
+			title = itemDetails.getString("title");
+			subTitle = "";
+		}
 		String mediaType = itemDetails.getString("kind");
 		String primaryFormat;
 		switch (mediaType) {
@@ -517,8 +525,7 @@ public class HooplaExportMain {
 
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("hoopla", Long.toString(hooplaId));
 
-		String subtitle = "";
-		return getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subtitle, author, primaryFormat, true);
+		return getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subTitle, author, primaryFormat, true);
 	}
 
 	private static String getAccessToken(String username, String password) {

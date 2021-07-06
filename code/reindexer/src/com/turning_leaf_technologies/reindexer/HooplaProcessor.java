@@ -52,6 +52,8 @@ class HooplaProcessor {
 				hooplaRecord.setRecordIdentifier("hoopla", identifier);
 
 				String title = productRS.getString("title");
+				String subTitle = "";
+
 				String formatCategory;
 				String primaryFormat;
 				switch (kind) {
@@ -89,7 +91,17 @@ class HooplaProcessor {
 
 				JSONObject rawResponse = new JSONObject(productRS.getString("rawResponse"));
 
+				if (rawResponse.has("titleTitle")){
+					title = rawResponse.getString("titleTitle");
+					subTitle = rawResponse.getString("title");
+				}
+
+				String fullTitle = title + " " + subTitle;
+				fullTitle = fullTitle.trim();
 				groupedWork.setTitle(title, title, title, primaryFormat);
+				groupedWork.setSubTitle(subTitle);
+				groupedWork.addFullTitle(fullTitle);
+
 
 				String primaryAuthor = "";
 				if (rawResponse.has("artist")){
@@ -215,6 +227,7 @@ class HooplaProcessor {
 				groupedWork.addUpc(upc);
 
 				ItemInfo itemInfo = new ItemInfo();
+				itemInfo.setItemIdentifier(identifier);
 				itemInfo.seteContentSource("Hoopla");
 				itemInfo.setIsEContent(true);
 				itemInfo.seteContentUrl(rawResponse.getString("url"));
@@ -298,11 +311,11 @@ class HooplaProcessor {
 			}
 			productRS.close();
 		}catch (NullPointerException e) {
-			logEntry.incErrors("Null pointer exception processing Hoopla record ", e);
+			logEntry.incErrors("Null pointer exception processing Hoopla record " + identifier + " grouped work " + groupedWork.getId(), e);
 		} catch (JSONException e) {
-			logEntry.incErrors("Error parsing raw data for Hoopla", e);
+			logEntry.incErrors("Error parsing raw data for Hoopla record " + identifier, e);
 		} catch (SQLException e) {
-			logEntry.incErrors("Error loading information from Database for Hoopla title", e);
+			logEntry.incErrors("Error loading information from Database for Hoopla title " + identifier, e);
 		}
 	}
 

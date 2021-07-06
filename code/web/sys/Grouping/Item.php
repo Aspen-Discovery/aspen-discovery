@@ -225,6 +225,12 @@ class Grouping_Item
 			$sectionId = 6;
 		}
 
+		$lastCheckInDate = '';
+		if (!empty($this->lastCheckInDate)) {
+			$date = new DateTime();
+			$date->setTimestamp($this->lastCheckInDate);
+			$lastCheckInDate =$date->format( 'M j, Y');
+		}
 		$itemSummaryInfo = array(
 			'description' => $description,
 			'shelfLocation' => $this->shelfLocation,
@@ -245,7 +251,7 @@ class Grouping_Item
 			'sectionId' => $sectionId,
 			'section' => $section,
 			'relatedUrls' => $this->getRelatedUrls(),
-			'lastCheckinDate' => !empty($this->lastCheckInDate) ? date_format($this->lastCheckInDate, 'M j, Y') : '',
+			'lastCheckinDate' => $lastCheckInDate,
 			'volume' => $this->volume,
 			'volumeId' => $this->volumeId,
 			'isEContent' => $this->isEContent,

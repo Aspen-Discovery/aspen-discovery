@@ -1828,6 +1828,7 @@ public class GroupedWorkSolr implements Cloneable {
 				HashMap<String, Long> existingItems = groupedWorkIndexer.getExistingItemsForRecord(recordId);
 
 				//Save all the items
+				HashSet<Long> foundItems = new HashSet<>();
 				for (ItemInfo itemInfo : recordInfo.getRelatedItems()) {
 					//Get the variation for the item
 					long variationId = groupedWorkIndexer.saveGroupedWorkVariation(existingVariations, groupedWorkId, recordInfo, itemInfo);
@@ -1845,13 +1846,16 @@ public class GroupedWorkSolr implements Cloneable {
 						for (SavedScopingInfo savedScopingInfo : existingScopes.values()) {
 							groupedWorkIndexer.removeItemScope(savedScopingInfo.id);
 						}
+
+						foundItems.add(itemId);
 					}
-					existingItems.remove(itemInfo.getItemIdentifier());
 				}
 
 				//Remove remaining items that no longer exist
 				for (Long itemId : existingItems.values()) {
-					groupedWorkIndexer.removeRecordItem(itemId);
+					if (!foundItems.contains(itemId)) {
+						groupedWorkIndexer.removeRecordItem(itemId);
+					}
 				}
 			}
 		}

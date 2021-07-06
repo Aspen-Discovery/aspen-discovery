@@ -99,7 +99,7 @@
 					{/if}
 				{/if}
 
-				{if $showPublicationDate}
+				{if !empty($showPublicationDate) && $showPublicationDate}
 					{if $alwaysShowSearchResultsMainDetails || $summPubDate}
 						<div class="row">
 							<div class="result-label col-tn-3">{translate text="Pub. Date"} </div>

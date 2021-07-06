@@ -45,7 +45,7 @@
 							<div class="btn-group btn-group-vertical btn-block">
 								{* Options for the user to view online or download *}
 								{foreach from=$actions item=link}
-									<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action btn-wrap" {if $link.target}target="{$link.target}"{/if}>{$link.title}</a>&nbsp;
+									<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action btn-wrap" {if !empty($link.target)}target="{$link.target}"{/if}>{$link.title}</a>&nbsp;
 								{/foreach}
 							</div>
 						</div>

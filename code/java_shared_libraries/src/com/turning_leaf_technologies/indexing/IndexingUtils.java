@@ -482,7 +482,8 @@ public class IndexingUtils {
 						"groupedWorkDisplaySettingId, hooplaScopeId, rbdigitalScopeId, axis360ScopeId " +
 						"FROM library ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement numLocationsForLibraryStmt = dbConn.prepareStatement("SELECT count(locationId) as numLocations from location where libraryId = ?")
+;		PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet libraryInformationRS = libraryInformationStmt.executeQuery();
 		PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -502,12 +503,26 @@ public class IndexingUtils {
 				pTypes = "";
 			}
 
+			//Get number of locations for the library
+			int numLocations = 0;
+			numLocationsForLibraryStmt.setLong(1, libraryId);
+			ResultSet numLocationsForLibraryRS = numLocationsForLibraryStmt.executeQuery();
+			if (numLocationsForLibraryRS.next()){
+				numLocations = numLocationsForLibraryRS.getInt("numLocations");
+			}
+			numLocationsForLibraryRS.close();
+
 			//Determine if we need to build a scope for this library
 			//MDN 10/1/2014 always build scopes because it makes coding more consistent elsewhere.
 			//We need to build a scope
 			Scope newScope = new Scope();
 			newScope.setIsLibraryScope(true);
-			newScope.setIsLocationScope(false);
+			if (numLocations == 1) {
+				//Scopes with only 1 location for the library will be boht library and location
+				newScope.setIsLocationScope(true);
+			}else{
+				newScope.setIsLocationScope(false);
+			}
 			newScope.setScopeName(subdomain);
 			newScope.setLibraryId(libraryId);
 			newScope.setFacetLabel(facetLabel);

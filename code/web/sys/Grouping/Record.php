@@ -32,7 +32,7 @@ class Grouping_Record
 	public $_bookable = false;
 	public $_holdable = false;
 	public $_itemSummary = [];
-	public $_itemsDisplayedByDefault = [];
+	public $_itemsDisplayedByDefault = null;
 	public $_itemDetails = [];
 
 	public $source;
@@ -129,6 +129,25 @@ class Grouping_Record
 		} else {
 			$this->addCopies($item->numCopies);
 		}
+		$searchLocation = Location::getSearchLocation();
+		if ($searchLocation != null){
+			if ($item->locallyOwned) {
+				$this->_statusInformation->addLocalCopies($item->numCopies);
+				if ($item->available){
+					$this->_statusInformation->addLocalCopies($item->numCopies);
+					$this->_statusInformation->setAvailableHere(true);
+				}
+			}
+		}else{
+			if ($item->libraryOwned) {
+				$this->_statusInformation->addLocalCopies($item->numCopies);
+				if ($item->available){
+					$this->_statusInformation->addAvailableCopies($item->numCopies);
+					$this->_statusInformation->setAvailableLocally(true);
+				}
+			}
+		}
+
 		$this->_statusInformation->setGroupedStatus(GroupedWorkDriver::keepBestGroupedStatus($this->getStatusInformation()->getGroupedStatus(), $item->groupedStatus));
 
 		if (!empty($this->_volumeData)){
@@ -364,6 +383,10 @@ class Grouping_Record
 
 	public function getItemsDisplayedByDefault(): array
 	{
+		if ($this->_itemsDisplayedByDefault == null) {
+			//Make sure everything gets initialized
+			$this->getItemDetails();
+		}
 		return $this->_itemsDisplayedByDefault;
 	}
 
@@ -390,6 +413,9 @@ class Grouping_Record
 			$this->_itemSummary[$key] = $itemSummaryInfo;
 		}
 
+		if ($this->_itemsDisplayedByDefault == null) {
+			$this->_itemsDisplayedByDefault = [];
+		}
 		if ($itemSummaryInfo['displayByDefault']){
 			if (isset($this->_itemsDisplayedByDefault[$key])){
 				$this->_itemsDisplayedByDefault[$key]['totalCopies'] += $itemSummaryInfo['totalCopies'];
