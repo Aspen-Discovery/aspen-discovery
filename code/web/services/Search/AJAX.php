@@ -29,17 +29,17 @@ class AJAX extends Action {
 		$subject = translate('Library Catalog Search Result');
 		$url = $_REQUEST['sourceUrl'];
 		$to = $_REQUEST['to'];
-		$from = $_REQUEST['from'];
+		$from = isset($_REQUEST['from']) ? $_REQUEST['from'] : '';
 		$message = $_REQUEST['message'];
-		$interface->assign('from', $from);
 		if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
 			$interface->assign('message', $message);
 			$interface->assign('msgUrl', $url);
+			$interface->assign('from', $from);
 			$body = $interface->fetch('Emails/share-link.tpl');
 
 			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mail = new Mailer();
-			$emailResult = $mail->send($to, $subject, $body, $from);
+			$emailResult = $mail->send($to, $subject, $body);
 
 			if ($emailResult === true){
 				$result = array(

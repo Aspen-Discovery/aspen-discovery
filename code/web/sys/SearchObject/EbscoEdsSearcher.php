@@ -533,7 +533,11 @@ BODY;
 				return null;
 			}else{
 				$recordData = json_decode($recordInfoStr);
-				return $recordData->Record;
+				if (isset($recordData->Record)) {
+					return $recordData->Record;
+				}else{
+					return null;
+				}
 			}
 		}
 	}
