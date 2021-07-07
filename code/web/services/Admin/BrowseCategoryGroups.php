@@ -94,8 +94,8 @@ class Admin_BrowseCategoryGroups extends ObjectEditor
 				$libraryId = $library == null ? -1 : $library->libraryId;
 				$objectType = $this->getObjectType();
 				$object = new $objectType();
-				$object->whereAdd("sharing = 'everyone'");
-				$object->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+				$object->id = $library->browseCategoryGroupId;
 				$this->applyFilters($object);
 				$this->_numObjects = $object->count();
 			} else if (UserAccount::userHasPermission('Administer All Browse Categories')) {
