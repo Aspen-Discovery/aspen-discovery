@@ -1301,6 +1301,7 @@ public class GroupedWorkIndexer {
 			return -1;
 		}
 		if (publisher.length() > 500) {
+			logEntry.incErrors("Publisher was more than 500 characters (" + publisher.length() + ") " + publisher);
 			publisher = publisher.substring(0, 500);
 		}
 		Long id = publisherIds.get(publisher);
